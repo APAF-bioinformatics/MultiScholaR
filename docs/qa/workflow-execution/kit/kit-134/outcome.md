@@ -703,3 +703,22 @@ Bounds under the fixed rule (relative 1e-6, absolute floor 1e-9): same rounding 
 - The in-process proteomics DA publication draws `da_proteins_num_sig_da_molecules.png` in place and does not check it: from root 125 with long paths on (and earlier with them off) the PNG is lost **silently**. Package code (KIT-052's scope; not changed here).
 - Long paths off: the limit (about 41 to 43) is set by the worker's request-folder names (the pending harness decision); not shown at 41 because these fixtures cannot have a root shorter than 47.
 - The FragPipe table's exact maximum difference (only bounds here); the oracles' table digests do not see digits past the ninth (the mask), a weakness of the recorder, not changed.
+
+## Windows figure paths after the in-process and folder-name repairs; trx_screen `top_de_genes.tsv` (2026-11-19)
+
+**Declared before the run.** Purpose: confirm on windows-2025, with the installed application, `kit-052-win-paths` at `4b6770fd` (merged into kit-134 as `e7cabee5`, no conflict): 463abfb9 (in-process proteomics DA publication drawn in a short folder, copied and checked), fe6b7f54 (worker request folder `p/<role letter>`, old layout still read), 4b6770fd (normalisation, RUV covariates, protein QC in-process publications through the same helper); and classify on the Linux jobs the open difference of trx_screen's `top_de_genes.tsv` (7 steps, digest, ubuntu-22.04 in 44275615462). Bindings: kit-134 at the commit that carries this section, stage full, both platforms (the Linux jobs serve the table's classification; ubuntu-24.04 is the reference). Package code under `R/` and `tests/` unchanged beyond the merge; no oracle changed; instrumentation in `packaging/verify` and the workflow only. Ceiling: 300 minutes per job as before; each figure step 120 minutes (was 90; more cases). Budget: this run and one bounded correction pass, used only for an instrumentation fault; an unfavourable valid result is a finding, not a reason to rerun. Decision after the run: each KIT-052 Windows row confirmed or reported with its cause; the table's difference within the fixed rule (relative 1e-6, absolute floor 1e-9, discrete exact) or real.
+
+Cases (root lengths are approximate until the run states them; trx root = TMPDIR + 43, prot_tmt root = TMPDIR + 59 to 60 in 44275615462):
+
+| Long paths | Root | Items | Expected |
+|---|---|---|---|
+| on | 102 | figure tests, trx managed DA (MCI-031.2), lipid/metab/trx worker routes, old-layout DA check | every figure present |
+| on | 124, 130 | trx managed DA, worker routes | every figure present |
+| on | 125, 127, 130 | prot_tmt entry lane (in process: QC, normalisation, RUV covariates, DA) | every figure present, including `da_proteins_num_sig_da_molecules.png` (lost at 125 before) |
+| off | 63 | figure tests, trx managed DA, worker routes, old-layout DA check | every figure present |
+| off | 70, 77 | trx managed DA, worker routes | every figure present (calculated safe: trx 77 at a 15-character contrast; the fixture's is 12) |
+| off | 85, 95 | trx managed DA, worker routes | the step stops with the classed message naming the files; nothing lost silently |
+| off | 90 | prot_tmt entry lane | every figure present (below the Q-value staged copy's calculated 99) |
+| off | 118 | prot_tmt entry lane | stops loudly (expected at QC's Q-value staged copy, before normalisation and RUV covariates can be reached); nothing lost silently |
+
+Also: the four non-DIA e2e lanes on Windows (expected 88, 190, 16, 153). Table instrumentation (`run-lanes.R`): the recorder's copies of `top_de_genes.tsv` stay in the job; FPRINT lines give bytes, line endings, the oracle's own form (the recorder's `guiEntryMask`, parsed from the helper, then sha256) against the oracle's stored digests, digests of the body in order and sorted (raw and masked), per column text and masked-cell digests, the printed-digit range and digests of values rounded to 15, 13, 12, 11, 10, 9, 8, 7 and 6 significant digits.

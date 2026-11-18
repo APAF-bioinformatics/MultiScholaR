@@ -10,10 +10,13 @@
 #   figure_tests   tests/testthat/test-workflow-figure-paths.R (KIT-052's tests), whole file
 #   trx_worker_da  test-module-ci-trx-da.R, MCI-031.2: transcriptomics DA on the managed route, the worker's
 #                  entry point and the acceptance in this process; the worker draws the DA figures in its
-#                  request folder (<store>/.workflow-export/wfx-<32>/da-publication|omics-publication)
+#                  request folder (<store>/.workflow-export/wfx-<32>/p/<role letter>, KIT-052 fe6b7f54)
 #   prot_worker_da test-omic-da-module.R, KIT-112 W3, one contrast: proteomics DA on the managed route
 #                  (DA-contrast-output, then da_publication in the worker's request folder)
-#   prot_tmt_lane  the GUI-entry lane prot_tmt (QC with the Q-value figures, DA in process), against its oracle
+#   dia_products_old_layout  test-workflow-dia-products.R, the DA publication worker handler (KIT-019), which
+#                  also publishes a request staged under the earlier names (`da-publication/<role>`, KIT-052)
+#   prot_tmt_lane  the GUI-entry lane prot_tmt (QC with the Q-value figures, normalisation, RUV covariates and DA
+#                  in process), against its oracle
 # The project root's length is set by the caller through the temporary folder (TMPDIR), under which every
 # fixture makes its project (withr::local_tempdir). Each item's figures are printed by figure-trace.R.
 
@@ -123,6 +126,8 @@ for (item in items) {
         # (b-managed) lipid, metab and trx), not the whole file.
         omic_worker_da = runBlock("test-omic-da-module.R",
             "(W3, D3) lipid managed: the volcano is <req> until ticked, then the worker's lipid_volcano_page iframe; the tab holds no state, widget or page"),
+        dia_products_old_layout = runBlock("test-workflow-dia-products.R",
+            "the DA publication worker handler stages the exports, figures and pages under the request directory without saving assets (KIT-019)"),
         prot_tmt_lane = {
             lines <- readLines(file.path(checkout, "tests", "testthat", "test-gui-entry-proteomics.R"))
             block <- gsub("^.*test_that\\(\"|\"$", "", regmatches(lines, regexpr("test_that\\(\"KIT-101 entry lane prot_tmt:[^\"]+\"", lines)))

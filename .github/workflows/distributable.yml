@@ -443,7 +443,7 @@ jobs:
             fi
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
-          echo "fingerprints of prot_lfq_fragpipe's da_proteins_groupKO-groupWT_long_annot.tsv (the table stays in the job):"
+          echo "fingerprints of trx_screen's top_de_genes.tsv (the table stays in the job):"
           grep -a '^FPRINT' "$OUT/lanes.log" | cut -c1-1700 || true
           exit "$status"
 
@@ -784,7 +784,7 @@ jobs:
           $lines += '```'
           $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
           $lines
-          "fingerprints of prot_lfq_fragpipe's da_proteins_groupKO-groupWT_long_annot.tsv (the table stays in the job):"
+          "fingerprints of trx_screen's top_de_genes.tsv (the table stays in the job):"
           Get-Content "$env:OUT\lanes.log" | Where-Object { $_ -match '^FPRINT' } | ForEach-Object { $_.Substring(0, [math]::Min(1700, $_.Length)) }
           if ($status -ne 0) { throw "the lanes did not pass (exit $status)" }
 
@@ -810,42 +810,51 @@ jobs:
           $lines
           if ($status -ne 0) { throw "the e2e lanes did not pass (exit $status)" }
 
-      # KIT-052 / KIT-134 Windows figure paths, second confirmation (after the worker-route repair b0f4719c), with
-      # the installed application's R and the test tools: KIT-052's tests, the transcriptomics managed DA
-      # (MCI-031.2) and the lipid/metab/trx worker routes of test-omic-da-module.R from project roots of about 63,
-      # 102 and 124 characters, and the prot_tmt entry lane from 118 and 124. The root's length is set through
-      # TMPDIR, under which every fixture makes its project; no package or test code is changed. Every figure is
-      # listed with where it was drawn and where it ended, each path's length and whether it is there
-      # (packaging/verify/figure-trace.R, FIGPAIR lines), and every refusal of unwritten figures with its message.
+      # KIT-052 / KIT-134 Windows figure paths, third confirmation (kit-052-win-paths 4b6770fd merged as e7cabee5: the
+      # in-process DA, normalisation, RUV covariates and protein QC publications drawn in a short folder and copied with a
+      # check; the worker's request folder `p/<role letter>`), with the installed application's R and the test tools:
+      # KIT-052's tests, the transcriptomics managed DA (MCI-031.2), the lipid/metab/trx worker routes of
+      # test-omic-da-module.R, the old-layout DA check of test-workflow-dia-products.R and the prot_tmt entry lane (QC,
+      # normalisation, RUV covariates and DA in process). The root's length is set through TMPDIR, under which every
+      # fixture makes its project (trx root = TMPDIR + 43, prot_tmt root = TMPDIR + 59 to 60 in run 44275615462); no
+      # package or test code is changed. Every figure is listed with where it was drawn and where it ended, each path's
+      # length and whether it is there (packaging/verify/figure-trace.R, FIGPAIR lines), and every refusal of unwritten
+      # figures with its message (RAISED lines).
       - name: "Figure paths (KIT-052), long paths as the runner has them"
         id: figures
         if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' }}
-        timeout-minutes: 90
+        timeout-minutes: 120
         run: |
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
           "LongPathsEnabled in the registry: $((Get-ItemProperty $key).LongPathsEnabled)"
           "RUNNER_TEMP $env:RUNNER_TEMP ($($env:RUNNER_TEMP.Length) characters); TEMP $env:TEMP"
           New-Item -ItemType Directory -Force "$env:OUT\figures" | Out-Null
           & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
-            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" -Cases 'on-root63=20:figure_tests,trx_worker_da,omic_worker_da', `
-            'on-root102=59:figure_tests,trx_worker_da,omic_worker_da', 'on-root124=81:figure_tests,trx_worker_da,omic_worker_da', `
-            'on-tmt118=60:prot_tmt_lane', 'on-tmt124=66:prot_tmt_lane'
+            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" `
+            -Cases 'on-root102=59:figure_tests,trx_worker_da,omic_worker_da,dia_products_old_layout', `
+            'on-root124=81:trx_worker_da,omic_worker_da', 'on-root130=87:trx_worker_da,omic_worker_da', `
+            'on-tmt125=66:prot_tmt_lane', 'on-tmt127=68:prot_tmt_lane', 'on-tmt130=71:prot_tmt_lane'
           if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
 
       # The same with Windows' default: LongPathsEnabled set to 0 for the rest of this job (the runner is
-      # discarded with it). Windows reads the value per process, so the R processes started after this see it;
-      # the device probe's writeLines and file.copy rows show whether it took effect.
+      # discarded with it). Windows reads the value per process, so the R processes started after this see it
+      # (each case prints the value its R process reads). Worker routes at roots of about 63, 70, 77 (calculated safe:
+      # trx 77 at a 15-character contrast, the fixture's is 12) and 85, 95 (expected: a loud classed refusal naming the
+      # files); the prot_tmt lane in process at about 90 (below the Q-value staged copy's calculated 99) and about 118.
       - name: "Figure paths (KIT-052), long paths turned off (HKLM LongPathsEnabled = 0 for this disposable runner)"
         id: figuresoff
         if: ${{ !cancelled() && steps.figures.outcome != 'skipped' && steps.install.outcome == 'success' }}
-        timeout-minutes: 90
+        timeout-minutes: 120
         run: |
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
           Set-ItemProperty -Path $key -Name LongPathsEnabled -Value 0 -Type DWord
           "LongPathsEnabled in the registry now: $((Get-ItemProperty $key).LongPathsEnabled)"
           & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
-            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" -Cases 'off-rootmin=4:devices,figure_tests,trx_worker_da,omic_worker_da', `
-            'off-root63=20:figure_tests,trx_worker_da,omic_worker_da'
+            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" `
+            -Cases 'off-root63=20:figure_tests,trx_worker_da,omic_worker_da,dia_products_old_layout', `
+            'off-root70=27:trx_worker_da,omic_worker_da', 'off-root77=34:trx_worker_da,omic_worker_da', `
+            'off-root85=42:trx_worker_da,omic_worker_da', 'off-root95=52:trx_worker_da,omic_worker_da', `
+            'off-tmt90=31:prot_tmt_lane', 'off-tmt118=59:prot_tmt_lane'
           if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
 
       - name: Results
