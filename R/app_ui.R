@@ -492,6 +492,26 @@ app_ui <- function(request) {
         .ruv-design-status {
           grid-column: span 2;
         }
+        /* A row's figures span the two figure columns and keep them; the figure with the other rule for k is a
+           line under the two cells. */
+        .ruv-design-figures {
+          display: grid;
+          grid-column: span 2;
+          grid-template-columns: subgrid;
+          align-content: start;
+        }
+        .ruv-design-alt {
+          grid-column: span 2;
+          margin-top: 6px;
+          padding-top: 4px;
+          border-top: 1px dotted var(--ruv-rule);
+          color: var(--ruv-muted);
+          font-size: 12px;
+          line-height: 1.45;
+        }
+        .ruv-design-alt > span {
+          display: block;
+        }
         .ruv-design-option.is-pending .ruv-design-status {
           font-style: italic;
         }
@@ -616,19 +636,9 @@ app_ui <- function(request) {
           .ruv-design-option > .ruv-design-note {
             margin-top: 4px;
           }
-          .ruv-design-option > .ruv-design-fdp,
-          .ruv-design-option > .ruv-design-power,
-          .ruv-design-option > .ruv-design-status {
-            grid-row: 1 / span 3;
-          }
-          .ruv-design-option > .ruv-design-fdp {
-            grid-column: 2;
-          }
-          .ruv-design-option > .ruv-design-power {
-            grid-column: 3;
-          }
-          .ruv-design-option > .ruv-design-status {
+          .ruv-design-option > .ruv-design-figures {
             grid-column: 2 / span 2;
+            grid-row: 1 / span 3;
           }
           /* The k rules one under another, each rule's name beside its texts. */
           .ruv-design-k-rules {

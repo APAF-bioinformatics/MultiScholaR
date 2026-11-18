@@ -7,27 +7,36 @@
 ruvDesignOmics <- c("proteomics", "lipidomics", "metabolomics", "transcriptomics")
 ruvDesignIds <- c("groups_all_features", "technical_replicates", "supplied_controls", "first_pass_nulls", "legacy", "none")
 
-# Each table's measured figures: false discovery proportion in the worst cell, and power (ticket 1a to 1d).
+# Each table's measured figures: false discovery proportion in the worst cell, and power (ticket 1a to 1d; since
+# decision M15 of 2026-11-18 the first-pass nulls' is the one measured with the estimated number, and the
+# technical-replicate design of lipid and metab is the re-measurement: kit-124/outcome.md, "New arms and the
+# technical-duplicate re-measurement").
 ruvDesignFigures <- list(
     classic = list(groups_all_features = c(0.066, 0.91), technical_replicates = c(0.054, 0.90),
-        supplied_controls = c(0.053, 0.91), first_pass_nulls = c(0.078, 0.91), legacy = c(0.385, 0.92),
+        supplied_controls = c(0.053, 0.91), first_pass_nulls = c(0.077, 0.91), legacy = c(0.385, 0.92),
         none = c(0.052, 0.49)),
     dia_limpa = list(groups_all_features = c(0.055, 0.91), technical_replicates = c(0.055, 0.77),
-        supplied_controls = c(0.056, 0.91), first_pass_nulls = c(0.149, 0.92), legacy = c(0.435, 0.90),
+        supplied_controls = c(0.056, 0.91), first_pass_nulls = c(0.146, 0.92), legacy = c(0.435, 0.90),
         legacy_correction = c(0.466, 0.91), none = c(0.191, 0.56)),
     transcriptomics = list(groups_all_features = c(0.055, 0.77), supplied_controls = c(0.056, 0.76),
-        first_pass_nulls = c(0.064, 0.60), legacy = c(0.299, 0.73), none = c(0.044, 0.005)),
-    feature = list(groups_all_features = c(0.072, 0.43), supplied_controls = c(0.068, 0.37),
-        first_pass_nulls = c(0.239, 0.50), legacy = c(0.556, 0.42), none = c(0.059, 0.003)))
+        first_pass_nulls = c(0.071, 0.77), legacy = c(0.299, 0.73), none = c(0.044, 0.005)),
+    feature = list(groups_all_features = c(0.072, 0.43), technical_replicates = c(0.058, 0.36),
+        supplied_controls = c(0.068, 0.37), first_pass_nulls = c(0.174, 0.44), legacy = c(0.556, 0.42),
+        none = c(0.059, 0.003)))
+
+# The figures measured with the separation rule, where it is not the pre-selected rule (the same definition).
+ruvDesignSeparationFigures <- list(
+    classic = list(supplied_controls = c(0.060, 0.90), first_pass_nulls = c(0.078, 0.91)),
+    dia_limpa = list(supplied_controls = c(0.056, 0.90), first_pass_nulls = c(0.149, 0.92)),
+    transcriptomics = list(supplied_controls = c(0.053, 0.61), first_pass_nulls = c(0.064, 0.60)),
+    feature = list(supplied_controls = c(0.118, 0.26), first_pass_nulls = c(0.239, 0.50)))
 
 # The k rules each design offers and the one pre-selected (ticket section 2, the user's direction U1).
 ruvDesignKRules <- list(
     groups_all_features = list(rules = c("num_sv_be", "user"), default = "num_sv_be", pending = NULL),
     technical_replicates = list(rules = c("num_sv_be", "user"), default = "num_sv_be", pending = NULL),
-    supplied_controls = list(rules = c("num_sv_be", "sweep_bounded", "user"), default = "num_sv_be",
-        pending = "sweep_bounded"),
-    first_pass_nulls = list(rules = c("num_sv_be", "sweep_bounded", "user"), default = "sweep_bounded",
-        pending = "num_sv_be"),
+    supplied_controls = list(rules = c("num_sv_be", "sweep_bounded", "user"), default = "num_sv_be", pending = NULL),
+    first_pass_nulls = list(rules = c("num_sv_be", "sweep_bounded", "user"), default = "num_sv_be", pending = NULL),
     legacy = list(rules = character(), default = NULL, pending = NULL),
     legacy_correction = list(rules = character(), default = NULL, pending = NULL),
     none = list(rules = character(), default = NULL, pending = NULL))
@@ -39,10 +48,10 @@ ruvDesignTables <- function() {
 }
 
 #' The figures expected of one table.
-ruvDesignExpectedFigures <- function(name) {
+ruvDesignExpectedFigures <- function(name, figures = ruvDesignFigures) {
     key <- sub("^(lipidomics|metabolomics)\\..*$", "feature", name)
     key <- sub("^transcriptomics\\..*$", "transcriptomics", key)
-    ruvDesignFigures[[sub("^proteomics\\.", "", key)]]
+    figures[[sub("^proteomics\\.", "", key)]]
 }
 
 ruvDesignOptions <- function(table) stats::setNames(table$options, vapply(table$options, `[[`, "", "id"))
@@ -104,16 +113,26 @@ test_that("each measured figure is the ticket's; the cells still running are pen
         for (id in setdiff(names(options), measured)) {
             expect_false(any(c("fdp", "power") %in% names(options[[id]])), info = paste(name, id))
         }
+        # The separation rule's own figure where it is offered and not pre-selected, and nowhere else.
+        separation <- ruvDesignExpectedFigures(name, ruvDesignSeparationFigures)
+        with_other <- names(Filter(\(option) length(option$k_rule_figures) > 0L, options))
+        expect_setequal(with_other, names(separation))
+        for (id in names(separation)) {
+            figure <- options[[id]]$k_rule_figures
+            expect_identical(names(figure), "sweep_bounded", info = paste(name, id))
+            expect_identical(c(figure$sweep_bounded$fdp, figure$sweep_bounded$power), separation[[id]], info = paste(name, id))
+            expect_true(all(nzchar(unlist(figure$sweep_bounded[c("fdp_where", "source")]))), info = paste(name, id))
+        }
     }
-    # Lipid and metab: the technical-replicate design is being re-measured. Transcriptomics: not available.
-    for (name in c("lipidomics.features", "metabolomics.features")) {
-        expect_identical(ruvDesignOptions(tables[[name]])$technical_replicates$status, "pending", info = name)
-    }
+    # A figure measured in one scenario says so: the technical-replicate designs, and no other.
+    single <- unlist(lapply(tables, \(table) vapply(table$options, \(option) isTRUE(option$single_scenario), NA)))
+    ids <- unlist(lapply(tables, \(table) vapply(table$options, `[[`, "", "id")))
+    expect_identical(unname(ids[single]), rep("technical_replicates", 4L))
     trx <- ruvDesignOptions(tables[["transcriptomics.genes"]])$technical_replicates
     expect_identical(trx$status, "unavailable")
     expect_match(trx$unavailable, "added together into one set of counts before the analysis", fixed = TRUE)
     statuses <- unlist(lapply(tables, \(table) vapply(table$options, `[[`, "", "status")))
-    expect_identical(sum(statuses == "pending"), 2L)
+    expect_identical(sum(statuses == "pending"), 0L)
     expect_identical(sum(statuses == "unavailable"), 1L)
 })
 
@@ -138,8 +157,8 @@ test_that("the texts shown name no internal arm, cell, ticket or question", {
     for (omic in ruvDesignOmics) {
         design <- omicGuiConfig(omic)$norm$ruv_design
         shown <- c(design$tiers, design$conditions, unlist(design$k_rules), unlist(lapply(design$tables, \(table) c(
-            unlist(lapply(table$options, \(option) option[c("label", "description", "tooltip", "note", "fdp_where",
-                "unavailable")]))))))
+            unlist(lapply(table$options, \(option) c(option[c("label", "description", "tooltip", "note", "fdp_where",
+                "unavailable")], omicNormRuvAltText(option))))))))
         expect_identical(grep(internal, unname(shown), value = TRUE), character(), info = omic)
     }
 })
@@ -216,6 +235,19 @@ test_that("the schema refuses an incomplete or inconsistent preset table by clas
         paste0(option_path, "$k_rules_pending"))
     expectRuvDesignRefused(option(\(o) utils::modifyList(o, list(k_rules = c("num_sv_be", "sweep_bounded", "user")))),
         paste0(option_path, "$k_rules"))
+    # Another rule's figure: of a rule the option offers besides the selected one, complete, proportions.
+    other <- list(fdp = 0.06, fdp_where = "x", power = 0.9, source = "s")
+    expectRuvDesignRefused(option(\(o) utils::modifyList(o, list(k_rule_figures = list(num_sv_be = other)))),
+        paste0(option_path, "$k_rule_figures"))
+    expectRuvDesignRefused(option(\(o) utils::modifyList(o, list(k_rule_figures = list(sweep_bounded = other)))),
+        paste0(option_path, "$k_rule_figures"))
+    supplied <- function(edit) table(\(t) {
+        t$options[[3L]]$k_rule_figures$sweep_bounded <- edit(t$options[[3L]]$k_rule_figures$sweep_bounded)
+        t
+    })
+    figure_path <- paste0(table_path, "$options[[3]]$k_rule_figures$sweep_bounded")
+    expectRuvDesignRefused(supplied(\(f) f[setdiff(names(f), "source")]), paste0(figure_path, "$source"))
+    expectRuvDesignRefused(supplied(\(f) utils::modifyList(f, list(power = 90))), figure_path)
     # A group without the table still validates (the field is checked when present).
     without <- config
     without$norm$ruv_design <- NULL
@@ -287,7 +319,7 @@ test_that("with the gate on each omic's tab shows every design with its figure a
             # The tier, the label, the description, the figure and the note are text in the panel; the tooltip is
             # the option's title.
             for (text in c(design$tiers[[option$tier]], option$label, option$description, option$note,
-                omicNormRuvFigureText(option))) {
+                omicNormRuvFigureText(option), omicNormRuvAltText(option))) {
                 expect_true(grepl(htmltools::htmlEscape(text), html, fixed = TRUE), info = paste(where, text))
             }
             expect_true(grepl(sprintf('title="%s"', htmltools::htmlEscape(option$tooltip, attribute = TRUE)), html,
@@ -388,6 +420,10 @@ test_that("the figure text is the table's numbers in words; a pending or unavail
     expect_identical(vapply(powers, \(power) omicNormRuvFigureParts(list(fdp = 0, fdp_where = "", power = power))[["power"]], ""),
         c("91%", "90%", "92%", "49%", "77%", "56%", "76%", "60%", "73%", "0.5%", "43%", "37%", "50%", "42%", "0.3%"))
     expect_identical(omicNormRuvFigureText(list(status = "pending")), "Not yet measured in simulation.")
+    # The figure with the other rule for k, in words; none where there is none.
+    expect_identical(omicNormRuvAltText(list(k_rule_figures = list(sweep_bounded = list(fdp = 0.118, fdp_where = "x",
+        power = 0.26)))), "With the separation rule for k: 11.8% false discoveries; worst scenario: x. Power 26%.")
+    expect_identical(omicNormRuvAltText(list(status = "measured")), character())
     expect_identical(omicNormRuvFigureText(list(status = "unavailable", unavailable = "No replicates.")),
         "Not available: No replicates.")
 })
@@ -411,7 +447,7 @@ test_that("the k rule's choices follow the selected design, and the route's tabl
     })))
     expect_identical(lapply(updates, `[[`, "id"), list("ruv_k_rule", "ruv_k_rule"))
     expect_identical(unname(updates[[1L]]$choices), c("num_sv_be", "sweep_bounded", "user"))
-    expect_identical(updates[[1L]]$selected, "sweep_bounded")
+    expect_identical(updates[[1L]]$selected, "num_sv_be")
     expect_identical(unname(updates[[2L]]$choices), c("num_sv_be", "user"))
     expect_identical(updates[[2L]]$selected, "num_sv_be")
     expect_identical(names(updates[[2L]]$choices), c("Estimated number", "Your own number"))

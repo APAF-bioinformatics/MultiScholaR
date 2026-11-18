@@ -220,9 +220,23 @@ omicNormRuvFigureText <- function(option) {
         unavailable = paste("Not available:", option$unavailable))
 }
 
+#' The figures of a preset measured with another rule for k than its pre-selected one, in words, one per rule.
+#' @param option A preset of the table.
+#' @param k_rules The k rules' texts (the group's `k_rules`), for their names.
+#' @return A character vector, empty when the preset has no such figure.
+#' @noRd
+omicNormRuvAltText <- function(option, k_rules = omicGuiRuvKRules()) {
+    vapply(names(option$k_rule_figures), \(rule) {
+        parts <- omicNormRuvFigureParts(option$k_rule_figures[[rule]])
+        sprintf("With the %s for k: %s false discoveries; worst scenario: %s. Power %s.", tolower(k_rules[[rule]]$label),
+            parts[["fdp"]], parts[["fdp_where"]], parts[["power"]])
+    }, character(1), USE.NAMES = FALSE)
+}
+
 #' One preset as a radio choice, a row of the comparison list: its tier, its label with its description under it,
 #' the figure and the note; the tooltip (the exact statement, extra detail only) is the title. A measured figure is shown in two cells (false discoveries, power); its sentence is the
-#' text a screen reader is given in their place.
+#' text a screen reader is given in their place. A figure measured with the other rule for k is a line under them,
+#' in the same cell group (`ruv-design-figures`, which spans the two figure columns).
 #' @param option A preset of the table.
 #' @param tiers The tier labels.
 #' @return A tag.
@@ -243,7 +257,10 @@ omicNormRuvOptionTag <- function(option, tiers) {
             collapse = " "),
         cell("tier", shiny::tags$strong(class = paste0("ruv-design-tier-", gsub("_", "-", option$tier, fixed = TRUE)),
             tiers[[option$tier]], shiny::tags$span(class = "sr-only", ":"))),
-        cell("label", option$label, cell("description", option$description)), figure, cell("note", option$note))
+        cell("label", option$label, cell("description", option$description)),
+        cell("figures", figure,
+            if (length(option$k_rule_figures) > 0L) cell("alt", lapply(omicNormRuvAltText(option), shiny::tags$span))),
+        cell("note", option$note))
 }
 
 #' The comparison list's column headings, above the options: the two figure columns say what is measured and in
@@ -373,7 +390,9 @@ omicNormRuvDesignSection <- function(ns, norm) {
             "data. False discoveries: the average share of the features reported as different that are not, at a 5%",
             "false discovery rate (FDR) threshold, so 5% is the target; shown for the worst scenario tested that",
             "contained real differences. Power: the share of real differences found, in the reference scenario (6",
-            "samples per group, 20% of features truly different, one unwanted factor). \"Tied to the groups\": the",
+            "samples per group, 20% of features truly different, one unwanted factor). Each figure was measured with",
+            "the approach's pre-selected rule for the number of factors (k); where the other rule was also measured,",
+            "its figure is on the line beneath. \"Tied to the groups\": the",
             "unwanted variation differs between the groups, for example when most of one group was run in the same",
             "batch."),
         if (!is.null(design$conditions)) shiny::helpText(design$conditions),
