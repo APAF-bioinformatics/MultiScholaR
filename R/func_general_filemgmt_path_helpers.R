@@ -20,10 +20,6 @@ getProjectPaths <- function(omic_type,
                             experiment_label = NULL,
                             project_dirs_object_name = "project_dirs",
                             env = .GlobalEnv) {
-    message("--- DEBUG66: Entering getProjectPaths ---")
-    message(sprintf("   DEBUG66: omic_type = '%s'", omic_type))
-    message(sprintf("   DEBUG66: experiment_label = '%s'", ifelse(is.null(experiment_label), "NULL", experiment_label)))
-    message(sprintf("   DEBUG66: project_dirs_object_name = '%s'", project_dirs_object_name))
 
     # Validate project_dirs exists
     if (!exists(project_dirs_object_name, envir = env)) {
@@ -35,9 +31,6 @@ getProjectPaths <- function(omic_type,
 
     project_dirs_global <- get(project_dirs_object_name, envir = env)
 
-    message("   DEBUG66: project_dirs object found in global environment")
-    message(sprintf("      DEBUG66: project_dirs has %d keys", length(names(project_dirs_global))))
-    message(sprintf("      DEBUG66: Available keys: %s", paste(names(project_dirs_global), collapse = ", ")))
 
     # Try multiple key formats in order of preference
     potential_keys <- c()
@@ -56,22 +49,16 @@ getProjectPaths <- function(omic_type,
         potential_keys <- c(potential_keys, matching_keys[1]) # Take first match
     }
 
-    message(sprintf("   DEBUG66: Trying %d potential keys: %s", length(potential_keys), paste(potential_keys, collapse = ", ")))
 
     # Try each potential key
     for (key in potential_keys) {
-        message(sprintf("   DEBUG66: Trying key: '%s'", key))
         if (key %in% names(project_dirs_global)) {
-            message(sprintf("   DEBUG66: SUCCESS - Found match with key: '%s'", key))
             logger::log_debug("Found project paths using key: {key}")
             return(project_dirs_global[[key]])
-        } else {
-            message(sprintf("      DEBUG66: Key '%s' not found, continuing...", key))
         }
     }
 
     # If we get here, no valid key was found
-    message("   DEBUG66: No valid key found - ABORTING")
     available_keys <- paste(names(project_dirs_global), collapse = ", ")
     rlang::abort(paste0(
         "Could not find project paths for omic_type='", omic_type, "'",

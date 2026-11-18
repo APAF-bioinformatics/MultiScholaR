@@ -19,7 +19,6 @@ perform_enrichment <- function(data_subset,
                                protein_id_column,
                                correction_method = "gSCS") {
   
-  message("--- Entering perform_enrichment ---")
   message(sprintf("   perform_enrichment Arg: species = %s", species))
   message(sprintf("   perform_enrichment Arg: threshold = %s", threshold))
   message(sprintf("   perform_enrichment Arg: sources = %s", paste(sources, collapse = ", ")))
@@ -37,7 +36,6 @@ perform_enrichment <- function(data_subset,
   
   if (nrow(data_subset) == 0) {
     message("   perform_enrichment Step: Data subset is empty, returning NULL")
-    message("--- Exiting perform_enrichment. Returning: NULL ---")
     return(NULL)
   }
 
@@ -49,22 +47,10 @@ perform_enrichment <- function(data_subset,
   message(sprintf("      Data State (protein_ids): Class = %s", class(protein_ids)))
   message(sprintf("      Data State (protein_ids): First 5 values = %s", paste(head(protein_ids, 5), collapse = ", ")))
   
-  # [OK] DEBUG66: Comprehensive NA analysis
   na_count_initial <- sum(is.na(protein_ids))
   empty_count_initial <- sum(protein_ids == "", na.rm = TRUE)
   valid_count_initial <- length(protein_ids) - na_count_initial - empty_count_initial
   
-  message(sprintf("      +==================================================================+"))
-  message(sprintf("      | DEBUG66: PROTEIN ID AVAILABILITY ANALYSIS                       |"))
-  message(sprintf("      +==================================================================+"))
-  message(sprintf("      | Total proteins in data_subset:     %5d (100.0%%)                 |", length(protein_ids)))
-  message(sprintf("      | NA values in %s column:   %5d (%5.1f%%)                 |", 
-                 protein_id_column, na_count_initial, (na_count_initial/length(protein_ids))*100))
-  message(sprintf("      | Empty string values:                %5d (%5.1f%%)                 |", 
-                 empty_count_initial, (empty_count_initial/length(protein_ids))*100))
-  message(sprintf("      | Valid (non-NA, non-empty) values:  %5d (%5.1f%%)                 |", 
-                 valid_count_initial, (valid_count_initial/length(protein_ids))*100))
-  message(sprintf("      +==================================================================+"))
 
   if (any(is.na(protein_ids))) {
     na_count <- sum(is.na(protein_ids))
@@ -87,12 +73,6 @@ perform_enrichment <- function(data_subset,
 
   protein_ids <- unique(protein_ids[!is.na(protein_ids) & protein_ids != ""])
   
-  message(sprintf("      DEBUG66: Final protein IDs to submit to gprofiler2: %d unique IDs", length(protein_ids)))
-  if (length(protein_ids) > 0 && length(protein_ids) <= 20) {
-    message(sprintf("      DEBUG66: All protein IDs being submitted: %s", paste(protein_ids, collapse = ", ")))
-  } else if (length(protein_ids) > 20) {
-    message(sprintf("      DEBUG66: First 20 protein IDs being submitted: %s", paste(head(protein_ids, 20), collapse = ", ")))
-  }
 
   message("   perform_enrichment Step: Checking custom background...")
   message(sprintf("      Data State (custom_bg): Length = %d", length(custom_bg)))
@@ -195,12 +175,10 @@ perform_enrichment <- function(data_subset,
         list(message = sprintf("g:Profiler did not answer after %d attempts: %s", max_retries,
           last_error %||% "no attempt was made"), call = NULL)))
     }
-    message("--- Exiting perform_enrichment. Returning: NULL ---")
     return(NULL)
   }
 
   message("   perform_enrichment Step: Successfully obtained gprofiler2 result")
-  message("--- Exiting perform_enrichment. Returning: gost result object ---")
   return(result)
 }
 

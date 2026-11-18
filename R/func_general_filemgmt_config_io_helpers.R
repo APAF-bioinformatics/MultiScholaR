@@ -111,19 +111,9 @@ readConfigFile <- function(file = file.path(source_dir, "config.ini"), file_type
     if (!is.logical(create_workers) || length(create_workers) != 1L || is.na(create_workers)) {
         cli::cli_abort("create_workers must be TRUE or FALSE", class = "saved_entity_invalid")
     }
-    message(sprintf("DEBUG66: readConfigFile() called with file = %s", file))
-    message(sprintf("DEBUG66: file exists = %s", file.exists(file)))
 
     config_list <- read.config(file = file, file.type = file_type)
 
-    message(sprintf(
-        "DEBUG66: read.config() completed, config_list names = %s",
-        paste(names(config_list), collapse = ", ")
-    ))
-    message(sprintf(
-        "DEBUG66: config_list class = %s, length = %d",
-        class(config_list)[1], length(config_list)
-    ))
 
     # to set the number of cores to be used in the parallel processing
     if ("globalParameters" %in% names(config_list)) {
@@ -347,11 +337,6 @@ readConfigFile <- function(file = file.path(source_dir, "config.ini"), file_type
     }
 
     if ("deAnalysisParameters" %in% names(config_list)) {
-        message("DEBUG66: Processing deAnalysisParameters section")
-        message(sprintf(
-            "DEBUG66: deAnalysisParameters keys = %s",
-            paste(names(config_list[["deAnalysisParameters"]]), collapse = ", ")
-        ))
 
         # Handle plots_format as array (only if it exists)
         if ("plots_format" %in% names(config_list[["deAnalysisParameters"]])) {
@@ -395,14 +380,12 @@ readConfigFile <- function(file = file.path(source_dir, "config.ini"), file_type
                 tolower(config_list[["deAnalysisParameters"]][["eBayes_robust"]]) == "true"
         }
 
-        message("DEBUG66: deAnalysisParameters processing complete")
         print(paste0(
             "Read deAnalysisParameters: formula_string = ",
             config_list[["deAnalysisParameters"]][["formula_string"]]
         ))
     }
 
-    message("DEBUG66: readConfigFile() returning successfully")
     config_list
 }
 
@@ -437,25 +420,20 @@ readConfigFileSection <- function(
 #' @param indent Number of spaces for indentation
 #' @export
 formatConfigList <- function(config_list, indent = 0) {
-    message(sprintf("--- DEBUG66: Entering formatConfigList with %d items, indent=%d ---", length(config_list), indent))
     output <- character()
 
     # Exclude internal_workflow_source_dir from printing
     names_to_process <- names(config_list)
     names_to_process <- names_to_process[names_to_process != "internal_workflow_source_dir"]
-    message(sprintf("   DEBUG66: Processing %d items after exclusions", length(names_to_process)))
 
     # FUNCTIONAL APPROACH - NO FOR LOOPS that cause hanging - Works in Shiny AND .rmd
     output <- if (requireNamespace("purrr", quietly = TRUE)) {
         purrr::map_chr(names_to_process, function(name) {
-            message(sprintf("   DEBUG66: Processing config item '%s'", name))
             value <- config_list[[name]]
-            message(sprintf("   DEBUG66: Item '%s' class: %s", name, paste(class(value), collapse = ", ")))
 
             # Skip core_utilisation, seqinr_obj, and complex objects from display
             if (name == "core_utilisation" || name == "seqinr_obj" ||
                 any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster", "tbl_df", "tbl", "data.frame"))) {
-                message(sprintf("   DEBUG66: Skipping '%s' due to complex class or large data frame", name))
                 return("") # Return empty string instead of next
             }
 
@@ -466,20 +444,16 @@ formatConfigList <- function(config_list, indent = 0) {
 
             # Handle different value types
             if (is.list(value)) {
-                message(sprintf("   DEBUG66: '%s' is a list with %d elements", name, length(value)))
                 if (length(value) > 0 && !is.null(names(value))) {
                     output_lines <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")
-                    message(sprintf("   DEBUG66: Recursing into list '%s'", name))
                     recursive_result <- formatConfigList(value, indent + 2)
                     return(paste(c(output_lines, recursive_result), collapse = "\n"))
                 } else if (length(value) > 0) { # Unnamed list, process elements functionally
-                    message(sprintf("   DEBUG66: '%s' is unnamed list, processing elements", name))
                     header <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")
 
                     # FUNCTIONAL processing of list elements - NO FOR LOOP
                     element_lines <- if (requireNamespace("purrr", quietly = TRUE)) {
                         purrr::imap_chr(value, function(item_val, item_idx) {
-                            message(sprintf("   DEBUG66: Processing unnamed list item %d, class: %s", item_idx, paste(class(item_val), collapse = ", ")))
                             if (is.atomic(item_val) && length(item_val) == 1) {
                                 paste0(paste(rep(" ", indent + 2), collapse = ""), "- ", as.character(item_val))
                             } else {
@@ -499,11 +473,9 @@ formatConfigList <- function(config_list, indent = 0) {
                     }
                     return(paste(c(header, element_lines), collapse = "\n"))
                 } else { # Empty list
-                    message(sprintf("   DEBUG66: '%s' is empty list", name))
                     return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": [Empty List]"))
                 }
             } else {
-                message(sprintf("   DEBUG66: '%s' is atomic/non-list, attempting conversion", name))
 
                 # SAFE value display formatting
                 value_display <- tryCatch(
@@ -513,9 +485,7 @@ formatConfigList <- function(config_list, indent = 0) {
                         } else if (is.character(value) && length(value) > 1) {
                             paste(value, collapse = ", ")
                         } else {
-                            message(sprintf("   DEBUG66: About to convert '%s' to character", name))
                             result <- as.character(value)
-                            message(sprintf("   DEBUG66: Conversion successful for '%s'", name))
                             if (length(result) == 0) "[Empty/NULL]" else result
                         }
                     },
@@ -564,7 +534,6 @@ formatConfigList <- function(config_list, indent = 0) {
 
     # Flatten the nested strings
     output <- unlist(strsplit(output, "\n"))
-    message(sprintf("--- DEBUG66: Exiting formatConfigList, returning %d lines ---", length(output)))
     return(output)
 }
 

@@ -19,7 +19,6 @@ runKeggEnrichment <- function(ranked_list,
                              kegg_species_code = "kpn") {
   requireOptionalPackage("KEGGREST", "KEGG enrichment") # KIT-064 (roar BUG-24)
   
-  message(sprintf("--- Entering runKeggEnrichment ---"))
   message(sprintf("   runKeggEnrichment Args: assay_name = %s", assay_name))
   message(sprintf("   runKeggEnrichment Args: kegg_species_code = %s", kegg_species_code))
   message(sprintf("   runKeggEnrichment Args: ranked_list length = %d", length(ranked_list)))
@@ -154,16 +153,11 @@ runKeggEnrichment <- function(ranked_list,
         kegg_ranked_list <- sort(kegg_ranked_list, decreasing = TRUE)
         
         # Diagnostic: Check for ties in the data
-        message("   runKeggEnrichment DEBUG: Analyzing score distribution...")
         # Count exact duplicates in values
         duplicate_count <- sum(duplicated(kegg_ranked_list))
         duplicate_percentage <- (duplicate_count / length(kegg_ranked_list)) * 100
-        message(sprintf("   runKeggEnrichment DEBUG: Found %d exact duplicate values (%.2f%% of total)",
-                       duplicate_count, duplicate_percentage))
         
         # Show basic statistics
-        message(sprintf("   runKeggEnrichment DEBUG: Score range: [%.4f, %.4f], Median: %.4f", 
-                       min(kegg_ranked_list), max(kegg_ranked_list), median(kegg_ranked_list)))
         
         # Add small random noise to break ties in the ranked list
         message("   runKeggEnrichment Step: Adding small random noise to break ties in ranked list...")
@@ -212,12 +206,10 @@ runKeggEnrichment <- function(ranked_list,
         print(ranked_compounds)
         
         # FIX: FORCE PREFIX ADDITION REGARDLESS OF CHECKS
-        message("   runKeggEnrichment DEBUG: Adding 'cpd:' prefix to all KEGG IDs in ranked list")
         prefixed_kegg_ids <- paste0("cpd:", names(kegg_ranked_list))
         prefixed_kegg_ranked_list <- kegg_ranked_list
         names(prefixed_kegg_ranked_list) <- prefixed_kegg_ids
         
-        message(sprintf("   runKeggEnrichment DEBUG: Created prefixed ranked list with %d entries", length(prefixed_kegg_ranked_list)))
         message("Sample prefixed entries:")
         print(head(prefixed_kegg_ranked_list, 5))
         
@@ -227,24 +219,18 @@ runKeggEnrichment <- function(ranked_list,
           dplyr::select(pathway, compound) |>
           dplyr::rename(term = pathway, gene = compound)
         
-        message(sprintf("   runKeggEnrichment DEBUG: After prefix fix, TERM2GENE has %d entries", nrow(term2gene)))
         
         if (nrow(term2gene) == 0) {
           message("   runKeggEnrichment WARNING: Still no matches after prefix fix!")
           
           # Debug check the values directly
-          message("   runKeggEnrichment DEBUG: Direct value checking...")
           sample_pathway_compounds <- head(species_specific_pathway_to_compound_tbl$compound, 5)
           sample_prefixed_ids <- head(names(prefixed_kegg_ranked_list), 10)
           
           for (compound in sample_prefixed_ids) {
             matching_idx <- which(species_specific_pathway_to_compound_tbl$compound == compound)
-            message(sprintf("   runKeggEnrichment DEBUG: Compound '%s' appears %d times in pathway table", 
-                          compound, length(matching_idx)))
             if (length(matching_idx) > 0) {
               sample_pathways <- head(species_specific_pathway_to_compound_tbl$pathway[matching_idx], 3)
-              message(sprintf("   runKeggEnrichment DEBUG: Found in pathways: %s", 
-                            paste(sample_pathways, collapse=", ")))
             }
           }
         }
@@ -282,7 +268,6 @@ runKeggEnrichment <- function(ranked_list,
             map_format = paste0("map", pathway_num)
           )
         
-        message("   runKeggEnrichment DEBUG: Sample pathways with numeric parts:")
         print(head(term2name_with_numeric, 3))
         
         # Create mapping from pathway numbers to pathway names
@@ -294,7 +279,6 @@ runKeggEnrichment <- function(ranked_list,
             map_format = stringr::str_extract(map_id, "map\\d+")
           )
         
-        message("   runKeggEnrichment DEBUG: Sample pathway mappings:")
         print(head(pathway_num_to_name, 3))
         
         # Join the terms with pathway names based on numeric part
@@ -499,7 +483,6 @@ runKeggEnrichment <- function(ranked_list,
           )
         }
         
-        message(sprintf("--- Exiting runKeggEnrichment. Returning table with %d rows ---", nrow(kegg_results)))
         return(kegg_results)
       } else {
         message("No KEGG IDs could be mapped from ChEBI IDs. Returning empty result.")
@@ -530,16 +513,11 @@ runKeggEnrichment <- function(ranked_list,
     kegg_ranked_list <- sort(kegg_ranked_list, decreasing = TRUE)
     
     # Diagnostic: Check for ties in the data
-    message("   runKeggEnrichment DEBUG: Analyzing score distribution...")
     # Count exact duplicates in values
     duplicate_count <- sum(duplicated(kegg_ranked_list))
     duplicate_percentage <- (duplicate_count / length(kegg_ranked_list)) * 100
-    message(sprintf("   runKeggEnrichment DEBUG: Found %d exact duplicate values (%.2f%% of total)",
-                   duplicate_count, duplicate_percentage))
     
     # Show basic statistics
-    message(sprintf("   runKeggEnrichment DEBUG: Score range: [%.4f, %.4f], Median: %.4f", 
-                   min(kegg_ranked_list), max(kegg_ranked_list), median(kegg_ranked_list)))
     
     # Add small random noise to break ties in the ranked list
     message("   runKeggEnrichment Step: Adding small random noise to break ties in ranked list...")
@@ -610,7 +588,6 @@ runKeggEnrichment <- function(ranked_list,
   message(sprintf("   runKeggEnrichment: Found %d distinct terms", nrow(term2name_initial)))
   
   # Debug the term format
-  message("   runKeggEnrichment DEBUG: Sample term formats:")
   print(head(term2name_initial$term))
   
   # Approach 1: Direct matching with pathway_id
@@ -621,7 +598,6 @@ runKeggEnrichment <- function(ranked_list,
       term_format2 = paste0("path:", hsa_pathway_id)
     )
   
-  message("   runKeggEnrichment DEBUG: Extended pathway_id_to_name formats:")
   print(head(pathway_id_to_name_extended))
   
   # Try to join using the extended formats
@@ -650,7 +626,6 @@ runKeggEnrichment <- function(ranked_list,
         pathway_num = str_extract(term, "\\d+")
       )
     
-    message("   runKeggEnrichment DEBUG: Extracted pathway numbers:")
     print(head(term2name))
     
     # Also extract numeric parts from pathway IDs
@@ -659,7 +634,6 @@ runKeggEnrichment <- function(ranked_list,
         pathway_num = str_extract(pathway_id, "\\d+")
       )
     
-    message("   runKeggEnrichment DEBUG: Pathway ID numeric parts:")
     print(head(pathway_id_to_name_numeric))
     
     # Join on numeric parts
@@ -801,7 +775,6 @@ runKeggEnrichment <- function(ranked_list,
     )
   }
   
-  message(sprintf("--- Exiting runKeggEnrichment. Returning table with %d rows ---", nrow(kegg_results)))
   return(kegg_results)
 }
 

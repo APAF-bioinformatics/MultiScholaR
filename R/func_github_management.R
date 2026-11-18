@@ -351,7 +351,6 @@ pushProjectToGithub <- function(base_dir,
     # message("DEBUG: system('git push') command appeared successful (exit code 0).")
   }, error = function(e) {
     # === DEBUG: Push FAILED ===
-    message("DEBUG: Push operation failed. Error:")
     print(e)
     # Include original error message if available
     stop("Failed to push to repository. Error during push step: ", e$message)
