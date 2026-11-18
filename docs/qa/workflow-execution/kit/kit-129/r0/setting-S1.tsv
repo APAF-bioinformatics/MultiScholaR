@@ -1,0 +1,41 @@
+scope	class	cell	arm	rows	rows_with_W	crashed	fired	share_fired	share_fired_of_rows_with_W	association_median	association_p90	true_association_median
+class	correlation 0	all	all	12000	10159	0	1200	0.1	0.1181	0.021	0.1047	0
+class	correlation 0.3 or more	all	all	8000	7923	0	6033	0.7541	0.7615	0.2527	0.5426	0.3
+cell	correlation 0	C0	all	4000	3991	0	333	0.0833	0.0834	0.0219	0.084	0
+cell	correlation 0	C3	all	4000	2189	0	624	0.156	0.2851	0.0442	0.1545	NA
+cell	correlation 0	C4	all	4000	3979	0	243	0.0608	0.0611	0.0146	0.0663	0
+cell	correlation 0.3 or more	C5	all	4000	3943	0	3000	0.75	0.7608	0.2451	0.3077	0.3
+cell	correlation 0.3 or more	S11	all	2000	2000	0	1501	0.7505	0.7505	0.2189	0.2975	0.3
+cell	correlation 0.3 or more	S3	all	2000	1980	0	1532	0.766	0.7737	0.5011	0.5864	0.6
+arm	correlation 0	all	4	3000	2937	0	414	0.138	0.141	0.0243	0.1237	0
+arm	correlation 0	all	5	3000	3000	0	636	0.212	0.212	0.0247	0.1321	0
+arm	correlation 0	all	7	3000	2111	0	63	0.021	0.0298	0.0141	0.0477	0
+arm	correlation 0	all	8	3000	2111	0	87	0.029	0.0412	0.0226	0.0597	0
+arm	correlation 0.3 or more	all	4	2000	1923	0	37	0.0185	0.0192	0.0157	0.0533	0.3
+arm	correlation 0.3 or more	all	5	2000	2000	0	1999	0.9995	0.9995	0.2317	0.4445	0.3
+arm	correlation 0.3 or more	all	7	2000	2000	0	2000	1	1	0.2868	0.5684	0.3
+arm	correlation 0.3 or more	all	8	2000	2000	0	1997	0.9985	0.9985	0.2945	0.5761	0.3
+cell and arm	correlation 0	C0	4	1000	991	0	201	0.201	0.2028	0.032	0.1602	0
+cell and arm	correlation 0	C0	5	1000	1000	0	112	0.112	0.112	0.0177	0.0982	0
+cell and arm	correlation 0	C0	7	1000	1000	0	5	0.005	0.005	0.0209	0.0539	0
+cell and arm	correlation 0	C0	8	1000	1000	0	15	0.015	0.015	0.021	0.0533	0
+cell and arm	correlation 0	C3	4	1000	967	0	0	0	0	0.0144	0.0408	NA
+cell and arm	correlation 0	C3	5	1000	1000	0	499	0.499	0.499	0.0939	0.1718	NA
+cell and arm	correlation 0	C3	7	1000	111	0	58	0.058	0.5225	0.0984	0.1968	NA
+cell and arm	correlation 0	C3	8	1000	111	0	67	0.067	0.6036	0.1101	0.2861	NA
+cell and arm	correlation 0	C4	4	1000	979	0	213	0.213	0.2176	0.0371	0.1534	0
+cell and arm	correlation 0	C4	5	1000	1000	0	25	0.025	0.025	0.0092	0.0432	0
+cell and arm	correlation 0	C4	7	1000	1000	0	0	0	0	0.0091	0.0229	0
+cell and arm	correlation 0	C4	8	1000	1000	0	5	0.005	0.005	0.0219	0.0521	0
+cell and arm	correlation 0.3 or more	C5	4	1000	943	0	1	0.001	0.0011	0.0118	0.0429	0.3
+cell and arm	correlation 0.3 or more	C5	5	1000	1000	0	1000	1	1	0.2296	0.2577	0.3
+cell and arm	correlation 0.3 or more	C5	7	1000	1000	0	1000	1	1	0.2768	0.3141	0.3
+cell and arm	correlation 0.3 or more	C5	8	1000	1000	0	999	0.999	0.999	0.2854	0.3236	0.3
+cell and arm	correlation 0.3 or more	S11	4	500	500	0	4	0.008	0.008	0.0151	0.048	0.3
+cell and arm	correlation 0.3 or more	S11	5	500	500	0	499	0.998	0.998	0.2036	0.2292	0.3
+cell and arm	correlation 0.3 or more	S11	7	500	500	0	500	1	1	0.2647	0.3024	0.3
+cell and arm	correlation 0.3 or more	S11	8	500	500	0	498	0.996	0.996	0.2682	0.3228	0.3
+cell and arm	correlation 0.3 or more	S3	4	500	480	0	32	0.064	0.0667	0.0255	0.0777	0.6
+cell and arm	correlation 0.3 or more	S3	5	500	500	0	500	1	1	0.4373	0.4717	0.6
+cell and arm	correlation 0.3 or more	S3	7	500	500	0	500	1	1	0.5637	0.5915	0.6
+cell and arm	correlation 0.3 or more	S3	8	500	500	0	500	1	1	0.5688	0.6013	0.6

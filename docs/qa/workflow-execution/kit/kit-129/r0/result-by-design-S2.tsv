@@ -1,0 +1,5 @@
+simulator	omic	arm	threshold	share_fired_correlation_0	share_fired_correlation_0.3_or_more	accepted	verdict
+S2	DIA_LIMPA	4	0.082676219	0.0967	0.0813	FALSE	no verdict
+S2	DIA_LIMPA	5	0.30819538	0.1	0.5273	FALSE	no verdict
+S2	DIA_LIMPA	7	0.40365361	0.1	0.5587	FALSE	no verdict
+S2	DIA_LIMPA	8	0.4034692	0.106	0.5507	FALSE	no verdict
