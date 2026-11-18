@@ -1,0 +1,2 @@
+simulator	omic	arm	threshold	share_fired_correlation_0	share_fired_correlation_0.3_or_more	accepted	verdict
+S4	lipidomics and metabolomics	8	0.19494193	0.06	0.915	TRUE	threshold = 0.1949, accepted

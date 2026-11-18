@@ -1,0 +1,4 @@
+simulator	omic	arm	threshold	share_fired_correlation_0	share_fired_correlation_0.3_or_more	accepted	verdict
+S1	classic proteomics	5	0.16376377	0.0467	0.9893	TRUE	threshold = 0.1638, accepted
+S1	classic proteomics	7	0.058077853	0.0513	1	TRUE	threshold = 0.05808, accepted
+S1	classic proteomics	8	0.070068989	0.0427	1	TRUE	threshold = 0.07007, accepted
