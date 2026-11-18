@@ -549,3 +549,95 @@ Not shown on any host: the laptop itself and the systemd worker from the bundle 
 | Release candidate | not attempted | needs M20 lifted |
 
 Defects: #2 repaired (packaging), shown as above; #3 not mine (once `kit-052-win-paths` is merged into `kit-134`, one `[dist:full] [dist-windows]` run is enough: the job already runs prot_tmt, prot_lfq, prot_lfq_fragpipe and the TMT and LFQ e2e lane from the installed application); #4 waits for the fixtures' re-record.
+
+## Windows figure paths, Linux hosts, M25 and M26 (2026-11-18, run 44241609555)
+
+One run, stage full, both platforms: [44241609555](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44241609555) on `fca957ae` (after the merge of `kit-052-win-paths`, `390a0f7c`), 05:04 to 06:44 UTC. Budget declared in `fca957ae`: this run and one correction pass; **the correction pass is not used** (every failure below is a finding, not a fault of the run). 0 artifacts; no cache written (the eight caches on the branch are of 2026-11-17). Evidence is the job logs. Package code under `R/` and `tests/` was not changed beyond the merge; no oracle changed.
+
+New verification files: `packaging/verify/figure-paths.R` (one case: a device probe, KIT-052's tests, the managed DA routes, the prot_tmt entry lane), `figure-trace.R` (traces every PNG/PDF device, `file.copy` and `checkWorkflowFigureFiles` call and records the path's length and whether the file is in its folder afterwards), `windows-figure-cases.ps1` (one case per project-root length, set through `TMPDIR`, under which every fixture makes its project). Instrumentation note: the `prot_worker_da` item's test filter did not narrow `test-omic-da-module.R` to its one test, so the whole file ran (1,126 expectations); that gives the lipidomics, metabolomics and transcriptomics worker routes as well, and is reported as such.
+
+### 1. Windows (windows-2025, the installed application's R, the shell's environment, network cut)
+
+**Lanes now.**
+
+| Lane | Before (44226281203) | Now |
+|---|---|---|
+| e2e TMT and LFQ | 136 of 153, the report download | **153 of 153** (laptop count) |
+| e2e lipidomics, metabolomics, transcriptomics | 88, 190, 16 | 88, 190, 16 |
+| prot_tmt, prot_lfq (entry) | error at QC, "required Q-value figures are incomplete" | **QC and every later step pass**; 35 passed, 2 failed: the `session_summary` text at `summary_report` and `summary_export` holds the report's absolute path (`C:/Users/runneradmin/...`, or `D:/a/_temp/...`) where the oracle has `<ROOT>`: the recorder's root substitution does not catch the Windows form of the path (harness, not classified further) |
+| prot_lfq_fragpipe (entry) | error at QC | QC passes; 31 passed, 6 failed: the same summary text, and `da_proteins_groupKO-groupWT_long_annot.tsv` differs by digest in 6 steps (not classified; values not compared) |
+| lipid_canonical, metab_* | as before | as before (log text; the fixture, defect 4) |
+| trx_screen (entry) | "module session has been destroyed" | unchanged |
+
+**The diagnosis, by observation (device probe, folder 24 characters, names under 150).** `exists` is from the folder's listing.
+
+| Path length | grDevices::png (windows) | png (cairo) | ragg::agg_png = ggsave's PNG | pdf / ggsave pdf | writeLines | file.copy |
+|---|---|---|---|---|---|---|
+| 239, 254, 258, 259, long paths on | yes | yes | yes | yes | yes | yes |
+| 260, 269, 299, long paths on | yes | yes | **no, and no error or warning** | yes | yes | yes |
+| 239 to 259, long paths off | yes | yes | yes | yes | yes | yes |
+| 260, 269, 299, long paths off | no ("unable to start png() device") | no (error) | no, silent | no (error) | no (error) | no (warning) |
+
+**Confirmed:** `ggsave` draws PNG with `ragg` (installed in the bundle), and `ragg` cannot write a path of 260 characters or more on Windows **even with long paths enabled**, and says nothing. In the prot_tmt lane from the runner's temporary folder (project root 98 characters) the Q-value figures are now drawn in the short temporary folder (107 to 121 characters, all present) and copied into the staged folder (244 to 258 characters with the short names, all present); with the earlier names (35 characters longer) they were drawn directly at 279 to 293, which is the failure of runs 44195739758 and 44226281203. `test-workflow-figure-paths.R`: 65 passed with long paths on; with them off 58 passed and 1 error (its first test makes a folder over 248 characters, which needs long paths).
+
+**The worker's request folder, observed.** Figures drawn by the worker in `<root>/scripts/<omic>/.dia-native-<14>/.workflow-entities/.workflow-export/wfx-<32>/omics-publication/<role>/...` (transcriptomics MCI-031.2, managed route, worker entry point in process):
+
+| Case | Project root | Figure | Path length | Device | Exists |
+|---|---|---|---|---|---|
+| long paths on | 63 | `publication_graphs_dir/normalization_comparison_grid.png` | 260 | ragg | **no** |
+| long paths on | 63 | `Volcano_Plots/volcano_plot_Sera_vs_RPMI.png` (and `RPMI_vs_Sera`) | 270 | ragg | **no** |
+| long paths on | 63 | `NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png` (and the other) | 277 | ragg | **no** |
+| long paths on | 63 | the same figures as PDF; the `.xlsx` copy | 260 to 277; 274 | pdf; file.copy | yes |
+| long paths on | 63 | every other figure of the run | up to 259 | ragg, pdf | yes |
+| long paths on | 102 | 12 PNG figures, QC (`gene_qc_dir/trx_*_pca.png`, `_rle.png`, 268 to 269), canonical correlation (296), normalisation grid (297), volcanoes (307), bar plots (314) | 268 to 314 | ragg | **no** |
+| long paths on | 102 | the PDFs and copies | up to 314; 311 | pdf; file.copy | yes |
+| long paths off | 63 | normalisation grid and volcano, PNG **and** PDF | 260, 270 | ragg, pdf | **no** |
+| long paths off | 63 | `canonical_correlation_optimization_summary.xlsx` | 274 | file.copy (FALSE) | **no** |
+| long paths off | 100 | the run stops earlier (the test's "Could not save" and file checks fail); every figure it reached was 192 or shorter and written | | | |
+
+With long paths on, the test passes (8 of 8) while those PNGs are missing: **the worker route loses figures silently** (nothing checks them, unlike the Q-value route after KIT-052). The same appears on the lipidomics and metabolomics worker routes of `test-omic-da-module.R` at roots 126 and 127 (volcano and bar-plot PNGs 279 to 291, long paths on; heatmap PNGs 283 to 289, long paths off). The proteomics managed DA fixture (KIT-112 W3) stores its request folder at `<root>/.workflow-entities/...` (no `scripts/proteomics/.dia-native-<14>`, about 47 characters shorter than the application's): every figure written, longest 259 at root 93. In process (the prot_tmt lane): every figure written at root 118 with long paths on (longest PNG 253, copies up to 310); with long paths off it passes at root 80 and at root 120 QC refuses: all 48 Q-value staged copies fail (266 to 280 characters).
+
+**LongPathsEnabled** on the runner: 1. Set to 0 with `Set-ItemProperty` for the later step of the same disposable job; R processes started afterwards read 0 and every writer failed at 260 or more, so the change took effect.
+
+**Safe project-path length on Windows, as observed:**
+
+| | Long paths on (the runner) | Long paths off (Windows' default) |
+|---|---|---|
+| Limit per path (every case) | 259: `ragg` PNG fails silently from 260; everything else works beyond | 259 for every writer |
+| In-process steps (the prot_tmt lane: QC, Q-value figures, DA) | works at 118 (the largest root tried) | works at 80; fails at 120 (Q-value staged copy) |
+| Worker route (managed DA and omics publications; the route the plain launcher uses on Windows) | **PNG figures missing at 63**, silently | figures missing at 63, the step stops at 100 |
+| Safe root, observed | **below 63** (no root between 52 and 62 was tried on the worker route) | **below 63** |
+
+Calculated from the observed 259 and this run's longest worker figure (`summary_barplot_<contrast>.png`, 214 characters after the root with a 12-character contrast): 45 characters, less for longer contrast names. The user documentation should not state a number until the worker route draws in a short folder and copies (the KIT-052 repair, applied to the request folder) or the request folder is moved; then the limits of KIT-052's table apply.
+
+### 2. Linux hosts; M25 (`which`) and M26 (etc/ldpaths)
+
+**M25.** `packaging/linux/Rscript` stops with exit 69 and a message naming `/usr/bin/which` and the install command per distribution; `install.sh` refuses without it; `main.js` shows the same advice for exit 69 (not exercised: no window in a container); the notices carry a Linux requirements paragraph (checked in the install step). In the published `archlinux:latest` and `fedora:latest` images: exit 69, the message, R not started (both runners).
+
+**Host check** (the installed application's R; containers with network none, `which` added to Arch and Fedora; `debian:stable` = Debian 13 has it): 8 of 8 on every host, before and after M26, on both runners: ubuntu-22.04, ubuntu-24.04, Arch Linux (glibc 2.44; bash under the old exported path still exits 127, the defect, shown repaired), Fedora 45 (glibc 2.44), Debian 13 (glibc 2.41): child R, `processx`, the entry answering HTTP 200 on the plain launcher, `bash -c true`, `sh -c true`.
+
+**M26, measure, change, measure.** The change: `assemble.sh` rewrites R's default in `etc/ldpaths` from `${R_HOME}/lib:/usr/local/lib:/usr/lib/x86_64-linux-gnu` to `${R_HOME}/lib`; nothing from `syslib/` is exported. The "before" rows are the same installed copy with R's original file put back (`$OUT/ldpaths.original`), then the build's.
+
+| Host | readline | BLAS | LAPACK | curl | gfortran | quadmath | host objects mapped in R |
+|---|---|---|---|---|---|---|---|
+| ubuntu-22.04, before | host 8.1 | **host** OpenBLAS 0.3.20 (`openblas-pthread/libblas.so.3`) | **host** | host 4.7.0 | host | host | many |
+| ubuntu-22.04, after | bundle | bundle (`syslib/libblas.so.3`, `libopenblas.so.0`) | bundle | bundle | bundle | bundle | C library only |
+| ubuntu-24.04, before | host 8.2 | bundle | bundle | host 4.8.0 | host | none | 50 |
+| ubuntu-24.04, after | bundle | bundle | bundle | bundle | bundle | bundle | 4 (libc, libm, libresolv, the loader) |
+| Arch, Fedora, before and after | bundle | bundle | bundle | bundle | bundle | bundle | 5 (C library, nss_systemd) |
+| Debian 13, before | bundle | bundle | bundle | bundle | bundle | bundle | 17 (libstdc++, libssl, libcrypto, ...) |
+| Debian 13, after | bundle | bundle | bundle | bundle | bundle | bundle | 4 |
+
+The child R process shows the same copy as its parent on every row. The bundled R's BLAS is the bundled OpenBLAS (`La_library()` = `syslib/libopenblas.so.0`).
+
+**Lanes after M26** (installed application, network closed, the laptop's locale): ubuntu-22.04 and ubuntu-24.04 each: prot_dia 44, prot_dia_limpa 38, prot_tmt, prot_lfq, prot_lfq_fragpipe 37 each, lipid_canonical 35, trx_screen 29: **identical to their oracles** (digests of values rounded to 10 significant digits); metab_lc, metab_gc, metab_combined differ as before (the fixture, defect 4) with **the same state digests as run 44232555102 before the change**, on both runners. So no value moved: nothing for `compare-results.R` to judge. ubuntu-22.04 e2e lanes: 88, 190, 16, 42, 86, 98, 153 (the laptop's counts). Lifecycle passed on both runners (plain launcher).
+
+### Acceptance (2.0.9), rows that changed
+
+| Criterion | State | Evidence |
+|---|---|---|
+| Windows: four non-DIA lanes and the suite | **lanes: met** (e2e 88, 190, 16, 153 with the laptop's counts); suite not run | 44241609555; entry lanes: protein QC passes, summary-text and fragpipe DA-table differences open (above) |
+| Linux: seven e2e lanes | met in the weaker form, again after M26 | 44241609555, ubuntu-22.04 |
+| Linux hosts (defect 2's "not shown") | **shown**: Arch, Fedora, Debian 13, full check, with `which` (M25) | 44241609555 |
+
+Defects: #3 (Q-value figures on Windows) **repaired** by `kit-052-win-paths` and shown; **new, #5: the worker route's figures over 259 characters are lost silently on Windows** (package code, KIT-052's scope; not changed). #2 extended by M26 (bundle libraries on every host). #4 unchanged.
