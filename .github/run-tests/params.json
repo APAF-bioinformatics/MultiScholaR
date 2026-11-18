@@ -1,44 +1,17 @@
 {
-  "label": "KIT-129 second pass items 1-5: 45fa1e81 against a559f511 with sva; prove-arms techrep, firstpass; failing-first; check on both",
-  "package_commit": "45fa1e81832b1318b24e33a7b5a79d474c7aa5be",
-  "base_commit": "a559f511802533e31a5c9c410015b4c7ce7cda20",
+  "label": "KIT-129 second pass: prove-arms techrep rerun after the arm 15 k correction (script only)",
+  "package_commit": "1a3e8f1e7dbe3f9b31d23adab382bbfaed1e3141",
+  "base_commit": "",
   "tools_ref": "",
-  "tests": [
-    "test-prot-ruv-factors-in-model.R",
-    "test-kit127-omics-ruv-factors.R",
-    "test-kit128-tech-reps-lipid-metab.R",
-    "test-kit128-da-assay-failure.R",
-    "test-ruv-factor-count.R",
-    "test-trx-ruv-designs.R",
-    "test-dia-limpa-ruv-rules.R",
-    "test-kit129-run-path.R",
-    "test-omics-da-core.R",
-    "test-workflow-omics-declarations.R",
-    "test-workflow-prot-declarations.R",
-    "test-workflow-lipid-declarations.R",
-    "test-workflow-metab-declarations.R",
-    "test-workflow-operations.R",
-    "test-workflow-operation-registry.R",
-    "test-lipid-02-da-core-helpers.R",
-    "test-metab-02h-da-orchestration-characterization.R",
-    "test-metab-da-orchestration-direct-shared.R",
-    "test-module-ci-lipid-da.R",
-    "test-module-ci-metab-da.R",
-    "test-workflow-omics-da-contrasts.R",
-    "test-workflow-omics-worker.R",
-    "test-omic-da-module.R",
-    "test-prot-norm-core.R"
-  ],
-  "shards": 12,
+  "tests": [],
+  "shards": 1,
   "file_timeout_minutes": 45,
-  "file_timeouts": {
-    "test-prot-norm-core.R": 120
-  },
+  "file_timeouts": {},
   "extra_packages": [
     "sva"
   ],
   "env": {},
-  "check": true,
+  "check": false,
   "blas": "reference",
   "fetch_refs": [
     "sim-k124-exact",
@@ -58,35 +31,6 @@
       },
       "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass",
       "out_pattern": "\\.(tsv|txt)$",
-      "timeout_minutes": 120
-    },
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/prove-arms.R",
-      "args": [
-        "firstpass",
-        "docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass"
-      ],
-      "env": {
-        "OMP_NUM_THREADS": "1",
-        "OPENBLAS_NUM_THREADS": "1"
-      },
-      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass",
-      "out_pattern": "\\.(tsv|txt)$",
-      "timeout_minutes": 150
-    },
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
-      "args": [
-        "a559f511802533e31a5c9c410015b4c7ce7cda20",
-        "docs/qa/workflow-execution/kit/kit-129/final-method/out-failing-first",
-        "test-prot-ruv-factors-in-model.R",
-        "test-kit127-omics-ruv-factors.R"
-      ],
-      "env": {
-        "OMP_NUM_THREADS": "1"
-      },
-      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-failing-first",
-      "out_pattern": "\\.(tsv|txt|log)$",
       "timeout_minutes": 120
     }
   ]
