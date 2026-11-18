@@ -1,0 +1,61 @@
+KIT-144: per-run results of the KIT-124 main scenarios (C0 to C7), for figures S6 and S7
+script: docs/qa/workflow-execution/kit/kit-144/extract-runs.R
+script sha256: 97cc4e203e7c5d3b98512bb2dedd52d2dd3a2c6d868b024191d3022bacc08f00
+commit: 91d8a7aa8514a87f01bde3edf8ad5df60d7c2d0c
+command: Rscript docs/qa/workflow-execution/kit/kit-144/extract-runs.R /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124
+R: R version 4.6.1 (2026-06-24)
+run at: 2026-11-18 09:47:09 AEDT
+
+output: k124-main-runs.tsv.xz, 477000 rows, sha256 9c004bc89325d12a2047f953643c901aab124d0fdea380b06e57022d0c811210
+columns: simulator; cell; run (the data set, 1 to 1000; the seed is 100000 + 10000 x cell index + run);
+  arm (the design, KIT-124's numbering); subset (the design's primary feature subset, kit-124's k124-arms.tsv);
+  class (ok, refused_designed, refused_method, crashed, as kit-124/aggregate.R classifies);
+  k (unwanted factors removed; the mean over the two assays in S4; NA where the design has none);
+  n_calls (features called at q < 0.05); fdp (false calls / calls, 0 without calls; one value over both assays
+  in S4); power (called true effects / true effects; NA without true effects).
+  A refused run carries the no-RUV result of its data set (KIT-124 R-07), as scored.
+
+dropped:
+  extra-hard scenarios (S1 to S14): not read (incomplete for some simulators)
+  rows of a design's non-primary feature subset: S1 89000 of 202000; S2 0 of 112000; S3 0 of 106000; S4 122000 of 268000
+  columns: cell_class, seed, status (in class), n_features, n_true, null_p05, null_p01, bias, rmse, seconds
+
+reproduction check against kit-124/scored/s<i>-core/k124-cells.tsv, before the subset was dropped: 688
+  rows (simulator x cell x design x subset), each on scored (count), mean_fdp, power, mean_k and fdp10_share at
+  6 significant digits: 3440 of 3440 values agree
+
+inputs (sha256 of the bytes read = the sha256 recorded by the scoring; bytes read; bytes on disk; file):
+  9d821f7947ac3f9644f5da5dfcffeb5d97a5ee3d288a7ccf9c71a00dbccc416d 30395765 45848435 s1-confirm/s1-runs.tsv
+  aa8c994998b143f9b7f66f8df301183af2ef18c25dcd0eae64cc93d11dfafb35 25051 159067 s1-confirm/s1-runs.log
+  d708ec4e6719d649e737ef2504b9fe502a045bc4f162337e630bcdb8101682d7 413185 413185 s2-confirm/cells/C0.rds
+  349c1b5feb3a92e59554aef17792ed8c58c7893f84b7144d13f2279c995bbb55 396846 396846 s2-confirm/cells/C1.rds
+  5ff1786a0ca085d890db21ae4865d64b2bd8f38a4985d3924d6ebadaaab4533a 407567 407567 s2-confirm/cells/C2.rds
+  3fad22949a9d9bb6955b4f1e79a32497cac5d94e910edc43e5710e5bdfa47d82 301726 301726 s2-confirm/cells/C3.rds
+  c932e3e5d8f600898be0378698d4610543408fc40a14d6f8d5d039fa73db49f5 145852 145852 s2-confirm/cells/C4.rds
+  2a0d376fc155b2a96af836cede596635adeb41fd35538713ac1329ebfef46845 426054 426054 s2-confirm/cells/C5.rds
+  e53c9e6ee2f64f148acb1ba578817b18c2d5a764fcd40ee00ea3eab8dfabf76e 458653 458653 s2-confirm/cells/C6.rds
+  d6b71b84bd57dd4960a0dda6098c410a4d1e4c4c76fbf15a2e4f1577c2647364 409928 409928 s2-confirm/cells/C7.rds
+  ac52df73f1ac09668639ac7e6179e20da40a472e0d51f1115e3e82db67817a86 467428 467428 s3-confirm/cells/s3-C0.rds
+  6af8044e9e7dd803c896823e730e6ed5135832520da1768258725ade08e3a3a2 452967 452967 s3-confirm/cells/s3-C1.rds
+  b463d757bfd786bbc61036468a28fb2a873f9577a8b6cbea1fb07d6de632d02a 446499 446499 s3-confirm/cells/s3-C2.rds
+  a1c586bc021c68c57f1802702c0271ab78bf3fea45a5a77eeca51009ca15ac35 402332 402332 s3-confirm/cells/s3-C3.rds
+  6eb10ce27e7d6ad90247770236ec3e839d1b7fc5e10bfa454f89b8ed7f7f7c1f 185250 185250 s3-confirm/cells/s3-C4.rds
+  613d434828a8e487a792a4aa7cca612eb11ae71c491d251f1ce27556ddeaebbe 503201 503201 s3-confirm/cells/s3-C5.rds
+  b71a5a34596bed66da59f7251a5d3031bfa9895727aa0fa3527e8d217dfb409d 597353 597353 s3-confirm/cells/s3-C6.rds
+  05af0a493a3362d9b155879c029077d7a13ea737ce77fc2086d093d2e07d4e5e 450375 450375 s3-confirm/cells/s3-C7.rds
+  333c7d08fc88c938477368685d32eb3215fbe482e27327dd238e284a7ea6ea9f 3343114 3343114 s4-confirm/cells/C0.tsv
+  278cfabb658e13414aad0e08f0fc4993ec0f9ea6b935a507fbeccc3152491d47 3390877 3390877 s4-confirm/cells/C1.tsv
+  c6370952bc28ec548bda6e34bba2aa65b9486c11dba85082992e999da0743888 3277077 3277077 s4-confirm/cells/C2.tsv
+  6fc3e2d7b1f4588d04406492f2c022fc9bab65a60e06f26cf977000f91316325 3541369 3541369 s4-confirm/cells/C3.tsv
+  cdd41b4fc1a945b9839059ff40d79fae0179a38cb7198aa31d30f3286194201c 2596253 2596253 s4-confirm/cells/C4.tsv
+  ccfc1719499bf25108fb551de999242764b45bec8a4fe27d57ac270ab1b13874 3406407 3406407 s4-confirm/cells/C5.tsv
+  2a626d444a112a88db3506906f75e1e6afdfdf76b6d0a85dc0cfe3885f214abf 3895980 3895980 s4-confirm/cells/C6.tsv
+  1f44eeb78bef3ed0cb658325122aa69f69d1cebb7dacce7776e5d37518191e9b 3502953 3502953 s4-confirm/cells/C7.tsv
+  fc103fdf6094d34d7d4674fbb527aee2a7dda0bbcab77cda727541b3911b786f 219821 219821 s4-confirm/cells/C0.notes.tsv
+  0ce13b5657c2b1d5f03a61cd3931e1a8f1ff9c993d3085400642e432ec6d16c3 219236 219236 s4-confirm/cells/C1.notes.tsv
+  f136ce9ba1c35c45e88de1fd68835fe41c93094991e8ac9a6c4df378250e9d5b 222564 222564 s4-confirm/cells/C2.notes.tsv
+  1478fc41a0391ccfb20b0580f5f5e6c0c8341f4b289f41484546b8bfd7cf2374 215826 215826 s4-confirm/cells/C3.notes.tsv
+  91ca3ce353cead0c6ec67d18cb6f064c7019073f589463f46341cf3760a87bb3 281128 281128 s4-confirm/cells/C4.notes.tsv
+  238e28939fe02e8ac9404feae810778cacfd16386a915ab040eca00c9ac6f369 217910 217910 s4-confirm/cells/C5.notes.tsv
+  aa10d82e21371853ced0c4b0f84ee56f8a30eba7e3723d775c8850cb90e098a5 218607 218607 s4-confirm/cells/C6.notes.tsv
+  25711d1fb2ad2208ad88c32753b4564d0ec7b164b95c82ffe9a970b294c17a63 217796 217796 s4-confirm/cells/C7.notes.tsv
