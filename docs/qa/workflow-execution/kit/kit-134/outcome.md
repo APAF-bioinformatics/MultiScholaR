@@ -641,3 +641,65 @@ The child R process shows the same copy as its parent on every row. The bundled 
 | Linux hosts (defect 2's "not shown") | **shown**: Arch, Fedora, Debian 13, full check, with `which` (M25) | 44241609555 |
 
 Defects: #3 (Q-value figures on Windows) **repaired** by `kit-052-win-paths` and shown; **new, #5: the worker route's figures over 259 characters are lost silently on Windows** (package code, KIT-052's scope; not changed). #2 extended by M26 (bundle libraries on every host). #4 unchanged.
+
+## Windows figure paths after the worker-route repair; the FragPipe table (2026-11-18, run 44275615462)
+
+One stage-full run, both platforms (the Linux jobs serve as the reference for the FragPipe table; a second dispatch on this ref would cancel the first): [44275615462](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44275615462) on `7eb6fc73` (merge of `kit-052-win-paths` at `b0f4719c` as `72383d0e`, then the instrumentation). Budget: this run and one correction pass; **the correction pass is not used**. Every job ended "failure" because of a lanes step whose results are findings, not faults of the run: Windows lanes as in 44241609555, Linux metab lanes (defect 4), and on ubuntu-22.04 trx_screen's `top_de_genes.tsv` (7 steps, digest; seen before in 44195739758 but not in 44241609555; not classified here). 0 artifacts, no cache. Package code under `R/` and `tests/` unchanged beyond the merge; no oracle changed.
+
+Instrumentation added (packaging/verify only): `figure-trace.R` also traces `file.rename` (the final name of a published file) and `rlang::abort` of class `workflow_figure_unwritten` (RAISED lines, with the message), and pairs every drawn figure with its later copies and renames of the same name (FIGPAIR lines: drawn path and length, final path and length, present and not empty). `figure-paths.R` item `omic_worker_da`: the named lipid managed test of `test-omic-da-module.R`; testthat's `desc` filter also runs the file's top-level loops ((b) in process and (b-managed) lipid, metab, trx), so the item covers the lipid and metabolomics worker routes, not the whole file. A short TMPDIR (`D:\o`) gives the lowest root these fixtures can have. Fixture roots: trx `.../project/kit097` (TMPDIR + 43); lipid/metab: the trace's root is the store prefix up to `.dia-native-<hex>`, so it reads about 25 longer than the fixture's project folder.
+
+### 1. Figures (windows-2025, installed application's R, network cut)
+
+"Figures" = every PNG or PDF a device drew in the item; "final ok" = every copy and rename of it present and not empty. The worker's figures are drawn in `tempdir()/wfx-<hex>/...` (the longest drawn path of any worker item: 239).
+
+| Case (LongPathsEnabled as R reads it) | Root | figure tests | trx managed DA (MCI-031.2) | lipid/metab worker routes | trx in the omic file | Longest final path |
+|---|---|---|---|---|---|---|
+| on (1), root 63 | 62-63 | 88 passed, 2 skipped | 42 of 42 final ok, 8/0 | 129 of 129 | 170 of 170 | 275 |
+| on, root 102 | 101-102 | 88/0 | 42 of 42, 8/0 | 129 of 129 | 170 of 170 | 315 |
+| on, root 124 | 123-124 | 88/0 | 42 of 42, 8/0 | 129 of 129 | 170 of 170 | 336 |
+| off (0), root 47 (the lowest possible) | 47 | 70 passed, 3 errors (tests that make 248+ folders) | **38 of 42**: both bar plots, PNG and PDF, final 261, refused | 129 of 129 (longest 237) | 168 of 170: 2 bar plot files refused (261) | 261 |
+| off, root 63 | 61-62 | 70/3 errors | **32 of 40**: volcanoes 267, bar plots 274, refused; the `.xlsx` 271 | 129 of 129 (longest 250) | 164 of 168: 4 refused (268, 275) | 275 |
+
+`omic_worker_da` has 9 failures in every case with long paths on: frozen-capture differences of the `*_da_results_<DATE>.csv` sha and the trx row digest (as in 44241609555, before the repair; not figures).
+
+**The refusal (long paths off), as raised**, class `workflow_figure_unwritten/saved_entity_outputs_pending`: "the worker's publication files could not be copied into its request folder | missing or empty: 'summary_barplot_RPMI_vs_Sera.pdf', 'summary_barplot_RPMI_vs_Sera.png', 'summary_barplot_Sera_vs_RPMI.pdf', 'summary_barplot_Sera_vs_RPMI.png', 'volcano_plot_...' | in '<root>/scripts/transcriptomics/.dia-native-<hex>/.workflow-entities/.workflow-export/wfx-<32>/omics-publication/publication_graphs_dir/...' | the longest of these paths is 271 [261 at root 47] characters: the project folder's path is too long for Windows with long paths disabled, where a path may have at most 259 characters. Move the project to a folder with a shorter path, or enable Windows long paths." The test fails (trx 5 passed, 3 failed): a loud failure, not a silent loss and not a pass.
+
+**prot_tmt entry lane, long paths on** (the roots reached were 120 and 125, not 118 and 124: the fixture folder's hex suffix varies by one or two):
+
+| Root | Figures | Lane | Missing |
+|---|---|---|---|
+| 120 | 121 of 121 (longest drawn 255, longest copy 280) | 35 passed, 2 failed (the summary-text root, as before) | none |
+| 125 | **120 of 121** | 31 passed, 6 failed | `publication_graphs_dir/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png`, drawn in place by ragg at **260**: no file, **no refusal raised** (the in-process DA publication does not check its figures) |
+
+### 2. Safe project-path length on Windows after the repair
+
+| | Calculated (KIT-052 note) | Observed here |
+|---|---|---|
+| Long paths on | 124 (in-process proteomics DA number-significant PNG drawn in place) | worker routes: no limit up to root 124 (trx final 336; lipid/metab 311); in process: 120 safe, **125 loses exactly that PNG (260), silently**. So 124, as calculated; the loss at 125 is silent (a remaining defect of the in-process DA route, not of the worker route). |
+| Long paths off | 41 (metab `num_sig` xlsx, 218 after the root); 43 for the trx bar plot at a 12-character contrast | the fixtures cannot go below root 47: there the trx bar plots' copies (214 after the fixture root, 261) are refused loudly; at 63 the step stops loudly. Not shown passing at 41. Consistent with the calculation (fixture's trx limit 45 = app layout 43, the `.dia-native` suffix 2 shorter in the fixture); the metab xlsx bound (41) is not exercised by these fixtures, whose metab copies stay at 116-131 characters. |
+
+### 3. e2e lanes (Windows, installed application)
+
+lipidomics-canonical 88, metabolomics-lc-gc 190, transcriptomics-screen 16, proteomics-tmt-lfq 153: the laptop's counts, nothing regressed. ubuntu-22.04: 88, 190, 16, 42, 86, 98, 153. GUI-entry lanes on Windows as in 44241609555 (prot_tmt and prot_lfq 35/2, prot_lfq_fragpipe 31/6, lipid_canonical 27/8, metab 25/10, trx_screen error).
+
+### 4. prot_lfq_fragpipe `da_proteins_groupKO-groupWT_long_annot.tsv`: classified numeric, within the rule
+
+Each copy the recorder read (6 per platform, one distinct content per platform) was kept in its job and fingerprinted (FPRINT lines): bytes, line endings, header, shape, row order, per column a text digest and digests of the values rounded to 15/12/10/8/6 significant digits, two sample cells.
+
+- **Not textual, not structural**: header identical (41 columns), 400 rows, row order identical, LF only on every platform (no CRLF, no BOM); every text column (17, including `annotation_score`, ids, GO terms) identical on Windows, ubuntu-22.04 and ubuntu-24.04.
+- **Numeric**: 3 statistics columns and 20 intensity columns differ.
+
+| Columns | Windows vs Linux (either) | ubuntu-22.04 vs 24.04 | Sample |
+|---|---|---|---|
+| `fdr_qvalue`, `raw_pvalue` | equal at 10 significant digits, not at 12 | equal at 10, not 12 | 1.2396646615107782e-23 (Linux) vs 1.2396646615105722e-23: 1.7e-13 relative |
+| `log2FC` | equal at 8 (vs 22.04) or 10 (vs 24.04) | equal at 8, not 10 | 3.1801726079068473 vs 3.180172607906851: 1.2e-15 |
+| `log2norm.*`, `raw.*` (14 of 20) | equal at 12, not 15 | identical text | 12.397269757248953 vs 12.397269757248955: 1.6e-16 (last bit) |
+| `log2norm.*`, `raw.*` (6 of 20) | equal at 15 | identical | |
+
+Bounds under the fixed rule (relative 1e-6, absolute floor 1e-9): same rounding at s significant digits bounds the relative difference near 10^(1-s), so the largest relative difference is below about 1e-9 for the p and q values, below about 1e-7 for `log2FC` (some value near zero, where the floor applies), and about 1e-11 or less for the intensities: **every column within the rule**. The exact maximum needs the two tables side by side, which this run deliberately does not allow. The Linux hosts differ from each other by as much and both still match the oracle: the recorder's mask (`helper-gui-entry.R`, `guiEntryMask`) replaces every run of 10 or more digits with `<HEX>`, so long mantissas never reach the oracle's digest. Windows' digest difference must therefore come from a number whose printed form changes length (for example a value printed as an integer on one platform and with a long fraction on the other); inferred, not shown. Correction to the run's commit message: the oracle's digest covers the whole masked text (`guiEntryMask` collapses the lines before `digest(serialize = FALSE)`), not the first line only; the "first-line digest" in the FPRINT lines is not comparable with it, and the classification above does not use it.
+
+### What remains
+
+- The in-process proteomics DA publication draws `da_proteins_num_sig_da_molecules.png` in place and does not check it: from root 125 with long paths on (and earlier with them off) the PNG is lost **silently**. Package code (KIT-052's scope; not changed here).
+- Long paths off: the limit (about 41 to 43) is set by the worker's request-folder names (the pending harness decision); not shown at 41 because these fixtures cannot have a root shorter than 47.
+- The FragPipe table's exact maximum difference (only bounds here); the oracles' table digests do not see digits past the ninth (the mask), a weakness of the recorder, not changed.
