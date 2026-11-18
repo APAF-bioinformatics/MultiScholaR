@@ -72,6 +72,9 @@
 #   19  S12  stress  3 per group, 3 factors
 #   20  S13  stress  3 per group, no factor
 #   21  S14  stress  no factor, 50% missing
+#   22  C8   core    the exactness round (user, 2026-11-18, decision M16): C6 with no unwanted factor (technical
+#                    duplicates, 4 units per group, 2 injections each; data generation as C6 with factors = 0). Run on
+#                    request (a cell argument naming it); reported, judges no design.
 #
 # The test (every arm that tests with the package's kernel): the proteomics default path's call, as
 # differentialAbundanceAnalysisHelper makes it with inst/config/config.ini [deAnalysisParameters] untouched:
@@ -122,8 +125,33 @@
 # Arm 24 (user, 2026-11-18): arm 5 takes the sweep's k, which the sweep computed on its own winning control set; arm
 # 24 applies arm 22's rule to arm 5's controls (all proteins outside the 25% most significant of the first pass), so
 # it differs from arm 5 in k only, and does not read the sweep either.
-# K124_ARMS (environment; unset = the arms above, 22 to 24 not run): a comma list of the arms to run, of those the
-# cell has and 22, 23, 24. Arm 1 must be in it (refusals carry its result). The data, E and every stream are as without
+# The exactness round (user, 2026-11-18, decision M16; kit-124/exact-round-declaration.md), on request (K124_ARMS).
+# Each arm is another arm with the named change and nothing else: it runs on that arm's random stream. Where only E
+# changes (29 to 31) and the new E equals the base arm's k, the base arm's result is taken without computing it again.
+#   25  arm 7 with the comparison's standard error exact per protein: the contrast is fitted as a coefficient
+#       (limma::contrastAsCoef on the kernel's model matrix; the kernel's fit, fitProtDaBaseModel, on the
+#       reparameterised matrix; its first coefficient taken in place of limma::contrasts.fit), then the kernel's
+#       eBayes(trend, robust), treat(lfc = 0) and topTreat as before. contrasts.fit forms the standard error from one
+#       correlation matrix for all proteins, which is approximate for a protein with missing values when the model
+#       carries W.
+#   26  arm 7 with a test that applies the settings the kernel sets: limma::treat(fit, lfc = 0, trend = TRUE,
+#       robust = TRUE) in place of treat(fit, lfc = 0) (which moderates without trend and not robustly). At a cutoff
+#       of 0 this equals the kernel without its TREAT step (topTable of eBayes(trend, robust)): one arm, not two (the
+#       two p-values are compared under K124_EXACT_CHECK=1).
+#   27  arm 1 with arm 26's test.            28  arm 3 with arm 26's test (the same sweep, controls, k and correction).
+#   29  C6 and C8: arm 7 with E estimated after the biological units are removed, not only the groups:
+#       sva::num.sv(dat, model.matrix(~ tech_rep_group), method = "be", B = 20, seed = stream 0).
+#   30  C6 and C8: arm 16 with arm 29's E.
+#   31  arm 7 with E from 200 permutations: sva::num.sv(..., B = 200, seed = stream 0), the group model.
+#   32  arm 7 with all of them: arm 25's standard error, arm 26's test, B = 200, and in C6 and C8 the units removed.
+#   33  C6 and C8: arm 16 with all of them (the design a declared technical-replicate design would take).
+# With E = 0 arms 29 to 31 are arm 1's result, as arm 7; arms 25, 26, 32, 33 are the no-RUV fit under their own test,
+# and a refusal of arms 25, 26, 28, 32, 33 is scored as that fit too (R-07 with the arm's own test).
+# K124_EXACT_CHECK=1 (environment; a check, not a result): per data set, the simulator's rebuilt kernel with neither
+# change must be identical() to the package's kernel (no RUV, and with arm 7's W), and treat(lfc = 0, trend, robust)
+# must give topTable's p-values of eBayes(trend, robust) to 1e-12; otherwise the run crashes with the reason.
+# K124_ARMS (environment; unset = the arms above, 22 to 33 not run): a comma list of the arms to run, of those the
+# cell has and 22 to 33. Arm 1 must be in it (refusals carry its result). The data, E and every stream are as without
 # it, so an arm's rows are the same whichever other arms run.
 # First pass (arms 5, 6): limma lmFit(~ group) + eBayes, the F test over the group coefficients; q = BH.
 # Replicate structure of RUV-III: arms 3 to 6 take what the package resolves from the design (the group; the unit in
@@ -196,7 +224,8 @@ cell_table <- list(
     S1 = list(n = 3L), S2 = list(share = 0.40), S3 = list(rho = 0.6), S4 = list(factors = 3L), S5 = list(missing = 0),
     S6 = list(missing = 0.50), S7 = list(tails = "t3"), S8 = list(batch = TRUE), S9 = list(up = 0.8),
     S10 = list(abundance_tie = 0.7), S11 = list(n = 3L, rho = 0.3), S12 = list(n = 3L, factors = 3L),
-    S13 = list(n = 3L, factors = 0L), S14 = list(factors = 0L, missing = 0.50))
+    S13 = list(n = 3L, factors = 0L), S14 = list(factors = 0L, missing = 0.50),
+    C8 = list(n = 4L, duplicates = TRUE, factors = 0L))
 cell_names <- names(cell_table)
 cell_setting <- function(cell) utils::modifyList(centre, cell_table[[cell]])
 cell_index <- function(cell) match(cell, cell_names) - 1L
@@ -207,9 +236,14 @@ arms_of <- function(cell) {
     if (p$share == 0) arms <- setdiff(arms, 9L)
     if (p$duplicates) arms <- c(arms, 15L, 16L)
     if (p$batch) arms <- c(arms, 17L)
-    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L, 24L), arms_wanted)
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L, 24L, 25L, 26L, 27L, 28L, if (p$duplicates) c(29L, 30L),
+        31L, 32L, if (p$duplicates) 33L), arms_wanted)
     arms
 }
+# the exactness round: the arms whose test differs from the kernel's (exact standard error, settings applied)
+own_test <- list(`25` = c(TRUE, FALSE), `26` = c(FALSE, TRUE), `27` = c(FALSE, TRUE), `28` = c(FALSE, TRUE),
+    `32` = c(TRUE, TRUE), `33` = c(TRUE, TRUE))
+self_check <- identical(Sys.getenv("K124_EXACT_CHECK"), "1")
 subsets_of <- function(arm) if (arm %in% 12:14) "complete" else c("full", "complete")
 
 # ---- data ------------------------------------------------------------------------------------------------------
@@ -350,6 +384,47 @@ da <- function(matrix, design, covariates = NULL, terms = character()) {
     tab <- value$results[[1L]]
     data.frame(id = rownames(tab), p = tab$raw_pvalue, q = tab$fdr_qvalue, estimate = tab$logFC, stringsAsFactors = FALSE)
 }
+# The exactness round: the kernel's steps from its own halves (fitProtDaBaseModel, applyProtDaContrastModel), so that
+# the two changes can be made. `exact`: the contrast as a coefficient of a reparameterised model matrix
+# (limma::contrastAsCoef), its first coefficient in place of contrasts.fit. `applied`: treat() given the kernel's
+# trend and robust settings. With neither, the result is the kernel's (K124_EXACT_CHECK=1 asserts it).
+# `no_treat` (the check only): topTable of the moderated fit, the kernel without its TREAT step.
+da_variant <- function(matrix, design, covariates = NULL, exact = FALSE, applied = FALSE, no_treat = FALSE) {
+    terms <- character()
+    if (!is.null(covariates)) {
+        design <- cbind(design, as.data.frame(covariates[rownames(design), , drop = FALSE]))
+        terms <- colnames(covariates)
+    }
+    formula <- stats::as.formula(paste(c(test_settings$formula_string, terms), collapse = " + "))
+    design_m <- stats::model.matrix(formula, stats::model.frame(formula, design))
+    data_subset <- matrix[, rownames(design_m), drop = FALSE]
+    contrast <- limma::makeContrasts(contrasts = test_settings$contrast, levels = colnames(design_m))
+    fit_design <- design_m
+    if (exact) {
+        fit_design <- limma::contrastAsCoef(design_m, contrast)$design
+        dimnames(fit_design) <- list(rownames(design_m), c(colnames(contrast), paste0("Q", seq_len(ncol(design_m))[-1L])))
+    }
+    silent <- function(...) invisible(NULL)
+    model <- NULL
+    quietly({
+        base <- fitProtDaBaseModel(data_subset, fit_design, design, rownames(design_m), messageFn = silent,
+            group_id = "group", technical_replicate_id = "tech_rep_group")
+        model <- applyProtDaContrastModel(base, contrast, treat_lfc_cutoff = test_settings$treat_lfc_cutoff,
+            eBayes_trend = test_settings$eBayes_trend, eBayes_robust = test_settings$eBayes_robust,
+            contrastsFitFn = if (exact) function(fit, contrasts) fit[, 1L] else limma::contrasts.fit,
+            treatFn = if (applied) function(fit, lfc) limma::treat(fit, lfc = lfc, trend = test_settings$eBayes_trend,
+                robust = test_settings$eBayes_robust) else limma::treat, messageFn = silent)
+    })
+    tab <- if (no_treat) limma::topTable(model$moderated_fit, coef = 1L, number = Inf) else limma::topTreat(model$public_fit, coef = 1L, n = Inf)
+    # q as the kernel: qvalue on the finite p-values, Benjamini-Hochberg when they are degenerate or qvalue fails
+    p <- tab$P.Value; q <- rep(NA_real_, length(p)); valid <- which(!is.na(p) & is.finite(p))
+    if (length(valid)) {
+        v <- p[valid]
+        q[valid] <- if (all(v == 0) || all(v == 1) || length(v) < 3L) stats::p.adjust(v, "BH") else
+            tryCatch(qvalue::qvalue(v)$qvalues, error = function(e) stats::p.adjust(v, "BH"))
+    }
+    data.frame(id = rownames(tab), p = p, q = q, estimate = tab$logFC, stringsAsFactors = FALSE)
+}
 measures <- c("n_features", "n_true", "n_calls", "null_p05", "null_p01", "fdp", "power", "bias", "rmse")
 score <- function(tab, sim, subset) {
     ids <- if (subset == "full") rownames(sim$x) else rownames(sim$x)[sim$complete]
@@ -397,6 +472,26 @@ one <- function(cell, run) {
         as.integer(value)
     }, error = function(e) e)
     E <- function() if (inherits(estimate, "error")) stop(estimate) else estimate
+    # the exactness round: E with 200 permutations, and with the biological units removed (stream 0, as E)
+    E_variant <- function(B, units) {
+        if (B == 20L && !units) return(E())
+        key <- paste0("E_", B, "_", units)
+        if (is.null(cache[[key]])) cache[[key]] <- tryCatch({
+            if (nrow(xc) < 2L) refuse("no proteins observed in every sample: E is undefined")
+            model <- if (units) stats::model.matrix(~ tech_rep_group, design) else stats::model.matrix(~ group, design)
+            value <- NULL
+            quietly(value <- sva::num.sv(xc, model, method = "be", B = B, seed = stream(0L)))
+            as.integer(value)
+        }, error = function(e) e)
+        if (inherits(cache[[key]], "error")) stop(cache[[key]])
+        cache[[key]]
+    }
+    no_ruv_under <- function(arm) {                       # the no-RUV fit under an arm's own test
+        settings <- own_test[[as.character(arm)]]
+        key <- paste0("none_", settings[[1L]], "_", settings[[2L]])
+        if (is.null(cache[[key]])) cache[[key]] <- da_variant(x, design, exact = settings[[1L]], applied = settings[[2L]])
+        cache[[key]]
+    }
     # the sweep, once per data set (stream 3), its time charged to arm 3
     sweep <- function() {
         if (is.null(cache$sweep)) {
@@ -440,7 +535,7 @@ one <- function(cell, run) {
     no_ruv <- list(same_as_no_ruv = TRUE, k = 0L)
     room <- function(k) if (n_samples - n_groups - k < 1L)
         refuse(sprintf("no residual degree of freedom for %d covariates with %d samples and %d groups", k, n_samples, n_groups))
-    in_model <- function(controls, k, technical) {        # W of RUV-III as covariates of the test
+    in_model <- function(controls, k, technical, test = da) {   # W of RUV-III as covariates of the test
         if (k == 0L) return(no_ruv)
         room(k)
         usable <- unname(controls[complete])
@@ -450,13 +545,34 @@ one <- function(cell, run) {
         if (k > n_samples - blocks) refuse(sprintf("k = %d exceeds samples minus replicate sets (%d)", k, n_samples - blocks))
         value <- NULL
         quietly(value <- computeRuvCovariates(object_complete(technical), k = k, controls = usable, ruv_grouping_variable = "group"))
-        list(tab = da(x, design, value$W), k = k)
+        if (self_check && identical(test, da)) {
+            stopifnot("the rebuilt kernel is not the package's kernel (with W)" =
+                identical(da(x, design, value$W), da_variant(x, design, value$W)))
+        }
+        list(tab = test(x, design, value$W), k = k)
     }
-    corrected <- function(controls, k, technical) {       # RUV-III-C correction, then the test
+    corrected <- function(controls, k, technical, test = da) {   # RUV-III-C correction, then the test
         if (k == 0L) return(no_ruv)
         value <- NULL
         quietly(value <- ruvIII_C_Varying(object(technical), ruv_grouping_variable = "group", ruv_number_k = k, ctrl = controls))
-        list(tab = da(as_matrix(value), design), k = k)
+        list(tab = test(as_matrix(value), design), k = k)
+    }
+    # the exactness round: `base` arm with the changes named, on the base arm's stream (E first: num.sv sets a seed)
+    variant <- function(arm, base, B = 20L, units = FALSE) function() {
+        settings <- own_test[[as.character(arm)]]
+        test <- if (is.null(settings)) da else function(matrix, design, covariates = NULL)
+            da_variant(matrix, design, covariates, exact = settings[[1L]], applied = settings[[2L]])
+        k <- if (base %in% c(7L, 16L)) E_variant(B, units)
+        kept <- if (is.null(settings)) cache[[paste0("result_", base)]]   # the base arm's result, when this arm's k is its k
+        if (!is.null(kept) && identical(k, if (isTRUE(kept$same_as_no_ruv)) 0L else kept$k)) return(kept)
+        set.seed(stream(base))
+        result <- switch(as.character(base),
+            `1` = list(tab = test(x, design), k = 0L),
+            `3` = { s <- sweep(); corrected(s$controls, s$k, "tech_rep_group", test) },
+            `7` = in_model(all_controls, k, "no_tech", test),
+            `16` = in_model(all_controls, k, "tech_rep_group", test))
+        if (isTRUE(result$same_as_no_ruv) && !is.null(settings)) result <- list(tab = no_ruv_under(arm), k = 0L)
+        result
     }
     ruv_package <- function(method) {                     # ruv::RUV4 / ruv::RUVinv on the complete proteins
         control <- unname(sim$oracle[complete])
@@ -511,18 +627,29 @@ one <- function(cell, run) {
         `17` = function() list(tab = da(x, design, NULL, "batch"), k = 0L),
         `22` = function() in_model(sim$oracle, separation_k(sim$oracle), "no_tech"),
         `23` = function() in_model(wide_controls(), E(), "tech_rep_group"),
-        `24` = function() in_model(wide_controls(), separation_k(wide_controls()), "tech_rep_group"))
+        `24` = function() in_model(wide_controls(), separation_k(wide_controls()), "tech_rep_group"),
+        `25` = variant(25L, 7L), `26` = variant(26L, 7L), `27` = variant(27L, 1L), `28` = variant(28L, 3L),
+        `29` = variant(29L, 7L, units = TRUE), `30` = variant(30L, 16L, units = TRUE), `31` = variant(31L, 7L, B = 200L),
+        `32` = variant(32L, 7L, B = 200L, units = p$duplicates), `33` = variant(33L, 16L, B = 200L, units = TRUE))
+    if (self_check) {
+        stopifnot("the rebuilt kernel is not the package's kernel (no RUV)" = identical(da(x, design), da_variant(x, design)))
+        with_settings <- da_variant(x, design, applied = TRUE); without_treat <- da_variant(x, design, applied = TRUE, no_treat = TRUE)
+        gap <- max(abs(with_settings$p - without_treat$p[match(with_settings$id, without_treat$id)]))
+        if (!is.finite(gap) || gap > 1e-12) stop(sprintf("treat(lfc = 0, trend, robust) is not eBayes(trend, robust): p differs by up to %.3g", gap))
+    }
     rows <- list(); log <- character()
     reference <- NULL                                     # arm 1's table, the no-RUV result
     for (arm in arms_of(cell)) {
         set.seed(stream(arm)); t0 <- proc.time()[[3L]]
         result <- tryCatch(arm_functions[[as.character(arm)]](), error = function(e) e)
         seconds <- proc.time()[[3L]] - t0
+        if (arm %in% c(7L, 16L) && !inherits(result, "error")) cache[[paste0("result_", arm)]] <- result
         status <- "ok"; k <- NA_integer_; tab <- NULL
         if (inherits(result, "error")) {
             status <- if (is_refusal(result)) "refused" else "crashed"
             log <- c(log, paste(cell, run, arm, status, gsub("[\r\n\t]+", " ", conditionMessage(result)), sep = "\t"))
-            if (status == "refused") tab <- reference
+            if (status == "refused") tab <- if (is.null(own_test[[as.character(arm)]])) reference else
+                tryCatch(no_ruv_under(arm), error = function(e) NULL)
         } else if (isTRUE(result$same_as_no_ruv)) {
             k <- 0L; tab <- reference
         } else {
@@ -554,7 +681,7 @@ crashed_run <- function(cell, run, message) {
 
 # ---- the study ---------------------------------------------------------------------------------------------------
 columns <- c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", "status", "k", measures, "seconds")
-cells <- if (identical(cells_wanted, "all")) cell_names else strsplit(cells_wanted, ",", fixed = TRUE)[[1L]]
+cells <- if (identical(cells_wanted, "all")) setdiff(cell_names, "C8") else strsplit(cells_wanted, ",", fixed = TRUE)[[1L]]
 stopifnot(all(cells %in% cell_names), cores >= 1L)
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 runs_file <- file.path(out_dir, "s1-runs.tsv"); meta_file <- file.path(out_dir, "s1-runs.meta.txt")
@@ -580,8 +707,8 @@ meta("threads: OMP_NUM_THREADS=", Sys.getenv("OMP_NUM_THREADS"), " OPENBLAS_NUM_
     "; worker processes: ", cores, "; BLAS: ", extSoftVersion()[["BLAS"]])
 meta(R.version.string, "; ", R.version$platform)
 meta("MultiScholaR (pkgload::load_all of the work tree): ", as.character(utils::packageVersion("MultiScholaR")))
-meta("seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); ",
-    "arm a under set.seed(seed * 100 + a); E under stream 0; runs ", first_run, " onward")
+meta("seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); ",
+    "arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs ", first_run, " onward")
 meta("K124_ARMS: ", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ","))
 meta("cells: ", paste(cells, collapse = ","), "; runs per core cell ", runs_core, ", per stress cell ", runs_stress)
 for (cell in cells) {

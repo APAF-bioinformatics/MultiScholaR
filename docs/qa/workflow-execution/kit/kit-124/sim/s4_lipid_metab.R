@@ -76,7 +76,9 @@
 # duplicates; C7 7 3 groups; S1 8 3 per group; S2 9 40% effects; S3 10 correlation 0.6; S4 11 3 factors; S5 12 0%
 # missing; S6 13 50% missing; S7 14 heavy tails; S8 15 known unbalanced batch; S9 16 80% up; S10 17 loadings tied to
 # abundance; S11 18 3 per group, correlation 0.3; S12 19 3 per group, 3 factors; S13 20 no unwanted variation, 3 per
-# group; S14 21 no unwanted variation, 50% missing.
+# group; S14 21 no unwanted variation, 50% missing. C8 22 (the exactness round, user 2026-11-18, decision M16):
+# C6 with no unwanted variation (duplicates; data generation as C6 with no drift and no f), run when the cells
+# argument names it; reported, judges no design.
 # Seed = 100000 + 10000 x cell index + run: the data of a (cell, run), made once and shared by every arm. Each arm
 # starts its own stream at set.seed(seed * 100 + arm number) (I = 18, Qs = 19, Qm = 20, L = 21); E uses seed * 100 + 99.
 #
@@ -112,8 +114,27 @@
 #     cross the two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only.
 #     There is no arm 24 here (S1 to S3: arm 5 with today's rule on arm 5's own controls): arm 5 already is that
 #     design in this simulator. A 24 in K124_ARMS is ignored.
-#     K124_ARMS (environment; unset = the arms of this list but 22 and 23): a comma list of the arm labels to run,
-#     of those the cell has and 22, 23. Arm 1 must be in it. The data, E and every stream are as without it, so an
+#     The exactness round (user, 2026-11-18, decision M16; kit-124/exact-round-declaration.md), on request
+#     (K124_ARMS). Each arm is another arm with the named change and nothing else, on that arm's random stream.
+# 25  arm 7 with each comparison's standard error exact per feature. limma::contrasts.fit forms it from one
+#     correlation matrix for all features, which is approximate for a feature with missing values when the model
+#     carries W. Here, per comparison, the model matrix is reparameterised so that the comparison is its first
+#     coefficient (limma::contrastAsCoef), its columns join the design table, and the same kernel is called with
+#     the formula of those columns and the contrast "comparison": for a contrast that is one coefficient
+#     contrasts.fit is exact. Estimates, residual variances, their moderation (trend, robust) and q are as before.
+# 29  (C6, C8) arm 7 with E estimated after the extracts (the biological units) are removed, not only the groups:
+#     sva::num.sv(dat, mod = ~ extract, method = "be", B = 20, E's seed).       30  (C6, C8) arm 16 with arm 29's E.
+# 31  arm 7 with E from 200 permutations: sva::num.sv(dat, mod = ~ group, method = "be", B = 200, E's seed).
+# 32  arm 7 with all of them: arm 25's standard error, B = 200, and in C6 and C8 the extracts removed.
+# 33  (C6, C8) arm 16 with all of them.
+#     Arm numbers 26 to 28 (S1: the test applies its trend and robust settings) are not formed: this kernel has no
+#     TREAT step (a cut-off of 0 is passed on as NA) and reports the p-values of eBayes(trend, robust).
+#     With E = 0 these arms are the no-RUV fit (for 25, 32, 33 with the reparameterised matrix: equal to arm 1's up
+#     to rounding, because without W the model's coefficients are uncorrelated); a refused assay is arm 1's, as before.
+#     K124_EXACT_CHECK=1 (environment; a check, not a result): per data set and view, the reparameterised no-RUV fit
+#     must give arm 1's estimates and p-values to 1e-8; otherwise arm 25 crashes with the reason.
+#     K124_ARMS (environment; unset = the arms of this list but 22 to 33): a comma list of the arm labels to run,
+#     of those the cell has and 22, 23, 25, 29 to 33. Arm 1 must be in it. The data, E and every stream are as without it, so an
 #     arm's rows are the same whichever other arms run.
 #  I  the package's ITSD normalisation and log2 alone, then the test.
 #  Qs pooled QC injections as the one replicate set (M over study and QC injections), all features as controls,
@@ -170,7 +191,9 @@ ID_COL <- "database_identifier"
 RUV_PARAMS <- list(ruv_grouping_variable = "group", percentage_min = 1, percentage_max = 20,
     separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, manual_k = 2,
     manual_percentage = 5)
-ARM_NUMBER <- c(stats::setNames(1:17, 1:17), I = 18L, Qs = 19L, Qm = 20L, L = 21L, "22" = 22L, "23" = 23L)
+ARM_NUMBER <- c(stats::setNames(1:17, 1:17), I = 18L, Qs = 19L, Qm = 20L, L = 21L, "22" = 22L, "23" = 23L,
+    "25" = 25L, "29" = 29L, "30" = 30L, "31" = 31L, "32" = 32L, "33" = 33L)
+EXACT_STREAM <- c("25" = 7L, "29" = 7L, "30" = 16L, "31" = 7L, "32" = 7L, "33" = 16L)   # the stream of the arm each varies
 COMPLETE_ONLY <- c("12", "13", "14")
 
 cellTable <- function() {
@@ -187,7 +210,8 @@ cellTable <- function() {
         cell("S7", "stress", tails = TRUE), cell("S8", "stress", unwanted = "batch"), cell("S9", "stress", up = 0.8),
         cell("S10", "stress", abundance = TRUE), cell("S11", "stress", n = 3L, rho = 0.3),
         cell("S12", "stress", n = 3L, unwanted = "three"), cell("S13", "stress", n = 3L, unwanted = "none"),
-        cell("S14", "stress", unwanted = "none", missing = 0.5))
+        cell("S14", "stress", unwanted = "none", missing = 0.5),
+        cell("C8", "core", n = 4L, duplicates = TRUE, unwanted = "none"))
     for (i in seq_along(cells)) cells[[i]]$index <- i - 1L
     stats::setNames(cells, vapply(cells, `[[`, "", "id"))
 }
@@ -196,7 +220,7 @@ armsOfCell <- function(cell) {
     arms <- c(as.character(1:14), "I", "Qs", "Qm", "L")
     if (cell$duplicates) arms <- c(arms, "15", "16")
     if (identical(cell$unwanted, "batch")) arms <- c(arms, "17")
-    if (!is.null(arms_wanted)) arms <- intersect(c(arms, "22", "23"), arms_wanted)
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, "22", "23", "25", "31", "32", if (cell$duplicates) c("29", "30", "33")), arms_wanted)
     arms[order(ARM_NUMBER[arms])]
 }
 
@@ -389,7 +413,7 @@ longTable <- function(results) {
     }))
 }
 # The kernel of the default path: limma, trend and robust, no TREAT.
-daKernel <- function(m, design, formula, contrasts) {
+daKernel <- function(m, design, formula, contrasts, exact = FALSE) {
     if (anyNA(m)) {
         # A feature whose observed injections cannot estimate every coefficient makes the kernel fail for the whole
         # assay ("prior.weights contain NA values"): it is left out and counts as not tested.
@@ -398,6 +422,18 @@ daKernel <- function(m, design, formula, contrasts) {
         pattern <- drop(seen %*% 2^(seq_len(ncol(m)) - 1))
         estimable <- vapply(split(seq_len(nrow(m)), pattern), function(i) qr(x[seen[i[[1L]], ], , drop = FALSE])$rank == ncol(x), logical(1L))
         m <- m[estimable[as.character(pattern)], , drop = FALSE]
+    }
+    if (exact) {
+        # the exactness round: per comparison, the model reparameterised so that the comparison is its first coefficient
+        x <- stats::model.matrix(stats::as.formula(formula), design)
+        return(do.call(rbind, lapply(contrasts, function(contrast) {
+            q <- limma::contrastAsCoef(x, limma::makeContrasts(contrasts = contrast, levels = colnames(x)))$design
+            colnames(q) <- c("comparison", paste0("Q", seq_len(ncol(q))[-1L]))
+            table <- daKernel(m, cbind(design[setdiff(names(design), colnames(q))], q),
+                paste("~ 0 +", paste(colnames(q), collapse = " + ")), "comparison")
+            table$contrast <- contrast
+            table
+        })))
     }
     longTable(quiet(runTestsContrastsLipidDA(data = m, contrast_strings = contrasts, design_matrix = design,
         formula_string = formula, sample_id_col = "Sample_ID", treat_lfc_cutoff = NA, eBayes_trend = TRUE,
@@ -492,11 +528,11 @@ ruvSubtract <- function(y, m, controls, to_correct, k, keep = rownames(y)) {
         potentialControls = controls, progress = FALSE))
     t(out[keep, to_correct, drop = FALSE])
 }
-testWithW <- function(view, assay, w, y = view$assays[[assay]]$y) {
+testWithW <- function(view, assay, w, y = view$assays[[assay]]$y, exact = FALSE) {
     if (isRefusal(w)) return(w)
-    if (is.null(w)) return(daKernel(y, view$design, "~ 0 + group", view$contrasts))
+    if (is.null(w)) return(daKernel(y, view$design, "~ 0 + group", view$contrasts, exact))
     design <- cbind(view$design, as.data.frame(w[view$design$Sample_ID, , drop = FALSE]))
-    daKernel(y, design, paste("~ 0 + group +", paste(colnames(w), collapse = " + ")), view$contrasts)
+    daKernel(y, design, paste("~ 0 + group +", paste(colnames(w), collapse = " + ")), view$contrasts, exact)
 }
 residualDf <- function(view) nrow(view$design) - length(unique(view$design$group))
 completeY <- function(a, extra = NULL, with_qc = FALSE) {
@@ -525,7 +561,8 @@ perAssay <- function(view, fn) {
     out <- lapply(stats::setNames(ASSAYS, ASSAYS), function(assay) fn(view$assays[[assay]], assay))
     list(tables = lapply(out, `[[`, "table"), k = vapply(out, function(x) as.numeric(x$k %||% NA_real_), numeric(1L)))
 }
-modelArm <- function(view, controls_of, k_of, m_of = function(view, a) groupM(view$design), standards = NULL, with_qc = FALSE) {
+modelArm <- function(view, controls_of, k_of, m_of = function(view, a) groupM(view$design), standards = NULL, with_qc = FALSE,
+                     exact = FALSE) {
     perAssay(view, function(a, assay) {
         k <- k_of(a, assay)
         extra <- if (!is.null(standards)) if (with_qc) cbind(a[[standards]], a[[paste0(standards, "_qc")]]) else a[[standards]]
@@ -533,7 +570,7 @@ modelArm <- function(view, controls_of, k_of, m_of = function(view, a) groupM(vi
         ctl <- controls_of(a, assay, colnames(y))
         if (isRefusal(ctl)) return(list(table = ctl, k = 0))
         w <- ruvW(y, m_of(view, a), ctl, k, keep = view$design$Sample_ID, residual_df = residualDf(view))
-        list(table = testWithW(view, assay, w), k = if (isRefusal(w)) 0 else k)
+        list(table = testWithW(view, assay, w, exact = exact), k = if (isRefusal(w)) 0 else k)
     })
 }
 subtractArm <- function(view, k_of, m, standards = NULL, with_qc = FALSE) {
@@ -553,6 +590,20 @@ subtractArm <- function(view, k_of, m, standards = NULL, with_qc = FALSE) {
 allComplete <- function(a, assay, columns) rep(TRUE, length(columns))
 standardsOnly <- function(a, assay, columns) grepl("_ITSD_", columns)
 kE <- function(a, assay) a$E
+# the exactness round: E's variants (runOne), the extracts as replicate sets, and the check of the reparameterisation
+kVariant <- function(name) function(a, assay) a[[name]]
+extractM <- function(view, a) replicateMatrix(stats::setNames(view$design$extract, view$design$Sample_ID))
+hasDuplicates <- function(view) anyDuplicated(view$design$extract) > 0L
+checkExact <- function(view) {
+    if (!identical(Sys.getenv("K124_EXACT_CHECK"), "1")) return(invisible(NULL))
+    for (assay in ASSAYS) {
+        base <- view$base()[[assay]]
+        exact <- daKernel(view$assays[[assay]]$y, view$design, "~ 0 + group", view$contrasts, exact = TRUE)
+        at <- match(paste(base$feature, base$contrast), paste(exact$feature, exact$contrast))
+        gap <- max(abs(exact$est[at] - base$est), abs(exact$p[at] - base$p))
+        if (nrow(exact) != nrow(base) || !is.finite(gap) || gap > 1e-8) stop(sprintf("the reparameterised no-RUV fit is not arm 1's (%s): differs by up to %.3g", assay, gap))
+    }
+}
 
 armFunctions <- list(
     "1" = function(view) list(tables = view$base(), k = c(NA_real_, NA_real_)),
@@ -636,6 +687,15 @@ armFunctions <- list(
             columns %in% controls[[assay]]
         }, kE)
     },
+    "25" = function(view) {
+        checkExact(view)
+        modelArm(view, allComplete, kE, exact = TRUE)
+    },
+    "29" = function(view) modelArm(view, allComplete, kVariant("E_units")),
+    "30" = function(view) modelArm(view, allComplete, kVariant("E_units"), m_of = extractM),
+    "31" = function(view) modelArm(view, allComplete, kVariant("E_200")),
+    "32" = function(view) modelArm(view, allComplete, kVariant(if (hasDuplicates(view)) "E_units_200" else "E_200"), exact = TRUE),
+    "33" = function(view) modelArm(view, allComplete, kVariant("E_units_200"), m_of = extractM, exact = TRUE),
     "I" = function(view) {
         raw <- lapply(view$assays, function(a) 2^rbind(a$y, a$is))
         object <- quiet(logTransformAssays(normaliseUntransformedData(lipidObject(raw, view$design), method = "ITSD",
@@ -703,11 +763,12 @@ loessCorrect <- function(y, qc, pos_s, pos_q) {
 }
 
 # ---- one view (a subset of the features) with its shared, lazily computed pieces ------------------------------------
-makeView <- function(data, estimates) {
+makeView <- function(data, estimates, variants = list()) {
     view <- data
     for (assay in ASSAYS) {
         view$assays[[assay]]$complete <- completeFeatures(view$assays[[assay]])
         view$assays[[assay]]$E <- estimates[[assay]]
+        for (name in names(variants)) view$assays[[assay]][[name]] <- variants[[name]][[assay]]
     }
     cache <- new.env(parent = emptyenv())
     cache$seconds <- c(base = 0, sweep = 0, cancor = 0)
@@ -770,9 +831,20 @@ runOne <- function(cell, run) {
         tryCatch(as.integer(quiet(sva::num.sv(dat, stats::model.matrix(~ factor(data$design$group)), method = "be", B = 20,
             seed = seed * 100L + 99L))), error = function(e) NA_integer_)
     }))[["elapsed"]]
+    # the exactness round: E with 200 permutations and with the extracts (the biological units) removed, E's seed
+    estimateWith <- function(B, units) lapply(data$assays, function(a) {
+        dat <- a$y[completeFeatures(a), , drop = FALSE]
+        if (nrow(dat) < 20L) return(NA_integer_)
+        mod <- stats::model.matrix(~ factor(if (units) data$design$extract else data$design$group))
+        tryCatch(as.integer(quiet(sva::num.sv(dat, mod, method = "be", B = B, seed = seed * 100L + 99L))), error = function(e) NA_integer_)
+    })
+    variants <- list()
+    if (any(c("31", "32") %in% armsOfCell(cell))) variants$E_200 <- estimateWith(200, FALSE)
+    if (any(c("29", "30") %in% armsOfCell(cell))) variants$E_units <- estimateWith(20, TRUE)
+    if (any(c("32", "33") %in% armsOfCell(cell)) && cell$duplicates) variants$E_units_200 <- estimateWith(200, TRUE)
     keep <- lapply(data$assays, completeFeatures)
     same <- all(unlist(keep))
-    views <- list(full = makeView(data, estimates), complete = if (!same) makeView(restrictData(data, keep), estimates))
+    views <- list(full = makeView(data, estimates, variants), complete = if (!same) makeView(restrictData(data, keep), estimates, variants))
     rows <- list()
     notes <- list()
     for (subset in c("full", "complete")) {
@@ -785,7 +857,7 @@ runOne <- function(cell, run) {
                 next
             }
             view <- views[[subset]]
-            set.seed(seed * 100L + ARM_NUMBER[[arm]])
+            set.seed(seed * 100L + if (arm %in% names(EXACT_STREAM)) EXACT_STREAM[[arm]] else ARM_NUMBER[[arm]])
             t0 <- proc.time()[["elapsed"]]
             scored <- tryCatch(scoreArm(armFunctions[[arm]](view), view), error = function(e) list(status = "crashed", reasons = conditionMessage(e)))
             seconds <- proc.time()[["elapsed"]] - t0
@@ -839,7 +911,7 @@ readTsv <- function(path) utils::read.delim(path, stringsAsFactors = FALSE, colC
 
 main <- function() {
     cells <- cellTable()
-    if (!identical(cells_arg, "all")) cells <- cells[strsplit(cells_arg, ",")[[1L]]]
+    cells <- if (identical(cells_arg, "all")) cells[setdiff(names(cells), "C8")] else cells[strsplit(cells_arg, ",")[[1L]]]
     dir.create(file.path(out_dir, "cells"), recursive = TRUE, showWarnings = FALSE)
     started <- Sys.time()
     checks <- checkSharedKernels()
@@ -893,7 +965,7 @@ main <- function() {
         paste("K124_ARMS:", if (is.null(arms_wanted)) "unset (the arms of the header's list but 22 and 23)" else paste(arms_wanted, collapse = ",")),
         paste("runs:", sprintf("core %d, stress %d, numbered from %d", runs_core, runs_stress, first_run)),
         paste("cores:", cores, "(OMP_NUM_THREADS=1)"),
-        "seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99",
+        "seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21 (arms 25 to 33: the stream of the arm each varies); E = seed * 100 + 99; cell index of C8 = 22",
         paste("R:", R.version.string),
         paste("library paths:", paste(.libPaths(), collapse = ":")),
         paste("R_LIBS:", Sys.getenv("R_LIBS")),
