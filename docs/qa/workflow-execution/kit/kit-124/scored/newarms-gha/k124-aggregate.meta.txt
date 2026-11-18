@@ -1,0 +1,360 @@
+KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
+script: /home/doktersmol/Projects/APAF/MultiScholaR/docs/qa/workflow-execution/kit/kit-124/aggregate.R
+script sha256: c5c6275f099166ab59bb479b4557ca598c96004f71494de785883bdbe5f4d200
+commit: be2d4f7162ed99030b6c18821de5f652513217c0
+script differs from commit: FALSE
+command: Rscript /home/doktersmol/Projects/APAF/MultiScholaR/docs/qa/workflow-execution/kit/kit-124/aggregate.R /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/scored/newarms-gha S1=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s1-newarms S2=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms S3=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms S4=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms
+working directory: /home/doktersmol/Projects/APAF/MultiScholaR
+R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
+packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
+library paths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+run at: 2026-11-18 12:27:56 AEDT
+inputs (sha256, bytes, path):
+  4a4864e3787f3d40312ebd33be5ffc019cd62e80a23fb300523067b14bec8c8f 11944479 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s1-newarms/s1-runs.tsv
+  694ae03e54401a3e512ecac9f10a2125155c9164e0147d4afd7f3812923f8eb6 26857 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s1-newarms/s1-runs.meta.txt
+  10a171c48f4f4302b8aa09fd3d607080caca2fdddf748ce4dc374ed70d5c1e61 180454 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C0.rds
+  cb0fd4b7089c45b6d4a09b769eff0de0fd121a8e3a392fe822d8261e19b019ce 178221 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C1.rds
+  b58c97e875d6d7e91ba4dc2911d28904c06bc0a31121c65c4da654c9e6802820 178200 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C2.rds
+  f59a61b72f3d7079c50c5ef8e9124651da912a6ff9c26cc184f02922b7d5171f 133277 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C3.rds
+  455213ae8e83980c95b63468d9a64acd4cf20eabd7a91108c0200c7247f3c9bf 85100 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C4.rds
+  3b20ed2face3fc8b3975449f7b3d9e7491d4bafd8c36bfeb6c0fa4aff2da8058 185750 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C5.rds
+  1fdd75ba48629ed1bb1805976f552ad9a09f7ec0ff9f7f4c93d9ce758fd365ba 187131 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C6.rds
+  f77ac6e73c9be1b8e9383d19f4d514df499876b8fef5cba5bb2022ffeca0db5c 183742 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C7.rds
+  ea532c312a3b519574e8eda42fc8386d5ecd936b007c975ed62aa83c428b158a 10456 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/s2-runs.meta.txt
+  77a31f44c56b15bae5c42bdc3f4bde4b7be6ca9187ba44d9b30faa6f29cfcc2e 212226 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms/cells/s3-C2.rds
+  f7c22a8e288531cc598be3f95b2b8d87ce03ef7bbde9ac4eee0d3e7c51a13911 177120 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms/cells/s3-C3.rds
+  8739dd06a464bfedc5a8cf60cd78c0854cdf041978ef4b165ca2939e16b157df 91750 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms/cells/s3-C4.rds
+  bdf6d82214e9ccbc772a7066f849ee663cf553c68a7a09a10009df65964661e9 7392 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms/s3-runs.meta.txt
+  8b29f12b749c7318f6baa596fc6812e3bc7d3d4e6c7e7874383f7145c4a90a11 808420 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C0.tsv
+  5bb50647101319b017a679c8261b387b9cf888f2f22bdffb789dbd7c5627c535 816775 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C1.tsv
+  9f479b8c618b90535c84b8b3adf288650eb01e6850412e4a322981c1725271d1 792402 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C2.tsv
+  97b496232c9cd3d9ef58ff84a3da45e579475618bb76ef3eeb0c3c0b992e09e8 856157 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C3.tsv
+  6dda77d7c67e8b26b4ad4e5090181a7f362f47dbba72bed26ea7d4ee6e60dd82 630225 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C4.tsv
+  deb1658e45a0c768b79d2c5cc100cc62b5b88ed4509a60753e339598906654da 824589 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C5.tsv
+  da67f6b2c8a43533706f642e5b17a85290cd988ffa0475a55bf85700f41aeed2 839194 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C6.tsv
+  6b7252c8be8f4f8b970a59523670683aa1583d7b3598e2a1466cfedf99aac540 850967 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C7.tsv
+  bddd0200fb955f5b4775490526e55df96d2e4b0d4ee781c0b140ad0a7522713d 29652 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C0.timing.tsv
+  7bbf031bd42b8826dff1bb223c60717a7c9d83bd2c3681ae245d04032f9c3ef2 29634 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C1.timing.tsv
+  b3ebcddf9c5fdcfdfbdb2dabbbf93ff0b88ae68ffe89f5ad6a471ee29f794b7a 29686 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C2.timing.tsv
+  89145a60294fbf48e9f4efde98321e3b9d26ef0c7fd21e99f4b55f3d36178f6e 29647 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C3.timing.tsv
+  0700a11906fa85c281680db051aba914d0e68c4c598ad0e605d3af11c3984b99 29661 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C4.timing.tsv
+  c9b0bb6d6032d212b62fcca034eec1f361dde0d3a211a6ce72f9dc8a63435aaa 29644 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C5.timing.tsv
+  444a990d5618212850b69726c585a48dc5f5e9a6bbded3dfdcc1b27fa8a0e3d5 29614 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C6.timing.tsv
+  6dc40cccc123f2d4252a7f847507c7b041c8cd2a803a2ed2de165cd20d727b82 29630 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C7.timing.tsv
+  789f3a3498931561cbcee2c3ada42c5ccc5c2c58734693232cdd0fa446ead838 8864 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/s4-runs.meta.txt
+simulator S1 meta (/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s1-newarms):
+  == s1_classic.R started 2026-11-17 23:48:11 UTC ==
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a; uncommitted changes in the work tree: FALSE
+  script md5: 84e18e3380e5afa67083653bfc9ed69f
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 1000 0 4 C0
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 1 onward
+  cells: C0; runs per core cell 1000, per stress cell 0
+  == finished 2026-11-18 00:19:28 UTC ==
+  == s1_classic.R started 2026-11-17 23:47:53 UTC ==
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a; uncommitted changes in the work tree: FALSE
+  script md5: 84e18e3380e5afa67083653bfc9ed69f
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 1000 0 4 C1
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 1 onward
+  cells: C1; runs per core cell 1000, per stress cell 0
+  == finished 2026-11-18 00:18:05 UTC ==
+  == s1_classic.R started 2026-11-17 23:47:27 UTC ==
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a; uncommitted changes in the work tree: FALSE
+  script md5: 84e18e3380e5afa67083653bfc9ed69f
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 1000 0 4 C2
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 1 onward
+  cells: C2; runs per core cell 1000, per stress cell 0
+  == finished 2026-11-18 00:16:44 UTC ==
+  == s1_classic.R started 2026-11-17 23:47:49 UTC ==
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a; uncommitted changes in the work tree: FALSE
+  script md5: 84e18e3380e5afa67083653bfc9ed69f
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 1000 0 4 C3
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 1 onward
+  cells: C3; runs per core cell 1000, per stress cell 0
+  == finished 2026-11-18 00:18:03 UTC ==
+  == s1_classic.R started 2026-11-17 23:47:07 UTC ==
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a; uncommitted changes in the work tree: FALSE
+  script md5: 84e18e3380e5afa67083653bfc9ed69f
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 1000 0 4 C4
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 1 onward
+  cells: C4; runs per core cell 1000, per stress cell 0
+  == finished 2026-11-18 00:17:12 UTC ==
+  == s1_classic.R started 2026-11-17 23:47:24 UTC ==
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a; uncommitted changes in the work tree: FALSE
+  script md5: 84e18e3380e5afa67083653bfc9ed69f
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 1000 0 4 C5
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 1 onward
+  cells: C5; runs per core cell 1000, per stress cell 0
+  == finished 2026-11-18 00:17:43 UTC ==
+  == s1_classic.R started 2026-11-17 23:46:00 UTC ==
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a; uncommitted changes in the work tree: FALSE
+  script md5: 84e18e3380e5afa67083653bfc9ed69f
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 1000 0 4 C6
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 1 onward
+  cells: C6; runs per core cell 1000, per stress cell 0
+  == finished 2026-11-18 00:32:54 UTC ==
+  == s1_classic.R started 2026-11-17 23:46:43 UTC ==
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a; uncommitted changes in the work tree: FALSE
+  script md5: 84e18e3380e5afa67083653bfc9ed69f
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 1000 0 4 C7
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 1 onward
+  cells: C7; runs per core cell 1000, per stress cell 0
+  == finished 2026-11-18 00:14:09 UTC ==
+simulator S2 meta (/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms):
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8297702a336da9c88b05f82aae546f79
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 1000 0 4 C0
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 1000 ; runs per stress cell: 0
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  cells completed in this invocation: C0
+  started: 2026-11-17 23:47:26 UTC
+  finished: 2026-11-18 00:02:20 UTC
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8297702a336da9c88b05f82aae546f79
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 1000 0 4 C1
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 1000 ; runs per stress cell: 0
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  cells completed in this invocation: C1
+  started: 2026-11-17 23:47:39 UTC
+  finished: 2026-11-18 00:33:45 UTC
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8297702a336da9c88b05f82aae546f79
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 1000 0 4 C2
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 1000 ; runs per stress cell: 0
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  cells completed in this invocation: C2
+  started: 2026-11-17 23:47:24 UTC
+  finished: 2026-11-18 00:02:30 UTC
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8297702a336da9c88b05f82aae546f79
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 1000 0 4 C3
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 1000 ; runs per stress cell: 0
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  cells completed in this invocation: C3
+  started: 2026-11-17 23:45:37 UTC
+  finished: 2026-11-17 23:53:19 UTC
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8297702a336da9c88b05f82aae546f79
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 1000 0 4 C4
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 1000 ; runs per stress cell: 0
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  cells completed in this invocation: C4
+  started: 2026-11-17 23:47:00 UTC
+  finished: 2026-11-18 00:02:39 UTC
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8297702a336da9c88b05f82aae546f79
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 1000 0 4 C5
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 1000 ; runs per stress cell: 0
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  cells completed in this invocation: C5
+  started: 2026-11-17 23:44:12 UTC
+  finished: 2026-11-17 23:52:08 UTC
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8297702a336da9c88b05f82aae546f79
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 1000 0 4 C6
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 1000 ; runs per stress cell: 0
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  cells completed in this invocation: C6
+  started: 2026-11-17 23:45:51 UTC
+  finished: 2026-11-18 00:41:13 UTC
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8297702a336da9c88b05f82aae546f79
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 1000 0 4 C7
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 1000 ; runs per stress cell: 0
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  cells completed in this invocation: C7
+  started: 2026-11-17 23:49:06 UTC
+  finished: 2026-11-17 23:56:58 UTC
+simulator S3 meta (/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms):
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C0
+  cells run by this command: C0; cells in the tables: C0
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-17 23:47:25; finished 2026-11-18 00:56:37
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C1
+  cells run by this command: C1; cells in the tables: C1
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-17 23:46:21; finished 2026-11-18 00:52:34
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C2
+  cells run by this command: C2; cells in the tables: C2
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-17 23:47:37; finished 2026-11-18 00:54:11
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C3
+  cells run by this command: C3; cells in the tables: C3
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-17 23:46:21; finished 2026-11-18 00:27:44
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C4
+  cells run by this command: C4; cells in the tables: C4
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-17 23:46:29; finished 2026-11-18 00:36:36
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C5
+  cells run by this command: C5; cells in the tables: C5
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-17 23:47:30; finished 2026-11-18 00:53:36
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C6
+  cells run by this command: C6; cells in the tables: C6
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-17 23:47:50; finished 2026-11-18 01:01:39
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C7
+  cells run by this command: C7; cells in the tables: C7
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-17 23:43:49; finished 2026-11-18 00:31:30
+simulator S4 meta (/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms):
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-gha 1000 0 4 C0
+  cells: C0
+  runs: core 1000, stress 0, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-17 23:43:36 finished: 2026-11-17 23:56:09
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-gha 1000 0 4 C1
+  cells: C1
+  runs: core 1000, stress 0, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-17 23:47:05 finished: 2026-11-18 00:04:32
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-gha 1000 0 4 C2
+  cells: C2
+  runs: core 1000, stress 0, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-17 23:48:58 finished: 2026-11-18 00:06:45
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-gha 1000 0 4 C3
+  cells: C3
+  runs: core 1000, stress 0, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-17 23:47:29 finished: 2026-11-18 00:04:38
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-gha 1000 0 4 C4
+  cells: C4
+  runs: core 1000, stress 0, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-17 23:47:01 finished: 2026-11-18 00:04:05
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-gha 1000 0 4 C5
+  cells: C5
+  runs: core 1000, stress 0, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-17 23:46:58 finished: 2026-11-18 00:03:28
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-gha 1000 0 4 C6
+  cells: C6
+  runs: core 1000, stress 0, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-17 23:47:30 finished: 2026-11-18 00:04:25
+  commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-gha 1000 0 4 C7
+  cells: C7
+  runs: core 1000, stress 0, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-17 23:43:28 finished: 2026-11-17 23:57:20
