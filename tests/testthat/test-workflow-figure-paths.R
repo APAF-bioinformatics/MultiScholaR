@@ -281,7 +281,7 @@ test_that("the omics worker draws its figures in a short folder: from a long pro
     names <- basename(drawn$paths)
     expect_gt(length(names), 0L)
     # Drawn in the request folder, every one of these paths would be 260 characters or more.
-    request <- file.path(done$paths$request_dir, "omics-publication", "lipid_qc_dir", names)
+    request <- file.path(done$paths$request_dir, "p", "l", names)
     expect_true(all(nchar(request) >= 260L))
     expect_true(all(nchar(drawn$paths) < 260L))
     expect_true(all(file.exists(request)))
@@ -289,7 +289,9 @@ test_that("the omics worker draws its figures in a short folder: from a long pro
     expect_identical(list.files(tempdir(), pattern = "^wfx-"), scratch_before)
 })
 
-figurePathDaWorker <- function(request_dir, draw, env = parent.frame()) {
+figurePathDaWorker <- function(request_dir, draw, env = parent.frame(), graphs = c("Volcano_Plots/groupB-groupA.png",
+    "Volcano_Plots/groupB-groupA.pdf", "NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"),
+    table = "da_proteins_groupB-groupA_long_annot.tsv") {
     head <- list(entity_id = "head")
     testthat::local_mocked_bindings(
         getWorkflowStateReference = function(manager) head,
@@ -298,13 +300,12 @@ figurePathDaWorker <- function(request_dir, draw, env = parent.frame()) {
         isDIAResultManifest = function(x) TRUE,
         withWorkflowStateScope = function(manager, fn) fn(),
         produceDIADaPublication = function(manager, manifest, annotations, qvalue, staged, save_assets = TRUE) {
-            for (name in c("Volcano_Plots/groupB-groupA.png", "Volcano_Plots/groupB-groupA.pdf",
-                "NumSigDaMolecules/da_proteins_num_sig_da_molecules.png")) {
+            for (name in graphs) {
                 path <- file.path(staged$publication_graphs_dir, name)
                 dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
                 draw(path)
             }
-            writeLines("table", file.path(staged$da_output_dir, "da_proteins_groupB-groupA_long_annot.tsv"))
+            writeLines("table", file.path(staged$da_output_dir, table))
             list(completed = TRUE)
         }, .package = "MultiScholaR", .env = env)
     manager <- new.env()
@@ -328,7 +329,7 @@ test_that("the proteomics worker's DA publication draws in a short folder and co
     expected <- c("da_output_dir/da_proteins_groupB-groupA_long_annot.tsv", "publication_graphs_dir/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png",
         "publication_graphs_dir/Volcano_Plots/groupB-groupA.pdf", "publication_graphs_dir/Volcano_Plots/groupB-groupA.png")
     expect_setequal(value$files, expected)
-    published <- file.path(request_dir, "da-publication", expected[-1L])
+    published <- file.path(request_dir, "p", sub("^publication_graphs_dir/", "g/", expected[-1L]))
     expect_true(all(nchar(published) >= 260L))
     expect_true(all(nchar(drawn) < 260L))
     expect_identical(vapply(published, function(path) rawToChar(readBin(path, "raw", 200L)), character(1), USE.NAMES = FALSE),
@@ -337,7 +338,7 @@ test_that("the proteomics worker's DA publication draws in a short folder and co
 
 test_that("a copy into the worker's request folder that fails stops the step and names the files", {
     request_dir <- withr::local_tempdir()
-    figurePathReadOnly(file.path(request_dir, "da-publication", "publication_graphs_dir", "Volcano_Plots"))
+    figurePathReadOnly(file.path(request_dir, "p", "g", "Volcano_Plots"))
     run <- figurePathDaWorker(request_dir, function(path) writeBin(charToRaw(basename(path)), path))
     error <- expect_error(suppressWarnings(run()), class = "workflow_figure_unwritten")
     expect_s3_class(error, "saved_entity_outputs_pending")
@@ -442,4 +443,117 @@ test_that("the in-process DA publication draws in a short folder: from a long st
     expect_true(file.exists(file.path(paths$da_output_dir, "da_proteins_groupB-groupA_long_annot.tsv")))
     expect_true(manager$.context$snapshot$completed_outputs[[reference$entity_id]]$da)
     expect_identical(da_data$da_results_list, manifest)
+})
+
+# KIT-052, decision of 2026-11-19 (option A): inside the worker's request folder the publication folder and its role folders
+# have one-letter names. The request folder itself, `<root>/scripts/<omic>/.dia-native-<14>/.workflow-entities/
+# .workflow-export/wfx-<32>`, keeps its names: the profiling harness and the GUI-entry oracles read them (protocol v1.11).
+
+# The longest files each omic's worker publishes, by role (the GUI-entry lanes' names; a 15-character contrast).
+figurePathLongestFiles <- function(contrast = "groupKO-groupWT") list(
+    proteomics = list(da_output_dir = sprintf("da_proteins_%s_long_annot.xlsx", contrast),
+        publication_graphs_dir = c(sprintf("Volcano_Plots/%s.png", contrast), sprintf("Interactive_Volcano_Plots/%s.html", contrast),
+            "NumSigDaMolecules/da_proteins_num_sig_da_molecules.xlsx")),
+    lipidomics = list(da_output_dir = sprintf("de_negmode_lipids_%s_long_annot.xlsx", contrast),
+        publication_graphs_dir = c(sprintf("Heatmaps/posmode_%s_heatmap.png", contrast), "NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx"),
+        lipid_qc_dir = "lipidomics_composite_QC_figure.png"),
+    metabolomics = list(da_output_dir = sprintf("de_negmode_metabolites_%s_long_annot.xlsx", contrast),
+        publication_graphs_dir = "NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx",
+        metabolite_qc_dir = "metabolomics_composite_QC_figure.png"),
+    transcriptomics = list(publication_graphs_dir = c(sprintf("NumSigDeMolecules/summary_barplot_%s.png", contrast),
+        sprintf("Volcano_Plots/volcano_plot_%s.png", contrast), "canonical_correlation_optimization_summary.xlsx"),
+        gene_qc_dir = "ruv_normalised_log_values.tsv"))
+
+# The omics worker's compute (`computeWorkflowOmicsAction`) with a handler that stages `files` (role -> relative paths).
+figurePathOmicsWorker <- function(request_dir, files, env = parent.frame()) {
+    testthat::local_mocked_bindings(
+        newWorkflowEntityStore = function(...) list(identity = "owner"),
+        closeWorkflowEntityStore = function(store) invisible(NULL),
+        newWorkflowStateOwner = function(store, reopen = FALSE) {
+            manager <- new.env()
+            manager$.context <- new.env()
+            manager
+        },
+        closeWorkflowStateOwner = function(manager) invisible(NULL),
+        validateWorkflowActionParameters = function(...) invisible(NULL),
+        validateWorkflowActionInput = function(...) invisible(NULL),
+        workflowQualificationVariant = function(...) "whole",
+        workflowActionSpec = function(operation) list(compute = "omics", handler = "computeWorkflowTrxQcFiguresAction"),
+        withWorkflowStateScope = function(manager, fn) fn(),
+        computeWorkflowTrxQcFiguresAction = function(manager, request, variant) {
+            for (role in names(files)) for (name in files[[role]]) {
+                path <- file.path(omicsStagedPublicationDir(request, role), name)
+                dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+                writeLines(name, path)
+            }
+            list(display = list(saved = TRUE))
+        }, .package = "MultiScholaR", .env = env)
+    function() computeWorkflowOmicsAction(list(project_root = "unused", owner = "owner", operation = "trx_qc_figures",
+        parameters = list(), config = list(), input_references = list(), directory = request_dir))
+}
+
+# The longest path after the project root of everything one publication writes: the worker's copies into its request
+# folder (measured), the controller's staging copy and its backup (`a-<16>/previous`), and the published file.
+figurePathLongestPath <- function(omic, request_dir, files) {
+    project <- normalizePath(withr::local_tempdir(), winslash = "/")
+    paths <- suppressMessages(setupDirectories(project, omic))[[omic]]
+    request <- file.path(paths$source_dir, paste0(".dia-native-", strrep("0", 14L)), ".workflow-entities", ".workflow-export",
+        paste0("wfx-", strrep("0", 32L)))
+    staging <- file.path(paths$source_dir, ".workflow-export", workflowStagedRequest(paths$source_dir, "action", strrep("0", 64L))$request_id)
+    members <- unlist(lapply(names(files), function(role) file.path(role, files[[role]])))
+    published <- unlist(lapply(names(files), function(role) file.path(paths[[role]], files[[role]])))
+    max(nchar(c(file.path(request, list.files(request_dir, recursive = TRUE)), file.path(staging, "previous", members), published))) -
+        nchar(project)
+}
+
+test_that("each omic's worker publication leaves a project root of 77 characters within Windows' 259", {
+    longest <- figurePathLongestFiles()
+    safe <- vapply(names(longest), function(omic) {
+        request_dir <- withr::local_tempdir()
+        files <- longest[[omic]]
+        if (omic == "proteomics") {
+            figurePathDaWorker(request_dir, function(path) writeLines(basename(path), path), graphs = files$publication_graphs_dir,
+                table = files$da_output_dir)()
+        } else {
+            figurePathOmicsWorker(request_dir, files)()
+        }
+        expect_setequal(list.files(request_dir), "p")
+        259L - figurePathLongestPath(omic, request_dir, files)
+    }, numeric(1))
+    # Before (the request folder's `da-publication`/`omics-publication` and the roles' own names): 46, 48, 41, 40.
+    expect_identical(safe, c(proteomics = 80, lipidomics = 85, metabolomics = 78, transcriptomics = 77))
+})
+
+test_that("a worker's publication staged under the earlier folder names is published as one staged under the short ones", {
+    files <- figurePathLongestFiles()$lipidomics
+    request_root <- withr::local_tempdir()
+    short <- file.path(request_root, "wfx-short")
+    dir.create(short)
+    local(figurePathOmicsWorker(short, files)())
+    expect_setequal(list.files(file.path(short, "p")), c("d", "g", "l"))
+    # The earlier layout, as a worker before KIT-052's names left it in a project's request folder.
+    earlier <- file.path(request_root, "wfx-earlier")
+    dir.create(file.path(earlier, "omics-publication"), recursive = TRUE)
+    for (role in names(files)) file.copy(file.path(short, "p", workflowRequestPublication(short, "omics-publication")$roles[[role]]),
+        file.path(earlier, "omics-publication"), recursive = TRUE)
+    file.rename(file.path(earlier, "omics-publication", c("d", "g", "l")), file.path(earlier, "omics-publication", names(files)))
+    projects <- c(short = withr::local_tempdir(), earlier = withr::local_tempdir())
+    published <- Map(function(request_dir, project) {
+        manager <- figurePathManager()
+        experiment_paths <- stats::setNames(lapply(c(names(files), "time_dir"), function(role) file.path(project, role)),
+            c(names(files), "time_dir"))
+        for (path in experiment_paths) dir.create(path)
+        saveRDS(list(experiment_paths = experiment_paths), file.path(request_dir, "publication-context.rds"))
+        publishWorkflowOmicsResult(list(manager = manager), list(request_dir = request_dir),
+            list(state_reference = getDIAStateReference(manager), operation = "lipid_da_export"))
+        expect_true(manager$.context$snapshot$completed_outputs[[getDIAStateReference(manager)$entity_id]]$lipid_da_export)
+        relative <- setdiff(list.files(project, recursive = TRUE), "")
+        relative <- relative[!grepl("(^|/)[.]workflow-export/", relative)]
+        stats::setNames(vapply(file.path(project, relative), digest::digest, "", algo = "sha256", file = TRUE), relative)
+    }, c(short = short, earlier = earlier), projects)
+    expect_identical(published$earlier, published$short)
+    expect_setequal(names(published$short), unlist(lapply(names(files), function(role) file.path(role, files[[role]]))))
+    # The earlier folders are read where they are, not renamed.
+    expect_setequal(list.files(file.path(earlier, "omics-publication")), names(files))
+    expect_false(dir.exists(file.path(earlier, "p")))
 })

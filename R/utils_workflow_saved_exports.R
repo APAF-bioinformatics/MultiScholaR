@@ -686,16 +686,51 @@ copyWorkflowFolder <- function(from, to, message, class = NULL) {
 #' @param target The folder the files belong in.
 #' @param produce `function(scratch)` writing into `scratch`.
 #' @param message First line of the condition when a copy fails (the in-process DA publication names its own folder).
+#' @param folders Named folder names: each top-level folder of `scratch` named here arrives in `target` under the given
+#'   name (a role's short folder in a worker's request folder, `workflowRequestPublication`); the others keep theirs.
 #' @return What `produce` returns.
 #' @noRd
 withWorkflowShortFigureFolder <- function(target, produce,
-    message = "the worker's publication files could not be copied into its request folder") {
+    message = "the worker's publication files could not be copied into its request folder", folders = character()) {
     scratch <- tempfile("wfx-")
     dir.create(scratch)
     on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
     value <- produce(scratch)
+    for (role in intersect(names(folders), list.files(scratch, all.files = TRUE, no.. = TRUE))) {
+        if (!file.rename(file.path(scratch, role), file.path(scratch, folders[[role]])))
+            cli::cli_abort("cannot name the publication folder of {role}", class = "saved_entity_write")
+    }
     copyWorkflowFolder(scratch, target, message, class = "saved_entity_outputs_pending")
     value
+}
+
+#' The folder a worker's publication is copied into inside its request folder, and the folder of each role there (KIT-052,
+#' decision of 2026-11-19, option A). The request folder lies deep in the project
+#' (`<root>/scripts/<omic>/.dia-native-<14>/.workflow-entities/.workflow-export/wfx-<32>`, names the profiling harness
+#' reads), and a copy into a path longer than 259 characters fails on Windows with long paths disabled; so the
+#' publication folder and its role folders have one-letter names. A request staged under the earlier names (`earlier`,
+#' each role in its own name) is read there: one left pending in a project from before is published as before.
+#' @param request_dir The request folder.
+#' @param earlier The earlier publication folder: `da-publication` or `omics-publication`.
+#' @return `path`, the publication folder, and `roles`, the role folders by role (none under the earlier name).
+#' @noRd
+workflowRequestPublication <- function(request_dir, earlier) {
+    if (dir.exists(file.path(request_dir, earlier))) return(list(path = file.path(request_dir, earlier), roles = character()))
+    list(path = file.path(request_dir, "p"), roles = c(da_output_dir = "d", publication_graphs_dir = "g",
+        gene_qc_dir = "t", lipid_qc_dir = "l", metabolite_qc_dir = "m"))
+}
+
+#' The folders of roles in a request's publication folder (`workflowRequestPublication`), or with `role = FALSE` the
+#' roles of folders; a role without a short folder keeps its name.
+#' @param x Roles, or folders.
+#' @param roles The `roles` of `workflowRequestPublication`.
+#' @param role TRUE: `x` are roles and their folders are returned; FALSE: the reverse.
+#' @return A character vector as long as `x`.
+#' @noRd
+workflowRequestRoleFolder <- function(x, roles, role = TRUE) {
+    from <- if (role) names(roles) else unname(roles)
+    to <- if (role) unname(roles) else names(roles)
+    ifelse(x %in% from, to[match(x, from)], x)
 }
 
 #' Flush explicit export-owned files and directories.
