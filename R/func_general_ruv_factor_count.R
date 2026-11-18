@@ -563,6 +563,79 @@ ruvGroupAssociationRecordFields <- c("ruv_group_association", "ruv_group_associa
     "ruv_group_association_outcome", "ruv_group_association_source", "ruv_group_association_basis", "ruv_group_association_fdp_0",
     "ruv_group_association_fdp_03", "ruv_group_association_fdp_06", "ruv_group_association_uncorrected_06")
 
+#' The new designs' record fields, one set in every omic (KIT-129 sixth pass item 4, W8, ticket section 1e): the design,
+#' the replicate structure and its column, the k rule, the typed k, the applied k, the estimated number with its seed and
+#' permutations, the control rule, a supplied list's digest, count and found count, the controls used, the first pass's
+#' test, and the DA's standard-error and test methods. A step of today's design records none of them.
+#' @noRd
+RUV_DESIGN_RECORD_FIELDS <- c("ruv_design", "ruv_replicate_structure", "ruv_grouping_variable", "ruv_k_rule", "ruv_k_typed", "ruv_k",
+    "ruv_k_estimate", "ruv_k_seed", "ruv_k_permutations", "ruv_control_rule", "ruv_control_list_sha256", "ruv_control_list_count",
+    "ruv_control_list_found", "ruv_control_count", "ruv_first_pass_rule", "ruv_da_method", "ruv_se_method", "ruv_test_method")
+
+#' One set of `RUV_DESIGN_RECORD_FIELDS`: the values given (a NULL or empty value reads NA), NA for the others; the
+#' standard-error and test methods follow from `ruv_da_method` (`ruvDesignDaMethods`).
+#' @param ... Named values of `RUV_DESIGN_RECORD_FIELDS` (one each).
+#' @return A named list in the order of `RUV_DESIGN_RECORD_FIELDS`.
+#' @noRd
+ruvDesignRecordFields <- function(...) {
+    given <- list(...)
+    stopifnot(all(names(given) %in% RUV_DESIGN_RECORD_FIELDS))
+    out <- stats::setNames(rep(list(NA), length(RUV_DESIGN_RECORD_FIELDS)), RUV_DESIGN_RECORD_FIELDS)
+    for (name in names(given)) {
+        value <- given[[name]]
+        if (length(value) == 1L && !is.list(value)) out[[name]] <- if (is.factor(value)) as.character(value) else value
+    }
+    methods <- ruvDesignDaMethods(out$ruv_da_method)
+    out$ruv_se_method <- methods[["se"]]
+    out$ruv_test_method <- methods[["test"]]
+    out
+}
+
+#' The standard-error and test methods of a new design's DA, by the method its state names (`workflowRuvDaMethodOfArgs`;
+#' transcriptomics `edger_qlf_factors_in_model`, `edger_qlf_none`). Decisions M29 (each comparison's standard error
+#' exact, `limma::contrastAsCoef`) and M30 (classic proteomics: treat() with the trend and robust settings).
+#' @param method The DA method code, or NA.
+#' @return `c(se, test)`, NA for an unknown code.
+#' @noRd
+ruvDesignDaMethods <- function(method) {
+    table <- list(
+        ruv_factors_exact_se_trend_robust = c(se = "exact_per_comparison", test = "limma_treat_trend_robust"),
+        ruv_none_trend_robust = c(se = "contrasts_fit", test = "limma_treat_trend_robust"),
+        dpcde_ruv_factors_exact_se = c(se = "exact_per_comparison", test = "limpa_dpcde"),
+        dpcde_ruv_none = c(se = "contrasts_fit", test = "limpa_dpcde"),
+        limma_ruv_factors_exact_se = c(se = "exact_per_comparison", test = "limma_da_settings"),
+        edger_qlf_factors_in_model = c(se = "edger_contrast", test = "edger_qlf"),
+        edger_qlf_none = c(se = "edger_contrast", test = "edger_qlf"))
+    if (!checkmate::test_string(method) || is.null(table[[method]])) return(c(se = NA_character_, test = NA_character_))
+    table[[method]]
+}
+
+#' The request parameters of a new design that a step's record keeps beside the registry's own names, so that the saved
+#' declaration reproduces the request (KIT-129 sixth pass item 5): the design, the rules, the typed k and seed, and the
+#' supplied list itself (`ruv_control_ids`; the identity of classic proteomics and lipid/metab holds only its digest and
+#' count, so the list is kept in the step's provenance and written to the analysis record). A legacy request names none.
+#' @noRd
+RUV_DESIGN_REQUEST_PARAMETERS <- c("ruv_design", "ruv_k_rule", "ruv_k_seed", "ruv_control_rule", "ruv_control_ids",
+    "ruv_control_list_sha256", "ruv_control_count", "ruv_k")
+
+#' Check a replayed request's supplied list against its recorded digest (KIT-129 sixth pass item 5): the list the record
+#' keeps must hash to the recorded `ruv_control_list_sha256` and count, else the replay is refused.
+#' @param parameters The replayed parameters. @param step The record's step (for the message).
+#' @return `parameters`, invisibly.
+#' @noRd
+assertReplayRuvControlList <- function(parameters, step) {
+    recorded <- parameters[["ruv_control_list_sha256", exact = TRUE]]
+    if (is.null(recorded) || all(is.na(recorded))) return(invisible(parameters))
+    ids <- parameters[["ruv_control_ids", exact = TRUE]]
+    listed <- if (is.character(ids) && length(ids)) trxCanonicalControlIds(ids) else character()
+    if (!length(listed) || !identical(trxControlListSha256(listed), recorded) ||
+        !identical(as.integer(parameters[["ruv_control_count", exact = TRUE]]), length(listed))) {
+        cli::cli_abort("step {.val {step$state}}: the record's supplied control list does not match its recorded digest",
+            class = "workflow_replay_invalid")
+    }
+    invisible(parameters)
+}
+
 #' The identity parameters of a supplied control list (KIT-129 fifth pass item 3): a classic proteomics or lipid/metab
 #' request under the design `supplied_controls` is identified by its list's sha256 (`trxControlListSha256`, section 1e:
 #' the hash of the sorted ids) and the number of ids listed, not by the ids themselves; the list travels beside them as

@@ -643,6 +643,9 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
     } else {
         cat("WORKFLOW ARGS: No RUV optimization results available\n")
     }
+    # KIT-129 sixth pass item 4: a new RUV design's fields in words, once, beside the RUV sections (no line for today's
+    # design: the file is then as before).
+    output_lines <- c(output_lines, workflowRuvDesignStudyLines(analysis_record))
 
     # Add FASTA Processing Information
     if (!is.null(workflow_data) && !is.null(workflow_data$fasta_metadata)) {

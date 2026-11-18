@@ -3292,8 +3292,14 @@ completeWorkflowAction <- function(owner, operation, value, context = NULL, vari
         class = "workflow_execution_busy")
     entry <- workflowActionSpec(operation)
     # KIT-025: the state this completion commits is the registered operation's, under the request's variant.
+    # KIT-129 sixth pass item 5: a new design's request parameters are recorded beside the registry's names (a request
+    # that names no design, today's, records the registry's names only, as before).
+    recorded <- entry$parameters
+    if (!is.null(values[["ruv_design", exact = TRUE]]) || !is.null(values[["ruv_control_rule", exact = TRUE]])) {
+        recorded <- union(recorded, intersect(RUV_DESIGN_REQUEST_PARAMETERS, names(values)))
+    }
     setWorkflowStepProvenance(owner$manager, operation, variant %||% entry$default_variant %||% NA_character_,
-        entry$parameters, entry$declaration$fixed, values = values)
+        recorded, entry$declaration$fixed, values = values)
     if (entry$completion == "fixture")
         return(commitWorkflowReferenceState(owner$manager, value$state_name, value$checkpoint,
             value$config, "guarded fixture computation"))

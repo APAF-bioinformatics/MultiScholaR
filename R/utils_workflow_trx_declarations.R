@@ -696,6 +696,22 @@ trxRouteRecordOutcomes <- function(binding, context, operation, record, outcomes
         outcomes[c("genes_before", "genes_after_filter_by_expr", "genes_after_zero_variance")] <- unname(value$counts)
     } else if (identical(operation, "trx_ruvs")) {
         outcomes[names(value$outcomes)] <- value$outcomes
+        # KIT-129 sixth pass item 4: a declared design's fields, one set in every omic (today's grid records none).
+        o <- value$outcomes
+        if (!is.null(o$ruv_design) && isSavedWorkflowReference(value$grid)) {
+            choice <- tryCatch(hydrateSavedWorkflowEntity(context$store, value$grid)$value, error = function(error) NULL)
+            listed <- if (identical(o$ruv_control_rule, "supplied_list")) length(unique(choice$settings$ruv_control_ids %||% character()))
+            outcomes[RUV_DESIGN_RECORD_FIELDS] <- ruvDesignRecordFields(ruv_design = o$ruv_design,
+                ruv_replicate_structure = o$ruv_replicate_structure,
+                ruv_grouping_variable = if (identical(o$ruv_replicate_structure, "group")) "group",
+                ruv_k_rule = o$ruv_k_rule, ruv_k_typed = if (identical(o$ruv_k_rule, "user")) choice$settings$ruv_k, ruv_k = o$ruv_k,
+                ruv_k_estimate = o$ruv_k_estimate, ruv_k_seed = o$ruv_k_seed, ruv_k_permutations = choice$k_estimate$permutations,
+                ruv_control_rule = o$ruv_control_rule, ruv_control_list_sha256 = o$ruv_control_list_sha256, ruv_control_list_count = listed,
+                ruv_control_list_found = if (length(listed)) listed - length(o$ruv_control_list_unmatched %||% character()),
+                ruv_control_count = o$ruv_control_count,
+                ruv_first_pass_rule = if (identical(o$ruv_design, "first_pass_nulls")) "edger_qlf_f_test_groups",
+                ruv_da_method = if (isTRUE(o$ruv_applied)) "edger_qlf_factors_in_model" else "edger_qlf_none")
+        }
     } else if (identical(operation, "trx_ruviii_export")) {
         outcomes[c("ruviii_m_source", "k", "negative_control_count")] <- list(value$m_source, value$k, value$control_count)
     }
@@ -718,6 +734,13 @@ trxRouteReplay <- local({
             # The grid that ran last before the commit is the one the state used.
             previous <- Filter(function(p) identical(p$operation, "trx_ruv_grid"), step$preceded_by %||% list())
             if (!length(previous)) omicsReplayUnsupported(step)
+            # KIT-129 sixth pass item 5: a declared design's grid replays from its recorded declaration (the supplied
+            # list is a declared parameter of the transcriptomics design, so the record holds it).
+            recorded <- previous[[length(previous)]]$parameters
+            if ("ruv_design" %in% vapply(recorded, function(parameter) parameter$name, character(1))) {
+                design <- workflowReplayParameters(recorded, trxRuvDesignParameterNames)
+                return(runTrxReferenceRuvs(manager, NULL, config, description, state_name = step$state, design_parameters = design))
+            }
             grid <- workflowReplayParameters(previous[[length(previous)]]$parameters, workflowOperationEntry("trx_ruv_grid")$parameters)
             runTrxReferenceRuvs(manager, grid[trxRuvGridParameterNames], config, description, state_name = step$state)
         },

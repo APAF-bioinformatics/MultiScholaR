@@ -145,7 +145,12 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
     refuse <- workflowLegacyDesignRefusal(declaration)
     if (!is.null(refuse)) refuse(parameters)
     # KIT-025: the state the wrapper commits after this operation carries the declaration's provenance.
-    setWorkflowStepProvenance(manager, declaration$name, parameters$variant %||% "whole", declaration$parameters, declaration$fixed,
+    # KIT-129 sixth pass item 5: a supplied list whose identity is its digest is kept beside the declared names.
+    recorded <- declaration$parameters
+    if (all(RUV_SUPPLIED_LIST_PARAMETERS %in% recorded) && !is.null(parameters[["ruv_control_ids", exact = TRUE]])) {
+        recorded <- c(recorded, "ruv_control_ids")
+    }
+    setWorkflowStepProvenance(manager, declaration$name, parameters$variant %||% "whole", recorded, declaration$fixed,
         values = parameters)
     spec <- readComponentMetadata(manager, source)$data
     if (!identical(spec$class, declaration$input_class)) {

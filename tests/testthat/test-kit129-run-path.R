@@ -1372,3 +1372,247 @@ test_that("(fifth pass item 4) lipidomics and metabolomics: the separation rule 
         }
     }
 })
+
+# ---- Sixth pass items 4 to 6: the record's fields, the study parameters, save -> reopen -> replay ------------------------
+
+# A replay project: a copy of the store under `source_dir` cut to `preconditions`, as the omics replay tests make it.
+kit129ReplayProject <- function(source_dir, preconditions, env = parent.frame()) {
+    harness <- new.env(parent = globalenv())
+    sys.source(file.path(testthat::test_path("..", ".."), "tools", "profiling", "workflow_kit.R"), harness)
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    copy <- withr::local_tempdir(.local_envir = env)
+    stopifnot(system2("cp", c("-a", file.path(source_dir, "."), copy)) == 0L)
+    store_root <- dirname(dirname(list.files(source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE, full.names = TRUE)[[1L]]))
+    copy_root <- file.path(copy, substring(store_root, nchar(source_dir) + 2L))
+    list(prepared = harness$kitPrepareReplayProject(copy_root, preconditions, api), origin = store_root, harness = harness, api = api)
+}
+
+# The record's input files, by the basenames the record names, under `source_dir`.
+kit129ReplayInputs <- function(record, source_dir) {
+    files <- list.files(source_dir, recursive = TRUE, full.names = TRUE)
+    inputs <- Filter(function(input) is.character(input$basename) && any(basename(files) == input$basename), record$inputs)
+    stats::setNames(vapply(inputs, function(input) files[basename(files) == input$basename][[1L]], ""),
+        vapply(inputs, function(input) input$role, ""))
+}
+
+# Save the record as JSON, reopen it, replay it on a copy cut to `preconditions`: the states and their fingerprints.
+kit129SaveReopenReplay <- function(owner, source_dir, preconditions, paths = list(), env = parent.frame()) {
+    json <- file.path(withr::local_tempdir(.local_envir = env), "analysis_record.json")
+    writeWorkflowAnalysisRecord(owner, json)
+    record <- jsonlite::read_json(json, simplifyVector = FALSE)
+    project <- kit129ReplayProject(source_dir, preconditions, env = env)
+    replay <- kit129Quiet(project$harness$kitReplayJourney(record, project$prepared, project$origin,
+        kit129ReplayInputs(record, source_dir), paths, withr::local_tempdir(.local_envir = env), project$api))
+    list(record = record, replay = replay, project = project)
+}
+
+# A record's parameter of a step, decoded.
+kit129StepParameter <- function(step, name) {
+    hit <- Filter(function(parameter) identical(parameter$name, name), step$parameters)
+    if (length(hit)) decodeWorkflowRecordValue(hit[[1L]]$value)
+}
+
+# The same record with one recorded parameter of the named operation's step replaced.
+kit129TamperParameter <- function(record, operation, name, value) {
+    for (i in seq_along(record$steps)) {
+        if (!identical(record$steps[[i]]$operation, operation)) next
+        for (j in seq_along(record$steps[[i]]$parameters)) {
+            if (identical(record$steps[[i]]$parameters[[j]]$name, name)) record$steps[[i]]$parameters[[j]]$value <- encodeWorkflowRecordValue(value)
+        }
+    }
+    record
+}
+
+test_that("(sixth pass item 4) the record fields are one set; the methods follow from the DA method", {
+    fields <- ruvDesignRecordFields(ruv_design = "groups_all_features", ruv_k = 2L, ruv_da_method = "ruv_factors_exact_se_trend_robust",
+        ruv_k_typed = NULL, ruv_control_list_count = integer())
+    expect_identical(names(fields), RUV_DESIGN_RECORD_FIELDS)
+    expect_identical(fields[c("ruv_design", "ruv_k", "ruv_se_method", "ruv_test_method", "ruv_k_typed", "ruv_control_list_count")],
+        list(ruv_design = "groups_all_features", ruv_k = 2L, ruv_se_method = "exact_per_comparison", ruv_test_method = "limma_treat_trend_robust",
+            ruv_k_typed = NA, ruv_control_list_count = NA))
+    expect_identical(ruvDesignDaMethods("limma_ruv_factors_exact_se"), c(se = "exact_per_comparison", test = "limma_da_settings"))
+    expect_identical(ruvDesignDaMethods(NA_character_), c(se = NA_character_, test = NA_character_))
+    expect_error(ruvDesignRecordFields(not_a_field = 1))
+    # every code has words
+    texts <- omicGuiRuvRecordTexts()
+    for (method in c("ruv_factors_exact_se_trend_robust", "ruv_none_trend_robust", "dpcde_ruv_factors_exact_se", "dpcde_ruv_none",
+        "limma_ruv_factors_exact_se", "edger_qlf_factors_in_model", "edger_qlf_none")) {
+        codes <- ruvDesignDaMethods(method)
+        expect_true(all(paste0(c("se_", "test_"), codes) %in% names(texts)), info = method)
+    }
+    expect_false(any(grepl("=", texts, fixed = TRUE)))
+})
+
+test_that("(sixth pass items 4 to 6) classic proteomics: the record and the study parameters carry the design; save, reopen and replay give the same states", {
+    skip_if_not_installed("sva")
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    ids <- as.character(object@protein_quant_table[[object@protein_id_column]])
+    listed <- c(ids[seq(1L, length(ids), by = 3L)], "NOT_A_PROTEIN")
+    run_on <- function(parameters) {
+        root <- withr::local_tempdir(.local_envir = parent.frame())
+        manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "kit129-replay", "DIA"), WorkflowState$new(audit_enabled = FALSE))
+        manager$.context$reference_states <- TRUE
+        manager$setWorkflowType("DIA")
+        setDIAStepProvenance(manager, "design_builder")
+        manager$saveState("protein_replicate_filtered", object, list(), "fixture")
+        run <- kit129Quiet(withDIAStateScope(manager, function() {
+            run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
+            commit <- diaNormalizationCommit(manager, parameters, run)
+            commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+            run
+        }))
+        list(manager = manager, root = root, run = run)
+    }
+    declared <- c(kit129ProtParameters(), list(ruv_design = "supplied_controls", ruv_k_rule = "user", ruv_k_seed = 11L,
+        ruv_control_ids = rev(listed)))
+    origin <- run_on(declared)
+    withr::defer(closeDIAStateAdapter(origin$manager))
+    record <- buildWorkflowAnalysisRecord(origin$manager)
+    step <- Filter(function(step) identical(step$operation, "normalization-ruv"), record$steps)[[1L]]
+    value <- origin$run$value
+    expect_identical(step$outcomes[c("ruv_design", "ruv_replicate_structure", "ruv_grouping_variable", "ruv_k_rule", "ruv_control_rule",
+        "ruv_control_list_sha256", "ruv_da_method", "ruv_se_method", "ruv_test_method", "ruv_first_pass_rule")],
+        list(ruv_design = "supplied_controls", ruv_replicate_structure = value$ruv_model$replicate_structure, ruv_grouping_variable = "group",
+            ruv_k_rule = "user", ruv_control_rule = "supplied_list", ruv_control_list_sha256 = trxControlListSha256(listed),
+            ruv_da_method = "ruv_factors_exact_se_trend_robust", ruv_se_method = "exact_per_comparison",
+            ruv_test_method = "limma_treat_trend_robust", ruv_first_pass_rule = NA))
+    expect_equal(unlist(step$outcomes[c("ruv_k_typed", "ruv_k", "ruv_k_seed", "ruv_k_permutations", "ruv_control_list_count",
+        "ruv_control_list_found", "ruv_control_count")]), c(ruv_k_typed = 1, ruv_k = 1, ruv_k_seed = 11, ruv_k_permutations = 200,
+        ruv_control_list_count = length(listed), ruv_control_list_found = length(listed) - 1L, ruv_control_count = value$ruv_model$control_count))
+    expect_identical(step$outcomes$ruv_k_estimate, value$ruv_result$ruv_k_estimate)
+    expect_true(step$outcomes$ruv_group_association_outcome %in% c("detectable", "not_detectable", "no_limit"))
+    # the list itself is kept in the step's record (its identity holds its digest and count only)
+    expect_identical(kit129StepParameter(step, "ruv_control_ids"), rev(listed))
+    expect_identical(kit129StepParameter(step, "ruv_control_list_sha256"), trxControlListSha256(listed))
+    # the study parameters' section, in words, once
+    lines <- workflowRuvDesignStudyLines(record)
+    expect_identical(lines[[1L]], "Unwanted variation (RUV):")
+    expect_identical(sum(lines == "Unwanted variation (RUV):"), 1L)
+    expect_false(any(grepl("=", lines, fixed = TRUE)))
+    texts <- omicGuiRuvRecordTexts()
+    expect_true(any(lines == paste0("* ", texts[["approach"]], ": ", texts[["design_supplied_controls"]])))
+    expect_true(any(lines == paste0("* ", texts[["list"]], ": ", sprintf(texts[["list_value"]], length(listed), length(listed) - 1L,
+        trxControlListSha256(listed)))))
+    expect_true(any(startsWith(lines, paste0("* ", texts[["methods"]], ": Unwanted variation was estimated with RUV-III"))))
+    # the record's workbook has the same rows
+    expect_identical(workflowAnalysisRecordTables(record)$ruv_design, workflowRuvDesignSummary(record)$rows)
+    # save -> reopen -> replay: every state equal, the list from the record
+    saved <- kit129SaveReopenReplay(origin$manager, origin$root, c("initial", "protein_replicate_filtered"))
+    expect_identical(saved$replay$states, unlist(origin$manager$.context$snapshot$state_history))
+    expect_identical(as.character(saved$replay$mismatches), character())
+    # a record whose list does not hash to its recorded digest is refused before any step runs
+    tampered <- kit129TamperParameter(saved$record, "normalization-ruv", "ruv_control_ids", listed[-1L])
+    project <- kit129ReplayProject(origin$root, c("initial", "protein_replicate_filtered"))
+    expect_error(kit129Quiet(replayWorkflowAnalysisRecord(tampered, project$prepared, character(), list(), withr::local_tempdir())),
+        class = "workflow_replay_invalid")
+    # today's design: no field, no section, the record's parameters are today's declaration's, and it replays as before
+    legacy <- run_on(kit129ProtParameters())
+    withr::defer(closeDIAStateAdapter(legacy$manager))
+    legacy_record <- buildWorkflowAnalysisRecord(legacy$manager)
+    legacy_step <- Filter(function(step) identical(step$operation, "normalization-ruv"), legacy_record$steps)[[1L]]
+    expect_false(any(RUV_DESIGN_RECORD_FIELDS %in% names(legacy_step$outcomes)))
+    recorded_names <- vapply(legacy_step$parameters, function(p) p$name, "")
+    expect_true(all(diaNormalizationOperation()$parameters %in% recorded_names))
+    expect_false(any(setdiff(RUV_DESIGN_REQUEST_PARAMETERS, "ruv_k") %in% recorded_names))
+    expect_null(workflowRuvDesignSummary(legacy_record))
+    expect_identical(workflowRuvDesignStudyLines(legacy_record), character())
+    expect_null(workflowAnalysisRecordTables(legacy_record)$ruv_design)
+    replayed <- kit129SaveReopenReplay(legacy$manager, legacy$root, c("initial", "protein_replicate_filtered"))
+    expect_identical(as.character(replayed$replay$mismatches), character())
+})
+
+test_that("(sixth pass items 4 and 5) lipidomics and metabolomics: the record carries the design per assay; save, reopen and replay give the same states", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    for (omic in c("lipidomics", "metabolomics")) {
+        fixture <- kit129OmicsOwner(omic)
+        binding <- omicsDeclarationBindings()[[omic]]
+        # the features of kit129OmicsObject's two assays (the fifth pass's lists)
+        listed <- c(sprintf("neg_f%03d", 21:40), sprintf("pos_f%03d", 11:30), "NOT_A_FEATURE")
+        parameters <- utils::modifyList(kit129OmicsRuvParameters("supplied_controls", ruv_k = 1L, ruv_k_rule = "user"),
+            list(ruv_control_ids = rev(listed)))
+        kit129Quiet(runWorkflowOmicsReferenceRuv(binding, fixture$owner, parameters, list()))
+        record <- buildWorkflowAnalysisRecord(fixture$owner)
+        step <- Filter(function(step) identical(step$operation, paste0(binding$prefix, "_ruv")), record$steps)[[1L]]
+        o <- step$outcomes
+        expect_identical(o[c("ruv_design", "ruv_k_rule", "ruv_control_rule", "ruv_control_list_sha256", "ruv_da_method", "ruv_se_method")],
+            list(ruv_design = "supplied_controls", ruv_k_rule = "user", ruv_control_rule = "supplied_list",
+                ruv_control_list_sha256 = trxControlListSha256(listed), ruv_da_method = "limma_ruv_factors_exact_se",
+                ruv_se_method = "exact_per_comparison"), info = omic)
+        expect_equal(unlist(o[c("ruv_k_typed", "ruv_control_list_count", "ruv_control_list_found")]),
+            c(ruv_k_typed = 1, ruv_control_list_count = length(listed), ruv_control_list_found = length(listed) - 1L), info = omic)
+        expect_setequal(names(o$ruv_k_per_assay), c("pos", "neg"))
+        expect_setequal(names(o$ruv_control_count_per_assay), c("pos", "neg"))
+        expect_identical(kit129StepParameter(step, "ruv_control_ids"), rev(listed), info = omic)
+        lines <- workflowRuvDesignStudyLines(record)
+        expect_identical(lines[[1L]], "Unwanted variation (RUV):", info = omic)
+        expect_false(any(grepl("=", lines, fixed = TRUE)), info = omic)
+        preconditions <- unlist(fixture$owner$.context$snapshot$state_history)[1:2]
+        saved <- kit129SaveReopenReplay(fixture$owner, fixture$source_dir, preconditions, fixture$paths)
+        expect_identical(saved$replay$states, unlist(fixture$owner$.context$snapshot$state_history), info = omic)
+        expect_identical(as.character(saved$replay$mismatches), character(), info = omic)
+    }
+})
+
+test_that("(sixth pass items 4 and 5) transcriptomics: the record carries the design; save, reopen and replay give the same states", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    fixture <- kit129TrxOwner()
+    owner <- fixture$owner
+    genes <- rownames(trxAssayInputs(readTrxWorkflowState(owner, getWorkflowStateReference(owner)))$counts)
+    listed <- c(genes[seq(1L, length(genes), by = 7L)], "NOT_A_GENE")
+    kit129Quiet(runTrxReferenceRuvs(owner, NULL, list(), design_parameters = trxRuvDesignParameters("supplied_controls", 2L, "user",
+        ruv_control_ids = rev(listed))))
+    record <- buildWorkflowAnalysisRecord(owner)
+    step <- Filter(function(step) identical(step$operation, "trx_ruvs"), record$steps)[[1L]]
+    o <- step$outcomes
+    expect_identical(o[c("ruv_design", "ruv_k_rule", "ruv_control_rule", "ruv_control_list_sha256", "ruv_da_method", "ruv_se_method",
+        "ruv_test_method")], list(ruv_design = "supplied_controls", ruv_k_rule = "user", ruv_control_rule = "supplied_list",
+        ruv_control_list_sha256 = trxControlListSha256(listed), ruv_da_method = "edger_qlf_factors_in_model", ruv_se_method = "edger_contrast",
+        ruv_test_method = "edger_qlf"))
+    expect_equal(unlist(o[c("ruv_k_typed", "ruv_k", "ruv_control_list_count", "ruv_control_list_found")]),
+        c(ruv_k_typed = 2, ruv_k = 2, ruv_control_list_count = length(listed), ruv_control_list_found = length(listed) - 1L))
+    lines <- workflowRuvDesignStudyLines(record)
+    expect_true(any(startsWith(lines, paste0("* ", omicGuiRuvRecordTexts()[["methods"]], ": Unwanted variation was estimated with RUVg"))))
+    saved <- kit129SaveReopenReplay(owner, fixture$source_dir, c("initial", "trx_raw_data_s4"), fixture$paths)
+    expect_identical(saved$replay$states, unlist(owner$.context$snapshot$state_history))
+    expect_identical(as.character(saved$replay$mismatches), character())
+})
+
+test_that("(sixth pass items 4 and 5) DIA with limpa: the record carries the declared rules; save, reopen and replay give the same states", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    skip_if_not_installed("sva")
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("fastlimpadpc")
+    sim <- kit129LimpaSimulate(129L, proteins = 120L, per_group = 5L)
+    quantified <- kit129Quiet(kit129LimpaQuantify(sim, "fastlimpadpc"))
+    ids <- as.character(quantified@protein_quant_table[[quantified@protein_id_column]])
+    listed <- ids[seq(2L, length(ids), by = 3L)]
+    root <- withr::local_tempdir()
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "kit129-dia-replay", "DIA"), WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    manager$setWorkflowType("DIA_LIMPA")
+    setDIAStepProvenance(manager, "design_builder")
+    manager$saveState("correlation_filtered", quantified, list(), "fixture")
+    parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "supplied_list", ruv_control_ids = rev(listed),
+        ruv_k_rule = "user", ruv_k = 1L, ruv_k_seed = 5L)
+    run <- kit129Quiet(withDIAStateScope(manager, function() {
+        run <- computeDIAReferenceRuvCovariates(manager, getDIAStateReference(manager), parameters)
+        commit <- diaRuvCovariatesCommit(manager, parameters, run)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        run
+    }))
+    record <- buildWorkflowAnalysisRecord(manager)
+    step <- Filter(function(step) identical(step$operation, "protein_ruv_covariates"), record$steps)[[1L]]
+    o <- step$outcomes
+    expect_identical(o[c("ruv_design", "ruv_k_rule", "ruv_control_rule", "ruv_control_list_sha256", "ruv_da_method", "ruv_test_method")],
+        list(ruv_design = "supplied_controls", ruv_k_rule = "user", ruv_control_rule = "supplied_list",
+            ruv_control_list_sha256 = trxControlListSha256(listed), ruv_da_method = "dpcde_ruv_factors_exact_se", ruv_test_method = "limpa_dpcde"))
+    expect_equal(unlist(o[c("ruv_k_typed", "ruv_k", "ruv_k_seed", "ruv_control_list_count", "ruv_control_list_found", "ruv_control_count")]),
+        c(ruv_k_typed = 1, ruv_k = 1, ruv_k_seed = 5, ruv_control_list_count = length(listed), ruv_control_list_found = length(listed),
+            ruv_control_count = length(listed)))
+    expect_true(isTRUE(o$ruv_applied))
+    expect_identical(kit129StepParameter(step, "ruv_control_ids"), rev(listed))
+    saved <- kit129SaveReopenReplay(manager, root, c("initial", "correlation_filtered"))
+    expect_identical(saved$replay$states, unlist(manager$.context$snapshot$state_history))
+    expect_identical(as.character(saved$replay$mismatches), character())
+})

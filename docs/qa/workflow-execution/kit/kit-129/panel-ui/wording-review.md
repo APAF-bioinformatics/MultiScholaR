@@ -301,3 +301,71 @@ rewritten here.
 default list is filled in: an empty list is refused ("Enter at least one control ... identifier."), and internal standards
 removed by ITSD normalisation are no longer features of the assay, so they cannot be controls (refused as "not a feature of
 this assay"). Nothing changed: the wording, or a default list, is the user's choice.
+
+## Sixth pass (2026-11-19): the new design in the study parameters, the reports and the record's workbook (items 4 and 6). Drafts
+
+Keys of `omicGuiRuvRecordTexts()`. Written once, as the section "Unwanted variation (RUV):" of `study_parameters.txt`
+(one "* field: value" line each, the methods sentence last), as the sheet `ruv_design` of the record's workbook, and the
+methods sentence replaces the RUV paragraph of the six study-parameter report templates (DIANN, DIANN_limpa, LFQ, TMT,
+lipidomics, metabolomics). Nothing is written for a run of today's design (the files and the reports are then as before).
+The transcriptomics report is not changed (see the handoff). No string holds "=" (the reports' parser splits on it).
+`%s` slots are filled from the record; in lipid/metab per assay as "1 (assay pos), 2 (assay neg)".
+
+| # | Key | New text (draft) |
+|---|---|---|
+| 179 | `section` | Unwanted variation (RUV) |
+| 180 | `approach` | Approach |
+| 181 | `design_groups_all_features` | all features as controls, the experimental groups as replicates (recommended) |
+| 182 | `design_technical_replicates` | all features as controls, the declared technical replicates as replicates |
+| 183 | `design_supplied_controls` | a supplied list of control features, the experimental groups as replicates |
+| 184 | `design_first_pass_nulls` | controls chosen from the data: the features outside the 25% most significant of a first test |
+| 185 | `design_none` | no correction for unwanted variation |
+| 186 | `replicates` | Replicates |
+| 187 | `replicates_group` | the experimental groups (column %s) |
+| 188 | `replicates_technical_replicates` | the declared technical replicates (column %s) |
+| 189 | `k_rule` | Rule for the number of factors (k) |
+| 190 | `rule_num_sv_be` | estimated number (sva num.sv, method be) |
+| 191 | `rule_sweep_bounded` | separation rule (canonical correlations of the controls against all features) |
+| 192 | `rule_user` | chosen by the analyst |
+| 193 | `k_typed` | Number of factors typed |
+| 194 | `k` | Number of factors applied |
+| 195 | `k_estimate` | Estimated number of factors |
+| 196 | `k_estimate_value` | %s (random seed %s, %s permutations) |
+| 197 | `controls` | Controls used (measured in every sample) |
+| 198 | `list` | Supplied control list |
+| 199 | `list_value` | %s identifiers, %s found in the data (sha256 %s) |
+| 200 | `first_pass` | First test for the controls |
+| 201 | `first_limma_f_test_groups` | limma F test of the groups |
+| 202 | `first_dpcde_f_test_groups` | limpa dpcDE F test of the groups |
+| 203 | `first_limma_smallest_pairwise_p` | limma, the smallest p-value over the pairwise comparisons of the groups |
+| 204 | `first_edger_qlf_f_test_groups` | edgeR quasi-likelihood F test of the groups |
+| 205 | `se` | Standard errors of the comparisons |
+| 206 | `se_exact_per_comparison` | exact for each comparison (the comparison refitted as a model coefficient, limma contrastAsCoef) |
+| 207 | `se_contrasts_fit` | limma contrasts.fit (exact when no factor is in the model) |
+| 208 | `se_edger_contrast` | edgeR, each comparison tested as a contrast of one fit |
+| 209 | `test` | Test |
+| 210 | `test_limma_treat_trend_robust` | limma treat with the eBayes trend and robust settings |
+| 211 | `test_limpa_dpcde` | limpa dpcDE with limma eBayes |
+| 212 | `test_limma_da_settings` | limma with the differential analysis tab's eBayes settings |
+| 213 | `test_edger_qlf` | edgeR quasi-likelihood F test |
+| 214 | `association` | Association of the factors with the groups |
+| 215 | `association_value` | largest %s; %s |
+| 216 | `outcome_detectable` | detectable (above the detection limit of %s for this approach) |
+| 217 | `outcome_not_detectable` | not detectable (detection limit %s) |
+| 218 | `outcome_no_limit` | no detection limit established for this approach with this rule for the number of factors |
+| 219 | `not_applied` | Not applied |
+| 220 | `assay` | assay %s |
+| 221 | `methods` | Methods text |
+| 222 | `methods_applied` | Unwanted variation was estimated with %s, using %s as replicate sets and %s as negative controls. %s factor(s) were used (%s) and included as covariates in the differential model fitted to the uncorrected values; the corrected matrix was used for figures and export only. Standard errors: %s. Test: %s. |
+| 223 | `methods_applied_ruvg` | Unwanted variation was estimated with %s, using %s as negative controls. %s factor(s) were used (%s) and included as covariates in the differential model fitted to the uncorrected values; the corrected matrix was used for figures and export only. Standard errors: %s. Test: %s. |
+| 224 | `methods_none` | No correction for unwanted variation was applied. |
+| 225 | `methods_not_applied` | %s could not be applied (%s); no correction was made. |
+| 226 | `methods_association` | At least one estimated factor was associated with the experimental groups (largest association %s, above the detection limit of %s for this approach). |
+| 227 | `method_ruviii` | RUV-III (Molania et al., 2019) |
+| 228 | `method_ruvs` | RUVs (Risso et al., 2014) |
+| 229 | `method_ruvg` | RUVg (Risso et al., 2014) |
+| 230 | `sets_group` | the experimental groups |
+| 231 | `sets_technical_replicates` | the declared technical replicates |
+| 232 | `controls_all` | all %s |
+| 233 | `controls_supplied` | a supplied list of %s %s |
+| 234 | `controls_first_pass` | the %s outside the 25%% most significant of a first test |

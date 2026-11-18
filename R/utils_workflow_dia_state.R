@@ -753,7 +753,9 @@ boundDIAProvenanceValues <- function(values, parameter_names) {
         value <- values[[name]]
         # KIT-031: a declared parameter whose value is NULL (the lipid ITSD selection when none is made) is recorded
         # as null rather than dropped (`out[[name]] <- NULL` would remove the entry).
-        out[name] <- list(if (plain(value) && as.numeric(object.size(value)) <= 65536) value else
+        # KIT-129 sixth pass item 5: a supplied control list is kept whole, so that the saved declaration reproduces it.
+        kept <- identical(name, "ruv_control_ids") && is.character(value)
+        out[name] <- list(if (kept || plain(value) && as.numeric(object.size(value)) <= 65536) value else
             list(omitted = class(value)[[1L]], bytes = as.numeric(object.size(value))))
     }
     out

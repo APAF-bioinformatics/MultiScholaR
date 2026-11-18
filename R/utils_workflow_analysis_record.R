@@ -149,6 +149,49 @@ workflowRecordStepOutcomes <- function(context, state, operation, record, sizes)
             # KIT-129 fourth pass item 4: the factor-tied-to-groups check (statistic, threshold, outcome).
             association <- saved$ruv_result$ruv_group_association
             if (!is.null(association)) outcomes[ruvGroupAssociationRecordFields] <- association[ruvGroupAssociationRecordFields]
+            # KIT-129 sixth pass item 4: the new design's fields, one set in every omic.
+            model <- saved$ruv_model
+            result <- saved$ruv_result
+            listed <- result$ruv_control_list_count %||% NA_integer_
+            outcomes[RUV_DESIGN_RECORD_FIELDS] <- ruvDesignRecordFields(ruv_design = saved$parameters$ruv_design,
+                ruv_replicate_structure = model$replicate_structure, ruv_grouping_variable = model$ruv_grouping_variable,
+                ruv_k_rule = result$ruv_k_rule, ruv_k_typed = if (identical(result$ruv_k_rule, "user")) saved$parameters$ruv_k,
+                ruv_k = if (isTRUE(result$ruv_applied)) saved$best_k else 0L, ruv_k_estimate = result$ruv_k_estimate,
+                ruv_k_seed = result$ruv_k_seed, ruv_k_permutations = result$k_estimate$permutations,
+                ruv_control_rule = switch(model$ruv_controls %||% "", all = "all_features", supplied = "supplied_list",
+                    first_pass = "first_pass_drop_top_25", NULL),
+                ruv_control_list_sha256 = saved$parameters$ruv_control_list_sha256, ruv_control_list_count = listed,
+                ruv_control_list_found = listed - length(result$ruv_control_list_unmatched), ruv_control_count = model$control_count,
+                ruv_first_pass_rule = if (identical(saved$parameters$ruv_design, "first_pass_nulls")) "limma_f_test_groups",
+                ruv_da_method = workflowRuvDaMethodOfArgs(record$data$slots$args))
+        }
+    }
+    # KIT-129 sixth pass item 4: DIA with limpa's declared rules, the same fields (today's product names no k rule).
+    if (identical(operation, "protein_ruv_covariates")) {
+        product <- record$data$products$ruv_covariates_science
+        saved <- if (isSavedWorkflowReference(product)) tryCatch(hydrateSavedWorkflowEntity(context$store, product)$value,
+            error = function(error) NULL)
+        result <- saved$ruv_result
+        if (!is.null(saved$ruv_k_rule)) {
+            control_rule <- saved$ruv_control_rule
+            listed <- if (identical(control_rule, "supplied_list")) length(unique(saved$parameters$ruv_control_ids %||% character()))
+            outcomes[RUV_DESIGN_RECORD_FIELDS] <- ruvDesignRecordFields(
+                ruv_design = switch(control_rule %||% "", supplied_list = "supplied_controls", first_pass_drop_top_25 = "first_pass_nulls",
+                    all_features = if (identical(saved$replicate_structure, "technical_replicates")) "technical_replicates" else
+                        "groups_all_features", NULL),
+                ruv_replicate_structure = saved$replicate_structure, ruv_grouping_variable = saved$parameters$ruv_grouping_variable,
+                ruv_k_rule = saved$ruv_k_rule, ruv_k_typed = if (identical(saved$ruv_k_rule, "user")) saved$parameters$ruv_k,
+                ruv_k = saved$best_k, ruv_k_estimate = saved$ruv_k_estimate, ruv_k_seed = result$k_estimate$seed %||% saved$parameters$ruv_k_seed,
+                ruv_k_permutations = result$k_estimate$permutations, ruv_control_rule = control_rule,
+                ruv_control_list_sha256 = if (length(listed)) trxControlListSha256(trxCanonicalControlIds(saved$parameters$ruv_control_ids)),
+                ruv_control_list_count = listed, ruv_control_list_found = if (length(listed)) listed - length(result$controls_unmatched),
+                ruv_control_count = saved$control_count,
+                ruv_first_pass_rule = if (identical(control_rule, "first_pass_drop_top_25")) "dpcde_f_test_groups",
+                ruv_da_method = workflowRuvDaMethodOfArgs(record$data$slots$args))
+            outcomes$ruv_applied <- isTRUE(saved$ruv_applied)
+            outcomes$ruv_not_applied_reason <- saved$ruv_not_applied_reason %||% NA_character_
+            association <- result$ruv_group_association
+            if (!is.null(association)) outcomes[ruvGroupAssociationRecordFields] <- association[ruvGroupAssociationRecordFields]
         }
     }
     # KIT-031/032 (KIT-094: the binding's hook): an omics step's own outcomes, from the binding whose prefix it carries.
@@ -156,6 +199,127 @@ workflowRecordStepOutcomes <- function(context, state, operation, record, sizes)
         if (isTRUE(startsWith(operation, paste0(binding$prefix, "_")))) outcomes <- binding$record_outcomes(binding, context, operation, record, outcomes)
     }
     outcomes
+}
+
+#' The new RUV design of a record's last RUV step in words (KIT-129 sixth pass items 4 and 6): one row per field of
+#' `RUV_DESIGN_RECORD_FIELDS` that the step recorded, the check of the factors against the groups, and the methods
+#' sentence, in the words of `omicGuiRuvRecordTexts()`. Read by the saved study parameters, the reports' methods
+#' paragraph (through them) and the record's workbook.
+#' @param record An analysis record (as built, or read from JSON).
+#' @return NULL for a record whose last RUV step is today's design (or that has none); else `list(rows, methods)`:
+#'   `rows` a data frame (`field`, `value`), `methods` one string.
+#' @noRd
+workflowRuvDesignSummary <- function(record) {
+    operations <- c("normalization-ruv", "protein_ruv_covariates", "trx_ruvs", "lipid_ruv", "metab_ruv")
+    steps <- Filter(function(step) isTRUE(step$operation %in% operations), record$steps)
+    if (!length(steps)) return(NULL)
+    o <- steps[[length(steps)]]$outcomes
+    one <- function(x) {
+        x <- unlist(x)
+        if (!length(x) || all(is.na(x))) NULL else x[[1L]]
+    }
+    design <- one(o$ruv_design)
+    if (!checkmate::test_string(design, min.chars = 1L)) return(NULL)
+    t <- omicGuiRuvRecordTexts()
+    word <- function(prefix, code) {
+        code <- one(code)
+        if (is.null(code)) return(NULL)
+        key <- paste0(prefix, code)
+        if (key %in% names(t)) t[[key]] else as.character(code)
+    }
+    features <- switch(record$omic_type %||% "", proteomics = "proteins", transcriptomics = "genes", lipidomics = "lipids",
+        metabolomics = "metabolites", "features")
+    # per assay in lipid/metab: "1 (assay pos), 2 (assay neg)"
+    per_assay <- function(values) {
+        values <- Filter(function(v) length(v) && !all(is.na(unlist(v))), values %||% list())
+        if (!length(values)) return(NULL)
+        if (length(values) == 1L && is.null(names(values))) return(as.character(unlist(values)))
+        paste(sprintf("%s (%s)", vapply(values, function(v) as.character(unlist(v)[[1L]]), ""), sprintf(t[["assay"]], names(values))),
+            collapse = ", ")
+    }
+    k <- per_assay(o$ruv_k_per_assay) %||% one(o$ruv_k)
+    estimate <- if (!is.null(o$ruv_k_estimate_per_assay)) per_assay(o$ruv_k_estimate_per_assay) else one(o$ruv_k_estimate)
+    permutations <- one(o$ruv_k_permutations) %||% one(o$ruv_k_permutations_per_assay)
+    controls <- per_assay(o$ruv_control_count_per_assay) %||% one(o$ruv_control_count)
+    listed <- one(o$ruv_control_list_count)
+    association <- function(a) {
+        value <- one(a$ruv_group_association)
+        outcome <- one(a$ruv_group_association_outcome)
+        if (is.null(value) || is.null(outcome) || !outcome %in% c("detectable", "not_detectable", "no_limit")) return(NULL)
+        limit <- one(a$ruv_group_association_threshold)
+        words <- if (identical(outcome, "no_limit")) t[["outcome_no_limit"]] else sprintf(t[[paste0("outcome_", outcome)]], sprintf("%.3f", limit))
+        sprintf(t[["association_value"]], sprintf("%.3f", value), words)
+    }
+    assays <- names(o$ruv_group_association_per_assay %||% list())
+    association_text <- if (length(assays)) {
+        parts <- lapply(assays, function(assay) {
+            words <- association(lapply(stats::setNames(paste0(ruvGroupAssociationRecordFields, "_per_assay"), ruvGroupAssociationRecordFields),
+                function(field) o[[field]][[assay]]))
+            if (!is.null(words)) sprintf("%s: %s", sprintf(t[["assay"]], assay), words)
+        })
+        parts <- unlist(parts)
+        if (length(parts)) paste(parts, collapse = "; ")
+    } else association(o)
+    reasons <- unique(stats::na.omit(unlist(c(o$ruv_not_applied_reason_per_assay, o$ruv_not_applied_reason))))
+    none <- identical(design, "none")
+    rows <- list(
+        list(t[["approach"]], word("design_", design)),
+        list(t[["replicates"]], if (!none && !is.null(one(o$ruv_replicate_structure)))
+            sprintf(word("replicates_", o$ruv_replicate_structure), one(o$ruv_grouping_variable) %||% "not recorded")),
+        list(t[["k_rule"]], if (!none) word("rule_", o$ruv_k_rule)),
+        list(t[["k_typed"]], one(o$ruv_k_typed)),
+        list(t[["k"]], if (!none) k),
+        list(t[["k_estimate"]], if (!is.null(estimate)) sprintf(t[["k_estimate_value"]], estimate, one(o$ruv_k_seed) %||% "not recorded",
+            permutations %||% "not recorded")),
+        list(t[["controls"]], controls),
+        list(t[["list"]], if (!is.null(listed)) sprintf(t[["list_value"]], listed, one(o$ruv_control_list_found) %||% "not recorded",
+            one(o$ruv_control_list_sha256) %||% "not recorded")),
+        list(t[["first_pass"]], word("first_", o$ruv_first_pass_rule)),
+        list(t[["se"]], word("se_", o$ruv_se_method)),
+        list(t[["test"]], word("test_", o$ruv_test_method)),
+        list(t[["not_applied"]], if (length(reasons)) paste(reasons, collapse = "; ")),
+        list(t[["association"]], association_text))
+    rows <- Filter(function(row) !is.null(row[[2L]]) && length(row[[2L]]), rows)
+    method <- if (identical(record$omic_type, "transcriptomics")) word("method_", tolower(one(o$ruv_method) %||% "ruvs")) else t[["method_ruviii"]]
+    k_values <- suppressWarnings(as.numeric(unlist(o$ruv_k_per_assay %||% o$ruv_k)))
+    methods <- if (none) {
+        t[["methods_none"]]
+    } else if (!length(k_values) || all(is.na(k_values) | k_values == 0)) {
+        sprintf(t[["methods_not_applied"]], method, if (length(reasons)) paste(reasons, collapse = "; ") else "no factor was estimated")
+    } else {
+        control_words <- switch(one(o$ruv_control_rule) %||% "", supplied_list = sprintf(t[["controls_supplied"]], controls %||% listed, features),
+            first_pass_drop_top_25 = sprintf(t[["controls_first_pass"]], features), sprintf(t[["controls_all"]], features))
+        tail <- list(k, word("rule_", o$ruv_k_rule) %||% "not recorded", word("se_", o$ruv_se_method) %||% "not recorded",
+            word("test_", o$ruv_test_method) %||% "not recorded")
+        sentence <- if (identical(one(o$ruv_method), "RUVg")) do.call(sprintf, c(list(t[["methods_applied_ruvg"]], method, control_words), tail)) else
+            do.call(sprintf, c(list(t[["methods_applied"]], method, word("sets_", o$ruv_replicate_structure) %||% t[["sets_group"]], control_words), tail))
+        detected <- if (length(assays)) {
+            hits <- Filter(function(assay) identical(one(o$ruv_group_association_outcome_per_assay[[assay]]), "detectable"), assays)
+            if (length(hits)) list(value = max(unlist(o$ruv_group_association_per_assay[hits])),
+                limit = one(o$ruv_group_association_threshold_per_assay[[hits[[1L]]]]))
+        } else if (identical(one(o$ruv_group_association_outcome), "detectable")) {
+            list(value = one(o$ruv_group_association), limit = one(o$ruv_group_association_threshold))
+        }
+        paste(c(sentence, if (!is.null(detected)) sprintf(t[["methods_association"]], sprintf("%.3f", detected$value),
+            sprintf("%.3f", detected$limit))), collapse = " ")
+    }
+    rows[[length(rows) + 1L]] <- list(t[["methods"]], methods)
+    no_equals <- function(x) gsub("\\s*=\\s*", " is ", as.character(x))
+    list(rows = data.frame(field = vapply(rows, function(row) row[[1L]], ""), value = vapply(rows, function(row) no_equals(row[[2L]]), ""),
+        stringsAsFactors = FALSE), methods = no_equals(methods))
+}
+
+#' The new RUV design's section of the saved study parameters (KIT-129 sixth pass item 4): "Unwanted variation (RUV):"
+#' with one "* field: value" line per row of `workflowRuvDesignSummary`, the methods sentence last. No line for a
+#' record of today's design (the file is then as before, byte for byte).
+#' @param record An analysis record, or NULL.
+#' @return A character vector.
+#' @noRd
+workflowRuvDesignStudyLines <- function(record) {
+    summary <- if (!is.null(record)) workflowRuvDesignSummary(record)
+    if (is.null(summary)) return(character())
+    heading <- paste0(omicGuiRuvRecordTexts()[["section"]], ":")
+    c(heading, strrep("-", nchar(heading)), sprintf("* %s: %s", summary$rows$field, summary$rows$value), "")
 }
 
 #' Read the shipped `config.ini` as strings, section by key.
@@ -550,7 +714,9 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             tryCatch(workflowOperationEntry(operation), error = function(e) NULL)
         if (is.null(entry)) cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}",
             class = "workflow_replay_unsupported")
-        parameters <- workflowReplayParameters(step$parameters, entry$parameters)
+        # KIT-129 sixth pass item 5: a new design's recorded request parameters replay with it (a legacy record names none).
+        parameters <- workflowReplayParameters(step$parameters, union(entry$parameters, RUV_DESIGN_REQUEST_PARAMETERS))
+        assertReplayRuvControlList(parameters, step)
         variant <- if (is.null(step$variant) || is.na(step$variant)) entry$default_variant else step$variant
         withWorkflowStateScope(manager, function() {
             if (entry$compute %in% c("peptide", "protein")) {
@@ -580,6 +746,13 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                         experiment_label = "dia_baseline_smoke", overwrite = TRUE, return_grid = FALSE,
                         project_dirs = directories, progress_owner = progress)
                 }
+            } else if (identical(operation, "normalization-ruv") && !is.null(parameters$ruv_design)) {
+                # KIT-129 sixth pass item 5: a new design, as the tab runs and commits it (`computeDIAReferenceNormalization`,
+                # `diaNormalizationCommit`): the saved declaration with the recorded list.
+                run <- computeDIAReferenceNormalization(manager, getWorkflowStateReference(manager), parameters)
+                commit <- diaNormalizationCommit(manager, parameters, run)
+                if (!is.null(commit)) commitWorkflowReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+                normalization_final <<- run$value$final
             } else if (identical(operation, "normalization-ruv")) {
                 # As `runDIAReferenceNormalization` commits: the operation's final checkpoint with its product.
                 run <- runSavedOperation(manager, diaNormalizationOperation(), getWorkflowStateReference(manager), parameters)
@@ -609,6 +782,12 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 spec <- readWorkflowStateMetadata(manager, selection$value)$data
                 commitWorkflowReferenceState(manager, "correlation_filtered", spec,
                     list(min_pearson_correlation_threshold = parameters$threshold), "Applied final sample correlation filter (chunk 28)")
+            } else if (identical(operation, "protein_ruv_covariates") && !is.null(parameters$ruv_control_rule)) {
+                # KIT-129 sixth pass item 5: declared rules, as the tab runs and commits them (`computeDIAReferenceRuvCovariates`,
+                # `diaRuvCovariatesCommit`).
+                run <- computeDIAReferenceRuvCovariates(manager, getWorkflowStateReference(manager), parameters)
+                commit <- diaRuvCovariatesCommit(manager, parameters, run)
+                if (!is.null(commit)) commitWorkflowReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
             } else if (identical(operation, "protein_ruv_covariates")) {
                 # KIT-053: as `runDIAReferenceRuvCovariates` commits on the DIA_LIMPA route. KIT-056: the mode is a
                 # declared parameter; records written before it carry none and replay as covariates.
@@ -755,8 +934,12 @@ workflowAnalysisRecordTables <- function(record) {
             name = parameter$name, value = workflowRecordValueText(parameter$value), provenance = parameter$provenance))), recursive = FALSE),
         c("analysis", "operation", "source_state", "name", "value", "provenance"))
     external <- frame(record$external_resources, c("service", "release", "release_kind", "query_date", "query_summary"))
-    list(software = software, packages = packages, inputs = inputs, design = design, steps = steps, parameters = parameters,
+    out <- list(software = software, packages = packages, inputs = inputs, design = design, steps = steps, parameters = parameters,
         analyses = analyses, external_resources = external)
+    # KIT-129 sixth pass item 6: a new RUV design in words, as the study parameters state it (none for today's design).
+    ruv <- workflowRuvDesignSummary(record)
+    if (!is.null(ruv)) out$ruv_design <- ruv$rows
+    out
 }
 
 #' Write the record's workbook (KIT-029): sheets `software`, `inputs`, `design`, `parameters`, `external_resources`
@@ -764,8 +947,8 @@ workflowAnalysisRecordTables <- function(record) {
 #' @noRd
 writeWorkflowAnalysisRecordWorkbook <- function(record, path) {
     tables <- workflowAnalysisRecordTables(record)
-    openxlsx::write.xlsx(tables[c("software", "inputs", "design", "parameters", "external_resources", "steps", "analyses", "packages")],
-        path, overwrite = TRUE)
+    openxlsx::write.xlsx(tables[intersect(c("software", "inputs", "design", "parameters", "external_resources", "steps", "analyses",
+        "packages", "ruv_design"), names(tables))], path, overwrite = TRUE)
     invisible(path)
 }
 

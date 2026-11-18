@@ -1032,6 +1032,21 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
             for (field in ruvGroupAssociationRecordFields) {
                 outcomes[[paste0(field, "_per_assay")]] <- lapply(saved$factors, function(record) record$ruv_group_association[[field]])
             }
+            # KIT-129 sixth pass item 4: the new design's fields, one set in every omic; what differs by assay (k, the
+            # estimate's permutations, the controls used, the list's found count) per assay.
+            listed <- saved$ruv_control_list_count
+            outcomes[RUV_DESIGN_RECORD_FIELDS] <- ruvDesignRecordFields(ruv_design = saved$ruv_design,
+                ruv_replicate_structure = saved$ruv_replicate_structure, ruv_grouping_variable = saved$ruv_grouping_variable,
+                ruv_k_rule = saved$ruv_k_rule, ruv_k_typed = if (identical(saved$ruv_k_rule, "user")) saved$parameters$ruv_k,
+                ruv_k_seed = saved$ruv_k_seed, ruv_control_rule = saved$ruv_control_rule %||% switch(saved$ruv_design %||% "",
+                    groups_all_features = , technical_replicates = "all_features", first_pass_nulls = "first_pass_drop_top_25", NULL),
+                ruv_control_list_sha256 = saved$ruv_control_list_sha256, ruv_control_list_count = listed,
+                ruv_control_list_found = if (length(listed)) listed - length(saved$ruv_control_list_unmatched),
+                ruv_first_pass_rule = if (identical(saved$ruv_design, "first_pass_nulls")) "limma_smallest_pairwise_p",
+                ruv_da_method = workflowRuvDaMethodOfArgs(record$data$slots$args))
+            outcomes$ruv_k_per_assay <- as.list(saved$best_k)
+            outcomes$ruv_control_count_per_assay <- as.list(saved$control_count)
+            outcomes$ruv_k_permutations_per_assay <- lapply(saved$k_estimate, function(estimate) estimate$permutations %||% NA_integer_)
         }
     }
     if (identical(operation, paste0(binding$prefix, "_itsd_normalisation"))) outcomes$itsd_applied <- TRUE

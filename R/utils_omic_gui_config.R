@@ -1550,6 +1550,87 @@ omicGuiRuvTexts <- function(features) {
         association_column = "Unwanted factors and your groups")
 }
 
+#' The new design's fields in words, for the saved study parameters, the report's methods paragraph and the record's
+#' workbook (KIT-129 sixth pass items 4 and 6; drafts, the user sets the final wording; listed in
+#' docs/qa/workflow-execution/kit/kit-129/panel-ui/wording-review.md). No value holds "=", which the reports' parser of
+#' `study_parameters.txt` reads as a separator.
+#' @return A named character vector.
+#' @noRd
+omicGuiRuvRecordTexts <- function() {
+    c(section = "Unwanted variation (RUV)",
+        approach = "Approach",
+        design_groups_all_features = "all features as controls, the experimental groups as replicates (recommended)",
+        design_technical_replicates = "all features as controls, the declared technical replicates as replicates",
+        design_supplied_controls = "a supplied list of control features, the experimental groups as replicates",
+        design_first_pass_nulls = "controls chosen from the data: the features outside the 25% most significant of a first test",
+        design_none = "no correction for unwanted variation",
+        replicates = "Replicates",
+        # %s: the design's column
+        replicates_group = "the experimental groups (column %s)",
+        replicates_technical_replicates = "the declared technical replicates (column %s)",
+        k_rule = "Rule for the number of factors (k)",
+        rule_num_sv_be = "estimated number (sva num.sv, method be)",
+        rule_sweep_bounded = "separation rule (canonical correlations of the controls against all features)",
+        rule_user = "chosen by the analyst",
+        k_typed = "Number of factors typed",
+        k = "Number of factors applied",
+        k_estimate = "Estimated number of factors",
+        # %s: the estimated number, its random seed and its permutations
+        k_estimate_value = "%s (random seed %s, %s permutations)",
+        controls = "Controls used (measured in every sample)",
+        list = "Supplied control list",
+        # %s: identifiers listed, found in the data, the list's sha256
+        list_value = "%s identifiers, %s found in the data (sha256 %s)",
+        first_pass = "First test for the controls",
+        first_limma_f_test_groups = "limma F test of the groups",
+        first_dpcde_f_test_groups = "limpa dpcDE F test of the groups",
+        first_limma_smallest_pairwise_p = "limma, the smallest p-value over the pairwise comparisons of the groups",
+        first_edger_qlf_f_test_groups = "edgeR quasi-likelihood F test of the groups",
+        se = "Standard errors of the comparisons",
+        se_exact_per_comparison = "exact for each comparison (the comparison refitted as a model coefficient, limma contrastAsCoef)",
+        se_contrasts_fit = "limma contrasts.fit (exact when no factor is in the model)",
+        se_edger_contrast = "edgeR, each comparison tested as a contrast of one fit",
+        test = "Test",
+        test_limma_treat_trend_robust = "limma treat with the eBayes trend and robust settings",
+        test_limpa_dpcde = "limpa dpcDE with limma eBayes",
+        test_limma_da_settings = "limma with the differential analysis tab's eBayes settings",
+        test_edger_qlf = "edgeR quasi-likelihood F test",
+        association = "Association of the factors with the groups",
+        # %s: the largest association, then the outcome's words
+        association_value = "largest %s; %s",
+        outcome_detectable = "detectable (above the detection limit of %s for this approach)",
+        outcome_not_detectable = "not detectable (detection limit %s)",
+        outcome_no_limit = "no detection limit established for this approach with this rule for the number of factors",
+        not_applied = "Not applied",
+        # %s: the assay's name
+        assay = "assay %s",
+        methods = "Methods text",
+        # %s: the method, the replicate sets, the controls, k, the k rule, the standard errors, the test
+        methods_applied = paste("Unwanted variation was estimated with %s, using %s as replicate sets and %s as negative",
+            "controls. %s factor(s) were used (%s) and included as covariates in the differential model fitted to the",
+            "uncorrected values; the corrected matrix was used for figures and export only. Standard errors: %s. Test: %s."),
+        # RUVg uses no replicate sets. %s: the method, the controls, k, the k rule, the standard errors, the test
+        methods_applied_ruvg = paste("Unwanted variation was estimated with %s, using %s as negative controls. %s factor(s)",
+            "were used (%s) and included as covariates in the differential model fitted to the uncorrected values; the",
+            "corrected matrix was used for figures and export only. Standard errors: %s. Test: %s."),
+        methods_none = "No correction for unwanted variation was applied.",
+        # %s: the method, the reason
+        methods_not_applied = "%s could not be applied (%s); no correction was made.",
+        # %s: the largest association, the detection limit
+        methods_association = paste("At least one estimated factor was associated with the experimental groups (largest",
+            "association %s, above the detection limit of %s for this approach)."),
+        method_ruviii = "RUV-III (Molania et al., 2019)",
+        method_ruvs = "RUVs (Risso et al., 2014)",
+        method_ruvg = "RUVg (Risso et al., 2014)",
+        sets_group = "the experimental groups",
+        sets_technical_replicates = "the declared technical replicates",
+        # %s: the features in words (proteins, genes, lipids, metabolites)
+        controls_all = "all %s",
+        # %s: the number of listed controls found, the features
+        controls_supplied = "a supplied list of %s %s",
+        controls_first_pass = "the %s outside the 25%% most significant of a first test")
+}
+
 #' The scenarios of KIT-124's simulations in words, for `fdp_where`: the condition only (the column heading says
 #' it is the worst scenario tested; a figure measured in one scenario carries `single_scenario`).
 #' @return A named character vector by scenario.
