@@ -704,6 +704,25 @@ withWorkflowShortFigureFolder <- function(target, produce,
     value
 }
 
+#' Run an in-process action publication's `produce` (`publishWorkflowActionOutputs`) with its staged folders in a short
+#' folder under `tempdir()` and copy them into the staging folder (KIT-052, KIT-134 run 44275615462): drawn in the staging
+#' folder, ggsave's PNG device on Windows wrote nothing, and said nothing, from 260 characters; a copy that fails is named.
+#' @param staged The staged folders by role, all in one folder.
+#' @param produce `function(staged)` writing only into the folders it is given.
+#' @param message First line of the condition when a copy fails.
+#' @return What `produce` returns.
+#' @noRd
+withWorkflowShortStaging <- function(staged, produce, message) {
+    withWorkflowShortFigureFolder(dirname(staged[[1L]]), function(scratch) {
+        short <- lapply(staged, function(path) {
+            path <- file.path(scratch, basename(path))
+            dir.create(path)
+            path
+        })
+        produce(short)
+    }, message)
+}
+
 #' The folder a worker's publication is copied into inside its request folder, and the folder of each role there (KIT-052,
 #' decision of 2026-11-19, option A). The request folder lies deep in the project
 #' (`<root>/scripts/<omic>/.dia-native-<14>/.workflow-entities/.workflow-export/wfx-<32>`, names the profiling harness

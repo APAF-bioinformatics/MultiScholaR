@@ -557,3 +557,89 @@ test_that("a worker's publication staged under the earlier folder names is publi
     expect_setequal(list.files(file.path(earlier, "omics-publication")), names(files))
     expect_false(dir.exists(file.path(earlier, "p")))
 })
+
+# KIT-052 item 3: the in-process proteomics publications that drew in the action staging folder and did not check every
+# figure (normalisation, RUV covariates, protein QC's limpa figures) draw in a short folder and copy in, as the DA does.
+
+# A project whose action staging folder (`<source_dir>/.workflow-export/a-<16>/f/<role>/`) makes a figure's path 260+.
+figurePathLongProject <- function(env = parent.frame()) {
+    root <- normalizePath(withr::local_tempdir(.local_envir = env), winslash = "/")
+    project <- file.path(root, strrep("p", 190L - nchar(root)))
+    paths <- list(source_dir = project, protein_qc_dir = file.path(project, "qc"), time_dir = file.path(project, "t"),
+        publication_graphs_dir = file.path(project, "g"))
+    for (path in paths) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    paths
+}
+
+# As ggsave's PNG device (ragg) on Windows: nothing written, nothing said, from 260 characters.
+figurePathRagg <- function(path) if (nchar(path) < 260L) writeBin(charToRaw(basename(path)), path)
+
+figurePathPublishedFigure <- function(path) if (file.exists(path)) rawToChar(readBin(path, "raw", 200L)) else NA_character_
+
+test_that("the normalisation publication draws in a short folder: from a long staging path no figure is lost", {
+    manager <- figurePathManager()
+    paths <- figurePathLongProject()
+    manager$.context$experiment_paths <- paths
+    testthat::local_mocked_bindings(
+        saveDIADisplayTable = function(manager, table) "table",
+        readDIAStateMetadata = function(manager, reference = NULL) list(data = list(components = list(), metadata = list(proteins = 1L))),
+        writeDIADesignTable = function(manager, table, path, writer) writeLines("table", path),
+        writeDIACompositeFigureFiles = function(...) FALSE,
+        generateProtNormCompositeQcFigure = function(ruv_mode, qc_dir, omic_type) figurePathRagg(file.path(qc_dir,
+            paste0(omic_type, "_composite_QC_figure.png"))),
+        finalizeProtNormWorkflowState = function(norm_data) invisible(NULL),
+        .package = "MultiScholaR")
+    norm_data <- new.env()
+    workflow <- new.env()
+    post_qc <- function(object) figurePathRagg(file.path(norm_data$publication_paths$protein_qc_dir, "post_norm_pca.png"))
+    run <- list(value = list(normalized = "normalized", final = "final", best_k = 0L, controls = NULL, percentage = 0,
+        ruv_result = list(optimization_results = data.frame())), reference = list(entity_id = "product"))
+    expect_gte(nchar(file.path(paths$source_dir, ".workflow-export", strrep("a", 18L), "f", "protein_qc_dir",
+        "post_norm_pca.png")), 260L)
+    expect_true(publishDIAReferenceNormalization(manager, list(ruv_mode = "skip", norm_method = "median"), run, workflow,
+        norm_data, paths, "proteomics", "fixture", post_qc, function(object) NULL))
+    expect_identical(figurePathPublishedFigure(file.path(paths$protein_qc_dir, "post_norm_pca.png")), "post_norm_pca.png")
+    expect_identical(figurePathPublishedFigure(file.path(paths$protein_qc_dir, "proteomics_composite_QC_figure.png")),
+        "proteomics_composite_QC_figure.png")
+    expect_true(manager$.context$snapshot$completed_outputs[[getDIAStateReference(manager)$entity_id]]$normalization)
+})
+
+test_that("the RUV covariates publication draws in a short folder: from a long staging path no figure is lost", {
+    manager <- figurePathManager()
+    paths <- figurePathLongProject()
+    manager$.context$experiment_paths <- paths
+    testthat::local_mocked_bindings(
+        saveDIADisplayTable = function(manager, table) "table",
+        readDIAStateMetadata = function(manager, reference = NULL) list(data = list(components = list())),
+        writeDIADesignTable = function(manager, table, path, writer) writeLines("table", path),
+        .package = "MultiScholaR")
+    testthat::local_mocked_bindings(ggsave = function(filename, ...) figurePathRagg(filename), .package = "ggplot2")
+    norm_data <- new.env()
+    ruv_qc <- function(object) figurePathRagg(file.path(norm_data$publication_paths$protein_qc_dir, "ruv_corrected_pca.png"))
+    run <- list(value = list(covariates = "covariates", adjusted = "adjusted", best_k = 1L, controls = NULL,
+        ruv_result = list(optimization_results = data.frame(k = 1L), best_cancor_plot = "plot")),
+        reference = list(entity_id = "product"))
+    publishDIAReferenceRuvCovariates(manager, list(), run, new.env(), norm_data, paths, ruv_qc)
+    for (name in c("ruv_covariates_cancor.png", "ruv_corrected_pca.png")) {
+        expect_identical(figurePathPublishedFigure(file.path(paths$protein_qc_dir, name)), name)
+    }
+    expect_true(manager$.context$snapshot$completed_outputs[[getDIAStateReference(manager)$entity_id]][["ruv-covariates"]])
+})
+
+test_that("the protein QC publication draws the limpa figures in a short folder: from a long staging path none is lost", {
+    manager <- figurePathManager()
+    paths <- figurePathLongProject()
+    manager$.context$experiment_paths <- paths
+    manager$saveState("protein_dpc_quant", makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small")), list(), "fixture")
+    expect_identical(manager$current_state, "protein_dpc_quant")
+    names <- c("limpa_dpc_curve.png", "limpa_missing_comparison.png", "limpa_composite.png")
+    testthat::local_mocked_bindings(
+        readDIAStateMetadata = function(manager, reference = NULL) list(data = list()),
+        readDIAExecutionComponents = function(manager, reference) "object",
+        generateLimpaQCPlots = function(object, save_plots, save_dir, plot_prefix, verbose) {
+            for (name in names) figurePathRagg(file.path(save_dir, name))
+            invisible(NULL)
+        }, .package = "MultiScholaR")
+    publishDIAProteinTables(manager, list(stateReference = getDIAStateReference(manager)))
+    expect_identical(vapply(file.path(paths$protein_qc_dir, names), figurePathPublishedFigure, "", USE.NAMES = FALSE), names)
+})
