@@ -1424,6 +1424,36 @@ protRuvModelDesign <- function(factors) {
   "groups_all_features"
 }
 
+#' The replicate-set column the classic run path hands `computeProtRuvModelFactors` for a declared design (KIT-129
+#' third pass item 3), as simulator S1's arms define it: `groups_all_features` the grouping (arm 7); `technical_replicates`
+#' the declared technical-replicate column, the biological units (arm 16), refused when the design declares no technical
+#' replicates or when that column does not name each unit alone; `first_pass_nulls` what the design resolves (arm 23:
+#' the units when the design declares technical replicates, the grouping otherwise).
+#' @param theObject The normalised `ProteinQuantitativeData` object.
+#' @param ruv_design The declared design.
+#' @param grouping The step's grouping column.
+#' @return One design column name; an error of class `workflow_execution_invalid` otherwise.
+#' @noRd
+protRuvModelReplicateSets <- function(theObject, ruv_design, grouping) {
+  invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
+  designs <- c("groups_all_features", "technical_replicates", "first_pass_nulls")
+  if (!checkmate::test_choice(ruv_design, designs)) {
+    invalid(sprintf("ruv_design must be one of %s on the classic route's new design", paste(designs, collapse = ", ")))
+  }
+  if (identical(ruv_design, "groups_all_features")) return(grouping)
+  design_matrix <- theObject@design_matrix
+  technical <- resolveProtTechnicalReplicateBlock(design_matrix, theObject@group_id, theObject@technical_replicate_id)
+  if (!isTRUE(technical$technical)) {
+    if (identical(ruv_design, "first_pass_nulls")) return(grouping)
+    invalid(sprintf("the design technical_replicates needs declared technical replicates; this design has none (%s)", technical$reason))
+  }
+  if (!ruvReplicateSetsAreUnits(design_matrix[[theObject@technical_replicate_id]], technical$block)) {
+    invalid(sprintf(paste("the technical-replicate column `%s` does not name each biological unit alone (the same value",
+      "in more than one group); give each unit its own value"), theObject@technical_replicate_id))
+  }
+  theObject@technical_replicate_id
+}
+
 #' The RUV state of the factors-in-the-model design (KIT-126): the corrected object (its protein table stays the
 #' corrected matrix, for figures, export and integration) gains the factors as design columns `W1..Wk`, the
 #' declaration `args$ruvCovariates` (`ruv_mode = "covariates"`, k and its source, the controls, the replicate

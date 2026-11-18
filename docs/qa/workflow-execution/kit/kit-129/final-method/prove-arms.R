@@ -25,7 +25,9 @@
 #   runpath KIT-129 integration item 5: the run path (the compute halves the tab and the managed worker call, in a
 #         reference store) against arm 32: classic proteomics `computeDIAReferenceNormalization` with the new design
 #         (the estimated count) then `computeDIAReferenceDaContrast` (S1); DIA with limpa `computeDIAReferenceRuvCovariates`
-#         with all proteins as controls (its own count) then `computeDIAReferenceDaContrast` on the limpa route (S2)
+#         with all proteins as controls (its own count) then `computeDIAReferenceDaContrast` on the limpa route (S2);
+#         third pass item 3: classic S1 under the design technical_replicates against arm 33 (C6; the run path's own
+#         count) and first_pass_nulls against arm 23 (C0 and C6; the user's k = arm 23's E, 1 where E is 0)
 #   techrep KIT-129 integration (second pass) item 1: the technical-replicate design at the kernels (the biological
 #         units as RUV-III's replicate sets: `ruv_grouping_variable` = the unit column), run 1 of C6 and C8, S1 and S4:
 #         the kernel's own count against arm 29's model with M30's 200 permutations (= arm 33's E); its W against arm
@@ -212,19 +214,80 @@ for (cell in cells) {
         add(sprintf("S1/%s/arm32/k", cell), E32, k32, "arm 32's E against the package's count")
         if (k32 > 0L) add_tables(sprintf("S1/%s/arm32/classic", cell), arm_table(E32, TRUE, TRUE), entry(k32))
     }
+    if (stage %in% c("firstpass", "runpath")) {
+        # `first_pass` and `wide_controls` (lines 514-534)
+        first <- limma::topTable(limma::eBayes(suppressWarnings(limma::lmFit(x, stats::model.matrix(~ group, design)))),
+            coef = seq(2L, nlevels(sim$group)), number = Inf, sort.by = "none")$P.Value
+        wide <- rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))
+        wide[is.na(wide)] <- FALSE
+        wide <- stats::setNames(wide, rownames(x))
+        # in_model(wide_controls(), k, "tech_rep_group") (lines 629, 630, 538-553), tested as the final method tests
+        arm_wide <- function(arm, k) {
+            W <- silently(computeRuvCovariates(s1$make_object(xc, design, "tech_rep_group"), k = k,
+                controls = unname(wide[sim$complete]), ruv_grouping_variable = "group"))$W
+            set.seed(seed * 100L + arm)
+            tab <- silently(s1$da_variant(x, design, W, exact = TRUE, applied = TRUE))
+            keyed(tab$id, "contrast", tab$estimate, tab$p, tab$q)
+        }
+    }
     if (stage == "runpath") {
+        # the classic normalisation's declared parameters (the tab's request with the gate on), one design and k rule
+        runpath_parameters <- function(ruv_design, ruv_k_rule, ruv_k = NULL) {
+            list(norm_method = "none", ruv_mode = if (identical(ruv_k_rule, "user")) "manual" else "automatic", auto_percentage_min = 5,
+                auto_percentage_max = 30, separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE,
+                ruv_percentage = 50, ruv_k = ruv_k, grouping = "group", ruv_design = ruv_design, ruv_k_rule = ruv_k_rule,
+                ruv_k_seed = seed * 100L)
+        }
+        # the run path in a store of its own: the compute half of the normalisation, then the contrast's; a refusal is noted
+        runpath_run <- function(name, parameters) {
+            manager <- runpath_store(normalised)
+            on.exit(closeDIAStateAdapter(manager), add = TRUE)
+            tryCatch(silently(withDIAStateScope(manager, function() {
+                run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
+                c(list(k = run$value$best_k, ruv_model = run$value$ruv_model),
+                    runpath_da(manager, run$value$final, s1_contrast, "iq", "Protein.Group"))
+            })), error = function(e) {
+                notes[[paste0(name, "/W_package_vs_simulator")]] <<- sprintf("the run path refused (%s): %s", class(e)[[1L]], conditionMessage(e))
+                NULL
+            })
+        }
         E32 <- count(200L, p$duplicates)
-        manager <- runpath_store(normalised)
-        parameters <- list(norm_method = "none", ruv_mode = "automatic", auto_percentage_min = 5, auto_percentage_max = 30,
-            separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, ruv_percentage = 50,
-            ruv_k = NULL, grouping = "group", ruv_design = "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = seed * 100L)
-        package <- silently(withDIAStateScope(manager, function() {
-            run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
-            c(list(k = run$value$best_k), runpath_da(manager, run$value$final, s1_contrast, "iq", "Protein.Group"))
-        }))
-        closeDIAStateAdapter(manager)
-        add(sprintf("S1/%s/arm32/runpath_k", cell), E32, as.integer(package$k), "arm 32's E against the run path's own count")
-        if (E32 > 0L) add_tables(sprintf("S1/%s/arm32/runpath", cell), arm_table(E32, TRUE, TRUE), package$table)
+        name <- sprintf("S1/%s/arm32/runpath", cell)
+        package <- runpath_run(name, runpath_parameters("groups_all_features", "num_sv_be"))
+        if (!is.null(package)) {
+            add(sprintf("S1/%s/arm32/runpath_k", cell), E32, as.integer(package$k), "arm 32's E against the run path's own count")
+            if (E32 > 0L) add_tables(name, arm_table(E32, TRUE, TRUE), package$table)
+        }
+        # KIT-129 third pass item 3: the technical-replicate design (C6) against arm 33 (arm 16 with arm 25's standard
+        # error, arm 26's test and arm 29's E at 200 permutations, the units removed), k by the run path's own count
+        if (p$duplicates) {
+            E33 <- count(200L, TRUE)
+            name <- sprintf("S1/%s/arm33/runpath", cell)
+            package <- runpath_run(name, runpath_parameters("technical_replicates", "num_sv_be"))
+            if (!is.null(package)) {
+                add(sprintf("S1/%s/arm33/runpath_k", cell), E33, as.integer(package$k), sprintf(paste("arm 33's E (the units removed, B =",
+                    "200) against the run path's own count; replicate sets %s"), package$ruv_model$ruv_grouping_variable))
+                if (E33 > 0L) {
+                    # arm 16's W (line 626, `in_model(all_controls, E, "tech_rep_group")`): the declared units as replicate sets
+                    W <- silently(computeRuvCovariates(s1$make_object(xc, design, "tech_rep_group"), k = E33,
+                        controls = rep(TRUE, nrow(xc)), ruv_grouping_variable = "group"))$W
+                    set.seed(seed * 100L + 16L)
+                    tab <- silently(s1$da_variant(x, design, W, exact = TRUE, applied = TRUE))
+                    add_tables(name, keyed(tab$id, "contrast", tab$estimate, tab$p, tab$q), package$table)
+                }
+            }
+        }
+        # KIT-129 third pass item 3: first-pass nulls (C0 and C6) against arm 23 (arm 5's controls with k = E, B = 20; at
+        # k = 1 where E is 0) under the final test; the user's k, the replicate sets the design resolves (the units on C6)
+        k23 <- if (E20 > 0L) E20 else 1L
+        name <- sprintf("S1/%s/%s/runpath", cell, if (E20 > 0L) "arm23" else "arm23_at_k1")
+        package <- runpath_run(name, runpath_parameters("first_pass_nulls", "user", k23))
+        if (!is.null(package)) {
+            add(sprintf("S1/%s/arm23/runpath_controls", cell), sum(wide[sim$complete]), as.integer(package$ruv_model$control_count),
+                sprintf("the first pass's controls observed in every sample (%d of %d proteins are controls); replicate sets %s",
+                    sum(wide), length(wide), package$ruv_model$ruv_grouping_variable))
+            add_tables(name, arm_wide(23L, k23), package$table)
+        }
     }
     if (stage == "count") {
         own <- silently(computeProtRuvModelFactors(normalised, ruv_k_rule = "num_sv_be", ruv_grouping_variable = "group",
@@ -277,24 +340,11 @@ for (cell in cells) {
         grouping <- if (p$duplicates) "tech_rep_group" else "group"
         first_pass_factors <- function(...) silently(computeProtRuvModelFactors(normalised, ..., ruv_design = "first_pass_nulls",
             ruv_grouping_variable = grouping))
-        # `first_pass` and `wide_controls` (lines 514-534)
-        first <- limma::topTable(limma::eBayes(suppressWarnings(limma::lmFit(x, stats::model.matrix(~ group, design)))),
-            coef = seq(2L, nlevels(sim$group)), number = Inf, sort.by = "none")$P.Value
-        wide <- rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))
-        wide[is.na(wide)] <- FALSE
-        wide <- stats::setNames(wide, rownames(x))
+        # `first_pass` and `wide_controls` (lines 514-534): `wide` and `arm_wide`, above
         own <- first_pass_factors(ruv_k_rule = "num_sv_be", ruv_k_seed = seed * 100L)
         add(sprintf("S1/%s/arm23/controls", cell), wide, own$controls, sprintf("the first pass's controls (%d of %d proteins)", sum(wide), length(wide)))
         add(sprintf("S1/%s/arm32/kernel_k_first_pass", cell), count(200L, p$duplicates), own$k,
             "arm 32's E (B = 200; the units removed on C6) against the kernel's own count under first_pass_nulls")
-        # in_model(wide_controls(), k, "tech_rep_group") (lines 629, 630, 538-553), tested as the final method tests
-        arm_wide <- function(arm, k) {
-            W <- silently(computeRuvCovariates(s1$make_object(xc, design, "tech_rep_group"), k = k,
-                controls = unname(wide[sim$complete]), ruv_grouping_variable = "group"))$W
-            set.seed(seed * 100L + arm)
-            tab <- silently(s1$da_variant(x, design, W, exact = TRUE, applied = TRUE))
-            keyed(tab$id, "contrast", tab$estimate, tab$p, tab$q)
-        }
         k23 <- if (E20 > 0L) E20 else 1L
         add_tables(sprintf("S1/%s/%s/classic", cell, if (E20 > 0L) "arm23" else "arm23_at_k1"), arm_wide(23L, k23),
             entry_state(attachProtRuvModelFactors(normalised, normalised, first_pass_factors(ruv_k = k23, ruv_k_rule = "user"))))

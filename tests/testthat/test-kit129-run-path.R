@@ -11,9 +11,11 @@ kit129Quiet <- function(expr) {
 
 # Two assays, two groups of six, one sample-wise factor uncorrelated with the groups, values under a detection limit
 # missing (KIT-127's fixture shape, smaller).
-kit129OmicsObject <- function(omic = "lipidomics", seed = 129L, p = 50L) {
+kit129OmicsObject <- function(omic = "lipidomics", seed = 129L, p = 50L, technical = FALSE) {
     set.seed(seed)
     design <- data.frame(Sample_ID = sprintf("S%02d", 1:12), group = rep(c("A", "B"), each = 6L), stringsAsFactors = FALSE)
+    # (third pass item 3) three biological units per group, each injected twice: the technical-replicate declaration
+    if (technical) design$extract <- paste(design$group, rep(rep(1:3, each = 2L), 2L), sep = "_")
     f <- stats::residuals(stats::lm(stats::rnorm(12L) ~ factor(design$group)))
     f <- f / sqrt(mean(f^2))
     tables <- lapply(c(pos = "pos", neg = "neg"), function(assay) {
@@ -30,17 +32,20 @@ kit129OmicsObject <- function(omic = "lipidomics", seed = 129L, p = 50L) {
         table <- tibble::add_column(table, database_identifier = rownames(y), .before = 1L)
         tibble::add_column(table, name = rownames(y), .after = 1L)
     })
-    if (identical(omic, "lipidomics")) {
-        return(methods::new("LipidomicsAssayData", lipid_data = tables, lipid_id_column = "database_identifier",
-            annotation_id_column = "name", design_matrix = design, sample_id = "Sample_ID", group_id = "group", args = list()))
+    object <- if (identical(omic, "lipidomics")) {
+        methods::new("LipidomicsAssayData", lipid_data = tables, lipid_id_column = "database_identifier",
+            annotation_id_column = "name", design_matrix = design, sample_id = "Sample_ID", group_id = "group", args = list())
+    } else {
+        methods::new("MetaboliteAssayData", metabolite_data = tables, metabolite_id_column = "database_identifier",
+            annotation_id_column = "name", design_matrix = design, sample_id = "Sample_ID", group_id = "group", args = list())
     }
-    methods::new("MetaboliteAssayData", metabolite_data = tables, metabolite_id_column = "database_identifier",
-        annotation_id_column = "name", design_matrix = design, sample_id = "Sample_ID", group_id = "group", args = list())
+    if (technical) object@technical_replicate_id <- "extract"
+    object
 }
 
-kit129OmicsOwner <- function(omic, env = parent.frame()) {
+kit129OmicsOwner <- function(omic, env = parent.frame(), technical = FALSE) {
     root <- withr::local_tempdir(.local_envir = env)
-    object <- kit129OmicsObject(omic)
+    object <- kit129OmicsObject(omic, technical = technical)
     fixture <- if (identical(omic, "lipidomics")) lipidDeclarationsOwner(root, object = object) else metabDeclarationsOwner(root, object = object)
     withr::defer(closeDIAStateAdapter(fixture$owner), envir = env)
     fixture$object <- object
@@ -49,17 +54,17 @@ kit129OmicsOwner <- function(omic, env = parent.frame()) {
     fixture
 }
 
-kit129OmicsRuvParameters <- function(ruv_design = "groups_all_features", ruv_k = 1L, ruv_k_rule = "user") {
-    list(ruv_design = ruv_design, ruv_grouping_variable = "group", ruv_k = ruv_k, ruv_k_rule = ruv_k_rule, ruv_k_seed = NULL,
+kit129OmicsRuvParameters <- function(ruv_design = "groups_all_features", ruv_k = 1L, ruv_k_rule = "user", grouping = "group") {
+    list(ruv_design = ruv_design, ruv_grouping_variable = grouping, ruv_k = ruv_k, ruv_k_rule = ruv_k_rule, ruv_k_seed = NULL,
         ruv_control_ids = NULL)
 }
 
-kit129ProtStore <- function(env = parent.frame()) {
+kit129ProtStore <- function(env = parent.frame(), object = makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))) {
     manager <- newDIAStateAdapter(newWorkflowEntityStore(withr::local_tempdir(.local_envir = env), "kit-129-run-path", "DIA"),
         WorkflowState$new(audit_enabled = FALSE))
     withr::defer(closeDIAStateAdapter(manager), envir = env)
     manager$.context$reference_states <- TRUE
-    manager$saveState("protein_replicate_filtered", makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small")), list(), "source")
+    manager$saveState("protein_replicate_filtered", object, list(), "source")
     manager
 }
 
@@ -689,4 +694,211 @@ test_that("(item 5) lipidomics and metabolomics: in process, on the worker and b
         expect_equal(key(process$results[[long]]), key(kernel[[long]]), tolerance = 1e-12, info = omic)
         expect_equal(key(worker), key(kernel[[long]]), tolerance = 1e-12, info = omic)
     }
+})
+
+# ---- Third pass item 3: the technical-replicate design and first-pass nulls on the run path --------------------------
+
+# The classic kernel called directly on the normalised object with the design's replicate sets, then the DA entry point.
+kit129ProtKernelDa <- function(normalised, factors, replicate_sets, contrast) {
+    corrected <- kit129Quiet(removeRowsWithMissingValuesPercent(theObject = ruvIII_C_Varying(protRuvGroupReplicateObject(normalised),
+        ruv_grouping_variable = replicate_sets, ruv_number_k = factors$k, ctrl = factors$controls)))
+    state <- attachProtRuvModelFactors(corrected, normalised, factors)
+    kernel <- kit129Quiet(differentialAbundanceAnalysis(state, contrasts_tbl = data.frame(contrasts = contrast), formula_string = "~ 0 + group",
+        da_q_val_thresh = 0.05, treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE, args_row_id = "Protein.Group",
+        qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue"))
+    kit129KernelTable(kernel, "Protein.Group")
+}
+
+# One declared classic run in process: the normalisation's compute half, then the contrast's.
+kit129ProtRunPath <- function(parameters, contrast, object = makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))) {
+    manager <- kit129ProtStore(object = object)
+    source <- getDIAStateReference(manager)
+    kit129Quiet(withDIAStateScope(manager, function() {
+        run <- computeDIAReferenceNormalization(manager, source, parameters)
+        final <- run$value$final
+        da <- computeDIAReferenceDaContrast(manager, final, kit129DaStep(manager, final, contrast), "iq")$run$value
+        list(value = run$value, state = readDIAExecutionComponents(manager, final),
+            normalised = readDIAExecutionComponents(manager, run$value$normalized), table = kit129DaTable(manager, da, "Protein.Group"),
+            method = workflowSourceRuvDaMethod(manager, final))
+    }))
+}
+
+test_that("(third pass item 3) classic proteomics: the technical-replicate design on the run path equals the kernel; refused without technical replicates", {
+    contrast <- "a=grouptreated-groupcontrol"
+    declared <- c(kit129ProtParameters(), list(ruv_design = "technical_replicates", ruv_k_rule = "user", ruv_k_seed = NULL))
+    out <- kit129ProtRunPath(declared, contrast)
+    expect_identical(out$value$parameters$ruv_design, "technical_replicates")
+    expect_identical(out$value$ruv_model[c("ruv_design", "replicate_structure", "ruv_grouping_variable", "k")],
+        list(ruv_design = "technical_replicates", replicate_structure = "technical_replicates", ruv_grouping_variable = "tech_rep_group", k = 1L))
+    expect_identical(out$state@args$ruvCovariates[c("ruv_design", "replicate_structure", "ruv_grouping_variable")],
+        list(ruv_design = "technical_replicates", replicate_structure = "technical_replicates", ruv_grouping_variable = "tech_rep_group"))
+    expect_identical(out$method, "ruv_factors_exact_se_trend_robust")
+    factors <- kit129Quiet(computeProtRuvModelFactors(out$normalised, ruv_k = 1L, ruv_k_rule = "user", ruv_grouping_variable = "tech_rep_group"))
+    expected <- kit129ProtKernelDa(out$normalised, factors, "tech_rep_group", contrast)
+    expect_identical(out$table$Protein.Group, expected$Protein.Group)
+    expect_equal(out$table[-1L], expected[-1L], tolerance = 1e-12)
+    # the identity names the design: the groups' design on the same request is another product
+    groups <- kit129ProtRunPath(utils::modifyList(declared, list(ruv_design = "groups_all_features")), contrast)
+    expect_false(identical(groups$value$final, out$value$final))
+    # the k rules the kernel defines: the separation rule is undefined with every protein a control
+    automatic <- kit129ProtParameters("automatic", NULL)
+    automatic[c("auto_percentage_min", "auto_percentage_max", "separation_metric", "k_penalty_weight", "adaptive_k_penalty")] <-
+        list(5, 10, "max_difference", 0.5, TRUE)
+    separation <- tryCatch(kit129ProtRunPath(c(automatic, list(ruv_design = "technical_replicates", ruv_k_rule = "sweep_bounded",
+        ruv_k_seed = NULL)), contrast), error = function(e) e)
+    expect_s3_class(separation, "ruv_k_separation_undefined")
+    # a design without technical replicates is refused, not run as the groups' design
+    plain <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    plain@technical_replicate_id <- NA_character_
+    refused <- tryCatch(kit129ProtRunPath(declared, contrast, object = plain), error = function(e) e)
+    expect_s3_class(refused, "workflow_execution_invalid")
+    expect_match(conditionMessage(refused), "needs declared technical replicates")
+})
+
+test_that("(third pass item 3) classic proteomics: first-pass nulls on the run path equal the kernel, with the user's k and the separation rule", {
+    contrast <- "a=grouptreated-groupcontrol"
+    declared <- c(kit129ProtParameters(), list(ruv_design = "first_pass_nulls", ruv_k_rule = "user", ruv_k_seed = NULL))
+    out <- kit129ProtRunPath(declared, contrast)
+    # the fixture declares technical replicates: the replicate sets are the units (arm 23's structure)
+    expect_identical(out$value$ruv_model[c("ruv_design", "ruv_controls", "ruv_grouping_variable", "k")],
+        list(ruv_design = "first_pass_nulls", ruv_controls = "first_pass", ruv_grouping_variable = "tech_rep_group", k = 1L))
+    expect_identical(out$state@args$ruvCovariates$ruv_design, "first_pass_nulls")
+    factors <- kit129Quiet(computeProtRuvModelFactors(out$normalised, ruv_k = 1L, ruv_k_rule = "user", ruv_grouping_variable = "tech_rep_group",
+        ruv_design = "first_pass_nulls"))
+    expect_identical(sum(out$value$ruv_result$best_control_genes_index), sum(factors$controls))
+    expect_lt(sum(factors$controls), length(factors$controls))
+    expected <- kit129ProtKernelDa(out$normalised, factors, "tech_rep_group", contrast)
+    expect_identical(out$table$Protein.Group, expected$Protein.Group)
+    expect_equal(out$table[-1L], expected[-1L], tolerance = 1e-12)
+    # the separation rule is defined for the first pass's controls: k is the sweep's estimate the run path hands the kernel
+    automatic <- kit129ProtParameters("automatic", NULL)
+    automatic[c("auto_percentage_min", "auto_percentage_max", "separation_metric", "k_penalty_weight", "adaptive_k_penalty")] <-
+        list(5, 10, "max_difference", 0.5, TRUE)
+    swept <- tryCatch(kit129ProtRunPath(c(automatic, list(ruv_design = "first_pass_nulls", ruv_k_rule = "sweep_bounded", ruv_k_seed = NULL)),
+        contrast), ruv_k_above_limit = function(e) e)
+    if (inherits(swept, "ruv_k_above_limit")) {
+        # the sweep's k is above the units' limit on this fixture (decision M28): refused, never reduced
+        expect_match(conditionMessage(swept), "limit")
+    } else {
+        expect_identical(swept$value$ruv_model$ruv_k_rule, "sweep_bounded")
+        expect_identical(as.integer(swept$value$best_k), as.integer(swept$value$ruv_result$sweep_diagnostic$best_k))
+    }
+})
+
+# One lipid/metab RUV step and its DA in process, and the kernel called directly, as tables keyed by assay and feature.
+kit129OmicsRunPath <- function(omic, parameters, technical = FALSE, env = parent.frame()) {
+    binding <- omicsDeclarationBindings()[[omic]]
+    fixture <- kit129OmicsOwner(omic, env = env, technical = technical)
+    ruv <- kit129Quiet(runWorkflowOmicsReferenceRuv(binding, fixture$owner, parameters, list()))
+    da <- kit129Quiet(runWorkflowOmicsReferenceDaAnalysis(binding, fixture$owner, ruv$reference,
+        list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), fixture$contrasts))
+    list(fixture = fixture, ruv = ruv, da = da, binding = binding)
+}
+kit129OmicsKey <- function(omic, t) {
+    id <- if (identical(omic, "lipidomics")) "lipid_id" else "metabolite_id"
+    t <- as.data.frame(t)[order(t$assay, t[[id]]), c("assay", id, "logFC", "P.Value", "fdr_qvalue")]
+    rownames(t) <- NULL
+    t
+}
+kit129OmicsKernelDa <- function(omic, fixture, factors) {
+    kit129Quiet(if (identical(omic, "lipidomics")) runLipidsDA(fixture$object, fixture$contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE,
+        ruv_factors = factors) else runMetabolitesDA(fixture$object, fixture$contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = factors))
+}
+
+test_that("(third pass item 3) lipidomics and metabolomics: the technical-replicate design on the run path equals the kernel and records its structure", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    for (omic in c("lipidomics", "metabolomics")) {
+        long <- if (identical(omic, "lipidomics")) "da_lipids_long" else "da_metabolites_long"
+        prefix <- if (identical(omic, "lipidomics")) "lipid" else "metab"
+        run <- kit129OmicsRunPath(omic, kit129OmicsRuvParameters("technical_replicates", grouping = NULL), technical = TRUE)
+        value <- run$ruv$value
+        expect_identical(value[c("ruv_design", "ruv_replicate_structure", "ruv_grouping_variable")],
+            list(ruv_design = "technical_replicates", ruv_replicate_structure = "technical_replicates", ruv_grouping_variable = "extract"), info = omic)
+        expect_identical(unname(unlist(value$best_k)), c(1L, 1L), info = omic)
+        state <- withWorkflowStateScope(run$fixture$owner, function() readWorkflowExecutionComponents(run$fixture$owner, run$ruv$reference,
+            fields = run$binding$fields))
+        expect_identical(state@args$ruvFactorsDeclaration[c("ruv_design", "ruv_replicate_structure", "ruv_grouping_variable")],
+            list(ruv_design = "technical_replicates", ruv_replicate_structure = "technical_replicates", ruv_grouping_variable = "extract"), info = omic)
+        expect_identical(unname(vapply(state@args$ruv_factors, `[[`, "", "ruv_replicate_structure")), rep("technical_replicates", 2L), info = omic)
+        expect_identical(unname(vapply(state@args$ruv_factors, `[[`, "", "ruv_design")), rep("technical_replicates", 2L), info = omic)
+        expect_identical(run$da$manifest$results[[1L]]$model$ruv_da_method, "limma_ruv_factors_exact_se", info = omic)
+        # the kernel directly: all features as controls, the declared units as the replicate sets
+        direct <- kit129Quiet(runOmicsRuvFactors(run$fixture$object, "groups_all_features", 1L, "user", ruv_grouping_variable = "extract"))
+        expect_equal(lapply(state@args$ruv_factors, `[[`, "W"), lapply(direct$factors, `[[`, "W"), tolerance = 0, info = omic)
+        kernel <- kit129OmicsKernelDa(omic, run$fixture, direct$factors)
+        expect_equal(kit129OmicsKey(omic, run$da$results[[long]]), kit129OmicsKey(omic, kernel[[long]]), tolerance = 1e-12, info = omic)
+        # the record names the structure and its column
+        record <- buildWorkflowAnalysisRecord(run$fixture$owner)
+        step <- Filter(function(step) identical(step$operation, paste0(prefix, "_ruv")), record$steps)
+        expect_length(step, 1L)
+        expect_identical(step[[1L]]$outcomes[c("ruv_design", "ruv_replicate_structure", "ruv_grouping_variable")],
+            list(ruv_design = "technical_replicates", ruv_replicate_structure = "technical_replicates", ruv_grouping_variable = "extract"), info = omic)
+    }
+    # refused without technical replicates, with another replicate-set column, and under the separation rule
+    binding <- lipidomicsDeclarationBinding
+    plain <- kit129OmicsOwner("lipidomics")
+    expect_error(kit129Quiet(runWorkflowOmicsReferenceRuv(binding, plain$owner, kit129OmicsRuvParameters("technical_replicates", grouping = NULL),
+        list())), "needs declared technical replicates", class = "workflow_execution_invalid")
+    technical <- kit129OmicsOwner("lipidomics", technical = TRUE)
+    expect_error(kit129Quiet(runWorkflowOmicsReferenceRuv(binding, technical$owner, kit129OmicsRuvParameters("technical_replicates"), list())),
+        "not `group`", class = "workflow_execution_invalid")
+    expect_error(kit129Quiet(runWorkflowOmicsReferenceRuv(binding, technical$owner, kit129OmicsRuvParameters("technical_replicates", 1L,
+        "sweep_bounded", grouping = NULL), list())), class = "omics_ruv_factors_invalid")
+})
+
+test_that("(third pass item 3) lipidomics and metabolomics: first-pass nulls on the run path equal the kernel", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    for (omic in c("lipidomics", "metabolomics")) {
+        long <- if (identical(omic, "lipidomics")) "da_lipids_long" else "da_metabolites_long"
+        run <- kit129OmicsRunPath(omic, kit129OmicsRuvParameters("first_pass_nulls"))
+        expect_identical(run$ruv$value[c("ruv_design", "ruv_replicate_structure", "ruv_grouping_variable")],
+            list(ruv_design = "first_pass_nulls", ruv_replicate_structure = "group", ruv_grouping_variable = "group"), info = omic)
+        direct <- kit129Quiet(runOmicsRuvFactors(run$fixture$object, "first_pass_nulls", 1L, "user"))
+        expect_identical(run$ruv$value$control_count, lapply(direct$factors, `[[`, "control_count"), info = omic)
+        expect_true(all(unlist(run$ruv$value$control_count) < unlist(lapply(direct$factors, `[[`, "complete_features"))), info = omic)
+        kernel <- kit129OmicsKernelDa(omic, run$fixture, direct$factors)
+        expect_equal(kit129OmicsKey(omic, run$da$results[[long]]), kit129OmicsKey(omic, kernel[[long]]), tolerance = 1e-12, info = omic)
+    }
+})
+
+test_that("(third pass item 3) DIA with limpa and transcriptomics: first-pass nulls reach the run path's declared step", {
+    # the tab's requests with the gate on carry the first pass's rule, and the request selects the declared declaration
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    dia <- diaRuvCovariatesRequestParameters(list(), "group", list(ruv_mode = "covariates", ruv_control_rule = "first_pass_drop_top_25",
+        ruv_k_rule = "user", ruv_k = 1L))
+    expect_identical(dia[c("ruv_control_rule", "ruv_k_rule", "ruv_k")], list(ruv_control_rule = "first_pass_drop_top_25", ruv_k_rule = "user", ruv_k = 1L))
+    expect_identical(workflowRequestOperation(NULL, workflowOperationEntry("protein_ruv_covariates"), NULL, dia)$declaration$parameters,
+        diaRuvCovariatesOperation("declared")$parameters)
+    trx <- trxNormRuvRequest(c(trxRuvGridParameters(), list(ruv_design = "first_pass_nulls", ruv_k = 1L, ruv_k_rule = "user")))
+    expect_null(trx$grid)
+    expect_identical(trx$design$ruv_design, "first_pass_nulls")
+    expect_identical(workflowRequestOperation(NULL, workflowOperationEntry("trx_ruv_grid"), NULL, c(list(logcpm = "x"), trx$design))$declaration$parameters,
+        c("logcpm", trxRuvDesignParameterNames))
+    # DIA with limpa end to end: the compute half equals the declared kernel called directly
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("fastlimpadpc")
+    sim <- kit129LimpaSimulate(129L, proteins = 120L, per_group = 5L)
+    quantified <- kit129Quiet(kit129LimpaQuantify(sim, "fastlimpadpc"))
+    manager <- kit129LimpaManager(quantified)
+    contrast <- "B_vs_A=groupB-groupA"
+    process <- kit129Quiet(withDIAStateScope(manager, function() {
+        run <- computeDIAReferenceRuvCovariates(manager, getDIAStateReference(manager), dia)
+        final <- run$value$final
+        da <- computeDIAReferenceDaContrast(manager, final, kit129DaStep(manager, final, contrast), "limpa")$run$value
+        list(value = run$value, table = kit129DaTable(manager, da, "Protein.Ids"))
+    }))
+    expect_identical(process$value$ruv_control_rule, "first_pass_drop_top_25")
+    saved <- list()
+    store <- list(checkpoint = function(value, label, from = NULL) {
+        saved[[label]] <<- value
+        label
+    })
+    value <- kit129Quiet(diaRuvCovariatesOperation("declared")$kernel(quantified, dia, store))
+    expect_identical(value$best_k, process$value$best_k)
+    kernel <- kit129Quiet(differentialAbundanceAnalysis(saved[[value$final]], contrasts_tbl = data.frame(contrasts = contrast),
+        formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE,
+        args_row_id = "Protein.Ids", qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue"))
+    expected <- kit129KernelTable(kernel, "Protein.Ids")
+    expect_identical(process$table$Protein.Ids, expected$Protein.Ids)
+    expect_equal(process$table[-1L], expected[-1L], tolerance = 1e-12)
 })

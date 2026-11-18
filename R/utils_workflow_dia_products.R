@@ -335,8 +335,10 @@ resolveDIAReferenceQcPlot <- function(reference, aesthetics, plot_type, build_pr
 #' object inherits it as its source, exactly as before.
 #' @param ruv_design KIT-126. `"legacy"` (the default): today's declaration and kernel path, the corrected matrix
 #'   tested by the DA; its ten parameters and identities are unchanged. `"declared"`: the declaration gains
-#'   the parameters `ruv_design` (`"groups_all_features"`, KIT-129 section 1e), `ruv_k_rule` and `ruv_k_seed`, and the
-#'   kernel runs KIT-124's arm 7 (groups as replicate sets, every protein a control): k by the shared resolver
+#'   the parameters `ruv_design` (`"groups_all_features"`, `"technical_replicates"` or `"first_pass_nulls"`, KIT-129
+#'   section 1e; the replicate sets and controls by `protRuvModelReplicateSets` and `computeProtRuvModelFactors`),
+#'   `ruv_k_rule` and `ruv_k_seed`, and the kernel runs KIT-124's arm 7 (groups as replicate sets, every protein a
+#'   control), arm 16 (the declared units as replicate sets) or arm 23 (the first pass's controls): k by the shared resolver
 #'   (KIT-129 item 3) under `ruv_k_rule`: `num_sv_be` (the estimated count, seeded by `ruv_k_seed`, NULL for the
 #'   default seed) or `sweep_bounded` (the sweep's estimate; undefined with every protein a control, so refused) with
 #'   `ruv_mode = "automatic"`, `user` (the manual k) with `ruv_mode = "manual"`. The final state's table is the
@@ -391,15 +393,17 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                 if (factors_in_model) {
                     # KIT-126: the sweep (or the manual k) gives k only; every protein is a control, the groups are
                     # the replicate sets, and the corrected matrix uses the same controls, k and sets as the factors.
-                    if (!identical(parameters$ruv_design, "groups_all_features"))
-                        cli::cli_abort("the declaration and the parameter ruv_design disagree", class = "workflow_execution_invalid")
+                    # KIT-129 third pass item 3: the technical-replicate design (the declared units as the replicate
+                    # sets) and first-pass nulls (its controls; the replicate sets the design resolves) as well.
+                    replicate_sets <- protRuvModelReplicateSets(normalized, parameters$ruv_design, parameters$grouping)
                     ruv_model <- computeProtRuvModelFactors(normalized,
                         ruv_k = if (!identical(parameters$ruv_k_rule, "num_sv_be")) resolved$k, ruv_k_rule = parameters$ruv_k_rule,
-                        ruv_grouping_variable = parameters$grouping, ruv_k_seed = parameters$ruv_k_seed %||% RUV_FACTOR_COUNT_SEED)
+                        ruv_grouping_variable = replicate_sets, ruv_k_seed = parameters$ruv_k_seed %||% RUV_FACTOR_COUNT_SEED,
+                        ruv_design = if (identical(parameters$ruv_design, "first_pass_nulls")) "first_pass_nulls" else "groups_all_features")
                     applied <- identical(ruv_model$status, "ok")
                     resolved$k <- ruv_model$k
                     resolved$controls <- if (applied) ruv_model$controls else NA
-                    resolved$percentage <- if (applied) 100 else NA
+                    resolved$percentage <- if (applied) 100 * mean(ruv_model$controls) else NA
                     # Audit F-05: the result every reader takes (the panel text, the study parameters, the optimisation
                     # RDS, the reports) names what was used: every protein a control, the k of the factors. The
                     # control selection's own values (the sweep's, or the manual percentage's) stay as a diagnostic;
@@ -433,7 +437,7 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                     }
                     if (applied) {
                         corrected <- ruvIII_C_VaryingFn(protRuvGroupReplicateObject(normalized),
-                            ruv_grouping_variable = parameters$grouping, ruv_number_k = resolved$k, ctrl = resolved$controls)
+                            ruv_grouping_variable = replicate_sets, ruv_number_k = resolved$k, ctrl = resolved$controls)
                         corrected <- removeRowsWithMissingValuesPercentFn(theObject = corrected)
                         corrected <- attachProtRuvModelFactors(corrected, normalized, ruv_model)
                     }

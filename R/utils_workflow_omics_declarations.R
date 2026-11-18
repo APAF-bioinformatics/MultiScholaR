@@ -341,9 +341,42 @@ omicsRuvDesignParameterNames <- c("ruv_design", "ruv_grouping_variable", "ruv_k"
 #' @noRd
 omicsRuvDesignOnlyParameterNames <- setdiff(omicsRuvDesignParameterNames, omicsRuvParameterNames)
 
-#' The designs the new declaration takes: the factors kernel's two and `none` (no RUV, the option set's None).
+#' The designs the new declaration takes: the factors kernel's three (all features, supplied controls, first-pass
+#' nulls), the technical-replicate design (KIT-129 third pass item 3: all features as controls, the declared units as
+#' the replicate sets) and `none` (no RUV, the option set's None).
 #' @noRd
-OMICS_RUV_DESIGNS <- c("groups_all_features", "supplied_controls", "none")
+OMICS_RUV_DESIGNS <- c("groups_all_features", "technical_replicates", "supplied_controls", "first_pass_nulls", "none")
+
+#' The replicate sets of a declared lipidomics or metabolomics design (KIT-129 third pass item 3), as simulator S4's arms
+#' define them: the technical-replicate design (arm 16) the declared technical-replicate column, the biological units,
+#' refused when the design declares no technical replicates, when that column does not name each unit alone, or when
+#' the request names another replicate-set column; every other design the request's column, or the groups (arms 7, 8,
+#' 5 and 23).
+#' @param object The normalised object.
+#' @param design The declared design.
+#' @param grouping The request's `ruv_grouping_variable`, or NULL.
+#' @return `list(grouping, structure)`: the replicate-set column and the record's `ruv_replicate_structure` (`group` or
+#'   `technical_replicates`, KIT-129 section 1e).
+#' @noRd
+omicsRuvDesignReplicateSets <- function(object, design, grouping) {
+    invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
+    if (!identical(design, "technical_replicates")) return(list(grouping = grouping %||% object@group_id, structure = "group"))
+    column <- object@technical_replicate_id
+    frame <- as.data.frame(object@design_matrix)
+    technical <- resolveProtTechnicalReplicateBlock(frame, object@group_id, column)
+    if (!isTRUE(technical$technical)) {
+        invalid(sprintf("the design technical_replicates needs declared technical replicates; this design has none (%s)", technical$reason))
+    }
+    if (!is.null(grouping) && !identical(grouping, column)) {
+        invalid(sprintf("the design technical_replicates takes the technical-replicate column `%s` as its replicate sets, not `%s`",
+            column, grouping))
+    }
+    if (!ruvReplicateSetsAreUnits(frame[[column]], technical$block)) {
+        invalid(sprintf(paste("the technical-replicate column `%s` does not name each biological unit alone (the same value",
+            "in more than one group); give each unit its own value"), column))
+    }
+    list(grouping = column, structure = "technical_replicates")
+}
 
 #' Today's RUV declaration takes none of the new design's parameters (KIT-129 integration item 1): its identity reads its
 #' nine parameters only, so `runSavedOperation` calls this before the identity, and a request that names the new design
@@ -384,7 +417,8 @@ omicsRuvDesignOperation <- function(binding) {
             }
             slots <- omicsRuvAssaySlots(object)
             assays <- methods::slot(object, slots$data)
-            grouping <- parameters$ruv_grouping_variable %||% object@group_id
+            sets <- omicsRuvDesignReplicateSets(object, design, parameters$ruv_grouping_variable)
+            grouping <- sets$grouping
             rule <- parameters$ruv_k_rule
             seed <- if (omicsRuvAbsent(parameters$ruv_k_seed)) RUV_FACTOR_COUNT_SEED else parameters$ruv_k_seed
             if (identical(design, "none")) {
@@ -401,7 +435,9 @@ omicsRuvDesignOperation <- function(binding) {
             } else {
                 counted <- identical(rule, "num_sv_be")
                 if (counted && !omicsRuvAbsent(parameters$ruv_k)) invalid("a k is not given with ruv_k_rule num_sv_be: the count gives k")
-                arguments <- list(theObject = object, ruv_design = design, ruv_k_rule = rule, ruv_control_ids = parameters$ruv_control_ids,
+                # the technical-replicate design is the factors kernel's all-features design on the units (arm 16)
+                kernel_design <- if (identical(design, "technical_replicates")) "groups_all_features" else design
+                arguments <- list(theObject = object, ruv_design = kernel_design, ruv_k_rule = rule, ruv_control_ids = parameters$ruv_control_ids,
                     ruv_grouping_variable = grouping, ruv_k_seed = seed)
                 if (!counted) arguments$ruv_k <- parameters$ruv_k
                 result <- do.call(runOmicsRuvFactors, arguments)
@@ -425,8 +461,11 @@ omicsRuvDesignOperation <- function(binding) {
                 }
             }
             object <- NULL
+            # KIT-129 third pass item 3: each record names the declared design and its replicate structure (section 1e)
             records <- lapply(factors, function(record) {
                 record$k_estimate <- NULL
+                record$ruv_design <- design
+                record$ruv_replicate_structure <- sets$structure
                 record
             })
             k <- lapply(factors, `[[`, "k")
@@ -434,10 +473,11 @@ omicsRuvDesignOperation <- function(binding) {
             corrected@args$ruv_factors <- records
             seed_used <- if (rule %in% c("num_sv_be", "user")) as.integer(seed) else NA_integer_
             corrected@args$ruvFactorsDeclaration <- list(ruv_design = design, ruv_k_rule = rule, ruv_k_seed = seed_used, k = k,
-                tested_matrix = "uncorrected")
+                tested_matrix = "uncorrected", ruv_replicate_structure = sets$structure, ruv_grouping_variable = grouping)
             final <- store$checkpoint(corrected, paste0(binding$prefix, "-ruv-corrected"))
             corrected <- assays <- NULL
-            list(final = final, ruv_design = design, best_k = k, control_count = lapply(factors, `[[`, "control_count"),
+            list(final = final, ruv_design = design, ruv_replicate_structure = sets$structure, ruv_grouping_variable = grouping,
+                best_k = k, control_count = lapply(factors, `[[`, "control_count"),
                 percentage = lapply(factors, function(record) NA_real_), ruv_k_rule = rule, ruv_k_seed = seed_used,
                 ruv_k_estimate = lapply(factors, `[[`, "ruv_k_estimate"), k_estimate = lapply(factors, `[[`, "k_estimate"),
                 ruv_applied = lapply(factors, function(record) identical(record$status, "ok")),
@@ -929,6 +969,10 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
         if (!is.null(saved$ruv_design)) {
             outcomes$ruv_applied <- any(unlist(saved$ruv_applied))
             outcomes[c("ruv_design", "ruv_k_rule", "ruv_k_seed")] <- list(saved$ruv_design, saved$ruv_k_rule, saved$ruv_k_seed)
+            # KIT-129 third pass item 3: the replicate structure and its column (products before it name neither)
+            if (!is.null(saved$ruv_replicate_structure)) {
+                outcomes[c("ruv_replicate_structure", "ruv_grouping_variable")] <- list(saved$ruv_replicate_structure, saved$ruv_grouping_variable)
+            }
             outcomes$ruv_applied_per_assay <- as.list(saved$ruv_applied)
             outcomes$ruv_k_estimate_per_assay <- as.list(saved$ruv_k_estimate)
             outcomes$ruv_not_applied_reason_per_assay <- as.list(saved$ruv_not_applied_reason)
