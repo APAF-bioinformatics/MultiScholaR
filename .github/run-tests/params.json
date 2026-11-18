@@ -1,22 +1,25 @@
 {
-  "label": "KIT-129 fifth pass correction; 6fd0b2e7 against 18ea2a30; test-omic-norm-ruv-design.R",
-  "package_commit": "6fd0b2e74df3c3f86aa29f59001c335ef3c9ba2f",
-  "base_commit": "18ea2a301e87dd3711d768a9fdc03083dc8c53b4",
+  "label": "KIT-137 corpus manifests, run 1: 87132bd1 against 74bdf127, test-integration-corpus.R failing-first, composer generates the corpus (artifact)",
+  "package_commit": "87132bd142875bf6d6f508f7d0b007dfe57d9d6c",
+  "base_commit": "74bdf127fe2718182709072ea82697b60a73d825",
   "tools_ref": "",
   "tests": [
-    "test-omic-norm-ruv-design.R"
+    "test-integration-corpus.R"
   ],
   "shards": 1,
-  "file_timeout_minutes": 45,
+  "file_timeout_minutes": 30,
   "file_timeouts": {},
-  "extra_packages": [
-    "sva"
-  ],
-  "env": {
-    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
-  },
+  "extra_packages": [],
+  "env": {},
   "check": false,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": []
+  "scripts": [
+    {
+      "path": "tests/testdata/integration/compose_integration_corpus.R",
+      "args": ["kit137-out/corpus"],
+      "out": "kit137-out",
+      "timeout_minutes": 30
+    }
+  ]
 }
