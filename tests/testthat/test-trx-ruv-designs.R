@@ -17,7 +17,7 @@ trxDesignTestPackages <- function() {
 trxDesignTestData <- function(seed = 129L, genes = 1500L, per_group = 6L, groups = 2L, share = 0.2) {
     withr::local_seed(seed)
     levels <- LETTERS[seq_len(groups)]
-    group <- factor(rep(levels, each = per_group), levels = levels)
+    group <- factor(rep(levels, times = rep_len(per_group, groups)), levels = levels)
     n <- length(group)
     log2_lambda <- stats::rnorm(genes, 6.5, 2)
     lambda <- 2^log2_lambda
@@ -234,6 +234,19 @@ test_that("(KIT-129 W4) what a design cannot compute is refused by class, never 
     expect_error(factors(genes[1:3], 3L, "RUVg"), class = "trx_ruv_k_unavailable")
     expect_error(factors(c(genes[1:20], "not_a_gene"), 1L, "RUVg"), class = "trx_ruv_controls_invalid")
     expect_error(factors(genes, 1L, "RUVr"))
+    # audit F-09: the "returned fewer factors" refusal is reached (above it is the residual rule that refuses): five
+    # control genes of rank 1 carry one factor, and RUVg returns one where two were asked
+    deficient <- d$y
+    deficient[1:5, ] <- matrix(rep(deficient[1L, ], each = 5L), 5L)
+    expect_identical(ncol(RUVSeq::RUVg(trxDesignTestUq(deficient), genes[1:5], 2L)$W), 1L)
+    fewer <- tryCatch(suppressWarnings(suppressMessages(trxRuvFactors(deficient, d$log_cpm_tmm, d$design, genes[1:5], 2L, "RUVg"))), error = function(e) e)
+    expect_s3_class(fewer, c("trx_ruv_k_unavailable", "trx_error"), exact = FALSE)
+    expect_match(conditionMessage(fewer), "RUVSeq::RUVg returned 1 factor", fixed = TRUE)
+    # audit F-09: a run whose upper quartile is 0 cannot be upper-quartile normalised
+    sparse <- d$y
+    sparse[-(1:50), 3L] <- 0
+    expect_error(trxUpperQuartileCounts(sparse), class = "trx_ruv_upper_quartile_invalid")
+    expect_error(suppressWarnings(suppressMessages(trxRuvFactors(sparse, d$log_cpm_tmm, d$design, genes, 1L, "RUVs"))), class = "trx_ruv_upper_quartile_invalid")
     for (class in c("trx_ruv_design_unsupported", "trx_ruv_design_invalid", "trx_ruv_controls_invalid", "trx_ruv_k_unavailable")) {
         condition <- tryCatch(switch(class,
             trx_ruv_design_unsupported = choose("legacy", 1L, "user"),
@@ -241,6 +254,99 @@ test_that("(KIT-129 W4) what a design cannot compute is refused by class, never 
             trx_ruv_controls_invalid = choose("supplied_controls", 1L, "user", "not_a_gene"),
             trx_ruv_k_unavailable = factors(genes[1:3], 3L, "RUVg")), error = function(e) e)
         expect_s3_class(condition, c(class, "trx_error"), exact = FALSE)
+    }
+})
+
+test_that("(KIT-129 audit F-05) the factors' kernel refuses a design, counts and logCPM that are not one set of runs and genes", {
+    trxDesignTestPackages()
+    d <- suppressWarnings(suppressMessages(trxDesignTestData(genes = 600L)))
+    genes <- rownames(d$y)
+    shuffled <- d$design[c(7:12, 1:6), ]
+    rownames(shuffled) <- NULL
+    refused <- function(expr) expect_error(suppressWarnings(suppressMessages(expr)), class = "trx_ruv_inputs_misaligned")
+    for (method in c("RUVs", "RUVg")) refused(trxRuvFactors(d$y, d$log_cpm_tmm, shuffled, genes, 1L, method))
+    # without factors too: the returned sample table would carry the wrong runs
+    refused(trxRuvFactors(d$y, d$log_cpm_tmm, shuffled, character(), 0L))
+    refused(trxRuvFactors(d$y, d$log_cpm_tmm[1:50, ], d$design, genes, 1L, "RUVs"))
+    refused(trxRuvFactors(d$y, d$log_cpm_tmm[rev(genes), ], d$design, genes, 1L, "RUVs"))
+    refused(trxRuvFactors(d$y, d$log_cpm_tmm[, c(7:12, 1:6)], d$design, genes, 1L, "RUVs"))
+    refused(trxRuvFactors(d$y, d$log_cpm_tmm, d$design[-1L, ], genes, 1L, "RUVs"))
+    # the controls' kernel reads the groups by position for its first pass
+    for (ruv_design in c("groups_all_features", "first_pass_nulls")) refused(trxRuvDesignControls(d$y, shuffled, ruv_design))
+    refused(trxChooseRuvDesign(list(counts = d$y, design = shuffled), trxRuvDesignParameters("first_pass_nulls", 1L, "sweep_bounded")))
+    condition <- tryCatch(trxRuvFactors(d$y, d$log_cpm_tmm, shuffled, genes, 1L, "RUVs"), error = function(e) e)
+    expect_s3_class(condition, c("trx_ruv_inputs_misaligned", "trx_error"), exact = FALSE)
+    # aligned inputs pass as before
+    expect_identical(ncol(suppressWarnings(suppressMessages(trxRuvFactors(d$y, d$log_cpm_tmm, d$design, genes, 1L, "RUVs")))$W), 1L)
+})
+
+test_that("(KIT-129 audit F-01) the factors' kernel drops the W columns a design already carries", {
+    trxDesignTestPackages()
+    d <- suppressWarnings(suppressMessages(trxDesignTestData(genes = 600L)))
+    genes <- rownames(d$y)
+    carried <- cbind(d$design, W_1 = seq_len(nrow(d$design)), W_2 = rev(seq_len(nrow(d$design))))
+    clean <- suppressWarnings(suppressMessages(trxRuvFactors(d$y, d$log_cpm_tmm, d$design, genes, 1L, "RUVs")))
+    again <- suppressWarnings(suppressMessages(trxRuvFactors(d$y, d$log_cpm_tmm, carried, genes, 1L, "RUVs")))
+    expect_identical(names(again$pdata), c("Run", "group", "W_1"))
+    expect_identical(again, clean)
+    expect_identical(trxDaFormula(again$pdata), "~ 0 + group + W_1")
+    none <- trxRuvFactors(d$y, d$log_cpm_tmm, carried, character(), 0L)
+    expect_identical(names(none$pdata), c("Run", "group"))
+    expect_identical(trxDaFormula(none$pdata), "~ 0 + group")
+    expect_identical(none, trxRuvFactors(d$y, d$log_cpm_tmm, d$design, character(), 0L))
+})
+
+test_that("(KIT-129 audit F-08) degenerate inputs are refused by class: a k of the wrong type at the kernel, identical runs within every group under RUVs", {
+    trxDesignTestPackages()
+    d <- suppressWarnings(suppressMessages(trxDesignTestData(genes = 600L)))
+    genes <- rownames(d$y)
+    for (k in list(2.5, NA_integer_, NA_real_, "2", -1L, c(1L, 2L), NULL, TRUE, 1e10)) {
+        condition <- tryCatch(trxRuvFactors(d$y, d$log_cpm_tmm, d$design, genes, k, "RUVs"), error = function(e) e)
+        expect_s3_class(condition, c("trx_ruv_k_invalid", "trx_error"), exact = FALSE)
+    }
+    # a whole k held as a double is a k
+    expect_identical(ncol(suppressWarnings(suppressMessages(trxRuvFactors(d$y, d$log_cpm_tmm, d$design, genes, 1, "RUVs")))$W), 1L)
+    # every group's runs identical: RUVs has no replicate difference to estimate from (RUVSeq fails on an empty index)
+    same <- d$y
+    same[, 2:6] <- same[, 1L]
+    same[, 8:12] <- same[, 7L]
+    log_cpm <- suppressWarnings(suppressMessages(trxTmmLogCpm(same, d$design$group)))$log_cpm_tmm
+    expect_error(suppressWarnings(RUVSeq::RUVs(trxDesignTestUq(same), genes, 1L, RUVSeq::makeGroups(d$design$group))))
+    condition <- tryCatch(suppressWarnings(suppressMessages(trxRuvFactors(same, log_cpm, d$design, genes, 1L, "RUVs"))), error = function(e) e)
+    expect_s3_class(condition, c("trx_ruv_k_unavailable", "trx_error"), exact = FALSE)
+    expect_match(conditionMessage(condition), "identical", fixed = TRUE)
+    # one group with a difference is enough for RUVs to run
+    partly <- d$y
+    partly[, 2:6] <- partly[, 1L]
+    log_cpm <- suppressWarnings(suppressMessages(trxTmmLogCpm(partly, d$design$group)))$log_cpm_tmm
+    expect_identical(ncol(suppressWarnings(suppressMessages(trxRuvFactors(partly, log_cpm, d$design, genes, 1L, "RUVs")))$W), 1L)
+})
+
+test_that("(KIT-129 audit F-09) unequal groups, three groups and a group of one: the recommended and the supplied designs are the direct RUVSeq and edgeR calls", {
+    trxDesignTestPackages()
+    layouts <- list(unequal = list(per_group = c(6L, 3L), groups = 2L), three = list(per_group = 4L, groups = 3L),
+        one = list(per_group = c(5L, 3L, 1L), groups = 3L), six_one = list(per_group = c(6L, 1L), groups = 2L))
+    for (name in names(layouts)) {
+        d <- suppressWarnings(suppressMessages(trxDesignTestData(seed = 131L, genes = 900L, per_group = layouts[[name]]$per_group,
+            groups = layouts[[name]]$groups)))
+        genes <- rownames(d$y)
+        uq <- trxDesignTestUq(d$y)
+        expect_identical(as.integer(table(d$design$group)), rep_len(layouts[[name]]$per_group, layouts[[name]]$groups), info = name)
+        # the recommended design: RUVs with the groups as replicate sets (a group of one has no set)
+        sets <- RUVSeq::makeGroups(d$design$group)
+        arm <- RUVSeq::RUVs(uq, genes, 1L, sets)
+        p <- suppressWarnings(suppressMessages(trxDesignTestPackage(d, "groups_all_features", 1L, "user")))
+        expect_identical(unname(as.matrix(p$s$W)), unname(arm$W), info = name)
+        expect_identical(rownames(p$s$W), d$design$Run, info = name)
+        expect_identical(p$table, suppressWarnings(suppressMessages(trxDesignTestEdgeR(d$y, d$design, arm$W))), info = name)
+        # the supplied design: RUVg with the list in the matrix's row order
+        supplied <- withr::with_seed(9L, sample(d$null, 40L))
+        matched <- genes[genes %in% supplied]
+        arm <- RUVSeq::RUVg(uq, matched, 1L)
+        p <- suppressWarnings(suppressMessages(trxDesignTestPackage(d, "supplied_controls", 1L, "user", supplied)))
+        expect_identical(p$choice$chosen$control_genes, matched, info = name)
+        expect_identical(unname(as.matrix(p$s$W)), unname(arm$W), info = name)
+        expect_identical(p$table, suppressWarnings(suppressMessages(trxDesignTestEdgeR(d$y, d$design, arm$W))), info = name)
     }
 })
 
@@ -350,3 +456,37 @@ test_that("(KIT-129 W4) through the declarations: the none design commits a RUVs
     direct <- suppressWarnings(suppressMessages(trxDaApply(trxDaFit(filtered$counts, pdata, "~ 0 + group"), entry)))$results[[1L]]$top_table
     expect_identical(top, direct)
 })
+
+test_that("(KIT-129 audit F-01) a second declared design on a RUVs head leaves the first one's factors out of the state and the test", {
+    fixture <- trxDesignTestOwner()
+    owner <- fixture$owner
+    read <- function(name) trxAssayInputs(withWorkflowStateScope(owner, function() readTrxWorkflowState(owner, name)))
+    formula <- function() withWorkflowStateScope(owner, function() trxRealisedFormula(owner, getWorkflowStateReference(owner)))
+    declared <- function(...) suppressWarnings(suppressMessages(runTrxReferenceRuvs(owner, NULL, list(), design_parameters = trxRuvDesignParameters(...))))
+    filtered <- read("trx_qc_complete")
+    first <- declared("groups_all_features", 2L, "user")
+    expect_identical(formula(), "~ 0 + group + W_1 + W_2")
+    # none on that head: no factor in the state's design, the formula the DA realises is the record's
+    none <- declared("none")
+    expect_false(none$value$outcomes$ruv_applied)
+    state <- read(owner$current_state)
+    expect_identical(names(state$design), names(filtered$design))
+    expect_identical(formula(), "~ 0 + group")
+    expect_identical(state$counts, filtered$counts)
+    da <- suppressWarnings(suppressMessages(runTrxReferenceDaAnalysis(owner, getWorkflowStateReference(owner),
+        list(da_q_val_thresh = 0.05, treat_lfc_cutoff = 1), fixture$workflow$contrasts_tbl)))
+    expect_identical(da$manifest$parameters$formula, "~ 0 + group")
+    expect_identical(da$manifest$model$w_columns, character())
+    # k = 1 after k = 2, on a head that carries two factors again: exactly one W, this run's
+    again <- declared("groups_all_features", 2L, "user")
+    expect_identical(formula(), "~ 0 + group + W_1 + W_2")
+    one <- declared("groups_all_features", 1L, "user")
+    expect_identical(one$value$outcomes[c("ruv_k", "ruv_applied")], list(ruv_k = 1L, ruv_applied = TRUE))
+    state <- read(owner$current_state)
+    expect_identical(names(state$design), c(names(filtered$design), "W_1"))
+    arm <- RUVSeq::RUVs(trxDesignTestUq(filtered$counts), rownames(filtered$counts), 1L, RUVSeq::makeGroups(filtered$design$group))
+    expect_identical(unname(as.matrix(state$design[, "W_1", drop = FALSE])), unname(arm$W))
+    expect_identical(unname(as.matrix(one$value$W)), unname(arm$W))
+    expect_identical(formula(), "~ 0 + group + W_1")
+})
+

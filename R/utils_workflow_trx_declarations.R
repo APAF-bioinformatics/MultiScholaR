@@ -387,6 +387,9 @@ trxRuvsOperation <- function(binding) {
             s <- if (is.null(declared)) {
                 trxRuvs(x$counts, log_cpm, x$design, grid$chosen$control_genes, grid$chosen$k)
             } else {
+                # Audit F-01: a source that already carries factors (a second RUV run on a head) gives them up, so the
+                # state's design, and the formula the DA realises from it, hold this design's factors and no other.
+                object@design_matrix <- object@design_matrix[, !startsWith(names(object@design_matrix), "W_"), drop = FALSE]
                 c(trxRuvFactors(x$counts, log_cpm, x$design, grid$chosen$control_genes, grid$chosen$k, declared$method),
                     list(control_source = grid$control_source))
             }

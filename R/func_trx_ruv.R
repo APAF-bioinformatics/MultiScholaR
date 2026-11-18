@@ -214,6 +214,22 @@ TRX_RUV_DESIGNS <- c("groups_all_features", "supplied_controls", "first_pass_nul
 #' @noRd
 TRX_FIRST_PASS_DROPPED_SHARE <- 0.25
 
+#' Refuse RUV inputs that are not one set of runs and genes (KIT-129 audit F-05): the design's `Run` must be the count
+#' columns, and the logCPM's genes and runs the counts', identical in order and content. RUVSeq takes the replicate
+#' sets by position, so a design in another order gives factors of the wrong runs without an error.
+#' @param log_cpm_tmm The TMM logCPM; NULL where the caller has none.
+#' @noRd
+trxRuvCheckAlignment <- function(filtered_counts, design, log_cpm_tmm = NULL) {
+    refuse <- function(message) trxAbort(message, c("trx_ruv_inputs_misaligned", "trx_error"))
+    if (!identical(colnames(filtered_counts), as.character(design$Run))) {
+        refuse("the design's runs are not the count columns in the same order")
+    }
+    if (is.null(log_cpm_tmm)) return(invisible(NULL))
+    if (!identical(colnames(log_cpm_tmm), colnames(filtered_counts))) refuse("the logCPM's runs are not the count columns in the same order")
+    if (!identical(rownames(log_cpm_tmm), rownames(filtered_counts))) refuse("the logCPM's genes are not the counts' genes in the same order")
+    invisible(NULL)
+}
+
 #' The controls and the RUVSeq method of a declared design.
 #' @param filtered_counts The filtered counts (genes by runs).
 #' @param design The validated design (`Run`, `group`).
@@ -225,6 +241,7 @@ TRX_FIRST_PASS_DROPPED_SHARE <- 0.25
 #'   `trx_ruv_controls_invalid` when no supplied id is in the matrix.
 #' @noRd
 trxRuvDesignControls <- function(filtered_counts, design, ruv_design, control_ids = character()) {
+    trxRuvCheckAlignment(filtered_counts, design)
     genes <- rownames(filtered_counts)
     controls <- function(control_genes, control_rule, method, unmatched = character()) {
         list(control_genes = control_genes, control_rule = control_rule, method = method, unmatched = unmatched)
@@ -267,20 +284,27 @@ trxUpperQuartileCounts <- function(filtered_counts) {
 #' `RUVSeq::RUVg`, on upper-quartile counts with the given controls and k.
 #' @param filtered_counts The filtered counts (genes by runs); the test's input, returned unchanged.
 #' @param log_cpm_tmm Their TMM logCPM.
-#' @param design The validated design (`Run`, `group`).
+#' @param design The validated design (`Run`, `group`). Columns named `W_...` are an earlier RUV step's factors (the
+#'   package's rule, `trxDaFormula`) and are dropped, so the returned `pdata` carries this call's factors alone.
 #' @param control_genes The control genes (`trxRuvDesignControls`).
 #' @param k The number of factors, a whole number; 0 gives no factor.
 #' @param method `"RUVs"` or `"RUVg"`; not read when k is 0.
 #' @return `trxRuvs`' list without `control_source`: `W` (`W_1..W_k`, a data frame by run, no column when k is 0),
 #'   `ruvs_counts` (the filtered counts), `log_cpm_ruvs` (visualisation and export only: `removeBatchEffect` with W;
 #'   the TMM logCPM itself when k is 0) and `pdata` (the design with W, the DA kernel's input). Refuses
-#'   `trx_ruv_controls_invalid` (a control that is not a gene of the matrix) and `trx_ruv_k_unavailable` (k leaves no
-#'   residual degree of freedom beside the groups, is not below the number of controls, or RUVSeq returned fewer
-#'   factors: k is never reduced).
+#'   `trx_ruv_inputs_misaligned` (`trxRuvCheckAlignment`), `trx_ruv_k_invalid` (k is not one whole number of 0 or
+#'   more), `trx_ruv_controls_invalid` (a control that is not a gene of the matrix) and `trx_ruv_k_unavailable` (k
+#'   leaves no residual degree of freedom beside the groups, is not below the number of controls, the runs of every
+#'   group are identical under RUVs, or RUVSeq returned fewer factors: k is never reduced).
 #' @noRd
 trxRuvFactors <- function(filtered_counts, log_cpm_tmm, design, control_genes, k, method = c("RUVs", "RUVg")) {
     validateTrxCounts(filtered_counts)
-    k <- checkmate::assert_count(k, coerce = TRUE)
+    trxRuvCheckAlignment(filtered_counts, design, log_cpm_tmm)
+    if (!checkmate::test_count(k)) {
+        trxAbort(sprintf("k must be one whole number of 0 or more, not %s", substr(deparse1(k), 1L, 40L)), c("trx_ruv_k_invalid", "trx_error"))
+    }
+    k <- as.integer(round(k))
+    design <- design[, !startsWith(names(design), "W_"), drop = FALSE]
     pdata <- data.frame(design, row.names = design$Run)
     if (k == 0L) {
         return(list(W = pdata[, character(), drop = FALSE], ruvs_counts = filtered_counts, log_cpm_ruvs = log_cpm_tmm, pdata = pdata))
@@ -299,6 +323,12 @@ trxRuvFactors <- function(filtered_counts, log_cpm_tmm, design, control_genes, k
     }
     if (k >= length(control_genes)) refuse_k(sprintf("there are %d control gene(s) and k must be below their number", length(control_genes)))
     uq <- trxUpperQuartileCounts(filtered_counts)
+    # RUVs estimates the factors from the differences of the runs within a group; when there is none it fails on an
+    # empty index (KIT-129 audit F-08).
+    runs_by_group <- split(seq_len(ncol(uq)), as.character(design$group))
+    if (method == "RUVs" && all(vapply(runs_by_group, \(runs) all(uq[, runs] == uq[, runs[[1L]]]), logical(1)))) {
+        refuse_k("the runs of every group are identical, so their differences hold no unwanted variation")
+    }
     fit <- if (method == "RUVs") {
         RUVSeq::RUVs(uq, control_genes, k, RUVSeq::makeGroups(design$group))
     } else {
