@@ -86,7 +86,10 @@ mask <- function(text) {
     text <- gsub("/home/runner/work/_temp", "<runner-temp>", text)
     gsub("file[0-9a-f]{6,}", "file<id>", text)
 }
-keyed <- function(names) paste0(names, " #", stats::ave(seq_along(names), names, FUN = seq_along))
+keyed <- function(names) {
+    if (!length(names)) return(character())
+    paste0(names, " #", stats::ave(seq_along(names), names, FUN = seq_along))
+}
 digestWithoutValue <- function(messages) {
     any(grepl("digest|sha256|sha1|md5|hash", messages, ignore.case = TRUE)) && !any(grepl("[0-9a-f]{32,}", messages))
 }
@@ -166,7 +169,8 @@ if (!is.null(base_side) && !is.null(head_side)) {
     for (i in seq_along(requested)) {
         file <- requested[[i]]
         b <- base_side$rows[i, ]; h <- head_side$rows[i, ]
-        result <- compareFile(b, h, base_side$detail[[file]], head_side$detail[[file]])
+        result <- tryCatch(compareFile(b, h, base_side$detail[[file]], head_side$detail[[file]]), error = function(e)
+            list(verdict = "compare-error", tests = character(), note = paste("comparison failed:", conditionMessage(e)), pairs = list()))
         rows[[i]] <- data.frame(file = file, base_passed = b$passed, base_failed = b$failed, base_errors = b$errors,
             base_skipped = b$skipped, base_status = b$status, head_passed = h$passed, head_failed = h$failed,
             head_errors = h$errors, head_skipped = h$skipped, head_status = h$status, verdict = result$verdict,
@@ -231,11 +235,11 @@ tableTitle <- function(rows, title) c(
         if (any(rows$status == "absent")) sprintf(", absent %d", sum(rows$status == "absent")) else ""), "")
 md <- tableTitle(rows, "Tests (head)")
 if (!is.null(compare)) {
-    verdicts <- table(factor(compare$verdict, levels = c("same", "new-failure", "message-changed", "count-changed", "fixed", "only-on-head")))
+    verdicts <- table(factor(compare$verdict, levels = c("same", "new-failure", "message-changed", "count-changed", "fixed", "only-on-head", "compare-error")))
     shown <- compare[compare$verdict != "same" | nzchar(compare$note), ]
     md <- c(md, tableTitle(base_side$rows, "Tests (base)"),
         sprintf("### Base versus head: %s", paste(sprintf("%s %d", names(verdicts), as.integer(verdicts)), collapse = ", ")),
-        if (verdicts[["new-failure"]] + verdicts[["message-changed"]] == 0L) "**Clean under the rule** (no new failure, no changed failure message)" else
+        if (verdicts[["new-failure"]] + verdicts[["message-changed"]] + verdicts[["compare-error"]] == 0L) "**Clean under the rule** (no new failure, no changed failure message)" else
             "**Not clean under the rule**: see the rows below and compare-failures.txt", "",
         "| file | base p/f/e/s | head p/f/e/s | verdict | tests | note |", "|---|---|---|---|---|---|",
         sprintf("| %s | %d/%d/%d/%d %s | %d/%d/%d/%d %s | %s | %s | %s |", shown$file, shown$base_passed, shown$base_failed,
