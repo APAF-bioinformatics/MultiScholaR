@@ -30,14 +30,19 @@
 # (log2((count + 0.5) / (library + 1) * 1e6)). The biological sample of recipe$dropped is removed
 # from that omic's files after generation (decision D4: it stays missing, not dropped elsewhere).
 #
-# Layout (KIT-061's integration input contract is not on performance-v2 yet; the file names follow
-# the proposal of AUDIT section 4.1 so that its manifest, integration_input.json, can be added
-# without rewriting the tables):
+# Layout: each <omic>/ folder is one omic's integration input in the form of KIT-061's contract
+# (R/utils_workflow_integration_input.R; readIntegrationInput() accepts it), the tables under the
+# contract's fixed names:
 #   <omic>/matrix_<view>.tsv    features in rows; feature_id, then one column per run (the omic's
 #                               own run names, in a seeded order); log2 values, 4 decimals; NA kept
 #   <omic>/features_<view>.tsv  feature_id, display_name
 #   <omic>/samples.tsv          Run, group, replicates, tech_rep_group, batch, biological_sample
 #                               (the cross-omic key); one row per matrix column, in column order
+#   <omic>/integration_input.json  the contract's manifest: matrix_role "normalised", no
+#                               correction, every table's sha256. Written here, not through
+#                               writeIntegrationInput(), so that the tables stay as above and the
+#                               file holds nothing that varies by machine, package version or
+#                               time: no version, and written_at fixed to the corpus's date
 #   truth_scores.tsv            biological_sample, group, Z1, Z2, Z3 (6 decimals)
 #   truth_loadings.tsv          omic, view, feature_id, Z1, Z2, Z3 loadings and batch_B1..B3
 #                               effects (NA where the omic has no such batch)
@@ -54,6 +59,12 @@
 # (default directory tests/testdata/integration/corpus, the committed copy).
 
 INTEGRATION_CORPUS_SEED <- 20261117L
+
+# The route each omic's integration input names (KIT-060 audit 4.2) and its values' scale.
+INTEGRATION_CORPUS_WORKFLOWS <- c(proteomics = "LFQ", transcriptomics = "TRANSCRIPTOMICS",
+    lipidomics = "LIPIDOMICS", metabolomics = "METABOLOMICS")
+INTEGRATION_CORPUS_SCALES <- c(proteomics = "log2", transcriptomics = "log2_cpm",
+    lipidomics = "log2", metabolomics = "log2")
 
 integrationCorpusRecipe <- function(seed = INTEGRATION_CORPUS_SEED) {
     all_omics <- c("proteomics", "transcriptomics", "lipidomics", "metabolomics")
@@ -267,7 +278,40 @@ integrationWriteOmic <- function(directory, omic, built, digits) {
             integrationWriteTable(matrix_table, file.path(out, sprintf("matrix_%s.tsv", view))),
             integrationWriteTable(feature_table, file.path(out, sprintf("features_%s.tsv", view))))
     }
-    paths
+    c(paths, integrationWriteInputManifest(out, omic, built, paths))
+}
+
+# The omic's KIT-061 manifest (fields of KIT-060 audit 4.2) over the tables just written.
+integrationWriteInputManifest <- function(out, omic, built, paths) {
+    views <- lapply(names(built$views), \(view) list(name = view,
+        matrix_file = sprintf("matrix_%s.tsv", view), features_file = sprintf("features_%s.tsv", view),
+        rows = nrow(built$views[[view]]), columns = ncol(built$views[[view]])))
+    manifest <- list(
+        schema = "multischolar.integration_input.v1",
+        omic_type = omic,
+        workflow = INTEGRATION_CORPUS_WORKFLOWS[[omic]],
+        matrix_role = "normalised",
+        correction = NULL,
+        scale = INTEGRATION_CORPUS_SCALES[[omic]],
+        source_state = list(name = "synthetic", synthetic = TRUE,
+            note = "KIT-137 tier 1: written by the composer, not by an omic's journey"),
+        sample_id_column = "Run",
+        group_column = "group",
+        technical_replicate_column = "tech_rep_group",
+        biological_sample_column = "biological_sample",
+        feature_id_column = "feature_id",
+        display_name_column = "display_name",
+        views = views,
+        samples_file = "samples.tsv",
+        files = stats::setNames(lapply(paths, \(path) digest::digest(file = path, algo = "sha256")),
+            basename(paths)),
+        software = list(package = "MultiScholaR",
+            composer = "tests/testdata/integration/compose_integration_corpus.R"),
+        written_at = "2026-11-17T00:00:00Z",
+        synthetic = TRUE)
+    path <- file.path(out, "integration_input.json")
+    jsonlite::write_json(manifest, path, auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null")
+    path
 }
 
 integrationLoadingTable <- function(built, batch_levels) {
