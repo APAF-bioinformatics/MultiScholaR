@@ -10,6 +10,12 @@
 #         the package's estimated count (S1: `estimateRuvFactorCount`; S2: the declared kernel's own count)
 #   m30b  arm 26 (classic proteomics: treat() given the trend and robust settings) and arm 32 (all together) in every
 #         omic with arm 32
+#   count KIT-129 item 3: each omic's new-design kernel computes k itself by the estimated count, and that k equals the
+#         simulator's arm 32 E (arm 31 in transcriptomics; B = 200, the biological units removed on the
+#         technical-duplicate cell): classic proteomics `computeProtRuvModelFactors(ruv_k_rule = "num_sv_be")` (S1),
+#         DIA with limpa the declared kernel (S2), transcriptomics `trxChooseRuvDesign` with the count (S3, run 1 of C0
+#         and C6), lipidomics and metabolomics `runOmicsRuvFactors(ruv_k_rule = "num_sv_be")` (S4, on the view of the
+#         features complete in study and pooled-QC injections, the features S4's E is computed on)
 # Writes <out dir>/<stage>-simulator.rds and <stage>-package.rds (named lists: per data set, arm and omic, the table
 # keyed by feature and contrast, and k), compares them with packaging/verify/compare-results.R (relative 1e-6,
 # absolute floor 1e-9, discrete values exact) into <stage>-compare.tsv, and writes <stage>-summary.tsv (one row per
@@ -33,7 +39,7 @@
 
 stage <- commandArgs(TRUE)[[1L]]
 out_dir <- commandArgs(TRUE)[[2L]]
-stopifnot(stage %in% c("m29", "m30a", "m30b"))
+stopifnot(stage %in% c("m29", "m30a", "m30b", "count"))
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -158,10 +164,16 @@ for (cell in cells) {
         add(sprintf("S1/%s/arm32/k", cell), E32, k32, "arm 32's E against the package's count")
         if (k32 > 0L) add_tables(sprintf("S1/%s/arm32/classic", cell), arm_table(E32, TRUE, TRUE), entry(k32))
     }
+    if (stage == "count") {
+        own <- silently(computeProtRuvModelFactors(normalised, ruv_k_rule = "num_sv_be", ruv_grouping_variable = "group",
+            ruv_k_seed = seed * 100L))
+        add(sprintf("S1/%s/arm32/kernel_k", cell), count(200L, p$duplicates), own$k,
+            "arm 32's E against the classic kernel's own count (computeProtRuvModelFactors, num_sv_be)")
+    }
 }
 
 # ---- S2, DIA with limpa ------------------------------------------------------------------------------------------------
-if (stage %in% c("m29", "m30a", "m30b")) {
+if (stage %in% c("m29", "m30a", "m30b", "count")) {
     s2 <- simulator("s2_limpa.R", "2ba5cf87", "^if \\(!is.null\\(cells_wanted\\)\\)")
     table_s2 <- s2$cellTable()
     for (cell_name in cells) {
@@ -219,6 +231,11 @@ if (stage %in% c("m29", "m30a", "m30b")) {
             package <- kernel()
             add(sprintf("S2/%s/arm%s/k", cell_name, if (units) "32" else "31"), count(200L, units), package$value$ruv_k_estimate,
                 "arm 31's E (C0) or arm 32's E (C6, the units removed), B = 200, against the declared kernel's own count")
+        }
+        if (stage == "count") {
+            package <- kernel()
+            add(sprintf("S2/%s/arm%s/kernel_k", cell_name, if (units) "32" else "31"), count(200L, units), package$value$best_k,
+                "arm 31's E (C0) or arm 32's E (C6, the units removed) against the declared kernel's own k")
         }
         if (stage == "m30b") {
             E32 <- count(200L, units)
@@ -281,6 +298,56 @@ if (stage %in% c("m29", "m30b")) {
                 add(sprintf("S4/%s/%s/%s/%s/k", cell_name, arm, omic, assay), as.integer(k_of[[assay]]), as.integer(run$factors[[assay]]$k))
                 add_tables(sprintf("S4/%s/%s/%s/%s", cell_name, arm, omic, assay), keyed(ref$feature, ref$contrast, ref$est, ref$p, ref$q),
                     keyed(got[[id]], got$comparison, got$logFC, got$P.Value, got$fdr_qvalue))
+            }
+        }
+    }
+}
+
+# ---- S3, transcriptomics (stage count) -------------------------------------------------------------------------------
+if (stage == "count") {
+    s3 <- simulator("s3_trx.R", "2ba5cf87", "^selected <- if")
+    for (cell_name in cells) {
+        cl <- s3$CELLS[[cell_name]]
+        seed <- 100000L + 10000L * cl$idx + 1L
+        # the shared preparation of every arm as `oneRun` forms it (s3_trx.R lines 320-330); arm 31's E (line 450)
+        prep <- silently({
+            d <- s3$generate(cl, seed)
+            y <- trxExpressionFilter(d$counts, d$design$group)$filtered_counts
+            n <- trxTmmLogCpm(y, d$design$group)
+            list(d = d, y = y, n = n)
+        })
+        E200 <- as.integer(silently(sva::num.sv(prep$n$log_cpm_tmm, stats::model.matrix(~ group, data = prep$d$design), method = "be",
+            B = 200, seed = seed)))
+        choice <- silently(trxChooseRuvDesign(list(counts = prep$y, design = prep$d$design),
+            trxRuvDesignParameters("groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = seed), log_cpm = prep$n$log_cpm_tmm))
+        add(sprintf("S3/%s/arm31/kernel_k", cell_name), E200, choice$ruv_design$k,
+            "arm 31's E (B = 200; C6's libraries are not summed on this simulator tree) against trxChooseRuvDesign's own count")
+    }
+}
+
+# ---- S4, lipidomics and metabolomics (stage count) -------------------------------------------------------------------
+if (stage == "count") {
+    s4 <- simulator("s4_lipid_metab.R", "2d03b103", "^# ---- driver")
+    table_s4 <- s4$cellTable()
+    for (cell_name in cells) {
+        cell <- table_s4[[cell_name]]
+        seed <- 100000L + 10000L * cell$index + 1L
+        data <- s4$generateData(cell, seed)
+        # arm 32's E as `runOne` forms it (s4_lipid_metab.R lines 843-848): the features complete in study and QC
+        E32 <- lapply(data$assays, function(a) {
+            dat <- a$y[s4$completeFeatures(a), , drop = FALSE]
+            mod <- stats::model.matrix(~ factor(if (cell$duplicates) data$design$extract else data$design$group))
+            as.integer(silently(sva::num.sv(dat, mod, method = "be", B = 200, seed = seed * 100L + 99L)))
+        })
+        # the package holds the study injections only: it is given the view of those same features
+        view <- s4$restrictData(data, lapply(data$assays, s4$completeFeatures))
+        mats <- lapply(view$assays, `[[`, "y")
+        for (omic in c("lipid", "metab")) {
+            object <- if (omic == "lipid") s4$lipidObject(mats, view$design) else s4$metabObject(mats, view$design)
+            run <- silently(runOmicsRuvFactors(object, "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = seed * 100L + 99L))
+            for (assay in s4$ASSAYS) {
+                add(sprintf("S4/%s/arm32/%s/%s/kernel_k", cell_name, omic, assay), E32[[assay]], as.integer(run$factors[[assay]]$k),
+                    "arm 32's E against runOmicsRuvFactors' own count (num_sv_be)")
             }
         }
     }

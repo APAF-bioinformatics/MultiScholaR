@@ -381,7 +381,7 @@ test_that("(KIT-129 audit F-07) the choice does not depend on how its parameters
     ids <- rownames(d$y)[c(40L, 3L, 17L, 250L)]
     expect_identical(trxRuvDesignParameters("groups_all_features", 2, "user"), trxRuvDesignParameters("groups_all_features", 2L, "user"))
     expect_identical(trxCanonicalRuvDesignParameters(list(ruv_design = "groups_all_features", ruv_k = 2, ruv_k_rule = "user")),
-        list(ruv_design = "groups_all_features", ruv_k = 2L, ruv_k_rule = "user", ruv_control_ids = character()))
+        list(ruv_design = "groups_all_features", ruv_k = 2L, ruv_k_rule = "user", ruv_control_ids = character(), ruv_k_seed = NA_integer_))
     # the design none takes no k: none given, NA and 0 are one declaration
     for (k in list(NULL, NA, NA_real_, 0, 0L)) {
         expect_identical(trxCanonicalRuvDesignParameters(list(ruv_design = "none", ruv_k = k)), trxRuvDesignParameters("none"))
@@ -469,7 +469,7 @@ test_that("(KIT-129 W4) today's declarations are the default: the grid's and the
     }
     declared <- trxRuvGridOperation(binding, "declared")
     expect_identical(declared$name, "trx_ruv_grid")
-    expect_identical(declared$parameters, c("logcpm", "ruv_design", "ruv_k", "ruv_k_rule", "ruv_control_ids"))
+    expect_identical(declared$parameters, c("logcpm", "ruv_design", "ruv_k", "ruv_k_rule", "ruv_control_ids", "ruv_k_seed"))
     expect_identical(declared$product_type, "trx.ruv_grid")
     for (declaration in list(trxRuvsOperation(binding), workflowOperationEntry("trx_ruvs")$declaration)) {
         expect_identical(declaration$parameters, c("logcpm", "grid"))
@@ -686,4 +686,29 @@ test_that("(KIT-129 B1) the shared runner refuses today's grid a declared design
     expect_identical(runs$design$value$ruv_design$id, "groups_all_features")
     expect_null(workflowLegacyDesignRefusal(trxRuvGridOperation(transcriptomicsDeclarationBinding, "declared")))
     expect_identical(workflowLegacyDesignRefusal(trxRuvGridOperation(transcriptomicsDeclarationBinding)), trxRefuseDeclaredRuvParameters)
+})
+
+test_that("(KIT-129 item 3) with the k rule num_sv_be and no k, the choice estimates k itself on the TMM logCPM", {
+    trxDesignTestPackages()
+    testthat::skip_if_not_installed("sva")
+    d <- suppressWarnings(suppressMessages(trxDesignTestData()))
+    x <- list(counts = d$y, design = d$design)
+    parameters <- trxRuvDesignParameters("groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = 129L)
+    expect_identical(parameters$ruv_k_seed, 129L)
+    expect_identical(trxRuvDesignParameters("groups_all_features", ruv_k_rule = "num_sv_be")$ruv_k_seed, RUV_FACTOR_COUNT_SEED)
+    expect_identical(trxRuvDesignParameters("groups_all_features", 2L, "user")$ruv_k_seed, NA_integer_)
+    expect_error(trxRuvDesignParameters("groups_all_features", 2L, "user", ruv_k_seed = 1L), class = "trx_ruv_design_invalid")
+    choice <- suppressMessages(trxChooseRuvDesign(x, parameters, log_cpm = d$log_cpm_tmm))
+    # the simulator's E with 200 permutations (S3 arm 31): sva::num.sv on the TMM logCPM, the groups removed
+    E200 <- as.integer(sva::num.sv(d$log_cpm_tmm, stats::model.matrix(~ group, data = d$design), method = "be", B = 200, seed = 129L))
+    expect_identical(choice$ruv_design[c("k", "k_rule")], list(k = E200, k_rule = "num_sv_be"))
+    expect_identical(choice$k_record$k_estimate, E200)
+    expect_identical(choice$k_estimate$k, E200)
+    expect_s3_class(plotRuvFactorCount(choice$k_estimate), "ggplot")
+    expect_identical(choice$settings$ruv_k_seed, 129L)
+    expect_error(trxChooseRuvDesign(x, parameters), class = "trx_ruv_design_invalid")
+    # a k given with the rule is taken as resolved, as before
+    given <- suppressMessages(trxChooseRuvDesign(x, trxRuvDesignParameters("groups_all_features", 1L, "num_sv_be")))
+    expect_null(given$k_estimate)
+    expect_identical(given$ruv_design$k, 1L)
 })

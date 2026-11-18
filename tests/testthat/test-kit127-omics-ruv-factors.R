@@ -750,3 +750,45 @@ kit127LegacyDigests <- function() {
 test_that("the legacy DA without RUV factors is unchanged by the exact standard errors (M29)", {
     expect_identical(kit127LegacyDigests(), c(lipid = "2d923db5e9fc4ff2d193b200014e73d9", metab = "c6fa5d5cc4881d65a71296422749962c"))
 })
+
+test_that("(KIT-129 item 3) the estimated count is the kernel's own k, per assay; with technical replicates it removes the units", {
+    skip_if_not_installed("ruv")
+    skip_if_not_installed("sva")
+    fixture <- kit127Fixture()
+    for (omic in c("lipid", "metab")) {
+        mats <- lapply(fixture$assays, function(a) rbind(a$y, a$is))
+        object <- if (omic == "lipid") kit127Lipid(mats, fixture$design) else kit127Metab(mats, fixture$design)
+        run <- suppressWarnings(kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = 11L)))
+        expect_identical(run$parameters[c("ruv_k_rule", "ruv_k_seed")], list(ruv_k_rule = "num_sv_be", ruv_k_seed = 11L), info = omic)
+        for (assay in names(mats)) {
+            record <- run$factors[[assay]]
+            expected <- tryCatch(estimateRuvFactorCount(mats[[assay]], fixture$design$group, seed = 11L), ruv_factor_count_unavailable = \(e) e)
+            expect_identical(record$ruv_k_rule, "num_sv_be", info = omic)
+            if (inherits(expected, "condition")) {
+                expect_identical(record[c("status", "reason", "reason_class")], list(status = "refused",
+                    reason = conditionMessage(expected), reason_class = class(expected)[[1L]]), info = omic)
+            } else {
+                expect_identical(record$k, expected$k, info = omic)
+                expect_identical(record$ruv_k_estimate, expected$k, info = omic)
+                expect_identical(record$k_estimate$components, expected$components, info = omic)
+                expect_s3_class(plotRuvFactorCount(record$k_estimate), "ggplot")
+            }
+        }
+    }
+    object <- kit127Lipid(lapply(fixture$assays, `[[`, "y"), fixture$design)
+    expect_error(runOmicsRuvFactors(object, "groups_all_features", 1L, "num_sv_be"), class = "omics_ruv_factors_invalid")
+    expect_error(runOmicsRuvFactors(object, "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = 1.5), class = "omics_ruv_factors_invalid")
+    # technical replicates: the count removes the biological units (M28)
+    for (omic in c("lipid", "metab")) {
+        tech <- techRepRuvObject(omic)
+        run <- suppressWarnings(kit127Quiet(runOmicsRuvFactors(tech, "groups_all_features", ruv_k_rule = "num_sv_be")))
+        slots <- omicsRuvAssaySlots(tech)
+        for (assay in names(methods::slot(tech, slots$data))) {
+            values <- omicsRuvAssayValues(methods::slot(tech, slots$data)[[assay]], methods::slot(tech, slots$id),
+                tech@design_matrix$Run, assay)
+            expected <- estimateRuvFactorCount(values, tech@design_matrix$group, units = tech@design_matrix$tech_rep_group)
+            expect_identical(run$factors[[assay]]$k_estimate$removed, "biological units", info = omic)
+            expect_identical(run$factors[[assay]]$ruv_k_estimate, expected$k, info = omic)
+        }
+    }
+})

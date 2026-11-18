@@ -166,6 +166,12 @@ ruvModelParameters <- function(ruv_mode = "manual", ruv_k = 2) {
     parameters
 }
 
+# The new design's parameters (KIT-129 item 3): the design, the k rule the step's mode takes (the user's k when manual,
+# the estimated count when automatic) and the default seed.
+ruvModelDeclared <- function(parameters, ruv_k_rule = if (identical(parameters$ruv_mode, "automatic")) "num_sv_be" else "user") {
+    c(parameters, list(ruv_design = "groups_all_features", ruv_k_rule = ruv_k_rule, ruv_k_seed = NULL))
+}
+
 ruvModelQuietly <- function(expr) {
     value <- NULL
     utils::capture.output(value <- suppressWarnings(suppressMessages(expr)))
@@ -180,7 +186,7 @@ ruvModelThroughOperations <- function(fixture, k) {
     contrasts <- normaliseProtDaContrastsTable(data.frame(contrasts = "grouptreated-groupcontrol"))
     ruvModelQuietly(withDIAStateScope(manager, function() {
         chosen <- runSavedOperation(manager, diaNormalizationOperation("declared"), source,
-            c(ruvModelParameters(ruv_k = k), list(ruv_design = "groups_all_features")))
+            ruvModelDeclared(ruvModelParameters(ruv_k = k)))
         spec <- readDIAStateMetadata(manager, chosen$value$final)$data
         contrast <- runSavedOperation(manager, diaContrastOperation(), chosen$value$final, list(formula = "~ 0 + group",
             qvalue = 0.05, lfc = 0, weights = NA, contrast = contrasts$full_format[[1L]],
@@ -245,10 +251,10 @@ test_that("the corrected state carries the corrected table, the factors and the 
     expect_identical(unname(as.matrix(state@design_matrix[, c("W1", "W2")])), unname(package$factors$W[samples, ]))
     expect_identical(state@technical_replicate_id, "tech_rep_group")
     declared <- state@args$ruvCovariates
-    expect_identical(declared[c("ruv_mode", "ruv_design", "k", "ruv_k_rule", "k_estimated", "k_bounded", "ruv_controls",
+    expect_identical(declared[c("ruv_mode", "ruv_design", "k", "ruv_k_rule", "ruv_k_estimate", "ruv_controls",
         "replicate_structure", "ruv_grouping_variable", "tested_matrix")],
-        list(ruv_mode = "covariates", ruv_design = "groups_all_features", k = 2L, ruv_k_rule = "user", k_estimated = 2L,
-            k_bounded = FALSE, ruv_controls = "all", replicate_structure = "group", ruv_grouping_variable = "group",
+        list(ruv_mode = "covariates", ruv_design = "groups_all_features", k = 2L, ruv_k_rule = "user", ruv_k_estimate = NA_integer_,
+            ruv_controls = "all", replicate_structure = "group", ruv_grouping_variable = "group",
             tested_matrix = "uncorrected"))
     complete <- sum(rowSums(!is.finite(fixture$x)) == 0)
     expect_identical(declared$control_count, complete)
@@ -274,31 +280,42 @@ test_that("W comes from the proteins observed in every sample, with the groups a
     expect_equal(computeProtRuvModelFactors(declared, ruv_k = 2L, ruv_k_rule = "user")$W, factors$W, tolerance = 1e-12)
 })
 
-test_that("k is a parameter: the sweep's estimate is bounded and recorded, a user's k is refused above the bound", {
+test_that("k by the shared resolver: the estimated count, the separation rule where defined, a user's k refused above the limit", {
     fixture <- ruvModelFixture(proteins = 120L)
     object <- ruvModelObject(fixture$x, fixture$design)
     k_max <- 12L - 2L - 1L
     expect_gt(sum(rowSums(!is.finite(fixture$x)) == 0), k_max + 1L)
-    bounded <- computeProtRuvModelFactors(object, ruv_k = 40L, ruv_k_rule = "sweep_bounded")
-    expect_identical(bounded[c("k", "ruv_k_rule", "k_estimated", "k_bounded", "k_max")],
-        list(k = k_max, ruv_k_rule = "sweep_bounded", k_estimated = 40L, k_bounded = TRUE, k_max = k_max))
-    expect_identical(ncol(bounded$W), k_max)
-    kept <- computeProtRuvModelFactors(object, ruv_k = 3L, ruv_k_rule = "sweep_bounded")
-    expect_identical(kept[c("k", "k_estimated", "k_bounded")], list(k = 3L, k_estimated = 3L, k_bounded = FALSE))
+    # KIT-129 item 3: the estimated count is the kernel's own (the shared estimate, the groups removed, the default seed)
+    skip_if_not_installed("sva")
+    counted <- suppressMessages(computeProtRuvModelFactors(object, ruv_k_rule = "num_sv_be"))
+    expected <- estimateRuvFactorCount(fixture$x, fixture$design$group)
+    expect_identical(counted[c("k", "ruv_k_rule", "ruv_k_estimate", "k_max")],
+        list(k = expected$k, ruv_k_rule = "num_sv_be", ruv_k_estimate = expected$k, k_max = k_max))
+    expect_identical(counted$k_estimate$components, expected$components)
+    expect_s3_class(plotRuvFactorCount(counted$k_estimate), "ggplot")
+    expect_identical(suppressMessages(computeProtRuvModelFactors(object, ruv_k_rule = "num_sv_be", ruv_k_seed = 7L))$k_estimate$seed, 7L)
+    expect_error(computeProtRuvModelFactors(object, ruv_k = 2L, ruv_k_rule = "num_sv_be"), class = "prot_ruv_model_input")
+    # the separation rule is undefined with every protein a control; with a control set it is the sweep's k, never reduced
+    expect_error(computeProtRuvModelFactors(object, ruv_k = 3L, ruv_k_rule = "sweep_bounded"), class = "ruv_k_separation_undefined")
+    set <- rep(c(TRUE, FALSE), length.out = nrow(fixture$x))
+    kept <- computeProtRuvModelFactors(object, ruv_k = 3L, ruv_k_rule = "sweep_bounded", controls = set)
+    expect_identical(kept[c("k", "ruv_k_rule", "ruv_k_estimate", "status")], list(k = 3L, ruv_k_rule = "sweep_bounded", ruv_k_estimate = 3L, status = "ok"))
     expect_identical(ncol(kept$W), 3L)
+    expect_error(computeProtRuvModelFactors(object, ruv_k = 40L, ruv_k_rule = "sweep_bounded", controls = set), class = "ruv_k_above_limit")
     expect_error(computeProtRuvModelFactors(object, ruv_k = 40L, ruv_k_rule = "user"), class = "ruv_k_above_limit")
     expect_error(computeProtRuvModelFactors(object, ruv_k = 40L, ruv_k_rule = "user"), class = "ruv_k_refused")
     expect_error(computeProtRuvModelFactors(object, ruv_k = 0L, ruv_k_rule = "user"), "invalid")
     expect_error(computeProtRuvModelFactors(object, ruv_k = 1L, ruv_k_rule = "num.sv"))
-    # the bound follows the complete proteins when they are the scarce side
+    # the limit follows the complete proteins when they are the scarce side
     scarce <- fixture$x
     complete <- which(rowSums(!is.finite(scarce)) == 0)
     scarce[complete[-(1:4)], 1L] <- NA_real_
-    few <- computeProtRuvModelFactors(ruvModelObject(scarce, fixture$design), ruv_k = 8L, ruv_k_rule = "sweep_bounded")
-    expect_identical(few[c("k", "k_bounded", "k_max", "control_count")], list(k = 3L, k_bounded = TRUE, k_max = 3L, control_count = 4L))
+    expect_error(computeProtRuvModelFactors(ruvModelObject(scarce, fixture$design), ruv_k = 8L, ruv_k_rule = "user"), class = "ruv_k_above_limit")
+    few <- computeProtRuvModelFactors(ruvModelObject(scarce, fixture$design), ruv_k = 3L, ruv_k_rule = "user")
+    expect_identical(few[c("k", "k_max", "control_count")], list(k = 3L, k_max = 3L, control_count = 4L))
     # no factor can be computed: refused with the reason, never a silent fallback
     scarce[complete[-1L], 1L] <- NA_real_
-    expect_error(computeProtRuvModelFactors(ruvModelObject(scarce, fixture$design), ruv_k = 1L, ruv_k_rule = "sweep_bounded"),
+    expect_error(computeProtRuvModelFactors(ruvModelObject(scarce, fixture$design), ruv_k = 1L, ruv_k_rule = "user"),
         "observed in every sample", class = "prot_ruv_factors_unavailable")
     tiny <- ruvModelObject(fixture$x[, c(1L, 2L, 7L)], fixture$design[c(1L, 2L, 7L), ])
     expect_error(computeProtRuvModelFactors(tiny, ruv_k = 1L, ruv_k_rule = "user"), class = "prot_ruv_factors_unavailable")
@@ -409,7 +426,7 @@ test_that("the normalisation declaration is today's by default and declares the 
             output_class = "ProteinQuantitativeData", product_type = "dia-normalization-ruv", factors = list()))
     expect_identical(diaNormalizationOperation("legacy")$parameters, today)
     chosen <- diaNormalizationOperation("declared")
-    expect_identical(chosen$parameters, c(today, "ruv_design"))
+    expect_identical(chosen$parameters, c(today, "ruv_design", "ruv_k_rule", "ruv_k_seed"))
     expect_identical(chosen$name, "normalization-ruv")
     expect_error(diaNormalizationOperation("subtract"))
     expect_identical(workflowClassDeclaration("ProteinQuantitativeData")$args_as_owned,
@@ -439,8 +456,7 @@ test_that("through the operations: the RUV state carries the factors and the DA 
         legacy <- runSavedOperation(manager, diaNormalizationOperation(), source, parameters)
         expect_error(runSavedOperation(manager, diaNormalizationOperation("declared"), source, parameters),
             class = "workflow_operation_parameters")
-        chosen <- runSavedOperation(manager, diaNormalizationOperation("declared"), source,
-            c(parameters, list(ruv_design = "groups_all_features")))
+        chosen <- runSavedOperation(manager, diaNormalizationOperation("declared"), source, ruvModelDeclared(parameters))
         again <- runSavedOperation(manager, diaNormalizationOperation(), source, parameters)
         list(legacy = legacy, chosen = chosen, again = again,
             legacy_state = readDIAExecutionComponents(manager, legacy$value$final),
@@ -599,20 +615,24 @@ test_that("the kernel's input validation refuses with a classed condition (audit
 test_that("through the operations: automatic and skip under the new design, a refused k, today's declaration handed the design", {
     object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
     proteins <- nrow(object@protein_quant_table)
-    design <- function(parameters) c(parameters, list(ruv_design = "groups_all_features"))
+    design <- function(parameters, ...) ruvModelDeclared(parameters, ...)
     caught <- function(expr) tryCatch(expr, error = function(e) e)
     manager <- ruvModelStore(object)
     source <- getDIAStateReference(manager)
     outcome <- ruvModelQuietly(withDIAStateScope(manager, function() {
-        chosen <- function(parameters) runSavedOperation(manager, diaNormalizationOperation("declared"), source, design(parameters))
+        chosen <- function(parameters, ...) runSavedOperation(manager, diaNormalizationOperation("declared"), source, design(parameters, ...))
         # today's declaration handed the design, with nothing of today's design in the store yet (audit F-06)
         handed <- caught(runSavedOperation(manager, diaNormalizationOperation(), source, design(ruvModelParameters())))
         fractional <- caught(chosen(ruvModelParameters(ruv_k = 1.5)))
         absent <- caught(chosen(ruvModelParameters(ruv_k = NA)))
         automatic <- chosen(ruvModelParameters("automatic"))
+        # KIT-129 item 3: the separation rule is undefined with every protein a control; the rule must fit the mode
+        separation <- caught(chosen(ruvModelParameters("automatic"), "sweep_bounded"))
+        mismatched <- caught(chosen(ruvModelParameters("manual"), "num_sv_be"))
         skip <- chosen(ruvModelParameters("skip"))
         today_skip <- runSavedOperation(manager, diaNormalizationOperation(), source, ruvModelParameters("skip"))
         list(handed = handed, fractional = fractional, absent = absent, automatic = automatic, skip = skip, today_skip = today_skip,
+            separation = separation, mismatched = mismatched, normalised_state = readDIAExecutionComponents(manager, automatic$value$normalized),
             automatic_state = readDIAExecutionComponents(manager, automatic$value$final),
             skip_state = readDIAExecutionComponents(manager, skip$value$final))
     }))
@@ -620,20 +640,38 @@ test_that("through the operations: automatic and skip under the new design, a re
     # a manual k under the new design is refused when fractional or missing (today's path truncates it or takes 3)
     expect_s3_class(outcome$fractional, "prot_ruv_model_input")
     expect_s3_class(outcome$absent, "prot_ruv_model_input")
-    # automatic: the sweep gives k only; the result names every protein as a control and the sweep's values as a diagnostic
+    expect_s3_class(outcome$separation, "ruv_k_separation_undefined")
+    expect_s3_class(outcome$mismatched, "workflow_execution_invalid")
+    # automatic: k is the estimated count on the normalised object (the kernel's own); the result names every protein as
+    # a control, the count's record for its diagnostic, and the sweep's values as a diagnostic
     value <- outcome$automatic$value
-    expect_identical(value$ruv_model$ruv_k_rule, "sweep_bounded")
-    expect_identical(value$ruv_model$k_estimated, value$ruv_result$sweep_diagnostic$best_k)
+    normalised <- outcome$normalised_state
+    technical <- resolveProtTechnicalReplicateBlock(normalised@design_matrix, normalised@group_id, normalised@technical_replicate_id)
+    expected <- estimateRuvFactorCount(as.matrix(normalised@protein_quant_table[, normalised@design_matrix$Run]),
+        normalised@design_matrix$group, technical_replicates = isTRUE(technical$technical),
+        units = if (isTRUE(technical$technical)) technical$block)
+    expect_identical(value$ruv_model[c("ruv_k_rule", "k", "ruv_k_estimate")],
+        list(ruv_k_rule = "num_sv_be", k = expected$k, ruv_k_estimate = expected$k))
+    expect_identical(value$ruv_result[c("ruv_k_rule", "ruv_k_estimate", "ruv_applied")],
+        list(ruv_k_rule = "num_sv_be", ruv_k_estimate = expected$k, ruv_applied = expected$k > 0L))
+    expect_identical(value$ruv_result$k_estimate$components, expected$components)
+    expect_identical(value$parameters[c("ruv_design", "ruv_k_rule")], list(ruv_design = "groups_all_features", ruv_k_rule = "num_sv_be"))
     expect_identical(value$best_k, value$ruv_model$k)
-    expect_identical(value$percentage, 100)
-    expect_identical(value$ruv_result[c("best_percentage", "best_k", "ruv_design")],
-        list(best_percentage = 100, best_k = value$ruv_model$k, ruv_design = "groups_all_features"))
-    expect_identical(sum(value$ruv_result$best_control_genes_index), proteins)
     expect_true(value$ruv_result$sweep_diagnostic$best_percentage >= 5 && value$ruv_result$sweep_diagnostic$best_percentage <= 30)
     expect_lt(sum(value$ruv_result$sweep_diagnostic$best_control_genes_index, na.rm = TRUE), proteins)
-    expect_identical(outcome$automatic_state@args$ruvCovariates[c("ruv_design", "k", "ruv_k_rule")],
-        list(ruv_design = "groups_all_features", k = value$ruv_model$k, ruv_k_rule = "sweep_bounded"))
-    expect_identical(sum(grepl("^W[0-9]+$", names(outcome$automatic_state@design_matrix))), value$ruv_model$k)
+    if (expected$k > 0L) {
+        expect_identical(value$percentage, 100)
+        expect_identical(value$ruv_result[c("best_percentage", "best_k", "ruv_design")],
+            list(best_percentage = 100, best_k = value$ruv_model$k, ruv_design = "groups_all_features"))
+        expect_identical(sum(value$ruv_result$best_control_genes_index), proteins)
+        expect_identical(outcome$automatic_state@args$ruvCovariates[c("ruv_design", "k", "ruv_k_rule")],
+            list(ruv_design = "groups_all_features", k = value$ruv_model$k, ruv_k_rule = "num_sv_be"))
+        expect_identical(sum(grepl("^W[0-9]+$", names(outcome$automatic_state@design_matrix))), value$ruv_model$k)
+    } else {
+        # a count of 0 applies no RUV: the final state is the normalised one, with the reason
+        expect_identical(value$final, value$normalized)
+        expect_match(value$ruv_result$ruv_not_applied_reason, "no unwanted factor")
+    }
     # skip: no RUV ran, so no design is recorded on the product or the state (audit F-08)
     skipped <- outcome$skip$value
     expect_identical(names(skipped), names(outcome$today_skip$value))
@@ -681,7 +719,7 @@ test_that("the shared runner refuses today's declaration a request that names th
         # the auditor's case: today's product is saved; the mixed request would be a hit on it before any kernel runs
         mixed_run <- tryCatch(runSavedOperation(manager, diaNormalizationOperation(), source, mixed), error = function(e) e)
         again <- runSavedOperation(manager, diaNormalizationOperation(), source, todays)
-        declared <- runSavedOperation(manager, diaNormalizationOperation("declared"), source, mixed)
+        declared <- runSavedOperation(manager, diaNormalizationOperation("declared"), source, ruvModelDeclared(todays))
         list(saved = saved, mixed = mixed_run, again = again, declared = declared)
     }))))
     expect_identical(outcome$saved$status, "computed")
@@ -749,10 +787,12 @@ test_that("with technical replicates the biological units limit k, in the kernel
     expect_error(computeProtRuvModelFactors(normalised, ruv_k = 12L, ruv_k_rule = "user"), class = "ruv_k_above_limit")
     within <- computeProtRuvModelFactors(normalised, ruv_k = 5L, ruv_k_rule = "user")
     expect_identical(c(within$k, within$k_max), c(5L, 5L))
-    # the sweep's k is bounded by the units, the bound recorded as before
-    swept <- computeProtRuvModelFactors(normalised, ruv_k = 9L, ruv_k_rule = "sweep_bounded")
-    expect_identical(swept$k, 5L)
-    expect_true(swept$k_bounded)
+    # the kernel's own count removes the biological units (M28, KIT-129 item 3)
+    skip_if_not_installed("sva")
+    counted <- suppressMessages(computeProtRuvModelFactors(normalised, ruv_k_rule = "num_sv_be"))
+    expect_identical(counted$k_estimate$removed, "biological units")
+    expect_identical(counted$k, estimateRuvFactorCount(fixture$x, fixture$design$group,
+        units = fixture$design$tech_rep_group)$k)
     # at the test: k = 5 fits beside the groups; a covariate between units leaves no unit-level degree of freedom
     state <- ruvModelPackageState(fixture, 5L)$state
     expect_gt(nrow(ruvModelDa(state)$contrasts_results$results[[1L]]), 0L)

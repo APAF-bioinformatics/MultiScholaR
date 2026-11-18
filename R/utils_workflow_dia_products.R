@@ -335,9 +335,14 @@ resolveDIAReferenceQcPlot <- function(reference, aesthetics, plot_type, build_pr
 #' object inherits it as its source, exactly as before.
 #' @param ruv_design KIT-126. `"legacy"` (the default): today's declaration and kernel path, the corrected matrix
 #'   tested by the DA; its ten parameters and identities are unchanged. `"declared"`: the declaration gains
-#'   the parameter `ruv_design` (`"groups_all_features"`, KIT-129 section 1e) and the kernel runs KIT-124's arm 7 (groups as replicate sets, every protein a
-#'   control, k from the automatic sweep, bounded, or the manual k): the final state's table is the corrected matrix
-#'   and it carries the factors and the normalised matrix for the DA (`attachProtRuvModelFactors`).
+#'   the parameters `ruv_design` (`"groups_all_features"`, KIT-129 section 1e), `ruv_k_rule` and `ruv_k_seed`, and the
+#'   kernel runs KIT-124's arm 7 (groups as replicate sets, every protein a control): k by the shared resolver
+#'   (KIT-129 item 3) under `ruv_k_rule`: `num_sv_be` (the estimated count, seeded by `ruv_k_seed`, NULL for the
+#'   default seed) or `sweep_bounded` (the sweep's estimate; undefined with every protein a control, so refused) with
+#'   `ruv_mode = "automatic"`, `user` (the manual k) with `ruv_mode = "manual"`. The final state's table is the
+#'   corrected matrix and it carries the factors and the normalised matrix for the DA (`attachProtRuvModelFactors`);
+#'   a count of 0 applies no RUV (the final state is the normalised one, `ruv_result$ruv_applied` FALSE with the
+#'   reason). The count's record is `ruv_result$k_estimate` (`plotRuvFactorCount`).
 #' @noRd
 diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
     ruv_design <- match.arg(ruv_design)
@@ -347,16 +352,17 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
         output_class = "ProteinQuantitativeData", product_type = "dia-normalization-ruv",
         parameters = c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
             "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k", "grouping",
-            if (factors_in_model) "ruv_design"),
+            if (factors_in_model) c("ruv_design", "ruv_k_rule", "ruv_k_seed")),
         kernel = function(object, parameters, store) {
             # The kernels record their arguments under the calling name; the legacy path calls them through
             # these aliases, so the aliases keep the recorded args (and every checkpoint hash) identical.
             normaliseBetweenSamplesFn <- normaliseBetweenSamples
             # KIT-126 audit F-06: today's declaration does not know the design; handed it, it refuses rather than
             # run today's design under a record that names the other.
-            if (!factors_in_model && !is.null(parameters[["ruv_design", exact = TRUE]])) assertProtNormLegacyRuvParameters(parameters)
+            if (!factors_in_model) assertProtNormLegacyRuvParameters(parameters)
             # Audit F-08: under the new design a manual k is one whole number, refused otherwise (not truncated, no default).
             if (factors_in_model && identical(parameters$ruv_mode, "manual")) validateProtRuvModelK(parameters$ruv_k)
+            if (factors_in_model) assertProtRuvModelKRule(parameters)
             normalized <- normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method)
             normalized_reference <- store$checkpoint(normalized, "normalized-science")
             object <- NULL
@@ -380,33 +386,45 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                     # the replicate sets, and the corrected matrix uses the same controls, k and sets as the factors.
                     if (!identical(parameters$ruv_design, "groups_all_features"))
                         cli::cli_abort("the declaration and the parameter ruv_design disagree", class = "workflow_execution_invalid")
-                    ruv_model <- computeProtRuvModelFactors(normalized, ruv_k = resolved$k,
-                        ruv_k_rule = if (identical(parameters$ruv_mode, "automatic")) "sweep_bounded" else "user",
-                        ruv_grouping_variable = parameters$grouping)
+                    ruv_model <- computeProtRuvModelFactors(normalized,
+                        ruv_k = if (!identical(parameters$ruv_k_rule, "num_sv_be")) resolved$k, ruv_k_rule = parameters$ruv_k_rule,
+                        ruv_grouping_variable = parameters$grouping, ruv_k_seed = parameters$ruv_k_seed %||% RUV_FACTOR_COUNT_SEED)
+                    applied <- identical(ruv_model$status, "ok")
                     resolved$k <- ruv_model$k
-                    resolved$controls <- ruv_model$controls
-                    resolved$percentage <- 100
+                    resolved$controls <- if (applied) ruv_model$controls else NA
+                    resolved$percentage <- if (applied) 100 else NA
                     # Audit F-05: the result every reader takes (the panel text, the study parameters, the optimisation
                     # RDS, the reports) names what was used: every protein a control, the k of the factors. The
                     # control selection's own values (the sweep's, or the manual percentage's) stay as a diagnostic;
                     # the canonical-correlation plot and the optimisation table are that selection's too.
                     if (!is.null(ruv_result)) ruv_result$sweep_diagnostic <-
                         ruv_result[c("best_percentage", "best_k", "best_control_genes_index")]
-                    ruv_result$best_percentage <- 100
+                    ruv_result$best_percentage <- resolved$percentage
                     ruv_result$best_k <- ruv_model$k
-                    ruv_result$best_control_genes_index <- ruv_model$controls
+                    ruv_result$best_control_genes_index <- if (applied) ruv_model$controls
                     ruv_result$ruv_design <- protRuvModelDesign(ruv_model)
-                    corrected <- ruvIII_C_VaryingFn(protRuvGroupReplicateObject(normalized),
-                        ruv_grouping_variable = parameters$grouping, ruv_number_k = resolved$k, ctrl = resolved$controls)
-                    corrected <- removeRowsWithMissingValuesPercentFn(theObject = corrected)
-                    corrected <- attachProtRuvModelFactors(corrected, normalized, ruv_model)
-                    ruv_model$W <- ruv_model$controls <- NULL
+                    # KIT-129 item 3: the rule that gave k, the count's record (for `plotRuvFactorCount`) and whether RUV
+                    # was applied, by the names the other omics' products use.
+                    ruv_result$ruv_k_rule <- ruv_model$ruv_k_rule
+                    ruv_result$ruv_k_estimate <- ruv_model$ruv_k_estimate
+                    ruv_result$k_estimate <- ruv_model$k_estimate
+                    ruv_result$ruv_applied <- applied
+                    ruv_result$ruv_not_applied_reason <- ruv_model$reason
+                    if (applied) {
+                        corrected <- ruvIII_C_VaryingFn(protRuvGroupReplicateObject(normalized),
+                            ruv_grouping_variable = parameters$grouping, ruv_number_k = resolved$k, ctrl = resolved$controls)
+                        corrected <- removeRowsWithMissingValuesPercentFn(theObject = corrected)
+                        corrected <- attachProtRuvModelFactors(corrected, normalized, ruv_model)
+                    }
+                    ruv_model$W <- ruv_model$controls <- ruv_model$k_estimate <- NULL
                 } else {
                 corrected <- ruvIII_C_VaryingFn(normalized,
                     ruv_grouping_variable = parameters$grouping, ruv_number_k = resolved$k, ctrl = resolved$controls)
                 corrected <- removeRowsWithMissingValuesPercentFn(theObject = corrected)
                 }
-                final_reference <- store$checkpoint(corrected, "ruv-science", from = normalized_reference)
+                # A count of 0 under the new design applies no RUV: the final state is the normalised one.
+                final_reference <- if (factors_in_model && !applied) normalized_reference else
+                    store$checkpoint(corrected, "ruv-science", from = normalized_reference)
                 corrected <- NULL
                 best_k <- resolved$k
                 controls <- resolved$controls
@@ -419,16 +437,17 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                     "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k", "grouping")])
             # Audit F-08: a skipped RUV step applied no design, so none is recorded on its product.
             if (factors_in_model && parameters$ruv_mode != "skip") {
-                value$parameters$ruv_design <- parameters$ruv_design
+                value$parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")] <- parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")]
                 value$ruv_model <- c(list(ruv_design = protRuvModelDesign(ruv_model)), ruv_model)
             }
             value
         })
 }
 
-#' Today's normalisation declaration takes no `ruv_design` (KIT-126 audit F-06, KIT-129 B1): its identity reads its
-#' ten parameters only, so `runSavedOperation` calls this before the identity, and a request that names the new design
-#' is refused rather than served today's saved product. The condition is the kernel's own (`workflow_execution_invalid`).
+#' Today's normalisation declaration takes none of the new design's parameters (KIT-126 audit F-06, KIT-129 B1): its
+#' identity reads its ten parameters only, so `runSavedOperation` calls this before the identity, and a request that
+#' names the new design is refused rather than served today's saved product. The condition is the legacy refusal of
+#' every omic (`workflow_execution_invalid`).
 #' @param parameters A request's parameters.
 #' @return `parameters`, invisibly.
 #' @noRd
@@ -437,6 +456,32 @@ assertProtNormLegacyRuvParameters <- function(parameters) {
         cli::cli_abort(c("the normalisation declaration of today's design was handed ruv_design = {.val {parameters$ruv_design}}",
             i = "declare it with diaNormalizationOperation(\"declared\")"), class = "workflow_execution_invalid", call = NULL)
     }
+    given <- Filter(\(name) !is.null(parameters[[name, exact = TRUE]]), PROT_NORM_RUV_K_PARAMETERS)
+    if (length(given)) {
+        cli::cli_abort(c("the normalisation declaration of today's design takes no k rule; the request carries {.val {given}}",
+            i = "declare it with diaNormalizationOperation(\"declared\")"), class = "workflow_execution_invalid", call = NULL)
+    }
+    invisible(parameters)
+}
+
+#' The new design's k parameters of the classic normalisation (KIT-129 item 3), after `ruv_design`.
+#' @noRd
+PROT_NORM_RUV_K_PARAMETERS <- c("ruv_k_rule", "ruv_k_seed")
+
+#' The k rule of the classic new design agrees with the step's mode (KIT-129 item 3): the user's k under `manual`, the
+#' estimated count or the separation rule under `automatic`; a seed is a whole number or NULL (the default seed).
+#' @param parameters The declaration's parameters.
+#' @return `parameters`, invisibly; an error of class `workflow_execution_invalid` otherwise.
+#' @noRd
+assertProtRuvModelKRule <- function(parameters) {
+    invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
+    rule <- parameters$ruv_k_rule
+    if (identical(parameters$ruv_mode, "skip")) return(invisible(parameters))
+    if (!checkmate::test_choice(rule, RUV_K_RULES)) invalid(paste("ruv_k_rule must be one of", paste(RUV_K_RULES, collapse = ", ")))
+    if (identical(parameters$ruv_mode, "manual") != identical(rule, "user")) {
+        invalid("ruv_k_rule is user with ruv_mode manual, and num_sv_be or sweep_bounded with ruv_mode automatic")
+    }
+    if (!is.null(parameters$ruv_k_seed) && !checkmate::test_int(parameters$ruv_k_seed)) invalid("ruv_k_seed must be a whole number")
     invisible(parameters)
 }
 

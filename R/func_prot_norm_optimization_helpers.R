@@ -1269,31 +1269,43 @@ protRuvGroupReplicateObject <- function(theObject) {
 #' RUV-III factors for the DA model of the classic proteomics route (KIT-126; KIT-124's gate, arm 7 of the simulator
 #' S1): the groups as replicate sets, every protein a negative control unless a set is given, W computed by
 #' `computeRuvCovariates` on the proteins observed in every sample (RUV-III takes no missing values; the DA then reads
-#' the full matrix with W as covariates). k is a parameter and its source is recorded. It cannot exceed
-#' `k_max = min(samples - groups - 1, complete controls - 1)`: a residual degree of freedom for the group model and
-#' fewer factors than controls. The sweep's estimate is reduced to that bound and the reduction recorded; a user's k
-#' above it is refused. When no factor can be computed the function refuses with the reason
+#' the full matrix with W as covariates). k comes from the shared resolver (`resolveRuvFactorCount`, KIT-129 item 3)
+#' under the rule given, and the rule is recorded: the estimated count (`num_sv_be`: `estimateRuvFactorCount` with 200
+#' permutations, the biological units removed on a design with declared technical replicates, decision M28), the
+#' separation rule (`sweep_bounded`: the sweep's estimate, given as `ruv_k`; undefined, and refused, with every protein
+#' a control) or the user's number. k cannot exceed the limit `ruvFactorCountLimit` gives (a residual degree of freedom
+#' for the group model, fewer factors than controls, and on technical-replicate designs a residual degree of freedom
+#' between the biological units); a k above it is refused (`ruv_k_above_limit`, never reduced). A count of 0 is a
+#' result: no factor, `status = "none"`. When no factor can be computed the function refuses with the reason
 #' (`prot_ruv_factors_unavailable`). An input it cannot take is refused with `prot_ruv_model_input` (audit F-08): a k
-#' that is not one whole number of at least 1, a grouping variable that is absent or has missing values, a design
-#' that already has a column named `W<n>`, controls of the wrong shape.
+#' that is not one whole number of at least 1 (or a k given with the estimated count), a grouping variable that is
+#' absent or has missing values, a design that already has a column named `W<n>`, controls of the wrong shape.
 #' @param theObject The normalised `ProteinQuantitativeData` object (missing values allowed).
-#' @param ruv_k Number of factors asked for (a positive whole number).
-#' @param ruv_k_rule Where k comes from, recorded with it (KIT-129 section 1e): `"user"` (a chosen k) or
-#'   `"sweep_bounded"` (the estimate of `findBestNegCtrlPercentage`).
+#' @param ruv_k The user's k, or the sweep's estimate under `"sweep_bounded"` (a positive whole number); NULL under
+#'   `"num_sv_be"`.
+#' @param ruv_k_rule Where k comes from, recorded with it (KIT-129 section 1e): `"user"`, `"sweep_bounded"` or
+#'   `"num_sv_be"`.
 #' @param controls NULL for every protein, or a logical vector over the protein rows.
 #' @param ruv_grouping_variable Design column whose levels are the replicate sets.
-#' @return `list(W, k, ruv_k_rule, k_estimated, k_bounded, k_max, controls, ruv_controls, control_count, protein_count,
-#'   replicate_structure, ruv_grouping_variable)`: `W` a sample-by-k matrix in the design's sample order, `controls`
-#'   the named logical control vector over all proteins, `control_count` the controls observed in every sample.
+#' @param ruv_k_seed The estimated count's seed (recorded with it).
+#' @return `list(W, k, ruv_k_rule, ruv_k_estimate, k_max, k_estimate, status, reason, controls, ruv_controls,
+#'   control_count, protein_count, replicate_structure, ruv_grouping_variable)`: `W` a sample-by-k matrix in the
+#'   design's sample order (NULL when k is 0), `ruv_k_estimate` what the rule returned, `k_estimate` the estimated
+#'   count's record for `plotRuvFactorCount` (NULL under the other rules), `status` `"ok"` or `"none"` (k = 0, with
+#'   `reason`), `controls` the named logical control vector over all proteins, `control_count` the controls observed in
+#'   every sample.
 #' @noRd
-computeProtRuvModelFactors <- function(theObject, ruv_k, ruv_k_rule = c("user", "sweep_bounded"), controls = NULL,
-                                       ruv_grouping_variable = "group") {
+computeProtRuvModelFactors <- function(theObject, ruv_k = NULL, ruv_k_rule = c("user", "sweep_bounded", "num_sv_be"),
+                                       controls = NULL, ruv_grouping_variable = "group", ruv_k_seed = RUV_FACTOR_COUNT_SEED) {
   if (!inherits(theObject, "ProteinQuantitativeData")) abortProtRuvModelInput("theObject must be a ProteinQuantitativeData object")
-  if (!is.character(ruv_k_rule) || !length(ruv_k_rule) || !ruv_k_rule[[1L]] %in% c("user", "sweep_bounded")) {
-    abortProtRuvModelInput("ruv_k_rule must be \"user\" or \"sweep_bounded\"")
+  if (!is.character(ruv_k_rule) || !length(ruv_k_rule) || !ruv_k_rule[[1L]] %in% RUV_K_RULES) {
+    abortProtRuvModelInput("ruv_k_rule must be \"user\", \"sweep_bounded\" or \"num_sv_be\"")
   }
   ruv_k_rule <- ruv_k_rule[[1L]]
-  k_estimated <- validateProtRuvModelK(ruv_k)
+  counted <- identical(ruv_k_rule, "num_sv_be")
+  if (counted && !is.null(ruv_k)) abortProtRuvModelInput("ruv_k is not given with the estimated count (num_sv_be): the count gives k")
+  k_given <- if (!counted) validateProtRuvModelK(ruv_k)
+  if (!checkmate::test_int(ruv_k_seed)) abortProtRuvModelInput("ruv_k_seed must be a whole number")
   design_matrix <- theObject@design_matrix
   if (!is.character(ruv_grouping_variable) || length(ruv_grouping_variable) != 1L ||
       !ruv_grouping_variable %in% names(design_matrix)) {
@@ -1322,26 +1334,35 @@ computeProtRuvModelFactors <- function(theObject, ruv_k, ruv_k_rule = c("user", 
   # units' limit beside it when there are technical replicates.
   limit <- ruvFactorCountLimit(length(sample_ids), group_count, group_count, control_count, units = unit_count)
   k_max <- limit$k_max
-  refuse <- function(reason, class = "prot_ruv_factors_unavailable") cli::cli_abort(c("the RUV factors for the model cannot be computed: {reason}",
+  refuse <- function(reason) cli::cli_abort(c("the RUV factors for the model cannot be computed: {reason}",
     i = "{control_count} control protein{?s} observed in every sample, {length(sample_ids)} sample{?s}, {group_count} group{?s}",
     i = if (!is.null(unit_count)) paste0("the design has technical replicates: ", unit_count, " biological units carry the ",
       "test, which leaves at most ", limit$k_max_units, " factor(s) (", limit$binding, ")")),
-    class = class)
+    class = "prot_ruv_factors_unavailable")
   if (k_max < 1L) refuse(if (control_count < 2L) "fewer than 2 control proteins are observed in every sample" else
     "the samples leave no residual degree of freedom for a factor beside the groups")
-  if (k_estimated > k_max && identical(ruv_k_rule, "user")) {
-    # KIT-129 item 2: a k above the limit is refused with the class every omic's new design uses.
-    refuse(sprintf("k = %d was asked for and at most %d can be estimated", k_estimated, k_max), c("ruv_k_above_limit", "ruv_k_refused"))
+  # KIT-129 item 3: k by the shared resolver, as the other omics' new designs take it. The count removes the groups, or
+  # the biological units on a design with technical replicates (M28). A k above the limit is refused there
+  # (`ruv_k_above_limit`), never reduced.
+  resolved <- resolveRuvFactorCount(ruv_k_rule, if (identical(ruv_controls, "all")) "all_features" else "supplied_list", limit,
+    k_user = if (identical(ruv_k_rule, "user")) k_given,
+    estimate_count = if (counted) \() estimateRuvFactorCount(values, design_matrix[[ruv_grouping_variable]], seed = ruv_k_seed,
+      technical_replicates = isTRUE(technical$technical), units = if (isTRUE(technical$technical)) technical$block),
+    separation_rule = \() k_given)
+  k <- resolved$k
+  record <- function(W, replicate_structure) {
+    list(W = W, k = k, ruv_k_rule = ruv_k_rule, ruv_k_estimate = resolved$k_estimate, k_max = k_max, k_estimate = resolved$estimate,
+      status = resolved$status, reason = resolved$reason, controls = controls, ruv_controls = ruv_controls,
+      control_count = control_count, protein_count = length(ids), replicate_structure = replicate_structure,
+      ruv_grouping_variable = ruv_grouping_variable)
   }
-  k <- min(k_estimated, k_max)
+  if (k == 0L) return(record(NULL, NA_character_))
   complete_object <- protRuvGroupReplicateObject(theObject)
   complete_object@protein_quant_table <- theObject@protein_quant_table[complete, , drop = FALSE]
   rownames(complete_object@protein_quant_table) <- NULL # `computeRuvCovariates` moves the id column to the row names
   factors <- computeRuvCovariates(complete_object, k = k, controls = unname(controls[complete]),
     ruv_grouping_variable = ruv_grouping_variable)
-  list(W = factors$W, k = k, ruv_k_rule = ruv_k_rule, k_estimated = k_estimated, k_bounded = k < k_estimated, k_max = k_max,
-       controls = controls, ruv_controls = ruv_controls, control_count = control_count, protein_count = length(ids),
-       replicate_structure = factors$replicate_structure, ruv_grouping_variable = ruv_grouping_variable)
+  record(factors$W, factors$replicate_structure)
 }
 
 #' The designs of the classic route's factors-in-the-model kernel, by the names of KIT-129 section 1e: every protein a
@@ -1376,7 +1397,7 @@ attachProtRuvModelFactors <- function(corrected, normalised, factors) {
   rownames(uncorrected) <- as.character(normalised@protein_quant_table[[normalised@protein_id_column]])
   corrected@args$ruv_uncorrected_quant <- uncorrected
   corrected@args$ruvCovariates <- c(list(ruv_mode = "covariates", ruv_design = protRuvModelDesign(factors)),
-    factors[c("k", "ruv_k_rule", "k_estimated", "k_bounded", "k_max", "ruv_controls", "control_count", "protein_count",
+    factors[c("k", "ruv_k_rule", "ruv_k_estimate", "k_max", "ruv_controls", "control_count", "protein_count",
       "replicate_structure", "ruv_grouping_variable")], list(tested_matrix = "uncorrected"))
   corrected
 }

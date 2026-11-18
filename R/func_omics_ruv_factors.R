@@ -151,10 +151,17 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #' @param ruv_design `"groups_all_features"`: every feature observed in every sample is a control.
 #'   `"supplied_controls"`: the features of `ruv_control_ids` are the controls, and are not tested (the names of
 #'   KIT-129 section 1e).
-#' @param ruv_k The number of factors: a whole number of 0 or more, or one per assay by name. No default.
-#'   0 is no RUV; `NA` (a k that could not be estimated) refuses the assay.
-#' @param ruv_k_rule Where k comes from, recorded with it: `"user"` or `"sweep_bounded"` (`boundOmicsRuvSweepK`).
-#'   `"sweep_bounded"` is refused with `"groups_all_features"`: that k was not measured with all features as controls.
+#' @param ruv_k The number of factors: a whole number of 0 or more, or one per assay by name. No default under
+#'   `"user"` and `"sweep_bounded"`; not given (or NULL) under `"num_sv_be"`. 0 is no RUV; `NA` (a k that could not be
+#'   estimated) refuses the assay.
+#' @param ruv_k_rule Where k comes from, recorded with it: `"num_sv_be"` (the estimated count per assay, by the shared
+#'   resolver: `estimateRuvFactorCount` with 200 permutations on the assay's features observed in every sample, the
+#'   groups removed, or the biological units on a design with declared technical replicates; KIT-129 item 3, decisions
+#'   M28, M30), `"user"` or `"sweep_bounded"` (`boundOmicsRuvSweepK`). `"sweep_bounded"` is refused with
+#'   `"groups_all_features"`: that k was not measured with all features as controls. An assay whose count cannot be
+#'   estimated is refused as any other (no RUV, the warning), with the count's reason. This kernel keeps its own limit
+#'   on k and its refusal mode (an assay refused, not the run): the resolver is given no limit.
+#' @param ruv_k_seed The estimated count's seed (recorded with it).
 #' @param ruv_control_ids For `"supplied_controls"`: the control feature ids per assay, by assay name. A
 #'   supplied control with a missing value is used neither for W nor for the correction; it is named in a warning of
 #'   class `omics_ruv_controls_incomplete` and in `controls_left_out`, and is still not tested.
@@ -163,20 +170,24 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #' @return `list(corrected, factors, parameters)`: `corrected` the object with the corrected assays, its `args`
 #'   stamped with `ruv_design`, `ruv_grouping_variable`, `ruv_number_k` (the key `ruvIII_C_Varying` writes) and `ctrl` when an assay was corrected (the DA
 #'   refuses a stamped object together with factors, class `omics_ruv_object_already_corrected`); `factors` per
-#'   assay `list(assay, status, reason, reason_class, W, k, k_requested, ruv_k_rule, control_ids, control_count, controls_left_out,
-#'   complete_features, not_tested, ruv_design, ruv_grouping_variable)`, `W` a sample-by-k matrix or NULL;
+#'   assay `list(assay, status, reason, reason_class, W, k, k_requested, ruv_k_rule, ruv_k_estimate, k_estimate, control_ids, control_count, controls_left_out,
+#'   complete_features, not_tested, ruv_design, ruv_grouping_variable)`, `W` a sample-by-k matrix or NULL,
+#'   `k_estimate` the count's record for `plotRuvFactorCount` (NULL under the other rules);
 #'   `parameters` the arguments.
 #' @noRd
 runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_control_ids = NULL,
-                               ruv_grouping_variable = NULL) {
+                               ruv_grouping_variable = NULL, ruv_k_seed = RUV_FACTOR_COUNT_SEED) {
     slots <- omicsRuvAssaySlots(theObject)
     if (missing(ruv_design) || !is.character(ruv_design) || length(ruv_design) != 1L || !ruv_design %in% names(omicsRuvFactorsDesigns)) {
         abortOmicsRuvFactors(sprintf("ruv_design must be one of: %s", paste(names(omicsRuvFactorsDesigns), collapse = ", ")))
     }
-    if (missing(ruv_k)) abortOmicsRuvFactors("ruv_k has no default: give the number of factors")
-    if (missing(ruv_k_rule) || !is.character(ruv_k_rule) || length(ruv_k_rule) != 1L || !ruv_k_rule %in% c("user", "sweep_bounded")) {
-        abortOmicsRuvFactors("ruv_k_rule must be \"user\" or \"sweep_bounded\"")
+    if (missing(ruv_k_rule) || !is.character(ruv_k_rule) || length(ruv_k_rule) != 1L || !ruv_k_rule %in% RUV_K_RULES) {
+        abortOmicsRuvFactors("ruv_k_rule must be \"num_sv_be\", \"user\" or \"sweep_bounded\"")
     }
+    counted <- identical(ruv_k_rule, "num_sv_be")
+    if (counted && !missing(ruv_k) && !is.null(ruv_k)) abortOmicsRuvFactors("ruv_k is not given with ruv_k_rule = \"num_sv_be\": the count gives k")
+    if (!counted && missing(ruv_k)) abortOmicsRuvFactors("ruv_k has no default: give the number of factors")
+    if (!checkmate::test_int(ruv_k_seed)) abortOmicsRuvFactors("ruv_k_seed must be a whole number")
     assays <- methods::slot(theObject, slots$data)
     id_column <- methods::slot(theObject, slots$id)
     design <- as.data.frame(theObject@design_matrix)
@@ -198,7 +209,8 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
     if (!supplied && identical(ruv_k_rule, "sweep_bounded")) {
         abortOmicsRuvFactors("ruv_k_rule = \"sweep_bounded\" is refused with ruv_design = \"groups_all_features\": that k was not validated for it")
     }
-    k_requested <- resolveOmicsRuvFactorsK(ruv_k, names(assays))
+    k_requested <- if (counted) stats::setNames(rep(list(NA_integer_), length(assays)), names(assays)) else
+        resolveOmicsRuvFactorsK(ruv_k, names(assays))
     design_samples <- as.character(design[[sample_id]])
 
     values <- list()
@@ -215,11 +227,26 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
         assay_design <- design[match(samples, design_samples), , drop = FALSE]
         replicate_matrix <- getRuvIIIReplicateMatrixHelper(assay_design, !!rlang::sym(sample_id), !!rlang::sym(grouping))
         technical <- resolveProtTechnicalReplicateBlock(assay_design, theObject@group_id, theObject@technical_replicate_id)
+        units <- if (isTRUE(technical$technical)) technical$block
+        # KIT-129 item 3: the estimated count per assay by the shared resolver (no limit there: this kernel's own limit
+        # refuses the assay below). An assay the count cannot be made on is refused with the count's reason.
+        counted_k <- if (counted) tryCatch(resolveRuvFactorCount("num_sv_be", if (supplied) "supplied_list" else "all_features",
+            list(k_max = .Machine$integer.max), estimate_count = \() estimateRuvFactorCount(values[[assay_name]],
+                assay_design[[grouping]], seed = ruv_k_seed, technical_replicates = isTRUE(technical$technical), units = units)),
+            ruv_factor_count_unavailable = \(e) e)
+        k_assay <- if (!counted) k_requested[[assay_name]] else if (inherits(counted_k, "condition")) NA_integer_ else counted_k$k
         record <- computeOmicsRuvAssayFactors(values[[assay_name]], replicate_matrix[samples, , drop = FALSE],
-            k_requested[[assay_name]], control_ids, units = if (isTRUE(technical$technical)) technical$block)
+            k_assay, control_ids, units = units)
+        if (inherits(counted_k, "condition")) {
+            record$reason <- conditionMessage(counted_k)
+            record$reason_class <- class(counted_k)[[1L]]
+        }
+        if (counted && identical(record$status, "none")) record$reason <- counted_k$reason
         factors[[assay_name]] <- list(assay = assay_name, status = record$status, reason = record$reason,
             reason_class = record$reason_class, W = record$W, k = record$k,
-            k_requested = k_requested[[assay_name]], ruv_k_rule = ruv_k_rule, control_ids = record$control_ids,
+            k_requested = k_requested[[assay_name]], ruv_k_rule = ruv_k_rule,
+            ruv_k_estimate = if (counted && !inherits(counted_k, "condition")) counted_k$k_estimate else NA_integer_,
+            k_estimate = if (counted && !inherits(counted_k, "condition")) counted_k$estimate, control_ids = record$control_ids,
             control_count = length(record$control_ids), controls_left_out = setdiff(control_ids, record$control_ids),
             complete_features = record$complete_features,
             not_tested = if (supplied) control_ids else character(), ruv_design = ruv_design, ruv_grouping_variable = grouping)
@@ -269,6 +296,7 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
     }
     list(corrected = corrected, factors = factors,
         parameters = list(ruv_design = ruv_design, ruv_k = k_requested, ruv_k_rule = ruv_k_rule,
+            ruv_k_seed = if (counted) as.integer(ruv_k_seed) else NA_integer_,
             ruv_control_ids = ruv_control_ids, ruv_grouping_variable = grouping))
 }
 

@@ -1,0 +1,15 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S1/C0/arm32/kernel_k	integer	1			0	agree	
+S1/C6/arm32/kernel_k	integer	1			0	agree	
+S2/C0/arm31/kernel_k	integer	1			0	agree	
+S2/C6/arm32/kernel_k	integer	1			0	agree	
+S3/C0/arm31/kernel_k	integer	1			0	agree	
+S3/C6/arm31/kernel_k	integer	1			0	agree	
+S4/C0/arm32/lipid/pos/kernel_k	integer	1			0	agree	
+S4/C0/arm32/lipid/neg/kernel_k	integer	1			0	agree	
+S4/C0/arm32/metab/pos/kernel_k	integer	1			0	agree	
+S4/C0/arm32/metab/neg/kernel_k	integer	1			0	agree	
+S4/C6/arm32/lipid/pos/kernel_k	integer	1			0	agree	
+S4/C6/arm32/lipid/neg/kernel_k	integer	1			0	agree	
+S4/C6/arm32/metab/pos/kernel_k	integer	1			0	agree	
+S4/C6/arm32/metab/neg/kernel_k	integer	1			0	agree	

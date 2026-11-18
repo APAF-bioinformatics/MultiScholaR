@@ -27,7 +27,7 @@ trxRuvGridParameters <- function(ruv_mode = "automatic", percentage_min = 5, per
 
 #' The declared parameters of a RUV design other than today's grid (KIT-129 W4), after the dependency `logcpm`.
 #' @noRd
-trxRuvDesignParameterNames <- c("ruv_design", "ruv_k", "ruv_k_rule", "ruv_control_ids")
+trxRuvDesignParameterNames <- c("ruv_design", "ruv_k", "ruv_k_rule", "ruv_control_ids", "ruv_k_seed")
 
 #' The parameters of a declared RUV design (KIT-129 W4).
 #' @param ruv_design One of `TRX_RUV_DESIGNS`.
@@ -37,19 +37,24 @@ trxRuvDesignParameterNames <- c("ruv_design", "ruv_k", "ruv_k_rule", "ruv_contro
 #'   (today's grid estimate) or `user`.
 #' @param ruv_control_ids The supplied control gene ids, for `supplied_controls`; kept sorted and unique, so one list
 #'   is one identity whatever its order.
+#' @param ruv_k_seed KIT-129 item 3: the seed of the estimated count, read only when the kernel estimates k (`ruv_k_rule
+#'   = "num_sv_be"` with no `ruv_k`); NA there is the default seed.
 #' @return The named list the declared `trx_ruv_grid` takes after `logcpm`, in its canonical form
 #'   (`trxCanonicalRuvDesignParameters`).
 #' @noRd
-trxRuvDesignParameters <- function(ruv_design, ruv_k = NA_integer_, ruv_k_rule = NA_character_, ruv_control_ids = character()) {
-    trxCanonicalRuvDesignParameters(list(ruv_design = ruv_design, ruv_k = ruv_k, ruv_k_rule = ruv_k_rule, ruv_control_ids = ruv_control_ids))
+trxRuvDesignParameters <- function(ruv_design, ruv_k = NA_integer_, ruv_k_rule = NA_character_, ruv_control_ids = character(),
+                                   ruv_k_seed = NA_integer_) {
+    trxCanonicalRuvDesignParameters(list(ruv_design = ruv_design, ruv_k = ruv_k, ruv_k_rule = ruv_k_rule, ruv_control_ids = ruv_control_ids,
+        ruv_k_seed = ruv_k_seed))
 }
 
 #' The declared parameters in one form (KIT-129 audit F-07), so a product's identity and its recorded settings do not
 #' depend on how the parameters were passed: `ruv_k` an integer (2 and 2L are one k; NA when absent, and for the design
-#' `none`, which takes no k), `ruv_k_rule` NA when absent, `ruv_control_ids` `trxCanonicalControlIds`' list. The
+#' `none`, which takes no k), `ruv_k_rule` NA when absent, `ruv_control_ids` `trxCanonicalControlIds`' list,
+#' `ruv_k_seed` an integer when the kernel estimates k (the default seed when absent) and NA otherwise. The
 #' design and the rule are checked by `trxChooseRuvDesign`, not here.
 #' @param parameters A list with the names of `trxRuvDesignParameterNames`; other elements are not returned.
-#' @return The four parameters. Refuses `trx_ruv_design_invalid` when `ruv_k` is given and is not one whole number of
+#' @return The five parameters. Refuses `trx_ruv_design_invalid` when `ruv_k` is given and is not one whole number of
 #'   0 or more: a fractional k is never rounded.
 #' @noRd
 trxCanonicalRuvDesignParameters <- function(parameters) {
@@ -59,8 +64,18 @@ trxCanonicalRuvDesignParameters <- function(parameters) {
         trxAbort(sprintf("ruv_k must be one whole number of 0 or more, not %s", substr(deparse1(k), 1L, 40L)), c("trx_ruv_design_invalid", "trx_error"))
     }
     none <- identical(parameters$ruv_design, "none")
+    rule <- parameters$ruv_k_rule %||% NA_character_
+    # KIT-129 item 3: the seed is part of the identity only when the kernel estimates k.
+    estimated <- !none && absent && identical(rule, "num_sv_be")
+    seed <- parameters$ruv_k_seed
+    seed_absent <- is.null(seed) || (length(seed) == 1L && is.na(seed))
+    if (!seed_absent && (!estimated || !checkmate::test_int(seed))) {
+        trxAbort("ruv_k_seed is one whole number, given only when the kernel estimates k (ruv_k_rule num_sv_be with no ruv_k)",
+            c("trx_ruv_design_invalid", "trx_error"))
+    }
     list(ruv_design = parameters$ruv_design, ruv_k = if (absent || (none && k == 0)) NA_integer_ else as.integer(round(k)),
-        ruv_k_rule = parameters$ruv_k_rule %||% NA_character_, ruv_control_ids = trxCanonicalControlIds(parameters$ruv_control_ids))
+        ruv_k_rule = rule, ruv_control_ids = trxCanonicalControlIds(parameters$ruv_control_ids),
+        ruv_k_seed = if (estimated) as.integer(if (seed_absent) RUV_FACTOR_COUNT_SEED else seed) else NA_integer_)
 }
 
 #' Refuse today's grid when its request carries a declared design's parameter (KIT-129 audit F-02). The declared
@@ -295,11 +310,13 @@ trxRuvDesignOperation <- function(binding) {
             replicate_sets = "the groups (RUVs)", first_pass = "the preliminary ~ group QL GLM, every group coefficient; its most significant 25% left out",
             test = "the filtered counts with W_1..W_k in the edgeR model"),
         kernel = function(object, parameters, store) {
-            # The dependency is checked, not read: no rule here needs the logCPM until the shared k rule is called at this
-            # seam, where `resolveRuvFactorCount()`'s value replaces the record of the two parameters.
             trxProductReference(store$manager, parameters$logcpm)
-            # Audit F-07: until then the record is the choice's default, read from the canonical parameters.
-            trxChooseRuvDesign(trxAssayInputs(object), parameters)
+            # KIT-129 item 3: the estimated count (`ruv_k_rule = "num_sv_be"` with no `ruv_k`) is computed here, by the
+            # shared resolver, on the TMM logCPM (as simulator S3 computes E); a k given is taken as resolved.
+            canonical <- trxCanonicalRuvDesignParameters(parameters)
+            estimated <- !identical(canonical$ruv_design, "none") && is.na(canonical$ruv_k) && identical(canonical$ruv_k_rule, "num_sv_be")
+            log_cpm <- if (estimated) trxSavedMatrix(store$manager, trxProductValue(store$manager, parameters$logcpm)$log_cpm)
+            trxChooseRuvDesign(trxAssayInputs(object), parameters, log_cpm = log_cpm)
         })
 }
 
@@ -349,14 +366,18 @@ TRX_RUV_K_RULES <- c("num_sv_be", "sweep_bounded", "user")
 #' @param parameters `trxRuvDesignParameters`' list.
 #' @param k_record The number of factors and its source: a list with `k` (a whole number; 0 when the rule found no
 #'   factor) and `k_rule` (one of `TRX_RUV_K_RULES`), as the shared resolver returns it; its other fields (`reason`,
-#'   `k_estimate`, `k_max`, `estimate`, ...) are kept with the product. Not read for `none`.
+#'   `k_estimate`, `k_max`, `estimate`, ...) are kept with the product. Not read for `none`. NULL (the default): the
+#'   parameters' `ruv_k` and `ruv_k_rule`, or, with `ruv_k_rule = "num_sv_be"` and no `ruv_k`, the shared resolver's
+#'   estimated count on `log_cpm` under the limit `ruvFactorCountLimit` gives (KIT-129 item 3; a k above it is refused,
+#'   `ruv_k_above_limit`).
+#' @param log_cpm The TMM logCPM of the counts, for the estimated count.
 #' @return The product the RUVs step reads: `chosen` (`k`, `percentage`, `n_controls`, `control_genes`, the grid
 #'   product's names), `ruv_design` (`id`, `method`, `control_rule`, `unmatched`, `list_sha256`, `k`, `k_rule`, `applied`, `reason`,
-#'   `test_form`), `k_record`, `control_genes`, `control_source`, `mode` (`"declared"`) and `settings`. A k of 0 and
+#'   `test_form`), `k_record`, `k_estimate` (the count's record for `plotRuvFactorCount`, when the count ran), `control_genes`, `control_source`, `mode` (`"declared"`) and `settings`. A k of 0 and
 #'   `none` give a choice without factors, with the reason. Refuses `trx_ruv_design_unsupported` and
 #'   `trx_ruv_design_invalid` (parameters that do not fit the design), `trx_ruv_controls_invalid`.
 #' @noRd
-trxChooseRuvDesign <- function(x, parameters, k_record = list(k = parameters$ruv_k, k_rule = parameters$ruv_k_rule)) {
+trxChooseRuvDesign <- function(x, parameters, k_record = NULL, log_cpm = NULL) {
     ruv_design <- parameters$ruv_design
     invalid <- function(message) trxAbort(message, c("trx_ruv_design_invalid", "trx_error"))
     if (!checkmate::test_choice(ruv_design, TRX_RUV_DESIGNS)) {
@@ -367,6 +388,8 @@ trxChooseRuvDesign <- function(x, parameters, k_record = list(k = parameters$ruv
     parameters <- trxCanonicalRuvDesignParameters(parameters)
     none <- identical(ruv_design, "none")
     supplied <- parameters$ruv_control_ids
+    estimated <- !none && is.null(k_record) && is.na(parameters$ruv_k) && identical(parameters$ruv_k_rule, "num_sv_be")
+    if (is.null(k_record)) k_record <- list(k = parameters$ruv_k, k_rule = parameters$ruv_k_rule)
     k <- k_record$k
     k_rule <- k_record$k_rule
     if (none) {
@@ -375,15 +398,25 @@ trxChooseRuvDesign <- function(x, parameters, k_record = list(k = parameters$ruv
         }
         k <- 0L
         k_rule <- NA_character_
-    } else if (!checkmate::test_count(k) || !checkmate::test_choice(k_rule, TRX_RUV_K_RULES) || (identical(k_rule, "user") && k < 1)) {
+    } else if (!estimated && (!checkmate::test_count(k) || !checkmate::test_choice(k_rule, TRX_RUV_K_RULES) || (identical(k_rule, "user") && k < 1))) {
         invalid(sprintf("the design %s needs k (a whole number; 1 or more when the user chose it) and its rule (%s)", ruv_design,
             paste(TRX_RUV_K_RULES, collapse = ", ")))
     }
     if (identical(ruv_design, "supplied_controls") != checkmate::test_character(supplied, min.len = 1L)) {
         invalid("ruv_control_ids names the control genes of the design supplied_controls, and is given for no other design")
     }
-    k <- as.integer(round(k))
     controls <- trxRuvDesignControls(x$counts, x$design, ruv_design, supplied)
+    if (estimated) {
+        if (!is.matrix(log_cpm)) invalid("the estimated count (ruv_k_rule num_sv_be with no ruv_k) needs the TMM logCPM")
+        trxRuvCheckAlignment(x$counts, x$design, log_cpm)
+        groups <- as.character(x$design$group)
+        limit <- ruvFactorCountLimit(ncol(x$counts), length(unique(groups)), length(unique(groups)), length(controls$control_genes))
+        k_record <- resolveRuvFactorCount("num_sv_be", controls$control_rule, limit,
+            estimate_count = \() estimateRuvFactorCount(log_cpm, groups, seed = parameters$ruv_k_seed))
+        k <- k_record$k
+        k_rule <- k_record$k_rule
+    }
+    k <- as.integer(round(k))
     applied <- k > 0L
     reason <- if (none) {
         "the design none: no correction for unwanted variation"
@@ -396,7 +429,7 @@ trxChooseRuvDesign <- function(x, parameters, k_record = list(k = parameters$ruv
     list(chosen = list(k = k, percentage = 100 * n_controls / nrow(x$counts), n_controls = n_controls, control_genes = controls$control_genes),
         ruv_design = list(id = ruv_design, method = controls$method, control_rule = controls$control_rule, unmatched = controls$unmatched,
             list_sha256 = controls$list_sha256, k = k, k_rule = k_rule, applied = applied, reason = reason, test_form = if (applied) "factors_in_model" else "none"),
-        k_record = if (!none) k_record, control_genes = controls$control_genes, control_source = controls$control_rule, mode = "declared",
+        k_record = if (!none) k_record, k_estimate = if (estimated) k_record$estimate, control_genes = controls$control_genes, control_source = controls$control_rule, mode = "declared",
         settings = parameters[trxRuvDesignParameterNames])
 }
 

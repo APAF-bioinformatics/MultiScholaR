@@ -177,7 +177,7 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
 workflowLegacyDesignRefusal <- function(declaration) {
     guard <- switch(declaration$name,
         # Classic proteomics normalisation (KIT-126): the new design's parameter is `ruv_design`.
-        "normalization-ruv" = list(names = "ruv_design", refuse = assertProtNormLegacyRuvParameters),
+        "normalization-ruv" = list(names = c("ruv_design", PROT_NORM_RUV_K_PARAMETERS), refuse = assertProtNormLegacyRuvParameters),
         # DIA with limpa, the RUV covariates (KIT-129 W3): the control rule and the k rule.
         protein_ruv_covariates = list(names = diaRuvCovariatesRuleParameters, refuse = assertDiaRuvSweepParameters),
         # Transcriptomics, the RUV grid (KIT-129 W4): the declared design.
