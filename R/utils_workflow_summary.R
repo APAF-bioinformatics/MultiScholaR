@@ -93,6 +93,11 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
     summaryFailed <- function(error) {
         catFn("SESSION SUMMARY ERROR:", conditionMessage(error), "\n")
+        # KIT-052 (KIT-134 run 44379470655): a file the save could not write (the session archive's, on Windows with long
+        # paths disabled) is named to the user, not only logged; the copy and the report stay refused until it is written.
+        if (inherits(error, "workflow_figure_unwritten")) {
+            notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
+        }
         basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
         if (!file.exists(basicParamsFile)) {
             writeLines(c("Study Parameters", "================", "", paste("Workflow Name:", label),

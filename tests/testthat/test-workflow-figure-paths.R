@@ -643,3 +643,101 @@ test_that("the protein QC publication draws the limpa figures in a short folder:
     publishDIAProteinTables(manager, list(stateReference = getDIAStateReference(manager)))
     expect_identical(vapply(file.path(paths$protein_qc_dir, names), figurePathPublishedFigure, "", USE.NAMES = FALSE), names)
 })
+
+# KIT-052 (KIT-134 run 44379470655): with long paths disabled and a project root of 91 characters the proteomics Summary
+# wrote no report. Its save refreshes the session archive; R's tar (Windows, no GNU tar) staged the archive's members in
+# the export's request folder, `<source_dir>/.workflow-export/native-export-<12>/archive-stage-<12>/`, where a DA entity's
+# descriptor is 195 characters after the root. The copy failed, the export stayed pending, the copy step was refused and
+# the report never rendered; the user saw "Study parameters saved with warnings" only.
+
+# The entity of the lane whose member path was the longest (`<operation>-<name>-<12 hex>`).
+figurePathArchiveEntity <- paste0("DA-contrast-output-num_sig_da_molecules_first_go-", strrep("0", 12L))
+
+# As a copy on Windows with long paths disabled: a target of 260 characters or more is not written and the copy returns
+# FALSE (redirected here into a folder no file can be copied into).
+figurePathLongCopyFails <- function(env = parent.frame()) {
+    blocked <- figurePathReadOnly(file.path(withr::local_tempdir(.local_envir = env), "blocked"), env = env)
+    tracer <- bquote(if (is.character(to) && any(nchar(to) >= 260L))
+        to[nchar(to) >= 260L] <- file.path(.(blocked), basename(to[nchar(to) >= 260L])))
+    suppressMessages(trace("file.copy", tracer = tracer, where = baseenv(), print = FALSE))
+    withr::defer(suppressMessages(untrace("file.copy", where = baseenv())), envir = env)
+    invisible(blocked)
+}
+
+test_that("the session archive (R's tar) stages its members in a short folder: from a long request folder it is written", {
+    root <- normalizePath(withr::local_tempdir(), winslash = "/")
+    store_parent <- file.path(root, "s")
+    members <- file.path(".workflow-entities", "entities", figurePathArchiveEntity, c("descriptor.rds", "commit.json", "payload.rds"))
+    for (member in members) {
+        dir.create(dirname(file.path(store_parent, member)), recursive = TRUE, showWarnings = FALSE)
+        writeLines(member, file.path(store_parent, member))
+    }
+    request_dir <- file.path(root, strrep("r", 150L - nchar(root) - 1L))
+    dir.create(request_dir)
+    writeBin(members, file.path(request_dir, "store-members.nul"))
+    archive <- file.path(request_dir, "session.msdia.tar")
+    # Staged in the request folder, the descriptor's path would be 260 characters or more.
+    expect_gte(nchar(file.path(request_dir, paste0("archive-stage-", strrep("0", 8L)), members[[1L]])), 260L)
+    figurePathLongCopyFails()
+    scratch_before <- list.files(tempdir(), pattern = "^archive-stage-")
+    suppressWarnings(runDIANativeTarR(c("--create", "--file", "-", "--directory", store_parent, "--files-from",
+        file.path(request_dir, "store-members.nul")), file.path(request_dir, "archive-create.log"), output_path = archive))
+    expect_setequal(names(readDIANativeTarEntriesR(archive)), members)
+    expect_setequal(list.files(request_dir, all.files = TRUE, no.. = TRUE), c("store-members.nul", "session.msdia.tar"))
+    expect_identical(list.files(tempdir(), pattern = "^archive-stage-"), scratch_before)
+})
+
+test_that("a file the session archive cannot copy into its request folder stops the export and is named", {
+    testthat::local_mocked_bindings(workflowToolsAvailable = function(names) FALSE, .package = "MultiScholaR")
+    root <- withr::local_tempdir()
+    source <- file.path(root, "source")
+    writeLines("dependency", source)
+    member <- strrep("a", 64L)
+    blocked <- figurePathReadOnly(file.path(root, "files"))
+    error <- expect_error(suppressWarnings(snapshotWorkflowFile(source, file.path(blocked, member), file.path(root, "copy.log"))),
+        class = "workflow_figure_unwritten")
+    expect_s3_class(error, "saved_entity_write")
+    text <- figurePathText(error)
+    expect_match(text, "could not be copied into its staging folder", fixed = TRUE)
+    expect_match(text, member, fixed = TRUE)
+})
+
+test_that("a Summary save that cannot write a file says so, naming the file and, on Windows, its length", {
+    config <- omicGuiConfig("lipidomics")$summary
+    base <- withr::local_tempdir()
+    paths <- list(base_dir = base, source_dir = file.path(base, "scripts", "lipidomics"), integration_dir = file.path(base, "integration"))
+    for (path in paths) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    long <- file.path(base, strrep("c", 150L), paste0(strrep("d", 120L), ".rds"))
+    config$final_state$context <- function(workflowData, catFn) list(finalS4Object = NULL, contrastsTbl = NULL, dataStateUsed = NULL)
+    config$integration$write <- function(workflowData, path) checkWorkflowFigureFiles(long,
+        "a file of the session archive could not be copied into its staging folder", class = "saved_entity_write",
+        windows = TRUE, copied = FALSE)
+    shown <- character()
+    failed <- NULL
+    saveWorkflowSummaryParameters(config, list(state_manager = NULL), list(lipidomics = paths), "lipidomics", "kit052", "d",
+        notify = function(message, type, duration) shown <<- c(shown, paste0("[", type, "] ", message)),
+        done = function(saved) stop("the save must not complete"), failed = function(error) failed <<- error,
+        createWorkflowArgsFn = function(...) file.path(paths$source_dir, "study_parameters.txt"),
+        writeAnalysisRecordFn = function(manager, path) invisible(path), catFn = function(...) invisible(NULL))
+    expect_s3_class(failed, "workflow_figure_unwritten")
+    expect_length(shown, 2L)
+    text <- gsub("\\s+", " ", shown[[1L]])
+    expect_match(text, "[error] The session could not be saved:", fixed = TRUE)
+    expect_match(text, basename(long), fixed = TRUE)
+    expect_match(text, paste(nchar(long), "characters"), fixed = TRUE)
+    expect_identical(shown[[2L]], "[warning] Study parameters saved with warnings")
+})
+
+# The proteomics Summary's longest own writes after the project root: before, the archive's members staged in the request
+# folder (the lane's DA entity); after, the archive's dependency copies `files/<sha256>` in the request folder, whose names
+# (`.workflow-export`, `native-export-<12>`, `files/`) are the saved archive layout and stay.
+test_that("the proteomics Summary's session archive leaves a project root of 125 characters within Windows' 259", {
+    project <- normalizePath(withr::local_tempdir(), winslash = "/")
+    paths <- suppressMessages(setupDirectories(project, "proteomics"))$proteomics
+    request <- workflowExportPaths(paths$source_dir, paste0("native-export-", strrep("0", 12L)))$request_dir
+    staged <- file.path(request, paste0("archive-stage-", strrep("0", 12L)), ".workflow-entities", "entities",
+        figurePathArchiveEntity, "descriptor.rds")
+    dependency <- file.path(request, "files", strrep("0", 64L))
+    safe <- function(files) 259L - (max(nchar(files)) - nchar(project))
+    expect_identical(c(before = safe(c(staged, dependency)), after = safe(dependency)), c(before = 64L, after = 125L))
+})
