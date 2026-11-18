@@ -314,3 +314,20 @@ rule | verdict | * | measure | rules 1 to 7 | KIT-124 revision 1.2, W3
 rule | verdict | * | applies_in | main ("core") scenarios that are not void; extra-hard ("stress") scenarios give conditions of use only | KIT-124 revision 1.2, W3
 rule | verdict | * | stated_source | independent review R-06: "core cells (must pass) and stress cells (state conditions)" | kit-124/independent-review-20261116.md
 rule | verdict | * | reading | A4: the interval is the two one-sided 97.5% bounds. A8: each design is judged on all features and on the features complete in every sample; the summary uses its primary subset. A14: "every core cell" was read as every main scenario in which the design runs, so the technical-replicate designs, run in one scenario, pass on that scenario alone; whether that makes a design eligible was put to the user. A12: see rule 4 | kit-124/aggregate.R header; kit-124/outcome.md
+design | 22 | * | controls | as known null controls, factors in model | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 22 | * | replicate_sets | as known null controls, factors in model | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 22 | * | number_of_factors | separation rule applied to these controls | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 22 | * | test_on | uncorrected data, factors in the model | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 23 | * | controls | as first-pass nulls (top 25% dropped), factors in model | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 23 | * | replicate_sets | as first-pass nulls (top 25% dropped), factors in model | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 23 | * | number_of_factors | estimated count | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 23 | * | test_on | uncorrected data, factors in the model | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 24 | * | controls | as first-pass nulls (top 25% dropped), factors in model | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 24 | * | replicate_sets | as first-pass nulls (top 25% dropped), factors in model | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 24 | * | number_of_factors | separation rule applied to these controls | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+design | 24 | * | test_on | uncorrected data, factors in the model | kit-124/outcome.md, "New arms and the technical-duplicate re-measurement"
+scenario | C6R | * | units_per_group | 4 | as C6 (simulator headers, cell tables)
+scenario | C6R | S3 | technical_replicates | 2 libraries per unit, summed per unit before the analysis (8 samples analysed) | kit-124/outcome.md, "The technical-duplicate cell after the repair"
+scenario | C6R | S4 | technical_replicates | 2 injections per unit (16 samples) | sim/s4_lipid_metab.R header
+scenario | C6R | S3 | note | scenario C6 measured again on the repaired package tree (ace1f4de) on a hosted runner, with the simulators of that tree; the ceiling's factor is the mean of a unit's two library scores, an approximate ceiling; reported, not used to judge a design | kit-124/outcome.md, "The technical-duplicate cell after the repair"; kit-124/scored/README.md
+scenario | C6R | S4 | note | scenario C6 measured again on the repaired package tree (ace1f4de) on a hosted runner, with the simulators of that tree; reported, not used to judge a design | kit-124/outcome.md, "The technical-duplicate cell after the repair"; kit-124/scored/README.md
