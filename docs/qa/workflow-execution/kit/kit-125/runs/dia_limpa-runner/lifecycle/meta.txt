@@ -1,0 +1,18 @@
+KIT-125 null split, omic dia_limpa (ticket revision 1.4)
+package tree (working directory): /home/runner/work/MultiScholaR/MultiScholaR/pkgtree; commit 0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22; changes under R/, tests/, src/: FALSE
+script: ../k125/docs/qa/workflow-execution/kit/kit-125/k125_dia_limpa.R; sha256 b9f062cf1689295221261c5738b675ba63cda3c55ee84d4b4b15e46dc7ba5360; common sha256 bd0702216568117bd1e52a417bfb4084f840a701cb2240322bcb2e624db42e0f
+command: Rscript ../k125/docs/qa/workflow-execution/kit/kit-125/k125_dia_limpa.R /home/runner/work/_temp/out/lifecycle /home/runner/work/_temp/data/dia_limpa 3 9001
+K125_FAIL_AT: not set
+R_LIBS: 
+library paths: /opt/R/4.6.1/lib/R/library
+threads: OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1; one R process
+R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu; BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+input files (sha256): DIANN1.8_SingleCells_CellCycle.zip eebe51f38170232409d8cfd9f355bb4b13dad4c25052822283a4884076f33f0f
+pool: 203 units; batches 20201010 = 65, 20201126 = 138
+split types: random, batch; splits 9001 to 9003 of each
+seed rule: seed = 5000000 + 100000 * omic index + 10000 * type index + split; units under set.seed(seed); arm a under set.seed(seed * 100 + a)
+report: 434 runs; q-value columns filtered at 0.01: Q.Value, PG.Q.Value, Global.Q.Value, Global.PG.Q.Value; UB runs in the matrix: 203; precursors per UB run: 1300 to 5944 (median 2823); pool rule: at least 500
+DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+started: 2026-11-18 00:39:54 UTC
+finished: 2026-11-18 00:42:24 UTC; wall 149 s

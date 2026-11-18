@@ -1,0 +1,17 @@
+KIT-125 null split, omic classic (ticket revision 1.4)
+package tree (working directory): /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim; commit 0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22; changes under R/, tests/, src/: FALSE
+script: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k125/docs/qa/workflow-execution/kit/kit-125/k125_classic.R; sha256 cefca648809bf090e02f1b3bddf524027a8c5545e9f5c11c1d72ccd40dfdf051; common sha256 bd0702216568117bd1e52a417bfb4084f840a701cb2240322bcb2e624db42e0f
+command: Rscript /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k125/docs/qa/workflow-execution/kit/kit-125/k125_classic.R /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k125/docs/qa/workflow-execution/kit/kit-125/lifecycle/classic /home/doktersmol/Projects/APAF/MultiScholaR-public-data/kit-125/classic_proteomics 3 9001
+K125_FAIL_AT: 9002
+R_LIBS: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/../core/browser-smoke.y5ordS/library
+library paths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+threads: OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1; one R process
+R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu; BLAS /usr/lib/libblas.so.3.12.0
+packages: MultiScholaR 0.5.0; limma 3.68.4; ruv 0.9.7.1; RUVIIIC 1.0.19; sva 3.60.0; qvalue 2.44.0; pkgload 1.5.3
+input files (sha256): combined_protein.tsv 6f52cb47c942fcb1fba34a57ffb766b63805276dd95bdd2f5ba8df2a0891a28d
+pool: 24 units; no batch recorded
+split types: random; splits 9001 to 9003 of each
+seed rule: seed = 5000000 + 100000 * omic index + 10000 * type index + split; units under set.seed(seed); arm a under set.seed(seed * 100 + a)
+pool rule: HC samples with at least 275.8 quantified proteins (half the median of the 30); quantified proteins per pooled sample: 324 to 1084
+started: 2026-11-18 10:24:08 AEDT
+finished: 2026-11-18 10:25:01 AEDT; wall 54 s

@@ -1,0 +1,4 @@
+omic	split_type	split	seed	group_A	group_B
+classic	random	9001	5109001	HC_6,HC_3,HC_34,HC_89,HC_12,HC_92	HC_85,HC_19,HC_15,HC_23,HC_18,HC_75
+classic	random	9002	5109002	HC_3,HC_44,HC_15,HC_89,HC_24,HC_85	HC_69,HC_23,HC_75,HC_39,HC_33,HC_59
+classic	random	9003	5109003	HC_69,HC_17,HC_76,HC_34,HC_45,HC_19	HC_6,HC_12,HC_85,HC_24,HC_56,HC_15

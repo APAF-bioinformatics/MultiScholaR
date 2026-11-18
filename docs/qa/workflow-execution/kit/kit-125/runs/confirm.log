@@ -1,0 +1,6 @@
+classic start 2026-11-18 10:26:29
+classic end 2026-11-18 10:55:13 exit 0 wall 1724s
+trx start 2026-11-18 10:55:13
+trx end 2026-11-18 11:10:12 exit 0 wall 899s
+metab start 2026-11-18 11:10:12
+metab end 2026-11-18 11:18:17 exit 0 wall 485s
