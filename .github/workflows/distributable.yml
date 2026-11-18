@@ -443,6 +443,8 @@ jobs:
             fi
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "fingerprints of prot_lfq_fragpipe's da_proteins_groupKO-groupWT_long_annot.tsv (the table stays in the job):"
+          grep -a '^FPRINT' "$OUT/lanes.log" | cut -c1-1700 || true
           exit "$status"
 
       # P5: the seven browser e2e lanes, the application being the installed application's package
@@ -782,6 +784,8 @@ jobs:
           $lines += '```'
           $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
           $lines
+          "fingerprints of prot_lfq_fragpipe's da_proteins_groupKO-groupWT_long_annot.tsv (the table stays in the job):"
+          Get-Content "$env:OUT\lanes.log" | Where-Object { $_ -match '^FPRINT' } | ForEach-Object { $_.Substring(0, [math]::Min(1700, $_.Length)) }
           if ($status -ne 0) { throw "the lanes did not pass (exit $status)" }
 
       - name: "e2e lanes: the four browser lanes without DIA against the installed application's package (reduced environment, network cut)"
@@ -806,13 +810,13 @@ jobs:
           $lines
           if ($status -ne 0) { throw "the e2e lanes did not pass (exit $status)" }
 
-      # KIT-052 / KIT-134 confirmation 1 (Windows figure paths), with the installed application's R and the test
-      # tools: the runner's long-path setting; each way a figure is written, at 240 to 300 characters; KIT-052's
-      # tests; the transcriptomics and proteomics DA on the managed route (the worker's entry point, its request
-      # folder) and the prot_tmt entry lane (QC with the Q-value figures, DA in process), from project roots of
-      # about 60 and 100 characters. The root's length is set through TMPDIR, under which every fixture makes its
-      # project; no package or test code is changed. Every figure is listed with its path's length and whether it
-      # is there (packaging/verify/figure-trace.R).
+      # KIT-052 / KIT-134 Windows figure paths, second confirmation (after the worker-route repair b0f4719c), with
+      # the installed application's R and the test tools: KIT-052's tests, the transcriptomics managed DA
+      # (MCI-031.2) and the lipid/metab/trx worker routes of test-omic-da-module.R from project roots of about 63,
+      # 102 and 124 characters, and the prot_tmt entry lane from 118 and 124. The root's length is set through
+      # TMPDIR, under which every fixture makes its project; no package or test code is changed. Every figure is
+      # listed with where it was drawn and where it ended, each path's length and whether it is there
+      # (packaging/verify/figure-trace.R, FIGPAIR lines), and every refusal of unwritten figures with its message.
       - name: "Figure paths (KIT-052), long paths as the runner has them"
         id: figures
         if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' }}
@@ -823,8 +827,9 @@ jobs:
           "RUNNER_TEMP $env:RUNNER_TEMP ($($env:RUNNER_TEMP.Length) characters); TEMP $env:TEMP"
           New-Item -ItemType Directory -Force "$env:OUT\figures" | Out-Null
           & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
-            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" -Cases 'on-default=0:devices,figure_tests,prot_tmt_lane', `
-            'on-root60=20:trx_worker_da,prot_worker_da,prot_tmt_lane', 'on-root100=60:trx_worker_da,prot_worker_da,prot_tmt_lane'
+            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" -Cases 'on-root63=20:figure_tests,trx_worker_da,omic_worker_da', `
+            'on-root102=59:figure_tests,trx_worker_da,omic_worker_da', 'on-root124=81:figure_tests,trx_worker_da,omic_worker_da', `
+            'on-tmt118=60:prot_tmt_lane', 'on-tmt124=66:prot_tmt_lane'
           if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
 
       # The same with Windows' default: LongPathsEnabled set to 0 for the rest of this job (the runner is
@@ -839,8 +844,8 @@ jobs:
           Set-ItemProperty -Path $key -Name LongPathsEnabled -Value 0 -Type DWord
           "LongPathsEnabled in the registry now: $((Get-ItemProperty $key).LongPathsEnabled)"
           & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
-            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" -Cases 'off-default=0:devices,figure_tests', `
-            'off-root60=20:trx_worker_da,prot_worker_da,prot_tmt_lane', 'off-root100=60:trx_worker_da,prot_worker_da,prot_tmt_lane'
+            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" -Cases 'off-rootmin=4:devices,figure_tests,trx_worker_da,omic_worker_da', `
+            'off-root63=20:figure_tests,trx_worker_da,omic_worker_da'
           if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
 
       - name: Results

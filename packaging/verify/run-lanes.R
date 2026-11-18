@@ -134,6 +134,66 @@ compareLane <- function(lane, recorded, frozen) {
     do.call(rbind, rows)
 }
 
+# KIT-134 open item (run 44241609555): prot_lfq_fragpipe's da_proteins_groupKO-groupWT_long_annot.tsv differed from
+# its oracle by digest on Windows. Each copy the recorder reads (helper-gui-entry.R reads every .tsv with readLines) is
+# kept in the output folder, which never leaves the job, and only fingerprints are printed (FPRINT lines): the bytes,
+# line endings, the header, per column its kind, a digest of its text and, for numbers, digests of the values rounded
+# to 15, 12, 10, 8 and 6 significant digits, two sample cells, so two platforms' tables can be compared from the logs.
+# The recorder's digest (`digest(lines, serialize = FALSE)`) hashes the first line only, so the oracle's value is
+# compared with the header's.
+capture_name <- "da_proteins_groupKO-groupWT_long_annot.tsv"
+capture <- new.env()
+capture$lane <- ""
+capture$n <- 0L
+dir.create(file.path(out_dir, "captured"), showWarnings = FALSE)
+captureTable <- function(con) {
+    if (is.character(con) && length(con) == 1L && identical(basename(con), capture_name) && file.exists(con)) {
+        capture$n <- capture$n + 1L
+        file.copy(con, file.path(out_dir, "captured", sprintf("%s-%02d.tsv", capture$lane, capture$n)))
+    }
+    invisible()
+}
+invisible(suppressMessages(trace("readLines", tracer = quote(captureTable(con)), where = baseenv(), print = FALSE)))
+
+fingerprintTables <- function(lane, oracle) {
+    files <- sort(list.files(file.path(out_dir, "captured"), pattern = paste0("^", lane, "-[0-9]+\\.tsv$"), full.names = TRUE))
+    if (!length(files)) return(invisible())
+    stored <- unique(unlist(lapply(oracle$steps, function(step) step$artifacts[grepl(capture_name, names(step$artifacts), fixed = TRUE)])))
+    hashes <- vapply(files, function(file) digest::digest(file = file, algo = "sha256"), "")
+    cat(sprintf("FPRINT %s copies read by the recorder: %d; distinct contents: %d; the oracle's digests: %s\n", lane, length(files),
+        length(unique(hashes)), paste(substr(stored, 1L, 16L), collapse = ", ")))
+    short <- function(x) substr(x, 1L, 16L)
+    for (file in files[!duplicated(hashes)]) {
+        label <- sprintf("%s %s", lane, sub("\\.tsv$", "", basename(file)))
+        raw <- readBin(file, "raw", file.size(file))
+        lf <- which(raw == as.raw(10L))
+        crlf <- sum(lf > 1L & raw[pmax(lf - 1L, 1L)] == as.raw(13L))
+        lines <- readLines(file, warn = FALSE)
+        header <- digest::digest(lines, algo = "sha256", serialize = FALSE)
+        cat(sprintf("FPRINT %s: bytes %d, sha256 %s; lines %d, LF %d, CRLF %d, UTF-8 BOM %s; first-line digest %s (the oracle's: %s)\n",
+            label, length(raw), short(hashes[[file]]), length(lines), length(lf), crlf,
+            identical(raw[1:3], as.raw(c(0xef, 0xbb, 0xbf))), short(header), if (header %in% stored) "equal" else "differs"))
+        cat(sprintf("FPRINT %s header: %s\n", label, substr(lines[[1L]], 1L, 1500L)))
+        table <- utils::read.delim(file, colClasses = "character", check.names = FALSE, na.strings = character(), quote = "\"",
+            comment.char = "")
+        cat(sprintf("FPRINT %s shape: %d rows, %d columns; first column order %s, sorted %s; row-text digest %s\n", label, nrow(table),
+            ncol(table), short(digest::digest(table[[1L]])), short(digest::digest(sort(table[[1L]]))),
+            short(digest::digest(unname(as.list(table))))))
+        for (j in seq_along(table)) {
+            text <- table[[j]]
+            value <- suppressWarnings(as.numeric(text))
+            numeric <- any(!is.na(value)) && all(!is.na(value) | text %in% c("", "NA", "NaN", "Inf", "-Inf"))
+            rounded <- if (numeric) vapply(c(15L, 12L, 10L, 8L, 6L), function(s)
+                short(digest::digest(formatC(signif(value, s), digits = s, format = "g"))), "") else character()
+            cat(sprintf("FPRINT %s col %d %s: %s; text %s%s; sample %s\n", label, j, names(table)[[j]],
+                if (numeric) sprintf("numeric (%d NA)", sum(is.na(value))) else "text", short(digest::digest(text)),
+                if (numeric) paste0("; rounded 15/12/10/8/6 ", paste(rounded, collapse = "/")) else "",
+                paste(substr(utils::head(text, 2L), 1L, 40L), collapse = " | ")))
+        }
+    }
+    invisible()
+}
+
 summaries <- list()
 reports <- list()
 failures <- list()
@@ -148,6 +208,8 @@ for (lane in lanes) {
     block <- unname(block)
     if (report_check) reports[[lane]] <- FALSE
     unlink(file.path(out_dir, "records", paste0(lane, ".json")))
+    capture$lane <- lane
+    capture$n <- 0L
     started <- Sys.time()
     reporter <- testthat::ListReporter$new()
     outcome <- tryCatch({
@@ -177,6 +239,7 @@ for (lane in lanes) {
             error = function(e) data.frame(lane = lane, step = "<comparison failed>", field = "", key = "", kind = "discrete",
                 runner = truncate(conditionMessage(e)), oracle = "", stringsAsFactors = FALSE))
     }
+    tryCatch(fingerprintTables(lane, oracle), error = function(e) cat(sprintf("FPRINT %s failed: %s\n", lane, conditionMessage(e))))
     differences <- c(differences, list(lane_differences))
     kinds <- if (is.null(lane_differences)) character() else lane_differences$kind
     summaries[[lane]] <- data.frame(lane = lane,

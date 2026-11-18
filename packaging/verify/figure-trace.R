@@ -63,6 +63,21 @@ local({
         for (i in seq_along(from)) e$add("file.copy", targets[[i]], sprintf("returned %s", if (length(result) >= i) result[[i]] else NA))
     }
     e$checked <- function(files, message) for (file in files) e$add("checkWorkflowFigureFiles", file, message)
+    # KIT-052 second confirmation: the final name of a published file (publishWorkflowActionOutputs renames its
+    # `.publish-` copy into place) and every classed refusal of unwritten figures, with its message.
+    e$renamed <- function(from, to, result) {
+        for (i in seq_along(to)) e$add("file.rename", to[[i]], sprintf("returned %s", if (length(result) >= i) result[[i]] else NA))
+    }
+    e$raised <- list()
+    e$abort <- function(message, class) {
+        if (!"workflow_figure_unwritten" %in% class) return(invisible())
+        labels <- names(message)
+        if (is.null(labels)) labels <- rep("", length(message))
+        text <- paste(ifelse(nzchar(labels), paste0("[", labels, "] "), ""), message, collapse = " | ")
+        e$raised[[length(e$raised) + 1L]] <- data.frame(item = e$item, class = paste(class, collapse = "/"),
+            message = cli::ansi_strip(text), stringsAsFactors = FALSE)
+        invisible()
+    }
 })
 
 kit134FigureTraceInstall <- function() {
@@ -89,6 +104,8 @@ kit134FigureTraceInstall <- function() {
     quietly("dev.off", tracer = quote(.kit134FigureTrace$closing <- which), exit = quote(.kit134FigureTrace$deviceClosed()),
         where = asNamespace("grDevices"))
     quietly("file.copy", exit = quote(.kit134FigureTrace$copied(from, to, returnValue(logical()))), where = baseenv())
+    quietly("file.rename", exit = quote(.kit134FigureTrace$renamed(from, to, returnValue(logical()))), where = baseenv())
+    quietly("abort", tracer = quote(.kit134FigureTrace$abort(message, class)), where = asNamespace("rlang"))
     namespace <- asNamespace("MultiScholaR")
     if (exists("checkWorkflowFigureFiles", envir = namespace, inherits = FALSE)) {
         quietly("checkWorkflowFigureFiles", tracer = quote(.kit134FigureTrace$checked(files, message)), where = namespace)
@@ -132,11 +149,61 @@ kit134FigureTraceReport <- function(path, case) {
     }
     for (item in unique(rows$item)) {
         r <- rows[rows$item == item, ]
-        figures <- r[r$op != "file.copy", ]
+        figures <- r[!r$op %in% c("file.copy", "file.rename"), ]
         cat(sprintf("FIGSUM %s %s: longest figure path %s (root %s), longest copy target %s; figures missing %d of %d; copies missing %d of %d\n",
             case, item, if (nrow(figures)) max(figures$length) else NA, if (nrow(figures)) figures$root_length[which.max(figures$length)] else NA,
             if (any(r$op == "file.copy")) max(r$length[r$op == "file.copy"]) else NA, sum(!figures$exists), nrow(figures),
             sum(!r$exists[r$op == "file.copy"]), sum(r$op == "file.copy")))
     }
+    kit134FigurePairs(rows, case, sub("\\.tsv$", "-pairs.tsv", path))
+    for (x in e$raised) cat(sprintf("RAISED %s %s: class %s: %s\n", case, x$item, x$class, substr(gsub("[\r\n\t]+", " ", x$message), 1L, 900L)))
     invisible(rows)
+}
+
+#' Each figure a device drew, paired with where it ended: the copies and renames after it of a file with the same
+#' name, up to the next drawing of that name in the same item, outside the short scratch folders (`wfx-<hex>` under
+#' tempdir()). A figure drawn in place is its own final file. "ok": listed in its folder and not empty (a size that
+#' cannot be read counts as listed only).
+kit134FigurePairs <- function(rows, case, path) {
+    device <- grepl("::", rows$op)
+    temp <- gsub("\\\\", "/", tempdir())
+    scratch <- startsWith(rows$path, paste0(temp, "/wfx-"))
+    moved <- rows$op %in% c("file.copy", "file.rename") & !scratch
+    name <- basename(rows$path)
+    ok <- function(i) rows$exists[i] & (is.na(rows$bytes[i]) | rows$bytes[i] > 0)
+    pairs <- list()
+    for (i in which(device)) {
+        later <- which(seq_len(nrow(rows)) > i & rows$item == rows$item[[i]] & name == name[[i]])
+        stop_at <- later[device[later]]
+        if (length(stop_at)) later <- later[later < min(stop_at)]
+        finals <- later[moved[later]]
+        if (!length(finals)) finals <- i
+        longest <- finals[which.max(rows$length[finals])]
+        native <- regmatches(rows$path[[longest]], regexpr("/\\.dia-native-[0-9a-f]+/.*$", rows$path[[longest]]))
+        pairs[[length(pairs) + 1L]] <- data.frame(case = case, item = rows$item[[i]], device = rows$op[[i]],
+            drawn_length = rows$length[[i]], drawn_ok = ok(i), drawn_in_scratch = scratch[[i]], finals = length(finals),
+            final_length = rows$length[[longest]], final_root_length = rows$root_length[[longest]], final_ok = all(ok(finals)),
+            after_native = if (length(native)) nchar(sub("^/\\.dia-native-[0-9a-f]+", "", native)) else NA_integer_,
+            drawn_path = rows$path[[i]], final_path = rows$path[[longest]], stringsAsFactors = FALSE)
+    }
+    if (!length(pairs)) return(invisible())
+    pairs <- do.call(rbind, pairs)
+    utils::write.table(pairs, path, sep = "\t", quote = FALSE, row.names = FALSE)
+    short <- function(p) paste(utils::tail(strsplit(p, "/", fixed = TRUE)[[1L]], 3L), collapse = "/")
+    for (j in seq_len(nrow(pairs))) {
+        p <- pairs[j, ]
+        cat(sprintf("FIGPAIR %s\t%s\t%s\tdrawn %d %s%s\tfinal %d (root %s, after .dia-native %s) %s x%d\t%s\n", case, p$item, p$device,
+            p$drawn_length, if (p$drawn_ok) "ok" else "MISSING", if (p$drawn_in_scratch) " scratch" else "", p$final_length,
+            p$final_root_length, p$after_native, if (p$final_ok) "ok" else "MISSING", p$finals, short(p$final_path)))
+    }
+    for (item in unique(pairs$item)) {
+        p <- pairs[pairs$item == item, ]
+        cat(sprintf(paste("FIGPAIRSUM %s %s: figures drawn %d (in scratch %d; PNG %d, PDF %d), drawn ok %d, final ok %d;",
+            "longest drawn %d, longest final %d (root %s); longest after .dia-native %s\n"),
+            case, item, nrow(p), sum(p$drawn_in_scratch), sum(grepl("\\.png$", p$final_path, ignore.case = TRUE)),
+            sum(grepl("\\.pdf$", p$final_path, ignore.case = TRUE)), sum(p$drawn_ok), sum(p$final_ok), max(p$drawn_length),
+            max(p$final_length), p$final_root_length[which.max(p$final_length)],
+            if (all(is.na(p$after_native))) NA else max(p$after_native, na.rm = TRUE)))
+    }
+    invisible(pairs)
 }

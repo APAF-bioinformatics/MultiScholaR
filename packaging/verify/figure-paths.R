@@ -117,6 +117,12 @@ for (item in items) {
             "MCI-031.2 several pairwise contrasts run on one fit and are offered by the tab; the managed tab equals the in-process one"),
         prot_worker_da = runBlock("test-omic-da-module.R",
             "KIT-112 W3 (D3): a managed run with one contrast dispatches DA-contrast-output then da_publication and gives the in-process run's manifest, tab and bus"),
+        # The lipid and metabolomics worker routes are the "(b-managed)" cases of test-omic-da-module.R, made in a
+        # top-level loop: testthat's desc filter runs every top-level call that is not a test_that block, so naming
+        # the one top-level lipid managed test below runs that test plus the file's loops ((b) in process and
+        # (b-managed) lipid, metab and trx), not the whole file.
+        omic_worker_da = runBlock("test-omic-da-module.R",
+            "(W3, D3) lipid managed: the volcano is <req> until ticked, then the worker's lipid_volcano_page iframe; the tab holds no state, widget or page"),
         prot_tmt_lane = {
             lines <- readLines(file.path(checkout, "tests", "testthat", "test-gui-entry-proteomics.R"))
             block <- gsub("^.*test_that\\(\"|\"$", "", regmatches(lines, regexpr("test_that\\(\"KIT-101 entry lane prot_tmt:[^\"]+\"", lines)))

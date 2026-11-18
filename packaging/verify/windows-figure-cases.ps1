@@ -24,7 +24,13 @@ foreach ($case in $Cases) {
     $length, $list = $rest -split ':', 2
     $items = $list -split ','
     Remove-Item Env:TMPDIR -ErrorAction SilentlyContinue
-    if ([int]$length -gt 0) {
+    if ([int]$length -gt 0 -and [int]$length -lt ($env:RUNNER_TEMP.Length + 3)) {
+        # Shorter than a folder under RUNNER_TEMP can be: a folder at the root of RUNNER_TEMP's drive (D:\o is 4).
+        $dir = (Split-Path -Qualifier $env:RUNNER_TEMP) + '\' + ('o' * ([int]$length - 3))
+        New-Item -ItemType Directory -Force $dir | Out-Null
+        $env:TMPDIR = $dir
+        "case ${name}: TMPDIR $dir ($($dir.Length) characters)"
+    } elseif ([int]$length -gt 0) {
         $pad = [int]$length - $env:RUNNER_TEMP.Length - 1
         $dir = Join-Path $env:RUNNER_TEMP ('t' + ('x' * ($pad - 1)))
         New-Item -ItemType Directory -Force $dir | Out-Null
@@ -38,7 +44,7 @@ foreach ($case in $Cases) {
     & $runner -Bundle $Runtime -Script $script -NoBundleArgument -Arguments (@($Checkout, $TestTools, (Join-Path $Out "figures-$name"), $name) + $items) *> $log
     $code = $LASTEXITCODE
     "case ${name}: exit $code after $([math]::Round($clock.Elapsed.TotalSeconds)) s"
-    Get-Content $log | Where-Object { $_ -match '^(CASE|TEST|ITEM|FIGSUM|FIGURES|DEVICES|DEVROW|FIGROW|\s+expectation_)' }
+    Get-Content $log | Where-Object { $_ -match '^(CASE|TEST|ITEM|FIGSUM|FIGURES|DEVICES|DEVROW|FIGROW|FIGPAIR|FIGPAIRSUM|RAISED|\s+expectation_)' }
     if ($code -ne 0) {
         $status = 1
         "case ${name}: the end of its log:"
