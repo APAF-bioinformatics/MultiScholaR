@@ -197,9 +197,11 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #' different corrections of the same unwanted variation, RUV-III-C's own against the model's fit of W per feature, so
 #' a group difference read from the corrected matrix need not equal the model's fold change (up to 0.18 log2 on the
 #' audit's data for the features observed in every sample).
-#' An assay whose factors cannot be computed gets no RUV and a warning of class `omics_ruv_factors_refused` (today's
-#' behaviour, kept: the other omics' new designs stop instead); its record's `reason_class` and the warning name the
-#' refusal by the class the other omics raise (`ruv_k_above_limit`, `ruv_k_not_estimated`; KIT-129 item 2).
+#' An assay whose factors cannot be computed under an automatic k rule gets no RUV and a warning of class
+#' `omics_ruv_factors_refused`; its record's `reason_class` and the warning name the refusal by the class the other
+#' omics raise (`ruv_k_above_limit`, `ruv_k_not_estimated`; KIT-129 item 2). A k the user typed (`"user"`) above an
+#' assay's limit stops the run with an error of class `ruv_k_above_limit` and `ruv_k_refused`, as in classic proteomics
+#' and transcriptomics (decision M31).
 #'
 #' @param theObject A `LipidomicsAssayData` or `MetaboliteAssayData` object (log2 values, missing values kept).
 #' @param ruv_design `"groups_all_features"`: every feature observed in every sample is a control.
@@ -314,6 +316,12 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
         if (inherits(counted_k, "condition")) {
             record$reason <- conditionMessage(counted_k)
             record$reason_class <- class(counted_k)[[1L]]
+        }
+        # Decision M31: a k the user typed above the assay's limit stops the run, as in classic proteomics and
+        # transcriptomics; under an automatic rule the assay is analysed without RUV, with the warning below.
+        if (identical(ruv_k_rule, "user") && identical(record$status, "refused") && identical(record$reason_class, "ruv_k_above_limit")) {
+            cli::cli_abort(c("the number of unwanted factors (k) is refused: assay {.val {assay_name}}: {record$reason}",
+                i = "give a smaller k, or choose the estimated count"), class = c("ruv_k_above_limit", "ruv_k_refused"), call = NULL)
         }
         if (counted && identical(record$status, "none")) record$reason <- counted_k$reason
         factors[[assay_name]] <- list(assay = assay_name, status = record$status, reason = record$reason,

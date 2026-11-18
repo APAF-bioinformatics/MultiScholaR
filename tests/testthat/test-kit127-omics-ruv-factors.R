@@ -124,6 +124,14 @@ simArm <- function(fixture, assay, k, standards = NULL) {
     list(W = w, table = simTestWithW(fixture, a$y, w))
 }
 
+# The first pass of S4's arms 5 and 23 (`first_pass`, `daKernel`): arm 1's test, per feature the smallest p over the
+# comparisons, every feature outside the 25% most significant a control.
+simFirstPassControls <- function(fixture, y) {
+    base <- simDaKernel(y, fixture$design, "~ 0 + group", fixture$contrasts)
+    fp <- stats::aggregate(p ~ feature, base, min)
+    fp$feature[rank(fp$p, na.last = "keep", ties.method = "first") > 0.25 * sum(is.finite(fp$p)) & is.finite(fp$p)]
+}
+
 expectKit127Table <- function(long, id_column, assay, reference) {
     got <- long[long$assay == assay, ]
     expect_setequal(got[[id_column]], reference$feature)
@@ -285,15 +293,23 @@ test_that("k has no default, 0 is no RUV, and an assay whose factors cannot be c
     expect_identical(kit127Quiet(runLipidsDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE,
         ruv_factors = none$factors))$da_lipids_long, plain)
 
-    # 12 samples in 2 replicate sets leave 9 factors at most; pos asks for 10 and is refused, neg is corrected
-    expect_warning(refused <- suppressMessages(runOmicsRuvFactors(object, "groups_all_features", list(pos = 10L, neg = 1L), "user")),
-        class = "omics_ruv_factors_refused")
+    # 12 samples in 2 groups leave 9 factors at most. Decision M31: a typed k of 10 for pos stops the run, as in classic
+    # proteomics and transcriptomics (before: pos analysed without RUV, with a warning)
+    typed <- tryCatch(suppressMessages(runOmicsRuvFactors(object, "groups_all_features", list(pos = 10L, neg = 1L), "user")),
+        error = function(e) e)
+    expect_s3_class(typed, c("ruv_k_above_limit", "ruv_k_refused"))
+    expect_match(conditionMessage(typed), "pos", fixed = TRUE)
+    expect_match(conditionMessage(typed), "residual", fixed = TRUE)
+    # under an automatic rule (the separation rule, first-pass controls) pos is refused and analysed without RUV, neg
+    # is corrected
+    expect_warning(refused <- suppressMessages(runOmicsRuvFactors(object, "first_pass_nulls", list(pos = 10L, neg = 1L),
+        "sweep_bounded")), class = "omics_ruv_factors_refused")
     expect_identical(refused$factors$pos$status, "refused")
     expect_match(refused$factors$pos$reason, "residual")
-    # KIT-129 item 2: the refused assay (today's behaviour) names its refusal by the class the other omics raise
+    # KIT-129 item 2: the refused assay names its refusal by the class the other omics raise
     expect_identical(refused$factors$pos$reason_class, "ruv_k_above_limit")
     expect_identical(refused$factors$neg$reason_class, NA_character_)
-    warned <- tryCatch(suppressMessages(runOmicsRuvFactors(object, "groups_all_features", list(pos = 10L, neg = 1L), "user")),
+    warned <- tryCatch(suppressMessages(runOmicsRuvFactors(object, "first_pass_nulls", list(pos = 10L, neg = 1L), "sweep_bounded")),
         omics_ruv_factors_refused = function(w) w)
     expect_match(conditionMessage(warned), "(ruv_k_above_limit)", fixed = TRUE)
     expect_identical(refused$factors$pos$k, 0L)
@@ -305,11 +321,16 @@ test_that("k has no default, 0 is no RUV, and an assay whose factors cannot be c
     mixed <- kit127Quiet(runLipidsDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE,
         ruv_factors = refused$factors))$da_lipids_long
     expect_identical(mixed[mixed$assay == "pos", ], plain[plain$assay == "pos", ])
-    expectKit127Table(mixed, "lipid_id", "neg", simArm(fixture, "neg", 1L)$table)
+    neg <- fixture$assays$neg$y
+    y <- t(neg[rowSums(!is.finite(neg)) == 0L, , drop = FALSE])
+    w <- simRuvW(y, simGroupM(fixture$design), colnames(y) %in% simFirstPassControls(fixture, neg), 1L, keep = fixture$design$Sample_ID)
+    expectKit127Table(mixed, "lipid_id", "neg", simTestWithW(fixture, neg, w))
 
-    # more factors than controls observed in every sample
+    # more factors than controls observed in every sample: typed, the run stops (M31); automatic, the assay is refused
     with_standards <- kit127Lipid(lapply(fixture$assays, function(a) rbind(a$y, a$is)), fixture$design)
-    expect_warning(few <- suppressMessages(runOmicsRuvFactors(with_standards, "supplied_controls", 6L, "user",
+    expect_error(suppressMessages(runOmicsRuvFactors(with_standards, "supplied_controls", 6L, "user",
+        ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is)))), "controls observed in every sample", class = "ruv_k_above_limit")
+    expect_warning(few <- suppressMessages(runOmicsRuvFactors(with_standards, "supplied_controls", 6L, "sweep_bounded",
         ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is)))), class = "omics_ruv_factors_refused")
     expect_identical(unname(vapply(few$factors, `[[`, "", "status")), c("refused", "refused"))
     expect_match(few$factors$pos$reason, "controls observed in every sample")
@@ -705,14 +726,11 @@ test_that("with technical replicates the biological units limit k, in the kernel
         run <- if (identical(omic, "lipid")) runLipidsDA else runMetabolitesDA
         object <- techRepRuvObject(omic)
         kernel <- function(k, obj = object) suppressMessages(runOmicsRuvFactors(obj, "groups_all_features", k, "user"))
-        # 8 units in 2 groups: at most 5 factors (the injections' bound was 13); k = 6 is refused per assay, never reduced
-        refused <- NULL
-        expect_warning(refused <- kernel(6L), class = "omics_ruv_factors_refused")
-        for (assay in c("pos", "neg")) {
-            expect_identical(refused$factors[[assay]][c("status", "k")], list(status = "refused", k = 0L), info = omic)
-            expect_match(refused$factors[[assay]]$reason, "limit of 5: the design has technical replicates", fixed = TRUE, info = omic)
-            expect_identical(refused$factors[[assay]]$reason_class, "ruv_k_above_limit", info = omic)
-        }
+        # 8 units in 2 groups: at most 5 factors (the injections' bound was 13); a typed k = 6 stops the run (M31), never
+        # reduced
+        refused <- tryCatch(kernel(6L), error = function(e) e)
+        expect_s3_class(refused, c("ruv_k_above_limit", "ruv_k_refused"))
+        expect_match(conditionMessage(refused), "limit of 5: the design has technical replicates", fixed = TRUE, info = omic)
         within <- kernel(5L)
         expect_identical(vapply(within$factors, `[[`, "", "status"), c(pos = "ok", neg = "ok"), info = omic)
         da <- function(factors, formula = "~ 0 + group") {
@@ -839,14 +857,6 @@ test_that("the technical-replicate design: the biological units as replicate set
         }
     }
 })
-
-# The first pass of S4's arms 5 and 23 (`first_pass`, `daKernel`): arm 1's test, per feature the smallest p over the
-# comparisons, every feature outside the 25% most significant a control.
-simFirstPassControls <- function(fixture, y) {
-    base <- simDaKernel(y, fixture$design, "~ 0 + group", fixture$contrasts)
-    fp <- stats::aggregate(p ~ feature, base, min)
-    fp$feature[rank(fp$p, na.last = "keep", ties.method = "first") > 0.25 * sum(is.finite(fp$p)) & is.finite(fp$p)]
-}
 
 test_that("first-pass null controls: the features outside the 25% most significant of the no-RUV test, W in the model (M7; S4 arms 5 and 23)", {
     skip_if_not_installed("ruv")
