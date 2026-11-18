@@ -125,8 +125,16 @@ text <- c(
     sprintf("MultiScholaR is licensed under %s (the LICENSE file of %s).", description[1L, "License"], repository),
     "This distribution also contains the components listed below, each under its own licence. The",
     "components are distributed together; none of them is modified, except that R's front-end script",
-    "is changed at build time so that R finds its own folder.",
+    if (is_windows) "is changed at build time so that R finds its own folder." else c(
+        "is changed at build time so that R finds its own folder, and R's etc/ldpaths so that R uses only",
+        "its own libraries."),
     "",
+    # Decision M25 (the user, 2026-11-18): the Linux host requirements, as install.sh checks them.
+    if (!is_windows) c(
+        "Requirements (Linux): the GNU C library 2.35 or later (Ubuntu 22.04, Debian 12, Fedora 36 and",
+        "later) and the program /usr/bin/which (Fedora, RHEL: dnf install which; Arch Linux: pacman -S",
+        "which; Debian, Ubuntu: apt install debianutils; openSUSE: zypper install which).",
+        ""),
     "Source code. Each component's source, at the version listed, is at the address beside it. The",
     "complete corresponding source of every component in this distribution is also published as one",
     sprintf("archive beside the installers of this release, at %s/releases. Questions:", repository),

@@ -72,8 +72,27 @@ ls "$bundle/syslib"
 #    have theirs since before MultiScholaR was installed and are not touched again. The launcher
 #    then sets no LD_LIBRARY_PATH.
 bash "$here/runpath.sh" "$bundle/syslib" "$bundle/R" "$bundle/syslib"
-echo "== what R's front-end adds to LD_LIBRARY_PATH for R and its children (etc/ldpaths, not changed)"
-grep -n 'LD_LIBRARY_PATH=' "$bundle/R/etc/ldpaths" || true
+#    R's etc/ldpaths (sourced by the front-end script for every R, the systemd workers' included)
+#    puts the host's library folders after R's own lib folder in the LD_LIBRARY_PATH it exports, and
+#    that path is searched before any run path: on Debian-family hosts the host's libreadline,
+#    libcurl and libgfortran then won over the bundled ones (outcome.md, defect 2). Decision M26
+#    (the user, 2026-11-18): R's default keeps only its own lib folder (libR, libRblas, libRlapack),
+#    so the bundled copies are taken on every host. Nothing from syslib/ is exported, so the host
+#    programs R starts still load the host's libraries. A user-set R_LD_LIBRARY_PATH is removed by
+#    the launcher. The original is kept outside the bundle (MSR_LDPATHS_ORIGINAL) for the
+#    before-and-after measurement of the host check.
+echo "== etc/ldpaths: R's default library path before"
+grep -n 'R_LD_LIBRARY_PATH=' "$bundle/R/etc/ldpaths" || true
+if [ -n "${MSR_LDPATHS_ORIGINAL:-}" ]; then cp "$bundle/R/etc/ldpaths" "$MSR_LDPATHS_ORIGINAL"; fi
+sed -i 's|^\(: \${R_LD_LIBRARY_PATH=\${R_HOME}/lib\):[^}]*}|\1}|' "$bundle/R/etc/ldpaths"
+echo "== etc/ldpaths: after (only R's own lib folder)"
+grep -n 'R_LD_LIBRARY_PATH=' "$bundle/R/etc/ldpaths" || true
+if grep -E '^: \$\{R_LD_LIBRARY_PATH=' "$bundle/R/etc/ldpaths" | grep -vqE '^: \$\{R_LD_LIBRARY_PATH=\$\{R_HOME\}/lib\}$'; then
+    echo "etc/ldpaths still names a host folder in R's default library path" >&2
+    exit 1
+fi
+grep -qE '^: \$\{R_LD_LIBRARY_PATH=\$\{R_HOME\}/lib\}$' "$bundle/R/etc/ldpaths" ||
+    { echo "etc/ldpaths has no default R_LD_LIBRARY_PATH line in the expected form" >&2; exit 1; }
 #    Checked here as the user's machine will resolve them: with no path but R's own lib folder (what
 #    R's front-end script sets), nothing but the C library may resolve outside the bundle.
 find "$bundle/R" "$bundle/syslib" -type f \( -name '*.so' -o -name '*.so.*' -o -path '*/bin/exec/R' \) -print0 |

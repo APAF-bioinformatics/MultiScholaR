@@ -44,13 +44,18 @@ check("system2: sh -c with a pipe of host programs", identical(system2("sh", c("
 shelled <- tryCatch(processx::run("bash", c("-c", "echo shelled"))$stdout, error = function(e) conditionMessage(e))
 check("processx: bash", identical(trimws(shelled), "shelled"), if (identical(trimws(shelled), "shelled")) "" else shelled)
 
+# The child also uses LAPACK and reports the shared objects it has mapped (for the table below).
 child <- suppressWarnings(system2(file.path(R.home("bin"), "Rscript"), c("--vanilla", "-e",
-    shQuote('for (p in c("stringi", "xml2", "curl", "MultiScholaR")) loadNamespace(p); cat("CHILD-LOADED\\n")')),
+    shQuote(paste0('for (p in c("stringi", "xml2", "curl", "MultiScholaR")) loadNamespace(p); invisible(solve(matrix(c(2, 1, 1, 3), 2))); ',
+        'm <- unique(sub("^\\\\S+ +\\\\S+ +\\\\S+ +\\\\S+ +\\\\S+ +", "", grep(" /.*\\\\.so[.0-9]*$", readLines("/proc/self/maps"), value = TRUE))); ',
+        'cat(paste0("CHILDMAP ", m), sep = "\\n"); cat("CHILD-LOADED\\n")'))),
     stdout = TRUE, stderr = TRUE))
 check("child R loads stringi, xml2, curl and MultiScholaR", any(child == "CHILD-LOADED"),
     if (any(child == "CHILD-LOADED")) "" else paste(utils::tail(child, 3L), collapse = " | "))
 
 for (package in c("stringi", "xml2", "curl")) loadNamespace(package)
+invisible(solve(matrix(c(2, 1, 1, 3), 2))) # loads LAPACK
+cat(sprintf("La_library(): %s; extSoftVersion BLAS: %s\n", La_library(), extSoftVersion()[["BLAS"]]))
 # /proc/self/maps: address, permissions, offset, device, inode, then the path (which may hold spaces)
 mapped <- sub("^\\S+ +\\S+ +\\S+ +\\S+ +\\S+ +", "", grep(" /.*\\.so[.0-9]*$", readLines("/proc/self/maps"), value = TRUE))
 mapped <- unique(mapped)
@@ -60,6 +65,19 @@ cat(sprintf("shared objects mapped in this R: %d from the bundle, %d from the ho
 # Printed, not decided: R's own etc/ldpaths puts /usr/local/lib and /usr/lib/x86_64-linux-gnu in front
 # of the run path, so on Debian and Ubuntu a host library of the same name is taken first.
 cat(sprintf("libreadline and ICU in use: %s\n", paste(grep("/(libreadline|libicuuc)", mapped, value = TRUE), collapse = " ")))
+# Decision M26's measurement: which copy of readline, BLAS, LAPACK, curl and the Fortran runtime each R uses.
+roles <- c(readline = "/libreadline[.]so", BLAS = "/lib(R|open|flexi)?blas[^/]*[.]so", LAPACK = "/lib(R)?lapack[^/]*[.]so",
+    curl = "/libcurl[^/]*[.]so", gfortran = "/libgfortran[.]so", quadmath = "/libquadmath[.]so")
+childMapped <- sub("^CHILDMAP ", "", grep("^CHILDMAP ", child, value = TRUE))
+for (process in c("R", "child R")) {
+    paths <- if (process == "R") mapped else childMapped
+    for (role in names(roles)) {
+        found <- grep(roles[[role]], paths, value = TRUE)
+        cat(sprintf("LIBS\t%s\t%s\t%s\t%s\t%s\n", label, process, role,
+            if (!length(found)) "none" else paste(ifelse(startsWith(found, paste0(runtime, "/")), "bundle", "HOST"), collapse = ","),
+            if (!length(found)) "-" else paste(gsub(runtime, "<bundle>", found, fixed = TRUE), collapse = " ")))
+    }
+}
 
 # The application's entry, as the shell starts it; this process stands for the shell (the entry's
 # watchdog ends the application when it is gone).

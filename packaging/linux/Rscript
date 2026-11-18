@@ -40,4 +40,20 @@ case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
         ;;
 esac
 
+# Decision M25 (the user, 2026-11-18): /usr/bin/which is a host requirement. R's Sys.which() runs
+# that fixed path, and R's utils package needs it as it loads; without it R starts without utils
+# and stats and the application cannot start. Minimal installations (container images) may lack it.
+# The shell (packaging/electron/main.js) shows the same advice for exit status 69.
+if [ ! -x /usr/bin/which ]; then
+    cat >&2 <<'MESSAGE'
+MultiScholaR cannot start: this computer has no /usr/bin/which, a small standard program that
+MultiScholaR needs. Install it, then start MultiScholaR again:
+  Fedora, RHEL, Rocky, Alma:  sudo dnf install which
+  Arch Linux, Manjaro:        sudo pacman -S which
+  Debian, Ubuntu:             sudo apt install debianutils
+  openSUSE:                   sudo zypper install which
+MESSAGE
+    exit 69
+fi
+
 exec "$bundle/R/bin/Rscript" "$@"

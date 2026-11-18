@@ -101,7 +101,7 @@ pandoc)
     "$BUNDLE/pandoc/pandoc" --version | head -n 1
     ;;
 assemble)
-    bash packaging/linux/assemble.sh "$r_prefix/lib/R" "$BUNDLE" 2>&1 | tee "$OUT/assemble.log"
+    MSR_LDPATHS_ORIGINAL="$OUT/ldpaths.original" bash packaging/linux/assemble.sh "$r_prefix/lib/R" "$BUNDLE" 2>&1 | tee "$OUT/assemble.log"
     sudo rm -rf "$r_prefix"
     {
         echo "### Linux bundle, size (MiB)"

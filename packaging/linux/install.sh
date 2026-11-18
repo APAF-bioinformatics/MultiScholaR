@@ -4,7 +4,7 @@
 #     ./install.sh
 # It copies the application to ~/.local/share/multischolar/<version>, adds a menu entry and an
 # icon, and puts uninstall.sh beside the application. Needs glibc 2.35 or later (Ubuntu 22.04,
-# Debian 12, Fedora 36 and later; D1).
+# Debian 12, Fedora 36 and later; D1) and the program /usr/bin/which (M25).
 set -eu
 
 here="$(cd "$(dirname "$0")" && pwd -P)"
@@ -23,6 +23,13 @@ case "$glibc" in
         exit 1
         ;;
 esac
+# Decision M25: /usr/bin/which is needed by the bundled R (the launcher refuses to start without it).
+if [ ! -x /usr/bin/which ]; then
+    echo "install.sh: MultiScholaR needs the program /usr/bin/which, which this system does not have." >&2
+    echo "  Install it first (Fedora, RHEL: sudo dnf install which; Arch Linux: sudo pacman -S which;" >&2
+    echo "  Debian, Ubuntu: sudo apt install debianutils; openSUSE: sudo zypper install which)." >&2
+    exit 1
+fi
 
 data="${XDG_DATA_HOME:-$HOME/.local/share}"
 dest="$data/multischolar/$version"

@@ -36,6 +36,11 @@ if (testLog) app.disableHardwareAcceleration(); // the runners have no GPU
 let shellLog = null;
 let rProcess = null;
 let rExited = false;
+// The Linux launcher (packaging/linux/Rscript) exits 69 when the host has no /usr/bin/which (decision M25).
+let rExitCode = null;
+const MISSING_WHICH = 'MultiScholaR needs the program "which" (/usr/bin/which), which this computer does not have. '
+  + 'Install it (Fedora, RHEL: sudo dnf install which; Arch Linux: sudo pacman -S which; Debian, Ubuntu: '
+  + 'sudo apt install debianutils; openSUSE: sudo zypper install which), then start MultiScholaR again.';
 let mainWindow = null;
 let origin = null;
 let launcher = { launcher: 'unknown', reason: 'R has not reported its launcher' };
@@ -170,6 +175,7 @@ function startR(port, runFolder, probe) {
   });
   rProcess.once('exit', (code, signal) => {
     rExited = true;
+    rExitCode = code;
     record('r-exited', { code, signal });
     if (!quitting && mainWindow) {
       dialog.showErrorBox('MultiScholaR stopped', `The analysis engine stopped (exit ${code ?? signal}). Details are in the log:\n${app.getPath('logs')}`);
@@ -232,7 +238,7 @@ function waitForApplication(port, timeoutMs = 300000) {
   return new Promise((resolve, reject) => {
     const attempt = () => {
       if (rExited) {
-        reject(new Error('R exited before the application answered'));
+        reject(new Error(!isWindows && rExitCode === 69 ? MISSING_WHICH : 'R exited before the application answered'));
         return;
       }
       const retry = () => {

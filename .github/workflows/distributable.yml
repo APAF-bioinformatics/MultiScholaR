@@ -22,7 +22,7 @@ name: KIT-134 distributable
 #   [dist:full]       P2 to P6 in one job per platform: the library; the shell; the Linux archive or
 #                     the Windows installer; installed on that runner; the lifecycle test, the
 #                     GUI-entry lanes and the browser e2e lanes from the installed application with
-#                     the network closed (Linux: ubuntu-22.04 with all lanes, and ubuntu-24.04 with
+#                     the network closed (Linux: ubuntu-22.04 with all lanes, and ubuntu-24.04 with the GUI-entry lanes and
 #                     the lifecycle, its bundle built in an ubuntu:22.04 container; Windows: the
 #                     lanes without DIA, D4); on Linux the installed R on other distributions
 #   [dist:container]  D5: the Windows library, then loaded in a Server Core container
@@ -340,6 +340,7 @@ jobs:
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
           grep -q "Exec=\"$dest/multischolar\"" "$XDG_DATA_HOME/applications/multischolar.desktop"
+          grep -q '/usr/bin/which' "$dest/THIRD-PARTY-NOTICES.txt" && echo "the notices name the /usr/bin/which requirement (M25)"
           cd "$RUNNER_TEMP"
           rm -rf "$RUNNER_TEMP/unpack" "$RUNNER_TEMP/dist"
           test ! -e "$MOVED" && test ! -e "$GITHUB_WORKSPACE/packaging/electron/runtime" && test ! -e "$GITHUB_WORKSPACE/packaging/electron/dist" && test ! -e "$ARCHIVE"
@@ -364,18 +365,46 @@ jobs:
 
       # The Linux library path (outcome.md, defect 2): the installed application's R on this runner and
       # in containers of other distributions; bash and sh started from R, a child R, the entry.
-      - name: "Hosts: the installed R starts host programs and child R processes (this runner, Arch Linux, Fedora; containers with the network off)"
+      # Decision M25: /usr/bin/which is a host requirement; the launcher stops without it (shown in the Arch Linux and
+      # Fedora images as published), and the full check runs in those images with `which` added. Decision M26: R's
+      # etc/ldpaths keeps only R's own lib folder (assemble.sh); measured before and after on this installed copy by
+      # putting R's original file back for the "before" rows, then the build's (the only difference between the two).
+      - name: "Hosts: the installed R without and with /usr/bin/which (M25); host programs, child R, the entry, and the libraries R loads before and after etc/ldpaths (M26); this runner, Arch Linux, Fedora, Debian (network off)"
         id: hosts
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        timeout-minutes: 30
+        timeout-minutes: 60
         run: |
-          docker pull -q archlinux:latest
-          docker pull -q fedora:latest
-          bash packaging/verify/linux-host-check.sh "$DEST" archlinux:latest fedora:latest
+          status=0
+          for image in archlinux:latest fedora:latest debian:stable; do docker pull -q "$image"; done
+          bash packaging/verify/linux-host-check.sh --no-which "$DEST" archlinux:latest fedora:latest | tee "$OUT/hosts-no-which.log" || status=1
+          # the images with which (the network only here, as root, before any check)
+          docker run --name msr-arch archlinux:latest sh -c 'pacman -Sy --noconfirm which > /dev/null' && docker commit msr-arch msr-arch-which > /dev/null
+          docker run --name msr-fedora fedora:latest sh -c 'dnf -y -q install which > /dev/null' && docker commit msr-fedora msr-fedora-which > /dev/null
+          docker run --name msr-debian debian:stable sh -c 'test -x /usr/bin/which || { apt-get update -qq && apt-get install -y -qq debianutils; }' && docker commit msr-debian msr-debian-which > /dev/null
+          for image in msr-arch-which msr-fedora-which msr-debian-which; do
+            echo "$image: $(docker run --rm "$image" sh -c 'ls -l /usr/bin/which; . /etc/os-release; echo "$PRETTY_NAME"' | tr '\n' ' ')"
+          done
+          ldpaths="$DEST/app/resources/runtime/R/etc/ldpaths"
+          cp "$ldpaths" "$RUNNER_TEMP/ldpaths.build"
+          echo "etc/ldpaths, R's original against the build's:"; diff "$OUT/ldpaths.original" "$ldpaths" || true
+          cp "$OUT/ldpaths.original" "$ldpaths"
+          bash packaging/verify/linux-host-check.sh "$DEST" before msr-arch-which msr-fedora-which msr-debian-which | tee "$OUT/hosts-before.log" || status=1
+          cp "$RUNNER_TEMP/ldpaths.build" "$ldpaths"
+          cmp "$RUNNER_TEMP/ldpaths.build" "$ldpaths"
+          bash packaging/verify/linux-host-check.sh "$DEST" after msr-arch-which msr-fedora-which msr-debian-which | tee "$OUT/hosts-after.log" || status=1
+          {
+            echo "### Hosts (${{ matrix.runner }}): M25, and the libraries R loads before and after M26"; echo '```'
+            grep -h '^NOWHICH' "$OUT/hosts-no-which.log" || true
+            sed -n '/^== hosts/,$p' "$OUT/hosts-before.log" "$OUT/hosts-after.log"
+            printf 'LIBS\thost (phase)\tprocess\trole\tcopy\tpath\n'
+            grep -h '^LIBS' "$OUT/hosts-before.log" "$OUT/hosts-after.log"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "$status"
 
       - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library (installed application's R)"
         id: testtools
-        if: ${{ !cancelled() && matrix.runner == 'ubuntu-22.04' && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: |
           echo "TEST_TOOLS=$RUNNER_TEMP/test-tools" >> "$GITHUB_ENV"
           "$DEST/app/resources/runtime/bin/Rscript" --vanilla packaging/verify/test-tools.R "$RUNNER_TEMP/test-tools" \
@@ -383,6 +412,8 @@ jobs:
             || { tail -n 30 "$OUT/test-tools.log"; exit 1; }
           tail -n 3 "$OUT/test-tools.log"
 
+      # On both runners since M26 (ubuntu-24.04: the host's libraries no longer taken by R; the lanes show whether
+      # the results still agree with the laptop's oracles there).
       - name: "Lanes: every GUI-entry lane in process with the installed application's R (network closed, the laptop's locale)"
         id: lanes
         if: ${{ !cancelled() && steps.testtools.outcome == 'success' }}
@@ -398,7 +429,7 @@ jobs:
             prot_tmt prot_lfq prot_lfq_fragpipe metab_lc metab_gc metab_combined lipid_canonical trx_screen' \
             "$(id -un)" "$HOME" "$DEST/app/resources/runtime" "$GITHUB_WORKSPACE" "$TEST_TOOLS" "$OUT/lanes" > "$OUT/lanes.log" 2>&1 || status=$?
           {
-            echo '### GUI-entry lanes, installed application (ubuntu-22.04)'; echo '```'
+            echo '### GUI-entry lanes, installed application (${{ matrix.runner }})'; echo '```'
             if [ -f "$OUT/lanes/lane-summary.tsv" ]; then
               cat "$OUT/lanes/lane-summary.tsv"
               echo; echo "differences by lane, step count and kind:"
@@ -418,7 +449,7 @@ jobs:
       # (MULTISCHOLAR_E2E_INSTALLED=1); Chrome is the runner's. CI=true as in Module CI's e2e jobs.
       - name: "e2e lanes: the seven browser lanes against the installed application's package (network closed, the laptop's locale)"
         id: e2e
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' }}
+        if: ${{ !cancelled() && matrix.runner == 'ubuntu-22.04' && steps.testtools.outcome == 'success' }}
         timeout-minutes: 120
         run: |
           sudo locale-gen en_GB.UTF-8 en_AU.UTF-8 > /dev/null
@@ -464,7 +495,7 @@ jobs:
               "archive" "${{ steps.archive.outcome }}" \
               "install.sh into a scratch folder" "${{ steps.install.outcome }}" \
               "lifecycle, installed application, network closed" "${{ steps.lifecycle.outcome }}" \
-              "hosts: this runner, Arch Linux, Fedora" "${{ steps.hosts.outcome }}" \
+              "hosts: M25 without which; this runner, Arch Linux, Fedora, Debian before and after M26" "${{ steps.hosts.outcome }}" \
               "GUI-entry lanes, installed application" "${{ steps.lanes.outcome }}" \
               "browser e2e lanes, installed application" "${{ steps.e2e.outcome }}" \
               "uninstall" "${{ steps.uninstall.outcome }}"
@@ -775,6 +806,43 @@ jobs:
           $lines
           if ($status -ne 0) { throw "the e2e lanes did not pass (exit $status)" }
 
+      # KIT-052 / KIT-134 confirmation 1 (Windows figure paths), with the installed application's R and the test
+      # tools: the runner's long-path setting; each way a figure is written, at 240 to 300 characters; KIT-052's
+      # tests; the transcriptomics and proteomics DA on the managed route (the worker's entry point, its request
+      # folder) and the prot_tmt entry lane (QC with the Q-value figures, DA in process), from project roots of
+      # about 60 and 100 characters. The root's length is set through TMPDIR, under which every fixture makes its
+      # project; no package or test code is changed. Every figure is listed with its path's length and whether it
+      # is there (packaging/verify/figure-trace.R).
+      - name: "Figure paths (KIT-052), long paths as the runner has them"
+        id: figures
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' }}
+        timeout-minutes: 90
+        run: |
+          $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          "LongPathsEnabled in the registry: $((Get-ItemProperty $key).LongPathsEnabled)"
+          "RUNNER_TEMP $env:RUNNER_TEMP ($($env:RUNNER_TEMP.Length) characters); TEMP $env:TEMP"
+          New-Item -ItemType Directory -Force "$env:OUT\figures" | Out-Null
+          & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
+            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" -Cases 'on-default=0:devices,figure_tests,prot_tmt_lane', `
+            'on-root60=20:trx_worker_da,prot_worker_da,prot_tmt_lane', 'on-root100=60:trx_worker_da,prot_worker_da,prot_tmt_lane'
+          if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
+
+      # The same with Windows' default: LongPathsEnabled set to 0 for the rest of this job (the runner is
+      # discarded with it). Windows reads the value per process, so the R processes started after this see it;
+      # the device probe's writeLines and file.copy rows show whether it took effect.
+      - name: "Figure paths (KIT-052), long paths turned off (HKLM LongPathsEnabled = 0 for this disposable runner)"
+        id: figuresoff
+        if: ${{ !cancelled() && steps.figures.outcome != 'skipped' && steps.install.outcome == 'success' }}
+        timeout-minutes: 90
+        run: |
+          $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          Set-ItemProperty -Path $key -Name LongPathsEnabled -Value 0 -Type DWord
+          "LongPathsEnabled in the registry now: $((Get-ItemProperty $key).LongPathsEnabled)"
+          & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
+            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" -Cases 'off-default=0:devices,figure_tests', `
+            'off-root60=20:trx_worker_da,prot_worker_da,prot_tmt_lane', 'off-root100=60:trx_worker_da,prot_worker_da,prot_tmt_lane'
+          if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
+
       - name: Results
         if: ${{ !cancelled() }}
         run: |
@@ -787,6 +855,8 @@ jobs:
             "lifecycle, installed application, network cut" = '${{ steps.lifecycle.outcome }}'
             "GUI-entry lanes without DIA, installed application" = '${{ steps.lanes.outcome }}'
             "browser e2e lanes without DIA, installed application" = '${{ steps.e2e.outcome }}'
+            "figure paths, long paths as the runner has them" = '${{ steps.figures.outcome }}'
+            "figure paths, long paths off" = '${{ steps.figuresoff.outcome }}'
           }
           $lines = @('### Results, Windows on windows-2025 (stage ${{ needs.plan.outputs.stage }})', '```')
           $lines += $rows.GetEnumerator() | ForEach-Object { "{0}`t{1}" -f $_.Key, $_.Value }
