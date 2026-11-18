@@ -1,23 +1,21 @@
 {
-  "label": "Merge rehearsal: merge-rehearsal 1b67d469 (kit-129-integration, kit-146, kit-145, kit-144, kit-134, kit-052) against performance-v2 74bdf127, full suite, check on both",
-  "package_commit": "1b67d46949bb281bbbe0edc68dec86d2bbaa091a",
-  "base_commit": "74bdf127fe2718182709072ea82697b60a73d825",
+  "label": "KIT-129 fifth pass correction; 6fd0b2e7 against 18ea2a30; test-omic-norm-ruv-design.R",
+  "package_commit": "6fd0b2e74df3c3f86aa29f59001c335ef3c9ba2f",
+  "base_commit": "18ea2a301e87dd3711d768a9fdc03083dc8c53b4",
   "tools_ref": "",
-  "tests": "all",
-  "shards": 20,
-  "file_timeout_minutes": 60,
-  "file_timeouts": {
-    "test-gui-entry-proteomics.R": 150,
-    "test-gui-entry-transcriptomics.R": 150,
-    "test-gui-entry-lipidomics.R": 150,
-    "test-gui-entry-metabolomics.R": 150,
-    "test-prot-norm-core.R": 150
-  },
+  "tests": [
+    "test-omic-norm-ruv-design.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
   "extra_packages": [
     "sva"
   ],
-  "env": {},
-  "check": true,
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
   "blas": "reference",
   "fetch_refs": [],
   "scripts": []
