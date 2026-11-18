@@ -489,14 +489,14 @@ test_that("the k rule's choices follow the selected design, and the route's tabl
 
 # The options a session cannot choose, by table and by whether its design declares technical replicates, with the
 # text of the table that says why (written from the ticket's answers: M6, U2, U3; and the run path as it stands).
+# KIT-129 fifth pass item 3: supplied lists are on the classic and lipid/metab run paths; only the preconditions close.
 ruvDesignClosed <- list(
-    proteomics.classic = list(no = c(technical_replicates = "no_technical_replicates", supplied_controls = "list_not_connected"),
-        yes = c(supplied_controls = "list_not_connected")),
+    proteomics.classic = list(no = c(technical_replicates = "no_technical_replicates"), yes = character()),
     proteomics.dia_limpa = list(no = c(technical_replicates = "no_technical_replicates"),
         yes = c(groups_all_features = "technical_replicates_declared")),
     transcriptomics.genes = list(no = character(), yes = character()),
-    lipidomics.features = list(no = c(technical_replicates = "no_technical_replicates", supplied_controls = "list_not_connected"),
-        yes = c(groups_all_features = "technical_replicates_declared", supplied_controls = "list_not_connected")))
+    lipidomics.features = list(no = c(technical_replicates = "no_technical_replicates"),
+        yes = c(groups_all_features = "technical_replicates_declared")))
 ruvDesignClosed$metabolomics.features <- ruvDesignClosed$lipidomics.features
 
 test_that("(fourth pass item 2) only the options a route's run path takes can be chosen; the others say why; the defaults are M2 and M6", {
@@ -522,12 +522,14 @@ test_that("(fourth pass item 2) only the options a route's run path takes can be
     # every new text is plain words: no internal names
     internal <- "\\b(arm|arms|KIT-[0-9]+|C[0-9]|S[0-9]{1,2}|U[0-9]{1,2}|W[0-9]{1,2}|R0|B[0-9]|num_sv_be|sweep_bounded)\\b"
     for (name in names(tables)) expect_identical(grep(internal, unname(tables[[name]]$texts), value = TRUE), character(), info = name)
-    # as rendered: a closed option is disabled and its row says why, and keeps its figure
+    # as rendered: a closed option is disabled and its row says why, and keeps its figure; (fifth pass item 3) the
+    # supplied list is open in classic proteomics
     withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
     html <- ruvDesignHtml("proteomics", TRUE)
-    radio <- regmatches(html, regexpr('<input type="radio" name="norm-ruv_design" value="supplied_controls"[^>]*>', html))
-    expect_match(radio, "disabled", fixed = TRUE)
-    expect_match(html, htmltools::htmlEscape(paste("Not available:", tables[["proteomics.classic"]]$texts[["list_not_connected"]])),
+    radio <- function(id) regmatches(html, regexpr(sprintf('<input type="radio" name="norm-ruv_design" value="%s"[^>]*>', id), html))
+    expect_match(radio("technical_replicates"), "disabled", fixed = TRUE)
+    expect_false(grepl("disabled", radio("supplied_controls"), fixed = TRUE))
+    expect_match(html, htmltools::htmlEscape(paste("Not available:", tables[["proteomics.classic"]]$texts[["no_technical_replicates"]])),
         fixed = TRUE)
     expect_match(html, '<span class="ruv-design-fdp" aria-hidden="true">\\s*<strong>5.3%</strong>')
 })
@@ -565,8 +567,11 @@ test_that("(fourth pass item 2) the panel's choice reads the design, the k rule,
     refused(ruvDesignInput(ruv_design = "supplied_controls", ruv_control_list = " \n "), table, texts[["list_missing"]])
     refused(ruvDesignInput(ruv_k_rule = "sweep_bounded"), table, texts[["k_rule_not_available"]])
     classic <- omicNormRuvRunTable("proteomics", "LFQ")
-    refused(ruvDesignInput(ruv_design = "supplied_controls", ruv_control_list = "P1"), classic,
-        paste(texts[["not_available"]], classic$texts[["list_not_connected"]]))
+    # (fifth pass item 3) the supplied list is read in classic proteomics and lipid/metab, the identifiers in entry order
+    expect_identical(omicNormRuvDesignChoice(ruvDesignInput(ruv_design = "supplied_controls", ruv_control_list = "P2 P1"),
+        classic)$ruv_control_ids, c("P2", "P1"))
+    expect_identical(omicNormRuvDesignChoice(ruvDesignInput(ruv_design = "supplied_controls", ruv_control_list = "L2;L1"),
+        omicNormRuvRunTable("lipidomics"))$ruv_control_ids, c("L2", "L1"))
     refused(ruvDesignInput(ruv_design = "legacy_correction"), classic, texts[["not_available"]])
     trx <- omicNormRuvRunTable("transcriptomics")
     refused(ruvDesignInput(ruv_design = "technical_replicates"), trx, trx$options[[2L]]$unavailable)
@@ -607,6 +612,17 @@ test_that("(fourth pass item 2) each omic's tab builds the run path's request fr
     none <- classic(ruv_design = "none")
     expect_identical(none[c("ruv_mode", "ruv_design")], list(ruv_mode = "skip", ruv_design = "none"))
     expect_null(none$ruv_k_rule)
+    expect_null(none$ruv_control_ids)
+    # (fifth pass item 3) the supplied list travels beside the design; the request's identity is its hash and count
+    supplied <- classic(ruv_design = "supplied_controls", ruv_control_list = "P2 P1 P2")
+    expect_identical(supplied[c("ruv_design", "ruv_k_rule", "ruv_control_ids")], list(ruv_design = "supplied_controls",
+        ruv_k_rule = "num_sv_be", ruv_control_ids = c("P2", "P1")))
+    expect_null(counted$ruv_control_ids)
+    chosen <- workflowRequestOperation(NULL, workflowOperationEntry("normalization-ruv"), NULL, supplied)
+    expect_identical(chosen$declaration$parameters, c(diaNormalizationOperation("declared")$parameters, RUV_SUPPLIED_LIST_PARAMETERS))
+    expect_false("ruv_control_ids" %in% chosen$declaration$parameters)
+    expect_identical(chosen$parameters[RUV_SUPPLIED_LIST_PARAMETERS], list(ruv_control_list_sha256 = trxControlListSha256(c("P1", "P2")),
+        ruv_control_count = 2L))
     # DIA with limpa: the mode and the declared rules
     dia <- function(...) {
         choice <- omicNormRuvDesignChoice(ruvDesignInput(...), omicNormRuvRunTable("proteomics", "DIA_LIMPA"))
@@ -645,6 +661,13 @@ test_that("(fourth pass item 2) each omic's tab builds the run path's request fr
         expect_identical(technical$parameters[c("ruv_design", "ruv_grouping_variable", "ruv_k", "ruv_k_rule")],
             list(ruv_design = "technical_replicates", ruv_grouping_variable = NULL, ruv_k = 1L, ruv_k_rule = "user"), info = binding$prefix)
         expect_identical(omics(ruv_design = "none")$ruv_mode, "none", info = binding$prefix)
+        # (fifth pass item 3) the one supplied list, by the hash and the count in the identity
+        listed <- omicsRuvStep(binding, omics(ruv_design = "supplied_controls", ruv_control_list = "f2 f1")$ruv_parameters)
+        expect_identical(listed$parameters$ruv_control_ids, c("f2", "f1"), info = binding$prefix)
+        chosen <- workflowRequestOperation(NULL, workflowOperationEntry(listed$operation), NULL, listed$parameters)
+        expect_identical(chosen$declaration$parameters, c(setdiff(omicsRuvDesignParameterNames, "ruv_control_ids"),
+            RUV_SUPPLIED_LIST_PARAMETERS), info = binding$prefix)
+        expect_identical(chosen$parameters$ruv_control_count, 2L, info = binding$prefix)
     }
     # transcriptomics: the declared design alone, in its canonical form; legacy is the grid's request
     trx <- function(...) trxNormRuvRequest(trxNormGridParameters(ruvDesignInput(...)))
@@ -769,6 +792,12 @@ test_that("(fourth pass item 3) the summary says what was done in the table's wo
     none <- html(omicNormRuvDesignResult("none", NA, NA, NA, list()))
     expect_match(none, htmltools::htmlEscape(presets$none$label), fixed = TRUE)
     expect_false(grepl(texts[["result_k"]], none, fixed = TRUE))
+    # (fifth pass item 3) a supplied list: the identifiers listed and found, the controls used per assay
+    listed <- html(omicNormRuvDesignResult("supplied_controls", "num_sv_be", 7L, "group", list(pos = list(k = 1L, applied = TRUE,
+        control_count = 8L), neg = list(k = 1L, applied = TRUE, control_count = 5L)), control_list = list(listed = 15L, unmatched = 2L)))
+    expect_match(listed, sprintf(texts[["result_list"]], 15L, 13L), fixed = TRUE)
+    expect_match(listed, paste("Assay neg -", htmltools::htmlEscape(texts[["result_controls"]]), "5"), fixed = TRUE)
+    expect_false(grepl(sprintf(texts[["result_list"]], 15L, 13L), typed, fixed = TRUE))
 })
 
 test_that("(fourth pass item 3) the tab renders the last run's summary and the estimated number's plot; the gate off sets nothing", {

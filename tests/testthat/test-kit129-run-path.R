@@ -1116,3 +1116,110 @@ test_that("(fourth pass item 5) the RUV QC tab shows the legacy grid's frame onl
         expect_match(html(), "Assay: counts", fixed = TRUE)
     })))
 })
+
+# ---- Fifth pass item 3: supplied control lists on the classic and lipid/metab run paths -------------------------------
+
+# The run's `ruv_control_ids_unmatched` warning (its fields), the other output and conditions muffled; NULL without one.
+kit129UnmatchedWarning <- function(expr) {
+    tryCatch({
+        utils::capture.output(suppressMessages(withCallingHandlers(expr, warning = function(w) {
+            if (!inherits(w, "ruv_control_ids_unmatched")) invokeRestart("muffleWarning")
+        })))
+        NULL
+    }, ruv_control_ids_unmatched = function(w) list(matched = w$matched, listed = w$listed, unmatched = w$unmatched))
+}
+
+test_that("(fifth pass item 3) classic proteomics: a supplied list on the run path equals the kernel, named by its hash and count", {
+    contrast <- "a=grouptreated-groupcontrol"
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    ids <- as.character(object@protein_quant_table[[object@protein_id_column]])
+    listed <- c(ids[seq(1L, length(ids), by = 3L)], "NOT_A_PROTEIN")
+    declared <- c(kit129ProtParameters(), list(ruv_design = "supplied_controls", ruv_k_rule = "user", ruv_k_seed = NULL,
+        ruv_control_ids = rev(listed)))
+    out <- kit129ProtRunPath(declared, contrast, object = object)
+    expect_identical(out$value$ruv_model[c("ruv_design", "ruv_controls", "ruv_grouping_variable", "k")],
+        list(ruv_design = "supplied_controls", ruv_controls = "supplied", ruv_grouping_variable = "group", k = 1L))
+    expect_identical(out$state@args$ruvCovariates$ruv_design, "supplied_controls")
+    expect_identical(out$method, "ruv_factors_exact_se_trend_robust")
+    # the list by section 1e's names; the request's identity is its hash and the number listed, not the ids
+    expect_identical(out$value$ruv_result[c("ruv_control_rule", "ruv_control_list_sha256", "ruv_control_list_count",
+        "ruv_control_list_unmatched")], list(ruv_control_rule = "supplied_list", ruv_control_list_sha256 = trxControlListSha256(listed),
+        ruv_control_list_count = length(listed), ruv_control_list_unmatched = "NOT_A_PROTEIN"))
+    expect_identical(out$value$parameters[RUV_SUPPLIED_LIST_PARAMETERS], list(ruv_control_list_sha256 = trxControlListSha256(listed),
+        ruv_control_count = length(listed)))
+    expect_false("ruv_control_ids" %in% names(out$value$parameters))
+    # the kernel directly: the listed proteins of the table as controls, the groups as replicate sets (arm 8)
+    factors <- kit129Quiet(computeProtRuvModelFactors(out$normalised, ruv_k = 1L, ruv_k_rule = "user", ruv_grouping_variable = "group",
+        controls = ids %in% listed, ruv_design = "supplied_controls"))
+    expect_identical(out$value$ruv_model$control_count, factors$control_count)
+    expected <- kit129ProtKernelDa(out$normalised, factors, "group", contrast)
+    expect_identical(out$table$Protein.Group, expected$Protein.Group)
+    expect_equal(out$table[-1L], expected[-1L], tolerance = 1e-12)
+    # what the identity reads: one list in another order (an id repeated) is one identity, another list another one
+    identity <- function(ids) {
+        chosen <- workflowRequestOperation(NULL, workflowOperationEntry("normalization-ruv"), NULL,
+            utils::modifyList(declared, list(ruv_control_ids = ids)))
+        chosen$parameters[chosen$declaration$parameters]
+    }
+    expect_identical(identity(c(listed, listed[[1L]])), identity(rev(listed)))
+    expect_false(identical(identity(listed[-1L]), identity(listed)))
+    expect_false("ruv_control_ids" %in% names(identity(listed)))
+    # the unknown identifiers are said with their counts
+    manager <- kit129ProtStore(object = object)
+    warned <- kit129UnmatchedWarning(withDIAStateScope(manager, function() computeDIAReferenceNormalization(manager,
+        getDIAStateReference(manager), declared)))
+    expect_identical(warned[c("matched", "listed", "unmatched")], list(matched = length(listed) - 1L, listed = length(listed),
+        unmatched = "NOT_A_PROTEIN"))
+    # refused: a list that names no protein; too few controls (the kernel's rule); a list under another design; today's
+    # declaration handed a list
+    expect_error(kit129ProtRunPath(utils::modifyList(declared, list(ruv_control_ids = c("X1", "X2"))), contrast, object = object),
+        "none of the 2 listed", class = "workflow_execution_invalid")
+    expect_error(kit129ProtRunPath(utils::modifyList(declared, list(ruv_control_ids = ids[[1L]])), contrast, object = object),
+        class = "prot_ruv_factors_unavailable")
+    expect_error(kit129ProtRunPath(utils::modifyList(declared, list(ruv_design = "groups_all_features")), contrast, object = object),
+        "ruv_control_ids names the controls", class = "workflow_execution_invalid")
+    expect_error(kit129ProtRunPath(c(kit129ProtParameters(), list(ruv_control_ids = listed)), contrast, object = object),
+        class = "workflow_execution_invalid")
+})
+
+test_that("(fifth pass item 3) lipidomics and metabolomics: one supplied list on the run path, per assay, equals the kernel", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    controls <- list(pos = sprintf("pos_f%03d", 11:30), neg = sprintf("neg_f%03d", 21:40))
+    listed <- c(controls$neg, controls$pos, "absent_f999")
+    parameters <- utils::modifyList(kit129OmicsRuvParameters("supplied_controls"), list(ruv_control_ids = listed))
+    for (omic in c("lipidomics", "metabolomics")) {
+        long <- if (identical(omic, "lipidomics")) "da_lipids_long" else "da_metabolites_long"
+        run <- kit129OmicsRunPath(omic, parameters)
+        value <- run$ruv$value
+        expect_identical(value[c("ruv_design", "ruv_control_rule", "ruv_control_list_sha256", "ruv_control_list_count",
+            "ruv_control_list_unmatched")], list(ruv_design = "supplied_controls", ruv_control_rule = "supplied_list",
+            ruv_control_list_sha256 = trxControlListSha256(listed), ruv_control_list_count = length(listed),
+            ruv_control_list_unmatched = "absent_f999"), info = omic)
+        expect_identical(value$parameters[RUV_SUPPLIED_LIST_PARAMETERS], list(ruv_control_list_sha256 = trxControlListSha256(listed),
+            ruv_control_count = length(listed)), info = omic)
+        expect_false("ruv_control_ids" %in% names(value$parameters), info = omic)
+        # the kernel directly, each assay its own listed features
+        direct <- kit129Quiet(runOmicsRuvFactors(run$fixture$object, "supplied_controls", 1L, "user", ruv_control_ids = controls))
+        expect_identical(value$control_count, lapply(direct$factors, `[[`, "control_count"), info = omic)
+        expect_equal(lapply(value$factors, `[[`, "W"), lapply(direct$factors, `[[`, "W"), tolerance = 0, info = omic)
+        kernel <- kit129OmicsKernelDa(omic, run$fixture, direct$factors)
+        expect_equal(kit129OmicsKey(omic, run$da$results[[long]]), kit129OmicsKey(omic, kernel[[long]]), tolerance = 1e-12, info = omic)
+        # what the panel shows: the identifiers listed and found, the controls used per assay
+        shown <- omicsRuvDesignResult(value)
+        expect_identical(shown$control_list, list(listed = length(listed), unmatched = 1L), info = omic)
+        expect_identical(lapply(shown$assays, `[[`, "control_count"), value$control_count, info = omic)
+    }
+    binding <- lipidomicsDeclarationBinding
+    # an assay that holds none of the listed features is refused; too few controls in an assay are the kernel's refusal
+    only_pos <- kit129OmicsOwner("lipidomics")
+    expect_error(kit129Quiet(runWorkflowOmicsReferenceRuv(binding, only_pos$owner, utils::modifyList(parameters,
+        list(ruv_control_ids = controls$pos)), list())), "assay 'neg': none of the 20 listed", class = "workflow_execution_invalid")
+    one_each <- kit129OmicsOwner("lipidomics")
+    expect_error(kit129Quiet(runWorkflowOmicsReferenceRuv(binding, one_each$owner, utils::modifyList(parameters,
+        list(ruv_control_ids = c("pos_f011", "neg_f021"))), list())), class = "ruv_k_above_limit")
+    # the unknown identifier is said with the counts
+    warned <- kit129OmicsOwner("lipidomics")
+    warning <- kit129UnmatchedWarning(runWorkflowOmicsReferenceRuv(binding, warned$owner, parameters, list()))
+    expect_identical(warning[c("matched", "listed", "unmatched")], list(matched = length(listed) - 1L, listed = length(listed),
+        unmatched = "absent_f999"))
+})

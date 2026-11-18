@@ -1428,7 +1428,8 @@ protRuvModelDesign <- function(factors) {
 #' third pass item 3), as simulator S1's arms define it: `groups_all_features` the grouping (arm 7); `technical_replicates`
 #' the declared technical-replicate column, the biological units (arm 16), refused when the design declares no technical
 #' replicates or when that column does not name each unit alone; `first_pass_nulls` what the design resolves (arm 23:
-#' the units when the design declares technical replicates, the grouping otherwise).
+#' the units when the design declares technical replicates, the grouping otherwise); `supplied_controls` the grouping
+#' (arm 8; KIT-129 fifth pass item 3).
 #' @param theObject The normalised `ProteinQuantitativeData` object.
 #' @param ruv_design The declared design.
 #' @param grouping The step's grouping column.
@@ -1436,11 +1437,11 @@ protRuvModelDesign <- function(factors) {
 #' @noRd
 protRuvModelReplicateSets <- function(theObject, ruv_design, grouping) {
   invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
-  designs <- c("groups_all_features", "technical_replicates", "first_pass_nulls")
+  designs <- c("groups_all_features", "technical_replicates", "first_pass_nulls", "supplied_controls")
   if (!checkmate::test_choice(ruv_design, designs)) {
     invalid(sprintf("ruv_design must be one of %s on the classic route's new design", paste(designs, collapse = ", ")))
   }
-  if (identical(ruv_design, "groups_all_features")) return(grouping)
+  if (ruv_design %in% c("groups_all_features", "supplied_controls")) return(grouping)
   design_matrix <- theObject@design_matrix
   technical <- resolveProtTechnicalReplicateBlock(design_matrix, theObject@group_id, theObject@technical_replicate_id)
   if (!isTRUE(technical$technical)) {

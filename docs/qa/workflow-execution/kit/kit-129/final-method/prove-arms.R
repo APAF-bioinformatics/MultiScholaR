@@ -45,6 +45,14 @@
 #         the first pass's controls, `elbowK`, which is arm 5 there). S1 on C6 with the units as replicate sets (arm 23's
 #         structure, the one the package resolves from the declaration); S4 with the groups (arms 5 and 23's), on the
 #         view of the features complete in study and pooled-QC injections as in techrep
+#   supplied KIT-129 fifth pass item 3: the supplied control list on the run path, run 1 of C0: classic proteomics (S1)
+#         `computeDIAReferenceNormalization` with the design supplied_controls and arm 8's oracle set as the list (the
+#         estimated count) then `computeDIAReferenceDaContrast`, against arm 8 under the final method (E with 200
+#         permutations, arm 25's standard error, arm 26's test); lipidomics and metabolomics (S4) the RUV step and the DA
+#         in process (`runWorkflowOmicsReferenceRuv`, `runWorkflowOmicsReferenceDaAnalysis`) with the standards of both
+#         assays as one list, against the confirmation round's arm 35 call of the shipped kernel (the estimated count) and
+#         against arm 8 under arm 25's standard error at E (200 permutations) as the user's k, on the view of the features
+#         complete in study and pooled-QC injections with the standards beside them
 # Writes <out dir>/<stage>-simulator.rds and <stage>-package.rds (named lists: per data set, arm and omic, the table
 # keyed by feature and contrast, and k), compares them with packaging/verify/compare-results.R (relative 1e-6,
 # absolute floor 1e-9, discrete values exact) into <stage>-compare.tsv, and writes <stage>-summary.tsv (one row per
@@ -68,7 +76,7 @@
 
 stage <- commandArgs(TRUE)[[1L]]
 out_dir <- commandArgs(TRUE)[[2L]]
-stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath", "techrep", "firstpass"))
+stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath", "techrep", "firstpass", "supplied"))
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -146,7 +154,7 @@ add_tables <- function(name, simulator_table, package_table) {
     add(name, pick(simulator_table), pick(package_table), note)
 }
 
-cells <- if (stage == "techrep") c("C6", "C8") else c("C0", "C6")
+cells <- if (stage == "techrep") c("C6", "C8") else if (stage == "supplied") "C0" else c("C0", "C6")
 
 # ---- S1, classic proteomics ------------------------------------------------------------------------------------------
 s1 <- simulator("s1_classic.R", "2ba5cf87", "^# ---- the study")
@@ -232,13 +240,14 @@ for (cell in cells) {
             keyed(tab$id, "contrast", tab$estimate, tab$p, tab$q)
         }
     }
-    if (stage == "runpath") {
+    if (stage %in% c("runpath", "supplied")) {
         # the classic normalisation's declared parameters (the tab's request with the gate on), one design and k rule
-        runpath_parameters <- function(ruv_design, ruv_k_rule, ruv_k = NULL) {
-            list(norm_method = "none", ruv_mode = if (identical(ruv_k_rule, "user")) "manual" else "automatic", auto_percentage_min = 5,
+        # (fifth pass item 3: and the supplied list, beside them)
+        runpath_parameters <- function(ruv_design, ruv_k_rule, ruv_k = NULL, ruv_control_ids = NULL) {
+            c(list(norm_method = "none", ruv_mode = if (identical(ruv_k_rule, "user")) "manual" else "automatic", auto_percentage_min = 5,
                 auto_percentage_max = 30, separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE,
                 ruv_percentage = 50, ruv_k = ruv_k, grouping = "group", ruv_design = ruv_design, ruv_k_rule = ruv_k_rule,
-                ruv_k_seed = seed * 100L)
+                ruv_k_seed = seed * 100L), if (!is.null(ruv_control_ids)) list(ruv_control_ids = ruv_control_ids))
         }
         # the run path in a store of its own: the compute half of the normalisation, then the contrast's; a refusal is noted
         runpath_run <- function(name, parameters) {
@@ -246,13 +255,39 @@ for (cell in cells) {
             on.exit(closeDIAStateAdapter(manager), add = TRUE)
             tryCatch(silently(withDIAStateScope(manager, function() {
                 run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
-                c(list(k = run$value$best_k, ruv_model = run$value$ruv_model),
+                c(list(k = run$value$best_k, ruv_model = run$value$ruv_model, ruv_result = run$value$ruv_result),
                     runpath_da(manager, run$value$final, s1_contrast, "iq", "Protein.Group"))
             })), error = function(e) {
                 notes[[paste0(name, "/W_package_vs_simulator")]] <<- sprintf("the run path refused (%s): %s", class(e)[[1L]], conditionMessage(e))
                 NULL
             })
         }
+    }
+    if (stage == "supplied") {
+        # KIT-129 fifth pass item 3: the supplied list on the run path against arm 8 (`in_model(sim$oracle, E(), "no_tech")`,
+        # s1_classic.R line 615; the oracle set of lines 331-334: 50 proteins without an effect, complete) under the final
+        # method: E at 200 permutations (M30; the confirmation round's arm 35 takes the shipped count), arm 25's standard
+        # error and arm 26's test (`da_variant(exact = TRUE, applied = TRUE)`). The run path is given the oracle's ids as
+        # the panel's list, the estimated count with E's seed.
+        oracle_ids <- names(which(sim$oracle))
+        E32 <- count(200L, p$duplicates)
+        name <- sprintf("S1/%s/arm8/runpath", cell)
+        package <- runpath_run(name, runpath_parameters("supplied_controls", "num_sv_be", ruv_control_ids = rev(oracle_ids)))
+        if (!is.null(package)) {
+            add(sprintf("S1/%s/arm8/runpath_k", cell), E32, as.integer(package$k), "arm 8's E at 200 permutations against the run path's own count")
+            add(sprintf("S1/%s/arm8/runpath_controls", cell), sum(sim$oracle[sim$complete]), as.integer(package$ruv_model$control_count),
+                sprintf("the oracle's controls observed in every sample (%d listed; not found: %d); replicate sets %s", length(oracle_ids),
+                    length(package$ruv_result$ruv_control_list_unmatched), package$ruv_model$ruv_grouping_variable))
+            if (E32 > 0L) {
+                W <- silently(computeRuvCovariates(s1$make_object(xc, design, "no_tech"), k = E32,
+                    controls = unname(sim$oracle[sim$complete]), ruv_grouping_variable = "group"))$W
+                set.seed(seed * 100L + 8L)
+                tab <- silently(s1$da_variant(x, design, W, exact = TRUE, applied = TRUE))
+                add_tables(name, keyed(tab$id, "contrast", tab$estimate, tab$p, tab$q), package$table)
+            }
+        }
+    }
+    if (stage == "runpath") {
         E32 <- count(200L, p$duplicates)
         name <- sprintf("S1/%s/arm32/runpath", cell)
         package <- runpath_run(name, runpath_parameters("groups_all_features", "num_sv_be"))
@@ -663,6 +698,95 @@ if (stage %in% c("techrep", "firstpass")) {
                 }, function(a, assay) if (is.na(k5[[assay]])) 0L else k5[[assay]], exact = TRUE)
                 compare_arm("arm5", omic, reference, suppressWarnings(first_pass_run(lapply(k5, as.integer), "sweep_bounded"))$factors)
             }
+        }
+    }
+}
+
+# ---- S4, lipidomics and metabolomics (fifth pass item 3: stage supplied) ---------------------------------------------
+if (stage == "supplied") {
+    s4 <- simulator("s4_lipid_metab.R", "2d03b103", "^# ---- driver")
+    # the run path's owners and steps as the package's tests build them (tests/testthat helpers; nothing of them is changed)
+    helpers <- new.env(parent = globalenv())
+    silently(testthat::source_test_helpers("tests/testthat", env = helpers))
+    table_s4 <- s4$cellTable()
+    for (cell_name in cells) {
+        cell <- table_s4[[cell_name]]
+        seed <- 100000L + 10000L * cell$index + 1L
+        data <- s4$generateData(cell, seed)
+        estimate <- function(B, units) lapply(data$assays, function(a) {
+            dat <- a$y[s4$completeFeatures(a), , drop = FALSE]
+            if (nrow(dat) < 20L) return(NA_integer_)
+            mod <- stats::model.matrix(~ factor(if (units) data$design$extract else data$design$group))
+            as.integer(silently(sva::num.sv(dat, mod, method = "be", B = B, seed = seed * 100L + 99L)))
+        })
+        E20 <- estimate(20L, FALSE)
+        E200 <- estimate(200L, cell$duplicates)
+        # the view of the features complete in study and pooled-QC injections, the standards beside them (never missing):
+        # on it the package's W is the simulator's (as in techrep and firstpass)
+        view <- s4$makeView(s4$restrictData(data, lapply(data$assays, s4$completeFeatures)), E20, list(E_200 = E200))
+        mats <- lapply(view$assays, function(a) rbind(a$y, a$is))
+        standards <- lapply(view$assays, function(a) rownames(a$is))
+        listed <- rev(unlist(standards, use.names = FALSE))
+        contrasts <- s4$contrastsTable(view$contrasts)
+        options(MultiScholaR.ruv_design_panel = TRUE)
+        for (omic in c("lipid", "metab")) {
+            object <- if (omic == "lipid") s4$lipidObject(mats, view$design) else s4$metabObject(mats, view$design)
+            binding <- omicsDeclarationBindings()[[if (omic == "lipid") "lipidomics" else "metabolomics"]]
+            long_name <- if (omic == "lipid") "da_lipids_long" else "da_metabolites_long"
+            id <- if (omic == "lipid") "lipid_id" else "metabolite_id"
+            # the run path: the panel's one list, the RUV step and the DA in process on an owner holding the object
+            runpath <- function(ruv_k_rule, ruv_k = NULL) {
+                root <- tempfile("supplied-")
+                dir.create(root)
+                fixture <- if (omic == "lipid") helpers$lipidDeclarationsOwner(root, object = object) else
+                    helpers$metabDeclarationsOwner(root, object = object)
+                on.exit(closeDIAStateAdapter(fixture$owner), add = TRUE)
+                parameters <- list(ruv_design = "supplied_controls", ruv_grouping_variable = "group", ruv_k = ruv_k, ruv_k_rule = ruv_k_rule,
+                    ruv_k_seed = if (!identical(ruv_k_rule, "user")) seed * 100L + 99L, ruv_control_ids = listed)
+                ruv <- silently(runWorkflowOmicsReferenceRuv(binding, fixture$owner, parameters, list()))
+                da <- silently(runWorkflowOmicsReferenceDaAnalysis(binding, fixture$owner, ruv$reference,
+                    list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), contrasts))
+                list(value = ruv$value, long = da$results[[long_name]])
+            }
+            per_assay <- function(label, reference, long) for (assay in s4$ASSAYS) {
+                name <- sprintf("S4/%s/%s/%s/%s", cell_name, label, omic, assay)
+                ref <- reference[[assay]]
+                if (s4$isRefusal(ref)) {
+                    notes[[paste0(name, "/W_package_vs_simulator")]] <<- paste("the simulator refused:", ref$reason)
+                    next
+                }
+                got <- long[long$assay == assay, ]
+                add_tables(name, keyed(ref$feature, ref$contrast, ref$est, ref$p, ref$q),
+                    keyed(got[[id]], got$comparison, got$logFC, got$P.Value, got$fdr_qvalue))
+            }
+            # (1) the estimated count against the confirmation round's arm 35 (the shipped kernel called as arm 35 calls it,
+            # sim-k124-confirm s4_lipid_metab.R `shippedArm(view, "supplied_controls", standards = "is")`)
+            counted <- runpath("num_sv_be")
+            shipped <- silently(runOmicsRuvFactors(object, "supplied_controls", ruv_k_rule = "num_sv_be", ruv_control_ids = standards,
+                ruv_k_seed = seed * 100L + 99L))
+            shipped_da <- silently(if (omic == "lipid") runLipidsDA(object, contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE,
+                ruv_factors = shipped$factors) else runMetabolitesDA(object, contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE,
+                ruv_factors = shipped$factors))
+            shipped_long <- if (omic == "lipid") shipped_da$da_lipids_long else shipped_da$da_metabolites_long
+            for (assay in s4$ASSAYS) {
+                add(sprintf("S4/%s/arm35/%s/%s/runpath_k", cell_name, omic, assay), as.integer(shipped$factors[[assay]]$k),
+                    as.integer(counted$value$best_k[[assay]]), sprintf(paste("the shipped kernel's count (arm 35's call) against the run",
+                        "path's; arm 8's E at 200 permutations on the study features: %s"), E200[[assay]]))
+                add(sprintf("S4/%s/arm35/%s/%s/runpath_controls", cell_name, omic, assay), sort(shipped$factors[[assay]]$control_ids),
+                    sort(counted$value$factors[[assay]]$control_ids), sprintf("the standards of the assay (%d), from the one list of %d",
+                        length(standards[[assay]]), length(listed)))
+                got <- counted$long[counted$long$assay == assay, ]
+                ref <- shipped_long[shipped_long$assay == assay, ]
+                add_tables(sprintf("S4/%s/arm35/%s/%s/runpath", cell_name, omic, assay), keyed(ref[[id]], ref$comparison, ref$logFC,
+                    ref$P.Value, ref$fdr_qvalue), keyed(got[[id]], got$comparison, got$logFC, got$P.Value, got$fdr_qvalue))
+            }
+            # (2) arm 8 (`modelArm(view, standardsOnly, kE, standards = "is")`, s4_lipid_metab.R line 690) under arm 25's
+            # standard error, at E with 200 permutations given to the run path as the user's k per assay (1 where it is 0)
+            k8 <- lapply(E200, function(v) if (is.na(v) || v == 0L) 1L else as.integer(v))
+            typed <- runpath("user", k8)
+            set.seed(seed * 100L + 8L)
+            per_assay(if (all(unlist(E200) > 0L)) "arm8" else "arm8_at_k1_where_0", s4$modelArm(view, s4$standardsOnly,
+                function(a, assay) k8[[assay]], standards = "is", exact = TRUE)$tables, typed$long)
         }
     }
 }

@@ -1498,7 +1498,6 @@ omicGuiRuvTexts <- function(features) {
     c(no_technical_replicates = "the experimental design declares no technical replicates.",
         technical_replicates_declared = paste("the experimental design declares technical replicates, so the approach",
             "within your technical replicates is used instead."),
-        list_not_connected = sprintf("a list of control %s cannot be entered for this workflow in this version.", features),
         separation_not_connected = "the separation rule cannot be used for this workflow in this version.",
         not_available = "This approach is not available:",
         k_rule_not_available = "This rule for the number of factors is not available here:",
@@ -1521,6 +1520,9 @@ omicGuiRuvTexts <- function(features) {
         result_not_applied = "Unwanted variation was not removed:",
         result_seed = "Random seed for the estimated number:",
         result_assay = "Assay",
+        # KIT-129 fifth pass item 3: a supplied list. %d: the identifiers listed, then those found in the data.
+        result_list = "Your list: %d identifiers, of which %d were found in your data.",
+        result_controls = "Controls used (measured in every sample):",
         separation_plot_heading = "Number of factors (k): the separation rule",
         # KIT-129 fourth pass item 4: the check that an estimated unwanted factor follows the groups (decisions M11, M27).
         # %s: the largest association of a factor with the groups (0 to 1), then the validated threshold.
@@ -1574,8 +1576,6 @@ omicGuiRuvTableClassic <- function() {
             note = "Use when the experimental design declares technical replicates. Measured in one scenario only.",
             source = "KIT-129 1a; KIT-124 S1 arm 16: C6 0.054, power C6 0.90"),
         supplied_controls = list(status = "measured", fdp = 0.053, fdp_where = cell[["c5"]], power = 0.91,
-            # KIT-129 fourth pass item 2: the classic normalisation's declaration takes no control list yet.
-            not_offered = omicGuiRuvTexts("proteins")[["list_not_connected"]],
             note = omicGuiRuvSuppliedNote("proteins", 0.119),
             k_rule_figures = list(sweep_bounded = list(fdp = 0.060, fdp_where = cell[["c6"]], power = 0.90,
                 source = "KIT-124 S1 arm 22 (scored/newarms-gha): worst cell C6 0.060, power C0 0.90")),
@@ -1721,8 +1721,6 @@ omicGuiRuvTableFeature <- function(features) {
             source = paste("KIT-129 1d; KIT-124 S4 arm 16, run r0a on the KIT-128 tree (scored/r0a-gha; hosted runner,",
                 "no equivalence comparison; the cell is reported, not core): C6 0.058, power C6 0.36")),
         supplied_controls = list(status = "measured", fdp = 0.068, fdp_where = cell[["c5"]], power = 0.37,
-            # KIT-129 fourth pass item 2: the controls are per assay, and the tab has no per-assay list yet.
-            not_offered = omicGuiRuvTexts(features)[["list_not_connected"]],
             label = sprintf("Estimate from a list of control %s (by default the internal standards)", features),
             description = sprintf(paste("The unwanted variation is estimated from %s that do not differ between the",
                 "groups (negative controls): the internal standards, unless you supply another list (RUV-III)."),

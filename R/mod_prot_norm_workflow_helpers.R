@@ -128,7 +128,7 @@ protNormDiaRuvDesignRules <- function(choice) {
 }
 
 #' The classic normalisation's settings under the RUV design section's choice (KIT-129 fourth pass item 2): the new
-#' design, its k rule and seed (`diaNormalizationRequest` sends them), the step's mode from the rule (the typed k under
+#' design, its k rule and seed and its supplied list (`diaNormalizationRequest` sends them), the step's mode from the rule (the typed k under
 #' `manual`, the estimated number or the separation rule under `automatic`), and the design `none` with the skip mode.
 #' A legacy design, or no choice, keeps today's settings.
 #' @param settings `resolveProtNormReferenceSettings`' list.
@@ -147,6 +147,8 @@ applyProtNormRuvDesign <- function(settings, choice) {
   settings$ruv_design <- choice$ruv_design
   settings$ruv_k_rule <- choice$ruv_k_rule
   settings$ruv_k_seed <- choice$ruv_k_seed
+  # KIT-129 fifth pass item 3: the supplied list (`diaNormalizationRequest` sends it under that design only).
+  settings$ruv_control_ids <- choice$ruv_control_ids
   settings
 }
 

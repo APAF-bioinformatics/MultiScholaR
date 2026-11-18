@@ -493,3 +493,66 @@ ruvFactorGroups <- function(W, design, sample_id, group_id) {
 #' @noRd
 ruvGroupAssociationRecordFields <- c("ruv_group_association", "ruv_group_association_threshold", "ruv_group_association_flag",
     "ruv_group_association_outcome", "ruv_group_association_source")
+
+#' The identity parameters of a supplied control list (KIT-129 fifth pass item 3): a classic proteomics or lipid/metab
+#' request under the design `supplied_controls` is identified by its list's sha256 (`trxControlListSha256`, section 1e:
+#' the hash of the sorted ids) and the number of ids listed, not by the ids themselves; the list travels beside them as
+#' `ruv_control_ids`, which the kernel reads and checks against the hash.
+#' @noRd
+RUV_SUPPLIED_LIST_PARAMETERS <- c("ruv_control_list_sha256", "ruv_control_count")
+
+#' A request's parameters with the identity of its supplied list (`RUV_SUPPLIED_LIST_PARAMETERS`) set from its
+#' `ruv_control_ids`: NA and 0 for an absent or empty list (the kernel refuses it).
+#' @param parameters A request's parameters.
+#' @return `parameters`.
+#' @noRd
+ruvSuppliedListIdentity <- function(parameters) {
+    ids <- parameters[["ruv_control_ids", exact = TRUE]]
+    listed <- if (length(ids)) trxCanonicalControlIds(ids) else character()
+    parameters[RUV_SUPPLIED_LIST_PARAMETERS] <- list(if (length(listed)) trxControlListSha256(listed) else NA_character_,
+        length(listed))
+    parameters
+}
+
+#' The supplied list of a declared request, checked (KIT-129 fifth pass item 3): given under `supplied_controls` and
+#' under no other design, one id or more, no missing id, and its hash the request's identity
+#' (`ruvSuppliedListIdentity`). Refuses with the legacy refusal class of every omic (`workflow_execution_invalid`).
+#' @param parameters The declaration's parameters.
+#' @return The canonical list (`trxCanonicalControlIds`), or NULL for another design.
+#' @noRd
+ruvDeclaredSuppliedList <- function(parameters) {
+    invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
+    supplied <- identical(parameters$ruv_design, "supplied_controls")
+    ids <- parameters[["ruv_control_ids", exact = TRUE]]
+    if (!supplied) {
+        if (!is.null(ids)) invalid("ruv_control_ids names the controls of the design supplied_controls, and is given for no other design")
+        return(NULL)
+    }
+    if (!checkmate::test_character(ids, min.len = 1L, any.missing = FALSE, min.chars = 1L)) {
+        invalid("the design supplied_controls needs a list of one control identifier or more (ruv_control_ids)")
+    }
+    listed <- trxCanonicalControlIds(ids)
+    if (!identical(parameters[["ruv_control_list_sha256", exact = TRUE]], trxControlListSha256(listed)) ||
+        !identical(as.integer(parameters[["ruv_control_count", exact = TRUE]]), length(listed))) {
+        invalid("the request's ruv_control_list_sha256 and ruv_control_count are not those of its ruv_control_ids")
+    }
+    listed
+}
+
+#' Warn when a supplied list names identifiers the data does not hold (KIT-129 fifth pass item 3, as DIA with limpa's
+#' `dia_ruv_control_ids_unmatched`): a warning of class `ruv_control_ids_unmatched` with the fields `matched`,
+#' `listed` and `unmatched`.
+#' @param listed The canonical list. @param present The ids the data holds.
+#' @param what The features in words (`proteins`, `lipids`, `metabolites`).
+#' @return The unmatched ids.
+#' @noRd
+warnRuvSuppliedListUnmatched <- function(listed, present, what) {
+    unmatched <- setdiff(listed, present)
+    if (length(unmatched)) {
+        matched <- length(listed) - length(unmatched)
+        cli::cli_warn(c("{matched} of the {length(listed)} listed control identifiers are {what} of this data set; the controls are those {matched}",
+            i = "not found: {.val {utils::head(unmatched, 5L)}}{if (length(unmatched) > 5L) ' and others'}"),
+            class = "ruv_control_ids_unmatched", matched = matched, listed = length(listed), unmatched = unmatched)
+    }
+    unmatched
+}

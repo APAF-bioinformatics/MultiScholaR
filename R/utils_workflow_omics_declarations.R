@@ -303,9 +303,10 @@ omicsRuvParameterNames <- c("ruv_mode", "ruv_grouping_variable", "percentage_min
 #' optimisation results are a product of the step.
 #' @param ruv_design KIT-129 integration item 1. `"legacy"` (the default): today's declaration, unchanged. `"declared"`:
 #'   the new design's declaration (`omicsRuvDesignOperation`).
+#' @param supplied KIT-129 fifth pass item 3: under `"declared"`, the declaration of the design `supplied_controls`.
 #' @noRd
-omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared")) {
-    if (identical(match.arg(ruv_design), "declared")) return(omicsRuvDesignOperation(binding))
+omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), supplied = FALSE) {
+    if (identical(match.arg(ruv_design), "declared")) return(omicsRuvDesignOperation(binding, supplied = supplied))
     newOmicsOperation(binding, paste0(binding$prefix, "_ruv"), "whole_matrix", parameters = omicsRuvParameterNames,
         product_type = paste0(binding$prefix, ".ruv_result"),
         kernel = function(object, parameters, store) {
@@ -404,9 +405,18 @@ omicsRuvAbsent <- function(value) is.null(value) || (length(value) == 1L && !is.
 #' `workflowClassDeclarations`) and the declaration `args$ruvFactorsDeclaration` (the design, the k rule and seed, k per
 #' assay), which names the DA's method (`workflowSourceRuvDaMethod`). A k is not given under the estimated count: the
 #' count gives it, once, here.
+#' @param supplied KIT-129 fifth pass item 3: the declaration of the design `supplied_controls`. Its identity names the
+#'   list by its hash and count (`RUV_SUPPLIED_LIST_PARAMETERS`) in place of `ruv_control_ids`; the request's one list
+#'   (`ruvDeclaredSuppliedList`) is applied to each assay as the listed features that assay holds, and an assay that
+#'   holds none of them is refused (the factors kernel needs controls in every assay); listed ids in no assay are named
+#'   in a warning (`ruv_control_ids_unmatched`) and in the product. Too few controls in an assay are the kernel's
+#'   refusal (k below the controls observed in every sample, decision M32).
 #' @noRd
-omicsRuvDesignOperation <- function(binding) {
-    newOmicsOperation(binding, paste0(binding$prefix, "_ruv"), "whole_matrix", parameters = omicsRuvDesignParameterNames,
+omicsRuvDesignOperation <- function(binding, supplied = FALSE) {
+    supplied <- isTRUE(supplied)
+    declared_names <- if (supplied) c(setdiff(omicsRuvDesignParameterNames, "ruv_control_ids"), RUV_SUPPLIED_LIST_PARAMETERS) else
+        omicsRuvDesignParameterNames
+    newOmicsOperation(binding, paste0(binding$prefix, "_ruv"), "whole_matrix", parameters = declared_names,
         product_type = paste0(binding$prefix, ".ruv_result"),
         # KIT-129 fourth pass item 1: the replicate sets by design (`omicsRuvDesignReplicateSets`), not the groups alone.
         fixed = list(replicate_sets = paste("the groups (RUV-III); under the design technical_replicates the declared",
@@ -423,6 +433,23 @@ omicsRuvDesignOperation <- function(binding) {
             grouping <- sets$grouping
             rule <- parameters$ruv_k_rule
             seed <- if (omicsRuvAbsent(parameters$ruv_k_seed)) RUV_FACTOR_COUNT_SEED else parameters$ruv_k_seed
+            # KIT-129 fifth pass item 3: the one supplied list, checked against the request's identity of it, then per
+            # assay the listed features that assay holds.
+            listed <- if (!identical(design, "none")) ruvDeclaredSuppliedList(parameters)
+            if (!is.null(listed) != supplied) invalid("the design supplied_controls runs under its own declaration, with its list")
+            unmatched <- character()
+            if (supplied) {
+                id_column <- methods::slot(object, slots$id)
+                held <- lapply(assays, \(assay) as.character(assay[[id_column]]))
+                for (assay in names(assays)) {
+                    if (!any(listed %in% held[[assay]])) {
+                        invalid(sprintf("assay '%s': none of the %d listed control identifiers is a feature of this assay", assay, length(listed)))
+                    }
+                }
+                unmatched <- warnRuvSuppliedListUnmatched(listed, unlist(held, use.names = FALSE),
+                    if (identical(binding$omic_type, "lipidomics")) "lipids" else "metabolites")
+                parameters$ruv_control_ids <- lapply(held, \(ids) listed[listed %in% ids])
+            }
             if (identical(design, "none")) {
                 if (!omicsRuvAbsent(parameters$ruv_k) || !omicsRuvAbsent(rule) || !is.null(parameters$ruv_control_ids)) {
                     invalid("the design none takes no k, no k rule and no controls")
@@ -489,7 +516,11 @@ omicsRuvDesignOperation <- function(binding) {
                 ruv_k_estimate = lapply(factors, `[[`, "ruv_k_estimate"), k_estimate = lapply(factors, `[[`, "k_estimate"),
                 ruv_applied = lapply(factors, function(record) identical(record$status, "ok")),
                 ruv_not_applied_reason = lapply(factors, `[[`, "reason"), factors = records,
-                parameters = parameters[omicsRuvDesignParameterNames])
+                parameters = parameters[declared_names],
+                # KIT-129 fifth pass item 3: the supplied list by section 1e's names; per assay its controls are
+                # `control_count` (those observed in every sample) and the records' `control_ids`.
+                ruv_control_rule = if (supplied) "supplied_list", ruv_control_list_sha256 = if (supplied) parameters$ruv_control_list_sha256,
+                ruv_control_list_count = if (supplied) length(listed), ruv_control_list_unmatched = if (supplied) unmatched)
         })
 }
 

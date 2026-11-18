@@ -198,7 +198,9 @@ workflowLegacyDesignRefusal <- function(declaration) {
 #' registry's (today's) declaration, which refuses the new design's parameters (`workflowLegacyDesignRefusal`). A DA step
 #' on a source that declares a new design (`workflowSourceRuvDaMethod`) runs the DA declaration that names the method,
 #' with `ruv_da_method` added to its parameters (and so to its identity). With neither, the entry's declaration and the
-#' parameters are returned as they came.
+#' parameters are returned as they came. A classic proteomics or lipid/metab request of the design `supplied_controls`
+#' runs that design's declaration, and its parameters gain the list's identity (`ruvSuppliedListIdentity`; KIT-129
+#' fifth pass item 3).
 #' @param manager The state owner (the session's, or the worker's reopened owner).
 #' @param entry The registry entry (`workflowOperationEntry`).
 #' @param source Saved reference of the step's source state.
@@ -214,13 +216,19 @@ workflowRequestOperation <- function(manager, entry, source, parameters) {
         declared
     }
     binding <- if (entry$omic_type %in% names(omicsDeclarationBindings())) omicsDeclarationBindings()[[entry$omic_type]]
+    supplied <- identical(parameters[["ruv_design", exact = TRUE]], "supplied_controls")
     declared <- switch(entry$name,
-        `normalization-ruv` = selected("ruv_design", diaNormalizationOperation("declared")),
+        # KIT-129 fifth pass item 3: the design supplied_controls has its own declaration (the list's identity).
+        `normalization-ruv` = selected("ruv_design", diaNormalizationOperation("declared", supplied = supplied)),
         protein_ruv_covariates = selected("ruv_control_rule", diaRuvCovariatesOperation("declared")),
         trx_ruv_grid = selected("ruv_design", trxRuvGridOperation(binding, "declared")),
-        lipid_ruv = , metab_ruv = selected("ruv_design", omicsRuvOperation(binding, "declared")),
+        lipid_ruv = , metab_ruv = selected("ruv_design", omicsRuvOperation(binding, "declared", supplied = supplied)),
         NULL)
-    if (!is.null(declared)) return(list(declaration = declared, parameters = parameters))
+    if (!is.null(declared)) {
+        # the identity of a supplied list (its hash and count), from the list the request carries
+        if (all(RUV_SUPPLIED_LIST_PARAMETERS %in% declared$parameters)) parameters <- ruvSuppliedListIdentity(parameters)
+        return(list(declaration = declared, parameters = parameters))
+    }
     if (entry$name %in% c("lipid_da_contrast", "metab_da_contrast")) {
         method <- workflowSourceRuvDaMethod(manager, source)
         if (!is.null(method)) return(list(declaration = omicsDaContrastOperation(binding, "declared"),

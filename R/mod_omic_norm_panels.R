@@ -597,6 +597,13 @@ omicNormRuvResultTags <- function(result, presets, texts) {
         }
         line(paste(c(prefix, texts[["result_k"]], paste0(assay$k, " (", rule, beside, ")")), collapse = " "))
     })
+    # KIT-129 fifth pass item 3: a supplied list, how much of it the data holds and the controls used per assay.
+    list_lines <- if (!is.null(result$control_list)) c(list(line(sprintf(texts[["result_list"]], result$control_list$listed,
+        result$control_list$listed - result$control_list$unmatched))), lapply(names(assays), function(name) {
+            if (is.null(assays[[name]]$control_count)) return(NULL)
+            line(paste(c(if (several) paste(texts[["result_assay"]], name, "-"), texts[["result_controls"]], assays[[name]]$control_count),
+                collapse = " "))
+        }))
     sets <- text(paste0("result_sets_", result$replicate_structure))
     # KIT-129 fourth pass item 4: the check that a factor follows the groups, per assay: a warning or its absence where
     # a threshold was validated, the value without a verdict elsewhere, and under a legacy design that it is not available.
@@ -618,6 +625,7 @@ omicNormRuvResultTags <- function(result, presets, texts) {
         shiny::tags$h5(texts[["result_heading"]]),
         line(texts[["result_design"]], label),
         if (!identical(result$design, "none")) k_lines,
+        list_lines,
         if (!identical(result$design, "none") && !is.null(sets)) line(sets),
         if (!is.na(result$seed %||% NA) && result$k_rule %in% c("num_sv_be", "user")) line(texts[["result_seed"]], result$seed),
         association_lines,
@@ -630,12 +638,22 @@ omicNormRuvResultTags <- function(result, presets, texts) {
 #' @param assays Per assay (one, `all`, outside lipid/metab): `k`, `k_estimate` (beside a typed k), `k_estimate_reason`,
 #'   `applied`, `reason`, `estimate` (the count's record for `plotRuvFactorCount`, or NULL).
 #' @param separation_plot The separation rule's plot of the run, or NULL.
+#' @param control_list A supplied list (KIT-129 fifth pass item 3): `list(listed, unmatched)`, the counts; NULL otherwise.
+#'   Its assays carry `control_count`, the controls used.
 #' @noRd
 omicNormRuvDesignResult <- function(design, k_rule, seed, replicate_structure, assays, separation_plot = NULL, route = NA_character_,
-    legacy = FALSE) {
+    legacy = FALSE, control_list = NULL) {
     list(design = design, k_rule = k_rule %||% NA_character_, seed = seed %||% NA_integer_,
         replicate_structure = replicate_structure %||% NA_character_, assays = assays, separation_plot = separation_plot, route = route,
-        legacy = legacy)
+        legacy = legacy, control_list = control_list)
+}
+
+#' A product's supplied list for the panel (KIT-129 fifth pass item 3): its counts, or NULL without one.
+#' @param record The product's record of the list (`ruv_control_list_count`, `ruv_control_list_unmatched`).
+#' @noRd
+omicNormRuvControlList <- function(record) {
+    if (is.null(record$ruv_control_list_count)) return(NULL)
+    list(listed = as.integer(record$ruv_control_list_count), unmatched = length(record$ruv_control_list_unmatched))
 }
 
 #' A run of a legacy design, for the panel (KIT-129 fourth pass item 4): its name and that the check is not available.
@@ -662,8 +680,9 @@ protNormRuvDesignResult <- function(saved) {
     applied <- isTRUE(r$ruv_applied)
     omicNormRuvDesignResult(design, r$ruv_k_rule, r$ruv_k_seed, saved$ruv_model$replicate_structure,
         list(all = list(k = if (applied) saved$best_k else 0L, k_estimate = r$ruv_k_estimate, k_estimate_reason = r$ruv_k_estimate_reason,
-            applied = applied, reason = r$ruv_not_applied_reason, estimate = r$k_estimate, association = r$ruv_group_association)),
-        separation_plot = if (identical(r$ruv_k_rule, "sweep_bounded")) r$best_cancor_plot)
+            applied = applied, reason = r$ruv_not_applied_reason, estimate = r$k_estimate, association = r$ruv_group_association,
+            control_count = if (!is.null(r$ruv_control_list_count)) saved$ruv_model$control_count)),
+        separation_plot = if (identical(r$ruv_k_rule, "sweep_bounded")) r$best_cancor_plot, control_list = omicNormRuvControlList(r))
 }
 
 #' The result of DIA with limpa's RUV covariates product (KIT-129 fourth pass item 3); NULL for today's rule.
@@ -691,9 +710,11 @@ omicsRuvDesignResult <- function(value) {
         record <- value$factors[[assay]]
         list(k = record$k, k_estimate = record$ruv_k_estimate, k_estimate_reason = record$k_estimate_reason,
             applied = isTRUE(value$ruv_applied[[assay]]), reason = record$reason, estimate = value$k_estimate[[assay]],
-            association = record$ruv_group_association)
+            association = record$ruv_group_association,
+            control_count = if (!is.null(value$ruv_control_list_count)) value$control_count[[assay]])
     })
-    omicNormRuvDesignResult(design, value$ruv_k_rule, value$ruv_k_seed, value$ruv_replicate_structure, assays)
+    omicNormRuvDesignResult(design, value$ruv_k_rule, value$ruv_k_seed, value$ruv_replicate_structure, assays,
+        control_list = omicNormRuvControlList(value))
 }
 
 #' The result of the transcriptomics declared choice (KIT-129 fourth pass item 3).

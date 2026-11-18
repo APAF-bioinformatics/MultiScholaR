@@ -345,16 +345,22 @@ resolveDIAReferenceQcPlot <- function(reference, aesthetics, plot_type, build_pr
 #'   corrected matrix and it carries the factors and the normalised matrix for the DA (`attachProtRuvModelFactors`);
 #'   a count of 0 applies no RUV (the final state is the normalised one, `ruv_result$ruv_applied` FALSE with the
 #'   reason). The count's record is `ruv_result$k_estimate` (`plotRuvFactorCount`).
+#' @param supplied KIT-129 fifth pass item 3: the declared declaration of the design `supplied_controls`, whose identity
+#'   adds the list's hash and count (`RUV_SUPPLIED_LIST_PARAMETERS`); the list itself is the request's `ruv_control_ids`
+#'   (`ruvDeclaredSuppliedList`), and the controls are the listed proteins of the table (arm 8 of simulator S1: the
+#'   groups as replicate sets). Listed ids that are not proteins of the table are named in a warning
+#'   (`ruv_control_ids_unmatched`) and in `ruv_result`; a list that matches none is refused.
 #' @noRd
-diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
+diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supplied = FALSE) {
     ruv_design <- match.arg(ruv_design)
     factors_in_model <- identical(ruv_design, "declared")
+    supplied <- factors_in_model && isTRUE(supplied)
     newWorkflowOperation("normalization-ruv", "ProteinQuantitativeData",
         fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
         output_class = "ProteinQuantitativeData", product_type = "dia-normalization-ruv",
         parameters = c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
             "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k", "grouping",
-            if (factors_in_model) c("ruv_design", "ruv_k_rule", "ruv_k_seed")),
+            if (factors_in_model) c("ruv_design", "ruv_k_rule", "ruv_k_seed"), if (supplied) RUV_SUPPLIED_LIST_PARAMETERS),
         kernel = function(object, parameters, store) {
             # The kernels record their arguments under the calling name; the legacy path calls them through
             # these aliases, so the aliases keep the recorded args (and every checkpoint hash) identical.
@@ -365,6 +371,11 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
             # Audit F-08: under the new design a manual k is one whole number, refused otherwise (not truncated, no default).
             if (factors_in_model && identical(parameters$ruv_mode, "manual")) validateProtRuvModelK(parameters$ruv_k)
             if (factors_in_model) assertProtRuvModelKRule(parameters)
+            # KIT-129 fifth pass item 3: the supplied list, checked against the request's identity of it.
+            listed <- if (factors_in_model) ruvDeclaredSuppliedList(parameters)
+            if (!is.null(listed) && !supplied) {
+                cli::cli_abort("the design supplied_controls runs under its own declaration", class = "workflow_execution_invalid")
+            }
             # KIT-129 integration item 2: the option set's None is the design `none`, with the step's skip mode only.
             none <- factors_in_model && identical(parameters$ruv_design, "none")
             if (none && !identical(parameters$ruv_mode, "skip"))
@@ -396,10 +407,24 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                     # KIT-129 third pass item 3: the technical-replicate design (the declared units as the replicate
                     # sets) and first-pass nulls (its controls; the replicate sets the design resolves) as well.
                     replicate_sets <- protRuvModelReplicateSets(normalized, parameters$ruv_design, parameters$grouping)
+                    # KIT-129 fifth pass item 3: the listed proteins of the table are the controls (arm 8).
+                    list_controls <- NULL
+                    unmatched <- character()
+                    if (!is.null(listed)) {
+                        protein_ids <- as.character(normalized@protein_quant_table[[normalized@protein_id_column]])
+                        if (!any(listed %in% protein_ids)) {
+                            cli::cli_abort(sprintf("none of the %d listed control identifiers is a protein of this data set", length(listed)),
+                                class = "workflow_execution_invalid", call = NULL)
+                        }
+                        unmatched <- warnRuvSuppliedListUnmatched(listed, protein_ids, "proteins")
+                        list_controls <- protein_ids %in% listed
+                    }
                     ruv_model <- computeProtRuvModelFactors(normalized,
                         ruv_k = if (!identical(parameters$ruv_k_rule, "num_sv_be")) resolved$k, ruv_k_rule = parameters$ruv_k_rule,
+                        controls = list_controls,
                         ruv_grouping_variable = replicate_sets, ruv_k_seed = parameters$ruv_k_seed %||% RUV_FACTOR_COUNT_SEED,
-                        ruv_design = if (identical(parameters$ruv_design, "first_pass_nulls")) "first_pass_nulls" else "groups_all_features")
+                        ruv_design = switch(parameters$ruv_design, first_pass_nulls = "first_pass_nulls", supplied_controls = "supplied_controls",
+                            "groups_all_features"))
                     applied <- identical(ruv_model$status, "ok")
                     resolved$k <- ruv_model$k
                     resolved$controls <- if (applied) ruv_model$controls else NA
@@ -421,6 +446,14 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                     ruv_result$k_estimate <- ruv_model$k_estimate
                     ruv_result$ruv_applied <- applied
                     ruv_result$ruv_not_applied_reason <- ruv_model$reason
+                    # KIT-129 fifth pass item 3: the supplied list by section 1e's names (its hash, the ids listed, those not
+                    # found); the controls used are `ruv_model$control_count`.
+                    if (!is.null(listed)) {
+                        ruv_result$ruv_control_rule <- "supplied_list"
+                        ruv_result[c("ruv_control_list_sha256", "ruv_control_list_count")] <- list(parameters$ruv_control_list_sha256,
+                            length(listed))
+                        ruv_result$ruv_control_list_unmatched <- unmatched
+                    }
                     # KIT-129 integration item 3: the count beside a k the user chose (section 1e), once, here; and the
                     # seed the count was (or would be) made with.
                     ruv_result$ruv_k_seed <- as.integer(parameters$ruv_k_seed %||% RUV_FACTOR_COUNT_SEED)
@@ -472,6 +505,7 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
             if (none) value$parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")] <- parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")]
             if (factors_in_model && parameters$ruv_mode != "skip") {
                 value$parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")] <- parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")]
+                if (supplied) value$parameters[RUV_SUPPLIED_LIST_PARAMETERS] <- parameters[RUV_SUPPLIED_LIST_PARAMETERS]
                 value$ruv_model <- c(list(ruv_design = protRuvModelDesign(ruv_model)), ruv_model)
             }
             value
@@ -490,7 +524,8 @@ assertProtNormLegacyRuvParameters <- function(parameters) {
         cli::cli_abort(c("the normalisation declaration of today's design was handed ruv_design = {.val {parameters$ruv_design}}",
             i = "declare it with diaNormalizationOperation(\"declared\")"), class = "workflow_execution_invalid", call = NULL)
     }
-    given <- Filter(\(name) !is.null(parameters[[name, exact = TRUE]]), PROT_NORM_RUV_K_PARAMETERS)
+    given <- Filter(\(name) !is.null(parameters[[name, exact = TRUE]]), c(PROT_NORM_RUV_K_PARAMETERS, "ruv_control_ids",
+        RUV_SUPPLIED_LIST_PARAMETERS))
     if (length(given)) {
         cli::cli_abort(c("the normalisation declaration of today's design takes no k rule; the request carries {.val {given}}",
             i = "declare it with diaNormalizationOperation(\"declared\")"), class = "workflow_execution_invalid", call = NULL)
@@ -722,6 +757,8 @@ diaNormalizationRequest <- function(manager, settings, norm_data, grouping) {
     # KIT-129 integration item 1: with the gate on, a new design the tab names travels with its k rule and seed.
     if (omicGuiRuvDesignEnabled() && is.character(settings$ruv_design) && !identical(settings$ruv_design, "legacy")) {
         parameters[c("ruv_design", PROT_NORM_RUV_K_PARAMETERS)] <- list(settings$ruv_design, settings$ruv_k_rule, settings$ruv_k_seed)
+        # KIT-129 fifth pass item 3: the supplied list beside them (its identity is set by `workflowRequestOperation`).
+        if (identical(settings$ruv_design, "supplied_controls")) parameters$ruv_control_ids <- settings$ruv_control_ids
     }
     list(source = source, parameters = parameters)
 }
