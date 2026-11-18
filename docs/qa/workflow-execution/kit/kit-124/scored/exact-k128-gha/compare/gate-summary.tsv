@@ -1,0 +1,8 @@
+comparison	reference	simulator	cell	arm	rows_compared	runs	subsets	discrete_differences	discrete_columns	rows_outside_rule	measures_outside	largest_rel_diff	gate_as_declared	gate_as_read_M19
+k128-s3	r0a	S3	C6	1	1000	1000	full	0		0		0	pass	pass
+k128-s3	r0a	S3	C6	2	1000	1000	full	0		0		0	pass	pass
+k128-s3	r0a	S3	C6	7	1000	1000	full	0		0		2.78e-08	pass	pass
+k128-s4	r0a	S4	C6	1	2000	1000	complete,full	0		0		0	pass	pass
+k128-s4	r0a	S4	C6	16	2000	1000	complete,full	0		0		0	pass	pass
+k128-s4	r0a	S4	C6	2	2000	1000	complete,full	0		0		0	pass	pass
+k128-s4	r0a	S4	C6	7	2000	1000	complete,full	0		0		0	pass	pass
