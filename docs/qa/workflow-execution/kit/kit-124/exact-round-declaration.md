@@ -92,6 +92,38 @@ Anything between adopted and rejected (for example a rule that moves from pass t
 | New arms | Every row `ok`; scored by `aggregate.R`; C8 scored under rule 5 as a reported cell |
 | Deliberate failure | An unknown cell stops the simulator with exit status 1 and writes nothing |
 
-## Sizing and launch
+## Lifecycle on the runners (2026-11-18)
 
-To be completed from the lifecycle run before the launch.
+Runs 44228654579 (`sim-k124-exact`, label `exact-lc`) and 44228659549 (`sim-k129-exact`, label `exact-lc`): 12 runs per cell, the round's arms, 4 cores.
+
+| Check | Result |
+|---|---|
+| Jobs | 8 of 8 simulator jobs on `sim-k124-exact` (S1 C0, C6; S2 C0, C8; S3 C0, C3; S4 C0, C7) and 4 of 4 on `sim-k129-exact` (S3 and S4, C6 and C8) succeeded, uploaded and were assembled with `assemble.sh`. The job for S1's cell C9, which does not exist, failed and uploaded nothing, as intended (so the first run's conclusion reads "failure") |
+| Rows | Every row `ok` (1,116 on `sim-k124-exact`, 576 on `sim-k129-exact`); no refusal, no crash |
+| Gate, tree `0b6fcb6d` | Arms 1 and 2 against the laptop's confirm rows, runs 1 to 12: within the rule in all four simulators (largest relative difference 3.3e-9). Arm 7 also within the rule |
+| Gate, kit-128 | C6, arms 1, 2, 7 (S4 also 16) against run r0a: identical |
+| S1 arm 3 against the laptop | Outside the rule in 7 of 36 compared columns (one of them a count), as recorded before for this arm; arm 28 is therefore read against arm 3 of the same runner job |
+
+## Sizing: the round is NOT launched (above the limit; the user's word is needed)
+
+Seconds per run inside a worker on the runner (lifecycle), scaled to 1,000 runs; a job also costs about 10 minutes of set-up on 4 cores. Cells not in the lifecycle are taken as the measured cell of the same kind.
+
+| Part | Seconds per run | Jobs | Core-hours, about |
+|---|---|---|---|
+| S1, 9 cells | 36 to 40, of which 23 to 27 are today's sweep, needed only by arms 3 and 28 | 18 (cells split in two ranges of 500) | 105 |
+| S2, 9 cells | 4 (C6, C8: 17) | 9 | 25 |
+| S3, 7 cells on `0b6fcb6d` | 22, of which 13 to 15 are the 200 permutations of arm 31 on about 4,700 genes | 7 | 48 |
+| S4, 7 cells on `0b6fcb6d` | 4 to 5 | 7 | 14 |
+| S3 and S4, C6 and C8 on kit-128 | 14 to 17; 10 to 14 | 4 | 18 |
+| **Whole round** | | 45 | **about 210** |
+
+The declared limit is about 120 core-hours. What the round costs without its two expensive parts:
+
+| Variant | Core-hours, about |
+|---|---|
+| As declared | 210 |
+| Without arms 3 and 28 (today's design restated under change (b)); arms 26 and 27 stay | 140 |
+| Without arms 3 and 28, and arm 31 in S3 on C0 and C3 only | 110 |
+| Arms 3 and 28 alone, later (S1, arms 1, 3, 28, 9 cells) | 70 |
+
+The launch files are on the branches and start nothing until they are copied over `params.json` and pushed: `.github/k124-sim/params-exact-launch.json` on `sim-k124-exact` (label `exact`) and on `sim-k129-exact` (label `exact-k128`).

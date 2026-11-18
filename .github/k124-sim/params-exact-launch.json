@@ -1,0 +1,11 @@
+{
+  "label": "exact-k128",
+  "package_commit": "ace1f4de68edfea857b1f51fff4d7d519e4d522e",
+  "tools_ref": "ebd5378b9f44ed54503011a175b1ea8e852cf5e1",
+  "runs_core": 1000,
+  "runs_stress": 0,
+  "cores": 4,
+  "timeout_minutes": 300,
+  "arms": {"s3": "1,2,7,31", "s4": "1,2,7,16,25,29,30,31,32,33"},
+  "cells": {"s3": "C6,C8", "s4": "C6,C8"}
+}
