@@ -10,6 +10,3 @@ dfe1338a56929f592c576381d97dc665e36111084f27856516a84b1f16d29988  raw/s3-newarms
 9dc0d83b7bd3c0ac50ce73d25155b52db628993aa865fd920b377ed64e1a6a7c  newarms-compare/s3-runner.rds
 418539fa5ae61104c4e7e9b103714fce337e7a4a35ad23bbbb5ab60f8c445a83  newarms-compare/s4-laptop.rds
 418539fa5ae61104c4e7e9b103714fce337e7a4a35ad23bbbb5ab60f8c445a83  newarms-compare/s4-runner.rds
-77a31f44c56b15bae5c42bdc3f4bde4b7be6ca9187ba44d9b30faa6f29cfcc2e  gated/s3-newarms/cells/s3-C2.rds
-f7c22a8e288531cc598be3f95b2b8d87ce03ef7bbde9ac4eee0d3e7c51a13911  gated/s3-newarms/cells/s3-C3.rds
-8739dd06a464bfedc5a8cf60cd78c0854cdf041978ef4b165ca2939e16b157df  gated/s3-newarms/cells/s3-C4.rds

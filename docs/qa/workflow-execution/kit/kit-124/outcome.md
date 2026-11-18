@@ -130,12 +130,24 @@ Arms 1 and 2 of the runner against the laptop's confirm rows for the same seeds,
 |---|---|---|---|---|
 | S1 | 32,000 (8 cells, 1,000 runs, 2 arms, 2 subsets) | 0 | 0 (largest relative difference 2.2e-10) | pass, all cells |
 | S2 | 16,000 | 0 | 0 (3.1e-8) | pass, all cells |
-| S3 | 16,000 | 0 | 8 rows (9 values): `bias` in C0 (1 row), C1 (2), C5 (1), C6 (1), C7 (3), and `rmse` in one of the C7 rows | **fails in C0, C1, C5, C6, C7**; passes in C2, C3, C4 |
+| S3 | 16,000 | 0 | 8 rows (9 values): `bias` in C0 (1 row), C1 (2), C5 (1), C6 (1), C7 (3), and `rmse` in one of the C7 rows | as declared: **fails in C0, C1, C5, C6, C7**, passes in C2, C3, C4; as read under M19: pass, with the exception stated below |
 | S4 | 32,000 | 0 | 0 (identical) | pass, all cells |
 
-In S3 the null rates, the false discovery proportion, power, k, the feature counts and the number of calls are identical in all 16,000 rows. The values outside the rule are the bias of the estimated effects (relative differences 1.0e-6 to 6.7e-5, absolute 3.6e-9 to 1.9e-7) and one rmse (relative 6.4e-6); they are listed in `compare/gate-rows-outside.tsv`. No rule of the ticket reads bias or rmse. The gate as declared is nevertheless not met in those five cells, so **arms 22, 23 and 24 are not scored in S3 C0, C1, C5, C6 and C7**; S3 was aggregated from C2, C3 and C4 only. Whether a difference confined to bias and rmse may be accepted is the user's decision; the data are downloaded and one `aggregate.R` call scores the five cells if it is. The 20-run proof had not shown this (bias and rmse within 5.6e-8 there).
+In S3 the null rates, the false discovery proportion, power, k, the feature counts and the number of calls are identical in all 16,000 rows. The values outside the rule are the bias of the estimated effects (relative differences 1.0e-6 to 6.7e-5, absolute 3.6e-9 to 1.9e-7) and one rmse (relative 6.4e-6); they are listed in `compare/gate-rows-outside.tsv`. No rule of the ticket reads bias or rmse. The gate as first declared (every value within the rule) is therefore not met in those five cells, and at the first scoring arms 22, 23 and 24 were held back in S3 C0, C1, C5, C6 and C7 (commit `38047a96`). **The user accepted the exception on 2026-11-18 (decision M19, `design-review-20261118.md` section 6): the gate is read on the values the rules use, identical in all 16,000 rows; the 8 rows outside the tolerance on bias and rmse are accepted and reported.** The five cells were then scored from the same downloaded data, and every figure of the cells scored before is unchanged. `compare/gate-summary.tsv` carries both readings per cell. The 20-run proof had not shown the difference (bias and rmse within 5.6e-8 there).
 
-Arms 1 and 2 scored from the runner's rows give the same figures as the committed laptop tables in every cell scored (86 rows, every measure identical).
+| Cell | Run | Arm | Measure | Laptop | Runner | Relative difference |
+|---|---|---|---|---|---|---|
+| C0 | 564 | 2 | bias | 0.0103163943 | 0.0103163618 | 3.2e-6 |
+| C1 | 151 | 1 | bias | -0.0009244668 | -0.0009244741 | 7.9e-6 |
+| C1 | 977 | 1 | bias | -0.0031892499 | -0.0031892567 | 2.1e-6 |
+| C5 | 614 | 1 | bias | -0.0035918684 | -0.0035918720 | 1.0e-6 |
+| C6 | 323 | 1 | bias | 0.0061616440 | 0.0061616503 | 1.0e-6 |
+| C7 | 218 | 1 | bias | -0.0026642314 | -0.0026640533 | 6.7e-5 |
+| C7 | 218 | 1 | rmse | 0.5565873986 | 0.5565838332 | 6.4e-6 |
+| C7 | 218 | 2 | bias | -0.0072835920 | -0.0072834015 | 2.6e-5 |
+| C7 | 823 | 2 | bias | -0.0044673143 | -0.0044674502 | 3.0e-5 |
+
+Arms 1 and 2 scored from the runner's rows give the same figures as the committed laptop tables in every cell (96 rows, every measure identical).
 
 ### The new arms beside the arm each differs from by one choice
 
@@ -231,10 +243,20 @@ Primary subset (`full`). Arms 8 and 5 are read from the laptop tables (`scored/s
 | C7 | **23** | 1.00 | 0.067 (0.0008) | 0.087 (0.0019) | 0.267 [0.240, 0.296] | 0.053 | 0.927 (0.0007) | fail: rule 1 fail; rule 2 fail; rule 3 fail |
 | C7 | **24** | 2.90 | 0.070 (0.0008) | 0.093 (0.0019) | 0.299 [0.271, 0.328] | 0.053 | 0.926 (0.0007) | fail: rule 1 fail; rule 2 fail; rule 3 fail |
 
-**S3, transcriptomics (C2, C3, C4 only: the other cells did not pass the gate)**
+**S3, transcriptomics (all eight cells; C6 void on this tree)**
 
 | Cell | Arm | Mean k | Type I at 0.05 (SE) | Mean FDP (SE) | Share FDP > 0.10 [97.5% bounds] | Rule 3 limit | Power (SE) | Cell verdict (rules not passed) |
 |---|---|---|---|---|---|---|---|---|
+| C0 | 8 (laptop) | 1.00 | 0.056 (0.0002) | 0.048 (0.0003) | 0.002 [0.000, 0.007] | 0.050 | 0.763 (0.0006) | pass |
+| C0 | **22** | 3.00 | 0.054 (0.0002) | 0.047 (0.0005) | 0.005 [0.002, 0.012] | 0.050 | 0.612 (0.0045) | pass |
+| C0 | 5 (laptop) | 2.92 | 0.055 (0.0001) | 0.047 (0.0005) | 0.004 [0.001, 0.010] | 0.050 | 0.601 (0.0066) | pass |
+| C0 | **23** | 1.00 | 0.056 (0.0001) | 0.048 (0.0002) | 0.000 [0.000, 0.004] | 0.050 | 0.774 (0.0005) | pass |
+| C0 | **24** | 2.96 | 0.055 (0.0001) | 0.047 (0.0004) | 0.003 [0.001, 0.009] | 0.050 | 0.600 (0.0065) | pass |
+| C1 | 8 (laptop) | 1.00 | 0.056 (0.0002) | 0.049 (0.0003) | 0.002 [0.000, 0.007] | 0.050 | 0.954 (0.0002) | pass |
+| C1 | **22** | 3.04 | 0.055 (0.0002) | 0.048 (0.0003) | 0.000 [0.000, 0.004] | 0.050 | 0.934 (0.0007) | pass |
+| C1 | 5 (laptop) | 3.04 | 0.057 (0.0001) | 0.049 (0.0005) | 0.008 [0.003, 0.016] | 0.050 | 0.816 (0.0083) | pass |
+| C1 | **23** | 1.00 | 0.057 (0.0001) | 0.050 (0.0002) | 0.000 [0.000, 0.004] | 0.050 | 0.956 (0.0002) | pass |
+| C1 | **24** | 3.00 | 0.057 (0.0001) | 0.050 (0.0005) | 0.009 [0.004, 0.017] | 0.050 | 0.827 (0.0079) | pass |
 | C2 | 8 (laptop) | 1.00 | 0.056 (0.0002) | 0.056 (0.0005) | 0.021 [0.013, 0.032] | 0.051 | 0.696 (0.0008) | pass |
 | C2 | **22** | 2.99 | 0.054 (0.0002) | 0.053 (0.0006) | 0.022 [0.014, 0.033] | 0.051 | 0.533 (0.0046) | pass |
 | C2 | 5 (laptop) | 2.97 | 0.055 (0.0001) | 0.054 (0.0004) | 0.001 [0.000, 0.006] | 0.051 | 0.637 (0.0030) | pass |
@@ -250,6 +272,21 @@ Primary subset (`full`). Arms 8 and 5 are read from the laptop tables (`scored/s
 | C4 | 5 (laptop) | 1.49 | 0.055 (0.0001) | 0.077 (0.0084) | 0.077 [0.061, 0.095] | 0.125 | n/a | fail: rule 2 inconclusive; rule 4 fail; rule 7 inconclusive |
 | C4 | **23** | 1.00 | 0.056 (0.0001) | 0.082 (0.0087) | 0.082 [0.066, 0.101] | 0.125 | n/a | fail: rule 2 inconclusive; rule 4 fail; rule 7 inconclusive |
 | C4 | **24** | 1.63 | 0.055 (0.0001) | 0.073 (0.0082) | 0.073 [0.058, 0.091] | 0.125 | n/a | fail: rule 2 inconclusive; rule 4 fail; rule 7 inconclusive |
+| C5 | 8 (laptop) | 1.00 | 0.055 (0.0002) | 0.048 (0.0004) | 0.003 [0.001, 0.009] | 0.050 | 0.721 (0.0007) | pass |
+| C5 | **22** | 2.99 | 0.054 (0.0002) | 0.046 (0.0005) | 0.008 [0.003, 0.016] | 0.050 | 0.580 (0.0045) | pass |
+| C5 | 5 (laptop) | 2.93 | 0.058 (0.0002) | 0.064 (0.0044) | 0.125 [0.105, 0.147] | 0.050 | 0.107 (0.0059) | fail: rule 3 fail |
+| C5 | **23** | 1.00 | 0.071 (0.0002) | 0.071 (0.0004) | 0.022 [0.014, 0.033] | 0.050 | 0.741 (0.0006) | fail: rule 1 fail |
+| C5 | **24** | 2.54 | 0.061 (0.0003) | 0.064 (0.0035) | 0.100 [0.082, 0.120] | 0.050 | 0.255 (0.0097) | fail: rule 3 fail |
+| C6 (void) | 8 (laptop) | 1.00 | 0.178 (0.0004) | 0.274 (0.0008) | 1.000 [0.996, 1.000] | 1.050 | 0.832 (0.0005) | fail: rule 1 fail; rule 2 fail |
+| C6 (void) | **22** | 3.01 | 0.208 (0.0007) | 0.351 (0.0013) | 0.998 [0.993, 1.000] | 1.050 | 0.719 (0.0048) | fail: rule 1 fail; rule 2 fail |
+| C6 (void) | 5 (laptop) | 2.99 | 0.214 (0.0008) | 0.350 (0.0015) | 0.993 [0.986, 0.997] | 1.050 | 0.779 (0.0048) | fail: rule 1 fail; rule 2 fail |
+| C6 (void) | **23** | 1.00 | 0.179 (0.0003) | 0.275 (0.0006) | 1.000 [0.996, 1.000] | 1.050 | 0.840 (0.0005) | fail: rule 1 fail; rule 2 fail |
+| C6 (void) | **24** | 3.06 | 0.215 (0.0008) | 0.353 (0.0015) | 0.991 [0.983, 0.996] | 1.050 | 0.778 (0.0048) | fail: rule 1 fail; rule 2 fail |
+| C7 | 8 (laptop) | 1.00 | 0.057 (0.0002) | 0.051 (0.0004) | 0.003 [0.001, 0.009] | 0.050 | 0.752 (0.0006) | pass |
+| C7 | **22** | 3.02 | 0.056 (0.0002) | 0.050 (0.0003) | 0.000 [0.000, 0.004] | 0.050 | 0.666 (0.0029) | pass |
+| C7 | 5 (laptop) | 2.98 | 0.055 (0.0001) | 0.057 (0.0065) | 0.086 [0.069, 0.105] | 0.050 | 0.023 (0.0039) | fail: rule 3 fail; rule 4 fail |
+| C7 | **23** | 1.00 | 0.058 (0.0001) | 0.051 (0.0003) | 0.000 [0.000, 0.004] | 0.050 | 0.763 (0.0006) | pass |
+| C7 | **24** | 2.99 | 0.055 (0.0001) | 0.064 (0.0068) | 0.091 [0.074, 0.111] | 0.050 | 0.049 (0.0057) | fail: rule 2 inconclusive; rule 3 fail; rule 4 fail |
 
 **S4, lipidomics and metabolomics (no arm 24; C4 and C6 void on this tree)**
 
@@ -290,10 +327,10 @@ Primary subset (`full`). Arms 8 and 5 are read from the laptop tables (`scored/s
 
 Plain reading.
 
-- **Supplied controls, separation rule against estimated count (22 against 8).** The separation rule picks more factors than there are: 1.3 to 3.0 where the truth is 1 (the count: 1.00), about 2 where there is no factor (the count: 0.12 to 0.17, and 1.35 in transcriptomics), 4.1 to 4.3 in lipid/metab where the truth is 2 (the count: 1.95). Classic proteomics: a small cost in both directions, mean FDP higher by 0 to 0.005 in seven cells and by 0.011 with technical duplicates (C6, 0.060 against 0.049, rule 3 inconclusive), power lower by 0.003 to 0.023; with no factor (C3) the power loss against no RUV is 0.023 and rule 5 fails where arm 8 passed. DIA_LIMPA: practically no difference (mean FDP within 0.005, power within 0.007, except C6: FDP 0.050 against 0.056, power 0.731 against 0.758); the same verdicts. Transcriptomics, three cells only: calibration unchanged, power clearly lower at 10% effects (C2: 0.533 against 0.696) and lower with no factor (0.662 against 0.696). Lipid/metab: worse on both counts in every judged cell (centre cell: mean FDP 0.077 against 0.050, share above 0.10 0.317 against 0.146, power 0.262 against 0.366), and with no factor it fails rules 3 and 5 where arm 8 passed. In short: the separation rule never helps the supplied-controls design; it costs little in the two proteomics routes, power in transcriptomics, and calibration and power in lipid/metab.
-- **First-pass nulls, estimated count against separation rule (23 against 5).** Classic proteomics: no material change (mean FDP within 0.004); the failure with the factor tied to the groups stays (C5: mean FDP 0.077 against 0.078, share above 0.10 0.204 against 0.205); power is higher by 0.002 to 0.016. DIA_LIMPA: **not rescued.** Mean FDP 0.071 to 0.146 in the cells with a factor and true effects (arm 5: 0.073 to 0.149), 15% to 51% of data sets above 0.10, rule 3 failed in each of them as for arm 5; with technical duplicates it is slightly worse (0.081 against 0.073). The poor figure there comes from the control set, not from k. Lipid/metab: **largely rescued where the factor is not tied to the groups**: mean FDP 0.052 against 0.097 (C0), 0.041 against 0.054 (C1), 0.062 against 0.188 (C2), 0.059 against 0.083 (C3); these four cells now pass every rule; no refusals (arm 5 refused 28 runs in C2). Power is lower than arm 5's (0.437 against 0.502 in C0), but arm 5's power was measured at about twice the nominal FDP; the ceiling is 0.498. The same holds against arm 8 with the same k: the first-pass set gives more power than the standards (0.437 against 0.366) at the same mean FDP (0.052 against 0.050). It still fails with the factor tied to the groups (C5: mean FDP 0.174, type I 0.093; arm 5 0.239 and 0.111) and misses rule 3 with three groups (C7: share 0.223 against a limit of 0.163; mean FDP 0.072). Transcriptomics: in the three cells scored the power loss is gone (10% effects, C2: 0.709 against 0.637, the ceiling's 0.709; no factor: 0.774 against 0.770) with calibration unchanged. The centre cell, where arm 5's loss was reported (0.60 against 0.77), is among the cells not scored.
-- **Arm 24 against arm 5.** Not materially different in any cell scored: mean FDP within 0.004, power within 0.003, the same rule results in every cell. The two differ only in the k chosen in some runs (mean k within 0.2).
-- Lipid/metab C4 (void by the scoring unit) and C6 (void on this tree, before the technical-replicate repair) judge nothing; their rows are in the table for completeness.
+- **Supplied controls, separation rule against estimated count (22 against 8).** The separation rule picks more factors than there are: 1.3 to 3.0 where the truth is 1 (the count: 1.00), about 2 where there is no factor (the count: 0.12 to 0.17, and 1.35 in transcriptomics), 4.1 to 4.3 in lipid/metab where the truth is 2 (the count: 1.95). Classic proteomics: a small cost in both directions, mean FDP higher by 0 to 0.005 in seven cells and by 0.011 with technical duplicates (C6, 0.060 against 0.049, rule 3 inconclusive), power lower by 0.003 to 0.023; with no factor (C3) the power loss against no RUV is 0.023 and rule 5 fails where arm 8 passed. DIA_LIMPA: practically no difference (mean FDP within 0.005, power within 0.007, except C6: FDP 0.050 against 0.056, power 0.731 against 0.758); the same verdicts. Transcriptomics: k is 3.0 where the truth is 1; calibration is unchanged (mean FDP 0.043 to 0.053 against 0.043 to 0.056), power is lower in every cell with true effects: centre 0.612 (SE 0.0045) against 0.763 (0.0006), 12 per group 0.934 against 0.954, 10% effects 0.533 against 0.696, factor tied to the groups 0.580 against 0.721, three groups 0.666 against 0.752, no factor 0.662 against 0.696 (both fail rule 5 there). Lipid/metab: worse on both counts in every judged cell (centre cell: mean FDP 0.077 against 0.050, share above 0.10 0.317 against 0.146, power 0.262 against 0.366), and with no factor it fails rules 3 and 5 where arm 8 passed. In short: the separation rule never helps the supplied-controls design; it costs little in the two proteomics routes, 0.02 to 0.16 of power in transcriptomics, and calibration and power in lipid/metab.
+- **First-pass nulls, estimated count against separation rule (23 against 5).** Classic proteomics: no material change (mean FDP within 0.004); the failure with the factor tied to the groups stays (C5: mean FDP 0.077 against 0.078, share above 0.10 0.204 against 0.205); power is higher by 0.002 to 0.016. DIA_LIMPA: **not rescued.** Mean FDP 0.071 to 0.146 in the cells with a factor and true effects (arm 5: 0.073 to 0.149), 15% to 51% of data sets above 0.10, rule 3 failed in each of them as for arm 5; with technical duplicates it is slightly worse (0.081 against 0.073). The poor figure there comes from the control set, not from k. Lipid/metab: **largely rescued where the factor is not tied to the groups**: mean FDP 0.052 against 0.097 (C0), 0.041 against 0.054 (C1), 0.062 against 0.188 (C2), 0.059 against 0.083 (C3); these four cells now pass every rule; no refusals (arm 5 refused 28 runs in C2). Power is lower than arm 5's (0.437 against 0.502 in C0), but arm 5's power was measured at about twice the nominal FDP; the ceiling is 0.498. The same holds against arm 8 with the same k: the first-pass set gives more power than the standards (0.437 against 0.366) at the same mean FDP (0.052 against 0.050). It still fails with the factor tied to the groups (C5: mean FDP 0.174, type I 0.093; arm 5 0.239 and 0.111) and misses rule 3 with three groups (C7: share 0.223 against a limit of 0.163; mean FDP 0.072). Transcriptomics: **the power loss is gone.** Centre cell: power 0.774 (SE 0.0005) against arm 5's 0.601 (0.0066), equal to the ceiling's 0.774, at the same mean FDP (0.048 against 0.047). 12 per group 0.956 against 0.816; 10% effects 0.709 against 0.637; three groups 0.763 against 0.023 (arm 5 there also fails rule 3); no factor 0.774 against 0.770; each at the ceiling's power or within 0.008 of it, with mean FDP 0.044 to 0.055. With the factor tied to the groups (C5) power is 0.741 against arm 5's 0.107, but the design is liberal there: type I 0.071 (SE 0.0002; arm 5 0.058) and mean FDP 0.071 (0.0004; the ceiling 0.047), so rule 1 fails. Its share of data sets above 0.10 is 0.022 there, against arm 5's 0.125. Arm 5 failed that cell too (rule 3), in a different way: few calls, and a tail of bad data sets.
+- **Arm 24 against arm 5.** Not materially different in classic proteomics and DIA_LIMPA: mean FDP within 0.004, power within 0.003, the same rule results in every cell, mean k within 0.2. In transcriptomics the same holds in six cells (power within 0.011, which is inside the two arms' errors where it is largest, 12 per group: 0.827, SE 0.0079, against 0.816, SE 0.0083), but not with the factor tied to the groups (C5: power 0.255, SE 0.0097, against 0.107, SE 0.0059; mean k 2.54 against 2.93; both fail rule 3) nor quite with three groups (0.049, SE 0.0057, against 0.023, SE 0.0039; both fail). Both keep arm 5's power loss in the centre cell (0.600 against 0.601). Arm 24 is arm 5 with a slightly different k in some runs; it removes none of arm 5's failures.
+- Lipid/metab C4 (void by the scoring unit) and C6 of lipid/metab and of transcriptomics (void on this tree, before the technical-replicate repair) judge nothing; their rows are in the table for completeness.
 
 ### The technical-duplicate cell after the repair (run r0a, kit-128 tree)
 
