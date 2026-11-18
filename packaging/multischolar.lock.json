@@ -8,7 +8,7 @@
     "Method": "utils::installed.packages() over .libPaths() in order, first hit per package; closure of DESCRIPTION Imports/Depends/LinkingTo/Suggests, recursive over Imports/Depends/LinkingTo; read-only",
     "Counts": {
       "hard": 171,
-      "suggests-only": 243
+      "suggests-only": 246
     },
     "NotInstalled": [
       "dynamicTreeCut",
@@ -78,6 +78,18 @@
       "Repository": "CRAN",
       "NeedsCompilation": false,
       "Library": "/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6"
+    },
+    "annotate": {
+      "Package": "annotate",
+      "Version": "1.90.0",
+      "Installed": true,
+      "Source": "Bioconductor",
+      "Closure": "suggests-only",
+      "Declared": "indirect",
+      "Bioconductor": "3.23",
+      "GitLastCommit": "d5d1236",
+      "NeedsCompilation": false,
+      "Library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib"
     },
     "AnnotationDbi": {
       "Package": "AnnotationDbi",
@@ -1415,6 +1427,18 @@
       "Repository": "CRAN",
       "NeedsCompilation": true,
       "Library": "/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6"
+    },
+    "genefilter": {
+      "Package": "genefilter",
+      "Version": "1.94.0",
+      "Installed": true,
+      "Source": "Bioconductor",
+      "Closure": "suggests-only",
+      "Declared": "indirect",
+      "Bioconductor": "3.23",
+      "GitLastCommit": "68e3734",
+      "NeedsCompilation": true,
+      "Library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib"
     },
     "generics": {
       "Package": "generics",
@@ -4060,6 +4084,18 @@
       "Repository": "CRAN",
       "NeedsCompilation": true,
       "Library": "/usr/lib/R/library"
+    },
+    "sva": {
+      "Package": "sva",
+      "Version": "3.60.0",
+      "Installed": true,
+      "Source": "Bioconductor",
+      "Closure": "suggests-only",
+      "Declared": "Suggests",
+      "Bioconductor": "3.23",
+      "GitLastCommit": "87a4798",
+      "NeedsCompilation": true,
+      "Library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib"
     },
     "svglite": {
       "Package": "svglite",
