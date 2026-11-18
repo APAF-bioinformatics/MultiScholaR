@@ -1,6 +1,6 @@
 {
-  "label": "KIT-129 sixth pass items 1-3 (early): fbca59e1 against a9d6b240 with sva; failing-first; prove-arms diaseparation",
-  "package_commit": "fbca59e108e2e3fd2ae50aabf7418edb6cbb667f",
+  "label": "KIT-137 corpus manifests, run 2: 5fd98172 (runner-generated corpus committed) against 74bdf127; test-integration-corpus.R; composer regenerates in a separate job; check on both",
+  "package_commit": "5fd981722a55cc72442b4a632f5a9e4916c43c17",
   "base_commit": "a9d6b24086e572b2bb2b76e503d6299a0eb1cc88",
   "tools_ref": "",
   "tests": [
@@ -17,7 +17,7 @@
   "env": {
     "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
   },
-  "check": false,
+  "check": true,
   "blas": "reference",
   "fetch_refs": [
     "sim-k124-exact",
