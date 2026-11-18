@@ -1,0 +1,5 @@
+simulator	omic	arm	threshold	rule	correlation_0_rows	correlation_0_rows_with_W	set_files
+S4	lipidomics and metabolomics	4	0.61837545	fires when the largest factor association is above the threshold; at most 600 of 6000 correlation-0 rows of the design above it	6000	5907	s4-assoc.tsv
+S4	lipidomics and metabolomics	5	0.19513334	fires when the largest factor association is above the threshold; at most 600 of 6000 correlation-0 rows of the design above it	6000	5557	s4-assoc.tsv
+S4	lipidomics and metabolomics	7	0.088611623	fires when the largest factor association is above the threshold; at most 600 of 6000 correlation-0 rows of the design above it	6000	4246	s4-assoc.tsv
+S4	lipidomics and metabolomics	8	0.14388186	fires when the largest factor association is above the threshold; at most 600 of 6000 correlation-0 rows of the design above it	6000	4246	s4-assoc.tsv
