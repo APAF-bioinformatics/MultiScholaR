@@ -83,7 +83,7 @@ test_that("every omic carries the preset table: every design once, in four tiers
         expect_identical(tables[[name]]$selected_with_technical_replicates,
             if (startsWith(name, "transcriptomics")) NULL else "technical_replicates", info = name)
         for (option in options) {
-            for (field in c("label", "tooltip", "note", "source")) {
+            for (field in c("label", "description", "tooltip", "note", "source")) {
                 expect_true(nzchar(option[[field]]), info = paste(name, option$id, field))
             }
         }
@@ -111,7 +111,7 @@ test_that("each measured figure is the ticket's; the cells still running are pen
     }
     trx <- ruvDesignOptions(tables[["transcriptomics.genes"]])$technical_replicates
     expect_identical(trx$status, "unavailable")
-    expect_match(trx$unavailable, "summed into one sample per biological unit", fixed = TRUE)
+    expect_match(trx$unavailable, "added together into one set of counts before the analysis", fixed = TRUE)
     statuses <- unlist(lapply(tables, \(table) vapply(table$options, `[[`, "", "status")))
     expect_identical(sum(statuses == "pending"), 2L)
     expect_identical(sum(statuses == "unavailable"), 1L)
@@ -138,8 +138,8 @@ test_that("the texts shown name no internal arm, cell, ticket or question", {
     for (omic in ruvDesignOmics) {
         design <- omicGuiConfig(omic)$norm$ruv_design
         shown <- c(design$tiers, design$conditions, unlist(design$k_rules), unlist(lapply(design$tables, \(table) c(
-            unlist(lapply(table$options, \(option) option[c("label", "tooltip", "note", "fdp_where", "power_where",
-                "unavailable")]))))))
+            unlist(lapply(table$options, \(option) option[c("label", "description", "tooltip", "note", "fdp_where",
+                "power_where", "unavailable")]))))))
         expect_identical(grep(internal, unname(shown), value = TRUE), character(), info = omic)
     }
 })
@@ -195,7 +195,7 @@ test_that("the schema refuses an incomplete or inconsistent preset table by clas
         t$options[[1L]] <- edit(t$options[[1L]])
         t
     })
-    for (field in c("id", "tier", "label", "tooltip", "note", "status", "source", "test_form", "k_rules")) {
+    for (field in c("id", "tier", "label", "description", "tooltip", "note", "status", "source", "test_form", "k_rules")) {
         expectRuvDesignRefused(option(\(o) o[setdiff(names(o), field)]), paste0(option_path, "$", field))
     }
     expectRuvDesignRefused(option(\(o) utils::modifyList(o, list(tier = "preferred"))), paste0(option_path, "$tier"))
@@ -284,8 +284,10 @@ test_that("with the gate on each omic's tab shows every design with its figure a
         expect_identical(grepl("disabled", radios), unavailable, info = omic)
         for (option in table$options) {
             where <- paste(omic, option$id)
-            # The tier, the label, the figure and the note are text in the panel; the tooltip is the option's title.
-            for (text in c(design$tiers[[option$tier]], option$label, option$note, omicNormRuvFigureText(option))) {
+            # The tier, the label, the description, the figure and the note are text in the panel; the tooltip is
+            # the option's title.
+            for (text in c(design$tiers[[option$tier]], option$label, option$description, option$note,
+                omicNormRuvFigureText(option))) {
                 expect_true(grepl(htmltools::htmlEscape(text), html, fixed = TRUE), info = paste(where, text))
             }
             expect_true(grepl(sprintf('title="%s"', htmltools::htmlEscape(option$tooltip, attribute = TRUE)), html,
@@ -328,7 +330,7 @@ test_that("with the gate on the section is a block above the options column, its
         expect_lt(regexpr("RUV Parameter Tuning:", html, fixed = TRUE), column)
         # The column headings once, between the group's label and its options; they are not read out.
         header <- regexpr('<div class="ruv-design-header" aria-hidden="true">', html, fixed = TRUE)
-        expect_true(header > regexpr("RUV design:", html, fixed = TRUE) &&
+        expect_true(header > regexpr("How unwanted variation is removed:", html, fixed = TRUE) &&
             header < regexpr('class="shiny-options-group"', html, fixed = TRUE), info = omic)
         for (option in design$tables[[1L]]$options) {
             row <- as.character(omicNormRuvOptionTag(option, design$tiers))
@@ -356,12 +358,17 @@ test_that("with the gate on the section is a block above the options column, its
 
 test_that("the figure text is the table's numbers in words; a pending or unavailable cell shows no number", {
     expect_identical(omicNormRuvFigureText(list(status = "measured", fdp = 0.066,
-        fdp_where = "worst design tested: 12 per group", power = 0.91)),
-        "Measured: 6.6% false discoveries at a nominal 5% (worst design tested: 12 per group); power 0.91 in the standard design.")
-    expect_identical(omicNormRuvFigureText(list(status = "measured", fdp = 0.044, fdp_where = "worst design tested: x",
+        fdp_where = "worst scenario tested: 12 samples per group", power = 0.91)),
+        paste("Measured in simulation: 6.6% false discoveries at a 5% FDR threshold (worst scenario tested: 12 samples",
+            "per group); power 91% in the reference scenario."))
+    expect_identical(omicNormRuvFigureText(list(status = "measured", fdp = 0.044, fdp_where = "worst scenario tested: x",
         power = 0.005, power_where = "there")),
-        "Measured: 4.4% false discoveries at a nominal 5% (worst design tested: x); power 0.005 there.")
-    expect_identical(omicNormRuvFigureText(list(status = "pending")), "Not yet measured: the simulation is still running.")
+        "Measured in simulation: 4.4% false discoveries at a 5% FDR threshold (worst scenario tested: x); power 0.5% there.")
+    # The power of every table as a percentage, exactly.
+    powers <- c(0.91, 0.90, 0.92, 0.49, 0.77, 0.56, 0.76, 0.60, 0.73, 0.005, 0.43, 0.37, 0.50, 0.42, 0.003)
+    expect_identical(vapply(powers, \(power) omicNormRuvFigureParts(list(fdp = 0, fdp_where = "", power = power))[["power"]], ""),
+        c("91%", "90%", "92%", "49%", "77%", "56%", "76%", "60%", "73%", "0.5%", "43%", "37%", "50%", "42%", "0.3%"))
+    expect_identical(omicNormRuvFigureText(list(status = "pending")), "Not yet measured in simulation.")
     expect_identical(omicNormRuvFigureText(list(status = "unavailable", unavailable = "No replicates.")),
         "Not available: No replicates.")
 })
@@ -388,7 +395,7 @@ test_that("the k rule's choices follow the selected design, and the route's tabl
     expect_identical(updates[[1L]]$selected, "sweep_bounded")
     expect_identical(unname(updates[[2L]]$choices), c("num_sv_be", "user"))
     expect_identical(updates[[2L]]$selected, "num_sv_be")
-    expect_identical(names(updates[[2L]]$choices), c("Estimated count", "A number"))
+    expect_identical(names(updates[[2L]]$choices), c("Estimated number", "Your own number"))
 
     # Proteomics: the DIA with limpa route has its own table; the other routes keep the first.
     updates <- list()

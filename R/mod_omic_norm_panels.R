@@ -190,14 +190,14 @@ omicNormRuvToday <- function(ns, norm) {
     omicNormRuvSection(ns, norm$panels$ruv_iii, norm$testids[["ruv_mode"]])
 }
 
-#' A measured preset's figure in its parts, as shown: the false discovery proportion and the power, each with
-#' the design it was measured in.
+#' A measured preset's figure in its parts, as shown: the false discovery proportion and the power (the share of
+#' real differences found, as a percentage), each with the scenario it was measured in.
 #' @param option A measured preset of the table.
 #' @return A named character vector: `fdp`, `fdp_where`, `power`, `power_where`.
 #' @noRd
 omicNormRuvFigureParts <- function(option) {
     c(fdp = sprintf("%.1f%%", 100 * option$fdp), fdp_where = option$fdp_where,
-        power = format(option$power, nsmall = 2), power_where = option$power_where %||% "in the standard design")
+        power = paste0(format(100 * option$power), "%"), power_where = option$power_where %||% "in the reference scenario")
 }
 
 #' A preset's measured figure in words: the false discovery proportion with its cell and the power; a pending
@@ -207,14 +207,14 @@ omicNormRuvFigureParts <- function(option) {
 #' @noRd
 omicNormRuvFigureText <- function(option) {
     switch(option$status,
-        measured = do.call(sprintf, c(list("Measured: %s false discoveries at a nominal 5%% (%s); power %s %s."),
-            as.list(unname(omicNormRuvFigureParts(option))))),
-        pending = "Not yet measured: the simulation is still running.",
+        measured = do.call(sprintf, c(list(paste("Measured in simulation: %s false discoveries at a 5%% FDR threshold",
+            "(%s); power %s %s.")), as.list(unname(omicNormRuvFigureParts(option))))),
+        pending = "Not yet measured in simulation.",
         unavailable = paste("Not available:", option$unavailable))
 }
 
-#' One preset as a radio choice, a row of the comparison list: its tier, its label, the figure and the note; the
-#' tooltip is the title. A measured figure is shown in two cells (false discoveries, power); its sentence is the
+#' One preset as a radio choice, a row of the comparison list: its tier, its label with its description under it,
+#' the figure and the note; the tooltip (the exact statement, extra detail only) is the title. A measured figure is shown in two cells (false discoveries, power); its sentence is the
 #' text a screen reader is given in their place.
 #' @param option A preset of the table.
 #' @param tiers The tier labels.
@@ -236,7 +236,7 @@ omicNormRuvOptionTag <- function(option, tiers) {
             collapse = " "),
         cell("tier", shiny::tags$strong(class = paste0("ruv-design-tier-", gsub("_", "-", option$tier, fixed = TRUE)),
             tiers[[option$tier]], shiny::tags$span(class = "sr-only", ":"))),
-        cell("label", option$label), figure, cell("note", option$note))
+        cell("label", option$label, cell("description", option$description)), figure, cell("note", option$note))
 }
 
 #' The comparison list's column headings, above the options. They are for the eye: each option's own text
@@ -245,8 +245,9 @@ omicNormRuvOptionTag <- function(option, tiers) {
 #' @noRd
 omicNormRuvOptionHeader <- function() {
     cell <- \(name, text) shiny::tags$span(class = paste0("ruv-design-", name), text)
-    shiny::tags$div(class = "ruv-design-header", `aria-hidden` = "true", cell("tier", "Tier"), cell("label", "Design"),
-        cell("fdp", "False discoveries at a nominal 5%"), cell("power", "Power"), cell("note", "Note"))
+    shiny::tags$div(class = "ruv-design-header", `aria-hidden` = "true", cell("tier", "Tier"), cell("label", "Approach"),
+        cell("fdp", "False discoveries (target 5%)"), cell("power", "Power (real differences found)"),
+        cell("note", "When to use it, and the evidence"))
 }
 
 #' A JavaScript condition for `conditionalPanel`: whether an input's value is one of `values`.
@@ -276,7 +277,7 @@ omicNormRuvPresets <- function(design) {
 #' @return A tag.
 #' @noRd
 omicNormRuvDesignRadio <- function(ns, design, table) {
-    radio <- shiny::radioButtons(ns("ruv_design"), "RUV design:",
+    radio <- shiny::radioButtons(ns("ruv_design"), "How unwanted variation is removed:",
         choiceNames = lapply(table$options, omicNormRuvOptionTag, tiers = design$tiers),
         choiceValues = vapply(table$options, `[[`, character(1), "id"), selected = table$selected, width = "100%")
     for (option in table$options) {
@@ -309,31 +310,33 @@ omicNormRuvKSection <- function(ns, design) {
         shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", offering(rule)), ns = ns,
             class = "ruv-design-k-rule",
             shiny::tags$p(class = "ruv-design-k-rule-name", shiny::tags$strong(text$label)), shiny::tags$p(text$reads),
-            shiny::tags$p(shiny::tags$strong("For: "), text$pros),
-            shiny::tags$p(shiny::tags$strong("Against: "), text$cons),
-            shiny::tags$p(shiny::tags$strong("Diagnostic: "), text$diagnostic))
+            shiny::tags$p(shiny::tags$strong("Strengths: "), text$pros),
+            shiny::tags$p(shiny::tags$strong("Limits: "), text$cons),
+            shiny::tags$p(shiny::tags$strong("Plot to check: "), text$diagnostic))
     })
     pending <- unlist(lapply(presets, \(preset) sprintf("(input.ruv_design == '%s' && input.ruv_k_rule == '%s')",
         rep(preset$id, length(preset$k_rules_pending)), preset$k_rules_pending)))
     list(
         shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", with_k), ns = ns, class = "ruv-design-k",
             shiny::h5("Number of factors (k)"),
+            shiny::helpText("k is the number of separate patterns of unwanted variation (factors) that are estimated",
+                "and removed."),
             shiny::tags$div(class = "ruv-design-k-choice",
-                shiny::radioButtons(ns("ruv_k_rule"), "How k is chosen:",
+                shiny::radioButtons(ns("ruv_k_rule"), "How the number of factors is chosen:",
                     choices = stats::setNames(first$k_rules, labels[first$k_rules]), selected = first[["k_rule"]],
                     width = "100%"),
                 shiny::conditionalPanel(condition = "input.ruv_k_rule == 'user'", ns = ns,
                     shiny::numericInput(ns("ruv_k_user"), "Number of factors (k):", value = NA, min = 1, step = 1,
                         width = "100%"))),
             if (length(pending) > 0L) shiny::conditionalPanel(condition = paste(pending, collapse = " || "), ns = ns,
-                shiny::helpText("No figure has been measured yet for this design with this rule: the simulation is",
-                    "still running. The figure beside the design was measured with its pre-selected rule.")),
+                shiny::helpText("No figure has been measured yet for this approach with this rule. The figure shown",
+                    "for the approach in the list above was measured with its pre-selected rule.")),
             shiny::tags$div(class = "ruv-design-k-rules", rule_text),
             shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", setdiff(with_k, offering("sweep_bounded"))),
-                ns = ns, shiny::helpText("The separation rule is not offered with all features as controls: the two",
-                    "curves it compares are then the same.")),
-            shiny::helpText("Whichever rule is used, its diagnostic is shown in the RUV QC tab and saved with the QC",
-                "outputs.")))
+                ns = ns, shiny::helpText("The separation rule is not offered when all features are the controls: the",
+                    "two curves it compares are then the same.")),
+            shiny::helpText("Whichever rule you use, its diagnostic plot is shown in the RUV QC tab and saved with the",
+                "QC outputs.")))
 }
 
 #' The RUV design section, a block of the tab's full width: every preset with its figure and note, the output slot
@@ -350,13 +353,23 @@ omicNormRuvDesignSection <- function(ns, norm) {
     legacy <- names(Filter(\(preset) identical(preset$tier, "legacy"), presets))
     shiny::tags$section(class = "well ruv-design", `aria-label` = "Unwanted variation (RUV)",
         shiny::h4("Unwanted variation (RUV)"),
+        shiny::helpText("Unwanted variation is variation between samples that comes from the measurement rather than",
+            "the biology, such as batch, run order or sample handling. RUV (Remove Unwanted Variation) estimates it",
+            "as a small number of factors so that it does not distort the differential analysis. Each approach below",
+            "is shown with how it performed in simulation."),
         omicNormRuvDesignRadio(ns, design, design$tables[[1L]]),
-        shiny::helpText("Each figure comes from simulation: the mean share of false discoveries among the features",
-            "called at a nominal 5%, in the worst design tested that had true effects, and the power in the standard",
-            "design (6 per group, 20% of features changed, one unwanted factor). Hover over a design for what it does."),
+        shiny::helpText(shiny::tags$strong("How to read the figures."), "They were measured in simulation, not on your",
+            "data. False discoveries: the average share of the features reported as different that are not, at a 5%",
+            "false discovery rate (FDR) threshold, so 5% is the target; shown for the worst scenario tested that",
+            "contained real differences. Power: the share of real differences found, in the reference scenario (6",
+            "samples per group, 20% of features truly different, one unwanted factor). \"Tied to the groups\": the",
+            "unwanted variation differs between the groups, for example when most of one group was run in the same",
+            "batch."),
         if (!is.null(design$conditions)) shiny::helpText(design$conditions),
-        shiny::helpText("Under every design the corrected values are still computed and used for the figures, the",
-            "export and the integration input; the design decides what the differential test reads."),
+        shiny::helpText("Whichever approach you choose, the corrected values are still calculated and used for the",
+            "plots, the exported tables and the multi-omics integration. The approach decides what the differential",
+            "test uses: in the recommended approach and those valid with conditions, the test is run on the",
+            "uncorrected values with the estimated factors included as covariates."),
         shiny::uiOutput(ns("ruv_design_summary")),
         omicNormRuvKSection(ns, design),
         shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", legacy), ns = ns, class = "ruv-design-today",
@@ -374,7 +387,7 @@ omicNormRuvKDiagnosticSlots <- function(ns, view) {
     if (!isTRUE(design$enabled)) return(NULL)
     with_k <- names(Filter(\(preset) length(preset$k_rules) > 0L, omicNormRuvPresets(design)))
     shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", with_k), ns = ns, shiny::hr(),
-        shiny::h5("Number of factors: the estimated count", style = "text-align: center;"),
+        shiny::h5("Number of factors (k): the estimated number", style = "text-align: center;"),
         shiny::helpText(design$k_rules$num_sv_be$diagnostic),
         lapply(seq_len(view$assay_slots), \(n) shinyjqui::jqui_resizable(
             shiny::plotOutput(ns(sprintf("ruv_k_estimate_assay%d", n)), height = "400px"))))

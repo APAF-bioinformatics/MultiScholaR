@@ -263,8 +263,8 @@ omicGuiConfigSchema <- function() {
         norm_ruv_designs_optional = "legacy_correction",
         # An option: `status` says whether its figure is measured, pending (a simulation still running) or
         # unavailable (with the reason). A measured option carries `norm_ruv_figure`; no other carries a number.
-        norm_ruv_option = c(id = "chr1", tier = "chr1", label = "chr1", tooltip = "chr1", note = "chr1",
-            status = "chr1", source = "chr1", test_form = "chr1", k_rules = "chr0"),
+        norm_ruv_option = c(id = "chr1", tier = "chr1", label = "chr1", description = "chr1", tooltip = "chr1",
+            note = "chr1", status = "chr1", source = "chr1", test_form = "chr1", k_rules = "chr0"),
         norm_ruv_option_optional = c(replicate_structure = "chr1", control_rule = "chr1", fdp = "num1",
             fdp_where = "chr1", power = "num1", power_where = "chr1", k_rule = "chr1", k_rules_pending = "chr",
             unavailable = "chr1"),
@@ -1263,7 +1263,7 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
 
 # ------------------------------------------------------------------------------------------------
 # KIT-129 W2: the RUV design presets (ticket sections 1 and 2; the user's gate of 2026-11-18). One
-# catalogue of designs (tier, label, tooltip, what the design does, its k rules) and one table of
+# catalogue of designs (tier, label, description, tooltip, what the design does, its k rules) and one table of
 # measured figures and notes per route family. The panel section (mod_omic_norm_panels.R) reads them;
 # the study parameters, the record and the report templates are to read the same fields.
 #
@@ -1301,100 +1301,124 @@ omicGuiRuvDesign <- function(prefix, tables, route_tables = NULL, conditions = N
     design
 }
 
-#' The three rules for the number of factors (k), with the texts shown beside the choice (ticket section 2;
-#' kit-124/design-review-20261118.md section 5: what each reads, for and against, the measured counts). The ids
-#' are the record's `ruv_k_rule` values.
+#' The three rules for the number of factors (k), with the texts shown behind the choice's explanation (ticket
+#' section 2; kit-124/design-review-20261118.md section 5: what each reads, for and against, the measured counts).
+#' The ids are the record's `ruv_k_rule` values. Wording: docs/qa/workflow-execution/kit/kit-129/panel-ui/
+#' wording-review.md (plain words first, the method's name second).
 #' @return A named list of `label`, `reads`, `pros`, `cons` and `diagnostic`.
 #' @noRd
 omicGuiRuvKRules <- function() {
     list(
-        num_sv_be = list(label = "Estimated count",
-            reads = paste("Counts the components of the residuals, after the groups are removed, whose share of",
-                "variance exceeds that of 20 permutations (sva::num.sv, method \"be\")."),
-            pros = paste("Counts the factors; needs no control set; seeded and reproducible; the rule behind the",
-                "figures of the recommended design. In simulation it returned 1.00 on average where the truth is 1,",
-                "1.94 where it is 2 and 3.00 where it is 3."),
-            cons = paste("Borrowed from surrogate variable analysis, not from an RUV paper; the groups are removed",
-                "first, so a factor that follows the groups can be under-counted; coarse at 3 per group; needs the",
-                "optional package sva."),
-            diagnostic = paste("The observed share of residual variance per component against the permutation",
-                "null, with the count marked (RUV QC tab).")),
+        num_sv_be = list(label = "Estimated number",
+            reads = paste("The software estimates how many unwanted factors the data contain. It first sets the",
+                "differences between the groups aside, then counts the patterns (principal components) in what is",
+                "left that explain more of the variation than they do in 20 random shuffles (permutations) of the",
+                "data. Method: sva::num.sv, method \"be\"."),
+            pros = paste("It counts the factors directly, needs no control features and gives the same answer every",
+                "time (fixed random seed). It is the rule the figures of the recommended approach were measured",
+                "with. In simulation it returned on average 1.00 where there was truly 1 factor, 1.94 where there",
+                "were 2 and 3.00 where there were 3."),
+            cons = paste("It comes from surrogate variable analysis (the sva package), not from the RUV publications.",
+                "Because the group differences are set aside first, a factor that is tied to the groups can be",
+                "under-counted. It is a rough estimate with only 3 samples per group. It needs the optional R",
+                "package sva."),
+            diagnostic = paste("For each pattern, the share of the remaining variation it explains in your data",
+                "beside the shuffled data, with the estimated number marked (RUV QC tab).")),
         sweep_bounded = list(label = "Separation rule",
-            reads = paste("Reads the canonical-correlation plot: the k with the largest gap between the curve of all",
-                "features and the curve of the controls, bounded at small sample sizes."),
-            pros = paste("The package's established diagnostic; ties k to the chosen controls; needs no extra",
-                "package; the rule behind the figures of today's design and of controls chosen from the data."),
-            cons = paste("In simulation it returned 2.9 on average where the truth is 1 and 1.55 where it is 3;",
-                "it measures how well the controls avoid the biology, not how many factors there are; it is not",
-                "defined with all features as controls."),
+            reads = paste("Uses the canonical-correlation plot, which shows for each k how strongly the first k",
+                "patterns in the data are related to the groups: one curve for all features, one for the control",
+                "features only. The rule takes the k at which the two curves are furthest apart, with an upper",
+                "limit on k in small experiments."),
+            pros = paste("It is this package's established diagnostic, links k to the controls you chose and needs",
+                "no extra package. It is the rule the figures of the approach of earlier versions and of controls",
+                "chosen from the data were measured with."),
+            cons = paste("In simulation it returned on average 2.9 where there was truly 1 factor, and 1.55 where",
+                "there were 3. It shows how free the controls are of group differences, not how many factors",
+                "there are. It cannot be used when all features are the controls."),
             diagnostic = "The canonical-correlation plot and its table (RUV QC tab)."),
-        user = list(label = "A number",
-            reads = "You give the number of factors.",
-            pros = paste("The RUV method papers ask for judgment guided by diagnostics rather than one automatic",
-                "rule; every design accepts a number."),
-            cons = paste("The figure beside each design was measured with that design's own rule, not with your",
-                "number."),
-            diagnostic = paste("The estimated count's plot, and the canonical-correlation plot; with all features as",
-                "controls that plot is drawn with controls chosen from the data, and says so.")))
+        user = list(label = "Your own number",
+            reads = "You enter the number of factors.",
+            pros = paste("The RUV publications ask for judgement guided by diagnostic plots rather than one",
+                "automatic rule. Every approach accepts a number."),
+            cons = paste("The figure shown for each approach was measured with that approach's own pre-selected",
+                "rule, not with your number."),
+            diagnostic = paste("The estimated number's plot and the canonical-correlation plot. When all features",
+                "are the controls, the canonical-correlation plot is drawn with controls chosen from the data, and",
+                "says so.")))
 }
 
-#' The designs' common part (ticket section 1's table): tier, label, tooltip, replicate structure, control rule,
-#' test form (the record's values) and k rules (section 2: the estimated count for every design with a k; the
-#' separation rule where a separate control set exists; the rule selected is the one the figure was measured
-#' with; `k_rules_pending` are the combinations whose own figure is still being simulated).
+#' The designs' common part (ticket section 1's table): tier, label (what is done, in plain words), description
+#' (the visible second line: how, with the method's name), tooltip (the exact statement, extra detail only),
+#' replicate structure, control rule, test form (the record's values) and k rules (section 2: the estimated number
+#' for every design with a k; the separation rule where a separate control set exists; the rule selected is the
+#' one the figure was measured with; `k_rules_pending` are the combinations without a measured figure of their
+#' own). The two legacy designs' descriptions end with what their test reads (`omicGuiRuvTable`).
 #' @param features The omic's features in words (`proteins`, `genes`, `lipids`, `metabolites`).
 #' @param method The RUV method's name by kind of design: `replicates` and `controls`.
 #' @return A named list of options without their figures.
 #' @noRd
 omicGuiRuvDesignCatalogue <- function(features, method) {
-    in_model <- paste("The estimated factors are added to the differential model, which is fitted to the",
-        "uncorrected values; the corrected values are used for figures and export only.")
+    in_model <- paste("The estimated factors are included as covariates in the differential model, which is fitted",
+        "to the uncorrected values; the corrected values are used for plots and export only.")
+    earlier <- sprintf(paste("The %s that differ least between the groups in a first test serve as controls; an",
+        "automatic search chooses how many of them, and the number of factors. Its settings appear below when it",
+        "is selected."), features)
     list(
         groups_all_features = list(id = "groups_all_features", tier = "recommended",
-            label = sprintf("Groups as replicate sets, all %s as controls, factors in the model", features),
+            label = sprintf("Estimate from all %s, within your groups", features),
+            description = sprintf(paste("Samples of the same group are treated as replicates of each other, and all",
+                "%s are used to estimate the unwanted variation (%s)."), features, method[["replicates"]]),
             tooltip = sprintf("%s with the experimental groups as replicate sets and all %s as negative controls. %s",
                 method[["replicates"]], features, in_model),
             replicate_structure = "group", control_rule = "all_features", test_form = "factors_in_model",
             k_rules = c("num_sv_be", "user"), k_rule = "num_sv_be"),
         technical_replicates = list(id = "technical_replicates", tier = "valid_with_conditions",
-            label = sprintf("Declared technical replicates as replicate sets, all %s as controls, factors in the model",
-                features),
+            label = sprintf("Estimate from all %s, within your technical replicates", features),
+            description = sprintf(paste("The technical replicates declared in the experimental design are compared",
+                "with each other, and all %s are used to estimate the unwanted variation (%s)."), features,
+                method[["replicates"]]),
             tooltip = sprintf(paste("%s with the technical replicates declared in the design as replicate sets and all",
                 "%s as negative controls. %s"), method[["replicates"]], features, in_model),
             replicate_structure = "technical_replicates", control_rule = "all_features",
             test_form = "factors_in_model", k_rules = c("num_sv_be", "user"), k_rule = "num_sv_be"),
         supplied_controls = list(id = "supplied_controls", tier = "valid_with_conditions",
-            label = sprintf("Your own list of control %s, groups as replicate sets, factors in the model", features),
+            label = sprintf("Estimate from your own list of control %s", features),
+            description = sprintf(paste("You supply %s that you know do not differ between the groups (negative",
+                "controls); the unwanted variation is estimated from them (%s)."), features, method[["controls"]]),
             tooltip = sprintf(paste("%s with a list of %s you know not to change between the groups as negative",
                 "controls. %s"), method[["controls"]], features, in_model),
             replicate_structure = "group", control_rule = "supplied_list", test_form = "factors_in_model",
             k_rules = c("num_sv_be", "sweep_bounded", "user"), k_rule = "num_sv_be",
             k_rules_pending = "sweep_bounded"),
         first_pass_nulls = list(id = "first_pass_nulls", tier = "valid_with_conditions",
-            label = sprintf(paste("Controls chosen from the data (all %s but the 25%% most significant of a first",
-                "test), groups as replicate sets, factors in the model"), features),
+            label = sprintf("Estimate from control %s chosen from the data", features),
+            description = sprintf(paste("A first test of the groups is run; the 25%% most significant %s are set",
+                "aside and all the others serve as controls (%s)."), features, method[["controls"]]),
             tooltip = sprintf(paste("%s with negative controls chosen from the data: a first test of the groups is",
                 "run and the 25%% most significant %s are left out. %s"), method[["controls"]], features, in_model),
             replicate_structure = "group", control_rule = "first_pass_drop_top_25", test_form = "factors_in_model",
             k_rules = c("num_sv_be", "sweep_bounded", "user"), k_rule = "sweep_bounded",
             k_rules_pending = "num_sv_be"),
-        legacy = list(id = "legacy", tier = "legacy", label = "Today's design",
-            tooltip = sprintf(paste("The design of earlier versions: the least significant %s of a first test are",
-                "the negative controls, and a sweep chooses how many and k. Its controls are shown below."), features),
+        legacy = list(id = "legacy", tier = "legacy", label = "Approach of earlier versions", description = earlier,
+            tooltip = sprintf(paste("The approach of earlier versions: the least significant %s of a first test are",
+                "the negative controls, and a search over the share of controls (a sweep) chooses how many and k."),
+                features),
             replicate_structure = "group", control_rule = "sweep_least_significant", k_rules = character()),
         legacy_correction = list(id = "legacy_correction", tier = "legacy",
-            label = "Today's design, with the matrix corrected before the test",
-            tooltip = sprintf(paste("The design of earlier versions in its correction mode: the least significant %s",
-                "of a first test are the negative controls, the quantified matrix is corrected and the model",
-                "carries no factors. Its controls are shown below."), features),
+            label = "Approach of earlier versions, values corrected before the test", description = earlier,
+            tooltip = sprintf(paste("The approach of earlier versions in its correction mode: the least significant",
+                "%s of a first test are the negative controls, the quantified matrix is corrected and the model",
+                "carries no factors."), features),
             replicate_structure = "group", control_rule = "sweep_least_significant",
             test_form = "corrected_then_tested", k_rules = character()),
-        none = list(id = "none", tier = "none", label = "No RUV",
-            tooltip = "No correction for unwanted variation: the test reads the normalised values.",
+        none = list(id = "none", tier = "none", label = "No removal of unwanted variation",
+            description = "The differential test is run on the normalised values as they are.",
+            tooltip = "No RUV: the differential test reads the normalised values.",
             test_form = "none", k_rules = character()))
 }
 
-#' One preset table: the catalogue's designs in the rows' order, each with its measured figure and note.
+#' One preset table: the catalogue's designs in the rows' order, each with its measured figure and note. A legacy
+#' design's description ends with what its test reads in this table (its `test_form`).
 #' @param features,method `omicGuiRuvDesignCatalogue()`'s arguments.
 #' @param rows The omic's rows, named by design: `status`, the figure, `note`, `source`, and any field of the
 #'   catalogue the omic words differently.
@@ -1404,33 +1428,41 @@ omicGuiRuvDesignCatalogue <- function(features, method) {
 #' @noRd
 omicGuiRuvTable <- function(features, method, rows, selected_with_technical_replicates = "technical_replicates") {
     catalogue <- omicGuiRuvDesignCatalogue(features, method)
+    reads <- c(corrected_then_tested = "The values are corrected first, and the differential test is run on the corrected values.",
+        factors_in_model = paste("The estimated factors are included as covariates in the differential test, which",
+            "is run on the uncorrected values."))
     table <- list(selected = "legacy", recommended = "groups_all_features",
-        options = unname(lapply(names(rows), \(id) utils::modifyList(catalogue[[id]], rows[[id]]))))
+        options = unname(lapply(names(rows), \(id) {
+            option <- utils::modifyList(catalogue[[id]], rows[[id]])
+            if (identical(option$tier, "legacy")) option$description <- paste(option$description, reads[[option$test_form]])
+            option
+        })))
     table$selected_with_technical_replicates <- selected_with_technical_replicates
     table
 }
 
-#' The cells of KIT-124's simulations in words, for `fdp_where`.
-#' @return A named character vector by cell.
+#' The scenarios of KIT-124's simulations in words, for `fdp_where`.
+#' @return A named character vector by scenario.
 #' @noRd
 omicGuiRuvCells <- function() {
-    c(c1 = "worst design tested: 12 per group",
-        c2 = "worst design tested: 10% of features changed",
-        c3 = "worst design tested: no unwanted factor present",
-        c5 = "worst design tested: unwanted factor correlated with the groups at 0.3",
-        c6 = "worst design tested: technical duplicates, 4 units per group with 2 injections each",
-        c6_only = "the one design it was measured in: 4 units per group, 2 injections each",
-        c7 = "worst design tested: three groups")
+    c(c1 = "worst scenario tested: 12 samples per group",
+        c2 = "worst scenario tested: 10% of features truly different",
+        c3 = "worst scenario tested: no unwanted variation present",
+        c5 = "worst scenario tested: unwanted variation tied to the groups (correlation 0.3)",
+        c6 = "worst scenario tested: technical duplicates (4 samples per group, each measured twice)",
+        c6_only = "only scenario tested: 4 samples per group, each measured twice",
+        c7 = "worst scenario tested: three groups")
 }
 
 #' The note of a supplied control list, with the false discovery proportion measured when one control in five
 #' truly changes (KIT-124's arm 9).
+#' @param features The omic's features in words.
 #' @param contaminated That proportion.
 #' @return One string.
 #' @noRd
-omicGuiRuvSuppliedNote <- function(contaminated) {
-    sprintf(paste("Only as good as the list: with one changing feature in five on it, false discoveries rose to",
-        "%.1f%%."), 100 * contaminated)
+omicGuiRuvSuppliedNote <- function(features, contaminated) {
+    sprintf(paste("Use when you have %s known not to differ between the groups. Only as good as the list: when one",
+        "listed feature in five truly differed, false discoveries rose to %.1f%%."), features, 100 * contaminated)
 }
 
 #' Classic proteomics (DIA with IQ, LFQ, TMT): ticket section 1a, simulator S1.
@@ -1440,25 +1472,29 @@ omicGuiRuvTableClassic <- function() {
     cell <- omicGuiRuvCells()
     omicGuiRuvTable("proteins", c(replicates = "RUV-III", controls = "RUV-III"), list(
         groups_all_features = list(status = "measured", fdp = 0.066, fdp_where = cell[["c1"]], power = 0.91,
-            note = paste("Slightly liberal at 12 per group: 11.5% of simulated runs had more than 10% false",
-                "discoveries (limit 5.7%). 5.4% false discoveries in the standard design."),
+            note = paste("The general-purpose choice. With 12 samples per group it reported slightly too many false",
+                "discoveries: 11.5% of simulated data sets had more than 10% false discoveries (acceptance limit",
+                "5.7%). 5.4% false discoveries in the reference scenario."),
             source = "KIT-129 1a; KIT-124 S1 arm 7: worst cell C1 0.066, C0 0.054, power C0 0.91"),
         technical_replicates = list(status = "measured", fdp = 0.054, fdp_where = cell[["c6_only"]], power = 0.90,
-            power_where = "in that design", note = "Measured in one design only.",
+            power_where = "in that scenario",
+            note = "Use when the experimental design declares technical replicates. Measured in one scenario only.",
             source = "KIT-129 1a; KIT-124 S1 arm 16: C6 0.054, power C6 0.90"),
         supplied_controls = list(status = "measured", fdp = 0.053, fdp_where = cell[["c5"]], power = 0.91,
-            note = omicGuiRuvSuppliedNote(0.119),
+            note = omicGuiRuvSuppliedNote("proteins", 0.119),
             source = "KIT-129 1a; KIT-124 S1 arm 8: worst cell C5 0.053, power C0 0.91; arm 9: C1 0.119"),
         first_pass_nulls = list(status = "measured", fdp = 0.078, fdp_where = cell[["c5"]], power = 0.91,
-            note = "Not when the unwanted factor follows the groups. At most 5.6% in the other designs tested.",
+            note = paste("Not when the unwanted variation is tied to the groups: too many false discoveries there",
+                "(7.8%, as shown). At most 5.6% in the other scenarios tested."),
             source = "KIT-129 1a; KIT-124 S1 arm 5: worst cell C5 0.078, at most 0.056 elsewhere, power C0 0.91"),
         legacy = list(status = "measured", fdp = 0.385, fdp_where = cell[["c5"]], power = 0.92,
             test_form = "corrected_then_tested",
-            note = paste("For reproducing analyses made with earlier versions. Measured false discoveries 3% to 39%",
-                "at a nominal 5%, by design tested; 9.8% in the standard design."),
+            note = paste("For reproducing analyses made with earlier versions. False discoveries ranged from 3% to",
+                "39% across the scenarios tested, against a target of 5%; 9.8% in the reference scenario."),
             source = "KIT-129 1a; KIT-124 S1 arm 3: worst cell C5 0.385, C0 0.098, power C0 0.92"),
         none = list(status = "measured", fdp = 0.052, fdp_where = cell[["c3"]], power = 0.49,
-            note = "Calibrated; loses about half the power when unwanted variation is present.",
+            note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
+                "target, but about half the power is lost when unwanted variation is present."),
             source = "KIT-129 1a; KIT-124 S1 arm 1: worst cell C3 0.052, power C0 0.49")))
 }
 
@@ -1469,33 +1505,38 @@ omicGuiRuvTableDiaLimpa <- function() {
     cell <- omicGuiRuvCells()
     omicGuiRuvTable("proteins", c(replicates = "RUV-III", controls = "RUV-III"), list(
         groups_all_features = list(status = "measured", fdp = 0.055, fdp_where = cell[["c6"]], power = 0.91,
-            note = paste("Matches the known-factor ceiling in every design tested (5.3% with the factor correlated",
-                "with the groups at 0.3). Measured on the fastlimpadpc engine; expected to transfer to limpa, not",
-                "measured there."),
+            note = paste("The general-purpose choice. In every scenario tested it did as well as an analysis that",
+                "was given the true unwanted factor (5.3% false discoveries with unwanted variation tied to the",
+                "groups, correlation 0.3). Measured with the fastlimpadpc engine; expected to hold for the limpa",
+                "engine, not measured there."),
             source = "KIT-129 1b; KIT-124 S2 arm 7: worst cell C6 0.055, C5 0.053, power C0 0.91"),
         technical_replicates = list(status = "measured", fdp = 0.055, fdp_where = cell[["c6_only"]], power = 0.77,
-            power_where = "in that design",
-            note = paste("Measured in one design only. On a design with declared technical replicates this and the",
-                "recommended design are the same computation on this route."),
+            power_where = "in that scenario",
+            note = paste("Use when the experimental design declares technical replicates. Measured in one scenario",
+                "only. In DIA with limpa, when technical replicates are declared, this and the recommended approach",
+                "are the same calculation."),
             source = "KIT-129 1b; KIT-124 S2 arm 16 (= arm 7 in C6): C6 0.055, power C6 0.77"),
         supplied_controls = list(status = "measured", fdp = 0.056, fdp_where = cell[["c6"]], power = 0.91,
-            note = omicGuiRuvSuppliedNote(0.089),
+            note = omicGuiRuvSuppliedNote("proteins", 0.089),
             source = "KIT-129 1b; KIT-124 S2 arm 8: worst cell C6 0.056, power C0 0.91; arm 9: C1 0.089"),
         first_pass_nulls = list(status = "measured", fdp = 0.149, fdp_where = cell[["c5"]], power = 0.92,
-            note = paste("Liberal on this route in most designs tested (9.4% in the standard design); shown because",
-                "every design is offered."),
+            note = paste("Reports too many false discoveries in DIA with limpa in most scenarios tested (9.4% in the",
+                "reference scenario). Offered for completeness."),
             source = "KIT-129 1b; KIT-124 S2 arm 5: worst cell C5 0.149, C0 0.094, power C0 0.92"),
         legacy = list(status = "measured", fdp = 0.435, fdp_where = cell[["c5"]], power = 0.90,
-            label = "Today's design, with the factors as covariates", test_form = "factors_in_model",
-            note = paste("The limpa script's control rule. Measured false discoveries 5% to 44%; 29.0% in the",
-                "standard design."),
+            label = "Approach of earlier versions, factors in the test", test_form = "factors_in_model",
+            note = paste("For reproducing analyses made with earlier versions. It chooses its controls as the limpa",
+                "workflow script does. False discoveries ranged from 5% to 44% across the scenarios tested; 29.0%",
+                "in the reference scenario."),
             source = "KIT-129 1b; KIT-124 S2 arm 4: worst cell C5 0.435, C0 0.290, power C0 0.90"),
         legacy_correction = list(status = "measured", fdp = 0.466, fdp_where = cell[["c5"]], power = 0.91,
-            note = "Measured false discoveries 8% to 47%.",
+            note = paste("For reproducing analyses made with earlier versions. False discoveries ranged from 8% to",
+                "47% across the scenarios tested."),
             source = "KIT-129 1b; KIT-124 S2 arm 3: worst cell C5 0.466, power C0 0.91"),
         none = list(status = "measured", fdp = 0.191, fdp_where = cell[["c5"]], power = 0.56,
-            note = paste("Not calibrated on this route when unwanted variation is present: 15% of simulated runs had",
-                "more than 10% false discoveries; 6.5% false discoveries in the standard design."),
+            note = paste("In DIA with limpa, false discoveries do not stay at the 5% target when unwanted variation",
+                "is present: 15% of simulated data sets had more than 10% false discoveries; 6.5% false discoveries",
+                "in the reference scenario."),
             source = "KIT-129 1b; KIT-124 S2 arm 1: worst cell C5 0.191, C0 0.065, power C0 0.56")))
 }
 
@@ -1505,30 +1546,34 @@ omicGuiRuvTableDiaLimpa <- function() {
 #' @noRd
 omicGuiRuvTableTrx <- function() {
     cell <- omicGuiRuvCells()
-    omicGuiRuvTable("genes", c(replicates = "RUVs", controls = "RUVg"), list(
+    omicGuiRuvTable("genes", c(replicates = "RUVSeq's RUVs", controls = "RUVSeq's RUVg"), list(
         groups_all_features = list(status = "measured", fdp = 0.055, fdp_where = cell[["c2"]], power = 0.77,
-            note = paste("Matches the known-factor ceiling in every design tested (5.2% with the factor correlated",
-                "with the groups at 0.6)."),
+            note = paste("The general-purpose choice. In every scenario tested it did as well as an analysis that",
+                "was given the true unwanted factor (5.2% false discoveries with unwanted variation tied to the",
+                "groups at a correlation of 0.6)."),
             source = "KIT-129 1c; KIT-124 S3 arm 7: worst cell C2 0.055, stress S3 0.052, power C0 0.77"),
         technical_replicates = list(status = "unavailable",
-            unavailable = paste("Technical replicates are summed into one sample per biological unit (edgeR User's",
-                "Guide 4.9.1); no replicate structure is left for RUV."),
+            unavailable = paste("the technical replicates of a biological sample are added together into one set",
+                "of counts before the analysis (edgeR User's Guide, section 4.9.1), so none are left for RUV to",
+                "compare."),
             note = "Not offered in transcriptomics.",
             source = "KIT-129 1c, answer U3; KIT-128 (the sum at the design step)"),
         supplied_controls = list(status = "measured", fdp = 0.056, fdp_where = cell[["c2"]], power = 0.76,
-            note = omicGuiRuvSuppliedNote(0.076),
+            note = omicGuiRuvSuppliedNote("genes", 0.076),
             source = "KIT-129 1c; KIT-124 S3 arm 8: worst cell C2 0.056, power C0 0.76; arm 9: C1 0.076"),
         first_pass_nulls = list(status = "measured", fdp = 0.064, fdp_where = cell[["c5"]], power = 0.60,
-            note = paste("Loses most of its power when the factor follows the groups (0.11) or with three groups",
-                "(0.02)."),
+            note = paste("Not when the unwanted variation is tied to the groups, or with three groups: it then",
+                "finds few of the real differences (power 11% and 2%)."),
             source = "KIT-129 1c; KIT-124 S3 arm 5: worst cell C5 0.064, power C0 0.60, C5 0.11, C7 0.02"),
         legacy = list(status = "measured", fdp = 0.299, fdp_where = cell[["c5"]], power = 0.73,
             test_form = "factors_in_model",
-            note = paste("The notebook's design. Fails when the unwanted factor follows the groups: 30% false",
-                "discoveries at a correlation of 0.3, 72% at 0.6. At most 5.4% in the other designs tested."),
+            note = paste("For reproducing analyses made with earlier versions. It fails when the unwanted variation",
+                "is tied to the groups: 30% false discoveries at a correlation of 0.3, 72% at 0.6. At most 5.4% in",
+                "the other scenarios tested."),
             source = "KIT-129 1c; KIT-124 S3 arm 3: worst cell C5 0.299, stress S3 0.724, at most 0.054 elsewhere, power C0 0.73"),
         none = list(status = "measured", fdp = 0.044, fdp_where = cell[["c3"]], power = 0.005,
-            note = "Calibrated; finds almost nothing when unwanted variation is strong.",
+            note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
+                "target, but almost no real differences are found when unwanted variation is strong."),
             source = "KIT-129 1c; KIT-124 S3 arm 1: worst cell C3 0.044, power C0 0.005")),
         selected_with_technical_replicates = NULL)
 }
@@ -1542,28 +1587,36 @@ omicGuiRuvTableFeature <- function(features) {
     cell <- omicGuiRuvCells()
     omicGuiRuvTable(features, c(replicates = "RUV-III", controls = "RUV-III"), list(
         groups_all_features = list(status = "measured", fdp = 0.072, fdp_where = cell[["c5"]], power = 0.43,
-            note = paste("No design passed every rule here. Liberal when the factor is strongly tied to the groups",
-                "(13% at a correlation of 0.6) and at 3 per group (10%); 5.7% in the standard design. Put a known",
-                "batch in the model: 14% with an unbalanced batch left to RUV."),
+            note = sprintf(paste("The general-purpose choice, with limits: no approach met every acceptance",
+                "criterion for %s. Too many false discoveries when the unwanted variation is strongly tied to the",
+                "groups (13%% at a correlation of 0.6) and with 3 samples per group (10%%); 5.7%% in the reference",
+                "scenario. If you know the batches, put batch in the statistical model: 14%% false discoveries when",
+                "an unbalanced batch was left for RUV to find."), features),
             source = "KIT-129 1d; KIT-124 S4 arm 7: worst cell C5 0.072, C0 0.057, stress S3 0.130, S1 0.101, S8 0.14, power C0 0.43"),
-        technical_replicates = list(status = "pending", note = "Not yet measured with the blocked test.",
+        technical_replicates = list(status = "pending",
+            note = paste("Use when the experimental design declares technical replicates. Not yet measured with",
+                "the test that accounts for them."),
             source = "KIT-129 1d: pending the re-measure of C6 on the KIT-128 tree (section 4, R0)"),
         supplied_controls = list(status = "measured", fdp = 0.068, fdp_where = cell[["c5"]], power = 0.37,
-            label = sprintf(paste("A list of control %s (by default the internal standards), groups as replicate",
-                "sets, factors in the model"), features),
-            note = "A changing standard is costly here: 37% false discoveries with 2 of 10 contaminated.",
+            label = sprintf("Estimate from a list of control %s (by default the internal standards)", features),
+            description = sprintf(paste("The unwanted variation is estimated from %s that do not differ between the",
+                "groups (negative controls): the internal standards, unless you supply another list (RUV-III)."),
+                features),
+            note = paste("Check that the standards do not differ between the groups: when 2 of 10 did, false",
+                "discoveries rose to 37%."),
             source = "KIT-129 1d; KIT-124 S4 arm 8 (standards): worst cell C5 0.068, power C0 0.37; arm 9: C1 0.371"),
         first_pass_nulls = list(status = "measured", fdp = 0.239, fdp_where = cell[["c5"]], power = 0.50,
-            note = paste("Liberal in most designs tested (9.7% in the standard design); shown because every design",
-                "is offered."),
+            note = paste("Reports too many false discoveries in most scenarios tested (9.7% in the reference",
+                "scenario). Offered for completeness."),
             source = "KIT-129 1d; KIT-124 S4 arm 5: worst cell C5 0.239, C0 0.097, power C0 0.50"),
         legacy = list(status = "measured", fdp = 0.556, fdp_where = cell[["c2"]], power = 0.42,
             test_form = "corrected_then_tested",
-            note = paste("More than 90% of simulated runs exceeded 10% false discoveries; 47.0% false discoveries in",
-                "the standard design."),
+            note = paste("More than 90% of simulated data sets had more than 10% false discoveries; 47.0% false",
+                "discoveries in the reference scenario."),
             source = "KIT-129 1d; KIT-124 S4 arm 3: worst cell C2 0.556, C0 0.470, power C0 0.42"),
         none = list(status = "measured", fdp = 0.059, fdp_where = cell[["c7"]], power = 0.003,
-            note = "Calibrated; almost no power under drift.",
+            note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
+                "target, but almost no real differences are found when the signal drifts during the run."),
             source = "KIT-129 1d; KIT-124 S4 arm 1: worst cell C7 0.059, power C0 0.003")))
 }
 
