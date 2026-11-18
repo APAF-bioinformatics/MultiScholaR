@@ -2082,3 +2082,4 @@ Rows added the day they were decided. The full text of each is in `docs/qa/workf
 | M18 | Shorter staging folder names and short-path rendering for Windows | 2026-11-18 | user | decided, partly implemented (branch `kit-052-win-paths`), unconfirmed on Windows |
 | M19 | Equivalence gate read on rule-bearing values; 8 transcriptomics rows outside tolerance on bias and rmse accepted and reported | 2026-11-18 | user | in force |
 | M20 | `fast_duckdb` made public only at the public build; installers tested inside one job until then | 2026-11-18 | user | in force |
+| M21 | The real-data null check contradicts the simulations for "no RUV" on DIA with limpa (better on real data than simulated); recorded, accepted as not bearing on the default, RUV work continues; one bounded check of the unwanted variation's strength alongside | 2026-11-18 | user ("A and B") | in force; check pending |
