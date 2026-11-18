@@ -1,0 +1,20 @@
+aggregate.R used for this folder (the exactness round's copy, as its declaration says; NOT the version on performance-v2)
+branch: sim-k129-exact
+commit: 2d03b1032676c8c54c4887f8abe2022dce354d3f
+path in that commit: docs/qa/workflow-execution/kit/kit-124/aggregate.R
+sha256: 089d852c1f3b08d70096b1218ef26550f393cffd213e4bdd9980453075fd2a66
+version on performance-v2 (477ac839): sha256 c5c6275f099166ab59bb479b4557ca598c96004f71494de785883bdbe5f4d200
+difference against performance-v2 (C8 as a no-factor, reported cell; three constants and a comment):
+  50a51,53
+  > #   C8 (the exactness round, 2026-11-18, kit-124/exact-round-declaration.md: C6 with no unwanted factor) is a
+  > #   no-factor cell (rule 5, not rule 4) and "reported, not core" in every simulator: it judges no design. These are
+  > #   the only changes against the version on performance-v2 (sha256 c5c6275f...): three constants below.
+  101,103c104,106
+  < cells_all <- c(paste0("C", 0:7), paste0("S", 1:14))
+  < no_factor_cells <- c("C3", "S13", "S14")
+  < reported_not_core <- list(S3 = "C6", S4 = "C6")
+  ---
+  > cells_all <- c(paste0("C", 0:8), paste0("S", 1:14))
+  > no_factor_cells <- c("C3", "C8", "S13", "S14")
+  > reported_not_core <- list(S1 = "C8", S2 = "C8", S3 = c("C6", "C8"), S4 = c("C6", "C8"))
+the same file on sim-k124-exact and sim-k129-exact: identical
