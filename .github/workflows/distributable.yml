@@ -258,13 +258,13 @@ jobs:
 
       # ------------------------------------------------ stage full: the shell, the archive, the install
       - uses: actions/setup-node@v4
-        if: needs.plan.outputs.full == 'true' && steps.check.outcome == 'success'
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Version stamp and third-party notices
         id: stamp
-        if: needs.plan.outputs.full == 'true' && steps.check.outcome == 'success'
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
         run: |
           set -o pipefail
           version="$(sed -n 's/^Version: *//p' DESCRIPTION)"
@@ -277,7 +277,7 @@ jobs:
 
       - name: The Electron shell (directory target)
         id: electron
-        if: needs.plan.outputs.full == 'true' && steps.stamp.outcome == 'success'
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.stamp.outcome == 'success' }}
         working-directory: packaging/electron
         run: |
           mkdir -p build
@@ -290,7 +290,7 @@ jobs:
 
       - name: The Linux archive (per-user install.sh, D2); the build's own copies are deleted
         id: archive
-        if: needs.plan.outputs.full == 'true' && steps.electron.outcome == 'success'
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.electron.outcome == 'success' }}
         run: |
           name="MultiScholaR-${VERSION}"
           stage="$RUNNER_TEMP/archive/$name"
@@ -317,7 +317,7 @@ jobs:
 
       - name: Install from the archive with install.sh into a scratch folder, as the runner's user; the archive is deleted
         id: install
-        if: needs.plan.outputs.full == 'true' && steps.archive.outcome == 'success'
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.archive.outcome == 'success' }}
         run: |
           command -v xvfb-run >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq xvfb; }
           export XDG_DATA_HOME="$RUNNER_TEMP/scratch-install/share"
@@ -637,13 +637,13 @@ jobs:
 
       # ------------------------------------------------ stage full: the shell, the installer, the install
       - uses: actions/setup-node@v4
-        if: needs.plan.outputs.full == 'true' && steps.check.outcome == 'success'
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Version stamp and third-party notices
         id: stamp
-        if: needs.plan.outputs.full == 'true' && steps.check.outcome == 'success'
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
         run: |
           $version = (Select-String -Path DESCRIPTION -Pattern '^Version:\s*(.+)$').Matches[0].Groups[1].Value.Trim()
           $packageVersion = node -p "require('./packaging/electron/package.json').version"
@@ -656,7 +656,7 @@ jobs:
 
       - name: The Electron shell and the NSIS per-user installer
         id: electron
-        if: needs.plan.outputs.full == 'true' && steps.stamp.outcome == 'success'
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.stamp.outcome == 'success' }}
         working-directory: packaging/electron
         run: |
           New-Item -ItemType Directory -Force build | Out-Null
@@ -673,7 +673,7 @@ jobs:
 
       - name: "P4: path lengths under the application folder (limit 170)"
         id: pathlength
-        if: needs.plan.outputs.full == 'true' && steps.electron.outcome == 'success'
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.electron.outcome == 'success' }}
         run: |
           pwsh -NoProfile -File packaging\windows\assemble.ps1 -Action pathlength -Folder packaging\electron\dist\win-unpacked -Limit 170
           if ($LASTEXITCODE -ne 0) { throw "a path is too long" }

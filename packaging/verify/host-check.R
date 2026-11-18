@@ -10,7 +10,8 @@
 # that need bundled libraries (ICU, libxml2, libcurl); (4) the application's entry starts with the
 # plain launcher, whose trial unit is a child R process, and answers HTTP 200. Printed, not
 # decided: whether the path the launcher exported before this repair breaks this host's bash (the
-# defect, where the host has it), and which host libraries beside the C library R has mapped.
+# defect, where the host has it), which host libraries beside the C library R has mapped, and
+# whose libreadline and ICU are in use.
 
 arguments <- commandArgs(trailingOnly = TRUE)
 if (length(arguments) != 3L) stop("usage: Rscript --vanilla host-check.R <runtime directory> <entry.R> <label>")
@@ -56,8 +57,9 @@ mapped <- unique(mapped)
 inside <- startsWith(mapped, paste0(runtime, "/"))
 cat(sprintf("shared objects mapped in this R: %d from the bundle, %d from the host: %s\n", sum(inside), sum(!inside),
     paste(sort(basename(mapped[!inside])), collapse = " ")))
-check("the bundle's own libreadline and ICU are the ones in use",
-    any(startsWith(mapped, file.path(syslib, "libreadline"))) && any(startsWith(mapped, file.path(syslib, "libicuuc"))))
+# Printed, not decided: R's own etc/ldpaths puts /usr/local/lib and /usr/lib/x86_64-linux-gnu in front
+# of the run path, so on Debian and Ubuntu a host library of the same name is taken first.
+cat(sprintf("libreadline and ICU in use: %s\n", paste(grep("/(libreadline|libicuuc)", mapped, value = TRUE), collapse = " ")))
 
 # The application's entry, as the shell starts it; this process stands for the shell (the entry's
 # watchdog ends the application when it is gone).

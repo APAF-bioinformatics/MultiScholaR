@@ -67,18 +67,11 @@ done
 echo "== bundled shared libraries: $(find "$bundle/syslib" -type f | wc -l)"
 ls "$bundle/syslib"
 
-# 3. The run path. Each object finds syslib/ from its own location, in front of whatever run path
-#    it had. DT_RUNPATH serves only the object that carries it, so every object gets one, the
-#    bundled libraries included (they need each other). The launcher then sets no LD_LIBRARY_PATH.
-patched=0
-while IFS= read -r -d '' object; do
-    old="$(patchelf --print-rpath "$object" 2>/dev/null)" || continue # not a dynamic ELF object
-    new="\$ORIGIN/$(realpath --relative-to="$(dirname "$object")" "$bundle/syslib")"
-    chmod u+w "$object"
-    patchelf --set-rpath "$new${old:+:$old}" "$object" || { echo "patchelf could not write the run path of $object" >&2; exit 1; }
-    patched=$((patched + 1))
-done < <(find "$bundle/R" "$bundle/syslib" -type f \( -name '*.so' -o -name '*.so.*' -o -path '*/bin/exec/R' \) -print0)
-echo "== run path to syslib written into $patched objects"
+# 3. The run path (runpath.sh). Each object finds syslib/ from its own location; every object gets
+#    one, the bundled libraries included (they need each other). duckdb, duckplyr and fastduckdb
+#    have theirs since before MultiScholaR was installed and are not touched again. The launcher
+#    then sets no LD_LIBRARY_PATH.
+bash "$here/runpath.sh" "$bundle/syslib" "$bundle/R" "$bundle/syslib"
 echo "== what R's front-end adds to LD_LIBRARY_PATH for R and its children (etc/ldpaths, not changed)"
 grep -n 'LD_LIBRARY_PATH=' "$bundle/R/etc/ldpaths" || true
 #    Checked here as the user's machine will resolve them: with no path but R's own lib folder (what

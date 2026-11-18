@@ -72,7 +72,7 @@ rust)
     rustc --version; cargo --version
     ;;
 library)
-    R_LIBS="$TOOLS_LIB" "$rscript" --vanilla packaging/r/install-library.R install . "$OUT" \
+    MSR_BUNDLE_RUNPATH=1 R_LIBS="$TOOLS_LIB" "$rscript" --vanilla packaging/r/install-library.R install . "$OUT" \
         2>&1 | tee "$OUT/install-library.log"
     grep '^INTERNAL ' "$OUT/install-library.log" || true
     echo "installed as binary packages: $(grep -c 'installing \*binary\* package' "$OUT/install-library.log" || true)"

@@ -335,6 +335,18 @@ if (nzchar(internal_mode)) {
     unlink(internal_root, recursive = TRUE)
 }
 
+# Linux bundle build (MSR_BUNDLE_RUNPATH=1, packaging/linux/build.sh): the run path to the bundle's
+# syslib/ goes into duckdb's, duckplyr's and fastduckdb's libraries now. MultiScholaR's install
+# records their sha256 (src/build_dia_rsum.R), and the DIA rollup and the direct writer refuse a
+# build whose binaries changed afterwards; assemble.sh writes the run path of everything else.
+if (!is_windows && identical(Sys.getenv("MSR_BUNDLE_RUNPATH"), "1")) {
+    hashed <- file.path(lib, intersect(c("duckdb", "duckplyr", "fastduckdb"), rownames(utils::installed.packages(lib.loc = lib))))
+    if (any(c("duckdb", "duckplyr", "fastduckdb") %in% loadedNamespaces())) stop("a package whose libraries are about to be rewritten is loaded")
+    status <- system2("bash", shQuote(c(file.path(checkout, "packaging", "linux", "runpath.sh"),
+        file.path(dirname(R.home()), "syslib"), hashed)))
+    if (status != 0L) stop("the run path could not be written into ", paste(basename(hashed), collapse = ", "))
+}
+
 # (3) MultiScholaR from the checkout.
 rInstall(checkout)
 
