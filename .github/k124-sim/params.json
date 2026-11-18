@@ -1,13 +1,13 @@
 {
-  "label": "r0b-random-lc",
+  "label": "r0b-random",
   "package_commit": "0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22",
   "tools_ref": "ebd5378b9f44ed54503011a175b1ea8e852cf5e1",
-  "runs_core": 4,
-  "runs_stress": 0,
-  "first_run": 1,
+  "runs_core": 500,
+  "runs_stress": 500,
+  "first_run": 3001,
   "cores": 4,
-  "timeout_minutes": 60,
+  "timeout_minutes": 200,
   "assoc": false,
   "arms": {"s1": "1,2,5,7,8", "s3": "1,2,7", "s4": "1,2,7,8"},
-  "cells": {"s1": "C0,C0R", "s3": "C0,C0R", "s4": "C0,C0R"}
+  "cells": {"s1": "C0R,C4R,S1R", "s3": "C0R,C4R,S1R", "s4": "C0R,C4R,S1R"}
 }
