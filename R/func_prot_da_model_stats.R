@@ -418,13 +418,15 @@ buildProtDaResultTables <- function(contrast_artifact, contrast_strings,
     fit.eb = contrast_artifact$public_fit)
 }
 
-#' The limma test of the factors-in-the-model design (KIT-126; decision M29)
+#' The limma test of the factors-in-the-model design (KIT-126; decisions M29, M30)
 #'
 #' `runTestsContrasts`'s steps from its own halves (`fitProtDaBaseModel`, `applyProtDaContrastModel`,
 #' `buildProtDaResultTables`), with each comparison's standard error exact per protein (`ruvExactContrastsFit`, the
 #' exactness round's arm 25): with RUV factors in the model, `limma::contrasts.fit` only approximates it for a protein
-#' with missing values. The technical-replicate block and its consensus correlation are the base fit's. The legacy
-#' design keeps `runTestsContrasts`.
+#' with missing values. The TREAT step applies the moderation settings the kernel sets (`limma::treat(fit, lfc,
+#' trend = eBayes_trend, robust = eBayes_robust)`, the exactness round's arm 26, decision M30); `runTestsContrasts`
+#' calls treat() without them. The technical-replicate block and its consensus correlation are the base fit's. The
+#' legacy design keeps `runTestsContrasts`.
 #' @param data,contrast_strings,design_matrix,formula_string,treat_lfc_cutoff,eBayes_trend,eBayes_robust,group_id,technical_replicate_id
 #'   As `runTestsContrasts`.
 #' @param exact FALSE forms the comparisons with `limma::contrasts.fit`, as `runTestsContrasts` does (kept so that the
@@ -451,7 +453,8 @@ runProtRuvModelContrasts <- function(data, contrast_strings, design_matrix, form
     limma::contrasts.fit
   }
   model <- applyProtDaContrastModel(base, contrast_matrix, treat_lfc_cutoff = treat_lfc_cutoff,
-    eBayes_trend = eBayes_trend, eBayes_robust = eBayes_robust, contrastsFitFn = contrastsFitFn, messageFn = silent)
+    eBayes_trend = eBayes_trend, eBayes_robust = eBayes_robust, contrastsFitFn = contrastsFitFn,
+    treatFn = \(fit, lfc) limma::treat(fit, lfc = lfc, trend = eBayes_trend, robust = eBayes_robust), messageFn = silent)
   buildProtDaResultTables(model, contrast_strings, messageFn = silent)
 }
 

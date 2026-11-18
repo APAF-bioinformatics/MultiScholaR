@@ -117,7 +117,7 @@ ruvModelSimulatorTest <- function(matrix, design, covariates = NULL, exact = TRU
 
 # Arm 7's computation as the simulator makes it (`in_model(all_controls, k, "no_tech")`): W of RUV-III on the complete
 # proteins, every one a control, the groups as replicate sets; then the test on the uncorrected matrix with W, as the
-# exactness round changed it (decision M29: arm 25's exact standard error).
+# exactness round changed it (arm 32's test: the exact standard error, M29, and treat() given the settings, M30).
 ruvModelArm7 <- function(fixture, k, rows = rownames(fixture$x)) {
     x <- fixture$x
     design <- fixture$design
@@ -125,19 +125,19 @@ ruvModelArm7 <- function(fixture, k, rows = rownames(fixture$x)) {
     complete <- rowSums(!is.finite(x)) == 0
     value <- suppressMessages(computeRuvCovariates(ruvModelObject(x[complete, , drop = FALSE], design, "no_tech"), k = k,
         controls = rep(TRUE, sum(complete)), ruv_grouping_variable = "group"))
-    list(W = value$W, test = suppressMessages(ruvModelSimulatorTest(x[rows, , drop = FALSE], fixture$design, value$W)))
+    list(W = value$W, test = suppressMessages(ruvModelSimulatorTest(x[rows, , drop = FALSE], fixture$design, value$W, applied = TRUE)))
 }
 
 # The same test with limma called directly: lmFit with the comparison as the first coefficient of the reparameterised
-# model (decision M29), eBayes with trend and robust, then treat at the cutoff 0: no code of the package between the
-# matrix and the table.
+# model (decision M29), eBayes with trend and robust, then treat at the cutoff 0 with the same settings (decision M30):
+# no code of the package between the matrix and the table.
 ruvModelDirectLimma <- function(x, design, W) {
     design <- cbind(design, as.data.frame(W[design$Run, , drop = FALSE]))
     rownames(design) <- design$Run
     model <- stats::model.matrix(stats::as.formula(paste("~ 0 + group +", paste(colnames(W), collapse = " + "))), design)
     contrast <- limma::makeContrasts(contrasts = "grouptreated-groupcontrol", levels = colnames(model))
     fit <- suppressWarnings(limma::lmFit(x[, rownames(model), drop = FALSE], limma::contrastAsCoef(model, contrast)$design))
-    tested <- limma::treat(limma::eBayes(fit[, 1L], trend = TRUE, robust = TRUE), lfc = 0)
+    tested <- limma::treat(limma::eBayes(fit[, 1L], trend = TRUE, robust = TRUE), lfc = 0, trend = TRUE, robust = TRUE)
     p <- tested$p.value[, 1L]
     q <- rep(NA_real_, length(p))
     q[is.finite(p)] <- qvalue::qvalue(p[is.finite(p)])$q
@@ -787,6 +787,27 @@ test_that("each comparison's standard error is exact per protein under the facto
     # the legacy kernel given the same W still forms it with contrasts.fit
     legacy <- ruvModelKernel(fixture$x, fixture$design, package$factors$W)$fit.eb
     expect_equal(unname(legacy$stdev.unscaled[rownames(x), 1L]), unname(approximate$stdev.unscaled[, 1L]), tolerance = 1e-10)
+})
+
+test_that("the factors-in-the-model test applies its trend and robust settings at the TREAT step (M30)", {
+    fixture <- ruvModelFixture()
+    package <- ruvModelPackageState(fixture, 2L)
+    result <- ruvModelDa(package$state)
+    fit <- result$contrasts_results$fit.eb
+    table <- result$contrasts_results$results[[1L]]
+    # at the cutoff 0, treat() given the settings is the moderated test itself (the exactness round's reading)
+    design <- cbind(fixture$design, as.data.frame(package$factors$W[fixture$design$Run, , drop = FALSE]))
+    rownames(design) <- design$Run
+    model <- stats::model.matrix(~ 0 + group + W1 + W2, design)
+    contrast <- limma::makeContrasts(contrasts = "grouptreated-groupcontrol", levels = colnames(model))
+    exact <- suppressWarnings(limma::lmFit(fixture$x[, rownames(model)], limma::contrastAsCoef(model, contrast)$design))[, 1L]
+    moderated <- limma::eBayes(exact, trend = TRUE, robust = TRUE)
+    expect_equal(table$raw_pvalue, unname(moderated$p.value[rownames(table), 1L]), tolerance = 1e-10)
+    # treat() without the settings (today's kernel) gives other p-values on the same fit
+    plain <- limma::treat(moderated, lfc = 0)
+    expect_gt(max(abs(plain$p.value[rownames(table), 1L] - table$raw_pvalue)), 1e-4)
+    # the moderation the TREAT step used is recorded on the fit: the trend's prior variances, per protein
+    expect_gt(length(unique(fit$s2.prior)), 1L)
 })
 
 # The legacy paths' DA outputs on fixed inputs (decisions M29, M30: legacy unchanged). The digests were recorded on the
