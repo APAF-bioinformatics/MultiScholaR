@@ -17,7 +17,6 @@
 #' @export
 #' @param volumes Runtime inputs used by this function; see the usage section for accepted values.
 mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes = NULL) {
-  message(sprintf("--- Entering mod_prot_import_server ---"))
   message(sprintf("   mod_prot_import_server Arg: id = %s", id))
   # KIT-102 W6: the shared import frame runs the proteomics panel (protImportPanelServer) in its module session.
   mod_omic_import_server(id, workflow_data, experiment_paths, volumes = volumes, config = omicGuiConfig("proteomics"))

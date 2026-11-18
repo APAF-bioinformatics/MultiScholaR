@@ -50,7 +50,6 @@ generateLimpaQCPlots <- function(after_object,
                                  save_dir = "peptide_qc",
                                  plot_prefix = "limpa",
                                  verbose = TRUE) {
-  message("--- Entering generateLimpaQCPlots ---")
   message(sprintf(
     "   Arguments: after_object type=%s, before_object=%s, save_plots=%s, save_dir=%s, plot_prefix=%s, verbose=%s",
     class(after_object), ifelse(is.null(before_object), "NULL", class(before_object)),
@@ -161,7 +160,6 @@ generateLimpaQCPlots <- function(after_object,
   # 1. Detection Probability Curve Plot
   plot_list$dpc_curve <- tryCatch(
     {
-      message("--- Entering DPC curve plot generation ---")
       if (verbose) cat("Generating DPC curve plot...\n")
 
       # Validate dpc_params first

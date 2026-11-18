@@ -30,26 +30,12 @@ generateLipidDAVolcanoPlotGlimma <- function(
   annotation_column = "lipid_name"
 ) {
     requireOptionalPackage("Glimma", "interactive volcano plots")
-    # [D66:START] -------------------------
-    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("=== ENTER generateLipidDAVolcanoPlotGlimma ===")
-    d66_log("  selected_contrast = ", if (is.null(selected_contrast)) "NULL" else selected_contrast)
-    d66_log("  selected_assay = ", if (is.null(selected_assay)) "NULL" else selected_assay)
-    # [D66:END] ---------------------------
 
     logger::log_info("--- Entering generateLipidDAVolcanoPlotGlimma ---")
     logger::log_info(sprintf("   selected_contrast = %s", selected_contrast))
     logger::log_info(sprintf("   selected_assay = %s", ifelse(is.null(selected_assay), "NULL (combined)", selected_assay)))
 
     if (is.null(da_results_list) || is.null(da_results_list$da_lipids_long)) {
-        # [D66:START]
-        d66_log("  ERROR: da_results_list or da_lipids_long is NULL")
-        d66_log("    da_results_list is NULL = ", is.null(da_results_list))
-        if (!is.null(da_results_list)) {
-            d66_log("    da_results_list names = ", paste(names(da_results_list), collapse = ", "))
-            d66_log("    da_lipids_long is NULL = ", is.null(da_results_list$da_lipids_long))
-        }
-        # [D66:END]
         logger::log_warn("   No DE results available")
         return(NULL)
     }
@@ -63,16 +49,6 @@ generateLipidDAVolcanoPlotGlimma <- function(
     da_lipids_long <- da_results_list$da_lipids_long
     contrasts_results <- da_results_list$contrasts_results
 
-    # [D66:START] -------------------------
-    d66_log("  da_lipids_long dims = ", nrow(da_lipids_long), " x ", ncol(da_lipids_long))
-    d66_log("  da_lipids_long columns = ", paste(colnames(da_lipids_long), collapse = ", "))
-    if (nrow(da_lipids_long) > 0 && "comparison" %in% colnames(da_lipids_long)) {
-        d66_log("  unique comparisons = ", paste(unique(da_lipids_long$comparison), collapse = ", "))
-    }
-    if (nrow(da_lipids_long) > 0 && "friendly_name" %in% colnames(da_lipids_long)) {
-        d66_log("  unique friendly_names = ", paste(unique(da_lipids_long$friendly_name), collapse = ", "))
-    }
-    # [D66:END] ---------------------------
 
     # Extract comparison name (handle "=" format from full_format)
     comparison_to_search <- stringr::str_extract(selected_contrast, "^[^=]+")
@@ -80,16 +56,12 @@ generateLipidDAVolcanoPlotGlimma <- function(
         comparison_to_search <- selected_contrast
     }
 
-    # [D66:START]
-    d66_log("  comparison_to_search = ", comparison_to_search)
-    # [D66:END]
 
     # Glimma requires matching dimensions between fit object and data.
     # For "Combined" view across multiple assays, this is not possible since
     # each assay has its own fit object with different genes.
     # Return NULL with a message - user should use static plot for combined view.
     if (is.null(selected_assay) || selected_assay == "Combined") {
-        d66_log("  NOTE: Combined view not supported for Glimma - use static plot")
         logger::log_info("   Glimma not supported for Combined view (dimension mismatch). Use static plot.")
         return(NULL)
     }
@@ -124,23 +96,13 @@ generateLipidDAVolcanoPlotGlimma <- function(
 
     fit_obj <- contrasts_results[[fit_assay]]$fit.eb
 
-    # [D66:START] -------------------------
-    d66_log("  fit_assay = ", fit_assay)
-    d66_log("  fit_obj class = ", class(fit_obj)[1])
-    # [D66:END] ---------------------------
 
     # Find coefficient index
     coef_names <- colnames(fit_obj$coefficients)
 
-    # [D66:START] -------------------------
-    d66_log("  Looking for coefficient:")
-    d66_log("    comparison_to_search (friendly) = ", comparison_to_search)
-    d66_log("    coef_names (actual) = ", paste(coef_names, collapse = ", "))
-    # [D66:END] ---------------------------
 
     # Extract comparison strings from data for matching
     available_contrasts_in_data <- unique(contrast_data$comparison)
-    d66_log("    Available contrasts in data: ", paste(available_contrasts_in_data, collapse = ", "))
 
     coef_index <- integer(0)
     # 1. Try exact match on friendly name
@@ -152,7 +114,6 @@ generateLipidDAVolcanoPlotGlimma <- function(
             match_idx <- which(coef_names == actual_comp)
             if (length(match_idx) > 0) {
                 coef_index <- match_idx
-                d66_log("    Match by actual contrast from data: ", actual_comp)
                 break
             }
         }
@@ -163,7 +124,6 @@ generateLipidDAVolcanoPlotGlimma <- function(
         clean_target <- gsub("[^A-Za-z0-9]", "", comparison_to_search)
         clean_coefs <- gsub("[^A-Za-z0-9]", "", coef_names)
         coef_index <- which(clean_coefs == clean_target)
-        if (length(coef_index) > 0) d66_log("    Match by fuzzy name: ", coef_names[coef_index[1]])
     }
 
     # 4. Try fuzzy match on actual comparison strings
@@ -174,21 +134,18 @@ generateLipidDAVolcanoPlotGlimma <- function(
             match_idx <- which(clean_coefs == clean_comps[i])
             if (length(match_idx) > 0) {
                 coef_index <- match_idx
-                d66_log("    Match by fuzzy actual contrast: ", available_contrasts_in_data[i])
                 break
             }
         }
     }
 
     if (length(coef_index) == 0) {
-        d66_log("  ERROR: No coefficient found!")
         logger::log_warn(sprintf("   No coefficient found for: %s", comparison_to_search))
         logger::log_info(sprintf("   Available coefficients: %s", paste(coef_names, collapse = ", ")))
         return(NULL)
     }
 
     coef_index <- coef_index[1]
-    d66_log("  FINAL coef_index = ", coef_index, " (", coef_names[coef_index], ")")
     logger::log_info(sprintf("   Using coefficient index %d: %s", coef_index, coef_names[coef_index]))
 
     # Prepare volcano plot annotation table with Inf/NaN protection.
@@ -251,13 +208,6 @@ generateLipidDAVolcanoPlotGlimma <- function(
     rownames(dm) <- dm[[theObject@sample_id]]
     groups <- dm[sample_cols, theObject@group_id]
 
-    # [D66:START] -------------------------
-    d66_log("  Preparing Glimma inputs:")
-    d66_log("    counts_mat dims = ", nrow(counts_mat), " x ", ncol(counts_mat))
-    d66_log("    groups = ", paste(groups, collapse = ", "))
-    d66_log("    fit_obj nrow = ", nrow(fit_obj$coefficients))
-    d66_log("    coef_index = ", coef_index)
-    # [D66:END] ---------------------------
 
     # =====================================================================
     # CRITICAL: Reorder volcano_tab to match fit_obj row order

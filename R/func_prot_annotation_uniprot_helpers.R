@@ -29,7 +29,6 @@ getUniprotAnnotations <- function(input_tbl,
                                  api_delay = 1,
                                  progress_callback = NULL) {
   
-  message("=== DEBUG66: Entering getUniprotAnnotations ===")
   message(sprintf("   Cache dir: %s", cache_dir))
   message(sprintf("   Taxon ID: %d", taxon_id))
   message(sprintf("   Input table rows: %d", nrow(input_tbl)))
@@ -44,9 +43,6 @@ getUniprotAnnotations <- function(input_tbl,
   cache_file <- file.path(cache_dir, "uniprot_annotations.RDS")
   raw_results_file <- file.path(cache_dir, "uniprot_results.tsv")
   
-  message("   DEBUG66: Checking cache...")
-  message(sprintf("   DEBUG66: Cache file: %s", cache_file))
-  message(sprintf("   DEBUG66: Cache exists: %s", file.exists(cache_file)))
   
   # Check if cache exists and should be used
   if (!force_download && file.exists(cache_file)) {
@@ -121,7 +117,6 @@ directUniprotDownload <- function(input_tbl,
                                  api_delay = 1,
                                  progress_callback = NULL) {
   
-  message("=== DEBUG66: Entering directUniprotDownload ===")
   message(sprintf("   Input: %d unique protein IDs", nrow(input_tbl)))
   message(sprintf("   Taxon ID: %d", taxon_id))
   message(sprintf("   Batch size: %d", batch_size))
@@ -155,7 +150,6 @@ directUniprotDownload <- function(input_tbl,
   }
   
   message(paste("Querying", length(protein_ids), "valid UniProt IDs"))
-  message("   DEBUG66: First 10 protein IDs:")
   print(head(protein_ids, 10))
   
   # Split into batches
@@ -168,16 +162,12 @@ directUniprotDownload <- function(input_tbl,
     # Convert chunk_idx to integer (purrr::imap passes names as characters)
     chunk_idx <- as.integer(chunk_idx)
     
-    message(sprintf("=== DEBUG66: Entering process_chunk %d/%d ===", chunk_idx, total_chunks))
     message(paste("Processing chunk", chunk_idx, "of", total_chunks, "with", length(chunk), "IDs"))
     message("   Chunk protein IDs:")
     print(chunk)
     
     # Create query for this batch
-    message("   DEBUG66: Constructing query string...")
     query <- paste0("(", paste(chunk, collapse=" OR "), ") AND organism_id:", taxon_id)
-    message(sprintf("   DEBUG66: Query string length: %d characters", nchar(query)))
-    message(sprintf("   DEBUG66: Query string: %s", substr(query, 1, 500)))  # First 500 chars
     
     # Use httr to download
     response <- httr::GET(
@@ -209,38 +199,28 @@ directUniprotDownload <- function(input_tbl,
           query_summary = sprintf("uniprotkb search, organism_id %s", taxon_id))
         release_recorded <<- TRUE
       }
-      message("   DEBUG66: Response status 200, processing content...")
       tryCatch({
-        message("   DEBUG66: Extracting content from response...")
         content <- httr::content(response, "text", encoding = "UTF-8")
-        message(sprintf("   DEBUG66: Content retrieved, length: %d chars", nchar(content)))
-        message(sprintf("   DEBUG66: First 200 chars of content: %s", substr(content, 1, 200)))
         
         temp_file <- tempfile(fileext = ".tsv")
-        message(sprintf("   DEBUG66: Writing to temp file: %s", temp_file))
         writeLines(content, temp_file)
         
-        message("   DEBUG66: Reading TSV from temp file...")
         chunk_result <- suppressWarnings(
           read.delim(temp_file, sep="\t", quote="", stringsAsFactors=FALSE)
         )
         
-        message(sprintf("   DEBUG66: Parsed TSV, rows: %d, cols: %d", nrow(chunk_result), ncol(chunk_result)))
         if (ncol(chunk_result) > 0) {
-          message("   DEBUG66: Column names:")
           print(names(chunk_result))
         }
         
         if (nrow(chunk_result) > 0) {
           message(paste("  Found", nrow(chunk_result), "results"))
-          message("   DEBUG66: Returning chunk result")
           return(chunk_result)
         } else {
           message("  API returned 200 but result has 0 rows")
           return(NULL)
         }
       }, error = function(e) {
-        message("   DEBUG66: ERROR processing API response")
         message(paste("      Error message:", e$message))
         message(paste("      Error class:", paste(class(e), collapse = ", ")))
         message(paste("      Error occurred at chunk", chunk_idx))
@@ -249,7 +229,6 @@ directUniprotDownload <- function(input_tbl,
       })
     } else {
       message(paste("  Request failed with status", httr::status_code(response)))
-      message("   DEBUG66: Non-200 status, returning NULL")
       return(NULL)
     }
     
@@ -259,19 +238,15 @@ directUniprotDownload <- function(input_tbl,
   # Process all chunks using imap (provides both value and index)
   total_chunks <- length(chunks)
   
-  message(sprintf("=== DEBUG66: About to process %d chunks ===", total_chunks))
   message("   First chunk protein IDs:")
   print(head(chunks[[1]], 10))
   
   # Wrap purrr::imap in tryCatch to catch errors with full context
   results <- tryCatch({
-    message("   DEBUG66: Starting purrr::imap...")
     res <- purrr::imap(chunks, ~ process_chunk(.x, .y, total_chunks)) |>
       purrr::compact() # Remove NULL results
-    message(sprintf("=== DEBUG66: purrr::imap completed. Got %d results ===", length(res)))
     res
   }, error = function(e) {
-    message("=== DEBUG66: ERROR in purrr::imap ===")
     message(sprintf("   Error message: %s", e$message))
     message(sprintf("   Error class: %s", paste(class(e), collapse = ", ")))
     message("   Full error structure:")

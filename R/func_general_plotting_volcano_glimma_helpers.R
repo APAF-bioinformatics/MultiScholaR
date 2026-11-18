@@ -394,7 +394,6 @@ getGlimmaVolcanoProteomicsWidget <- function(
   ...
 ) {
   requireOptionalPackage("Glimma", "interactive volcano plots")
-  message("--- Entering getGlimmaVolcanoProteomicsWidget ---")
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: coef = %d", coef))
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: r_obj class = %s", class(r_obj)))
   message(sprintf("   getGlimmaVolcanoProteomicsWidget Arg: volcano_plot_tab dims = %d rows, %d cols", nrow(volcano_plot_tab), ncol(volcano_plot_tab)))
@@ -531,7 +530,6 @@ getGlimmaVolcanoProteomicsWidget <- function(
       ...
     )
 
-    message("--- Exiting getGlimmaVolcanoProteomicsWidget ---")
     return(widget)
   }
 }

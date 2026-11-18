@@ -434,7 +434,6 @@ omicEnrichTabState <- function() {
 #' (mod_prot_enrich_server.R and its setup layer at 6129b546).
 #' @noRd
 runOmicEnrichServer <- function(input, output, session, id, workflowData, experimentPaths, config, selectedTab) {
-  cat("--- Entering mod_prot_enrich_server ---\n")
   cat(sprintf("   mod_prot_enrich_server Arg: id = %s\n", id))
   cat(sprintf("   mod_prot_enrich_server Arg: workflow_data is NULL = %s\n", is.null(workflowData)))
   cat(sprintf("   mod_prot_enrich_server Arg: selected_tab is NULL = %s\n", is.null(selectedTab)))
@@ -561,7 +560,6 @@ omicEnrichManifestChoices <- function(manifest) {
 #' initialisation and its "invalid state" warning are retired (D7).
 #' @noRd
 selectOmicEnrichTab <- function(session, selected, tab, workflowData, config) {
-  cat("--- Entering enrichment tab selection observer ---\n")
   cat(sprintf("   enrichment_tab_observer Step: Selected tab = %s\n", selected))
   if (is.null(selected) || selected != config$tab_value) {
     cat(sprintf("   enrichment_tab_observer Step: Tab '%s' is not enrichment tab, ignoring\n", selected))
@@ -574,7 +572,6 @@ selectOmicEnrichTab <- function(session, selected, tab, workflowData, config) {
     shiny::showNotification("Please complete the differential expression analysis before accessing enrichment analysis.",
       type = "warning", duration = 5)
   }
-  cat("--- Exiting enrichment tab selection observer ---\n")
   invisible(FALSE)
 }
 

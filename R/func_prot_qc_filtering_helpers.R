@@ -166,9 +166,6 @@ removeRowsWithMissingValuesPercentHelper <- function(
   proteins_intensity_cutoff_percentile = 1,
   temporary_abundance_column = "Abundance"
 ) {
-  message("+===========================================================================+")
-  message("|  DEBUG66: Entering removeRowsWithMissingValuesPercentHelper (OPTIMIZED)   |")
-  message("+===========================================================================+")
 
   # 1. Setup strings and symbols
   sample_id_str <- rlang::as_string(rlang::ensym(sample_id))
@@ -221,7 +218,6 @@ removeRowsWithMissingValuesPercentHelper <- function(
   } else {
     0
   }
-  message(sprintf("   DEBUG66: Threshold calculated: %g", min_protein_intensity_threshold))
 
   # 5. Count samples per group
   count_values_per_group <- abundance_long |>
@@ -251,7 +247,6 @@ removeRowsWithMissingValuesPercentHelper <- function(
     dplyr::filter(percent_groups_failed > max_groups_percentage_cutoff)
 
   num_removed <- nrow(proteins_to_remove)
-  message(sprintf("   DEBUG66: Proteins to remove: %d", num_removed))
 
   # 8. Filter original table
   if (num_removed > 0) {
@@ -269,9 +264,6 @@ removeRowsWithMissingValuesPercentHelper <- function(
   # Final GC
   gc()
 
-  message("+===========================================================================+")
-  message("|  DEBUG66: Exiting removeRowsWithMissingValuesPercentHelper                |")
-  message("+===========================================================================+")
 
   return(filtered_tbl)
 }

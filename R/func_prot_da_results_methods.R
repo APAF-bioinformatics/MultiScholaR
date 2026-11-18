@@ -13,7 +13,6 @@ setMethod(
                         args_row_id = NULL,
                         gene_names_column = "gene_names",
                         uniprot_id_column = "Entry") {
-    message("--- Entering outputDaResultsAllContrasts ---")
     message(sprintf("   outputDaResultsAllContrasts: da_output_dir = %s", da_output_dir))
     message(sprintf("   outputDaResultsAllContrasts: file_prefix = %s", file_prefix))
 
@@ -395,7 +394,6 @@ setMethod(
       }
     )
 
-    message("--- Exiting outputDaResultsAllContrasts ---")
     return(TRUE)
   }
 )

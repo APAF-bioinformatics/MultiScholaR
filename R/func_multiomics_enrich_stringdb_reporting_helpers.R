@@ -632,8 +632,6 @@ plotStringDbEnrichmentResults <- function(project_dirs,
   }
   
   # Check for empty results
-  cat(sprintf("DEBUG_STR: Checking results. Rows: %d, Cols: %d\n", nrow(all_enrichment_results), ncol(all_enrichment_results)))
-  cat(sprintf("DEBUG_STR: Columns: %s\n", paste(colnames(all_enrichment_results), collapse = ", ")))
 
   if (nrow(all_enrichment_results) == 0) {
     message("No enrichment results found (0 rows). Skipping plotting.")

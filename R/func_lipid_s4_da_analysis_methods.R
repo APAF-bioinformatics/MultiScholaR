@@ -56,7 +56,6 @@ setMethod(
                           eBayes_trend = NULL,
                           eBayes_robust = NULL,
                           args_group_pattern = NULL) {
-        message("--- Entering differentialAbundanceAnalysisHelper ---")
 
         contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
         formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", " ~ 0 + group")
@@ -119,7 +118,6 @@ setMethod(
         return_list <- list()
         return_list$theObject <- theObject
 
-        message("--- Entering differentialAbundanceAnalysis ---")
         message(sprintf("   differentialAbundanceAnalysis: theObject class = %s", class(theObject)))
 
         # Debug: Print parameter values before conversion
@@ -203,7 +201,6 @@ setMethod(
             fit.eb = return_list$fit.eb,
             contrasts_results_table = return_list$contrasts_results_table
         )
-        message("--- Exiting differentialAbundanceAnalysisHelper ---")
         return(result_object)
     }
 )

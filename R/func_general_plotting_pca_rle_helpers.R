@@ -60,20 +60,11 @@ plotPcaHelper <- function(data,
                           title, geom.text.size = 11, ncomp = 2,
                           cv_percentile = 0.90,
                           ...) {
-  # DEBUG66: Memory helper using BOTH R heap AND process memory (Task Manager view)
   checkMem <- function(step) {
     checkMemoryBoth(step, context = "plotPcaHelper")
   }
 
-  message("+===========================================================================+")
-  message("|  DEBUG66: Entering plotPcaHelper                                          |")
-  message("+===========================================================================+")
   entry_mem <- checkMem("Entry")
-  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: nrow(data) = %d, ncol(data) = %d", nrow(data), ncol(data)))
-  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: nrow(design_matrix) = %d", nrow(design_matrix)))
-  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: grouping_variable = '%s'", grouping_variable))
-  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: shape_variable = '%s'", ifelse(is.null(shape_variable), "NULL", shape_variable)))
-  message(sprintf("   DEBUG66 [plotPcaHelper] Arg: cv_percentile = %.2f", cv_percentile))
 
   # Ensure design_matrix is a data frame
   design_matrix <- as.data.frame(design_matrix)
@@ -121,7 +112,6 @@ plotPcaHelper <- function(data,
   # --- END of modification ---
 
   checkMem("After CV filtering")
-  message(sprintf("   DEBUG66 [plotPcaHelper] data_filtered dims: %d x %d", nrow(data_filtered), ncol(data_filtered)))
 
   checkMem("Before mixOmics::pca")
   pca_input <- t(as.matrix(data_filtered))
@@ -139,7 +129,6 @@ plotPcaHelper <- function(data,
     }
 
     if (nrow(pca_input_complete) < 2 || ncol(pca_input_complete) < 1) {
-      message("   DEBUG66 [plotPcaHelper] Fallback PCA has no variable complete features; returning zero-valued PCA scores")
       pca_scores <- as.data.frame(matrix(
         0,
         nrow = nrow(pca_input),
@@ -184,13 +173,8 @@ plotPcaHelper <- function(data,
     )
 
     if (max_mixomics_components < 1L) {
-      message("   DEBUG66 [plotPcaHelper] PCA input has no usable dimensions; falling back to zero-valued PCA scores")
       pca.res <- run_fallback_pca()
     } else {
-      message(sprintf(
-        "   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca() with %d component(s)...",
-        max_mixomics_components
-      ))
       pca.res <- tryCatch(
         pcaWithMissing(pca_input, ncomp = max_mixomics_components),
         error = function(error) {
@@ -203,7 +187,6 @@ plotPcaHelper <- function(data,
       )
     }
   } else {
-    message("   DEBUG66 [plotPcaHelper] mixOmics not available; falling back to stats::prcomp()")
     pca.res <- run_fallback_pca()
   }
 
@@ -233,17 +216,14 @@ plotPcaHelper <- function(data,
   pca.res$prop_expl_var$X <- explained_variance
 
   checkMem("After mixOmics::pca")
-  message(sprintf("   DEBUG66 [plotPcaHelper] pca.res class: %s", class(pca.res)[1]))
   proportion_explained <- pca.res$prop_expl_var
 
   checkMem("Before temp_tbl creation")
-  message("   DEBUG66 [plotPcaHelper] Step: Creating temp_tbl with left_join...")
   temp_tbl <- pca.res$variates$X |>
     as.data.frame() |>
     rownames_to_column(var = sample_id_column) |>
     left_join(design_matrix, by = sample_id_column)
   checkMem("After temp_tbl creation")
-  message(sprintf("   DEBUG66 [plotPcaHelper] temp_tbl dims: %d x %d", nrow(temp_tbl), ncol(temp_tbl)))
 
   # --- START of fix for shape aesthetic ---
   # Ensure the shape variable is treated as a discrete factor for plotting
@@ -262,7 +242,6 @@ plotPcaHelper <- function(data,
   }
 
   checkMem("Before ggplot creation")
-  message("   DEBUG66 [plotPcaHelper] Step: Building ggplot object...")
 
   # Create base plot with appropriate aesthetics based on whether shape_variable is NULL
   if (is.null(label_column) || label_column == "") {
@@ -337,12 +316,8 @@ plotPcaHelper <- function(data,
   }
 
   checkMem("After ggplot creation")
-  message(sprintf("   DEBUG66 [plotPcaHelper] output object size: %s", format(object.size(output), units = "auto")))
 
   checkMem("Exit")
-  message("+===========================================================================+")
-  message("|  DEBUG66: Exiting plotPcaHelper                                           |")
-  message("+===========================================================================+")
 
   # Strip captured environment to prevent memory bloat
   output$plot_env <- rlang::base_env()

@@ -23,7 +23,6 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
                                              kegg_species_code = "kpn",
                                              reactome_organism = NULL) {
   
-  message(sprintf("--- Entering runMetabolomicsEnrichmentAnalysis ---"))
   message(sprintf("   runMetabolomicsEnrichmentAnalysis Args: assay_name = %s", assay_name))
   message(sprintf("   runMetabolomicsEnrichmentAnalysis Args: kegg_species_code = %s", kegg_species_code))
   message(sprintf("   runMetabolomicsEnrichmentAnalysis Args: reactome_organism = %s", as.character(reactome_organism)))
@@ -139,7 +138,6 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   vroom::vroom_write(combined_results, 
                     file.path(results_dir, paste0(assay_name, "_enrichment_results.tab")))
   
-  message("--- Exiting runMetabolomicsEnrichmentAnalysis ---")
   return(combined_results)
 }
 
@@ -168,7 +166,6 @@ runMetabolomicsPathwayEnrichment <- function(weights,
                                             kegg_species_code = "kpn",
                                             reactome_organism = NULL) {
   
-  message(sprintf("--- Entering runMetabolomicsPathwayEnrichment ---"))
   message(sprintf("   runMetabolomicsPathwayEnrichment Args: kegg_species_code = %s", kegg_species_code))
   message(sprintf("   runMetabolomicsPathwayEnrichment Args: reactome_organism = %s", as.character(reactome_organism)))
   
@@ -354,7 +351,6 @@ runMetabolomicsPathwayEnrichment <- function(weights,
   vroom::vroom_write(combined_results, 
                     file.path(results_dir, "combined_metabolomics_enrichment_results.tab"))
   
-  message("--- Exiting runMetabolomicsPathwayEnrichment ---")
   return(combined_results)
 }
 

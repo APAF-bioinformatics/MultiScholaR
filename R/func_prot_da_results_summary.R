@@ -57,7 +57,6 @@ countStatDaGenesHelper <- function(
   log_fc_column = logFC,
   q_value_column = fdr_qvalue
 ) {
-  message("--- Entering countStatDaGenesHelper (DEBUG66) ---")
   message(paste("   countStatDaGenesHelper: da_table class =", class(da_table)))
   message(paste("   countStatDaGenesHelper: da_table is list =", is.list(da_table)))
   message(paste("   countStatDaGenesHelper: da_table length =", length(da_table)))
@@ -139,7 +138,6 @@ countStatDaGenesHelper <- function(
     }
   }
 
-  message("--- Exiting countStatDaGenesHelper (DEBUG66) ---")
   merged_tables
 }
 
@@ -242,14 +240,12 @@ getSignificantData <- function(
   facet_column = analysis_type,
   q_val_thresh = 0.05
 ) {
-  message("--- Entering getSignificantData (DEBUG66) ---")
   message(paste("   getSignificantData: list_of_da_tables class =", class(list_of_da_tables)))
   message(paste("   getSignificantData: list_of_da_tables length =", length(list_of_da_tables)))
   message("   getSignificantData: list_of_da_tables structure:")
   str(list_of_da_tables, max.level = 2)
 
   get_row_binded_table <- function(de_table_list, description) {
-    message("   --- Entering get_row_binded_table (DEBUG66) ---")
     message(paste("      get_row_binded_table: de_table_list class =", class(de_table_list)))
     message(paste("      get_row_binded_table: de_table_list length =", length(de_table_list)))
     message("      get_row_binded_table: de_table_list names:")
@@ -317,7 +313,6 @@ getSignificantData <- function(
       message("      get_row_binded_table: No '=' delimiter found, skipping separation")
     }
 
-    message("   --- Exiting get_row_binded_table (DEBUG66) ---")
     return(output)
   }
 
@@ -356,6 +351,5 @@ getSignificantData <- function(
     )) |>
     dplyr::mutate(colour = factor(colour, levels = c("black", "orange", "blue", "purple")))
 
-  message("--- Exiting getSignificantData (DEBUG66) ---")
   selected_data
 }
