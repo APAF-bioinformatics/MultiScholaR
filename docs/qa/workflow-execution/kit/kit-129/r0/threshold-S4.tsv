@@ -1,0 +1,2 @@
+simulator	omic	threshold	rule	correlation_0_rows	correlation_0_rows_with_W	set_files
+S4	lipidomics and metabolomics	0.33413794	fires when the largest factor association is above the threshold; at most 2400 of 24000 correlation-0 rows above it	24000	19956	s4-assoc.tsv
