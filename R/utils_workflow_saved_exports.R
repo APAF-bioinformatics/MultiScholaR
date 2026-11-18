@@ -685,15 +685,16 @@ copyWorkflowFolder <- function(from, to, message, class = NULL) {
 #' nothing, at a path of 260 characters or more. A file whose copy fails stops the step by name (`copyWorkflowFolder`).
 #' @param target The folder the files belong in.
 #' @param produce `function(scratch)` writing into `scratch`.
+#' @param message First line of the condition when a copy fails (the in-process DA publication names its own folder).
 #' @return What `produce` returns.
 #' @noRd
-withWorkflowShortFigureFolder <- function(target, produce) {
+withWorkflowShortFigureFolder <- function(target, produce,
+    message = "the worker's publication files could not be copied into its request folder") {
     scratch <- tempfile("wfx-")
     dir.create(scratch)
     on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
     value <- produce(scratch)
-    copyWorkflowFolder(scratch, target, "the worker's publication files could not be copied into its request folder",
-        class = "saved_entity_outputs_pending")
+    copyWorkflowFolder(scratch, target, message, class = "saved_entity_outputs_pending")
     value
 }
 

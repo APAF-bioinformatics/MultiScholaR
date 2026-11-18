@@ -396,3 +396,50 @@ test_that("a failed copy says, on Windows, that the project's path is too long w
     # A copy that reported success but left no file is named as well.
     expect_match(message_of(file.path(directory, "gone.png"), copied = TRUE), "gone.png", fixed = TRUE)
 })
+
+# KIT-134 run 44275615462: the in-process DA publication drew in place in the action staging folder; at a project root of
+# 125 characters `da_proteins_num_sig_da_molecules.png` (260) was missing and nothing said so.
+
+test_that("the in-process DA publication draws in a short folder: from a long staging path none is lost", {
+    manager <- figurePathManager()
+    root <- normalizePath(withr::local_tempdir(), winslash = "/")
+    project <- file.path(root, strrep("p", 150L - nchar(root)))
+    paths <- list(da_output_dir = file.path(project, "da"), publication_graphs_dir = file.path(project, "graphs"))
+    for (path in paths) dir.create(path, recursive = TRUE)
+    names <- c("Volcano_Plots/groupB-groupA.png", "Volcano_Plots/groupB-groupA.pdf",
+        "NumSigDaMolecules/da_proteins_num_sig_da_molecules.png")
+    drawn <- character()
+    manifest <- list(contrasts = data.frame(friendly_names = "groupB-groupA"))
+    testthat::local_mocked_bindings(
+        diaDaRequest = function(...) list(source = NULL, steps = list(), manifest = manifest, annotations = data.frame()),
+        acceptDIADaManifest = function(manager, manifest, results) manifest,
+        produceDIADaPublication = function(manager, manifest, annotations, qvalue, staged, save_assets = TRUE) {
+            for (name in names) {
+                path <- file.path(staged$publication_graphs_dir, name)
+                dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+                drawn <<- c(drawn, path)
+                # As ggsave's PNG device (ragg) on Windows: nothing written, nothing said, from 260 characters.
+                if (nchar(path) < 260L) writeBin(charToRaw(basename(path)), path)
+            }
+            writeLines("table", file.path(staged$da_output_dir, "da_proteins_groupB-groupA_long_annot.tsv"))
+            list(completed = TRUE)
+        }, .package = "MultiScholaR")
+    da_data <- new.env()
+    workflow <- new.env()
+    workflow$state_manager <- manager
+    workflow$tab_status <- list()
+    runDIAReferenceDaAnalysis(list(da_q_val_thresh = 0.05), da_data, workflow, paths)
+    reference <- getDIAStateReference(manager)
+    key <- digest::digest(list(state = reference$entity_id, action = "da",
+        identity = diaDaPublicationIdentity(manifest, NULL)), algo = "sha256")
+    # Drawn in the action staging folder, the number-significant figure's path would be 260 characters or more.
+    expect_gte(nchar(file.path(paths$da_output_dir, ".workflow-export", paste0("a-", substr(key, 1L, 16L)), "f",
+        "publication_graphs_dir", names[[3L]])), 260L)
+    expect_true(all(nchar(drawn) < 260L))
+    published <- file.path(paths$publication_graphs_dir, names)
+    expect_identical(vapply(published, function(path) if (file.exists(path)) rawToChar(readBin(path, "raw", 200L)) else NA_character_,
+        character(1), USE.NAMES = FALSE), basename(published))
+    expect_true(file.exists(file.path(paths$da_output_dir, "da_proteins_groupB-groupA_long_annot.tsv")))
+    expect_true(manager$.context$snapshot$completed_outputs[[reference$entity_id]]$da)
+    expect_identical(da_data$da_results_list, manifest)
+})
