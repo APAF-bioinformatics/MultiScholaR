@@ -2,7 +2,9 @@
 
 **Result: one contradiction with KIT-124's simulations by the declaration's rule, in DIA_LIMPA; none in the other three omics.**
 
-**The contradiction (a stop by revision 1.2: KIT-129 does not proceed on it; to the user).** DIA_LIMPA, no RUV: KIT-124 scored it "failed" (rule 1 in cell C5, null rate 0.116), and on real data it is within both limits on every split type: random 0.033 with 2 of 100 splits calling, batch-aligned 0.037 with 0 of 100. The declaration foresaw this for the random splits only (the simulations' own global-null cell C4 gave 0.052). It did not foresee it for the batch-aligned splits, which were the real-data counterpart of C5: there too no RUV is within the limits, on a data set with two real culture batches. Whether this stops KIT-129 is the user's call; nothing here decides it.
+**The contradiction (by the letter of revision 1.2).** DIA_LIMPA, no RUV: KIT-124 scored it "failed" (rule 1 in cell C5, null rate 0.116), and on real data it is within both limits on every split type: random 0.033 with 2 of 100 splits calling, batch-aligned 0.037 with 0 of 100. The declaration foresaw this for the random splits only (the simulations' own global-null cell C4 gave 0.052); on the batch-aligned splits, the real-data counterpart of C5, no RUV is within the limits too.
+
+**Decided by the user (2026-11-18, decision M21, `kit-124/design-review-20261118.md` section 6):** recorded and accepted as not bearing on the default; KIT-126 to KIT-129 continue; one bounded check of the reading runs alongside. **That check, measured:** the labelled unwanted variation of this data set is weaker than the factor S2 generates. With the confounding matched (1/3), the culture batch explains a median of 0.13 of a protein's variance and 0.22 of the matrix's, against 0.52 and 0.66 for the simulated factor in C5, with no overlap between any real matrix and any simulated run. The reading "the simulation's factor is stronger than this data set's batch" is supported for this one data set and its one labelled factor; that this is why no RUV stays within the limits here is not shown (section "Bounded check" below).
 
 Everything else is consistent: today's design is outside the limits in all four omics (in DIA_LIMPA in both of its forms, on both split types), and the recommended design is within both limits in all four.
 
@@ -73,7 +75,32 @@ About 6,050 genes tested per split. Mean k: today 2.4, recommended 2.0 (never 0)
 
 About 1,135 (random) and 1,120 (batch-aligned) proteins tested per split. Mean k: today 1.7 and 1.9, recommended 2.7 and 2.4 (never 0). No refusal, no crash: 800 rows, all `ok`. Run on a GitHub-hosted runner (run 44207066523, attempt 1), not on the laptop; see the run record.
 
-**The contradiction, by the letter of revision 1.2.** No RUV "failed" KIT-124's rule 1 in DIA_LIMPA (in cell C5 only, 0.116) and is within both limits on both split types here, so the rule says "contradiction". For the random splits the declaration foresaw it: the simulations' global-null cell gave 0.052. For the batch-aligned splits it did not: they tie the recorded culture batch to the false groups at a correlation of 1/3, the layout of C5, and no RUV's mean null rate there is 0.037 against the simulation's 0.116, with no split calling anything. The simulation and the real data disagree about no RUV under a batch tied to the groups at this strength. Why was not looked into: the size of the batch difference in this data set was not measured, and C5's simulated factor may be stronger than the real one.
+**The contradiction, by the letter of revision 1.2.** No RUV "failed" KIT-124's rule 1 in DIA_LIMPA (in cell C5 only, 0.116) and is within both limits on both split types here, so the rule says "contradiction". For the random splits the declaration foresaw it: the simulations' global-null cell gave 0.052. For the batch-aligned splits it did not: they tie the recorded culture batch to the false groups at a correlation of 1/3, the layout of C5, and no RUV's mean null rate there is 0.037 against the simulation's 0.116, with no split calling anything. The simulation and the real data disagree about no RUV under a factor tied to the groups at this correlation.
+
+**Bounded check of the unwanted variation's strength (decision M21; a measurement, not a verdict).** Method and the rule for reading it: `declaration.md`, last section, committed (`026bc56c`) before anything was computed. Ten matrices of 12 samples per source, quantified the same way: the batch-aligned splits 1 to 10 of this run (6 cells of each culture batch; the factor is the batch), and S2's own generator in cells C0 and C5, runs 1 to 10 (the factor is the true score; the 800 proteins without a group effect). Median over the ten matrices, with the range.
+
+| Measure | Real, culture batch | Simulated, C5 | Simulated, C0 |
+|---|---|---|---|
+| Share of a protein's variance explained by the factor, median over proteins | **0.125** (0.094 to 0.174) | **0.521** (0.382 to 0.576) | 0.509 (0.391 to 0.617) |
+| Lower and upper quartile over proteins | 0.030; 0.310 | 0.180; 0.784 | 0.183; 0.764 |
+| Proteins with more than 0.10 explained | 0.55 (0.49 to 0.62) | 0.82 (0.77 to 0.85) | 0.82 (0.77 to 0.84) |
+| Proteins with more than 0.30 explained | 0.26 (0.21 to 0.34) | 0.66 (0.57 to 0.70) | 0.66 (0.57 to 0.71) |
+| Factor's share of the matrix's total variance | **0.219** (0.175 to 0.289) | **0.664** (0.544 to 0.696) | 0.642 (0.551 to 0.724) |
+| The same two with the factor permuted (the floor at 12 samples): median per protein; share of total | 0.042; 0.079 | 0.042; 0.070 | 0.046; 0.074 |
+| First five principal components, share of variance | 0.28, 0.16, 0.10, 0.08, 0.08 | 0.66, 0.04, 0.04, 0.04, 0.03 | 0.64, 0.04, 0.04, 0.04, 0.04 |
+| R-squared of the first component with the factor | 0.72 (0.17 to 0.93) | 0.999 (0.999 to 1.000) | 0.999 (0.999 to 1.000) |
+| R-squared of the second and third component with the factor | 0.14 (0.00 to 0.60); 0.02 (0.00 to 0.28) | 0.000; 0.000 | 0.000; 0.000 |
+| Correlation of the factor with the groups (absolute value for the real layout) | 0.333 in every split, by layout | 0.33 (-0.23 to 0.57), realised | -0.11 (-0.60 to 0.28), realised |
+
+**Reading, by the declared rule: supported.** On both deciding measures every real matrix is below every simulated run of C5 and of C0 (per-protein median: real at most 0.174, simulated at least 0.382; share of total: real at most 0.289, simulated at least 0.544). Above the floor, the batch explains about a quarter of what the simulated factor does (0.14 against 0.59 of the total).
+
+What this does and does not say:
+
+- It says the labelled batch of this data set is weaker than S2's factor of strength 3. It does not say the batch is negligible: it is well above the floor, and in most of the ten real matrices it is the leading axis of variation (first component's R-squared with batch 0.72 at the median).
+- It does not show that the difference in strength is why no RUV stays within the limits on real data. No dose was varied; this is two points.
+- One data set. Batch is the only labelled unwanted factor: the real matrices carry more variance in their second to fifth components (0.16 to 0.08 each) than the simulated ones (0.04 each), and what that is (unlabelled unwanted variation, or differences between single cells) was not measured.
+- The real factor is a balanced two-level indicator with a fixed correlation of 1/3 with the groups; the simulated one is a continuous score whose realised correlation in C5 ranges from -0.23 to 0.57 over these ten runs, above 1/3 in four of them. So the simulated cell differs from the real layout in the spread of the confounding as well as in strength.
+- Files: `k125_strength.R`, `runs/strength/` (per-matrix rows, summary, sidecar), `runs/strength.out`. Laptop, one R process, one attempt, 56 s, exit 0.
 
 **What the batch-aligned splits show.** Tying the culture batch to the false groups raised today's design in both of its forms and left the other two where they were: correction mode 0.083 to 0.096 and 25 to 39 splits with a call; covariates mode 0.058 to 0.070 and 11 to 20; no RUV 0.033 to 0.037 and 2 to 0; recommended 0.051 to 0.053 and 7 to 6. The direction for today's design is the simulations' (C4 to C5: 0.190 to 0.287, 0.166 to 0.265); the real rates are a quarter to under a half of the simulated ones. The random splits are not free of the batch either: by chance 99 of 100 hold cells of both batches, and in 68 the two false groups hold unequal numbers of the smaller batch's cells.
 
@@ -86,7 +113,7 @@ Other things a reader should not miss here:
 
 - **Today's design** is outside the limits on real data in all four omics, as in the simulations: outside both limits in classic proteomics, transcriptomics, metabolomics and DIA_LIMPA's correction mode; outside the any-call limit only in DIA_LIMPA's covariates mode. In transcriptomics it is worse on real data than in the simulations' global-null cell; in DIA_LIMPA it is milder than there (0.083 and 0.058 against 0.190 and 0.166).
 - **The recommended design** is within both limits in all four. Its mean null rate is 0.040 (classic proteomics), 0.051 and 0.053 (DIA_LIMPA), 0.056 (transcriptomics) and 0.066 and 0.059 (metabolomics); the simulations gave 0.050, 0.049, 0.056 and 0.044.
-- **No RUV** is within the limits in all four, with a mean null rate of 0.03 to 0.05. In three omics that agrees with KIT-124's "passed". In DIA_LIMPA KIT-124 scored it "failed", so by the declaration's rule this is the contradiction stated at the top. In the three other omics the simulations gave 0.01 in the cells with a strong unwanted factor (C4) and 0.05 in the cell without one (C3: 0.050, 0.053, 0.048); the real figures sit at the second.
+- **No RUV** is within the limits in all four, with a mean null rate of 0.03 to 0.05. In three omics that agrees with KIT-124's "passed". In DIA_LIMPA KIT-124 scored it "failed" (in cell C5 only), so by the declaration's rule this is the contradiction stated at the top; the user accepted it as not bearing on the default (M21), and the bounded check found this data set's batch about a quarter as strong as the simulated factor. In the three other omics the simulations gave 0.01 in the cells with a strong unwanted factor (C4) and 0.05 in the cell without one (C3: 0.050, 0.053, 0.048); the real figures sit at the second.
 
 Things a reader should not miss, none of which crosses a limit:
 

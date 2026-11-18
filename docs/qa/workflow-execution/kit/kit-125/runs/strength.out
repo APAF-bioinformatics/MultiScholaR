@@ -1,0 +1,152 @@
+13:47:16 real split 1 done
+13:47:38 real split 2 done
+13:47:38 real split 3 done
+13:47:39 real split 4 done
+13:47:40 real split 5 done
+13:47:40 real split 6 done
+13:47:40 real split 7 done
+13:47:40 real split 8 done
+13:47:40 real split 9 done
+13:47:41 real split 10 done
+13:47:41 simulated C0 run 1 done
+13:47:41 simulated C0 run 2 done
+13:47:41 simulated C0 run 3 done
+13:47:42 simulated C0 run 4 done
+13:47:42 simulated C0 run 5 done
+13:47:42 simulated C0 run 6 done
+13:47:42 simulated C0 run 7 done
+13:47:43 simulated C0 run 8 done
+13:47:43 simulated C0 run 9 done
+13:47:43 simulated C0 run 10 done
+13:47:43 simulated C5 run 1 done
+13:47:44 simulated C5 run 2 done
+13:47:44 simulated C5 run 3 done
+13:47:44 simulated C5 run 4 done
+13:47:46 simulated C5 run 5 done
+13:47:46 simulated C5 run 6 done
+13:47:46 simulated C5 run 7 done
+13:47:46 simulated C5 run 8 done
+13:48:10 simulated C5 run 9 done
+13:48:11 simulated C5 run 10 done
+              source               measure matrices     median        min
+ real, batch-aligned            n_proteins       10  1.097e+03  1.056e+03
+ real, batch-aligned                r2_q25       10  3.008e-02  2.167e-02
+ real, batch-aligned             r2_median       10  1.250e-01  9.434e-02
+ real, batch-aligned                r2_q75       10  3.097e-01  2.533e-01
+ real, batch-aligned          r2_above_010       10  5.489e-01  4.903e-01
+ real, batch-aligned          r2_above_030       10  2.599e-01  2.071e-01
+ real, batch-aligned          pooled_share       10  2.191e-01  1.748e-01
+ real, batch-aligned    permuted_r2_median       10  4.156e-02  2.781e-02
+ real, batch-aligned permuted_pooled_share       10  7.870e-02  6.082e-02
+ real, batch-aligned          pc1_variance       10  2.837e-01  2.002e-01
+ real, batch-aligned          pc2_variance       10  1.583e-01  1.161e-01
+ real, batch-aligned          pc3_variance       10  9.907e-02  8.872e-02
+ real, batch-aligned          pc4_variance       10  8.473e-02  6.900e-02
+ real, batch-aligned          pc5_variance       10  7.521e-02  5.584e-02
+ real, batch-aligned         pc1_r2_factor       10  7.230e-01  1.719e-01
+ real, batch-aligned         pc2_r2_factor       10  1.433e-01  6.522e-04
+ real, batch-aligned         pc3_r2_factor       10  2.450e-02  2.675e-04
+ real, batch-aligned         pc4_r2_factor       10  8.108e-03  4.182e-04
+ real, batch-aligned         pc5_r2_factor       10  6.787e-03  5.460e-04
+ real, batch-aligned      factor_group_cor       10 -3.333e-01 -3.333e-01
+       simulated, C0            n_proteins       10  8.000e+02  8.000e+02
+       simulated, C0                r2_q25       10  1.834e-01  1.119e-01
+       simulated, C0             r2_median       10  5.093e-01  3.912e-01
+       simulated, C0                r2_q75       10  7.639e-01  6.783e-01
+       simulated, C0          r2_above_010       10  8.206e-01  7.650e-01
+       simulated, C0          r2_above_030       10  6.638e-01  5.738e-01
+       simulated, C0          pooled_share       10  6.416e-01  5.509e-01
+       simulated, C0    permuted_r2_median       10  4.556e-02  2.433e-02
+       simulated, C0 permuted_pooled_share       10  7.393e-02  3.725e-02
+       simulated, C0          pc1_variance       10  6.419e-01  5.513e-01
+       simulated, C0          pc2_variance       10  4.313e-02  3.534e-02
+       simulated, C0          pc3_variance       10  4.201e-02  3.213e-02
+       simulated, C0          pc4_variance       10  4.071e-02  3.019e-02
+       simulated, C0          pc5_variance       10  3.783e-02  2.916e-02
+       simulated, C0         pc1_r2_factor       10  9.994e-01  9.989e-01
+       simulated, C0         pc2_r2_factor       10  5.831e-05  1.605e-07
+       simulated, C0         pc3_r2_factor       10  3.596e-05  2.185e-06
+       simulated, C0         pc4_r2_factor       10  2.811e-06  1.732e-07
+       simulated, C0         pc5_r2_factor       10  2.275e-05  2.587e-08
+       simulated, C0      factor_group_cor       10 -1.086e-01 -6.049e-01
+       simulated, C5            n_proteins       10  8.000e+02  8.000e+02
+       simulated, C5                r2_q25       10  1.800e-01  1.142e-01
+       simulated, C5             r2_median       10  5.209e-01  3.823e-01
+       simulated, C5                r2_q75       10  7.844e-01  6.780e-01
+       simulated, C5          r2_above_010       10  8.219e-01  7.650e-01
+       simulated, C5          r2_above_030       10  6.612e-01  5.725e-01
+       simulated, C5          pooled_share       10  6.638e-01  5.439e-01
+       simulated, C5    permuted_r2_median       10  4.238e-02  1.782e-02
+       simulated, C5 permuted_pooled_share       10  7.013e-02  3.563e-02
+       simulated, C5          pc1_variance       10  6.640e-01  5.443e-01
+       simulated, C5          pc2_variance       10  4.136e-02  3.541e-02
+       simulated, C5          pc3_variance       10  3.931e-02  3.496e-02
+       simulated, C5          pc4_variance       10  3.748e-02  3.354e-02
+       simulated, C5          pc5_variance       10  3.485e-02  3.215e-02
+       simulated, C5         pc1_r2_factor       10  9.994e-01  9.988e-01
+       simulated, C5         pc2_r2_factor       10  5.089e-05  6.954e-06
+       simulated, C5         pc3_r2_factor       10  1.304e-05  2.273e-07
+       simulated, C5         pc4_r2_factor       10  3.220e-05  3.031e-07
+       simulated, C5         pc5_r2_factor       10  7.725e-05  1.578e-06
+       simulated, C5      factor_group_cor       10  3.307e-01 -2.297e-01
+        max
+  1.222e+03
+  4.296e-02
+  1.735e-01
+  4.081e-01
+  6.218e-01
+  3.435e-01
+  2.894e-01
+  7.649e-02
+  1.476e-01
+  3.294e-01
+  2.004e-01
+  1.113e-01
+  9.367e-02
+  7.978e-02
+  9.251e-01
+  6.011e-01
+  2.805e-01
+  9.959e-02
+  2.691e-02
+ -3.333e-01
+  8.000e+02
+  2.182e-01
+  6.172e-01
+  8.246e-01
+  8.438e-01
+  7.075e-01
+  7.235e-01
+  7.063e-02
+  1.054e-01
+  7.240e-01
+  5.555e-02
+  5.337e-02
+  5.103e-02
+  4.857e-02
+  9.998e-01
+  1.958e-04
+  3.510e-04
+  2.490e-04
+  4.266e-04
+  2.752e-01
+  8.000e+02
+  2.198e-01
+  5.755e-01
+  8.107e-01
+  8.462e-01
+  7.025e-01
+  6.958e-01
+  2.175e-01
+  2.751e-01
+  6.962e-01
+  5.508e-02
+  5.302e-02
+  4.936e-02
+  4.831e-02
+  9.998e-01
+  2.163e-04
+  1.101e-04
+  3.457e-04
+  1.209e-04
+  5.670e-01
