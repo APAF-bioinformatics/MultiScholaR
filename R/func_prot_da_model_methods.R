@@ -413,8 +413,16 @@ setMethod(
       }
       dpcDEFn <- limpa::dpcDE
       dpc_fit <- dpcDEFn(elist, design_for_dpcde, plot = FALSE, block = block)
-      contrasts_results <- convertDpcDAToStandardFormat(dpc_fit = dpc_fit, contrast_strings = contrast_strings_to_use,
-        design_matrix = design_for_dpcde, eBayes_trend = as.logical(eBayes_trend), eBayes_robust = as.logical(eBayes_robust))
+      # Decision M29: a state of the declared RUV rules with factors in the model forms each comparison's standard
+      # error exactly (dpcDE fits with per-observation weights); today's covariates and no RUV are as before.
+      contrasts_results <- if (length(w_terms) && !is.null(theObject@args$ruvCovariates$ruv_k_rule)) {
+        moderateDpcDaContrastFit(ruvExactContrastsFit(dpc_fit, dpcDaContrastMatrix(contrast_strings_to_use, design_for_dpcde),
+          design_for_dpcde, \(design) dpcDEFn(elist, design, plot = FALSE, block = block)), contrast_strings_to_use,
+          as.logical(eBayes_trend), as.logical(eBayes_robust))
+      } else {
+        convertDpcDAToStandardFormat(dpc_fit = dpc_fit, contrast_strings = contrast_strings_to_use,
+          design_matrix = design_for_dpcde, eBayes_trend = as.logical(eBayes_trend), eBayes_robust = as.logical(eBayes_robust))
+      }
       # The converter names the protein and the comparison as columns; the shared path below adds both from the
       # row names, as it does for the limma tables.
       contrasts_results$results <- lapply(contrasts_results$results, function(table) {
@@ -442,16 +450,25 @@ setMethod(
         ruv_controls = ruv_model$declaration$ruv_controls, tested_matrix = "uncorrected",
         tested_proteins = nrow(ruv_model$matrix), no_corrected_intensity = ruv_model$no_corrected_intensity))
     }
-    contrasts_results <- runTestsContrasts(protein_quant_matrix,
-      contrast_strings = contrast_strings_to_use,
-      design_matrix = theObject@design_matrix,
-      group_id = theObject@group_id, technical_replicate_id = theObject@technical_replicate_id, # KIT-035
-      formula_string = formula_string,
-      weights = NA,
-      treat_lfc_cutoff = as.double(treat_lfc_cutoff),
-      eBayes_trend = as.logical(eBayes_trend),
-      eBayes_robust = as.logical(eBayes_robust)
-    )
+    # Decision M29: the factors-in-the-model design forms each comparison's standard error exactly per protein; the
+    # legacy design keeps runTestsContrasts unchanged.
+    contrasts_results <- if (!is.null(ruv_model)) {
+      runProtRuvModelContrasts(protein_quant_matrix, contrast_strings_to_use, theObject@design_matrix, formula_string,
+        treat_lfc_cutoff = as.double(treat_lfc_cutoff), eBayes_trend = as.logical(eBayes_trend),
+        eBayes_robust = as.logical(eBayes_robust), group_id = theObject@group_id,
+        technical_replicate_id = theObject@technical_replicate_id)
+    } else {
+      runTestsContrasts(protein_quant_matrix,
+        contrast_strings = contrast_strings_to_use,
+        design_matrix = theObject@design_matrix,
+        group_id = theObject@group_id, technical_replicate_id = theObject@technical_replicate_id, # KIT-035
+        formula_string = formula_string,
+        weights = NA,
+        treat_lfc_cutoff = as.double(treat_lfc_cutoff),
+        eBayes_trend = as.logical(eBayes_trend),
+        eBayes_robust = as.logical(eBayes_robust)
+      )
+    }
     }
 
     message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!")

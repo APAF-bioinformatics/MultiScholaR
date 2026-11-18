@@ -298,10 +298,9 @@ findOmicsRuvUnobservedGroups <- function(expr_matrix, design_matrix, sample_id_c
 #' is observed, and it is listed in `not_observed` (the user's decision of 2026-11-18 on audit F5; KIT-124 design
 #' review, M9). This departs from the kernel of KIT-124's simulator, which left out every feature that could not
 #' estimate all coefficients of the model; the two rules agree where every feature is observed in every group, which
-#' is the data the simulator's arms 7 and 8 were scored on. limma forms a contrast's standard error from the
-#' full design's correlations, so with missing values and W in the model it is approximate (for any feature with
-#' missing values, not only these); the estimate, the residual variance and its degrees of freedom are exact. An
-#' assay without factors (k = 0 or refused) keeps the design and the formula. A model that leaves no residual degree
+#' is the data the simulator's arms 7 and 8 were scored on. With W in the model the DA forms each comparison's standard
+#' error exactly per feature (`runOmicsRuvFactorsDaKernel`, decision M29); limma's contrast step alone would form it
+#' from the full design's correlations, approximately for a feature with missing values. An assay without factors (k = 0 or refused) keeps the design and the formula. A model that leaves no residual degree
 #' of freedom on the assay's samples stops with class `omics_ruv_no_residual_df`.
 #' @param expr_matrix Feature-by-sample matrix of uncorrected values.
 #' @param design_matrix,formula_string,sample_id_col As the DA kernel reads them.
@@ -403,4 +402,37 @@ withOmicsRuvKOnBlockFailure <- function(expr, assay_factors) {
         rlang::abort(sprintf("with k = %d RUV factors in the model, %s; use fewer factors", k, conditionMessage(e)),
             class = c("omics_ruv_k_block_correlation_failed", "omics_da_block_correlation_failed"), call = NULL)
     })
+}
+
+#' The DA kernel of an assay with RUV factors in the model (decision M29)
+#'
+#' The kernel's two halves as `runTestsContrastsLipidDA` and `runTestsContrastsMetabDA` call them, with each
+#' comparison's standard error exact per feature (`ruvExactContrastsFit`, the exactness round's arm 25): with W in the
+#' model, `limma::contrasts.fit` only approximates it for a feature with missing values. The technical-replicate block
+#' (when the fit used one) is the fit half's, with its consensus correlation. An assay without factors keeps the
+#' exported kernel.
+#' @param fitFn,applyFn The omic's fit and contrast halves (`fitLipidDaAssayModel` and `applyLipidDaContrasts`, or the
+#'   metabolomics pair).
+#' @param data,contrast_strings,design_matrix,formula_string,sample_id_col,treat_lfc_cutoff,eBayes_trend,eBayes_robust,group_id,technical_replicate_id
+#'   As `runTestsContrastsLipidDA`.
+#' @return The value of `applyFn`.
+#' @noRd
+runOmicsRuvFactorsDaKernel <- function(fitFn, applyFn, data, contrast_strings, design_matrix, formula_string, sample_id_col,
+                                       treat_lfc_cutoff, eBayes_trend, eBayes_robust, group_id, technical_replicate_id) {
+    fit <- fitFn(data, design_matrix, formula_string, sample_id_col, group_id, technical_replicate_id)
+    samples <- rownames(fit$design)
+    data_subset <- data[, samples, drop = FALSE]
+    block <- NULL
+    if (isTRUE(fit$uses_duplicate_correlation)) {
+        # the fit half's block: the same rule on the same design rows
+        rows <- design_matrix
+        if (sample_id_col %in% colnames(rows)) rownames(rows) <- rows[[sample_id_col]]
+        block <- resolveProtTechnicalReplicateBlock(as.data.frame(rows)[samples, , drop = FALSE], group_id, technical_replicate_id)$block
+    }
+    refit <- function(design) {
+        if (is.null(block)) return(limma::lmFit(data_subset, design = design))
+        limma::lmFit(data_subset, design = design, block = block, correlation = fit$consensus_correlation)
+    }
+    applyFn(fit, contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust,
+        contrastsFitFn = \(fit, contrasts) ruvExactContrastsFit(fit, contrasts, fit$design, refit))
 }

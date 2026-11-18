@@ -72,13 +72,26 @@ simLongTable <- function(results) {
             bh = t$fdr_value_bh, stringsAsFactors = FALSE)
     }))
 }
-simDaKernel <- function(m, design, formula, contrasts) {
+# `exact`: the exactness round's arm 25 (decision M29; `daKernel` of s4_lipid_metab.R on `sim-k129-exact`): per
+# comparison, the model reparameterised so that the comparison is its first coefficient (`limma::contrastAsCoef`).
+simDaKernel <- function(m, design, formula, contrasts, exact = FALSE) {
     if (anyNA(m)) {
         x <- stats::model.matrix(stats::as.formula(formula), design)
         seen <- is.finite(m)
         pattern <- drop(seen %*% 2^(seq_len(ncol(m)) - 1))
         estimable <- vapply(split(seq_len(nrow(m)), pattern), function(i) qr(x[seen[i[[1L]], ], , drop = FALSE])$rank == ncol(x), logical(1L))
         m <- m[estimable[as.character(pattern)], , drop = FALSE]
+    }
+    if (exact) {
+        x <- stats::model.matrix(stats::as.formula(formula), design)
+        return(do.call(rbind, lapply(contrasts, function(contrast) {
+            q <- limma::contrastAsCoef(x, limma::makeContrasts(contrasts = contrast, levels = colnames(x)))$design
+            colnames(q) <- c("comparison", paste0("Q", seq_len(ncol(q))[-1L]))
+            table <- simDaKernel(m, cbind(design[setdiff(names(design), colnames(q))], q),
+                paste("~ 0 +", paste(colnames(q), collapse = " + ")), "comparison")
+            table$contrast <- contrast
+            table
+        })))
     }
     simLongTable(kit127Quiet(runTestsContrastsLipidDA(data = m, contrast_strings = contrasts, design_matrix = design,
         formula_string = formula, sample_id_col = "Sample_ID", treat_lfc_cutoff = NA, eBayes_trend = TRUE,
@@ -94,7 +107,7 @@ simRuvW <- function(y, m, ctl, k, keep = rownames(y)) {
 }
 simTestWithW <- function(fixture, y, w) {
     design <- cbind(fixture$design, as.data.frame(w[fixture$design$Sample_ID, , drop = FALSE]))
-    simDaKernel(y, design, paste("~ 0 + group +", paste(colnames(w), collapse = " + ")), fixture$contrasts)
+    simDaKernel(y, design, paste("~ 0 + group +", paste(colnames(w), collapse = " + ")), fixture$contrasts, exact = TRUE)
 }
 simGroupM <- function(design) {
     m <- ruv::replicate.matrix(stats::setNames(design$group, design$Sample_ID))
@@ -480,14 +493,12 @@ test_that("F5: a feature unobserved in one whole group is tested between the gro
     expect_equal(long$logFC[at("groupB-groupA")], unname(reference[, "logFC"]), tolerance = 1e-10)
     expect_equal(unname(eb$sigma[rows]), unname(reference[, "sigma"]), tolerance = 1e-10)
     expect_equal(unname(eb$df.residual[rows]), unname(reference[, "df"]))
-    # approximate: limma's contrast step forms the contrast's standard error from the full design's correlations
-    # (`limma::contrasts.fit`, "approximate" with missing values in a non-orthogonal design). Measured on this
-    # fixture for the features complete in A and B: 0.15 per cent on the standard error, 0.007 on log10 p.
+    # exact too (decision M29): the contrast's standard error, per feature on its own observed samples. limma's
+    # contrast step alone (`limma::contrasts.fit`) formed it from the full design's correlations, 0.15 per cent off
+    # on this fixture for the features complete in A and B.
     ratio <- unname(eb$stdev.unscaled[rows, "groupB-groupA"] / reference[, "unscaled"])
-    complete_ab <- no_c %in% fx$no_c
-    expect_lt(max(abs(ratio[complete_ab] - 1)), 0.005)
-    expect_lt(max(abs(log10(long$P.Value[at("groupB-groupA")]) - log10(reference[, "p"]))[complete_ab]), 0.01)
-    expect_true(all(is.finite(ratio)))
+    expect_equal(ratio, rep(1, length(no_c)), tolerance = 1e-10)
+    expect_equal(long$P.Value[at("groupB-groupA")], unname(reference[, "p"]), tolerance = 1e-10)
 })
 
 test_that("F6: the features not tested are returned by assay and announced by a classed warning", {
@@ -569,8 +580,9 @@ test_that("F11: the test with W in the model is limma's own, computed here witho
         x <- cbind(groupA = as.numeric(fixture$design$group == "A"), groupB = as.numeric(fixture$design$group == "B"),
             run$factors[[assay]]$W[fixture$design$Sample_ID, , drop = FALSE])
         estimable <- apply(is.finite(y), 1L, function(seen) qr(x[seen, , drop = FALSE])$rank == ncol(x))
-        fit <- suppressWarnings(limma::lmFit(y[estimable, ], x))
-        fit <- limma::contrasts.fit(fit, limma::makeContrasts(contrasts = "groupB-groupA", levels = colnames(x)))
+        # the comparison as the first coefficient of the reparameterised model: its exact standard error (M29)
+        exact <- limma::contrastAsCoef(x, limma::makeContrasts(contrasts = "groupB-groupA", levels = colnames(x)))$design
+        fit <- suppressWarnings(limma::lmFit(y[estimable, ], exact))[, 1L]
         top <- limma::topTable(limma::eBayes(fit, trend = TRUE, robust = TRUE), coef = 1L, number = Inf, sort.by = "none")
         expectKit127Table(da$da_lipids_long, "lipid_id", assay, data.frame(feature = rownames(top), est = top$logFC, p = top$P.Value,
             q = qvalue::qvalue(top$P.Value)$qvalues, bh = stats::p.adjust(top$P.Value, "BH")))
@@ -713,4 +725,19 @@ test_that("with technical replicates the biological units limit k, in the kernel
         # without the declaration the limit is the injections' one, as before
         expect_identical(vapply(kernel(12L, undeclared)$factors, `[[`, "", "status"), c(pos = "ok", neg = "ok"), info = omic)
     }
+})
+
+# The legacy DA (no RUV factors) on fixed inputs (decision M29: legacy unchanged). The digests were recorded on the tree
+# before M29 was implemented (`kit-129-integration` d4b5db27).
+kit127LegacyDigests <- function() {
+    fixture <- kit127Fixture()
+    mats <- lapply(fixture$assays, `[[`, "y")
+    lipid <- kit127Quiet(runLipidsDA(kit127Lipid(mats, fixture$design), fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE))
+    metab <- kit127Quiet(runMetabolitesDA(kit127Metab(mats, fixture$design), fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE))
+    c(lipid = digest::digest(list(lipid$contrasts_results, lipid$da_lipids_long)),
+        metab = digest::digest(list(metab$contrasts_results, metab$da_metabolites_long)))
+}
+
+test_that("the legacy DA without RUV factors is unchanged by the exact standard errors (M29)", {
+    expect_identical(kit127LegacyDigests(), c(lipid = "2d923db5e9fc4ff2d193b200014e73d9", metab = "c6fa5d5cc4881d65a71296422749962c"))
 })

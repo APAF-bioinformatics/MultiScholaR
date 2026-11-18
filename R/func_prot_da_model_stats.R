@@ -418,6 +418,43 @@ buildProtDaResultTables <- function(contrast_artifact, contrast_strings,
     fit.eb = contrast_artifact$public_fit)
 }
 
+#' The limma test of the factors-in-the-model design (KIT-126; decision M29)
+#'
+#' `runTestsContrasts`'s steps from its own halves (`fitProtDaBaseModel`, `applyProtDaContrastModel`,
+#' `buildProtDaResultTables`), with each comparison's standard error exact per protein (`ruvExactContrastsFit`, the
+#' exactness round's arm 25): with RUV factors in the model, `limma::contrasts.fit` only approximates it for a protein
+#' with missing values. The technical-replicate block and its consensus correlation are the base fit's. The legacy
+#' design keeps `runTestsContrasts`.
+#' @param data,contrast_strings,design_matrix,formula_string,treat_lfc_cutoff,eBayes_trend,eBayes_robust,group_id,technical_replicate_id
+#'   As `runTestsContrasts`.
+#' @param exact FALSE forms the comparisons with `limma::contrasts.fit`, as `runTestsContrasts` does (kept so that the
+#'   exactness round's arms can be reproduced one change at a time).
+#' @return `list(results, fit.eb, qvalue_warnings)` as `runTestsContrasts`, with the result tables' extra fields.
+#' @noRd
+runProtRuvModelContrasts <- function(data, contrast_strings, design_matrix, formula_string, treat_lfc_cutoff = NA,
+    eBayes_trend = FALSE, eBayes_robust = FALSE, group_id = "group", technical_replicate_id = "replicates",
+    exact = TRUE) {
+  formula <- stats::as.formula(formula_string)
+  design_m <- stats::model.matrix(formula, stats::model.frame(formula, design_matrix))
+  data_subset <- data[, rownames(design_m), drop = FALSE]
+  contrast_matrix <- limma::makeContrasts(contrasts = contrast_strings, levels = colnames(design_m))
+  silent <- \(...) invisible(NULL)
+  base <- fitProtDaBaseModel(data_subset, design_m, design_matrix, rownames(design_m), messageFn = silent,
+    group_id = group_id, technical_replicate_id = technical_replicate_id)
+  refit <- function(design) {
+    if (!isTRUE(base$uses_duplicate_correlation)) return(limma::lmFit(data_subset, design = design))
+    limma::lmFit(data_subset, design = design, block = base$block, correlation = base$consensus_correlation)
+  }
+  contrastsFitFn <- if (exact) {
+    \(fit, contrasts) ruvExactContrastsFit(fit, contrasts, design_m, refit)
+  } else {
+    limma::contrasts.fit
+  }
+  model <- applyProtDaContrastModel(base, contrast_matrix, treat_lfc_cutoff = treat_lfc_cutoff,
+    eBayes_trend = eBayes_trend, eBayes_robust = eBayes_robust, contrastsFitFn = contrastsFitFn, messageFn = silent)
+  buildProtDaResultTables(model, contrast_strings, messageFn = silent)
+}
+
 #' @param p_value_column The name of the raw p-value column (tidyverse style).
 #' @param q_value_column The name of the q-value column (tidyverse style).
 #' @param fdr_value_column The name of the fdr-value column (tidyverse style).

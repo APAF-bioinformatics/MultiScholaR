@@ -75,8 +75,49 @@ ruvModelKernel <- function(matrix, design, covariates = NULL) {
     value
 }
 
-# Arm 7 as the simulator computes it (`in_model(all_controls, k, "no_tech")`): W of RUV-III on the complete proteins,
-# every one a control, the groups as replicate sets; then the kernel on the uncorrected matrix with W.
+# The exactness round's test (`da_variant` of s1_classic.R on `sim-k124-exact`, copied): the kernel's halves, with
+# `exact` the contrast fitted as the first coefficient of a reparameterised model matrix (`limma::contrastAsCoef`, arm
+# 25, decision M29) and `applied` treat() given the trend and robust settings (arm 26, decision M30). Returns the
+# table in the shape of `runTestsContrasts`'s results.
+ruvModelSimulatorTest <- function(matrix, design, covariates = NULL, exact = TRUE, applied = FALSE) {
+    rownames(design) <- design$Run
+    terms <- character()
+    if (!is.null(covariates)) {
+        design <- cbind(design, as.data.frame(covariates[rownames(design), , drop = FALSE]))
+        terms <- colnames(covariates)
+    }
+    formula <- stats::as.formula(paste(c("~ 0 + group", terms), collapse = " + "))
+    design_m <- stats::model.matrix(formula, stats::model.frame(formula, design))
+    data_subset <- matrix[, rownames(design_m), drop = FALSE]
+    contrast <- limma::makeContrasts(contrasts = ruvModelContrast, levels = colnames(design_m))
+    fit_design <- design_m
+    if (exact) {
+        fit_design <- limma::contrastAsCoef(design_m, contrast)$design
+        dimnames(fit_design) <- list(rownames(design_m), c(colnames(contrast), paste0("Q", seq_len(ncol(design_m))[-1L])))
+    }
+    silent <- function(...) invisible(NULL)
+    base <- fitProtDaBaseModel(data_subset, fit_design, design, rownames(design_m), messageFn = silent,
+        group_id = "group", technical_replicate_id = "tech_rep_group")
+    model <- applyProtDaContrastModel(base, contrast, treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE,
+        contrastsFitFn = if (exact) function(fit, contrasts) fit[, 1L] else limma::contrasts.fit,
+        treatFn = if (applied) function(fit, lfc) limma::treat(fit, lfc = lfc, trend = TRUE, robust = TRUE) else limma::treat,
+        messageFn = silent)
+    tab <- limma::topTreat(model$public_fit, coef = 1L, n = Inf)
+    p <- tab$P.Value
+    q <- rep(NA_real_, length(p))
+    valid <- which(!is.na(p) & is.finite(p))
+    if (length(valid)) {
+        v <- p[valid]
+        q[valid] <- if (all(v == 0) || all(v == 1) || length(v) < 3L) stats::p.adjust(v, "BH") else
+            tryCatch(qvalue::qvalue(v)$qvalues, error = function(e) stats::p.adjust(v, "BH"))
+    }
+    list(results = stats::setNames(list(data.frame(logFC = tab$logFC, raw_pvalue = p, fdr_qvalue = q,
+        row.names = rownames(tab))), ruvModelContrast))
+}
+
+# Arm 7's computation as the simulator makes it (`in_model(all_controls, k, "no_tech")`): W of RUV-III on the complete
+# proteins, every one a control, the groups as replicate sets; then the test on the uncorrected matrix with W, as the
+# exactness round changed it (decision M29: arm 25's exact standard error).
 ruvModelArm7 <- function(fixture, k, rows = rownames(fixture$x)) {
     x <- fixture$x
     design <- fixture$design
@@ -84,18 +125,19 @@ ruvModelArm7 <- function(fixture, k, rows = rownames(fixture$x)) {
     complete <- rowSums(!is.finite(x)) == 0
     value <- suppressMessages(computeRuvCovariates(ruvModelObject(x[complete, , drop = FALSE], design, "no_tech"), k = k,
         controls = rep(TRUE, sum(complete)), ruv_grouping_variable = "group"))
-    list(W = value$W, test = ruvModelKernel(x[rows, , drop = FALSE], fixture$design, value$W))
+    list(W = value$W, test = suppressMessages(ruvModelSimulatorTest(x[rows, , drop = FALSE], fixture$design, value$W)))
 }
 
-# The same test with limma called directly, in the order today's kernel calls it (lmFit, contrasts.fit, eBayes with
-# trend and robust, then treat at the cutoff 0): no code of the package between the matrix and the table.
+# The same test with limma called directly: lmFit with the comparison as the first coefficient of the reparameterised
+# model (decision M29), eBayes with trend and robust, then treat at the cutoff 0: no code of the package between the
+# matrix and the table.
 ruvModelDirectLimma <- function(x, design, W) {
     design <- cbind(design, as.data.frame(W[design$Run, , drop = FALSE]))
     rownames(design) <- design$Run
     model <- stats::model.matrix(stats::as.formula(paste("~ 0 + group +", paste(colnames(W), collapse = " + "))), design)
-    fit <- suppressWarnings(limma::lmFit(x[, rownames(model), drop = FALSE], model))
     contrast <- limma::makeContrasts(contrasts = "grouptreated-groupcontrol", levels = colnames(model))
-    tested <- limma::treat(limma::eBayes(limma::contrasts.fit(fit, contrast), trend = TRUE, robust = TRUE), lfc = 0)
+    fit <- suppressWarnings(limma::lmFit(x[, rownames(model), drop = FALSE], limma::contrastAsCoef(model, contrast)$design))
+    tested <- limma::treat(limma::eBayes(fit[, 1L], trend = TRUE, robust = TRUE), lfc = 0)
     p <- tested$p.value[, 1L]
     q <- rep(NA_real_, length(p))
     q[is.finite(p)] <- qvalue::qvalue(p[is.finite(p)])$q
@@ -722,4 +764,47 @@ test_that("with technical replicates the biological units limit k, in the kernel
     plain <- ruvModelFixture()
     expect_identical(computeProtRuvModelFactors(ruvModelObject(plain$x, plain$design), k = 2L, k_source = "user")$k_max,
         as.integer(min(nrow(plain$design) - 3L, sum(rowSums(is.na(plain$x)) == 0L) - 1L)))
+})
+
+test_that("each comparison's standard error is exact per protein under the factors-in-the-model design (M29)", {
+    fixture <- ruvModelFixture()
+    package <- ruvModelPackageState(fixture, 2L)
+    fit <- ruvModelDa(package$state)$contrasts_results$fit.eb
+    design <- cbind(fixture$design, as.data.frame(package$factors$W[fixture$design$Run, , drop = FALSE]))
+    rownames(design) <- design$Run
+    model <- stats::model.matrix(~ 0 + group + W1 + W2, design)
+    contrast <- limma::makeContrasts(contrasts = "grouptreated-groupcontrol", levels = colnames(model))
+    x <- fixture$x[rownames(fit$coefficients), rownames(model)]
+    exact <- suppressWarnings(limma::lmFit(x, limma::contrastAsCoef(model, contrast)$design))
+    approximate <- limma::contrasts.fit(suppressWarnings(limma::lmFit(x, model)), contrast)
+    expect_equal(unname(fit$stdev.unscaled[, 1L]), unname(exact$stdev.unscaled[, 1L]), tolerance = 1e-10)
+    expect_equal(unname(fit$coefficients[, 1L]), unname(exact$coefficients[, 1L]), tolerance = 1e-10)
+    # the fixture has proteins with missing values, whose standard error contrasts.fit only approximates ...
+    partial <- rowSums(!is.finite(x)) > 0
+    expect_gt(max(abs(approximate$stdev.unscaled[partial, 1L] / exact$stdev.unscaled[partial, 1L] - 1)), 1e-4)
+    # ... and complete proteins, where the two agree
+    expect_equal(unname(approximate$stdev.unscaled[!partial, 1L]), unname(exact$stdev.unscaled[!partial, 1L]), tolerance = 1e-10)
+    # the legacy kernel given the same W still forms it with contrasts.fit
+    legacy <- ruvModelKernel(fixture$x, fixture$design, package$factors$W)$fit.eb
+    expect_equal(unname(legacy$stdev.unscaled[rownames(x), 1L]), unname(approximate$stdev.unscaled[, 1L]), tolerance = 1e-10)
+})
+
+# The legacy paths' DA outputs on fixed inputs (decisions M29, M30: legacy unchanged). The digests were recorded on the
+# tree before those decisions were implemented (`kit-129-integration` d4b5db27): the DA entry point on an object of
+# today's design (no declaration: its own table tested by `runTestsContrasts`), without and with technical
+# replicates, and the kernel called directly.
+ruvModelLegacyDigests <- function() {
+    plain <- ruvModelFixture(proteins = 120L)
+    technical <- ruvModelTechRepFixture()
+    entry <- function(fixture) {
+        result <- ruvModelDa(ruvModelObject(fixture$x, fixture$design))
+        digest::digest(list(result$contrasts_results$results, result$contrasts_results$fit.eb,
+            result$contrasts_results$qvalue_warnings, result$da_model))
+    }
+    c(entry = entry(plain), entry_technical = entry(technical), kernel = digest::digest(ruvModelKernel(plain$x, plain$design)))
+}
+
+test_that("the legacy design's DA is unchanged by the exact standard errors and the test settings (M29, M30)", {
+    expect_identical(ruvModelLegacyDigests(), c(entry = "5f301cd329832bf4169a188156ea5a3f", entry_technical = "597ebf0d6c82e95f05a3238fa3b7df78",
+        kernel = "0ba8a9420b0234237f70623e8ffd2565"))
 })

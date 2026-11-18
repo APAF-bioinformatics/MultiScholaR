@@ -325,3 +325,36 @@ resolveRuvFactorCount <- function(k_rule, control_rule, limit, k_user = NULL, es
     list(k = k, k_rule = k_rule, k_estimate = k_estimate, k_estimate_reason = k_estimate_reason, k_max = limit$k_max,
         control_rule = control_rule, status = if (k > 0L) "ok" else "none", reason = reason, estimate = estimate)
 }
+
+#' Each comparison fitted as a coefficient: its exact standard error per feature (decision M29)
+#'
+#' `limma::contrasts.fit` forms a comparison's standard error from one correlation matrix of the coefficients for
+#' every feature. With RUV factors in the model the design is not orthogonal, so for a feature with missing values (or
+#' per-observation weights) that is an approximation. Here each comparison is fitted directly, as the exactness round's
+#' arm 25 did: the model is reparameterised so that the comparison is its first coefficient
+#' (`limma::contrastAsCoef`), refitted, and that coefficient and its unscaled standard deviation replace
+#' contrasts.fit's. The residual variances and their degrees of freedom do not depend on the parameterisation and are
+#' contrasts.fit's (the fit's own). A comparison contrasts.fit leaves missing for a feature (not estimable on the
+#' feature's observed samples) stays missing.
+#' @param fit The uncontrasted `MArrayLM`.
+#' @param contrasts A limma contrast matrix over the columns of `design`.
+#' @param design The model matrix `fit` was fitted with.
+#' @param refit Function of a model matrix returning the `MArrayLM` of the same data with the same block,
+#'   correlation and weights.
+#' @return The value of `limma::contrasts.fit(fit, contrasts)` with the exact coefficients and unscaled standard
+#'   deviations.
+#' @noRd
+ruvExactContrastsFit <- function(fit, contrasts, design, refit) {
+    contrasted <- limma::contrasts.fit(fit, contrasts)
+    for (j in seq_len(ncol(contrasts))) {
+        exact <- refit(limma::contrastAsCoef(design, contrasts[, j, drop = FALSE], first = TRUE)$design)
+        if (!identical(dimnames(exact$coefficients)[[1L]], dimnames(contrasted$coefficients)[[1L]]) ||
+            nrow(exact$coefficients) != nrow(contrasted$coefficients)) {
+            cli::cli_abort("the refitted model does not hold the features of the fit", class = "ruv_exact_contrasts_invalid")
+        }
+        estimable <- !is.na(contrasted$coefficients[, j])
+        contrasted$coefficients[estimable, j] <- exact$coefficients[estimable, 1L]
+        contrasted$stdev.unscaled[estimable, j] <- exact$stdev.unscaled[estimable, 1L]
+    }
+    contrasted
+}

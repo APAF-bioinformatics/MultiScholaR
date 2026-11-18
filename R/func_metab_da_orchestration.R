@@ -280,19 +280,26 @@ runMetabolitesDA <- function(
         tryCatch(
             {
                 # KIT-129 B1: with RUV factors, a technical-replicate correlation that cannot be estimated names k.
-                limma_results <- withOmicsRuvKOnBlockFailure(runTestsContrastsMetabDA(
-                    data = expr_matrix,
-                    contrast_strings = contrast_strings,
-                    design_matrix = da_design,
-                    formula_string = da_formula,
-                    sample_id_col = sample_id_col,
-                    treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA,
-                    eBayes_trend = eBayes_trend,
-                    eBayes_robust = eBayes_robust,
-                    # KIT-128: the declared technical replicates, for the block.
-                    group_id = group_col,
-                    technical_replicate_id = theObject@technical_replicate_id
-                ), if (!is.null(ruv_factors)) ruv_factors[[assay_name]])
+                # Decision M29: an assay with W in the model forms each comparison's standard error exactly.
+                limma_results <- withOmicsRuvKOnBlockFailure(if (!is.null(ruv_factors[[assay_name]]$W)) {
+                    runOmicsRuvFactorsDaKernel(fitMetabDaAssayModel, applyMetabDaContrasts, expr_matrix, contrast_strings, da_design, da_formula,
+                        sample_id_col, if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA, eBayes_trend, eBayes_robust,
+                        group_col, theObject@technical_replicate_id)
+                } else {
+                    runTestsContrastsMetabDA(
+                        data = expr_matrix,
+                        contrast_strings = contrast_strings,
+                        design_matrix = da_design,
+                        formula_string = da_formula,
+                        sample_id_col = sample_id_col,
+                        treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA,
+                        eBayes_trend = eBayes_trend,
+                        eBayes_robust = eBayes_robust,
+                        # KIT-128: the declared technical replicates, for the block.
+                        group_id = group_col,
+                        technical_replicate_id = theObject@technical_replicate_id
+                    )
+                }, if (!is.null(ruv_factors)) ruv_factors[[assay_name]])
 
                 # Collect qvalue warnings
                 if (length(limma_results$qvalue_warnings) > 0) {

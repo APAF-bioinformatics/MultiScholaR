@@ -26,6 +26,22 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
   cat("   convertDpcDAToStandardFormat: Converting dpcDE results to standard format\n")
   cat("   convertDpcDAToStandardFormat: Processing", length(contrast_strings), "contrasts\n")
 
+  contrast_matrix <- dpcDaContrastMatrix(contrast_strings, design_matrix)
+
+  # Apply contrasts to the dpcDE fit
+  contrast_fit <- limma::contrasts.fit(dpc_fit, contrast_matrix)
+
+  moderateDpcDaContrastFit(contrast_fit, contrast_strings, eBayes_trend, eBayes_robust)
+}
+
+# KIT-129 (decision M29): the contrast matrix and the half after `contrasts.fit` of `convertDpcDAToStandardFormat`,
+# moved unchanged, so that the declared RUV rules' test can hand the second its exact contrasted fit.
+
+#' The limma contrast matrix of "name=expression" contrast strings over the model's columns.
+#' @param contrast_strings,design_matrix As `convertDpcDAToStandardFormat`.
+#' @return The contrast matrix.
+#' @noRd
+dpcDaContrastMatrix <- function(contrast_strings, design_matrix) {
   # Create contrast matrix from contrast strings
   # Extract just the contrast expressions (after the "=" sign)
   contrast_expressions <- sapply(contrast_strings, function(x) {
@@ -44,10 +60,15 @@ convertDpcDAToStandardFormat <- function(dpc_fit,
   )
 
   cat("   convertDpcDAToStandardFormat: Contrast matrix dims:", nrow(contrast_matrix), "x", ncol(contrast_matrix), "\n")
+  contrast_matrix
+}
 
-  # Apply contrasts to the dpcDE fit
-  contrast_fit <- limma::contrasts.fit(dpc_fit, contrast_matrix)
-
+#' eBayes, the per-contrast tables and the q-values of a contrasted dpcDE fit.
+#' @param contrast_fit The contrasted `MArrayLM`.
+#' @param contrast_strings,eBayes_trend,eBayes_robust As `convertDpcDAToStandardFormat`.
+#' @return The value of `convertDpcDAToStandardFormat`.
+#' @noRd
+moderateDpcDaContrastFit <- function(contrast_fit, contrast_strings, eBayes_trend, eBayes_robust) {
   # Apply empirical Bayes
   eb_fit <- limma::eBayes(contrast_fit, trend = eBayes_trend, robust = eBayes_robust)
 

@@ -78,8 +78,10 @@ limpaRuvQuiet <- function(expr) {
     value
 }
 
-# The route's test as the simulator calls it (`routeTest` of s2_limpa.R): `covariates` join the design and the formula.
-limpaRuvRouteTest <- function(elist, design, covariates = NULL) {
+# The route's test as the simulator calls it (`routeTest` of s2_limpa.R on `sim-k124-exact`): `covariates` join the
+# design and the formula; `exact` is the exactness round's arm 25 (decision M29): the comparison as the first
+# coefficient of the reparameterised model (`limma::contrastAsCoef`), the route's dpcDE and converter called with it.
+limpaRuvRouteTest <- function(elist, design, covariates = NULL, exact = FALSE) {
     formula_used <- "~ 0 + group"
     if (!is.null(covariates)) {
         design <- cbind(design[setdiff(names(design), colnames(covariates))],
@@ -90,8 +92,15 @@ limpaRuvRouteTest <- function(elist, design, covariates = NULL) {
     samples <- rownames(model)
     replicate <- resolveProtTechnicalReplicateBlock(design[samples, , drop = FALSE], "group", "tech_rep_group")
     block <- if (isTRUE(replicate$technical)) replicate$block else NULL
+    contrast_string <- limpaRuvContrast
+    if (exact) {
+        contrast <- limma::makeContrasts(contrasts = sub("^.*=", "", limpaRuvContrast), levels = colnames(model))
+        model <- limma::contrastAsCoef(model, contrast)$design
+        dimnames(model) <- list(samples, c("comparison", paste0("Q", seq_len(ncol(model))[-1L])))
+        contrast_string <- sub("=.*$", "=comparison", limpaRuvContrast)
+    }
     fit <- limpaRuvQuiet(limpa::dpcDE(elist[, samples], model, plot = FALSE, block = block))
-    result <- limpaRuvQuiet(convertDpcDAToStandardFormat(dpc_fit = fit, contrast_strings = limpaRuvContrast,
+    result <- limpaRuvQuiet(convertDpcDAToStandardFormat(dpc_fit = fit, contrast_strings = contrast_string,
         design_matrix = model, eBayes_trend = TRUE, eBayes_robust = TRUE))
     table <- result$results[[1L]]
     data.frame(id = rownames(table), logFC = table$logFC, p = table$raw_pvalue, q = table$fdr_qvalue, stringsAsFactors = FALSE)
@@ -114,11 +123,12 @@ limpaRuvSimulatorE <- function(case, seed) {
     as.integer(sva::num.sv(case$elist$E, stats::model.matrix(~ group, case$design), method = "be", B = 20, seed = seed))
 }
 
-# The simulator's `inModel`: the factors of `computeRuvCovariates`, then the route's test with them.
+# The simulator's `inModel`: the factors of `computeRuvCovariates`, then the route's test with them, with the exact
+# standard error of the declared rules' test (decision M29, arm 25).
 limpaRuvInModel <- function(case, k, controls) {
     factors <- limpaRuvQuiet(computeRuvCovariates(case$quantified, k, controls, "group"))
     list(W = factors$W, replicate_structure = factors$replicate_structure,
-        table = limpaRuvRouteTest(case$elist, case$design, factors$W))
+        table = limpaRuvRouteTest(case$elist, case$design, factors$W, exact = TRUE))
 }
 
 # The package: the declared kernel on the quantified object (the store keeps what it checkpoints), and the DA entry
@@ -143,9 +153,12 @@ limpaRuvDa <- function(state) {
 expectLimpaRuvTable <- function(result, reference, info) {
     table <- result$contrasts_results$results[[1L]]
     expect_identical(rownames(table), reference$id, info = info)
-    expect_equal(table$logFC, reference$logFC, tolerance = 1e-12, info = info)
-    expect_equal(table$raw_pvalue, reference$p, tolerance = 1e-12, info = info)
-    expect_equal(table$fdr_qvalue, reference$q, tolerance = 1e-12, info = info)
+    # 1e-9 (decision M29): the package places the reparameterised fit's coefficient into the original dpcDE fit, the
+    # simulator tests the reparameterised fit itself; dpcDE's iterated weights agree between the two to rounding only
+    # (measured: 1e-11 relative on p with k = 2).
+    expect_equal(table$logFC, reference$logFC, tolerance = 1e-9, info = info)
+    expect_equal(table$raw_pvalue, reference$p, tolerance = 1e-9, info = info)
+    expect_equal(table$fdr_qvalue, reference$q, tolerance = 1e-9, info = info)
 }
 
 limpaRuvSweep <- function(quantified) {
@@ -744,4 +757,25 @@ test_that("with technical replicates a declared state needs a residual degree of
     refused <- tryCatch(limpaRuvDaWithFormula(state, "~ 0 + group + site"), error = function(e) e)
     expect_s3_class(refused, "dia_da_no_residual_df")
     expect_match(conditionMessage(refused), "between the biological units", fixed = TRUE)
+})
+
+# The legacy DA of this route on fixed inputs (decision M29: legacy unchanged). The digests were recorded on the tree
+# before M29 was implemented (`kit-129-integration` d4b5db27), with the limpa engine: the quantified state without RUV,
+# and today's covariates state (W in the design, no declared rule) with one factor.
+limpaRuvLegacyDigests <- function() {
+    case <- limpaRuvCase("limpa", seed = 101L, proteins = 120L)
+    factors <- limpaRuvQuiet(computeRuvCovariates(case$quantified, 1L, rep(TRUE, length(case$ids)), "group"))
+    todays <- case$quantified
+    todays@design_matrix$W1 <- unname(factors$W[todays@design_matrix$Run, 1L])
+    todays@args$ruvCovariates <- list(k = 1L, ruv_mode = "covariates")
+    vapply(list(no_ruv = case$quantified, todays_covariates = todays), function(state) {
+        result <- limpaRuvDa(state)
+        digest::digest(list(result$contrasts_results$results, result$contrasts_results$fit.eb, result$da_model))
+    }, character(1L))
+}
+
+test_that("the legacy DA (no RUV, today's covariates) is unchanged by the exact standard errors (M29)", {
+    skip_if_not_installed("limpa")
+    expect_identical(limpaRuvLegacyDigests(), c(no_ruv = "b1316e237d8b23073dba131c0daba919",
+        todays_covariates = "a610463e3967a448bafeb71dfbf2e068"))
 })

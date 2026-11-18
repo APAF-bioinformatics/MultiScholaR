@@ -66,9 +66,12 @@ fitMetabDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
 # `contrasts.fit`, `eBayes`, `treat` when asked, the extraction and the q-values, for one or more contrasts.
 #' @param fit The fit half's `MArrayLM`.
 #' @param contrast_strings,treat_lfc_cutoff,eBayes_trend,eBayes_robust As `runTestsContrastsMetabDA`.
+#' @param contrastsFitFn The contrast step: `limma::contrasts.fit` (today's), or the exact one of the factors-in-the-model
+#'   design (`ruvExactContrastsFit`, decision M29).
 #' @return `list(results, fit.eb, qvalue_warnings)` for those contrasts.
 #' @noRd
-applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, eBayes_trend = TRUE, eBayes_robust = TRUE) {
+applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, eBayes_trend = TRUE, eBayes_robust = TRUE,
+                                  contrastsFitFn = limma::contrasts.fit) {
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     design_m <- fit$design
 
@@ -119,7 +122,7 @@ applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
 
     # Run limma analysis
     logger::log_info("   Running contrasts.fit...")
-    cfit <- limma::contrasts.fit(fit, contrasts = contr.matrix)
+    cfit <- contrastsFitFn(fit, contrasts = contr.matrix)
 
     logger::log_info("   Running eBayes...")
     eb.fit <- limma::eBayes(cfit, trend = eBayes_trend, robust = eBayes_robust)
