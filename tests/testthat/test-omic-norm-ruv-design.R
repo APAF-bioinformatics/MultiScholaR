@@ -349,7 +349,9 @@ test_that("with the gate on each omic's tab shows every design with its figure a
         off_ids <- sub('^id="norm-', "", sub('"$', "", regmatches(off, gregexpr('id="norm-[A-Za-z0-9_]+"', off))[[1L]]))
         expect_identical(setdiff(off_ids, ids), character(), info = omic)
         expect_identical(sort(setdiff(grep("-label$", ids, invert = TRUE, value = TRUE), off_ids)),
-            sort(c("ruv_design", "ruv_k_rule", "ruv_k_user", "ruv_k_seed", "ruv_control_list", "ruv_design_summary", "ruv_k_separation_plot",
+            # (fifth pass items 4, 5) the separation plot per assay row where the omic has several; the check's table
+            sort(c("ruv_design", "ruv_k_rule", "ruv_k_user", "ruv_k_seed", "ruv_control_list", "ruv_design_summary",
+                "ruv_design_association_table", if (length(slots) > 1L) sub("estimate", "separation", slots) else "ruv_k_separation_plot",
                 slots)), info = omic)
     }
 })
