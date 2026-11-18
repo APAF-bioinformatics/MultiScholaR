@@ -1,0 +1,9 @@
+arm	threshold	scope	class	cell	rows	rows_with_W	crashed	fired	share_fired	share_fired_of_rows_with_W	association_median	association_p90	true_association_median
+8	0.19494193	class	correlation 0	all	3000	2124	0	180	0.06	0.0847	0.0716	0.1789	0
+8	0.19494193	class	correlation 0.3 or more	all	3000	3000	0	2745	0.915	0.915	0.4176	0.7253	0.3
+8	0.19494193	cell	correlation 0	C0	1000	1000	0	54	0.054	0.054	0.067	0.1554	0
+8	0.19494193	cell	correlation 0	C3	1000	124	0	69	0.069	0.5565	0.2269	0.468	NA
+8	0.19494193	cell	correlation 0	C4	1000	1000	0	57	0.057	0.057	0.0707	0.1545	0
+8	0.19494193	cell	correlation 0.3 or more	C5	1000	1000	0	973	0.973	0.973	0.378	0.502	0.3
+8	0.19494193	cell	correlation 0.3 or more	S11	1000	1000	0	786	0.786	0.786	0.3326	0.4798	0.3
+8	0.19494193	cell	correlation 0.3 or more	S3	1000	1000	0	986	0.986	0.986	0.6841	0.7907	0.6

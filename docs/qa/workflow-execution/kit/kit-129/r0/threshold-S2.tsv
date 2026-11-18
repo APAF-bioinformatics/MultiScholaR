@@ -1,0 +1,2 @@
+simulator	omic	threshold	rule	correlation_0_rows	correlation_0_rows_with_W	set_files
+S2	DIA_LIMPA	0.33473326	fires when the largest factor association is above the threshold; at most 1200 of 12000 correlation-0 rows above it	12000	10266	s2-assoc.tsv

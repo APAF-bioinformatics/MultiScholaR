@@ -1,0 +1,17 @@
+KIT-125 null split, omic trx (ticket revision 1.4)
+package tree (working directory): /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim; commit 0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22; changes under R/, tests/, src/: FALSE
+script: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k125/docs/qa/workflow-execution/kit/kit-125/k125_trx.R; sha256 179bd885cd16cc86682b00feb70fe10bee0ce4cd508b409e33bcf147ab5f8089; common sha256 bd0702216568117bd1e52a417bfb4084f840a701cb2240322bcb2e624db42e0f
+command: Rscript /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k125/docs/qa/workflow-execution/kit/kit-125/k125_trx.R /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k125/docs/qa/workflow-execution/kit/kit-125/lifecycle/trx /home/doktersmol/Projects/APAF/MultiScholaR-public-data/kit-125/transcriptomics 3 9001
+K125_FAIL_AT: 9002
+R_LIBS: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/../core/browser-smoke.y5ordS/library
+library paths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+threads: OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1; one R process
+R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu; BLAS /usr/lib/libblas.so.3.12.0
+packages: MultiScholaR 0.5.0; edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; pkgload 1.5.3
+input files (sha256): WT_countdata.tar.gz 11b33cf3fb8bd9b7c229c81ec00f3ab502f61a1715d0f59821b9bc7a7eb625ac; exclude.lst 57d5e5a7512388b7df2255095b0cb0938438658256262e29b60cd12056214a5e
+pool: 42 units; no batch recorded
+split types: random; splits 9001 to 9003 of each
+seed rule: seed = 5000000 + 100000 * omic index + 10000 * type index + split; units under set.seed(seed); arm a under set.seed(seed * 100 + a)
+genes in the table: 7126; excluded replicates (authors' list): WT_rep21,WT_rep22,WT_rep25,WT_rep28,WT_rep34,WT_rep36
+started: 2026-11-18 10:25:22 AEDT
+finished: 2026-11-18 10:25:49 AEDT; wall 28 s

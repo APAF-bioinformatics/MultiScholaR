@@ -1,0 +1,4 @@
+omic	split_type	split	seed	group_A	group_B
+trx	random	9001	5309001	WT_rep48,WT_rep35,WT_rep06,WT_rep09,WT_rep39,WT_rep43	WT_rep19,WT_rep11,WT_rep46,WT_rep26,WT_rep38,WT_rep13
+trx	random	9002	5309002	WT_rep38,WT_rep03,WT_rep26,WT_rep40,WT_rep24,WT_rep19	WT_rep42,WT_rep08,WT_rep48,WT_rep06,WT_rep47,WT_rep14
+trx	random	9003	5309003	WT_rep09,WT_rep31,WT_rep35,WT_rep41,WT_rep45,WT_rep14	WT_rep05,WT_rep11,WT_rep38,WT_rep02,WT_rep19,WT_rep32

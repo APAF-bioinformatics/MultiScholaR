@@ -1,0 +1,89 @@
+simulator	cell	class	platform	source	arms	arm_list	runs_per_arm	first_run	last_run	rows	ok	refused	crashed	state
+S1	C0	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	25000	24982	18	0	complete
+S1	C1	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	25000	24876	124	0	complete
+S1	C2	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	25000	24958	42	0	complete
+S1	C3	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	25000	24934	66	0	complete
+S1	C4	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,4,5,6,7,8,10,11,12,13,14	1000	1	1000	23000	22958	42	0	complete
+S1	C5	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	25000	24886	114	0	complete
+S1	C6	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	16	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16	1000	1	1000	29000	28882	118	0	complete
+S1	C7	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	25000	24864	136	0	complete
+S1	S1	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12015	2	483	complete
+S1	S2	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12486	14	0	complete
+S1	S3	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12460	40	0	complete
+S1	S4	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12482	18	0	complete
+S1	S5	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12500	0	0	complete
+S1	S6	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12393	106	1	complete
+S1	S7	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12488	12	0	complete
+S1	S8	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	15	1,2,3,4,5,6,7,8,9,10,11,12,13,14,17	500	1	500	13500	13468	32	0	complete
+S1	S9	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12490	10	0	complete
+S1	S10	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12482	18	0	complete
+S1	S11	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12039	0	461	complete
+S1	S12	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12072	2	426	complete
+S1	S13	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12493	4	3	complete
+S1	S14	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	12500	12366	134	0	complete
+S2	C0	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	14000	13817	183	0	complete
+S2	C1	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	14000	13767	233	0	complete
+S2	C2	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	14000	13844	156	0	complete
+S2	C3	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	14000	14000	0	0	complete
+S2	C4	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,4,5,6,7,8,10,11,12,13,14	1000	1	1000	13000	12891	109	0	complete
+S2	C5	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	14000	13597	403	0	complete
+S2	C6	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	16	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16	1000	1	1000	16000	15896	104	0	complete
+S2	C7	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	1000	1	1000	14000	13792	208	0	complete
+S2	S1	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	6738	59	203	complete
+S2	S2	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	6820	180	0	complete
+S2	S3	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	6583	417	0	complete
+S2	S4	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	6971	29	0	complete
+S2	S5	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	4167	61	2772	complete
+S2	S6	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	7000	0	0	complete
+S2	S7	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	6903	97	0	complete
+S2	S8	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	15	1,2,3,4,5,6,7,8,9,10,11,12,13,14,17	500	1	500	7500	7450	50	0	complete
+S2	S9	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	6879	121	0	complete
+S2	S10	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	6897	103	0	complete
+S2	S11	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	6700	120	180	complete
+S2	S12	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	6929	5	66	complete
+S2	S13	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	7000	0	0	complete
+S2	S14	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	14	1,2,3,4,5,6,7,8,9,10,11,12,13,14	500	1	500	7000	7000	0	0	complete
+S3	C0	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	1000	1	1000	13000	13000	0	0	complete
+S3	C1	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	1000	1	1000	13000	13000	0	0	complete
+S3	C2	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	1000	1	1000	13000	13000	0	0	complete
+S3	C3	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	1000	1	1000	13000	13000	0	0	complete
+S3	C4	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	1000	1	1000	13000	13000	0	0	complete
+S3	C5	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	1000	1	1000	13000	13000	0	0	complete
+S3	C6	reported, not core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	15	1,2,3,5,6,7,8,9,10,11,R,14,14E,15,16	1000	1	1000	15000	15000	0	0	complete
+S3	C7	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	1000	1	1000	13000	13000	0	0	complete
+S3	S1	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S2	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S3	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S4	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S5	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S6	extra-hard	none	not defined for this simulator (revision 1.3: S3 has no 50%-missing cell)	0		0			0	0	0	0	not run by design
+S3	S7	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S8	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	14	1,2,3,5,6,7,8,9,10,11,R,14,14E,17	500	1	500	7000	7000	0	0	complete
+S3	S9	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S10	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S11	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S12	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S13	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S3	S14	extra-hard	runner	hosted-runner run 44201244793 (label hard, package tree 0b6fcb6d)	13	1,2,3,5,6,7,8,9,10,11,R,14,14E	500	1	500	6500	6500	0	0	complete
+S4	C0	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	1000	1	1000	33000	31932	1068	0	complete
+S4	C1	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	1000	1	1000	33000	31941	1059	0	complete
+S4	C2	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	1000	1	1000	33000	31900	1100	0	complete
+S4	C3	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	1000	1	1000	33000	32000	1000	0	complete
+S4	C4	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	1000	1	1000	33000	31172	1828	0	complete
+S4	C5	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	1000	1	1000	33000	31964	1036	0	complete
+S4	C6	reported, not core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	20	1,2,3,4,5,6,7,8,9,10,11,15,16,I,Qs,Qm,L,12,13,14	1000	1	1000	37000	35952	1048	0	complete
+S4	C7	core	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	1000	1	1000	33000	31967	1033	0	complete
+S4	S1	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	14871	1129	500	complete
+S4	S2	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15976	524	0	complete
+S4	S3	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15991	509	0	complete
+S4	S4	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15983	517	0	complete
+S4	S5	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	16000	500	0	complete
+S4	S6	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15921	579	0	complete
+S4	S7	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15967	533	0	complete
+S4	S8	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	19	1,2,3,4,5,6,7,8,9,10,11,17,I,Qs,Qm,L,12,13,14	500	1	500	17500	16990	510	0	complete
+S4	S9	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15984	516	0	complete
+S4	S10	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15980	520	0	complete
+S4	S11	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15027	973	500	complete
+S4	S12	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	14850	1150	500	complete
+S4	S13	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15934	73	493	complete
+S4	S14	extra-hard	laptop	laptop confirm run (tree 0b6fcb6d), finished before 2026-11-18 09:38	18	1,2,3,4,5,6,7,8,9,10,11,I,Qs,Qm,L,12,13,14	500	1	500	16500	15999	501	0	complete

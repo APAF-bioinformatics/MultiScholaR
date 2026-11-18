@@ -1,0 +1,2 @@
+simulator	omic	eligible_in_order	ruv_designs_pass	ruv_designs_fail	ruv_designs_inconclusive	ruv_designs_not_judged	ruv_designs_not_run	arm1_rules_1_2_6_7	branch	eligible_without_rule4_in_C4	void_core_cells	core_cells_not_run	notes
+S1	proteomics, classic route	15 > 16	2	11	0	0	0	pass	eligible designs exist	15 > 16			

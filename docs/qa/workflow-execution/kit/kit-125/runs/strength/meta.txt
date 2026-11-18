@@ -1,0 +1,8 @@
+KIT-125 bounded check of the unwanted variation's strength (decision M21)
+package tree commit 0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22; changes under R/, tests/, src/: FALSE
+sha256: k125_strength.R a7f95356f9c0d0bfda19d12c9527a0887927ff5e31714faf0105b3b2836cc0fc; k125_dia_limpa.R b9f062cf1689295221261c5738b675ba63cda3c55ee84d4b4b15e46dc7ba5360; k125_common.R bd0702216568117bd1e52a417bfb4084f840a701cb2240322bcb2e624db42e0f; s2_limpa.R 76dcbf9e3833bf3c4b0b074abda394963f1b088a9c5f9a94492d09d34c09c292
+input (sha256): DIANN1.8_SingleCells_CellCycle.zip eebe51f38170232409d8cfd9f355bb4b13dad4c25052822283a4884076f33f0f
+matrices per source: 10; threads: OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1; one R process
+R version 4.6.1 (2026-06-24); packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4
+DPC engine: fastlimpadpc
+started 2026-11-18 13:47:15 AEDT; finished 2026-11-18 13:48:11 AEDT
