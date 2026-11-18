@@ -902,3 +902,14 @@ test_that("(third pass item 3) DIA with limpa and transcriptomics: first-pass nu
     expect_identical(process$table$Protein.Ids, expected$Protein.Ids)
     expect_equal(process$table[-1L], expected[-1L], tolerance = 1e-12)
 })
+
+test_that("(fourth pass item 1) lipidomics and metabolomics: the declared RUV step's identity states the replicate structure by design", {
+    for (binding in list(lipidomicsDeclarationBinding, metabolomicsDeclarationBinding)) {
+        fixed <- omicsRuvOperation(binding, "declared")$fixed
+        expect_match(fixed$replicate_sets, "the groups (RUV-III)", fixed = TRUE, info = binding$prefix)
+        expect_match(fixed$replicate_sets, "under the design technical_replicates the declared technical replicates", fixed = TRUE,
+            info = binding$prefix)
+        # today's declaration has no fixed replicate text
+        expect_null(omicsRuvOperation(binding)$fixed$replicate_sets, info = binding$prefix)
+    }
+})

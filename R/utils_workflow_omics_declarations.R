@@ -408,7 +408,9 @@ omicsRuvAbsent <- function(value) is.null(value) || (length(value) == 1L && !is.
 omicsRuvDesignOperation <- function(binding) {
     newOmicsOperation(binding, paste0(binding$prefix, "_ruv"), "whole_matrix", parameters = omicsRuvDesignParameterNames,
         product_type = paste0(binding$prefix, ".ruv_result"),
-        fixed = list(replicate_sets = "the groups (RUV-III)", test = "the uncorrected values with W1..Wk in the limma model"),
+        # KIT-129 fourth pass item 1: the replicate sets by design (`omicsRuvDesignReplicateSets`), not the groups alone.
+        fixed = list(replicate_sets = paste("the groups (RUV-III); under the design technical_replicates the declared",
+            "technical replicates, the biological units (RUV-III)"), test = "the uncorrected values with W1..Wk in the limma model"),
         kernel = function(object, parameters, store) {
             invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
             design <- parameters$ruv_design
