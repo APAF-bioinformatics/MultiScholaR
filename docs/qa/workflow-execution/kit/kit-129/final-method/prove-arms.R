@@ -102,7 +102,10 @@ keyed <- function(feature, contrast, estimate, p, q) {
 # The run path's store (item 5): an in-process state owner holding `object` as the step's source; the compute halves of
 # the tab and the managed worker run on it (`computeDIAReference*`), exactly as in the application.
 runpath_store <- function(object) {
-    manager <- newDIAStateAdapter(newWorkflowEntityStore(tempfile("runpath-"), "kit-129-runpath", "DIA"),
+    # the store's root is an existing directory (newWorkflowEntityStore refuses one that is not; runner 44367921310)
+    root <- tempfile("runpath-")
+    dir.create(root)
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "kit-129-runpath", "DIA"),
         WorkflowState$new(audit_enabled = FALSE))
     manager$.context$reference_states <- TRUE
     manager$saveState("protein_replicate_filtered", object, list(), "source")
