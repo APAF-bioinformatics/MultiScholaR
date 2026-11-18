@@ -116,7 +116,7 @@ Counted but not part of this pass (needs a scope decision; tests assert some of 
 
 ## Outcome, first part (2026-11-19, branch kit-146-debug-cleanup)
 
-Removed in the 54 `R/` files no open branch changes: whole debug statements only (A, B, C), found with the R parser so multi-line calls go as a unit; the boxed banners around DEBUG66 headers; the emptied `[D66:START]`/`[D66:END]` blocks and the local `d66_log` helpers once nothing called them; `if`/`for`/`else` bodies that held nothing but removed debug lines (conditions without side effects); eight `DEBUG66` label comments over removed code. A statement was removed only when it was not the value of its block, or the block's value is unused (loop bodies, `if` statements followed by more code, observer bodies). 1,184 lines removed in total.
+Removed in the 54 `R/` files no open branch changes: whole debug statements only (A, B, C), found with the R parser so multi-line calls go as a unit; the boxed banners around DEBUG66 headers; the emptied `[D66:START]`/`[D66:END]` blocks and the local `d66_log` helpers once nothing called them; `if`/`for`/`else` bodies that held nothing but removed debug lines (conditions without side effects); eight `DEBUG66` label comments over removed code. A statement was removed only when it was not the value of its block, or the block's value is unused (loop bodies, `if` statements followed by more code, observer bodies). 1,182 lines removed in total, in 52 files (after restoring two test-expected lines in two files).
 
 Not done in this pass: D (console dumps) is left whole, together with the untagged `Step:`/`Arg:`/`Data State` traces: most dumps sit under an untagged label line of that family (e.g. `message("Data State (up_matrix) Head:")`), so removing only the dump leaves the label. Needs a scope decision.
 
@@ -124,11 +124,11 @@ Not done in this pass: D (console dumps) is left whole, together with the untagg
 
 | Group | A all | A in code | B | C | D |
 |---|---|---|---|---|---|
-| First part (cleaned now) | 637 -> 14 | 626 -> 11 | 151 -> 5 | 47 -> 2 | 72 -> 72 |
+| First part (cleaned now) | 637 -> 16 | 626 -> 13 | 151 -> 5 | 47 -> 2 | 72 -> 72 |
 | Second part (held, open branch) | 111 -> 111 | 108 -> 108 | 75 -> 75 | 9 -> 9 | 17 -> 17 |
 | inst/reports (held) | 0 -> 0 | 0 -> 0 | 78 -> 78 | 0 -> 0 | 0 -> 0 |
 | inst/workbooks (out of scope) | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 13 -> 13 |
-| **All** | 748 -> 125 | 734 -> 119 | 304 -> 158 | 56 -> 11 | 102 -> 102 |
+| **All** | 748 -> 127 | 734 -> 121 | 304 -> 158 | 56 -> 11 | 102 -> 102 |
 
 ### Kept in first-part files, with the reason
 
@@ -138,6 +138,8 @@ Not done in this pass: D (console dumps) is left whole, together with the untagg
 | `R/func_prot_annotation_uniprot_helpers.R:55` | `DEBUG66: Cache miss, calling directUniprotDownload...` | same test pair (`test-e2e-browser-harness.R`) |
 | `R/func_metab_s4_plotting_methods.R:197` | `--- Entering plotRle for MetaboliteAssayData ---` | expected by `test-metab-01h-s4-plot-rle-characterization.R`, `test-metab-s4-plotting-direct-shared.R` (the lipid twin was removed: no test expects it) |
 | `R/mod_prot_design.R:142` | `--- Entering mod_prot_design_server ---` | expected by `test-prot-04-design.R` (call log) |
+| `R/mod_prot_norm_render_helpers.R:112` | `messageFn("--- DEBUG66 [final_qc_plot]: Rendering ---")` | restored after runner run 44366929002: `test-prot-05b-norm-module-contracts.R` expects a message containing "Rendering" |
+| `R/mod_prot_norm_correlation_helpers.R:139` | `messageFn(sprintf("--- DEBUG66 [mod_prot_norm]: %s ---", startMessage))` | restored after the same run: `test-prot-05b-norm-module-contracts.R` expects the caller's `startMessage` ("Starting Correlation Filter Flow") in the messages |
 | `R/func_prot_qc_filtering_helpers.R:175,203,259` | `DEBUG66: ... Memory: %.1f MB` | the message arguments call `gc()`; removing them changes garbage-collection timing and so memory peaks in the KIT memory measurements; needs a decision (drop, or keep an explicit `gc()`) |
 | `R/func_general_runtime_helpers.R:105,108` | roxygen line and default `log_level = "DEBUG66"` of exported `checkMemoryBoth()` | public signature; second part decides |
 | `R/func_prot_da_results_long_format.R:76` | comment over commented-out prints | commented-out debug block, out of scope |
