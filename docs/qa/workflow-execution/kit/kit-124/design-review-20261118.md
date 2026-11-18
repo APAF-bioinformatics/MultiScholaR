@@ -50,7 +50,7 @@ Mean false discovery proportion, worst core cell (and in C5, factor tied to grou
 - **Arm 4 against arm 7** isolates the control rule (both W in the model, both pseudo-replicates): the small least-significant subset is what fails, mostly when the factor is tied to the groups.
 - **Arm 8** shows the user's premise is right: true nulls as controls are the best design. **Arm 5** shows the cost of finding them from the same data by a first test: acceptable in classic proteomics and transcriptomics except when the factor is tied to the groups (and with a power loss in transcriptomics), poor in DIA_LIMPA and lipid/metab.
 
-Stress cells finished so far (transcriptomics, lipid/metab; scored 2026-11-18, partial):
+Stress cells finished so far (transcriptomics, lipid/metab; scored 2026-11-18, partial). **Superseded 2026-11-18 by the final scoring of every extra-hard cell in all four omics: `outcome.md`, last section, and `scored/final-20261118/`. The figures of this table are unchanged there; the reading below it is corrected in the note that follows it.**
 
 | Cell | Transcriptomics: arm 7 / arm 5 / today | Lipid/metab: arm 7 / arm 5 / today |
 |---|---|---|
@@ -62,6 +62,8 @@ Stress cells finished so far (transcriptomics, lipid/metab; scored 2026-11-18, p
 | 3 per group (S1) | 0.046 / 0.044 / 0.046 | 0.101 (ceiling 0.126) / 0.070 / 0.546 |
 
 All features as controls held where it was expected to be weakest (many changed features, one-directional effects, abundance-tied loadings) in transcriptomics; in lipid/metab it is liberal under strong confounding (0.130 against a ceiling of 0.072) and at 3 per group, where the ceiling is liberal too. k = 1 fails with three factors: k must be estimated or chosen, not fixed. Classic proteomics and DIA_LIMPA stress cells are still running.
+
+**Corrected 2026-11-18 (final scoring).** (a) "Held ... with one-directional effects in transcriptomics" cannot be said: in that scenario (S9) the ceiling itself fails rule 1 (type I 0.075 at 0.05 and 0.018 at 0.01), so the scenario is void and judges no design; arm 7 equals the ceiling there (0.074). The heavy-tails scenario of transcriptomics is void too (ceiling type I 0.085). (b) "k must be estimated or chosen, not fixed" stands, but estimating is not sufficient everywhere: with three factors the estimated count returned 3.00 in classic proteomics and transcriptomics at 6 per group, 2.63 in DIA_LIMPA (arm 7: mean false discovery proportion 0.088, outside the limits), 1.39 in DIA_LIMPA at 3 per group (0.164) and 2.00 in transcriptomics at 3 per group (no calls, power 0.000 against the ceiling's 0.341). (c) Classic proteomics and DIA_LIMPA are no longer running: arm 7 left no limit in any classic proteomics scenario (four inconclusive on the tail); in DIA_LIMPA it is outside a limit at 3 per group, with the factor tied to the groups at 0.6 (tail only), with three factors, and at 3 per group with a tied factor or three factors. In lipid/metab, beside strong confounding, it fails with a known unbalanced batch (0.139; this cell was not in the partial table). The four 3-per-group scenarios of lipid/metab are void (the ceiling fails rule 2), so "liberal at 3 per group" is not a statement about the design. Figures and standard errors: `outcome.md`, last section.
 
 ## 4. Proposal for the option set (for the user's decision)
 
@@ -78,7 +80,9 @@ Three tiers, each a tested arm, each recorded in the analysis record and named i
 
 The corrected matrix is still computed and used for PCA, plots, export and integration under every RUV option: "factors in the model" changes only what the test reads.
 
-Open for the stress cells still running: conditions of use for classic proteomics and DIA_LIMPA; whether k is estimated (`sva::num.sv`, not a dependency today) or user-chosen.
+**Note of 2026-11-18 (final scoring), on the labels in the table above; the labels themselves are the user's and are not changed here.** "None: calibrated except DIA_LIMPA" holds in the core cells only: with the unwanted factor tied to the groups at 0.6, no correction gives a mean false discovery proportion of 0.593 (classic proteomics), 0.533 (DIA_LIMPA, runner), 0.450 (transcriptomics) and 0.642 (lipid/metab). First-pass null controls in classic proteomics also leave the limits with a known unbalanced batch, at 3 per group with a tied factor and when there is no unwanted factor (power lost), and lose nearly all power with three factors; in transcriptomics they also fail with a known batch. Legacy's "0.30 to 0.56" is the core-cell range; in the extra-hard scenarios it reaches 0.72. Conditions of use for all four omics: `outcome.md`, last section.
+
+Open for the stress cells still running (as written before the final scoring; no cell is running now): conditions of use for classic proteomics and DIA_LIMPA; whether k is estimated (`sva::num.sv`, not a dependency today) or user-chosen.
 
 ## 5. Choosing k: two rules, offered where each is defined (user's direction, 2026-11-18)
 
@@ -151,7 +155,7 @@ One row per decision that the paper's Methods must state. "Basis" names the evid
 | M19 | The hosted-runner equivalence gate is read on the values the study's rules use (null rates, false discovery proportion, power, k, counts: identical in all 16,000 transcriptomics rows); 8 rows outside the tolerance on bias and root mean square error only (relative difference at most 6.7e-5) are accepted and reported | User, 2026-11-18: "accept" | How equivalence between machines was shown, including the exception |
 | M20 | `fast_duckdb` is made public (or the upload rule changed) only at the public build; until then installers are built, installed and tested inside one build job and discarded | User, 2026-11-18. No installer can leave a build job while the repository is internal | Availability of the dependency at publication |
 
-Still to be decided or measured before the Methods can state them: the three further arms (each selectable combination of control set and k rule), the technical-duplicate re-measurement, the warning's threshold, the extra-hard scenarios of three simulators, the real-data null check, the audits' open findings on the kernels.
+(Note of 2026-11-18: the three further arms, the technical-duplicate re-measurement and the extra-hard scenarios of this list are now measured and scored; see `outcome.md`.) Still to be decided or measured before the Methods can state them: the three further arms (each selectable combination of control set and k rule), the technical-duplicate re-measurement, the warning's threshold, the extra-hard scenarios of three simulators, the real-data null check, the audits' open findings on the kernels.
 
 ## Sources
 

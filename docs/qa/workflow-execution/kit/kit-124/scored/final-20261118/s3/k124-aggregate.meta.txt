@@ -1,0 +1,53 @@
+KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
+script: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-scored-final/docs/qa/workflow-execution/kit/kit-124/aggregate.R
+script sha256: c5c6275f099166ab59bb479b4557ca598c96004f71494de785883bdbe5f4d200
+commit: 19409bb6997225e8434a732768853e6843577f46
+script differs from commit: FALSE
+command: Rscript /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-scored-final/docs/qa/workflow-execution/kit/kit-124/aggregate.R /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-hard-20261118/scored/s3 S3=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-hard-20261118/combined/s3
+working directory: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-scored-final
+R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
+packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
+library paths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+run at: 2026-11-18 13:41:38 AEDT
+inputs (sha256, bytes, path):
+  ac52df73f1ac09668639ac7e6179e20da40a472e0d51f1115e3e82db67817a86 467428 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-C0.rds
+  6af8044e9e7dd803c896823e730e6ed5135832520da1768258725ade08e3a3a2 452967 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-C1.rds
+  b463d757bfd786bbc61036468a28fb2a873f9577a8b6cbea1fb07d6de632d02a 446499 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-C2.rds
+  a1c586bc021c68c57f1802702c0271ab78bf3fea45a5a77eeca51009ca15ac35 402332 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-C3.rds
+  6eb10ce27e7d6ad90247770236ec3e839d1b7fc5e10bfa454f89b8ed7f7f7c1f 185250 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-C4.rds
+  613d434828a8e487a792a4aa7cca612eb11ae71c491d251f1ce27556ddeaebbe 503201 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-C5.rds
+  b71a5a34596bed66da59f7251a5d3031bfa9895727aa0fa3527e8d217dfb409d 597353 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-C6.rds
+  05af0a493a3362d9b155879c029077d7a13ea737ce77fc2086d093d2e07d4e5e 450375 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-C7.rds
+  ab8985f332326ea339921896036c0361aae25848f6ab4572071e2a8f83aacf74 242264 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S1.rds
+  24a3037fcb83ad5113c0d7e9463a83d9c3a05971e7f6b60cd3ce76166376fa1c 244691 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S10.rds
+  34a644c16a99f5b2e999e7d57d49b822e452e7c6c0c8bd9820c3e9255de39f14 258104 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S11.rds
+  d17229cb04f522c16c638e70cdd0135587809da93719242ba76b096d3a96703a 193452 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S12.rds
+  10655d4b9a1bd8edc0e3bd52740ae922f49f95b61724c937d3ef9bf8dae1ae3f 192220 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S13.rds
+  2fc31d2905e9ae5c670b229560ec2afde0bb1e0b308a6ab1f25ce117f4fef991 235847 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-hard-20261118/runner/s3-hard/cells/s3-S14.rds
+  5701df7ae111516dcd0024e601d1819b2bd5bd715a91cf917e9172e688d7a843 241110 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S2.rds
+  00764573633495944b0e0f4e28ed6eb34a7955d4ff6668d39da93ad22a1a19a7 274503 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S3.rds
+  c470005148208bc70f2033516eb8e187724ee2c0b897470d0bb54a54a60d5424 247401 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S4.rds
+  9f3597ee0b2ec425a78c37f5d50caa4cd5ddd19789f7a3d2521db33d3f557625 239587 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S5.rds
+  14bbb9ca270aaf7e44cd189983d5a868a84fdb3c08e259db4b70d5ce929aa9cb 243197 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S7.rds
+  fc19b6bcd1d2bb966d1e687aea03d7cabe27212af41f762d1c49b33276bebf49 270884 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S8.rds
+  aba0533a8293a3f5dd9c51dd8bd3e563a2b02d599f6f50dd85471a7384446b55 248393 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s3-confirm/cells/s3-S9.rds
+  2d07565b99126b6f712bc09d9d1385f6e155270128a34c6b1ec04dec803a7e97 2199 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-hard-20261118/combined/s3/s3-runs.meta.txt
+simulator S3 meta (/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-hard-20261118/combined/s3):
+  commit: 0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22
+  script sha256: ad9567c02534bf12fee3b7efbc9dfce2cf0b7610c8248bdd944e41a13df8c508
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-confirm 1000 500 6 C0,C1,C2,C3,C4,C5,C6,C7
+  cells run by this command: C0,C1,C2,C3,C4,C5,C6,C7; cells in the tables: C0,C1,C2,C3,C4,C5,C6,C7
+  runs: core 1000, stress 500, first run 1; cores 6
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/libblas.so.3.12.0
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-16 11:54:54; finished 2026-11-17 07:12:38
+  commit: d11dbb82a3210258c581a470aec16f230b5f4cf2
+  script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 0 500 4 S14
+  cells run by this command: S14; cells in the tables: S14
+  runs: core 0, stress 500, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-17 23:47:34; finished 2026-11-18 00:18:13
