@@ -468,3 +468,84 @@ The Linux archive of run 44146578653 (token-free, `d958b479`; sha256 checked) wa
 | `fastduckdb` in Imports; P5 Linux lanes; P6 Windows lanes | 1 run for both platforms: 44195739758 | not used |
 | Laptop systemd lifecycle | 1 (after one invalid start that observed nothing) | not used: the repair needs a new archive |
 | Notices | none | |
+
+## In-job build and test (2026-11-18, decision M20); the Linux library path (defect 2)
+
+M20 (the user, 2026-11-18): `fast_duckdb` becomes public only at the public build. Until then nothing built with the read token may leave the job that built it. `distributable.yml` is restructured accordingly, and the Linux bundle finds its libraries by run path. Budget declared in `b835b7f1`: one run (stage full, both platforms) and one correction pass. Both are used.
+
+| Run | Commit | What ran | Result |
+|---|---|---|---|
+| [44226281203](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44226281203) | `b835b7f1` | stage full: ubuntu-22.04, ubuntu-24.04, windows-2025 | Windows complete (below). Linux, both runners: the library loads with the run paths (389 of 389, bare ubuntu:22.04, no `LD_LIBRARY_PATH`), then the internal check failed: "direct writer requires the qualified incremental fastduckdb build"; the later Linux steps were skipped (a fault of the new workflow's conditions) |
+| [44232555102](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44232555102) | `cbc46e8f` | the correction pass, Linux only | every Linux step ran; open: the host check in the Arch Linux and Fedora containers, and the three metabolomics entry lanes (the fixture, defect 4) |
+
+Neither run has an artifact (0 and 0 by the API) and neither wrote a cache (the eight caches on the branch are of 2026-11-17, R 4.6.2, another workflow). The job logs hold the install output of the public packages, the check lines and the tables below; the internal packages' build output stays in the runner's temporary folder as before.
+
+### 1. The workflow
+
+- Stages: `snapshot` (token-free, unchanged), `library`, `full`, `container`. Every build step that installs the library has the token; no other step does.
+- Stage `full`, one job per platform: library, checks from the moved folder, shell, Linux archive or NSIS installer, install on the same runner (Linux: `install.sh` under a scratch `XDG_DATA_HOME`; Windows: the silent per-user install into the runner's `%LOCALAPPDATA%\Programs`), the build's other copies and the archive or installer deleted, then from the installed application: the lifecycle test, the GUI-entry lanes, the browser e2e lanes (network closed), and on Linux the host check and `uninstall.sh`.
+- Linux has two jobs: ubuntu-22.04 (everything) and ubuntu-24.04 (to the lifecycle and the host check). The 24.04 job cannot receive an archive, so it builds its own bundle in an `ubuntu:22.04` container by the same steps (`packaging/linux/build.sh`, one phase per step; the token passed by name). Its archive is therefore a second build of the same commit, not the same file (sha256 `8fed632a...` against `85b08e03...`; 117 against 118 bundled libraries, the runner image having one more than the bare container).
+- Nothing is uploaded by a build job. The plan job fails if the file names a cache, a download of an artifact, or an upload outside the snapshot job. Lane and e2e logs go to files on the runner; the log shows their tables and, only where no table was written, the last 40 lines.
+
+**What building and testing in one job weakens** (not worked around):
+
+| Criterion | As written | What the single job shows instead |
+|---|---|---|
+| P4: "installs without administrator rights on a fresh runner" | the installer goes to a runner that never held the build | installed on the build runner, from the archive or installer, after the build tree, the moved bundle and the unpacked shell were deleted. The runner still has R's build dependencies (the `-dev` system libraries, compilers, Rust, on Windows Rtools and R 4.6.2): a library missing from the bundle but present on the build runner would not be seen. Linux mitigation, partial: every package loads in a bare `ubuntu:22.04` container with the network off (before packing), and the installed R starts in Arch Linux and Fedora containers. Windows has no such check in stage full (D5's Server Core check is stage `container`, last run token-free) |
+| P3 and 2.0.9: lifecycle on `ubuntu-24.04` | the 22.04-built archive installed on 24.04 | a bundle built on the 24.04 runner inside `ubuntu:22.04`: same sources, same steps, a different file from the one tested on 22.04 |
+| 2.0.9 lanes "from the installed archive" on a clean machine | fresh runner | installed application, build runner (same reservation as P4) |
+| Release candidate: "fresh-runner installs on both platforms" | unchanged | not attempted; needs M20 lifted |
+| Transfer integrity (download, checksum on another machine) | artifact and `sha256sum -c` | checksum verified in the same job only |
+
+### 2. The library path (defect 2)
+
+**Repair, packaging only.** `packaging/linux/runpath.sh` writes a run path to `syslib/`, relative to each object's own place (`$ORIGIN/...`, `patchelf` 0.14.3), into R's binary, its modules, every package library and the bundled libraries themselves (326 objects). The launcher (`packaging/linux/Rscript`) no longer exports `LD_LIBRARY_PATH` and removes any it inherits. `assemble.sh` then checks, with only R's own `lib` folder on the path, that nothing but the C library resolves outside the bundle (none did).
+
+**Why this mechanism.** R starts every child through the C library's shell (`system`, `popen`) or `processx`, all of which inherit R's environment, and R's own front-end is a bash script: any exported path reaches host programs, the shell first. A run path is read only by the object that carries it, so the bundled libraries are visible to the bundled R and to child R processes (which load the same objects) and to nothing else. The alternatives: `R_HOME/etc/ldpaths` would keep the path in R's environment, so `system()` children would still get it; restricting what is bundled would leave R without its readline and ICU on hosts that carry other versions. `patchelf` was not on the build before; it is one build-time tool (already on the 22.04 runner image), not a dependency of the bundle.
+
+**One consequence found by the first run.** MultiScholaR's install records the sha256 of the binaries of `duckdb`, `duckplyr` and `fastduckdb` (`src/build_dia_rsum.R`), and the DIA rollup and the direct writer refuse a build whose binaries changed afterwards. Writing the run path after the install changed them. So `install-library.R`, only in the bundle build (`MSR_BUNDLE_RUNPATH=1`), writes the run path into those three packages before MultiScholaR is installed, and `assemble.sh`'s pass leaves objects that already carry it alone ("3 objects", then "323 objects (3 had it already)"). After that: manifest supported, rollup admitted, writer admitted, on both runners. No package code changed.
+
+**Hosts (run 44232555102, the installed application's R; containers with the network off):**
+
+| Host | bash under the old exported path | Children inherit a path into `syslib` | `bash -c true`, `sh -c true`, a pipe of host programs from R | `processx` bash; child R loading stringi, xml2, curl, MultiScholaR; the entry (plain launcher, trial unit) answering HTTP 200 |
+|---|---|---|---|---|
+| ubuntu-22.04 runner | runs | no | pass | pass (8 of 8) |
+| ubuntu-24.04 runner | runs | no | pass | pass (8 of 8) |
+| `archlinux:latest` (glibc 2.44, `/bin/sh` is bash) | **fails, exit 127: the defect reproduced** | no | **pass** | **not shown**: R's `utils` did not load in the container |
+| `fedora:latest` (Fedora 45, glibc 2.44) | runs | no | pass | not shown, same cause |
+
+So the defect itself is shown repaired on Arch's userland: the bundled R starts through the host's bash and starts `bash` and `sh`, where the old path stops bash. The rest of the check did not run there, for a cause outside the library path: both minimal images have no `/usr/bin/which`, R's `Sys.which()` runs that fixed path, and `utils`' load hook fails on it ("error in running command"; R's startup then warns that `utils` and `stats` were not found). **Finding: the bundled R needs `/usr/bin/which` on the host.** Desktop installs normally have it; a minimal one does not, and then the application cannot start. The budget is spent, so the check was not rerun with `which` added to the images.
+
+Not shown on any host: the laptop itself and the systemd worker from the bundle (P3 step 4, still open: it needs an archive on the laptop, which M20 forbids); Debian; any host on glibc 2.35 to 2.38 other than Ubuntu 22.04.
+
+**Recorded, not changed.** R's own `etc/ldpaths` puts `/usr/local/lib` and `/usr/lib/x86_64-linux-gnu` in front of everything, as it did before the repair. On Debian and Ubuntu hosts a host library of the same file name is therefore taken before the bundled one (on the 24.04 runner R used the host's `libreadline.so.8.2`, `libcurl`, `libgfortran`; on Arch and Fedora that folder does not exist and the bundle's are used). Children inherit those two folders and a Java folder, none inside the bundle. Whether the bundle should set `R_LD_LIBRARY_PATH` to its own `lib` only is a separate decision: it changes which BLAS and Fortran runtime a Ubuntu 24.04 user computes with.
+
+### 3. Lifecycle and lanes from the installed application
+
+| | ubuntu-22.04 | ubuntu-24.04 | windows-2025 |
+|---|---|---|---|
+| Run | 44232555102 | 44232555102 | 44226281203 |
+| Archive or installer | 1,020 MiB, installed 2,645 MiB, 21 s | 1,019 MiB, 2,645 MiB, 21 s | NSIS 772 MiB, installed 2,563 MiB, 326 s; longest path under the folder 143 (limit 170) |
+| Library from the moved folder, network off | 389 of 389 | 389 of 389 | passed |
+| Internal packages, DIA manifest, rollup, writer | passed | passed | passed (no DIA, D4) |
+| Lifecycle, installed, network closed | passed, 16 checks; launcher `process` (kernel 6.8) | passed, 17 checks; `process`, "the user D-Bus does not answer"; `--no-sandbox` (AppArmor 1) | passed, 15 checks; `process` |
+| Browser e2e lanes | 7 of 7 with the laptop's counts (88, 190, 16, 42, 86, 98, 153) | not run (lifecycle only) | 3 of 4 (88, 190, 16); TMT and LFQ 136 of 153, the report download (defect 3) |
+| GUI-entry lanes | 7 identical (prot_dia, prot_dia_limpa, prot_tmt, prot_lfq, prot_lfq_fragpipe, lipid_canonical, trx_screen); 3 metabolomics lanes differ from `norm` on, the same digests as run 44195739758 (defect 4, the fixture) | not run | as run 44195739758: three protein lanes error (defect 3), trx_screen errors under `testServer`, metabolomics as on Linux, lipid log text |
+| Uninstall | passed | passed | not in the job |
+
+`trx_screen` on Linux is identical to its oracle here (29 passed) where run 44195739758 had 7 failures on `top_de_genes.tsv`. Nothing in this change targets it and the cause was not looked for: read it as one observation, not as closed.
+
+### Acceptance (2.0.9), 2026-11-18
+
+| Criterion | State | Evidence, and what is weaker |
+|---|---|---|
+| Built by `distributable.yml` from the lockfile at the snapshot date | met for these builds | version table check passed in each job; installers are not kept (M20) |
+| Linux: seven e2e lanes with the laptop's counts, from the installed archive | met in the weaker form | 44232555102, installed application on the build runner |
+| Linux: the suite per file | not run | needs a laptop check-mode table of the same tree, then one sharded run |
+| Windows: four non-DIA lanes and the suite | not met | TMT and LFQ fail (defect 3, `kit-052-win-paths`); suite not run |
+| Lifecycle on ubuntu-22.04, ubuntu-24.04, windows-2025, network closed | met in the weaker form | installed in the build job; 24.04 on its own container-built bundle |
+| Lifecycle, systemd branch, laptop | not met | defect 2 repaired in packaging and shown on the runners and on Arch's shell; the laptop run needs an archive there |
+| No token run uploaded a library or installer; no cache | met for these two runs | 0 artifacts, no new cache |
+| Release candidate | not attempted | needs M20 lifted |
+
+Defects: #2 repaired (packaging), shown as above; #3 not mine (once `kit-052-win-paths` is merged into `kit-134`, one `[dist:full] [dist-windows]` run is enough: the job already runs prot_tmt, prot_lfq, prot_lfq_fragpipe and the TMT and LFQ e2e lane from the installed application); #4 waits for the fixtures' re-record.
