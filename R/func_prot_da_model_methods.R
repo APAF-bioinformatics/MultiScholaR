@@ -388,6 +388,17 @@ setMethod(
       replicate <- resolveProtTechnicalReplicateBlock(theObject@design_matrix[samples_in_model, , drop = FALSE],
         theObject@group_id, theObject@technical_replicate_id)
       block <- if (isTRUE(replicate$technical)) replicate$block else NULL
+      # KIT-129 (audit F4): the fit needs a residual degree of freedom in the model that is fitted (the formula's
+      # terms and the RUV factors; the technical-replicate block is a correlation, not a column). The k limit of the
+      # RUV step knows the groups only, so a covariate of the formula can leave none.
+      residual_df <- nrow(design_for_dpcde) - qr(design_for_dpcde)$rank
+      if (residual_df < 1L) {
+        cli::cli_abort(c(paste0("the DA model leaves no residual degree of freedom with k = {length(w_terms)} RUV factor{?s}: ",
+          "{nrow(design_for_dpcde)} samples, {ncol(design_for_dpcde)} model columns ",
+          "({ncol(design_for_dpcde) - length(w_terms)} from the formula {.val {formula_string}})"),
+          i = "use fewer RUV factors or fewer terms in the formula"),
+          class = "dia_da_no_residual_df", call = NULL)
+      }
       dpcDEFn <- limpa::dpcDE
       dpc_fit <- dpcDEFn(elist, design_for_dpcde, plot = FALSE, block = block)
       contrasts_results <- convertDpcDAToStandardFormat(dpc_fit = dpc_fit, contrast_strings = contrast_strings_to_use,

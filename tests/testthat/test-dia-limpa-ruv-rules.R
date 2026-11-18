@@ -435,3 +435,40 @@ test_that("the declared rules run through the saved operation; today's declarati
         expect_null(legacy$value$ruv_control_rule)
     })
 })
+
+# ---- Audit of 2026-11-18 (KIT-129, register F4) ----
+
+limpaRuvDaWithFormula <- function(state, formula_string) {
+    differentialAbundanceAnalysis(state, contrasts_tbl = data.frame(contrasts = limpaRuvContrast, stringsAsFactors = FALSE),
+        formula_string = formula_string, da_q_val_thresh = 0.05, treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE,
+        args_row_id = "Protein.Ids", qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue")
+}
+
+test_that("the DA refuses, naming k, a model that leaves no residual degree of freedom (audit F4)", {
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    case <- limpaRuvCase(engine, seed = 101L)
+    with_k <- function(k) {
+        state <- limpaRuvKernel(case$quantified, resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features",
+            ruv_k_rule = "user", ruv_k = k))$state
+        state@design_matrix$batch <- rep(c("x", "y", "z"), 4L)
+        state
+    }
+    # k at the limit the groups leave (12 samples, 2 groups, 9 factors: one residual degree of freedom): the DA runs
+    at_limit <- with_k(9L)
+    result <- limpaRuvQuiet(limpaRuvDaWithFormula(at_limit, "~ 0 + group"))
+    expect_identical(result$da_model$k, 9L)
+    expect_false(anyNA(result$contrasts_results$results[[1L]]$raw_pvalue))
+    # a batch covariate of the user's formula beside the factors: 13 columns, then 12, on 12 samples
+    for (k in c(9L, 8L)) {
+        state <- if (k == 9L) at_limit else with_k(k)
+        refusal <- NULL
+        limpaRuvQuiet(refusal <- tryCatch(limpaRuvDaWithFormula(state, "~ 0 + group + batch"), error = \(e) e))
+        expect_s3_class(refusal, "dia_da_no_residual_df")
+        expect_match(conditionMessage(refusal), sprintf("k = %d", k), fixed = TRUE)
+        expect_match(conditionMessage(refusal), "12 samples", fixed = TRUE)
+    }
+    # with room left the same formula runs
+    result <- limpaRuvQuiet(limpaRuvDaWithFormula(with_k(2L), "~ 0 + group + batch"))
+    expect_identical(result$da_model$formula_used, "~ 0 + group + batch + W1 + W2")
+})

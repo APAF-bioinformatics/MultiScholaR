@@ -52,6 +52,9 @@
    only, the quantified matrix is unchanged and the factors enter the `dpcDE` model as today. Declared
    technical replicates stay RUV-III's replicate sets. When the estimated count is 0, or the data cannot
    give a k, the run has no RUV and says why. With the defaults every result is as before.
+ * DIA_LIMPA differential abundance (KIT-129): a model that leaves no residual degree of freedom (the
+   formula's terms and the RUV factors against the samples) is refused with a message that names k, instead
+   of failing inside the fit with "NA/NaN/Inf in 'y'".
  * Proteomics automatic RUV parameters (`findBestNegCtrlPercentage()`): the number of factors k is now chosen
    among the values up to the sample-size limit (`max_acceptable_k`). Before, the limit was applied only to
    the penalty, and a larger k could be returned. Results change only where the canonical-correlation curve
