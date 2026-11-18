@@ -15,6 +15,8 @@
     qvalue_column = "fdr_qvalue",
     raw_pvalue_column = "raw_pvalue"
   ) {
+    # KIT-126 audit F-02: this entry point tests the object's own table; a factors-in-the-model object is refused.
+    refuseProtRuvModelObject(theObject, ".differentialAbundanceAnalysisHelperProteomicsLegacy")
     message("--- Entering differentialAbundanceAnalysisHelper ---")
 
     # IMMEDIATE PARAMETER VALIDATION TO CATCH INDEX ERROR
