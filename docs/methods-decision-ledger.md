@@ -2069,3 +2069,16 @@ Every decision that is still open on 2026-11-18, by subsection, with what is awa
 - LIM-092, LIM-093: the user's go for KIT-088 (scaling figure) and, after the submission, KIT-091.
 - LIM-035: the user: the test edit that makes the installed `resources` suite pass.
 - LIM-014, LIM-086, LIM-096: no owner recorded (numeric annotation columns as samples; two diagnosis questions; the ordinal in the DIANN limpa report template).
+
+## Added after the harvest of 2026-11-18
+
+Rows added the day they were decided. The full text of each is in `docs/qa/workflow-execution/kit/kit-124/design-review-20261118.md`, section 6.
+
+| Id | Decision | Date | Who | Status |
+|---|---|---|---|---|
+| M15 | The estimated count is the pre-selected k rule wherever defined, first-pass nulls included; the separation rule stays selectable with its measured figures | 2026-11-18 | user, on the new-arms results | decided, not yet implemented |
+| M16 | Four exactness changes to be measured as one simulation round before they ship: exact standard errors with missing values; the proteomics test applies its trend and robust settings; the count removes biological units on technical-replicate designs; 200 permutations | 2026-11-18 | user | decided, measurement pending |
+| M17 | Cyclic loess refused below 10 features per assay (lipidomics, metabolomics); fixtures enlarged; references re-frozen in the single re-record | 2026-11-18 | user | decided, not yet implemented |
+| M18 | Shorter staging folder names and short-path rendering for Windows | 2026-11-18 | user | decided, partly implemented (branch `kit-052-win-paths`), unconfirmed on Windows |
+| M19 | Equivalence gate read on rule-bearing values; 8 transcriptomics rows outside tolerance on bias and rmse accepted and reported | 2026-11-18 | user | in force |
+| M20 | `fast_duckdb` made public only at the public build; installers tested inside one job until then | 2026-11-18 | user | in force |
