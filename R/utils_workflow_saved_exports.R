@@ -396,12 +396,16 @@ publishWorkflowActionOutputs <- function(manager, reference, label, destinations
         destination <- file.path(destinations[[fields[[1L]]]], paste(fields[-1L], collapse = "/"))
         if (!dir.exists(dirname(destination))) dir.create(dirname(destination), recursive = TRUE)
         backup <- file.path(previous, member)
+        # KIT-052: a copy into a path longer than 259 characters fails on Windows with long paths disabled; it is named.
         if (file.exists(destination) && !file.exists(backup)) {
             dir.create(dirname(backup), recursive = TRUE, showWarnings = FALSE)
-            if (!file.copy(destination, backup)) cli::cli_abort("cannot retain previous action output")
+            copied <- file.copy(destination, backup)
+            checkWorkflowFigureFiles(backup, "cannot retain previous action output", copied = copied)
         }
         temporary <- tempfile(".publish-", tmpdir = dirname(destination))
-        if (!file.copy(source, temporary)) cli::cli_abort("cannot stage action output publication")
+        copied <- file.copy(source, temporary)
+        checkWorkflowFigureFiles(temporary, paste("cannot stage action output publication of",
+            gsub("([{}])", "\\1\\1", member)), copied = copied)
         syncWorkflowExportPaths(temporary, dirname(destination))
         if (!file.rename(temporary, destination)) cli::cli_abort("cannot publish action output")
         syncWorkflowExportPaths(c(destination, dirname(destination)), dirname(destination))
@@ -633,21 +637,64 @@ workflowStagedRequest <- function(root, kind = c("qvalue", "action"), key, label
 #' @param message First line of the condition.
 #' @param class Further condition classes, after `workflow_figure_unwritten`.
 #' @param windows Whether the Windows path limit applies; an argument so the wording is testable.
+#' @param copied For copies, `file.copy`'s result per file: a file is unwritten when its copy failed or it is missing (a
+#'   copy may carry an empty file), and the Windows hint names the limit a copy has (long paths disabled).
 #' @return `files` invisibly when every one exists with content.
 #' @noRd
 checkWorkflowFigureFiles <- function(files, message = "required figures were not written", class = NULL,
-    windows = identical(.Platform$OS.type, "windows")) {
+    windows = identical(.Platform$OS.type, "windows"), copied = NULL) {
     size <- file.size(files)
-    unwritten <- files[is.na(size) | size <= 0]
+    unwritten <- files[if (is.null(copied)) is.na(size) | size <= 0 else !copied | is.na(size)]
     if (!length(unwritten)) return(invisible(files))
     lengths <- nchar(enc2utf8(unwritten), type = "bytes")
+    # KIT-052 (KIT-134 run 44241609555): ggsave's PNG device (ragg) writes no file from 260 characters even with Windows
+    # long paths enabled; a copy and every other writer fail from 260 only with them disabled, Windows' default.
+    hint <- if (is.null(copied)) paste("the longest of these paths is {max(lengths)} characters; Windows cannot write a",
+        "figure whose path is longer than 259 characters. Move the project to a folder with a shorter path.") else
+        paste("the longest of these paths is {max(lengths)} characters: the project folder's path is too long for Windows",
+            "with long paths disabled, where a path may have at most 259 characters. Move the project to a folder with a",
+            "shorter path, or enable Windows long paths.")
     cli::cli_abort(c(message,
         "x" = "missing or empty: {.file {basename(unwritten)}}",
         "i" = "in {.path {unique(dirname(unwritten))}}",
-        if (windows && any(lengths > 259L)) c("x" = paste(
-            "the longest of these paths is {max(lengths)} characters; Windows cannot write a figure",
-            "whose path is longer than 259 characters. Move the project to a folder with a shorter path."))),
+        if (windows && any(lengths > 259L)) c("x" = hint)),
         class = c("workflow_figure_unwritten", class))
+}
+
+#' Copy every file under one folder into another, keeping the relative layout and the folders, and check that each
+#' arrived (KIT-052): a copy into a path longer than 259 characters fails on Windows with long paths disabled, with a
+#' warning only.
+#' @param from Folder to copy from.
+#' @param to Folder to copy into; created when `from` holds anything.
+#' @param message,class The condition's first line and further classes (`checkWorkflowFigureFiles`).
+#' @return The copied files' paths under `to`, invisibly.
+#' @noRd
+copyWorkflowFolder <- function(from, to, message, class = NULL) {
+    folders <- list.dirs(from, full.names = FALSE, recursive = TRUE)
+    files <- list.files(from, recursive = TRUE, all.files = TRUE, no.. = TRUE)
+    if (!length(files) && !any(nzchar(folders))) return(invisible(character()))
+    for (folder in c(to, file.path(to, folders[nzchar(folders)]))) dir.create(folder, recursive = TRUE, showWarnings = FALSE)
+    target <- file.path(to, files)
+    copied <- file.copy(file.path(from, files), target, overwrite = TRUE)
+    checkWorkflowFigureFiles(target, message, class, copied = copied)
+    invisible(target)
+}
+
+#' Draw a publication's files in a short scratch folder under `tempdir()` and copy them into `target` (KIT-052): the
+#' worker's request folder lies deep in the project, and ggsave's PNG device on Windows writes nothing, and says
+#' nothing, at a path of 260 characters or more. A file whose copy fails stops the step by name (`copyWorkflowFolder`).
+#' @param target The folder the files belong in.
+#' @param produce `function(scratch)` writing into `scratch`.
+#' @return What `produce` returns.
+#' @noRd
+withWorkflowShortFigureFolder <- function(target, produce) {
+    scratch <- tempfile("wfx-")
+    dir.create(scratch)
+    on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
+    value <- produce(scratch)
+    copyWorkflowFolder(scratch, target, "the worker's publication files could not be copied into its request folder",
+        class = "saved_entity_outputs_pending")
+    value
 }
 
 #' Flush explicit export-owned files and directories.
@@ -1098,9 +1145,9 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
         }
         checkWorkflowFigureFiles(file.path(scratch, expected), "required Q-value figures are incomplete",
             class = "saved_entity_outputs_pending")
-        file.copy(file.path(scratch, expected), files, overwrite = TRUE)
+        copied <- file.copy(file.path(scratch, expected), files, overwrite = TRUE)
         checkWorkflowFigureFiles(files, "required Q-value figures are incomplete",
-            class = "saved_entity_outputs_pending")
+            class = "saved_entity_outputs_pending", copied = copied)
         saveRDS(list(grid = grid, progress = shiny::isolate(owner$filtering_progress)), grid_path)
         journal$files <- stats::setNames(lapply(files, \(path) list(
             sha256 = digest::digest(file = path, algo = "sha256"), bytes = file.size(path))), expected)

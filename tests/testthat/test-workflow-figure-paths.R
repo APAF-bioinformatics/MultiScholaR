@@ -234,3 +234,165 @@ test_that("action outputs stage under the short name; one pending under the earl
     expect_identical(jsonlite::read_json(file.path(earlier, "journal.json"))$status, "complete")
     expect_null(assertWorkflowExportReady(manager))
 })
+
+# The worker's request folder (KIT-134 run 44241609555, defect #5): `<root>/scripts/<omic>/.dia-native-<14>/.workflow-entities/
+# .workflow-export/wfx-<32>/{da,omics}-publication/<role>/<file>`. Its figures are drawn in a short folder and copied in; a
+# copy that fails (Windows with long paths disabled) is named. The device double below refuses, silently, as ggsave's PNG
+# device (ragg) on Windows does, any path of 260 characters or more.
+
+figurePathLongDevice <- function(env = parent.frame()) {
+    drawn <- new.env(parent = emptyenv())
+    drawn$paths <- character()
+    original <- ggplot2::ggsave
+    testthat::local_mocked_bindings(ggsave = function(filename, ...) {
+        drawn$paths <- c(drawn$paths, filename)
+        if (nchar(filename) < 260L) original(filename, ...)
+        invisible(filename)
+    }, .package = "ggplot2", .env = env)
+    drawn
+}
+
+# A folder no file can be copied into, as a path over 259 characters is on Windows with long paths disabled.
+figurePathReadOnly <- function(path, env = parent.frame()) {
+    dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    Sys.chmod(path, "0555")
+    withr::defer(Sys.chmod(path, "0755"), envir = env)
+    testthat::skip_if(file.access(path, 2L) == 0L, "the folder stays writable (root?)")
+    path
+}
+
+figurePathText <- function(error) gsub("\\s+", " ", cli::ansi_strip(paste(conditionMessage(error), collapse = " ")))
+
+test_that("the omics worker draws its figures in a short folder: from a long project root none is lost", {
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) {
+            owner$job <- NULL
+            list(status = status)
+        }, .package = "MultiScholaR")
+    fixture <- lipidDeclarationsOwner(file.path(withr::local_tempdir(), strrep("p", 60L), strrep("q", 60L)))
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    suppressWarnings(suppressMessages(runWorkflowOmicsReferenceDuplicateResolution(lipidomicsDeclarationBinding, fixture$owner, list())))
+    controller <- omicsWorkerController(fixture)
+    drawn <- figurePathLongDevice()
+    scratch_before <- list.files(tempdir(), pattern = "^wfx-")
+    done <- omicsWorkerAction(fixture, controller, "lipid_qc_figures",
+        list(stage = "post_filter", grouping_variable = "group", shape_variable = NULL))
+    expect_identical(done$acceptance, "complete")
+    names <- basename(drawn$paths)
+    expect_gt(length(names), 0L)
+    # Drawn in the request folder, every one of these paths would be 260 characters or more.
+    request <- file.path(done$paths$request_dir, "omics-publication", "lipid_qc_dir", names)
+    expect_true(all(nchar(request) >= 260L))
+    expect_true(all(nchar(drawn$paths) < 260L))
+    expect_true(all(file.exists(request)))
+    expect_setequal(list.files(fixture$paths$lipid_qc_dir, "[.]png$"), names)
+    expect_identical(list.files(tempdir(), pattern = "^wfx-"), scratch_before)
+})
+
+figurePathDaWorker <- function(request_dir, draw, env = parent.frame()) {
+    head <- list(entity_id = "head")
+    testthat::local_mocked_bindings(
+        getWorkflowStateReference = function(manager) head,
+        resolveWorkflowStateValue = function(context, reference) list(source = head, parameters = list(qvalue = 0.05)),
+        readWorkflowStateMetadata = function(manager, reference) list(data = "checkpoint"),
+        isDIAResultManifest = function(x) TRUE,
+        withWorkflowStateScope = function(manager, fn) fn(),
+        produceDIADaPublication = function(manager, manifest, annotations, qvalue, staged, save_assets = TRUE) {
+            for (name in c("Volcano_Plots/groupB-groupA.png", "Volcano_Plots/groupB-groupA.pdf",
+                "NumSigDaMolecules/da_proteins_num_sig_da_molecules.png")) {
+                path <- file.path(staged$publication_graphs_dir, name)
+                dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+                draw(path)
+            }
+            writeLines("table", file.path(staged$da_output_dir, "da_proteins_groupB-groupA_long_annot.tsv"))
+            list(completed = TRUE)
+        }, .package = "MultiScholaR", .env = env)
+    manager <- new.env()
+    manager$.context <- new.env()
+    manager$.context$snapshot <- list(da_results = list(entity_id = "manifest"))
+    manager$current_state <- "da"
+    request <- list(operation = "da_publication", input_references = list(state = head), parameters = list(),
+        directory = request_dir, worker_cap = 12 * 1024^3)
+    function() computeWorkflowDaPublicationAction(manager, request, "whole")
+}
+
+test_that("the proteomics worker's DA publication draws in a short folder and copies into the request folder", {
+    request_dir <- file.path(withr::local_tempdir(), strrep("p", 100L), strrep("q", 100L))
+    dir.create(request_dir, recursive = TRUE)
+    drawn <- character()
+    run <- figurePathDaWorker(request_dir, function(path) {
+        drawn <<- c(drawn, path)
+        if (nchar(path) < 260L) writeBin(charToRaw(basename(path)), path)
+    })
+    value <- run()
+    expected <- c("da_output_dir/da_proteins_groupB-groupA_long_annot.tsv", "publication_graphs_dir/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png",
+        "publication_graphs_dir/Volcano_Plots/groupB-groupA.pdf", "publication_graphs_dir/Volcano_Plots/groupB-groupA.png")
+    expect_setequal(value$files, expected)
+    published <- file.path(request_dir, "da-publication", expected[-1L])
+    expect_true(all(nchar(published) >= 260L))
+    expect_true(all(nchar(drawn) < 260L))
+    expect_identical(vapply(published, function(path) rawToChar(readBin(path, "raw", 200L)), character(1), USE.NAMES = FALSE),
+        basename(published))
+})
+
+test_that("a copy into the worker's request folder that fails stops the step and names the files", {
+    request_dir <- withr::local_tempdir()
+    figurePathReadOnly(file.path(request_dir, "da-publication", "publication_graphs_dir", "Volcano_Plots"))
+    run <- figurePathDaWorker(request_dir, function(path) writeBin(charToRaw(basename(path)), path))
+    error <- expect_error(suppressWarnings(run()), class = "workflow_figure_unwritten")
+    expect_s3_class(error, "saved_entity_outputs_pending")
+    text <- figurePathText(error)
+    expect_match(text, "could not be copied into its request folder", fixed = TRUE)
+    expect_match(text, "groupB-groupA.png", fixed = TRUE)
+    expect_match(text, "groupB-groupA.pdf", fixed = TRUE)
+    expect_no_match(text, "num_sig", fixed = TRUE)
+})
+
+test_that("a copy that fails is named in process too: the omics publication and the action outputs", {
+    root <- withr::local_tempdir()
+    testthat::local_mocked_bindings(
+        computeWorkflowTrxQcFiguresAction = function(manager, request, context) {
+            target <- file.path(request$directory, "omics-publication", "gene_qc_dir")
+            dir.create(target, recursive = TRUE)
+            writeLines("figure", file.path(target, "trx_raw_pca.png"))
+            list(display = list(saved = TRUE))
+        },
+        getWorkflowStateReference = function(manager) list(entity_id = "head"),
+        withWorkflowStateScope = function(manager, fn) fn(),
+        .package = "MultiScholaR")
+    target <- figurePathReadOnly(file.path(root, "gene_qc"))
+    error <- expect_error(suppressWarnings(runWorkflowOmicsPublicationInProcess(transcriptomicsDeclarationBinding, "owner",
+        "trx_qc_figures", list(stage = "raw"), list(gene_qc_dir = target))), class = "workflow_figure_unwritten")
+    expect_match(figurePathText(error), "trx_raw_pca.png", fixed = TRUE)
+
+    manager <- figurePathManager()
+    reference <- getDIAStateReference(manager)
+    project <- normalizePath(withr::local_tempdir(), winslash = "/")
+    manager$.context$experiment_paths <- list(source_dir = project)
+    destination <- figurePathReadOnly(file.path(project, "qc"))
+    error <- expect_error(suppressWarnings(publishWorkflowActionOutputs(manager, reference, "protein-qc",
+        list(protein_qc_dir = destination), function(staged) {
+            writeLines("new", file.path(staged$protein_qc_dir, "a.png"))
+            list(completed = TRUE)
+        }, identity = "read-only")), class = "workflow_figure_unwritten")
+    expect_match(figurePathText(error), "cannot stage action output publication of protein_qc_dir/a.png", fixed = TRUE)
+    expect_false(isTRUE(manager$.context$snapshot$completed_outputs[[reference$entity_id]][["protein-qc"]]))
+})
+
+test_that("a failed copy says, on Windows, that the project's path is too long with long paths disabled", {
+    directory <- withr::local_tempdir()
+    long <- file.path(directory, strrep("c", 150L), paste0(strrep("d", 150L), ".png"))
+    copied <- file.path(directory, "copied.png")
+    file.create(copied)
+    message_of <- function(...) figurePathText(expect_error(checkWorkflowFigureFiles(...), class = "workflow_figure_unwritten"))
+    windows <- message_of(c(copied, long), "files could not be copied", windows = TRUE, copied = c(TRUE, FALSE))
+    expect_match(windows, basename(long), fixed = TRUE)
+    # A copy may carry an empty file: it is not named.
+    expect_no_match(windows, "copied.png", fixed = TRUE)
+    expect_match(windows, paste(nchar(long), "characters"), fixed = TRUE)
+    expect_match(windows, "too long for Windows with long paths disabled", fixed = TRUE)
+    expect_match(windows, "enable Windows long paths", fixed = TRUE)
+    expect_no_match(message_of(long, windows = FALSE, copied = FALSE), "259", fixed = TRUE)
+    # A copy that reported success but left no file is named as well.
+    expect_match(message_of(file.path(directory, "gone.png"), copied = TRUE), "gone.png", fixed = TRUE)
+})

@@ -217,7 +217,8 @@ runWorkflowOmicsPublicationInProcess <- function(binding, manager, operation, pa
         target <- experiment_paths[[role]]
         if (is.null(target)) next
         dir.create(target, recursive = TRUE, showWarnings = FALSE)
-        file.copy(list.files(file.path(staged, role), full.names = TRUE, all.files = TRUE, no.. = TRUE), target, recursive = TRUE, overwrite = TRUE)
+        # KIT-052: a copy that fails (a path over 259 characters, Windows long paths disabled) is named, not lost.
+        copyWorkflowFolder(file.path(staged, role), target, "the publication's files could not be copied into the project")
     }
     done$display
 }
