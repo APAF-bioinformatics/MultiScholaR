@@ -54,6 +54,41 @@
    adjusted matrix and the results that use them change. Abundance-dependent steps after RUV can change:
    the low-intensity filter that follows the classic correction may now remove a different protein.
    Lipidomics, metabolomics and the peptide method are not changed.
+ * RUV, the number of unwanted factors k (KIT-129): an estimated count is available to the RUV step of every
+   omic (the kernel only; no screen offers it yet and no default changes). It is `sva::num.sv()` (method "be",
+   20 permutations, a fixed and recorded seed) on the features observed in every sample: the groups are
+   removed, and a component of the residuals is counted while at most 10% of the permutations reach its share
+   of the residual variance. `sva` is a suggested package; without it the estimate is refused with the reason
+   and k has to be given, never replaced by another rule. The estimate is also refused when fewer than 20
+   features are observed in every sample or the samples leave fewer than two residual components; a count
+   of 0 means no RUV for the run, with a notice. A k above what the design can carry (samples minus replicate
+   sets, a residual degree of freedom beside the groups, fewer factors than controls) is refused, not
+   reduced. The estimate has its own diagnostic plot (observed share of residual variance per component
+   against the permutation null, the count marked). Today's rule on the canonical-correlation plot is
+   unchanged and stays the rule of today's designs; it is not defined when all features are the controls.
+   The estimate draws under a fixed and recorded random-number kind, so it does not depend on the session's
+   `RNGkind()`; a sample without a group and a single group are refusals with their reason; a given k is
+   used whatever error the estimate raises, the reason recorded. The count removes the groups only: on a
+   design with declared technical replicates its record says so (`technical_replicates_ignored`).
+ * DIA_LIMPA RUV covariates (KIT-129): the control rule and the rule for k are now parameters of the step
+   (the kernel only; no screen offers them yet and no default changes). Besides today's sweep (the limpa
+   script's rule: the least significant proteins as controls, k from the canonical-correlation plot), the
+   step can take all proteins as controls, a supplied list of control proteins, or the proteins outside the
+   25% most significant of a first test of the groups (`limpa::dpcDE` without RUV, the F test of the
+   differences between the groups); k is the estimated count, today's estimate where a separate control set
+   exists, or a given number. These designs depart from the limpa script; they run in the covariates mode
+   only, the quantified matrix is unchanged and the factors enter the `dpcDE` model as today. Declared
+   technical replicates stay RUV-III's replicate sets. When the estimated count is 0, or the data cannot
+   give a k, the run has no RUV and says why. With the defaults every result is as before.
+   Such a run is recorded as one: mode `none` and `ruv_applied = FALSE` in the product, the state and the
+   commit, with the reason; no percentage, controls or control count are given as used, and the integration
+   input labels its matrix `normalised`. A declared run's commit names its control rule, its control count,
+   k and the rule that gave it; the sweep's own record, when the sweep gave k, is kept apart
+   (`ruv_result$k_sweep`). Supplied control ids that are not in the protein table raise a warning with the
+   matched and listed counts. Today's declaration refuses a request that carries a rule parameter.
+ * DIA_LIMPA differential abundance (KIT-129): a model that leaves no residual degree of freedom (the
+   formula's terms and the RUV factors against the samples) is refused with a message that names k, instead
+   of failing inside the fit with "NA/NaN/Inf in 'y'".
  * Proteomics automatic RUV parameters (`findBestNegCtrlPercentage()`): the number of factors k is now chosen
    among the values up to the sample-size limit (`max_acceptable_k`). Before, the limit was applied only to
    the penalty, and a larger k could be returned. Results change only where the canonical-correlation curve
