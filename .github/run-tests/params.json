@@ -1,37 +1,24 @@
 {
-  "label": "KIT-129 second pass: prove-arms techrep rerun after the arm 15 k correction (script only)",
-  "package_commit": "1a3e8f1e7dbe3f9b31d23adab382bbfaed1e3141",
-  "base_commit": "",
+  "label": "KIT-146 first part fix: two restored prot-norm messages, base b35d8089 vs head 24a04e51",
+  "package_commit": "24a04e51917a88131f3b22ca0eef94c22a4d9d72",
+  "base_commit": "b35d8089bee789256036546043b88c9ed51774f7",
   "tools_ref": "",
-  "tests": [],
-  "shards": 1,
+  "tests": [
+    "test-prot-05b-norm-module-contracts.R",
+    "test-dia-baseline-compatibility.R",
+    "test-module-ci-prot-norm.R",
+    "test-prot-05d-norm-module-characterization.R",
+    "test-workflow-native-session.R",
+    "test-omic-norm-module.R",
+    "test-workflow-dia-products.R"
+  ],
+  "shards": 4,
   "file_timeout_minutes": 45,
   "file_timeouts": {},
-  "extra_packages": [
-    "sva"
-  ],
+  "extra_packages": [],
   "env": {},
   "check": false,
   "blas": "reference",
-  "fetch_refs": [
-    "sim-k124-exact",
-    "sim-k129-exact",
-    "sim-k124-confirm"
-  ],
-  "scripts": [
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/prove-arms.R",
-      "args": [
-        "techrep",
-        "docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass"
-      ],
-      "env": {
-        "OMP_NUM_THREADS": "1",
-        "OPENBLAS_NUM_THREADS": "1"
-      },
-      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass",
-      "out_pattern": "\\.(tsv|txt)$",
-      "timeout_minutes": 120
-    }
-  ]
+  "fetch_refs": [],
+  "scripts": []
 }
