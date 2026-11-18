@@ -249,6 +249,21 @@ ruvFactorCountLimit <- function(samples, replicate_sets, groups, controls, units
         between_unit_rank = as.integer(between_unit_rank), k_max_units = k_max_units)
 }
 
+#' Whether RUV-III's replicate sets are the biological units of a design with declared technical replicates (KIT-129
+#' integration, technical-replicate design; arms 15 and 16 of the simulators): the two vectors partition the samples
+#' the same way.
+#' @param replicate_sets The replicate set of each sample.
+#' @param units The biological unit of each sample, or NULL (no declared technical replicates).
+#' @return TRUE or FALSE.
+#' @noRd
+ruvReplicateSetsAreUnits <- function(replicate_sets, units) {
+    if (is.null(units)) return(FALSE)
+    sets <- as.character(replicate_sets)
+    units <- as.character(units)
+    n_units <- length(unique(units))
+    length(unique(sets)) == n_units && length(unique(paste(sets, units, sep = "\r"))) == n_units
+}
+
 #' The residual degrees of freedom left between biological units by a model (decision M28): the units minus the rank
 #' of the model's unit means. NA when the design declares no technical replicates.
 #' @param model A model matrix over the samples (rows), the formula's terms and any W columns.

@@ -1286,7 +1286,10 @@ protRuvGroupReplicateObject <- function(theObject) {
 #' @param ruv_k_rule Where k comes from, recorded with it (KIT-129 section 1e): `"user"`, `"sweep_bounded"` or
 #'   `"num_sv_be"`.
 #' @param controls NULL for every protein, or a logical vector over the protein rows.
-#' @param ruv_grouping_variable Design column whose levels are the replicate sets.
+#' @param ruv_grouping_variable Design column whose levels are the replicate sets. The declared technical-replicate
+#'   column gives the technical-replicate design (the biological units as the replicate sets, arms 15 and 16 of
+#'   simulator S1; `replicate_structure = "technical_replicates"`): k is then limited by the units and the groups across
+#'   them (decision M28), not by the units counted as groups.
 #' @param ruv_k_seed The estimated count's seed (recorded with it).
 #' @return `list(W, k, ruv_k_rule, ruv_k_estimate, k_max, k_estimate, status, reason, controls, ruv_controls,
 #'   control_count, protein_count, replicate_structure, ruv_grouping_variable)`: `W` a sample-by-k matrix in the
@@ -1326,13 +1329,20 @@ computeProtRuvModelFactors <- function(theObject, ruv_k = NULL, ruv_k_rule = c("
   controls <- stats::setNames(!is.na(controls) & unname(controls), ids)
   complete <- rowSums(!is.finite(values)) == 0
   control_count <- sum(controls & complete)
-  group_count <- length(unique(as.character(design_matrix[[ruv_grouping_variable]])))
+  replicate_sets <- as.character(design_matrix[[ruv_grouping_variable]])
+  # The groups of the test (the object's group column), not the replicate sets: on the technical-replicate design the
+  # replicate sets are the biological units, and the limit counts the groups across them.
+  group_column <- if (isTRUE(theObject@group_id %in% names(design_matrix))) theObject@group_id else ruv_grouping_variable
+  group_count <- length(unique(as.character(design_matrix[[group_column]])))
   # Decision M28: on a design with declared technical replicates the biological units, not the injections, limit k.
   technical <- resolveProtTechnicalReplicateBlock(design_matrix, theObject@group_id, theObject@technical_replicate_id)
   unit_count <- if (isTRUE(technical$technical)) length(unique(technical$block))
-  # The groups are the replicate sets here, so the limit is min(samples - groups - 1, controls - 1) as before, and the
-  # units' limit beside it when there are technical replicates.
-  limit <- ruvFactorCountLimit(length(sample_ids), group_count, group_count, control_count, units = unit_count)
+  # The technical-replicate design (arms 15, 16 and 29 of simulator S1): the replicate sets are the biological units.
+  sets_are_units <- ruvReplicateSetsAreUnits(replicate_sets, if (isTRUE(technical$technical)) technical$block)
+  # min(samples - replicate sets, samples - groups - 1, controls - 1), and the units' limit beside it when there are
+  # technical replicates (units - groups - 1: the rank of the group design across the units). With the groups as the
+  # replicate sets this is the limit as before.
+  limit <- ruvFactorCountLimit(length(sample_ids), length(unique(replicate_sets)), group_count, control_count, units = unit_count)
   k_max <- limit$k_max
   refuse <- function(reason) cli::cli_abort(c("the RUV factors for the model cannot be computed: {reason}",
     i = "{control_count} control protein{?s} observed in every sample, {length(sample_ids)} sample{?s}, {group_count} group{?s}",
@@ -1356,24 +1366,27 @@ computeProtRuvModelFactors <- function(theObject, ruv_k = NULL, ruv_k_rule = c("
       control_count = control_count, protein_count = length(ids), replicate_structure = replicate_structure,
       ruv_grouping_variable = ruv_grouping_variable)
   }
-  if (k == 0L) return(record(NULL, NA_character_))
+  if (k == 0L) return(record(NULL, if (sets_are_units) "technical_replicates" else NA_character_))
   complete_object <- protRuvGroupReplicateObject(theObject)
   complete_object@protein_quant_table <- theObject@protein_quant_table[complete, , drop = FALSE]
   rownames(complete_object@protein_quant_table) <- NULL # `computeRuvCovariates` moves the id column to the row names
   factors <- computeRuvCovariates(complete_object, k = k, controls = unname(controls[complete]),
     ruv_grouping_variable = ruv_grouping_variable)
-  record(factors$W, factors$replicate_structure)
+  record(factors$W, if (sets_are_units) "technical_replicates" else factors$replicate_structure)
 }
 
 #' The designs of the classic route's factors-in-the-model kernel, by the names of KIT-129 section 1e: every protein a
-#' control, or a supplied control set; the groups are the replicate sets in both.
+#' control with the groups as replicate sets, a supplied control set, or every protein a control with the declared
+#' biological units as replicate sets (the technical-replicate design).
 #' @noRd
-PROT_RUV_MODEL_DESIGNS <- c("groups_all_features", "supplied_controls")
+PROT_RUV_MODEL_DESIGNS <- c("groups_all_features", "supplied_controls", "technical_replicates")
 
 #' The design a value of `computeProtRuvModelFactors` computed (KIT-129 section 1e).
 #' @noRd
 protRuvModelDesign <- function(factors) {
-  if (identical(factors$ruv_controls, "supplied")) "supplied_controls" else "groups_all_features"
+  if (identical(factors$ruv_controls, "supplied")) return("supplied_controls")
+  if (identical(factors$replicate_structure, "technical_replicates")) return("technical_replicates")
+  "groups_all_features"
 }
 
 #' The RUV state of the factors-in-the-model design (KIT-126): the corrected object (its protein table stays the

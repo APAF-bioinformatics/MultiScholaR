@@ -792,3 +792,50 @@ test_that("(KIT-129 item 3) the estimated count is the kernel's own k, per assay
         }
     }
 })
+
+# The replicate matrix of the biological units (arms 15 and 16 of simulator S4: `extractM`).
+simUnitM <- function(design, unit_column, sample_column) {
+    m <- ruv::replicate.matrix(stats::setNames(design[[unit_column]], design[[sample_column]]))
+    rownames(m) <- design[[sample_column]]
+    m
+}
+
+test_that("the technical-replicate design: the biological units as replicate sets, k limited by the units and the groups across them (KIT-129 integration)", {
+    skip_if_not_installed("ruv")
+    contrasts <- data.frame(contrasts = "groupB-groupA", friendly_names = "B_vs_A", stringsAsFactors = FALSE)
+    for (omic in c("lipid", "metab")) {
+        object <- techRepRuvObject(omic)
+        slots <- omicsRuvAssaySlots(object)
+        kernel <- function(...) suppressMessages(runOmicsRuvFactors(object, "groups_all_features", ...,
+            ruv_grouping_variable = "tech_rep_group"))
+        # 8 units in 2 groups: k = 2 and k = 5 are computed (the 8 units counted as 8 groups left none)
+        run <- kernel(2L, "user")
+        expect_identical(vapply(run$factors, `[[`, "", "status"), c(pos = "ok", neg = "ok"), info = omic)
+        expect_identical(vapply(kernel(5L, "user")$factors, `[[`, 0L, "k"), c(pos = 5L, neg = 5L), info = omic)
+        for (assay in c("pos", "neg")) {
+            # W is arm 16's: RUV-III on the complete features, every one a control, the units as replicate sets
+            values <- omicsRuvAssayValues(methods::slot(object, slots$data)[[assay]], methods::slot(object, slots$id),
+                object@design_matrix$Run, assay)
+            y <- t(values[rowSums(is.na(values)) == 0L, , drop = FALSE])
+            expectKit127W(run$factors[[assay]]$W, simRuvW(y, simUnitM(object@design_matrix, "tech_rep_group", "Run"),
+                rep(TRUE, ncol(y)), 2L))
+            expect_identical(run$factors[[assay]]$ruv_grouping_variable, "tech_rep_group", info = omic)
+        }
+        # the DA runs with W in the model and the units as block
+        da <- NULL
+        utils::capture.output(da <- suppressWarnings(suppressMessages((if (identical(omic, "lipid")) runLipidsDA else runMetabolitesDA)(
+            object, contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors))))
+        expect_null(da$failed_assays)
+        expect_true(isTRUE(da$contrasts_results$pos$fit.eb$uses_duplicate_correlation), info = omic)
+        # the estimated count removes the units (arm 29's model, with M30's permutations)
+        skip_if_not_installed("sva")
+        counted <- suppressWarnings(kernel(ruv_k_rule = "num_sv_be"))
+        for (assay in c("pos", "neg")) {
+            values <- omicsRuvAssayValues(methods::slot(object, slots$data)[[assay]], methods::slot(object, slots$id),
+                object@design_matrix$Run, assay)
+            expected <- estimateRuvFactorCount(values, object@design_matrix$tech_rep_group, units = object@design_matrix$tech_rep_group)
+            expect_identical(counted$factors[[assay]]$k_estimate$removed, "biological units", info = omic)
+            expect_identical(counted$factors[[assay]]$k, expected$k, info = omic)
+        }
+    }
+})

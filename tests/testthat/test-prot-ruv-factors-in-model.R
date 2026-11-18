@@ -870,3 +870,35 @@ test_that("the legacy design's DA is unchanged by the exact standard errors and 
     expect_identical(ruvModelLegacyDigests(), c(entry = "5f301cd329832bf4169a188156ea5a3f", entry_technical = "597ebf0d6c82e95f05a3238fa3b7df78",
         kernel = "0ba8a9420b0234237f70623e8ffd2565"))
 })
+
+test_that("the technical-replicate design: the biological units as replicate sets, k limited by the units and the groups across them (KIT-129 integration)", {
+    fixture <- ruvModelTechRepFixture()
+    normalised <- ruvModelObject(fixture$x, fixture$design)
+    units <- function(...) computeProtRuvModelFactors(normalised, ..., ruv_grouping_variable = "tech_rep_group")
+    # 8 units in 2 groups: at most 8 - 2 - 1 = 5 factors (the 8 units counted as 8 groups left none)
+    factors <- units(ruv_k = 2L, ruv_k_rule = "user")
+    expect_identical(factors[c("k", "k_max", "status", "replicate_structure", "ruv_grouping_variable")],
+        list(k = 2L, k_max = 5L, status = "ok", replicate_structure = "technical_replicates", ruv_grouping_variable = "tech_rep_group"))
+    expect_identical(protRuvModelDesign(factors), "technical_replicates")
+    expect_identical(units(ruv_k = 5L, ruv_k_rule = "user")$k, 5L)
+    refused <- tryCatch(units(ruv_k = 6L, ruv_k_rule = "user"), error = function(e) e)
+    expect_s3_class(refused, c("ruv_k_above_limit", "ruv_k_refused"))
+    expect_match(conditionMessage(refused), "at most 5", fixed = TRUE)
+    # W is arm 16's: RUV-III on the complete proteins, every one a control, the declared units as replicate sets
+    complete <- rowSums(!is.finite(fixture$x)) == 0
+    reference <- suppressMessages(computeRuvCovariates(ruvModelObject(fixture$x[complete, ], fixture$design), k = 2L,
+        controls = rep(TRUE, sum(complete)), ruv_grouping_variable = "group"))
+    expect_identical(reference$replicate_structure, "technical_replicates")
+    expect_equal(factors$W, reference$W, tolerance = 1e-12)
+    # the DA: the declared state is tested with W in the model and the units as block
+    result <- ruvModelDa(attachProtRuvModelFactors(normalised, normalised, factors))
+    expect_identical(result$da_model$formula_used, "~ 0 + group + W1 + W2")
+    expect_true(all(is.finite(result$contrasts_results$results[[1L]][rownames(fixture$x)[complete], "raw_pvalue"])))
+    # the estimated count removes the units (arm 29's model, with M30's permutations)
+    skip_if_not_installed("sva")
+    counted <- suppressMessages(units(ruv_k_rule = "num_sv_be"))
+    expected <- estimateRuvFactorCount(fixture$x, fixture$design$tech_rep_group, units = fixture$design$tech_rep_group)
+    expect_identical(counted$k_estimate$removed, "biological units")
+    expect_identical(counted[c("k", "k_max", "replicate_structure")], list(k = expected$k, k_max = 5L,
+        replicate_structure = "technical_replicates"))
+})

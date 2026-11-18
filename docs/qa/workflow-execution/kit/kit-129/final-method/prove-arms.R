@@ -26,6 +26,13 @@
 #         reference store) against arm 32: classic proteomics `computeDIAReferenceNormalization` with the new design
 #         (the estimated count) then `computeDIAReferenceDaContrast` (S1); DIA with limpa `computeDIAReferenceRuvCovariates`
 #         with all proteins as controls (its own count) then `computeDIAReferenceDaContrast` on the limpa route (S2)
+#   techrep KIT-129 integration (second pass) item 1: the technical-replicate design at the kernels (the biological
+#         units as RUV-III's replicate sets: `ruv_grouping_variable` = the unit column), run 1 of C6 and C8, S1 and S4:
+#         the kernel's own count against arm 29's model with M30's 200 permutations (= arm 33's E); its W against arm
+#         16's W (S1); its DA against arm 33 (arm 16 with arm 25's standard error, arm 26's test and that count; at k = 1
+#         where the count is 0, so that the design is exercised); its corrected matrix, tested as arm 15 tests, against
+#         arm 15 (arm 15's own k, 1 where E is 0). S4 on the view of the features complete in study and pooled-QC
+#         injections on both sides (the simulator's `complete` subset), so that the package computes its own W
 # Writes <out dir>/<stage>-simulator.rds and <stage>-package.rds (named lists: per data set, arm and omic, the table
 # keyed by feature and contrast, and k), compares them with packaging/verify/compare-results.R (relative 1e-6,
 # absolute floor 1e-9, discrete values exact) into <stage>-compare.tsv, and writes <stage>-summary.tsv (one row per
@@ -49,7 +56,7 @@
 
 stage <- commandArgs(TRUE)[[1L]]
 out_dir <- commandArgs(TRUE)[[2L]]
-stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath"))
+stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath", "techrep"))
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -124,7 +131,7 @@ add_tables <- function(name, simulator_table, package_table) {
     add(name, pick(simulator_table), pick(package_table), note)
 }
 
-cells <- c("C0", "C6")
+cells <- if (stage == "techrep") c("C6", "C8") else c("C0", "C6")
 
 # ---- S1, classic proteomics ------------------------------------------------------------------------------------------
 s1 <- simulator("s1_classic.R", "2ba5cf87", "^# ---- the study")
@@ -156,8 +163,9 @@ for (cell in cells) {
         factors <- computeProtRuvModelFactors(normalised, ruv_k = k, ruv_k_rule = "user", ruv_grouping_variable = "group")
         attachProtRuvModelFactors(normalised, normalised, factors)
     }
-    entry <- function(k) {
-        result <- silently(differentialAbundanceAnalysis(state(k), contrasts_tbl = data.frame(contrasts = s1_contrast,
+    entry <- function(k) entry_state(state(k))
+    entry_state <- function(declared) {
+        result <- silently(differentialAbundanceAnalysis(declared, contrasts_tbl = data.frame(contrasts = s1_contrast,
             stringsAsFactors = FALSE), formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0,
             eBayes_trend = TRUE, eBayes_robust = TRUE, args_row_id = "Protein.Group", qvalue_column = "fdr_qvalue",
             raw_pvalue_column = "raw_pvalue"))
@@ -212,6 +220,42 @@ for (cell in cells) {
             ruv_k_seed = seed * 100L))
         add(sprintf("S1/%s/arm32/kernel_k", cell), count(200L, p$duplicates), own$k,
             "arm 32's E against the classic kernel's own count (computeProtRuvModelFactors, num_sv_be)")
+    }
+    if (stage == "techrep") {
+        # the kernel handed the units as replicate sets (the confirmation round's arm 38 call)
+        units_factors <- function(...) silently(computeProtRuvModelFactors(normalised, ..., ruv_grouping_variable = "tech_rep_group"))
+        own <- units_factors(ruv_k_rule = "num_sv_be", ruv_k_seed = seed * 100L)
+        E29 <- count(200L, TRUE)
+        add(sprintf("S1/%s/arm29_B200/kernel_k", cell), E29, own$k, sprintf(paste("arm 29's E (the units removed) with M30's",
+            "200 permutations (= arm 33's E) against the kernel's own count; arm 29 itself (B = 20): %d; the kernel's limit",
+            "k_max = %d, replicate structure %s"), count(20L, TRUE), own$k_max, own$replicate_structure))
+        # arm 16's W (s1_classic.R line 626, `in_model(all_controls, E, "tech_rep_group")`, lines 538-553): RUV-III on the
+        # complete proteins, every one a control, the declared units as the replicate sets
+        tech_W <- function(k) silently(computeRuvCovariates(s1$make_object(xc, design, "tech_rep_group"), k = k,
+            controls = rep(TRUE, nrow(xc)), ruv_grouping_variable = "group"))$W
+        kk <- if (E29 > 0L) E29 else 1L
+        package <- units_factors(ruv_k = kk, ruv_k_rule = "user")
+        add(sprintf("S1/%s/arm16/W_k%d", cell, kk), unname(tech_W(kk)), unname(package$W), "arm 16's W against the kernel's W")
+        # arm 33 (lines 147, 633: arm 16 with arm 25's standard error, arm 26's test and arm 29's E at 200 permutations)
+        set.seed(seed * 100L + 16L)
+        tab <- silently(s1$da_variant(x, design, tech_W(kk), exact = TRUE, applied = TRUE))
+        add_tables(sprintf("S1/%s/%s/classic", cell, if (E29 > 0L) "arm33" else "arm33_at_k1"), keyed(tab$id, "contrast", tab$estimate,
+            tab$p, tab$q), entry_state(attachProtRuvModelFactors(normalised, normalised, package)))
+        # arm 15 (line 625, `corrected(all_controls, E, "tech_rep_group")`, lines 554-559) against the corrected matrix the
+        # new design forms (`diaNormalizationOperation("declared")`: ruvIII_C_Varying on the object without the
+        # declaration, with the kernel's replicate sets, k and controls), each tested as arm 15 tests
+        k15 <- if (E20 > 0L) E20 else 1L
+        sim15 <- s1$as_matrix(silently(ruvIII_C_Varying(s1$make_object(x, design, "tech_rep_group"), ruv_grouping_variable = "group",
+            ruv_number_k = k15, ctrl = stats::setNames(rep(TRUE, nrow(x)), rownames(x)))))
+        pkg15 <- s1$as_matrix(silently(ruvIII_C_Varying(protRuvGroupReplicateObject(normalised), ruv_grouping_variable = "tech_rep_group",
+            ruv_number_k = k15, ctrl = units_factors(ruv_k = k15, ruv_k_rule = "user")$controls)))
+        label15 <- if (E20 > 0L) "arm15" else "arm15_at_k1"
+        add(sprintf("S1/%s/%s/corrected", cell, label15), sim15, pkg15[rownames(sim15), colnames(sim15), drop = FALSE],
+            "arm 15's corrected matrix against the new design's")
+        t15 <- silently(s1$da(sim15, design))
+        p15 <- silently(s1$da(pkg15, design))
+        add_tables(sprintf("S1/%s/%s/classic", cell, label15), keyed(t15$id, "contrast", t15$estimate, t15$p, t15$q),
+            keyed(p15$id, "contrast", p15$estimate, p15$p, p15$q))
     }
 }
 
@@ -354,6 +398,94 @@ if (stage %in% c("m29", "m30b")) {
                 add(sprintf("S4/%s/%s/%s/%s/k", cell_name, arm, omic, assay), as.integer(k_of[[assay]]), as.integer(run$factors[[assay]]$k))
                 add_tables(sprintf("S4/%s/%s/%s/%s", cell_name, arm, omic, assay), keyed(ref$feature, ref$contrast, ref$est, ref$p, ref$q),
                     keyed(got[[id]], got$comparison, got$logFC, got$P.Value, got$fdr_qvalue))
+            }
+        }
+    }
+}
+
+# ---- S4, lipidomics and metabolomics (second-pass stages: techrep) ---------------------------------------------------
+if (stage %in% c("techrep")) {
+    s4 <- simulator("s4_lipid_metab.R", "2d03b103", "^# ---- driver")
+    table_s4 <- s4$cellTable()
+    for (cell_name in cells) {
+        cell <- table_s4[[cell_name]]
+        seed <- 100000L + 10000L * cell$index + 1L
+        data <- s4$generateData(cell, seed)
+        # E and its variants as `runOne` forms them (s4_lipid_metab.R lines 836-852), on the features complete in study and
+        # pooled-QC injections
+        estimate <- function(B, units) lapply(data$assays, function(a) {
+            dat <- a$y[s4$completeFeatures(a), , drop = FALSE]
+            if (nrow(dat) < 20L) return(NA_integer_)
+            mod <- stats::model.matrix(~ factor(if (units) data$design$extract else data$design$group))
+            as.integer(silently(sva::num.sv(dat, mod, method = "be", B = B, seed = seed * 100L + 99L)))
+        })
+        E20 <- estimate(20L, FALSE)
+        variants <- list(E_200 = estimate(200L, FALSE))
+        if (cell$duplicates) variants$E_units_200 <- estimate(200L, TRUE)
+        # both sides on the view of those features (the simulator's `complete` subset): the package holds the study
+        # injections only, and on this view computes the simulator's W itself
+        view <- s4$makeView(s4$restrictData(data, lapply(data$assays, s4$completeFeatures)), E20, variants)
+        mats <- lapply(view$assays, `[[`, "y")
+        objects <- list(lipid = s4$lipidObject(mats, view$design), metab = s4$metabObject(mats, view$design))
+        contrasts <- s4$contrastsTable(view$contrasts)
+        at_least_one <- function(k) lapply(k, function(v) if (is.na(v) || v == 0L) 1L else as.integer(v))
+        # an arm's tables (`modelArm`/`subtractArm`) against the package's DA with the kernel's factors
+        compare_arm <- function(label, omic, reference, factors) {
+            da <- silently(if (omic == "lipid") runLipidsDA(objects[[omic]], contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE,
+                ruv_factors = factors) else runMetabolitesDA(objects[[omic]], contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE,
+                ruv_factors = factors))
+            long <- if (omic == "lipid") da$da_lipids_long else da$da_metabolites_long
+            id <- if (omic == "lipid") "lipid_id" else "metabolite_id"
+            for (assay in s4$ASSAYS) {
+                ref <- reference$tables[[assay]]
+                name <- sprintf("S4/%s/%s/%s/%s", cell_name, label, omic, assay)
+                if (s4$isRefusal(ref)) {
+                    notes[[paste0(name, "/W_package_vs_simulator")]] <<- paste("the simulator refused:", ref$reason)
+                    next
+                }
+                got <- long[long$assay == assay, ]
+                add_tables(name, keyed(ref$feature, ref$contrast, ref$est, ref$p, ref$q),
+                    keyed(got[[id]], got$comparison, got$logFC, got$P.Value, got$fdr_qvalue))
+            }
+        }
+        if (stage == "techrep") {
+            for (omic in c("lipid", "metab")) {
+                units_run <- function(...) silently(runOmicsRuvFactors(objects[[omic]], "groups_all_features", ...,
+                    ruv_grouping_variable = "extract"))
+                own <- units_run(ruv_k_rule = "num_sv_be", ruv_k_seed = seed * 100L + 99L)
+                arm29 <- estimate(20L, TRUE)
+                for (assay in s4$ASSAYS) {
+                    add(sprintf("S4/%s/arm29_B200/%s/%s/kernel_k", cell_name, omic, assay), variants$E_units_200[[assay]],
+                        as.integer(own$factors[[assay]]$k), sprintf(paste("arm 29's E (the extracts removed) with M30's 200",
+                            "permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): %d; status %s"),
+                            arm29[[assay]], own$factors[[assay]]$status))
+                }
+                # arm 33 (lines 129, 706: arm 16, the extracts as replicate sets, with arm 25's standard error and that count)
+                kk <- at_least_one(variants$E_units_200)
+                package <- units_run(kk, "user")
+                set.seed(seed * 100L + 16L)
+                compare_arm(if (all(unlist(variants$E_units_200) > 0L)) "arm33" else "arm33_at_k1_where_0", omic,
+                    s4$modelArm(view, s4$allComplete, function(a, assay) kk[[assay]], m_of = s4$extractM, exact = TRUE),
+                    package$factors)
+                # arm 15 (line 677: the extracts as replicate sets, RUV-III-C subtracted, then the plain test) against the
+                # kernel's corrected matrix tested the same way (its feature levels restored: a constant per feature)
+                k15 <- at_least_one(E20)
+                set.seed(seed * 100L + 15L)
+                reference <- s4$subtractArm(view, function(a, assay) k15[[assay]], s4$extractM(view, NULL))
+                corrected <- units_run(k15, "user")$corrected
+                assays <- if (omic == "lipid") corrected@lipid_data else corrected@metabolite_data
+                for (assay in s4$ASSAYS) {
+                    name <- sprintf("S4/%s/%s/%s/%s", cell_name, if (all(unlist(E20) > 0L)) "arm15" else "arm15_at_k1_where_0", omic, assay)
+                    ref <- reference$tables[[assay]]
+                    if (s4$isRefusal(ref)) {
+                        notes[[paste0(name, "/W_package_vs_simulator")]] <- paste("the simulator refused:", ref$reason)
+                        next
+                    }
+                    tested <- silently(s4$daKernel(s4$assayMatrix(assays[[assay]], view$design$Sample_ID), view$design, "~ 0 + group",
+                        view$contrasts))
+                    add_tables(name, keyed(ref$feature, ref$contrast, ref$est, ref$p, ref$q),
+                        keyed(tested$feature, tested$contrast, tested$est, tested$p, tested$q))
+                }
             }
         }
     }

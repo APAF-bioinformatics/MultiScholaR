@@ -82,11 +82,16 @@ boundOmicsRuvSweepK <- function(theObject, ruv_results) {
 #' @param replicate_matrix Sample-by-replicate-set matrix M, rows in the order of `values`' columns.
 #' @param k Number of factors, or `NA` when it could not be estimated.
 #' @param control_ids The supplied controls, or NULL for every feature observed in every sample.
+#' @param units The biological unit of each sample on a design with declared technical replicates, or NULL.
+#' @param groups The number of groups of the test (the object's group column). With the groups as the replicate sets it
+#'   is the number of replicate sets; on the technical-replicate design (the biological units as the replicate sets,
+#'   arms 15 and 16 of simulator S4) it is smaller, and the limits count the groups across the units (decision M28).
 #' @return `list(status, reason, reason_class, W, k, control_ids, complete_features)`; `status` is `ok`, `none` (k = 0)
 #'   or `refused`; `reason_class` names a refusal by the class the other omics raise for it (KIT-129 item 2):
 #'   `ruv_k_above_limit` or `ruv_k_not_estimated`.
 #' @noRd
-computeOmicsRuvAssayFactors <- function(values, replicate_matrix, k, control_ids = NULL, units = NULL) {
+computeOmicsRuvAssayFactors <- function(values, replicate_matrix, k, control_ids = NULL, units = NULL,
+                                        groups = ncol(replicate_matrix)) {
     complete <- rowSums(is.na(values)) == 0L
     y <- t(values[complete, , drop = FALSE])
     ctl <- if (is.null(control_ids)) rep(TRUE, ncol(y)) else colnames(y) %in% control_ids
@@ -99,17 +104,22 @@ computeOmicsRuvAssayFactors <- function(values, replicate_matrix, k, control_ids
     if (k > sum(ctl)) {
         return(result("refused", sprintf("k = %d is above the %d controls observed in every sample", k, sum(ctl))))
     }
-    if (k > nrow(y) - ncol(replicate_matrix) - 1L) {
-        return(result("refused", sprintf("k = %d leaves no residual degree of freedom (%d samples in %d replicate sets)",
-            k, nrow(y), ncol(replicate_matrix))))
+    if (k > nrow(y) - groups - 1L) {
+        return(result("refused", sprintf("k = %d leaves no residual degree of freedom (%d samples in %d groups)",
+            k, nrow(y), groups)))
+    }
+    # The rank RUV-III's replicate sets leave (binding only when the replicate sets are not the groups).
+    if (k > nrow(y) - ncol(replicate_matrix)) {
+        return(result("refused", sprintf("k = %d is above the %d factors RUV-III can estimate from %d samples in %d replicate sets",
+            k, nrow(y) - ncol(replicate_matrix), nrow(y), ncol(replicate_matrix))))
     }
     # Decision M28: with declared technical replicates the biological units, not the injections, limit k.
     if (!is.null(units)) {
-        limit <- ruvFactorCountLimit(nrow(y), ncol(replicate_matrix), ncol(replicate_matrix), sum(ctl), units = length(unique(units)))
+        limit <- ruvFactorCountLimit(nrow(y), ncol(replicate_matrix), groups, sum(ctl), units = length(unique(units)))
         if (k > limit$k_max_units) {
             return(result("refused", sprintf(paste("k = %d is above the limit of %d: the design has technical replicates, so its",
                 "%d biological units, not its %d injections, carry the test and need a residual degree of freedom beside the",
-                "%d groups"), k, limit$k_max_units, limit$units, nrow(y), ncol(replicate_matrix))))
+                "%d groups"), k, limit$k_max_units, limit$units, nrow(y), groups)))
         }
     }
     # W as `computeRuvCovariates` forms it (KIT-123 R2): the controls centred on their means, times ac' (ac ac')^-1.
@@ -166,7 +176,9 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #'   supplied control with a missing value is used neither for W nor for the correction; it is named in a warning of
 #'   class `omics_ruv_controls_incomplete` and in `controls_left_out`, and is still not tested.
 #' @param ruv_grouping_variable The design column whose levels are the replicate sets; the object's group column
-#'   when NULL.
+#'   when NULL. The declared technical-replicate column gives the technical-replicate design (the biological units as
+#'   the replicate sets, arms 15 and 16 of simulator S4): k is then limited by the units and the groups across them
+#'   (decision M28), not by the units counted as groups.
 #' @return `list(corrected, factors, parameters)`: `corrected` the object with the corrected assays, its `args`
 #'   stamped with `ruv_design`, `ruv_grouping_variable`, `ruv_number_k` (the key `ruvIII_C_Varying` writes) and `ctrl` when an assay was corrected (the DA
 #'   refuses a stamped object together with factors, class `omics_ruv_object_already_corrected`); `factors` per
@@ -228,6 +240,10 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
         replicate_matrix <- getRuvIIIReplicateMatrixHelper(assay_design, !!rlang::sym(sample_id), !!rlang::sym(grouping))
         technical <- resolveProtTechnicalReplicateBlock(assay_design, theObject@group_id, theObject@technical_replicate_id)
         units <- if (isTRUE(technical$technical)) technical$block
+        # The groups of the test, counted apart from the replicate sets (the technical-replicate design: the units).
+        groups <- if (isTRUE(theObject@group_id %in% colnames(assay_design))) {
+            length(unique(as.character(assay_design[[theObject@group_id]])))
+        } else ncol(replicate_matrix)
         # KIT-129 item 3: the estimated count per assay by the shared resolver (no limit there: this kernel's own limit
         # refuses the assay below). An assay the count cannot be made on is refused with the count's reason.
         counted_k <- if (counted) tryCatch(resolveRuvFactorCount("num_sv_be", if (supplied) "supplied_list" else "all_features",
@@ -236,7 +252,7 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
             ruv_factor_count_unavailable = \(e) e)
         k_assay <- if (!counted) k_requested[[assay_name]] else if (inherits(counted_k, "condition")) NA_integer_ else counted_k$k
         record <- computeOmicsRuvAssayFactors(values[[assay_name]], replicate_matrix[samples, , drop = FALSE],
-            k_assay, control_ids, units = units)
+            k_assay, control_ids, units = units, groups = groups)
         if (inherits(counted_k, "condition")) {
             record$reason <- conditionMessage(counted_k)
             record$reason_class <- class(counted_k)[[1L]]
