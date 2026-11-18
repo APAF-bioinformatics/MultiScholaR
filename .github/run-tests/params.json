@@ -1,6 +1,6 @@
 {
-  "label": "KIT-129 fourth pass items 1-5: panel to request, after-run display, warning, trx tab; 17a7c08f against 530b97f7 with sva; failing-first; check on both",
-  "package_commit": "17a7c08f420d87147a51f85395286d3a2491cf43",
+  "label": "KIT-129 fourth pass correction pass; 3dea37f4 against 530b97f7 with sva; failing-first; check on both",
+  "package_commit": "3dea37f4ad1d2c03e6c607a821c4e9426b246bc0",
   "base_commit": "530b97f751a9f60d83275275cbe6482fc1734eac",
   "tools_ref": "",
   "tests": [
