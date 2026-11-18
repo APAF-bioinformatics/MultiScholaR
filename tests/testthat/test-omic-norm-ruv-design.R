@@ -349,7 +349,8 @@ test_that("with the gate on each omic's tab shows every design with its figure a
         off_ids <- sub('^id="norm-', "", sub('"$', "", regmatches(off, gregexpr('id="norm-[A-Za-z0-9_]+"', off))[[1L]]))
         expect_identical(setdiff(off_ids, ids), character(), info = omic)
         expect_identical(sort(setdiff(grep("-label$", ids, invert = TRUE, value = TRUE), off_ids)),
-            sort(c("ruv_design", "ruv_k_rule", "ruv_k_user", "ruv_k_seed", "ruv_control_list", "ruv_design_summary", slots)), info = omic)
+            sort(c("ruv_design", "ruv_k_rule", "ruv_k_user", "ruv_k_seed", "ruv_control_list", "ruv_design_summary", "ruv_k_separation_plot",
+                slots)), info = omic)
     }
 })
 
@@ -707,4 +708,123 @@ test_that("(fourth pass item 2) a refused choice is the tab's error notice and t
     expect_identical(notices, list(list(ui = texts[["k_missing"]], type = "error")))
     expect_identical(lines, paste("ERROR:", texts[["k_missing"]]))
     expect_true(omicNormReadRuvDesign(ruvDesignInput(), "lipidomics", function(line) NULL)$ok)
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-129 fourth pass item 3: after the run the panel shows what was done.
+# ------------------------------------------------------------------------------------------------
+
+test_that("(fourth pass item 3) each omic's product gives one result: the design, k and its rule, the count beside a typed k, the sets", {
+    classic <- protNormRuvDesignResult(list(parameters = list(ruv_design = "groups_all_features"), best_k = 2L,
+        ruv_model = list(replicate_structure = "group"), ruv_result = list(ruv_k_rule = "user", ruv_k_estimate = 1L,
+            ruv_applied = TRUE, ruv_k_seed = 7L, k_estimate = list(k = 1L), ruv_not_applied_reason = NA_character_)))
+    expect_identical(classic[c("design", "k_rule", "seed", "replicate_structure")], list(design = "groups_all_features",
+        k_rule = "user", seed = 7L, replicate_structure = "group"))
+    expect_identical(classic$assays$all[c("k", "k_estimate", "applied", "estimate")], list(k = 2L, k_estimate = 1L, applied = TRUE,
+        estimate = list(k = 1L)))
+    expect_null(classic$separation_plot)
+    expect_null(protNormRuvDesignResult(list(parameters = list(norm_method = "quantile"), ruv_result = list())))
+    expect_identical(protNormRuvDesignResult(list(parameters = list(ruv_design = "none")))$design, "none")
+    dia <- diaRuvDesignResult(list(ruv_control_rule = "all_features", ruv_k_rule = "num_sv_be", ruv_k_estimate = 1L, best_k = 1L,
+        ruv_applied = TRUE, replicate_structure = "technical_replicates", parameters = list(ruv_k_seed = 7L),
+        ruv_result = list(k_estimate = list(k = 1L), k_sweep = list(cancor_plot = "plot"))), "technical_replicates")
+    expect_identical(dia[c("design", "replicate_structure", "separation_plot")], list(design = "technical_replicates",
+        replicate_structure = "technical_replicates", separation_plot = "plot"))
+    expect_null(diaRuvDesignResult(list(ruv_result = list()), NULL))
+    omics <- omicsRuvDesignResult(list(ruv_design = "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = 7L,
+        ruv_replicate_structure = "group", ruv_applied = list(pos = TRUE, neg = FALSE), k_estimate = list(pos = list(k = 1L), neg = NULL),
+        factors = list(pos = list(k = 1L, ruv_k_estimate = 1L, reason = NA_character_), neg = list(k = 0L, ruv_k_estimate = 0L,
+            reason = "the count found no unwanted factor"))))
+    expect_identical(names(omics$assays), c("pos", "neg"))
+    expect_identical(omics$assays$neg[c("applied", "reason")], list(applied = FALSE, reason = "the count found no unwanted factor"))
+    expect_null(omicsRuvDesignResult(list(best_k = list(pos = 1L))))
+    trx <- trxRuvDesignResult(list(ruv_design = list(id = "supplied_controls", method = "RUVg", k = 2L, k_rule = "user", applied = TRUE,
+        reason = NA_character_), k_record = list(k_estimate = 1L, k_seed = 7L), k_estimate = list(k = 1L)))
+    expect_identical(trx[c("design", "k_rule", "seed", "replicate_structure")], list(design = "supplied_controls", k_rule = "user",
+        seed = 7L, replicate_structure = NA_character_))
+    expect_null(trxRuvDesignResult(list(chosen = list(k = 1L))))
+})
+
+test_that("(fourth pass item 3) the summary says what was done in the table's words", {
+    design <- omicGuiConfig("lipidomics")$norm$ruv_design
+    presets <- omicNormRuvPresets(design)
+    texts <- design$tables[[1L]]$texts
+    html <- function(result) as.character(omicNormRuvResultTags(result, presets, texts))
+    expect_identical(html(NULL), character(0))
+    typed <- html(omicNormRuvDesignResult("groups_all_features", "user", 7L, "group", list(pos = list(k = 2L, k_estimate = 1L,
+        applied = TRUE), neg = list(k = 0L, applied = FALSE, reason = "k = 3 is above the limit of 2"))))
+    expect_match(typed, htmltools::htmlEscape(texts[["result_heading"]]), fixed = TRUE)
+    expect_match(typed, htmltools::htmlEscape(presets$groups_all_features$label), fixed = TRUE)
+    expect_match(typed, paste("Assay pos -", texts[["result_k"]], "2 (your own number; estimated number for comparison: 1)"), fixed = TRUE)
+    expect_match(typed, paste("Assay neg -", texts[["result_not_applied"]], "k = 3 is above the limit of 2"), fixed = TRUE)
+    expect_match(typed, htmltools::htmlEscape(texts[["result_sets_group"]]), fixed = TRUE)
+    expect_match(typed, texts[["result_seed"]], fixed = TRUE)
+    counted <- html(omicNormRuvDesignResult("technical_replicates", "num_sv_be", 7L, "technical_replicates",
+        list(all = list(k = 1L, applied = TRUE))))
+    expect_match(counted, paste(texts[["result_k"]], "1 (estimated number)"), fixed = TRUE)
+    expect_false(grepl("Assay", counted, fixed = TRUE))
+    expect_match(counted, htmltools::htmlEscape(texts[["result_sets_technical_replicates"]]), fixed = TRUE)
+    none <- html(omicNormRuvDesignResult("none", NA, NA, NA, list()))
+    expect_match(none, htmltools::htmlEscape(presets$none$label), fixed = TRUE)
+    expect_false(grepl(texts[["result_k"]], none, fixed = TRUE))
+})
+
+test_that("(fourth pass item 3) the tab renders the last run's summary and the estimated number's plot; the gate off sets nothing", {
+    state <- new.env()
+    omicNormSetRuvDesignResult(state, list(design = "x"))
+    expect_null(state$ruv_design_result)
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    estimate <- NULL
+    if (requireNamespace("sva", quietly = TRUE)) {
+        set.seed(1)
+        y <- matrix(stats::rnorm(60L * 12L), 60L) + outer(stats::rnorm(60L), stats::rnorm(12L))
+        estimate <- suppressMessages(estimateRuvFactorCount(y, rep(c("A", "B"), each = 6L), seed = 7L))
+    }
+    bus <- shiny::reactiveValues(state_manager = NULL, design_matrix = NULL, config_list = list(),
+        tab_status = list(normalization = "pending"), state_update_trigger = NULL)
+    suppressWarnings(suppressMessages(shiny::testServer(mod_omic_norm_server, args = list(id = "norm", workflow_data = bus,
+        experiment_paths = list(), omic_type = "lipidomics", experiment_label = "kit129",
+        config = omicGuiConfig("lipidomics")$norm), {
+        omicNormSetRuvDesignResult(session$returned, omicNormRuvDesignResult("groups_all_features", "num_sv_be", 7L, "group",
+            list(pos = list(k = 1L, applied = TRUE, estimate = estimate))))
+        session$flushReact()
+        expect_match(as.character(output$ruv_design_summary$html), "1 (estimated number)", fixed = TRUE)
+        if (!is.null(estimate)) expect_true(nzchar(output$ruv_k_estimate_assay1$src))
+    })))
+})
+
+test_that("(fourth pass item 3) refusals reach the tab's error notice with the kernel's message; DIA's None is shown as done", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    captured <- new.env(parent = emptyenv())
+    refusal <- "the design technical_replicates needs declared technical replicates; this design has none (no_duplicates)"
+    testthat::local_mocked_bindings(runDIAReferenceRuvCovariates = function(settings, ...) {
+        captured$settings <- settings
+        rlang::abort(refusal, class = "workflow_execution_invalid")
+    }, updateProtNormRuvAuditTrail = function(...) invisible(NULL))
+    workflow <- list2env(list(state_manager = list(workflow_type = "DIA_LIMPA")))
+    norm_data <- list2env(list(correlation_filtering_complete = TRUE))
+    notes <- character()
+    observe <- function(input) runProtNormRuvCovariatesObserver(input, list2env(list()), workflow, norm_data, list(), "proteomics", "x",
+        function(reference) NULL, function() "group", renderTextFn = function(text) text,
+        showNotificationFn = function(message, ...) notes <<- c(notes, message), messageFn = function(...) NULL)
+    observe(c(ruvDesignInput(ruv_design = "technical_replicates"), list(color_variable = NULL, shape_variable = NULL)))
+    expect_identical(captured$settings[c("ruv_mode", "ruv_control_rule", "ruv_k_rule", "ruv_design")], list(ruv_mode = "covariates",
+        ruv_control_rule = "all_features", ruv_k_rule = "num_sv_be", ruv_design = "technical_replicates"))
+    expect_identical(notes, paste("Error computing the RUV-III covariates:", refusal))
+    notes <- character()
+    observe(c(ruvDesignInput(ruv_design = "none"), list(color_variable = NULL, shape_variable = NULL)))
+    expect_identical(norm_data$ruv_design_result$design, "none")
+    expect_true(norm_data$ruv_covariates_complete)
+    # classic proteomics: the kernel's refusal is the normalisation's error handler's
+    errors <- list()
+    testthat::local_mocked_bindings(runDIAReferenceNormalization = function(settings, ...) {
+        captured$classic <- settings
+        rlang::abort(refusal, class = "workflow_execution_invalid")
+    }, recordProtNormMethod = function(...) invisible(NULL))
+    runProtNormNormalizationWorkflow(ruvDesignInput(ruv_design = "technical_replicates"), list2env(list(state_manager = list(workflow_type = "LFQ"))),
+        norm_data, list(), "proteomics", "x", function(...) NULL, function(...) NULL, function() "group",
+        handleErrorFn = function(error) errors[[length(errors) + 1L]] <<- conditionMessage(error))
+    expect_identical(captured$classic[c("ruv_design", "ruv_mode", "ruv_k_rule")], list(ruv_design = "technical_replicates",
+        ruv_mode = "automatic", ruv_k_rule = "num_sv_be"))
+    expect_identical(errors, list(refusal))
 })

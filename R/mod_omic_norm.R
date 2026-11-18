@@ -85,7 +85,7 @@ runOmicNormServer <- function(input, output, session, id, workflowData, experime
     }
     if (any(c("aesthetics", "ruv_iii") %in% panels)) shiny::observe(omicNormDesignChoices(session, workflowData))
     # KIT-129 W2: the RUV design section's observers, for every omic; none while its gate is off.
-    registerOmicNormRuvDesign(input, session, workflowData, norm$ruv_design)
+    registerOmicNormRuvDesign(input, session, workflowData, norm$ruv_design, output, normData, norm$assay_slots)
     # KIT-120: an omic with its own server (`norm$server`, a module function's name; proteomics) registers its actions and its other outputs
     # itself, on the frame's state. The frame keeps the design's choices above and the stage grid.
     if (!is.null(norm$server)) {
@@ -331,6 +331,9 @@ runOmicNormPipeline <- function(input, workflowData, experimentPaths, normData, 
             finish = finish, failed = function(error) {
                 addLog(paste("ERROR:", conditionMessage(error)))
                 logger::log_error(paste("Normalization pipeline error:", conditionMessage(error)))
+                # KIT-129 fourth pass item 3: under the gate a refusal of the worker's RUV step is the tab's error notice,
+                # as in process.
+                if (omicGuiRuvDesignEnabled()) shiny::showNotification(paste("Error:", conditionMessage(error)), type = "error")
             }))
     }
     settings <- c(omicNormRunSettings(input, getPlotAesthetics(), normData, experimentPaths, binding, ruvDesign = ruv_design$choice),

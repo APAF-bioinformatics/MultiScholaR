@@ -80,6 +80,8 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
     choice <- omicNormRuvDesignChoice(input, omicNormRuvRunTable("proteomics", "DIA_LIMPA"))
     mode <- protNormDiaRuvDesignMode(choice) %||% input$ruv_mode %||% "covariates"
     if (identical(mode, "skip")) {
+      # KIT-129 fourth pass item 3: under the gate the design none is what was done.
+      omicNormSetRuvDesignResult(normData, if (identical(choice$ruv_design, "none")) omicNormRuvDesignResult("none", NA, NA, NA, list()))
       messageFn("*** RUV covariates skipped by the user (DIA with limpa) ***")
       normData$ruv_covariates_complete <- TRUE
       text <- "RUV-III covariates skipped by the user; the DA model carries no W terms."
@@ -122,7 +124,7 @@ protNormDiaRuvDesignRules <- function(choice) {
   rule <- c(groups_all_features = "all_features", technical_replicates = "all_features", supplied_controls = "supplied_list",
     first_pass_nulls = "first_pass_drop_top_25")[[choice$ruv_design]]
   list(ruv_control_rule = rule, ruv_k_rule = choice$ruv_k_rule, ruv_k = choice$ruv_k, ruv_control_ids = choice$ruv_control_ids,
-    ruv_k_seed = choice$ruv_k_seed)
+    ruv_k_seed = choice$ruv_k_seed, ruv_design = choice$ruv_design)
 }
 
 #' The classic normalisation's settings under the RUV design section's choice (KIT-129 fourth pass item 2): the new

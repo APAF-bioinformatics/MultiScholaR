@@ -936,4 +936,10 @@ test_that("(fourth pass item 2) the panel's choice runs in process and on the wo
     expect_identical(ruv$run$reference$identity, worker$result$reference$identity)
     expect_identical(ruv$value$ruv_design, "groups_all_features")
     expect_identical(unname(unlist(ruv$value$best_k)), c(1L, 1L))
+    # (fourth pass item 3) what the panel shows of this run: k per assay, the count beside the typed k, the sets, the seed
+    result <- omicsRuvDesignResult(ruv$value)
+    expect_identical(result[c("design", "k_rule", "seed", "replicate_structure")], list(design = "groups_all_features", k_rule = "user",
+        seed = RUV_FACTOR_COUNT_SEED, replicate_structure = "group"))
+    expect_identical(lapply(result$assays, `[[`, "k"), list(pos = 1L, neg = 1L))
+    expect_identical(lapply(result$assays, `[[`, "k_estimate"), ruv$value$ruv_k_estimate)
 })

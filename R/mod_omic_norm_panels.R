@@ -435,11 +435,18 @@ omicNormRuvKDiagnosticSlots <- function(ns, view) {
     design <- view$ruv_design
     if (!isTRUE(design$enabled)) return(NULL)
     with_k <- names(Filter(\(preset) length(preset$k_rules) > 0L, omicNormRuvPresets(design)))
-    shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", with_k), ns = ns, shiny::hr(),
+    with_separation <- names(Filter(\(preset) "sweep_bounded" %in% preset$k_rules, omicNormRuvPresets(design)))
+    list(shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", with_k), ns = ns, shiny::hr(),
         shiny::h5("Number of factors (k): the estimated number", style = "text-align: center;"),
         shiny::helpText(design$k_rules$num_sv_be$diagnostic),
         lapply(seq_len(view$assay_slots), \(n) shinyjqui::jqui_resizable(
-            shiny::plotOutput(ns(sprintf("ruv_k_estimate_assay%d", n)), height = "400px"))))
+            shiny::plotOutput(ns(sprintf("ruv_k_estimate_assay%d", n)), height = "400px")))),
+        # KIT-129 fourth pass item 3: the separation rule's plot of the last run, where the run computed one.
+        shiny::conditionalPanel(condition = paste(omicNormRuvJsIn("ruv_design", with_separation), "&& input.ruv_k_rule == 'sweep_bounded'"),
+            ns = ns, shiny::hr(),
+            shiny::h5(design$tables[[1L]]$texts[["separation_plot_heading"]], style = "text-align: center;"),
+            shiny::helpText(design$k_rules$sweep_bounded$diagnostic),
+            shinyjqui::jqui_resizable(shiny::plotOutput(ns("ruv_k_separation_plot"), height = "400px"))))
 }
 
 #' The table of a design group for a workflow type: the route's where the group names one, else the first.
@@ -495,8 +502,9 @@ omicNormRuvShowKRules <- function(session, design, table, selected) {
 #' @param design The norm group's `ruv_design`.
 #' @return NULL, invisibly.
 #' @noRd
-registerOmicNormRuvDesign <- function(input, session, workflowData, design) {
+registerOmicNormRuvDesign <- function(input, session, workflowData, design, output = NULL, normData = NULL, slots = 1L) {
     if (!isTRUE(design$enabled)) return(invisible(NULL))
+    if (!is.null(output) && !is.null(normData)) registerOmicNormRuvDesignOutputs(output, normData, design, slots)
     # KIT-129 fourth pass item 2: the table of the route and whether the session's design declares technical
     # replicates, read again on each state change; the options are shown again, with their default selection, only
     # when what is available changes.
@@ -529,6 +537,150 @@ registerOmicNormRuvDesign <- function(input, session, workflowData, design) {
         omicNormRuvShowKRules(session, design, table, input$ruv_design)
     })
     invisible(NULL)
+}
+
+#' The section's outputs of the last run (KIT-129 fourth pass item 3): under the options, what was done
+#' (`ruv_design_summary`); in the RUV QC tab the estimated number's diagnostic per assay row (`plotRuvFactorCount`) and
+#' the separation rule's plot when the run computed one. They read `normData$ruv_design_result`
+#' (`omicNormRuvDesignResult`), which a run of a new design sets and a run of a legacy design clears.
+#' @param output The module's output.
+#' @param normData The tab's state.
+#' @param design The norm group's `ruv_design`.
+#' @param slots The tab's assay rows (`norm$assay_slots`).
+#' @return NULL, invisibly.
+#' @noRd
+registerOmicNormRuvDesignOutputs <- function(output, normData, design, slots = 1L) {
+    presets <- omicNormRuvPresets(design)
+    texts <- design$tables[[1L]]$texts
+    output$ruv_design_summary <- shiny::renderUI(omicNormRuvResultTags(normData$ruv_design_result, presets, texts))
+    for (n in seq_len(slots %||% 1L)) local({
+        slot <- n
+        output[[sprintf("ruv_k_estimate_assay%d", slot)]] <- shiny::renderPlot({
+            result <- normData$ruv_design_result
+            estimate <- if (length(result$assays) >= slot) result$assays[[slot]]$estimate
+            shiny::req(is.list(estimate))
+            plotRuvFactorCount(estimate)
+        })
+    })
+    output$ruv_k_separation_plot <- shiny::renderPlot({
+        plot <- normData$ruv_design_result$separation_plot
+        shiny::req(!is.null(plot))
+        if (inherits(plot, "grob")) grid::grid.draw(plot) else print(plot)
+    })
+    invisible(NULL)
+}
+
+#' What a run of a new design did, in the panel's words (KIT-129 fourth pass item 3): the approach, per assay k with the
+#' rule that gave it (the estimated number beside a typed k, decision M33), or why no factor was removed; the replicate
+#' sets; the seed.
+#' @param result `omicNormRuvDesignResult`'s value, or NULL (nothing shown).
+#' @param presets The design group's presets by id.
+#' @param texts The table's texts.
+#' @return A tag, or NULL.
+#' @noRd
+omicNormRuvResultTags <- function(result, presets, texts) {
+    if (is.null(result)) return(NULL)
+    line <- \(...) shiny::tags$p(...)
+    text <- \(key) if (checkmate::test_string(key) && key %in% names(texts)) texts[[key]]
+    label <- presets[[result$design]]$label %||% result$design
+    assays <- result$assays
+    several <- length(assays) > 1L
+    k_lines <- lapply(names(assays), function(name) {
+        assay <- assays[[name]]
+        prefix <- if (several) paste(texts[["result_assay"]], name, "-") else NULL
+        if (!isTRUE(assay$applied)) return(line(paste(c(prefix, texts[["result_not_applied"]], assay$reason), collapse = " ")))
+        rule <- text(paste0("result_rule_", result$k_rule)) %||% result$k_rule
+        beside <- if (identical(result$k_rule, "user")) {
+            if (!is.na(assay$k_estimate %||% NA)) paste0("; ", texts[["result_k_estimate"]], " ", assay$k_estimate) else
+                if (!is.null(assay$k_estimate_reason) && !is.na(assay$k_estimate_reason))
+                    paste0("; ", texts[["result_k_estimate_none"]], " ", assay$k_estimate_reason)
+        }
+        line(paste(c(prefix, texts[["result_k"]], paste0(assay$k, " (", rule, beside, ")")), collapse = " "))
+    })
+    sets <- text(paste0("result_sets_", result$replicate_structure))
+    shiny::tags$div(class = "ruv-design-result", `aria-live` = "polite",
+        shiny::tags$h5(texts[["result_heading"]]),
+        line(texts[["result_design"]], label),
+        if (!identical(result$design, "none")) k_lines,
+        if (!identical(result$design, "none") && !is.null(sets)) line(sets),
+        if (!is.na(result$seed %||% NA) && result$k_rule %in% c("num_sv_be", "user")) line(texts[["result_seed"]], result$seed))
+}
+
+#' One run's result for the panel (KIT-129 fourth pass item 3), in one shape for every omic.
+#' @param design The design's id. @param k_rule The k rule. @param seed The count's seed, or NA.
+#' @param replicate_structure `group`, `technical_replicates` or NA.
+#' @param assays Per assay (one, `all`, outside lipid/metab): `k`, `k_estimate` (beside a typed k), `k_estimate_reason`,
+#'   `applied`, `reason`, `estimate` (the count's record for `plotRuvFactorCount`, or NULL).
+#' @param separation_plot The separation rule's plot of the run, or NULL.
+#' @noRd
+omicNormRuvDesignResult <- function(design, k_rule, seed, replicate_structure, assays, separation_plot = NULL) {
+    list(design = design, k_rule = k_rule %||% NA_character_, seed = seed %||% NA_integer_,
+        replicate_structure = replicate_structure %||% NA_character_, assays = assays, separation_plot = separation_plot)
+}
+
+#' Set the tab's last-run result (KIT-129 fourth pass item 3); nothing with the gate off.
+#' @param normData The tab's state. @param result The result, or NULL (a legacy run: the summary is cleared).
+#' @noRd
+omicNormSetRuvDesignResult <- function(normData, result) {
+    if (!omicGuiRuvDesignEnabled() || is.null(normData)) return(invisible(NULL))
+    normData$ruv_design_result <- result
+    invisible(result)
+}
+
+#' The result of the classic normalisation's product (KIT-129 fourth pass item 3); NULL for today's design.
+#' @param saved The product's value (`diaNormalizationOperation`).
+#' @noRd
+protNormRuvDesignResult <- function(saved) {
+    design <- saved$parameters$ruv_design
+    if (is.null(design)) return(NULL)
+    r <- saved$ruv_result
+    if (identical(design, "none")) return(omicNormRuvDesignResult("none", NA, NA, NA, list()))
+    applied <- isTRUE(r$ruv_applied)
+    omicNormRuvDesignResult(design, r$ruv_k_rule, r$ruv_k_seed, saved$ruv_model$replicate_structure,
+        list(all = list(k = if (applied) saved$best_k else 0L, k_estimate = r$ruv_k_estimate, k_estimate_reason = r$ruv_k_estimate_reason,
+            applied = applied, reason = r$ruv_not_applied_reason, estimate = r$k_estimate)),
+        separation_plot = if (identical(r$ruv_k_rule, "sweep_bounded")) r$best_cancor_plot)
+}
+
+#' The result of DIA with limpa's RUV covariates product (KIT-129 fourth pass item 3); NULL for today's rule.
+#' @param saved The product's value. @param design The panel's design id (the route's product names its control rule only).
+#' @noRd
+diaRuvDesignResult <- function(saved, design) {
+    if (is.null(saved$ruv_control_rule)) return(NULL)
+    r <- saved$ruv_result
+    applied <- isTRUE(saved$ruv_applied)
+    omicNormRuvDesignResult(design %||% saved$ruv_control_rule, saved$ruv_k_rule, saved$parameters$ruv_k_seed,
+        saved$replicate_structure, list(all = list(k = saved$best_k, k_estimate = saved$ruv_k_estimate,
+            k_estimate_reason = r$ruv_k_estimate_reason, applied = applied, reason = saved$ruv_not_applied_reason, estimate = r$k_estimate)),
+        separation_plot = r$k_sweep$cancor_plot)
+}
+
+#' The result of the lipid/metab new design's RUV product (KIT-129 fourth pass item 3), per assay; NULL for today's.
+#' @param value The product's value (`omicsRuvDesignOperation`).
+#' @noRd
+omicsRuvDesignResult <- function(value) {
+    design <- value$ruv_design
+    if (is.null(design)) return(NULL)
+    if (identical(design, "none")) return(omicNormRuvDesignResult("none", NA, NA, NA, list()))
+    assays <- lapply(stats::setNames(names(value$factors), names(value$factors)), function(assay) {
+        record <- value$factors[[assay]]
+        list(k = record$k, k_estimate = record$ruv_k_estimate, k_estimate_reason = record$k_estimate_reason,
+            applied = isTRUE(value$ruv_applied[[assay]]), reason = record$reason, estimate = value$k_estimate[[assay]])
+    })
+    omicNormRuvDesignResult(design, value$ruv_k_rule, value$ruv_k_seed, value$ruv_replicate_structure, assays)
+}
+
+#' The result of the transcriptomics declared choice (KIT-129 fourth pass item 3); NULL for today's grid.
+#' @param value The choice's value (`trxChooseRuvDesign`, the declared `trx_ruv_grid` product).
+#' @noRd
+trxRuvDesignResult <- function(value) {
+    d <- value[["ruv_design", exact = TRUE]]
+    if (is.null(d)) return(NULL)
+    if (identical(d$id, "none")) return(omicNormRuvDesignResult("none", NA, NA, NA, list()))
+    omicNormRuvDesignResult(d$id, d$k_rule, value$k_record$k_seed %||% value$settings$ruv_k_seed,
+        if (identical(d$method, "RUVs")) "group", list(all = list(k = d$k, k_estimate = value$k_record$k_estimate,
+            k_estimate_reason = value$k_record$k_estimate_reason, applied = isTRUE(d$applied), reason = d$reason,
+            estimate = value$k_estimate)))
 }
 
 #' Why an option cannot be chosen on this session (KIT-129 fourth pass item 2): the reason the run path does not take

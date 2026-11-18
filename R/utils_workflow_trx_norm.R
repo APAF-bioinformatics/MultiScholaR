@@ -95,6 +95,8 @@ runTrxNormManaged <- function(binding, runner, manager, settings, normData, conf
     after_logcpm <- function() runner$run(list(omicsManagedProduct("trx_ruv_grid", c(list(logcpm = held$logcpm), request$design %||% settings), function(result) {
         held$grid <- result$reference$entity_id
         held$k <- result$value$chosen$k
+        # KIT-129 fourth pass item 3: what a declared design's run did, for the RUV design section.
+        omicNormSetRuvDesignResult(normData, trxRuvDesignResult(result$value))
         # A declared design has no grid to show (KIT-129 integration item 1; its diagnostic is the panel's).
         if (is.null(result$value[["ruv_design", exact = TRUE]])) normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(result$value))
         addLog(sprintf("RUV grid (%s): k = %d, %s%% inferred negative controls", result$value$mode, result$value$chosen$k, result$value$chosen$percentage))
@@ -113,6 +115,7 @@ runTrxNormInProcess <- function(binding, manager, settings, normData, config, ad
     tryCatch({
         request <- trxNormRuvRequest(settings)
         run <- runTrxReferenceRuvs(manager, settings, config, design_parameters = request$design)
+        omicNormSetRuvDesignResult(normData, trxRuvDesignResult(run$grid$value))
         if (is.null(run$grid$value[["ruv_design", exact = TRUE]])) normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(run$grid$value))
         normData$ruv_corrected_obj <- run$reference
         addLog(sprintf("RUVs applied: W_1..W_%d added to the design (state 'trx_ruvs')", run$grid$value$chosen$k))

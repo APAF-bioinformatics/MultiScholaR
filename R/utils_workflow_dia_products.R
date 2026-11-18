@@ -770,6 +770,8 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
     norm_data$control_genes_index <- saved$controls
     norm_data$ruv_optimization_result <- saved$ruv_result
     workflow$ruv_optimization_result <- saved$ruv_result
+    # KIT-129 fourth pass item 3: what a new design's run did, for the RUV design section (nothing with the gate off).
+    omicNormSetRuvDesignResult(norm_data, protNormRuvDesignResult(saved))
     # KIT-018: the optimisation grid is a saved display table the module pages on demand.
     norm_data$ruv_optimization_table <- saveDIADisplayTable(manager, saved$ruv_result$optimization_results)
     skipped <- identical(settings$ruv_mode, "skip")
@@ -1436,6 +1438,8 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
     norm_data$ruv_optimization_result <- saved$ruv_result
     workflow$ruv_optimization_result <- saved$ruv_result
     norm_data$ruv_optimization_table <- saveDIADisplayTable(manager, saved$ruv_result$optimization_results)
+    # KIT-129 fourth pass item 3: what a declared rule's run did, for the RUV design section (nothing with the gate off).
+    omicNormSetRuvDesignResult(norm_data, diaRuvDesignResult(saved, settings$ruv_design))
     norm_data$best_k <- saved$best_k
     norm_data$control_genes_index <- saved$controls
     accepted <- getDIAStateReference(manager)
@@ -1451,7 +1455,10 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
             adjusted_spec <- readDIAStateMetadata(manager, saved$adjusted)$data
             writeDIADesignTable(manager, adjusted_spec$components$protein_quant_table,
                 file.path(staged$protein_qc_dir, "ruv_adjusted_protein_matrix.tsv"), vroom::vroom_write)
-            vroom::vroom_write(saved$ruv_result$optimization_results, file.path(staged$protein_qc_dir, "ruv_covariates_optimization.tsv"))
+            # KIT-129 fourth pass item 3: a declared rule's run has no sweep table unless the sweep gave k.
+            if (is.data.frame(saved$ruv_result$optimization_results)) {
+                vroom::vroom_write(saved$ruv_result$optimization_results, file.path(staged$protein_qc_dir, "ruv_covariates_optimization.tsv"))
+            }
             saveRDS(saved$ruv_result[setdiff(names(saved$ruv_result), "best_cancor_plot")],
                 file.path(staged$source_dir, "ruv_covariates_optimization_results.RDS"))
             if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(

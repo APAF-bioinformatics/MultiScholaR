@@ -1504,7 +1504,22 @@ omicGuiRuvTexts <- function(features) {
         seed = "Random seed for the estimated number:",
         k_missing = "Enter the number of factors (k) as a whole number of 1 or more.",
         seed_invalid = "Enter the random seed for the estimated number as a whole number.",
-        list_missing = sprintf("Enter at least one control %s identifier.", feature))
+        list_missing = sprintf("Enter at least one control %s identifier.", feature),
+        # KIT-129 fourth pass item 3: what the run did, under the options.
+        result_heading = "What the last run did",
+        result_design = "Approach used:",
+        result_k = "Number of factors (k):",
+        result_rule_num_sv_be = "estimated number",
+        result_rule_sweep_bounded = "separation rule",
+        result_rule_user = "your own number",
+        result_k_estimate = "estimated number for comparison:",
+        result_k_estimate_none = "the estimated number could not be computed:",
+        result_sets_group = "Replicate sets: your groups.",
+        result_sets_technical_replicates = "Replicate sets: your technical replicates (the measurements of each biological sample).",
+        result_not_applied = "Unwanted variation was not removed:",
+        result_seed = "Random seed for the estimated number:",
+        result_assay = "Assay",
+        separation_plot_heading = "Number of factors (k): the separation rule")
 }
 
 #' The scenarios of KIT-124's simulations in words, for `fdp_where`: the condition only (the column heading says
