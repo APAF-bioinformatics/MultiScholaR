@@ -75,7 +75,9 @@ module_ci_metab_da_object <- function(layout = c("combined", "lc", "gc"),
     design_matrix = module_ci_metab_da_design(),
     sample_id = "Run",
     group_id = "group",
-    technical_replicate_id = "tech_rep_group",
+    # KIT-128 K128-1: no technical replicates declared. The table's one pair per group would be no biological
+    # replication, now refused; these tests are about the DA tables, and their frozen oracles hash this design table.
+    technical_replicate_id = NA_character_,
     args = list(
       daAnalysisParameters = list(formula_string = formula_string),
       module_ci_fixture = "MCI-016"
@@ -322,7 +324,8 @@ module_ci_metab_da_bind_orchestration_stubs <- function(case = "mixed",
              sample_id_col = "Run",
              treat_lfc_cutoff = NA,
              eBayes_trend = TRUE,
-             eBayes_robust = TRUE) {
+             eBayes_robust = TRUE,
+             ...) {
       observed$calls[[length(observed$calls) + 1L]] <- list(
         sample_cols = colnames(data),
         contrast_strings = contrast_strings,

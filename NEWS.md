@@ -4,6 +4,30 @@
 
 ### Scientific changes
 
+ * Lipidomics and metabolomics differential abundance: technical replicates declared in the design
+   (several runs of one biological unit, the design step's `tech_rep_group`) are now fitted with the
+   biological unit as a block (`limma::duplicateCorrelation`, then `lmFit(block, correlation)`; limma
+   User's Guide 11.3), the rule proteomics already applies. Before, each injection was tested as an
+   independent sample, which made P-values too small (null rate 0.16 at a nominal 0.05 on duplicated
+   injections; at most 0.075 now). The DA record names the model (`block_reason`,
+   `uses_duplicate_correlation`). Designs without technical replicates give the same results as before.
+   The RUV-III replicate structure of these omics is unchanged here.
+ * Transcriptomics: technical replicates declared in the design are summed per biological unit at the
+   design step (`edgeR::sumTechReps`; edgeR User's Guide 4.9.1), before the expression filter, TMM, RUVs and
+   the edgeR QL test, which takes no block. Before, each library was tested as an independent sample (null
+   rate 0.29 at a nominal 0.05 on duplicated libraries through the route; at most 0.075 now). On such designs
+   the samples are now the units (named by `tech_rep_group`), the summed runs are recorded with the design
+   state, results no longer equal the notebook on library counts, and the RUVIII export no longer offers a
+   technical-replicate M. Designs without technical replicates are unchanged.
+ * A design whose every group is one biological unit measured more than once is refused in every omic: no
+   biological replication. Proteomics, lipidomics and metabolomics stop the differential analysis with an error
+   (class `omics_da_no_biological_replication`) naming the groups; before, the runs were tested as independent
+   samples. Import, design saving and normalisation are unchanged.
+ * Transcriptomics design check: a group needs two biological units, as in every omic. A group of one unit
+   sequenced twice (two libraries, one `tech_rep_group`) is now refused at save; before, it passed as two samples.
+ * Lipidomics and metabolomics differential abundance: an error on one assay is no longer dropped silently.
+   `runLipidsDA` and `runMetabolitesDA` name the failed assay in `failed_assays` with a warning and keep the
+   other assays, and stop when every assay failed; the DA tab records and warns about a failed assay fit.
  * DIA-NN import: a precursor quantity of exactly 0 (a precursor DIA-NN did not quantify) is now read as a
    missing value in both quantity columns (`Precursor.Quantity` and `Precursor.Normalised`),
    with a notice of the count per column, as the LFQ and TMT readers already did. Before, a 0 counted as an

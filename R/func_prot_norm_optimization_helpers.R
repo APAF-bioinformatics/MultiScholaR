@@ -414,6 +414,20 @@ resolveProtTechnicalReplicateBlock <- function(design_matrix, group_id, technica
     blocks = length(unique(block)))
 }
 
+#' Refuse a differential analysis without biological replication (KIT-128 K128-1, the user's rule of 2026-11-17, every
+#' omic): a design whose every group is one biological unit measured more than once (the rule's `spanned_by_design`)
+#' has no biological replicate to test against, and its technical replicates are not independent samples.
+#' @param replicate `resolveProtTechnicalReplicateBlock`'s result.
+#' @param groups The group of each row the rule read.
+#' @return `replicate`, invisibly; otherwise an error of class `omics_da_no_biological_replication` naming the groups.
+#' @noRd
+refuseNoBiologicalReplication <- function(replicate, groups) {
+  if (!identical(replicate$reason, "spanned_by_design")) return(invisible(replicate))
+  rlang::abort(sprintf(paste("no biological replication: every group is one biological unit measured more than once",
+    "(groups %s), so there is no biological replicate to test against. Each group needs at least two biological units."),
+    paste(unique(as.character(groups)), collapse = ", ")), class = "omics_da_no_biological_replication")
+}
+
 resolveProtRuvReplicateBlocks <- function(design_matrix, sample_id, group_id, technical_replicate_id,
                                           ruv_grouping_variable) {
   stopifnot(is.data.frame(design_matrix), sample_id %in% names(design_matrix))

@@ -42,19 +42,23 @@ test_that("MCI-027.1 the builder keeps the counts file's run order and names; th
   expect_identical(object@gene_id_column, "GeneID")
   expect_identical(object@annotation_id_column, "GeneName")
   expect_identical(object@technical_replicate_id, "tech_rep_group")
-  # Names and order reach the kernels unchanged: the class's inputs are the corpus's runs, by name.
+  # KIT-128 (D1, D2): the corpus declares technical replicates, so the design state holds their summed counts, one
+  # sample per biological unit named by the builder's technical replicate set, in the order of the units' first runs.
   inputs <- trxAssayInputs(object)
-  expect_identical(colnames(inputs$counts), truth$column_order)
-  expect_identical(as.character(inputs$design$Run), truth$column_order)
+  built <- result$design_matrix
+  units <- unique(built$tech_rep_group)
+  expect_identical(colnames(inputs$counts), units)
+  expect_identical(as.character(inputs$design$Run), units)
   expect_identical(levels(inputs$group), c("RPMI", "Sera"))
-  expect_identical(as.character(inputs$group), design$group[match(truth$column_order, design$Run)])
-  # The technical replicates partition the runs as the corpus's biological samples do.
+  expect_identical(as.character(inputs$group), design$group[match(built$Run[!duplicated(built$tech_rep_group)], design$Run)])
+  # The summed runs, as recorded, partition the runs as the corpus's biological samples do.
   partition <- function(runs, sets) {
     parts <- lapply(split(as.character(runs), sets), sort)
     unname(parts[order(vapply(parts, `[`, "", 1L))])
   }
-  committed <- inputs$design
-  expect_identical(partition(committed$Run, committed$tech_rep_group), partition(design$Run, design$tech_rep_group))
+  summed <- object@args$technical_replicates_summed
+  expect_identical(partition(unlist(summed, use.names = FALSE), rep(names(summed), lengths(summed))),
+    partition(design$Run, design$tech_rep_group))
   expect_true(validateWorkflowAnalysisRecord(buildWorkflowAnalysisRecord(owner))$valid)
   for (file in c("design_matrix.tab", "contrast_strings.tab", "data_cln_counts.tab")) {
     expect_true(file.exists(file.path(fixture$paths$source_dir, file)), info = file)
@@ -171,4 +175,20 @@ test_that("MCI-027.4 the design tab under the transcriptomics profile: the share
   lipid <- htmltools::renderTags(mod_lipid_design_ui("design"))$html
   expect_match(lipid, "design-show_import_modal", fixed = TRUE)
   expect_match(lipid, "Multi-Assay Workflow", fixed = TRUE)
+})
+
+test_that("KIT-128 the design tab says how many runs were summed into how many samples, and nothing without technical replicates", {
+  skip_if_not(workflowOwnerCapable())
+  notes <- function(technical) {
+    fixture <- module_ci_trx_fixture_owner()
+    module_ci_trx_import(fixture, file.path(module_ci_trx_corpus(), "counts.tsv"))
+    result <- module_ci_trx_build_design(fixture, module_ci_trx_corpus_design(), c("RPMI", "Sera"), technical = technical)
+    list(result = result, messages = vapply(module_ci_trx_commit(fixture, result)$notes, `[[`, "", "message"))
+  }
+  with_reps <- notes(TRUE)
+  runs <- nrow(with_reps$result$design_matrix)
+  units <- length(unique(with_reps$result$design_matrix$tech_rep_group))
+  expect_lt(units, runs)
+  expect_true(any(grepl(sprintf("%d runs summed into %d samples", runs, units), with_reps$messages, fixed = TRUE)))
+  expect_false(any(grepl("summed into", notes(FALSE)$messages, fixed = TRUE)))
 })

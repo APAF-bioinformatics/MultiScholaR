@@ -387,6 +387,7 @@ setMethod(
       elist <- elist[, samples_in_model]
       replicate <- resolveProtTechnicalReplicateBlock(theObject@design_matrix[samples_in_model, , drop = FALSE],
         theObject@group_id, theObject@technical_replicate_id)
+      refuseNoBiologicalReplication(replicate, theObject@design_matrix[samples_in_model, theObject@group_id]) # KIT-128 K128-1
       block <- if (isTRUE(replicate$technical)) replicate$block else NULL
       dpcDEFn <- limpa::dpcDE
       dpc_fit <- dpcDEFn(elist, design_for_dpcde, plot = FALSE, block = block)

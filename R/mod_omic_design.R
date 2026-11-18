@@ -258,6 +258,12 @@ runOmicsDesignCommit <- function(results, workflowData, experimentPaths, qcTrigg
         workflowData$tab_status <- status
         shiny::removeModal()
         shiny::showNotification("Design matrix and contrasts saved successfully!", type = "message")
+        # KIT-128: transcriptomics sums technical replicates per biological unit at this step (trxDesignObject).
+        summed <- if (methods::.hasSlot(committed$object, "args")) committed$object@args$technical_replicates_summed
+        if (length(summed)) {
+            shiny::showNotification(sprintf("Technical replicates: %d runs summed into %d samples.",
+                length(unlist(summed)), length(summed)), type = "message", duration = NULL)
+        }
     }, error = function(e) omicsDesignSaveFailed(e$message))
     invisible(NULL)
 }

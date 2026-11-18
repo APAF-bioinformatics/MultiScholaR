@@ -387,10 +387,28 @@ omicsDaOperation <- function(binding) {
             accepted$products$da_results <- store$product(result, "da_results", paste0(binding$prefix, "-da-results"))
             accepted$rows <- if (is.data.frame(result[[long_table]])) nrow(result[[long_table]]) else 0L
             accepted$columns <- names(result[[long_table]])
-            accepted$model <- list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
-                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))
+            # KIT-128: the assays the kernel could not compute, as it names them.
+            if (length(result$failed_assays)) accepted$failed_assays <- result$failed_assays
+            accepted$model <- c(list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
+                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0)),
+                omicsDaBlockRecord(list(list(
+                    block_reason = lapply(result$contrasts_results, function(entry) entry$fit.eb$block_reason),
+                    uses_duplicate_correlation = lapply(result$contrasts_results, function(entry) entry$fit.eb$uses_duplicate_correlation)))))
             accepted
         })
+}
+
+#' The DA model record's replicate fields (KIT-128), as the proteomics record names them: `block_reason` (the rule's
+#' reason; the distinct ones joined when assays differ) and `uses_duplicate_correlation` (whether any assay was fitted
+#' with the biological unit as block).
+#' @param models Lists with `block_reason` and `uses_duplicate_correlation` per assay (a contrast's, or the kernel's).
+#' @return The two fields, or an empty list when no fit recorded a reason (a transcriptomics fit, a fit saved earlier).
+#' @noRd
+omicsDaBlockRecord <- function(models) {
+    reasons <- unique(as.character(unlist(lapply(models, `[[`, "block_reason"))))
+    if (!length(reasons)) return(list())
+    list(block_reason = paste(reasons, collapse = "; "),
+        uses_duplicate_correlation = any(as.logical(unlist(lapply(models, `[[`, "uses_duplicate_correlation")))))
 }
 
 #' Identify one assay's uncontrasted limma fit (KIT-076): the values in order, the design and formula, the software.
@@ -400,33 +418,49 @@ omicsDaOperation <- function(binding) {
 #' @param formula_string The model formula.
 #' @param assay The assay's name.
 #' @param software Installed software identity.
+#' @param block The fit's block (KIT-128): the biological unit per sample when the design has technical replicates, else
+#'   NULL, which leaves the identity as it was. A fit saved before KIT-128 on such a design is therefore not a hit.
 #' @return The store's scientific identity.
 #' @noRd
-newWorkflowOmicsDaFitIdentity <- function(data, design, formula_string, assay, software) {
+newWorkflowOmicsDaFitIdentity <- function(data, design, formula_string, assay, software, block = NULL) {
     newSavedWorkflowScientificIdentity(
         digest::digest(list(values = data, feature_order = rownames(data), sample_order = colnames(data)), algo = "sha256"),
-        digest::digest(list(formula = formula_string, design = design), algo = "sha256"),
+        digest::digest(c(list(formula = formula_string, design = design), if (!is.null(block)) list(block = block)), algo = "sha256"),
         digest::digest(list(layer = "omics_da_base_fit"), algo = "sha256"),
         digest::digest(list(assay = assay), algo = "sha256"), software)
 }
 
 #' One assay's fit for the contrast operations (KIT-076): the saved `da_fit` when the identity has one, else the fit half
-#' of the omic's kernel, saved once. A fit failure drops the assay (the orchestrator's silent drop, kept for the
-#' fit half only and recorded in the KIT-076 outcome); ids the store's envelope refuses keep the fit unsaved.
-#' @return `list(fit, reference)`, or NULL when the fit failed.
+#' of the omic's kernel, saved once. A fit failure is returned as its message (KIT-128; before, the assay was dropped
+#' silently) and the caller records it under the contrast's `errors`; ids the store's envelope refuses keep the fit
+#' unsaved.
+#' @param group_id,technical_replicate_id The object's declared columns (KIT-128), handed to the fit half; the default
+#'   NULL keeps the fit and its identity as they were.
+#' @return `list(fit, reference)`, or `list(error)` when the fit failed.
 #' @noRd
-omicsDaAssayFit <- function(binding, store, data, design, formula_string, sample_id, assay) {
+omicsDaAssayFit <- function(binding, store, data, design, formula_string, sample_id, assay, group_id = NULL,
+                            technical_replicate_id = NULL) {
     manager <- store$manager
-    identity <- newWorkflowOmicsDaFitIdentity(data, design, formula_string, assay, manager$.context$software)
+    # KIT-128: the block of the samples the fit reads, by the rule the fit half applies; only a technical one is in the
+    # identity.
+    block <- if (!is.null(technical_replicate_id) && sample_id %in% names(design)) {
+        replicate <- resolveProtTechnicalReplicateBlock(as.data.frame(design)[design[[sample_id]] %in% colnames(data), , drop = FALSE],
+            group_id, technical_replicate_id)
+        if (isTRUE(replicate$technical)) replicate$block
+    }
+    identity <- newWorkflowOmicsDaFitIdentity(data, design, formula_string, assay, manager$.context$software, block = block)
     factors <- list(route = binding$prefix, layer = "base_fit")
     hit <- resolveSavedWorkflowEntity(manager$.context$store, "da_fit", identity, factors = factors)
     if (identical(hit$status, "hit")) return(list(fit = hit$value$fit, reference = hit$reference))
-    fit <- tryCatch(binding$da_fit(data, design, formula_string, sample_id), error = function(e) {
+    failure <- NULL
+    fit <- tryCatch(binding$da_fit(data, design, formula_string, sample_id, group_id = group_id,
+        technical_replicate_id = technical_replicate_id), error = function(e) {
         cat(sprintf("[ERROR] Processing assay %s: %s\n", assay, e$message))
         logger::log_error(sprintf("   ERROR processing assay %s: %s", assay, e$message))
+        failure <<- conditionMessage(e)
         NULL
     })
-    if (is.null(fit)) return(NULL)
+    if (!is.null(failure)) return(list(error = failure))
     features <- rownames(fit$coefficients)
     if (anyDuplicated(features) || anyNA(features) || !all(nzchar(features))) return(list(fit = fit, reference = NULL))
     reference <- saveWorkflowConsumerEntity(manager$.context$store,
@@ -470,8 +504,18 @@ omicsDaContrastOperation <- function(binding) {
                 input <- binding$da_assay_input(assays[[assay]], assay, design, object@sample_id,
                     methods::slot(object, binding$id_slot), object@annotation_id_column)
                 if (is.null(input)) next
-                fit <- omicsDaAssayFit(binding, store, input$expr_matrix, design, parameters$formula, object@sample_id, assay)
-                if (is.null(fit)) next
+                fit <- omicsDaAssayFit(binding, store, input$expr_matrix, design, parameters$formula, object@sample_id, assay,
+                    group_id = object@group_id, technical_replicate_id = object@technical_replicate_id)
+                # KIT-128: a failed fit is named in the errors channel the contrast half uses; the other assays go on.
+                if (!is.null(fit$error)) {
+                    accepted$errors[[assay]] <- fit$error
+                    next
+                }
+                # KIT-128: which model the assay's fit is (the fit half records it; a trx fit carries none).
+                if (!is.null(fit$fit$block_reason)) {
+                    accepted$model$block_reason[[assay]] <- fit$fit$block_reason
+                    accepted$model$uses_duplicate_correlation[[assay]] <- isTRUE(fit$fit$uses_duplicate_correlation)
+                }
                 outcome <- tryCatch({
                     applied <- binding$da_apply(fit$fit, contrast, if (parameters$lfc > 0) parameters$lfc else NA, TRUE, TRUE)
                     list(applied = applied, table = binding$da_format(applied$results[[contrast]], contrast, assay,
@@ -1168,6 +1212,7 @@ acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, co
     # KIT-095: the model record is the binding's (`da_model`); lipid and metab keep the limma one.
     model <- if (is.function(binding$da_model)) binding$da_model(parameters) else list(model = "limma",
         formula_used = parameters$formula, eBayes_trend = TRUE, eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))
+    model <- c(model, omicsDaBlockRecord(lapply(results, `[[`, "model")))
     manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v2"), source = source),
         stats::setNames(list(metadata$slots[[binding$id_slot]]), binding$id_slot),
         list(sample_id = metadata$slots$sample_id, assays = metadata$assay_names, contrasts = contrasts, results = results,

@@ -82,6 +82,7 @@ fitDIAExecutionBaseModel <- function(data, design_m, design, samples, formula, w
     # KIT-035: the block from the declaration (the same string as the group_replicates block it replaces, so the
     # base-fit identity of an existing store is unchanged).
     replicate <- resolveProtTechnicalReplicateBlock(selected_design, group_id, technical_replicate_id)
+    refuseNoBiologicalReplication(replicate, selected_design[[group_id]]) # KIT-128 K128-1
     block <- replicate$block
     identity <- newWorkflowDiaBaseFitIdentity(data, selected_design, formula, block, weights,
         "accepted-normalized-component", "accepted-ruv-component", manager$.context$software)

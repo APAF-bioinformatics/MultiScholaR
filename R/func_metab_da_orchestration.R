@@ -146,6 +146,9 @@ countMetabDaSignificant <- function(df) {
 #'   - per_assay_results: List of per-assay result tables
 #'   - significant_counts: Summary of significant metabolites per assay
 #'   - qvalue_warnings: Any qvalue computation warnings
+#'   - failed_assays: Present only when an assay's analysis stopped: the message per failed assay. The
+#'     other assays are kept and a warning (class `omics_da_assay_failed`) names the failed ones; when every
+#'     assay failed the function stops (class `omics_da_all_assays_failed`).
 #'
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr mutate bind_rows select left_join
@@ -225,6 +228,11 @@ runMetabolitesDA <- function(
     per_assay_results <- list()
     contrasts_results <- list()
     all_qvalue_warnings <- list()
+    # KIT-128: the assays whose kernel stopped, with the message.
+    failed_assays <- list()
+    # KIT-128 K128-1: a design without biological replication is refused before any assay.
+    refuseNoBiologicalReplication(resolveProtTechnicalReplicateBlock(as.data.frame(design_matrix), group_col,
+        theObject@technical_replicate_id), design_matrix[[group_col]])
 
     # Process each assay
     for (assay_name in assay_names) {
@@ -249,11 +257,11 @@ runMetabolitesDA <- function(
                     sample_id_col = sample_id_col,
                     treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA,
                     eBayes_trend = eBayes_trend,
-                    eBayes_robust = eBayes_robust
+                    eBayes_robust = eBayes_robust,
+                    # KIT-128: the declared technical replicates, for the block.
+                    group_id = group_col,
+                    technical_replicate_id = theObject@technical_replicate_id
                 )
-
-                # Store fit object for Glimma
-                contrasts_results[[assay_name]] <- limma_results
 
                 # Collect qvalue warnings
                 if (length(limma_results$qvalue_warnings) > 0) {
@@ -278,6 +286,8 @@ runMetabolitesDA <- function(
                 # Combine all contrasts for this assay
                 assay_combined <- dplyr::bind_rows(assay_results_list)
                 per_assay_results[[assay_name]] <- assay_combined
+                # Store fit object for Glimma (KIT-128 K128-5: only once the assay's tables are formatted).
+                contrasts_results[[assay_name]] <- limma_results
 
                 logger::log_info(sprintf(
                     "   Completed assay %s: %d total results",
@@ -288,8 +298,23 @@ runMetabolitesDA <- function(
                 cat(sprintf("[ERROR] Processing assay %s: %s\n", assay_name, e$message))
                 logger::log_error(sprintf("   ERROR processing assay %s: %s", assay_name, e$message))
                 per_assay_results[[assay_name]] <<- NULL
+                # KIT-128: the root cause; an error of the formatting step arrives wrapped by purrr (its message is the index).
+                cause <- e
+                while (inherits(cause$parent, "condition")) cause <- cause$parent
+                failed_assays[[assay_name]] <<- conditionMessage(cause)
             }
         )
+    }
+
+    # KIT-128 (parked row 24 b): a failed assay is named and warned about and the others are kept; the run stops only
+    # when every assay failed (before: printed, logged and dropped, down to an empty table).
+    if (length(failed_assays) > 0) {
+        failures <- stats::setNames(sprintf("%s: %s", names(failed_assays), unlist(failed_assays)), rep("x", length(failed_assays)))
+        if (length(per_assay_results) == 0) {
+            rlang::abort(c("differential abundance failed for every assay", failures), class = "omics_da_all_assays_failed")
+        }
+        rlang::warn(c("differential abundance failed for some assays; the other assays are kept", failures),
+            class = "omics_da_assay_failed")
     }
 
     # Combine all assay results
@@ -301,7 +326,7 @@ runMetabolitesDA <- function(
 
     logger::log_info("=== Completed runMetabolitesDA ===")
 
-    return(list(
+    result <- list(
         theObject = theObject,
         contrasts_results = contrasts_results,
         da_metabolites_long = da_metabolites_long,
@@ -310,5 +335,7 @@ runMetabolitesDA <- function(
         qvalue_warnings = all_qvalue_warnings,
         da_q_val_thresh = da_q_val_thresh,
         treat_lfc_cutoff = treat_lfc_cutoff
-    ))
+    )
+    if (length(failed_assays) > 0) result$failed_assays <- failed_assays
+    return(result)
 }
