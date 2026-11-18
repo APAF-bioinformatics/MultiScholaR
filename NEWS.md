@@ -42,6 +42,10 @@
    reduced. The estimate has its own diagnostic plot (observed share of residual variance per component
    against the permutation null, the count marked). Today's rule on the canonical-correlation plot is
    unchanged and stays the rule of today's designs; it is not defined when all features are the controls.
+   The estimate draws under a fixed and recorded random-number kind, so it does not depend on the session's
+   `RNGkind()`; a sample without a group and a single group are refusals with their reason; a given k is
+   used whatever error the estimate raises, the reason recorded. The count removes the groups only: on a
+   design with declared technical replicates its record says so (`technical_replicates_ignored`).
  * DIA_LIMPA RUV covariates (KIT-129): the control rule and the rule for k are now parameters of the step
    (the kernel only; no screen offers them yet and no default changes). Besides today's sweep (the limpa
    script's rule: the least significant proteins as controls, k from the canonical-correlation plot), the
@@ -52,6 +56,12 @@
    only, the quantified matrix is unchanged and the factors enter the `dpcDE` model as today. Declared
    technical replicates stay RUV-III's replicate sets. When the estimated count is 0, or the data cannot
    give a k, the run has no RUV and says why. With the defaults every result is as before.
+   Such a run is recorded as one: mode `none` and `ruv_applied = FALSE` in the product, the state and the
+   commit, with the reason; no percentage, controls or control count are given as used, and the integration
+   input labels its matrix `normalised`. A declared run's commit names its control rule, its control count,
+   k and the rule that gave it; the sweep's own record, when the sweep gave k, is kept apart
+   (`ruv_result$k_sweep`). Supplied control ids that are not in the protein table raise a warning with the
+   matched and listed counts. Today's declaration refuses a request that carries a rule parameter.
  * DIA_LIMPA differential abundance (KIT-129): a model that leaves no residual degree of freedom (the
    formula's terms and the RUV factors against the samples) is refused with a message that names k, instead
    of failing inside the fit with "NA/NaN/Inf in 'y'".

@@ -305,7 +305,8 @@ test_that("a supplied control list with the estimated count is the simulator's a
     reference <- limpaRuvInModel(case, E, case$ids %in% listed)
     parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "supplied_list",
         ruv_control_ids = c(listed, "NOT_IN_THE_TABLE"), ruv_k_seed = 4242L)
-    package <- limpaRuvKernel(case$quantified, parameters)
+    package <- NULL
+    expect_warning(package <- limpaRuvKernel(case$quantified, parameters), class = "dia_ruv_control_ids_unmatched")
     value <- package$value
     expect_identical(unname(value$controls), case$ids %in% listed)
     expect_identical(names(value$controls), case$ids)
@@ -345,9 +346,18 @@ test_that("first-pass nulls with the sweep's k is the simulator's arm 5", {
         list(best_k = sweep$best_k, ruv_control_rule = "first_pass_drop_top_25", ruv_k_rule = "sweep_bounded", ruv_applied = TRUE))
     expect_equal(value$W, reference$W, tolerance = 1e-12)
     expectLimpaRuvTable(limpaRuvDa(package$state), reference$table, engine)
-    # the sweep's own record is kept for this design, as today
-    expect_identical(value$ruv_result$optimization_results, sweep$optimization_results)
-    expect_identical(value$ruv_result$max_acceptable_k, sweep$max_acceptable_k)
+    # the sweep gave k only: its own record (its percentage, controls, scores and table) is kept under a name of its
+    # own, and is not presented as what this run used (audit F2)
+    k_sweep <- value$ruv_result$k_sweep
+    expect_identical(k_sweep$optimization_results, sweep$optimization_results)
+    expect_identical(k_sweep[c("best_k", "best_percentage", "control_count", "max_acceptable_k")],
+        list(best_k = sweep$best_k, best_percentage = sweep$best_percentage,
+            control_count = sum(sweep$best_control_genes_index, na.rm = TRUE), max_acceptable_k = sweep$max_acceptable_k))
+    expect_null(value$ruv_result$optimization_results)
+    expect_null(value$ruv_result$best_cancor_plot)
+    expect_true(is.na(value$percentage) && is.na(value$ruv_result$best_percentage))
+    expect_true(is.na(value$ruv_result$best_separation_score) && is.na(value$ruv_result$max_acceptable_k))
+    expect_identical(value$ruv_controls_selected, sum(controls))
     expect_null(value$ruv_result$k_estimate)
     # the sweep's controls are not this design's
     expect_false(identical(controls, unname(sweep$best_control_genes_index)))
@@ -425,7 +435,23 @@ test_that("the declared rules run through the saved operation; today's declarati
         # the same request is reused; the commit description is the existing one
         again <- limpaRuvQuiet(runSavedOperation(manager, diaRuvCovariatesOperation("declared"), source, parameters))
         expect_identical(again$status, "hit")
-        expect_identical(diaRuvCovariatesCommit(manager, parameters, run)$state_name, "ruv_covariates")
+        commit <- diaRuvCovariatesCommit(manager, parameters, run)
+        expect_identical(commit$state_name, "ruv_covariates")
+        # the commit describes what this run used (audit F2): its control rule and count, k and the rule that gave it
+        E <- in_memory$value$best_k
+        expect_identical(commit$config[c("ruv_mode", "ruv_k", "control_count", "ruv_applied", "ruv_control_rule", "ruv_k_rule",
+            "ruv_k_estimate")], list(ruv_mode = "covariates", ruv_k = E, control_count = length(case$ids), ruv_applied = TRUE,
+            ruv_control_rule = "all_features", ruv_k_rule = "num_sv_be", ruv_k_estimate = E))
+        expect_true(is.na(commit$config$percentage_as_neg_ctrl) && is.na(commit$config$separation_score))
+        expect_identical(commit$config$outcomes[c("k", "control_count", "ruv_mode", "ruv_applied", "control_rule", "k_rule", "k_estimate")],
+            list(k = E, control_count = length(case$ids), ruv_mode = "covariates", ruv_applied = TRUE, control_rule = "all_features",
+                k_rule = "num_sv_be", k_estimate = E))
+        expect_match(commit$description, "all_features", fixed = TRUE)
+        expect_match(commit$description, "num_sv_be", fixed = TRUE)
+        # today's commit carries today's fields only
+        legacy_fields <- c("ruv_mode", "ruv_k", "percentage_as_neg_ctrl", "control_count", "separation_score", "composite_score",
+            "max_acceptable_k", "replicate_structure", "block_reason", "replicate_blocks", "ruv_grouping_variable", "ruv_applied", "outcomes")
+        expect_identical(names(commit$config)[seq_along(legacy_fields)], legacy_fields)
         # today's declaration on the same source: its own identity, its ten parameters, the sweep's controls
         legacy <- limpaRuvQuiet(runSavedOperation(manager, diaRuvCovariatesOperation(), source, resolveDIARuvCovariatesParameters(list(), "group")))
         expect_identical(legacy$status, "computed")
@@ -433,10 +459,136 @@ test_that("the declared rules run through the saved operation; today's declarati
         expect_identical(names(legacy$value$parameters), limpaRuvSweepParameters)
         expect_lt(legacy$value$control_count, length(case$ids))
         expect_null(legacy$value$ruv_control_rule)
+        legacy_commit <- diaRuvCovariatesCommit(manager, resolveDIARuvCovariatesParameters(list(), "group"), legacy)
+        expect_identical(names(legacy_commit$config), legacy_fields)
+        expect_true(legacy_commit$config$ruv_applied)
+        expect_identical(legacy_commit$config$percentage_as_neg_ctrl, legacy$value$percentage)
     })
 })
 
-# ---- Audit of 2026-11-18 (KIT-129, register F4) ----
+# ---- Audit of 2026-11-18 (KIT-129, register F2, F3, F4, F6, F10) ----
+
+limpaRuvManager <- function(quantified, env = parent.frame()) {
+    root <- withr::local_tempdir(.local_envir = env)
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, basename(root), "DIA"), WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager), envir = env)
+    manager$.context$reference_states <- TRUE
+    manager$saveState("correlation_filtered", quantified, list(), "fixture")
+    manager$setWorkflowType("DIA_LIMPA")
+    manager
+}
+
+test_that("a run without RUV is recorded as one: product, state, commit, run description and integration input (audit F2)", {
+    skip_if_not_installed("sva")
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    case <- limpaRuvCase(engine, seed = 103L, factors = 0L)
+    expect_identical(limpaRuvSimulatorE(case, 4242L), 0L)
+    parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features", ruv_k_seed = 4242L)
+    manager <- limpaRuvManager(case$quantified)
+    withDIAStateScope(manager, function() {
+        source <- getDIAStateReference(manager)
+        run <- limpaRuvQuiet(runSavedOperation(manager, diaRuvCovariatesOperation("declared"), source, parameters))
+        value <- run$value
+        # the product: no mode, no k, and nothing presented as used
+        expect_identical(value[c("ruv_mode", "best_k", "ruv_applied", "ruv_control_rule", "ruv_k_rule", "ruv_k_estimate")],
+            list(ruv_mode = "none", best_k = 0L, ruv_applied = FALSE, ruv_control_rule = "all_features", ruv_k_rule = "num_sv_be",
+                ruv_k_estimate = 0L))
+        expect_identical(value$ruv_result$ruv_mode, "none")
+        expect_identical(value$ruv_result$best_k, 0L)
+        expect_true(is.na(value$percentage) && is.na(value$control_count) && is.na(value$ruv_result$best_percentage))
+        expect_null(value$controls)
+        expect_null(value$ruv_result$best_control_genes_index)
+        # what the rule selected is a diagnostic under its own name
+        expect_identical(value$ruv_controls_selected, length(case$ids))
+        # the state's declaration agrees with the product
+        final <- readDIAExecutionComponents(manager, value$final)
+        expect_identical(final@args$ruvCovariates[c("k", "ruv_mode", "ruv_applied")], list(k = 0L, ruv_mode = "none", ruv_applied = FALSE))
+        expect_true(is.na(final@args$ruvCovariates$control_count) && is.na(final@args$ruvCovariates$percentage_as_neg_ctrl))
+        # the commit takes them from the product
+        commit <- diaRuvCovariatesCommit(manager, parameters, run)
+        config <- commit$config
+        expect_identical(config[c("ruv_mode", "ruv_k", "ruv_applied", "ruv_control_rule", "ruv_k_rule", "ruv_k_estimate")],
+            list(ruv_mode = "none", ruv_k = 0L, ruv_applied = FALSE, ruv_control_rule = "all_features", ruv_k_rule = "num_sv_be",
+                ruv_k_estimate = 0L))
+        expect_true(is.na(config$percentage_as_neg_ctrl) && is.na(config$control_count))
+        expect_match(config$ruv_not_applied_reason, "no unwanted factor", fixed = TRUE)
+        expect_identical(config$outcomes[c("k", "ruv_mode", "ruv_applied", "control_rule", "k_rule", "k_estimate")],
+            list(k = 0L, ruv_mode = "none", ruv_applied = FALSE, control_rule = "all_features", k_rule = "num_sv_be", k_estimate = 0L))
+        expect_true(is.na(config$outcomes$percentage_as_neg_ctrl) && is.na(config$outcomes$control_count))
+        expect_match(config$outcomes$not_applied_reason, "no unwanted factor", fixed = TRUE)
+        expect_match(commit$description, "RUV not applied", fixed = TRUE)
+        expect_match(commit$description, "no unwanted factor", fixed = TRUE)
+        expect_no_match(commit$description, "W1", fixed = TRUE)
+        limpaRuvQuiet(commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description))
+        # the tab's description of the run
+        expect_identical(resolveDIARuvRunDescription(manager)[c("ruv_mode", "grouping")], list(ruv_mode = "none", grouping = "group"))
+        # the integration input: the quantified matrix, normalised, no RUV method and no adjusted product
+        input <- protIntegrationInputSource(manager)
+        expect_identical(input$manifest$matrix_role, "normalised")
+        expect_null(input$manifest$correction)
+        expect_null(input$manifest$source_state$product)
+        expect_identical(input$manifest$source_state$name, "ruv_covariates")
+        samples <- case$design$Run
+        expect_identical(input$matrix$feature_id, case$ids)
+        expect_equal(as.matrix(input$matrix[samples]), as.matrix(case$quantified@protein_quant_table[samples]), tolerance = 1e-12)
+    })
+})
+
+test_that("a refused automatic k is a run without RUV in the product and the commit, as an estimate of 0 is (audit F2)", {
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    case <- limpaRuvCase(engine, seed = 101L)
+    testthat::local_mocked_bindings(estimateRuvFactorCount = \(...) list(k = 10L, seed = 1L))
+    parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features")
+    refused <- NULL
+    expect_warning(refused <- limpaRuvKernel(case$quantified, parameters), class = "dia_ruv_not_applied")
+    expect_identical(refused$value[c("ruv_mode", "best_k", "ruv_applied")], list(ruv_mode = "none", best_k = 0L, ruv_applied = FALSE))
+    expect_identical(refused$value$ruv_result$ruv_mode, "none")
+    expect_true(is.na(refused$value$control_count))
+    # the commit's fields come from the product (the state metadata stands in: no store on this path)
+    testthat::local_mocked_bindings(readDIAStateMetadata = \(...) list(data = list(products = list())))
+    commit <- diaRuvCovariatesCommit(list(current_state = "correlation_filtered"), parameters,
+        list(value = refused$value, reference = "product"))
+    expect_false(commit$config$ruv_applied)
+    expect_identical(commit$config$ruv_mode, "none")
+    expect_match(commit$config$ruv_not_applied_reason, "at most 9", fixed = TRUE)
+    expect_match(commit$description, "RUV not applied", fixed = TRUE)
+})
+
+test_that("today's declaration refuses the rule parameters, on a computed run and on a saved product (audit F3)", {
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    case <- limpaRuvCase(engine, seed = 101L)
+    todays <- resolveDIARuvCovariatesParameters(list(), "group")
+    declared <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features", ruv_k_rule = "user", ruv_k = 1)
+    # the kernel of today's declaration: any one rule parameter is refused, never run as the sweep
+    local({
+        testthat::local_mocked_bindings(findBestNegCtrlPercentageCapped = \(...) stop("the sweep is not to run"))
+        refusal <- expect_error(limpaRuvKernel(case$quantified, declared, "legacy"), class = "dia_ruv_rule_parameters_on_legacy")
+        expect_s3_class(refusal, "workflow_execution_invalid")
+        expect_match(conditionMessage(refusal), "ruv_control_rule", fixed = TRUE)
+        for (extra in list(list(ruv_control_rule = "all_features"), list(ruv_k_rule = "num_sv_be"), list(ruv_k = 2L),
+            list(ruv_control_ids = "P1"), list(ruv_k_seed = 7L))) {
+            expect_error(limpaRuvKernel(case$quantified, c(todays, extra), "legacy"), class = "dia_ruv_rule_parameters_on_legacy",
+                info = names(extra))
+        }
+    })
+    # the auditor's case: today's product is saved, then the same source is asked with rule parameters. The identity
+    # of today's declaration reads its ten parameters only, so the saved product would be returned (a hit) before
+    # any kernel runs; the route's compute half refuses first.
+    manager <- limpaRuvManager(case$quantified)
+    withDIAStateScope(manager, function() {
+        source <- getDIAStateReference(manager)
+        saved <- limpaRuvQuiet(computeDIAReferenceRuvCovariates(manager, source, todays))
+        expect_identical(saved$status, "computed")
+        expect_error(computeDIAReferenceRuvCovariates(manager, source, declared), class = "dia_ruv_rule_parameters_on_legacy")
+        expect_error(computeDIAReferenceRuvCovariates(manager, source, c(todays, list(ruv_k_seed = 7L))),
+            class = "dia_ruv_rule_parameters_on_legacy")
+        # today's request is still served from the saved product
+        expect_identical(limpaRuvQuiet(computeDIAReferenceRuvCovariates(manager, source, todays))$status, "hit")
+    })
+})
 
 limpaRuvDaWithFormula <- function(state, formula_string) {
     differentialAbundanceAnalysis(state, contrasts_tbl = data.frame(contrasts = limpaRuvContrast, stringsAsFactors = FALSE),
@@ -471,4 +623,68 @@ test_that("the DA refuses, naming k, a model that leaves no residual degree of f
     # with room left the same formula runs
     result <- limpaRuvQuiet(limpaRuvDaWithFormula(with_k(2L), "~ 0 + group + batch"))
     expect_identical(result$da_model$formula_used, "~ 0 + group + batch + W1 + W2")
+})
+
+test_that("a supplied list matched in part runs with a warning that gives the matched and listed counts (audit F6)", {
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    case <- limpaRuvCase(engine, seed = 101L)
+    listed <- c(case$ids[1:2], sprintf("UNKNOWN%02d", 1:48))
+    parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "supplied_list", ruv_control_ids = listed,
+        ruv_k_rule = "user", ruv_k = 1)
+    package <- NULL
+    warned <- expect_warning(package <- limpaRuvKernel(case$quantified, parameters), class = "dia_ruv_control_ids_unmatched")
+    expect_identical(warned$matched, 2L)
+    expect_identical(warned$listed, 50L)
+    expect_match(conditionMessage(warned), "2 of 50", fixed = TRUE)
+    expect_identical(package$value[c("best_k", "control_count", "ruv_applied")], list(best_k = 1L, control_count = 2L, ruv_applied = TRUE))
+    expect_length(package$value$ruv_result$controls_unmatched, 48L)
+    # a list matched in full does not warn
+    full <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "supplied_list", ruv_control_ids = case$ids[1:30],
+        ruv_k_rule = "user", ruv_k = 1)
+    expect_no_warning(limpaRuvKernel(case$quantified, full), class = "dia_ruv_control_ids_unmatched")
+})
+
+test_that("with three groups the first pass is the F test of the group differences, not one contrast (audit F8, F10)", {
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    case <- limpaRuvCase(engine, seed = 107L, groups = 3L)
+    model <- stats::model.matrix(~ 0 + group, case$design)
+    fit <- limpaRuvQuiet(limpa::dpcDE(case$elist, model, plot = FALSE))
+    pairs <- limma::makeContrasts(groupB - groupA, groupC - groupA, levels = model)
+    f_test <- limma::eBayes(limma::contrasts.fit(fit, pairs), trend = TRUE, robust = TRUE)$F.p.value
+    first <- limpaRuvQuiet(diaRuvFirstPassPValues(case$quantified, "group"))
+    expect_identical(names(first), case$ids)
+    expect_equal(unname(first), f_test, tolerance = 1e-12)
+    expected <- rank(f_test, ties.method = "first") > 0.25 * length(case$ids)
+    package <- limpaRuvKernel(case$quantified, resolveDIARuvCovariatesParameters(list(), "group",
+        ruv_control_rule = "first_pass_drop_top_25", ruv_k_rule = "user", ruv_k = 1))
+    expect_identical(unname(package$value$controls), expected)
+    expect_identical(package$value$control_count, sum(expected))
+    # the simulator's arm ranks B against A only: with three groups that is another control set
+    single <- limpaRuvRouteTest(case$elist, case$design)
+    expect_false(identical(expected, rank(single$p, ties.method = "first") > 0.25 * nrow(single)))
+})
+
+test_that("an error of the estimate does not stop a run whose k the user gave (audit F11)", {
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    case <- limpaRuvCase(engine, seed = 101L)
+    testthat::local_mocked_bindings(estimateRuvFactorCount = \(...) stop("a plain error of the estimate"))
+    chosen <- limpaRuvKernel(case$quantified, resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features",
+        ruv_k_rule = "user", ruv_k = 2))
+    expect_identical(chosen$value[c("best_k", "ruv_k_rule", "ruv_k_estimate", "ruv_applied")],
+        list(best_k = 2L, ruv_k_rule = "user", ruv_k_estimate = NA_integer_, ruv_applied = TRUE))
+    expect_match(chosen$value$ruv_result$ruv_k_estimate_reason, "a plain error", fixed = TRUE)
+})
+
+test_that("the count's record says when declared technical replicates were not removed before counting (audit F1, flag only)", {
+    skip_if_not_installed("sva")
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features", ruv_k_seed = 4242L)
+    technical <- limpaRuvCase(engine, seed = 105L, per_group = 8L, units = 4L)
+    expect_true(limpaRuvKernel(technical$quantified, parameters)$value$ruv_result$k_estimate$technical_replicates_ignored)
+    plain <- limpaRuvCase(engine, seed = 101L)
+    expect_false(limpaRuvKernel(plain$quantified, parameters)$value$ruv_result$k_estimate$technical_replicates_ignored)
 })

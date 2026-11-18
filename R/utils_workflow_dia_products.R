@@ -536,8 +536,12 @@ resolveDIARuvRunDescription <- function(manager) {
         record <- tryCatch(readDIAStateMetadata(manager, getDIAStateReference(manager, state))$data, error = function(e) NULL)
         product <- record$products$ruv_covariates_science %||% record$products$normalization_science
         if (is.null(product)) next
-        parameters <- hydrateSavedWorkflowEntity(manager$.context$store, product)$value$parameters
-        return(list(ruv_mode = parameters$ruv_mode, grouping = parameters$grouping %||% parameters$ruv_grouping_variable))
+        value <- hydrateSavedWorkflowEntity(manager$.context$store, product)$value
+        parameters <- value$parameters
+        # KIT-129 (audit F2): a declared-rule run that applied no RUV (a count of 0, or a refused automatic k) is
+        # described as such, whatever mode its parameters asked for.
+        ruv_mode <- if (identical(value$ruv_applied, FALSE)) "none" else parameters$ruv_mode
+        return(list(ruv_mode = ruv_mode, grouping = parameters$grouping %||% parameters$ruv_grouping_variable))
     }
     NULL
 }
@@ -798,6 +802,7 @@ diaRuvCovariatesOperation <- function(ruv_rules = c("legacy", "declared")) {
             if (declared_rules) diaRuvCovariatesRuleParameters),
         kernel = function(object, parameters, store) {
             if (declared_rules) return(diaRuvCovariatesByRuleKernel(object, parameters, store))
+            assertDiaRuvSweepParameters(parameters)
             findBestNegCtrlPercentageCappedFn <- findBestNegCtrlPercentageCapped
             sweep <- suppressMessages(findBestNegCtrlPercentageCappedFn(object,
                 percentage_range = seq(parameters$percentage_min, parameters$percentage_max, by = 1),
@@ -900,6 +905,24 @@ resolveDIARuvCovariatesParameters <- function(config_list, grouping = NULL, ruv_
 #' @noRd
 diaRuvCovariatesRuleParameters <- c("ruv_control_rule", "ruv_k_rule", "ruv_k", "ruv_control_ids", "ruv_k_seed")
 
+#' Today's declaration takes none of the rule parameters (KIT-129 audit F3): a request that carries one is refused,
+#' never run as the sweep. Its identity reads the sweep's ten parameters only, so `runSavedOperation` returns a saved
+#' sweep product for such a request before any kernel runs; the route's compute half
+#' (`computeDIAReferenceRuvCovariates`) therefore checks before the runner, and the kernel checks on a computed run.
+#' @param parameters A request's parameters.
+#' @return `parameters`, invisibly; an error of class `dia_ruv_rule_parameters_on_legacy` when a rule parameter is
+#'   present with a value.
+#' @noRd
+assertDiaRuvSweepParameters <- function(parameters) {
+    given <- Filter(\(name) !is.null(parameters[[name]]), diaRuvCovariatesRuleParameters)
+    if (length(given)) {
+        cli::cli_abort(c("today's RUV covariates declaration (the sweep) takes no rule parameter; the request carries {.val {given}}",
+            i = "a control rule or a k rule runs under {.code diaRuvCovariatesOperation(\"declared\")}"),
+            class = c("dia_ruv_rule_parameters_on_legacy", "workflow_execution_invalid"), call = NULL)
+    }
+    invisible(parameters)
+}
+
 #' The control rule and the k rule of the RUV covariates as declared parameters (KIT-129 W3). The control rules are
 #' the designs of KIT-129 section 1b that leave today's sweep: `all_features` (arms 7 and 16 of simulator S2),
 #' `supplied_list` (arm 8) and `first_pass_drop_top_25` (arm 5). The k rule, when none is given, is the one the
@@ -977,6 +1000,9 @@ diaRuvFirstPassPValues <- function(object, grouping) {
 #' `dia_ruv_not_applied`; an estimate of 0 does the same with the resolver's message (`ruv_k_zero`).
 #' @param object The quantified `ProteinQuantitativeData` object.
 #' @param parameters The declaration's parameters (`resolveDIARuvCovariatesParameters` with a control rule).
+#'
+#' Supplied ids that are not in the protein table raise a warning of class `dia_ruv_control_ids_unmatched` with
+#' the fields `matched`, `listed` and `unmatched` (audit F6); a list that matches none is refused, as before.
 #' @return `list(status, reason, k, factors, controls, controls_unmatched, sweep, replicate_structure, block_reason,
 #'   blocks)`: `status` is `ok`, `none` (k = 0) or `refused`; `k` the resolver's record; `factors` the value of
 #'   `computeRuvCovariates` or NULL; `controls` a logical vector named by protein; `sweep` today's sweep when it ran.
@@ -1001,8 +1027,15 @@ computeDiaRuvCovariatesByRule <- function(object, parameters) {
         rep(TRUE, length(ids))
     } else if (identical(control_rule, "supplied_list")) {
         unmatched <- setdiff(parameters$ruv_control_ids, ids)
-        if (!any(ids %in% parameters$ruv_control_ids)) invalid("none of the supplied control ids is in the protein table")
-        ids %in% parameters$ruv_control_ids
+        matched <- ids %in% parameters$ruv_control_ids
+        if (!any(matched)) invalid("none of the supplied control ids is in the protein table")
+        if (length(unmatched)) {
+            listed <- length(unique(parameters$ruv_control_ids))
+            cli::cli_warn(c("{sum(matched)} of {listed} supplied control ids are in the protein table; the controls are those {sum(matched)}",
+                i = "not in the table: {.val {utils::head(unmatched, 5L)}}{if (length(unmatched) > 5L) ' and others'}"),
+                class = "dia_ruv_control_ids_unmatched", matched = sum(matched), listed = listed, unmatched = unmatched)
+        }
+        matched
     } else {
         first_pass <- diaRuvFirstPassPValues(object, grouping)[ids]
         if (anyNA(first_pass)) invalid("the first-pass test gave no p-value for some proteins of the table")
@@ -1014,25 +1047,25 @@ computeDiaRuvCovariatesByRule <- function(object, parameters) {
     replicates <- resolveProtRuvReplicateBlocks(design, object@sample_id, object@group_id, object@technical_replicate_id, grouping)
     block <- resolveProtTechnicalReplicateBlock(design, object@group_id, object@technical_replicate_id)
     limit <- ruvFactorCountLimit(length(samples), replicates$blocks, length(unique(as.character(design[[grouping]]))), sum(controls))
-    sweep <- NULL
+    # Today's sweep runs only where the resolver reads it: the separation rule, which it refuses with all proteins
+    # as controls before asking for a k.
+    sweep <- if (identical(k_rule, "sweep_bounded") && !identical(control_rule, "all_features")) {
+        suppressMessages(findBestNegCtrlPercentageCapped(object,
+            percentage_range = seq(parameters$percentage_min, parameters$percentage_max, by = 1),
+            num_components_to_impute = parameters$num_components_to_impute,
+            ruv_grouping_variable = grouping, ruv_qval_cutoff = parameters$ruv_qval_cutoff,
+            ruv_fdr_method = parameters$ruv_fdr_method, separation_metric = parameters$separation_metric,
+            k_penalty_weight = parameters$k_penalty_weight, adaptive_k_penalty = isTRUE(parameters$adaptive_k_penalty),
+            verbose = FALSE))
+    }
     resolveK <- function() {
         resolveRuvFactorCount(k_rule, control_rule, limit, k_user = parameters$ruv_k,
-            estimate_count = function() {
-                estimateRuvFactorCount(as.matrix(object@protein_quant_table[, samples, drop = FALSE]), design[[grouping]],
-                    seed = parameters$ruv_k_seed)
-            },
-            separation_rule = function() {
-                sweep <<- suppressMessages(findBestNegCtrlPercentageCapped(object,
-                    percentage_range = seq(parameters$percentage_min, parameters$percentage_max, by = 1),
-                    num_components_to_impute = parameters$num_components_to_impute,
-                    ruv_grouping_variable = grouping, ruv_qval_cutoff = parameters$ruv_qval_cutoff,
-                    ruv_fdr_method = parameters$ruv_fdr_method, separation_metric = parameters$separation_metric,
-                    k_penalty_weight = parameters$k_penalty_weight, adaptive_k_penalty = isTRUE(parameters$adaptive_k_penalty),
-                    verbose = FALSE))
-                sweep$best_k
-            })
+            # The count removes the groups; declared technical replicates are flagged in its record (audit F1).
+            estimate_count = \() estimateRuvFactorCount(as.matrix(object@protein_quant_table[, samples, drop = FALSE]),
+                design[[grouping]], seed = parameters$ruv_k_seed, technical_replicates = isTRUE(block$technical)),
+            separation_rule = \() sweep$best_k)
     }
-    keep <- function(condition) condition
+    keep <- \(condition) condition
     k <- if (identical(k_rule, "user")) {
         resolveK()
     } else {
@@ -1057,14 +1090,22 @@ computeDiaRuvCovariatesByRule <- function(object, parameters) {
 #' The kernel of the RUV covariates by declared rules (KIT-129 W3): `computeDiaRuvCovariatesByRule`, then the same
 #' products as today's kernel. The output state carries the quantified matrix unchanged, `W1..Wk` in the design and
 #' the declaration `args$ruvCovariates` with the rules and k's source; the RUV-adjusted matrix is a component
-#' checkpoint for the QC plots. A run without RUV (an estimate of 0, or a refusal) returns the input as the state,
-#' with `ruv_mode = "none"`, `ruv_applied = FALSE` and the reason, and no adjusted matrix of its own. The sweep's
-#' table and plot are in the product only when the sweep gave k; the estimated count's record (`k_estimate`, for
-#' `plotRuvFactorCount`) whenever it was computed.
+#' checkpoint for the QC plots.
+#'
+#' The product describes what this run used (audit F2 of 2026-11-18). A run without RUV (an estimate of 0, or a
+#' refusal) returns the input as the state and no adjusted matrix of its own; its mode is `"none"` in the product,
+#' in `ruv_result` and in the state's `args`, with `ruv_applied = FALSE` and the reason, and it names no controls
+#' and no control count as used (`controls` NULL, `control_count` NA). The sweep's percentage is not a quantity of a
+#' declared run (`percentage`, `best_percentage` NA); the count the control rule selected is
+#' `ruv_controls_selected`. When the sweep gave k, its own record (its k, percentage, control count, scores, table
+#' and plot) is `ruv_result$k_sweep`, never the run's own fields (`optimization_results` and `best_cancor_plot`
+#' absent, the scores NA). The estimated count's record (`k_estimate`, for `plotRuvFactorCount`) is kept whenever
+#' it was computed.
 #' @param object,parameters,store As a declaration's kernel.
 #' @return Today's product (`covariates`, `adjusted`, `final`, `ruv_mode`, `ruv_result`, `W`, `best_k`,
 #'   `percentage`, `controls`, `control_count`, `replicate_structure`, `block_reason`, `blocks`, `parameters`) and
-#'   `ruv_control_rule`, `ruv_k_rule`, `ruv_k_estimate`, `ruv_applied`, `ruv_not_applied_reason`.
+#'   `ruv_control_rule`, `ruv_k_rule`, `ruv_k_estimate`, `ruv_applied`, `ruv_not_applied_reason`,
+#'   `ruv_controls_selected`.
 #' @noRd
 diaRuvCovariatesByRuleKernel <- function(object, parameters, store) {
     result <- computeDiaRuvCovariatesByRule(object, parameters)
@@ -1072,19 +1113,18 @@ diaRuvCovariatesByRuleKernel <- function(object, parameters, store) {
     factors <- result$factors
     sweep <- result$sweep
     best_k <- if (applied) factors$k else 0L
-    control_count <- sum(result$controls)
-    percentage <- 100 * control_count / length(result$controls)
+    ruv_mode <- if (applied) "covariates" else "none"
+    controls <- if (applied) result$controls
+    control_count <- if (applied) sum(result$controls) else NA_integer_
     rules <- list(ruv_control_rule = result$k$control_rule, ruv_k_rule = result$k$k_rule, ruv_k_estimate = result$k$k_estimate,
-        ruv_applied = applied, ruv_not_applied_reason = result$reason)
-    sweep_scores <- list(separation_score = sweep$best_separation_score %||% NA_real_,
-        composite_score = sweep$best_composite_score %||% NA_real_, max_acceptable_k = sweep$max_acceptable_k %||% NA_integer_)
+        ruv_applied = applied, ruv_not_applied_reason = result$reason, ruv_controls_selected = sum(result$controls))
     with_w <- object
     samples <- as.character(with_w@design_matrix[[with_w@sample_id]])
     for (i in seq_len(best_k)) with_w@design_matrix[[paste0("W", i)]] <- unname(factors$W[samples, i])
-    with_w@args$ruvCovariates <- c(list(k = best_k, percentage_as_neg_ctrl = percentage, control_count = control_count,
+    with_w@args$ruvCovariates <- c(list(k = best_k, percentage_as_neg_ctrl = NA_real_, control_count = control_count,
         replicate_structure = result$replicate_structure, block_reason = result$block_reason, blocks = result$blocks,
-        ruv_grouping_variable = parameters$ruv_grouping_variable), sweep_scores,
-        list(ruv_mode = if (applied) "covariates" else "none"), rules)
+        ruv_grouping_variable = parameters$ruv_grouping_variable, separation_score = NA_real_, composite_score = NA_real_,
+        max_acceptable_k = NA_integer_, ruv_mode = ruv_mode), rules)
     covariates_reference <- store$checkpoint(with_w, "ruv-covariates-science")
     adjusted_reference <- covariates_reference
     if (applied) {
@@ -1095,19 +1135,23 @@ diaRuvCovariatesByRuleKernel <- function(object, parameters, store) {
         adjusted@protein_quant_table <- adjusted_table[, colnames(object@protein_quant_table), drop = FALSE]
         adjusted_reference <- store$checkpoint(adjusted, "ruv-adjusted-science", from = covariates_reference)
     }
-    cancor_plot <- if (!is.null(sweep$best_cancor_plot)) ggplot2::ggplotGrob(stripProtNormQcPlotOwners(sweep$best_cancor_plot))
-    ruv_result <- c(list(best_percentage = percentage, best_k = best_k, best_control_genes_index = result$controls,
-        best_separation_score = sweep_scores$separation_score, best_composite_score = sweep_scores$composite_score,
-        optimization_results = sweep$optimization_results, best_cancor_plot = cancor_plot,
-        max_acceptable_k = sweep_scores$max_acceptable_k, sample_size = length(samples),
-        separation_metric_used = parameters$separation_metric, k_penalty_weight = parameters$k_penalty_weight,
-        adaptive_k_penalty_used = isTRUE(parameters$adaptive_k_penalty), ruv_mode = "covariates",
-        replicate_structure = result$replicate_structure, block_reason = result$block_reason), rules,
+    k_sweep <- if (!is.null(sweep)) {
+        list(best_k = sweep$best_k, best_percentage = sweep$best_percentage,
+            control_count = sum(sweep$best_control_genes_index, na.rm = TRUE), separation_score = sweep$best_separation_score,
+            composite_score = sweep$best_composite_score, max_acceptable_k = sweep$max_acceptable_k,
+            separation_metric = parameters$separation_metric, k_penalty_weight = parameters$k_penalty_weight,
+            adaptive_k_penalty = isTRUE(parameters$adaptive_k_penalty), optimization_results = sweep$optimization_results,
+            cancor_plot = if (!is.null(sweep$best_cancor_plot)) ggplot2::ggplotGrob(stripProtNormQcPlotOwners(sweep$best_cancor_plot)))
+    }
+    ruv_result <- c(list(best_percentage = NA_real_, best_k = best_k, best_control_genes_index = controls,
+        best_separation_score = NA_real_, best_composite_score = NA_real_, max_acceptable_k = NA_integer_,
+        sample_size = length(samples), ruv_mode = ruv_mode, replicate_structure = result$replicate_structure,
+        block_reason = result$block_reason), rules,
         list(ruv_k_estimate_reason = result$k$k_estimate_reason, k_max = result$k$k_max, k_estimate = result$k$estimate,
-            controls_unmatched = result$controls_unmatched))
+            k_sweep = k_sweep, controls_unmatched = result$controls_unmatched))
     c(list(covariates = covariates_reference, adjusted = adjusted_reference, final = covariates_reference,
-        ruv_mode = "covariates", ruv_result = ruv_result, W = factors$W, best_k = best_k, percentage = percentage,
-        controls = result$controls, control_count = control_count, replicate_structure = result$replicate_structure,
+        ruv_mode = ruv_mode, ruv_result = ruv_result, W = factors$W, best_k = best_k, percentage = NA_real_,
+        controls = controls, control_count = control_count, replicate_structure = result$replicate_structure,
         block_reason = result$block_reason, blocks = result$blocks,
         parameters = parameters[c("percentage_min", "percentage_max", "num_components_to_impute", "ruv_grouping_variable",
             "ruv_qval_cutoff", "ruv_fdr_method", "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_mode",
@@ -1159,10 +1203,16 @@ diaRuvCovariatesSource <- function(manager, norm_data) {
 #' @return `runSavedOperation`'s run.
 #' @noRd
 computeDIAReferenceRuvCovariates <- function(manager, source, parameters) {
+    # KIT-129 audit F3: before the runner, whose identity lookup would return today's saved product for a request
+    # that carries rule parameters.
+    assertDiaRuvSweepParameters(parameters)
     runSavedOperation(manager, diaRuvCovariatesOperation(), source, parameters)
 }
 
 #' The RUV covariates' commit description (KIT-111 D3), shared by the in-process runner and the worker's completion.
+#' Today's product commits today's fields. A declared-rule product (KIT-129) adds its rules to the configuration
+#' (`ruv_control_rule`, `ruv_k_rule`, `ruv_k_estimate`, `ruv_not_applied_reason`, `ruv_controls_selected`) and to
+#' the outcomes; a run without RUV commits the state `ruv_covariates` with `ruv_applied = FALSE` and mode `none`.
 #' @param parameters The declaration's parameters (`resolveDIARuvCovariatesParameters`).
 #' @param run The compute half's run.
 #' @return `list(state_name, checkpoint, config, description)`, or NULL when the head already holds the state with
@@ -1172,6 +1222,10 @@ diaRuvCovariatesCommit <- function(manager, parameters, run) {
     saved <- run$value
     ruv_mode <- saved$ruv_mode %||% "covariates"
     correction <- identical(ruv_mode, "correction")
+    # KIT-129 (audit F2): whether RUV was applied is the product's own statement. Today's product (the sweep) makes
+    # none and always applies; a declared-rule product says, with its reason and its rules.
+    declared <- !is.null(saved$ruv_control_rule)
+    applied <- !identical(saved$ruv_applied, FALSE)
     state_name <- if (correction) "ruv_corrected" else "ruv_covariates"
     final <- readDIAStateMetadata(manager, saved$final %||% saved$covariates)$data
     final$products$ruv_covariates_science <- run$reference
@@ -1179,15 +1233,32 @@ diaRuvCovariatesCommit <- function(manager, parameters, run) {
         control_count = saved$control_count, separation_score = saved$ruv_result$best_separation_score,
         composite_score = saved$ruv_result$best_composite_score, max_acceptable_k = saved$ruv_result$max_acceptable_k,
         replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, replicate_blocks = saved$blocks,
-        ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_applied = TRUE,
+        ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_applied = applied,
         outcomes = list(k = saved$best_k, percentage_as_neg_ctrl = saved$percentage, control_count = saved$control_count,
             separation_score = saved$ruv_result$best_separation_score, composite_score = saved$ruv_result$best_composite_score,
             replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, ruv_mode = ruv_mode))
+    description <- if (correction) {
+        sprintf("RUV-III correction applied to the quantified matrix and the DPC EList (k = %d; Y - W alpha); no W terms in the design", saved$best_k)
+    } else {
+        sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k)
+    }
+    if (declared) {
+        # What this run used, from its product: the control rule, k and the rule that gave it, and the reason when
+        # no RUV was applied.
+        config <- c(config, saved[c("ruv_control_rule", "ruv_k_rule", "ruv_k_estimate", "ruv_not_applied_reason", "ruv_controls_selected")])
+        config$outcomes <- c(config$outcomes, list(ruv_applied = applied, control_rule = saved$ruv_control_rule,
+            k_rule = saved$ruv_k_rule, k_estimate = saved$ruv_k_estimate, not_applied_reason = saved$ruv_not_applied_reason,
+            controls_selected = saved$ruv_controls_selected))
+        description <- if (applied) {
+            sprintf("RUV-III factors appended to the design as covariates (W1..W%d; controls by the rule %s, %d proteins; k by the rule %s); the quantified matrix unchanged",
+                saved$best_k, saved$ruv_control_rule, saved$control_count, saved$ruv_k_rule)
+        } else {
+            sprintf("RUV not applied (%s); the quantified matrix and the design unchanged", saved$ruv_not_applied_reason)
+        }
+    }
     previous <- if (identical(manager$current_state, state_name)) readDIAStateMetadata(manager) else NULL
     if (!is.null(previous) && identical(previous$data$products$ruv_covariates_science, run$reference)) return(NULL)
-    list(state_name = state_name, checkpoint = final, config = config, description = if (correction)
-        sprintf("RUV-III correction applied to the quantified matrix and the DPC EList (k = %d; Y - W alpha); no W terms in the design", saved$best_k) else
-        sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
+    list(state_name = state_name, checkpoint = final, config = config, description = description)
 }
 
 #' The RUV covariates' publication half (KIT-111 D3), in the controller on both paths: the tab's state and the step's
