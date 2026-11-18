@@ -632,3 +632,58 @@ test_that("F11: the factors record survives a save and a restore", {
     expect_identical(da(restored$factors)[c("da_lipids_long", "ruv_features_not_tested")],
         da(run$factors)[c("da_lipids_long", "ruv_features_not_tested")])
 })
+
+# KIT-129 B1 (the rehearsal's probe a): 2 groups of 4 biological units, each injected twice, the units declared as
+# technical replicates; two assays.
+techRepRuvObject <- function(omic, seed = 11L, features = 250L) {
+    groups <- rep(c("A", "B"), each = 8L)
+    unit <- rep(rep(1:4, each = 2L), times = 2L)
+    d <- data.frame(Run = sprintf("%s%d_%d", groups, unit, rep(1:2, times = 8L)), group = groups, replicates = unit,
+        tech_rep_group = paste(groups, unit, sep = "_"), stringsAsFactors = FALSE)
+    id <- if (identical(omic, "lipid")) "lipid_id" else "metabolite_id"
+    assay <- function(seed) {
+        u <- match(d$tech_rep_group, unique(d$tech_rep_group))
+        values <- withr::with_seed(seed, {
+            f <- stats::residuals(stats::lm(stats::rnorm(16L) ~ factor(d$group)))
+            stats::rnorm(features, 20, 2) + matrix(stats::rnorm(features * 8L, 0, sqrt(0.1875)), nrow = features)[, u] +
+                outer(stats::rnorm(features, sd = 0.5), f / sqrt(mean(f^2))) + matrix(stats::rnorm(features * 16L, 0, 0.25), nrow = features)
+        })
+        colnames(values) <- d$Run
+        table <- data.frame(sprintf("F%d_%03d", seed, seq_len(features)), paste("Name", seq_len(features)), stringsAsFactors = FALSE)
+        names(table) <- c(id, "name")
+        tibble::as_tibble(cbind(table, as.data.frame(values, check.names = FALSE)))
+    }
+    assays <- list(pos = assay(seed), neg = assay(seed + 1000L))
+    if (identical(omic, "lipid")) {
+        methods::new("LipidomicsAssayData", lipid_data = assays, design_matrix = d, sample_id = "Run", group_id = "group",
+            technical_replicate_id = "tech_rep_group", lipid_id_column = "lipid_id", annotation_id_column = "name")
+    } else {
+        methods::new("MetaboliteAssayData", metabolite_data = assays, design_matrix = d, sample_id = "Run", group_id = "group",
+            technical_replicate_id = "tech_rep_group", metabolite_id_column = "metabolite_id", annotation_id_column = "name")
+    }
+}
+
+test_that("with technical replicates, a k whose block correlation cannot be estimated is named in the failure (KIT-129 B1)", {
+    contrasts <- data.frame(contrasts = "groupB-groupA", friendly_names = "B_vs_A", stringsAsFactors = FALSE)
+    for (omic in c("lipid", "metab")) {
+        run <- if (identical(omic, "lipid")) runLipidsDA else runMetabolitesDA
+        object <- techRepRuvObject(omic)
+        da <- function(k) {
+            factors <- suppressWarnings(suppressMessages(runOmicsRuvFactors(object, "factors_all_features", k, "user")))$factors
+            utils::capture.output(out <- tryCatch(suppressWarnings(suppressMessages(run(object, contrasts, "~ 0 + group", 0.05, 0,
+                TRUE, TRUE, ruv_factors = factors))), error = function(e) e))
+            out
+        }
+        # within the kernel's bound (16 injections minus 2 sets), the units' correlation is no longer estimable in either
+        # assay: kit-128's handler still stops the run, and the reason names k
+        refused <- da(12L)
+        expect_s3_class(refused, "omics_da_all_assays_failed")
+        expect_match(conditionMessage(refused), "k = 12 RUV factors", fixed = TRUE, info = omic)
+        expect_match(conditionMessage(refused), "could not be estimated", fixed = TRUE, info = omic)
+        # a k the block can carry runs with the block
+        fitted <- da(1L)
+        expect_false(inherits(fitted, "error"), info = omic)
+        expect_true(isTRUE(fitted$contrasts_results$pos$fit.eb$uses_duplicate_correlation), info = omic)
+        expect_null(fitted$failed_assays)
+    }
+})

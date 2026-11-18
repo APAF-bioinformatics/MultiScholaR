@@ -364,3 +364,21 @@ applyOmicsRuvFactorsToDaInput <- function(expr_matrix, design_matrix, formula_st
         not_tested = list(supplied_controls = supplied_controls, not_estimable = not_estimable),
         not_observed = findOmicsRuvUnobservedGroups(expr_matrix, design_matrix, sample_id_col, group_col))
 }
+
+#' The DA kernel's call with the assay's RUV factors in the model (KIT-129 B1): when the technical replicates'
+#' correlation cannot be estimated, the refusal names k. The kernel's bound on k counts the replicate sets over the
+#' injections, not the biological units, so a k within it can leave the units' correlation inestimable; the run's
+#' handler (KIT-128) then records the assay as failed as for any other failure, with this message.
+#' @param expr The DA kernel's call (evaluated here).
+#' @param assay_factors The assay's entry of `runOmicsRuvFactors()$factors`, or NULL without RUV factors.
+#' @return The value of `expr`. A failure of class `omics_da_block_correlation_failed` with k > 0 is raised again with
+#'   k in its message and the class `omics_ruv_k_block_correlation_failed` added; every other condition passes unchanged.
+#' @noRd
+withOmicsRuvKOnBlockFailure <- function(expr, assay_factors) {
+    k <- if (is.list(assay_factors) && !is.null(assay_factors$W)) ncol(assay_factors$W) else 0L
+    if (k < 1L) return(expr)
+    tryCatch(expr, omics_da_block_correlation_failed = function(e) {
+        rlang::abort(sprintf("with k = %d RUV factors in the model, %s; use fewer factors", k, conditionMessage(e)),
+            class = c("omics_ruv_k_block_correlation_failed", "omics_da_block_correlation_failed"), call = NULL)
+    })
+}

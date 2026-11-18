@@ -279,7 +279,8 @@ runMetabolitesDA <- function(
         # Run limma DA
         tryCatch(
             {
-                limma_results <- runTestsContrastsMetabDA(
+                # KIT-129 B1: with RUV factors, a technical-replicate correlation that cannot be estimated names k.
+                limma_results <- withOmicsRuvKOnBlockFailure(runTestsContrastsMetabDA(
                     data = expr_matrix,
                     contrast_strings = contrast_strings,
                     design_matrix = da_design,
@@ -291,7 +292,7 @@ runMetabolitesDA <- function(
                     # KIT-128: the declared technical replicates, for the block.
                     group_id = group_col,
                     technical_replicate_id = theObject@technical_replicate_id
-                )
+                ), if (!is.null(ruv_factors)) ruv_factors[[assay_name]])
 
                 # Collect qvalue warnings
                 if (length(limma_results$qvalue_warnings) > 0) {
