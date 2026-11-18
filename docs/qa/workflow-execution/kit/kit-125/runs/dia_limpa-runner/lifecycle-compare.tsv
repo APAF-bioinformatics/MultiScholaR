@@ -1,0 +1,19 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+runs$omic	character	24			0	agree	
+runs$split_type	character	24			0	agree	
+runs$split	integer	24			0	agree	
+runs$seed	integer	24			0	agree	
+runs$arm	integer	24			0	agree	
+runs$design	character	24			0	agree	
+runs$status	character	24			0	agree	
+runs$k	integer	24			0	agree	
+runs$n_features	integer	24			0	agree	
+runs$n_calls	integer	24			0	agree	
+runs$null_p05	double	24	0	0	0	agree	
+runs$null_p01	double	24	0	0	0	agree	
+splits$omic	character	6			0	agree	
+splits$split_type	character	6			0	agree	
+splits$split	integer	6			0	agree	
+splits$seed	integer	6			0	agree	
+splits$group_A	character	6			0	agree	
+splits$group_B	character	6			0	agree	
