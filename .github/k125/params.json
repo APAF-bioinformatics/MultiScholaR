@@ -1,8 +1,0 @@
-{
-  "label": "dia-limpa-1",
-  "package_commit": "0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22",
-  "tools_ref": "ebd5378b9f44ed54503011a175b1ea8e852cf5e1",
-  "k124_tools_ref": "984c3fffebc53db0ac54bc0efc8007141e179b08",
-  "splits": 100,
-  "timeout_minutes": 300
-}
