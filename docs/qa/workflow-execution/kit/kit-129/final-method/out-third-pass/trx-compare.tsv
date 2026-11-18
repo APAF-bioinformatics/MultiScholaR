@@ -1,0 +1,11 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S3/C0/arm31/k	integer	1			0	agree	
+S3/C0/arm31/contrast_vs_reparameterised$key	character	4631			0	agree	
+S3/C0/arm31/contrast_vs_reparameterised$estimate	double	4631	2.20320970672428e-07	1.75260439494451e-09	0	agree	
+S3/C0/arm31/contrast_vs_reparameterised$p	double	4631	2.49400596854564e-09	4.05702471617531e-10	0	agree	
+S3/C0/arm31/contrast_vs_reparameterised$q	double	4631	2.49400596402557e-09	5.15601228379126e-10	0	agree	
+S3/C6/arm31/k	integer	1			0	agree	
+S3/C6/arm31/contrast_vs_reparameterised$key	character	4645			0	agree	
+S3/C6/arm31/contrast_vs_reparameterised$estimate	double	4645	4.09167919207201e-08	6.3962102281323e-10	0	agree	
+S3/C6/arm31/contrast_vs_reparameterised$p	double	4645	3.8670230800572e-10	7.29720728287475e-11	0	agree	
+S3/C6/arm31/contrast_vs_reparameterised$q	double	4645	2.94275775513582e-10	9.41322575442882e-11	0	agree	

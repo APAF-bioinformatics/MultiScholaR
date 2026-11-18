@@ -1,0 +1,65 @@
+entry	leaves	max_rel	verdict	note
+S1/C6/arm29_B200/kernel_k	1	NA	pass	arm 29's E (the units removed) with M30's 200 permutations (= arm 33's E) against the kernel's own count; arm 29 itself (B = 20): 1; the kernel's limit k_max = 5, replicate structure technical_replicates
+S1/C6/arm16/W_k1	1	0	pass	arm 16's W against the kernel's W
+S1/C6/arm33/classic	4	4.45376555880528e-11	pass	keys: 783 common, 0 simulator only, 0 package only
+S1/C6/arm15_at_k1/corrected	1	0	pass	arm 15's corrected matrix against the new design's
+S1/C6/arm15_at_k1/classic	4	0	pass	keys: 783 common, 0 simulator only, 0 package only
+S1/C8/arm29_B200/kernel_k	1	NA	pass	arm 29's E (the units removed) with M30's 200 permutations (= arm 33's E) against the kernel's own count; arm 29 itself (B = 20): 0; the kernel's limit k_max = 5, replicate structure technical_replicates
+S1/C8/arm16/W_k1	1	0	pass	arm 16's W against the kernel's W
+S1/C8/arm33_at_k1/classic	4	2.17260148528529e-11	pass	keys: 786 common, 0 simulator only, 0 package only
+S1/C8/arm15_at_k1/corrected	1	0	pass	arm 15's corrected matrix against the new design's
+S1/C8/arm15_at_k1/classic	4	0	pass	keys: 786 common, 0 simulator only, 0 package only
+S4/C6/arm29_B200/lipid/pos/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 2; status ok
+S4/C6/arm29_B200/lipid/neg/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 2; status ok
+S4/C6/arm33/lipid/pos	4	2.97639623491045e-13	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm33/lipid/neg	4	2.13282996950142e-13	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C6/arm15_at_arm33_k/lipid/pos/corrected_centred	1	7.08746031772013e-12	pass	the corrected matrices, each feature's mean removed: the same within-feature values (same W, alpha, rows)
+S4/C6/arm15_at_arm33_k/lipid/pos/corrected_levels_restored	1	0	pass	the simulator's corrected matrix with each feature's level restored (restoreRuvFeatureLevels) against the package's
+S4/C6/arm15_at_arm33_k/lipid/pos/levels_restored	4	0	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm15_at_arm33_k/lipid/neg/corrected_centred	1	4.61580286109393e-13	pass	the corrected matrices, each feature's mean removed: the same within-feature values (same W, alpha, rows)
+S4/C6/arm15_at_arm33_k/lipid/neg/corrected_levels_restored	1	0	pass	the simulator's corrected matrix with each feature's level restored (restoreRuvFeatureLevels) against the package's
+S4/C6/arm15_at_arm33_k/lipid/neg/levels_restored	4	0	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C6/arm29_B200/metab/pos/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 2; status ok
+S4/C6/arm29_B200/metab/neg/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 2; status ok
+S4/C6/arm33/metab/pos	4	2.97639623491045e-13	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm33/metab/neg	4	2.13282996950142e-13	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C6/arm15_at_arm33_k/metab/pos/corrected_centred	1	7.08746031772013e-12	pass	the corrected matrices, each feature's mean removed: the same within-feature values (same W, alpha, rows)
+S4/C6/arm15_at_arm33_k/metab/pos/corrected_levels_restored	1	0	pass	the simulator's corrected matrix with each feature's level restored (restoreRuvFeatureLevels) against the package's
+S4/C6/arm15_at_arm33_k/metab/pos/levels_restored	4	0	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm15_at_arm33_k/metab/neg/corrected_centred	1	4.61580286109393e-13	pass	the corrected matrices, each feature's mean removed: the same within-feature values (same W, alpha, rows)
+S4/C6/arm15_at_arm33_k/metab/neg/corrected_levels_restored	1	0	pass	the simulator's corrected matrix with each feature's level restored (restoreRuvFeatureLevels) against the package's
+S4/C6/arm15_at_arm33_k/metab/neg/levels_restored	4	0	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C8/arm29_B200/lipid/pos/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 0; status none
+S4/C8/arm29_B200/lipid/neg/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 0; status none
+S4/C8/arm33_at_k1_where_0/lipid/pos	4	3.35129477014112e-12	pass	keys: 107 common, 0 simulator only, 0 package only
+S4/C8/arm33_at_k1_where_0/lipid/neg	4	1.22149299350188e-12	pass	keys: 108 common, 0 simulator only, 0 package only
+S4/C8/arm15_at_arm33_k/lipid/pos/corrected_centred	1	5.22518226909566e-13	pass	the corrected matrices, each feature's mean removed: the same within-feature values (same W, alpha, rows)
+S4/C8/arm15_at_arm33_k/lipid/pos/corrected_levels_restored	1	0	pass	the simulator's corrected matrix with each feature's level restored (restoreRuvFeatureLevels) against the package's
+S4/C8/arm15_at_arm33_k/lipid/pos/levels_restored	4	0	pass	keys: 107 common, 0 simulator only, 0 package only
+S4/C8/arm15_at_arm33_k/lipid/neg/corrected_centred	1	3.35879724571e-13	pass	the corrected matrices, each feature's mean removed: the same within-feature values (same W, alpha, rows)
+S4/C8/arm15_at_arm33_k/lipid/neg/corrected_levels_restored	1	0	pass	the simulator's corrected matrix with each feature's level restored (restoreRuvFeatureLevels) against the package's
+S4/C8/arm15_at_arm33_k/lipid/neg/levels_restored	4	0	pass	keys: 108 common, 0 simulator only, 0 package only
+S4/C8/arm29_B200/metab/pos/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 0; status none
+S4/C8/arm29_B200/metab/neg/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 0; status none
+S4/C8/arm33_at_k1_where_0/metab/pos	4	3.35129477014112e-12	pass	keys: 107 common, 0 simulator only, 0 package only
+S4/C8/arm33_at_k1_where_0/metab/neg	4	1.22149299350188e-12	pass	keys: 108 common, 0 simulator only, 0 package only
+S4/C8/arm15_at_arm33_k/metab/pos/corrected_centred	1	5.22518226909566e-13	pass	the corrected matrices, each feature's mean removed: the same within-feature values (same W, alpha, rows)
+S4/C8/arm15_at_arm33_k/metab/pos/corrected_levels_restored	1	0	pass	the simulator's corrected matrix with each feature's level restored (restoreRuvFeatureLevels) against the package's
+S4/C8/arm15_at_arm33_k/metab/pos/levels_restored	4	0	pass	keys: 107 common, 0 simulator only, 0 package only
+S4/C8/arm15_at_arm33_k/metab/neg/corrected_centred	1	3.35879724571e-13	pass	the corrected matrices, each feature's mean removed: the same within-feature values (same W, alpha, rows)
+S4/C8/arm15_at_arm33_k/metab/neg/corrected_levels_restored	1	0	pass	the simulator's corrected matrix with each feature's level restored (restoreRuvFeatureLevels) against the package's
+S4/C8/arm15_at_arm33_k/metab/neg/levels_restored	4	0	pass	keys: 108 common, 0 simulator only, 0 package only
+S1/C6/arm15/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20, groups removed): 1; compared at k = 1
+S1/C8/arm15/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20, groups removed): 6; compared at k = 1
+S4/C6/arm15/lipid/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20): 2/2; compared at k = 2/2
+S4/C6/arm15_at_arm33_k/lipid/pos/W_package_vs_simulator	NA	NA	info	arm 15 as measured (levels not restored) against the package's corrected matrix tested the same way: 75 keys, estimate max abs 2.13e-14, p max abs 0.0532 (max rel 0.67), q max abs 0.103; the per-feature level shift -2.77 to 3.85 log2
+S4/C6/arm15_at_arm33_k/lipid/neg/W_package_vs_simulator	NA	NA	info	arm 15 as measured (levels not restored) against the package's corrected matrix tested the same way: 65 keys, estimate max abs 1.78e-14, p max abs 0.0626 (max rel 0.666), q max abs 0.0568; the per-feature level shift -10 to 15.6 log2
+S4/C6/arm15/metab/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20): 2/2; compared at k = 2/2
+S4/C6/arm15_at_arm33_k/metab/pos/W_package_vs_simulator	NA	NA	info	arm 15 as measured (levels not restored) against the package's corrected matrix tested the same way: 75 keys, estimate max abs 2.13e-14, p max abs 0.0532 (max rel 0.67), q max abs 0.103; the per-feature level shift -2.77 to 3.85 log2
+S4/C6/arm15_at_arm33_k/metab/neg/W_package_vs_simulator	NA	NA	info	arm 15 as measured (levels not restored) against the package's corrected matrix tested the same way: 65 keys, estimate max abs 1.78e-14, p max abs 0.0626 (max rel 0.666), q max abs 0.0568; the per-feature level shift -10 to 15.6 log2
+S4/C8/arm15/lipid/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20): 6/6; compared at k = 1/1
+S4/C8/arm15_at_arm33_k/lipid/pos/W_package_vs_simulator	NA	NA	info	arm 15 as measured (levels not restored) against the package's corrected matrix tested the same way: 107 keys, estimate max abs 2.49e-14, p max abs 0.0156 (max rel 0.235), q max abs 0.0192; the per-feature level shift -0.371 to 0.382 log2
+S4/C8/arm15_at_arm33_k/lipid/neg/W_package_vs_simulator	NA	NA	info	arm 15 as measured (levels not restored) against the package's corrected matrix tested the same way: 108 keys, estimate max abs 1.78e-14, p max abs 7.4e-05 (max rel 0.00217), q max abs 6.83e-05; the per-feature level shift -0.00323 to 0.00328 log2
+S4/C8/arm15/metab/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20): 6/6; compared at k = 1/1
+S4/C8/arm15_at_arm33_k/metab/pos/W_package_vs_simulator	NA	NA	info	arm 15 as measured (levels not restored) against the package's corrected matrix tested the same way: 107 keys, estimate max abs 2.49e-14, p max abs 0.0156 (max rel 0.235), q max abs 0.0192; the per-feature level shift -0.371 to 0.382 log2
+S4/C8/arm15_at_arm33_k/metab/neg/W_package_vs_simulator	NA	NA	info	arm 15 as measured (levels not restored) against the package's corrected matrix tested the same way: 108 keys, estimate max abs 1.78e-14, p max abs 7.4e-05 (max rel 0.00217), q max abs 6.83e-05; the per-feature level shift -0.00323 to 0.00328 log2

@@ -1,0 +1,47 @@
+entry	leaves	max_rel	verdict	note
+S1/C0/arm23/controls	1	NA	pass	the first pass's controls (590 of 786 proteins)
+S1/C0/arm32/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the units removed on C6) against the kernel's own count under first_pass_nulls
+S1/C0/arm23/classic	4	3.10613711668428e-13	pass	keys: 786 common, 0 simulator only, 0 package only
+S1/C0/arm5/k	1	NA	pass	the sweep's k, handed to the kernel under sweep_bounded
+S1/C0/arm5/classic	4	3.10613711668428e-13	pass	keys: 786 common, 0 simulator only, 0 package only
+S1/C6/arm23/controls	1	NA	pass	the first pass's controls (588 of 783 proteins)
+S1/C6/arm32/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the units removed on C6) against the kernel's own count under first_pass_nulls
+S1/C6/arm23/classic	4	3.10512488498589e-11	pass	keys: 783 common, 0 simulator only, 0 package only
+S1/C6/arm5/k	1	NA	pass	the sweep's k, handed to the kernel under sweep_bounded
+S1/C6/arm5/classic	4	5.3898202739417e-11	pass	keys: 783 common, 0 simulator only, 0 package only
+S4/C0/arm23/lipid/pos/controls	1	NA	pass	the first pass's controls (all features complete on this view)
+S4/C0/arm32/lipid/pos/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the extracts removed on C6) against runOmicsRuvFactors' own count under first_pass_nulls; status ok
+S4/C0/arm23/lipid/neg/controls	1	NA	pass	the first pass's controls (all features complete on this view)
+S4/C0/arm32/lipid/neg/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the extracts removed on C6) against runOmicsRuvFactors' own count under first_pass_nulls; status ok
+S4/C0/arm23/lipid/pos	4	2.3192887667809e-13	pass	keys: 78 common, 0 simulator only, 0 package only
+S4/C0/arm23/lipid/neg	4	1.45353898929306e-13	pass	keys: 68 common, 0 simulator only, 0 package only
+S4/C0/arm5/lipid/pos	4	1.11256767505134e-13	pass	keys: 78 common, 0 simulator only, 0 package only
+S4/C0/arm5/lipid/neg	4	2.15181023373039e-13	pass	keys: 68 common, 0 simulator only, 0 package only
+S4/C0/arm23/metab/pos/controls	1	NA	pass	the first pass's controls (all features complete on this view)
+S4/C0/arm32/metab/pos/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the extracts removed on C6) against runOmicsRuvFactors' own count under first_pass_nulls; status ok
+S4/C0/arm23/metab/neg/controls	1	NA	pass	the first pass's controls (all features complete on this view)
+S4/C0/arm32/metab/neg/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the extracts removed on C6) against runOmicsRuvFactors' own count under first_pass_nulls; status ok
+S4/C0/arm23/metab/pos	4	2.3192887667809e-13	pass	keys: 78 common, 0 simulator only, 0 package only
+S4/C0/arm23/metab/neg	4	1.45353898929306e-13	pass	keys: 68 common, 0 simulator only, 0 package only
+S4/C0/arm5/metab/pos	4	1.11256767505134e-13	pass	keys: 78 common, 0 simulator only, 0 package only
+S4/C0/arm5/metab/neg	4	2.15181023373039e-13	pass	keys: 68 common, 0 simulator only, 0 package only
+S4/C6/arm23/lipid/pos/controls	1	NA	pass	the first pass's controls (all features complete on this view)
+S4/C6/arm32/lipid/pos/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the extracts removed on C6) against runOmicsRuvFactors' own count under first_pass_nulls; status ok
+S4/C6/arm23/lipid/neg/controls	1	NA	pass	the first pass's controls (all features complete on this view)
+S4/C6/arm32/lipid/neg/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the extracts removed on C6) against runOmicsRuvFactors' own count under first_pass_nulls; status ok
+S4/C6/arm23/lipid/pos	4	1.3289388770932e-13	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm23/lipid/neg	4	5.19338110680299e-13	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C6/arm5/lipid/pos	4	5.27694556421781e-13	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm5/lipid/neg	4	2.36013597756998e-13	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C6/arm23/metab/pos/controls	1	NA	pass	the first pass's controls (all features complete on this view)
+S4/C6/arm32/metab/pos/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the extracts removed on C6) against runOmicsRuvFactors' own count under first_pass_nulls; status ok
+S4/C6/arm23/metab/neg/controls	1	NA	pass	the first pass's controls (all features complete on this view)
+S4/C6/arm32/metab/neg/kernel_k_first_pass	1	NA	pass	arm 32's E (B = 200; the extracts removed on C6) against runOmicsRuvFactors' own count under first_pass_nulls; status ok
+S4/C6/arm23/metab/pos	4	1.3289388770932e-13	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm23/metab/neg	4	5.19338110680299e-13	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C6/arm5/metab/pos	4	5.27694556421781e-13	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm5/metab/neg	4	2.36013597756998e-13	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C0/arm5/lipid/W_package_vs_simulator	NA	NA	info	elbowK: pos 4, neg 4
+S4/C0/arm5/metab/W_package_vs_simulator	NA	NA	info	elbowK: pos 4, neg 4
+S4/C6/arm5/lipid/W_package_vs_simulator	NA	NA	info	elbowK: pos 4, neg 3
+S4/C6/arm5/metab/W_package_vs_simulator	NA	NA	info	elbowK: pos 4, neg 3
