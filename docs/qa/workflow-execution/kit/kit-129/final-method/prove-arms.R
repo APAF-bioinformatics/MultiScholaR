@@ -33,6 +33,14 @@
 #         where the count is 0, so that the design is exercised); its corrected matrix, tested as arm 15 tests, against
 #         arm 15 (arm 15's own k, 1 where E is 0). S4 on the view of the features complete in study and pooled-QC
 #         injections on both sides (the simulator's `complete` subset), so that the package computes its own W
+#   firstpass KIT-129 integration (second pass) item 2: the design first_pass_nulls at the kernels, run 1 of C0 and C6,
+#         S1 and S4: the kernel's controls against the simulator's first pass (S1 `wide_controls`, S4 arm 5/23's); its own
+#         count against arm 32's E (B = 200; the units removed on C6, M28); its DA at arm 23's k (E, B = 20) against arm
+#         23 under the final test (arm 25's standard error, and in S1 arm 26's test); its DA at the separation rule's k
+#         against arm 5 under the final test (S1: the sweep's k, which the run path hands the kernel; S4: today's rule on
+#         the first pass's controls, `elbowK`, which is arm 5 there). S1 on C6 with the units as replicate sets (arm 23's
+#         structure, the one the package resolves from the declaration); S4 with the groups (arms 5 and 23's), on the
+#         view of the features complete in study and pooled-QC injections as in techrep
 # Writes <out dir>/<stage>-simulator.rds and <stage>-package.rds (named lists: per data set, arm and omic, the table
 # keyed by feature and contrast, and k), compares them with packaging/verify/compare-results.R (relative 1e-6,
 # absolute floor 1e-9, discrete values exact) into <stage>-compare.tsv, and writes <stage>-summary.tsv (one row per
@@ -56,7 +64,7 @@
 
 stage <- commandArgs(TRUE)[[1L]]
 out_dir <- commandArgs(TRUE)[[2L]]
-stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath", "techrep"))
+stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath", "techrep", "firstpass"))
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -257,6 +265,53 @@ for (cell in cells) {
         add_tables(sprintf("S1/%s/%s/classic", cell, label15), keyed(t15$id, "contrast", t15$estimate, t15$p, t15$q),
             keyed(p15$id, "contrast", p15$estimate, p15$p, p15$q))
     }
+    if (stage == "firstpass") {
+        # arm 23's replicate structure: what the package resolves from the declaration (s1_classic.R lines 157-159), the
+        # units on C6, the groups on C0
+        grouping <- if (p$duplicates) "tech_rep_group" else "group"
+        first_pass_factors <- function(...) silently(computeProtRuvModelFactors(normalised, ..., ruv_design = "first_pass_nulls",
+            ruv_grouping_variable = grouping))
+        # `first_pass` and `wide_controls` (lines 514-534)
+        first <- limma::topTable(limma::eBayes(suppressWarnings(limma::lmFit(x, stats::model.matrix(~ group, design)))),
+            coef = seq(2L, nlevels(sim$group)), number = Inf, sort.by = "none")$P.Value
+        wide <- rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))
+        wide[is.na(wide)] <- FALSE
+        wide <- stats::setNames(wide, rownames(x))
+        own <- first_pass_factors(ruv_k_rule = "num_sv_be", ruv_k_seed = seed * 100L)
+        add(sprintf("S1/%s/arm23/controls", cell), wide, own$controls, sprintf("the first pass's controls (%d of %d proteins)", sum(wide), length(wide)))
+        add(sprintf("S1/%s/arm32/kernel_k_first_pass", cell), count(200L, p$duplicates), own$k,
+            "arm 32's E (B = 200; the units removed on C6) against the kernel's own count under first_pass_nulls")
+        # in_model(wide_controls(), k, "tech_rep_group") (lines 629, 630, 538-553), tested as the final method tests
+        arm_wide <- function(arm, k) {
+            W <- silently(computeRuvCovariates(s1$make_object(xc, design, "tech_rep_group"), k = k,
+                controls = unname(wide[sim$complete]), ruv_grouping_variable = "group"))$W
+            set.seed(seed * 100L + arm)
+            tab <- silently(s1$da_variant(x, design, W, exact = TRUE, applied = TRUE))
+            keyed(tab$id, "contrast", tab$estimate, tab$p, tab$q)
+        }
+        k23 <- if (E20 > 0L) E20 else 1L
+        add_tables(sprintf("S1/%s/%s/classic", cell, if (E20 > 0L) "arm23" else "arm23_at_k1"), arm_wide(23L, k23),
+            entry_state(attachProtRuvModelFactors(normalised, normalised, first_pass_factors(ruv_k = k23, ruv_k_rule = "user"))))
+        # arm 5's k: the sweep, stream 3 (lines 495-510), as the run path hands it to the kernel (sweep_bounded)
+        set.seed(seed * 100L + 3L)
+        sweep <- tryCatch(silently(findBestNegCtrlPercentage(normalised_protein_matrix_obj = s1$make_object(x, design, "tech_rep_group"),
+            percentage_range = seq(1, 20, by = 1), separation_metric = "max_difference", k_penalty_weight = 0.5,
+            adaptive_k_penalty = TRUE, ruv_grouping_variable = "group", verbose = FALSE)), error = function(e) e)
+        if (inherits(sweep, "error")) {
+            notes[[sprintf("S1/%s/arm5/W_package_vs_simulator", cell)]] <- paste("the sweep refused:", conditionMessage(sweep))
+        } else {
+            k5 <- validateProtNormRuvK(sweep$best_k, "ruv_k")
+            package5 <- tryCatch(first_pass_factors(ruv_k = k5, ruv_k_rule = "sweep_bounded"), error = function(e) e)
+            if (inherits(package5, "error")) {
+                notes[[sprintf("S1/%s/arm5/W_package_vs_simulator", cell)]] <- sprintf("k = %d: the kernel refused (%s): %s", k5,
+                    class(package5)[[1L]], conditionMessage(package5))
+            } else {
+                add(sprintf("S1/%s/arm5/k", cell), k5, package5$k, "the sweep's k, handed to the kernel under sweep_bounded")
+                add_tables(sprintf("S1/%s/arm5/classic", cell), arm_wide(5L, k5),
+                    entry_state(attachProtRuvModelFactors(normalised, normalised, package5)))
+            }
+        }
+    }
 }
 
 # ---- S2, DIA with limpa ------------------------------------------------------------------------------------------------
@@ -404,7 +459,7 @@ if (stage %in% c("m29", "m30b")) {
 }
 
 # ---- S4, lipidomics and metabolomics (second-pass stages: techrep) ---------------------------------------------------
-if (stage %in% c("techrep")) {
+if (stage %in% c("techrep", "firstpass")) {
     s4 <- simulator("s4_lipid_metab.R", "2d03b103", "^# ---- driver")
     table_s4 <- s4$cellTable()
     for (cell_name in cells) {
@@ -486,6 +541,39 @@ if (stage %in% c("techrep")) {
                     add_tables(name, keyed(ref$feature, ref$contrast, ref$est, ref$p, ref$q),
                         keyed(tested$feature, tested$contrast, tested$est, tested$p, tested$q))
                 }
+            }
+        }
+        if (stage == "firstpass") {
+            # arms 5 and 23's controls (lines 656-657, 690-691): the smallest p of arm 1's test over the comparisons
+            controls <- lapply(view$first_pass(), function(fp) fp$feature[rank(fp$p, na.last = "keep", ties.method = "first") >
+                0.25 * sum(is.finite(fp$p)) & is.finite(fp$p)])
+            E32 <- if (cell$duplicates) variants$E_units_200 else variants$E_200
+            in_controls <- function(a, assay, columns) columns %in% controls[[assay]]
+            for (omic in c("lipid", "metab")) {
+                first_pass_run <- function(...) silently(runOmicsRuvFactors(objects[[omic]], "first_pass_nulls", ...))
+                own <- first_pass_run(ruv_k_rule = "num_sv_be", ruv_k_seed = seed * 100L + 99L)
+                for (assay in s4$ASSAYS) {
+                    add(sprintf("S4/%s/arm23/%s/%s/controls", cell_name, omic, assay), sort(controls[[assay]]),
+                        sort(own$factors[[assay]]$control_ids), "the first pass's controls (all features complete on this view)")
+                    add(sprintf("S4/%s/arm32/%s/%s/kernel_k_first_pass", cell_name, omic, assay), E32[[assay]],
+                        as.integer(own$factors[[assay]]$k), sprintf(paste("arm 32's E (B = 200; the extracts removed on C6)",
+                            "against runOmicsRuvFactors' own count under first_pass_nulls; status %s"), own$factors[[assay]]$status))
+                }
+                # arm 23 (k = E, B = 20) under arm 25's standard error
+                k23 <- at_least_one(E20)
+                set.seed(seed * 100L + 23L)
+                compare_arm(if (all(unlist(E20) > 0L)) "arm23" else "arm23_at_k1_where_0", omic,
+                    s4$modelArm(view, in_controls, function(a, assay) k23[[assay]], exact = TRUE), first_pass_run(k23, "user")$factors)
+                # arm 5 (lines 656-658, 724-732): today's rule on those controls (`elbowK`), under arm 25's standard error
+                k5 <- s4$elbowK(view, controls)
+                notes[[sprintf("S4/%s/arm5/%s/W_package_vs_simulator", cell_name, omic)]] <- paste("elbowK:",
+                    paste(names(k5), unlist(k5), collapse = ", "))
+                set.seed(seed * 100L + 5L)
+                reference <- s4$modelArm(view, function(a, assay, columns) {
+                    if (is.na(k5[[assay]])) return(s4$refusal("findBestKElbow returned NA"))
+                    in_controls(a, assay, columns)
+                }, function(a, assay) if (is.na(k5[[assay]])) 0L else k5[[assay]], exact = TRUE)
+                compare_arm("arm5", omic, reference, suppressWarnings(first_pass_run(lapply(k5, as.integer), "sweep_bounded"))$factors)
             }
         }
     }

@@ -9,7 +9,51 @@
 
 #' The designs of the factors-in-the-model path, by the arm of KIT-124's simulator S4 each one is.
 #' @noRd
-omicsRuvFactorsDesigns <- c(groups_all_features = "arm 7", supplied_controls = "arm 8")
+omicsRuvFactorsDesigns <- c(groups_all_features = "arm 7", supplied_controls = "arm 8", first_pass_nulls = "arms 5 and 23")
+
+#' The share of the first pass's most significant features the first-pass control rule leaves out (arms 5 and 23).
+#' @noRd
+OMICS_RUV_FIRST_PASS_DROPPED_SHARE <- 0.25
+
+#' The controls of the design `first_pass_nulls` in one assay (decision M7; KIT-124 simulator S4, arms 5 and 23, its
+#' `first_pass` and `daKernel`): the omic's DA kernel without RUV (`~ 0 + group`, eBayes with trend and robust, the
+#' declared technical replicates as block) over every pairwise comparison of the groups, on the features whose observed
+#' samples estimate every group's coefficient (the others are not tested and are no control); per feature the smallest
+#' p-value over the comparisons; every feature outside the 25% most significant of those with a p-value is a control.
+#' @param values Feature-by-sample matrix of the assay (missing values kept).
+#' @param assay_design The design rows of the assay's samples, in the order of `values`' columns.
+#' @param sample_id,group_id,technical_replicate_id The object's columns.
+#' @param fitFn,applyFn The omic's DA halves (`fitLipidDaAssayModel` and `applyLipidDaContrasts`, or the metabolomics
+#'   pair).
+#' @return The control feature ids, in the matrix's row order.
+#' @noRd
+omicsRuvFirstPassControls <- function(values, assay_design, sample_id, group_id, technical_replicate_id, fitFn, applyFn) {
+    groups <- sort(unique(as.character(assay_design[[group_id]])))
+    if (length(groups) < 2L) abortOmicsRuvFactors("the first pass of the design first_pass_nulls needs two groups or more")
+    design <- as.data.frame(assay_design)
+    # the groups under syntactic labels in their sorted order (the comparisons are named by them)
+    labels <- sprintf("g%0*d", nchar(length(groups)), seq_along(groups))
+    design$.first_pass_group <- labels[match(as.character(design[[group_id]]), groups)]
+    groups <- labels
+    formula <- "~ 0 + .first_pass_group"
+    if (anyNA(values)) {
+        x <- stats::model.matrix(stats::as.formula(formula), design)
+        seen <- is.finite(values)
+        pattern <- apply(seen, 1L, function(row) paste(which(row), collapse = ","))
+        estimable <- vapply(split(seq_len(nrow(values)), pattern), function(rows) {
+            qr(x[seen[rows[[1L]], ], , drop = FALSE])$rank == ncol(x)
+        }, logical(1L))
+        values <- values[estimable[match(pattern, names(estimable))], , drop = FALSE]
+    }
+    pairs <- utils::combn(groups, 2L)
+    contrasts <- sprintf(".first_pass_group%s-.first_pass_group%s", pairs[2L, ], pairs[1L, ])
+    fit <- suppressMessages(fitFn(values, design, formula, sample_id, group_id, technical_replicate_id))
+    tables <- suppressMessages(applyFn(fit, contrasts, NA, TRUE, TRUE))$results
+    p <- do.call(cbind, lapply(tables, function(table) table[rownames(values), "P.Value"]))
+    smallest <- apply(p, 1L, min)
+    dropped <- rank(smallest, ties.method = "first", na.last = "keep") > OMICS_RUV_FIRST_PASS_DROPPED_SHARE * sum(is.finite(smallest))
+    rownames(values)[!is.na(dropped) & dropped & is.finite(smallest)]
+}
 
 #' Stop for a wrong argument of the factors-in-the-model kernel.
 #' @noRd
@@ -160,15 +204,18 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #' @param theObject A `LipidomicsAssayData` or `MetaboliteAssayData` object (log2 values, missing values kept).
 #' @param ruv_design `"groups_all_features"`: every feature observed in every sample is a control.
 #'   `"supplied_controls"`: the features of `ruv_control_ids` are the controls, and are not tested (the names of
-#'   KIT-129 section 1e).
+#'   KIT-129 section 1e). `"first_pass_nulls"` (decision M7; arms 5 and 23 of simulator S4): the features outside the
+#'   25% most significant of a first test without RUV (`omicsRuvFirstPassControls`) are the controls, and are tested
+#'   like every other feature; the estimated count and the separation rule are both defined for it.
 #' @param ruv_k The number of factors: a whole number of 0 or more, or one per assay by name. No default under
 #'   `"user"` and `"sweep_bounded"`; not given (or NULL) under `"num_sv_be"`. 0 is no RUV; `NA` (a k that could not be
 #'   estimated) refuses the assay.
 #' @param ruv_k_rule Where k comes from, recorded with it: `"num_sv_be"` (the estimated count per assay, by the shared
 #'   resolver: `estimateRuvFactorCount` with 200 permutations on the assay's features observed in every sample, the
 #'   groups removed, or the biological units on a design with declared technical replicates; KIT-129 item 3, decisions
-#'   M28, M30), `"user"` or `"sweep_bounded"` (`boundOmicsRuvSweepK`). `"sweep_bounded"` is refused with
-#'   `"groups_all_features"`: that k was not measured with all features as controls. An assay whose count cannot be
+#'   M28, M30), `"user"` or `"sweep_bounded"` (`boundOmicsRuvSweepK`, or the separation rule on the first pass's
+#'   controls). `"sweep_bounded"` is refused with `"groups_all_features"`: that k was not measured with all features as
+#'   controls. An assay whose count cannot be
 #'   estimated is refused as any other (no RUV, the warning), with the count's reason. This kernel keeps its own limit
 #'   on k and its refusal mode (an assay refused, not the run): the resolver is given no limit.
 #' @param ruv_k_seed The estimated count's seed (recorded with it).
@@ -213,12 +260,13 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
     }
     if (!length(assays) || is.null(names(assays)) || !all(nzchar(names(assays)))) abortOmicsRuvFactors("the object needs named assays")
     supplied <- identical(ruv_design, "supplied_controls")
+    first_pass <- identical(ruv_design, "first_pass_nulls")
     if (!supplied && !is.null(ruv_control_ids)) abortOmicsRuvFactors("ruv_control_ids is for ruv_design = \"supplied_controls\" only")
     if (supplied && !(is.list(ruv_control_ids) && all(names(assays) %in% names(ruv_control_ids)))) {
         abortOmicsRuvFactors("ruv_design = \"supplied_controls\" needs ruv_control_ids for every assay, by assay name")
     }
     # Audit F1: the bounded sweep's k was never measured with all features as controls (KIT-129 brings the estimate).
-    if (!supplied && identical(ruv_k_rule, "sweep_bounded")) {
+    if (identical(ruv_design, "groups_all_features") && identical(ruv_k_rule, "sweep_bounded")) {
         abortOmicsRuvFactors("ruv_k_rule = \"sweep_bounded\" is refused with ruv_design = \"groups_all_features\": that k was not validated for it")
     }
     k_requested <- if (counted) stats::setNames(rep(list(NA_integer_), length(assays)), names(assays)) else
@@ -237,6 +285,15 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
         }
         samples <- colnames(values[[assay_name]])
         assay_design <- design[match(samples, design_samples), , drop = FALSE]
+        if (first_pass) {
+            control_ids <- if (inherits(theObject, "LipidomicsAssayData")) {
+                omicsRuvFirstPassControls(values[[assay_name]], assay_design, sample_id, theObject@group_id,
+                    theObject@technical_replicate_id, fitLipidDaAssayModel, applyLipidDaContrasts)
+            } else {
+                omicsRuvFirstPassControls(values[[assay_name]], assay_design, sample_id, theObject@group_id,
+                    theObject@technical_replicate_id, fitMetabDaAssayModel, applyMetabDaContrasts)
+            }
+        }
         replicate_matrix <- getRuvIIIReplicateMatrixHelper(assay_design, !!rlang::sym(sample_id), !!rlang::sym(grouping))
         technical <- resolveProtTechnicalReplicateBlock(assay_design, theObject@group_id, theObject@technical_replicate_id)
         units <- if (isTRUE(technical$technical)) technical$block
@@ -246,7 +303,8 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
         } else ncol(replicate_matrix)
         # KIT-129 item 3: the estimated count per assay by the shared resolver (no limit there: this kernel's own limit
         # refuses the assay below). An assay the count cannot be made on is refused with the count's reason.
-        counted_k <- if (counted) tryCatch(resolveRuvFactorCount("num_sv_be", if (supplied) "supplied_list" else "all_features",
+        counted_k <- if (counted) tryCatch(resolveRuvFactorCount("num_sv_be",
+            if (supplied) "supplied_list" else if (first_pass) "first_pass_drop_top_25" else "all_features",
             list(k_max = .Machine$integer.max), estimate_count = \() estimateRuvFactorCount(values[[assay_name]],
                 assay_design[[grouping]], seed = ruv_k_seed, technical_replicates = isTRUE(technical$technical), units = units)),
             ruv_factor_count_unavailable = \(e) e)
@@ -263,7 +321,7 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
             k_requested = k_requested[[assay_name]], ruv_k_rule = ruv_k_rule,
             ruv_k_estimate = if (counted && !inherits(counted_k, "condition")) counted_k$k_estimate else NA_integer_,
             k_estimate = if (counted && !inherits(counted_k, "condition")) counted_k$estimate, control_ids = record$control_ids,
-            control_count = length(record$control_ids), controls_left_out = setdiff(control_ids, record$control_ids),
+            control_count = length(record$control_ids), controls_left_out = if (supplied) setdiff(control_ids, record$control_ids) else character(),
             complete_features = record$complete_features,
             not_tested = if (supplied) control_ids else character(), ruv_design = ruv_design, ruv_grouping_variable = grouping)
     }
@@ -289,7 +347,7 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
         subset_object <- theObject
         methods::slot(subset_object, slots$data) <- assays[to_correct]
         correction_controls <- lapply(stats::setNames(to_correct, to_correct), function(assay_name) {
-            if (supplied) factors[[assay_name]]$control_ids else rownames(values[[assay_name]])
+            if (supplied || first_pass) factors[[assay_name]]$control_ids else rownames(values[[assay_name]])
         })
         result <- ruvIII_C_Varying(subset_object, ruv_grouping_variable = grouping, ruv_number_k = lapply(factors[to_correct], `[[`, "k"),
             ctrl = correction_controls)

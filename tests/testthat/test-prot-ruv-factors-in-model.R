@@ -902,3 +902,44 @@ test_that("the technical-replicate design: the biological units as replicate set
     expect_identical(counted[c("k", "k_max", "replicate_structure")], list(k = expected$k, k_max = 5L,
         replicate_structure = "technical_replicates"))
 })
+
+test_that("first-pass null controls: the proteins outside the 25% most significant of a first test, W in the model (M7; S1 arms 5, 23, 24)", {
+    fixture <- ruvModelFixture(proteins = 200L)
+    object <- ruvModelObject(fixture$x, fixture$design)
+    # the first pass as the simulator forms it (s1_classic.R `first_pass` and `wide_controls`)
+    first <- limma::topTable(limma::eBayes(suppressWarnings(limma::lmFit(fixture$x, stats::model.matrix(~ group, fixture$design)))),
+        coef = 2L, number = Inf, sort.by = "none")$P.Value
+    wide <- rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))
+    wide[is.na(wide)] <- FALSE
+    factors <- computeProtRuvModelFactors(object, ruv_k = 2L, ruv_k_rule = "user", ruv_design = "first_pass_nulls")
+    expect_identical(factors$controls, stats::setNames(wide, rownames(fixture$x)))
+    expect_identical(factors[c("k", "status", "ruv_controls")], list(k = 2L, status = "ok", ruv_controls = "first_pass"))
+    expect_identical(protRuvModelDesign(factors), "first_pass_nulls")
+    complete <- rowSums(!is.finite(fixture$x)) == 0
+    expect_identical(factors$control_count, sum(wide & complete))
+    expect_lt(factors$control_count, sum(complete))
+    reference <- suppressMessages(computeRuvCovariates(ruvModelObject(fixture$x[complete, ], fixture$design), k = 2L,
+        controls = unname(wide[complete]), ruv_grouping_variable = "group"))
+    expect_equal(factors$W, reference$W, tolerance = 1e-12)
+    # the DA tests every protein, the controls too, with W in the model (arm 23's design under the final test)
+    state <- attachProtRuvModelFactors(object, object, factors)
+    expect_identical(state@args$ruvCovariates$ruv_design, "first_pass_nulls")
+    table <- ruvModelDa(state)$contrasts_results$results[[1L]]
+    expected <- suppressMessages(ruvModelSimulatorTest(fixture$x, fixture$design, reference$W, applied = TRUE))$results[[1L]]
+    expect_identical(rownames(table), rownames(expected))
+    expect_setequal(rownames(table), rownames(fixture$x))
+    for (column in c("logFC", "raw_pvalue", "fdr_qvalue")) expect_equal(table[[column]], expected[[column]], tolerance = 1e-12, info = column)
+    # the controls are a subset, so the separation rule is defined here: the sweep's k, given, never reduced
+    separation <- computeProtRuvModelFactors(object, ruv_k = 3L, ruv_k_rule = "sweep_bounded", ruv_design = "first_pass_nulls")
+    expect_identical(separation[c("k", "ruv_k_rule", "status")], list(k = 3L, ruv_k_rule = "sweep_bounded", status = "ok"))
+    expect_error(computeProtRuvModelFactors(object, ruv_k = 40L, ruv_k_rule = "sweep_bounded", ruv_design = "first_pass_nulls"),
+        class = "ruv_k_above_limit")
+    # a control set is given for the supplied design only; an unknown design is refused
+    expect_error(computeProtRuvModelFactors(object, ruv_k = 2L, ruv_k_rule = "user", ruv_design = "first_pass_nulls", controls = wide),
+        class = "prot_ruv_model_input")
+    expect_error(computeProtRuvModelFactors(object, ruv_k = 2L, ruv_k_rule = "user", ruv_design = "legacy"), class = "prot_ruv_model_input")
+    # the estimated count: the groups removed, as for every design
+    skip_if_not_installed("sva")
+    counted <- suppressMessages(computeProtRuvModelFactors(object, ruv_k_rule = "num_sv_be", ruv_design = "first_pass_nulls"))
+    expect_identical(counted[c("k", "ruv_k_rule")], list(k = estimateRuvFactorCount(fixture$x, fixture$design$group)$k, ruv_k_rule = "num_sv_be"))
+})

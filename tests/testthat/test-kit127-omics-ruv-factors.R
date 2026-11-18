@@ -839,3 +839,55 @@ test_that("the technical-replicate design: the biological units as replicate set
         }
     }
 })
+
+# The first pass of S4's arms 5 and 23 (`first_pass`, `daKernel`): arm 1's test, per feature the smallest p over the
+# comparisons, every feature outside the 25% most significant a control.
+simFirstPassControls <- function(fixture, y) {
+    base <- simDaKernel(y, fixture$design, "~ 0 + group", fixture$contrasts)
+    fp <- stats::aggregate(p ~ feature, base, min)
+    fp$feature[rank(fp$p, na.last = "keep", ties.method = "first") > 0.25 * sum(is.finite(fp$p)) & is.finite(fp$p)]
+}
+
+test_that("first-pass null controls: the features outside the 25% most significant of the no-RUV test, W in the model (M7; S4 arms 5 and 23)", {
+    skip_if_not_installed("ruv")
+    fixture <- kit127Fixture()
+    mats <- lapply(fixture$assays, `[[`, "y")
+    for (omic in c("lipid", "metab")) {
+        object <- if (identical(omic, "lipid")) kit127Lipid(mats, fixture$design) else kit127Metab(mats, fixture$design)
+        id <- if (identical(omic, "lipid")) "lipid_id" else "metabolite_id"
+        run <- kit127Quiet(runOmicsRuvFactors(object, "first_pass_nulls", K127_K, "user"))
+        da <- kit127Quiet((if (identical(omic, "lipid")) runLipidsDA else runMetabolitesDA)(object, fixture$contrasts_tbl,
+            "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors))
+        long <- if (identical(omic, "lipid")) da$da_lipids_long else da$da_metabolites_long
+        for (assay in names(mats)) {
+            record <- run$factors[[assay]]
+            controls <- simFirstPassControls(fixture, mats[[assay]])
+            complete <- rownames(mats[[assay]])[rowSums(!is.finite(mats[[assay]])) == 0L]
+            expect_gt(length(controls), 0L)
+            expect_lt(length(controls), nrow(mats[[assay]]))
+            expect_setequal(record$control_ids, intersect(controls, complete))
+            expect_identical(record[c("status", "k", "ruv_design", "not_tested", "controls_left_out")],
+                list(status = "ok", k = K127_K[[assay]], ruv_design = "first_pass_nulls", not_tested = character(),
+                    controls_left_out = character()), info = omic)
+            # W from the complete controls, the groups as replicate sets; the test reads every feature with W
+            y <- t(mats[[assay]][complete, , drop = FALSE])
+            w <- simRuvW(y, simGroupM(fixture$design), colnames(y) %in% controls, K127_K[[assay]], keep = fixture$design$Sample_ID)
+            expectKit127W(record$W, w)
+            expectKit127Table(long, id, assay, simTestWithW(fixture, mats[[assay]], w))
+        }
+        # the controls are a subset, so the separation rule is defined here (its k given, as for supplied controls)
+        separation <- kit127Quiet(runOmicsRuvFactors(object, "first_pass_nulls", 1L, "sweep_bounded"))
+        expect_identical(unname(vapply(separation$factors, `[[`, "", "status")), c("ok", "ok"), info = omic)
+        expect_identical(unname(vapply(separation$factors, `[[`, "", "ruv_k_rule")), c("sweep_bounded", "sweep_bounded"))
+        expect_error(runOmicsRuvFactors(object, "first_pass_nulls", 1L, "user", ruv_control_ids = lapply(mats, rownames)),
+            class = "omics_ruv_factors_invalid")
+    }
+    # the estimated count
+    skip_if_not_installed("sva")
+    object <- kit127Lipid(mats, fixture$design)
+    counted <- suppressWarnings(kit127Quiet(runOmicsRuvFactors(object, "first_pass_nulls", ruv_k_rule = "num_sv_be", ruv_k_seed = 5L)))
+    for (assay in names(mats)) {
+        expected <- tryCatch(estimateRuvFactorCount(mats[[assay]], fixture$design$group, seed = 5L), ruv_factor_count_unavailable = \(e) e)
+        if (!inherits(expected, "condition")) expect_identical(counted$factors[[assay]]$ruv_k_estimate, expected$k)
+    }
+})

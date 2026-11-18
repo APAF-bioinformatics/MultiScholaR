@@ -1285,7 +1285,13 @@ protRuvGroupReplicateObject <- function(theObject) {
 #'   `"num_sv_be"`.
 #' @param ruv_k_rule Where k comes from, recorded with it (KIT-129 section 1e): `"user"`, `"sweep_bounded"` or
 #'   `"num_sv_be"`.
-#' @param controls NULL for every protein, or a logical vector over the protein rows.
+#' @param controls NULL for every protein, or a logical vector over the protein rows (the design `supplied_controls`).
+#' @param ruv_design The control rule, by the names of KIT-129 section 1e: NULL (taken from `controls`),
+#'   `"groups_all_features"`, `"supplied_controls"` or `"first_pass_nulls"` (decision M7; arms 5, 23 and 24 of
+#'   simulator S1: `limma::lmFit(~ group)` and `eBayes` on the normalised matrix, the F test of the groups, and every
+#'   protein outside the 25% most significant a control; `protRuvFirstPassControls`). The controls of the first pass
+#'   are a subset, so the separation rule is defined for it (`ruv_k` the sweep's estimate) as is the estimated count;
+#'   they are tested like every other protein.
 #' @param ruv_grouping_variable Design column whose levels are the replicate sets. The declared technical-replicate
 #'   column gives the technical-replicate design (the biological units as the replicate sets, arms 15 and 16 of
 #'   simulator S1; `replicate_structure = "technical_replicates"`): k is then limited by the units and the groups across
@@ -1299,8 +1305,16 @@ protRuvGroupReplicateObject <- function(theObject) {
 #'   every sample.
 #' @noRd
 computeProtRuvModelFactors <- function(theObject, ruv_k = NULL, ruv_k_rule = c("user", "sweep_bounded", "num_sv_be"),
-                                       controls = NULL, ruv_grouping_variable = "group", ruv_k_seed = RUV_FACTOR_COUNT_SEED) {
+                                       controls = NULL, ruv_grouping_variable = "group", ruv_k_seed = RUV_FACTOR_COUNT_SEED,
+                                       ruv_design = NULL) {
   if (!inherits(theObject, "ProteinQuantitativeData")) abortProtRuvModelInput("theObject must be a ProteinQuantitativeData object")
+  ruv_design <- ruv_design %||% if (is.null(controls)) "groups_all_features" else "supplied_controls"
+  if (!checkmate::test_choice(ruv_design, c("groups_all_features", "supplied_controls", "first_pass_nulls"))) {
+    abortProtRuvModelInput("ruv_design must be \"groups_all_features\", \"supplied_controls\" or \"first_pass_nulls\"")
+  }
+  if (identical(ruv_design, "supplied_controls") == is.null(controls)) {
+    abortProtRuvModelInput("controls are given for the design supplied_controls, and for no other design")
+  }
   if (!is.character(ruv_k_rule) || !length(ruv_k_rule) || !ruv_k_rule[[1L]] %in% RUV_K_RULES) {
     abortProtRuvModelInput("ruv_k_rule must be \"user\", \"sweep_bounded\" or \"num_sv_be\"")
   }
@@ -1323,17 +1337,18 @@ computeProtRuvModelFactors <- function(theObject, ruv_k = NULL, ruv_k_rule = c("
   ids <- as.character(theObject@protein_quant_table[[theObject@protein_id_column]])
   if (!all(sample_ids %in% names(theObject@protein_quant_table))) abortProtRuvModelInput("the design names samples absent from the protein table")
   values <- as.matrix(theObject@protein_quant_table[, sample_ids, drop = FALSE])
-  ruv_controls <- if (is.null(controls)) "all" else "supplied"
+  # The groups of the test (the object's group column), not the replicate sets: on the technical-replicate design the
+  # replicate sets are the biological units, and the limit counts the groups across them.
+  group_column <- if (isTRUE(theObject@group_id %in% names(design_matrix))) theObject@group_id else ruv_grouping_variable
+  group_count <- length(unique(as.character(design_matrix[[group_column]])))
+  ruv_controls <- switch(ruv_design, groups_all_features = "all", supplied_controls = "supplied", first_pass_nulls = "first_pass")
+  if (identical(ruv_design, "first_pass_nulls")) controls <- protRuvFirstPassControls(values, design_matrix[[group_column]])
   if (is.null(controls)) controls <- rep(TRUE, length(ids))
   if (!is.logical(controls) || length(controls) != length(ids)) abortProtRuvModelInput("controls must be a logical vector over the protein rows")
   controls <- stats::setNames(!is.na(controls) & unname(controls), ids)
   complete <- rowSums(!is.finite(values)) == 0
   control_count <- sum(controls & complete)
   replicate_sets <- as.character(design_matrix[[ruv_grouping_variable]])
-  # The groups of the test (the object's group column), not the replicate sets: on the technical-replicate design the
-  # replicate sets are the biological units, and the limit counts the groups across them.
-  group_column <- if (isTRUE(theObject@group_id %in% names(design_matrix))) theObject@group_id else ruv_grouping_variable
-  group_count <- length(unique(as.character(design_matrix[[group_column]])))
   # Decision M28: on a design with declared technical replicates the biological units, not the injections, limit k.
   technical <- resolveProtTechnicalReplicateBlock(design_matrix, theObject@group_id, theObject@technical_replicate_id)
   unit_count <- if (isTRUE(technical$technical)) length(unique(technical$block))
@@ -1354,7 +1369,8 @@ computeProtRuvModelFactors <- function(theObject, ruv_k = NULL, ruv_k_rule = c("
   # KIT-129 item 3: k by the shared resolver, as the other omics' new designs take it. The count removes the groups, or
   # the biological units on a design with technical replicates (M28). A k above the limit is refused there
   # (`ruv_k_above_limit`), never reduced.
-  resolved <- resolveRuvFactorCount(ruv_k_rule, if (identical(ruv_controls, "all")) "all_features" else "supplied_list", limit,
+  control_rule <- switch(ruv_controls, all = "all_features", supplied = "supplied_list", first_pass = "first_pass_drop_top_25")
+  resolved <- resolveRuvFactorCount(ruv_k_rule, control_rule, limit,
     k_user = if (identical(ruv_k_rule, "user")) k_given,
     estimate_count = if (counted) \() estimateRuvFactorCount(values, design_matrix[[ruv_grouping_variable]], seed = ruv_k_seed,
       technical_replicates = isTRUE(technical$technical), units = if (isTRUE(technical$technical)) technical$block),
@@ -1379,12 +1395,31 @@ computeProtRuvModelFactors <- function(theObject, ruv_k = NULL, ruv_k_rule = c("
 #' control with the groups as replicate sets, a supplied control set, or every protein a control with the declared
 #' biological units as replicate sets (the technical-replicate design).
 #' @noRd
-PROT_RUV_MODEL_DESIGNS <- c("groups_all_features", "supplied_controls", "technical_replicates")
+PROT_RUV_MODEL_DESIGNS <- c("groups_all_features", "supplied_controls", "technical_replicates", "first_pass_nulls")
+
+#' The controls of the design `first_pass_nulls` (decision M7; KIT-124 simulator S1, arms 5, 23 and 24, `wide_controls`
+#' and `first_pass`): a first test without RUV, `limma::lmFit(~ group)` and `limma::eBayes` on the normalised matrix
+#' (missing values kept), the F test over the group coefficients; every protein outside the 25% most significant of the
+#' proteins with a p-value is a control (ranked with ties in row order); a protein without a p-value is none.
+#' @param values Protein-by-sample matrix.
+#' @param groups The group of each column.
+#' @return A logical vector over the rows.
+#' @noRd
+protRuvFirstPassControls <- function(values, groups) {
+  model <- stats::model.matrix(~ group, data.frame(group = if (is.factor(groups)) droplevels(groups) else groups))
+  if (ncol(model) < 2L) abortProtRuvModelInput("the first pass of the design first_pass_nulls needs two groups or more")
+  first <- limma::topTable(limma::eBayes(suppressWarnings(limma::lmFit(values, model))), coef = seq(2L, ncol(model)),
+    number = Inf, sort.by = "none")$P.Value
+  wide <- rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))
+  wide[is.na(wide)] <- FALSE
+  wide
+}
 
 #' The design a value of `computeProtRuvModelFactors` computed (KIT-129 section 1e).
 #' @noRd
 protRuvModelDesign <- function(factors) {
   if (identical(factors$ruv_controls, "supplied")) return("supplied_controls")
+  if (identical(factors$ruv_controls, "first_pass")) return("first_pass_nulls")
   if (identical(factors$replicate_structure, "technical_replicates")) return("technical_replicates")
   "groups_all_features"
 }
