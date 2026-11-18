@@ -1,0 +1,10 @@
+{
+  "label": "lifecycle-1",
+  "lifecycle": true,
+  "windows": false,
+  "num_factors": 5,
+  "maxiter": 20,
+  "seed": 20261119,
+  "convergence_mode": "fast",
+  "timeout_minutes": 30
+}

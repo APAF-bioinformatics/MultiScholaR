@@ -1,0 +1,295 @@
+name: MOFA2 smoke (bundle versions)
+
+# Run-only lane (branch run-mofa-smoke; KIT-060 risks 2 and 6, KIT-134): does a MOFA2 model train with
+# exactly the R packages and the Python the KIT-134 bundle ships?
+#
+# R 4.6.1 (packaging/linux/build.sh r, or packaging/windows/assemble.ps1 -Action r), MOFA2 and its
+# recursive R dependencies from the KIT-134 snapshot and the bundle's repositories
+# (.github/mofa-smoke/install-mofa-library.R; the run stops if any version differs from the bundle's
+# recorded sources), and the bundle's Python exactly as KIT-134 builds it (build.sh python on Linux;
+# the distributable workflow's Windows step, copied). No internal packages, no MultiScholaR, no read
+# token, no cache. R is started the way the bundle starts it: the launcher packaging/linux/Rscript in
+# a bundle-shaped folder (bin/Rscript, R -> the R home, python/), or packaging/verify/windows-clean-run.ps1
+# (the shell's environment). The smoke (.github/mofa-smoke/smoke.R) trains on the KIT-137 tier-1
+# corpus and writes result.json; the compare job compares the runs pairwise.
+#
+# Start: change .github/mofa-smoke/params.json in a commit and push it to a run-mofa-smoke* branch,
+# or dispatch. "lifecycle": true runs Linux once with a deliberate failure case too; otherwise Linux
+# runs twice in separate jobs and Windows once when "windows" is true.
+# Uploads: each run's result.json, its time/cache notes and the library version table; compare.md/json.
+
+on:
+  push:
+    branches:
+      - "run-mofa-smoke*"
+    paths:
+      - .github/mofa-smoke/params.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mofa-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  R_LIBS_USER: /nonexistent-user-library
+  R_LIBS_SITE: /nonexistent-site-library
+
+jobs:
+  plan:
+    name: Parameters
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.plan.outputs.label }}
+      lifecycle: ${{ steps.plan.outputs.lifecycle }}
+      windows: ${{ steps.plan.outputs.windows }}
+      runs: ${{ steps.plan.outputs.runs }}
+      args: ${{ steps.plan.outputs.args }}
+      timeout: ${{ steps.plan.outputs.timeout }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/mofa-smoke
+          persist-credentials: false
+      - id: plan
+        run: |
+          p=.github/mofa-smoke/params.json
+          jq -e '(.label | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")) and
+            (.lifecycle | type == "boolean") and (.windows | type == "boolean") and
+            ([.num_factors, .maxiter, .seed, .timeout_minutes] | all(type == "number" and . == floor and . >= 1)) and
+            (.convergence_mode | IN("fast", "medium", "slow")) and (.timeout_minutes <= 100)' "$p" > /dev/null \
+            || { echo "::error::params.json is not valid"; exit 1; }
+          {
+            echo "label=$(jq -r .label "$p")"
+            echo "lifecycle=$(jq -r .lifecycle "$p")"
+            if [ "$(jq -r .lifecycle "$p")" = true ]; then echo 'runs=[1]'; echo windows=false; else echo 'runs=[1, 2]'; echo "windows=$(jq -r .windows "$p")"; fi
+            echo "args=$(jq -r '[.num_factors, .maxiter, .seed, .convergence_mode] | map(tostring) | join(" ")' "$p")"
+            echo "timeout=$(jq -r .timeout_minutes "$p")"
+          } | tee -a "$GITHUB_OUTPUT"
+
+  linux:
+    name: "Linux run ${{ matrix.run }}"
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        run: ${{ fromJSON(needs.plan.outputs.runs) }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Versions from the distributable workflow (R, python-build-standalone, CPython); paths
+        run: |
+          for key in R_VERSION PBS_RELEASE PBS_PYTHON; do
+            value="$(sed -n "s/^  $key: \"\(.*\)\"$/\1/p" .github/workflows/distributable.yml)"
+            test -n "$value" || { echo "::error::$key not found in distributable.yml"; exit 1; }
+            echo "$key=$value" | tee -a "$GITHUB_ENV"
+          done
+          {
+            echo "BUNDLE=$RUNNER_TEMP/bundle"
+            echo "TOOLS_LIB=$RUNNER_TEMP/tools-lib"
+            echo "OUT=$RUNNER_TEMP/evidence"
+            echo "RES=$RUNNER_TEMP/result"
+          } >> "$GITHUB_ENV"
+
+      - name: R at its build prefix (packaging/linux/build.sh r)
+        run: bash packaging/linux/build.sh r
+
+      - name: MOFA2's closure from the snapshot (plan)
+        run: R_LIBS="$TOOLS_LIB" "/opt/R/$R_VERSION/bin/Rscript" --vanilla .github/mofa-smoke/install-mofa-library.R plan . "$OUT"
+
+      - name: System libraries (packaging/linux/build.sh sysreqs on that plan); GNU time
+        run: |
+          bash packaging/linux/build.sh sysreqs
+          sudo apt-get install -y --no-install-recommends time
+
+      - name: Install MOFA2 and its dependencies; versions against the bundle's; MOFA2's pins against requirements.txt
+        run: |
+          set -o pipefail
+          R_LIBS="$TOOLS_LIB" "/opt/R/$R_VERSION/bin/Rscript" --vanilla .github/mofa-smoke/install-mofa-library.R install . "$OUT" \
+            2>&1 | tee "$OUT/install-mofa-library.log" | { grep -vE '^(\* |trying URL|Content type|downloaded|=+$)' || true; } | tail -n 40
+
+      - name: The bundle's Python (packaging/linux/build.sh python; hashes checked)
+        run: bash packaging/linux/build.sh python
+
+      - name: Bundle-shaped folder for the launcher (bin/Rscript = packaging/linux/Rscript, R -> the R home)
+        run: |
+          mkdir -p "$BUNDLE/bin"
+          install -m 0755 packaging/linux/Rscript "$BUNDLE/bin/Rscript"
+          ln -s "/opt/R/$R_VERSION/lib/R" "$BUNDLE/R"
+          ls -la "$BUNDLE"
+
+      - name: "Smoke: train (run ${{ matrix.run }})"
+        id: smoke
+        run: |
+          mkdir -p "$RES/train"
+          started=$(date +%s)
+          set +e
+          /usr/bin/time -v -o "$RES/train/time.txt" timeout "${{ needs.plan.outputs.timeout }}m" \
+            "$BUNDLE/bin/Rscript" --vanilla "$GITHUB_WORKSPACE/.github/mofa-smoke/smoke.R" "$BUNDLE" "$RES/train" \
+            "${{ needs.plan.outputs.label }}-linux-${{ matrix.run }}" "$GITHUB_WORKSPACE/tests/testdata/integration/corpus" \
+            ${{ needs.plan.outputs.args }} train
+          status=$?
+          set -e
+          echo "exit $status after $(( $(date +%s) - started )) s" | tee "$RES/train/exit.txt"
+          grep -E 'Maximum resident|Elapsed' "$RES/train/time.txt" || true
+          test "$status" = 0 && jq -e '.trained == true' "$RES/train/result.json" > /dev/null
+
+      - name: "Lifecycle: deliberate failure after prepare_mofa is observed (exit 1, trained false, result written)"
+        if: needs.plan.outputs.lifecycle == 'true'
+        run: |
+          mkdir -p "$RES/fail"
+          set +e
+          timeout 10m "$BUNDLE/bin/Rscript" --vanilla "$GITHUB_WORKSPACE/.github/mofa-smoke/smoke.R" "$BUNDLE" "$RES/fail" \
+            "${{ needs.plan.outputs.label }}-linux-fail" "$GITHUB_WORKSPACE/tests/testdata/integration/corpus" \
+            ${{ needs.plan.outputs.args }} fail
+          status=$?
+          set -e
+          echo "exit $status" | tee "$RES/fail/exit.txt"
+          test "$status" = 1
+          jq -e '.trained == false and (.error | test("deliberate failure"))' "$RES/fail/result.json"
+
+      - name: Folders basilisk, reticulate or uv would have created
+        if: ${{ !cancelled() }}
+        run: |
+          for d in "$HOME/.cache/R/basilisk" "$HOME/.cache/R/reticulate" "$HOME/.cache/uv" "$HOME/.local/share/r-miniconda" "$HOME/.virtualenvs"; do
+            if [ -e "$d" ]; then echo "present: $d"; else echo "absent: $d"; fi
+          done | tee "$RES/caches.txt"
+          cp "$OUT/mofa-library-versions.tsv" "$OUT/python-packages.txt" "$RES/" 2>/dev/null || true
+
+      - name: Nothing token-like in the upload
+        if: ${{ !cancelled() }}
+        run: |
+          if grep -rlE 'ghp_|github_pat_|Bearer ' "$RES"; then echo "::error::token-like text in the result"; exit 1; fi
+          du -sh "$RES"
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: mofa-smoke-linux-${{ matrix.run }}
+          path: ${{ runner.temp }}/result
+          retention-days: 14
+
+  windows:
+    name: Windows run 1
+    needs: plan
+    if: needs.plan.outputs.windows == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Versions from the distributable workflow (R, python-build-standalone, CPython); paths
+        run: |
+          foreach ($key in 'R_VERSION', 'PBS_RELEASE', 'PBS_PYTHON') {
+            $value = (Select-String -Path .github\workflows\distributable.yml -Pattern "^  ${key}: `"(.*)`"$").Matches[0].Groups[1].Value
+            if (-not $value) { throw "$key not found in distributable.yml" }
+            "$key=$value" | Tee-Object -Append -FilePath $env:GITHUB_ENV
+          }
+          "BUNDLE=$env:RUNNER_TEMP\bundle" >> $env:GITHUB_ENV
+          "TOOLS_LIB=$env:RUNNER_TEMP\tools-lib" >> $env:GITHUB_ENV
+          "OUT=$env:RUNNER_TEMP\evidence" >> $env:GITHUB_ENV
+          "RES=$env:RUNNER_TEMP\result" >> $env:GITHUB_ENV
+          "R_LIBS_USER=$env:RUNNER_TEMP\nonexistent-user-library" >> $env:GITHUB_ENV
+          "R_LIBS_SITE=$env:RUNNER_TEMP\nonexistent-site-library" >> $env:GITHUB_ENV
+
+      - name: R into the folder (packaging/windows/assemble.ps1 -Action r); jsonlite in a build-tool library
+        run: |
+          pwsh -NoProfile -File packaging\windows\assemble.ps1 -Action r -Bundle $env:BUNDLE -RVersion $env:R_VERSION
+          if ($LASTEXITCODE -ne 0) { throw "assemble.ps1 -Action r failed" }
+          New-Item -ItemType Directory -Force $env:TOOLS_LIB, $env:OUT, "$env:RES\train" | Out-Null
+          & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla -e "install.packages('jsonlite', lib = commandArgs(TRUE)[[1]], repos = 'https://packagemanager.posit.co/cran/latest', type = 'binary')" $env:TOOLS_LIB
+          if ($LASTEXITCODE -ne 0) { throw "could not install jsonlite into the build-tool library" }
+
+      - name: Install MOFA2 and its dependencies; versions against the bundle's; MOFA2's pins against requirements.txt
+        run: |
+          $env:PATH = "C:\rtools45\x86_64-w64-mingw32.static.posix\bin;C:\rtools45\usr\bin;$env:PATH"
+          $env:R_LIBS = $env:TOOLS_LIB
+          $rscript = "$env:BUNDLE\R\bin\Rscript.exe"
+          & $rscript --vanilla .github\mofa-smoke\install-mofa-library.R plan . $env:OUT
+          if ($LASTEXITCODE -ne 0) { throw "plan failed" }
+          & $rscript --vanilla .github\mofa-smoke\install-mofa-library.R install . $env:OUT *> "$env:OUT\install-mofa-library.log"
+          $status = $LASTEXITCODE
+          Get-Content "$env:OUT\install-mofa-library.log" | Where-Object { $_ -notmatch '^(trying URL|Content type|downloaded|=+$|package .* successfully unpacked)' } | Select-Object -Last 40
+          if ($status -ne 0) { throw "install failed" }
+
+      # As .github/workflows/distributable.yml, "Standalone Python with mofapy2 (hashes checked)" (Windows).
+      - name: The bundle's Python (hashes checked)
+        run: |
+          curl.exe -fsSL -o "$env:RUNNER_TEMP\python.tar.gz" "https://github.com/astral-sh/python-build-standalone/releases/download/${env:PBS_RELEASE}/cpython-${env:PBS_PYTHON}%2B${env:PBS_RELEASE}-x86_64-pc-windows-msvc-install_only.tar.gz"
+          & "$env:SystemRoot\System32\tar.exe" -xzf "$env:RUNNER_TEMP\python.tar.gz" -C $env:BUNDLE
+          if ($LASTEXITCODE -ne 0) { throw "could not unpack Python" }
+          $env:PYTHONNOUSERSITE = '1'
+          & "$env:BUNDLE\python\python.exe" -m pip install --no-cache-dir --no-warn-script-location --require-hashes --only-binary=:all: --no-deps -r packaging\python\requirements.txt
+          if ($LASTEXITCODE -ne 0) { throw "pip install failed" }
+          & "$env:BUNDLE\python\python.exe" -m pip list | Tee-Object -FilePath "$env:OUT\python-packages.txt"
+
+      - name: "Smoke: train (the shell's environment, packaging/verify/windows-clean-run.ps1)"
+        run: |
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          $smoke = Join-Path $env:GITHUB_WORKSPACE '.github\mofa-smoke\smoke.R'
+          $corpus = Join-Path $env:GITHUB_WORKSPACE 'tests\testdata\integration\corpus'
+          $arguments = @("$env:RES\train", '${{ needs.plan.outputs.label }}-windows-1', $corpus) + ('${{ needs.plan.outputs.args }}' -split ' ') + @('train')
+          & packaging\verify\windows-clean-run.ps1 -Bundle $env:BUNDLE -Script $smoke -Arguments $arguments
+          $status = $LASTEXITCODE
+          "exit $status after $([math]::Round($clock.Elapsed.TotalSeconds)) s" | Tee-Object -FilePath "$env:RES\train\exit.txt"
+          if ($status -ne 0) { throw "the smoke did not train" }
+
+      - name: Folders basilisk, reticulate or uv would have created
+        if: ${{ !cancelled() }}
+        run: |
+          $dirs = @("$env:LOCALAPPDATA\R\cache\R\basilisk", "$env:LOCALAPPDATA\R\cache\R\reticulate", "$env:LOCALAPPDATA\uv", "$env:LOCALAPPDATA\r-miniconda", "$env:USERPROFILE\.virtualenvs")
+          $dirs | ForEach-Object { if (Test-Path $_) { "present: $_" } else { "absent: $_" } } | Tee-Object -FilePath "$env:RES\caches.txt"
+          Copy-Item "$env:OUT\mofa-library-versions.tsv", "$env:OUT\python-packages.txt" $env:RES -ErrorAction SilentlyContinue
+
+      - name: Nothing token-like in the upload
+        if: ${{ !cancelled() }}
+        run: |
+          $hits = Get-ChildItem -Recurse -File $env:RES | Select-String -Pattern 'ghp_|github_pat_|Bearer ' -List
+          if ($hits) { $hits.Path; throw "token-like text in the result" }
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: mofa-smoke-windows-1
+          path: ${{ runner.temp }}\result
+          retention-days: 14
+
+  compare:
+    name: Compare the runs
+    needs: [plan, linux, windows]
+    if: ${{ !cancelled() && needs.linux.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/mofa-smoke
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mofa-smoke-*
+          path: ${{ runner.temp }}/runs
+      - name: Pairwise agreement
+        run: |
+          mkdir -p "$RUNNER_TEMP/runs-train"
+          for d in "$RUNNER_TEMP"/runs/*/; do
+            n="$(basename "$d")"
+            if [ -f "$d/train/result.json" ]; then mkdir -p "$RUNNER_TEMP/runs-train/$n"; cp "$d/train/result.json" "$RUNNER_TEMP/runs-train/$n/"; fi
+          done
+          python3 -I .github/mofa-smoke/compare.py "$RUNNER_TEMP/runs-train" "$RUNNER_TEMP/compare"
+          cat "$RUNNER_TEMP/compare/compare.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compare
+          path: ${{ runner.temp }}/compare
+          retention-days: 14
