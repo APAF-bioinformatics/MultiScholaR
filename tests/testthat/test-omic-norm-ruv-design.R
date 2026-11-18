@@ -507,8 +507,8 @@ test_that("(fourth pass item 2) only the options a route's run path takes can be
             closed <- Filter(Negate(is.null), stats::setNames(lapply(marked$options, `[[`, "unavailable_now"),
                 vapply(marked$options, `[[`, "", "id")))
             expected <- ruvDesignClosed[[name]][[if (technical) "yes" else "no"]]
-            expect_identical(names(closed), names(expected), info = paste(name, technical))
-            expect_identical(unname(unlist(closed)), unname(marked$texts[expected]), info = paste(name, technical))
+            expect_identical(names(closed) %||% character(), names(expected) %||% character(), info = paste(name, technical))
+            expect_identical(unname(unlist(closed)) %||% character(), unname(marked$texts[expected]), info = paste(name, technical))
             # the recommended design, or the technical-replicate design where the design declares them (not trx)
             expect_identical(marked$selected, if (technical && !startsWith(name, "transcriptomics")) "technical_replicates" else
                 "groups_all_features", info = paste(name, technical))
