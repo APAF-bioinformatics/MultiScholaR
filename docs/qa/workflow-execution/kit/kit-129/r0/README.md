@@ -1,6 +1,6 @@
 # KIT-129 R0, part B: the threshold of the factor-tied-to-groups warning (record of 2026-11-18)
 
-Stage reached: **thresholds set on the setting set; check set NOT launched** (it does not fit under the ceiling;
+Stage reached at the time of writing (superseded: see `amendment-20261118.md` and `results-20261118.md`): **thresholds set on the setting set; check set NOT launched** (it did not fit under the ceiling of about 150;
 the user decides). No verdict exists yet for any omic.
 
 ## The declaration (ticket section 3, frozen)

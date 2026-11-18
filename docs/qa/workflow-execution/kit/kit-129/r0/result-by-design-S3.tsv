@@ -1,0 +1,5 @@
+simulator	omic	arm	threshold	share_fired_correlation_0	share_fired_correlation_0.3_or_more	accepted	verdict
+S3	transcriptomics	3	0.37681809	0.094	0.1287	FALSE	no verdict
+S3	transcriptomics	5	0.5112273	0.0847	0.72	FALSE	no verdict
+S3	transcriptomics	7	0.038965628	0.0913	1	TRUE	threshold = 0.03897, accepted
+S3	transcriptomics	8	0.35523788	0.0973	0.3787	FALSE	no verdict
