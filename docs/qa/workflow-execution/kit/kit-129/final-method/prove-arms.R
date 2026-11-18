@@ -252,12 +252,15 @@ for (cell in cells) {
         # arm 15 (line 625, `corrected(all_controls, E, "tech_rep_group")`, lines 554-559) against the corrected matrix the
         # new design forms (`diaNormalizationOperation("declared")`: ruvIII_C_Varying on the object without the
         # declaration, with the kernel's replicate sets, k and controls), each tested as arm 15 tests
-        k15 <- if (E20 > 0L) E20 else 1L
+        # at arm 33's k: arm 15's own k (E, the groups removed, B = 20) is above the units' limit on these cells (the
+        # first runner request, 44371613004: the kernel refused it, ruv_k_above_limit), so it is not a k the package runs
+        k15 <- kk
+        notes[[sprintf("S1/%s/arm15/W_package_vs_simulator", cell)]] <- sprintf("arm 15's own k (E, B = 20, groups removed): %d; compared at k = %d", E20, kk)
         sim15 <- s1$as_matrix(silently(ruvIII_C_Varying(s1$make_object(x, design, "tech_rep_group"), ruv_grouping_variable = "group",
             ruv_number_k = k15, ctrl = stats::setNames(rep(TRUE, nrow(x)), rownames(x)))))
         pkg15 <- s1$as_matrix(silently(ruvIII_C_Varying(protRuvGroupReplicateObject(normalised), ruv_grouping_variable = "tech_rep_group",
             ruv_number_k = k15, ctrl = units_factors(ruv_k = k15, ruv_k_rule = "user")$controls)))
-        label15 <- if (E20 > 0L) "arm15" else "arm15_at_k1"
+        label15 <- sprintf("arm15_at_k%d", kk)
         add(sprintf("S1/%s/%s/corrected", cell, label15), sim15, pkg15[rownames(sim15), colnames(sim15), drop = FALSE],
             "arm 15's corrected matrix against the new design's")
         t15 <- silently(s1$da(sim15, design))
@@ -524,13 +527,16 @@ if (stage %in% c("techrep", "firstpass")) {
                     package$factors)
                 # arm 15 (line 677: the extracts as replicate sets, RUV-III-C subtracted, then the plain test) against the
                 # kernel's corrected matrix tested the same way (its feature levels restored: a constant per feature)
-                k15 <- at_least_one(E20)
+                # at arm 33's k (arm 15's own E is above the units' limit, as in S1)
+                k15 <- kk
+                notes[[sprintf("S4/%s/arm15/%s/W_package_vs_simulator", cell_name, omic)]] <- sprintf("arm 15's own k (E, B = 20): %s; compared at k = %s",
+                    paste(unlist(E20), collapse = "/"), paste(unlist(kk), collapse = "/"))
                 set.seed(seed * 100L + 15L)
                 reference <- s4$subtractArm(view, function(a, assay) k15[[assay]], s4$extractM(view, NULL))
                 corrected <- units_run(k15, "user")$corrected
                 assays <- if (omic == "lipid") corrected@lipid_data else corrected@metabolite_data
                 for (assay in s4$ASSAYS) {
-                    name <- sprintf("S4/%s/%s/%s/%s", cell_name, if (all(unlist(E20) > 0L)) "arm15" else "arm15_at_k1_where_0", omic, assay)
+                    name <- sprintf("S4/%s/%s/%s/%s", cell_name, "arm15_at_arm33_k", omic, assay)
                     ref <- reference$tables[[assay]]
                     if (s4$isRefusal(ref)) {
                         notes[[paste0(name, "/W_package_vs_simulator")]] <- paste("the simulator refused:", ref$reason)
