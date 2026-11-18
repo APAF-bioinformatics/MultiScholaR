@@ -38,6 +38,7 @@ Collate:
     'func_general_s4_plotting_methods.R'
     'func_omics_da_shared.R'
     'func_omics_design_shared.R'
+    'func_omics_norm_shared.R'
     'func_pept_s4_core.R'
     'func_pept_s4_objects.R'
     'func_pept_s4_norm_methods.R'
