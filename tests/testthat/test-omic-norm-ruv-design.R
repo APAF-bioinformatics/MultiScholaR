@@ -316,6 +316,44 @@ test_that("with the gate on each omic's tab shows every design with its figure a
     }
 })
 
+test_that("with the gate on the section is a block above the options column, its designs a comparison list", {
+    for (omic in ruvDesignOmics) {
+        design <- omicGuiConfig(omic)$norm$ruv_design
+        html <- ruvDesignHtml(omic, TRUE)
+        # One labelled block, before the options column; today's RUV section is in it and no longer in the column.
+        block <- regexpr('<section class="well ruv-design" aria-label="Unwanted variation (RUV)">', html, fixed = TRUE)
+        column <- regexpr('<div class="col-sm-3">', html, fixed = TRUE)
+        expect_true(block > 0L && block < column, info = omic)
+        expect_length(gregexpr("RUV Parameter Tuning:", html, fixed = TRUE)[[1L]], 1L)
+        expect_lt(regexpr("RUV Parameter Tuning:", html, fixed = TRUE), column)
+        # The column headings once, between the group's label and its options; they are not read out.
+        header <- regexpr('<div class="ruv-design-header" aria-hidden="true">', html, fixed = TRUE)
+        expect_true(header > regexpr("RUV design:", html, fixed = TRUE) &&
+            header < regexpr('class="shiny-options-group"', html, fixed = TRUE), info = omic)
+        for (option in design$tables[[1L]]$options) {
+            row <- as.character(omicNormRuvOptionTag(option, design$tiers))
+            expect_true(grepl(row, html, fixed = TRUE), info = paste(omic, option$id))
+            # A measured figure in two cells for the eye and as its sentence for a screen reader; else its status.
+            if (identical(option$status, "measured")) {
+                parts <- omicNormRuvFigureParts(option)
+                expect_match(row, sprintf('<span class="ruv-design-fdp" aria-hidden="true">\\s*<strong>%s</strong>',
+                    parts[["fdp"]]), info = option$id)
+                expect_match(row, sprintf('<span class="ruv-design-power" aria-hidden="true">\\s*<strong>%s</strong>',
+                    parts[["power"]]), info = option$id)
+                expect_match(row, paste0('<span class="sr-only">', htmltools::htmlEscape(omicNormRuvFigureText(option)),
+                    "</span>"), fixed = TRUE, info = option$id)
+            } else {
+                expect_match(row, sprintf('class="ruv-design-option is-%s"', option$status), fixed = TRUE)
+                expect_match(row, paste0('<span class="ruv-design-status">',
+                    htmltools::htmlEscape(omicNormRuvFigureText(option)), "</span>"), fixed = TRUE, info = option$id)
+                expect_false(grepl("aria-hidden", row, fixed = TRUE), info = option$id)
+            }
+        }
+        # One panel per k rule, side by side.
+        expect_length(gregexpr('ruv-design-k-rule"', html, fixed = TRUE)[[1L]], length(design$k_rules))
+    }
+})
+
 test_that("the figure text is the table's numbers in words; a pending or unavailable cell shows no number", {
     expect_identical(omicNormRuvFigureText(list(status = "measured", fdp = 0.066,
         fdp_where = "worst design tested: 12 per group", power = 0.91)),

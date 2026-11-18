@@ -28,14 +28,16 @@
 # Recorded divergence from conventions/R-shiny.md: the in-process or managed actions in place of ExtendedTask are
 # kept, under the existing-code scope rule of conventions/R.md.
 
-#' The normalisation tab's UI: the options column (`config$panels`) and the QC tabset.
+#' The normalisation tab's UI: the options column (`config$panels`) and the QC tabset; above them, with its gate
+#' on, the RUV design section (KIT-129 W2).
 #' @param id The module id.
 #' @param config The omic's `norm` group (`omicGuiConfig(<omic>)$norm`).
 #' @return A tag list.
 #' @noRd
 mod_omic_norm_ui <- function(id, config) {
     ns <- shiny::NS(id)
-    shiny::tagList(shiny::wellPanel(shiny::fluidRow(omicNormOptionsColumn(ns, config), omicNormQcTabset(ns, config))))
+    shiny::tagList(shiny::wellPanel(omicNormRuvDesignSection(ns, config),
+        shiny::fluidRow(omicNormOptionsColumn(ns, config), omicNormQcTabset(ns, config))))
 }
 
 #' The normalisation tab's server.

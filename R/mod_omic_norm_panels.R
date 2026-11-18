@@ -61,11 +61,9 @@ omicNormOptionSections <- function(ns, norm) {
             shiny::helpText(panels$between_sample$help %||% "Method for between-sample normalization")),
         tmm_logcpm = list(shiny::hr(), shiny::h4("TMM and logCPM"),
             shiny::helpText("edgeR TMM normalisation factors of the filtered counts; log2 counts per million with a prior count of 2.")),
-        # KIT-129 W2: with the gate on, the RUV design section, today's controls under today's design; else today's.
-        ruv_iii = omicNormRuvDesignSection(ns, norm$ruv_design,
-            omicNormRuvSection(ns, panels$ruv_iii, norm$testids[["ruv_mode"]])),
-        ruv_grid = omicNormRuvDesignSection(ns, norm$ruv_design,
-            omicNormRuvGridSection(ns, panels$ruv_grid, norm$testids[["ruv_mode"]])),
+        # KIT-129 W2: with the gate on, today's RUV controls leave the column for the RUV design section above it
+        # (`omicNormRuvDesignSection`), where they are shown under today's design; else today's.
+        ruv_iii = , ruv_grid = if (!isTRUE(norm$ruv_design$enabled)) omicNormRuvToday(ns, norm),
         actions = list(shiny::hr(),
             testid(shiny::actionButton(ns("run_normalization"), panels$actions$run_label %||% "Run Normalization Pipeline",
                 class = "btn-primary", width = "100%",
@@ -175,7 +173,32 @@ omicNormRuvSection <- function(ns, ruv, testId) {
 # by a computation yet. New ids, all static: the inputs `ruv_design`, `ruv_k_rule` and `ruv_k_user`, the output
 # slot `ruv_design_summary` under the options (the factor-to-group association and a run's notices) and, in the
 # RUV QC tab, one plot slot per assay row for the estimated count's diagnostic (`ruv_k_estimate_assay<n>`).
+# The section is a block of the tab's full width above the options column and the QC tabset (the column is too
+# narrow for it): the designs as rows of one comparison list (tier, design, false discoveries, power, note), the
+# k rules side by side. Its styles are the `ruv-design` rules of app_ui.R's style block.
 # ------------------------------------------------------------------------------------------------
+
+#' Today's RUV section of an omic: the RUVSeq grid's where its panels name one, else RUV-III's.
+#' @param ns The module's namespace function.
+#' @param norm The omic's `norm` group.
+#' @return A list of tags.
+#' @noRd
+omicNormRuvToday <- function(ns, norm) {
+    if ("ruv_grid" %in% names(norm$panels)) {
+        return(omicNormRuvGridSection(ns, norm$panels$ruv_grid, norm$testids[["ruv_mode"]]))
+    }
+    omicNormRuvSection(ns, norm$panels$ruv_iii, norm$testids[["ruv_mode"]])
+}
+
+#' A measured preset's figure in its parts, as shown: the false discovery proportion and the power, each with
+#' the design it was measured in.
+#' @param option A measured preset of the table.
+#' @return A named character vector: `fdp`, `fdp_where`, `power`, `power_where`.
+#' @noRd
+omicNormRuvFigureParts <- function(option) {
+    c(fdp = sprintf("%.1f%%", 100 * option$fdp), fdp_where = option$fdp_where,
+        power = format(option$power, nsmall = 2), power_where = option$power_where %||% "in the standard design")
+}
 
 #' A preset's measured figure in words: the false discovery proportion with its cell and the power; a pending
 #' or unavailable preset shows no number.
@@ -184,25 +207,46 @@ omicNormRuvSection <- function(ns, ruv, testId) {
 #' @noRd
 omicNormRuvFigureText <- function(option) {
     switch(option$status,
-        measured = sprintf("Measured: %.1f%% false discoveries at a nominal 5%% (%s); power %s %s.",
-            100 * option$fdp, option$fdp_where, format(option$power, nsmall = 2),
-            option$power_where %||% "in the standard design"),
+        measured = do.call(sprintf, c(list("Measured: %s false discoveries at a nominal 5%% (%s); power %s %s."),
+            as.list(unname(omicNormRuvFigureParts(option))))),
         pending = "Not yet measured: the simulation is still running.",
         unavailable = paste("Not available:", option$unavailable))
 }
 
-#' One preset as a radio choice: its tier and label, then the figure and the note as text; the tooltip is the
-#' title.
+#' One preset as a radio choice, a row of the comparison list: its tier, its label, the figure and the note; the
+#' tooltip is the title. A measured figure is shown in two cells (false discoveries, power); its sentence is the
+#' text a screen reader is given in their place.
 #' @param option A preset of the table.
 #' @param tiers The tier labels.
 #' @return A tag.
 #' @noRd
 omicNormRuvOptionTag <- function(option, tiers) {
+    cell <- \(name, ...) shiny::tags$span(class = paste0("ruv-design-", name), ...)
+    figure <- if (identical(option$status, "measured")) {
+        parts <- omicNormRuvFigureParts(option)
+        list(shiny::tags$span(class = "sr-only", omicNormRuvFigureText(option)),
+            cell("fdp", `aria-hidden` = "true", shiny::tags$strong(parts[["fdp"]]), cell("where", parts[["fdp_where"]])),
+            cell("power", `aria-hidden` = "true", shiny::tags$strong(parts[["power"]]),
+                cell("where", parts[["power_where"]])))
+    } else {
+        cell("status", omicNormRuvFigureText(option))
+    }
     shiny::tags$span(title = option$tooltip,
-        class = if (identical(option$status, "unavailable")) "text-muted",
-        shiny::tags$strong(paste0(tiers[[option$tier]], ":")), " ", option$label, shiny::tags$br(),
-        shiny::tags$small(omicNormRuvFigureText(option)), shiny::tags$br(),
-        shiny::tags$small(shiny::tags$em(option$note)))
+        class = paste(c("ruv-design-option", if (!identical(option$status, "measured")) paste0("is-", option$status)),
+            collapse = " "),
+        cell("tier", shiny::tags$strong(class = paste0("ruv-design-tier-", gsub("_", "-", option$tier, fixed = TRUE)),
+            tiers[[option$tier]], shiny::tags$span(class = "sr-only", ":"))),
+        cell("label", option$label), figure, cell("note", option$note))
+}
+
+#' The comparison list's column headings, above the options. They are for the eye: each option's own text
+#' carries its tier and its figure in words.
+#' @return A tag.
+#' @noRd
+omicNormRuvOptionHeader <- function() {
+    cell <- \(name, text) shiny::tags$span(class = paste0("ruv-design-", name), text)
+    shiny::tags$div(class = "ruv-design-header", `aria-hidden` = "true", cell("tier", "Tier"), cell("label", "Design"),
+        cell("fdp", "False discoveries at a nominal 5%"), cell("power", "Power"), cell("note", "Note"))
 }
 
 #' A JavaScript condition for `conditionalPanel`: whether an input's value is one of `values`.
@@ -224,7 +268,8 @@ omicNormRuvPresets <- function(design) {
     stats::setNames(options, ids)[unique(ids)]
 }
 
-#' The radio group of a table's presets; a preset that is not available is disabled.
+#' The radio group of a table's presets under the list's column headings; a preset that is not available is
+#' disabled.
 #' @param ns The module's namespace function.
 #' @param design The norm group's `ruv_design`.
 #' @param table The table shown.
@@ -240,11 +285,13 @@ omicNormRuvDesignRadio <- function(ns, design, table) {
             filter(\(input, i) identical(htmltools::tagGetAttribute(input, "value"), option$id))$
             addAttrs(disabled = NA)$allTags()
     }
+    radio <- htmltools::tagQuery(radio)$find(".shiny-options-group")$before(omicNormRuvOptionHeader())$allTags()
     testid(radio, design$testid)
 }
 
 #' The choice of k: the rule's radio group (its choices follow the selected design; `registerOmicNormRuvDesign`),
-#' the number, and each rule's reading, pros, cons and diagnostic shown where the rule is defined.
+#' the number, and each rule's reading, pros, cons and diagnostic shown where the rule is defined, the rules side
+#' by side with their rows aligned.
 #' @param ns The module's namespace function.
 #' @param design The norm group's `ruv_design`.
 #' @return A list of tags.
@@ -260,25 +307,28 @@ omicNormRuvKSection <- function(ns, design) {
     rule_text <- lapply(names(design$k_rules), \(rule) {
         text <- design$k_rules[[rule]]
         shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", offering(rule)), ns = ns,
-            shiny::tags$p(shiny::tags$strong(text$label), shiny::tags$br(), text$reads, shiny::tags$br(),
-                shiny::tags$strong("For: "), text$pros, shiny::tags$br(),
-                shiny::tags$strong("Against: "), text$cons, shiny::tags$br(),
-                shiny::tags$strong("Diagnostic: "), text$diagnostic))
+            class = "ruv-design-k-rule",
+            shiny::tags$p(class = "ruv-design-k-rule-name", shiny::tags$strong(text$label)), shiny::tags$p(text$reads),
+            shiny::tags$p(shiny::tags$strong("For: "), text$pros),
+            shiny::tags$p(shiny::tags$strong("Against: "), text$cons),
+            shiny::tags$p(shiny::tags$strong("Diagnostic: "), text$diagnostic))
     })
     pending <- unlist(lapply(presets, \(preset) sprintf("(input.ruv_design == '%s' && input.ruv_k_rule == '%s')",
         rep(preset$id, length(preset$k_rules_pending)), preset$k_rules_pending)))
     list(
-        shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", with_k), ns = ns,
+        shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", with_k), ns = ns, class = "ruv-design-k",
             shiny::h5("Number of factors (k)"),
-            shiny::radioButtons(ns("ruv_k_rule"), "How k is chosen:",
-                choices = stats::setNames(first$k_rules, labels[first$k_rules]), selected = first[["k_rule"]], width = "100%"),
-            shiny::conditionalPanel(condition = "input.ruv_k_rule == 'user'", ns = ns,
-                shiny::numericInput(ns("ruv_k_user"), "Number of factors (k):", value = NA, min = 1, step = 1,
-                    width = "100%")),
+            shiny::tags$div(class = "ruv-design-k-choice",
+                shiny::radioButtons(ns("ruv_k_rule"), "How k is chosen:",
+                    choices = stats::setNames(first$k_rules, labels[first$k_rules]), selected = first[["k_rule"]],
+                    width = "100%"),
+                shiny::conditionalPanel(condition = "input.ruv_k_rule == 'user'", ns = ns,
+                    shiny::numericInput(ns("ruv_k_user"), "Number of factors (k):", value = NA, min = 1, step = 1,
+                        width = "100%"))),
             if (length(pending) > 0L) shiny::conditionalPanel(condition = paste(pending, collapse = " || "), ns = ns,
                 shiny::helpText("No figure has been measured yet for this design with this rule: the simulation is",
                     "still running. The figure beside the design was measured with its pre-selected rule.")),
-            rule_text,
+            shiny::tags$div(class = "ruv-design-k-rules", rule_text),
             shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", setdiff(with_k, offering("sweep_bounded"))),
                 ns = ns, shiny::helpText("The separation rule is not offered with all features as controls: the two",
                     "curves it compares are then the same.")),
@@ -286,18 +336,20 @@ omicNormRuvKSection <- function(ns, design) {
                 "outputs.")))
 }
 
-#' The RUV design section: every preset with its figure and note, the output slot under them, the choice of k,
-#' and today's RUV controls shown under today's design. With the gate off, today's section as it is.
+#' The RUV design section, a block of the tab's full width: every preset with its figure and note, the output slot
+#' under them, the choice of k, and today's RUV controls shown under today's design. Nothing with the gate off:
+#' today's section is then in the options column (`omicNormOptionSections`).
 #' @param ns The module's namespace function.
-#' @param design The norm group's `ruv_design`; NULL for a group without presets.
-#' @param today Today's RUV section (`omicNormRuvSection` or `omicNormRuvGridSection`).
-#' @return A list of tags.
+#' @param norm The omic's `norm` group.
+#' @return A tag, or NULL.
 #' @noRd
-omicNormRuvDesignSection <- function(ns, design, today) {
-    if (!isTRUE(design$enabled)) return(today)
+omicNormRuvDesignSection <- function(ns, norm) {
+    design <- norm$ruv_design
+    if (!isTRUE(design$enabled)) return(NULL)
     presets <- omicNormRuvPresets(design)
     legacy <- names(Filter(\(preset) identical(preset$tier, "legacy"), presets))
-    list(shiny::hr(), shiny::h4("Unwanted variation (RUV)"),
+    shiny::tags$section(class = "well ruv-design", `aria-label` = "Unwanted variation (RUV)",
+        shiny::h4("Unwanted variation (RUV)"),
         omicNormRuvDesignRadio(ns, design, design$tables[[1L]]),
         shiny::helpText("Each figure comes from simulation: the mean share of false discoveries among the features",
             "called at a nominal 5%, in the worst design tested that had true effects, and the power in the standard",
@@ -307,7 +359,8 @@ omicNormRuvDesignSection <- function(ns, design, today) {
             "export and the integration input; the design decides what the differential test reads."),
         shiny::uiOutput(ns("ruv_design_summary")),
         omicNormRuvKSection(ns, design),
-        shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", legacy), ns = ns, today))
+        shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", legacy), ns = ns, class = "ruv-design-today",
+            omicNormRuvToday(ns, norm)))
 }
 
 #' The RUV QC tab's static plot slots for the estimated count's diagnostic, one per assay row, shown under the

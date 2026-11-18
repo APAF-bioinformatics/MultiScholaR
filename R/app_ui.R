@@ -397,6 +397,227 @@ app_ui <- function(request) {
         body.dark-mode .stepper-step.step-pending .stepper-label {
           color: #6c7a89;
         }
+        /* ========== RUV DESIGN SECTION (normalisation tab; mod_omic_norm_panels.R) ========== */
+        .ruv-design {
+          --ruv-rule: #d5d5d5;
+          --ruv-muted: #555;
+          --ruv-selected: #d1ecf1;
+          --ruv-accent: #3c8dbc;
+          --ruv-columns: 150px minmax(0, 1.4fr) 160px 110px minmax(0, 1.6fr);
+          background-color: #fff;
+        }
+        body.dark-mode .ruv-design {
+          --ruv-rule: #33466b;
+          --ruv-muted: #b8c0cc;
+          --ruv-selected: #1a4a6e;
+          --ruv-accent: #5dade2;
+        }
+        .ruv-design > h4 {
+          margin-top: 0;
+        }
+        .ruv-design .help-block {
+          max-width: 90ch;
+          color: var(--ruv-muted);
+        }
+        /* The designs: one comparison list, a row per radio choice, the columns shared with the headings. */
+        .ruv-design-header,
+        .ruv-design-option {
+          display: grid;
+          grid-template-columns: var(--ruv-columns);
+          column-gap: 24px;
+          align-items: start;
+        }
+        .ruv-design-header {
+          align-items: end;
+          padding: 6px 12px 6px 35px;
+          border-bottom: 2px solid var(--ruv-rule);
+          color: var(--ruv-muted);
+          font-size: 12px;
+          font-weight: 600;
+        }
+        /* Shiny pulls a radio group up under its label by the rows' own top margin, which these rows do not have. */
+        .ruv-design .ruv-design-header + .shiny-options-group {
+          margin-top: 0;
+          margin-bottom: 12px;
+        }
+        .ruv-design-header + .shiny-options-group > .radio {
+          margin: 0;
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--ruv-rule);
+          border-left: 3px solid transparent;
+        }
+        .ruv-design-header + .shiny-options-group > .radio:has(input:checked) {
+          background-color: var(--ruv-selected);
+          border-left-color: var(--ruv-accent);
+        }
+        .ruv-design-header + .shiny-options-group > .radio > label {
+          display: block;
+        }
+        .ruv-design-header + .shiny-options-group > .radio:has(input:disabled) > label {
+          cursor: not-allowed;
+        }
+        .ruv-design-fdp > strong,
+        .ruv-design-power > strong {
+          display: block;
+          font-size: 16px;
+          line-height: 20px;
+          font-variant-numeric: tabular-nums;
+        }
+        .ruv-design-where,
+        .ruv-design-note,
+        .ruv-design-status {
+          color: var(--ruv-muted);
+          font-size: 13px;
+          line-height: 1.45;
+        }
+        .ruv-design-where {
+          display: block;
+          font-size: 12px;
+        }
+        .ruv-design-status {
+          grid-column: span 2;
+        }
+        .ruv-design-option.is-pending .ruv-design-status {
+          font-style: italic;
+        }
+        .ruv-design-option.is-unavailable .ruv-design-label {
+          color: var(--ruv-muted);
+        }
+        .ruv-design-tier > strong {
+          display: inline-block;
+          padding: 1px 8px;
+          border: 1px solid var(--ruv-muted);
+          border-radius: 3px;
+          color: var(--ruv-muted);
+          font-size: 12px;
+          line-height: 18px;
+          white-space: nowrap;
+        }
+        .ruv-design-tier > strong.ruv-design-tier-recommended {
+          border-color: #1e7b45;
+          background-color: #1e7b45;
+          color: #fff;
+        }
+        .ruv-design-tier > strong.ruv-design-tier-legacy {
+          border-color: #8a5a00;
+          color: #8a5a00;
+        }
+        body.dark-mode .ruv-design-tier > strong.ruv-design-tier-legacy {
+          border-color: #f0c36a;
+          color: #f0c36a;
+        }
+        /* The settings of the selected design: the k rules side by side, rows aligned; today's controls. */
+        .ruv-design-k,
+        .ruv-design-today {
+          margin-top: 16px;
+        }
+        .ruv-design-k > h5 {
+          font-weight: 600;
+        }
+        .ruv-design-k-choice {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: flex-start;
+          column-gap: 3em;
+        }
+        .ruv-design-k-choice .shiny-input-container {
+          width: auto !important;
+        }
+        .ruv-design-k-choice .shiny-options-group {
+          display: flex;
+          flex-wrap: wrap;
+          column-gap: 2em;
+          margin-bottom: 0;
+        }
+        .ruv-design .ruv-design-k-choice .shiny-options-group {
+          margin-top: 0;
+        }
+        .ruv-design-k-choice .shiny-options-group > .radio {
+          margin: 0;
+        }
+        .ruv-design-k-choice input[type='number'] {
+          width: 8em;
+        }
+        .ruv-design-k-rules {
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: minmax(0, 1fr);
+          grid-template-rows: repeat(5, auto);
+          column-gap: 2em;
+          margin: 4px 0 12px;
+          padding-top: 10px;
+          border-top: 1px solid var(--ruv-rule);
+          max-width: 180ch;
+        }
+        .ruv-design-k-rule {
+          display: grid;
+          grid-row: span 5;
+          grid-template-rows: subgrid;
+        }
+        .ruv-design-k-rule > p {
+          margin: 0 0 8px;
+          font-size: 13px;
+          line-height: 1.45;
+        }
+        .ruv-design-k-rule > p.ruv-design-k-rule-name {
+          font-size: 14px;
+        }
+        .ruv-design-today {
+          max-width: 34em;
+        }
+        @media (max-width: 1279px) {
+          /* Narrow window: the tier, the design and its note share the first column; the figures stay aligned. */
+          .ruv-design {
+            --ruv-columns: minmax(0, 1fr) 150px 100px;
+          }
+          .ruv-design-header > .ruv-design-tier,
+          .ruv-design-header > .ruv-design-note {
+            display: none;
+          }
+          .ruv-design-option > .ruv-design-tier,
+          .ruv-design-option > .ruv-design-label,
+          .ruv-design-option > .ruv-design-note {
+            grid-column: 1;
+          }
+          .ruv-design-option > .ruv-design-tier {
+            margin-bottom: 4px;
+          }
+          .ruv-design-option > .ruv-design-note {
+            margin-top: 4px;
+          }
+          .ruv-design-option > .ruv-design-fdp,
+          .ruv-design-option > .ruv-design-power,
+          .ruv-design-option > .ruv-design-status {
+            grid-row: 1 / span 3;
+          }
+          .ruv-design-option > .ruv-design-fdp {
+            grid-column: 2;
+          }
+          .ruv-design-option > .ruv-design-power {
+            grid-column: 3;
+          }
+          .ruv-design-option > .ruv-design-status {
+            grid-column: 2 / span 2;
+          }
+          /* The k rules one under another, each rule's name beside its texts. */
+          .ruv-design-k-rules {
+            display: block;
+            max-width: 100ch;
+          }
+          .ruv-design-k-rule {
+            grid-template-columns: 9em minmax(0, 1fr);
+            grid-template-rows: none;
+            column-gap: 1.5em;
+            padding-bottom: 6px;
+          }
+          .ruv-design-k-rule > p {
+            grid-column: 2;
+          }
+          .ruv-design-k-rule > p.ruv-design-k-rule-name {
+            grid-column: 1;
+            grid-row: 1 / span 4;
+          }
+        }
       "))
       ),
       shinydashboard::tabItems(
