@@ -268,7 +268,7 @@ test_that("the DA publication worker handler stages the exports, figures and pag
     expect_true(any(grepl("^publication_graphs_dir/Interactive_Volcano_Plots/groupB_vs_groupA[.]html$", value$files)))
     expect_true(any(grepl("NumSigDaMolecules/da_proteins_num_sig_da_molecules[.]tab$", value$files)))
     # The annotations joined: the export carries the gene names column.
-    export <- vroom::vroom(file.path(directory, "da-publication", "da_output_dir", "da_proteins_groupB-groupA_long_annot.tsv"),
+    export <- vroom::vroom(file.path(directory, "p", "d", "da_proteins_groupB-groupA_long_annot.tsv"),
         show_col_types = FALSE)
     expect_true("gene_names" %in% names(export))
     # No asset and no product saved by the worker; the head is unchanged.
@@ -288,7 +288,7 @@ test_that("the DA publication worker handler stages the exports, figures and pag
     root <- withr::local_tempdir()
     request_dir <- file.path(root, "request")
     dir.create(request_dir)
-    file.copy(file.path(directory, "da-publication"), request_dir, recursive = TRUE)
+    file.copy(file.path(directory, "p"), request_dir, recursive = TRUE)
     owner <- list(manager = manager, control = list(generation = 1L))
     result <- list(operation = "da_publication", state_reference = head)
     withDIAProductsSession(manager, suppressMessages(publishWorkflowDaResult(owner, list(request_dir = request_dir, root = root), result)))
@@ -296,10 +296,24 @@ test_that("the DA publication worker handler stages the exports, figures and pag
     expect_true(any(grepl("da_proteins_groupB-groupA_long_annot[.]tsv$", published)))
     expect_true(any(grepl("Volcano_Plots/all_volcano_plots_combined[.]pdf$", published)))
     expect_true(any(grepl("Interactive_Volcano_Plots/groupB_vs_groupA[.]html$", published)))
+    # KIT-052: a request a worker staged under the earlier folder names (`da-publication/<role>`) publishes the same files.
+    earlier_root <- withr::local_tempdir()
+    earlier_dir <- file.path(earlier_root, "request")
+    dir.create(file.path(earlier_dir, "da-publication"), recursive = TRUE)
+    file.copy(file.path(directory, "p", c("d", "g")), file.path(earlier_dir, "da-publication"), recursive = TRUE)
+    file.rename(file.path(earlier_dir, "da-publication", c("d", "g")),
+        file.path(earlier_dir, "da-publication", c("da_output_dir", "publication_graphs_dir")))
+    withDIAProductsSession(manager, suppressMessages(publishWorkflowDaResult(owner, list(request_dir = earlier_dir, root = earlier_root), result)))
+    published_digests <- function(request_dir) {
+        files <- list.files(file.path(request_dir, "required-output"), recursive = TRUE)
+        stats::setNames(vapply(file.path(request_dir, "required-output", files), digest::digest, "", algo = "sha256", file = TRUE), files)
+    }
+    expect_identical(published_digests(earlier_dir), published_digests(request_dir))
+    expect_setequal(list.files(file.path(earlier_dir, "da-publication")), c("da_output_dir", "publication_graphs_dir"))
     withDIAProductsSession(manager, {
         page <- resolveDIAInteractiveVolcanoAsset(manifest, "groupB_vs_groupA", 0.05)
         expect_true(is.character(page) && nchar(page) > 1000)
-        expect_identical(page, rawToChar(readBin(file.path(directory, "da-publication", "publication_graphs_dir",
+        expect_identical(page, rawToChar(readBin(file.path(directory, "p", "g",
             "Interactive_Volcano_Plots", "groupB_vs_groupA.html"), "raw", n = 1e8)))
         read <- readManagedDaResult(manager, result, NULL)
         expect_identical(read$manifest$source$entity_id, head$entity_id)
@@ -329,14 +343,14 @@ test_that("KIT-101 F-08: a DA whose FDR cannot be estimated publishes every outp
     expect_true(any(grepl("NumSigDaMolecules/da_proteins_num_sig_da_molecules[.]tab$", value$files)))
     expect_true(any(grepl("^publication_graphs_dir/Interactive_Volcano_Plots/groupB_vs_groupA[.]unavailable[.]txt$", value$files)))
     expect_false(any(grepl("Interactive_Volcano_Plots/.*[.]html$", value$files)))
-    staged_record <- file.path(directory, "da-publication", "publication_graphs_dir", "Interactive_Volcano_Plots",
+    staged_record <- file.path(directory, "p", "g", "Interactive_Volcano_Plots",
         "groupB_vs_groupA.unavailable.txt")
     expect_identical(paste(readLines(staged_record), collapse = "\n"), reason)
     # The controller's publication completes (the DA load and the publication copy are not left pending) and saves no page.
     root <- withr::local_tempdir()
     request_dir <- file.path(root, "request")
     dir.create(request_dir)
-    file.copy(file.path(directory, "da-publication"), request_dir, recursive = TRUE)
+    file.copy(file.path(directory, "p"), request_dir, recursive = TRUE)
     owner <- list(manager = manager, control = list(generation = 1L))
     result <- list(operation = "da_publication", state_reference = head)
     withDIAProductsSession(manager, suppressMessages(publishWorkflowDaResult(owner, list(request_dir = request_dir, root = root), result)))
@@ -386,7 +400,7 @@ test_that("the worker entry point runs the DA publication from a frozen request 
     expect_identical(result$status, "complete")
     expect_identical(result$result$operation, "da_publication")
     expect_identical(result$result$reference$entity_id, head$entity_id)
-    expect_true(file.exists(file.path(directory, "da-publication", "publication_graphs_dir", "Interactive_Volcano_Plots", "groupB_vs_groupA.html")))
+    expect_true(file.exists(file.path(directory, "p", "g", "Interactive_Volcano_Plots", "groupB_vs_groupA.html")))
 })
 
 test_that("the active owner resolves from the open state scope before the session (KIT-022)", {
