@@ -57,6 +57,11 @@
 #         (`trxSeparationRuleK`, then `trxChooseRuvDesign` with its record, `trxRuvFactors`, the DA halves), run 1 of
 #         C0 of S3, against arm 22 (RUVg on arm 8's 50 oracle genes, k by the separation rule on them) and arm 24 (RUVg on
 #         the first pass's controls, k by the separation rule on them); k, the controls and the DA table
+#   diaseparation KIT-129 sixth pass item 3: DIA with limpa's supplied list with the separation rule on the run path
+#         (`computeDIAReferenceRuvCovariates` with the control rule supplied_list, the rule sweep_bounded and arm 8's
+#         oracle set as the list, then `computeDIAReferenceDaContrast` on the limpa route), run 1 of C0 of S2, against
+#         arm 22 (`inModel(separationK(oracle), oracle)`, s2_limpa.R lines 571-579 and 621) under the final method (the
+#         route's test with arm 25's exact standard error, M29); k, the controls and the DA table
 # Writes <out dir>/<stage>-simulator.rds and <stage>-package.rds (named lists: per data set, arm and omic, the table
 # keyed by feature and contrast, and k), compares them with packaging/verify/compare-results.R (relative 1e-6,
 # absolute floor 1e-9, discrete values exact) into <stage>-compare.tsv, and writes <stage>-summary.tsv (one row per
@@ -80,7 +85,8 @@
 
 stage <- commandArgs(TRUE)[[1L]]
 out_dir <- commandArgs(TRUE)[[2L]]
-stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath", "techrep", "firstpass", "supplied", "separation"))
+stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath", "techrep", "firstpass", "supplied", "separation",
+    "diaseparation"))
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -158,12 +164,12 @@ add_tables <- function(name, simulator_table, package_table) {
     add(name, pick(simulator_table), pick(package_table), note)
 }
 
-cells <- if (stage == "techrep") c("C6", "C8") else if (stage %in% c("supplied", "separation")) "C0" else c("C0", "C6")
+cells <- if (stage == "techrep") c("C6", "C8") else if (stage %in% c("supplied", "separation", "diaseparation")) "C0" else c("C0", "C6")
 
 # ---- S1, classic proteomics ------------------------------------------------------------------------------------------
 s1 <- simulator("s1_classic.R", "2ba5cf87", "^# ---- the study")
 s1_contrast <- "treated_vs_control=grouptreated-groupcontrol"
-for (cell in cells) {
+for (cell in if (stage == "diaseparation") character() else cells) {
     p <- s1$cell_setting(cell)
     seed <- 100000L + 10000L * s1$cell_index(cell) + 1L
     sim <- s1$simulate(p, seed)
@@ -412,7 +418,7 @@ for (cell in cells) {
 }
 
 # ---- S2, DIA with limpa ------------------------------------------------------------------------------------------------
-if (stage %in% c("m29", "m30a", "m30b", "count", "runpath")) {
+if (stage %in% c("m29", "m30a", "m30b", "count", "runpath", "diaseparation")) {
     s2 <- simulator("s2_limpa.R", "2ba5cf87", "^if \\(!is.null\\(cells_wanted\\)\\)")
     table_s2 <- s2$cellTable()
     for (cell_name in cells) {
@@ -488,6 +494,40 @@ if (stage %in% c("m29", "m30a", "m30b", "count", "runpath")) {
             closeDIAStateAdapter(manager)
             add(sprintf("S2/%s/arm32/runpath_k", cell_name), E32, as.integer(package$k), "arm 32's E against the run path's own count")
             if (E32 > 0L) add_tables(sprintf("S2/%s/arm32/runpath", cell_name), arm_table(E32), package$table)
+        }
+        if (stage == "diaseparation") {
+            # arm 8's oracle set (`runOne`, lines 494-500: 50 proteins without an effect, on stream 100 x seed + 8) and
+            # arm 22's k (`separationK`, lines 571-579) on it
+            ids <- rownames(elist$E)
+            null_ids <- ids[sim$truth[ids] == 0]
+            set.seed(100L * seed + 8L)
+            oracle <- ids %in% sample(null_ids, 50L)
+            parameters_s2 <- resolveDIARuvCovariatesParameters(list(), grouping = "group", ruv_mode = "covariates")
+            plot <- silently(ruvCancorFromInput(prepareRuvCancorInput(quantified, parameters_s2$num_components_to_impute), quantified,
+                oracle, "group"))
+            curve <- plot$data[plot$data$K <= min(calculateAdaptiveMaxK(ncol(elist$E)), sum(oracle) - 1), , drop = FALSE]
+            of_controls <- curve$featureset == "Control"
+            difference <- curve$cc[curve$featureset == "All"] - curve$cc[of_controls]
+            k22 <- as.integer(curve$K[of_controls][[which(difference == max(difference, na.rm = TRUE))[[1L]]]])
+            set.seed(100L * seed + 22L)
+            W <- silently(computeRuvCovariates(quantified, k22, oracle, "group"))$W
+            tab <- silently(s2$routeTest(elist, design, W, exact = TRUE))
+            # the package: the run path with the oracle's ids as the panel's list (in another order)
+            manager <- runpath_store(quantified)
+            manager$setWorkflowType("DIA_LIMPA")
+            parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "supplied_list",
+                ruv_control_ids = rev(ids[oracle]), ruv_k_rule = "sweep_bounded")
+            package <- silently(withDIAStateScope(manager, function() {
+                run <- computeDIAReferenceRuvCovariates(manager, getDIAStateReference(manager), parameters)
+                c(list(k = run$value$best_k, controls = run$value$control_count, rule = run$value$ruv_result$k_sweep$rule),
+                    runpath_da(manager, run$value$final, "B_vs_A=groupB-groupA", "limpa", "Protein.Ids"))
+            }))
+            closeDIAStateAdapter(manager)
+            add(sprintf("S2/%s/arm22/runpath_k", cell_name), k22, as.integer(package$k),
+                sprintf("arm 22's k (the separation rule on the oracle list) against the run path's; the run path's k record: %s",
+                    package$rule %||% "none"))
+            add(sprintf("S2/%s/arm22/runpath_controls", cell_name), sum(oracle), as.integer(package$controls), "the oracle's 50 controls")
+            add_tables(sprintf("S2/%s/arm22/runpath", cell_name), keyed(tab$id, "contrast", tab$logFC, tab$p, tab$q), package$table)
         }
         if (stage == "m30b") {
             E32 <- count(200L, units)

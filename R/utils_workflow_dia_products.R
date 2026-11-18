@@ -1179,6 +1179,28 @@ diaRuvFirstPassPValues <- function(object, grouping) {
     stats::setNames(tested$F.p.value, rownames(tested$coefficients))
 }
 
+#' The separation rule for k on a supplied control list on the DIA with limpa route (KIT-129 sixth pass item 3), as
+#' simulator S2's `separationK` computes it for arm 22: the canonical-correlation curve of the controls against all
+#' proteins (`prepareRuvCancorInput` with the declaration's components, `ruvCancorFromInput` with the grouping), up to
+#' `min(calculateAdaptiveMaxK(samples), controls - 1)`, k at the first largest all-minus-control difference.
+#' @param object The quantified `ProteinQuantitativeData` object.
+#' @param controls A logical vector over the protein rows.
+#' @param grouping The grouping column. @param components `num_components_to_impute`.
+#' @return `list(k, plot)`; refuses with `ruv_k_not_estimated` (and `ruv_k_refused`) when the curve gives no k.
+#' @noRd
+diaRuvSeparationRuleK <- function(object, controls, grouping, components) {
+    plot <- ruvCancorFromInput(prepareRuvCancorInput(object, components), object, unname(controls), grouping)
+    curve <- plot$data[plot$data$K <= min(calculateAdaptiveMaxK(nrow(object@design_matrix)), sum(controls) - 1), , drop = FALSE]
+    of_controls <- curve$featureset == "Control"
+    difference <- curve$cc[curve$featureset == "All"] - curve$cc[of_controls]
+    best <- which(difference == max(difference, na.rm = TRUE))
+    if (!length(best)) {
+        cli::cli_abort("the number of unwanted factors (k) is refused: the separation rule returned no k for the supplied list",
+            class = c("ruv_k_not_estimated", "ruv_k_refused"), call = NULL)
+    }
+    list(k = as.integer(curve$K[of_controls][[best[[1L]]]]), plot = plot)
+}
+
 #' The controls, k and factors of the RUV covariates by declared rules (KIT-129 W3), with no store: the science of
 #' `diaRuvCovariatesByRuleKernel`. The controls follow the control rule; k comes from `resolveRuvFactorCount` (the
 #' estimated count on the quantified matrix, today's sweep estimate, or the user's number) under the limit the
@@ -1243,8 +1265,14 @@ computeDiaRuvCovariatesByRule <- function(object, parameters) {
     limit <- ruvFactorCountLimit(length(samples), replicates$blocks, length(unique(as.character(design[[grouping]]))), sum(controls),
         units = if (!is.null(units)) length(unique(units)))
     # Today's sweep runs only where the resolver reads it: the separation rule, which it refuses with all proteins
-    # as controls before asking for a k.
-    sweep <- if (identical(k_rule, "sweep_bounded") && !identical(control_rule, "all_features")) {
+    # as controls before asking for a k. KIT-129 sixth pass item 3: with a supplied list the separation rule reads that
+    # list (simulator S2's arm 22, `diaRuvSeparationRuleK`), as in the other omics; the sweep is not run.
+    # A refusal of the rule is raised where the resolver reads it, so that an automatic rule leaves the run without RUV.
+    separation <- if (identical(k_rule, "sweep_bounded") && identical(control_rule, "supplied_list")) {
+        tryCatch(diaRuvSeparationRuleK(object, controls, grouping, parameters$num_components_to_impute),
+            ruv_k_not_estimated = \(condition) condition)
+    }
+    sweep <- if (identical(k_rule, "sweep_bounded") && !identical(control_rule, "all_features") && is.null(separation)) {
         suppressMessages(findBestNegCtrlPercentageCapped(object,
             percentage_range = seq(parameters$percentage_min, parameters$percentage_max, by = 1),
             num_components_to_impute = parameters$num_components_to_impute,
@@ -1258,7 +1286,8 @@ computeDiaRuvCovariatesByRule <- function(object, parameters) {
             # The count removes the groups, or the biological units on a design with technical replicates (M28).
             estimate_count = \() estimateRuvFactorCount(as.matrix(object@protein_quant_table[, samples, drop = FALSE]),
                 design[[grouping]], seed = parameters$ruv_k_seed, technical_replicates = isTRUE(block$technical), units = units),
-            separation_rule = \() sweep$best_k)
+            separation_rule = \() if (inherits(separation, "condition")) stop(separation) else if (!is.null(separation)) separation$k else
+                sweep$best_k)
     }
     keep <- \(condition) condition
     k <- if (identical(k_rule, "user")) {
@@ -1278,7 +1307,8 @@ computeDiaRuvCovariatesByRule <- function(object, parameters) {
     # --- Factors ---
     factors <- if (identical(k$status, "ok")) computeRuvCovariates(object, k$k, controls, grouping)
     list(status = k$status, reason = k$reason, k = k, factors = factors, controls = stats::setNames(controls, ids),
-        controls_unmatched = unmatched, sweep = sweep, replicate_structure = replicates$structure,
+        controls_unmatched = unmatched, sweep = sweep, separation = if (!inherits(separation, "condition")) separation,
+        replicate_structure = replicates$structure,
         block_reason = block$reason, blocks = replicates$blocks)
 }
 
@@ -1330,7 +1360,11 @@ diaRuvCovariatesByRuleKernel <- function(object, parameters, store) {
         adjusted@protein_quant_table <- adjusted_table[, colnames(object@protein_quant_table), drop = FALSE]
         adjusted_reference <- store$checkpoint(adjusted, "ruv-adjusted-science", from = covariates_reference)
     }
-    k_sweep <- if (!is.null(sweep)) {
+    # KIT-129 sixth pass item 3: the separation rule on a supplied list keeps its k and plot where the sweep's are kept.
+    k_sweep <- if (!is.null(result$separation)) {
+        list(best_k = result$separation$k, control_count = sum(result$controls), rule = "separation_on_supplied_list",
+            cancor_plot = ggplot2::ggplotGrob(stripProtNormQcPlotOwners(result$separation$plot)))
+    } else if (!is.null(sweep)) {
         list(best_k = sweep$best_k, best_percentage = sweep$best_percentage,
             control_count = sum(sweep$best_control_genes_index, na.rm = TRUE), separation_score = sweep$best_separation_score,
             composite_score = sweep$best_composite_score, max_acceptable_k = sweep$max_acceptable_k,

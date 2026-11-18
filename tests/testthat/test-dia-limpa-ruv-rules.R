@@ -338,12 +338,26 @@ test_that("a supplied control list with the estimated count is the simulator's a
     # the list's controls give other factors than all proteins do
     all_proteins <- limpaRuvInModel(case, E, rep(TRUE, length(case$ids)))
     expect_gt(max(abs(all_proteins$W - reference$W)), 1e-6)
-    # the separation rule is defined with a list: it is today's estimate, the sweep's k
-    sweep <- limpaRuvSweep(case$quantified)
-    separation <- limpaRuvQuiet(computeDiaRuvCovariatesByRule(case$quantified, resolveDIARuvCovariatesParameters(list(), "group",
-        ruv_control_rule = "supplied_list", ruv_control_ids = listed, ruv_k_rule = "sweep_bounded")))
-    expect_identical(separation$k[c("k", "k_rule")], list(k = sweep$best_k, k_rule = "sweep_bounded"))
+    # the separation rule is defined with a list (KIT-129 sixth pass item 3): it reads the list, as simulator S2's arm 22
+    # (`separationK`: the canonical-correlation curve of the listed controls against all proteins, up to the adaptive
+    # cap and the controls less one, k at the largest all-minus-control difference); the sweep is not run
+    separated <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "supplied_list", ruv_control_ids = listed,
+        ruv_k_rule = "sweep_bounded")
+    plot <- limpaRuvQuiet(ruvCancorFromInput(prepareRuvCancorInput(case$quantified, separated$num_components_to_impute), case$quantified,
+        case$ids %in% listed, "group"))
+    curve <- plot$data[plot$data$K <= min(calculateAdaptiveMaxK(ncol(case$elist$E)), length(listed) - 1L), , drop = FALSE]
+    difference <- curve$cc[curve$featureset == "All"] - curve$cc[curve$featureset == "Control"]
+    arm22_k <- as.integer(curve$K[curve$featureset == "Control"][[which(difference == max(difference, na.rm = TRUE))[[1L]]]])
+    separation <- limpaRuvQuiet(computeDiaRuvCovariatesByRule(case$quantified, separated))
+    expect_identical(separation$k[c("k", "k_rule")], list(k = arm22_k, k_rule = "sweep_bounded"))
     expect_identical(unname(separation$controls), case$ids %in% listed)
+    expect_null(separation$sweep)
+    expect_identical(separation$separation$k, arm22_k)
+    # the kernel keeps the rule's k and plot where the sweep's are kept
+    kept <- limpaRuvQuiet(limpaRuvKernel(case$quantified, separated))$value$ruv_result$k_sweep
+    expect_identical(kept[c("best_k", "control_count", "rule")], list(best_k = arm22_k, control_count = 50L,
+        rule = "separation_on_supplied_list"))
+    expect_s3_class(kept$cancor_plot, "gtable")
     # a list that names no protein of the table is refused
     expect_error(computeDiaRuvCovariatesByRule(case$quantified, resolveDIARuvCovariatesParameters(list(), "group",
         ruv_control_rule = "supplied_list", ruv_control_ids = c("X1", "X2"))), class = "workflow_execution_invalid")
