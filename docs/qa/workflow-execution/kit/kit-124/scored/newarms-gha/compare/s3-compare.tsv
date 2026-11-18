@@ -1,0 +1,145 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S3 C0$simulator	character	2000			0	agree	
+S3 C0$cell	character	2000			0	agree	
+S3 C0$cell_class	character	2000			0	agree	
+S3 C0$run	integer	2000			0	agree	
+S3 C0$arm	character	2000			0	agree	
+S3 C0$subset	character	2000			0	agree	
+S3 C0$status	character	2000			0	agree	
+S3 C0$seed	integer	2000			0	agree	
+S3 C0$k	integer	2000			0	agree	
+S3 C0$n_features	integer	2000			0	agree	
+S3 C0$n_true	integer	2000			0	agree	
+S3 C0$n_calls	integer	2000			0	agree	
+S3 C0$null_p05	double	2000	0	0	0	agree	
+S3 C0$null_p01	double	2000	0	0	0	agree	
+S3 C0$fdp	double	2000	0	0	0	agree	
+S3 C0$power	double	2000	0	0	0	agree	
+S3 C0$bias	double	2000	3.1521269626408e-06	3.25185845993781e-08	1	outside	
+S3 C0$rmse	double	2000	6.24502378799088e-07	1.94563829991612e-07	0	agree	
+S3 C1$simulator	character	2000			0	agree	
+S3 C1$cell	character	2000			0	agree	
+S3 C1$cell_class	character	2000			0	agree	
+S3 C1$run	integer	2000			0	agree	
+S3 C1$arm	character	2000			0	agree	
+S3 C1$subset	character	2000			0	agree	
+S3 C1$status	character	2000			0	agree	
+S3 C1$seed	integer	2000			0	agree	
+S3 C1$k	integer	2000			0	agree	
+S3 C1$n_features	integer	2000			0	agree	
+S3 C1$n_true	integer	2000			0	agree	
+S3 C1$n_calls	integer	2000			0	agree	
+S3 C1$null_p05	double	2000	0	0	0	agree	
+S3 C1$null_p01	double	2000	0	0	0	agree	
+S3 C1$fdp	double	2000	0	0	0	agree	
+S3 C1$power	double	2000	0	0	0	agree	
+S3 C1$bias	double	2000	7.91881393102381e-06	7.32073855800198e-09	2	outside	
+S3 C1$rmse	double	2000	4.04162979996353e-08	1.05179470133443e-08	0	agree	
+S3 C2$simulator	character	2000			0	agree	
+S3 C2$cell	character	2000			0	agree	
+S3 C2$cell_class	character	2000			0	agree	
+S3 C2$run	integer	2000			0	agree	
+S3 C2$arm	character	2000			0	agree	
+S3 C2$subset	character	2000			0	agree	
+S3 C2$status	character	2000			0	agree	
+S3 C2$seed	integer	2000			0	agree	
+S3 C2$k	integer	2000			0	agree	
+S3 C2$n_features	integer	2000			0	agree	
+S3 C2$n_true	integer	2000			0	agree	
+S3 C2$n_calls	integer	2000			0	agree	
+S3 C2$null_p05	double	2000	0	0	0	agree	
+S3 C2$null_p01	double	2000	0	0	0	agree	
+S3 C2$fdp	double	2000	0	0	0	agree	
+S3 C2$power	double	2000	0	0	0	agree	
+S3 C2$bias	double	2000	4.93983151325471e-07	2.80170921965889e-09	0	agree	
+S3 C2$rmse	double	2000	1.87137348584368e-08	8.00016997093422e-09	0	agree	
+S3 C3$simulator	character	2000			0	agree	
+S3 C3$cell	character	2000			0	agree	
+S3 C3$cell_class	character	2000			0	agree	
+S3 C3$run	integer	2000			0	agree	
+S3 C3$arm	character	2000			0	agree	
+S3 C3$subset	character	2000			0	agree	
+S3 C3$status	character	2000			0	agree	
+S3 C3$seed	integer	2000			0	agree	
+S3 C3$k	integer	2000			0	agree	
+S3 C3$n_features	integer	2000			0	agree	
+S3 C3$n_true	integer	2000			0	agree	
+S3 C3$n_calls	integer	2000			0	agree	
+S3 C3$null_p05	double	2000	0	0	0	agree	
+S3 C3$null_p01	double	2000	0	0	0	agree	
+S3 C3$fdp	double	2000	0	0	0	agree	
+S3 C3$power	double	2000	0	0	0	agree	
+S3 C3$bias	double	2000	1.82533824370793e-07	3.76128997739422e-11	0	agree	
+S3 C3$rmse	double	2000	4.0851608549226e-10	1.23791976669452e-10	0	agree	
+S3 C4$simulator	character	2000			0	agree	
+S3 C4$cell	character	2000			0	agree	
+S3 C4$cell_class	character	2000			0	agree	
+S3 C4$run	integer	2000			0	agree	
+S3 C4$arm	character	2000			0	agree	
+S3 C4$subset	character	2000			0	agree	
+S3 C4$status	character	2000			0	agree	
+S3 C4$seed	integer	2000			0	agree	
+S3 C4$k	integer	2000			0	agree	
+S3 C4$n_features	integer	2000			0	agree	
+S3 C4$n_true	integer	2000			0	agree	
+S3 C4$n_calls	integer	2000			0	agree	
+S3 C4$null_p05	double	2000	0	0	0	agree	
+S3 C4$null_p01	double	2000	0	0	0	agree	
+S3 C4$fdp	double	2000	0	0	0	agree	
+S3 C4$power	double	0	0	0	0	agree	
+S3 C4$bias	double	0	0	0	0	agree	
+S3 C4$rmse	double	0	0	0	0	agree	
+S3 C5$simulator	character	2000			0	agree	
+S3 C5$cell	character	2000			0	agree	
+S3 C5$cell_class	character	2000			0	agree	
+S3 C5$run	integer	2000			0	agree	
+S3 C5$arm	character	2000			0	agree	
+S3 C5$subset	character	2000			0	agree	
+S3 C5$status	character	2000			0	agree	
+S3 C5$seed	integer	2000			0	agree	
+S3 C5$k	integer	2000			0	agree	
+S3 C5$n_features	integer	2000			0	agree	
+S3 C5$n_true	integer	2000			0	agree	
+S3 C5$n_calls	integer	2000			0	agree	
+S3 C5$null_p05	double	2000	0	0	0	agree	
+S3 C5$null_p01	double	2000	0	0	0	agree	
+S3 C5$fdp	double	2000	0	0	0	agree	
+S3 C5$power	double	2000	0	0	0	agree	
+S3 C5$bias	double	2000	1.01022110641843e-06	1.47304908999779e-08	1	outside	
+S3 C5$rmse	double	2000	1.20018058405051e-07	6.28001660674116e-08	0	agree	
+S3 C6$simulator	character	2000			0	agree	
+S3 C6$cell	character	2000			0	agree	
+S3 C6$cell_class	character	2000			0	agree	
+S3 C6$run	integer	2000			0	agree	
+S3 C6$arm	character	2000			0	agree	
+S3 C6$subset	character	2000			0	agree	
+S3 C6$status	character	2000			0	agree	
+S3 C6$seed	integer	2000			0	agree	
+S3 C6$k	integer	2000			0	agree	
+S3 C6$n_features	integer	2000			0	agree	
+S3 C6$n_true	integer	2000			0	agree	
+S3 C6$n_calls	integer	2000			0	agree	
+S3 C6$null_p05	double	2000	0	0	0	agree	
+S3 C6$null_p01	double	2000	0	0	0	agree	
+S3 C6$fdp	double	2000	0	0	0	agree	
+S3 C6$power	double	2000	0	0	0	agree	
+S3 C6$bias	double	2000	1.02968950611011e-06	6.34458668068161e-09	1	outside	
+S3 C6$rmse	double	2000	3.29115614196738e-09	1.60527996451165e-09	0	agree	
+S3 C7$simulator	character	2000			0	agree	
+S3 C7$cell	character	2000			0	agree	
+S3 C7$cell_class	character	2000			0	agree	
+S3 C7$run	integer	2000			0	agree	
+S3 C7$arm	character	2000			0	agree	
+S3 C7$subset	character	2000			0	agree	
+S3 C7$status	character	2000			0	agree	
+S3 C7$seed	integer	2000			0	agree	
+S3 C7$k	integer	2000			0	agree	
+S3 C7$n_features	integer	2000			0	agree	
+S3 C7$n_true	integer	2000			0	agree	
+S3 C7$n_calls	integer	2000			0	agree	
+S3 C7$null_p05	double	2000	0	0	0	agree	
+S3 C7$null_p01	double	2000	0	0	0	agree	
+S3 C7$fdp	double	2000	0	0	0	agree	
+S3 C7$power	double	2000	0	0	0	agree	
+S3 C7$bias	double	2000	6.68432484441303e-05	1.90547811060142e-07	3	outside	
+S3 C7$rmse	double	2000	6.40580411418474e-06	3.56538984791488e-06	1	outside	
