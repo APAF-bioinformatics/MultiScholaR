@@ -2089,3 +2089,4 @@ Rows added the day they were decided. The full text of each is in `docs/qa/workf
 | M25 | `which` is a stated Linux host requirement, checked at start with a plain message | 2026-11-18 | user | decided, not yet implemented |
 | M26 | The bundled R is pinned to the bundle's own numerical and system libraries on every Linux host | 2026-11-18 | user | decided, not yet implemented |
 | M27 | The confounding warning's follow-up: accepted for all four near-miss designs; the warning is validated for the recommended design in classic proteomics, transcriptomics and lipid/metab; value only in DIA with limpa; not available under legacy | 2026-11-18 | result of the declared procedure | in force (not yet implemented in the app) |
+| M28 | On technical-replicate designs k is limited by biological units and the estimated count removes the units before counting | 2026-11-18 | user ("limit k"); exactness round | decided, not yet implemented |
