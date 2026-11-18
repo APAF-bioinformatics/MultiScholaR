@@ -68,13 +68,15 @@ trxCanonicalRuvDesignParameters <- function(parameters) {
 #' the declared design without a word. `ruv_k_seed` is the seed parameter of the shared k rule (KIT-129 W6).
 #' The guard is the kernel's: a request whose today's product is already saved on the source is a hit of
 #' `runSavedOperation` (the identity reads the declared names alone) and is returned without reaching it. Refusing
-#' that too is the registration's parameter validation (the later wiring's).
+#' that too is the registration's parameter validation (the later wiring's). The class is the tab's
+#' (`trx_ruv_grid_declared_parameters`, first, so its text is unchanged), then `trx_error` and the legacy refusal of
+#' every omic, `workflow_execution_invalid` (KIT-129 item 1).
 #' @noRd
 trxRefuseDeclaredRuvParameters <- function(parameters) {
     declared <- intersect(c(trxRuvDesignParameterNames, "ruv_k_seed"), names(parameters))
     if (!length(declared)) return(invisible(NULL))
     trxAbort(sprintf("today's RUV grid was asked with the declared-design parameter(s) %s: it runs no declared design and does not ignore one",
-        paste(declared, collapse = ", ")), c("trx_ruv_grid_declared_parameters", "trx_error"))
+        paste(declared, collapse = ", ")), c("trx_ruv_grid_declared_parameters", "trx_error", "workflow_execution_invalid"))
 }
 
 # ---------------------------------------------------------------------------------------------------------------

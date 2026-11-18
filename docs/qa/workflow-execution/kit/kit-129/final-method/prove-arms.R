@@ -118,7 +118,7 @@ for (cell in cells) {
     # the package: the declared state on the normalised object (the true technical-replicate declaration)
     normalised <- s1$make_object(x, design, "tech_rep_group")
     state <- function(k) {
-        factors <- computeProtRuvModelFactors(normalised, k = k, k_source = "user", ruv_grouping_variable = "group")
+        factors <- computeProtRuvModelFactors(normalised, ruv_k = k, ruv_k_rule = "user", ruv_grouping_variable = "group")
         attachProtRuvModelFactors(normalised, normalised, factors)
     }
     entry <- function(k) {
@@ -258,7 +258,7 @@ if (stage %in% c("m29", "m30b")) {
         mats <- lapply(view$assays, `[[`, "y")
         for (omic in c("lipid", "metab")) {
             object <- if (omic == "lipid") s4$lipidObject(mats, view$design) else s4$metabObject(mats, view$design)
-            run <- silently(runOmicsRuvFactors(object, "factors_all_features", lapply(k_of, as.integer), "user"))
+            run <- silently(runOmicsRuvFactors(object, "groups_all_features", lapply(k_of, as.integer), "user"))
             for (assay in s4$ASSAYS) {
                 if (is.null(W[[assay]])) {
                     run$factors[[assay]]["W"] <- list(NULL)

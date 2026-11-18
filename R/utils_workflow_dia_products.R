@@ -334,14 +334,14 @@ resolveDIAReferenceQcPlot <- function(reference, aesthetics, plot_type, build_pr
 #' `dia-normalization-ruv` product. The normalised object is checkpointed before RUV so the corrected
 #' object inherits it as its source, exactly as before.
 #' @param ruv_design KIT-126. `"legacy"` (the default): today's declaration and kernel path, the corrected matrix
-#'   tested by the DA; its ten parameters and identities are unchanged. `"factors_in_model"`: the declaration gains
-#'   the parameter `ruv_design` and the kernel runs KIT-124's arm 7 (groups as replicate sets, every protein a
+#'   tested by the DA; its ten parameters and identities are unchanged. `"declared"`: the declaration gains
+#'   the parameter `ruv_design` (`"groups_all_features"`, KIT-129 section 1e) and the kernel runs KIT-124's arm 7 (groups as replicate sets, every protein a
 #'   control, k from the automatic sweep, bounded, or the manual k): the final state's table is the corrected matrix
 #'   and it carries the factors and the normalised matrix for the DA (`attachProtRuvModelFactors`).
 #' @noRd
-diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model")) {
+diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
     ruv_design <- match.arg(ruv_design)
-    factors_in_model <- identical(ruv_design, "factors_in_model")
+    factors_in_model <- identical(ruv_design, "declared")
     newWorkflowOperation("normalization-ruv", "ProteinQuantitativeData",
         fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
         output_class = "ProteinQuantitativeData", product_type = "dia-normalization-ruv",
@@ -354,9 +354,7 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model
             normaliseBetweenSamplesFn <- normaliseBetweenSamples
             # KIT-126 audit F-06: today's declaration does not know the design; handed it, it refuses rather than
             # run today's design under a record that names the other.
-            if (!factors_in_model && identical(parameters$ruv_design, "factors_in_model"))
-                cli::cli_abort(c("the normalisation declaration of today's design was handed ruv_design = \"factors_in_model\"",
-                    i = "declare it with diaNormalizationOperation(\"factors_in_model\")"), class = "workflow_execution_invalid")
+            if (!factors_in_model && !is.null(parameters[["ruv_design", exact = TRUE]])) assertProtNormLegacyRuvParameters(parameters)
             # Audit F-08: under the new design a manual k is one whole number, refused otherwise (not truncated, no default).
             if (factors_in_model && identical(parameters$ruv_mode, "manual")) validateProtRuvModelK(parameters$ruv_k)
             normalized <- normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method)
@@ -380,10 +378,10 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model
                 if (factors_in_model) {
                     # KIT-126: the sweep (or the manual k) gives k only; every protein is a control, the groups are
                     # the replicate sets, and the corrected matrix uses the same controls, k and sets as the factors.
-                    if (!identical(parameters$ruv_design, "factors_in_model"))
+                    if (!identical(parameters$ruv_design, "groups_all_features"))
                         cli::cli_abort("the declaration and the parameter ruv_design disagree", class = "workflow_execution_invalid")
-                    ruv_model <- computeProtRuvModelFactors(normalized, k = resolved$k,
-                        k_source = if (identical(parameters$ruv_mode, "automatic")) "sweep" else "user",
+                    ruv_model <- computeProtRuvModelFactors(normalized, ruv_k = resolved$k,
+                        ruv_k_rule = if (identical(parameters$ruv_mode, "automatic")) "sweep_bounded" else "user",
                         ruv_grouping_variable = parameters$grouping)
                     resolved$k <- ruv_model$k
                     resolved$controls <- ruv_model$controls
@@ -397,7 +395,7 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model
                     ruv_result$best_percentage <- 100
                     ruv_result$best_k <- ruv_model$k
                     ruv_result$best_control_genes_index <- ruv_model$controls
-                    ruv_result$ruv_design <- "factors_in_model"
+                    ruv_result$ruv_design <- protRuvModelDesign(ruv_model)
                     corrected <- ruvIII_C_VaryingFn(protRuvGroupReplicateObject(normalized),
                         ruv_grouping_variable = parameters$grouping, ruv_number_k = resolved$k, ctrl = resolved$controls)
                     corrected <- removeRowsWithMissingValuesPercentFn(theObject = corrected)
@@ -422,7 +420,7 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model
             # Audit F-08: a skipped RUV step applied no design, so none is recorded on its product.
             if (factors_in_model && parameters$ruv_mode != "skip") {
                 value$parameters$ruv_design <- parameters$ruv_design
-                value$ruv_model <- c(list(ruv_design = "factors_in_model"), ruv_model)
+                value$ruv_model <- c(list(ruv_design = protRuvModelDesign(ruv_model)), ruv_model)
             }
             value
         })
@@ -437,7 +435,7 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model
 assertProtNormLegacyRuvParameters <- function(parameters) {
     if (!is.null(parameters[["ruv_design", exact = TRUE]])) {
         cli::cli_abort(c("the normalisation declaration of today's design was handed ruv_design = {.val {parameters$ruv_design}}",
-            i = "declare it with diaNormalizationOperation(\"factors_in_model\")"), class = "workflow_execution_invalid", call = NULL)
+            i = "declare it with diaNormalizationOperation(\"declared\")"), class = "workflow_execution_invalid", call = NULL)
     }
     invisible(parameters)
 }
@@ -849,14 +847,13 @@ subsetLimpaResultsToSamples <- function(object) {
 #' (RUV-III with the design's replicate structure, the W factors); the output state carries the quantified matrix
 #' unchanged and the design with `W1..Wk` appended; the optimisation table, the cancor plot and the RUV-adjusted
 #' matrix (a component checkpoint, never a state) are the product.
-#' @param ruv_rules KIT-129 W3. `"legacy"` (the default): today's declaration and kernel path, the sweep gives the
+#' @param ruv_design KIT-129 W3. `"legacy"` (the default): today's declaration and kernel path, the sweep gives the
 #'   controls and k; its ten parameters and identities are unchanged. `"declared"`: the declaration gains the
 #'   parameters of `diaRuvCovariatesRuleParameters` and the kernel is `diaRuvCovariatesByRuleKernel` (the control
 #'   rule and the k rule as declared; the sweep runs only when the k rule is today's estimate).
 #' @noRd
-diaRuvCovariatesOperation <- function(ruv_rules = c("legacy", "declared")) {
-    ruv_rules <- match.arg(ruv_rules)
-    declared_rules <- identical(ruv_rules, "declared")
+diaRuvCovariatesOperation <- function(ruv_design = c("legacy", "declared")) {
+    declared_rules <- identical(match.arg(ruv_design), "declared")
     newWorkflowOperation("protein_ruv_covariates", "ProteinQuantitativeData",
         fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
         output_class = "ProteinQuantitativeData", product_type = "dia-ruv-covariates",
@@ -973,15 +970,15 @@ diaRuvCovariatesRuleParameters <- c("ruv_control_rule", "ruv_k_rule", "ruv_k", "
 #' sweep product for such a request before any kernel runs; the route's compute half
 #' (`computeDIAReferenceRuvCovariates`) therefore checks before the runner, and the kernel checks on a computed run.
 #' @param parameters A request's parameters.
-#' @return `parameters`, invisibly; an error of class `dia_ruv_rule_parameters_on_legacy` when a rule parameter is
-#'   present with a value.
+#' @return `parameters`, invisibly; an error of class `workflow_execution_invalid` (the legacy refusal of every omic,
+#'   KIT-129 item 1) when a rule parameter is present with a value.
 #' @noRd
 assertDiaRuvSweepParameters <- function(parameters) {
     given <- Filter(\(name) !is.null(parameters[[name]]), diaRuvCovariatesRuleParameters)
     if (length(given)) {
         cli::cli_abort(c("today's RUV covariates declaration (the sweep) takes no rule parameter; the request carries {.val {given}}",
             i = "a control rule or a k rule runs under {.code diaRuvCovariatesOperation(\"declared\")}"),
-            class = c("dia_ruv_rule_parameters_on_legacy", "workflow_execution_invalid"), call = NULL)
+            class = "workflow_execution_invalid", call = NULL)
     }
     invisible(parameters)
 }

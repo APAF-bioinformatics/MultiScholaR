@@ -117,7 +117,7 @@
    corrected intensity. The test is refused, with the reason, when the samples left cannot carry the model. The number of factors k is the
    automatic sweep's estimate, reduced to what the samples and complete proteins can carry, or the value
    given; its source is recorded with the result. The design is available to the normalisation step
-   (`ruv_design = "factors_in_model"`) and is not selected by default or from the application yet: every
+   (`ruv_design = "groups_all_features"`) and is not selected by default or from the application yet: every
    result is unchanged until it is chosen. Today's design (the corrected matrix tested) stays as it is.
  * Lipidomics and metabolomics RUV: a second design is available to `runLipidsDA()` and `runMetabolitesDA()`
    through the new argument `ruv_factors` (the kernel only; no screen offers it yet and no default changes).

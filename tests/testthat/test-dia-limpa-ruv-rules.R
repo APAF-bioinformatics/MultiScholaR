@@ -133,13 +133,13 @@ limpaRuvInModel <- function(case, k, controls) {
 
 # The package: the declared kernel on the quantified object (the store keeps what it checkpoints), and the DA entry
 # point on the state the kernel returns as final.
-limpaRuvKernel <- function(quantified, parameters, ruv_rules = "declared") {
+limpaRuvKernel <- function(quantified, parameters, ruv_design = "declared") {
     saved <- list()
     store <- list(checkpoint = function(value, label, from = NULL) {
         saved[[label]] <<- value
         label
     })
-    value <- diaRuvCovariatesOperation(ruv_rules)$kernel(quantified, parameters, store)
+    value <- diaRuvCovariatesOperation(ruv_design)$kernel(quantified, parameters, store)
     list(value = value, state = saved[[value$final]], saved = saved)
 }
 
@@ -585,12 +585,12 @@ test_that("today's declaration refuses the rule parameters, on a computed run an
     # the kernel of today's declaration: any one rule parameter is refused, never run as the sweep
     local({
         testthat::local_mocked_bindings(findBestNegCtrlPercentageCapped = \(...) stop("the sweep is not to run"))
-        refusal <- expect_error(limpaRuvKernel(case$quantified, declared, "legacy"), class = "dia_ruv_rule_parameters_on_legacy")
+        refusal <- expect_error(limpaRuvKernel(case$quantified, declared, "legacy"), class = "workflow_execution_invalid")
         expect_s3_class(refusal, "workflow_execution_invalid")
         expect_match(conditionMessage(refusal), "ruv_control_rule", fixed = TRUE)
         for (extra in list(list(ruv_control_rule = "all_features"), list(ruv_k_rule = "num_sv_be"), list(ruv_k = 2L),
             list(ruv_control_ids = "P1"), list(ruv_k_seed = 7L))) {
-            expect_error(limpaRuvKernel(case$quantified, c(todays, extra), "legacy"), class = "dia_ruv_rule_parameters_on_legacy",
+            expect_error(limpaRuvKernel(case$quantified, c(todays, extra), "legacy"), class = "workflow_execution_invalid",
                 info = names(extra))
         }
     })
@@ -602,9 +602,9 @@ test_that("today's declaration refuses the rule parameters, on a computed run an
         source <- getDIAStateReference(manager)
         saved <- limpaRuvQuiet(computeDIAReferenceRuvCovariates(manager, source, todays))
         expect_identical(saved$status, "computed")
-        expect_error(computeDIAReferenceRuvCovariates(manager, source, declared), class = "dia_ruv_rule_parameters_on_legacy")
+        expect_error(computeDIAReferenceRuvCovariates(manager, source, declared), class = "workflow_execution_invalid")
         expect_error(computeDIAReferenceRuvCovariates(manager, source, c(todays, list(ruv_k_seed = 7L))),
-            class = "dia_ruv_rule_parameters_on_legacy")
+            class = "workflow_execution_invalid")
         # today's request is still served from the saved product
         expect_identical(limpaRuvQuiet(computeDIAReferenceRuvCovariates(manager, source, todays))$status, "hit")
     })
@@ -636,7 +636,7 @@ test_that("the DA refuses, naming k, a model that leaves no residual degree of f
         state <- if (k == 9L) at_limit else with_k(k)
         refusal <- NULL
         limpaRuvQuiet(refusal <- tryCatch(limpaRuvDaWithFormula(state, "~ 0 + group + batch"), error = \(e) e))
-        expect_s3_class(refusal, "dia_da_no_residual_df")
+        expect_s3_class(refusal, "omics_ruv_no_residual_df")
         expect_match(conditionMessage(refusal), sprintf("k = %d", k), fixed = TRUE)
         expect_match(conditionMessage(refusal), "12 samples", fixed = TRUE)
     }
@@ -726,11 +726,11 @@ test_that("the shared runner refuses today's declaration the rule parameters bef
         expect_identical(saved$status, "computed")
         # the auditor's case through the runner itself (the replay's path), with nothing before it: each rule parameter
         # alone and the whole declared request are refused, never served today's saved sweep
-        expect_error(runSavedOperation(manager, diaRuvCovariatesOperation(), source, declared), class = "dia_ruv_rule_parameters_on_legacy")
+        expect_error(runSavedOperation(manager, diaRuvCovariatesOperation(), source, declared), class = "workflow_execution_invalid")
         for (extra in list(list(ruv_control_rule = "all_features"), list(ruv_k_rule = "num_sv_be"), list(ruv_k = 2L),
             list(ruv_control_ids = "P1"), list(ruv_k_seed = 7L))) {
             expect_error(runSavedOperation(manager, diaRuvCovariatesOperation(), source, c(todays, extra)),
-                class = "dia_ruv_rule_parameters_on_legacy", info = names(extra))
+                class = "workflow_execution_invalid", info = names(extra))
         }
         # a plain request of today's design is still a hit; the declared rules compute their own product
         again <- limpaRuvQuiet(runSavedOperation(manager, diaRuvCovariatesOperation(), source, todays))
@@ -755,7 +755,7 @@ test_that("with technical replicates a declared state needs a residual degree of
     # a covariate between the units (one per unit) leaves the 8 units no degree of freedom beside 2 groups and 5 factors
     state@design_matrix$site <- c("s1", "s2")[(match(state@design_matrix$tech_rep_group, unique(state@design_matrix$tech_rep_group)) %% 2L) + 1L]
     refused <- tryCatch(limpaRuvDaWithFormula(state, "~ 0 + group + site"), error = function(e) e)
-    expect_s3_class(refused, "dia_da_no_residual_df")
+    expect_s3_class(refused, "omics_ruv_no_residual_df")
     expect_match(conditionMessage(refused), "between the biological units", fixed = TRUE)
 })
 

@@ -398,7 +398,7 @@ setMethod(
           "{nrow(design_for_dpcde)} samples, {ncol(design_for_dpcde)} model columns ",
           "({ncol(design_for_dpcde) - length(w_terms)} from the formula {.val {formula_string}})"),
           i = "use fewer RUV factors or fewer terms in the formula"),
-          class = "dia_da_no_residual_df", call = NULL)
+          class = "omics_ruv_no_residual_df", call = NULL)
       }
       # Decision M28: on a design with declared technical replicates the biological units carry the test; a state of the
       # declared RUV rules (KIT-129 W3) needs a residual degree of freedom between the units. Today's sweep is not checked.
@@ -409,7 +409,7 @@ setMethod(
           "{nrow(design_for_dpcde)} injections, carry the test, and at most {length(w_terms) + unit_df - 1L} factor{?s} fit beside ",
           "the formula {.val {formula_string}}"),
           i = "use fewer RUV factors or fewer terms in the formula"),
-          class = "dia_da_no_residual_df", call = NULL)
+          class = "omics_ruv_no_residual_df", call = NULL)
       }
       dpcDEFn <- limpa::dpcDE
       dpc_fit <- dpcDEFn(elist, design_for_dpcde, plot = FALSE, block = block)
@@ -446,7 +446,7 @@ setMethod(
       protein_quant_matrix <- ruv_model$matrix
       formula_string <- ruv_model$formula_used
       da_model <- utils::modifyList(da_model, list(formula_used = ruv_model$formula_used, w_terms = ruv_model$w_terms,
-        k = length(ruv_model$w_terms), ruv_mode = "covariates", k_source = ruv_model$declaration$k_source,
+        k = length(ruv_model$w_terms), ruv_mode = "covariates", ruv_k_rule = ruv_model$declaration$ruv_k_rule,
         ruv_controls = ruv_model$declaration$ruv_controls, tested_matrix = "uncorrected",
         tested_proteins = nrow(ruv_model$matrix), no_corrected_intensity = ruv_model$no_corrected_intensity))
     }

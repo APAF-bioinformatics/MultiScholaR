@@ -144,7 +144,7 @@ test_that("arm 7 (all features as controls, W in the model) is the simulator's c
     skip_if_not_installed("ruv")
     fixture <- kit127Fixture()
     object <- kit127Lipid(lapply(fixture$assays, `[[`, "y"), fixture$design)
-    run <- kit127Quiet(runOmicsRuvFactors(object, ruv_design = "factors_all_features", ruv_number_k = K127_K, ruv_k_source = "user"))
+    run <- kit127Quiet(runOmicsRuvFactors(object, ruv_design = "groups_all_features", ruv_k = K127_K, ruv_k_rule = "user"))
     da <- kit127Quiet(runLipidsDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors))
     not_estimable <- 0L
     for (assay in names(fixture$assays)) {
@@ -155,13 +155,13 @@ test_that("arm 7 (all features as controls, W in the model) is the simulator's c
         expectKit127Table(da$da_lipids_long, "lipid_id", assay, reference$table)
         not_estimable <- not_estimable + nrow(fixture$assays[[assay]]$y) - nrow(reference$table)
         expect_identical(record$k, K127_K[[assay]])
-        expect_identical(record$k_source, "user")
+        expect_identical(record$ruv_k_rule, "user")
         expect_identical(record$control_count, sum(rowSums(is.na(fixture$assays[[assay]]$y)) == 0L))
         expect_identical(record$not_tested, character())
     }
     # the fixture has features the model with W cannot estimate: they are not tested, as in the simulator
     expect_gt(not_estimable, 0L)
-    expect_identical(run$parameters$ruv_design, "factors_all_features")
+    expect_identical(run$parameters$ruv_design, "groups_all_features")
     expect_identical(run$parameters$ruv_grouping_variable, "group")
 })
 
@@ -170,8 +170,8 @@ test_that("arm 8 (the standards as controls, W in the model, the standards not t
     fixture <- kit127Fixture()
     object <- kit127Lipid(lapply(fixture$assays, function(a) rbind(a$y, a$is)), fixture$design)
     ids <- lapply(fixture$assays, function(a) rownames(a$is))
-    run <- kit127Quiet(runOmicsRuvFactors(object, ruv_design = "factors_supplied_controls", ruv_number_k = K127_K,
-        ruv_k_source = "user", ruv_control_ids = ids))
+    run <- kit127Quiet(runOmicsRuvFactors(object, ruv_design = "supplied_controls", ruv_k = K127_K,
+        ruv_k_rule = "user", ruv_control_ids = ids))
     da <- kit127Quiet(runLipidsDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors))
     for (assay in names(fixture$assays)) {
         reference <- simArm(fixture, assay, K127_K[[assay]], standards = fixture$assays[[assay]]$is)
@@ -193,8 +193,8 @@ test_that("metabolomics gives the factors and the tables lipidomics gives", {
     mats <- lapply(fixture$assays, `[[`, "y")
     lipid <- kit127Lipid(mats, fixture$design)
     metab <- kit127Metab(mats, fixture$design)
-    run_l <- kit127Quiet(runOmicsRuvFactors(lipid, "factors_all_features", K127_K, "user"))
-    run_m <- kit127Quiet(runOmicsRuvFactors(metab, "factors_all_features", K127_K, "user"))
+    run_l <- kit127Quiet(runOmicsRuvFactors(lipid, "groups_all_features", K127_K, "user"))
+    run_m <- kit127Quiet(runOmicsRuvFactors(metab, "groups_all_features", K127_K, "user"))
     expect_identical(run_m$factors, run_l$factors)
     expect_identical(run_m$corrected@metabolite_data, run_l$corrected@lipid_data)
     da_l <- kit127Quiet(runLipidsDA(lipid, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run_l$factors))$da_lipids_long
@@ -214,7 +214,7 @@ test_that("the corrected matrix of the new path keeps each feature's level; toda
     for (make in list(kit127Lipid, kit127Metab)) {
         object <- make(mats, fixture$design)
         slot_name <- if (methods::is(object, "LipidomicsAssayData")) "lipid_data" else "metabolite_data"
-        run <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", K127_K, "user"))
+        run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", K127_K, "user"))
         legacy <- kit127Quiet(ruvIII_C_Varying(object, ruv_grouping_variable = "group", ruv_number_k = K127_K,
             ctrl = lapply(mats, rownames)))
         for (assay in names(mats)) {
@@ -272,13 +272,13 @@ test_that("k has no default, 0 is no RUV, and an assay whose factors cannot be c
     fixture <- kit127Fixture()
     mats <- lapply(fixture$assays, `[[`, "y")
     object <- kit127Lipid(mats, fixture$design)
-    expect_error(runOmicsRuvFactors(object, "factors_all_features"), class = "omics_ruv_factors_invalid")
-    expect_error(runOmicsRuvFactors(object, "factors_all_features", 2L), class = "omics_ruv_factors_invalid")
-    expect_error(runOmicsRuvFactors(object, ruv_number_k = 2L, ruv_k_source = "user"), class = "omics_ruv_factors_invalid")
+    expect_error(runOmicsRuvFactors(object, "groups_all_features"), class = "omics_ruv_factors_invalid")
+    expect_error(runOmicsRuvFactors(object, "groups_all_features", 2L), class = "omics_ruv_factors_invalid")
+    expect_error(runOmicsRuvFactors(object, ruv_k = 2L, ruv_k_rule = "user"), class = "omics_ruv_factors_invalid")
     plain <- kit127Quiet(runLipidsDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE))$da_lipids_long
 
     # k = 0: no factors, the corrected object is the input, the test is the plain test
-    none <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", 0L, "user"))
+    none <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", 0L, "user"))
     expect_identical(vapply(none$factors, `[[`, "", "status"), c(pos = "none", neg = "none"))
     expect_null(none$factors$pos$W)
     expect_identical(none$corrected@lipid_data, object@lipid_data)
@@ -286,7 +286,7 @@ test_that("k has no default, 0 is no RUV, and an assay whose factors cannot be c
         ruv_factors = none$factors))$da_lipids_long, plain)
 
     # 12 samples in 2 replicate sets leave 9 factors at most; pos asks for 10 and is refused, neg is corrected
-    expect_warning(refused <- suppressMessages(runOmicsRuvFactors(object, "factors_all_features", list(pos = 10L, neg = 1L), "user")),
+    expect_warning(refused <- suppressMessages(runOmicsRuvFactors(object, "groups_all_features", list(pos = 10L, neg = 1L), "user")),
         class = "omics_ruv_factors_refused")
     expect_identical(refused$factors$pos$status, "refused")
     expect_match(refused$factors$pos$reason, "residual")
@@ -303,17 +303,17 @@ test_that("k has no default, 0 is no RUV, and an assay whose factors cannot be c
 
     # more factors than controls observed in every sample
     with_standards <- kit127Lipid(lapply(fixture$assays, function(a) rbind(a$y, a$is)), fixture$design)
-    expect_warning(few <- suppressMessages(runOmicsRuvFactors(with_standards, "factors_supplied_controls", 6L, "user",
+    expect_warning(few <- suppressMessages(runOmicsRuvFactors(with_standards, "supplied_controls", 6L, "user",
         ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is)))), class = "omics_ruv_factors_refused")
     expect_identical(unname(vapply(few$factors, `[[`, "", "status")), c("refused", "refused"))
     expect_match(few$factors$pos$reason, "controls observed in every sample")
 
     # a k that could not be estimated is a refusal, not a guess
-    expect_warning(unknown <- suppressMessages(runOmicsRuvFactors(with_standards, "factors_supplied_controls",
+    expect_warning(unknown <- suppressMessages(runOmicsRuvFactors(with_standards, "supplied_controls",
         list(pos = NA_integer_, neg = 1L), "sweep_bounded", ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is)))),
         class = "omics_ruv_factors_refused")
     expect_identical(unknown$factors$pos$status, "refused")
-    expect_identical(unknown$factors$neg$k_source, "sweep_bounded")
+    expect_identical(unknown$factors$neg$ruv_k_rule, "sweep_bounded")
 })
 
 test_that("wrong arguments stop", {
@@ -323,17 +323,17 @@ test_that("wrong arguments stop", {
     ids <- lapply(mats, function(m) rownames(m)[1:5])
     invalid <- function(...) expect_error(kit127Quiet(runOmicsRuvFactors(object, ...)), class = "omics_ruv_factors_invalid")
     invalid("legacy", 1L, "user")
-    invalid("factors_all_features", 1.5, "user")
-    invalid("factors_all_features", -1L, "user")
-    invalid("factors_all_features", list(pos = 1L), "user")
-    invalid("factors_all_features", 1L, "guess")
-    invalid("factors_all_features", 1L, "user", ruv_control_ids = ids)
-    invalid("factors_supplied_controls", 1L, "user")
-    invalid("factors_supplied_controls", 1L, "user", ruv_control_ids = list(pos = ids$pos))
-    invalid("factors_supplied_controls", 1L, "user", ruv_control_ids = list(pos = "absent", neg = ids$neg))
-    invalid("factors_all_features", 1L, "user", ruv_grouping_variable = "absent")
-    expect_error(runOmicsRuvFactors(fixture$design, "factors_all_features", 1L, "user"), class = "omics_ruv_factors_invalid")
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", 1L, "user"))
+    invalid("groups_all_features", 1.5, "user")
+    invalid("groups_all_features", -1L, "user")
+    invalid("groups_all_features", list(pos = 1L), "user")
+    invalid("groups_all_features", 1L, "guess")
+    invalid("groups_all_features", 1L, "user", ruv_control_ids = ids)
+    invalid("supplied_controls", 1L, "user")
+    invalid("supplied_controls", 1L, "user", ruv_control_ids = list(pos = ids$pos))
+    invalid("supplied_controls", 1L, "user", ruv_control_ids = list(pos = "absent", neg = ids$neg))
+    invalid("groups_all_features", 1L, "user", ruv_grouping_variable = "absent")
+    expect_error(runOmicsRuvFactors(fixture$design, "groups_all_features", 1L, "user"), class = "omics_ruv_factors_invalid")
+    run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", 1L, "user"))
     # the DA refuses factors that do not cover an assay, or a design that already has a W column
     expect_error(kit127Quiet(runLipidsDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE,
         ruv_factors = run$factors["pos"])), class = "omics_ruv_factors_invalid")
@@ -352,7 +352,7 @@ test_that("today's estimate of k is available and bounded by the sample-size lim
     expect_identical(bounded$k, list(pos = 2L, neg = 1L))
     expect_identical(bounded$sweep_k, list(pos = 5L, neg = 1L))
     expect_identical(bounded$limit, list(pos = 2L, neg = 2L))
-    expect_identical(bounded$source, "sweep_bounded")
+    expect_identical(bounded$ruv_k_rule, "sweep_bounded")
     failed <- boundOmicsRuvSweepK(object, list(pos = list(success = FALSE, error = "no valid percentage"), neg = sweep$neg))
     expect_identical(failed$k, list(pos = NA_integer_, neg = 1L))
     expect_error(boundOmicsRuvSweepK(object, sweep["pos"]), class = "omics_ruv_factors_invalid")
@@ -365,9 +365,9 @@ test_that("today's estimate of k is available and bounded by the sample-size lim
     expect_true(all(unlist(real$k)[known] <= 2L))
     # the bounded sweep's k goes with supplied controls only (audit F1)
     with_standards <- kit127Lipid(lapply(fixture$assays, function(a) rbind(a$y, a$is)), fixture$design)
-    run <- kit127Quiet(runOmicsRuvFactors(with_standards, "factors_supplied_controls", real$k, real$source,
+    run <- kit127Quiet(runOmicsRuvFactors(with_standards, "supplied_controls", real$k, real$ruv_k_rule,
         ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is))))
-    expect_identical(unname(vapply(run$factors, `[[`, "", "k_source")), c("sweep_bounded", "sweep_bounded"))
+    expect_identical(unname(vapply(run$factors, `[[`, "", "ruv_k_rule")), c("sweep_bounded", "sweep_bounded"))
     expect_true(all(vapply(run$factors, `[[`, "", "status") %in% c("ok", "refused")))
 })
 
@@ -415,7 +415,7 @@ test_that("F2: a model with no residual degree of freedom once W is added stops 
     fx <- kit127DesignFixture(c("A", "B"), 4L)
     object <- kit127Lipid(list(pos = fx$y), fx$design)
     # 8 samples in 2 replicate sets: k = 5 is the kernel's bound; with the batch covariate the model has 8 columns
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", 5L, "user"))
+    run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", 5L, "user"))
     expect_identical(run$factors$pos$status, "ok")
     plain <- kit127Quiet(runLipidsDA(object, kit127Contrasts("groupB-groupA"), "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors))
     expect_identical(nrow(plain$da_lipids_long), nrow(fx$y))
@@ -424,7 +424,7 @@ test_that("F2: a model with no residual degree of freedom once W is added stops 
     expect_error(kit127Quiet(runMetabolitesDA(kit127Metab(list(pos = fx$y), fx$design), kit127Contrasts("groupB-groupA"),
         "~ 0 + group + batch", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors)), class = "omics_ruv_no_residual_df")
     # one factor fewer leaves a degree of freedom: the covariate formula is fitted
-    run4 <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", 4L, "user"))
+    run4 <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", 4L, "user"))
     covariate <- kit127Quiet(runLipidsDA(object, kit127Contrasts("groupB-groupA"), "~ 0 + group + batch", 0.05, 0, TRUE, TRUE,
         ruv_factors = run4$factors))
     expect_identical(nrow(covariate$da_lipids_long), nrow(fx$y))
@@ -437,8 +437,8 @@ test_that("F3: the corrected object is stamped, and a stamped object is refused 
     mats <- lapply(fixture$assays, `[[`, "y")
     for (case in list(list(make = kit127Lipid, run = runLipidsDA), list(make = kit127Metab, run = runMetabolitesDA))) {
         object <- case$make(mats, fixture$design)
-        run <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", K127_K, "user"))
-        expect_identical(run$corrected@args$ruv_design, "factors_all_features")
+        run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", K127_K, "user"))
+        expect_identical(run$corrected@args$ruv_design, "groups_all_features")
         expect_identical(run$corrected@args$ruv_number_k, K127_K)
         expect_identical(run$corrected@args$ruv_grouping_variable, "group")
         expect_identical(run$corrected@args$ctrl, lapply(mats, rownames))
@@ -449,7 +449,7 @@ test_that("F3: the corrected object is stamped, and a stamped object is refused 
         expect_gt(nrow(kit127Quiet(case$run(run$corrected, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE))[[3L]]), 0L)
     }
     # no assay corrected: nothing to stamp
-    none <- kit127Quiet(runOmicsRuvFactors(kit127Lipid(mats, fixture$design), "factors_all_features", 0L, "user"))
+    none <- kit127Quiet(runOmicsRuvFactors(kit127Lipid(mats, fixture$design), "groups_all_features", 0L, "user"))
     expect_null(none$corrected@args$ruv_design)
 })
 
@@ -457,7 +457,7 @@ test_that("F5: a feature unobserved in one whole group is tested between the gro
     skip_if_not_installed("ruv")
     fx <- kit127DesignFixture(c("A", "B", "C"), 6L, patterns = TRUE)
     object <- kit127Lipid(list(pos = fx$y), fx$design)
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", 2L, "user"))
+    run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", 2L, "user"))
     expect_warning(da <- kit127Hush(runLipidsDA(object, kit127Contrasts(c("groupB-groupA", "groupC-groupA")), "~ 0 + group", 0.05, 0,
         TRUE, TRUE, ruv_factors = run$factors), "omics_ruv_features_not_tested"), class = "omics_ruv_features_not_tested")
     long <- da$da_lipids_long
@@ -507,7 +507,7 @@ test_that("F6: the features not tested are returned by assay and announced by a 
     mats <- lapply(fixture$assays, function(a) rbind(a$y, a$is))
     ids <- lapply(fixture$assays, function(a) rownames(a$is))
     object <- kit127Metab(mats, fixture$design)
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_supplied_controls", K127_K, "user", ruv_control_ids = ids))
+    run <- kit127Quiet(runOmicsRuvFactors(object, "supplied_controls", K127_K, "user", ruv_control_ids = ids))
     expect_warning(da <- kit127Hush(runMetabolitesDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE,
         ruv_factors = run$factors), "omics_ruv_features_not_tested"), class = "omics_ruv_features_not_tested")
     expect_named(da$ruv_features_not_tested, names(mats))
@@ -532,7 +532,7 @@ test_that("F9: an incomplete supplied control is left out of W and of the correc
     ids <- lapply(fixture$assays, function(a) rownames(a$is))
     complete <- list(pos = setdiff(ids$pos, "pos_ITSD_2"), neg = ids$neg)
     object <- kit127Lipid(mats, fixture$design)
-    expect_warning(run <- kit127Hush(runOmicsRuvFactors(object, "factors_supplied_controls", K127_K, "user", ruv_control_ids = ids),
+    expect_warning(run <- kit127Hush(runOmicsRuvFactors(object, "supplied_controls", K127_K, "user", ruv_control_ids = ids),
         "omics_ruv_controls_incomplete"), class = "omics_ruv_controls_incomplete", regexp = "pos_ITSD_2")
     expect_identical(run$factors$pos$control_ids, complete$pos)
     expect_identical(run$factors$pos$controls_left_out, "pos_ITSD_2")
@@ -540,7 +540,7 @@ test_that("F9: an incomplete supplied control is left out of W and of the correc
     expect_setequal(run$factors$pos$not_tested, ids$pos)
     expect_identical(run$corrected@args$ctrl, complete)
     # the correction is the one the complete controls give
-    reference <- kit127Quiet(runOmicsRuvFactors(object, "factors_supplied_controls", K127_K, "user", ruv_control_ids = complete))
+    reference <- kit127Quiet(runOmicsRuvFactors(object, "supplied_controls", K127_K, "user", ruv_control_ids = complete))
     expect_identical(run$corrected@lipid_data, reference$corrected@lipid_data)
     expect_identical(run$factors$pos$W, reference$factors$pos$W)
 })
@@ -550,14 +550,14 @@ test_that("F10: a non-finite k, a missing group and the factors of another assay
     fixture <- kit127Fixture()
     mats <- lapply(fixture$assays, `[[`, "y")
     object <- kit127Lipid(mats, fixture$design)
-    expect_error(kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", Inf, "user")), class = "omics_ruv_factors_invalid")
-    expect_error(kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", list(pos = NaN, neg = 1L), "user")),
+    expect_error(kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", Inf, "user")), class = "omics_ruv_factors_invalid")
+    expect_error(kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", list(pos = NaN, neg = 1L), "user")),
         class = "omics_ruv_factors_invalid")
     no_group <- fixture$design
     no_group$group[[2L]] <- NA_character_
-    expect_error(kit127Quiet(runOmicsRuvFactors(kit127Lipid(mats, no_group), "factors_all_features", 1L, "user")),
+    expect_error(kit127Quiet(runOmicsRuvFactors(kit127Lipid(mats, no_group), "groups_all_features", 1L, "user")),
         class = "omics_ruv_factors_invalid")
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", 1L, "user"))
+    run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", 1L, "user"))
     expect_identical(vapply(run$factors, `[[`, "", "assay"), c(pos = "pos", neg = "neg"))
     expect_error(kit127Quiet(runLipidsDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE,
         ruv_factors = list(pos = run$factors$pos, neg = run$factors$pos))), class = "omics_ruv_factors_invalid")
@@ -566,14 +566,14 @@ test_that("F10: a non-finite k, a missing group and the factors of another assay
 test_that("F1: the bounded sweep's k is refused with all features as controls", {
     fixture <- kit127Fixture()
     object <- kit127Lipid(lapply(fixture$assays, `[[`, "y"), fixture$design)
-    expect_error(kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", 1L, "sweep_bounded")), class = "omics_ruv_factors_invalid")
+    expect_error(kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", 1L, "sweep_bounded")), class = "omics_ruv_factors_invalid")
 })
 
 test_that("F11: the test with W in the model is limma's own, computed here without the package's DA kernel", {
     skip_if_not_installed("ruv")
     fixture <- kit127Fixture()
     object <- kit127Lipid(lapply(fixture$assays, `[[`, "y"), fixture$design)
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", K127_K, "user"))
+    run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", K127_K, "user"))
     da <- kit127Quiet(runLipidsDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors))
     for (assay in names(fixture$assays)) {
         y <- fixture$assays[[assay]]$y
@@ -594,7 +594,7 @@ test_that("F11: metabolomics with supplied standards is the simulator's arm 8", 
     fixture <- kit127Fixture()
     object <- kit127Metab(lapply(fixture$assays, function(a) rbind(a$y, a$is)), fixture$design)
     ids <- lapply(fixture$assays, function(a) rownames(a$is))
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_supplied_controls", K127_K, "user", ruv_control_ids = ids))
+    run <- kit127Quiet(runOmicsRuvFactors(object, "supplied_controls", K127_K, "user", ruv_control_ids = ids))
     da <- kit127Quiet(runMetabolitesDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors))
     for (assay in names(fixture$assays)) {
         reference <- simArm(fixture, assay, K127_K[[assay]], standards = fixture$assays[[assay]]$is)
@@ -609,7 +609,7 @@ test_that("F11: runMetabolitesDA refuses factors that are not the kernel's per-a
     skip_if_not_installed("ruv")
     fixture <- kit127Fixture()
     object <- kit127Metab(lapply(fixture$assays, `[[`, "y"), fixture$design)
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", 1L, "user"))
+    run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", 1L, "user"))
     refused <- function(factors) {
         expect_error(kit127Quiet(runMetabolitesDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = factors)),
             class = "omics_ruv_factors_invalid")
@@ -627,14 +627,14 @@ test_that("F11: a correction that returns an assay unchanged stops the run", {
     fixture <- kit127Fixture()
     object <- kit127Lipid(lapply(fixture$assays, `[[`, "y"), fixture$design)
     local_mocked_bindings(ruvIII_C_Varying = function(theObject, ...) theObject)
-    expect_error(kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", 1L, "user")), class = "omics_ruv_correction_failed")
+    expect_error(kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", 1L, "user")), class = "omics_ruv_correction_failed")
 })
 
 test_that("F11: the factors record survives a save and a restore", {
     skip_if_not_installed("ruv")
     fixture <- kit127Fixture()
     object <- kit127Lipid(lapply(fixture$assays, function(a) rbind(a$y, a$is)), fixture$design)
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_supplied_controls", K127_K, "user",
+    run <- kit127Quiet(runOmicsRuvFactors(object, "supplied_controls", K127_K, "user",
         ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is))))
     path <- withr::local_tempfile(fileext = ".rds")
     saveRDS(run[c("factors", "parameters")], path)
@@ -696,7 +696,7 @@ test_that("with technical replicates the biological units limit k, in the kernel
     for (omic in c("lipid", "metab")) {
         run <- if (identical(omic, "lipid")) runLipidsDA else runMetabolitesDA
         object <- techRepRuvObject(omic)
-        kernel <- function(k, obj = object) suppressMessages(runOmicsRuvFactors(obj, "factors_all_features", k, "user"))
+        kernel <- function(k, obj = object) suppressMessages(runOmicsRuvFactors(obj, "groups_all_features", k, "user"))
         # 8 units in 2 groups: at most 5 factors (the injections' bound was 13); k = 6 is refused per assay, never reduced
         refused <- NULL
         expect_warning(refused <- kernel(6L), class = "omics_ruv_factors_refused")
