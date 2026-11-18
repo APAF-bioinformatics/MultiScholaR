@@ -3,23 +3,23 @@
 #
 # Usage: Rscript --vanilla check-arms.R <sim: s1..s4> <out dir> <cell> <arms requested (K124_ARMS)>
 #
-# The shipped-kernel arms are 34 to 40. Of those requested, the ones the simulator forms in <cell> (the rules below,
+# The shipped-kernel arms are 34 to 41. Of those requested, the ones the simulator forms in <cell> (the rules below,
 # as each simulator's arm list has them) must have rows in every run of the table; a requested arm the simulator does
 # not form in the cell is listed as such. Exit status 1 when a formed arm is missing from a run or has a crashed row,
 # so that a crash of the package under test fails the job instead of being scored silently. Prints rows per arm and
 # status and the seconds per run of each shipped arm.
 
 FORMED <- list(
-    s1 = function(cell) c("34", "35", if (cell != "C4") "36", "37", if (cell %in% c("C6", "C8")) "38"),
-    s2 = function(cell) c("34", "35", if (cell != "C4") "36", "37", "39", "40"),
-    s3 = function(cell) c("34", "35", "36", "37", "39"),
-    s4 = function(cell) c("34", "35", "36", "37", if (cell %in% c("C6", "C8")) "38")
+    s1 = function(cell) c("34", "35", if (cell != "C4") "36", "37", if (cell %in% c("C6", "C8")) "38", "39", "40", "41"),
+    s2 = function(cell) c("34", "35", if (cell != "C4") "36", "37", "39", "40", "41"),
+    s3 = function(cell) c("34", "35", "36", "37", "39", "40", "41"),
+    s4 = function(cell) c("34", "35", "36", "37", if (cell %in% c("C6", "C8")) "38", "39", "40", "41")
 )
 
 arguments <- commandArgs(trailingOnly = TRUE)
 if (length(arguments) != 4L) stop("usage: Rscript --vanilla check-arms.R <sim> <out dir> <cell> <arms>")
 sim <- arguments[[1L]]; out_dir <- arguments[[2L]]; cell <- arguments[[3L]]
-requested <- intersect(strsplit(arguments[[4L]], ",", fixed = TRUE)[[1L]], as.character(34:40))
+requested <- intersect(strsplit(arguments[[4L]], ",", fixed = TRUE)[[1L]], as.character(34:41))
 formed <- intersect(requested, FORMED[[sim]](cell))
 problems <- character()
 not_formed <- setdiff(requested, formed)

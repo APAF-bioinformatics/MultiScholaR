@@ -32,7 +32,7 @@ name: KIT-124 simulators
 # commit: the library action installs MultiScholaR from its checkout of tools_ref, with the internal packages built in
 # the job from the read token, exactly as module-ci and KIT-134 do; that copy is kept (not removed) and the simulators
 # load it (K124_PACKAGE=installed) instead of the push's tree, which is then not compared with package_commit. The
-# arms 34 to 40 call that package's new-design kernels. Three further optional entries: `fault` (per simulator, one
+# arms 34 to 41 call that package's new-design kernels. Three further optional entries: `fault` (per simulator, one
 # arm label: K124_FAULT, the lifecycle test's deliberate crash in the first run), `pairs` (per simulator, "new:base"
 # comma list: the compare job saves both arms' rows and runs packaging/verify/compare-results.R on them, from
 # package_commit). After the upload a check (.github/k124-sim/check-arms.R) fails the job when a
@@ -250,7 +250,9 @@ jobs:
           if [ "$built_from" != "$PACKAGE_COMMIT" ]; then echo "::error::the library was built from $built_from, not $PACKAGE_COMMIT"; exit 1; fi
           Rscript --vanilla -e 'suppressPackageStartupMessages(library(MultiScholaR)); ns <- asNamespace("MultiScholaR");
             kernels <- c("computeProtRuvModelFactors", "attachProtRuvModelFactors", "diaRuvCovariatesOperation", "trxChooseRuvDesign",
-              "trxRuvFactors", "runOmicsRuvFactors", "estimateRuvFactorCount", "ruvExactContrastsFit");
+              "trxRuvFactors", "runOmicsRuvFactors", "estimateRuvFactorCount", "ruvExactContrastsFit",
+              "declareProtRuvNoFactors", "protRuvModelReplicateSets", "protRuvSeparationRuleK", "resolveProtRuvParameters",
+              "omicsRuvSeparationRuleK", "trxSeparationRuleK", "trxCanonicalRuvDesignParameters");
             missing <- kernels[!vapply(kernels, exists, logical(1L), envir = ns, inherits = FALSE)];
             if (length(missing)) { cat("::error::the installed MultiScholaR lacks", paste(missing, collapse = ", "), "\n"); quit(status = 1L) };
             cat("MultiScholaR", as.character(utils::packageVersion("MultiScholaR")), "installed at", find.package("MultiScholaR"), "from commit", Sys.getenv("PACKAGE_COMMIT"), "\n")'

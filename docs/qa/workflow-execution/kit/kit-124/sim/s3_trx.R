@@ -144,8 +144,12 @@
 #   36  supplied controls (RUVg): arm 9's degraded set (drawn again on arm 9's stream), the estimated count
 #   37  no RUV: the design none (simulator arm 1)
 #   39  first-pass nulls (RUVg; the kernel's own first pass), the estimated count (nearest: arm 23, which has B = 20)
-#   Not formed: 38 (technical replicates: summed at the design step, the option is unavailable in this omic); 40 (the
-#   separation rule: the kernel takes that k as given, from the wiring, and does not compute it).
+#   Not formed: 38 (technical replicates: summed at the design step, the option is unavailable in this omic).
+#   Brought to the bound commit (KIT-129 fifth pass item 4: the declared run path computes the separation rule):
+#   40  first-pass nulls (RUVg; the kernel's own first pass), the separation rule: trxSeparationRuleK(<the inputs>, the
+#       TMM logCPM, trxCanonicalRuvDesignParameters(<the parameters>)), then trxChooseRuvDesign(<inputs>, <parameters>,
+#       k_record = its record), as the declared choice computes it (simulator arm 24)
+#   41  supplied controls (RUVg): arm 8's 50 oracle genes (arm 8's stream), the separation rule, as 40 (simulator arm 22)
 #   K124_FAULT=<arm> (environment, the lifecycle test only): that arm stops with an unclassed error in the first run of
 #   the invocation, so that a crash of a shipped-kernel arm can be seen to be reported.
 #   K124_ARMS (environment; unset = the arms above, 22 to 31 not run): a comma list of the arm labels to run, of those
@@ -189,8 +193,8 @@ if (installed) {
     suppressPackageStartupMessages(library(MultiScholaR))
     attach(asNamespace("MultiScholaR"), name = "MultiScholaR:namespace", warn.conflicts = FALSE)
 } else suppressMessages(pkgload::load_all(".", quiet = TRUE))
-SHIPPED_ARMS <- c("34", "35", "36", "37", "39")
-if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 39 call the installed package: set K124_PACKAGE=installed")
+SHIPPED_ARMS <- c("34", "35", "36", "37", "39", "40", "41")
+if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 41 call the installed package: set K124_PACKAGE=installed")
 fault_arm <- Sys.getenv("K124_FAULT", "")
 for (package in c("edgeR", "RUVSeq", "EDASeq", "sva")) requireNamespace(package)
 
@@ -218,7 +222,7 @@ ENTRY <- "B_vs_A=groupB-groupA"
 ARM_STREAM <- c(`1` = 1L, `2` = 2L, `3` = 3L, `5` = 5L, `6` = 6L, `7` = 7L, `8` = 8L, `9` = 9L, `10` = 10L, `11` = 11L, R = 18L,
     `14` = 14L, `14E` = 19L, `15` = 15L, `16` = 16L, `17` = 17L, `22` = 22L, `23` = 23L, `24` = 24L,
     `31` = 7L,                                            # the exactness round: arm 7's stream
-    `34` = 34L, `35` = 35L, `36` = 36L, `37` = 37L, `39` = 39L)   # the confirmation round: their own streams
+    `34` = 34L, `35` = 35L, `36` = 36L, `37` = 37L, `39` = 39L, `40` = 40L, `41` = 41L)   # the confirmation round: their own streams
 COLUMNS <- c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", "status", "k", "n_features", "n_true", "n_calls",
     "null_p05", "null_p01", "fdp", "power", "bias", "rmse", "seconds")
 
@@ -512,11 +516,14 @@ oneRun <- function(cl, run) {
         table <- trxDaApply(trxDaFit(y, s$pdata, trxDaFormula(s$pdata)), ENTRY)$results[[1L]]$top_table
         list(table = table[genes, c("logFC", "PValue", "FDR")], k = ncol(s$W))
     }
-    shipped <- function(ruv_design, ids = character()) tryCatch({
+    shipped <- function(ruv_design, ids = character(), k_rule = "num_sv_be") tryCatch({
         none <- identical(ruv_design, "none")
-        parameters <- trxRuvDesignParameters(ruv_design, ruv_k_rule = if (none) NA_character_ else "num_sv_be",
-            ruv_control_ids = ids, ruv_k_seed = if (none) NA_integer_ else seed)
-        choice <- trxChooseRuvDesign(list(counts = y, design = design), parameters, log_cpm = n$log_cpm_tmm)
+        separation <- identical(k_rule, "sweep_bounded")
+        parameters <- trxRuvDesignParameters(ruv_design, ruv_k_rule = if (none) NA_character_ else k_rule,
+            ruv_control_ids = ids, ruv_k_seed = if (none || separation) NA_integer_ else seed)
+        x <- list(counts = y, design = design)
+        separated <- if (separation) trxSeparationRuleK(x, n$log_cpm_tmm, trxCanonicalRuvDesignParameters(parameters))
+        choice <- trxChooseRuvDesign(x, parameters, k_record = separated$k_record, log_cpm = if (!separation) n$log_cpm_tmm)
         shippedTest(trxRuvFactors(y, n$log_cpm_tmm, design, choice$chosen$control_genes, choice$chosen$k, choice$ruv_design$method))
     }, error = function(e) {
         if (!inherits(e, "trx_error") && inherits(e, c("ruv_k_refused", "ruv_factor_count_unavailable"))) {
@@ -539,6 +546,13 @@ oneRun <- function(cl, run) {
     })
     arm("37", function() shipped("none"))
     arm("39", function() shipped("first_pass_nulls"))
+    arm("40", function() shipped("first_pass_nulls", k_rule = "sweep_bounded"))
+    arm("41", function() {
+        nulls <- genes[all_null]
+        if (length(nulls) < 50L) refuse("fewer than 50 null genes pass the filter")
+        set.seed(seed * 100L + ARM_STREAM[["8"]])         # arm 8's draw
+        shipped("supplied_controls", sample(nulls, 50L), k_rule = "sweep_bounded")
+    })
     total <- proc.time()[["elapsed"]] - t_start
     list(rows = do.call(rbind, rows), events = if (length(events)) do.call(rbind, events),
         timing = data.frame(cell = cl$id, run = run, prep_seconds = prep_seconds, total_seconds = total, E = E))

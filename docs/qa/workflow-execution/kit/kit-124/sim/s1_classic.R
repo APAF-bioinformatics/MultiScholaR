@@ -162,6 +162,18 @@
 #   38  C6 and C8: technical replicates as the replicate sets, every protein a control, the estimated count: the kernel
 #       given ruv_grouping_variable = "tech_rep_group" (simulator arm 33). The kernel documents the groups as its only
 #       replicate structure; this arm shows what it does when handed the units.
+# Brought to the bound commit's kernels (confirmation round, two-part declaration; these replace the lines above where
+# they differ): the replicate sets of every arm are those the run path hands the kernel, protRuvModelReplicateSets(
+# <the normalised object>, <design>, "group") (38: the declared units; 39, 40: the units on C6 and C8, the groups
+# elsewhere); a count of 0, and arm 37, are the run path's declared state without factors (declareProtRuvNoFactors,
+# decision M30's test: treat with the trend and robust settings), tested by differentialAbundanceAnalysis as before.
+#   37  no RUV, the design none: declareProtRuvNoFactors(<normalised>, ruv_design = "none") (simulator arm 27)
+#   39  first-pass nulls (the kernel's own first pass, protRuvFirstPassControls), the estimated count
+#   40  first-pass nulls, the separation rule: k = the sweep's, resolveProtRuvParameters(<normalised>, the tab's
+#       automatic defaults: 1 to 20 %, max_difference, penalty 0.5, adaptive) as the run path computes it, on arm 3's
+#       stream (stream 3, so that the sweep is the one arms 3 to 6 read), handed to the kernel under sweep_bounded
+#   41  supplied controls (arm 8's oracle set), the separation rule: k = protRuvSeparationRuleK(<normalised>, the list,
+#       "group") as the run path computes it, handed to the kernel under sweep_bounded
 # K124_FAULT=<arm> (environment, the lifecycle test only): that arm stops with an unclassed error in the first run of
 # the invocation, so that a crash of a shipped-kernel arm can be seen to be reported.
 # With E = 0 arms 29 to 31 are arm 1's result, as arm 7; arms 25, 26, 32, 33 are the no-RUV fit under their own test,
@@ -262,11 +274,12 @@ arms_of <- function(cell) {
     if (p$duplicates) arms <- c(arms, 15L, 16L)
     if (p$batch) arms <- c(arms, 17L)
     if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L, 24L, 25L, 26L, 27L, 28L, if (p$duplicates) c(29L, 30L),
-        31L, 32L, if (p$duplicates) 33L, if (installed) c(34L, 35L, if (p$share > 0) 36L, 37L, if (p$duplicates) 38L)), arms_wanted)
+        31L, 32L, if (p$duplicates) 33L, if (installed) c(34L, 35L, if (p$share > 0) 36L, 37L, if (p$duplicates) 38L,
+        39L, 40L, 41L)), arms_wanted)
     arms
 }
-shipped_arms <- 34:38
-if (!installed && any(shipped_arms %in% arms_wanted)) stop("arms 34 to 38 call the installed package: set K124_PACKAGE=installed")
+shipped_arms <- 34:41
+if (!installed && any(shipped_arms %in% arms_wanted)) stop("arms 34 to 41 call the installed package: set K124_PACKAGE=installed")
 fault_arm <- suppressWarnings(as.integer(Sys.getenv("K124_FAULT", "")))
 # the exactness round: the arms whose test differs from the kernel's (exact standard error, settings applied)
 own_test <- list(`25` = c(TRUE, FALSE), `26` = c(FALSE, TRUE), `27` = c(FALSE, TRUE), `28` = c(FALSE, TRUE),
@@ -638,13 +651,33 @@ one <- function(cell, run) {
         if (is.null(tab) || !nrow(tab)) stop("differentialAbundanceAnalysis returned no table")
         data.frame(id = rownames(tab), p = tab$raw_pvalue, q = tab$fdr_qvalue, estimate = tab$logFC, stringsAsFactors = FALSE)
     }
-    shipped <- function(controls = NULL, grouping = "group") as_refusal({
+    # one design as the run path computes it (diaNormalizationOperation("declared")): the replicate sets of the design,
+    # the kernel under the k rule, a count of 0 the declared state without factors
+    shipped <- function(design_name, controls = NULL, k_rule = "num_sv_be", k = NULL) as_refusal({
         normalised <- object("tech_rep_group")
+        grouping <- protRuvModelReplicateSets(normalised, design_name, "group")
         factors <- NULL
-        quietly(factors <- computeProtRuvModelFactors(normalised, ruv_k_rule = "num_sv_be",
-            controls = if (!is.null(controls)) unname(controls), ruv_grouping_variable = grouping, ruv_k_seed = stream(0L)))
-        if (factors$k == 0L) return(list(tab = shipped_da(normalised), k = 0L))
+        quietly(factors <- computeProtRuvModelFactors(normalised, ruv_k = k, ruv_k_rule = k_rule,
+            controls = if (!is.null(controls)) unname(controls), ruv_grouping_variable = grouping, ruv_k_seed = stream(0L),
+            ruv_design = if (identical(design_name, "technical_replicates")) "groups_all_features" else design_name))
+        if (!identical(factors$status, "ok")) {
+            return(list(tab = shipped_da(declareProtRuvNoFactors(normalised, c(list(ruv_design = design_name),
+                factors[c("ruv_k_rule", "ruv_k_estimate", "reason")]))), k = 0L))
+        }
         list(tab = shipped_da(attachProtRuvModelFactors(normalised, normalised, factors)), k = factors$k)
+    })
+    # the separation rule's k as the run path computes it: the sweep (first-pass nulls), the list's own (supplied)
+    shipped_sweep_k <- function() as_refusal(tryCatch({
+        set.seed(stream(3L))
+        value <- NULL
+        quietly(value <- resolveProtRuvParameters(object("tech_rep_group"), list(ruv_mode = "automatic", auto_percentage_min = 1,
+            auto_percentage_max = 20, separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE), "group"))
+        value$k
+    }, error = function(e) if (is_refusal(e)) refuse(paste("the sweep refused:", conditionMessage(e))) else stop(e)))
+    shipped_list_k <- function(controls) as_refusal({
+        value <- NULL
+        quietly(value <- protRuvSeparationRuleK(object("tech_rep_group"), unname(controls), "group"))
+        value$k
     })
     arm_functions <- list(
         `1` = function() list(tab = da(x, design), k = 0L),
@@ -686,11 +719,15 @@ one <- function(cell, run) {
         `25` = variant(25L, 7L), `26` = variant(26L, 7L), `27` = variant(27L, 1L), `28` = variant(28L, 3L),
         `29` = variant(29L, 7L, units = TRUE), `30` = variant(30L, 16L, units = TRUE), `31` = variant(31L, 7L, B = 200L),
         `32` = variant(32L, 7L, B = 200L, units = p$duplicates), `33` = variant(33L, 16L, B = 200L, units = TRUE),
-        `34` = function() shipped(),
-        `35` = function() shipped(sim$oracle),
-        `36` = function() shipped(sim$degraded),
-        `37` = function() list(tab = as_refusal(shipped_da(object("tech_rep_group"))), k = 0L),
-        `38` = function() shipped(grouping = "tech_rep_group"))
+        `34` = function() shipped("groups_all_features"),
+        `35` = function() shipped("supplied_controls", sim$oracle),
+        `36` = function() shipped("supplied_controls", sim$degraded),
+        `37` = function() list(tab = as_refusal(shipped_da(declareProtRuvNoFactors(object("tech_rep_group"),
+            list(ruv_design = "none", reason = "the design none: no correction for unwanted variation")))), k = 0L),
+        `38` = function() shipped("technical_replicates"),
+        `39` = function() shipped("first_pass_nulls"),
+        `40` = function() shipped("first_pass_nulls", k_rule = "sweep_bounded", k = shipped_sweep_k()),
+        `41` = function() shipped("supplied_controls", sim$oracle, k_rule = "sweep_bounded", k = shipped_list_k(sim$oracle)))
     if (self_check) {
         stopifnot("the rebuilt kernel is not the package's kernel (no RUV)" = identical(da(x, design), da_variant(x, design)))
         with_settings <- da_variant(x, design, applied = TRUE); without_treat <- da_variant(x, design, applied = TRUE, no_treat = TRUE)

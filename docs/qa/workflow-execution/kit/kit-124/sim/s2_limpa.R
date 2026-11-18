@@ -176,6 +176,8 @@
 #   37  no RUV: differentialAbundanceAnalysis on the quantified object (simulator arm 1)
 #   39  first-pass nulls (the kernel's own first pass: dpcDE, the F test over the groups), the estimated count
 #   40  first-pass nulls, the separation rule (the kernel's default for this control rule: today's sweep's k)
+#   41  supplied controls (arm 8's oracle set), the separation rule: on this route the kernel's separation rule is
+#       today's sweep's k whatever the control rule (KIT-129 W3), not arm 22's rule on the list
 # Arm 38 (technical replicates as their own design) is not formed: on this route it is arm 34's computation.
 # K124_FAULT=<arm> (environment, the lifecycle test only): that arm stops with an unclassed error in the first run of
 # the invocation, so that a crash of a shipped-kernel arm can be seen to be reported.
@@ -232,8 +234,8 @@ if (installed) {
     suppressPackageStartupMessages(library(MultiScholaR))
     attach(asNamespace("MultiScholaR"), name = "MultiScholaR:namespace", warn.conflicts = FALSE)
 } else suppressMessages(pkgload::load_all(".", quiet = TRUE))
-SHIPPED_ARMS <- c(34L, 35L, 36L, 37L, 39L, 40L)
-if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 40 call the installed package: set K124_PACKAGE=installed")
+SHIPPED_ARMS <- c(34L, 35L, 36L, 37L, 39L, 40L, 41L)
+if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 41 call the installed package: set K124_PACKAGE=installed")
 fault_arm <- suppressWarnings(as.integer(Sys.getenv("K124_FAULT", "")))
 logger::log_threshold(logger::FATAL)
 # Namespaces are loaded before the workers fork (their load time is then in no run's seconds). The DPC engine
@@ -688,7 +690,8 @@ runOne <- function(cell, run) {
         `36` = \() shipped(ruv_control_rule = "supplied_list", ruv_control_ids = ids[degraded]),
         `37` = \() list(k = 0L, table = shippedDa(quantified)),
         `39` = \() shipped(ruv_control_rule = "first_pass_drop_top_25", ruv_k_rule = "num_sv_be"),
-        `40` = \() shipped(ruv_control_rule = "first_pass_drop_top_25", ruv_k_rule = "sweep_bounded")
+        `40` = \() shipped(ruv_control_rule = "first_pass_drop_top_25", ruv_k_rule = "sweep_bounded"),
+        `41` = \() shipped(ruv_control_rule = "supplied_list", ruv_control_ids = ids[oracle], ruv_k_rule = "sweep_bounded")
     )
     SHIPPED_REFUSALS <- c("ruv_k_refused", "ruv_factor_count_unavailable", "omics_ruv_no_residual_df",
         "omics_da_block_correlation_failed", "omics_da_no_biological_replication")

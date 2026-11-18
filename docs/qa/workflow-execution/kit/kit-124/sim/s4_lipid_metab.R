@@ -151,7 +151,17 @@
 # 37  no RUV: runLipidsDA on the object, no factors (simulator arm 1).
 # 38  (C6, C8) technical replicates: the extract as the replicate sets (ruv_grouping_variable = "extract"), all
 #     features as controls, the estimated count (simulator arm 33).
-#     Not formed: 39 and 40 (first-pass nulls): the kernel has no first-pass control rule.
+#     Brought to the bound commit (KIT-129 second and fifth passes; these replace the line "not formed: 39 and 40"):
+# 37  reports k as arm 1 does (NA: no factor is fitted), so that the pair 37~1 is read like for like.
+# 39  first-pass nulls (the kernel's own first pass, omicsRuvFirstPassControls), the estimated count.
+# 40  first-pass nulls, the separation rule: k per assay = omicsRuvSeparationRuleK(object, "first_pass_nulls") as the
+#     run path computes it, handed to runOmicsRuvFactors under sweep_bounded (an assay without a k: the kernel's refusal).
+# 41  supplied controls (the standards, arm 8's), the separation rule: omicsRuvSeparationRuleK(object,
+#     "supplied_controls", the standards), handed to the kernel as in 40 (simulator arm 22).
+#     The views (subsets): on `complete` (the features complete in study and pooled-QC injections) the package holds
+#     the features S4's own W is formed on, so its W can be the simulator's; on `full` the package's kernel forms W on
+#     the features complete in the study injections it holds (it holds no QC injection), the simulator on those
+#     complete in study and QC injections: there the two differ by the comparison, not by the shipped method.
 #     K124_FAULT=<arm> (environment, the lifecycle test only): that arm stops with an unclassed error in the first run
 #     of the invocation, so that a crash of a shipped-kernel arm can be seen to be reported.
 #  I  the package's ITSD normalisation and log2 alone, then the test.
@@ -204,8 +214,8 @@ if (installed) {
     suppressPackageStartupMessages(library(MultiScholaR))
     attach(asNamespace("MultiScholaR"), name = "MultiScholaR:namespace", warn.conflicts = FALSE)
 } else suppressPackageStartupMessages(pkgload::load_all(".", quiet = TRUE))
-SHIPPED_ARMS <- c("34", "35", "36", "37", "38")
-if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 38 call the installed package: set K124_PACKAGE=installed")
+SHIPPED_ARMS <- c("34", "35", "36", "37", "38", "39", "40", "41")
+if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 41 call the installed package: set K124_PACKAGE=installed")
 fault_arm <- Sys.getenv("K124_FAULT", "")
 logger::log_threshold(logger::FATAL)
 logger::log_threshold(logger::FATAL, namespace = "MultiScholaR")
@@ -226,7 +236,7 @@ RUV_PARAMS <- list(ruv_grouping_variable = "group", percentage_min = 1, percenta
     manual_percentage = 5)
 ARM_NUMBER <- c(stats::setNames(1:17, 1:17), I = 18L, Qs = 19L, Qm = 20L, L = 21L, "22" = 22L, "23" = 23L,
     "25" = 25L, "29" = 29L, "30" = 30L, "31" = 31L, "32" = 32L, "33" = 33L,
-    "34" = 34L, "35" = 35L, "36" = 36L, "37" = 37L, "38" = 38L)
+    "34" = 34L, "35" = 35L, "36" = 36L, "37" = 37L, "38" = 38L, "39" = 39L, "40" = 40L, "41" = 41L)
 EXACT_STREAM <- c("25" = 7L, "29" = 7L, "30" = 16L, "31" = 7L, "32" = 7L, "33" = 16L)   # the stream of the arm each varies
 COMPLETE_ONLY <- c("12", "13", "14")
 
@@ -255,7 +265,7 @@ armsOfCell <- function(cell) {
     if (cell$duplicates) arms <- c(arms, "15", "16")
     if (identical(cell$unwanted, "batch")) arms <- c(arms, "17")
     if (!is.null(arms_wanted)) arms <- intersect(c(arms, "22", "23", "25", "31", "32", if (cell$duplicates) c("29", "30", "33"),
-        if (installed) c("34", "35", "36", "37", if (cell$duplicates) "38")), arms_wanted)
+        if (installed) c("34", "35", "36", "37", if (cell$duplicates) "38", "39", "40", "41")), arms_wanted)
     arms[order(ARM_NUMBER[arms])]
 }
 
@@ -737,6 +747,9 @@ armFunctions <- list(
     "36" = function(view) shippedArm(view, "supplied_controls", standards = "isc"),
     "37" = function(view) shippedArm(view, NULL),
     "38" = function(view) shippedArm(view, "groups_all_features", grouping = "extract"),
+    "39" = function(view) shippedArm(view, "first_pass_nulls"),
+    "40" = function(view) shippedArm(view, "first_pass_nulls", k_rule = "sweep_bounded"),
+    "41" = function(view) shippedArm(view, "supplied_controls", standards = "is", k_rule = "sweep_bounded"),
     "I" = function(view) {
         raw <- lapply(view$assays, function(a) 2^rbind(a$y, a$is))
         object <- quiet(logTransformAssays(normaliseUntransformedData(lipidObject(raw, view$design), method = "ITSD",
@@ -756,14 +769,19 @@ armFunctions <- list(
 
 # The confirmation round (arms 34 to 38): the installed package's new-design kernels through both classes; the lipid
 # table is scored, the metab table must agree with it. `ruv_design` NULL is no RUV.
-shippedArm <- function(view, ruv_design, standards = NULL, grouping = NULL) {
+shippedArm <- function(view, ruv_design, standards = NULL, grouping = NULL, k_rule = "num_sv_be") {
     mats <- lapply(view$assays, function(a) if (is.null(standards)) a$y else rbind(a$y, a[[standards]]))
     controls <- if (!is.null(standards)) lapply(view$assays, function(a) rownames(a[[standards]]))
     contrasts <- contrastsTable(view$contrasts)
     through <- function(omic) {
         object <- if (omic == "lipid") lipidObject(mats, view$design) else metabObject(mats, view$design)
-        factors <- if (!is.null(ruv_design)) quiet(runOmicsRuvFactors(object, ruv_design, ruv_k_rule = "num_sv_be",
-            ruv_control_ids = controls, ruv_grouping_variable = grouping, ruv_k_seed = view$seed * 100L + 99L))$factors
+        # the separation rule's k per assay as the run path computes it (fifth pass item 4), then the kernel under it
+        k <- if (identical(k_rule, "sweep_bounded")) quiet(omicsRuvSeparationRuleK(object, ruv_design, ruv_control_ids = controls,
+            ruv_grouping_variable = grouping))$k
+        factors <- if (!is.null(ruv_design)) quiet(if (is.null(k)) runOmicsRuvFactors(object, ruv_design, ruv_k_rule = k_rule,
+            ruv_control_ids = controls, ruv_grouping_variable = grouping, ruv_k_seed = view$seed * 100L + 99L) else
+            runOmicsRuvFactors(object, ruv_design, ruv_k = k, ruv_k_rule = k_rule, ruv_control_ids = controls,
+                ruv_grouping_variable = grouping))$factors
         da <- quiet(if (omic == "lipid") runLipidsDA(object, contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = factors) else
             runMetabolitesDA(object, contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = factors))
         long <- if (omic == "lipid") da$da_lipids_long else da$da_metabolites_long
@@ -790,7 +808,9 @@ shippedArm <- function(view, ruv_design, standards = NULL, grouping = NULL) {
         rownames(rows) <- NULL
         rows
     })
-    list(tables = tables, k = vapply(ASSAYS, function(assay) as.numeric(lipid$factors[[assay]]$k %||% 0), numeric(1L)))
+    # no RUV (37) reports k as arm 1 does: NA, no factor fitted
+    list(tables = tables, k = vapply(ASSAYS, function(assay) if (is.null(ruv_design)) NA_real_ else
+        as.numeric(lipid$factors[[assay]]$k %||% 0), numeric(1L)))
 }
 
 empiricalControlsArm <- function(view, controls) {

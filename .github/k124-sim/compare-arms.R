@@ -11,7 +11,8 @@
 # them exactly, as compare-laptop.R stores them. Then compare-results.R writes <out dir>/<sim>-<new>-<base>-compare.tsv,
 # and <out dir>/<sim>-summary.tsv has one row per pair and column: the worst verdict over the cells and the largest
 # relative difference. The rule-bearing columns (decision M19) are status, k, the counts, null_p05, null_p01, fdp and
-# power; bias and rmse are reported.
+# power; bias and rmse are reported. Each subset (S1, S4: full and complete) is read apart: one data frame per cell and
+# subset ("S4 C6 complete 34~32") and one summary row per pair, subset and column.
 
 DISCRETE <- c("seed", "k", "n_features", "n_true", "n_calls")
 MEASURES <- c("null_p05", "null_p01", "fdp", "power", "bias", "rmse")
@@ -29,7 +30,7 @@ files <- file.path(parts, sprintf("%s-runs.tsv", sim))
 files <- files[file.exists(files)]
 summary_path <- file.path(out_dir, sprintf("%s-summary.tsv", sim))
 if (!length(files)) {
-    utils::write.table(data.frame(simulator = toupper(sim), pair = NA, column = NA, cells = 0L, verdict = "no table",
+    utils::write.table(data.frame(simulator = toupper(sim), pair = NA, subset = NA, column = NA, cells = 0L, verdict = "no table",
         max_rel = NA, rule_bearing = NA), summary_path, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
     cat(sprintf("%s: no result table among the artifacts (a failed job uploads nothing)\n", sim))
     quit(save = "no", status = 0L)
@@ -60,7 +61,7 @@ for (pair in pairs) {
     }
     byCell <- function(x) {
         t <- typed(x)
-        cells <- split(t, t$cell)
+        cells <- split(t, paste(t$cell, t$subset))
         cells <- lapply(cells, \(part) { rownames(part) <- NULL; part })
         stats::setNames(cells, sprintf("%s %s %s~%s", toupper(sim), names(cells), new, base))
     }
@@ -74,11 +75,14 @@ for (pair in pairs) {
     column <- sub("^[^$]*\\$", "", compared$path)
     compared <- compared[column %in% c(RULE_BEARING, "bias", "rmse", "seed", "cell", "run", "subset"), , drop = FALSE]
     column <- sub("^[^$]*\\$", "", compared$path)
-    for (name in unique(column)) {
-        mine <- compared[column == name, , drop = FALSE]
+    # the subset is the third word of the data frame's name ("S4 C6 complete 34~32"): each subset is read apart
+    part <- sub("^\\S+ \\S+ (\\S+) .*$", "\\1", sub("\\$.*$", "", compared$path))
+    for (name in unique(column)) for (subset in unique(part)) {
+        mine <- compared[column == name & part == subset, , drop = FALSE]
+        if (!nrow(mine)) next
         verdict <- if (all(mine$verdict == "agree")) "agree" else if (any(mine$verdict == "differ")) "differ" else "outside"
-        summary[[length(summary) + 1L]] <- data.frame(simulator = toupper(sim), pair = paste0(new, "~", base), column = name,
-            cells = nrow(mine), rows = length(common), verdict = verdict,
+        summary[[length(summary) + 1L]] <- data.frame(simulator = toupper(sim), pair = paste0(new, "~", base), subset = subset,
+            column = name, cells = nrow(mine), rows = sum(a$subset == subset), verdict = verdict,
             max_rel = if (any(is.finite(mine$max_rel))) max(mine$max_rel, na.rm = TRUE) else NA_real_,
             outside = sum(mine$outside, na.rm = TRUE), rule_bearing = name %in% RULE_BEARING, stringsAsFactors = FALSE)
     }
