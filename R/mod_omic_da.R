@@ -235,6 +235,17 @@ omicDaReadSource <- function(workflowData, source) {
         })
 }
 
+#' Whether the tab may fall back to the owner's head when no session was loaded (KIT-129 item 5, the KIT-145
+#' observation). Lipidomics and metabolomics accept any head of the omic's class, so before this the DA ran on
+#' un-normalised (even raw) data and reported complete; their fallback now needs the normalisation tab complete, and
+#' the tab otherwise refuses with the group's `no_data` text. Transcriptomics has its own refusal (its reader reads
+#' only a normalised RUVs state) and every other omic is as before.
+#' @noRd
+omicDaHeadFallbackAllowed <- function(workflowData, binding) {
+    if (!isTRUE(binding$omic_type %in% c("lipidomics", "metabolomics"))) return(TRUE)
+    identical(as.character(workflowData$tab_status$normalization %||% ""), "complete")
+}
+
 # ------------------------------------------------------------------------------------------------
 # The run.
 # ------------------------------------------------------------------------------------------------
@@ -247,7 +258,8 @@ runOmicDaAnalysis <- function(input, session, workflowData, tab, experimentPaths
     settings <- list(formula_string = if (isTRUE(da$model$editable)) input$formula_string,
         da_q_val_thresh = input$da_q_val_thresh, treat_lfc_cutoff = input$treat_lfc_cutoff)
     logger::log_info("=== RUN DA ANALYSIS BUTTON CLICKED ===")
-    current <- omicDaLoadedMetadata(tab, workflowData, binding) %||% omicDaReadSource(workflowData, da$source)
+    current <- omicDaLoadedMetadata(tab, workflowData, binding) %||%
+        (if (omicDaHeadFallbackAllowed(workflowData, binding)) omicDaReadSource(workflowData, da$source))
     if (!is.list(current) || !identical(current$class, da$source$class)) {
         shiny::showNotification(da$source$no_data, type = "error", duration = 5)
         return(invisible(NULL))
