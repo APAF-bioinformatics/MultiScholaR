@@ -31,7 +31,10 @@
    filtered counts, as today; the display matrix for figures and export is still `removeBatchEffect` with
    the factors. The number of factors k is given to the step with the rule that produced it; a k of 0, or the
    mode without RUV, fits `~ 0 + group` and leaves the display matrix uncorrected. A k the data cannot carry
-   is refused, never reduced (RUVSeq itself returns fewer factors without notice). Today's design (the grid's
+   is refused, never reduced (RUVSeq itself returns fewer factors without notice). A supplied list is taken
+   once per id and in the matrix's gene order, as are the first test's controls; an id that is NA or empty is
+   refused, every id not found among the filtered genes is warned of, a list with fewer than two genes found
+   is refused, and the sha256 of the sorted list is recorded (`ruv_control_list_sha256`). Today's design (the grid's
    controls and k, RUVs on the filtered counts) is the default and every result is as before.
  * Proteomics RUV-III correction (`ruvIII_C_Varying()` for protein data, and the adjusted matrix of the
    DIA_LIMPA route): each protein keeps its mean abundance. Before, the corrected values of a protein were

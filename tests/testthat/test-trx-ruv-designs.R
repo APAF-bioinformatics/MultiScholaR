@@ -75,6 +75,16 @@ trxDesignTestEdgeR <- function(y, design, W = NULL) {
     table[rownames(y), c("logFC", "PValue", "FDR")]
 }
 
+# The classed warnings an expression raises, with its value (audit F-06).
+trxDesignTestWarnings <- function(expr) {
+    caught <- list()
+    value <- withCallingHandlers(expr, warning = function(w) {
+        caught[[length(caught) + 1L]] <<- w
+        invokeRestart("muffleWarning")
+    })
+    list(value = value, warnings = caught)
+}
+
 # The package's entry: the design's choice (controls and k), the factors, then the session's fit and test halves on the
 # factors' sample table with the formula realised from it.
 trxDesignTestPackage <- function(d, ruv_design, k = NA_integer_, k_rule = NA_character_, control_ids = character()) {
@@ -138,6 +148,10 @@ test_that("(KIT-129 W4) the supplied-control design is the simulator's arm 8: RU
         expect_identical(p$choice$chosen$control_genes, matched)
         expect_identical(p$choice$chosen$n_controls, 50L)
         expect_identical(p$choice$ruv_design$unmatched, absent)
+        # audit F-06: the list's hash is of the sorted ids, each once, whatever was matched
+        expect_identical(p$choice$ruv_design$list_sha256, digest::digest(paste(sort(c(supplied, absent), method = "radix"), collapse = "\n"),
+            algo = "sha256", serialize = FALSE))
+        expect_identical(trxRuvDesignOutcomes(p$choice)$ruv_control_list_sha256, p$choice$ruv_design$list_sha256)
         expect_identical(p$choice$ruv_design[c("method", "control_rule")], list(method = "RUVg", control_rule = "supplied_list"))
         arm <- RUVSeq::RUVg(uq, matched, k)
         expect_identical(unname(as.matrix(p$s$W)), unname(arm$W))
@@ -159,7 +173,12 @@ test_that("(KIT-129 W4) the first-pass design is the simulator's arm 5: RUVg wit
     genes <- rownames(d$y)
     uq <- trxDesignTestUq(d$y)
     first_p <- suppressWarnings(suppressMessages(trxDesignTestFirstPass(d$y, d$design)))
-    controls <- genes[order(first_p)[-seq_len(ceiling(0.25 * length(genes)))]]
+    # the arm passes its controls in the first pass's ranking
+    ranked <- genes[order(first_p)[-seq_len(ceiling(0.25 * length(genes)))]]
+    # audit F-06: the package passes the same genes in the matrix's row order, as it passes a supplied list
+    controls <- genes[genes %in% ranked]
+    expect_setequal(controls, ranked)
+    expect_false(identical(controls, ranked))
     # the arm's k is today's grid's
     grid <- suppressWarnings(suppressMessages(trxRuvGrid(d$y, d$log_cpm_tmm, d$design)))
     for (k in unique(c(grid$best$best_k, 1L))) {
@@ -167,9 +186,14 @@ test_that("(KIT-129 W4) the first-pass design is the simulator's arm 5: RUVg wit
         expect_identical(p$choice$chosen$control_genes, controls)
         expect_identical(p$choice$ruv_design[c("method", "control_rule", "k_rule")],
             list(method = "RUVg", control_rule = "first_pass_drop_top_25", k_rule = "sweep_bounded"))
-        arm <- RUVSeq::RUVg(uq, controls, k)
-        expect_identical(unname(as.matrix(p$s$W)), unname(arm$W))
-        expect_identical(p$table, suppressWarnings(suppressMessages(trxDesignTestEdgeR(d$y, d$design, arm$W))))
+        row_order <- RUVSeq::RUVg(uq, controls, k)
+        expect_identical(unname(as.matrix(p$s$W)), unname(row_order$W))
+        expect_identical(p$table, suppressWarnings(suppressMessages(trxDesignTestEdgeR(d$y, d$design, row_order$W))))
+        # the arm's own call, with the ranking's order: RUVg does not depend on the order of its controls beyond
+        # rounding, so the arm is reproduced at the tolerances of the supplied list (W 1e-10, the table 1e-8)
+        arm <- RUVSeq::RUVg(uq, ranked, k)
+        expect_equal(unname(as.matrix(p$s$W)), unname(arm$W), tolerance = 1e-10)
+        expect_equal(p$table, suppressWarnings(suppressMessages(trxDesignTestEdgeR(d$y, d$design, arm$W))), tolerance = 1e-8)
     }
     # the first pass is the package's own, over every group coefficient; today's ranking reads the same p-values
     three <- suppressWarnings(suppressMessages(trxDesignTestData(seed = 7L, genes = 600L, groups = 3L)))
@@ -294,6 +318,84 @@ test_that("(KIT-129 audit F-01) the factors' kernel drops the W columns a design
     expect_identical(names(none$pdata), c("Run", "group"))
     expect_identical(trxDaFormula(none$pdata), "~ 0 + group")
     expect_identical(none, trxRuvFactors(d$y, d$log_cpm_tmm, d$design, character(), 0L))
+})
+
+test_that("(KIT-129 audit F-06) a supplied control list: each id once, NA and empty ids refused, unmatched ids warned of, fewer than two matches refused, the list's hash", {
+    trxDesignTestPackages()
+    d <- suppressWarnings(suppressMessages(trxDesignTestData(genes = 600L)))
+    genes <- rownames(d$y)
+    ids <- genes[c(40L, 3L, 17L, 250L)]
+    once <- trxRuvDesignControls(d$y, d$design, "supplied_controls", ids)
+    expect_identical(once$control_genes, genes[c(3L, 17L, 40L, 250L)])
+    # duplicates are removed in the kernel, without a warning
+    twice <- trxDesignTestWarnings(trxRuvDesignControls(d$y, d$design, "supplied_controls", c(ids, rev(ids), ids[1:2])))
+    expect_length(twice$warnings, 0L)
+    expect_identical(twice$value, once)
+    expect_identical(once$unmatched, character())
+    # NA and empty ids are refused, with their number
+    for (bad in list(c(ids, NA), c(ids, ""), c(ids, "  "), c(NA_character_, NA_character_))) {
+        condition <- tryCatch(trxRuvDesignControls(d$y, d$design, "supplied_controls", bad), error = function(e) e)
+        expect_s3_class(condition, c("trx_ruv_controls_invalid", "trx_error"), exact = FALSE)
+        expect_match(conditionMessage(condition), "NA or empty", fixed = TRUE)
+    }
+    # the constructor does not lose an NA on the way to that refusal
+    expect_true(anyNA(trxRuvDesignParameters("supplied_controls", 1L, "user", c(ids, NA))$ruv_control_ids))
+    expect_error(trxChooseRuvDesign(list(counts = d$y, design = d$design), trxRuvDesignParameters("supplied_controls", 1L, "user", c(ids, NA))),
+        class = "trx_ruv_controls_invalid")
+    # every unmatched id is warned of: the count, and the ids
+    absent <- c("not_a_gene_2", "not_a_gene_1")
+    partly <- trxDesignTestWarnings(trxRuvDesignControls(d$y, d$design, "supplied_controls", c(ids, absent, absent)))
+    expect_length(partly$warnings, 1L)
+    expect_s3_class(partly$warnings[[1L]], c("trx_ruv_controls_unmatched", "trx_warning"), exact = FALSE)
+    expect_match(conditionMessage(partly$warnings[[1L]]), "2 of the 6 supplied control ids", fixed = TRUE)
+    expect_match(conditionMessage(partly$warnings[[1L]]), "not_a_gene_1, not_a_gene_2", fixed = TRUE)
+    expect_identical(partly$value$control_genes, once$control_genes)
+    expect_identical(partly$value$unmatched, sort(absent))
+    # the auditor's case, one match of 500: refused, and so is no match; two matches are the fewest taken
+    many <- sprintf("absent_%03d", 1:499)
+    expect_error(suppressWarnings(trxRuvDesignControls(d$y, d$design, "supplied_controls", c(ids[1L], many))), class = "trx_ruv_controls_invalid")
+    expect_error(suppressWarnings(trxRuvDesignControls(d$y, d$design, "supplied_controls", many)), class = "trx_ruv_controls_invalid")
+    expect_identical(TRX_MIN_SUPPLIED_CONTROLS, 2L)
+    two <- trxDesignTestWarnings(trxRuvDesignControls(d$y, d$design, "supplied_controls", c(ids[1:2], many)))
+    expect_identical(two$value$control_genes, genes[c(3L, 40L)])
+    expect_match(conditionMessage(two$warnings[[1L]]), "499 of the 501 supplied control ids", fixed = TRUE)
+    # the hash: sha256 of the sorted ids, each once, joined by a line feed (a value computed outside R: printf 'a\nb' | sha256sum)
+    expect_identical(trxControlListSha256(c("b", "a", "b")), "7e18f737311b2dc3b2f269dd78396b0351f14fb66efa879f768cb23181883c78")
+    expect_identical(once$list_sha256, trxControlListSha256(rev(ids)))
+    expect_identical(twice$value$list_sha256, once$list_sha256)
+    expect_false(identical(partly$value$list_sha256, once$list_sha256))
+    for (ruv_design in c("groups_all_features", "none")) expect_identical(trxRuvDesignControls(d$y, d$design, ruv_design)$list_sha256, NA_character_)
+    recommended <- trxChooseRuvDesign(list(counts = d$y, design = d$design), trxRuvDesignParameters("groups_all_features", 1L, "user"))
+    expect_identical(trxRuvDesignOutcomes(recommended)$ruv_control_list_sha256, NA_character_)
+})
+
+test_that("(KIT-129 audit F-07) the choice does not depend on how its parameters were passed; a k that is not whole is refused", {
+    trxDesignTestPackages()
+    d <- suppressWarnings(suppressMessages(trxDesignTestData(genes = 600L)))
+    x <- list(counts = d$y, design = d$design)
+    ids <- rownames(d$y)[c(40L, 3L, 17L, 250L)]
+    expect_identical(trxRuvDesignParameters("groups_all_features", 2, "user"), trxRuvDesignParameters("groups_all_features", 2L, "user"))
+    expect_identical(trxCanonicalRuvDesignParameters(list(ruv_design = "groups_all_features", ruv_k = 2, ruv_k_rule = "user")),
+        list(ruv_design = "groups_all_features", ruv_k = 2L, ruv_k_rule = "user", ruv_control_ids = character()))
+    # the design none takes no k: none given, NA and 0 are one declaration
+    for (k in list(NULL, NA, NA_real_, 0, 0L)) {
+        expect_identical(trxCanonicalRuvDesignParameters(list(ruv_design = "none", ruv_k = k)), trxRuvDesignParameters("none"))
+    }
+    # a plain list, as a request carries it, gives the constructor's choice
+    built <- trxChooseRuvDesign(x, trxRuvDesignParameters("supplied_controls", 1L, "user", ids))
+    plain <- trxChooseRuvDesign(x, list(ruv_design = "supplied_controls", ruv_k = 1, ruv_k_rule = "user", ruv_control_ids = c(rev(ids), ids[1:2])))
+    expect_identical(plain, built)
+    expect_identical(built$settings$ruv_control_ids, sort(ids, method = "radix"))
+    expect_identical(built$settings$ruv_k, 1L)
+    expect_identical(built$k_record$k, 1L)
+    # the canonical order is the C locale's, the same on every machine
+    expect_identical(trxCanonicalControlIds(c("b", "A", "a", "B", "a")), c("A", "B", "a", "b"))
+    # a k that is not one whole number of 0 or more is refused, never rounded
+    for (k in list(2.5, -1L, "2", c(1L, 2L), TRUE)) {
+        expect_error(trxCanonicalRuvDesignParameters(list(ruv_design = "groups_all_features", ruv_k = k, ruv_k_rule = "user")), class = "trx_ruv_design_invalid")
+        expect_error(trxChooseRuvDesign(x, list(ruv_design = "groups_all_features", ruv_k = k, ruv_k_rule = "user", ruv_control_ids = character())),
+            class = "trx_ruv_design_invalid")
+    }
 })
 
 test_that("(KIT-129 audit F-08) degenerate inputs are refused by class: a k of the wrong type at the kernel, identical runs within every group under RUVs", {
@@ -488,5 +590,30 @@ test_that("(KIT-129 audit F-01) a second declared design on a RUVs head leaves t
     expect_identical(unname(as.matrix(state$design[, "W_1", drop = FALSE])), unname(arm$W))
     expect_identical(unname(as.matrix(one$value$W)), unname(arm$W))
     expect_identical(formula(), "~ 0 + group + W_1")
+})
+
+test_that("(KIT-129 audit F-07) on a session owner, one declared design is one product however its parameters were passed", {
+    fixture <- trxDesignTestOwner()
+    owner <- fixture$owner
+    runs <- suppressWarnings(suppressMessages(withWorkflowStateScope(owner, function() {
+        source <- getWorkflowStateReference(owner)
+        logcpm <- trxRunProduct(owner, "trx_tmm_logcpm", source, list())
+        one <- function(parameters) trxRunRuvDesign(owner, source, logcpm$reference, parameters)
+        genes <- rownames(trxAssayInputs(readTrxWorkflowState(owner, owner$current_state))$counts)[1:40]
+        list(integer = one(trxRuvDesignParameters("groups_all_features", 2L, "user")),
+            double = one(list(ruv_design = "groups_all_features", ruv_k = 2, ruv_k_rule = "user", ruv_control_ids = character())),
+            listed = one(trxRuvDesignParameters("supplied_controls", 1L, "user", genes)),
+            plain = one(list(ruv_design = "supplied_controls", ruv_k = 1, ruv_k_rule = "user", ruv_control_ids = c(rev(genes), genes[1:3]))),
+            fractional = tryCatch(one(list(ruv_design = "groups_all_features", ruv_k = 1.5, ruv_k_rule = "user", ruv_control_ids = character())),
+                error = function(e) e))
+    })))
+    expect_identical(runs$integer$status, "computed")
+    expect_identical(runs$double$status, "hit")
+    expect_identical(runs$double$reference$entity_id, runs$integer$reference$entity_id)
+    expect_identical(runs$listed$status, "computed")
+    expect_identical(runs$plain$status, "hit")
+    expect_identical(runs$plain$reference$entity_id, runs$listed$reference$entity_id)
+    expect_false(identical(runs$listed$reference$entity_id, runs$integer$reference$entity_id))
+    expect_s3_class(runs$fractional, c("trx_ruv_design_invalid", "trx_error"), exact = FALSE)
 })
 

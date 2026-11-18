@@ -214,6 +214,25 @@ TRX_RUV_DESIGNS <- c("groups_all_features", "supplied_controls", "first_pass_nul
 #' @noRd
 TRX_FIRST_PASS_DROPPED_SHARE <- 0.25
 
+#' The fewest supplied control ids that must be genes of the filtered counts (KIT-129 audit F-06). The ticket states no
+#' share; the rule is the conservative one: every unmatched id is warned of, and a list that leaves fewer than two
+#' controls is refused (one control cannot carry a factor: k must be below the number of controls).
+#' @noRd
+TRX_MIN_SUPPLIED_CONTROLS <- 2L
+
+#' A supplied control list in its canonical form (KIT-129 audit F-06, F-07): character, each id once, sorted in the C
+#' locale (`method = "radix"`), so the list is the same on every machine and in whatever order it was given. An NA is
+#' kept (last), for the controls' kernel to refuse.
+#' @noRd
+trxCanonicalControlIds <- function(control_ids) sort(unique(as.character(control_ids)), method = "radix", na.last = TRUE)
+
+#' The record's `ruv_control_list_sha256` (KIT-129 section 1e, "hash of the sorted ids"): the sha256 of the canonical
+#' list's ids as UTF-8 text, joined by a line feed, without a final one. It covers the list as supplied, matched or not.
+#' @noRd
+trxControlListSha256 <- function(control_ids) {
+    digest::digest(paste(enc2utf8(trxCanonicalControlIds(control_ids)), collapse = "\n"), algo = "sha256", serialize = FALSE)
+}
+
 #' Refuse RUV inputs that are not one set of runs and genes (KIT-129 audit F-05): the design's `Run` must be the count
 #' columns, and the logCPM's genes and runs the counts', identical in order and content. RUVSeq takes the replicate
 #' sets by position, so a design in another order gives factors of the wrong runs without an error.
@@ -236,30 +255,46 @@ trxRuvCheckAlignment <- function(filtered_counts, design, log_cpm_tmm = NULL) {
 #' @param ruv_design One of `TRX_RUV_DESIGNS`.
 #' @param control_ids The supplied control gene ids, for `supplied_controls`.
 #' @return A list: `control_genes`, `control_rule` (`all_features`, `supplied_list`, `first_pass_drop_top_25` or NA),
-#'   `method` (`RUVs`, `RUVg` or NA) and `unmatched` (supplied ids that are not in the matrix). A supplied list is
-#'   taken in the matrix's row order, so the order it was given in changes nothing. Refuses
-#'   `trx_ruv_controls_invalid` when no supplied id is in the matrix.
+#'   `method` (`RUVs`, `RUVg` or NA), `unmatched` (supplied ids that are not in the matrix) and `list_sha256`
+#'   (`trxControlListSha256` of the supplied list; NA for the other designs). The controls of every rule are in the
+#'   matrix's row order, so the order a list was given in, or the first pass's ranking, changes nothing. A supplied
+#'   list is taken once per id (`trxCanonicalControlIds`). Refuses `trx_ruv_inputs_misaligned` (the design's runs are
+#'   not the count columns) and `trx_ruv_controls_invalid` (a supplied id that is NA or empty; fewer than
+#'   `TRX_MIN_SUPPLIED_CONTROLS` supplied ids in the matrix). Warns `trx_ruv_controls_unmatched` whenever a supplied
+#'   id is not in the matrix, with their number and the first of them.
 #' @noRd
 trxRuvDesignControls <- function(filtered_counts, design, ruv_design, control_ids = character()) {
     trxRuvCheckAlignment(filtered_counts, design)
     genes <- rownames(filtered_counts)
-    controls <- function(control_genes, control_rule, method, unmatched = character()) {
-        list(control_genes = control_genes, control_rule = control_rule, method = method, unmatched = unmatched)
+    controls <- function(control_genes, control_rule, method, unmatched = character(), list_sha256 = NA_character_) {
+        list(control_genes = control_genes, control_rule = control_rule, method = method, unmatched = unmatched, list_sha256 = list_sha256)
     }
     switch(ruv_design,
         groups_all_features = controls(genes, "all_features", "RUVs"),
         supplied_controls = {
-            if (!any(genes %in% control_ids)) {
-                trxAbort(sprintf("none of the %d supplied control ids is a gene of the filtered counts", length(unique(control_ids))),
-                    c("trx_ruv_controls_invalid", "trx_error"))
+            refuse <- function(message) trxAbort(message, c("trx_ruv_controls_invalid", "trx_error"))
+            ids <- as.character(control_ids)
+            blank <- is.na(ids) | !nzchar(trimws(ids))
+            if (any(blank)) refuse(sprintf("%d of the %d supplied control ids are NA or empty", sum(blank), length(ids)))
+            supplied <- trxCanonicalControlIds(ids)
+            matched <- genes[genes %in% supplied]
+            unmatched <- setdiff(supplied, genes)
+            if (length(matched) < TRX_MIN_SUPPLIED_CONTROLS) {
+                refuse(sprintf("%d of the %d supplied control ids are genes of the filtered counts; at least %d are needed", length(matched),
+                    length(supplied), TRX_MIN_SUPPLIED_CONTROLS))
             }
-            controls(genes[genes %in% control_ids], "supplied_list", "RUVg", setdiff(control_ids, genes))
+            if (length(unmatched)) {
+                rlang::warn(sprintf("%d of the %d supplied control ids are not genes of the filtered counts and are not used: %s%s",
+                    length(unmatched), length(supplied), paste(utils::head(unmatched, 10L), collapse = ", "),
+                    if (length(unmatched) > 10L) ", ..." else ""), class = c("trx_ruv_controls_unmatched", "trx_warning"))
+            }
+            controls(matched, "supplied_list", "RUVg", unmatched, trxControlListSha256(supplied))
         },
         first_pass_nulls = {
             requireOptionalPackage("edgeR", "the first pass of the RUV controls")
             first_p <- trxPrelimPValues(trxFilteredDge(filtered_counts, design$group), stats::model.matrix(~ group, data = design))
             dropped <- seq_len(ceiling(TRX_FIRST_PASS_DROPPED_SHARE * length(genes)))
-            controls(genes[order(first_p)[-dropped]], "first_pass_drop_top_25", "RUVg")
+            controls(genes[sort(order(first_p)[-dropped])], "first_pass_drop_top_25", "RUVg")
         },
         none = controls(character(), NA_character_, NA_character_),
         trxAbort(sprintf("RUV design '%s' has no control rule", ruv_design), c("trx_ruv_design_unsupported", "trx_error")))
