@@ -1,0 +1,20 @@
+entry	leaves	max_rel	verdict	note
+S1/C0/arm8/runpath_k	1	NA	pass	arm 8's E at 200 permutations against the run path's own count
+S1/C0/arm8/runpath_controls	1	NA	pass	the oracle's controls observed in every sample (50 listed; not found: 0); replicate sets group
+S1/C0/arm8/runpath	4	1.73259513511198e-13	pass	keys: 786 common, 0 simulator only, 0 package only
+S4/C0/arm35/lipid/pos/runpath_k	1	NA	pass	the shipped kernel's count (arm 35's call) against the run path's; arm 8's E at 200 permutations on the study features: 2
+S4/C0/arm35/lipid/pos/runpath_controls	1	NA	pass	the standards of the assay (5), from the one list of 10
+S4/C0/arm35/lipid/pos/runpath	4	0	pass	keys: 78 common, 0 simulator only, 0 package only
+S4/C0/arm35/lipid/neg/runpath_k	1	NA	pass	the shipped kernel's count (arm 35's call) against the run path's; arm 8's E at 200 permutations on the study features: 2
+S4/C0/arm35/lipid/neg/runpath_controls	1	NA	pass	the standards of the assay (5), from the one list of 10
+S4/C0/arm35/lipid/neg/runpath	4	0	pass	keys: 68 common, 0 simulator only, 0 package only
+S4/C0/arm8/lipid/pos	4	1.02483993054858e-13	pass	keys: 78 common, 0 simulator only, 0 package only
+S4/C0/arm8/lipid/neg	4	2.82313778795951e-13	pass	keys: 68 common, 0 simulator only, 0 package only
+S4/C0/arm35/metab/pos/runpath_k	1	NA	pass	the shipped kernel's count (arm 35's call) against the run path's; arm 8's E at 200 permutations on the study features: 2
+S4/C0/arm35/metab/pos/runpath_controls	1	NA	pass	the standards of the assay (5), from the one list of 10
+S4/C0/arm35/metab/pos/runpath	4	0	pass	keys: 78 common, 0 simulator only, 0 package only
+S4/C0/arm35/metab/neg/runpath_k	1	NA	pass	the shipped kernel's count (arm 35's call) against the run path's; arm 8's E at 200 permutations on the study features: 2
+S4/C0/arm35/metab/neg/runpath_controls	1	NA	pass	the standards of the assay (5), from the one list of 10
+S4/C0/arm35/metab/neg/runpath	4	0	pass	keys: 68 common, 0 simulator only, 0 package only
+S4/C0/arm8/metab/pos	4	1.02483993054858e-13	pass	keys: 78 common, 0 simulator only, 0 package only
+S4/C0/arm8/metab/neg	4	2.82313778795951e-13	pass	keys: 68 common, 0 simulator only, 0 package only

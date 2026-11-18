@@ -1,0 +1,7 @@
+entry	leaves	max_rel	verdict	note
+S3/C0/arm22/k	1	NA	pass	arm 22's separation k against the run path's
+S3/C0/arm22/controls	1	NA	pass	arm 8's oracle genes as the list
+S3/C0/arm22/runpath	4	2.20698226903801e-07	pass	keys: 4631 common, 0 simulator only, 0 package only
+S3/C0/arm24/k	1	NA	pass	arm 24's separation k against the run path's
+S3/C0/arm24/controls	1	NA	pass	the first pass's controls
+S3/C0/arm24/runpath	4	5.37096949525019e-08	pass	keys: 4631 common, 0 simulator only, 0 package only
