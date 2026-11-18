@@ -25,6 +25,58 @@ trxRuvGridParameters <- function(ruv_mode = "automatic", percentage_min = 5, per
         k_penalty_weight = k_penalty_weight, manual_k = manual_k, manual_percentage = manual_percentage)
 }
 
+#' The declared parameters of a RUV design other than today's grid (KIT-129 W4), after the dependency `logcpm`.
+#' @noRd
+trxRuvDesignParameterNames <- c("ruv_design", "ruv_k", "ruv_k_rule", "ruv_control_ids")
+
+#' The parameters of a declared RUV design (KIT-129 W4).
+#' @param ruv_design One of `TRX_RUV_DESIGNS`.
+#' @param ruv_k The number of factors, already resolved: a whole number, 0 when the rule found no factor. Not given for
+#'   `none`.
+#' @param ruv_k_rule The rule that gave `ruv_k`, recorded with it: `num_sv_be` (the estimated count), `sweep_bounded`
+#'   (today's grid estimate) or `user`.
+#' @param ruv_control_ids The supplied control gene ids, for `supplied_controls`; kept sorted and unique, so one list
+#'   is one identity whatever its order.
+#' @return The named list the declared `trx_ruv_grid` takes after `logcpm`, in its canonical form
+#'   (`trxCanonicalRuvDesignParameters`).
+#' @noRd
+trxRuvDesignParameters <- function(ruv_design, ruv_k = NA_integer_, ruv_k_rule = NA_character_, ruv_control_ids = character()) {
+    trxCanonicalRuvDesignParameters(list(ruv_design = ruv_design, ruv_k = ruv_k, ruv_k_rule = ruv_k_rule, ruv_control_ids = ruv_control_ids))
+}
+
+#' The declared parameters in one form (KIT-129 audit F-07), so a product's identity and its recorded settings do not
+#' depend on how the parameters were passed: `ruv_k` an integer (2 and 2L are one k; NA when absent, and for the design
+#' `none`, which takes no k), `ruv_k_rule` NA when absent, `ruv_control_ids` `trxCanonicalControlIds`' list. The
+#' design and the rule are checked by `trxChooseRuvDesign`, not here.
+#' @param parameters A list with the names of `trxRuvDesignParameterNames`; other elements are not returned.
+#' @return The four parameters. Refuses `trx_ruv_design_invalid` when `ruv_k` is given and is not one whole number of
+#'   0 or more: a fractional k is never rounded.
+#' @noRd
+trxCanonicalRuvDesignParameters <- function(parameters) {
+    k <- parameters$ruv_k
+    absent <- is.null(k) || (length(k) == 1L && is.na(k))
+    if (!absent && !checkmate::test_count(k)) {
+        trxAbort(sprintf("ruv_k must be one whole number of 0 or more, not %s", substr(deparse1(k), 1L, 40L)), c("trx_ruv_design_invalid", "trx_error"))
+    }
+    none <- identical(parameters$ruv_design, "none")
+    list(ruv_design = parameters$ruv_design, ruv_k = if (absent || (none && k == 0)) NA_integer_ else as.integer(round(k)),
+        ruv_k_rule = parameters$ruv_k_rule %||% NA_character_, ruv_control_ids = trxCanonicalControlIds(parameters$ruv_control_ids))
+}
+
+#' Refuse today's grid when its request carries a declared design's parameter (KIT-129 audit F-02). The declared
+#' choice shares the operation's name, so a request with both parameter sets would otherwise run today's grid and drop
+#' the declared design without a word. `ruv_k_seed` is the seed parameter of the shared k rule (KIT-129 W6).
+#' The guard is the kernel's: a request whose today's product is already saved on the source is a hit of
+#' `runSavedOperation` (the identity reads the declared names alone) and is returned without reaching it. Refusing
+#' that too is the registration's parameter validation (the later wiring's).
+#' @noRd
+trxRefuseDeclaredRuvParameters <- function(parameters) {
+    declared <- intersect(c(trxRuvDesignParameterNames, "ruv_k_seed"), names(parameters))
+    if (!length(declared)) return(invisible(NULL))
+    trxAbort(sprintf("today's RUV grid was asked with the declared-design parameter(s) %s: it runs no declared design and does not ignore one",
+        paste(declared, collapse = ", ")), c("trx_ruv_grid_declared_parameters", "trx_error"))
+}
+
 # ---------------------------------------------------------------------------------------------------------------
 # Tables, products and the template.
 # ---------------------------------------------------------------------------------------------------------------
@@ -213,15 +265,39 @@ trxPartitionedLogCpm <- function(binding, store) {
 
 #' The RUV grid (rmd:195-298): automatic, the notebook's grid and its first winner; manual, the controls ranked at
 #' `manual_percentage` with `manual_k`. A product: the grid, its winner and the chosen k, percentage and controls.
+#' @param ruv_design KIT-129 W4. `"legacy"` (the default): today's declaration and kernel, unchanged. `"declared"`: the
+#'   same product chosen by a declared design instead of the grid (`trxRuvDesignParameterNames`, `trxChooseRuvDesign`);
+#'   the RUVs step reads either.
 #' @noRd
-trxRuvGridOperation <- function(binding) {
+trxRuvGridOperation <- function(binding, ruv_design = c("legacy", "declared")) {
+    if (identical(match.arg(ruv_design), "declared")) return(trxRuvDesignOperation(binding))
     newOmicsOperation(binding, "trx_ruv_grid", "whole_matrix", parameters = c("logcpm", trxRuvGridParameterNames),
         product_type = "trx.ruv_grid", output_class = NULL,
         fixed = list(max_k = "3 below 15 samples, else 4 (the kernel's rule)",
             controls = "inferred: the least significant genes of the preliminary ~ group QL GLM, coefficient 2"),
         kernel = function(object, parameters, store) {
+            trxRefuseDeclaredRuvParameters(parameters)
             x <- trxAssayInputs(object)
             trxChooseRuv(x, trxSavedMatrix(store$manager, trxProductValue(store$manager, parameters$logcpm)$log_cpm), parameters)
+        })
+}
+
+#' The choice of a declared RUV design (KIT-129 W4), the product the RUVs step reads in place of the grid's: the
+#' controls by the design's rule and the k it was given. `logcpm` stays a declared dependency: the shared rule for k
+#' (KIT-129 W6) estimates the count on the TMM logCPM when it is called here.
+#' @noRd
+trxRuvDesignOperation <- function(binding) {
+    newOmicsOperation(binding, "trx_ruv_grid", "whole_matrix", parameters = c("logcpm", trxRuvDesignParameterNames),
+        product_type = "trx.ruv_grid", output_class = NULL,
+        fixed = list(factors_estimated_on = "upper-quartile normalised counts (EDASeq::betweenLaneNormalization, which = upper)",
+            replicate_sets = "the groups (RUVs)", first_pass = "the preliminary ~ group QL GLM, every group coefficient; its most significant 25% left out",
+            test = "the filtered counts with W_1..W_k in the edgeR model"),
+        kernel = function(object, parameters, store) {
+            # The dependency is checked, not read: no rule here needs the logCPM until the shared k rule is called at this
+            # seam, where `resolveRuvFactorCount()`'s value replaces the record of the two parameters.
+            trxProductReference(store$manager, parameters$logcpm)
+            # Audit F-07: until then the record is the choice's default, read from the canonical parameters.
+            trxChooseRuvDesign(trxAssayInputs(object), parameters)
         })
 }
 
@@ -262,8 +338,82 @@ trxRuvOutcomes <- function(grid) {
         failed_members = as.numeric(grid$grid_failures$percentage), ruv_applied = TRUE)
 }
 
+#' The k rules a declared design records with its k (KIT-129 section 1e; the shared resolver's names).
+#' @noRd
+TRX_RUV_K_RULES <- c("num_sv_be", "sweep_bounded", "user")
+
+#' The choice of a declared RUV design (KIT-129 W4): its controls, and the k it is given with the rule that gave it.
+#' @param x The validated inputs (`counts`, `design`).
+#' @param parameters `trxRuvDesignParameters`' list.
+#' @param k_record The number of factors and its source: a list with `k` (a whole number; 0 when the rule found no
+#'   factor) and `k_rule` (one of `TRX_RUV_K_RULES`), as the shared resolver returns it; its other fields (`reason`,
+#'   `k_estimate`, `k_max`, `estimate`, ...) are kept with the product. Not read for `none`.
+#' @return The product the RUVs step reads: `chosen` (`k`, `percentage`, `n_controls`, `control_genes`, the grid
+#'   product's names), `ruv_design` (`id`, `method`, `control_rule`, `unmatched`, `list_sha256`, `k`, `k_rule`, `applied`, `reason`,
+#'   `test_form`), `k_record`, `control_genes`, `control_source`, `mode` (`"declared"`) and `settings`. A k of 0 and
+#'   `none` give a choice without factors, with the reason. Refuses `trx_ruv_design_unsupported` and
+#'   `trx_ruv_design_invalid` (parameters that do not fit the design), `trx_ruv_controls_invalid`.
+#' @noRd
+trxChooseRuvDesign <- function(x, parameters, k_record = list(k = parameters$ruv_k, k_rule = parameters$ruv_k_rule)) {
+    ruv_design <- parameters$ruv_design
+    invalid <- function(message) trxAbort(message, c("trx_ruv_design_invalid", "trx_error"))
+    if (!checkmate::test_choice(ruv_design, TRX_RUV_DESIGNS)) {
+        trxAbort(sprintf("RUV design '%s' is not one of %s", paste(ruv_design, collapse = ","), paste(TRX_RUV_DESIGNS, collapse = ", ")),
+            c("trx_ruv_design_unsupported", "trx_error"))
+    }
+    # Audit F-07: the canonical form, before `k_record`'s default reads the parameters.
+    parameters <- trxCanonicalRuvDesignParameters(parameters)
+    none <- identical(ruv_design, "none")
+    supplied <- parameters$ruv_control_ids
+    k <- k_record$k
+    k_rule <- k_record$k_rule
+    if (none) {
+        if (!(is.null(k) || identical(length(k), 1L) && (is.na(k) || k == 0)) || !(is.null(k_rule) || all(is.na(k_rule)))) {
+            invalid("the design none takes no k and no k rule")
+        }
+        k <- 0L
+        k_rule <- NA_character_
+    } else if (!checkmate::test_count(k) || !checkmate::test_choice(k_rule, TRX_RUV_K_RULES) || (identical(k_rule, "user") && k < 1)) {
+        invalid(sprintf("the design %s needs k (a whole number; 1 or more when the user chose it) and its rule (%s)", ruv_design,
+            paste(TRX_RUV_K_RULES, collapse = ", ")))
+    }
+    if (identical(ruv_design, "supplied_controls") != checkmate::test_character(supplied, min.len = 1L)) {
+        invalid("ruv_control_ids names the control genes of the design supplied_controls, and is given for no other design")
+    }
+    k <- as.integer(round(k))
+    controls <- trxRuvDesignControls(x$counts, x$design, ruv_design, supplied)
+    applied <- k > 0L
+    reason <- if (none) {
+        "the design none: no correction for unwanted variation"
+    } else if (!applied) {
+        k_record$reason %||% "the k rule found no unwanted factor (k = 0)"
+    } else {
+        NA_character_
+    }
+    n_controls <- length(controls$control_genes)
+    list(chosen = list(k = k, percentage = 100 * n_controls / nrow(x$counts), n_controls = n_controls, control_genes = controls$control_genes),
+        ruv_design = list(id = ruv_design, method = controls$method, control_rule = controls$control_rule, unmatched = controls$unmatched,
+            list_sha256 = controls$list_sha256, k = k, k_rule = k_rule, applied = applied, reason = reason, test_form = if (applied) "factors_in_model" else "none"),
+        k_record = if (!none) k_record, control_genes = controls$control_genes, control_source = controls$control_rule, mode = "declared",
+        settings = parameters[trxRuvDesignParameterNames])
+}
+
+#' The record's RUV outcomes of a declared design (KIT-129 W4), by the names of KIT-129 section 1e where the kernel
+#' knows the value, and the names today's record reads (`k`, the control count and percentage, `ruv_applied`).
+#' @param choice `trxChooseRuvDesign`'s value.
+#' @noRd
+trxRuvDesignOutcomes <- function(choice) {
+    d <- choice$ruv_design
+    list(ruv_design = d$id, ruv_method = d$method, ruv_replicate_structure = if (identical(d$method, "RUVs")) "group" else NA_character_,
+        ruv_control_rule = d$control_rule, ruv_control_count = choice$chosen$n_controls, ruv_control_list_sha256 = d$list_sha256, ruv_control_list_unmatched = d$unmatched,
+        ruv_k = d$k, ruv_k_rule = d$k_rule, ruv_test_form = d$test_form, ruv_applied = d$applied, ruv_not_applied_reason = d$reason,
+        k = d$k, negative_control_percentage = choice$chosen$percentage, negative_control_count = choice$chosen$n_controls)
+}
+
 #' RUVs (rmd:406-426): the state keeps the counts and gains W_1..W_k in its design (the notebook's `ruvs_pdata`); the
-#' removeBatchEffect display matrix is a saved table of the step's product.
+#' removeBatchEffect display matrix is a saved table of the step's product. KIT-129 W4: a `grid` product that carries a
+#' declared design (`trxChooseRuvDesign`) is run by `trxRuvFactors` (the factors on upper-quartile counts, by RUVs or
+#' RUVg; no factor when k is 0); today's grid product takes today's path, unchanged.
 #' @noRd
 trxRuvsOperation <- function(binding) {
     newOmicsOperation(binding, "trx_ruvs", "whole_matrix", parameters = c("logcpm", "grid"), product_type = "trx.ruvs_result",
@@ -271,13 +421,23 @@ trxRuvsOperation <- function(binding) {
             x <- trxAssayInputs(object)
             grid <- trxProductValue(store$manager, parameters$grid)
             log_cpm <- trxSavedMatrix(store$manager, trxProductValue(store$manager, parameters$logcpm)$log_cpm)
-            s <- trxRuvs(x$counts, log_cpm, x$design, grid$chosen$control_genes, grid$chosen$k)
+            declared <- grid[["ruv_design", exact = TRUE]]
+            s <- if (is.null(declared)) {
+                trxRuvs(x$counts, log_cpm, x$design, grid$chosen$control_genes, grid$chosen$k)
+            } else {
+                # Audit F-01: a source that already carries factors (a second RUV run on a head) gives them up, so the
+                # state's design, and the formula the DA realises from it, hold this design's factors and no other.
+                object@design_matrix <- object@design_matrix[, !startsWith(names(object@design_matrix), "W_"), drop = FALSE]
+                c(trxRuvFactors(x$counts, log_cpm, x$design, grid$chosen$control_genes, grid$chosen$k, declared$method),
+                    list(control_source = grid$control_source))
+            }
             for (w in names(s$W)) object@design_matrix[[w]] <- unname(s$W[[w]])
             final <- store$checkpoint(object, "trx-ruvs")
             # The products it used are kept as references: an entity id is run-specific, a reference is compared by content.
             list(final = final, corrected = store$table(trxMatrixTable(s$log_cpm_ruvs)), W = s$W, k = grid$chosen$k,
                 control_source = s$control_source, logcpm = trxProductReference(store$manager, parameters$logcpm),
-                grid = trxProductReference(store$manager, parameters$grid), outcomes = trxRuvOutcomes(grid))
+                grid = trxProductReference(store$manager, parameters$grid),
+                outcomes = if (is.null(declared)) trxRuvOutcomes(grid) else trxRuvDesignOutcomes(grid))
         })
 }
 
@@ -297,6 +457,8 @@ trxDaDesign <- function(object) {
 #' @noRd
 trxDaFormula <- function(design) {
     w_terms <- colnames(design)[startsWith(colnames(design), "W_")]
+    # KIT-129 W4: a state without factors (the design none, or a k of 0) is tested on the groups alone.
+    if (!length(w_terms)) return("~ 0 + group")
     paste("~ 0 + group", paste(w_terms, collapse = " + "), sep = " + ")
 }
 
@@ -782,19 +944,46 @@ trxRunProduct <- function(manager, operation, source, parameters, dependencies =
     run
 }
 
+#' The choice of a declared RUV design on a source (KIT-129 W4), rooted in the head as `trxRunProduct` roots the grid.
+#' The declaration is not the registry's (`trxRuvGridOperation(binding, "declared")`): nothing selects it by default.
+#' @noRd
+trxRunRuvDesign <- function(manager, source, logcpm, design_parameters) {
+    # Audit F-07: the identity is taken from the canonical parameters.
+    design_parameters <- trxCanonicalRuvDesignParameters(design_parameters)
+    run <- runSavedOperation(manager, trxRuvGridOperation(transcriptomicsDeclarationBinding, "declared"), source,
+        c(list(logcpm = logcpm$entity_id), design_parameters[trxRuvDesignParameterNames]), list(logcpm))
+    if (is.null(manager$.context$snapshot$products[[run$reference$entity_id]])) rootWorkflowProduct(manager, run$reference, list(source, logcpm))
+    run
+}
+
+#' The RUVs state's description: today's words for today's grid; the design and what it did for a declared one.
+#' @noRd
+trxRuvsDescription <- function(choice) {
+    declared <- choice[["ruv_design", exact = TRUE]]
+    if (is.null(declared)) return(sprintf("RUVs: W_1..W_%d added to the design", choice$chosen$k))
+    if (!declared$applied) return(sprintf("RUV design %s: no factor added to the design (%s)", declared$id, declared$reason))
+    sprintf("RUV design %s (%s): W_1..W_%d added to the design", declared$id, declared$method, declared$k)
+}
+
 #' TMM/logCPM, the grid and RUVs on the head, the RUVs state committed (the products before it are its `preceded_by`).
 #' @param grid_parameters trxRuvGridParameters' list.
+#' @param design_parameters KIT-129 W4. NULL (the default): today's grid with `grid_parameters`. `trxRuvDesignParameters`'
+#'   list: the declared design's choice in the grid's place; `grid_parameters` is not read.
 #' @return The RUVs step's run, reference and value, with `logcpm` and `grid`, the products' runs.
 #' @noRd
-runTrxReferenceRuvs <- function(manager, grid_parameters, config, description = NULL, state_name = NULL) {
+runTrxReferenceRuvs <- function(manager, grid_parameters, config, description = NULL, state_name = NULL, design_parameters = NULL) {
     if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the transcriptomics RUVs needs the session's state owner", class = "saved_entity_scope")
     withWorkflowStateScope(manager, function() {
         source <- getWorkflowStateReference(manager)
         logcpm <- trxRunProduct(manager, "trx_tmm_logcpm", source, list())
-        grid <- trxRunProduct(manager, "trx_ruv_grid", source, c(list(logcpm = logcpm$reference$entity_id), grid_parameters[trxRuvGridParameterNames]),
-            list(logcpm$reference))
+        grid <- if (is.null(design_parameters)) {
+            trxRunProduct(manager, "trx_ruv_grid", source, c(list(logcpm = logcpm$reference$entity_id), grid_parameters[trxRuvGridParameterNames]),
+                list(logcpm$reference))
+        } else {
+            trxRunRuvDesign(manager, source, logcpm$reference, design_parameters)
+        }
         step <- list(operation = "trx_ruvs", parameters = list(logcpm = logcpm$reference$entity_id, grid = grid$reference$entity_id),
-            state_name = state_name %||% "trx_ruvs", description = description %||% sprintf("RUVs: W_1..W_%d added to the design", grid$value$chosen$k))
+            state_name = state_name %||% "trx_ruvs", description = description %||% trxRuvsDescription(grid$value))
         result <- runWorkflowOmicsReferenceStep(manager, step, config, source = source, dependencies = list(logcpm$reference, grid$reference))
         c(result, list(logcpm = logcpm, grid = grid))
     })
