@@ -1,0 +1,547 @@
+MultiScholaR 0.5.0: third-party notices
+
+MultiScholaR is licensed under LGPL (>= 3) + file LICENSE (the LICENSE file of https://github.com/APAF-bioinformatics/MultiScholaR).
+This distribution also contains the components listed below, each under its own licence. The
+components are distributed together; none of them is modified, except that R's front-end script
+is changed at build time so that R finds its own folder.
+
+Source code. Each component's source, at the version listed, is at the address beside it. For three
+years from the date of this release, the complete corresponding source of every component in this
+distribution is also available on request, as one archive: open an issue at
+https://github.com/APAF-bioinformatics/MultiScholaR/issues or write to the maintainer, Ignatius Pang <ignatius.pang@mq.edu.au>.
+
+Built from commit 21dafb4d2c80850096a0b7bb4e8ba6b9ef568bf0 with packages from the Posit Package Manager snapshot of 2026-07-30.
+
+Component                    Version                Licence                                       Source
+R                            4.6.1                  GPL-2 | GPL-3                                 https://cran.r-project.org/src/base/R-4/R-4.6.1.tar.gz
+abind                        1.4-8                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/abind_1.4-8.tar.gz
+ade4                         1.7-24                 GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ade4_1.7-24.tar.gz
+aisdk                        1.4.12                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/aisdk_1.4.12.tar.gz
+AnnotationDbi                1.74.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/AnnotationDbi_1.74.0.tar.gz
+ape                          5.8-1                  GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ape_5.8-1.tar.gz
+aplot                        0.3.1                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/aplot_0.3.1.tar.gz
+aroma.light                  3.42.0                 GPL (>= 2)                                    https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/aroma.light_3.42.0.tar.gz
+arrow                        25.0.0                 Apache License (>= 2.0)                       https://packagemanager.posit.co/cran/2026-07-30/src/contrib/arrow_25.0.0.tar.gz
+askpass                      1.2.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/askpass_1.2.1.tar.gz
+assertthat                   0.2.1                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/assertthat_0.2.1.tar.gz
+attempt                      0.3.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/attempt_0.3.1.tar.gz
+audio                        0.1-12                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/audio_0.1-12.tar.gz
+backports                    1.5.1                  GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/backports_1.5.1.tar.gz
+base                         4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+base64enc                    0.1-6                  GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/base64enc_0.1-6.tar.gz
+basilisk                     1.24.0                 GPL-3                                         https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/basilisk_1.24.0.tar.gz
+beepr                        2.0                    GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/beepr_2.0.tar.gz
+BH                           1.90.0-1               BSL-1.0                                       https://packagemanager.posit.co/cran/2026-07-30/src/contrib/BH_1.90.0-1.tar.gz
+bigD                         0.3.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/bigD_0.3.1.tar.gz
+Biobase                      2.72.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/Biobase_2.72.0.tar.gz
+BiocBaseUtils                1.14.2                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/BiocBaseUtils_1.14.2.tar.gz
+BiocFileCache                3.2.0                  Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/BiocFileCache_3.2.0.tar.gz
+BiocGenerics                 0.58.1                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/BiocGenerics_0.58.1.tar.gz
+BiocIO                       1.22.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/BiocIO_1.22.0.tar.gz
+biocmake                     1.4.0                  MIT + file LICENSE                            https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/biocmake_1.4.0.tar.gz
+BiocManager                  1.30.27                Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/BiocManager_1.30.27.tar.gz
+BiocParallel                 1.46.0                 GPL-2 | GPL-3 | BSL-1.0                       https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/BiocParallel_1.46.0.tar.gz
+biomaRt                      2.68.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/biomaRt_2.68.0.tar.gz
+Biostrings                   2.80.1                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/Biostrings_2.80.1.tar.gz
+bit                          4.6.0                  GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/bit_4.6.0.tar.gz
+bit64                        4.8.2                  GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/bit64_4.8.2.tar.gz
+bitops                       1.0-9                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/bitops_1.0-9.tar.gz
+blob                         1.3.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/blob_1.3.0.tar.gz
+boot                         1.3-32                 Unlimited                                     https://packagemanager.posit.co/cran/2026-07-30/src/contrib/boot_1.3-32.tar.gz
+broom                        1.0.13                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/broom_1.0.13.tar.gz
+bslib                        0.11.0                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/bslib_0.11.0.tar.gz
+cachem                       1.1.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/cachem_1.1.0.tar.gz
+callr                        3.8.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/callr_3.8.0.tar.gz
+car                          3.1-5                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/car_3.1-5.tar.gz
+carData                      3.0-6                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/carData_3.0-6.tar.gz
+caTools                      1.18.4                 GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/caTools_1.18.4.tar.gz
+cellranger                   1.1.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/cellranger_1.1.0.tar.gz
+checkmate                    2.3.4                  BSD_3_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/checkmate_2.3.4.tar.gz
+cigarillo                    1.2.1                  Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/cigarillo_1.2.1.tar.gz
+circlize                     0.4.18                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/circlize_0.4.18.tar.gz
+class                        7.3-23                 GPL-2 | GPL-3                                 installed with R 4.6.1 (recommended package); https://packagemanager.posit.co/cran/2026-07-30/src/contrib/class_7.3-23.tar.gz
+cli                          3.6.6                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/cli_3.6.6.tar.gz
+clipr                        0.8.1                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/clipr_0.8.1.tar.gz
+clue                         0.3-68                 GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/clue_0.3-68.tar.gz
+cluster                      2.1.8.2                GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/cluster_2.1.8.2.tar.gz
+clusterProfiler              4.20.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/clusterProfiler_4.20.0.tar.gz
+codetools                    0.2-20                 GPL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/codetools_0.2-20.tar.gz
+collections                  0.3.12                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/collections_0.3.12.tar.gz
+colorspace                   2.1-3                  BSD_3_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/colorspace_2.1-3.tar.gz
+commonmark                   2.0.0                  BSD_2_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/commonmark_2.0.0.tar.gz
+compiler                     4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+ComplexHeatmap               2.28.0                 MIT + file LICENSE                            https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/ComplexHeatmap_2.28.0.tar.gz
+config                       0.3.2                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/config_0.3.2.tar.gz
+configr                      0.3.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/configr_0.3.5.tar.gz
+conflicted                   1.2.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/conflicted_1.2.0.tar.gz
+corpcor                      1.6.10                 GPL (>= 3)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/corpcor_1.6.10.tar.gz
+corrplot                     0.95                   MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/corrplot_0.95.tar.gz
+cowplot                      1.2.0                  GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/cowplot_1.2.0.tar.gz
+cpp11                        0.5.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/cpp11_0.5.5.tar.gz
+crayon                       1.5.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/crayon_1.5.3.tar.gz
+crosstalk                    1.2.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/crosstalk_1.2.2.tar.gz
+curl                         7.1.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/curl_7.1.0.tar.gz
+data.table                   1.18.4                 MPL-2.0 | file LICENSE                        https://packagemanager.posit.co/cran/2026-07-30/src/contrib/data.table_1.18.4.tar.gz
+datasets                     4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+DBI                          1.3.0                  LGPL (>= 2.1)                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/DBI_1.3.0.tar.gz
+dbplyr                       2.6.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/dbplyr_2.6.0.tar.gz
+DelayedArray                 0.38.2                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/DelayedArray_0.38.2.tar.gz
+deldir                       2.0-4                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/deldir_2.0-4.tar.gz
+Deriv                        4.3.0                  GPL (>= 3)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/Deriv_4.3.0.tar.gz
+DESeq2                       1.52.0                 LGPL (>= 3)                                   https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/DESeq2_1.52.0.tar.gz
+digest                       0.6.39                 GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/digest_0.6.39.tar.gz
+dir.expiry                   1.20.0                 GPL-3                                         https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/dir.expiry_1.20.0.tar.gz
+doBy                         4.7.2                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/doBy_4.7.2.tar.gz
+doParallel                   1.0.17                 GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/doParallel_1.0.17.tar.gz
+DOSE                         4.6.0                  Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/DOSE_4.6.0.tar.gz
+dplyr                        1.2.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/dplyr_1.2.1.tar.gz
+dqrng                        0.4.1                  AGPL-3                                        https://packagemanager.posit.co/cran/2026-07-30/src/contrib/dqrng_0.4.1.tar.gz
+DT                           0.34.0                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/DT_0.34.0.tar.gz
+dtplyr                       1.3.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/dtplyr_1.3.3.tar.gz
+duckdb                       1.5.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/duckdb_1.5.5.tar.gz
+duckplyr                     1.2.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/duckplyr_1.2.1.tar.gz
+EDASeq                       2.46.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/EDASeq_2.46.0.tar.gz
+edgeR                        4.10.1                 GPL (>=2)                                     https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/edgeR_4.10.1.tar.gz
+ellipse                      0.5.0                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ellipse_0.5.0.tar.gz
+enrichit                     0.2.0                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/enrichit_0.2.0.tar.gz
+enrichplot                   1.32.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/enrichplot_1.32.0.tar.gz
+evaluate                     1.0.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/evaluate_1.0.5.tar.gz
+farver                       2.1.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/farver_2.1.2.tar.gz
+fastcluster                  1.3.0                  FreeBSD | GPL-2 | file LICENSE                https://packagemanager.posit.co/cran/2026-07-30/src/contrib/fastcluster_1.3.0.tar.gz
+fastmap                      1.2.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/fastmap_1.2.0.tar.gz
+filelock                     1.0.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/filelock_1.0.3.tar.gz
+flextable                    0.10.0                 GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/flextable_0.10.0.tar.gz
+FNN                          1.1.4.1                GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/FNN_1.1.4.1.tar.gz
+fontawesome                  0.5.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/fontawesome_0.5.3.tar.gz
+fontBitstreamVera            0.1.1                  file LICENCE                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/fontBitstreamVera_0.1.1.tar.gz
+fontLiberation               0.1.0                  file LICENSE                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/fontLiberation_0.1.0.tar.gz
+fontquiver                   0.2.1                  GPL-3 | file LICENSE                          https://packagemanager.posit.co/cran/2026-07-30/src/contrib/fontquiver_0.2.1.tar.gz
+forcats                      1.0.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/forcats_1.0.1.tar.gz
+foreach                      1.5.2                  Apache License (== 2.0)                       https://packagemanager.posit.co/cran/2026-07-30/src/contrib/foreach_1.5.2.tar.gz
+forecast                     9.0.2                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/forecast_9.0.2.tar.gz
+foreign                      0.8-91                 GPL (>= 2)                                    installed with R 4.6.1 (recommended package); https://packagemanager.posit.co/cran/2026-07-30/src/contrib/foreign_0.8-91.tar.gz
+formatR                      1.14                   GPL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/formatR_1.14.tar.gz
+Formula                      1.2-5                  GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/Formula_1.2-5.tar.gz
+fracdiff                     1.5-4                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/fracdiff_1.5-4.tar.gz
+fs                           2.1.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/fs_2.1.0.tar.gz
+furrr                        0.4.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/furrr_0.4.0.tar.gz
+futile.logger                1.4.9                  LGPL-3                                        https://packagemanager.posit.co/cran/2026-07-30/src/contrib/futile.logger_1.4.9.tar.gz
+futile.options               1.0.1                  LGPL-3                                        https://packagemanager.posit.co/cran/2026-07-30/src/contrib/futile.options_1.0.1.tar.gz
+future                       1.75.0                 Apache License (>= 2)                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/future_1.75.0.tar.gz
+future.apply                 1.20.2                 GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/future.apply_1.20.2.tar.gz
+gargle                       1.6.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gargle_1.6.1.tar.gz
+gdtools                      0.5.1                  GPL-3 | file LICENSE                          https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gdtools_0.5.1.tar.gz
+generics                     0.1.4                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/generics_0.1.4.tar.gz
+GenomicAlignments            1.48.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/GenomicAlignments_1.48.0.tar.gz
+GenomicFeatures              1.64.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/GenomicFeatures_1.64.0.tar.gz
+GenomicRanges                1.64.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/GenomicRanges_1.64.0.tar.gz
+GetoptLong                   1.1.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/GetoptLong_1.1.1.tar.gz
+GGally                       2.4.0                  GPL (>= 2.0)                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/GGally_2.4.0.tar.gz
+ggdendro                     0.2.0                  GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggdendro_0.2.0.tar.gz
+ggforce                      0.5.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggforce_0.5.0.tar.gz
+ggfun                        0.2.1                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggfun_0.2.1.tar.gz
+ggiraph                      0.9.6                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggiraph_0.9.6.tar.gz
+ggnewscale                   0.5.2                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggnewscale_0.5.2.tar.gz
+ggplot2                      4.0.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggplot2_4.0.3.tar.gz
+ggplotify                    0.1.3                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggplotify_0.1.3.tar.gz
+ggpubr                       1.0.0                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggpubr_1.0.0.tar.gz
+ggraph                       2.2.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggraph_2.2.2.tar.gz
+ggrepel                      0.9.8                  GPL-3 | file LICENSE                          https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggrepel_0.9.8.tar.gz
+ggsci                        5.1.0                  GPL (>= 3)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggsci_5.1.0.tar.gz
+ggsignif                     0.6.4                  GPL-3 | file LICENSE                          https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggsignif_0.6.4.tar.gz
+ggstats                      0.13.0                 GPL (>= 3)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggstats_0.13.0.tar.gz
+ggtangle                     0.1.2                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ggtangle_0.1.2.tar.gz
+ggtree                       4.2.0                  Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/ggtree_4.2.0.tar.gz
+gh                           1.6.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gh_1.6.1.tar.gz
+git2r                        0.36.2                 GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/git2r_0.36.2.tar.gz
+gitcreds                     0.1.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gitcreds_0.1.2.tar.gz
+Glimma                       2.15.2                 GPL-3                                         https://github.com/APAF-bioinformatics/GlimmaV2/archive/743af0944957ce2515b17b38d329506edd06ca5a.tar.gz
+GlobalOptions                0.1.4                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/GlobalOptions_0.1.4.tar.gz
+globals                      0.19.1                 LGPL (>= 2.1)                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/globals_0.19.1.tar.gz
+glue                         1.8.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/glue_1.8.1.tar.gz
+GO.db                        3.23.1                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/data/annotation/src/contrib/GO.db_3.23.1.tar.gz
+golem                        1.0.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/golem_1.0.1.tar.gz
+googledrive                  2.1.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/googledrive_2.1.2.tar.gz
+googlesheets4                1.1.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/googlesheets4_1.1.2.tar.gz
+GOSemSim                     2.38.3                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/GOSemSim_2.38.3.tar.gz
+gplots                       3.3.0                  GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gplots_3.3.0.tar.gz
+gprofiler2                   0.2.4                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gprofiler2_0.2.4.tar.gz
+graphics                     4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+graphlayouts                 1.2.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/graphlayouts_1.2.5.tar.gz
+grDevices                    4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+grid                         4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+gridExtra                    2.3.1                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gridExtra_2.3.1.tar.gz
+gridGraphics                 0.5-1                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gridGraphics_0.5-1.tar.gz
+gson                         0.2.0                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gson_0.2.0.tar.gz
+gt                           1.3.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gt_1.3.0.tar.gz
+gtable                       0.3.6                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gtable_0.3.6.tar.gz
+gtools                       3.9.5                  GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/gtools_3.9.5.tar.gz
+h5mread                      1.4.0                  Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/h5mread_1.4.0.tar.gz
+haven                        2.5.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/haven_2.5.5.tar.gz
+HDF5Array                    1.40.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/HDF5Array_1.40.0.tar.gz
+here                         1.0.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/here_1.0.2.tar.gz
+highr                        0.12                   GPL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/highr_0.12.tar.gz
+hms                          1.1.4                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/hms_1.1.4.tar.gz
+htmltools                    0.5.9                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/htmltools_0.5.9.tar.gz
+htmlwidgets                  1.6.4                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/htmlwidgets_1.6.4.tar.gz
+httpuv                       1.6.17                 GPL (>= 2) | file LICENSE                     https://packagemanager.posit.co/cran/2026-07-30/src/contrib/httpuv_1.6.17.tar.gz
+httr                         1.4.8                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/httr_1.4.8.tar.gz
+httr2                        1.3.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/httr2_1.3.0.tar.gz
+hwriter                      1.3.2.1                LGPL-2.1                                      https://packagemanager.posit.co/cran/2026-07-30/src/contrib/hwriter_1.3.2.1.tar.gz
+ids                          1.0.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ids_1.0.1.tar.gz
+igraph                       2.3.3                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/igraph_2.3.3.tar.gz
+iheatmapr                    0.7.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/iheatmapr_0.7.1.tar.gz
+ini                          0.3.1                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ini_0.3.1.tar.gz
+interp                       1.1-6                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/interp_1.1-6.tar.gz
+iq                           2.0.1                  BSD_3_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/iq_2.0.1.tar.gz
+IRanges                      2.46.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/IRanges_2.46.0.tar.gz
+irlba                        2.3.7                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/irlba_2.3.7.tar.gz
+isoband                      0.3.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/isoband_0.3.0.tar.gz
+iterators                    1.0.14                 Apache License (== 2.0)                       https://packagemanager.posit.co/cran/2026-07-30/src/contrib/iterators_1.0.14.tar.gz
+janeaustenr                  1.0.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/janeaustenr_1.0.0.tar.gz
+janitor                      2.2.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/janitor_2.2.1.tar.gz
+jpeg                         0.1-11                 GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/jpeg_0.1-11.tar.gz
+jquerylib                    0.1.4                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/jquerylib_0.1.4.tar.gz
+jsonlite                     2.0.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/jsonlite_2.0.0.tar.gz
+juicyjuice                   0.1.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/juicyjuice_0.1.0.tar.gz
+KEGGREST                     1.52.2                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/KEGGREST_1.52.2.tar.gz
+KernSmooth                   2.23-26                Unlimited                                     https://packagemanager.posit.co/cran/2026-07-30/src/contrib/KernSmooth_2.23-26.tar.gz
+knitr                        1.51                   GPL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/knitr_1.51.tar.gz
+labeling                     0.4.3                  MIT + file LICENSE | Unlimited                https://packagemanager.posit.co/cran/2026-07-30/src/contrib/labeling_0.4.3.tar.gz
+lambda.r                     1.2.4                  LGPL-3                                        https://packagemanager.posit.co/cran/2026-07-30/src/contrib/lambda.r_1.2.4.tar.gz
+later                        1.4.8                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/later_1.4.8.tar.gz
+lattice                      0.22-9                 GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/lattice_0.22-9.tar.gz
+latticeExtra                 0.6-31                 GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/latticeExtra_0.6-31.tar.gz
+lazyeval                     0.2.3                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/lazyeval_0.2.3.tar.gz
+lifecycle                    1.0.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/lifecycle_1.0.5.tar.gz
+limma                        3.68.4                 GPL (>=2)                                     https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/limma_3.68.4.tar.gz
+limpa                        1.4.0                  GPL (>=2)                                     https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/limpa_1.4.0.tar.gz
+listenv                      1.0.0                  Apache License (>= 2)                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/listenv_1.0.0.tar.gz
+litedown                     0.10                   MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/litedown_0.10.tar.gz
+lme4                         2.0-6                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/lme4_2.0-6.tar.gz
+lmtest                       0.9-40                 GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/lmtest_0.9-40.tar.gz
+locfit                       1.5-9.12               GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/locfit_1.5-9.12.tar.gz
+logger                       0.4.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/logger_0.4.2.tar.gz
+logging                      0.10-111               GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/logging_0.10-111.tar.gz
+lubridate                    1.9.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/lubridate_1.9.5.tar.gz
+magick                       2.9.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/magick_2.9.1.tar.gz
+magrittr                     2.0.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/magrittr_2.0.5.tar.gz
+markdown                     2.0                    MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/markdown_2.0.tar.gz
+MASS                         7.3-66                 GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/MASS_7.3-66.tar.gz
+Matrix                       1.7-6                  GPL (>= 2) | file LICENCE                     https://packagemanager.posit.co/cran/2026-07-30/src/contrib/Matrix_1.7-6.tar.gz
+MatrixGenerics               1.24.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/MatrixGenerics_1.24.0.tar.gz
+MatrixModels                 0.5-4                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/MatrixModels_0.5-4.tar.gz
+matrixStats                  1.5.0                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/matrixStats_1.5.0.tar.gz
+memoise                      2.0.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/memoise_2.0.1.tar.gz
+methods                      4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+mgcv                         1.9-4                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/mgcv_1.9-4.tar.gz
+mime                         0.13                   GPL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/mime_0.13.tar.gz
+minqa                        1.2.8                  GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/minqa_1.2.8.tar.gz
+mixOmics                     6.36.0                 GPL (>= 2)                                    https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/mixOmics_6.36.0.tar.gz
+modelr                       0.1.11                 GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/modelr_0.1.11.tar.gz
+MOFA2                        1.22.0                 file LICENSE                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/MOFA2_1.22.0.tar.gz
+multidplyr                   0.1.4                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/multidplyr_0.1.4.tar.gz
+MultiScholaR                 0.5.0                  LGPL (>= 3) + file LICENSE                    https://github.com/APAF-bioinformatics/MultiScholaR/archive/21dafb4d2c80850096a0b7bb4e8ba6b9ef568bf0.tar.gz
+nanoarrow                    0.8.0-1                Apache License (>= 2)                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/nanoarrow_0.8.0-1.tar.gz
+nlme                         3.1-170                GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/nlme_3.1-170.tar.gz
+nloptr                       2.2.1                  LGPL (>= 3)                                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/nloptr_2.2.1.tar.gz
+NLP                          0.3-3                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/NLP_0.3-3.tar.gz
+nnet                         7.3-20                 GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/nnet_7.3-20.tar.gz
+numDeriv                     2016.8-1.1             GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/numDeriv_2016.8-1.1.tar.gz
+officer                      0.7.6                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/officer_0.7.6.tar.gz
+openssl                      2.4.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/openssl_2.4.2.tar.gz
+openxlsx                     4.2.8.1                MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/openxlsx_4.2.8.1.tar.gz
+optparse                     1.8.2                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/optparse_1.8.2.tar.gz
+otel                         0.2.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/otel_0.2.0.tar.gz
+pacman                       0.5.1                  GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/pacman_0.5.1.tar.gz
+parallel                     4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+parallelly                   1.48.0                 LGPL (>= 2.1)                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/parallelly_1.48.0.tar.gz
+patchwork                    1.3.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/patchwork_1.3.2.tar.gz
+pbkrtest                     0.5.5                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/pbkrtest_0.5.5.tar.gz
+pheatmap                     1.0.13                 GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/pheatmap_1.0.13.tar.gz
+pillar                       1.11.1                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/pillar_1.11.1.tar.gz
+pixmap                       0.4-14                 GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/pixmap_0.4-14.tar.gz
+pkgconfig                    2.0.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/pkgconfig_2.0.3.tar.gz
+plotly                       4.12.1                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/plotly_4.12.1.tar.gz
+plyr                         1.8.9                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/plyr_1.8.9.tar.gz
+png                          0.1-9                  GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/png_0.1-9.tar.gz
+polyclip                     1.10-7                 BSL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/polyclip_1.10-7.tar.gz
+polynom                      1.4-1                  GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/polynom_1.4-1.tar.gz
+prettyunits                  1.2.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/prettyunits_1.2.0.tar.gz
+processx                     3.9.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/processx_3.9.0.tar.gz
+progress                     1.2.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/progress_1.2.3.tar.gz
+promises                     1.5.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/promises_1.5.0.tar.gz
+ps                           1.9.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ps_1.9.3.tar.gz
+purrr                        1.2.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/purrr_1.2.2.tar.gz
+pwalign                      1.8.0                  Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/pwalign_1.8.0.tar.gz
+qs2                          0.2.2                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/qs2_0.2.2.tar.gz
+quantreg                     6.1                    GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/quantreg_6.1.tar.gz
+qvalue                       2.44.0                 LGPL                                          https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/qvalue_2.44.0.tar.gz
+R.methodsS3                  1.8.2                  LGPL (>= 2.1)                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/R.methodsS3_1.8.2.tar.gz
+R.oo                         1.27.1                 LGPL (>= 2.1)                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/R.oo_1.27.1.tar.gz
+R.utils                      2.13.0                 LGPL (>= 2.1)                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/R.utils_2.13.0.tar.gz
+R6                           2.6.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/R6_2.6.1.tar.gz
+ragg                         1.5.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ragg_1.5.2.tar.gz
+rappdirs                     0.3.4                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rappdirs_0.3.4.tar.gz
+rARPACK                      0.11-0                 BSD_3_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rARPACK_0.11-0.tar.gz
+rbibutils                    2.4.1                  GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rbibutils_2.4.1.tar.gz
+RColorBrewer                 1.1-3                  Apache License 2.0                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RColorBrewer_1.1-3.tar.gz
+Rcpp                         1.1.2                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/Rcpp_1.1.2.tar.gz
+RcppAnnoy                    0.0.23                 GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RcppAnnoy_0.0.23.tar.gz
+RcppArmadillo                15.4.2-1               GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RcppArmadillo_15.4.2-1.tar.gz
+RcppEigen                    0.3.4.0.2              GPL (>= 2) | file LICENSE                     https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RcppEigen_0.3.4.0.2.tar.gz
+RcppParallel                 6.1.1                  GPL (>= 3)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RcppParallel_6.1.1.tar.gz
+RcppProgress                 0.4.2                  GPL (>= 3)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RcppProgress_0.4.2.tar.gz
+RcppTOML                     0.2.3                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RcppTOML_0.2.3.tar.gz
+RCurl                        1.98-1.19              BSD_3_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RCurl_1.98-1.19.tar.gz
+Rdpack                       2.6.6                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/Rdpack_2.6.6.tar.gz
+reactable                    0.4.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/reactable_0.4.5.tar.gz
+reactR                       0.6.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/reactR_0.6.1.tar.gz
+readr                        2.2.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/readr_2.2.0.tar.gz
+readxl                       1.5.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/readxl_1.5.0.tar.gz
+reformulas                   0.4.4                  GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/reformulas_0.4.4.tar.gz
+rematch                      2.0.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rematch_2.0.0.tar.gz
+rematch2                     2.1.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rematch2_2.1.2.tar.gz
+remotes                      2.5.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/remotes_2.5.0.tar.gz
+reprex                       2.1.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/reprex_2.1.1.tar.gz
+reshape2                     1.4.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/reshape2_1.4.5.tar.gz
+restfulr                     0.0.17                 Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/restfulr_0.0.17.tar.gz
+reticulate                   1.46.0                 Apache License 2.0                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/reticulate_1.46.0.tar.gz
+rgl                          1.3.36                 GPL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rgl_1.3.36.tar.gz
+rhdf5                        2.56.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/rhdf5_2.56.0.tar.gz
+rhdf5filters                 1.24.1                 BSD_2_clause + file LICENSE                   https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/rhdf5filters_1.24.1.tar.gz
+Rhdf5lib                     2.0.0                  Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/Rhdf5lib_2.0.0.tar.gz
+Rhtslib                      3.8.0                  LGPL (>= 2)                                   https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/Rhtslib_3.8.0.tar.gz
+rjson                        0.2.23                 GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rjson_0.2.23.tar.gz
+rjsoncons                    1.3.3                  BSL-1.0                                       https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rjsoncons_1.3.3.tar.gz
+rlang                        1.3.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rlang_1.3.0.tar.gz
+rmarkdown                    2.31                   GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rmarkdown_2.31.tar.gz
+rpart                        4.1.27                 GPL-2 | GPL-3                                 installed with R 4.6.1 (recommended package); https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rpart_4.1.27.tar.gz
+rprojroot                    2.1.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rprojroot_2.1.1.tar.gz
+Rsamtools                    2.28.0                 Artistic-2.0 | file LICENSE                   https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/Rsamtools_2.28.0.tar.gz
+RSpectra                     0.16-2                 MPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RSpectra_0.16-2.tar.gz
+RSQLite                      3.53.3                 LGPL (>= 2.1)                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/RSQLite_3.53.3.tar.gz
+rstatix                      1.1.0                  GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rstatix_1.1.0.tar.gz
+rstudioapi                   0.19.0                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rstudioapi_0.19.0.tar.gz
+rtracklayer                  1.72.0                 Artistic-2.0 + file LICENSE                   https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/rtracklayer_1.72.0.tar.gz
+Rtsne                        0.17                   file LICENSE                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/Rtsne_0.17.tar.gz
+ruv                          0.9.7.1                GPL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/ruv_0.9.7.1.tar.gz
+RUVIIIC                      1.0.19                 MIT + file LICENSE                            https://github.com/cran/RUVIIIC/archive/c534151f6b2265b36294ff630f4dd13c2e86a9fa.tar.gz
+RUVSeq                       1.46.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/RUVSeq_1.46.0.tar.gz
+rvest                        1.0.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/rvest_1.0.5.tar.gz
+S4Arrays                     1.12.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/S4Arrays_1.12.0.tar.gz
+S4Vectors                    0.50.1                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/S4Vectors_0.50.1.tar.gz
+S7                           0.2.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/S7_0.2.2.tar.gz
+sass                         0.4.10                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/sass_0.4.10.tar.gz
+scales                       1.4.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/scales_1.4.0.tar.gz
+scatterpie                   0.2.6                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/scatterpie_0.2.6.tar.gz
+segmented                    2.2-1                  GPL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/segmented_2.2-1.tar.gz
+selectr                      0.6-0                  BSD_3_clause + file LICENCE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/selectr_0.6-0.tar.gz
+Seqinfo                      1.2.0                  Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/Seqinfo_1.2.0.tar.gz
+seqinr                       4.2-44                 GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/seqinr_4.2-44.tar.gz
+shape                        1.4.6.1                GPL (>= 3)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/shape_1.4.6.1.tar.gz
+shiny                        1.14.0                 MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/shiny_1.14.0.tar.gz
+shinydashboard               0.7.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/shinydashboard_0.7.3.tar.gz
+shinyFiles                   0.9.3                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/shinyFiles_0.9.3.tar.gz
+shinyjqui                    0.4.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/shinyjqui_0.4.1.tar.gz
+shinyjs                      2.1.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/shinyjs_2.1.1.tar.gz
+ShortRead                    1.70.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/ShortRead_1.70.0.tar.gz
+sitmo                        2.0.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/sitmo_2.0.2.tar.gz
+slam                         0.1-56                 GPL-2                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/slam_0.1-56.tar.gz
+snakecase                    0.11.1                 GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/snakecase_0.11.1.tar.gz
+snow                         0.4-4                  GPL                                           https://packagemanager.posit.co/cran/2026-07-30/src/contrib/snow_0.4-4.tar.gz
+SnowballC                    0.7.1                  BSD_3_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/SnowballC_0.7.1.tar.gz
+sourcetools                  0.1.7-2                MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/sourcetools_0.1.7-2.tar.gz
+sp                           2.2-3                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/sp_2.2-3.tar.gz
+SparseArray                  1.12.2                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/SparseArray_1.12.2.tar.gz
+SparseM                      1.84-2                 GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/SparseM_1.84-2.tar.gz
+spatial                      7.3-18                 GPL-2 | GPL-3                                 installed with R 4.6.1 (recommended package); https://packagemanager.posit.co/cran/2026-07-30/src/contrib/spatial_7.3-18.tar.gz
+splines                      4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+statmod                      1.5.2                  GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/statmod_1.5.2.tar.gz
+stats                        4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+stats4                       4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+stringfish                   0.19.0                 GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/stringfish_0.19.0.tar.gz
+stringi                      1.8.7                  file LICENSE                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/stringi_1.8.7.tar.gz
+stringr                      1.6.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/stringr_1.6.0.tar.gz
+SummarizedExperiment         1.42.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/SummarizedExperiment_1.42.0.tar.gz
+survival                     3.8-9                  LGPL (>= 2)                                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/survival_3.8-9.tar.gz
+svglite                      2.2.2                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/svglite_2.2.2.tar.gz
+sys                          3.4.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/sys_3.4.3.tar.gz
+systemfonts                  1.3.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/systemfonts_1.3.2.tar.gz
+tcltk                        4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+textshaping                  1.0.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/textshaping_1.0.5.tar.gz
+tibble                       3.3.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tibble_3.3.1.tar.gz
+tictoc                       1.2.1                  Apache License (== 2.0) | file LICENSE        https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tictoc_1.2.1.tar.gz
+tidydr                       0.0.6                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tidydr_0.0.6.tar.gz
+tidygraph                    1.3.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tidygraph_1.3.1.tar.gz
+tidyr                        1.3.2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tidyr_1.3.2.tar.gz
+tidyselect                   1.2.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tidyselect_1.2.1.tar.gz
+tidytext                     0.4.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tidytext_0.4.3.tar.gz
+tidytree                     0.4.8                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tidytree_0.4.8.tar.gz
+tidyverse                    2.0.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tidyverse_2.0.0.tar.gz
+timechange                   0.4.0                  GPL (>= 3)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/timechange_0.4.0.tar.gz
+timeDate                     4052.112               GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/timeDate_4052.112.tar.gz
+tinytex                      0.60                   MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tinytex_0.60.tar.gz
+tm                           0.7-18                 GPL-3                                         https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tm_0.7-18.tar.gz
+tokenizers                   0.3.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tokenizers_0.3.0.tar.gz
+tools                        4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+treeio                       1.36.1                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/treeio_1.36.1.tar.gz
+tweenr                       2.0.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tweenr_2.0.3.tar.gz
+tzdb                         0.5.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/tzdb_0.5.0.tar.gz
+UniProt.ws                   2.52.1                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/UniProt.ws_2.52.1.tar.gz
+UpSetR                       1.4.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/UpSetR_1.4.1.tar.gz
+urca                         1.3-4                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/urca_1.3-4.tar.gz
+utf8                         1.2.6                  Apache License (== 2.0) | file LICENSE        https://packagemanager.posit.co/cran/2026-07-30/src/contrib/utf8_1.2.6.tar.gz
+utils                        4.6.1                  Part of R 4.6.1                               part of R 4.6.1 (above)
+uuid                         1.2-2                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/uuid_1.2-2.tar.gz
+uwot                         0.2.4                  GPL (>= 3)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/uwot_0.2.4.tar.gz
+V8                           8.2.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/V8_8.2.0.tar.gz
+vctrs                        0.7.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/vctrs_0.7.3.tar.gz
+viridis                      0.6.5                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/viridis_0.6.5.tar.gz
+viridisLite                  0.4.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/viridisLite_0.4.3.tar.gz
+vroom                        1.7.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/vroom_1.7.1.tar.gz
+withr                        3.0.3                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/withr_3.0.3.tar.gz
+writexl                      1.5.4                  BSD_2_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/writexl_1.5.4.tar.gz
+xfun                         0.60                   MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/xfun_0.60.tar.gz
+XML                          3.99-0.23              BSD_3_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/XML_3.99-0.23.tar.gz
+xml2                         1.6.0                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/xml2_1.6.0.tar.gz
+xtable                       1.8-8                  GPL (>= 2)                                    https://packagemanager.posit.co/cran/2026-07-30/src/contrib/xtable_1.8-8.tar.gz
+XVector                      0.52.0                 Artistic-2.0                                  https://packagemanager.posit.co/bioconductor/2026-07-30/packages/3.23/bioc/src/contrib/XVector_0.52.0.tar.gz
+yaml                         2.3.12                 BSD_3_clause + file LICENSE                   https://packagemanager.posit.co/cran/2026-07-30/src/contrib/yaml_2.3.12.tar.gz
+yulab.utils                  0.2.4                  Artistic-2.0                                  https://packagemanager.posit.co/cran/2026-07-30/src/contrib/yulab.utils_0.2.4.tar.gz
+zip                          3.0.1                  MIT + file LICENSE                            https://packagemanager.posit.co/cran/2026-07-30/src/contrib/zip_3.0.1.tar.gz
+zoo                          1.8-15                 GPL-2 | GPL-3                                 https://packagemanager.posit.co/cran/2026-07-30/src/contrib/zoo_1.8-15.tar.gz
+libGL.so.1                   libgl1 1.4.0-1         see /usr/share/doc/libgl1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libglvnd/1.4.0-1
+libGLU.so.1                  libglu1-mesa 9.0.2-1   see /usr/share/doc/libglu1-mesa/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libglu/9.0.2-1
+libGLX.so.0                  libglx0 1.4.0-1        see /usr/share/doc/libglx0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libglvnd/1.4.0-1
+libGLdispatch.so.0           libglvnd0 1.4.0-1      see /usr/share/doc/libglvnd0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libglvnd/1.4.0-1
+libICE.so.6                  libice6 2:1.0.10-1build2 see /usr/share/doc/libice6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libice/2:1.0.10-1build2
+libMagick++-6.Q16.so.8       libmagick++-6.q16-8 8:6.9.11.60+dfsg-1.3ubuntu0.22.04.5 see /usr/share/doc/libmagick++-6.q16-8/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/imagemagick/8:6.9.11.60+dfsg-1.3ubuntu0.22.04.5
+libMagickCore-6.Q16.so.6     libmagickcore-6.q16-6 8:6.9.11.60+dfsg-1.3ubuntu0.22.04.5 see /usr/share/doc/libmagickcore-6.q16-6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/imagemagick/8:6.9.11.60+dfsg-1.3ubuntu0.22.04.5
+libMagickWand-6.Q16.so.6     libmagickwand-6.q16-6 8:6.9.11.60+dfsg-1.3ubuntu0.22.04.5 see /usr/share/doc/libmagickwand-6.q16-6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/imagemagick/8:6.9.11.60+dfsg-1.3ubuntu0.22.04.5
+libOpenGL.so.0               libopengl0 1.4.0-1     see /usr/share/doc/libopengl0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libglvnd/1.4.0-1
+libSM.so.6                   libsm6 2:1.2.3-1build2 see /usr/share/doc/libsm6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libsm/2:1.2.3-1build2
+libX11.so.6                  libx11-6 2:1.7.5-1ubuntu0.4 see /usr/share/doc/libx11-6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libx11/2:1.7.5-1ubuntu0.4
+libXau.so.6                  libxau6 1:1.0.9-1build5 see /usr/share/doc/libxau6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxau/1:1.0.9-1build5
+libXdmcp.so.6                libxdmcp6 1:1.1.3-0ubuntu5 see /usr/share/doc/libxdmcp6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxdmcp/1:1.1.3-0ubuntu5
+libXext.so.6                 libxext6 2:1.3.4-1build1 see /usr/share/doc/libxext6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxext/2:1.3.4-1build1
+libXft.so.2                  libxft2 2.3.4-1        see /usr/share/doc/libxft2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/xft/2.3.4-1
+libXrender.so.1              libxrender1 1:0.9.10-1build4 see /usr/share/doc/libxrender1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxrender/1:0.9.10-1build4
+libXss.so.1                  libxss1 1:1.2.3-1build2 see /usr/share/doc/libxss1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxss/1:1.2.3-1build2
+libXt.so.6                   libxt6 1:1.2.1-1       see /usr/share/doc/libxt6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxt/1:1.2.1-1
+libamd.so.2                  libamd2 1:5.10.1+dfsg-4build1 see /usr/share/doc/libamd2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/suitesparse/1:5.10.1+dfsg-4build1
+libblas.so.3                 libopenblas0-pthread 0.3.20+ds-1 see /usr/share/doc/libopenblas0-pthread/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/openblas/0.3.20+ds-1
+libblkid.so.1                libblkid1 2.37.2-4ubuntu3.6 see /usr/share/doc/libblkid1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/util-linux/2.37.2-4ubuntu3.6
+libbrotlicommon.so.1         libbrotli1 1.0.9-2ubuntu0.1 see /usr/share/doc/libbrotli1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/brotli/1.0.9-2ubuntu0.1
+libbrotlidec.so.1            libbrotli1 1.0.9-2ubuntu0.1 see /usr/share/doc/libbrotli1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/brotli/1.0.9-2ubuntu0.1
+libbsd.so.0                  libbsd0 0.11.5-1       see /usr/share/doc/libbsd0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libbsd/0.11.5-1
+libbz2.so.1.0                libbz2-1.0 1.0.8-5ubuntu0.1 see /usr/share/doc/libbz2-1.0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/bzip2/1.0.8-5ubuntu0.1
+libcairo.so.2                libcairo2 1.16.0-5ubuntu2.1 see /usr/share/doc/libcairo2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/cairo/1.16.0-5ubuntu2.1
+libcolamd.so.2               libcolamd2 1:5.10.1+dfsg-4build1 see /usr/share/doc/libcolamd2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/suitesparse/1:5.10.1+dfsg-4build1
+libcom_err.so.2              libcom-err2 1.46.5-2ubuntu1.2 see /usr/share/doc/libcom-err2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/e2fsprogs/1.46.5-2ubuntu1.2
+libcrypto.so.3               libssl3 3.0.2-0ubuntu1.30 see /usr/share/doc/libssl3/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/openssl/3.0.2-0ubuntu1.30
+libcurl.so.4                 libcurl4 7.81.0-1ubuntu1.30 see /usr/share/doc/libcurl4/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/curl/7.81.0-1ubuntu1.30
+libdatrie.so.1               libdatrie1 0.2.13-2    see /usr/share/doc/libdatrie1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libdatrie/0.2.13-2
+libdeflate.so.0              libdeflate0 1.10-2     see /usr/share/doc/libdeflate0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libdeflate/1.10-2
+libexpat.so.1                libexpat1 2.4.7-1ubuntu0.9 see /usr/share/doc/libexpat1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/expat/2.4.7-1ubuntu0.9
+libffi.so.8                  libffi8 3.4.2-4        see /usr/share/doc/libffi8/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libffi/3.4.2-4
+libfftw3.so.3                libfftw3-double3 3.3.8-2ubuntu8 see /usr/share/doc/libfftw3-double3/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/fftw3/3.3.8-2ubuntu8
+libfontconfig.so.1           libfontconfig1 2.13.1-4.2ubuntu5 see /usr/share/doc/libfontconfig1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/fontconfig/2.13.1-4.2ubuntu5
+libfreetype.so.6             libfreetype6 2.11.1+dfsg-1ubuntu0.4 see /usr/share/doc/libfreetype6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/freetype/2.11.1+dfsg-1ubuntu0.4
+libfribidi.so.0              libfribidi0 1.0.8-2ubuntu3.1 see /usr/share/doc/libfribidi0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/fribidi/1.0.8-2ubuntu3.1
+libgcc_s.so.1                libgcc-s1 12.3.0-1ubuntu1~22.04.3 see /usr/share/doc/libgcc-s1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/gcc-12/12.3.0-1ubuntu1~22.04.3
+libgfortran.so.5             libgfortran5 12.3.0-1ubuntu1~22.04.3 see /usr/share/doc/libgfortran5/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/gcc-12/12.3.0-1ubuntu1~22.04.3
+libgio-2.0.so.0              libglib2.0-0 2.72.4-0ubuntu2.11 see /usr/share/doc/libglib2.0-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/glib2.0/2.72.4-0ubuntu2.11
+libgit2.so.1.1               libgit2-1.1 1.1.0+dfsg.1-4.1ubuntu0.1 see /usr/share/doc/libgit2-1.1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libgit2/1.1.0+dfsg.1-4.1ubuntu0.1
+libglib-2.0.so.0             libglib2.0-0 2.72.4-0ubuntu2.11 see /usr/share/doc/libglib2.0-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/glib2.0/2.72.4-0ubuntu2.11
+libglpk.so.40                libglpk40 5.0-1        see /usr/share/doc/libglpk40/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/glpk/5.0-1
+libgmodule-2.0.so.0          libglib2.0-0 2.72.4-0ubuntu2.11 see /usr/share/doc/libglib2.0-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/glib2.0/2.72.4-0ubuntu2.11
+libgmp.so.10                 libgmp10 2:6.2.1+dfsg-3ubuntu1 see /usr/share/doc/libgmp10/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/gmp/2:6.2.1+dfsg-3ubuntu1
+libgnutls.so.30              libgnutls30 3.7.3-4ubuntu1.9 see /usr/share/doc/libgnutls30/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/gnutls28/3.7.3-4ubuntu1.9
+libgobject-2.0.so.0          libglib2.0-0 2.72.4-0ubuntu2.11 see /usr/share/doc/libglib2.0-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/glib2.0/2.72.4-0ubuntu2.11
+libgomp.so.1                 libgomp1 12.3.0-1ubuntu1~22.04.3 see /usr/share/doc/libgomp1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/gcc-12/12.3.0-1ubuntu1~22.04.3
+libgraphite2.so.3            libgraphite2-3 1.3.14-1ubuntu0.1 see /usr/share/doc/libgraphite2-3/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/graphite2/1.3.14-1ubuntu0.1
+libgssapi_krb5.so.2          libgssapi-krb5-2 1.19.2-2ubuntu0.10 see /usr/share/doc/libgssapi-krb5-2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/krb5/1.19.2-2ubuntu0.10
+libharfbuzz.so.0             libharfbuzz0b 2.7.4-1ubuntu3.2 see /usr/share/doc/libharfbuzz0b/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/harfbuzz/2.7.4-1ubuntu3.2
+libhogweed.so.6              libhogweed6 3.7.3-1build2 see /usr/share/doc/libhogweed6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/nettle/3.7.3-1build2
+libhttp_parser.so.2.9        libhttp-parser2.9 2.9.4-4 see /usr/share/doc/libhttp-parser2.9/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/http-parser/2.9.4-4
+libicudata.so.70             libicu70 70.1-2        see /usr/share/doc/libicu70/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/icu/70.1-2
+libicui18n.so.70             libicu70 70.1-2        see /usr/share/doc/libicu70/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/icu/70.1-2
+libicuuc.so.70               libicu70 70.1-2        see /usr/share/doc/libicu70/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/icu/70.1-2
+libidn2.so.0                 libidn2-0 2.3.2-2build1 see /usr/share/doc/libidn2-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libidn2/2.3.2-2build1
+libjbig.so.0                 libjbig0 2.1-3.1ubuntu0.22.04.1 see /usr/share/doc/libjbig0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/jbigkit/2.1-3.1ubuntu0.22.04.1
+libjpeg.so.8                 libjpeg-turbo8 2.1.2-0ubuntu1 see /usr/share/doc/libjpeg-turbo8/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libjpeg-turbo/2.1.2-0ubuntu1
+libk5crypto.so.3             libk5crypto3 1.19.2-2ubuntu0.10 see /usr/share/doc/libk5crypto3/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/krb5/1.19.2-2ubuntu0.10
+libkeyutils.so.1             libkeyutils1 1.6.1-2ubuntu3 see /usr/share/doc/libkeyutils1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/keyutils/1.6.1-2ubuntu3
+libkrb5.so.3                 libkrb5-3 1.19.2-2ubuntu0.10 see /usr/share/doc/libkrb5-3/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/krb5/1.19.2-2ubuntu0.10
+libkrb5support.so.0          libkrb5support0 1.19.2-2ubuntu0.10 see /usr/share/doc/libkrb5support0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/krb5/1.19.2-2ubuntu0.10
+liblapack.so.3               libopenblas0-pthread 0.3.20+ds-1 see /usr/share/doc/libopenblas0-pthread/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/openblas/0.3.20+ds-1
+liblber-2.5.so.0             libldap-2.5-0 2.5.20+dfsg-0ubuntu0.22.04.1 see /usr/share/doc/libldap-2.5-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/openldap/2.5.20+dfsg-0ubuntu0.22.04.1
+liblcms2.so.2                liblcms2-2 2.12~rc1-2ubuntu0.1 see /usr/share/doc/liblcms2-2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/lcms2/2.12~rc1-2ubuntu0.1
+libldap-2.5.so.0             libldap-2.5-0 2.5.20+dfsg-0ubuntu0.22.04.1 see /usr/share/doc/libldap-2.5-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/openldap/2.5.20+dfsg-0ubuntu0.22.04.1
+liblqr-1.so.0                liblqr-1-0 0.4.2-2.1   see /usr/share/doc/liblqr-1-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/liblqr/0.4.2-2.1
+libltdl.so.7                 libltdl7 2.4.6-15build2 see /usr/share/doc/libltdl7/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libtool/2.4.6-15build2
+liblzma.so.5                 liblzma5 5.2.5-2ubuntu1.2 see /usr/share/doc/liblzma5/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/xz-utils/5.2.5-2ubuntu1.2
+libmbedcrypto.so.7           libmbedcrypto7 2.28.0-1build1 see /usr/share/doc/libmbedcrypto7/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/mbedtls/2.28.0-1build1
+libmbedtls.so.14             libmbedtls14 2.28.0-1build1 see /usr/share/doc/libmbedtls14/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/mbedtls/2.28.0-1build1
+libmbedx509.so.1             libmbedx509-1 2.28.0-1build1 see /usr/share/doc/libmbedx509-1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/mbedtls/2.28.0-1build1
+libmd.so.0                   libmd0 1.0.4-1build1   see /usr/share/doc/libmd0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libmd/1.0.4-1build1
+libmount.so.1                libmount1 2.37.2-4ubuntu3.6 see /usr/share/doc/libmount1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/util-linux/2.37.2-4ubuntu3.6
+libnettle.so.8               libnettle8 3.7.3-1build2 see /usr/share/doc/libnettle8/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/nettle/3.7.3-1build2
+libnghttp2.so.14             libnghttp2-14 1.43.0-1ubuntu0.4 see /usr/share/doc/libnghttp2-14/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/nghttp2/1.43.0-1ubuntu0.4
+libopenblas.so.0             libopenblas0-pthread 0.3.20+ds-1 see /usr/share/doc/libopenblas0-pthread/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/openblas/0.3.20+ds-1
+libp11-kit.so.0              libp11-kit0 0.24.0-6ubuntu0.1 see /usr/share/doc/libp11-kit0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/p11-kit/0.24.0-6ubuntu0.1
+libpango-1.0.so.0            libpango-1.0-0 1.50.6+ds-2ubuntu1 see /usr/share/doc/libpango-1.0-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/pango1.0/1.50.6+ds-2ubuntu1
+libpangocairo-1.0.so.0       libpangocairo-1.0-0 1.50.6+ds-2ubuntu1 see /usr/share/doc/libpangocairo-1.0-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/pango1.0/1.50.6+ds-2ubuntu1
+libpangoft2-1.0.so.0         libpangoft2-1.0-0 1.50.6+ds-2ubuntu1 see /usr/share/doc/libpangoft2-1.0-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/pango1.0/1.50.6+ds-2ubuntu1
+libpcre.so.3                 libpcre3 2:8.39-13ubuntu0.22.04.1 see /usr/share/doc/libpcre3/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/pcre3/2:8.39-13ubuntu0.22.04.1
+libpcre2-8.so.0              libpcre2-8-0 10.39-3ubuntu0.2 see /usr/share/doc/libpcre2-8-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/pcre2/10.39-3ubuntu0.2
+libpixman-1.so.0             libpixman-1-0 0.40.0-1ubuntu0.22.04.1 see /usr/share/doc/libpixman-1-0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/pixman/0.40.0-1ubuntu0.22.04.1
+libpng16.so.16               libpng16-16 1.6.37-3ubuntu0.7 see /usr/share/doc/libpng16-16/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libpng1.6/1.6.37-3ubuntu0.7
+libpsl.so.5                  libpsl5 0.21.0-1.2build2 see /usr/share/doc/libpsl5/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libpsl/0.21.0-1.2build2
+libquadmath.so.0             libquadmath0 12.3.0-1ubuntu1~22.04.3 see /usr/share/doc/libquadmath0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/gcc-12/12.3.0-1ubuntu1~22.04.3
+libreadline.so.8             libreadline8 8.1.2-1   see /usr/share/doc/libreadline8/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/readline/8.1.2-1
+librtmp.so.1                 librtmp1 2.4+20151223.gitfa8646d.1-2build4 see /usr/share/doc/librtmp1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/rtmpdump/2.4+20151223.gitfa8646d.1-2build4
+libsasl2.so.2                libsasl2-2 2.1.27+dfsg2-3ubuntu1.2 see /usr/share/doc/libsasl2-2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/cyrus-sasl2/2.1.27+dfsg2-3ubuntu1.2
+libselinux.so.1              libselinux1 3.3-1build2 see /usr/share/doc/libselinux1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libselinux/3.3-1build2
+libssh.so.4                  libssh-4 0.9.6-2ubuntu0.22.04.8 see /usr/share/doc/libssh-4/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libssh/0.9.6-2ubuntu0.22.04.8
+libssh2.so.1                 libssh2-1 1.10.0-3ubuntu0.1 see /usr/share/doc/libssh2-1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libssh2/1.10.0-3ubuntu0.1
+libssl.so.3                  libssl3 3.0.2-0ubuntu1.30 see /usr/share/doc/libssl3/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/openssl/3.0.2-0ubuntu1.30
+libstdc++.so.6               libstdc++6 12.3.0-1ubuntu1~22.04.3 see /usr/share/doc/libstdc++6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/gcc-12/12.3.0-1ubuntu1~22.04.3
+libsuitesparseconfig.so.5    libsuitesparseconfig5 1:5.10.1+dfsg-4build1 see /usr/share/doc/libsuitesparseconfig5/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/suitesparse/1:5.10.1+dfsg-4build1
+libtasn1.so.6                libtasn1-6 4.18.0-4ubuntu0.2 see /usr/share/doc/libtasn1-6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libtasn1-6/4.18.0-4ubuntu0.2
+libtcl8.6.so                 libtcl8.6 8.6.12+dfsg-1build1 see /usr/share/doc/libtcl8.6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/tcl8.6/8.6.12+dfsg-1build1
+libthai.so.0                 libthai0 0.1.29-1build1 see /usr/share/doc/libthai0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libthai/0.1.29-1build1
+libtiff.so.5                 libtiff5 4.3.0-6ubuntu0.13 see /usr/share/doc/libtiff5/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/tiff/4.3.0-6ubuntu0.13
+libtinfo.so.6                libtinfo6 6.3-2ubuntu0.3 see /usr/share/doc/libtinfo6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/ncurses/6.3-2ubuntu0.3
+libtirpc.so.3                libtirpc3 1.3.2-2ubuntu0.1 see /usr/share/doc/libtirpc3/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libtirpc/1.3.2-2ubuntu0.1
+libtk8.6.so                  libtk8.6 8.6.12-1build1 see /usr/share/doc/libtk8.6/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/tk8.6/8.6.12-1build1
+libunistring.so.2            libunistring2 1.0-1    see /usr/share/doc/libunistring2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libunistring/1.0-1
+libuuid.so.1                 libuuid1 2.37.2-4ubuntu3.6 see /usr/share/doc/libuuid1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/util-linux/2.37.2-4ubuntu3.6
+libuv.so.1                   libuv1 1.43.0-1ubuntu0.1 see /usr/share/doc/libuv1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libuv1/1.43.0-1ubuntu0.1
+libwebp.so.7                 libwebp7 1.2.2-2ubuntu0.22.04.2 see /usr/share/doc/libwebp7/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libwebp/1.2.2-2ubuntu0.22.04.2
+libwebpmux.so.3              libwebpmux3 1.2.2-2ubuntu0.22.04.2 see /usr/share/doc/libwebpmux3/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libwebp/1.2.2-2ubuntu0.22.04.2
+libxcb-render.so.0           libxcb-render0 1.14-3ubuntu3 see /usr/share/doc/libxcb-render0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxcb/1.14-3ubuntu3
+libxcb-shm.so.0              libxcb-shm0 1.14-3ubuntu3 see /usr/share/doc/libxcb-shm0/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxcb/1.14-3ubuntu3
+libxcb.so.1                  libxcb1 1.14-3ubuntu3  see /usr/share/doc/libxcb1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxcb/1.14-3ubuntu3
+libxml2.so.2                 libxml2 2.9.13+dfsg-1ubuntu0.14 see /usr/share/doc/libxml2/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libxml2/2.9.13+dfsg-1ubuntu0.14
+libz.so.1                    zlib1g 1:1.2.11.dfsg-2ubuntu9.2 see /usr/share/doc/zlib1g/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/zlib/1:1.2.11.dfsg-2ubuntu9.2
+libzstd.so.1                 libzstd1 1.4.8+dfsg-3build1 see /usr/share/doc/libzstd1/copyright in Ubuntu 22.04 https://launchpad.net/ubuntu/+source/libzstd/1.4.8+dfsg-3build1
+CPython                      3.12.16                PSF-2.0                                       https://www.python.org/ftp/python/3.12.16/Python-3.12.16.tgz
+python-build-standalone      20261110               BSD-3-Clause (build scripts); the libraries it links are listed in the release's licence files https://github.com/astral-sh/python-build-standalone/releases/tag/20261110
+cloudpickle                  3.1.2                  BSD-3-Clause                                  https://pypi.org/project/cloudpickle/3.1.2/#files
+dtw-python                   1.3.1                  GNU General Public License v3                 https://pypi.org/project/dtw-python/1.3.1/#files
+h5py                         3.10.0                 BSD-3-Clause                                  https://pypi.org/project/h5py/3.10.0/#files
+joblib                       1.6.0                  BSD-3-Clause                                  https://pypi.org/project/joblib/1.6.0/#files
+mofapy2                      0.7.3                  LGPL-3.0                                      https://pypi.org/project/mofapy2/0.7.3/#files
+numpy                        1.26.4                 Copyright (c) 2005-2023, NumPy Developers.    https://pypi.org/project/numpy/1.26.4/#files
+pandas                       2.2.1                  BSD 3-Clause License                          https://pypi.org/project/pandas/2.2.1/#files
+pip                          26.3                   MIT                                           https://pypi.org/project/pip/26.3/#files
+python-dateutil              4.0.0                  BSD-3-Clause                                  https://pypi.org/project/python-dateutil/4.0.0/#files
+pytz                         2026.6                 MIT                                           https://pypi.org/project/pytz/2026.6/#files
+scikit-learn                 1.4.0                  new BSD                                       https://pypi.org/project/scikit-learn/1.4.0/#files
+scipy                        1.12.0                 Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers. https://pypi.org/project/scipy/1.12.0/#files
+threadpoolctl                3.8.0                  BSD-3-Clause                                  https://pypi.org/project/threadpoolctl/3.8.0/#files
+tzdata                       2026.6                 Apache-2.0                                    https://pypi.org/project/tzdata/2026.6/#files
+pandoc                       3.11                   GPL-2.0-or-later                              https://github.com/jgm/pandoc/archive/refs/tags/3.11.tar.gz
+Electron                     45.3.3                 MIT (LICENSE.electron.txt); Chromium and its components: LICENSES.chromium.html (both beside the program) https://github.com/electron/electron/archive/refs/tags/v45.3.3.tar.gz

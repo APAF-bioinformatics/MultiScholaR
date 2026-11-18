@@ -1,0 +1,27 @@
+Linux, installed with install.sh into a scratch data folder, the laptop (kernel 7.3.3-1-cachyos, login session): <scratch>/xdg-data/multischolar/0.5.0/multischolar
+application folder: <scratch>/xdg-data/multischolar/0.5.0
+ok   no process from the bundle before the start: 0 found
+ok   the shell started: {"electron":"45.3.3","noSandbox":false}
+ok   the probe ran: {"time":"2026-11-17T23:14:12.316Z","event":"probe","launcher":"systemd","reason":"systemd worker: every host requirement holds","facts":{"platform":"linux","kernel":"7.3.3-1-cachyos","tools":{"systemctl":true,"systemd-run":true,"busctl":true},"userManager":true,"cgroup":"0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-com.microsoft.VSCode-1474187.scope","controllers":"cpuset cpu io memory pids","userBus":true},"ms":21}
+FAIL the window loaded the application and a live session rendered the first tab: {"time":"2026-11-17T23:14:17.518Z","event":"error","message":"Error: R exited before the application answered"}; 6.0 s after launch
+FAIL the launcher is systemd: {}
+TypeError: Invalid URL
+    at new URL (node:internal/url:818:25)
+    at new ClientRequest (node:_http_client:196:30)
+    at request (node:http:102:10)
+    at Object.get (node:http:113:15)
+    at <worktree>/packaging/electron/lifecycle-test.js:74:10
+    at new Promise (<anonymous>)
+    at fetchPage (<worktree>/packaging/electron/lifecycle-test.js:73:10)
+    at main (<worktree>/packaging/electron/lifecycle-test.js:151:22) {
+  code: 'ERR_INVALID_URL',
+  input: 'http://127.0.0.1:undefined/'
+}
+--- the application's R log of that start
+/bin/bash: symbol lookup error: /bin/bash: undefined symbol: rl_trim_arg_from_keyseq
+--- the application's shell log
+{"time":"2026-11-17T23:14:12.293Z","event":"start","release":"0.5.0","resources":"<scratch>/xdg-data/multischolar/0.5.0/app/resources","runtime":"<scratch>/xdg-data/multischolar/0.5.0/app/resources/runtime","packaged":true,"platform":"linux","electron":"45.3.3","pid":1814719,"noSandbox":false,"logs":"<scratch>/xdg-config/MultiScholaR/logs","startedAt":"2026-11-17T23-14-12-137Z"}
+{"time":"2026-11-17T23:14:12.316Z","event":"probe","launcher":"systemd","reason":"systemd worker: every host requirement holds","facts":{"platform":"linux","kernel":"7.3.3-1-cachyos","tools":{"systemctl":true,"systemd-run":true,"busctl":true},"userManager":true,"cgroup":"0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-com.microsoft.VSCode-1474187.scope","controllers":"cpuset cpu io memory pids","userBus":true},"ms":21}
+{"time":"2026-11-17T23:14:12.364Z","event":"r-started","pid":1814834,"rscript":"<scratch>/xdg-data/multischolar/0.5.0/app/resources/runtime/bin/Rscript","port":45361,"runFolder":"<scratch>/xdg-state/multischolar/run/2026-11-17T23-14-12-137Z"}
+{"time":"2026-11-17T23:14:12.382Z","event":"r-exited","code":127,"signal":null}
+{"time":"2026-11-17T23:14:17.518Z","event":"error","message":"Error: R exited before the application answered"}

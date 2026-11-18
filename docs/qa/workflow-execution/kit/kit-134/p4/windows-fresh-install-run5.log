@@ -1,0 +1,25 @@
+installer: MultiScholaR-Setup-0.5.0.exe, 803600389 bytes
+runner's own R on the PATH: C:\Program Files\R\R-4.6.2\bin\x64\Rscript.exe
+silent install: exit 0 after 398 s
+installed per user at: C:\Users\runneradmin\AppData\Local\Programs\multischolar
+installed size: 2530 MiB in 50372 files
+longest installed path: 200 characters
+Start-menu shortcut: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\MultiScholaR.lnk
+outbound traffic blocked for the installed application's 39 programs
+Windows, installed per user, fresh windows-2025: C:\Users\runneradmin\AppData\Local\Programs\multischolar\MultiScholaR.exe
+ok   no process from the bundle before the start: 0 found
+ok   the shell started: {"electron":"45.3.3","noSandbox":false}
+ok   the probe ran: {"time":"2026-11-16T20:49:25.721Z","event":"probe","launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}
+ok   the window loaded the application and a live session rendered the first tab: {"time":"2026-11-16T20:49:31.509Z","event":"first-tab","connected":true,"home":true,"rendered":true,"title":"MultiScholaR"}; 6.0 s after launch
+ok   the launcher is in-process: {"time":"2026-11-16T20:49:29.450Z","event":"launcher","launcher":"in-process","reason":"this MultiScholaR has no runPackagedApplication yet (the package side of KIT-134 P3 waits for KIT-131), so steps run inside the application","probe":{"launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}}
+ok   the port serves the application: http://127.0.0.1:51379/ -> 200
+ok   R from the bundle is running: 872 c:/users/runneradmin/appdata/local/programs/multischolar/resources/runtime/r/bin/rscript.exe; 1528 c:/users/runneradmin/appdata/local/programs/multischolar/resources/runtime/r/bin/x64/rscript.exe
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 872,1528; after 872,1528
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:51379
+ok   started again, R running: 2 R processes
+ok   R is gone within 10 s of the shell being killed: 1.8 s
+KIT-134 CHECK PASSED: Windows, installed per user, fresh windows-2025

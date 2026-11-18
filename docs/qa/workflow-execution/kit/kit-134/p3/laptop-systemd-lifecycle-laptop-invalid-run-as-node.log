@@ -1,0 +1,19 @@
+Linux, installed with install.sh into a scratch data folder, the laptop (kernel 7.3.3-1-cachyos, login session): <scratch>/xdg-data/multischolar/0.5.0/multischolar
+application folder: <scratch>/xdg-data/multischolar/0.5.0
+ok   no process from the bundle before the start: 0 found
+FAIL the shell started: {}
+FAIL the probe ran: {}
+FAIL the window loaded the application and a live session rendered the first tab: {"exit":0}; 0.5 s after launch
+FAIL the launcher is systemd: {}
+TypeError: Invalid URL
+    at new URL (node:internal/url:818:25)
+    at new ClientRequest (node:_http_client:196:30)
+    at request (node:http:102:10)
+    at Object.get (node:http:113:15)
+    at <worktree>/packaging/electron/lifecycle-test.js:74:10
+    at new Promise (<anonymous>)
+    at fetchPage (<worktree>/packaging/electron/lifecycle-test.js:73:10)
+    at main (<worktree>/packaging/electron/lifecycle-test.js:151:22) {
+  code: 'ERR_INVALID_URL',
+  input: 'http://127.0.0.1:undefined/'
+}

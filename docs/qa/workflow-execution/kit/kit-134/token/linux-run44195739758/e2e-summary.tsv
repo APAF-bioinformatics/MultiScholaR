@@ -1,0 +1,8 @@
+lane	passed	failed	errors	skipped	laptop_passed	seconds	run_error
+lipidomics-canonical	88	0	0	0	88	70.6	
+metabolomics-lc-gc	190	0	0	0	190	161.4	
+transcriptomics-screen	16	0	0	0	16	49.5	
+proteomics-dia	42	0	0	0	42	158.9	
+proteomics-dia-limpa	86	0	0	0	86	115.3	
+proteomics-enrichment	98	0	0	0	98	342.1	
+proteomics-tmt-lfq	153	0	0	0	153	161.3	

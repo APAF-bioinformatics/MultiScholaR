@@ -1,0 +1,19 @@
+ok   R is 4.6.1: R version 4.6.1 (2026-06-24 ucrt)
+ok   R home is inside the bundle: D:/a/_temp/re located/msr moved/R
+ok   every library path is inside the bundle: D:/a/_temp/re located/msr moved/R/library
+ok   the network is offline: a connection to cran.r-project.org failed
+
+
+ok   every bundled package loads (389 packages): 389 loaded, 0 failed, 0 not reported, 148 s
+ok   every loaded namespace comes from the bundle: 0 outside
+ok   MultiScholaR attaches from the bundle and has run_app: MultiScholaR 0.5.0 TRUE D:/a/_temp/re located/msr moved/R/library/MultiScholaR 
+MINIMUM R >= 4.1.0: bundled 4.6.1, met
+MINIMUM fastduckdb >= 0.2.0: bundled 0.2.0, met
+MINIMUM filelock >= 1.0.3: bundled 1.0.3, met
+MINIMUM processx >= 3.9.0: bundled 3.9.0, met
+MINIMUM duckplyr >= 1.2.1: bundled 1.2.1, met
+MINIMUM testthat >= 3.0.0: bundled none, not bundled
+MINIMUM nanoarrow >= 0.9.0: bundled 0.9.0, met
+MINIMUM qs2 >= 0.2.2: bundled 0.2.2, met
+ok   every bundled package meets DESCRIPTION's declared version (8 declared): 7 met, 0 not met (), 1 not bundled (testthat)
+KIT-134 CHECK PASSED: the bundle's R and library from the moved folder

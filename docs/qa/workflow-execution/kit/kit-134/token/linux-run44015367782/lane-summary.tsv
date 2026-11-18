@@ -1,0 +1,3 @@
+lane	passed	failed	errors	skipped	record	oracle_steps	steps_differing	discrete_differences	digest_differences	seconds	run_error
+prot_dia	1	0	1	0	FALSE	29	0	0	0	60.7	
+prot_dia_limpa	0	0	1	0	FALSE	24	0	0	0	44	

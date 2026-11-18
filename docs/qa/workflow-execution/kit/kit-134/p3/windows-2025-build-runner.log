@@ -1,0 +1,16 @@
+ok   no process from the bundle before the start: 0 found
+ok   the shell started: {"electron":"45.3.3","noSandbox":false}
+ok   the probe ran: {"time":"2026-11-16T20:41:30.364Z","event":"probe","launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}
+ok   the window loaded the application and a live session rendered the first tab: {"time":"2026-11-16T20:41:35.789Z","event":"first-tab","connected":true,"home":true,"rendered":true,"title":"MultiScholaR"}; 5.6 s after launch
+ok   the launcher is in-process: {"time":"2026-11-16T20:41:33.618Z","event":"launcher","launcher":"in-process","reason":"this MultiScholaR has no runPackagedApplication yet (the package side of KIT-134 P3 waits for KIT-131), so steps run inside the application","probe":{"launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}}
+ok   the port serves the application: http://127.0.0.1:49990/ -> 200
+ok   R from the bundle is running: 9196 d:/a/multischolar/multischolar/packaging/electron/dist/win-unpacked/resources/runtime/r/bin/rscript.exe; 3768 d:/a/multischolar/multischolar/packaging/electron/dist/win-unpacked/resources/runtime/r/bin/x64/rscript.exe
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 9196,3768; after 9196,3768
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:49990
+ok   started again, R running: 2 R processes
+ok   R is gone within 10 s of the shell being killed: 2.1 s
+KIT-134 CHECK PASSED: Windows, unpacked, windows-2025 build runner

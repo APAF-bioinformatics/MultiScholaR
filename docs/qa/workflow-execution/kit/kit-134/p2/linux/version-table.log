@@ -1,0 +1,6 @@
+rows: 438 (lockfile 414, bundle 397)
+in both: 372; same version: 346; different version: 26 (hard closure 8, compiled 16)
+in the lockfile, not bundled: 37 (AsioHeaders, brew, brio, chromote, covr, credentials, desc, devtools, diffobj, downlit, ellipsis, fansi, fastduckdb, fastlimpadpc, gert, miniUI, pak, pingr, pkgbuild, pkgdown, pkgload, praise, profvis, rcmdcheck, rex, roxygen2, rversions, sessioninfo, shinytest2, testthat, urlchecker, usethis, waldo, webshot2, websocket, whisker, xopen)
+bundled, not in the lockfile: 24 (base, basilisk, biocmake, class, datasets, dir.expiry, dqrng, FNN, foreign, h5mread, HDF5Array, irlba, MultiScholaR, pheatmap, RcppAnnoy, rhdf5, rhdf5filters, Rhdf5lib, rpart, Rtsne, sitmo, spatial, tcltk, uwot)
+bundled packages built from source: Glimma, GO.db, MultiScholaR, RUVIIIC
+KIT-134 CHECK PASSED: version table complete; no hard-closure package missing; duckdb 1.5.5 

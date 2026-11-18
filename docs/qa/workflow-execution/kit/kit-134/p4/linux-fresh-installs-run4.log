@@ -1,0 +1,52 @@
+MultiScholaR-0.5.0-linux-x86_64.tar.gz: OK
+archive: ./MultiScholaR-0.5.0-linux-x86_64.tar.gz, 1057363126 bytes
+runner's own R: none; glibc glibc 2.39
+unpacked and installed in 26 s into /home/runner/.local/share/multischolar/0.5.0
+installed: 2577 MiB in 48650 files
+menu entry: /home/runner/.local/share/applications/multischolar.desktop
+apparmor_restrict_unprivileged_userns: 1
+ok   no process from the bundle before the start: 0 found
+ok   the network is closed: a connection to 1.1.1.1:443 failed
+ok   the shell started: {"electron":"45.3.3","noSandbox":true}
+ok   the probe ran: {"time":"2026-11-16T20:14:56.837Z","event":"probe","launcher":"systemd","reason":"systemd worker: every host requirement holds","facts":{"platform":"linux","kernel":"7.0.0-1017-azure","tools":{"systemctl":true,"systemd-run":true,"busctl":true},"userManager":true,"cgroup":"0::/system.slice/hosted-compute-agent.service","controllers":"cpu memory pids"},"ms":29}
+ok   the window loaded the application and a live session rendered the first tab: {"time":"2026-11-16T20:15:02.347Z","event":"first-tab","connected":true,"home":true,"rendered":true,"title":"MultiScholaR"}; 6.6 s after launch
+ok   the launcher is in-process: {"time":"2026-11-16T20:15:00.663Z","event":"launcher","launcher":"in-process","reason":"this MultiScholaR has no runPackagedApplication yet (the package side of KIT-134 P3 waits for KIT-131), so steps run inside the application","probe":{"launcher":"systemd","reason":"systemd worker: every host requirement holds","facts":{"platform":"linux","kernel":"7.0.0-1017-azure","tools":{"systemctl":true,"systemd-run":true,"busctl":true},"userManager":true,"cgroup":"0::/system.slice/hosted-compute-agent.service","controllers":"cpu memory pids"},"ms":29}}
+ok   the port serves the application: http://127.0.0.1:37931/ -> 200
+ok   R from the bundle is running: 2362 /home/runner/.local/share/multischolar/0.5.0/app/resources/runtime/R/bin/exec/R
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 2362; after 2362
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:37931
+ok   started again, R running: 1 R processes
+ok   R is gone within 10 s of the shell being killed: 1.0 s
+KIT-134 CHECK PASSED: Linux, installed with install.sh, ubuntu-24.04
+MultiScholaR removed from /home/runner/.local/share/multischolar/0.5.0
+MultiScholaR-0.5.0-linux-x86_64.tar.gz: OK
+archive: ./MultiScholaR-0.5.0-linux-x86_64.tar.gz, 1057363126 bytes
+runner's own R: /usr/bin/R; glibc glibc 2.35
+unpacked and installed in 22 s into /home/runner/.local/share/multischolar/0.5.0
+installed: 2577 MiB in 48650 files
+menu entry: /home/runner/.local/share/applications/multischolar.desktop
+apparmor_restrict_unprivileged_userns: 0
+ok   no process from the bundle before the start: 0 found
+ok   the network is closed: a connection to 1.1.1.1:443 failed
+ok   the shell started: {"electron":"45.3.3","noSandbox":false}
+ok   the probe ran: {"time":"2026-11-16T20:14:00.272Z","event":"probe","launcher":"process","reason":"kernel 6.8 is older than 6.12","facts":{"platform":"linux","kernel":"6.8.0-1070-azure","tools":{"systemctl":true,"systemd-run":true,"busctl":true},"userManager":true,"cgroup":"0::/system.slice/hosted-compute-agent.service","controllers":"memory pids"},"ms":9}
+ok   the window loaded the application and a live session rendered the first tab: {"time":"2026-11-16T20:14:05.612Z","event":"first-tab","connected":true,"home":true,"rendered":true,"title":"MultiScholaR"}; 8.1 s after launch
+ok   the launcher is in-process: {"time":"2026-11-16T20:14:04.027Z","event":"launcher","launcher":"in-process","reason":"this MultiScholaR has no runPackagedApplication yet (the package side of KIT-134 P3 waits for KIT-131), so steps run inside the application","probe":{"launcher":"process","reason":"kernel 6.8 is older than 6.12","facts":{"platform":"linux","kernel":"6.8.0-1070-azure","tools":{"systemctl":true,"systemd-run":true,"busctl":true},"userManager":true,"cgroup":"0::/system.slice/hosted-compute-agent.service","controllers":"memory pids"},"ms":9}}
+ok   the port serves the application: http://127.0.0.1:37449/ -> 200
+ok   R from the bundle is running: 2427 /home/runner/.local/share/multischolar/0.5.0/app/resources/runtime/R/bin/exec/R
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 2427; after 2427
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:37449
+ok   started again, R running: 1 R processes
+ok   R is gone within 10 s of the shell being killed: 0.8 s
+KIT-134 CHECK PASSED: Linux, installed with install.sh, ubuntu-22.04
+MultiScholaR removed from /home/runner/.local/share/multischolar/0.5.0
+MultiScholaR-0.5.0-linux-x86_64.tar.gz: 1057363126 bytes (1008 MiB), packed in 102 s
+unpacked: 2577 MiB in 48651 files

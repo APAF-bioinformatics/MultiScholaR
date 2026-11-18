@@ -1,0 +1,12 @@
+{
+  "release": "0.5.0",
+  "lockfile_sha256": "df12be0ed077db697f3e32f0ce6138baf79c3a24cc70f702d39d95f2ec89546e",
+  "commit": "21dafb4d2c80850096a0b7bb4e8ba6b9ef568bf0",
+  "snapshot": "2026-07-30",
+  "build_date": "2026-11-16T19:54:18Z",
+  "runner_image": "ubuntu22 20261111.360.2",
+  "platform": "linux-x86_64",
+  "r": "4.6.1",
+  "electron": "45.3.3",
+  "internal_packages": "not included (fastduckdb, fastlimpadpc): the DIA, DIA_LIMPA and enrichment routes are unavailable"
+}

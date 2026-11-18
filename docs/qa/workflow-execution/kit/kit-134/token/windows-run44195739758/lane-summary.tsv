@@ -1,0 +1,9 @@
+lane	passed	failed	errors	skipped	record	oracle_steps	steps_differing	discrete_differences	digest_differences	seconds	run_error
+prot_tmt	0	0	1	0	FALSE	21	0	0	0	87.9	
+prot_lfq	0	0	1	0	FALSE	21	0	0	0	79.6	
+prot_lfq_fragpipe	0	0	1	0	FALSE	21	0	0	0	80	
+metab_lc	25	10	0	0	TRUE	20	10	10	31	124.6	
+metab_gc	25	10	0	0	TRUE	20	10	19	25	94.4	
+metab_combined	25	10	0	0	TRUE	20	10	19	31	117.8	
+lipid_canonical	27	8	0	0	TRUE	20	8	10	0	122.9	
+trx_screen	0	0	1	0	FALSE	16	0	0	0	3	

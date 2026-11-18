@@ -1137,7 +1137,9 @@ publishDIAProteinTables <- function(manager, result) {
     destinations <- if (state == "protein_s4_created") paths[c("protein_qc_dir", "peptide_qc_dir")] else
         if (state == "protein_accession_cleaned") paths["source_dir"] else
         if (state == "protein_dpc_quant") paths["protein_qc_dir"] else paths[c("protein_qc_dir", "source_dir")]
-    publishDIAActionOutputs(manager, result$stateReference, "protein-qc", destinations, function(staged) {
+    # KIT-052: drawn in a short folder and copied into the action staging folder; drawn there, the limpa figures were
+    # lost without a word from 260 characters on Windows (generateLimpaQCPlots reports a failed save as a message).
+    publishDIAActionOutputs(manager, result$stateReference, "protein-qc", destinations, function(staging) withWorkflowShortStaging(staging, function(staged) {
         if (state == "protein_dpc_quant") {
             # KIT-047: the limpa QC figures rendered from the hydrated state (its owned results entry reattached).
             object <- readDIAExecutionComponents(manager, result$stateReference)
@@ -1158,7 +1160,7 @@ publishDIAProteinTables <- function(manager, result) {
             saveRDS(result$qcParams, file.path(staged$source_dir, "qc_params.RDS"))
         }
         list(completed = TRUE)
-    })
+    }, "the protein QC files could not be copied into the project's staging folder"))
     invisible(NULL)
 }
 
