@@ -1,24 +1,124 @@
 {
-  "label": "KIT-146 first part fix: two restored prot-norm messages, base b35d8089 vs head 24a04e51",
-  "package_commit": "24a04e51917a88131f3b22ca0eef94c22a4d9d72",
-  "base_commit": "b35d8089bee789256036546043b88c9ed51774f7",
+  "label": "KIT-129 third pass items 1-5: 85daae02 against f4315c99 with sva; prove-arms runpath, techrep, firstpass, trx; failing-first; check on both",
+  "package_commit": "85daae0270a4c412ac1c81925a4fceb2a647d8b6",
+  "base_commit": "f4315c99fab076531b0fe9b31ddc673c80b713ed",
   "tools_ref": "",
   "tests": [
-    "test-prot-05b-norm-module-contracts.R",
-    "test-dia-baseline-compatibility.R",
-    "test-module-ci-prot-norm.R",
-    "test-prot-05d-norm-module-characterization.R",
-    "test-workflow-native-session.R",
-    "test-omic-norm-module.R",
-    "test-workflow-dia-products.R"
+    "test-kit129-run-path.R",
+    "test-prot-ruv-factors-in-model.R",
+    "test-kit127-omics-ruv-factors.R",
+    "test-kit128-tech-reps-lipid-metab.R",
+    "test-ruv-factor-count.R",
+    "test-trx-ruv-designs.R",
+    "test-dia-limpa-ruv-rules.R",
+    "test-workflow-class-declarations.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-omics-declarations.R",
+    "test-workflow-prot-declarations.R",
+    "test-workflow-trx-declarations.R",
+    "test-workflow-operations.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-omics-worker.R",
+    "test-workflow-analysis-record.R",
+    "test-omics-da-core.R",
+    "test-omic-da-module.R",
+    "test-omic-summary-module.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-omic-norm-ruv-design.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-workflow-omics-da-contrasts.R",
+    "test-kit128-da-assay-failure.R",
+    "test-prot-norm-core.R"
   ],
-  "shards": 4,
+  "shards": 14,
   "file_timeout_minutes": 45,
-  "file_timeouts": {},
-  "extra_packages": [],
+  "file_timeouts": {
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
   "env": {},
-  "check": false,
+  "check": true,
   "blas": "reference",
-  "fetch_refs": [],
-  "scripts": []
+  "fetch_refs": [
+    "sim-k124-exact",
+    "sim-k129-exact",
+    "sim-k124-confirm"
+  ],
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/prove-arms.R",
+      "args": [
+        "runpath",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 150
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/prove-arms.R",
+      "args": [
+        "techrep",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 120
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/prove-arms.R",
+      "args": [
+        "firstpass",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 150
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/prove-arms.R",
+      "args": [
+        "trx",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-third-pass",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 120
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "f4315c99fab076531b0fe9b31ddc673c80b713ed",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-failing-first-third",
+        "test-kit129-run-path.R",
+        "test-prot-ruv-factors-in-model.R"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-failing-first-third",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 120
+    }
+  ]
 }
