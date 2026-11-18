@@ -403,7 +403,7 @@ app_ui <- function(request) {
           --ruv-muted: #555;
           --ruv-selected: #d1ecf1;
           --ruv-accent: #3c8dbc;
-          --ruv-columns: 150px minmax(0, 1.4fr) 160px 110px minmax(0, 1.6fr);
+          --ruv-columns: 140px minmax(0, 1.7fr) 170px 110px minmax(0, 1.5fr);
           background-color: #fff;
         }
         body.dark-mode .ruv-design {
@@ -416,7 +416,7 @@ app_ui <- function(request) {
           margin-top: 0;
         }
         .ruv-design .help-block {
-          max-width: 90ch;
+          max-width: 110ch;
           color: var(--ruv-muted);
         }
         /* The designs: one comparison list, a row per radio choice, the columns shared with the headings. */
@@ -455,6 +455,21 @@ app_ui <- function(request) {
         }
         .ruv-design-header + .shiny-options-group > .radio:has(input:disabled) > label {
           cursor: not-allowed;
+        }
+        /* A design: what is done, then how on a second, lighter line. */
+        .ruv-design-option > .ruv-design-label {
+          font-weight: 600;
+        }
+        .ruv-design-description {
+          display: block;
+          margin-top: 2px;
+          color: var(--ruv-muted);
+          font-size: 13px;
+          font-weight: 400;
+          line-height: 1.45;
+        }
+        .ruv-design-header .ruv-design-where {
+          font-weight: 400;
         }
         .ruv-design-fdp > strong,
         .ruv-design-power > strong {
@@ -538,6 +553,22 @@ app_ui <- function(request) {
         .ruv-design-k-choice input[type='number'] {
           width: 8em;
         }
+        /* The rules' explanation: a native disclosure, closed until opened. */
+        .ruv-design-k-why {
+          margin: 8px 0 10px;
+        }
+        .ruv-design-k-why > summary {
+          display: list-item;
+          width: fit-content;
+          padding: 4px 0;
+          color: var(--ruv-accent);
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .ruv-design-k-why > summary:focus-visible {
+          outline: 2px solid var(--ruv-accent);
+          outline-offset: 2px;
+        }
         .ruv-design-k-rules {
           display: grid;
           grid-auto-flow: column;
@@ -568,7 +599,7 @@ app_ui <- function(request) {
         @media (max-width: 1279px) {
           /* Narrow window: the tier, the design and its note share the first column; the figures stay aligned. */
           .ruv-design {
-            --ruv-columns: minmax(0, 1fr) 150px 100px;
+            --ruv-columns: minmax(0, 1fr) 160px 110px;
           }
           .ruv-design-header > .ruv-design-tier,
           .ruv-design-header > .ruv-design-note {

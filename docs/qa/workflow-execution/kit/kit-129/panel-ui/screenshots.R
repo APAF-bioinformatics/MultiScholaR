@@ -65,6 +65,20 @@ for (case in cases) {
                 (case[[3L]] %in% c("prot-classic", "trx") && identical(state[[3L]], "2-recommended-estimated"))) shot(width, paste0(state[[3L]], "_page"), "scrollable_area")
         }
     }
+    # The k rules' explanation: closed in every state above; opened here from the keyboard (focus on its summary,
+    # Enter), as a user without a mouse opens it.
+    app$set_inputs(`norm-ruv_design` = "supplied_controls", wait_ = FALSE); app$wait_for_idle(500)
+    if (!identical(tag, "before") && isTRUE(app$get_js("document.querySelector('.ruv-design-k-why') !== null"))) {
+        app$run_js("document.querySelector('.ruv-design-k-why > summary').focus();")
+        chrome <- app$get_chromote_session()
+        for (type in c("keyDown", "keyUp")) chrome$Input$dispatchKeyEvent(type = type, key = "Enter", code = "Enter",
+            windowsVirtualKeyCode = 13L, nativeVirtualKeyCode = 13L, text = if (identical(type, "keyDown")) "\r" else NULL)
+        Sys.sleep(0.3)
+        cat("disclosure", case[[3L]], "summary focusable:", app$get_js("document.activeElement.tagName"),
+            "open after Enter:", app$get_js("document.querySelector('.ruv-design-k-why').open"), "\n")
+        for (width in c(1440L, 1024L)) { app$set_window_size(width, 900); Sys.sleep(0.4); shot(width, "7-supplied-rules-open") }
+        app$run_js("document.querySelector('.ruv-design-k-why').open = false;")
+    }
     if (identical(case[[3L]], "prot-classic")) {
         app$set_inputs(`norm-ruv_design` = "groups_all_features", wait_ = FALSE); app$wait_for_idle(500)
         app$run_js("toggleDarkMode();"); Sys.sleep(0.6)

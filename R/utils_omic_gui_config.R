@@ -266,7 +266,7 @@ omicGuiConfigSchema <- function() {
         norm_ruv_option = c(id = "chr1", tier = "chr1", label = "chr1", description = "chr1", tooltip = "chr1",
             note = "chr1", status = "chr1", source = "chr1", test_form = "chr1", k_rules = "chr0"),
         norm_ruv_option_optional = c(replicate_structure = "chr1", control_rule = "chr1", fdp = "num1",
-            fdp_where = "chr1", power = "num1", power_where = "chr1", k_rule = "chr1", k_rules_pending = "chr",
+            fdp_where = "chr1", power = "num1", single_scenario = "lgl1", k_rule = "chr1", k_rules_pending = "chr",
             unavailable = "chr1"),
         norm_ruv_status = c("measured", "pending", "unavailable"),
         norm_ruv_figure = c("fdp", "fdp_where", "power"),
@@ -1269,7 +1269,7 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
 #
 # The figures are KIT-124's: the mean false discovery proportion at a nominal 0.05 in the worst core
 # cell with true effects (`fdp`, with the cell in words in `fdp_where`), and the power in the centre
-# cell (`power`; 6 per group, 20% changed, one factor) unless `power_where` names another. Each row's
+# cell (`power`; 6 per group, 20% changed, one factor); `single_scenario` marks a figure measured in one cell. Each row's
 # `source` gives the simulator, arm and cells; it is not shown. To update a figure when a simulation
 # finishes, change the row's numbers and `source`, set `status = "measured"`, and drop the rule from
 # `k_rules_pending` in the catalogue when a k rule's own figure arrives. Nothing is computed from
@@ -1361,8 +1361,7 @@ omicGuiRuvDesignCatalogue <- function(features, method) {
     in_model <- paste("The estimated factors are included as covariates in the differential model, which is fitted",
         "to the uncorrected values; the corrected values are used for plots and export only.")
     earlier <- sprintf(paste("The %s that differ least between the groups in a first test serve as controls; an",
-        "automatic search chooses how many of them, and the number of factors. Its settings appear below when it",
-        "is selected."), features)
+        "automatic search chooses how many of them, and the number of factors."), features)
     list(
         groups_all_features = list(id = "groups_all_features", tier = "recommended",
             label = sprintf("Estimate from all %s, within your groups", features),
@@ -1434,24 +1433,24 @@ omicGuiRuvTable <- function(features, method, rows, selected_with_technical_repl
     table <- list(selected = "legacy", recommended = "groups_all_features",
         options = unname(lapply(names(rows), \(id) {
             option <- utils::modifyList(catalogue[[id]], rows[[id]])
-            if (identical(option$tier, "legacy")) option$description <- paste(option$description, reads[[option$test_form]])
+            if (identical(option$tier, "legacy")) {
+                option$description <- paste(option$description, reads[[option$test_form]],
+                    "Its settings appear below when it is selected.")
+            }
             option
         })))
     table$selected_with_technical_replicates <- selected_with_technical_replicates
     table
 }
 
-#' The scenarios of KIT-124's simulations in words, for `fdp_where`.
+#' The scenarios of KIT-124's simulations in words, for `fdp_where`: the condition only (the column heading says
+#' it is the worst scenario tested; a figure measured in one scenario carries `single_scenario`).
 #' @return A named character vector by scenario.
 #' @noRd
 omicGuiRuvCells <- function() {
-    c(c1 = "worst scenario tested: 12 samples per group",
-        c2 = "worst scenario tested: 10% of features truly different",
-        c3 = "worst scenario tested: no unwanted variation present",
-        c5 = "worst scenario tested: unwanted variation tied to the groups (correlation 0.3)",
-        c6 = "worst scenario tested: technical duplicates (4 samples per group, each measured twice)",
-        c6_only = "only scenario tested: 4 samples per group, each measured twice",
-        c7 = "worst scenario tested: three groups")
+    c(c1 = "12 samples per group", c2 = "10% of features truly different", c3 = "no unwanted variation present",
+        c5 = "unwanted variation tied to the groups (correlation 0.3)",
+        c6 = "technical duplicates: 4 samples per group, each measured twice", c7 = "three groups")
 }
 
 #' The note of a supplied control list, with the false discovery proportion measured when one control in five
@@ -1476,8 +1475,8 @@ omicGuiRuvTableClassic <- function() {
                 "discoveries: 11.5% of simulated data sets had more than 10% false discoveries (acceptance limit",
                 "5.7%). 5.4% false discoveries in the reference scenario."),
             source = "KIT-129 1a; KIT-124 S1 arm 7: worst cell C1 0.066, C0 0.054, power C0 0.91"),
-        technical_replicates = list(status = "measured", fdp = 0.054, fdp_where = cell[["c6_only"]], power = 0.90,
-            power_where = "in that scenario",
+        technical_replicates = list(status = "measured", fdp = 0.054, fdp_where = cell[["c6"]], power = 0.90,
+            single_scenario = TRUE,
             note = "Use when the experimental design declares technical replicates. Measured in one scenario only.",
             source = "KIT-129 1a; KIT-124 S1 arm 16: C6 0.054, power C6 0.90"),
         supplied_controls = list(status = "measured", fdp = 0.053, fdp_where = cell[["c5"]], power = 0.91,
@@ -1510,8 +1509,8 @@ omicGuiRuvTableDiaLimpa <- function() {
                 "groups, correlation 0.3). Measured with the fastlimpadpc engine; expected to hold for the limpa",
                 "engine, not measured there."),
             source = "KIT-129 1b; KIT-124 S2 arm 7: worst cell C6 0.055, C5 0.053, power C0 0.91"),
-        technical_replicates = list(status = "measured", fdp = 0.055, fdp_where = cell[["c6_only"]], power = 0.77,
-            power_where = "in that scenario",
+        technical_replicates = list(status = "measured", fdp = 0.055, fdp_where = cell[["c6"]], power = 0.77,
+            single_scenario = TRUE,
             note = paste("Use when the experimental design declares technical replicates. Measured in one scenario",
                 "only. In DIA with limpa, when technical replicates are declared, this and the recommended approach",
                 "are the same calculation."),
@@ -1764,7 +1763,7 @@ omicGuiProteomicsNorm <- function() {
         ruv_design = omicGuiRuvDesign("prot", list(classic = omicGuiRuvTableClassic(), dia_limpa = omicGuiRuvTableDiaLimpa()),
             route_tables = c(DIA_LIMPA = "dia_limpa"),
             # KIT-129 1 ("Conditions of use still open"): until the stress cells of these two simulators are scored.
-            conditions = "Validated in simulation to 25% missing values and 6 or more per group."))
+            conditions = "The simulations covered up to 25% missing values and 6 or more samples per group."))
 }
 
 #' The proteomics Summary & Export tab at 5be34ee5 (mod_prot_summary_*.R; KIT-108 D1): the module id and test ids (the

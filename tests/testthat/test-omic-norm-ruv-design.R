@@ -139,7 +139,7 @@ test_that("the texts shown name no internal arm, cell, ticket or question", {
         design <- omicGuiConfig(omic)$norm$ruv_design
         shown <- c(design$tiers, design$conditions, unlist(design$k_rules), unlist(lapply(design$tables, \(table) c(
             unlist(lapply(table$options, \(option) option[c("label", "description", "tooltip", "note", "fdp_where",
-                "power_where", "unavailable")]))))))
+                "unavailable")]))))))
         expect_identical(grep(internal, unname(shown), value = TRUE), character(), info = omic)
     }
 })
@@ -351,19 +351,38 @@ test_that("with the gate on the section is a block above the options column, its
                 expect_false(grepl("aria-hidden", row, fixed = TRUE), info = option$id)
             }
         }
-        # One panel per k rule, side by side.
+        # One panel per k rule, side by side, behind one disclosure that is closed until opened; the choice of the
+        # rule and the number are before it, outside.
         expect_length(gregexpr('ruv-design-k-rule"', html, fixed = TRUE)[[1L]], length(design$k_rules))
+        opened <- regexpr('<details class="ruv-design-k-why">\\s*<summary>How is this chosen\\?', html)
+        closed <- regexpr("</details>", html, fixed = TRUE)
+        expect_length(gregexpr("<details", html, fixed = TRUE)[[1L]], 1L)
+        expect_false(grepl("<details[^>]* open", html), info = omic)
+        rules <- gregexpr('ruv-design-k-rule"', html, fixed = TRUE)[[1L]]
+        expect_true(all(rules > opened & rules < closed), info = omic)
+        for (id in c('id="norm-ruv_k_rule"', 'id="norm-ruv_k_user"')) {
+            expect_true(regexpr(id, html, fixed = TRUE) < opened, info = paste(omic, id))
+        }
+        # The headings say which scenario each figure is from; no row repeats it.
+        expect_match(html, "target 5%; worst scenario tested", fixed = TRUE)
+        expect_match(html, "real differences found; reference scenario", fixed = TRUE)
+        expect_false(grepl('<span class="ruv-design-where">(worst scenario tested:|in the reference scenario)', html), info = omic)
     }
 })
 
 test_that("the figure text is the table's numbers in words; a pending or unavailable cell shows no number", {
     expect_identical(omicNormRuvFigureText(list(status = "measured", fdp = 0.066,
-        fdp_where = "worst scenario tested: 12 samples per group", power = 0.91)),
+        fdp_where = "12 samples per group", power = 0.91)),
         paste("Measured in simulation: 6.6% false discoveries at a 5% FDR threshold (worst scenario tested: 12 samples",
             "per group); power 91% in the reference scenario."))
-    expect_identical(omicNormRuvFigureText(list(status = "measured", fdp = 0.044, fdp_where = "worst scenario tested: x",
-        power = 0.005, power_where = "there")),
-        "Measured in simulation: 4.4% false discoveries at a 5% FDR threshold (worst scenario tested: x); power 0.5% there.")
+    expect_identical(omicNormRuvFigureText(list(status = "measured", fdp = 0.044, fdp_where = "x", power = 0.005,
+        single_scenario = TRUE)),
+        "Measured in simulation: 4.4% false discoveries at a 5% FDR threshold (only scenario tested: x); power 0.5% in that scenario.")
+    # A row shows the scenario only (the heading says it is the worst tested); a single scenario says so.
+    expect_identical(omicNormRuvFigureParts(list(fdp = 0.066, fdp_where = "x", power = 0.91))[c("fdp_where", "power_where")],
+        c(fdp_where = "x", power_where = ""))
+    expect_identical(omicNormRuvFigureParts(list(fdp = 0.066, fdp_where = "x", power = 0.91, single_scenario = TRUE))[c("fdp_where",
+        "power_where")], c(fdp_where = "only scenario tested: x", power_where = "in that scenario"))
     # The power of every table as a percentage, exactly.
     powers <- c(0.91, 0.90, 0.92, 0.49, 0.77, 0.56, 0.76, 0.60, 0.73, 0.005, 0.43, 0.37, 0.50, 0.42, 0.003)
     expect_identical(vapply(powers, \(power) omicNormRuvFigureParts(list(fdp = 0, fdp_where = "", power = power))[["power"]], ""),
