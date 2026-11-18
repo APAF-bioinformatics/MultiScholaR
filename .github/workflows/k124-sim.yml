@@ -27,6 +27,20 @@ name: KIT-124 simulators
 # over (git checkout sim-k124 -- .github/workflows/k124-sim.yml .github/k124-sim), keep the tree's own workflows
 # from running on the branch, set package_commit (and tools_ref, if the tree's dependencies differ) and push.
 #
+# The confirmation round (KIT-124 / decision M29; docs/.../kit-124/scored/confirm-round-declaration.md): params
+# `package: "installed"`. The package under test is then the commit package_commit, and tools_ref must be the same
+# commit: the library action installs MultiScholaR from its checkout of tools_ref, with the internal packages built in
+# the job from the read token, exactly as module-ci and KIT-134 do; that copy is kept (not removed) and the simulators
+# load it (K124_PACKAGE=installed) instead of the push's tree, which is then not compared with package_commit. The
+# arms 34 to 40 call that package's new-design kernels. Three further optional entries: `fault` (per simulator, one
+# arm label: K124_FAULT, the lifecycle test's deliberate crash in the first run), `pairs` (per simulator, "new:base"
+# comma list: the compare job saves both arms' rows and runs packaging/verify/compare-results.R on them, from
+# package_commit). After the upload a check (.github/k124-sim/check-arms.R) fails the job when a
+# requested shipped-kernel arm is missing from a run where the simulator forms it, or has a crashed row: the rows are
+# uploaded first, so a failure is both visible and kept. In this mode the simulator's console output is printed in
+# the job log only; the artifact holds the result tables, the simulators' meta and log files and the runner's
+# library and job tables.
+#
 # Restart: a simulator keeps finished cells, and a job is one cell, so a failed or timed-out job is rerun alone
 # (`gh run rerun <run> --failed`) and recomputes that cell only. A job that fails uploads nothing.
 #
@@ -64,6 +78,8 @@ jobs:
       job_timeout: ${{ steps.plan.outputs.job_timeout }}
       package_commit: ${{ steps.plan.outputs.package_commit }}
       tools_ref: ${{ steps.plan.outputs.tools_ref }}
+      package: ${{ steps.plan.outputs.package }}
+      pairs: ${{ steps.plan.outputs.pairs }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -86,9 +102,16 @@ jobs:
             ((.chunk // {}) | type == "object" and
               (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "number" and . == floor and . >= 1)))) and
             ((.blas // "default") | . == "default" or . == "reference") and
-            ((.assoc // false) | type == "boolean") and ((.assoc // false) == false or (.arms | length) == 0)
+            ((.assoc // false) | type == "boolean") and ((.assoc // false) == false or (.arms | length) == 0) and
+            ((.package // "tree") | . == "tree" or . == "installed") and
+            ((.package // "tree") == "tree" or .tools_ref == .package_commit) and
+            ((.fault // {}) | type == "object" and
+              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[0-9]{2}$"))))) and
+            ((.pairs // {}) | type == "object" and
+              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[0-9]+:[0-9A-Za-z]+(,[0-9]+:[0-9A-Za-z]+)*$"))))) and
+            (((.fault // {}) | length) + ((.pairs // {}) | length) == 0 or (.package // "tree") == "installed")
           ' "$p" > /dev/null; then
-            echo "::error::params.json is not valid (label; package_commit and tools_ref as 40-digit commits; runs_core, runs_stress; cores 2 to 4; timeout_minutes 1 to 300; arms and cells per s1..s4; no cell of a class with 0 runs; chunk per s1..s4; assoc true only without arms)"
+            echo "::error::params.json is not valid (label; package_commit and tools_ref as 40-digit commits; runs_core, runs_stress; cores 2 to 4; timeout_minutes 1 to 300; arms and cells per s1..s4; no cell of a class with 0 runs; chunk per s1..s4; assoc true only without arms; package tree or installed, installed with tools_ref = package_commit; fault and pairs per s1..s4, installed only)"
             exit 1
           fi
           {
@@ -96,22 +119,29 @@ jobs:
             echo "matrix=$(jq -c '. as $p | {include: [.cells | to_entries[] | .key as $sim | .value | split(",")[] | . as $cell
               | (if startswith("C") then $p.runs_core else $p.runs_stress end) as $n | (($p.chunk // {})[$sim] // $n) as $chunk
               | range(0; $n; $chunk) | . as $done | ([$chunk, $n - $done] | min) as $runs
-              | {sim: $sim, cell: $cell, arms: ($p.arms[$sim] // ""), first: ($done + 1), runs: $runs,
+              | {sim: $sim, cell: $cell, arms: ($p.arms[$sim] // ""), fault: (($p.fault // {})[$sim] // ""), first: ($done + 1), runs: $runs,
                  tag: (if $chunk < $n then "\($cell)-r\($done + 1)" else $cell end),
                  runs_core: (if $chunk < $n then $runs else $p.runs_core end),
                  runs_stress: (if $chunk < $n then $runs else $p.runs_stress end)}]}' "$p")"
             echo "assoc=$(jq -r '.assoc // false' "$p")"
             echo "blas=$(jq -r '.blas // "default"' "$p")"
+            echo "package=$(jq -r '.package // "tree"' "$p")"
+            echo "pairs=$(jq -c '.pairs // {}' "$p")"
             for key in label package_commit tools_ref cores timeout_minutes; do echo "$key=$(jq -r ".$key" "$p")"; done
             # the library takes about 15 minutes; the job's own limit stays under the runner's 6 hours
             echo "job_timeout=$(jq -r '[.timeout_minutes + 45, 355] | min' "$p")"
           } >> "$GITHUB_OUTPUT"
           { echo '```json'; cat "$p"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-      - name: The package tree of this push is package_commit's (everything but docs/ and .github/)
+      - name: The package tree of this push is package_commit's (everything but docs/ and .github/), or the installed package's commit exists
         env:
           PACKAGE_COMMIT: ${{ steps.plan.outputs.package_commit }}
+          PACKAGE: ${{ steps.plan.outputs.package }}
         run: |
           git fetch --quiet --no-tags --depth 1 origin "$PACKAGE_COMMIT"
+          if [ "$PACKAGE" = "installed" ]; then
+            echo "package under test: commit $PACKAGE_COMMIT, installed in each job (the push's own package tree is not used)"
+            exit 0
+          fi
           if ! git diff --stat --exit-code "$PACKAGE_COMMIT" HEAD -- . ':(exclude)docs' ':(exclude).github'; then
             echo "::error::the package tree of this push is not commit $PACKAGE_COMMIT's"
             exit 1
@@ -131,6 +161,8 @@ jobs:
       CELL: ${{ matrix.cell }}
       LABEL: ${{ needs.plan.outputs.label }}
       ARMS: ${{ matrix.arms }}
+      FAULT: ${{ matrix.fault }}
+      PACKAGE: ${{ needs.plan.outputs.package }}
       TAG: ${{ matrix.tag }}
       FIRST: ${{ matrix.first }}
       RUNS: ${{ matrix.runs }}
@@ -154,7 +186,7 @@ jobs:
         with:
           token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: any::pkgload
-      - name: sva from the same snapshot (the laptop's scratch-k124-lib); the installed MultiScholaR removed
+      - name: sva from the same snapshot (the laptop's scratch-k124-lib); the installed MultiScholaR removed unless it is the package under test
         run: |
           cat > "$RUNNER_TEMP/sva.R" <<'EOF'
           snapshot <- jsonlite::fromJSON("packaging/multischolar.lock.json")$Snapshot$Date
@@ -169,10 +201,11 @@ jobs:
               which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE))))
           needed <- setdiff(wanted, rownames(utils::installed.packages(lib.loc = .Library)))
           cat("for sva, not in the library:", paste(needed, collapse = ", "), "\n")
-          utils::install.packages(needed, lib = .Library, repos = repos, dependencies = FALSE)
+          if (length(needed)) utils::install.packages(needed, lib = .Library, repos = repos, dependencies = FALSE)
           # The simulators load the package from the tree (pkgload::load_all). The copy the action installed is
           # performance-v2's: removed, so that nothing can load it in the tree's place.
-          utils::remove.packages("MultiScholaR", lib = .Library)
+          # The confirmation round (package installed): that copy, built from package_commit, is the package under test.
+          if (!identical(Sys.getenv("PACKAGE"), "installed")) utils::remove.packages("MultiScholaR", lib = .Library)
           EOF
           R_LIBS="$MSR_TOOLS_LIB" Rscript --vanilla "$RUNNER_TEMP/sva.R"
       - name: BLAS and LAPACK (params blas; reference = the distribution's libblas3 and liblapack3)
@@ -204,10 +237,23 @@ jobs:
           Rscript --vanilla simtree/.github/k124-sim/check-library.R
           simtree/.github/k124-sim/laptop-versions.tsv "$RUNNER_TEMP/library.tsv"
       - name: Compile the tree's native code (pkgload::load_all once, outside the simulator's time and output)
+        if: needs.plan.outputs.package != 'installed'
         working-directory: simtree
         run: >
           Rscript -e 'suppressMessages(pkgload::load_all(".", quiet = TRUE));
           cat("MultiScholaR", as.character(utils::packageVersion("MultiScholaR")), "loads from the tree\n")'
+      - name: The installed MultiScholaR is package_commit's and holds the new-design kernels
+        if: needs.plan.outputs.package == 'installed'
+        run: |
+          # the library action installed MultiScholaR from the checkout of tools_ref (= package_commit, checked by plan)
+          built_from="$(git rev-parse HEAD)"
+          if [ "$built_from" != "$PACKAGE_COMMIT" ]; then echo "::error::the library was built from $built_from, not $PACKAGE_COMMIT"; exit 1; fi
+          Rscript --vanilla -e 'suppressPackageStartupMessages(library(MultiScholaR)); ns <- asNamespace("MultiScholaR");
+            kernels <- c("computeProtRuvModelFactors", "attachProtRuvModelFactors", "diaRuvCovariatesOperation", "trxChooseRuvDesign",
+              "trxRuvFactors", "runOmicsRuvFactors", "estimateRuvFactorCount", "ruvExactContrastsFit");
+            missing <- kernels[!vapply(kernels, exists, logical(1L), envir = ns, inherits = FALSE)];
+            if (length(missing)) { cat("::error::the installed MultiScholaR lacks", paste(missing, collapse = ", "), "\n"); quit(status = 1L) };
+            cat("MultiScholaR", as.character(utils::packageVersion("MultiScholaR")), "installed at", find.package("MultiScholaR"), "from commit", Sys.getenv("PACKAGE_COMMIT"), "\n")'
       - name: Run the simulator
         working-directory: simtree
         run: |
@@ -219,6 +265,8 @@ jobs:
           esac
           if [ -n "$ARMS" ]; then export K124_ARMS="$ARMS"; fi
           if [ "$ASSOC" = "true" ]; then export K129_ASSOC=1; fi
+          if [ "$PACKAGE" = "installed" ]; then export K124_PACKAGE=installed K124_PACKAGE_COMMIT="$PACKAGE_COMMIT"; fi
+          if [ -n "$FAULT" ]; then export K124_FAULT="$FAULT"; fi
           # a later run range: the first run is the sixth argument of S1, S3 and S4 and K124_FIRST_RUN for S2
           first=()
           if [ "$FIRST" -gt 1 ]; then
@@ -235,7 +283,8 @@ jobs:
           if [ "$status" -ne 0 ]; then echo "::error::$SIM $TAG: the simulator failed (exit $status); nothing is uploaded"; exit "$status"; fi
           mkdir "$OUT/runner"
           cp "$RUNNER_TEMP/library.tsv" "$OUT/runner/$TAG.library.tsv"
-          cp "$RUNNER_TEMP/sim.out" "$OUT/runner/$TAG.out"
+          # the confirmation round: result tables only; the console output stays in this log
+          if [ "$PACKAGE" != "installed" ]; then cp "$RUNNER_TEMP/sim.out" "$OUT/runner/$TAG.out"; fi
           printf 'run\t%s\nattempt\t%s\ncommit\t%s\npackage_commit\t%s\ntools_ref\t%s\nlabel\t%s\nsim\t%s\ncell\t%s\narms\t%s\nassoc\t%s\nblas\t%s\nfirst_run\t%s\nruns\t%s\ncores\t%s\nsimulator_seconds\t%s\n' \
             "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$PACKAGE_COMMIT" "$TOOLS_REF" "$LABEL" "$SIM" "$CELL" "$ARMS" "$ASSOC" "$BLAS" "$FIRST" "$RUNS" "$CORES" "$SECONDS" \
             > "$OUT/runner/$TAG.job.tsv"
@@ -249,5 +298,56 @@ jobs:
         with:
           name: k124-${{ needs.plan.outputs.label }}-${{ matrix.sim }}-${{ matrix.tag }}
           path: simtree/${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+      - name: The shipped-kernel arms ran in every run (after the upload, so that a failure is kept)
+        if: needs.plan.outputs.package == 'installed'
+        working-directory: simtree
+        run: Rscript --vanilla .github/k124-sim/check-arms.R "$SIM" "$OUT" "$CELL" "$ARMS"
+
+  compare:
+    name: compare (shipped kernels against the simulator arms)
+    needs: [plan, sim]
+    if: always() && needs.plan.result == 'success' && needs.plan.outputs.package == 'installed' && needs.plan.outputs.pairs != '{}'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      LABEL: ${{ needs.plan.outputs.label }}
+      PAIRS: ${{ needs.plan.outputs.pairs }}
+    steps:
+      - name: The comparison scripts (this push) and the fixed rule (package_commit's packaging/verify/compare-results.R)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: The fixed rule from package_commit
+        env:
+          PACKAGE_COMMIT: ${{ needs.plan.outputs.package_commit }}
+        run: |
+          git fetch --quiet --no-tags --depth 1 origin "$PACKAGE_COMMIT"
+          git show "$PACKAGE_COMMIT:packaging/verify/compare-results.R" > "$RUNNER_TEMP/compare-results.R"
+      - name: R 4.6.1 (Posit r-builds; base R only)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-4.6.1_1_amd64.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb" > /dev/null
+          echo "/opt/R/4.6.1/bin" >> "$GITHUB_PATH"
+      - name: The run's result tables
+        uses: actions/download-artifact@v4
+        with:
+          pattern: k124-${{ needs.plan.outputs.label }}-s*
+          path: ${{ runner.temp }}/tables
+      - name: Compare under the fixed rule
+        run: |
+          mkdir -p "$RUNNER_TEMP/compare"
+          for sim in $(echo "$PAIRS" | jq -r 'keys[]'); do
+            Rscript --vanilla .github/k124-sim/compare-arms.R "$sim" "$RUNNER_TEMP/tables" "$LABEL" "$(echo "$PAIRS" | jq -r --arg s "$sim" '.[$s]')" \
+              "$RUNNER_TEMP/compare-results.R" "$RUNNER_TEMP/compare"
+          done
+          cat "$RUNNER_TEMP"/compare/*-summary.tsv
+      - name: Upload the comparison tables
+        uses: actions/upload-artifact@v4
+        with:
+          name: k124-${{ needs.plan.outputs.label }}-compare
+          path: ${{ runner.temp }}/compare
           if-no-files-found: error
           retention-days: 30

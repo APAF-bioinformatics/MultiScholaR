@@ -47,7 +47,13 @@
 #   Counts: y_gj ~ NB(mean = L_j * lambda_g * 2^(beta_g,group(j) + sum_f alpha_gf W_jf), dispersion phi_g).
 #   Technical duplicates (C6): 4 biological units per group, 2 libraries each. Unit level: a Gamma(shape 1/phi_g, mean 1)
 #     multiplier (biological dispersion phi_g, BCV about 0.3); library level: NB with technical dispersion 0.01 (BCV 0.1,
-#     library preparation replicates). Depth and the unwanted factor vary per library. The default path sees 16 runs.
+#     library preparation replicates). Depth and the unwanted factor vary per library.
+#     KIT-129 R0, on the `kit-128` tree (this file needs that tree): the design declares the unit as the technical
+#     replicate of each library, and the package's design step sums the libraries of a unit
+#     (trxSumTechnicalReplicates, as trxDesignObject calls it: edgeR::sumTechReps), so the filter, E, every RUV step and
+#     every test see 8 samples, 4 per group. Before KIT-128 the default path saw 16 runs (the KIT-124 confirm rows of
+#     C6: void). The true factor of a summed sample is the mean of its two libraries' scores (arm 2): an approximate
+#     ceiling there, because the sum of two libraries with different scores is not log-linear in their mean.
 #   Heavy tails (S7): every count independently with probability 0.05 multiplied by Uniform(1.5, 10) and rounded: the
 #     "random outliers" of Soneson and Delorenzi 2013 (BMC Bioinformatics 14:91). The negative binomial is already
 #     heavy-tailed on the log scale; a t-distributed log mean would only change the dispersion distribution, whereas
@@ -101,6 +107,8 @@
 #   14  sva::svaseq, its own number of factors; 14E [19] svaseq with n.sv = E. Surrogate variables as W in the model.
 #   15  C6 only: RUVs with the technical-duplicate sets, all genes as controls, k = E, test on normalizedCounts.
 #   16  C6 only: the same RUVs fit with W in the model.
+#       KIT-129 R0: arms 15 and 16 cannot be formed on the `kit-128` tree and are not run: after the design step's
+#       summing no replicate set is left (every sample is its own unit).
 #   17  S8 only: ~ 0 + group + batch.
 #   22  on request (K124_ARMS): arm 8 (RUVg, the same 50 oracle genes: drawn again from arm 8's stream) with k from
 #       today's separation rule on those genes: trxCancor(t(log_cpm_tmm), the group columns, the controls), then
@@ -120,9 +128,26 @@
 #       which refits the null model per gene for the contrast itself; there is no step that forms a contrast's standard
 #       error from the coefficients' common correlation, so nothing is approximate. The test applying its settings (S1:
 #       arms 26 to 28): no TREAT step in this route. The count on technical-replicate designs (S1, S2, S4: arms 29, 30):
-#       on the tree where technical replicates are handled (kit-128) the libraries of a unit are summed before E, so
-#       E's model already is one sample per biological unit; on this tree's C6 (16 libraries, void) it is not measured.
+#       on this tree (kit-128) the libraries of a unit are summed before E (see C6 above), so E's model already is one
+#       sample per biological unit and there is nothing to remove; C6 and C8 are run here with arms 1, 2, 7 and 31.
 #       All together (arm 32 elsewhere) would be arm 31 here and is not run under a second number.
+#   The confirmation round (KIT-124 / decision M29; kit-124/scored/confirm-round-declaration.md), on request (K124_ARMS),
+#   with K124_PACKAGE=installed (the MultiScholaR installed in the job from the bound commit). The RUV step and the test
+#   are the package's declared-design kernels, as the trx_ruv_grid (declared) and trx_ruvs operations call them:
+#   trxChooseRuvDesign(list(counts = the filtered counts, design), trxRuvDesignParameters(<design>, ruv_k_rule = "num_sv_be",
+#   ruv_control_ids, ruv_k_seed = the run's seed), log_cpm = the TMM logCPM), then trxRuvFactors(<counts, logCPM, design,
+#   the choice's controls, k, method>), then the DA kernel on the state's design: trxDaFit(counts, pdata,
+#   trxDaFormula(pdata)) and trxDaApply(fit, "B_vs_A=groupB-groupA"). A count of 0 is the package's no RUV (~ 0 + group).
+#   trx_error, ruv_k_refused and ruv_factor_count_unavailable are refusals (scored as arm 1); any other error a crash.
+#   34  recommended (groups_all_features: RUVs, all genes, the groups as replicate sets), the estimated count (arm 31)
+#   35  supplied controls (RUVg): arm 8's 50 oracle genes (drawn again on arm 8's stream), the estimated count
+#   36  supplied controls (RUVg): arm 9's degraded set (drawn again on arm 9's stream), the estimated count
+#   37  no RUV: the design none (simulator arm 1)
+#   39  first-pass nulls (RUVg; the kernel's own first pass), the estimated count (nearest: arm 23, which has B = 20)
+#   Not formed: 38 (technical replicates: summed at the design step, the option is unavailable in this omic); 40 (the
+#   separation rule: the kernel takes that k as given, from the wiring, and does not compute it).
+#   K124_FAULT=<arm> (environment, the lifecycle test only): that arm stops with an unclassed error in the first run of
+#   the invocation, so that a crash of a shipped-kernel arm can be seen to be reported.
 #   K124_ARMS (environment; unset = the arms above, 22 to 31 not run): a comma list of the arm labels to run, of those
 #   the cell has and 22, 23, 24, 31. Arm 1 must be in it (refusals and E = 0 carry its result). An arm that reads another arm's
 #   fit (5 and 6 the grid of 3; 10 the fit of 8; 16 of 15) is refused when that arm is left out. The data, E and every
@@ -158,7 +183,15 @@ arms_wanted <- if (nzchar(arms_wanted)) strsplit(arms_wanted, ",", fixed = TRUE)
 stopifnot(is.null(arms_wanted) || "1" %in% arms_wanted)
 started <- Sys.time()
 
-suppressMessages(pkgload::load_all(".", quiet = TRUE))
+installed <- identical(Sys.getenv("K124_PACKAGE"), "installed")
+if (installed) {
+    # the confirmation round: the installed package, every object of its namespace on the search path as load_all puts it
+    suppressPackageStartupMessages(library(MultiScholaR))
+    attach(asNamespace("MultiScholaR"), name = "MultiScholaR:namespace", warn.conflicts = FALSE)
+} else suppressMessages(pkgload::load_all(".", quiet = TRUE))
+SHIPPED_ARMS <- c("34", "35", "36", "37", "39")
+if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 39 call the installed package: set K124_PACKAGE=installed")
+fault_arm <- Sys.getenv("K124_FAULT", "")
 for (package in c("edgeR", "RUVSeq", "EDASeq", "sva")) requireNamespace(package)
 
 cell <- function(idx, id, class, n = 6L, groups = 2L, pi = 0.2, rho = 0, nf = 1L, tech = FALSE, lib_div = 1, outliers = FALSE,
@@ -184,7 +217,8 @@ RATIOS <- list(`1` = 3, `3` = c(3, 1.5, 0.75))
 ENTRY <- "B_vs_A=groupB-groupA"
 ARM_STREAM <- c(`1` = 1L, `2` = 2L, `3` = 3L, `5` = 5L, `6` = 6L, `7` = 7L, `8` = 8L, `9` = 9L, `10` = 10L, `11` = 11L, R = 18L,
     `14` = 14L, `14E` = 19L, `15` = 15L, `16` = 16L, `17` = 17L, `22` = 22L, `23` = 23L, `24` = 24L,
-    `31` = 7L)                                            # the exactness round: arm 7's stream
+    `31` = 7L,                                            # the exactness round: arm 7's stream
+    `34` = 34L, `35` = 35L, `36` = 36L, `37` = 37L, `39` = 39L)   # the confirmation round: their own streams
 COLUMNS <- c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", "status", "k", "n_features", "n_true", "n_calls",
     "null_p05", "null_p01", "fdp", "power", "bias", "rmse", "seconds")
 
@@ -247,6 +281,23 @@ generate <- function(cl, seed) {
         null_all = stats::setNames(rowSums(beta != 0) == 0, rownames(counts)))
 }
 
+# KIT-129 R0 (kit-128 tree): the design step on a design with technical replicates. The libraries of a unit are summed
+# by the package (trxSumTechnicalReplicates, with the unit declared as `tech_rep_group`); one sample per unit is left.
+sumTechnicalReplicates <- function(d) {
+    table <- data.frame(gene_id = rownames(d$counts), d$counts, check.names = FALSE, stringsAsFactors = FALSE)
+    summed <- trxSumTechnicalReplicates(list(counts = table), data.frame(d$design, tech_rep_group = sprintf("%s_u%02d", d$design$group, d$unit),
+        stringsAsFactors = FALSE), "tech_rep_group")
+    stopifnot(!is.null(summed$summed), all(lengths(summed$summed) == 2L))
+    units <- as.character(summed$design$Run)
+    counts <- as.matrix(summed$count_data$counts[, units])
+    rownames(counts) <- rownames(d$counts)
+    d$counts <- counts
+    d$W <- rowsum(d$W, d$unit, reorder = FALSE) / 2
+    d$design <- data.frame(Run = units, group = summed$design$group, stringsAsFactors = FALSE)
+    d$unit <- seq_along(units)
+    d
+}
+
 refuse <- function(message) rlang::abort(message, class = "s3_refusal")
 
 # The package's fit and test halves with an arm's covariates; the table in the order of the counts' rows.
@@ -297,7 +348,10 @@ oneRun <- function(cl, run) {
         if (!label %in% armsOf(cl)) return(NULL)
         t0 <- proc.time()[["elapsed"]]
         set.seed(seed * 100L + ARM_STREAM[[label]])
-        result <- tryCatch(suppressWarnings(suppressMessages(body())), error = function(e) e)
+        result <- tryCatch({
+            if (identical(label, fault_arm) && run == first_run) stop("deliberate fault (K124_FAULT, the lifecycle test)")
+            suppressWarnings(suppressMessages(body()))
+        }, error = function(e) e)
         seconds <- proc.time()[["elapsed"]] - t0
         if (inherits(result, "error")) {
             designed <- inherits(result, "trx_error") || inherits(result, "s3_refusal")
@@ -320,6 +374,7 @@ oneRun <- function(cl, run) {
     truth <- NULL
     prep <- tryCatch(suppressWarnings(suppressMessages({
         d <- generate(cl, seed)
+        if (cl$tech) d <- sumTechnicalReplicates(d)
         f <- trxExpressionFilter(d$counts, d$design$group)
         y <- f$filtered_counts
         n <- trxTmmLogCpm(y, d$design$group)
@@ -452,14 +507,46 @@ oneRun <- function(cl, run) {
         set.seed(seed * 100L + ARM_STREAM[["7"]])         # num.sv set a seed
         if (E200 == 0L) noRuv() else withW(RUVSeq::RUVs(uq, genes, E200, by_group)$W)
     })
+    # the confirmation round: the installed package's declared-design kernels (arms 34 to 39)
+    shippedTest <- function(s) {
+        table <- trxDaApply(trxDaFit(y, s$pdata, trxDaFormula(s$pdata)), ENTRY)$results[[1L]]$top_table
+        list(table = table[genes, c("logFC", "PValue", "FDR")], k = ncol(s$W))
+    }
+    shipped <- function(ruv_design, ids = character()) tryCatch({
+        none <- identical(ruv_design, "none")
+        parameters <- trxRuvDesignParameters(ruv_design, ruv_k_rule = if (none) NA_character_ else "num_sv_be",
+            ruv_control_ids = ids, ruv_k_seed = if (none) NA_integer_ else seed)
+        choice <- trxChooseRuvDesign(list(counts = y, design = design), parameters, log_cpm = n$log_cpm_tmm)
+        shippedTest(trxRuvFactors(y, n$log_cpm_tmm, design, choice$chosen$control_genes, choice$chosen$k, choice$ruv_design$method))
+    }, error = function(e) {
+        if (!inherits(e, "trx_error") && inherits(e, c("ruv_k_refused", "ruv_factor_count_unavailable"))) {
+            refuse(sprintf("the package refused (%s): %s", class(e)[[1L]], conditionMessage(e)))
+        }
+        stop(e)
+    })
+    arm("34", function() shipped("groups_all_features"))
+    arm("35", function() {
+        nulls <- genes[all_null]
+        if (length(nulls) < 50L) refuse("fewer than 50 null genes pass the filter")
+        set.seed(seed * 100L + ARM_STREAM[["8"]])         # arm 8's draw
+        shipped("supplied_controls", sample(nulls, 50L))
+    })
+    arm("36", function() {
+        set.seed(seed * 100L + ARM_STREAM[["9"]])         # arm 9's draw
+        effects <- genes[truth != 0]
+        n_bad <- min(10L, length(effects))
+        shipped("supplied_controls", c(sample(genes[all_null], 50L - n_bad), if (n_bad) sample(effects, n_bad)))
+    })
+    arm("37", function() shipped("none"))
+    arm("39", function() shipped("first_pass_nulls"))
     total <- proc.time()[["elapsed"]] - t_start
     list(rows = do.call(rbind, rows), events = if (length(events)) do.call(rbind, events),
         timing = data.frame(cell = cl$id, run = run, prep_seconds = prep_seconds, total_seconds = total, E = E))
 }
 
 armsOf <- function(cl) {
-    arms <- c("1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "R", "14", "14E", if (cl$tech) c("15", "16"), if (cl$batch) "17")
-    if (is.null(arms_wanted)) arms else intersect(c(arms, "22", "23", "24", "31"), arms_wanted)
+    arms <- c("1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "R", "14", "14E", if (cl$batch) "17")   # 15, 16: see the header
+    if (is.null(arms_wanted)) arms else intersect(c(arms, "22", "23", "24", "31", if (installed) SHIPPED_ARMS), arms_wanted)
 }
 
 # A run whose worker died (or failed outside every arm) is a crash of each of its arms.
@@ -512,7 +599,7 @@ writeTable(do.call(rbind, lapply(stored, `[[`, "timing")), "s3-timing.tsv")
 
 versions <- vapply(c("edgeR", "limma", "RUVSeq", "EDASeq", "sva", "ruv", "pkgload"), function(p) as.character(utils::packageVersion(p)), "")
 writeLines(c(
-    "simulator: S3 (transcriptomics), KIT-124 revision 1.2",
+    "simulator: S3 (transcriptomics), KIT-124 revision 1.2; KIT-129 R0: technical replicates summed by the design step (kit-128 tree)",
     sprintf("commit: %s%s", system("git rev-parse HEAD", intern = TRUE),
         if (length(system("git status --porcelain -- R docs/qa/workflow-execution/kit/kit-124/sim", intern = TRUE))) " (R/ or sim/ differ from the commit)" else ""),
     sprintf("script sha256: %s", digest::digest(file = sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)), algo = "sha256")),
@@ -520,6 +607,9 @@ writeLines(c(
     sprintf("cells run by this command: %s; cells in the tables: %s", paste(selected, collapse = ","), paste(done, collapse = ",")),
     sprintf("runs: core %d, stress %d, first run %d; cores %d", runs_core, runs_stress, first_run, cores),
     sprintf("K124_ARMS: %s", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
+    sprintf("MultiScholaR: %s", if (installed) sprintf("installed (K124_PACKAGE=installed; built from %s, at %s), version %s",
+        Sys.getenv("K124_PACKAGE_COMMIT", "unknown"), find.package("MultiScholaR"), utils::packageVersion("MultiScholaR")) else "pkgload::load_all of the work tree"),
+    sprintf("K124_FAULT: %s", if (nzchar(fault_arm)) fault_arm else "unset"),
     "seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22",
     sprintf("library paths: %s", paste(.libPaths(), collapse = ":")),
     sprintf("R: %s; BLAS %s", R.version.string, extSoftVersion()[["BLAS"]]),

@@ -136,6 +136,24 @@
 #     K124_ARMS (environment; unset = the arms of this list but 22 to 33): a comma list of the arm labels to run,
 #     of those the cell has and 22, 23, 25, 29 to 33. Arm 1 must be in it. The data, E and every stream are as without it, so an
 #     arm's rows are the same whichever other arms run.
+#     The confirmation round (KIT-124 / decision M29; kit-124/scored/confirm-round-declaration.md), on request
+#     (K124_ARMS), with K124_PACKAGE=installed (the MultiScholaR installed in the job from the bound commit). The RUV
+#     step and the test are the package's new-design kernels, as kit-129/final-method/prove-arms.R calls them, on an
+#     object of the study injections (the package holds no pooled-QC injection; S4's own W is formed on the features
+#     complete in study and QC injections, so these arms' controls can differ from arm 32's): runOmicsRuvFactors(object,
+#     <design>, ruv_k_rule = "num_sv_be", ruv_control_ids, ruv_grouping_variable, ruv_k_seed = E's seed), then
+#     runLipidsDA(object, contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = its factors). The same is run
+#     through the metabolomics classes (MetaboliteAssayData, runMetabolitesDA) and the arm crashes unless the two tables
+#     agree (identical, or within 1e-12); the lipid table is scored. An assay the kernel refuses (no RUV, its warning)
+#     is a refused assay, scored as arm 1 (R-07).
+# 34  recommended: all features as controls, the groups as replicate sets, the estimated count (simulator arm 32).
+# 35  supplied controls: the standards (arm 8's), the estimated count. 36  the contaminated standards (arm 9's).
+# 37  no RUV: runLipidsDA on the object, no factors (simulator arm 1).
+# 38  (C6, C8) technical replicates: the extract as the replicate sets (ruv_grouping_variable = "extract"), all
+#     features as controls, the estimated count (simulator arm 33).
+#     Not formed: 39 and 40 (first-pass nulls): the kernel has no first-pass control rule.
+#     K124_FAULT=<arm> (environment, the lifecycle test only): that arm stops with an unclassed error in the first run
+#     of the invocation, so that a crash of a shipped-kernel arm can be seen to be reported.
 #  I  the package's ITSD normalisation and log2 alone, then the test.
 #  Qs pooled QC injections as the one replicate set (M over study and QC injections), all features as controls,
 #     k = E, subtract; the study injections are tested.            Qm  the same, W in the model.
@@ -157,8 +175,15 @@
 #     effects in the subset (tested or not); n_calls; null_p05, null_p01 = share of tested nulls under 0.05, 0.01;
 #     fdp (0 with no calls); power = true calls / n_true; bias = mean of sign(truth) x (estimate - truth) and rmse
 #     over tested true effects. `seconds` includes the shared steps the arm uses (E, the sweep, the first pass).
-# Not as the package would behave in C6: nothing. The lipid and metab test has no replicate block, so the 16
-#     injections of C6 are tested as 16 independent samples in every arm, the ceiling included.
+# Technical replicates (KIT-129 R0, on the `kit-128` tree; this file needs that tree): the design declares the extract
+#     as the technical replicate of each injection, as the design step declares `tech_rep_group`. The objects carry it
+#     (`technical_replicate_id = "extract"`, read by runLipidsDA and runMetabolitesDA) and the kernel is called with
+#     `group_id = "group", technical_replicate_id = "extract"`, in every cell. In C6 (4 extracts per group, 2 injections
+#     each) every arm's test, the ceiling included, is therefore fitted with the extract as block
+#     (limma::duplicateCorrelation, then lmFit(block, correlation); KIT-128). In every other cell each extract is one
+#     injection, the package's rule finds no duplicates and the fit is the unblocked one, as before. Before KIT-128
+#     the 16 injections of C6 were tested as 16 independent samples (the KIT-124 confirm rows of C6: void).
+#     The RUV step does not read the declaration (the group, or the arm's own replicate matrix, as before).
 
 if (!identical(Sys.getenv("OMP_NUM_THREADS"), "1")) stop("run with OMP_NUM_THREADS=1 (RUVIIIC is threaded)")
 args <- commandArgs(trailingOnly = TRUE)
@@ -173,7 +198,15 @@ arms_wanted <- Sys.getenv("K124_ARMS", "")
 arms_wanted <- if (nzchar(arms_wanted)) strsplit(arms_wanted, ",", fixed = TRUE)[[1L]]
 stopifnot(is.null(arms_wanted) || "1" %in% arms_wanted)
 
-suppressPackageStartupMessages(pkgload::load_all(".", quiet = TRUE))
+installed <- identical(Sys.getenv("K124_PACKAGE"), "installed")
+if (installed) {
+    # the confirmation round: the installed package, every object of its namespace on the search path as load_all puts it
+    suppressPackageStartupMessages(library(MultiScholaR))
+    attach(asNamespace("MultiScholaR"), name = "MultiScholaR:namespace", warn.conflicts = FALSE)
+} else suppressPackageStartupMessages(pkgload::load_all(".", quiet = TRUE))
+SHIPPED_ARMS <- c("34", "35", "36", "37", "38")
+if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 38 call the installed package: set K124_PACKAGE=installed")
+fault_arm <- Sys.getenv("K124_FAULT", "")
 logger::log_threshold(logger::FATAL)
 logger::log_threshold(logger::FATAL, namespace = "MultiScholaR")
 # loaded before the workers fork, so that no run pays for it
@@ -192,7 +225,8 @@ RUV_PARAMS <- list(ruv_grouping_variable = "group", percentage_min = 1, percenta
     separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, manual_k = 2,
     manual_percentage = 5)
 ARM_NUMBER <- c(stats::setNames(1:17, 1:17), I = 18L, Qs = 19L, Qm = 20L, L = 21L, "22" = 22L, "23" = 23L,
-    "25" = 25L, "29" = 29L, "30" = 30L, "31" = 31L, "32" = 32L, "33" = 33L)
+    "25" = 25L, "29" = 29L, "30" = 30L, "31" = 31L, "32" = 32L, "33" = 33L,
+    "34" = 34L, "35" = 35L, "36" = 36L, "37" = 37L, "38" = 38L)
 EXACT_STREAM <- c("25" = 7L, "29" = 7L, "30" = 16L, "31" = 7L, "32" = 7L, "33" = 16L)   # the stream of the arm each varies
 COMPLETE_ONLY <- c("12", "13", "14")
 
@@ -220,7 +254,8 @@ armsOfCell <- function(cell) {
     arms <- c(as.character(1:14), "I", "Qs", "Qm", "L")
     if (cell$duplicates) arms <- c(arms, "15", "16")
     if (identical(cell$unwanted, "batch")) arms <- c(arms, "17")
-    if (!is.null(arms_wanted)) arms <- intersect(c(arms, "22", "23", "25", "31", "32", if (cell$duplicates) c("29", "30", "33")), arms_wanted)
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, "22", "23", "25", "31", "32", if (cell$duplicates) c("29", "30", "33"),
+        if (installed) c("34", "35", "36", "37", if (cell$duplicates) "38")), arms_wanted)
     arms[order(ARM_NUMBER[arms])]
 }
 
@@ -392,13 +427,13 @@ assayTable <- function(m) {
 }
 lipidObject <- function(mats, design) {
     methods::new("LipidomicsAssayData", lipid_data = lapply(mats, assayTable), lipid_id_column = ID_COL,
-        annotation_id_column = "name", design_matrix = design[, c("Sample_ID", "group")], sample_id = "Sample_ID",
-        group_id = "group", args = list())
+        annotation_id_column = "name", design_matrix = design[, c("Sample_ID", "group", "extract")], sample_id = "Sample_ID",
+        group_id = "group", technical_replicate_id = "extract", args = list())
 }
 metabObject <- function(mats, design) {
     methods::new("MetaboliteAssayData", metabolite_data = lapply(mats, assayTable), metabolite_id_column = ID_COL,
-        annotation_id_column = "name", design_matrix = design[, c("Sample_ID", "group")], sample_id = "Sample_ID",
-        group_id = "group", args = list())
+        annotation_id_column = "name", design_matrix = design[, c("Sample_ID", "group", "extract")], sample_id = "Sample_ID",
+        group_id = "group", technical_replicate_id = "extract", args = list())
 }
 assayMatrix <- function(table, samples) {
     m <- as.matrix(as.data.frame(table[, samples], check.names = FALSE))
@@ -437,7 +472,7 @@ daKernel <- function(m, design, formula, contrasts, exact = FALSE) {
     }
     longTable(quiet(runTestsContrastsLipidDA(data = m, contrast_strings = contrasts, design_matrix = design,
         formula_string = formula, sample_id_col = "Sample_ID", treat_lfc_cutoff = NA, eBayes_trend = TRUE,
-        eBayes_robust = TRUE))$results)
+        eBayes_robust = TRUE, group_id = "group", technical_replicate_id = "extract"))$results)
 }
 contrastsTable <- function(contrasts) data.frame(contrasts = contrasts, friendly_names = contrasts, stringsAsFactors = FALSE)
 
@@ -468,7 +503,8 @@ checkSharedKernels <- function() {
     for (assay in ASSAYS) {
         m <- assayMatrix(ruv_l@lipid_data[[assay]], samples)
         k_l <- daKernel(m, data$design, "~ 0 + group", data$contrasts)
-        k_m <- longTable(quiet(runTestsContrastsMetabDA(m, data$contrasts, data$design, "~ 0 + group", "Sample_ID", NA, TRUE, TRUE))$results)
+        k_m <- longTable(quiet(runTestsContrastsMetabDA(m, data$contrasts, data$design, "~ 0 + group", "Sample_ID", NA, TRUE, TRUE,
+            group_id = "group", technical_replicate_id = "extract"))$results)
         kernels_equal <- kernels_equal && identical(k_l, k_m)
         o <- da_l[da_l$assay == assay, ]
         at <- match(o$lipid_id, k_l$feature)
@@ -696,6 +732,11 @@ armFunctions <- list(
     "31" = function(view) modelArm(view, allComplete, kVariant("E_200")),
     "32" = function(view) modelArm(view, allComplete, kVariant(if (hasDuplicates(view)) "E_units_200" else "E_200"), exact = TRUE),
     "33" = function(view) modelArm(view, allComplete, kVariant("E_units_200"), m_of = extractM, exact = TRUE),
+    "34" = function(view) shippedArm(view, "groups_all_features"),
+    "35" = function(view) shippedArm(view, "supplied_controls", standards = "is"),
+    "36" = function(view) shippedArm(view, "supplied_controls", standards = "isc"),
+    "37" = function(view) shippedArm(view, NULL),
+    "38" = function(view) shippedArm(view, "groups_all_features", grouping = "extract"),
     "I" = function(view) {
         raw <- lapply(view$assays, function(a) 2^rbind(a$y, a$is))
         object <- quiet(logTransformAssays(normaliseUntransformedData(lipidObject(raw, view$design), method = "ITSD",
@@ -712,6 +753,45 @@ armFunctions <- list(
         list(table = daKernel(loessCorrect(a$y, a$qc, view$design$pos, view$pos_q), view$design, "~ 0 + group", view$contrasts), k = NA)
     })
 )
+
+# The confirmation round (arms 34 to 38): the installed package's new-design kernels through both classes; the lipid
+# table is scored, the metab table must agree with it. `ruv_design` NULL is no RUV.
+shippedArm <- function(view, ruv_design, standards = NULL, grouping = NULL) {
+    mats <- lapply(view$assays, function(a) if (is.null(standards)) a$y else rbind(a$y, a[[standards]]))
+    controls <- if (!is.null(standards)) lapply(view$assays, function(a) rownames(a[[standards]]))
+    contrasts <- contrastsTable(view$contrasts)
+    through <- function(omic) {
+        object <- if (omic == "lipid") lipidObject(mats, view$design) else metabObject(mats, view$design)
+        factors <- if (!is.null(ruv_design)) quiet(runOmicsRuvFactors(object, ruv_design, ruv_k_rule = "num_sv_be",
+            ruv_control_ids = controls, ruv_grouping_variable = grouping, ruv_k_seed = view$seed * 100L + 99L))$factors
+        da <- quiet(if (omic == "lipid") runLipidsDA(object, contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = factors) else
+            runMetabolitesDA(object, contrasts, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = factors))
+        long <- if (omic == "lipid") da$da_lipids_long else da$da_metabolites_long
+        id <- if (omic == "lipid") "lipid_id" else "metabolite_id"
+        table <- data.frame(feature = long[[id]], contrast = long$comparison, est = long$logFC, p = long$P.Value,
+            q = long$fdr_qvalue, bh = long$fdr_value_bh, assay = long$assay, stringsAsFactors = FALSE)
+        list(table = table[order(table$assay, table$contrast, table$feature), , drop = FALSE], factors = factors)
+    }
+    lipid <- through("lipid")
+    metab <- through("metab")
+    a <- lipid$table
+    b <- metab$table
+    same <- identical(a, b) || (identical(a[c("feature", "contrast", "assay")], b[c("feature", "contrast", "assay")]) &&
+        isTRUE(max(abs(c(a$est - b$est, a$p - b$p, a$q - b$q)), na.rm = TRUE) <= 1e-12) &&
+        identical(is.na(c(a$est, a$p, a$q)), is.na(c(b$est, b$p, b$q))))
+    if (!same) stop("the lipid and metab kernels give different tables on this data set")
+    tables <- lapply(stats::setNames(ASSAYS, ASSAYS), function(assay) {
+        record <- lipid$factors[[assay]]
+        if (!is.null(record) && identical(record$status, "refused")) {
+            return(refusal(sprintf("the package refused the assay (%s): %s", record$reason_class %||% "unclassed", record$reason %||% "")))
+        }
+        rows <- a[a$assay == assay, c("feature", "contrast", "est", "p", "q", "bh"), drop = FALSE]
+        if (!nrow(rows)) stop("the package's DA returned no rows for assay ", assay)
+        rownames(rows) <- NULL
+        rows
+    })
+    list(tables = tables, k = vapply(ASSAYS, function(assay) as.numeric(lipid$factors[[assay]]$k %||% 0), numeric(1L)))
+}
 
 empiricalControlsArm <- function(view, controls) {
     usable <- vapply(controls, length, integer(1L)) > 0L
@@ -859,7 +939,10 @@ runOne <- function(cell, run) {
             view <- views[[subset]]
             set.seed(seed * 100L + if (arm %in% names(EXACT_STREAM)) EXACT_STREAM[[arm]] else ARM_NUMBER[[arm]])
             t0 <- proc.time()[["elapsed"]]
-            scored <- tryCatch(scoreArm(armFunctions[[arm]](view), view), error = function(e) list(status = "crashed", reasons = conditionMessage(e)))
+            scored <- tryCatch({
+                if (identical(arm, fault_arm) && run == first_run) stop("deliberate fault (K124_FAULT, the lifecycle test)")
+                scoreArm(armFunctions[[arm]](view), view)
+            }, error = function(e) list(status = "crashed", reasons = conditionMessage(e)))
             seconds <- proc.time()[["elapsed"]] - t0
             measures <- c("k", "n_features", "n_true", "n_calls", "null_p05", "null_p01", "fdp", "power", "bias", "rmse")
             values <- lapply(stats::setNames(measures, measures), function(m) if (is.null(scored[[m]])) NA_real_ else signif(scored[[m]], 6L))
@@ -957,7 +1040,7 @@ main <- function() {
     writeTsv(gather("%s.timing.tsv"), file.path(out_dir, "s4-timing.tsv"))
     git <- function(...) tryCatch(system2("git", c(...), stdout = TRUE, stderr = FALSE), error = function(e) NA_character_)
     versions <- vapply(c("limma", "qvalue", "ruv", "RUVIIIC", "sva", "statmod", "pkgload"), function(p) as.character(utils::packageVersion(p)), "")
-    writeLines(c("simulator: S4 (lipidomics and metabolomics), KIT-124 revision 1.2",
+    writeLines(c("simulator: S4 (lipidomics and metabolomics), KIT-124 revision 1.2; KIT-129 R0: the extract declared as technical replicate (kit-128 tree)",
         paste("commit:", git("rev-parse", "HEAD")),
         paste("script committed state:", if (length(git("status", "--porcelain", "--", "docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R"))) "modified or untracked at run time" else "clean"),
         paste("command:", paste(c("OMP_NUM_THREADS=1 Rscript", sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)), args), collapse = " ")),
@@ -969,7 +1052,10 @@ main <- function() {
         paste("R:", R.version.string),
         paste("library paths:", paste(.libPaths(), collapse = ":")),
         paste("R_LIBS:", Sys.getenv("R_LIBS")),
-        paste("MultiScholaR (pkgload::load_all):", as.character(utils::packageVersion("MultiScholaR"))),
+        paste(if (installed) sprintf("MultiScholaR (installed, K124_PACKAGE=installed; built from %s, at %s):",
+            Sys.getenv("K124_PACKAGE_COMMIT", "unknown"), find.package("MultiScholaR")) else "MultiScholaR (pkgload::load_all):",
+            as.character(utils::packageVersion("MultiScholaR"))),
+        paste("K124_FAULT:", if (nzchar(fault_arm)) fault_arm else "unset"),
         paste("packages:", paste(names(versions), versions, collapse = ", ")),
         paste("lipid/metab sharing check (identical outputs through both classes):", paste(names(checks), unlist(checks), collapse = ", ")),
         paste("started:", format(started, "%Y-%m-%d %H:%M:%S"), "finished:", format(Sys.time(), "%Y-%m-%d %H:%M:%S"))),

@@ -158,6 +158,27 @@
 #       it), so this is also arm 16's variant; arm numbers 30 and 33 of S1 and S4 are not formed here.
 #   31  arm 7 with E from 200 permutations: sva::num.sv(..., B = 200, E's seed), the group model.
 #   32  arm 7 with all of them: arm 25's standard error, B = 200, and in C6 and C8 the units removed.
+# The confirmation round (KIT-124 / decision M29; kit-124/scored/confirm-round-declaration.md), on request (K124_ARMS),
+# with K124_PACKAGE=installed (the MultiScholaR installed in the job from the bound commit). The RUV step and the test
+# are the package's: the declared covariates kernel, as kit-129/final-method/prove-arms.R calls it,
+# diaRuvCovariatesOperation("declared")$kernel(<the quantified object>, resolveDIARuvCovariatesParameters(list(),
+# "group", ruv_control_rule = <the arm's>, ruv_k_rule = <the arm's>, ruv_control_ids = <the arm's>, ruv_k_seed =
+# 100 * seed + 99), <a store that keeps the checkpoints>), then differentialAbundanceAnalysis(<its final state>, the
+# default path's settings). The kernel's own no-RUV (a count of 0, or what the data cannot give under an automatic rule)
+# is its final state without W; a run the kernel leaves without RUV for a reason other than a count of 0 is `refused`
+# (scored as arm 1). The package's classed refusals (ruv_k_refused, ruv_factor_count_unavailable,
+# omics_ruv_no_residual_df, omics_da_block_correlation_failed, omics_da_no_biological_replication, and the kernel's
+# workflow_execution_invalid for a control list that matches nothing) are refusals; any other error is a crash.
+#   34  recommended: all proteins as controls, the estimated count (simulator arm 32; in C6 and C8 the kernel takes
+#       the declared technical replicates as replicate structure, so this is also the technical-replicate design)
+#   35  supplied controls: the oracle set (arm 8's), the estimated count
+#   36  supplied controls: the degraded set (arm 9's), the estimated count                 every cell but C4
+#   37  no RUV: differentialAbundanceAnalysis on the quantified object (simulator arm 1)
+#   39  first-pass nulls (the kernel's own first pass: dpcDE, the F test over the groups), the estimated count
+#   40  first-pass nulls, the separation rule (the kernel's default for this control rule: today's sweep's k)
+# Arm 38 (technical replicates as their own design) is not formed: on this route it is arm 34's computation.
+# K124_FAULT=<arm> (environment, the lifecycle test only): that arm stops with an unclassed error in the first run of
+# the invocation, so that a crash of a shipped-kernel arm can be seen to be reported.
 # Arm numbers 26 to 28 (S1: the test applies its trend and robust settings) are not formed: the dpcDE branch has no
 # TREAT step and its eBayes(trend, robust) p-values are the ones reported. With E = 0 arms 29 and 31 are arm 1's
 # result, as arm 7; arms 25 and 32 are the no-RUV fit with the reparameterised matrix (equal to arm 1's up to
@@ -205,7 +226,15 @@ stopifnot(is.null(arms_wanted) || (!anyNA(arms_wanted) && 1L %in% arms_wanted))
 stopifnot(runs_core >= 0L, runs_stress >= 0L, cores >= 1L, first_run >= 1L,
     first_run + max(runs_core, runs_stress) - 1L < 10000L)
 
-suppressMessages(pkgload::load_all(".", quiet = TRUE))
+installed <- identical(Sys.getenv("K124_PACKAGE"), "installed")
+if (installed) {
+    # the confirmation round: the installed package, every object of its namespace on the search path as load_all puts it
+    suppressPackageStartupMessages(library(MultiScholaR))
+    attach(asNamespace("MultiScholaR"), name = "MultiScholaR:namespace", warn.conflicts = FALSE)
+} else suppressMessages(pkgload::load_all(".", quiet = TRUE))
+SHIPPED_ARMS <- c(34L, 35L, 36L, 37L, 39L, 40L)
+if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 40 call the installed package: set K124_PACKAGE=installed")
+fault_arm <- suppressWarnings(as.integer(Sys.getenv("K124_FAULT", "")))
 logger::log_threshold(logger::FATAL)
 # Namespaces are loaded before the workers fork (their load time is then in no run's seconds). The DPC engine
 # itself is first called inside a worker: its thread pool must not exist in the parent of a fork.
@@ -279,7 +308,8 @@ armsFor <- function(cell) {
     if (cell$effects == 0) arms <- setdiff(arms, 9L)
     if (cell$units > 0L) arms <- c(arms, 15L, 16L)
     if (cell$batch) arms <- c(arms, 17L)
-    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L, 24L, 25L, if (cell$units > 0L) 29L, 31L, 32L), arms_wanted)
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L, 24L, 25L, if (cell$units > 0L) 29L, 31L, 32L,
+        if (installed) setdiff(SHIPPED_ARMS, if (cell$effects == 0) 36L)), arms_wanted)
     arms
 }
 
@@ -499,7 +529,7 @@ runOne <- function(cell, run) {
     set.seed(100L * seed + 8L)
     oracle <- ids %in% sample(null_ids, 50L)
     set.seed(100L * seed + 9L)
-    degraded <- if (9L %in% armsFor(cell)) {
+    degraded <- if (any(c(9L, 36L) %in% armsFor(cell))) {
         ids %in% c(sample(null_ids, 40L), sample(effect_ids, 10L))
     }
 
@@ -585,6 +615,33 @@ runOne <- function(cell, run) {
         p <- ruv::variance_adjust(fit, ebayes = TRUE, pooled = FALSE, evar = FALSE, rsvar = FALSE)$p.ebayes[1L, ]
         data.frame(id = ids, logFC = fit$betahat[1L, ], p = p, q = packageQ(p), stringsAsFactors = FALSE)
     }
+    # the confirmation round: the installed package's declared covariates kernel and DA entry point (arms 34 to 40)
+    shippedDa <- function(state) {
+        value <- NULL
+        quietly(value <- differentialAbundanceAnalysis(state, contrasts_tbl = data.frame(contrasts = CONTRAST,
+            stringsAsFactors = FALSE), formula_string = FORMULA, da_q_val_thresh = Q_CUT, treat_lfc_cutoff = 0,
+            eBayes_trend = TRUE, eBayes_robust = TRUE, args_row_id = "Protein.Ids", qvalue_column = "fdr_qvalue",
+            raw_pvalue_column = "raw_pvalue"))
+        table <- value$contrasts_results$results[[1L]]
+        if (is.null(table) || !nrow(table)) stop("differentialAbundanceAnalysis returned no table")
+        data.frame(id = rownames(table), logFC = table$logFC, p = table$raw_pvalue, q = table$fdr_qvalue,
+            stringsAsFactors = FALSE)
+    }
+    shipped <- function(...) {
+        saved <- list()
+        store <- list(checkpoint = function(value, label, from = NULL) {
+            saved[[label]] <<- value
+            label
+        })
+        parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_k_seed = 100L * seed + 99L, ...)
+        value <- NULL
+        quietly(value <- diaRuvCovariatesOperation("declared")$kernel(quantified, parameters, store))
+        state <- saved[[value$final]]
+        if (is.null(state)) stop("the declared kernel's final state was not checkpointed")
+        refused <- !isTRUE(value$ruv_applied) && !isTRUE(value$ruv_k_estimate == 0L)
+        list(k = as.integer(value$best_k), table = shippedDa(state),
+            refused = if (refused) value$ruv_not_applied_reason %||% "the kernel applied no RUV")
+    }
     arm_functions <- list(
         `1` = \() list(k = 0L, table = routeTest(elist, design)),
         `2` = \() if (ncol(true_terms)) list(k = cell$factors, table = routeTest(elist, design, true_terms)) else noRuv(),
@@ -625,8 +682,16 @@ runOne <- function(cell, run) {
             inModel(separationK(wide), wide)
         },
         `25` = variant(exact = TRUE), `29` = variant(units = TRUE), `31` = variant(B = 200L),
-        `32` = variant(exact = TRUE, B = 200L, units = cell$units > 0L)
+        `32` = variant(exact = TRUE, B = 200L, units = cell$units > 0L),
+        `34` = \() shipped(ruv_control_rule = "all_features"),
+        `35` = \() shipped(ruv_control_rule = "supplied_list", ruv_control_ids = ids[oracle]),
+        `36` = \() shipped(ruv_control_rule = "supplied_list", ruv_control_ids = ids[degraded]),
+        `37` = \() list(k = 0L, table = shippedDa(quantified)),
+        `39` = \() shipped(ruv_control_rule = "first_pass_drop_top_25", ruv_k_rule = "num_sv_be"),
+        `40` = \() shipped(ruv_control_rule = "first_pass_drop_top_25", ruv_k_rule = "sweep_bounded")
     )
+    SHIPPED_REFUSALS <- c("ruv_k_refused", "ruv_factor_count_unavailable", "omics_ruv_no_residual_df",
+        "omics_da_block_correlation_failed", "omics_da_no_biological_replication")
 
     arms <- armsFor(cell)
     rows <- vector("list", length(arms))
@@ -636,10 +701,19 @@ runOne <- function(cell, run) {
         arm <- arms[[i]]
         set.seed(100L * seed + arm)
         mark <- clock()
-        outcome <- tryCatch(arm_functions[[as.character(arm)]](), error = \(e) e)
+        outcome <- tryCatch({
+            if (identical(arm, fault_arm) && run == first_run) stop("deliberate fault (K124_FAULT, the lifecycle test)")
+            arm_functions[[as.character(arm)]]()
+        }, error = \(e) e)
         seconds <- clock() - mark
+        if (arm %in% SHIPPED_ARMS && !inherits(outcome, "condition") && !is.null(outcome$refused)) {
+            # the kernel left the run without RUV for a reason other than a count of 0: a refusal, scored as arm 1
+            outcome <- structure(class = c("s2_shipped_refusal", "error", "condition"),
+                list(message = paste("the kernel applied no RUV:", outcome$refused), call = NULL))
+        }
         if (inherits(outcome, "condition")) {
-            refused <- arm != 1L && !is.null(first_measures) && grepl(REFUSALS, conditionMessage(outcome))
+            refused <- arm != 1L && !is.null(first_measures) && (grepl(REFUSALS, conditionMessage(outcome)) ||
+                (arm %in% SHIPPED_ARMS && inherits(outcome, c("s2_shipped_refusal", SHIPPED_REFUSALS))))
             status <- if (refused) "refused" else "crashed"
             errors[[length(errors) + 1L]] <- errorRow(cell, run, arm, status, outcome)
             rows[[i]] <- runRow(cell, run, seed, arm, status, NA, if (refused) first_measures, seconds)
@@ -684,6 +758,9 @@ writeMeta <- function(path, started, finished = NULL, cells_run = character()) {
         paste("changes under R/, tests/, tools/:", nzchar(git("status", "--porcelain", "--", "R", "tests", "tools"))),
         paste("command: Rscript", paste(c(script, commandArgs(TRUE)), collapse = " ")),
         paste("K124_FIRST_RUN:", first_run),
+        paste("MultiScholaR:", if (installed) paste0("installed (K124_PACKAGE=installed; built from ",
+            Sys.getenv("K124_PACKAGE_COMMIT", "unknown"), ", at ", find.package("MultiScholaR"), ")") else "pkgload::load_all of the work tree"),
+        paste("K124_FAULT:", if (is.na(fault_arm)) "unset" else fault_arm),
         paste("K124_ARMS:", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
         paste("working directory:", getwd()),
         paste("R_LIBS:", Sys.getenv("R_LIBS")),
