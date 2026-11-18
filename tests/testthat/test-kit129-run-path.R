@@ -1065,3 +1065,54 @@ test_that("(fourth pass item 4) transcriptomics: the RUVs step's outcomes carry 
     result <- trxRuvDesignResult(run$grid$value, outcomes)
     expect_identical(result$assays$all$association$ruv_group_association_outcome, "not_calibrated")
 })
+
+# ---- Fourth pass item 5: the transcriptomics tab under a declared design ---------------------------------------------
+
+test_that("(fourth pass item 5) transcriptomics: a declared design's run publishes what exists for it and shows no grid", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    fixture <- kit129TrxOwner()
+    owner <- fixture$owner
+    root <- withr::local_tempdir()
+    paths <- list(gene_qc_dir = file.path(root, "qc"), publication_graphs_dir = file.path(root, "graphs"))
+    norm_data <- new.env()
+    norm_data$ruv_optimization_results <- list(counts = list(success = TRUE, best_k = 3L))
+    lines <- character()
+    outcome <- new.env()
+    input <- list(ruv_mode = "automatic", ruv_design = "groups_all_features", ruv_k_rule = "user", ruv_k_user = 2, ruv_k_seed = 7)
+    kit129Quiet(runTrxNormInProcess(transcriptomicsDeclarationBinding, owner, trxNormGridParameters(input), norm_data, list(),
+        function(line) lines <<- c(lines, line), paths, finish = function() outcome$finished <- TRUE,
+        failed = function(error) outcome$error <- conditionMessage(error)))
+    expect_null(outcome$error)
+    expect_true(isTRUE(outcome$finished))
+    # the grid of the earlier run is not shown; the panel's result is this run's
+    expect_identical(norm_data$ruv_optimization_results, list())
+    expect_identical(norm_data$ruv_design_result$design, "groups_all_features")
+    expect_identical(norm_data$ruv_design_result$assays$all$k, 2L)
+    # the RUV publication writes the corrected display matrix, and no canonical-correlation panels or grid workbook
+    display <- kit129Quiet(runWorkflowOmicsPublicationInProcess(transcriptomicsDeclarationBinding, owner, "trx_ruv_publication", list(), paths))
+    expect_true(isTRUE(display$saved), info = display$message)
+    expect_true(file.exists(file.path(paths$gene_qc_dir, "ruv_normalised_log_values.tsv")))
+    expect_false(any(grepl("canonical_correlation", list.files(paths$publication_graphs_dir))))
+    # the stage figures of the declared state are there
+    expect_true(file.exists(file.path(paths$gene_qc_dir, "trx_ruvs_pca.png")))
+})
+
+test_that("(fourth pass item 5) the RUV QC tab shows the legacy grid's frame only for a legacy run", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    bus <- shiny::reactiveValues(state_manager = NULL, design_matrix = NULL, config_list = list(),
+        tab_status = list(normalization = "pending"), state_update_trigger = NULL)
+    suppressWarnings(suppressMessages(shiny::testServer(mod_omic_norm_server, args = list(id = "norm", workflow_data = bus,
+        experiment_paths = list(), omic_type = "transcriptomics", experiment_label = "kit129",
+        config = omicGuiConfig("transcriptomics")$norm), {
+        html <- function() paste(as.character(output$ruv_qc_ui$html), collapse = "")
+        session$flushReact()
+        expect_match(html(), "Assay: counts", fixed = TRUE)
+        omicNormSetRuvDesignResult(session$returned, omicNormRuvDesignResult("groups_all_features", "user", 7L, "group",
+            list(all = list(k = 1L, applied = TRUE))))
+        session$flushReact()
+        expect_false(grepl("Assay: counts", html(), fixed = TRUE))
+        omicNormSetRuvDesignResult(session$returned, omicNormRuvLegacyResult())
+        session$flushReact()
+        expect_match(html(), "Assay: counts", fixed = TRUE)
+    })))
+})

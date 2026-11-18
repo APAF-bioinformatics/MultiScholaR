@@ -1064,6 +1064,10 @@ omicNormRuvQcUiRenderer <- function(normData, ns) {
     function() {
         shiny::renderUI({
             shiny::req(normData$assay_names)
+            # KIT-129 fourth pass item 5: after a new design's run (set under the gate only) there is no sweep or grid
+            # to show; the RUV design section's outputs show what the run did.
+            result <- normData$ruv_design_result
+            if (!is.null(result) && !isTRUE(result$legacy)) return(NULL)
             shiny::tagList(purrr::map(normData$assay_names, function(assay_name) {
                 safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
                 shiny::tagList(

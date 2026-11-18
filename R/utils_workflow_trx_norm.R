@@ -98,8 +98,9 @@ runTrxNormManaged <- function(binding, runner, manager, settings, normData, conf
         held$grid <- result$reference$entity_id
         held$k <- result$value$chosen$k
         held$grid_value <- result$value
-        # A declared design has no grid to show (KIT-129 integration item 1; its diagnostic is the panel's).
-        if (is.null(result$value[["ruv_design", exact = TRUE]])) normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(result$value))
+        # A declared design has no grid to show (KIT-129 integration item 1; its diagnostic is the panel's), and a grid of
+        # an earlier run is not shown for it (fourth pass item 5).
+        normData$ruv_optimization_results <- if (is.null(result$value[["ruv_design", exact = TRUE]])) list(counts = trxNormRuvQcResult(result$value)) else list()
         addLog(sprintf("RUV grid (%s): k = %d, %s%% inferred negative controls", result$value$mode, result$value$chosen$k, result$value$chosen$percentage))
     })), done = after_grid, failed = failed)
     runner$run(list(figures("raw"), omicsManagedProduct("trx_tmm_logcpm", list(), function(result) {
@@ -117,7 +118,8 @@ runTrxNormInProcess <- function(binding, manager, settings, normData, config, ad
         request <- trxNormRuvRequest(settings)
         run <- runTrxReferenceRuvs(manager, settings, config, design_parameters = request$design)
         omicNormSetRuvDesignResult(normData, trxRuvDesignResult(run$grid$value, run$value$outcomes))
-        if (is.null(run$grid$value[["ruv_design", exact = TRUE]])) normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(run$grid$value))
+        # KIT-129 fourth pass item 5: a declared design has no grid, and a grid of an earlier run is not shown for it.
+        normData$ruv_optimization_results <- if (is.null(run$grid$value[["ruv_design", exact = TRUE]])) list(counts = trxNormRuvQcResult(run$grid$value)) else list()
         normData$ruv_corrected_obj <- run$reference
         addLog(sprintf("RUVs applied: W_1..W_%d added to the design (state 'trx_ruvs')", run$grid$value$chosen$k))
         runTrxNormPublicationsInProcess(manager, experimentPaths, addLog)

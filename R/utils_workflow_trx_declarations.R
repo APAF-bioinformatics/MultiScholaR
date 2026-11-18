@@ -764,6 +764,13 @@ computeWorkflowTrxRuvPublicationAction <- function(manager, request, variant) {
     trxPublicationResult(manager, request, function(source) {
         ruvs <- trxStateRuvs(manager, source)
         grid <- trxProductValue(manager, ruvs$grid)
+        # KIT-129 fourth pass item 5: a declared design has no grid, so no canonical-correlation panels or grid workbook;
+        # its corrected display matrix is published as today's.
+        if (!is.null(grid[["ruv_design", exact = TRUE]])) {
+            vroom::vroom_write(as.data.frame(trxSavedMatrix(manager, ruvs$corrected)) |> tibble::rownames_to_column("GeneID"),
+                file.path(omicsStagedPublicationDir(request, "gene_qc_dir"), "ruv_normalised_log_values.tsv"))
+            return(list(saved = TRUE, ruv_design = grid$ruv_design$id))
+        }
         panels <- trxCcaPanels(grid$best, grid$grid_summary, length(grid$prelim_order))
         graphs <- omicsStagedPublicationDir(request, "publication_graphs_dir")
         trxSaveFigure(panels$grid$plot, graphs, "canonical_correlation_panels", 12, 5)
