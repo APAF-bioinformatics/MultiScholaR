@@ -12,6 +12,11 @@
 #' @noRd
 RUV_FACTOR_COUNT_SEED <- 20261118L
 
+#' The RNG kind the estimated count draws under (R's defaults since 3.6.0), whatever the caller's: fixed, and
+#' recorded with every estimate.
+#' @noRd
+RUV_FACTOR_COUNT_RNG <- c(kind = "Mersenne-Twister", normal_kind = "Inversion", sample_kind = "Rejection")
+
 #' The k rules and the control rules, by the names the analysis record uses (KIT-129 section 1e).
 #' @noRd
 RUV_K_RULES <- c("num_sv_be", "sweep_bounded", "user")
@@ -55,35 +60,49 @@ permuteRuvResidualShares <- function(dat, mod, permutations, seed) {
 #' B = 20, seed)` computes it, on the features observed in every sample: the groups are removed, and a component of
 #' the residuals is counted while at most 10% of the row-wise permutations reach its share of the residual
 #' variance. The count is `sva`'s own return value; the diagnostic's quantities are computed beside it on the same
-#' random stream and must give the same count. The caller's random stream is left as it was.
+#' random stream and must give the same count. The draws are made under a fixed RNG kind (`RUV_FACTOR_COUNT_RNG`,
+#' recorded in the result), so the count does not depend on the caller's `RNGkind()`; the caller's kind and random
+#' stream are left as they were.
 #'
-#' Refused with a condition of class `ruv_factor_count_unavailable` and one of `ruv_factor_count_needs_sva` (`sva`
-#' is not installed), `ruv_factor_count_too_few_features` (fewer than `min_features` features observed in every
-#' sample) or `ruv_factor_count_too_few_samples` (fewer than two residual components beside the groups).
+#' Refused with a condition of class `ruv_factor_count_unavailable` and one of `ruv_factor_count_group_missing`
+#' (a sample without a group), `ruv_factor_count_one_group` (fewer than two groups), `ruv_factor_count_needs_sva`
+#' (`sva` is not installed), `ruv_factor_count_too_few_features` (fewer than `min_features` features observed in
+#' every sample) or `ruv_factor_count_too_few_samples` (fewer than two residual components beside the groups).
 #'
 #' @param values Numeric feature-by-sample matrix; missing values allowed.
 #' @param groups The group of each column of `values` (the levels removed before the count).
 #' @param seed Whole number; recorded in the result.
 #' @param permutations Number of permutations (`num.sv`'s `B`; 20 in the simulations).
 #' @param min_features The fewest complete features the estimate is made on (20, the rule of simulator S4).
+#' @param technical_replicates Whether the design declares technical replicates. The count removes the groups
+#'   whatever its value (audit F1 of 2026-11-18, the user's decision pending); it is recorded as
+#'   `technical_replicates_ignored` so that a caller can warn.
 #' @return `list(k, rule = "num_sv_be", seed, permutations, p_threshold, features_used, features_total, samples,
-#'   groups, components, null_shares, sva_version)`: `components` has one row per residual component
-#'   (`component`, `observed_share`, `null_mean`, `p_value`, `p_value_monotone`, `counted`); `null_shares` is the
-#'   permutation-by-component matrix of shares.
+#'   groups, components, null_shares, sva_version, rng_kind, rng_normal_kind, rng_sample_kind, removed,
+#'   technical_replicates_ignored)`: `components` has one row per residual component (`component`,
+#'   `observed_share`, `null_mean`, `p_value`, `p_value_monotone`, `counted`); `null_shares` is the
+#'   permutation-by-component matrix of shares; `removed` names what the count removed before counting (`"groups"`).
 #' @noRd
 estimateRuvFactorCount <- function(values, groups, seed = RUV_FACTOR_COUNT_SEED, permutations = 20L,
-                                   min_features = 20L) {
+                                   min_features = 20L, technical_replicates = FALSE) {
     checkmate::assert_matrix(values, mode = "numeric", min.cols = 2L)
-    checkmate::assert_atomic_vector(groups, any.missing = FALSE, len = ncol(values))
+    checkmate::assert_atomic_vector(groups, len = ncol(values))
     seed <- checkmate::assert_int(seed, coerce = TRUE)
     permutations <- checkmate::assert_count(permutations, positive = TRUE, coerce = TRUE)
     checkmate::assert_count(min_features, positive = TRUE)
-    group <- if (is.factor(groups)) droplevels(groups) else as.character(groups)
-    n_groups <- length(unique(group))
-    if (n_groups < 2L) cli::cli_abort("{.arg groups} must name at least two groups")
+    checkmate::assert_flag(technical_replicates)
     refuse <- function(reason, class) {
         cli::cli_abort("the number of unwanted factors cannot be estimated: {reason}",
             class = c(class, "ruv_factor_count_unavailable"), call = NULL)
+    }
+    if (anyNA(groups)) {
+        refuse(sprintf("%d of %d samples have no group", sum(is.na(groups)), length(groups)), "ruv_factor_count_group_missing")
+    }
+    group <- if (is.factor(groups)) droplevels(groups) else as.character(groups)
+    n_groups <- length(unique(group))
+    if (n_groups < 2L) {
+        refuse(sprintf("the samples are in %d group; the count removes the differences between two groups or more", n_groups),
+            "ruv_factor_count_one_group")
     }
     if (!ruvFactorCountSvaAvailable()) {
         refuse("the package sva is not installed (the estimate is sva::num.sv); install it, or give the number of factors",
@@ -99,10 +118,13 @@ estimateRuvFactorCount <- function(values, groups, seed = RUV_FACTOR_COUNT_SEED,
             "ruv_factor_count_too_few_samples")
     }
     mod <- stats::model.matrix(~ group, data.frame(group = group))
-    counted <- withr::with_preserve_seed(list(
+    # Both calls seed themselves with `seed`; the kind they draw under is fixed here, and withr restores the
+    # caller's kind and stream.
+    counted <- withr::with_seed(seed, list(
         k = as.integer(sva::num.sv(dat, mod, method = "be", B = permutations, seed = seed)),
         shares = permuteRuvResidualShares(dat, mod, permutations, seed)
-    ))
+    ), .rng_kind = RUV_FACTOR_COUNT_RNG[["kind"]], .rng_normal_kind = RUV_FACTOR_COUNT_RNG[["normal_kind"]],
+        .rng_sample_kind = RUV_FACTOR_COUNT_RNG[["sample_kind"]])
     k <- counted$k
     observed <- counted$shares$observed
     null <- counted$shares$null
@@ -117,7 +139,10 @@ estimateRuvFactorCount <- function(values, groups, seed = RUV_FACTOR_COUNT_SEED,
         p_value = p_value, p_value_monotone = cummax(p_value), counted = seq_along(observed) <= k)
     list(k = k, rule = "num_sv_be", seed = seed, permutations = permutations, p_threshold = p_threshold,
         features_used = nrow(dat), features_total = nrow(values), samples = ncol(dat), groups = n_groups,
-        components = components, null_shares = null, sva_version = as.character(utils::packageVersion("sva")))
+        components = components, null_shares = null, sva_version = as.character(utils::packageVersion("sva")),
+        rng_kind = RUV_FACTOR_COUNT_RNG[["kind"]], rng_normal_kind = RUV_FACTOR_COUNT_RNG[["normal_kind"]],
+        rng_sample_kind = RUV_FACTOR_COUNT_RNG[["sample_kind"]], removed = "groups",
+        technical_replicates_ignored = technical_replicates)
 }
 
 #' The diagnostic plot of the estimated count (KIT-129 W6; user requirement of 2026-11-18)
@@ -154,6 +179,10 @@ plotRuvFactorCount <- function(estimate, max_components = 15L) {
     plot +
         ggplot2::scale_colour_manual(name = NULL, values = c(Observed = "#0072B2", `Permuted (null)` = "#D55E00")) +
         ggplot2::scale_shape_manual(name = NULL, values = c(Counted = 16, `Not counted` = 1), drop = FALSE) +
+        # Audit F14: the permutation null's key is a line without a point; the counted marks' key is in the
+        # observed series' colour, without a line through it.
+        ggplot2::guides(colour = ggplot2::guide_legend(order = 1L, override.aes = list(shape = c(16, NA))),
+            shape = ggplot2::guide_legend(order = 2L, override.aes = list(colour = "#0072B2", linetype = 0))) +
         ggplot2::scale_x_continuous(breaks = shown) +
         ggplot2::labs(x = "Component of the residuals (groups removed)", y = "Share of residual variance",
             title = "Number of unwanted factors: estimated count",
@@ -190,7 +219,8 @@ ruvFactorCountLimit <- function(samples, replicate_sets, groups, controls) {
 #'
 #' Refused with a condition of class `ruv_k_refused` and one of `ruv_k_separation_undefined`, `ruv_k_not_estimated`
 #' (the separation rule returned none) or `ruv_k_above_limit` (never reduced); the refusals of
-#' `estimateRuvFactorCount()` pass through under `"num_sv_be"`. A k of 0 is a result: no RUV for the run, with a
+#' `estimateRuvFactorCount()` pass through under `"num_sv_be"`; under `"user"` no error of the estimate stops the
+#' run (it is recorded in `k_estimate_reason`). A k of 0 is a result: no RUV for the run, with a
 #' message of class `ruv_k_zero`.
 #'
 #' @param k_rule One of `RUV_K_RULES`.
@@ -235,7 +265,8 @@ resolveRuvFactorCount <- function(k_rule, control_rule, limit, k_user = NULL, es
         k <- checkmate::assert_int(k_user, lower = 1, coerce = TRUE)
         if (!is.null(estimate_count)) {
             # The user's k stands whether or not the count can be estimated; the reason is kept with the record.
-            estimate <- tryCatch(estimate_count(), ruv_factor_count_unavailable = function(e) e)
+            # Audit F11: an error of any kind, classed as a refusal of the estimate or not.
+            estimate <- tryCatch(estimate_count(), error = \(e) e)
             if (inherits(estimate, "condition")) {
                 k_estimate_reason <- conditionMessage(estimate)
                 estimate <- NULL

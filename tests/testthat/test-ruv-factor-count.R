@@ -208,3 +208,78 @@ test_that("the resolver refuses a k the design cannot carry, reports no factor, 
     expect_match(chosen$k_estimate_reason, "sva", fixed = TRUE)
     expect_null(chosen$estimate)
 })
+
+# ---- Audit of 2026-11-18 (KIT-129, register F11, F12, F14, and the flag for F1) ----
+
+test_that("a missing group and a single group are refusals of the estimate, with their class and reason (audit F11)", {
+    fixture <- ruvCountFixture(14L, features = 60L)
+    missing_group <- fixture$group
+    missing_group[[1L]] <- NA
+    missing <- expect_error(estimateRuvFactorCount(fixture$x, missing_group), class = "ruv_factor_count_group_missing")
+    expect_s3_class(missing, "ruv_factor_count_unavailable")
+    expect_match(conditionMessage(missing), "1 of 12", fixed = TRUE)
+    single <- expect_error(estimateRuvFactorCount(fixture$x, rep("A", ncol(fixture$x))), class = "ruv_factor_count_one_group")
+    expect_s3_class(single, "ruv_factor_count_unavailable")
+    # a factor with one level in use is one group
+    expect_error(estimateRuvFactorCount(fixture$x, factor(rep("A", ncol(fixture$x)), levels = c("A", "B"))),
+        class = "ruv_factor_count_one_group")
+})
+
+test_that("a user's k stands whatever error the estimate raises; the reason is recorded (audit F11)", {
+    limit <- ruvFactorCountLimit(12L, 2L, 2L, 500L)
+    for (failure in list(\() stop("a plain error of the estimate"),
+        \() cli::cli_abort("the diagnostic disagrees", class = "ruv_factor_count_inconsistent"),
+        \() estimateRuvFactorCount(matrix(0, 30L, 4L), c("A", NA, "B", "B")))) {
+        chosen <- resolveRuvFactorCount("user", "all_features", limit, k_user = 2L, estimate_count = failure)
+        expect_identical(chosen[c("k", "k_rule", "k_estimate", "status")],
+            list(k = 2L, k_rule = "user", k_estimate = NA_integer_, status = "ok"))
+        expect_true(nzchar(chosen$k_estimate_reason))
+        expect_null(chosen$estimate)
+    }
+    # under the automatic rule the same errors are not swallowed
+    expect_error(resolveRuvFactorCount("num_sv_be", "all_features", limit, estimate_count = \() stop("a plain error of the estimate")),
+        "a plain error")
+})
+
+test_that("the estimate draws under a fixed and recorded RNG kind, whatever the caller's (audit F12)", {
+    skip_if_not_installed("sva")
+    fixture <- ruvCountFixture(2L, features = 300L, samples = 12L, factors = 2L)
+    reference <- estimateRuvFactorCount(fixture$x, fixture$group, seed = 902L)
+    expect_identical(reference[c("rng_kind", "rng_normal_kind", "rng_sample_kind")],
+        list(rng_kind = "Mersenne-Twister", rng_normal_kind = "Inversion", rng_sample_kind = "Rejection"))
+    callers_kind <- RNGkind()
+    withr::defer(do.call(RNGkind, as.list(callers_kind)))
+    suppressWarnings(RNGkind("Wichmann-Hill", "Box-Muller", "Rounding"))
+    set.seed(7L)
+    before <- .Random.seed
+    other <- estimateRuvFactorCount(fixture$x, fixture$group, seed = 902L)
+    # the caller's kind and stream are as they were
+    expect_identical(RNGkind(), c("Wichmann-Hill", "Box-Muller", "Rounding"))
+    expect_identical(.Random.seed, before)
+    expect_identical(other, reference)
+})
+
+test_that("the estimate says when the design declares technical replicates and the count removed the groups only (audit F1, flag only)", {
+    skip_if_not_installed("sva")
+    fixture <- ruvCountFixture(11L)
+    plain <- estimateRuvFactorCount(fixture$x, fixture$group)
+    expect_identical(plain[c("removed", "technical_replicates_ignored")], list(removed = "groups", technical_replicates_ignored = FALSE))
+    flagged <- estimateRuvFactorCount(fixture$x, fixture$group, technical_replicates = TRUE)
+    expect_identical(flagged[c("removed", "technical_replicates_ignored")], list(removed = "groups", technical_replicates_ignored = TRUE))
+    # what is counted does not change
+    expect_identical(flagged[c("k", "components", "null_shares")], plain[c("k", "components", "null_shares")])
+})
+
+test_that("the plot's legend: the permutation null is a line only, the counted marks in the observed colour (audit F14)", {
+    skip_if_not_installed("sva")
+    fixture <- ruvCountFixture(2L, features = 300L, samples = 12L, factors = 2L)
+    plot <- plotRuvFactorCount(estimateRuvFactorCount(fixture$x, fixture$group, seed = 902L))
+    built <- ggplot2::ggplot_build(plot)
+    colour <- built$plot$guides$get_params("colour")
+    shape <- built$plot$guides$get_params("shape")
+    # the colour key: a point on Observed only
+    expect_identical(colour$override.aes$shape, c(16, NA))
+    # the shape key: the observed series' colour, no line through the marks
+    expect_identical(shape$override.aes$colour, "#0072B2")
+    expect_identical(shape$override.aes$linetype, 0)
+})
