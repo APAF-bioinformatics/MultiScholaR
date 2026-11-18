@@ -22,5 +22,6 @@
     "s2": "C0,C1,C2,C3,C4,C5,C6,C7,C8",
     "s3": "C0,C1,C2,C3,C4,C5,C6,C7,C8",
     "s4": "C0,C1,C2,C3,C4,C5,C6,C7,C8"
-  }
+  },
+  "share": "count,sweep"
 }

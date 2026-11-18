@@ -196,6 +196,35 @@ if (installed) {
 SHIPPED_ARMS <- c("34", "35", "36", "37", "39", "40", "41")
 if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 41 call the installed package: set K124_PACKAGE=installed")
 fault_arm <- Sys.getenv("K124_FAULT", "")
+# The confirmation round's savings (declaration section 8; K124_SHARE, a comma list, unset = none): one call per data
+# set of a package function the shipped arms each make with the same arguments. "count" shares estimateRuvFactorCount
+# (L1), "sweep" findBestNegCtrlPercentageCapped (L2, S2's arms 40 and 41). The package's own function is called once;
+# a later call with identical arguments (digest of the whole argument list) returns that value, and leaves the random
+# number state as the call itself did (unchanged when the function restores it, else the state it left). The binding
+# is replaced in the installed namespace, so the kernels call it as before; the cache is emptied at the start of every
+# run (shareReset). Every shipped arm's rows must be identical with and without it (the declaration's proof).
+share_wanted <- intersect(strsplit(Sys.getenv("K124_SHARE", ""), ",", fixed = TRUE)[[1L]], c("count", "sweep"))
+if (length(share_wanted) && !installed) stop("K124_SHARE applies to the installed package only")
+shared_cache <- new.env()
+shareReset <- function() rm(list = ls(shared_cache, all.names = TRUE), envir = shared_cache)
+for (shared_name in c(count = "estimateRuvFactorCount", sweep = "findBestNegCtrlPercentageCapped")[share_wanted]) local({
+    name <- shared_name
+    real <- get(name, envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    shared <- function(...) {
+        key <- paste(name, digest::digest(list(...), algo = "sha256"))
+        hit <- shared_cache[[key]]
+        if (!is.null(hit)) {
+            if (hit$changed) assign(".Random.seed", hit$after, envir = globalenv())
+            return(hit$value)
+        }
+        before <- get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+        value <- real(...)
+        after <- get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+        assign(key, list(value = value, changed = !identical(before, after) && !is.null(after), after = after), envir = shared_cache)
+        value
+    }
+    utils::assignInNamespace(name, shared, ns = "MultiScholaR")
+})
 for (package in c("edgeR", "RUVSeq", "EDASeq", "sva")) requireNamespace(package)
 
 cell <- function(idx, id, class, n = 6L, groups = 2L, pi = 0.2, rho = 0, nf = 1L, tech = FALSE, lib_div = 1, outliers = FALSE,
@@ -335,6 +364,7 @@ NA_MEASURES <- data.frame(k = NA_integer_, n_features = NA_integer_, n_true = NA
 
 # One (cell, run): every arm on the same data. Returns list(rows, events, timing).
 oneRun <- function(cl, run) {
+    shareReset()
     seed <- 100000L + 10000L * cl$idx + run
     events <- list()
     rows <- list()
@@ -624,6 +654,7 @@ writeLines(c(
     sprintf("MultiScholaR: %s", if (installed) sprintf("installed (K124_PACKAGE=installed; built from %s, at %s), version %s",
         Sys.getenv("K124_PACKAGE_COMMIT", "unknown"), find.package("MultiScholaR"), utils::packageVersion("MultiScholaR")) else "pkgload::load_all of the work tree"),
     sprintf("K124_FAULT: %s", if (nzchar(fault_arm)) fault_arm else "unset"),
+    sprintf("K124_SHARE: %s", if (length(share_wanted)) paste(share_wanted, collapse = ",") else "unset"),
     "seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22",
     sprintf("library paths: %s", paste(.libPaths(), collapse = ":")),
     sprintf("R: %s; BLAS %s", R.version.string, extSoftVersion()[["BLAS"]]),

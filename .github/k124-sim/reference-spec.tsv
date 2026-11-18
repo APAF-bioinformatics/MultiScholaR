@@ -1,0 +1,5 @@
+file	arms	cells	last_run	sources
+s1-runs.tsv	1,2,3	C0,C1,C2,C3,C4,C5,C6,C7,C8	1000	44233215700/k124-exact-s1-*
+s2-runs.tsv	1,2	C0,C1,C2,C3,C4,C5,C6,C7,C8	1000	44233215700/k124-exact-s2-*
+s3-runs.tsv	1,2	C0,C1,C2,C3,C4,C5,C6,C7,C8	1000	44233215700/k124-exact-s3-* 44233219582/k124-exact-k128-s3-*
+s4-runs.tsv	1,2	C0,C1,C2,C3,C4,C5,C6,C7,C8	1000	44233215700/k124-exact-s4-* 44233219582/k124-exact-k128-s4-*

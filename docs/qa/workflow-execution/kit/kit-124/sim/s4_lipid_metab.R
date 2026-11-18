@@ -217,6 +217,35 @@ if (installed) {
 SHIPPED_ARMS <- c("34", "35", "36", "37", "38", "39", "40", "41")
 if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 41 call the installed package: set K124_PACKAGE=installed")
 fault_arm <- Sys.getenv("K124_FAULT", "")
+# The confirmation round's savings (declaration section 8; K124_SHARE, a comma list, unset = none): one call per data
+# set of a package function the shipped arms each make with the same arguments. "count" shares estimateRuvFactorCount
+# (L1), "sweep" findBestNegCtrlPercentageCapped (L2, S2's arms 40 and 41). The package's own function is called once;
+# a later call with identical arguments (digest of the whole argument list) returns that value, and leaves the random
+# number state as the call itself did (unchanged when the function restores it, else the state it left). The binding
+# is replaced in the installed namespace, so the kernels call it as before; the cache is emptied at the start of every
+# run (shareReset). Every shipped arm's rows must be identical with and without it (the declaration's proof).
+share_wanted <- intersect(strsplit(Sys.getenv("K124_SHARE", ""), ",", fixed = TRUE)[[1L]], c("count", "sweep"))
+if (length(share_wanted) && !installed) stop("K124_SHARE applies to the installed package only")
+shared_cache <- new.env()
+shareReset <- function() rm(list = ls(shared_cache, all.names = TRUE), envir = shared_cache)
+for (shared_name in c(count = "estimateRuvFactorCount", sweep = "findBestNegCtrlPercentageCapped")[share_wanted]) local({
+    name <- shared_name
+    real <- get(name, envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    shared <- function(...) {
+        key <- paste(name, digest::digest(list(...), algo = "sha256"))
+        hit <- shared_cache[[key]]
+        if (!is.null(hit)) {
+            if (hit$changed) assign(".Random.seed", hit$after, envir = globalenv())
+            return(hit$value)
+        }
+        before <- get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+        value <- real(...)
+        after <- get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+        assign(key, list(value = value, changed = !identical(before, after) && !is.null(after), after = after), envir = shared_cache)
+        value
+    }
+    utils::assignInNamespace(name, shared, ns = "MultiScholaR")
+})
 logger::log_threshold(logger::FATAL)
 logger::log_threshold(logger::FATAL, namespace = "MultiScholaR")
 # loaded before the workers fork, so that no run pays for it
@@ -922,6 +951,7 @@ COLUMNS <- c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", 
     "n_calls", "null_p05", "null_p01", "fdp", "power", "bias", "rmse", "seconds")
 
 runOne <- function(cell, run) {
+    shareReset()
     seed <- 100000L + 10000L * cell$index + run
     started <- proc.time()[["elapsed"]]
     data <- generateData(cell, seed)
@@ -1076,6 +1106,7 @@ main <- function() {
             Sys.getenv("K124_PACKAGE_COMMIT", "unknown"), find.package("MultiScholaR")) else "MultiScholaR (pkgload::load_all):",
             as.character(utils::packageVersion("MultiScholaR"))),
         paste("K124_FAULT:", if (nzchar(fault_arm)) fault_arm else "unset"),
+        paste("K124_SHARE:", if (length(share_wanted)) paste(share_wanted, collapse = ",") else "unset"),
         paste("packages:", paste(names(versions), versions, collapse = ", ")),
         paste("lipid/metab sharing check (identical outputs through both classes):", paste(names(checks), unlist(checks), collapse = ", ")),
         paste("started:", format(started, "%Y-%m-%d %H:%M:%S"), "finished:", format(Sys.time(), "%Y-%m-%d %H:%M:%S"))),

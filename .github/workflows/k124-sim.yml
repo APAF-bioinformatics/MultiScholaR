@@ -80,6 +80,9 @@ jobs:
       tools_ref: ${{ steps.plan.outputs.tools_ref }}
       package: ${{ steps.plan.outputs.package }}
       pairs: ${{ steps.plan.outputs.pairs }}
+      share: ${{ steps.plan.outputs.share }}
+      verify_reference: ${{ steps.plan.outputs.verify_reference }}
+      sims: ${{ steps.plan.outputs.sims }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -109,7 +112,10 @@ jobs:
               (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[0-9]{2}$"))))) and
             ((.pairs // {}) | type == "object" and
               (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[0-9]+:[0-9A-Za-z]+(,[0-9]+:[0-9A-Za-z]+)*$"))))) and
-            (((.fault // {}) | length) + ((.pairs // {}) | length) == 0 or (.package // "tree") == "installed")
+            (((.fault // {}) | length) + ((.pairs // {}) | length) == 0 or (.package // "tree") == "installed") and
+            ((.share // "") | type == "string" and test("^((count|sweep)(,(count|sweep))*)?$")) and
+            ((.share // "") == "" or (.package // "tree") == "installed") and
+            ((.verify_reference // false) | type == "boolean")
           ' "$p" > /dev/null; then
             echo "::error::params.json is not valid (label; package_commit and tools_ref as 40-digit commits; runs_core, runs_stress; cores 2 to 4; timeout_minutes 1 to 300; arms and cells per s1..s4; no cell of a class with 0 runs; chunk per s1..s4; assoc true only without arms; package tree or installed, installed with tools_ref = package_commit; fault and pairs per s1..s4, installed only)"
             exit 1
@@ -127,6 +133,9 @@ jobs:
             echo "blas=$(jq -r '.blas // "default"' "$p")"
             echo "package=$(jq -r '.package // "tree"' "$p")"
             echo "pairs=$(jq -c '.pairs // {}' "$p")"
+            echo "share=$(jq -r '.share // ""' "$p")"
+            echo "verify_reference=$(jq -r '.verify_reference // false' "$p")"
+            echo "sims=$(jq -r '.cells | keys | join(" ")' "$p")"
             for key in label package_commit tools_ref cores timeout_minutes; do echo "$key=$(jq -r ".$key" "$p")"; done
             # the library takes about 15 minutes; the job's own limit stays under the runner's 6 hours
             echo "job_timeout=$(jq -r '[.timeout_minutes + 45, 355] | min' "$p")"
@@ -162,6 +171,7 @@ jobs:
       LABEL: ${{ needs.plan.outputs.label }}
       ARMS: ${{ matrix.arms }}
       FAULT: ${{ matrix.fault }}
+      SHARE: ${{ needs.plan.outputs.share }}
       PACKAGE: ${{ needs.plan.outputs.package }}
       TAG: ${{ matrix.tag }}
       FIRST: ${{ matrix.first }}
@@ -269,6 +279,7 @@ jobs:
           if [ "$ASSOC" = "true" ]; then export K129_ASSOC=1; fi
           if [ "$PACKAGE" = "installed" ]; then export K124_PACKAGE=installed K124_PACKAGE_COMMIT="$PACKAGE_COMMIT"; fi
           if [ -n "$FAULT" ]; then export K124_FAULT="$FAULT"; fi
+          if [ -n "$SHARE" ]; then export K124_SHARE="$SHARE"; fi
           # a later run range: the first run is the sixth argument of S1, S3 and S4 and K124_FIRST_RUN for S2
           first=()
           if [ "$FIRST" -gt 1 ]; then
@@ -353,3 +364,98 @@ jobs:
           path: ${{ runner.temp }}/compare
           if-no-files-found: error
           retention-days: 30
+
+  gate:
+    name: gate (arms 1 and 2, and classic legacy, against the committed reference rows)
+    needs: [plan, sim]
+    if: always() && needs.plan.result == 'success' && needs.plan.outputs.package == 'installed'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    env:
+      LABEL: ${{ needs.plan.outputs.label }}
+      SIMS: ${{ needs.plan.outputs.sims }}
+      REF: docs/qa/workflow-execution/kit/kit-124/scored/confirm-reference
+    steps:
+      - name: The gate scripts and the committed reference rows (this push)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: The reference's source artifacts, exact-gha (only with verify_reference)
+        if: needs.plan.outputs.verify_reference == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 44233215700
+          github-token: ${{ github.token }}
+          pattern: k124-exact-s*
+          path: ${{ runner.temp }}/sources/44233215700
+      - name: The reference's source artifacts, exact-k128-gha (only with verify_reference)
+        if: needs.plan.outputs.verify_reference == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 44233219582
+          github-token: ${{ github.token }}
+          pattern: k124-exact-k128-s*
+          path: ${{ runner.temp }}/sources/44233219582
+      - name: The committed reference is the source artifacts' rows (only with verify_reference)
+        if: needs.plan.outputs.verify_reference == 'true'
+        run: |
+          # every source artifact listed in sources.tsv must be there, its table the one recorded, and the rows
+          # re-extracted from them byte-identical to the committed copy (the laptop rows cannot be re-downloaded: their
+          # recorded sha256 stands)
+          src="$RUNNER_TEMP/sources"
+          tail -n +2 "$REF/sources.tsv" | while IFS=$'\t' read -r file run artifact sha rows; do
+            [ "$run" = laptop ] && continue
+            table="$src/$run/$artifact/$file"
+            if [ ! -f "$table" ]; then echo "::error::reference source missing: run $run, artifact $artifact ($file); expired or not downloaded"; exit 1; fi
+            if [ "$(sha256sum "$table" | cut -d' ' -f1)" != "$sha" ]; then echo "::error::reference source changed: $run $artifact"; exit 1; fi
+          done
+          .github/k124-sim/reference-build.sh "$src" "$RUNNER_TEMP/rebuilt"
+          for f in s1-runs.tsv s2-runs.tsv s3-runs.tsv s4-runs.tsv; do
+            if ! cmp -s <(gzip -dc "$REF/$f.gz") "$RUNNER_TEMP/rebuilt/$f"; then echo "::error::the committed $f.gz is not the source artifacts' rows"; exit 1; fi
+          done
+          (cd "$RUNNER_TEMP/rebuilt" && grep -v laptop-extra "$GITHUB_WORKSPACE/$REF/tables.sha256" | sha256sum -c -)
+          gzip -dc "$REF/s4-runs.laptop-extra.tsv.gz" | sha256sum | sed 's/-$/s4-runs.laptop-extra.tsv/' | diff - <(grep laptop-extra "$REF/tables.sha256") \
+            && echo "the committed reference equals the source artifacts' rows; the laptop rows equal their recorded sha256"
+      - name: The fixed rule from package_commit
+        env:
+          PACKAGE_COMMIT: ${{ needs.plan.outputs.package_commit }}
+        run: |
+          git fetch --quiet --no-tags --depth 1 origin "$PACKAGE_COMMIT"
+          git show "$PACKAGE_COMMIT:packaging/verify/compare-results.R" > "$RUNNER_TEMP/compare-results.R"
+      - name: R 4.6.1 (Posit r-builds; base R only)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-4.6.1_1_amd64.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb" > /dev/null
+          echo "/opt/R/4.6.1/bin" >> "$GITHUB_PATH"
+      - name: The run's result tables
+        uses: actions/download-artifact@v4
+        with:
+          pattern: k124-${{ needs.plan.outputs.label }}-s*
+          path: ${{ runner.temp }}/tables
+      - name: Gate and legacy under the fixed rule
+        run: |
+          mkdir -p "$RUNNER_TEMP/gate"
+          status=0
+          for sim in $SIMS; do
+            Rscript --vanilla .github/k124-sim/gate.R "$sim" "$REF" "$RUNNER_TEMP/tables" "$LABEL" "$RUNNER_TEMP/compare-results.R" "$RUNNER_TEMP/gate" || status=1
+          done
+          cat "$RUNNER_TEMP"/gate/*-summary.tsv | awk -F'\t' 'NR == 1 || $5 != "agree"' | head -n 60
+          echo "gate status: $status" > "$RUNNER_TEMP/gate/status.txt"
+          exit 0
+      - name: Upload the gate tables
+        uses: actions/upload-artifact@v4
+        with:
+          name: k124-${{ needs.plan.outputs.label }}-gate
+          path: ${{ runner.temp }}/gate
+          if-no-files-found: error
+          retention-days: 30
+      - name: The gate passed (after the upload, so that a failure is kept)
+        run: |
+          if ! grep -q "gate status: 0" "$RUNNER_TEMP/gate/status.txt"; then
+            echo "::error::a gated cell failed, or a reference row is missing (see the gate tables)"
+            exit 1
+          fi

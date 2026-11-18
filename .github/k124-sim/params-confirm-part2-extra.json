@@ -14,5 +14,6 @@
   "cells": {
     "s3": "S3",
     "s4": "S1,S3,S8"
-  }
+  },
+  "share": "count,sweep"
 }

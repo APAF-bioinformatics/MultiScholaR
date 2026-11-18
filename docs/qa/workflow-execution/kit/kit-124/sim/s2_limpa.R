@@ -237,6 +237,35 @@ if (installed) {
 SHIPPED_ARMS <- c(34L, 35L, 36L, 37L, 39L, 40L, 41L)
 if (!installed && any(SHIPPED_ARMS %in% arms_wanted)) stop("arms 34 to 41 call the installed package: set K124_PACKAGE=installed")
 fault_arm <- suppressWarnings(as.integer(Sys.getenv("K124_FAULT", "")))
+# The confirmation round's savings (declaration section 8; K124_SHARE, a comma list, unset = none): one call per data
+# set of a package function the shipped arms each make with the same arguments. "count" shares estimateRuvFactorCount
+# (L1), "sweep" findBestNegCtrlPercentageCapped (L2, S2's arms 40 and 41). The package's own function is called once;
+# a later call with identical arguments (digest of the whole argument list) returns that value, and leaves the random
+# number state as the call itself did (unchanged when the function restores it, else the state it left). The binding
+# is replaced in the installed namespace, so the kernels call it as before; the cache is emptied at the start of every
+# run (shareReset). Every shipped arm's rows must be identical with and without it (the declaration's proof).
+share_wanted <- intersect(strsplit(Sys.getenv("K124_SHARE", ""), ",", fixed = TRUE)[[1L]], c("count", "sweep"))
+if (length(share_wanted) && !installed) stop("K124_SHARE applies to the installed package only")
+shared_cache <- new.env()
+shareReset <- function() rm(list = ls(shared_cache, all.names = TRUE), envir = shared_cache)
+for (shared_name in c(count = "estimateRuvFactorCount", sweep = "findBestNegCtrlPercentageCapped")[share_wanted]) local({
+    name <- shared_name
+    real <- get(name, envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    shared <- function(...) {
+        key <- paste(name, digest::digest(list(...), algo = "sha256"))
+        hit <- shared_cache[[key]]
+        if (!is.null(hit)) {
+            if (hit$changed) assign(".Random.seed", hit$after, envir = globalenv())
+            return(hit$value)
+        }
+        before <- get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+        value <- real(...)
+        after <- get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+        assign(key, list(value = value, changed = !identical(before, after) && !is.null(after), after = after), envir = shared_cache)
+        value
+    }
+    utils::assignInNamespace(name, shared, ns = "MultiScholaR")
+})
 logger::log_threshold(logger::FATAL)
 # Namespaces are loaded before the workers fork (their load time is then in no run's seconds). The DPC engine
 # itself is first called inside a worker: its thread pool must not exist in the parent of a fork.
@@ -489,6 +518,7 @@ dataRow <- function(cell, run, seed, values) {
 }
 
 runOne <- function(cell, run) {
+    shareReset()
     seed <- 100000L + 10000L * cell$index + run
     started <- clock()
     shared <- list()
@@ -764,6 +794,7 @@ writeMeta <- function(path, started, finished = NULL, cells_run = character()) {
         paste("MultiScholaR:", if (installed) paste0("installed (K124_PACKAGE=installed; built from ",
             Sys.getenv("K124_PACKAGE_COMMIT", "unknown"), ", at ", find.package("MultiScholaR"), ")") else "pkgload::load_all of the work tree"),
         paste("K124_FAULT:", if (is.na(fault_arm)) "unset" else fault_arm),
+        paste("K124_SHARE:", if (length(share_wanted)) paste(share_wanted, collapse = ",") else "unset"),
         paste("K124_ARMS:", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
         paste("working directory:", getwd()),
         paste("R_LIBS:", Sys.getenv("R_LIBS")),

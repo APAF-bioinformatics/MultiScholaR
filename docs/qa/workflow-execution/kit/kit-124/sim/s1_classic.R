@@ -281,6 +281,35 @@ arms_of <- function(cell) {
 shipped_arms <- 34:41
 if (!installed && any(shipped_arms %in% arms_wanted)) stop("arms 34 to 41 call the installed package: set K124_PACKAGE=installed")
 fault_arm <- suppressWarnings(as.integer(Sys.getenv("K124_FAULT", "")))
+# The confirmation round's savings (declaration section 8; K124_SHARE, a comma list, unset = none): one call per data
+# set of a package function the shipped arms each make with the same arguments. "count" shares estimateRuvFactorCount
+# (L1), "sweep" findBestNegCtrlPercentageCapped (L2, S2's arms 40 and 41). The package's own function is called once;
+# a later call with identical arguments (digest of the whole argument list) returns that value, and leaves the random
+# number state as the call itself did (unchanged when the function restores it, else the state it left). The binding
+# is replaced in the installed namespace, so the kernels call it as before; the cache is emptied at the start of every
+# run (shareReset). Every shipped arm's rows must be identical with and without it (the declaration's proof).
+share_wanted <- intersect(strsplit(Sys.getenv("K124_SHARE", ""), ",", fixed = TRUE)[[1L]], c("count", "sweep"))
+if (length(share_wanted) && !installed) stop("K124_SHARE applies to the installed package only")
+shared_cache <- new.env()
+shareReset <- function() rm(list = ls(shared_cache, all.names = TRUE), envir = shared_cache)
+for (shared_name in c(count = "estimateRuvFactorCount", sweep = "findBestNegCtrlPercentageCapped")[share_wanted]) local({
+    name <- shared_name
+    real <- get(name, envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    shared <- function(...) {
+        key <- paste(name, digest::digest(list(...), algo = "sha256"))
+        hit <- shared_cache[[key]]
+        if (!is.null(hit)) {
+            if (hit$changed) assign(".Random.seed", hit$after, envir = globalenv())
+            return(hit$value)
+        }
+        before <- get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+        value <- real(...)
+        after <- get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+        assign(key, list(value = value, changed = !identical(before, after) && !is.null(after), after = after), envir = shared_cache)
+        value
+    }
+    utils::assignInNamespace(name, shared, ns = "MultiScholaR")
+})
 # the exactness round: the arms whose test differs from the kernel's (exact standard error, settings applied)
 own_test <- list(`25` = c(TRUE, FALSE), `26` = c(FALSE, TRUE), `27` = c(FALSE, TRUE), `28` = c(FALSE, TRUE),
     `32` = c(TRUE, TRUE), `33` = c(TRUE, TRUE))
@@ -485,6 +514,7 @@ score <- function(tab, sim, subset) {
 
 # ---- one data set, every arm --------------------------------------------------------------------------------------
 one <- function(cell, run) {
+    shareReset()
     p <- cell_setting(cell)
     seed <- 100000L + 10000L * cell_index(cell) + run
     stream <- function(arm) seed * 100L + arm
@@ -810,6 +840,7 @@ meta(if (installed) paste0("MultiScholaR (installed, K124_PACKAGE=installed; bui
     ", at ", find.package("MultiScholaR"), "): ") else "MultiScholaR (pkgload::load_all of the work tree): ",
     as.character(utils::packageVersion("MultiScholaR")))
 meta("K124_FAULT: ", if (is.na(fault_arm)) "unset" else fault_arm)
+meta("K124_SHARE: ", if (length(share_wanted)) paste(share_wanted, collapse = ",") else "unset")
 meta("seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); ",
     "arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs ", first_run, " onward")
 meta("K124_ARMS: ", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ","))
