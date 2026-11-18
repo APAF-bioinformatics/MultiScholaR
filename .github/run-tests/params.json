@@ -1,5 +1,5 @@
 {
-  "label": "KIT-129 second pass items 1 to 5 (technical-replicate design, first-pass nulls, M31, M32, the all-missing feature): kit-129-integration 45fa1e81 against a559f511 with sva; prove-arms techrep and firstpass; failing-first; check on both",
+  "label": "KIT-129 second pass items 1-5: 45fa1e81 against a559f511 with sva; prove-arms techrep, firstpass; failing-first; check on both",
   "package_commit": "45fa1e81832b1318b24e33a7b5a79d474c7aa5be",
   "base_commit": "a559f511802533e31a5c9c410015b4c7ce7cda20",
   "tools_ref": "",
