@@ -492,12 +492,16 @@ applyOmicsRuvFactorsToDaInput <- function(expr_matrix, design_matrix, formula_st
             rank_all <- qr(x_seen)$rank
             all(vapply(colnames(w), function(name) qr(x_seen[, colnames(x_seen) != name, drop = FALSE])$rank < rank_all, logical(1L)))
         }, logical(1L))
-        keep <- unname(estimable[pattern])
+        # Matched by name: a feature with no value at all has the empty pattern, which `[` never matches (KIT-127 found
+        # and left: it was kept as an NA row and the fit failed the assay); it estimates nothing and is not tested.
+        keep <- unname(estimable[match(pattern, names(estimable))])
         not_estimable <- rownames(expr_matrix)[!keep]
+        no_value <- sum(!nzchar(pattern))
         expr_matrix <- expr_matrix[keep, , drop = FALSE]
         if (length(not_estimable)) {
             rlang::warn(sprintf(paste("assay '%s': %d feature(s) have too few values to estimate the RUV factors' coefficients",
-                "and are not tested"), assay_name, length(not_estimable)), class = "omics_ruv_features_not_tested")
+                "and are not tested%s"), assay_name, length(not_estimable),
+                if (no_value) sprintf(" (%d with no value in any sample)", no_value) else ""), class = "omics_ruv_features_not_tested")
         }
     }
     list(expr_matrix = expr_matrix, design_matrix = design_matrix, formula_string = formula_string, not_estimable = not_estimable,

@@ -918,3 +918,31 @@ test_that("k must be below the number of controls observed in every sample (M32)
     # k = 4 is computed
     expect_identical(unname(vapply(run(4L, "user")$factors, `[[`, 0L, "k")), c(4L, 4L))
 })
+
+test_that("a feature with no value in any sample is not tested and is reported, the assay is analysed (KIT-127 found and left)", {
+    skip_if_not_installed("ruv")
+    fixture <- kit127Fixture()
+    for (omic in c("lipid", "metab")) {
+        mats <- lapply(fixture$assays, `[[`, "y")
+        empty <- matrix(NA_real_, 1L, ncol(mats$pos), dimnames = list("pos_empty", colnames(mats$pos)))
+        mats$pos <- rbind(mats$pos, empty)
+        object <- if (identical(omic, "lipid")) kit127Lipid(mats, fixture$design) else kit127Metab(mats, fixture$design)
+        run <- kit127Quiet(runOmicsRuvFactors(object, "groups_all_features", K127_K, "user"))
+        warned <- NULL
+        da <- withCallingHandlers(kit127Hush((if (identical(omic, "lipid")) runLipidsDA else runMetabolitesDA)(object,
+            fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors), "omics_ruv_features_not_tested"),
+            omics_ruv_features_not_tested = function(w) {
+                warned <<- c(warned, conditionMessage(w))
+                invokeRestart("muffleWarning")
+            })
+        long <- if (identical(omic, "lipid")) da$da_lipids_long else da$da_metabolites_long
+        id <- if (identical(omic, "lipid")) "lipid_id" else "metabolite_id"
+        # the assay is analysed (before: it failed with "prior.weights contain NA values")
+        expect_null(da$failed_assays)
+        expect_true("pos_empty" %in% da$ruv_features_not_tested$pos$not_estimable, info = omic)
+        expect_false("pos_empty" %in% long[[id]], info = omic)
+        expect_true(any(grepl("assay 'pos'.*1 with no value in any sample", warned)), info = omic)
+        # the other features are tested as without it (arm 7's computation)
+        expectKit127Table(long, id, "pos", simArm(fixture, "pos", K127_K$pos)$table)
+    }
+})
