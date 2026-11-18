@@ -93,6 +93,7 @@
 #   C5    core    2       6                    20%      50%   1 (3)               0.3  25%
 #   C6    core    2       8 (4 units x 2)      20%      50%   1 (3)               0    25%      unit sd 0.3
 #   C7    core    3       6                    20%      50%   1 (3)               0    25%      B - A scored
+#   C8    core    2       8 (4 units x 2)      20%      50%   0                   -    25%      unit sd 0.3; index 8
 #   S1    stress  2       3                    20%      50%   1 (3)               0    25%
 #   S2    stress  2       6                    40%      50%   1 (3)               0    25%
 #   S3    stress  2       6                    20%      50%   1 (3)               0.6  25%
@@ -142,8 +143,29 @@
 # Arm 24 (user, 2026-11-18): arm 5 takes the sweep's k, which the sweep computed on its own winning control set; arm
 # 24 applies arm 22's rule to arm 5's controls (all proteins outside the 25% most significant of arm 1), so it
 # differs from arm 5 in k only, and does not read the sweep.
-# K124_ARMS (environment; unset = the arms above, 22 to 24 not run): a comma list of the arms to run, of those the
-# cell has and 22, 23, 24. Arm 1 must be in it (arms 5, 6, 23, 24 and every refusal read its result). Without any of arms
+# The exactness round (user, 2026-11-18, decision M16; kit-124/exact-round-declaration.md), on request (K124_ARMS).
+# Each arm is arm 7 with the named change and nothing else, on arm 7's random stream. Cell C8 is C6 with no unwanted
+# factor (data generation as C6 with factors = 0), run when a cell argument names it; reported, judges no design.
+#   25  arm 7 with the comparison's standard error exact per protein. The route's contrasts.fit forms it from one
+#       correlation matrix for all proteins, which is approximate when the model carries W, because dpcDE fits with
+#       per-observation weights (the quantified matrix has no missing values). Here the model matrix is
+#       reparameterised so that the comparison is its first coefficient (limma::contrastAsCoef) and the route's own
+#       dpcDE and convertDpcDAToStandardFormat are called with it and the contrast "B_vs_A=comparison": for a
+#       contrast that is one coefficient contrasts.fit is exact.
+#   29  C6 and C8: arm 7 with E estimated after the biological units are removed, not only the groups:
+#       sva::num.sv(quantified matrix, model.matrix(~ tech_rep_group), method = "be", B = 20, E's seed). On this
+#       route arm 7 already takes the declared technical replicates as RUV-III's replicate structure (arm 16 repeats
+#       it), so this is also arm 16's variant; arm numbers 30 and 33 of S1 and S4 are not formed here.
+#   31  arm 7 with E from 200 permutations: sva::num.sv(..., B = 200, E's seed), the group model.
+#   32  arm 7 with all of them: arm 25's standard error, B = 200, and in C6 and C8 the units removed.
+# Arm numbers 26 to 28 (S1: the test applies its trend and robust settings) are not formed: the dpcDE branch has no
+# TREAT step and its eBayes(trend, robust) p-values are the ones reported. With E = 0 arms 29 and 31 are arm 1's
+# result, as arm 7; arms 25 and 32 are the no-RUV fit with the reparameterised matrix (equal to arm 1's up to
+# rounding: without W the model's coefficients are uncorrelated). A refusal is scored as arm 1's result, as before.
+# K124_EXACT_CHECK=1 (environment; a check, not a result): per data set the reparameterised no-RUV fit must give
+# arm 1's estimates and p-values to 1e-8; otherwise arm 25 crashes with the reason.
+# K124_ARMS (environment; unset = the arms above, 22 to 32 not run): a comma list of the arms to run, of those the
+# cell has and 22 to 25, 29 (C6, C8), 31, 32. Arm 1 must be in it (arms 5, 6, 23, 24 and every refusal read its result). Without any of arms
 # 3 to 6 the route's sweep is not run (sweep_status "not run" in s2-data.tsv). The data, the control sets, E and every
 # stream are as without it, so an arm's rows are the same whichever other arms run.
 # Arms 5 to 11, 15 and 16 use computeRuvCovariates and the route's test. Arms 12 to 14 run on the quantified
@@ -240,7 +262,8 @@ cellTable <- function() {
         S4 = list(factors = 3L, strength = 1), S5 = list(missing = 0), S6 = list(missing = 0.50),
         S7 = list(tails = "t3"), S8 = list(batch = TRUE), S9 = list(up = 0.8), S10 = list(abundance = 0.7),
         S11 = list(n = 3L, rho = 0.3), S12 = list(n = 3L, factors = 3L, strength = 1),
-        S13 = list(n = 3L, factors = 0L), S14 = list(factors = 0L, missing = 0.50)
+        S13 = list(n = 3L, factors = 0L), S14 = list(factors = 0L, missing = 0.50),
+        C8 = list(n = 8L, units = 4L, factors = 0L)
     )
     cells <- lapply(names(changes), \(name) {
         core <- startsWith(name, "C")
@@ -256,7 +279,7 @@ armsFor <- function(cell) {
     if (cell$effects == 0) arms <- setdiff(arms, 9L)
     if (cell$units > 0L) arms <- c(arms, 15L, 16L)
     if (cell$batch) arms <- c(arms, 17L)
-    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L, 24L), arms_wanted)
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L, 24L, 25L, if (cell$units > 0L) 29L, 31L, 32L), arms_wanted)
     arms
 }
 
@@ -358,7 +381,7 @@ packageQ <- function(p) {
 
 # The route's test: the dpcDE branch of differentialAbundanceAnalysisHelper. `covariates` (samples in rows)
 # join the design table and the formula, as the W columns do there.
-routeTest <- function(elist, design, covariates = NULL) {
+routeTest <- function(elist, design, covariates = NULL, exact = FALSE) {
     formula_used <- FORMULA
     if (!is.null(covariates)) {
         design <- cbind(design[setdiff(names(design), colnames(covariates))],
@@ -369,10 +392,17 @@ routeTest <- function(elist, design, covariates = NULL) {
     samples <- rownames(model)
     replicate <- resolveProtTechnicalReplicateBlock(design[samples, , drop = FALSE], "group", "tech_rep_group")
     block <- if (isTRUE(replicate$technical)) replicate$block else NULL
+    contrast_string <- CONTRAST
+    if (exact) {                                          # the exactness round: the comparison as the first coefficient
+        contrast <- limma::makeContrasts(contrasts = sub("^.*=", "", CONTRAST), levels = colnames(model))
+        model <- limma::contrastAsCoef(model, contrast)$design
+        dimnames(model) <- list(samples, c("comparison", paste0("Q", seq_len(ncol(model))[-1L])))
+        contrast_string <- sub("=.*$", "=comparison", CONTRAST)
+    }
     fit <- NULL
     result <- NULL
     quietly(fit <- limpa::dpcDE(elist[, samples], model, plot = FALSE, block = block))
-    quietly(result <- convertDpcDAToStandardFormat(dpc_fit = fit, contrast_strings = CONTRAST,
+    quietly(result <- convertDpcDAToStandardFormat(dpc_fit = fit, contrast_strings = contrast_string,
         design_matrix = model, eBayes_trend = TRUE, eBayes_robust = TRUE))
     table <- result$results[[1L]]
     data.frame(id = rownames(table), logFC = table$logFC, p = table$raw_pvalue, q = table$fdr_qvalue,
@@ -504,9 +534,33 @@ runOne <- function(cell, run) {
         shared$replicate_structure <<- value$replicate_structure
         value
     }
-    inModel <- \(k, controls) {
+    inModel <- \(k, controls, exact = FALSE) {
         factors <- factorsOf(k, controls)
-        list(k = factors$k, table = routeTest(elist, design, factors$W))
+        list(k = factors$k, table = routeTest(elist, design, factors$W, exact = exact))
+    }
+    # the exactness round: arm 7 with the changes named, on arm 7's stream (E first: num.sv sets a seed)
+    counts <- list()
+    seventh <- NULL
+    variant <- \(exact = FALSE, B = 20L, units = FALSE) \() {
+        k <- k_e
+        key <- paste(B, units)
+        if (B != 20L || units) {
+            if (is.null(counts[[key]])) {
+                model <- if (units) stats::model.matrix(~ tech_rep_group, design) else stats::model.matrix(~ group, design)
+                quietly(k <- sva::num.sv(elist$E, model, method = "be", B = B, seed = 100L * seed + 99L))
+                counts[[key]] <<- as.integer(k)
+            }
+            k <- counts[[key]]
+        }
+        # only E changed and it equals arm 7's k: arm 7's result, not computed again
+        if (!exact && !is.null(seventh) && isTRUE(seventh$k == k)) return(seventh)
+        set.seed(100L * seed + 7L)
+        if (exact && identical(Sys.getenv("K124_EXACT_CHECK"), "1")) {
+            none <- routeTest(elist, design, exact = TRUE)
+            gap <- max(abs(none$logFC - first$logFC), abs(none$p - first$p))
+            if (!identical(none$id, first$id) || !is.finite(gap) || gap > 1e-8) stop(sprintf("the reparameterised no-RUV fit is not arm 1's: differs by up to %.3g", gap))
+        }
+        if (k > 0L) inModel(k, all_controls, exact = exact) else if (exact) list(k = 0L, table = routeTest(elist, design, exact = TRUE)) else noRuv()
     }
     subtracted <- \(k, controls) {
         factors <- factorsOf(k, controls)
@@ -569,7 +623,9 @@ runOne <- function(cell, run) {
         `24` = \() {
             wide <- rank(first$p, ties.method = "first") > 0.25 * nrow(first)
             inModel(separationK(wide), wide)
-        }
+        },
+        `25` = variant(exact = TRUE), `29` = variant(units = TRUE), `31` = variant(B = 200L),
+        `32` = variant(exact = TRUE, B = 200L, units = cell$units > 0L)
     )
 
     arms <- armsFor(cell)
@@ -589,6 +645,7 @@ runOne <- function(cell, run) {
             rows[[i]] <- runRow(cell, run, seed, arm, status, NA, if (refused) first_measures, seconds)
             next
         }
+        if (arm == 7L) seventh <- outcome
         measures <- measure(outcome$table, truth)
         if (arm == 1L) {
             stopifnot(identical(outcome$table$id, ids))
@@ -638,8 +695,8 @@ writeMeta <- function(path, started, finished = NULL, cells_run = character()) {
         paste("DPC engine:", QUANT$engine, "(RAYON_NUM_THREADS set to 1 by the package inside the method)"),
         paste("cores:", cores),
         paste("runs per core cell:", runs_core, "; runs per stress cell:", runs_stress),
-        "seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);",
-        "  data set.seed(seed); arm a set.seed(100 * seed + a); sweep on arm 3's stream; E seed 100 * seed + 99",
+        "seed rule: seed = 100000 + 10000 * cell index + run (C0..C8 = 0..8, S1..S14 = 11..24);",
+        "  data set.seed(seed); arm a set.seed(100 * seed + a) (arms 25 to 32: arm 7's stream); sweep on arm 3's stream; E seed 100 * seed + 99",
         paste("cells completed in this invocation:", paste(cells_run, collapse = ",")),
         paste("started:", format(started, "%Y-%m-%d %H:%M:%S %Z")),
         paste("finished:", if (is.null(finished)) "not yet" else format(finished, "%Y-%m-%d %H:%M:%S %Z"))
@@ -652,6 +709,8 @@ cells <- cellTable()
 if (!is.null(cells_wanted)) {
     stopifnot(all(cells_wanted %in% names(cells)))
     cells <- cells[cells_wanted]
+} else {
+    cells <- cells[setdiff(names(cells), "C8")]           # the exactness round's cell runs on request only
 }
 cell_dir <- file.path(out_dir, "cells")
 dir.create(cell_dir, recursive = TRUE, showWarnings = FALSE)

@@ -48,6 +48,9 @@
 #   Void: a (cell, subset) where arm 2 (the true factor) fails rule 1 or 2 is void; it is reported and judges no
 #   design. A cell where arm 2 is only inconclusive on rule 1 or 2 is flagged (arm2_rule12), not void.
 #   Core cells: C0 to C7, except the cells revision 1.3 makes "reported, not core": S3 C6 and S4 C6.
+#   C8 (the exactness round, 2026-11-18, kit-124/exact-round-declaration.md: C6 with no unwanted factor) is a
+#   no-factor cell (rule 5, not rule 4) and "reported, not core" in every simulator: it judges no design. These are
+#   the only changes against the version on performance-v2 (sha256 c5c6275f...): three constants below.
 #   Design verdict (per simulator, arm and subset): over the core cells that are not void and where the arm runs:
 #   fail if a judged cell fails; pass if every judged cell passes and no core cell is missing; not run if no core
 #   cell has the arm; else inconclusive. Stress cells never fail a design: their failing rules are listed as
@@ -98,9 +101,9 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 z975 <- stats::qnorm(0.975)
-cells_all <- c(paste0("C", 0:7), paste0("S", 1:14))
-no_factor_cells <- c("C3", "S13", "S14")
-reported_not_core <- list(S3 = "C6", S4 = "C6")
+cells_all <- c(paste0("C", 0:8), paste0("S", 1:14))
+no_factor_cells <- c("C3", "C8", "S13", "S14")
+reported_not_core <- list(S1 = "C8", S2 = "C8", S3 = c("C6", "C8"), S4 = c("C6", "C8"))
 comparator_arms <- c("12", "13", "14", "14E")
 ruv_designs <- c(as.character(c(3:13, 15, 16)), "R", "Qs", "Qm")
 omic_label <- c(S1 = "proteomics, classic route", S2 = "proteomics, DIA_LIMPA route",

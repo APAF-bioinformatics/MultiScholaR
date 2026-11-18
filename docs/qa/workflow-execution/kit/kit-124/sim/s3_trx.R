@@ -88,6 +88,9 @@
 #   19  S12 stress 3   2      0.2  0   3
 #   20  S13 stress 3   2      0.2  0   0
 #   21  S14 stress 6   2      0.2  0   0   no factor, low counts: lib_div = 10 (replaces "no factor with 50% missing")
+#   22  C8  core   8   2      0.2  0   0   the exactness round (user, 2026-11-18, decision M16): C6 with no unwanted
+#                                          factor (technical duplicates, data generation as C6 with nf = 0); run when
+#                                          the cells argument names it; reported, judges no design
 #
 # ARMS (label; random stream number in brackets where it differs)
 #   1   no RUV: ~ 0 + group.
@@ -117,8 +120,19 @@
 #   Arms 22 and 23 (user, 2026-11-18; 17 to 21 are taken as arm or stream numbers in one simulator or another) cross the
 #   two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only. Arm 22's k is never 0 (nor 24's); arm 23
 #   with E = 0 is no RUV, as arms 7 to 10.
-#   K124_ARMS (environment; unset = the arms above, 22 to 24 not run): a comma list of the arm labels to run, of those
-#   the cell has and 22, 23, 24. Arm 1 must be in it (refusals and E = 0 carry its result). An arm that reads another arm's
+#   31  on request (K124_ARMS), the exactness round (user, 2026-11-18, decision M16; kit-124/exact-round-declaration.md):
+#       arm 7 with E from 200 permutations, sva::num.sv(log_cpm_tmm, model.matrix(~ group), method = "be", B = 200,
+#       seed = the run's seed), on arm 7's random stream; E = 0 is arm 1's result, as arm 7.
+#       The round's other changes have no arm here. Exact standard errors of the comparison (S1, S2, S4: arm 25): the
+#       package's test is edgeR's quasi-likelihood F-test of the contrast (trxDaApply: glmQLFTest(fit, contrast = )),
+#       which refits the null model per gene for the contrast itself; there is no step that forms a contrast's standard
+#       error from the coefficients' common correlation, so nothing is approximate. The test applying its settings (S1:
+#       arms 26 to 28): no TREAT step in this route. The count on technical-replicate designs (S1, S2, S4: arms 29, 30):
+#       on this tree (kit-128) the libraries of a unit are summed before E (see C6 above), so E's model already is one
+#       sample per biological unit and there is nothing to remove; C6 and C8 are run here with arms 1, 2, 7 and 31.
+#       All together (arm 32 elsewhere) would be arm 31 here and is not run under a second number.
+#   K124_ARMS (environment; unset = the arms above, 22 to 31 not run): a comma list of the arm labels to run, of those
+#   the cell has and 22, 23, 24, 31. Arm 1 must be in it (refusals and E = 0 carry its result). An arm that reads another arm's
 #   fit (5 and 6 the grid of 3; 10 the fit of 8; 16 of 15) is refused when that arm is left out. The data, E and every
 #   stream are as without it, so an arm's rows are the same whichever other arms run.
 #   Arms 5 to 11, R, 14, 15 and 16 estimate on upper-quartile normalised counts (EDASeq::betweenLaneNormalization(which =
@@ -168,7 +182,8 @@ CELLS <- list(
     cell(11L, "S4", "stress", nf = 3L), cell(12L, "S5", "stress", lib_div = 10), cell(14L, "S7", "stress", outliers = TRUE),
     cell(15L, "S8", "stress", batch = TRUE), cell(16L, "S9", "stress", up = 0.8), cell(17L, "S10", "stress", abund = 0.7),
     cell(18L, "S11", "stress", n = 3L, rho = 0.3), cell(19L, "S12", "stress", n = 3L, nf = 3L),
-    cell(20L, "S13", "stress", n = 3L, nf = 0L), cell(21L, "S14", "stress", nf = 0L, lib_div = 10))
+    cell(20L, "S13", "stress", n = 3L, nf = 0L), cell(21L, "S14", "stress", nf = 0L, lib_div = 10),
+    cell(22L, "C8", "core", n = 8L, nf = 0L, tech = TRUE))
 names(CELLS) <- vapply(CELLS, `[[`, "", "id")
 
 G <- 5000L
@@ -176,7 +191,8 @@ TECH_DISPERSION <- 0.01
 RATIOS <- list(`1` = 3, `3` = c(3, 1.5, 0.75))
 ENTRY <- "B_vs_A=groupB-groupA"
 ARM_STREAM <- c(`1` = 1L, `2` = 2L, `3` = 3L, `5` = 5L, `6` = 6L, `7` = 7L, `8` = 8L, `9` = 9L, `10` = 10L, `11` = 11L, R = 18L,
-    `14` = 14L, `14E` = 19L, `15` = 15L, `16` = 16L, `17` = 17L, `22` = 22L, `23` = 23L, `24` = 24L)
+    `14` = 14L, `14E` = 19L, `15` = 15L, `16` = 16L, `17` = 17L, `22` = 22L, `23` = 23L, `24` = 24L,
+    `31` = 7L)                                            # the exactness round: arm 7's stream
 COLUMNS <- c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", "status", "k", "n_features", "n_true", "n_calls",
     "null_p05", "null_p01", "fdp", "power", "bias", "rmse", "seconds")
 
@@ -378,7 +394,7 @@ oneRun <- function(cl, run) {
         withW(RUVSeq::RUVg(uq, controls, k)$W)
     })
     by_group <- RUVSeq::makeGroups(design$group)
-    arm("7", function() if (E == 0L) noRuv() else withW(RUVSeq::RUVs(uq, genes, E, by_group)$W))
+    seventh <- arm("7", function() if (E == 0L) noRuv() else withW(RUVSeq::RUVs(uq, genes, E, by_group)$W))
     oracle <- NULL
     arm("8", function() {
         if (E == 0L) return(noRuv())
@@ -456,6 +472,12 @@ oneRun <- function(cl, run) {
         controls <- genes[order(prep$first_p)[-seq_len(ceiling(0.25 * length(genes)))]]
         withW(RUVSeq::RUVg(uq, controls, separationK(controls))$W)
     })
+    arm("31", function() {                                # the exactness round: arm 7 with E from 200 permutations
+        E200 <- as.integer(sva::num.sv(n$log_cpm_tmm, prep$model, method = "be", B = 200, seed = seed))
+        if (!is.null(seventh) && seventh$k == E200) return(seventh)   # the same k: arm 7's result, not computed again
+        set.seed(seed * 100L + ARM_STREAM[["7"]])         # num.sv set a seed
+        if (E200 == 0L) noRuv() else withW(RUVSeq::RUVs(uq, genes, E200, by_group)$W)
+    })
     total <- proc.time()[["elapsed"]] - t_start
     list(rows = do.call(rbind, rows), events = if (length(events)) do.call(rbind, events),
         timing = data.frame(cell = cl$id, run = run, prep_seconds = prep_seconds, total_seconds = total, E = E))
@@ -463,7 +485,7 @@ oneRun <- function(cl, run) {
 
 armsOf <- function(cl) {
     arms <- c("1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "R", "14", "14E", if (cl$batch) "17")   # 15, 16: see the header
-    if (is.null(arms_wanted)) arms else intersect(c(arms, "22", "23", "24"), arms_wanted)
+    if (is.null(arms_wanted)) arms else intersect(c(arms, "22", "23", "24", "31"), arms_wanted)
 }
 
 # A run whose worker died (or failed outside every arm) is a crash of each of its arms.
@@ -477,7 +499,7 @@ crashedRun <- function(cl, run, message) {
         timing = data.frame(cell = cl$id, run = run, prep_seconds = NA_real_, total_seconds = NA_real_, E = NA_integer_))
 }
 
-selected <- if (identical(cells_arg, "all")) names(CELLS) else strsplit(cells_arg, ",")[[1L]]
+selected <- if (identical(cells_arg, "all")) setdiff(names(CELLS), "C8") else strsplit(cells_arg, ",")[[1L]]
 if (!all(selected %in% names(CELLS))) stop("unknown cell(s): ", paste(setdiff(selected, names(CELLS)), collapse = ", "))
 dir.create(file.path(out_dir, "cells"), recursive = TRUE, showWarnings = FALSE)
 
@@ -524,7 +546,7 @@ writeLines(c(
     sprintf("cells run by this command: %s; cells in the tables: %s", paste(selected, collapse = ","), paste(done, collapse = ",")),
     sprintf("runs: core %d, stress %d, first run %d; cores %d", runs_core, runs_stress, first_run, cores),
     sprintf("K124_ARMS: %s", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
-    "seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)",
+    "seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22",
     sprintf("library paths: %s", paste(.libPaths(), collapse = ":")),
     sprintf("R: %s; BLAS %s", R.version.string, extSoftVersion()[["BLAS"]]),
     sprintf("MultiScholaR (load_all): %s", as.character(utils::packageVersion("MultiScholaR"))),
