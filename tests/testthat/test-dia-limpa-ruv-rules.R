@@ -688,3 +688,35 @@ test_that("the count's record says when declared technical replicates were not r
     plain <- limpaRuvCase(engine, seed = 101L)
     expect_false(limpaRuvKernel(plain$quantified, parameters)$value$ruv_result$k_estimate$technical_replicates_ignored)
 })
+
+test_that("the shared runner refuses today's declaration the rule parameters before a saved product is returned (KIT-129 B1)", {
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    case <- limpaRuvCase(engine, seed = 101L)
+    todays <- resolveDIARuvCovariatesParameters(list(), "group")
+    declared <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features", ruv_k_rule = "user", ruv_k = 1)
+    manager <- limpaRuvManager(case$quantified)
+    withDIAStateScope(manager, function() {
+        source <- getDIAStateReference(manager)
+        saved <- limpaRuvQuiet(runSavedOperation(manager, diaRuvCovariatesOperation(), source, todays))
+        expect_identical(saved$status, "computed")
+        # the auditor's case through the runner itself (the replay's path), with nothing before it: each rule parameter
+        # alone and the whole declared request are refused, never served today's saved sweep
+        expect_error(runSavedOperation(manager, diaRuvCovariatesOperation(), source, declared), class = "dia_ruv_rule_parameters_on_legacy")
+        for (extra in list(list(ruv_control_rule = "all_features"), list(ruv_k_rule = "num_sv_be"), list(ruv_k = 2L),
+            list(ruv_control_ids = "P1"), list(ruv_k_seed = 7L))) {
+            expect_error(runSavedOperation(manager, diaRuvCovariatesOperation(), source, c(todays, extra)),
+                class = "dia_ruv_rule_parameters_on_legacy", info = names(extra))
+        }
+        # a plain request of today's design is still a hit; the declared rules compute their own product
+        again <- limpaRuvQuiet(runSavedOperation(manager, diaRuvCovariatesOperation(), source, todays))
+        expect_identical(again$status, "hit")
+        expect_identical(again$reference$entity_id, saved$reference$entity_id)
+        chosen <- limpaRuvQuiet(runSavedOperation(manager, diaRuvCovariatesOperation("declared"), source, declared))
+        expect_identical(chosen$status, "computed")
+        expect_false(identical(chosen$reference$entity_id, saved$reference$entity_id))
+        expect_identical(chosen$value$ruv_control_rule, "all_features")
+    })
+    expect_null(workflowLegacyDesignRefusal(diaRuvCovariatesOperation("declared")))
+    expect_identical(workflowLegacyDesignRefusal(diaRuvCovariatesOperation()), assertDiaRuvSweepParameters)
+})

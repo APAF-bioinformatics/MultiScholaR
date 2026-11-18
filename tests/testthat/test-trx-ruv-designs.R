@@ -652,3 +652,33 @@ test_that("(KIT-129 audit F-02) today's grid refuses a request that carries a de
     expect_identical(todays$value$mode, "automatic")
     expect_null(todays$value[["ruv_design", exact = TRUE]])
 })
+
+test_that("(KIT-129 B1) the shared runner refuses today's grid a declared design's parameter when today's grid is already saved", {
+    fixture <- trxDesignTestOwner()
+    owner <- fixture$owner
+    declared <- trxRuvDesignParameters("groups_all_features", 2L, "user")
+    runs <- suppressWarnings(suppressMessages(withWorkflowStateScope(owner, function() {
+        source <- getWorkflowStateReference(owner)
+        logcpm <- trxRunProduct(owner, "trx_tmm_logcpm", source, list())
+        grid <- function(extra) trxRunProduct(owner, "trx_ruv_grid", source,
+            c(list(logcpm = logcpm$reference$entity_id), trxRuvGridParameters(), extra), list(logcpm$reference))
+        saved <- grid(list())
+        # the auditor's case: today's grid is saved, then the same source is asked with both parameter sets
+        mixed <- lapply(c(list(both = declared), lapply(stats::setNames(trxRuvDesignParameterNames, trxRuvDesignParameterNames),
+            \(name) declared[name]), list(ruv_k_seed = list(ruv_k_seed = 20261118L))), \(extra) tryCatch(grid(extra), error = \(e) e))
+        list(saved = saved, mixed = mixed, again = grid(list()),
+            design = trxRunRuvDesign(owner, source, logcpm$reference, declared))
+    })))
+    expect_identical(runs$saved$status, "computed")
+    for (name in names(runs$mixed)) {
+        expect_s3_class(runs$mixed[[name]], c("trx_ruv_grid_declared_parameters", "trx_error"), exact = FALSE)
+    }
+    # a plain request of today's grid is still a hit; the declared design computes its own product
+    expect_identical(runs$again$status, "hit")
+    expect_identical(runs$again$reference$entity_id, runs$saved$reference$entity_id)
+    expect_identical(runs$design$status, "computed")
+    expect_false(identical(runs$design$reference$entity_id, runs$saved$reference$entity_id))
+    expect_identical(runs$design$value$ruv_design$id, "groups_all_features")
+    expect_null(workflowLegacyDesignRefusal(trxRuvGridOperation(transcriptomicsDeclarationBinding, "declared")))
+    expect_identical(workflowLegacyDesignRefusal(trxRuvGridOperation(transcriptomicsDeclarationBinding)), trxRefuseDeclaredRuvParameters)
+})

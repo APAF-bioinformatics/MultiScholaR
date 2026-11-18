@@ -428,6 +428,20 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model
         })
 }
 
+#' Today's normalisation declaration takes no `ruv_design` (KIT-126 audit F-06, KIT-129 B1): its identity reads its
+#' ten parameters only, so `runSavedOperation` calls this before the identity, and a request that names the new design
+#' is refused rather than served today's saved product. The condition is the kernel's own (`workflow_execution_invalid`).
+#' @param parameters A request's parameters.
+#' @return `parameters`, invisibly.
+#' @noRd
+assertProtNormLegacyRuvParameters <- function(parameters) {
+    if (!is.null(parameters[["ruv_design", exact = TRUE]])) {
+        cli::cli_abort(c("the normalisation declaration of today's design was handed ruv_design = {.val {parameters$ruv_design}}",
+            i = "declare it with diaNormalizationOperation(\"factors_in_model\")"), class = "workflow_execution_invalid", call = NULL)
+    }
+    invisible(parameters)
+}
+
 #' Run or reuse the normalisation + RUV declaration and publish its outputs.
 #' @param settings Plain list of the normalisation settings (`norm_method`, `ruv_mode`, the RUV fields,
 #'   `color_variable`, `shape_variable`); the module edge builds it from its inputs.

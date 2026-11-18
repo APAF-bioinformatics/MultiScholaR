@@ -619,3 +619,40 @@ test_that("through the operations: automatic and skip under the new design, a re
     expect_identical(named_outcome$skip_state@design_matrix$W1, rep("a user covariate", nrow(object@design_matrix)))
     expect_null(named_outcome$skip_state@args$ruvCovariates)
 })
+
+test_that("the shared runner refuses today's declaration a request that names the new design, on a saved product too (KIT-129 B1)", {
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(withr::local_tempdir(), "kit-129-b1", "DIA"),
+        WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager$saveState("protein_replicate_filtered", object, list(), "source")
+    source <- getDIAStateReference(manager)
+    todays <- list(norm_method = "quantile", ruv_mode = "manual", auto_percentage_min = NULL,
+        auto_percentage_max = NULL, separation_metric = NULL, k_penalty_weight = NULL,
+        adaptive_k_penalty = NULL, ruv_percentage = 50, ruv_k = 2, grouping = "group")
+    mixed <- c(todays, list(ruv_design = "factors_in_model"))
+    outcome <- NULL
+    utils::capture.output(outcome <- suppressWarnings(suppressMessages(withDIAStateScope(manager, function() {
+        saved <- runSavedOperation(manager, diaNormalizationOperation(), source, todays)
+        # the auditor's case: today's product is saved; the mixed request would be a hit on it before any kernel runs
+        mixed_run <- tryCatch(runSavedOperation(manager, diaNormalizationOperation(), source, mixed), error = function(e) e)
+        again <- runSavedOperation(manager, diaNormalizationOperation(), source, todays)
+        declared <- runSavedOperation(manager, diaNormalizationOperation("factors_in_model"), source, mixed)
+        list(saved = saved, mixed = mixed_run, again = again, declared = declared)
+    }))))
+    expect_identical(outcome$saved$status, "computed")
+    expect_s3_class(outcome$mixed, "workflow_execution_invalid")
+    expect_match(conditionMessage(outcome$mixed), "ruv_design", fixed = TRUE)
+    # a plain request of today's design is still served from the saved product
+    expect_identical(outcome$again$status, "hit")
+    expect_identical(outcome$again$reference, outcome$saved$reference)
+    # the new design's declaration computes its own product
+    expect_identical(outcome$declared$status, "computed")
+    expect_false(identical(outcome$declared$reference, outcome$saved$reference))
+    expect_identical(outcome$declared$value$parameters$ruv_design, "factors_in_model")
+    # the lookup leaves the declarations as they were and gives the new design no refusal
+    expect_null(workflowLegacyDesignRefusal(diaNormalizationOperation("factors_in_model")))
+    expect_identical(workflowLegacyDesignRefusal(diaNormalizationOperation()), assertProtNormLegacyRuvParameters)
+    expect_null(diaNormalizationOperation()$validate)
+})

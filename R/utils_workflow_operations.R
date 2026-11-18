@@ -140,6 +140,10 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
         cli::cli_abort("operation {.val {declaration$name}} is missing parameter{?s} {.val {missing}}",
             class = "workflow_operation_parameters")
     }
+    # KIT-129 B1: today's declaration of a step that also has a new-design declaration refuses the new design's
+    # parameters here, before the identity (which reads the declared names only) can return today's saved product.
+    refuse <- workflowLegacyDesignRefusal(declaration)
+    if (!is.null(refuse)) refuse(parameters)
     # KIT-025: the state the wrapper commits after this operation carries the declaration's provenance.
     setWorkflowStepProvenance(manager, declaration$name, parameters$variant %||% "whole", declaration$parameters, declaration$fixed,
         values = parameters)
@@ -160,6 +164,27 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
         basename(tempfile(paste0(declaration$name, "-"))), identity, "scientific_product", factors = declaration$factors)
     rootWorkflowProduct(manager, reference, c(list(source), dependencies, store$created()))
     list(status = "computed", value = value, reference = reference)
+}
+
+#' The refusal today's declaration applies to a new design's parameters (KIT-129 B1). Today's declaration and the
+#' new design's declaration of one step share the operation name, and the identity reads the declared parameter names
+#' only, so a request that mixes the two would otherwise be a hit on today's saved product. Keyed by operation name and
+#' looked up here rather than held on the declaration, so that every declaration's fields stay as they are. A
+#' declaration that declares the new design's parameters is the new design's and gets no refusal.
+#' @param declaration A declaration from `newWorkflowOperation`.
+#' @return The kernel's own refusal, `function(parameters)`, or NULL.
+#' @noRd
+workflowLegacyDesignRefusal <- function(declaration) {
+    guard <- switch(declaration$name,
+        # Classic proteomics normalisation (KIT-126): the new design's parameter is `ruv_design`.
+        "normalization-ruv" = list(names = "ruv_design", refuse = assertProtNormLegacyRuvParameters),
+        # DIA with limpa, the RUV covariates (KIT-129 W3): the control rule and the k rule.
+        protein_ruv_covariates = list(names = diaRuvCovariatesRuleParameters, refuse = assertDiaRuvSweepParameters),
+        # Transcriptomics, the RUV grid (KIT-129 W4): the declared design.
+        trx_ruv_grid = list(names = trxRuvDesignParameterNames, refuse = trxRefuseDeclaredRuvParameters),
+        NULL)
+    if (is.null(guard) || any(guard$names %in% declaration$parameters)) return(NULL)
+    guard$refuse
 }
 
 #' Whole-matrix placement: one projected object, the kernel, nothing else resident.
