@@ -1,0 +1,4 @@
+base: a559f511802533e31a5c9c410015b4c7ce7cda20
+head: 45fa1e81832b1318b24e33a7b5a79d474c7aa5be
+files: test-prot-ruv-factors-in-model.R, test-kit127-omics-ruv-factors.R
+R version 4.6.1 (2026-06-24)
