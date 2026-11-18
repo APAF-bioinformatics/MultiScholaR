@@ -678,7 +678,7 @@ the 'limma' R package (Ritchie et al., 2015) to account for systematic technical
 variation across samples.
 
 Batch Effect Correction
-{ruv_text}
+{numbers$ruv_design_methods %||% ruv_text}
 
 Quality Control
 At each stage of data normalization, samples were checked for batch effects using:
@@ -1012,6 +1012,10 @@ AnalyzeSamples <- function(design_matrix, study_params) {
 
       # Replace NULLs with NA
       final_numbers[sapply(final_numbers, is.null)] <- NA
+      # KIT-129 sixth pass item 6: a new RUV design's methods sentence, from the study parameters' section
+      # "Unwanted variation (RUV)" (absent for today's design, whose text is unchanged)
+      ruv_design_methods <- safe_extract(study_params, c("Unwanted variation (RUV)", "Methods text"), NULL)
+      if (is.character(ruv_design_methods) && length(ruv_design_methods) == 1L && nzchar(ruv_design_methods)) final_numbers$ruv_design_methods <- ruv_design_methods
 
       list(numbers = final_numbers, table = group_summary)
     },
