@@ -33,7 +33,9 @@
 #         the kernel's own count against arm 29's model with M30's 200 permutations (= arm 33's E); its W against arm
 #         16's W (S1); its DA against arm 33 (arm 16 with arm 25's standard error, arm 26's test and that count; at k = 1
 #         where the count is 0, so that the design is exercised); its corrected matrix, tested as arm 15 tests, against
-#         arm 15 (arm 15's own k, 1 where E is 0). S4 on the view of the features complete in study and pooled-QC
+#         arm 15 (at arm 33's k). In S4 (third pass item 4) arm 15's matrix has the levels not restored and the package's
+#         has them restored: compared centred, with the package's restoration applied to it, and tested so; arm 15 as
+#         measured is stated in a note. S4 on the view of the features complete in study and pooled-QC
 #         injections on both sides (the simulator's `complete` subset), so that the package computes its own W
 #   firstpass KIT-129 integration (second pass) item 2: the design first_pass_nulls at the kernels, run 1 of C0 and C6,
 #         S1 and S4: the kernel's controls against the simulator's first pass (S1 `wide_controls`, S4 arm 5/23's); its own
@@ -595,10 +597,37 @@ if (stage %in% c("techrep", "firstpass")) {
                         notes[[paste0(name, "/W_package_vs_simulator")]] <- paste("the simulator refused:", ref$reason)
                         next
                     }
-                    tested <- silently(s4$daKernel(s4$assayMatrix(assays[[assay]], view$design$Sample_ID), view$design, "~ 0 + group",
-                        view$contrasts))
-                    add_tables(name, keyed(ref$feature, ref$contrast, ref$est, ref$p, ref$q),
-                        keyed(tested$feature, tested$contrast, tested$est, tested$p, tested$q))
+                    # KIT-129 third pass item 4: arm 15's corrected matrix is RUVIIIC::RUVIII_C_Varying's output with the
+                    # levels not restored (s4_lipid_metab.R line 24, `ruvSubtract`, lines 529-538); the package restores
+                    # each feature's level (`restoreRuvFeatureLevels`, KIT-123 R2; classic proteomics inside
+                    # ruvIII_C_Varying, which is why S1's arm 15 agrees). A constant per feature leaves the estimates but
+                    # not limma's variance trend over the mean level (eBayes trend = TRUE). The comparison like for like:
+                    # the simulator's own matrix, centred and with the package's restoration, against the package's.
+                    a <- view$assays[[assay]]
+                    sim_matrix <- silently(s4$ruvSubtract(t(a$y), s4$extractM(view, NULL), rownames(a$y), rownames(a$y), k15[[assay]],
+                        keep = view$design$Sample_ID))
+                    pkg_matrix <- s4$assayMatrix(assays[[assay]], view$design$Sample_ID)[rownames(sim_matrix), colnames(sim_matrix), drop = FALSE]
+                    centred <- function(m) m - rowMeans(m)
+                    add(paste0(name, "/corrected_centred"), unname(centred(sim_matrix)), unname(centred(pkg_matrix)),
+                        "the corrected matrices, each feature's mean removed: the same within-feature values (same W, alpha, rows)")
+                    restored <- restoreRuvFeatureLevels(sim_matrix, a$y[rownames(sim_matrix), colnames(sim_matrix), drop = FALSE])
+                    add(paste0(name, "/corrected_levels_restored"), unname(restored), unname(pkg_matrix),
+                        "the simulator's corrected matrix with each feature's level restored (restoreRuvFeatureLevels) against the package's")
+                    tested <- silently(s4$daKernel(pkg_matrix, view$design, "~ 0 + group", view$contrasts))
+                    restored_test <- silently(s4$daKernel(restored, view$design, "~ 0 + group", view$contrasts))
+                    add_tables(paste0(name, "/levels_restored"), keyed(restored_test$feature, restored_test$contrast, restored_test$est,
+                        restored_test$p, restored_test$q), keyed(tested$feature, tested$contrast, tested$est, tested$p, tested$q))
+                    # arm 15 as measured (levels not restored) against the package's corrected matrix, tested the same way
+                    measured <- keyed(ref$feature, ref$contrast, ref$est, ref$p, ref$q)
+                    package_tested <- keyed(tested$feature, tested$contrast, tested$est, tested$p, tested$q)
+                    at <- match(measured$key, package_tested$key)
+                    shift <- rowMeans(pkg_matrix - sim_matrix)
+                    notes[[paste0(name, "/W_package_vs_simulator")]] <- sprintf(paste("arm 15 as measured (levels not restored) against",
+                        "the package's corrected matrix tested the same way: %d keys, estimate max abs %.3g, p max abs %.3g (max rel %.3g),",
+                        "q max abs %.3g; the per-feature level shift %.3g to %.3g log2"), sum(!is.na(at)),
+                        max(abs(measured$estimate - package_tested$estimate[at]), na.rm = TRUE), max(abs(measured$p - package_tested$p[at]), na.rm = TRUE),
+                        max(abs(measured$p - package_tested$p[at]) / pmax(abs(measured$p), abs(package_tested$p[at])), na.rm = TRUE),
+                        max(abs(measured$q - package_tested$q[at]), na.rm = TRUE), min(shift), max(shift))
                 }
             }
         }
