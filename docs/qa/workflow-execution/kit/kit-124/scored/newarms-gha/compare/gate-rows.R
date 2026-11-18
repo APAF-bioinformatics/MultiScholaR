@@ -1,4 +1,4 @@
-# Per-row reading of the equivalence comparison (same rule as packaging/verify/compare-results.R: rel 1e-6, abs 1e-9).
+# Per-row reading of the equivalence comparison, and the gate as declared and as read under decision M19 (same rule as packaging/verify/compare-results.R: rel 1e-6, abs 1e-9).
 args <- commandArgs(trailingOnly = TRUE); dir <- args[[1L]]
 out <- list(); summ <- list()
 for (s in c("s1", "s2", "s3", "s4")) {
@@ -21,10 +21,18 @@ for (s in c("s1", "s2", "s3", "s4")) {
         summ[[length(summ) + 1L]] <- data.frame(simulator = toupper(s), cell = sub("^.* ", "", cell), rows_compared = nrow(x),
             runs = length(unique(x$run)), arms = paste(sort(unique(x$arm)), collapse = ","), subsets = paste(sort(unique(x$subset)), collapse = ","),
             discrete_differences = discrete, rows_outside_rule = sum(bad),
-            gate = if (discrete == 0 && !any(bad)) "pass" else "fail")
+            gate_as_declared = if (discrete == 0 && !any(bad)) "pass" else "fail",
+            measures_outside = paste(unique(unlist(lapply(out, \(o) if (identical(o$cell[[1L]], cell)) o$measure[[1L]]))), collapse = ","),
+            stringsAsFactors = FALSE)
     }
 }
 summ <- do.call(rbind, summ); out <- if (length(out)) do.call(rbind, out) else data.frame()
+# Decision M19 (user, 2026-11-18, design-review-20261118.md section 6): the gate is read on the values the rules use
+# (null rates, false discovery proportion, power, k, counts); rows outside the tolerance on bias and rmse only are
+# accepted and reported. The gate as first declared (every value) stays in gate_as_declared.
+summ$gate_as_read_M19 <- ifelse(summ$gate_as_declared == "pass", "pass", ifelse(summ$discrete_differences == 0 &
+    vapply(strsplit(summ$measures_outside, ","), \(m) all(m %in% c("bias", "rmse")), logical(1L)),
+    "pass: outside on bias/rmse only, accepted (M19); rows in gate-rows-outside.tsv", "fail"))
 write.table(summ, file.path(dir, "gate-summary.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 write.table(out, file.path(dir, "gate-rows-outside.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 print(summ, row.names = FALSE); options(width = 200, digits = 10); print(out, row.names = FALSE)

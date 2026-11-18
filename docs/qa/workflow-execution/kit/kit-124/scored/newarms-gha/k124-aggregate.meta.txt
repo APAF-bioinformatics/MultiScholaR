@@ -1,14 +1,14 @@
 KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
-script: /home/doktersmol/Projects/APAF/MultiScholaR/docs/qa/workflow-execution/kit/kit-124/aggregate.R
+script: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-scored-gha/docs/qa/workflow-execution/kit/kit-124/aggregate.R
 script sha256: c5c6275f099166ab59bb479b4557ca598c96004f71494de785883bdbe5f4d200
-commit: be2d4f7162ed99030b6c18821de5f652513217c0
+commit: 1485b94d6c6ef302ecb17c3efbabbaec96cfd9be
 script differs from commit: FALSE
-command: Rscript /home/doktersmol/Projects/APAF/MultiScholaR/docs/qa/workflow-execution/kit/kit-124/aggregate.R /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/scored/newarms-gha S1=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s1-newarms S2=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms S3=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms S4=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms
-working directory: /home/doktersmol/Projects/APAF/MultiScholaR
+command: Rscript /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-scored-gha/docs/qa/workflow-execution/kit/kit-124/aggregate.R /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/scored2/newarms-gha S1=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s1-newarms S2=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms S3=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms S4=/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms
+working directory: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-scored-gha
 R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
 packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
 library paths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
-run at: 2026-11-18 12:27:56 AEDT
+run at: 2026-11-18 13:34:38 AEDT
 inputs (sha256, bytes, path):
   4a4864e3787f3d40312ebd33be5ffc019cd62e80a23fb300523067b14bec8c8f 11944479 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s1-newarms/s1-runs.tsv
   694ae03e54401a3e512ecac9f10a2125155c9164e0147d4afd7f3812923f8eb6 26857 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s1-newarms/s1-runs.meta.txt
@@ -21,10 +21,15 @@ inputs (sha256, bytes, path):
   1fdd75ba48629ed1bb1805976f552ad9a09f7ec0ff9f7f4c93d9ce758fd365ba 187131 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C6.rds
   f77ac6e73c9be1b8e9383d19f4d514df499876b8fef5cba5bb2022ffeca0db5c 183742 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/cells/C7.rds
   ea532c312a3b519574e8eda42fc8386d5ecd936b007c975ed62aa83c428b158a 10456 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s2-newarms/s2-runs.meta.txt
-  77a31f44c56b15bae5c42bdc3f4bde4b7be6ca9187ba44d9b30faa6f29cfcc2e 212226 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms/cells/s3-C2.rds
-  f7c22a8e288531cc598be3f95b2b8d87ce03ef7bbde9ac4eee0d3e7c51a13911 177120 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms/cells/s3-C3.rds
-  8739dd06a464bfedc5a8cf60cd78c0854cdf041978ef4b165ca2939e16b157df 91750 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms/cells/s3-C4.rds
-  bdf6d82214e9ccbc772a7066f849ee663cf553c68a7a09a10009df65964661e9 7392 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms/s3-runs.meta.txt
+  cb2d8d6013f91f1644dbd0963a4ada2846ebb101ea0290144d4dd6a024f01b32 222969 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms/cells/s3-C0.rds
+  e0609ca5f42290f423a8c354042bad3edd1737bede0df2b298ac943e9db25a0d 216373 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms/cells/s3-C1.rds
+  77a31f44c56b15bae5c42bdc3f4bde4b7be6ca9187ba44d9b30faa6f29cfcc2e 212226 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms/cells/s3-C2.rds
+  f7c22a8e288531cc598be3f95b2b8d87ce03ef7bbde9ac4eee0d3e7c51a13911 177120 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms/cells/s3-C3.rds
+  8739dd06a464bfedc5a8cf60cd78c0854cdf041978ef4b165ca2939e16b157df 91750 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms/cells/s3-C4.rds
+  82b308a67ac3bca59efadaa783dad3c6da0701ee2886aeac4dc4da7c81c448e1 229296 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms/cells/s3-C5.rds
+  65b67a0d07d70cd8fa4cbc65f18ecf4cccfaa0036cbb0a7ae8f8b5512a8a5b14 251247 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms/cells/s3-C6.rds
+  a080b5b74a7e673b68121ac75245ac286ab91abdbeda82743bb492d038dbc862 211918 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms/cells/s3-C7.rds
+  bdf6d82214e9ccbc772a7066f849ee663cf553c68a7a09a10009df65964661e9 7392 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms/s3-runs.meta.txt
   8b29f12b749c7318f6baa596fc6812e3bc7d3d4e6c7e7874383f7145c4a90a11 808420 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C0.tsv
   5bb50647101319b017a679c8261b387b9cf888f2f22bdffb789dbd7c5627c535 816775 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C1.tsv
   9f479b8c618b90535c84b8b3adf288650eb01e6850412e4a322981c1725271d1 792402 /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s4-newarms/cells/C2.tsv
@@ -212,7 +217,7 @@ simulator S2 meta (/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/
   cells completed in this invocation: C7
   started: 2026-11-17 23:49:06 UTC
   finished: 2026-11-17 23:56:58 UTC
-simulator S3 meta (/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/gated/s3-newarms):
+simulator S3 meta (/tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-20261118/raw/s3-newarms):
   commit: 8cdcc5d629d260b1e67d538aa8cc99a8473bee0a
   script sha256: 70d798508b659395e6b9d200efee27a9f219b56a13be2784dab69f66b27afc38
   command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C0
