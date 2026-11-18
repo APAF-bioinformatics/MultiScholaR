@@ -1,0 +1,2 @@
+simulator	omic	eligible_in_order	ruv_designs_pass	ruv_designs_fail	ruv_designs_inconclusive	ruv_designs_not_judged	ruv_designs_not_run	arm1_rules_1_2_6_7	branch	eligible_without_rule4_in_C4	void_core_cells	core_cells_not_run	notes
+S3	transcriptomics		0	9	0	2	0	pass	RUV off by default (no RUV design passes; arm 1 passes rules 1, 2, 6, 7)				C6 reported, not core (rev 1.3; parked row 23); no 50%-missing cell (S6 not run; S5, S14 low counts); arms 4, 12, 13 not run (arm 4 = arm 3)

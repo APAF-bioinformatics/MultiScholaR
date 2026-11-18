@@ -1,0 +1,23 @@
+simulator	cell	role	status	runs	void_subsets	arm2_rule12	realised_missing_share	realised_factor_group_cor
+S1	C0	core	run	1000		complete:pass full:pass	NA	NA
+S1	C1	core	run	1000		complete:pass full:pass	NA	NA
+S1	C2	core	run	1000		complete:pass full:pass	NA	NA
+S1	C3	core	run	1000		complete:pass full:pass	NA	NA
+S1	C4	core	run	1000		complete:pass full:inconclusive	NA	NA
+S1	C5	core	run	1000		complete:pass full:pass	NA	NA
+S1	C6	core	run	1000		complete:pass full:pass	NA	NA
+S1	C7	core	run	1000		complete:pass full:pass	NA	NA
+S1	S1	stress	run	500		complete:pass full:pass	NA	NA
+S1	S2	stress	run	500		complete:pass full:pass	NA	NA
+S1	S3	stress	run	500		complete:pass full:pass	NA	NA
+S1	S4	stress	run	500		complete:pass full:pass	NA	NA
+S1	S5	stress	run	500		complete:pass full:pass	NA	NA
+S1	S6	stress	run	500		complete:pass full:pass	NA	NA
+S1	S7	stress	run	500		complete:pass full:pass	NA	NA
+S1	S8	stress	run	500		complete:pass full:pass	NA	NA
+S1	S9	stress	run	500		complete:pass full:pass	NA	NA
+S1	S10	stress	run	500		complete:pass full:pass	NA	NA
+S1	S11	stress	run	500		complete:pass full:pass	NA	NA
+S1	S12	stress	run	500	full	complete:inconclusive full:fail	NA	NA
+S1	S13	stress	run	500		complete:pass full:pass	NA	NA
+S1	S14	stress	run	500		complete:pass full:pass	NA	NA

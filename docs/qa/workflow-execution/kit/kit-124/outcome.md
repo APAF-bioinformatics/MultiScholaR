@@ -1,4 +1,6 @@
-# KIT-124: RUV in every omic, confirming studies (core cells complete, 2026-11-18; stress cells running)
+# KIT-124: RUV in every omic, confirming studies (core cells complete, 2026-11-18; extra-hard cells complete and scored 2026-11-18)
+
+**Corrected 2026-11-18 (final scoring of the extra-hard cells).** The title read "stress cells running" and the paragraph below says they "are still running": every extra-hard cell that is defined has now run and is scored in the last section, "Extra-hard scenarios, final, and conditions of use". They change no verdict. One qualifier to the per-simulator readings below, which are core-cell statements: no correction is conservative (S1, S3) or calibrated (S4) in the core cells, where the factor is tied to the groups at 0.3 at most; at 0.6 its mean false discovery proportion is 0.593 (S1), 0.450 (S3) and 0.642 (S4), and 0.533 in S2 (last section).
 
 **All four simulators' core cells are scored** (S2 on 2026-11-18); the stress cells (conditions of use, never a verdict) are still running and are added when scored. Nothing here is the user's decision yet; the gate table at the end is filled in when S2 is scored. Rules: the ticket's W3 table (revision 1.2), applied by `aggregate.R` (`0bb67eb2`) to the pinned tree `0b6fcb6d` (KIT-123 R1 and R2 in). Scores of the core phases: scratchpad `k124-agg/s{1,3,4}-core/` (copied here with the final aggregation).
 
@@ -105,7 +107,7 @@ Plain reading: **one design is valid in every core cell.** All proteins as contr
 - The verdict-to-option rule proposed in KIT-129 revision 1.1, for confirmation: a passing design is selectable; the default per omic is the user's choice among passing ones; a failing design is not offered except subtract-then-test as the warned legacy switch; an inconclusive or not-run design is selectable with a note; diagnostic arms (oracle controls) are never options.
 - Read literally, that rule leaves most omics with no RUV option at all, and "RUV off by default" means accepting the power losses above (transcriptomics and lipid/metab near zero under strong unwanted variation). This is the user's call; the measures are here to overrule the rule's literal reading if the user chooses to.
 - The `sva` choice (k from `sva::num.sv` in the arms that take k = E; `sva` is not a dependency; IR-M6).
-- Stress cells: conditions of use (minimum group size, high missingness), added when scored.
+- Stress cells: conditions of use (minimum group size, high missingness), added when scored. (Added 2026-11-18: the last section.)
 
 ## Independent audit of the scoring and this draft (2026-11-17, read-only)
 
@@ -368,3 +370,451 @@ Plain reading.
 | S4 C6, complete | 16, after | 1.99 | 0.057 (0.0007) | 0.079 (0.0023) | 0.331 [0.302, 0.361] | 0.361 | 0.547 (0.0044) | inconclusive: rule 2 inconclusive; rule 3 inconclusive |
 
 Plain reading: **the cell is no longer void in either simulator.** The ceiling arm now meets rules 1 and 2 on the full set (transcriptomics: type I 0.055, upper bound 0.056, at 0.01 0.0118, mean FDP 0.047; lipid/metab: 0.047, 0.0099, 0.055). On the complete-feature subset of lipid/metab the ceiling's mean FDP is 0.074 with an upper bound of 0.078, so rule 2 is inconclusive there: flagged, not void. All features as controls (arm 7) is calibrated in both (mean FDP 0.050 and 0.058); in lipid/metab its share above 0.10 (0.202, upper bound 0.228) sits at the limit of rule 3 (0.223), inconclusive. Technical replicates as the structure in lipid/metab: subtracting (arm 15) mean FDP 0.051 and power 0.293; in the model (arm 16) 0.058 and 0.356, the same as arm 7 (0.354); both pass in this one cell. Power is far below the old figures because those counted each duplicate as an independent sample. In transcriptomics arm 7's power (0.421) is above the ceiling arm's (0.372): the ceiling there is approximate, as noted. The cell stays "reported, not core" in both simulators, so these figures judge no design.
+
+## Extra-hard scenarios, final, and conditions of use (scored 2026-11-18)
+
+Every extra-hard cell that is defined has now run, 500 runs per arm, and is scored. Scoring and reading only: nothing was rerun and no code changed. One scoring per simulator, covering its main cells and all its extra-hard cells: `scored/final-20261118/s1` to `s4` (`aggregate.R` unchanged, sha256 `c5c6275f`, run at commit `19409bb6`). The extra-hard cells state conditions of use; they never change a design's verdict (ticket W3), and the verdict columns of the four final tables equal the committed `scored/s*-core` tables.
+
+### Where each cell ran
+
+| Simulator | Extra-hard cells on the laptop (tree `0b6fcb6d`) | On hosted runners (run 44201244793, label `hard`, package tree `0b6fcb6d`) | Not run |
+|---|---|---|---|
+| S1 classic proteomics | S1 to S8 | S9 to S14 | none |
+| S2 DIA_LIMPA | none | S1 to S14 | none |
+| S3 transcriptomics | S1 to S5, S7 to S13 | S14 | S6: not defined for this simulator (revision 1.3: no 50%-missing cell) |
+| S4 lipidomics and metabolomics | S1 to S14 | none | none |
+
+- 55 extra-hard cells, each complete: runs 1 to 500 for every arm the cell has, every row with a status. No cell exists on both platforms and no cell mixes rows of the two. Per cell and platform (arms, rows, ok, refused, crashed): `scored/final-20261118/inventory.tsv`.
+- The laptop's S1 phase ended at its ceiling (exit 124, 2026-11-18 09:38) while working on S9; the simulator writes a cell only when it is complete, so no partial S9 rows exist and the runner's complete S9 is used. S3's give-back phase ended at its ceiling (08:30) before S14; the runner's S14 is used. S2's extra-hard cells never ran on the laptop.
+- The hosted-runner run: 21 simulator jobs and the plan job, all succeeded, attempt 1 for each, no rerun (`scored/final-20261118/jobs.tsv`, with the artifact digests). The 21 artifacts hold result tables, per-cell restart files, the simulators' meta and log files and the per-job library check and console output; no input data. The per-run tables are not committed (sha256 in `not-committed.sha256` and in the sidecars).
+- Refusals and crashes in the option-set designs: none, except **S2 S5 (DIA_LIMPA, no missing values): 252 of 500 runs crash in every arm**, no correction and the ceiling included (the route's `dpcDE` failure on complete data, parked row 25); the figures of that cell are over the 248 runs that completed and rule 6 fails for every arm. In S4 arm 5 refuses 412, 414 and 426 of 500 runs in the 3-per-group cells with a factor (S1, S11, S12), 20 in S13 and 2 in S6, and arm 3 refuses 12 in S6 (refused runs are scored as no correction, by the refusal rule). The other refusals are in arms 4, 6 and 13 (`k124-cells.tsv`).
+
+### Equivalence between the platforms
+
+No extra-hard cell exists on both platforms, so arms 1 and 2 could not be compared for these cells. **The runner's extra-hard cells rest on the proof of 2026-11-18** (`gha-proof-20261118/README.md`): arms 1, 2, 7, 8 in core cells within the fixed rule, and all arms in core cells and one extra-hard cell per simulator within the rule except arm 3; decision M19 fixes how the gate is read. Two checks that could be made here were made: the main-cell rows of the four final tables are byte-identical to `scored/s1-core` to `s4-core` (688 rows), and the extra-hard rows already in `scored/s34-stress-partial` (S3: 9 cells, 118 rows; S4: 11 cells, 365 rows) are byte-identical in the final tables, which read the same files.
+
+**† Legacy (arm 3) on the runner.** Arm 3's per-run values differ between machines (the proof and the bounded BLAS test; accepted and stated by the user). Every arm-3 figure marked † below (S1 S9 to S14, S2 S1 to S14, S3 S14) is the runner's and would not be reproduced run for run on the laptop; in the proof's 20 runs the per-cell means stayed close (mean false discovery proportion 0.0369 on the laptop against 0.0351 on the runner in S1 C6; 0.4134 against 0.4140 in S4 C0).
+
+### The figures
+
+Full set of features, 500 runs per arm (S2 S5: 248). Type I is the share of true nulls with p below 0.05; standard errors are Monte Carlo errors over runs; the share of data sets above 0.10 carries exact one-sided 97.5% bounds; the rule 3 limit is the ceiling's share plus 0.05. "Rules not passed" lists rules 1 to 6 as `aggregate.R` judged them (rule 1 also reads the 0.01 level, in `k124-cells.tsv`); "none" fails rule 4 by construction wherever a factor exists (no gain over itself). A **void** scenario is one where the ceiling (true factor known) itself fails rule 1 or 2: it judges no design. No technical-replicate design (arms 15, 16) is defined in any extra-hard cell. Arms share their data sets, so a difference between two arms is known more precisely than the two errors suggest; no paired error was computed. Source: `scored/final-20261118/option-arms-extra-hard.tsv` (with arm 11, k = 1, and arm 17, the known batch in the model).
+
+**S1, classic proteomics (S1 to S8 laptop, S9 to S14 runner)**
+
+| Scenario | Design | Scored runs | Mean k | Type I at 0.05 (SE) | Mean FDP (SE) | Share FDP > 0.10 [97.5% bounds] | Rule 3 limit | Power (SE) | Rules not passed |
+|---|---|---|---|---|---|---|---|---|---|
+| S1 3 per group | 2 ceiling | 500 | 1.00 | 0.050 (0.0004) | 0.050 (0.0010) | 0.018 [0.008, 0.034] | 0.068 | 0.661 (0.0033) | within every limit |
+| S1 3 per group | **7 recommended** | 500 | 1.00 | 0.051 (0.0004) | 0.051 (0.0011) | 0.022 [0.011, 0.039] | 0.068 | 0.660 (0.0033) | within every limit |
+| S1 3 per group | 8 known controls | 500 | 1.00 | 0.050 (0.0005) | 0.051 (0.0011) | 0.028 [0.015, 0.047] | 0.068 | 0.644 (0.0036) | within every limit |
+| S1 3 per group | 5 first-pass nulls | 500 | 1.35 | 0.052 (0.0005) | 0.055 (0.0012) | 0.042 [0.026, 0.063] | 0.068 | 0.621 (0.0046) | within every limit |
+| S1 3 per group | 3 legacy | 500 | 1.35 | 0.188 (0.0052) | 0.327 (0.0098) | 0.928 [0.902, 0.949] | 0.068 | 0.853 (0.0054) | 1 fail; 2 fail; 3 fail |
+| S1 3 per group | 1 none | 500 | 0.00 | 0.010 (0.0002) | 0.002 (0.0020) | 0.002 [0.000, 0.011] | 0.068 | 0.000 (0.0000) | 4 fail |
+| S2 40% of features changed | 2 ceiling | 500 | 1.00 | 0.050 (0.0005) | 0.051 (0.0007) | 0.000 [0.000, 0.007] | 0.050 | 0.948 (0.0006) | within every limit |
+| S2 40% of features changed | **7 recommended** | 500 | 1.00 | 0.054 (0.0006) | 0.057 (0.0008) | 0.020 [0.010, 0.036] | 0.050 | 0.948 (0.0006) | within every limit |
+| S2 40% of features changed | 8 known controls | 500 | 1.00 | 0.050 (0.0005) | 0.051 (0.0007) | 0.006 [0.001, 0.017] | 0.050 | 0.947 (0.0006) | within every limit |
+| S2 40% of features changed | 5 first-pass nulls | 500 | 1.51 | 0.054 (0.0005) | 0.056 (0.0008) | 0.016 [0.007, 0.031] | 0.050 | 0.944 (0.0007) | within every limit |
+| S2 40% of features changed | 3 legacy | 500 | 1.51 | 0.072 (0.0008) | 0.082 (0.0013) | 0.244 [0.207, 0.284] | 0.050 | 0.947 (0.0035) | 1 fail; 2 fail; 3 fail |
+| S2 40% of features changed | 1 none | 500 | 0.00 | 0.014 (0.0003) | 0.007 (0.0003) | 0.000 [0.000, 0.007] | 0.050 | 0.623 (0.0018) | 4 fail |
+| S3 factor tied to groups, 0.6 | 2 ceiling | 500 | 1.00 | 0.050 (0.0004) | 0.050 (0.0009) | 0.008 [0.002, 0.020] | 0.058 | 0.822 (0.0017) | within every limit |
+| S3 factor tied to groups, 0.6 | **7 recommended** | 500 | 1.00 | 0.057 (0.0005) | 0.062 (0.0012) | 0.076 [0.054, 0.103] | 0.058 | 0.840 (0.0017) | 3 inconclusive |
+| S3 factor tied to groups, 0.6 | 8 known controls | 500 | 1.00 | 0.055 (0.0006) | 0.058 (0.0013) | 0.070 [0.049, 0.096] | 0.058 | 0.834 (0.0018) | 3 inconclusive |
+| S3 factor tied to groups, 0.6 | 5 first-pass nulls | 500 | 1.75 | 0.146 (0.0013) | 0.273 (0.0035) | 0.990 [0.977, 0.997] | 0.058 | 0.877 (0.0014) | 1 fail; 2 fail; 3 fail |
+| S3 factor tied to groups, 0.6 | 3 legacy | 500 | 1.75 | 0.437 (0.0056) | 0.684 (0.0065) | 0.980 [0.964, 0.990] | 0.058 | 0.829 (0.0065) | 1 fail; 2 fail; 3 fail |
+| S3 factor tied to groups, 0.6 | 1 none | 500 | 0.00 | 0.258 (0.0008) | 0.593 (0.0025) | 1.000 [0.993, 1.000] | 0.058 | 0.762 (0.0019) | 1 fail; 2 fail; 3 fail; 4 fail |
+| S4 three factors | 2 ceiling | 500 | 3.00 | 0.049 (0.0004) | 0.048 (0.0009) | 0.010 [0.003, 0.023] | 0.060 | 0.863 (0.0015) | within every limit |
+| S4 three factors | **7 recommended** | 500 | 3.00 | 0.054 (0.0005) | 0.057 (0.0011) | 0.054 [0.036, 0.078] | 0.060 | 0.862 (0.0016) | 3 inconclusive |
+| S4 three factors | 8 known controls | 500 | 3.00 | 0.048 (0.0004) | 0.048 (0.0009) | 0.018 [0.008, 0.034] | 0.060 | 0.852 (0.0016) | within every limit |
+| S4 three factors | 5 first-pass nulls | 500 | 1.20 | 0.009 (0.0002) | 0.003 (0.0011) | 0.004 [0.000, 0.014] | 0.060 | 0.071 (0.0063) | within every limit |
+| S4 three factors | 3 legacy | 500 | 1.20 | 0.021 (0.0008) | 0.016 (0.0017) | 0.022 [0.011, 0.039] | 0.060 | 0.143 (0.0089) | within every limit |
+| S4 three factors | 1 none | 500 | 0.00 | 0.005 (0.0001) | 0.000 (0.0000) | 0.000 [0.000, 0.007] | 0.060 | 0.000 (0.0000) | 4 fail |
+| S5 no missing values | 2 ceiling | 500 | 1.00 | 0.050 (0.0003) | 0.050 (0.0007) | 0.002 [0.000, 0.011] | 0.052 | 0.949 (0.0007) | within every limit |
+| S5 no missing values | **7 recommended** | 500 | 1.01 | 0.050 (0.0003) | 0.051 (0.0007) | 0.002 [0.000, 0.011] | 0.052 | 0.948 (0.0007) | within every limit |
+| S5 no missing values | 8 known controls | 500 | 1.01 | 0.049 (0.0004) | 0.049 (0.0008) | 0.008 [0.002, 0.020] | 0.052 | 0.948 (0.0008) | within every limit |
+| S5 no missing values | 5 first-pass nulls | 500 | 1.30 | 0.050 (0.0003) | 0.050 (0.0008) | 0.000 [0.000, 0.007] | 0.052 | 0.949 (0.0008) | within every limit |
+| S5 no missing values | 3 legacy | 500 | 1.30 | 0.066 (0.0006) | 0.082 (0.0013) | 0.250 [0.213, 0.290] | 0.052 | 0.957 (0.0008) | 1 fail; 2 fail; 3 fail |
+| S5 no missing values | 1 none | 500 | 0.00 | 0.010 (0.0002) | 0.005 (0.0003) | 0.000 [0.000, 0.007] | 0.052 | 0.603 (0.0019) | 4 fail |
+| S6 50% missing | 2 ceiling | 500 | 1.00 | 0.049 (0.0005) | 0.051 (0.0012) | 0.054 [0.036, 0.078] | 0.104 | 0.887 (0.0017) | within every limit |
+| S6 50% missing | **7 recommended** | 500 | 1.01 | 0.056 (0.0007) | 0.062 (0.0016) | 0.124 [0.096, 0.156] | 0.104 | 0.886 (0.0017) | 3 inconclusive |
+| S6 50% missing | 8 known controls | 500 | 1.01 | 0.049 (0.0005) | 0.050 (0.0012) | 0.044 [0.028, 0.066] | 0.104 | 0.883 (0.0018) | within every limit |
+| S6 50% missing | 5 first-pass nulls | 500 | 1.35 | 0.049 (0.0005) | 0.053 (0.0012) | 0.048 [0.031, 0.071] | 0.104 | 0.876 (0.0019) | within every limit |
+| S6 50% missing | 3 legacy | 500 | 1.35 | 0.071 (0.0010) | 0.099 (0.0023) | 0.462 [0.418, 0.507] | 0.104 | 0.858 (0.0065) | 1 fail; 2 fail; 3 fail |
+| S6 50% missing | 1 none | 500 | 0.00 | 0.016 (0.0003) | 0.008 (0.0006) | 0.000 [0.000, 0.007] | 0.104 | 0.424 (0.0035) | 4 fail |
+| S7 heavy tails | 2 ceiling | 500 | 1.00 | 0.042 (0.0004) | 0.035 (0.0008) | 0.002 [0.000, 0.011] | 0.052 | 0.922 (0.0010) | within every limit |
+| S7 heavy tails | **7 recommended** | 500 | 1.01 | 0.046 (0.0005) | 0.041 (0.0010) | 0.018 [0.008, 0.034] | 0.052 | 0.919 (0.0017) | within every limit |
+| S7 heavy tails | 8 known controls | 500 | 1.01 | 0.042 (0.0004) | 0.035 (0.0009) | 0.004 [0.000, 0.014] | 0.052 | 0.919 (0.0016) | within every limit |
+| S7 heavy tails | 5 first-pass nulls | 500 | 1.37 | 0.043 (0.0004) | 0.037 (0.0008) | 0.002 [0.000, 0.011] | 0.052 | 0.914 (0.0017) | within every limit |
+| S7 heavy tails | 3 legacy | 500 | 1.37 | 0.067 (0.0008) | 0.084 (0.0019) | 0.290 [0.251, 0.332] | 0.052 | 0.927 (0.0026) | 2 fail; 3 fail |
+| S7 heavy tails | 1 none | 500 | 0.00 | 0.010 (0.0002) | 0.003 (0.0003) | 0.000 [0.000, 0.007] | 0.052 | 0.534 (0.0024) | 4 fail |
+| S8 known unbalanced batch | 2 ceiling | 500 | 1.00 | 0.051 (0.0004) | 0.055 (0.0009) | 0.020 [0.010, 0.036] | 0.070 | 0.872 (0.0014) | within every limit |
+| S8 known unbalanced batch | **7 recommended** | 500 | 2.00 | 0.055 (0.0005) | 0.059 (0.0011) | 0.056 [0.038, 0.080] | 0.070 | 0.876 (0.0014) | 3 inconclusive |
+| S8 known unbalanced batch | 8 known controls | 500 | 2.00 | 0.050 (0.0005) | 0.053 (0.0010) | 0.038 [0.023, 0.059] | 0.070 | 0.869 (0.0014) | within every limit |
+| S8 known unbalanced batch | 5 first-pass nulls | 500 | 1.63 | 0.058 (0.0010) | 0.068 (0.0019) | 0.214 [0.179, 0.253] | 0.070 | 0.759 (0.0079) | 3 fail |
+| S8 known unbalanced batch | 3 legacy | 500 | 1.63 | 0.183 (0.0051) | 0.346 (0.0106) | 0.728 [0.687, 0.767] | 0.070 | 0.755 (0.0092) | 1 fail; 2 fail; 3 fail |
+| S8 known unbalanced batch | 1 none | 500 | 0.00 | 0.020 (0.0003) | 0.009 (0.0011) | 0.010 [0.003, 0.023] | 0.070 | 0.144 (0.0036) | 4 fail |
+| S9 80% of effects up | 2 ceiling | 500 | 1.00 | 0.051 (0.0004) | 0.052 (0.0009) | 0.012 [0.004, 0.026] | 0.062 | 0.920 (0.0011) | within every limit |
+| S9 80% of effects up | **7 recommended** | 500 | 1.00 | 0.053 (0.0004) | 0.056 (0.0009) | 0.018 [0.008, 0.034] | 0.062 | 0.920 (0.0011) | within every limit |
+| S9 80% of effects up | 8 known controls | 500 | 1.00 | 0.050 (0.0004) | 0.051 (0.0009) | 0.018 [0.008, 0.034] | 0.062 | 0.918 (0.0011) | within every limit |
+| S9 80% of effects up | 5 first-pass nulls | 500 | 1.10 | 0.051 (0.0004) | 0.053 (0.0009) | 0.016 [0.007, 0.031] | 0.062 | 0.919 (0.0011) | within every limit |
+| S9 80% of effects up | 3 legacy † | 500 | 1.10 | 0.067 (0.0007) | 0.086 (0.0015) | 0.288 [0.249, 0.330] | 0.062 | 0.922 (0.0032) | 1 fail; 2 fail; 3 fail |
+| S9 80% of effects up | 1 none | 500 | 0.00 | 0.015 (0.0002) | 0.007 (0.0004) | 0.000 [0.000, 0.007] | 0.062 | 0.516 (0.0025) | 4 fail |
+| S10 loadings tied to abundance | 2 ceiling | 500 | 1.00 | 0.050 (0.0004) | 0.050 (0.0009) | 0.012 [0.004, 0.026] | 0.062 | 0.913 (0.0011) | within every limit |
+| S10 loadings tied to abundance | **7 recommended** | 500 | 1.00 | 0.052 (0.0004) | 0.053 (0.0009) | 0.014 [0.006, 0.029] | 0.062 | 0.914 (0.0011) | within every limit |
+| S10 loadings tied to abundance | 8 known controls | 500 | 1.00 | 0.050 (0.0004) | 0.050 (0.0009) | 0.012 [0.004, 0.026] | 0.062 | 0.912 (0.0012) | within every limit |
+| S10 loadings tied to abundance | 5 first-pass nulls | 500 | 1.85 | 0.051 (0.0004) | 0.052 (0.0009) | 0.012 [0.004, 0.026] | 0.062 | 0.902 (0.0013) | within every limit |
+| S10 loadings tied to abundance | 3 legacy † | 500 | 1.85 | 0.079 (0.0009) | 0.112 (0.0021) | 0.596 [0.552, 0.639] | 0.062 | 0.912 (0.0042) | 1 fail; 2 fail; 3 fail |
+| S10 loadings tied to abundance | 1 none | 500 | 0.00 | 0.015 (0.0002) | 0.007 (0.0004) | 0.000 [0.000, 0.007] | 0.062 | 0.525 (0.0026) | 4 fail |
+| S11 3 per group, factor tied 0.3 | 2 ceiling | 500 | 1.00 | 0.051 (0.0004) | 0.051 (0.0011) | 0.036 [0.021, 0.056] | 0.086 | 0.614 (0.0036) | within every limit |
+| S11 3 per group, factor tied 0.3 | **7 recommended** | 500 | 1.00 | 0.052 (0.0004) | 0.055 (0.0011) | 0.032 [0.018, 0.051] | 0.086 | 0.628 (0.0036) | within every limit |
+| S11 3 per group, factor tied 0.3 | 8 known controls | 500 | 1.00 | 0.052 (0.0005) | 0.054 (0.0012) | 0.044 [0.028, 0.066] | 0.086 | 0.608 (0.0042) | within every limit |
+| S11 3 per group, factor tied 0.3 | 5 first-pass nulls | 500 | 1.51 | 0.061 (0.0005) | 0.067 (0.0014) | 0.128 [0.100, 0.160] | 0.086 | 0.601 (0.0044) | 3 fail |
+| S11 3 per group, factor tied 0.3 | 3 legacy † | 500 | 1.51 | 0.299 (0.0060) | 0.521 (0.0085) | 0.964 [0.944, 0.979] | 0.086 | 0.852 (0.0069) | 1 fail; 2 fail; 3 fail |
+| S11 3 per group, factor tied 0.3 | 1 none | 500 | 0.00 | 0.017 (0.0004) | 0.004 (0.0024) | 0.006 [0.001, 0.017] | 0.086 | 0.000 (0.0000) | 4 fail |
+| S12 3 per group, three factors (**void**) | 2 ceiling | 500 | 3.00 | 0.078 (0.0009) | 0.127 (0.0049) | 0.632 [0.588, 0.674] | 0.682 | 0.382 (0.0128) | 1 fail; 2 fail |
+| S12 3 per group, three factors (**void**) | **7 recommended** | 500 | 3.00 | 0.079 (0.0010) | 0.119 (0.0046) | 0.572 [0.527, 0.616] | 0.682 | 0.359 (0.0131) | 1 fail; 2 fail |
+| S12 3 per group, three factors (**void**) | 8 known controls | 500 | 3.00 | 0.074 (0.0009) | 0.124 (0.0056) | 0.606 [0.562, 0.649] | 0.682 | 0.341 (0.0124) | 1 fail; 2 fail |
+| S12 3 per group, three factors (**void**) | 5 first-pass nulls | 500 | 1.19 | 0.007 (0.0002) | 0.006 (0.0035) | 0.006 [0.001, 0.017] | 0.682 | 0.000 (0.0000) | 4 inconclusive |
+| S12 3 per group, three factors (**void**) | 3 legacy † | 500 | 1.19 | 0.056 (0.0040) | 0.106 (0.0100) | 0.192 [0.158, 0.229] | 0.682 | 0.103 (0.0100) | 1 fail; 2 fail |
+| S12 3 per group, three factors (**void**) | 1 none | 500 | 0.00 | 0.002 (0.0001) | 0.006 (0.0035) | 0.006 [0.001, 0.017] | 0.682 | 0.000 (0.0000) | 4 fail |
+| S13 no factor, 3 per group | 2 ceiling | 500 | 0.00 | 0.050 (0.0004) | 0.051 (0.0010) | 0.026 [0.014, 0.044] | 0.076 | 0.746 (0.0026) | within every limit |
+| S13 no factor, 3 per group | **7 recommended** | 500 | 0.13 | 0.051 (0.0005) | 0.053 (0.0011) | 0.034 [0.020, 0.054] | 0.076 | 0.741 (0.0029) | within every limit |
+| S13 no factor, 3 per group | 8 known controls | 500 | 0.13 | 0.051 (0.0004) | 0.053 (0.0011) | 0.040 [0.025, 0.061] | 0.076 | 0.739 (0.0030) | within every limit |
+| S13 no factor, 3 per group | 5 first-pass nulls | 500 | 1.86 | 0.057 (0.0005) | 0.067 (0.0013) | 0.144 [0.114, 0.178] | 0.076 | 0.617 (0.0044) | 3 fail; 5 fail |
+| S13 no factor, 3 per group | 3 legacy † | 500 | 1.86 | 0.281 (0.0037) | 0.518 (0.0071) | 0.980 [0.964, 0.990] | 0.076 | 0.928 (0.0035) | 1 fail; 2 fail; 3 fail |
+| S13 no factor, 3 per group | 1 none | 500 | 0.00 | 0.050 (0.0004) | 0.051 (0.0010) | 0.026 [0.014, 0.044] | 0.076 | 0.746 (0.0026) | within every limit |
+| S14 no factor, 50% missing | 2 ceiling | 500 | 0.00 | 0.051 (0.0005) | 0.052 (0.0011) | 0.038 [0.023, 0.059] | 0.088 | 0.908 (0.0015) | within every limit |
+| S14 no factor, 50% missing | **7 recommended** | 500 | 0.13 | 0.051 (0.0005) | 0.053 (0.0011) | 0.036 [0.021, 0.056] | 0.088 | 0.906 (0.0016) | within every limit |
+| S14 no factor, 50% missing | 8 known controls | 500 | 0.13 | 0.051 (0.0005) | 0.052 (0.0011) | 0.040 [0.025, 0.061] | 0.088 | 0.906 (0.0016) | within every limit |
+| S14 no factor, 50% missing | 5 first-pass nulls | 500 | 1.97 | 0.054 (0.0005) | 0.057 (0.0013) | 0.068 [0.048, 0.094] | 0.088 | 0.870 (0.0020) | 3 inconclusive; 5 fail |
+| S14 no factor, 50% missing | 3 legacy † | 500 | 1.97 | 0.066 (0.0011) | 0.089 (0.0022) | 0.376 [0.333, 0.420] | 0.088 | 0.822 (0.0083) | 1 fail; 2 fail; 3 fail; 5 fail |
+| S14 no factor, 50% missing | 1 none | 500 | 0.00 | 0.051 (0.0005) | 0.052 (0.0011) | 0.038 [0.023, 0.059] | 0.088 | 0.908 (0.0015) | within every limit |
+
+**S2, DIA_LIMPA (all fourteen on the runner)**
+
+| Scenario | Design | Scored runs | Mean k | Type I at 0.05 (SE) | Mean FDP (SE) | Share FDP > 0.10 [97.5% bounds] | Rule 3 limit | Power (SE) | Rules not passed |
+|---|---|---|---|---|---|---|---|---|---|
+| S1 3 per group | 2 ceiling | 500 | 1.00 | 0.048 (0.0004) | 0.045 (0.0012) | 0.020 [0.010, 0.036] | 0.070 | 0.541 (0.0083) | within every limit |
+| S1 3 per group | **7 recommended** | 500 | 1.00 | 0.058 (0.0011) | 0.070 (0.0031) | 0.132 [0.104, 0.165] | 0.070 | 0.602 (0.0048) | 2 inconclusive; 3 fail |
+| S1 3 per group | 8 known controls | 500 | 1.00 | 0.059 (0.0014) | 0.073 (0.0035) | 0.156 [0.125, 0.191] | 0.070 | 0.592 (0.0051) | 1 inconclusive; 2 inconclusive; 3 fail |
+| S1 3 per group | 5 first-pass nulls | 500 | 1.73 | 0.093 (0.0027) | 0.158 (0.0067) | 0.476 [0.431, 0.521] | 0.070 | 0.654 (0.0026) | 1 fail; 2 fail; 3 fail |
+| S1 3 per group | 3 legacy † | 500 | 1.73 | 0.286 (0.0063) | 0.505 (0.0086) | 0.986 [0.971, 0.994] | 0.070 | 0.826 (0.0029) | 1 fail; 2 fail; 3 fail |
+| S1 3 per group | 1 none | 500 | 0.00 | 0.060 (0.0042) | 0.083 (0.0086) | 0.178 [0.145, 0.214] | 0.070 | 0.153 (0.0102) | 1 inconclusive; 2 inconclusive; 3 fail; 4 fail |
+| S2 40% of features changed | 2 ceiling | 500 | 1.00 | 0.049 (0.0004) | 0.049 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.941 (0.0014) | within every limit |
+| S2 40% of features changed | **7 recommended** | 500 | 1.00 | 0.050 (0.0004) | 0.051 (0.0006) | 0.002 [0.000, 0.011] | 0.050 | 0.943 (0.0012) | within every limit |
+| S2 40% of features changed | 8 known controls | 500 | 1.00 | 0.050 (0.0005) | 0.050 (0.0007) | 0.006 [0.001, 0.017] | 0.050 | 0.942 (0.0012) | within every limit |
+| S2 40% of features changed | 5 first-pass nulls | 500 | 1.85 | 0.083 (0.0018) | 0.100 (0.0026) | 0.390 [0.347, 0.434] | 0.050 | 0.948 (0.0009) | 1 fail; 2 fail; 3 fail |
+| S2 40% of features changed | 3 legacy † | 500 | 1.85 | 0.207 (0.0067) | 0.248 (0.0071) | 0.758 [0.718, 0.795] | 0.050 | 0.938 (0.0015) | 1 fail; 2 fail; 3 fail |
+| S2 40% of features changed | 1 none | 500 | 0.00 | 0.053 (0.0038) | 0.070 (0.0056) | 0.184 [0.151, 0.221] | 0.050 | 0.692 (0.0057) | 1 inconclusive; 2 inconclusive; 3 fail; 4 fail |
+| S3 factor tied to groups, 0.6 | 2 ceiling | 500 | 1.00 | 0.048 (0.0003) | 0.047 (0.0008) | 0.006 [0.001, 0.017] | 0.056 | 0.741 (0.0076) | within every limit |
+| S3 factor tied to groups, 0.6 | **7 recommended** | 500 | 1.00 | 0.056 (0.0005) | 0.065 (0.0013) | 0.084 [0.061, 0.112] | 0.056 | 0.786 (0.0055) | 3 fail |
+| S3 factor tied to groups, 0.6 | 8 known controls | 500 | 1.00 | 0.059 (0.0009) | 0.073 (0.0021) | 0.180 [0.147, 0.217] | 0.056 | 0.782 (0.0056) | 2 inconclusive; 3 fail |
+| S3 factor tied to groups, 0.6 | 5 first-pass nulls | 500 | 1.86 | 0.154 (0.0026) | 0.301 (0.0063) | 0.894 [0.864, 0.920] | 0.056 | 0.858 (0.0028) | 1 fail; 2 fail; 3 fail |
+| S3 factor tied to groups, 0.6 | 3 legacy † | 500 | 1.86 | 0.469 (0.0069) | 0.677 (0.0067) | 0.994 [0.983, 0.999] | 0.056 | 0.865 (0.0021) | 1 fail; 2 fail; 3 fail |
+| S3 factor tied to groups, 0.6 | 1 none | 500 | 0.00 | 0.324 (0.0082) | 0.533 (0.0125) | 0.836 [0.801, 0.867] | 0.056 | 0.745 (0.0034) | 1 fail; 2 fail; 3 fail; 4 fail |
+| S4 three factors | 2 ceiling | 500 | 3.00 | 0.049 (0.0004) | 0.049 (0.0008) | 0.004 [0.000, 0.014] | 0.054 | 0.824 (0.0053) | within every limit |
+| S4 three factors | **7 recommended** | 500 | 2.63 | 0.066 (0.0018) | 0.088 (0.0042) | 0.188 [0.155, 0.225] | 0.054 | 0.867 (0.0024) | 1 fail; 2 fail; 3 fail |
+| S4 three factors | 8 known controls | 500 | 2.63 | 0.066 (0.0019) | 0.088 (0.0042) | 0.224 [0.188, 0.263] | 0.054 | 0.855 (0.0026) | 1 fail; 2 fail; 3 fail |
+| S4 three factors | 5 first-pass nulls | 500 | 1.86 | 0.094 (0.0033) | 0.152 (0.0073) | 0.432 [0.388, 0.477] | 0.054 | 0.821 (0.0037) | 1 fail; 2 fail; 3 fail |
+| S4 three factors | 3 legacy † | 500 | 1.86 | 0.173 (0.0048) | 0.316 (0.0096) | 0.788 [0.750, 0.823] | 0.054 | 0.843 (0.0036) | 1 fail; 2 fail; 3 fail |
+| S4 three factors | 1 none | 500 | 0.00 | 0.055 (0.0027) | 0.073 (0.0058) | 0.228 [0.192, 0.267] | 0.054 | 0.455 (0.0078) | 2 inconclusive; 3 fail; 4 fail |
+| S5 no missing values | 2 ceiling | 248 | 1.00 | 0.049 (0.0005) | 0.049 (0.0010) | 0.000 [0.000, 0.015] | 0.050 | 0.997 (0.0009) | 6 fail |
+| S5 no missing values | **7 recommended** | 248 | 1.00 | 0.051 (0.0005) | 0.050 (0.0010) | 0.004 [0.000, 0.022] | 0.050 | 0.997 (0.0007) | 6 fail |
+| S5 no missing values | 8 known controls | 248 | 1.00 | 0.050 (0.0006) | 0.050 (0.0012) | 0.012 [0.003, 0.035] | 0.050 | 0.997 (0.0008) | 6 fail |
+| S5 no missing values | 5 first-pass nulls | 248 | 1.71 | 0.068 (0.0016) | 0.088 (0.0037) | 0.262 [0.208, 0.321] | 0.050 | 0.997 (0.0005) | 1 fail; 2 fail; 3 fail; 6 fail |
+| S5 no missing values | 3 legacy † | 248 | 1.71 | 0.228 (0.0107) | 0.367 (0.0158) | 0.819 [0.765, 0.864] | 0.050 | 0.980 (0.0019) | 1 fail; 2 fail; 3 fail; 6 fail |
+| S5 no missing values | 1 none | 248 | 0.00 | 0.044 (0.0059) | 0.066 (0.0107) | 0.141 [0.100, 0.191] | 0.050 | 0.676 (0.0086) | 1 inconclusive; 2 inconclusive; 3 fail; 4 fail; 6 fail |
+| S6 50% missing | 2 ceiling | 500 | 1.00 | 0.063 (0.0005) | 0.068 (0.0013) | 0.116 [0.089, 0.147] | 0.166 | 0.514 (0.0031) | within every limit |
+| S6 50% missing | **7 recommended** | 500 | 1.00 | 0.066 (0.0005) | 0.071 (0.0014) | 0.138 [0.109, 0.171] | 0.166 | 0.524 (0.0025) | 1 inconclusive; 3 inconclusive |
+| S6 50% missing | 8 known controls | 500 | 1.00 | 0.066 (0.0006) | 0.073 (0.0016) | 0.162 [0.131, 0.197] | 0.166 | 0.517 (0.0025) | 1 inconclusive; 2 inconclusive; 3 inconclusive |
+| S6 50% missing | 5 first-pass nulls | 500 | 1.84 | 0.081 (0.0012) | 0.109 (0.0033) | 0.404 [0.361, 0.448] | 0.166 | 0.544 (0.0021) | 1 fail; 2 fail; 3 fail |
+| S6 50% missing | 3 legacy † | 500 | 1.84 | 0.164 (0.0040) | 0.307 (0.0091) | 0.862 [0.829, 0.891] | 0.166 | 0.568 (0.0032) | 1 fail; 2 fail; 3 fail |
+| S6 50% missing | 1 none | 500 | 0.00 | 0.095 (0.0026) | 0.136 (0.0064) | 0.428 [0.384, 0.473] | 0.166 | 0.318 (0.0043) | 1 fail; 2 fail; 3 fail; 4 fail |
+| S7 heavy tails | 2 ceiling | 500 | 1.00 | 0.050 (0.0004) | 0.048 (0.0007) | 0.002 [0.000, 0.011] | 0.052 | 0.925 (0.0015) | within every limit |
+| S7 heavy tails | **7 recommended** | 500 | 1.00 | 0.052 (0.0004) | 0.051 (0.0009) | 0.016 [0.007, 0.031] | 0.052 | 0.928 (0.0013) | within every limit |
+| S7 heavy tails | 8 known controls | 500 | 1.00 | 0.052 (0.0005) | 0.051 (0.0011) | 0.040 [0.025, 0.061] | 0.052 | 0.926 (0.0013) | 3 inconclusive |
+| S7 heavy tails | 5 first-pass nulls | 500 | 1.76 | 0.072 (0.0014) | 0.096 (0.0033) | 0.306 [0.266, 0.348] | 0.052 | 0.934 (0.0010) | 1 fail; 2 fail; 3 fail |
+| S7 heavy tails | 3 legacy † | 500 | 1.76 | 0.212 (0.0064) | 0.359 (0.0105) | 0.814 [0.777, 0.847] | 0.052 | 0.925 (0.0020) | 1 fail; 2 fail; 3 fail |
+| S7 heavy tails | 1 none | 500 | 0.00 | 0.047 (0.0036) | 0.068 (0.0072) | 0.146 [0.116, 0.180] | 0.052 | 0.602 (0.0067) | 2 inconclusive; 3 fail; 4 fail |
+| S8 known unbalanced batch | 2 ceiling | 500 | 1.00 | 0.048 (0.0003) | 0.049 (0.0008) | 0.002 [0.000, 0.011] | 0.052 | 0.861 (0.0025) | within every limit |
+| S8 known unbalanced batch | **7 recommended** | 500 | 1.98 | 0.052 (0.0010) | 0.055 (0.0019) | 0.026 [0.014, 0.044] | 0.052 | 0.870 (0.0020) | within every limit |
+| S8 known unbalanced batch | 8 known controls | 500 | 1.98 | 0.052 (0.0011) | 0.057 (0.0021) | 0.058 [0.039, 0.082] | 0.052 | 0.861 (0.0021) | 3 inconclusive |
+| S8 known unbalanced batch | 5 first-pass nulls | 500 | 1.78 | 0.100 (0.0024) | 0.164 (0.0054) | 0.726 [0.685, 0.765] | 0.052 | 0.830 (0.0057) | 1 fail; 2 fail; 3 fail |
+| S8 known unbalanced batch | 3 legacy † | 500 | 1.78 | 0.314 (0.0058) | 0.547 (0.0086) | 0.938 [0.913, 0.957] | 0.052 | 0.827 (0.0041) | 1 fail; 2 fail; 3 fail |
+| S8 known unbalanced batch | 1 none | 500 | 0.00 | 0.043 (0.0025) | 0.040 (0.0050) | 0.090 [0.066, 0.119] | 0.052 | 0.220 (0.0074) | 3 fail; 4 fail |
+| S9 80% of effects up | 2 ceiling | 500 | 1.00 | 0.048 (0.0004) | 0.047 (0.0008) | 0.004 [0.000, 0.014] | 0.054 | 0.900 (0.0022) | within every limit |
+| S9 80% of effects up | **7 recommended** | 500 | 1.00 | 0.050 (0.0004) | 0.050 (0.0008) | 0.008 [0.002, 0.020] | 0.054 | 0.904 (0.0018) | within every limit |
+| S9 80% of effects up | 8 known controls | 500 | 1.00 | 0.050 (0.0005) | 0.051 (0.0010) | 0.030 [0.017, 0.049] | 0.054 | 0.902 (0.0018) | within every limit |
+| S9 80% of effects up | 5 first-pass nulls | 500 | 1.52 | 0.073 (0.0014) | 0.101 (0.0035) | 0.330 [0.289, 0.373] | 0.054 | 0.912 (0.0012) | 1 fail; 2 fail; 3 fail |
+| S9 80% of effects up | 3 legacy † | 500 | 1.52 | 0.207 (0.0063) | 0.351 (0.0106) | 0.792 [0.754, 0.827] | 0.054 | 0.911 (0.0020) | 1 fail; 2 fail; 3 fail |
+| S9 80% of effects up | 1 none | 500 | 0.00 | 0.058 (0.0041) | 0.088 (0.0080) | 0.192 [0.158, 0.229] | 0.054 | 0.561 (0.0074) | 1 inconclusive; 2 inconclusive; 3 fail; 4 fail |
+| S10 loadings tied to abundance | 2 ceiling | 500 | 1.00 | 0.048 (0.0003) | 0.048 (0.0008) | 0.002 [0.000, 0.011] | 0.052 | 0.902 (0.0023) | within every limit |
+| S10 loadings tied to abundance | **7 recommended** | 500 | 1.00 | 0.050 (0.0004) | 0.052 (0.0009) | 0.010 [0.003, 0.023] | 0.052 | 0.907 (0.0018) | within every limit |
+| S10 loadings tied to abundance | 8 known controls | 500 | 1.00 | 0.050 (0.0004) | 0.052 (0.0010) | 0.026 [0.014, 0.044] | 0.052 | 0.905 (0.0017) | within every limit |
+| S10 loadings tied to abundance | 5 first-pass nulls | 500 | 1.87 | 0.072 (0.0013) | 0.100 (0.0032) | 0.344 [0.302, 0.387] | 0.052 | 0.916 (0.0012) | 1 fail; 2 fail; 3 fail |
+| S10 loadings tied to abundance | 3 legacy † | 500 | 1.87 | 0.209 (0.0065) | 0.353 (0.0105) | 0.828 [0.792, 0.860] | 0.052 | 0.909 (0.0022) | 1 fail; 2 fail; 3 fail |
+| S10 loadings tied to abundance | 1 none | 500 | 0.00 | 0.059 (0.0042) | 0.088 (0.0081) | 0.202 [0.168, 0.240] | 0.052 | 0.578 (0.0073) | 1 inconclusive; 2 inconclusive; 3 fail; 4 fail |
+| S11 3 per group, factor tied 0.3 | 2 ceiling | 500 | 1.00 | 0.048 (0.0004) | 0.046 (0.0024) | 0.034 [0.020, 0.054] | 0.084 | 0.482 (0.0095) | within every limit |
+| S11 3 per group, factor tied 0.3 | **7 recommended** | 500 | 1.00 | 0.061 (0.0014) | 0.078 (0.0036) | 0.164 [0.133, 0.199] | 0.084 | 0.560 (0.0062) | 1 inconclusive; 2 inconclusive; 3 fail |
+| S11 3 per group, factor tied 0.3 | 8 known controls | 500 | 1.00 | 0.061 (0.0016) | 0.082 (0.0041) | 0.180 [0.147, 0.217] | 0.084 | 0.548 (0.0065) | 1 inconclusive; 2 inconclusive; 3 fail |
+| S11 3 per group, factor tied 0.3 | 5 first-pass nulls | 500 | 1.75 | 0.113 (0.0033) | 0.210 (0.0080) | 0.600 [0.556, 0.643] | 0.084 | 0.644 (0.0027) | 1 fail; 2 fail; 3 fail |
+| S11 3 per group, factor tied 0.3 | 3 legacy † | 500 | 1.75 | 0.338 (0.0070) | 0.567 (0.0085) | 0.982 [0.966, 0.992] | 0.084 | 0.824 (0.0030) | 1 fail; 2 fail; 3 fail |
+| S11 3 per group, factor tied 0.3 | 1 none | 500 | 0.00 | 0.093 (0.0055) | 0.142 (0.0112) | 0.270 [0.232, 0.311] | 0.084 | 0.206 (0.0111) | 1 fail; 2 fail; 3 fail; 4 fail |
+| S12 3 per group, three factors | 2 ceiling | 500 | 3.00 | 0.046 (0.0005) | 0.053 (0.0058) | 0.114 [0.087, 0.145] | 0.164 | 0.173 (0.0092) | within every limit |
+| S12 3 per group, three factors | **7 recommended** | 500 | 1.39 | 0.092 (0.0035) | 0.164 (0.0086) | 0.448 [0.404, 0.493] | 0.164 | 0.390 (0.0087) | 1 fail; 2 fail; 3 fail |
+| S12 3 per group, three factors | 8 known controls | 500 | 1.39 | 0.092 (0.0035) | 0.165 (0.0086) | 0.448 [0.404, 0.493] | 0.164 | 0.378 (0.0086) | 1 fail; 2 fail; 3 fail |
+| S12 3 per group, three factors | 5 first-pass nulls | 500 | 1.79 | 0.122 (0.0038) | 0.236 (0.0091) | 0.648 [0.604, 0.690] | 0.164 | 0.494 (0.0088) | 1 fail; 2 fail; 3 fail |
+| S12 3 per group, three factors | 3 legacy † | 500 | 1.79 | 0.283 (0.0060) | 0.513 (0.0100) | 0.900 [0.870, 0.925] | 0.164 | 0.725 (0.0086) | 1 fail; 2 fail; 3 fail |
+| S12 3 per group, three factors | 1 none | 500 | 0.00 | 0.057 (0.0027) | 0.078 (0.0067) | 0.226 [0.190, 0.265] | 0.164 | 0.100 (0.0066) | 1 inconclusive; 2 inconclusive; 3 fail; 4 fail |
+| S13 no factor, 3 per group | 2 ceiling | 500 | 0.00 | 0.047 (0.0004) | 0.047 (0.0009) | 0.008 [0.002, 0.020] | 0.058 | 0.700 (0.0017) | within every limit |
+| S13 no factor, 3 per group | **7 recommended** | 500 | 0.14 | 0.048 (0.0004) | 0.048 (0.0009) | 0.010 [0.003, 0.023] | 0.058 | 0.702 (0.0018) | within every limit |
+| S13 no factor, 3 per group | 8 known controls | 500 | 0.14 | 0.048 (0.0004) | 0.047 (0.0009) | 0.010 [0.003, 0.023] | 0.058 | 0.700 (0.0018) | within every limit |
+| S13 no factor, 3 per group | 5 first-pass nulls | 500 | 1.99 | 0.053 (0.0004) | 0.056 (0.0011) | 0.036 [0.021, 0.056] | 0.058 | 0.702 (0.0020) | within every limit |
+| S13 no factor, 3 per group | 3 legacy † | 500 | 1.99 | 0.167 (0.0013) | 0.326 (0.0033) | 0.994 [0.983, 0.999] | 0.058 | 0.854 (0.0026) | 1 fail; 2 fail; 3 fail |
+| S13 no factor, 3 per group | 1 none | 500 | 0.00 | 0.047 (0.0004) | 0.047 (0.0009) | 0.008 [0.002, 0.020] | 0.058 | 0.700 (0.0017) | within every limit |
+| S14 no factor, 50% missing (**void**) | 2 ceiling | 500 | 0.00 | 0.064 (0.0004) | 0.074 (0.0011) | 0.138 [0.109, 0.171] | 0.188 | 0.551 (0.0017) | 1 fail; 2 inconclusive |
+| S14 no factor, 50% missing (**void**) | **7 recommended** | 500 | 0.19 | 0.065 (0.0004) | 0.075 (0.0011) | 0.150 [0.120, 0.184] | 0.188 | 0.553 (0.0017) | 1 fail; 2 inconclusive |
+| S14 no factor, 50% missing (**void**) | 8 known controls | 500 | 0.19 | 0.065 (0.0004) | 0.075 (0.0011) | 0.154 [0.123, 0.189] | 0.188 | 0.551 (0.0017) | 1 fail; 2 inconclusive; 3 inconclusive |
+| S14 no factor, 50% missing (**void**) | 5 first-pass nulls | 500 | 2.00 | 0.069 (0.0005) | 0.079 (0.0012) | 0.202 [0.168, 0.240] | 0.188 | 0.566 (0.0017) | 1 fail; 2 fail; 3 inconclusive |
+| S14 no factor, 50% missing (**void**) | 3 legacy † | 500 | 2.00 | 0.080 (0.0007) | 0.110 (0.0019) | 0.568 [0.523, 0.612] | 0.188 | 0.594 (0.0022) | 1 fail; 2 fail; 3 fail |
+| S14 no factor, 50% missing (**void**) | 1 none | 500 | 0.00 | 0.064 (0.0004) | 0.074 (0.0011) | 0.138 [0.109, 0.171] | 0.188 | 0.551 (0.0017) | 1 fail; 2 inconclusive |
+
+**S3, transcriptomics (S14 on the runner, the rest laptop; S6 not defined)**
+
+| Scenario | Design | Scored runs | Mean k | Type I at 0.05 (SE) | Mean FDP (SE) | Share FDP > 0.10 [97.5% bounds] | Rule 3 limit | Power (SE) | Rules not passed |
+|---|---|---|---|---|---|---|---|---|---|
+| S1 3 per group | 2 ceiling | 500 | 1.00 | 0.053 (0.0002) | 0.046 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.369 (0.0013) | within every limit |
+| S1 3 per group | **7 recommended** | 500 | 1.00 | 0.053 (0.0002) | 0.046 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.369 (0.0013) | within every limit |
+| S1 3 per group | 8 known controls | 500 | 1.00 | 0.054 (0.0003) | 0.047 (0.0008) | 0.010 [0.003, 0.023] | 0.050 | 0.345 (0.0017) | within every limit |
+| S1 3 per group | 5 first-pass nulls | 500 | 2.66 | 0.052 (0.0002) | 0.044 (0.0012) | 0.014 [0.006, 0.029] | 0.050 | 0.250 (0.0060) | within every limit |
+| S1 3 per group | 3 legacy | 500 | 2.66 | 0.052 (0.0003) | 0.046 (0.0008) | 0.010 [0.003, 0.023] | 0.050 | 0.306 (0.0033) | within every limit |
+| S1 3 per group | 1 none | 500 | 0.00 | 0.004 (0.0000) | 0.000 (0.0000) | 0.000 [0.000, 0.007] | 0.050 | 0.000 (0.0000) | 4 fail |
+| S2 40% of features changed | 2 ceiling | 500 | 1.00 | 0.056 (0.0002) | 0.035 (0.0002) | 0.000 [0.000, 0.007] | 0.050 | 0.835 (0.0005) | within every limit |
+| S2 40% of features changed | **7 recommended** | 500 | 1.00 | 0.056 (0.0002) | 0.035 (0.0002) | 0.000 [0.000, 0.007] | 0.050 | 0.835 (0.0005) | within every limit |
+| S2 40% of features changed | 8 known controls | 500 | 1.00 | 0.056 (0.0003) | 0.035 (0.0003) | 0.000 [0.000, 0.007] | 0.050 | 0.827 (0.0005) | within every limit |
+| S2 40% of features changed | 5 first-pass nulls | 500 | 2.78 | 0.053 (0.0002) | 0.035 (0.0075) | 0.036 [0.021, 0.056] | 0.050 | 0.092 (0.0117) | 3 inconclusive; 4 inconclusive |
+| S2 40% of features changed | 3 legacy | 500 | 2.78 | 0.057 (0.0003) | 0.036 (0.0003) | 0.000 [0.000, 0.007] | 0.050 | 0.793 (0.0025) | within every limit |
+| S2 40% of features changed | 1 none | 500 | 0.00 | 0.010 (0.0001) | 0.001 (0.0001) | 0.000 [0.000, 0.007] | 0.050 | 0.114 (0.0012) | 4 fail |
+| S3 factor tied to groups, 0.6 | 2 ceiling | 500 | 1.00 | 0.055 (0.0002) | 0.048 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.553 (0.0012) | within every limit |
+| S3 factor tied to groups, 0.6 | **7 recommended** | 500 | 1.00 | 0.058 (0.0002) | 0.052 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.575 (0.0011) | within every limit |
+| S3 factor tied to groups, 0.6 | 8 known controls | 500 | 1.00 | 0.055 (0.0003) | 0.048 (0.0006) | 0.004 [0.000, 0.014] | 0.050 | 0.538 (0.0016) | within every limit |
+| S3 factor tied to groups, 0.6 | 5 first-pass nulls | 500 | 3.00 | 0.055 (0.0002) | 0.062 (0.0101) | 0.076 [0.054, 0.103] | 0.050 | 0.002 (0.0012) | 2 inconclusive; 3 fail |
+| S3 factor tied to groups, 0.6 | 3 legacy | 500 | 3.00 | 0.509 (0.0022) | 0.724 (0.0016) | 1.000 [0.993, 1.000] | 0.050 | 0.676 (0.0010) | 1 fail; 2 fail; 3 fail |
+| S3 factor tied to groups, 0.6 | 1 none | 500 | 0.00 | 0.337 (0.0010) | 0.450 (0.0030) | 1.000 [0.993, 1.000] | 0.050 | 0.483 (0.0012) | 1 fail; 2 fail; 3 fail; 4 fail |
+| S4 three factors | 2 ceiling | 500 | 3.00 | 0.056 (0.0002) | 0.048 (0.0004) | 0.000 [0.000, 0.007] | 0.050 | 0.763 (0.0008) | within every limit |
+| S4 three factors | **7 recommended** | 500 | 3.00 | 0.056 (0.0002) | 0.049 (0.0004) | 0.000 [0.000, 0.007] | 0.050 | 0.762 (0.0008) | within every limit |
+| S4 three factors | 8 known controls | 500 | 3.00 | 0.056 (0.0005) | 0.048 (0.0008) | 0.012 [0.004, 0.026] | 0.050 | 0.718 (0.0012) | within every limit |
+| S4 three factors | 5 first-pass nulls | 500 | 1.55 | 0.017 (0.0009) | 0.009 (0.0008) | 0.000 [0.000, 0.007] | 0.050 | 0.180 (0.0129) | within every limit |
+| S4 three factors | 3 legacy | 500 | 1.55 | 0.016 (0.0008) | 0.008 (0.0008) | 0.002 [0.000, 0.011] | 0.050 | 0.160 (0.0121) | within every limit |
+| S4 three factors | 1 none | 500 | 0.00 | 0.005 (0.0002) | 0.000 (0.0000) | 0.000 [0.000, 0.007] | 0.050 | 0.000 (0.0000) | 4 fail |
+| S5 low counts (library size / 10) | 2 ceiling | 500 | 1.00 | 0.056 (0.0004) | 0.049 (0.0007) | 0.000 [0.000, 0.007] | 0.050 | 0.754 (0.0013) | within every limit |
+| S5 low counts (library size / 10) | **7 recommended** | 500 | 1.00 | 0.055 (0.0003) | 0.047 (0.0006) | 0.000 [0.000, 0.007] | 0.050 | 0.753 (0.0013) | within every limit |
+| S5 low counts (library size / 10) | 8 known controls | 500 | 1.00 | 0.054 (0.0005) | 0.047 (0.0008) | 0.012 [0.004, 0.026] | 0.050 | 0.735 (0.0014) | within every limit |
+| S5 low counts (library size / 10) | 5 first-pass nulls | 500 | 3.00 | 0.053 (0.0003) | 0.051 (0.0026) | 0.034 [0.020, 0.054] | 0.050 | 0.440 (0.0120) | 3 inconclusive |
+| S5 low counts (library size / 10) | 3 legacy | 500 | 3.00 | 0.056 (0.0004) | 0.050 (0.0007) | 0.002 [0.000, 0.011] | 0.050 | 0.688 (0.0028) | within every limit |
+| S5 low counts (library size / 10) | 1 none | 500 | 0.00 | 0.009 (0.0003) | 0.001 (0.0004) | 0.002 [0.000, 0.011] | 0.050 | 0.002 (0.0002) | 4 fail |
+| S7 heavy tails (**void**) | 2 ceiling | 500 | 1.00 | 0.085 (0.0003) | 0.022 (0.0004) | 0.000 [0.000, 0.007] | 0.050 | 0.352 (0.0013) | 1 fail |
+| S7 heavy tails (**void**) | **7 recommended** | 500 | 1.00 | 0.085 (0.0003) | 0.022 (0.0004) | 0.000 [0.000, 0.007] | 0.050 | 0.352 (0.0013) | 1 fail |
+| S7 heavy tails (**void**) | 8 known controls | 500 | 1.00 | 0.086 (0.0004) | 0.022 (0.0005) | 0.002 [0.000, 0.011] | 0.050 | 0.316 (0.0017) | 1 fail |
+| S7 heavy tails (**void**) | 5 first-pass nulls | 500 | 2.97 | 0.069 (0.0005) | 0.020 (0.0026) | 0.022 [0.011, 0.039] | 0.050 | 0.142 (0.0046) | within every limit |
+| S7 heavy tails (**void**) | 3 legacy | 500 | 2.97 | 0.064 (0.0003) | 0.018 (0.0006) | 0.000 [0.000, 0.007] | 0.050 | 0.204 (0.0033) | within every limit |
+| S7 heavy tails (**void**) | 1 none | 500 | 0.00 | 0.064 (0.0003) | 0.000 (0.0000) | 0.000 [0.000, 0.007] | 0.050 | 0.000 (0.0000) | 4 fail |
+| S8 known unbalanced batch | 2 ceiling | 500 | 1.00 | 0.056 (0.0002) | 0.048 (0.0004) | 0.000 [0.000, 0.007] | 0.050 | 0.725 (0.0009) | within every limit |
+| S8 known unbalanced batch | **7 recommended** | 500 | 1.00 | 0.056 (0.0002) | 0.049 (0.0004) | 0.000 [0.000, 0.007] | 0.050 | 0.728 (0.0009) | within every limit |
+| S8 known unbalanced batch | 8 known controls | 500 | 1.00 | 0.056 (0.0003) | 0.049 (0.0006) | 0.004 [0.000, 0.014] | 0.050 | 0.712 (0.0011) | within every limit |
+| S8 known unbalanced batch | 5 first-pass nulls | 500 | 3.00 | 0.058 (0.0002) | 0.067 (0.0060) | 0.184 [0.151, 0.221] | 0.050 | 0.042 (0.0038) | 2 inconclusive; 3 fail; 4 fail |
+| S8 known unbalanced batch | 3 legacy | 500 | 3.00 | 0.241 (0.0011) | 0.433 (0.0020) | 1.000 [0.993, 1.000] | 0.050 | 0.692 (0.0016) | 1 fail; 2 fail; 3 fail |
+| S8 known unbalanced batch | 1 none | 500 | 0.00 | 0.036 (0.0001) | 0.004 (0.0003) | 0.000 [0.000, 0.007] | 0.050 | 0.083 (0.0017) | 4 fail |
+| S9 80% of effects up (**void**) | 2 ceiling | 500 | 1.00 | 0.075 (0.0004) | 0.074 (0.0006) | 0.040 [0.025, 0.061] | 0.090 | 0.726 (0.0009) | 1 fail; 2 inconclusive |
+| S9 80% of effects up (**void**) | **7 recommended** | 500 | 1.00 | 0.075 (0.0004) | 0.074 (0.0006) | 0.038 [0.023, 0.059] | 0.090 | 0.726 (0.0009) | 1 fail; 2 inconclusive |
+| S9 80% of effects up (**void**) | 8 known controls | 500 | 1.00 | 0.075 (0.0005) | 0.075 (0.0009) | 0.094 [0.070, 0.123] | 0.090 | 0.711 (0.0010) | 1 fail; 2 inconclusive; 3 inconclusive |
+| S9 80% of effects up (**void**) | 5 first-pass nulls | 500 | 2.67 | 0.063 (0.0003) | 0.058 (0.0017) | 0.014 [0.006, 0.029] | 0.090 | 0.473 (0.0109) | within every limit |
+| S9 80% of effects up (**void**) | 3 legacy | 500 | 2.67 | 0.074 (0.0004) | 0.074 (0.0007) | 0.044 [0.028, 0.066] | 0.090 | 0.678 (0.0028) | 1 fail |
+| S9 80% of effects up (**void**) | 1 none | 500 | 0.00 | 0.014 (0.0002) | 0.000 (0.0000) | 0.000 [0.000, 0.007] | 0.090 | 0.001 (0.0002) | 4 fail |
+| S10 loadings tied to abundance | 2 ceiling | 500 | 1.00 | 0.056 (0.0002) | 0.048 (0.0004) | 0.000 [0.000, 0.007] | 0.050 | 0.774 (0.0007) | within every limit |
+| S10 loadings tied to abundance | **7 recommended** | 500 | 1.00 | 0.056 (0.0002) | 0.048 (0.0004) | 0.000 [0.000, 0.007] | 0.050 | 0.774 (0.0007) | within every limit |
+| S10 loadings tied to abundance | 8 known controls | 500 | 1.00 | 0.055 (0.0003) | 0.048 (0.0006) | 0.006 [0.001, 0.017] | 0.050 | 0.764 (0.0008) | within every limit |
+| S10 loadings tied to abundance | 5 first-pass nulls | 500 | 3.00 | 0.055 (0.0002) | 0.049 (0.0008) | 0.006 [0.001, 0.017] | 0.050 | 0.623 (0.0089) | within every limit |
+| S10 loadings tied to abundance | 3 legacy | 500 | 3.00 | 0.055 (0.0002) | 0.047 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.727 (0.0024) | within every limit |
+| S10 loadings tied to abundance | 1 none | 500 | 0.00 | 0.010 (0.0001) | 0.000 (0.0002) | 0.000 [0.000, 0.007] | 0.050 | 0.026 (0.0011) | 4 fail |
+| S11 3 per group, factor tied 0.3 | 2 ceiling | 500 | 1.00 | 0.053 (0.0002) | 0.047 (0.0006) | 0.000 [0.000, 0.007] | 0.050 | 0.315 (0.0013) | within every limit |
+| S11 3 per group, factor tied 0.3 | **7 recommended** | 500 | 1.00 | 0.055 (0.0002) | 0.049 (0.0006) | 0.000 [0.000, 0.007] | 0.050 | 0.324 (0.0013) | within every limit |
+| S11 3 per group, factor tied 0.3 | 8 known controls | 500 | 1.00 | 0.054 (0.0004) | 0.049 (0.0009) | 0.012 [0.004, 0.026] | 0.050 | 0.289 (0.0020) | within every limit |
+| S11 3 per group, factor tied 0.3 | 5 first-pass nulls | 500 | 2.54 | 0.061 (0.0003) | 0.065 (0.0029) | 0.080 [0.058, 0.107] | 0.050 | 0.230 (0.0056) | 3 fail |
+| S11 3 per group, factor tied 0.3 | 3 legacy | 500 | 2.54 | 0.108 (0.0018) | 0.186 (0.0048) | 0.728 [0.687, 0.767] | 0.050 | 0.334 (0.0035) | 1 fail; 2 fail; 3 fail |
+| S11 3 per group, factor tied 0.3 | 1 none | 500 | 0.00 | 0.013 (0.0002) | 0.000 (0.0000) | 0.000 [0.000, 0.007] | 0.050 | 0.000 (0.0000) | 4 fail |
+| S12 3 per group, three factors | 2 ceiling | 500 | 3.00 | 0.051 (0.0002) | 0.044 (0.0006) | 0.000 [0.000, 0.007] | 0.050 | 0.341 (0.0017) | within every limit |
+| S12 3 per group, three factors | **7 recommended** | 500 | 2.00 | 0.005 (0.0001) | 0.000 (0.0000) | 0.000 [0.000, 0.007] | 0.050 | 0.000 (0.0000) | 4 fail |
+| S12 3 per group, three factors | 8 known controls | 500 | 2.00 | 0.005 (0.0001) | 0.000 (0.0000) | 0.000 [0.000, 0.007] | 0.050 | 0.000 (0.0000) | 4 fail |
+| S12 3 per group, three factors | 5 first-pass nulls | 500 | 1.95 | 0.021 (0.0010) | 0.016 (0.0010) | 0.000 [0.000, 0.007] | 0.050 | 0.123 (0.0073) | within every limit |
+| S12 3 per group, three factors | 3 legacy | 500 | 1.95 | 0.021 (0.0011) | 0.017 (0.0013) | 0.022 [0.011, 0.039] | 0.050 | 0.094 (0.0063) | within every limit |
+| S12 3 per group, three factors | 1 none | 500 | 0.00 | 0.003 (0.0001) | 0.000 (0.0000) | 0.000 [0.000, 0.007] | 0.050 | 0.000 (0.0000) | 4 fail |
+| S13 no factor, 3 per group | 2 ceiling | 500 | 0.00 | 0.053 (0.0002) | 0.044 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.386 (0.0011) | within every limit |
+| S13 no factor, 3 per group | **7 recommended** | 500 | 0.57 | 0.052 (0.0002) | 0.044 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.380 (0.0012) | within every limit |
+| S13 no factor, 3 per group | 8 known controls | 500 | 0.57 | 0.052 (0.0002) | 0.044 (0.0013) | 0.018 [0.008, 0.034] | 0.050 | 0.310 (0.0054) | 5 fail |
+| S13 no factor, 3 per group | 5 first-pass nulls | 500 | 2.04 | 0.052 (0.0002) | 0.044 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.359 (0.0014) | 5 fail |
+| S13 no factor, 3 per group | 3 legacy | 500 | 2.04 | 0.052 (0.0002) | 0.043 (0.0006) | 0.000 [0.000, 0.007] | 0.050 | 0.324 (0.0031) | 5 fail |
+| S13 no factor, 3 per group | 1 none | 500 | 0.00 | 0.053 (0.0002) | 0.044 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.386 (0.0011) | within every limit |
+| S14 no factor, low counts | 2 ceiling | 500 | 0.00 | 0.052 (0.0002) | 0.043 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.788 (0.0011) | within every limit |
+| S14 no factor, low counts | **7 recommended** | 500 | 2.95 | 0.054 (0.0003) | 0.046 (0.0005) | 0.002 [0.000, 0.011] | 0.050 | 0.784 (0.0012) | within every limit |
+| S14 no factor, low counts | 8 known controls | 500 | 2.95 | 0.051 (0.0002) | 0.042 (0.0008) | 0.010 [0.003, 0.023] | 0.050 | 0.569 (0.0091) | 5 fail |
+| S14 no factor, low counts | 5 first-pass nulls | 500 | 2.07 | 0.053 (0.0002) | 0.044 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.773 (0.0013) | within every limit |
+| S14 no factor, low counts | 3 legacy † | 500 | 2.07 | 0.052 (0.0002) | 0.044 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.749 (0.0030) | 5 fail |
+| S14 no factor, low counts | 1 none | 500 | 0.00 | 0.052 (0.0002) | 0.043 (0.0005) | 0.000 [0.000, 0.007] | 0.050 | 0.788 (0.0011) | within every limit |
+
+**S4, lipidomics and metabolomics (all on the laptop)**
+
+| Scenario | Design | Scored runs | Mean k | Type I at 0.05 (SE) | Mean FDP (SE) | Share FDP > 0.10 [97.5% bounds] | Rule 3 limit | Power (SE) | Rules not passed |
+|---|---|---|---|---|---|---|---|---|---|
+| S1 3 per group (**void**) | 2 ceiling | 500 | n/a | 0.055 (0.0007) | 0.126 (0.0052) | 0.554 [0.509, 0.598] | 0.604 | 0.153 (0.0038) | 1 inconclusive; 2 fail |
+| S1 3 per group (**void**) | **7 recommended** | 500 | 1.47 | 0.040 (0.0010) | 0.101 (0.0069) | 0.370 [0.328, 0.414] | 0.604 | 0.084 (0.0040) | 2 fail |
+| S1 3 per group (**void**) | 8 known controls | 500 | 1.47 | 0.040 (0.0011) | 0.098 (0.0075) | 0.336 [0.295, 0.379] | 0.604 | 0.067 (0.0035) | 2 fail |
+| S1 3 per group (**void**) | 5 first-pass nulls | 500 | 0.78 | 0.027 (0.0010) | 0.070 (0.0071) | 0.228 [0.192, 0.267] | 0.604 | 0.045 (0.0035) | 2 inconclusive |
+| S1 3 per group (**void**) | 3 legacy | 500 | 1.85 | 0.265 (0.0096) | 0.546 (0.0131) | 0.830 [0.794, 0.862] | 0.604 | 0.285 (0.0090) | 1 fail; 2 fail; 3 fail |
+| S1 3 per group (**void**) | 1 none | 500 | n/a | 0.014 (0.0005) | 0.021 (0.0062) | 0.022 [0.011, 0.039] | 0.604 | 0.000 (0.0001) | 4 fail |
+| S2 40% of features changed | 2 ceiling | 500 | n/a | 0.046 (0.0007) | 0.046 (0.0012) | 0.038 [0.023, 0.059] | 0.088 | 0.634 (0.0029) | within every limit |
+| S2 40% of features changed | **7 recommended** | 500 | 1.97 | 0.053 (0.0009) | 0.055 (0.0015) | 0.106 [0.080, 0.136] | 0.088 | 0.563 (0.0035) | 3 inconclusive |
+| S2 40% of features changed | 8 known controls | 500 | 1.97 | 0.043 (0.0008) | 0.041 (0.0013) | 0.032 [0.018, 0.051] | 0.088 | 0.508 (0.0042) | within every limit |
+| S2 40% of features changed | 5 first-pass nulls | 500 | 3.94 | 0.058 (0.0009) | 0.066 (0.0015) | 0.172 [0.140, 0.208] | 0.088 | 0.571 (0.0031) | 1 inconclusive; 3 fail |
+| S2 40% of features changed | 3 legacy | 500 | 2.72 | 0.203 (0.0057) | 0.318 (0.0074) | 0.866 [0.833, 0.895] | 0.088 | 0.427 (0.0077) | 1 fail; 2 fail; 3 fail |
+| S2 40% of features changed | 1 none | 500 | n/a | 0.011 (0.0004) | 0.005 (0.0023) | 0.014 [0.006, 0.029] | 0.088 | 0.004 (0.0004) | 4 fail |
+| S3 factor tied to groups, 0.6 (ceiling inconclusive) | 2 ceiling | 500 | n/a | 0.049 (0.0007) | 0.072 (0.0036) | 0.312 [0.272, 0.355] | 0.362 | 0.253 (0.0043) | 2 inconclusive |
+| S3 factor tied to groups, 0.6 (ceiling inconclusive) | **7 recommended** | 500 | 1.94 | 0.071 (0.0026) | 0.130 (0.0080) | 0.446 [0.402, 0.491] | 0.362 | 0.173 (0.0050) | 1 fail; 2 fail; 3 fail |
+| S3 factor tied to groups, 0.6 (ceiling inconclusive) | 8 known controls | 500 | 1.94 | 0.063 (0.0027) | 0.120 (0.0090) | 0.344 [0.302, 0.387] | 0.362 | 0.106 (0.0048) | 1 fail; 2 fail; 3 inconclusive |
+| S3 factor tied to groups, 0.6 (ceiling inconclusive) | 5 first-pass nulls | 500 | 3.08 | 0.219 (0.0023) | 0.537 (0.0047) | 1.000 [0.993, 1.000] | 0.362 | 0.450 (0.0042) | 1 fail; 2 fail; 3 fail |
+| S3 factor tied to groups, 0.6 (ceiling inconclusive) | 3 legacy | 500 | 2.16 | 0.294 (0.0046) | 0.633 (0.0062) | 0.998 [0.989, 1.000] | 0.362 | 0.495 (0.0063) | 1 fail; 2 fail; 3 fail |
+| S3 factor tied to groups, 0.6 (ceiling inconclusive) | 1 none | 500 | n/a | 0.252 (0.0014) | 0.642 (0.0039) | 1.000 [0.993, 1.000] | 0.362 | 0.338 (0.0039) | 1 fail; 2 fail; 3 fail; 4 fail |
+| S4 three factors | 2 ceiling | 500 | n/a | 0.047 (0.0007) | 0.055 (0.0019) | 0.130 [0.102, 0.163] | 0.180 | 0.505 (0.0044) | within every limit |
+| S4 three factors | **7 recommended** | 500 | 1.93 | 0.036 (0.0006) | 0.037 (0.0021) | 0.110 [0.084, 0.141] | 0.180 | 0.311 (0.0049) | within every limit |
+| S4 three factors | 8 known controls | 500 | 1.93 | 0.031 (0.0006) | 0.030 (0.0023) | 0.098 [0.073, 0.127] | 0.180 | 0.227 (0.0049) | within every limit |
+| S4 three factors | 5 first-pass nulls | 500 | 4.74 | 0.060 (0.0008) | 0.100 (0.0026) | 0.460 [0.416, 0.505] | 0.180 | 0.491 (0.0039) | 1 fail; 2 fail; 3 fail |
+| S4 three factors | 3 legacy | 500 | 3.38 | 0.179 (0.0042) | 0.456 (0.0089) | 0.942 [0.918, 0.961] | 0.180 | 0.415 (0.0080) | 1 fail; 2 fail; 3 fail |
+| S4 three factors | 1 none | 500 | n/a | 0.010 (0.0003) | 0.010 (0.0042) | 0.012 [0.004, 0.026] | 0.180 | 0.002 (0.0003) | 4 fail |
+| S5 no missing values | 2 ceiling | 500 | n/a | 0.050 (0.0006) | 0.059 (0.0017) | 0.144 [0.114, 0.178] | 0.194 | 0.719 (0.0035) | within every limit |
+| S5 no missing values | **7 recommended** | 500 | 1.98 | 0.053 (0.0007) | 0.066 (0.0018) | 0.182 [0.149, 0.219] | 0.194 | 0.704 (0.0039) | 3 inconclusive |
+| S5 no missing values | 8 known controls | 500 | 1.98 | 0.048 (0.0008) | 0.063 (0.0023) | 0.188 [0.155, 0.225] | 0.194 | 0.608 (0.0055) | 3 inconclusive |
+| S5 no missing values | 5 first-pass nulls | 500 | 4.02 | 0.062 (0.0007) | 0.091 (0.0020) | 0.394 [0.351, 0.438] | 0.194 | 0.768 (0.0033) | 1 fail; 2 fail; 3 fail |
+| S5 no missing values | 3 legacy | 500 | 3.27 | 0.165 (0.0041) | 0.381 (0.0083) | 0.932 [0.906, 0.952] | 0.194 | 0.652 (0.0081) | 1 fail; 2 fail; 3 fail |
+| S5 no missing values | 1 none | 500 | n/a | 0.003 (0.0002) | 0.002 (0.0020) | 0.002 [0.000, 0.011] | 0.194 | 0.003 (0.0004) | 4 fail |
+| S6 50% missing by label (realised 28%) | 2 ceiling | 500 | n/a | 0.045 (0.0006) | 0.056 (0.0023) | 0.186 [0.153, 0.223] | 0.236 | 0.350 (0.0041) | within every limit |
+| S6 50% missing by label (realised 28%) | **7 recommended** | 500 | 1.92 | 0.045 (0.0007) | 0.066 (0.0029) | 0.276 [0.237, 0.317] | 0.236 | 0.272 (0.0042) | 3 fail |
+| S6 50% missing by label (realised 28%) | 8 known controls | 500 | 1.92 | 0.040 (0.0007) | 0.054 (0.0029) | 0.212 [0.177, 0.250] | 0.236 | 0.243 (0.0042) | 3 inconclusive |
+| S6 50% missing by label (realised 28%) | 5 first-pass nulls | 500 | 4.77 | 0.064 (0.0010) | 0.124 (0.0037) | 0.570 [0.525, 0.614] | 0.236 | 0.342 (0.0035) | 1 fail; 2 fail; 3 fail |
+| S6 50% missing by label (realised 28%) | 3 legacy | 500 | 3.46 | 0.231 (0.0050) | 0.565 (0.0076) | 0.976 [0.958, 0.988] | 0.236 | 0.336 (0.0066) | 1 fail; 2 fail; 3 fail |
+| S6 50% missing by label (realised 28%) | 1 none | 500 | n/a | 0.018 (0.0005) | 0.012 (0.0044) | 0.018 [0.008, 0.034] | 0.236 | 0.002 (0.0003) | 4 fail |
+| S7 heavy tails | 2 ceiling | 500 | n/a | 0.042 (0.0006) | 0.041 (0.0015) | 0.054 [0.036, 0.078] | 0.104 | 0.621 (0.0037) | within every limit |
+| S7 heavy tails | **7 recommended** | 500 | 1.97 | 0.046 (0.0008) | 0.046 (0.0019) | 0.108 [0.082, 0.139] | 0.104 | 0.543 (0.0048) | 3 inconclusive |
+| S7 heavy tails | 8 known controls | 500 | 1.97 | 0.040 (0.0007) | 0.038 (0.0018) | 0.076 [0.054, 0.103] | 0.104 | 0.483 (0.0054) | within every limit |
+| S7 heavy tails | 5 first-pass nulls | 500 | 4.37 | 0.058 (0.0008) | 0.080 (0.0024) | 0.310 [0.270, 0.353] | 0.104 | 0.568 (0.0036) | 1 inconclusive; 2 inconclusive; 3 fail |
+| S7 heavy tails | 3 legacy | 500 | 3.27 | 0.190 (0.0047) | 0.453 (0.0088) | 0.948 [0.925, 0.966] | 0.104 | 0.478 (0.0083) | 1 fail; 2 fail; 3 fail |
+| S7 heavy tails | 1 none | 500 | n/a | 0.011 (0.0004) | 0.009 (0.0036) | 0.014 [0.006, 0.029] | 0.104 | 0.003 (0.0005) | 4 fail |
+| S8 known unbalanced batch | 2 ceiling | 500 | n/a | 0.052 (0.0007) | 0.062 (0.0020) | 0.184 [0.151, 0.221] | 0.234 | 0.551 (0.0039) | within every limit |
+| S8 known unbalanced batch | **7 recommended** | 500 | 1.00 | 0.094 (0.0008) | 0.139 (0.0032) | 0.680 [0.637, 0.721] | 0.234 | 0.379 (0.0037) | 1 fail; 2 fail; 3 fail |
+| S8 known unbalanced batch | 8 known controls | 500 | 1.00 | 0.096 (0.0010) | 0.155 (0.0036) | 0.718 [0.676, 0.757] | 0.234 | 0.361 (0.0040) | 1 fail; 2 fail; 3 fail |
+| S8 known unbalanced batch | 5 first-pass nulls | 500 | 3.87 | 0.103 (0.0010) | 0.204 (0.0036) | 0.908 [0.879, 0.932] | 0.234 | 0.461 (0.0036) | 1 fail; 2 fail; 3 fail |
+| S8 known unbalanced batch | 3 legacy | 500 | 2.25 | 0.195 (0.0032) | 0.460 (0.0065) | 0.998 [0.989, 1.000] | 0.234 | 0.507 (0.0059) | 1 fail; 2 fail; 3 fail |
+| S8 known unbalanced batch | 1 none | 500 | n/a | 0.048 (0.0006) | 0.036 (0.0046) | 0.132 [0.104, 0.165] | 0.234 | 0.047 (0.0020) | 4 fail |
+| S9 80% of effects up | 2 ceiling | 500 | n/a | 0.046 (0.0006) | 0.051 (0.0018) | 0.112 [0.086, 0.143] | 0.162 | 0.520 (0.0040) | within every limit |
+| S9 80% of effects up | **7 recommended** | 500 | 1.96 | 0.049 (0.0007) | 0.059 (0.0022) | 0.178 [0.145, 0.214] | 0.162 | 0.464 (0.0046) | 3 inconclusive |
+| S9 80% of effects up | 8 known controls | 500 | 1.96 | 0.042 (0.0007) | 0.051 (0.0022) | 0.146 [0.116, 0.180] | 0.162 | 0.391 (0.0052) | 3 inconclusive |
+| S9 80% of effects up | 5 first-pass nulls | 500 | 4.16 | 0.059 (0.0008) | 0.096 (0.0026) | 0.434 [0.390, 0.479] | 0.162 | 0.522 (0.0041) | 1 fail; 2 fail; 3 fail |
+| S9 80% of effects up | 3 legacy | 500 | 2.49 | 0.138 (0.0041) | 0.356 (0.0099) | 0.828 [0.792, 0.860] | 0.162 | 0.352 (0.0081) | 1 fail; 2 fail; 3 fail |
+| S9 80% of effects up | 1 none | 500 | n/a | 0.011 (0.0004) | 0.015 (0.0053) | 0.016 [0.007, 0.031] | 0.162 | 0.003 (0.0003) | 4 fail |
+| S10 loadings tied to abundance | 2 ceiling | 500 | n/a | 0.046 (0.0006) | 0.054 (0.0019) | 0.148 [0.118, 0.182] | 0.198 | 0.499 (0.0044) | within every limit |
+| S10 loadings tied to abundance | **7 recommended** | 500 | 1.68 | 0.041 (0.0007) | 0.049 (0.0023) | 0.158 [0.127, 0.193] | 0.198 | 0.370 (0.0069) | within every limit |
+| S10 loadings tied to abundance | 8 known controls | 500 | 1.68 | 0.038 (0.0007) | 0.045 (0.0026) | 0.140 [0.111, 0.174] | 0.198 | 0.309 (0.0065) | within every limit |
+| S10 loadings tied to abundance | 5 first-pass nulls | 500 | 4.13 | 0.061 (0.0008) | 0.095 (0.0025) | 0.430 [0.386, 0.475] | 0.198 | 0.514 (0.0040) | 1 fail; 2 fail; 3 fail |
+| S10 loadings tied to abundance | 3 legacy | 500 | 3.40 | 0.179 (0.0045) | 0.430 (0.0088) | 0.940 [0.915, 0.959] | 0.198 | 0.440 (0.0076) | 1 fail; 2 fail; 3 fail |
+| S10 loadings tied to abundance | 1 none | 500 | n/a | 0.014 (0.0004) | 0.013 (0.0048) | 0.016 [0.007, 0.031] | 0.198 | 0.007 (0.0006) | 4 fail |
+| S11 3 per group, factor tied 0.3 (**void**) | 2 ceiling | 500 | n/a | 0.053 (0.0007) | 0.133 (0.0067) | 0.518 [0.473, 0.563] | 0.568 | 0.125 (0.0035) | 2 fail |
+| S11 3 per group, factor tied 0.3 (**void**) | **7 recommended** | 500 | 1.48 | 0.053 (0.0014) | 0.148 (0.0087) | 0.466 [0.422, 0.511] | 0.568 | 0.083 (0.0036) | 1 inconclusive; 2 fail |
+| S11 3 per group, factor tied 0.3 (**void**) | 8 known controls | 500 | 1.48 | 0.050 (0.0014) | 0.146 (0.0098) | 0.408 [0.365, 0.453] | 0.568 | 0.061 (0.0032) | 1 inconclusive; 2 fail |
+| S11 3 per group, factor tied 0.3 (**void**) | 5 first-pass nulls | 500 | 0.84 | 0.043 (0.0018) | 0.144 (0.0094) | 0.376 [0.333, 0.420] | 0.568 | 0.065 (0.0042) | 1 inconclusive; 2 fail |
+| S11 3 per group, factor tied 0.3 (**void**) | 3 legacy | 500 | 1.82 | 0.268 (0.0084) | 0.571 (0.0124) | 0.854 [0.820, 0.884] | 0.568 | 0.300 (0.0092) | 1 fail; 2 fail; 3 fail |
+| S11 3 per group, factor tied 0.3 (**void**) | 1 none | 500 | n/a | 0.016 (0.0005) | 0.013 (0.0050) | 0.014 [0.006, 0.029] | 0.568 | 0.000 (0.0001) | 4 fail |
+| S12 3 per group, three factors (**void**) | 2 ceiling | 500 | n/a | 0.055 (0.0007) | 0.133 (0.0059) | 0.542 [0.497, 0.586] | 0.592 | 0.148 (0.0040) | 1 inconclusive; 2 fail |
+| S12 3 per group, three factors (**void**) | **7 recommended** | 500 | 1.35 | 0.027 (0.0007) | 0.079 (0.0085) | 0.212 [0.177, 0.250] | 0.592 | 0.035 (0.0025) | 2 inconclusive |
+| S12 3 per group, three factors (**void**) | 8 known controls | 500 | 1.35 | 0.025 (0.0008) | 0.077 (0.0092) | 0.172 [0.140, 0.208] | 0.592 | 0.024 (0.0019) | 2 inconclusive |
+| S12 3 per group, three factors (**void**) | 5 first-pass nulls | 500 | 0.75 | 0.020 (0.0008) | 0.052 (0.0062) | 0.158 [0.127, 0.193] | 0.592 | 0.026 (0.0023) | within every limit |
+| S12 3 per group, three factors (**void**) | 3 legacy | 500 | 1.96 | 0.271 (0.0100) | 0.549 (0.0128) | 0.828 [0.792, 0.860] | 0.592 | 0.292 (0.0092) | 1 fail; 2 fail; 3 fail |
+| S12 3 per group, three factors (**void**) | 1 none | 500 | n/a | 0.010 (0.0004) | 0.010 (0.0045) | 0.010 [0.003, 0.023] | 0.592 | 0.000 (0.0000) | 4 fail |
+| S13 no factor, 3 per group (**void**) | 2 ceiling | 500 | n/a | 0.053 (0.0007) | 0.094 (0.0048) | 0.418 [0.374, 0.463] | 0.468 | 0.161 (0.0044) | 2 fail |
+| S13 no factor, 3 per group (**void**) | **7 recommended** | 500 | 0.13 | 0.055 (0.0007) | 0.105 (0.0047) | 0.466 [0.422, 0.511] | 0.468 | 0.176 (0.0046) | 2 fail; 3 inconclusive |
+| S13 no factor, 3 per group (**void**) | 8 known controls | 500 | 0.13 | 0.054 (0.0007) | 0.097 (0.0047) | 0.446 [0.402, 0.491] | 0.468 | 0.162 (0.0044) | 2 fail; 3 inconclusive |
+| S13 no factor, 3 per group (**void**) | 5 first-pass nulls | 500 | 2.03 | 0.074 (0.0009) | 0.170 (0.0042) | 0.754 [0.714, 0.791] | 0.468 | 0.302 (0.0051) | 1 fail; 2 fail; 3 fail |
+| S13 no factor, 3 per group (**void**) | 3 legacy | 500 | 1.69 | 0.167 (0.0028) | 0.405 (0.0069) | 0.970 [0.951, 0.983] | 0.468 | 0.454 (0.0065) | 1 fail; 2 fail; 3 fail |
+| S13 no factor, 3 per group (**void**) | 1 none | 500 | n/a | 0.053 (0.0007) | 0.094 (0.0048) | 0.418 [0.374, 0.463] | 0.468 | 0.161 (0.0044) | 2 fail |
+| S14 no factor, 50% missing by label (realised 16%) | 2 ceiling | 500 | n/a | 0.047 (0.0006) | 0.054 (0.0019) | 0.152 [0.122, 0.187] | 0.202 | 0.474 (0.0038) | within every limit |
+| S14 no factor, 50% missing by label (realised 16%) | **7 recommended** | 500 | 0.15 | 0.049 (0.0006) | 0.056 (0.0021) | 0.162 [0.131, 0.197] | 0.202 | 0.478 (0.0038) | within every limit |
+| S14 no factor, 50% missing by label (realised 16%) | 8 known controls | 500 | 0.15 | 0.048 (0.0006) | 0.055 (0.0020) | 0.158 [0.127, 0.193] | 0.202 | 0.471 (0.0039) | within every limit |
+| S14 no factor, 50% missing by label (realised 16%) | 5 first-pass nulls | 500 | 2.12 | 0.059 (0.0007) | 0.084 (0.0023) | 0.344 [0.302, 0.387] | 0.202 | 0.523 (0.0035) | 1 inconclusive; 2 fail; 3 fail |
+| S14 no factor, 50% missing by label (realised 16%) | 3 legacy | 500 | 1.88 | 0.117 (0.0031) | 0.272 (0.0091) | 0.770 [0.731, 0.806] | 0.202 | 0.419 (0.0055) | 1 fail; 2 fail; 3 fail; 5 fail |
+| S14 no factor, 50% missing by label (realised 16%) | 1 none | 500 | n/a | 0.047 (0.0006) | 0.054 (0.0019) | 0.152 [0.122, 0.187] | 0.202 | 0.474 (0.0038) | within every limit |
+
+### Where the ceiling itself fails (these scenarios cannot fault a design)
+
+| Omic | Scenario | Ceiling: type I at 0.05 (SE), at 0.01, mean FDP (SE) | Reading |
+|---|---|---|---|
+| Classic proteomics | S12, 3 per group with three factors (runner) | 0.078 (0.0009), 0.027, 0.127 (0.0049) | Void, as the pilot had shown |
+| DIA_LIMPA | S14, no factor, 50% missing (runner) | 0.064 (0.0004), 0.016, 0.074 (0.0011) | Void by rule 1. There is no factor here, so the ceiling is the no-correction result: the route itself is liberal at 50% missing. With a factor and 50% missing (S6) the ceiling passes but sits high (0.063, mean FDP 0.068, SE 0.0013) |
+| Transcriptomics | S7, heavy tails | 0.085 (0.0003), 0.010, 0.022 (0.0004) | Void by rule 1 (the mean FDP is low) |
+| Transcriptomics | S9, 80% of effects up | 0.075 (0.0004), 0.018, 0.074 (0.0006) | Void by rule 1 |
+| Lipid/metab | S1, S11, S12: 3 per group with a factor | 0.053 to 0.055, 0.014 to 0.015, 0.126 to 0.133 (0.0052 to 0.0067) | Void by rule 2 |
+| Lipid/metab | S13: 3 per group, no unwanted variation | 0.053 (0.0007), 0.012, 0.094 (0.0048) | Void by rule 2; the ceiling is the no-correction result here. Whether this is the two-assay scoring unit described for C4 above or the test at 3 per group was not separated |
+| Lipid/metab | S3, factor tied to groups 0.6 | 0.049 (0.0007), 0.011, 0.072 (0.0036) | Not void: rule 2 inconclusive, flagged |
+
+In DIA_LIMPA with no missing values (S5) the ceiling is calibrated on the 248 runs that completed, and half the runs crash in every arm: the scenario is a condition of the route, not of any RUV design.
+
+### Conditions of use per omic (measured; mean FDP with its standard error unless stated)
+
+"Within every limit" means rules 1 to 3 pass and rule 4 (or 5), where it applies, is not failed. "Tail" is rule 3: the share of data sets above 0.10 against the ceiling's share plus 0.05. Void scenarios are left out of each row and listed in the last column.
+
+**Classic proteomics** (13 scenarios judged; S9 to S14 on the runner)
+
+| Design | Within every limit | Inconclusive on the tail only (mean FDP within its limit) | Outside a limit | Void |
+|---|---|---|---|---|
+| Recommended (7) | 3 per group (0.051, SE 0.0011; power 0.660 against the ceiling's 0.661); 40% changed (0.057); no missing values; heavy tails; 80% up (0.056); abundance-tied loadings (0.053); 3 per group with the factor tied 0.3 (0.055); no factor at 3 per group and at 50% missing (0.053, 0.053) | Factor tied 0.6 (0.062, SE 0.0012; share 0.076 [0.054, 0.103] against 0.058); three factors (0.057; 0.054 against 0.060); 50% missing (0.062, SE 0.0016; 0.124 against 0.104); known unbalanced batch (0.059; 0.056 against 0.070) | none | S12 |
+| Known controls (8) | every scenario but one (0.035 to 0.054) | Factor tied 0.6 (0.058, SE 0.0013; share 0.070 against 0.058) | none | S12 |
+| First-pass nulls (5) | 3 per group; 40% changed; no and 50% missing; heavy tails; 80% up; abundance-tied loadings (0.037 to 0.056). Three factors: calibrated (0.003) with power 0.071 against the ceiling's 0.863 (mean k 1.20) | none | Factor tied 0.6 (type I 0.146, mean FDP 0.273, 99% of data sets above 0.10); known batch (tail 0.214 against 0.070; power 0.759 against 0.872); 3 per group with the factor tied 0.3 (tail 0.128 against 0.086); no factor at 3 per group (tail 0.144 against 0.076; power 0.617 against 0.746 without correction); no factor with 50% missing (power 0.870 against 0.908) | S12 |
+| Legacy (3) | Three factors only (0.016; power 0.143) | none | Every other scenario: mean FDP 0.082 to 0.684 (laptop cells), 0.086 to 0.521 † (runner cells) | S12 |
+| None (1) | Calibrated in 12 scenarios (mean FDP at most 0.009 with a factor); power 0.000 at 3 per group with a factor and with three factors, 0.144 to 0.623 in the other scenarios with a factor | none | Factor tied 0.6: type I 0.258 (SE 0.0008), mean FDP 0.593, every data set above 0.10 | S12 |
+
+**DIA_LIMPA** (13 scenarios judged; all on the runner; engine `fastlimpadpc`)
+
+| Design | Within every limit | Inconclusive | Outside a limit | Void |
+|---|---|---|---|---|
+| Recommended (7) | 40% changed (0.051, SE 0.0006); heavy tails (0.051); known unbalanced batch (0.055, SE 0.0019; mean k 1.98); 80% up (0.050); abundance-tied loadings (0.052); no factor at 3 per group (0.048); no missing values on the 248 runs that completed (0.050) | 50% missing (type I 0.066, 0.0152 at 0.01; mean FDP 0.071, SE 0.0014; the ceiling 0.068) | 3 per group (tail 0.132 [0.104, 0.165] against 0.070; mean FDP 0.070, SE 0.0031, against the ceiling's 0.045); factor tied 0.6 (tail 0.084 [0.061, 0.112] against 0.056; mean FDP 0.065, SE 0.0013, within its limit); three factors (type I 0.066, mean FDP 0.088, SE 0.0042, tail 0.188; mean k 2.63 where 3 exist); 3 per group with the factor tied 0.3 (tail 0.164 against 0.084; mean FDP 0.078, SE 0.0036); 3 per group with three factors (mean FDP 0.164, SE 0.0086; mean k 1.39) | S14 |
+| Known controls (8) | 40% changed; 80% up; abundance-tied loadings; no factor at 3 per group (0.047 to 0.052); no missing values on the 248 runs that completed (0.050) | Heavy tails and known batch (tail only: 0.040 and 0.058 against 0.052); 50% missing (0.073) | The same five scenarios as the recommended design, each slightly further out: 3 per group (tail 0.156); factor tied 0.6 (0.180); three factors (mean FDP 0.088); 3 per group with the factor tied (0.180); 3 per group with three factors (mean FDP 0.165) | S14 |
+| First-pass nulls (5) | No factor at 3 per group (0.056) | none | Every scenario with a factor: mean FDP 0.088 to 0.301, 26% to 89% of data sets above 0.10 | S14 |
+| Legacy (3) † | none | none | Every scenario: mean FDP 0.248 to 0.677 † | S14 |
+| None (1) | No factor at 3 per group (0.047) | none | The tail in every scenario with a factor (9% to 84% of data sets above 0.10; mean FDP 0.040 to 0.142); factor tied 0.6: type I 0.324 (SE 0.0082), mean FDP 0.533 | S14 |
+
+**Transcriptomics** (11 scenarios judged; S14 on the runner; no 50%-missing scenario; S5 and S14 are low-count scenarios)
+
+| Design | Within every limit | Inconclusive | Outside a limit | Void |
+|---|---|---|---|---|
+| Recommended (7) | 3 per group (0.046, SE 0.0005; power 0.369, equal to the ceiling); 40% changed (0.035; power 0.835); factor tied 0.6 (0.052, SE 0.0005; power 0.575 against 0.553); three factors (0.049; power 0.762 against 0.763); low counts (0.047); known batch (0.049); abundance-tied loadings (0.048); 3 per group with the factor tied 0.3 (0.049); no factor at 3 per group (0.044; power 0.380 against 0.386 without correction); no factor with low counts (0.046, SE 0.0005; power 0.784 against 0.788; mean k 2.95 where no factor exists) | none | 3 per group with three factors: no calls at all (type I 0.005, power 0.000 against the ceiling's 0.341, SE 0.0017; mean k 2.00): calibrated, no gain over no correction (rule 4) | S7, S9 |
+| Known controls (8) | The same scenarios with a factor as the recommended design, power 0.008 to 0.044 lower (0.035 to 0.049) | none | 3 per group with three factors (power 0.000); no factor: power lost against no correction, 0.310 against 0.386 at 3 per group and 0.569 (SE 0.0091) against 0.788 with low counts (rule 5) | S7, S9 |
+| First-pass nulls (5) | 3 per group (power 0.250 against 0.369); three factors (0.180 against 0.763); abundance-tied loadings (0.623 against 0.774); 3 per group with three factors (0.123); no factor with low counts (0.773 against 0.788) | 40% changed (power 0.092 against 0.835); low counts (power 0.440 against 0.754) | Factor tied 0.6 (tail 0.076 against 0.050; power 0.002); known batch (tail 0.184; power 0.042, below no correction's 0.083); 3 per group with the factor tied 0.3 (tail 0.080 against 0.050; mean FDP 0.065, SE 0.0029); no factor at 3 per group (power 0.359 against 0.386) | S7, S9 |
+| Legacy (3) | Calibrated (0.008 to 0.050) in 3 per group, 40% changed, three factors, low counts, abundance-tied loadings, 3 per group with three factors; power below the ceiling in each (0.094 to 0.793) | none | Factor tied 0.6 (mean FDP 0.724); known batch (0.433); 3 per group with the factor tied 0.3 (0.186); no factor: power 0.324 against 0.386 at 3 per group and 0.749 † against 0.788 with low counts | S7, S9 |
+| None (1) | Calibrated in 10 scenarios; power at most 0.114 in every scenario with a factor other than the one at right | none | Factor tied 0.6: type I 0.337 (SE 0.0010), mean FDP 0.450, every data set above 0.10 | S7, S9 |
+
+**Lipidomics and metabolomics** (10 scenarios judged; all on the laptop; "50% missing" is the detection limit's label, realised 28% in S6 and 16% in S14)
+
+| Design | Within every limit | Inconclusive on the tail only | Outside a limit | Void |
+|---|---|---|---|---|
+| Recommended (7) | Three factors (0.037, SE 0.0021; power 0.311 against the ceiling's 0.505); abundance-tied loadings (0.049; power 0.370 against 0.499); no factor with 50% missing (0.056; power 0.478 against 0.474) | 40% changed (0.055, SE 0.0015; tail 0.106 against 0.088); no missing values (0.066, SE 0.0018; 0.182 against 0.194); heavy tails (0.046; 0.108 against 0.104); 80% up (0.059; 0.178 against 0.162) | Factor tied 0.6 (type I 0.071, SE 0.0026; mean FDP 0.130, SE 0.0080; the ceiling 0.072, itself inconclusive); known unbalanced batch (type I 0.094, mean FDP 0.139, SE 0.0032, 68% of data sets above 0.10; mean k 1.00; the ceiling 0.062); 50% missing (tail only: 0.276 [0.237, 0.317] against 0.236, the lower bound just outside; mean FDP 0.066, SE 0.0029, within its limit) | S1, S11, S12, S13 |
+| Internal standards as controls (8) | 40% changed (0.041); three factors (0.030; power 0.227); heavy tails (0.038); abundance-tied loadings (0.045); no factor with 50% missing (0.055). Power below the recommended design's in every scenario with a factor | No missing values (0.063); 50% missing (0.054); 80% up (0.051) | Factor tied 0.6 (mean FDP 0.120, SE 0.0090); known unbalanced batch (0.155, SE 0.0036) | S1, S11, S12, S13 |
+| First-pass nulls (5) | none | none | The tail in every scenario (17% to 100% of data sets above 0.10); mean FDP 0.066 (40% changed) to 0.537 (factor tied 0.6) | S1, S11, S12, S13 |
+| Legacy (3) | none | none | Every scenario: mean FDP 0.272 to 0.633 | S1, S11, S12, S13 |
+| None (1) | Calibrated in 9 scenarios (mean FDP at most 0.054); power at most 0.007 under drift, 0.047 with the known batch | none | Factor tied 0.6: type I 0.252 (SE 0.0014), mean FDP 0.642, every data set above 0.10 | S1, S11, S12, S13 |
+
+In the known-batch scenario of lipid/metab, putting the known batch in the model without RUV (arm 17) gives a mean FDP of 0.242 (SE 0.0042); in DIA_LIMPA 0.064 (SE 0.0067; tail 0.134 against 0.052); in classic proteomics 0.010 and in transcriptomics 0.048, both within every limit.
+
+### Plain reading
+
+- **The recommended design never left a limit in classic proteomics, and in transcriptomics only at 3 per group with three factors, where it makes no calls.** In classic proteomics four scenarios are inconclusive on the tail with the mean FDP at 0.057 to 0.062.
+- **It stops holding in DIA_LIMPA** at 3 per group (the tail; mean FDP 0.070 to 0.078 with and without a tied factor), with three factors (0.088; the estimated count returns 2.63 on average) and with both (0.164), and on the tail with the factor tied 0.6 (mean FDP 0.065). **In lipid/metab** it stops with the factor tied 0.6 (0.130) and with a known unbalanced batch (0.139; the estimated count returns 1), and misses the tail narrowly at the higher missing share.
+- **The number of factors is the weak point where there are several or few samples.** k = 1 loses all power with three factors (arm 11: power 0.003 in classic proteomics, 0.000 in transcriptomics); the estimated count returns 3.00 with three factors at 6 per group in classic proteomics and transcriptomics, is low in DIA_LIMPA (2.63 of 3; 1.39 of 3 at 3 per group) and in transcriptomics at 3 per group (2.00 of 3, no calls), and returns 2.95 where no factor exists in the low-count transcriptomics scenario without cost there (power 0.784 against 0.788).
+- **No correction is not safe when the unwanted factor follows the groups strongly:** at 0.6 its mean FDP is 0.593 (classic proteomics), 0.533 (DIA_LIMPA), 0.450 (transcriptomics) and 0.642 (lipid/metab). The recommended design gives 0.062, 0.065, 0.052 and 0.130 in the same scenarios.
+- **Known controls** behave as the recommended design does, with a little less power; in transcriptomics they lose power when there is no factor (0.569 against 0.788 with low counts). **First-pass nulls** hold in classic proteomics except under a tied factor, a known batch or no factor, and lose nearly all power there with three factors (0.071); they fail every DIA_LIMPA scenario with a factor and every lipid/metab scenario, and in transcriptomics they are calibrated on the mean but lose most of their power in most scenarios. These first-pass figures are arm 5's (the separation rule for k); the estimated-count variant (arm 23) was not run in the extra-hard cells.
+- **Legacy** is outside the limits in nearly every scenario of classic proteomics, DIA_LIMPA and lipid/metab (mean FDP 0.082 to 0.684), and in transcriptomics where the factor is tied to the groups or a batch is present (0.186 to 0.724). Runner figures marked †.
+- **Not measurable here:** 3 per group in lipid/metab (the ceiling fails in all four scenarios), 50% missing without a factor in DIA_LIMPA (the route is liberal on its own), heavy tails and one-directional effects in transcriptomics, and 3 per group with three factors in classic proteomics.
