@@ -441,6 +441,10 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                         corrected <- removeRowsWithMissingValuesPercentFn(theObject = corrected)
                         corrected <- attachProtRuvModelFactors(corrected, normalized, ruv_model)
                     }
+                    # KIT-129 fourth pass item 4: the factor-tied-to-groups check on this run's W (decision M27).
+                    ruv_result$ruv_group_association <- ruvGroupAssociationCheck(ruv_model$W, ruvFactorGroups(ruv_model$W,
+                        normalized@design_matrix, normalized@sample_id, normalized@group_id), "proteomics", parameters$ruv_design,
+                        ruv_model$ruv_k_rule)
                     ruv_model$W <- ruv_model$controls <- ruv_model$k_estimate <- NULL
                 } else {
                 corrected <- ruvIII_C_VaryingFn(normalized,
@@ -1295,7 +1299,11 @@ diaRuvCovariatesByRuleKernel <- function(object, parameters, store) {
         sample_size = length(samples), ruv_mode = ruv_mode, replicate_structure = result$replicate_structure,
         block_reason = result$block_reason), rules,
         list(ruv_k_estimate_reason = result$k$k_estimate_reason, k_max = result$k$k_max, k_estimate = result$k$estimate,
-            k_sweep = k_sweep, controls_unmatched = result$controls_unmatched))
+            k_sweep = k_sweep, controls_unmatched = result$controls_unmatched,
+            # KIT-129 fourth pass item 4: the factor-tied-to-groups check on this run's W (no threshold validated on this
+            # route, decision M27: the value without a verdict).
+            ruv_group_association = ruvGroupAssociationCheck(factors$W, ruvFactorGroups(factors$W, object@design_matrix,
+                object@sample_id, object@group_id), "dia_limpa", NA_character_, result$k$k_rule)))
     c(list(covariates = covariates_reference, adjusted = adjusted_reference, final = covariates_reference,
         ruv_mode = ruv_mode, ruv_result = ruv_result, W = factors$W, best_k = best_k, percentage = NA_real_,
         controls = controls, control_count = control_count, replicate_structure = result$replicate_structure,
@@ -1413,7 +1421,9 @@ diaRuvCovariatesCommit <- function(manager, parameters, run) {
             k_rule = saved$ruv_k_rule, k_estimate = saved$ruv_k_estimate, not_applied_reason = saved$ruv_not_applied_reason,
             controls_selected = saved$ruv_controls_selected,
             # KIT-129 integration item 3: the count's seed, with the rule and the estimate.
-            k_seed = saved$parameters$ruv_k_seed %||% parameters$ruv_k_seed))
+            k_seed = saved$parameters$ruv_k_seed %||% parameters$ruv_k_seed),
+            # KIT-129 fourth pass item 4: the factor-tied-to-groups check (statistic, threshold, outcome).
+            saved$ruv_result$ruv_group_association[ruvGroupAssociationRecordFields])
         description <- if (applied) {
             sprintf("RUV-III factors appended to the design as covariates (W1..W%d; controls by the rule %s, %d proteins; k by the rule %s); the quantified matrix unchanged",
                 saved$best_k, saved$ruv_control_rule, saved$control_count, saved$ruv_k_rule)

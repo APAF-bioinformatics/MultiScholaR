@@ -462,12 +462,17 @@ omicsRuvDesignOperation <- function(binding) {
                     }
                 }
             }
+            # KIT-129 fourth pass item 4: the groups of the samples, for the factor-tied-to-groups check of each assay's W.
+            group_design <- list(design = object@design_matrix, sample_id = object@sample_id, group_id = object@group_id)
+            omic <- binding$omic_type
             object <- NULL
             # KIT-129 third pass item 3: each record names the declared design and its replicate structure (section 1e)
             records <- lapply(factors, function(record) {
                 record$k_estimate <- NULL
                 record$ruv_design <- design
                 record$ruv_replicate_structure <- sets$structure
+                record$ruv_group_association <- ruvGroupAssociationCheck(record$W, ruvFactorGroups(record$W, group_design$design,
+                    group_design$sample_id, group_design$group_id), omic, design, rule)
                 record
             })
             k <- lapply(factors, `[[`, "k")
@@ -978,6 +983,10 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
             outcomes$ruv_applied_per_assay <- as.list(saved$ruv_applied)
             outcomes$ruv_k_estimate_per_assay <- as.list(saved$ruv_k_estimate)
             outcomes$ruv_not_applied_reason_per_assay <- as.list(saved$ruv_not_applied_reason)
+            # KIT-129 fourth pass item 4: the factor-tied-to-groups check per assay (statistic, threshold, outcome).
+            for (field in ruvGroupAssociationRecordFields) {
+                outcomes[[paste0(field, "_per_assay")]] <- lapply(saved$factors, function(record) record$ruv_group_association[[field]])
+            }
         }
     }
     if (identical(operation, paste0(binding$prefix, "_itsd_normalisation"))) outcomes$itsd_applied <- TRUE

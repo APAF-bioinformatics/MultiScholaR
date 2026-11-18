@@ -1519,7 +1519,20 @@ omicGuiRuvTexts <- function(features) {
         result_not_applied = "Unwanted variation was not removed:",
         result_seed = "Random seed for the estimated number:",
         result_assay = "Assay",
-        separation_plot_heading = "Number of factors (k): the separation rule")
+        separation_plot_heading = "Number of factors (k): the separation rule",
+        # KIT-129 fourth pass item 4: the check that an estimated unwanted factor follows the groups (decisions M11, M27).
+        # %s: the largest association of a factor with the groups (0 to 1), then the validated threshold.
+        association_flagged = paste("Warning: an estimated unwanted factor follows your groups (largest association with the",
+            "groups %s, above the threshold of %s validated for this approach). When unwanted variation follows the groups,",
+            "false discoveries can rise above the target; see this approach's note above."),
+        association_not_flagged = paste("No estimated unwanted factor follows your groups beyond the threshold validated for",
+            "this approach (largest association with the groups %s; threshold %s)."),
+        association_not_calibrated = paste("Largest association of an estimated unwanted factor with your groups: %s. No",
+            "threshold has been validated for this approach with this rule for the number of factors, so no verdict is given."),
+        association_dia_limpa = paste("In DIA with limpa this value detects only strong ties to the groups: in simulation it",
+            "exceeded the threshold in 86% of data sets at a correlation of 0.6 and in 37% at 0.3."),
+        association_legacy = paste("The check that an unwanted factor follows your groups is not available for the approach",
+            "of earlier versions: its factors do not show this condition."))
 }
 
 #' The scenarios of KIT-124's simulations in words, for `fdp_where`: the condition only (the column heading says

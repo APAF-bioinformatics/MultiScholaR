@@ -491,7 +491,10 @@ trxRuvsOperation <- function(binding) {
             list(final = final, corrected = store$table(trxMatrixTable(s$log_cpm_ruvs)), W = s$W, k = grid$chosen$k,
                 control_source = s$control_source, logcpm = trxProductReference(store$manager, parameters$logcpm),
                 grid = trxProductReference(store$manager, parameters$grid),
-                outcomes = if (is.null(declared)) trxRuvOutcomes(grid) else trxRuvDesignOutcomes(grid))
+                outcomes = if (is.null(declared)) trxRuvOutcomes(grid) else c(trxRuvDesignOutcomes(grid),
+                    # KIT-129 fourth pass item 4: the factor-tied-to-groups check on this run's W (statistic, threshold, outcome).
+                    ruvGroupAssociationCheck(if (length(s$W)) s$W, as.character(x$design$group), "transcriptomics",
+                        declared$id, declared$k_rule)[ruvGroupAssociationRecordFields]))
         })
 }
 

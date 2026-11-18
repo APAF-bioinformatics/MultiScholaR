@@ -943,3 +943,125 @@ test_that("(fourth pass item 2) the panel's choice runs in process and on the wo
     expect_identical(lapply(result$assays, `[[`, "k"), list(pos = 1L, neg = 1L))
     expect_identical(lapply(result$assays, `[[`, "k_estimate"), ruv$value$ruv_k_estimate)
 })
+
+# ---- Fourth pass item 4: the factor-tied-to-groups check on the run's W, its threshold and the record ------------------
+
+test_that("(fourth pass item 4) the thresholds table is the calibration's: validated designs only, with their sources", {
+    thresholds <- ruvGroupAssociationThresholds()
+    key <- paste(thresholds$omic, thresholds$ruv_design, thresholds$ruv_k_rule)
+    # decision M27: the recommended design in classic proteomics, transcriptomics and lipid/metab; classic supplied
+    # controls and first-pass nulls (arm 5, the separation rule); lipid/metab supplied controls. None in DIA with limpa.
+    expect_setequal(key, c("proteomics groups_all_features num_sv_be", "proteomics supplied_controls num_sv_be",
+        "proteomics first_pass_nulls sweep_bounded", "transcriptomics groups_all_features num_sv_be",
+        "lipidomics groups_all_features num_sv_be", "metabolomics groups_all_features num_sv_be",
+        "lipidomics supplied_controls num_sv_be", "metabolomics supplied_controls num_sv_be"))
+    expect_false(any(thresholds$omic == "dia_limpa"))
+    # the shares of the validation runs as the results files report them (results-20261118.md, followup-results-20261118.md)
+    expect_identical(thresholds$false_alarms, c(0.051, 0.043, 0.047, 0.091, 0.095, 0.095, 0.060, 0.060))
+    expect_identical(thresholds$detection, c(1.000, 1.000, 0.989, 1.000, 0.929, 0.929, 0.915, 0.915))
+    expect_true(all(thresholds$false_alarms <= 0.10 & thresholds$detection >= 0.80))
+    # each threshold is its source file's row, to the digits written there
+    root <- testthat::test_path("..", "..")
+    for (i in seq_len(nrow(thresholds))) {
+        file <- file.path(root, thresholds$source[[i]])
+        if (!file.exists(file)) next
+        table <- utils::read.delim(file, stringsAsFactors = FALSE)
+        expect_identical(thresholds$threshold[[i]], table$threshold[table$arm == thresholds$arm[[i]]], info = key[[i]])
+    }
+})
+
+test_that("(fourth pass item 4) the statistic is the calibration's; the check gives a verdict where validated and none elsewhere", {
+    set.seed(4)
+    group <- rep(c("A", "B", "C"), each = 4L)
+    W <- cbind(W1 = stats::rnorm(12L), W2 = stats::rnorm(12L) + (group == "B"))
+    # the simulators' association mode (association.R, `factorAssociations`)
+    expected <- vapply(1:2, function(j) sqrt(summary(stats::lm(W[, j] ~ factor(group)))$r.squared), numeric(1L))
+    expect_identical(ruvFactorGroupAssociations(W, group), expected)
+    largest <- max(expected)
+    check <- function(...) ruvGroupAssociationCheck(W, group, ...)
+    flagged <- check("lipidomics", "groups_all_features", "num_sv_be")
+    expect_identical(flagged[c("ruv_group_association", "ruv_group_association_threshold", "ruv_group_association_flag",
+        "ruv_group_association_outcome")], list(ruv_group_association = largest, ruv_group_association_threshold = 0.088611623,
+        ruv_group_association_flag = largest > 0.088611623, ruv_group_association_outcome = if (largest > 0.088611623) "flagged" else "not_flagged"))
+    expect_match(flagged$ruv_group_association_source, "threshold-by-design-S4.tsv (simulator S4, arm 7; set on run 44203265622, validated on run 44227129836)",
+        fixed = TRUE)
+    low <- ruvGroupAssociationCheck(W * 0 + rep(c(1, -1), 6L), group, "lipidomics", "groups_all_features", "num_sv_be")
+    expect_identical(low$ruv_group_association_outcome, "not_flagged")
+    expect_false(low$ruv_group_association_flag)
+    for (args in list(list("dia_limpa", NA_character_, "num_sv_be"), list("proteomics", "groups_all_features", "user"),
+        list("proteomics", "technical_replicates", "num_sv_be"), list("proteomics", "first_pass_nulls", "num_sv_be"),
+        list("transcriptomics", "supplied_controls", "num_sv_be"))) {
+        uncalibrated <- do.call(check, args)
+        expect_identical(uncalibrated[c("ruv_group_association", "ruv_group_association_flag", "ruv_group_association_outcome")],
+            list(ruv_group_association = largest, ruv_group_association_flag = NA, ruv_group_association_outcome = "not_calibrated"),
+            info = paste(unlist(args), collapse = " "))
+    }
+    expect_identical(ruvGroupAssociationCheck(NULL, group, "lipidomics", "groups_all_features", "num_sv_be")$ruv_group_association_outcome,
+        "no_factors")
+    # factors whose samples the design does not name are not checked
+    expect_identical(ruvGroupAssociationCheck(W, ruvFactorGroups(W, data.frame(s = sprintf("s%d", 12:1), g = rev(group)), "s", "g"),
+        "lipidomics", "groups_all_features", "num_sv_be")$ruv_group_association_outcome, "not_computed")
+    rownames(W) <- sprintf("s%d", 1:12)
+    expect_identical(ruvFactorGroups(W, data.frame(s = sprintf("s%d", 12:1), g = rev(group)), "s", "g"), group)
+})
+
+test_that("(fourth pass item 4) each omic's step writes the check on its W into the record; the panel shows it", {
+    skip_if_not_installed("sva")
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    # lipidomics: the estimated count on the recommended design, a validated combination, per assay
+    fixture <- kit129OmicsOwner("lipidomics")
+    ruv <- kit129Quiet(runWorkflowOmicsReferenceRuv(lipidomicsDeclarationBinding, fixture$owner,
+        kit129OmicsRuvParameters(ruv_k = NULL, ruv_k_rule = "num_sv_be"), list()))
+    state <- withWorkflowStateScope(fixture$owner, function() readWorkflowExecutionComponents(fixture$owner, ruv$reference,
+        fields = lipidomicsDeclarationBinding$fields))
+    for (assay in names(ruv$value$factors)) {
+        record <- ruv$value$factors[[assay]]
+        if (is.null(record$W)) next
+        groups <- as.character(fixture$object@design_matrix$group[match(rownames(record$W), fixture$object@design_matrix$Sample_ID)])
+        expect_identical(record$ruv_group_association$ruv_group_association, max(ruvFactorGroupAssociations(record$W, groups)), info = assay)
+        expect_identical(record$ruv_group_association$ruv_group_association_threshold, 0.088611623, info = assay)
+        expect_true(record$ruv_group_association$ruv_group_association_outcome %in% c("flagged", "not_flagged"), info = assay)
+    }
+    step <- Filter(function(step) identical(step$operation, "lipid_ruv"), buildWorkflowAnalysisRecord(fixture$owner)$steps)[[1L]]
+    expect_identical(step$outcomes$ruv_group_association_outcome_per_assay,
+        lapply(ruv$value$factors, function(record) record$ruv_group_association$ruv_group_association_outcome))
+    expect_identical(step$outcomes$ruv_group_association_threshold_per_assay,
+        lapply(ruv$value$factors, function(record) record$ruv_group_association$ruv_group_association_threshold))
+    shown <- as.character(omicNormRuvResultTags(omicsRuvDesignResult(ruv$value), omicNormRuvPresets(omicGuiConfig("lipidomics")$norm$ruv_design),
+        omicNormRuvRunTable("lipidomics")$texts))
+    if (any(vapply(ruv$value$factors, function(record) !is.null(record$W), NA))) expect_match(shown, "threshold of 0.089|threshold 0.089")
+    # classic proteomics: the user's k is not a validated combination: the value without a verdict, recorded
+    manager <- kit129ProtStore()
+    source <- getDIAStateReference(manager)
+    declared <- c(kit129ProtParameters(), list(ruv_design = "groups_all_features", ruv_k_rule = "user", ruv_k_seed = NULL))
+    out <- kit129Quiet(withDIAStateScope(manager, function() {
+        run <- computeDIAReferenceNormalization(manager, source, declared)
+        record <- list(config = list(ruv_k = run$value$best_k), data = list(products = list(normalization_science = run$reference)))
+        list(run = run, outcomes = workflowRecordStepOutcomes(manager$.context, "ruv_corrected", "normalization-ruv", record, list()))
+    }))
+    association <- out$run$value$ruv_result$ruv_group_association
+    expect_identical(association$ruv_group_association_outcome, "not_calibrated")
+    expect_true(is.finite(association$ruv_group_association))
+    expect_identical(out$outcomes[ruvGroupAssociationRecordFields], association[ruvGroupAssociationRecordFields])
+    shown <- as.character(omicNormRuvResultTags(protNormRuvDesignResult(out$run$value),
+        omicNormRuvPresets(omicGuiConfig("proteomics")$norm$ruv_design), omicNormRuvRunTable("proteomics", "LFQ")$texts))
+    expect_match(shown, sprintf("Largest association of an estimated unwanted factor with your groups: %.3f", association$ruv_group_association),
+        fixed = TRUE)
+    # today's design records nothing of the check
+    today <- kit129Quiet(withDIAStateScope(manager, function() computeDIAReferenceNormalization(manager, source, kit129ProtParameters())))
+    expect_null(today$value$ruv_result$ruv_group_association)
+    expect_true(isTRUE(protNormRuvDesignResult(today$value)$legacy))
+})
+
+test_that("(fourth pass item 4) transcriptomics: the RUVs step's outcomes carry the check of its W", {
+    fixture <- kit129TrxOwner()
+    owner <- fixture$owner
+    run <- kit129Quiet(runTrxReferenceRuvs(owner, NULL, list(), design_parameters = trxRuvDesignParameters("groups_all_features", 2L, "user")))
+    outcomes <- run$value$outcomes
+    expect_identical(outcomes$ruv_group_association_outcome, "not_calibrated")
+    design <- withWorkflowStateScope(owner, function() readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, owner)$design_matrix)
+    W <- design[, startsWith(names(design), "W_"), drop = FALSE]
+    expect_identical(outcomes$ruv_group_association, max(ruvFactorGroupAssociations(W, as.character(design$group))))
+    result <- trxRuvDesignResult(run$grid$value, outcomes)
+    expect_identical(result$assays$all$association$ruv_group_association_outcome, "not_calibrated")
+})

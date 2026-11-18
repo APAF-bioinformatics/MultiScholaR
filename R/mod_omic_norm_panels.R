@@ -598,12 +598,30 @@ omicNormRuvResultTags <- function(result, presets, texts) {
         line(paste(c(prefix, texts[["result_k"]], paste0(assay$k, " (", rule, beside, ")")), collapse = " "))
     })
     sets <- text(paste0("result_sets_", result$replicate_structure))
+    # KIT-129 fourth pass item 4: the check that a factor follows the groups, per assay: a warning or its absence where
+    # a threshold was validated, the value without a verdict elsewhere, and under a legacy design that it is not available.
+    association_lines <- lapply(names(assays), function(name) {
+        a <- assays[[name]]$association
+        if (is.null(a) || is.na(a$ruv_group_association %||% NA)) return(NULL)
+        prefix <- if (several) paste(texts[["result_assay"]], name, "-") else NULL
+        value <- sprintf("%.3f", a$ruv_group_association)
+        threshold <- sprintf("%.3f", a$ruv_group_association_threshold)
+        switch(a$ruv_group_association_outcome,
+            flagged = shiny::tags$p(class = "ruv-design-warning", role = "alert", shiny::tags$strong(paste(c(prefix,
+                sprintf(texts[["association_flagged"]], value, threshold)), collapse = " "))),
+            not_flagged = line(paste(c(prefix, sprintf(texts[["association_not_flagged"]], value, threshold)), collapse = " ")),
+            not_calibrated = line(paste(c(prefix, sprintf(texts[["association_not_calibrated"]], value),
+                if (identical(result$route, "dia_limpa")) texts[["association_dia_limpa"]]), collapse = " ")),
+            NULL)
+    })
     shiny::tags$div(class = "ruv-design-result", `aria-live` = "polite",
         shiny::tags$h5(texts[["result_heading"]]),
         line(texts[["result_design"]], label),
         if (!identical(result$design, "none")) k_lines,
         if (!identical(result$design, "none") && !is.null(sets)) line(sets),
-        if (!is.na(result$seed %||% NA) && result$k_rule %in% c("num_sv_be", "user")) line(texts[["result_seed"]], result$seed))
+        if (!is.na(result$seed %||% NA) && result$k_rule %in% c("num_sv_be", "user")) line(texts[["result_seed"]], result$seed),
+        association_lines,
+        if (isTRUE(result$legacy)) line(texts[["association_legacy"]]))
 }
 
 #' One run's result for the panel (KIT-129 fourth pass item 3), in one shape for every omic.
@@ -613,10 +631,16 @@ omicNormRuvResultTags <- function(result, presets, texts) {
 #'   `applied`, `reason`, `estimate` (the count's record for `plotRuvFactorCount`, or NULL).
 #' @param separation_plot The separation rule's plot of the run, or NULL.
 #' @noRd
-omicNormRuvDesignResult <- function(design, k_rule, seed, replicate_structure, assays, separation_plot = NULL) {
+omicNormRuvDesignResult <- function(design, k_rule, seed, replicate_structure, assays, separation_plot = NULL, route = NA_character_,
+    legacy = FALSE) {
     list(design = design, k_rule = k_rule %||% NA_character_, seed = seed %||% NA_integer_,
-        replicate_structure = replicate_structure %||% NA_character_, assays = assays, separation_plot = separation_plot)
+        replicate_structure = replicate_structure %||% NA_character_, assays = assays, separation_plot = separation_plot, route = route,
+        legacy = legacy)
 }
+
+#' A run of a legacy design, for the panel (KIT-129 fourth pass item 4): its name and that the check is not available.
+#' @noRd
+omicNormRuvLegacyResult <- function(design = "legacy") omicNormRuvDesignResult(design, NA, NA, NA, list(), legacy = TRUE)
 
 #' Set the tab's last-run result (KIT-129 fourth pass item 3); nothing with the gate off.
 #' @param normData The tab's state. @param result The result, or NULL (a legacy run: the summary is cleared).
@@ -632,13 +656,13 @@ omicNormSetRuvDesignResult <- function(normData, result) {
 #' @noRd
 protNormRuvDesignResult <- function(saved) {
     design <- saved$parameters$ruv_design
-    if (is.null(design)) return(NULL)
+    if (is.null(design)) return(omicNormRuvLegacyResult())
     r <- saved$ruv_result
     if (identical(design, "none")) return(omicNormRuvDesignResult("none", NA, NA, NA, list()))
     applied <- isTRUE(r$ruv_applied)
     omicNormRuvDesignResult(design, r$ruv_k_rule, r$ruv_k_seed, saved$ruv_model$replicate_structure,
         list(all = list(k = if (applied) saved$best_k else 0L, k_estimate = r$ruv_k_estimate, k_estimate_reason = r$ruv_k_estimate_reason,
-            applied = applied, reason = r$ruv_not_applied_reason, estimate = r$k_estimate)),
+            applied = applied, reason = r$ruv_not_applied_reason, estimate = r$k_estimate, association = r$ruv_group_association)),
         separation_plot = if (identical(r$ruv_k_rule, "sweep_bounded")) r$best_cancor_plot)
 }
 
@@ -646,13 +670,14 @@ protNormRuvDesignResult <- function(saved) {
 #' @param saved The product's value. @param design The panel's design id (the route's product names its control rule only).
 #' @noRd
 diaRuvDesignResult <- function(saved, design) {
-    if (is.null(saved$ruv_control_rule)) return(NULL)
+    if (is.null(saved$ruv_control_rule)) return(omicNormRuvLegacyResult(if (identical(saved$ruv_mode, "correction")) "legacy_correction" else "legacy"))
     r <- saved$ruv_result
     applied <- isTRUE(saved$ruv_applied)
     omicNormRuvDesignResult(design %||% saved$ruv_control_rule, saved$ruv_k_rule, saved$parameters$ruv_k_seed,
         saved$replicate_structure, list(all = list(k = saved$best_k, k_estimate = saved$ruv_k_estimate,
-            k_estimate_reason = r$ruv_k_estimate_reason, applied = applied, reason = saved$ruv_not_applied_reason, estimate = r$k_estimate)),
-        separation_plot = r$k_sweep$cancor_plot)
+            k_estimate_reason = r$ruv_k_estimate_reason, applied = applied, reason = saved$ruv_not_applied_reason, estimate = r$k_estimate,
+            association = r$ruv_group_association)),
+        separation_plot = r$k_sweep$cancor_plot, route = "dia_limpa")
 }
 
 #' The result of the lipid/metab new design's RUV product (KIT-129 fourth pass item 3), per assay; NULL for today's.
@@ -660,27 +685,30 @@ diaRuvDesignResult <- function(saved, design) {
 #' @noRd
 omicsRuvDesignResult <- function(value) {
     design <- value$ruv_design
-    if (is.null(design)) return(NULL)
+    if (is.null(design)) return(omicNormRuvLegacyResult())
     if (identical(design, "none")) return(omicNormRuvDesignResult("none", NA, NA, NA, list()))
     assays <- lapply(stats::setNames(names(value$factors), names(value$factors)), function(assay) {
         record <- value$factors[[assay]]
         list(k = record$k, k_estimate = record$ruv_k_estimate, k_estimate_reason = record$k_estimate_reason,
-            applied = isTRUE(value$ruv_applied[[assay]]), reason = record$reason, estimate = value$k_estimate[[assay]])
+            applied = isTRUE(value$ruv_applied[[assay]]), reason = record$reason, estimate = value$k_estimate[[assay]],
+            association = record$ruv_group_association)
     })
     omicNormRuvDesignResult(design, value$ruv_k_rule, value$ruv_k_seed, value$ruv_replicate_structure, assays)
 }
 
-#' The result of the transcriptomics declared choice (KIT-129 fourth pass item 3); NULL for today's grid.
+#' The result of the transcriptomics declared choice (KIT-129 fourth pass item 3).
 #' @param value The choice's value (`trxChooseRuvDesign`, the declared `trx_ruv_grid` product).
+#' @param outcomes The RUVs step's outcomes (`trx_ruvs`; item 4: the factor-tied-to-groups check), or NULL.
 #' @noRd
-trxRuvDesignResult <- function(value) {
+trxRuvDesignResult <- function(value, outcomes = NULL) {
     d <- value[["ruv_design", exact = TRUE]]
-    if (is.null(d)) return(NULL)
+    if (is.null(d)) return(omicNormRuvLegacyResult())
     if (identical(d$id, "none")) return(omicNormRuvDesignResult("none", NA, NA, NA, list()))
     omicNormRuvDesignResult(d$id, d$k_rule, value$k_record$k_seed %||% value$settings$ruv_k_seed,
         if (identical(d$method, "RUVs")) "group", list(all = list(k = d$k, k_estimate = value$k_record$k_estimate,
             k_estimate_reason = value$k_record$k_estimate_reason, applied = isTRUE(d$applied), reason = d$reason,
-            estimate = value$k_estimate)))
+            estimate = value$k_estimate, association = if (!is.null(outcomes$ruv_group_association_outcome))
+                outcomes[ruvGroupAssociationRecordFields])))
 }
 
 #' Why an option cannot be chosen on this session (KIT-129 fourth pass item 2): the reason the run path does not take

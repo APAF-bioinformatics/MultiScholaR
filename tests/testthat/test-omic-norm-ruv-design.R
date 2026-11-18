@@ -723,26 +723,28 @@ test_that("(fourth pass item 3) each omic's product gives one result: the design
     expect_identical(classic$assays$all[c("k", "k_estimate", "applied", "estimate")], list(k = 2L, k_estimate = 1L, applied = TRUE,
         estimate = list(k = 1L)))
     expect_null(classic$separation_plot)
-    expect_null(protNormRuvDesignResult(list(parameters = list(norm_method = "quantile"), ruv_result = list())))
+    # (item 4) a legacy run is shown as such, with the check not available
+    expect_true(protNormRuvDesignResult(list(parameters = list(norm_method = "quantile"), ruv_result = list()))$legacy)
     expect_identical(protNormRuvDesignResult(list(parameters = list(ruv_design = "none")))$design, "none")
     dia <- diaRuvDesignResult(list(ruv_control_rule = "all_features", ruv_k_rule = "num_sv_be", ruv_k_estimate = 1L, best_k = 1L,
         ruv_applied = TRUE, replicate_structure = "technical_replicates", parameters = list(ruv_k_seed = 7L),
         ruv_result = list(k_estimate = list(k = 1L), k_sweep = list(cancor_plot = "plot"))), "technical_replicates")
     expect_identical(dia[c("design", "replicate_structure", "separation_plot")], list(design = "technical_replicates",
         replicate_structure = "technical_replicates", separation_plot = "plot"))
-    expect_null(diaRuvDesignResult(list(ruv_result = list()), NULL))
+    expect_identical(diaRuvDesignResult(list(ruv_result = list(), ruv_mode = "correction"), NULL)[c("design", "legacy")],
+        list(design = "legacy_correction", legacy = TRUE))
     omics <- omicsRuvDesignResult(list(ruv_design = "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = 7L,
         ruv_replicate_structure = "group", ruv_applied = list(pos = TRUE, neg = FALSE), k_estimate = list(pos = list(k = 1L), neg = NULL),
         factors = list(pos = list(k = 1L, ruv_k_estimate = 1L, reason = NA_character_), neg = list(k = 0L, ruv_k_estimate = 0L,
             reason = "the count found no unwanted factor"))))
     expect_identical(names(omics$assays), c("pos", "neg"))
     expect_identical(omics$assays$neg[c("applied", "reason")], list(applied = FALSE, reason = "the count found no unwanted factor"))
-    expect_null(omicsRuvDesignResult(list(best_k = list(pos = 1L))))
+    expect_true(omicsRuvDesignResult(list(best_k = list(pos = 1L)))$legacy)
     trx <- trxRuvDesignResult(list(ruv_design = list(id = "supplied_controls", method = "RUVg", k = 2L, k_rule = "user", applied = TRUE,
         reason = NA_character_), k_record = list(k_estimate = 1L, k_seed = 7L), k_estimate = list(k = 1L)))
     expect_identical(trx[c("design", "k_rule", "seed", "replicate_structure")], list(design = "supplied_controls", k_rule = "user",
         seed = 7L, replicate_structure = NA_character_))
-    expect_null(trxRuvDesignResult(list(chosen = list(k = 1L))))
+    expect_true(trxRuvDesignResult(list(chosen = list(k = 1L)))$legacy)
 })
 
 test_that("(fourth pass item 3) the summary says what was done in the table's words", {
@@ -827,4 +829,32 @@ test_that("(fourth pass item 3) refusals reach the tab's error notice with the k
     expect_identical(captured$classic[c("ruv_design", "ruv_mode", "ruv_k_rule")], list(ruv_design = "technical_replicates",
         ruv_mode = "automatic", ruv_k_rule = "num_sv_be"))
     expect_identical(errors, list(refusal))
+})
+
+test_that("(fourth pass item 4) the panel shows the check: a warning, its absence, the value without a verdict, not available", {
+    design <- omicGuiConfig("proteomics")$norm$ruv_design
+    presets <- omicNormRuvPresets(design)
+    texts <- design$tables[[1L]]$texts
+    check <- function(outcome, value = 0.21, threshold = 0.058077853) list(ruv_group_association = value,
+        ruv_group_association_threshold = if (outcome %in% c("flagged", "not_flagged")) threshold else NA_real_,
+        ruv_group_association_flag = if (outcome %in% c("flagged", "not_flagged")) identical(outcome, "flagged") else NA,
+        ruv_group_association_outcome = outcome)
+    html <- function(association, route = NA_character_) as.character(omicNormRuvResultTags(omicNormRuvDesignResult("groups_all_features",
+        "num_sv_be", 7L, "group", list(all = list(k = 1L, applied = TRUE, association = association)), route = route), presets, texts))
+    flagged <- html(check("flagged"))
+    expect_match(flagged, sprintf(texts[["association_flagged"]], "0.210", "0.058"), fixed = TRUE)
+    expect_match(flagged, 'role="alert"', fixed = TRUE)
+    expect_match(html(check("not_flagged", 0.01)), sprintf(texts[["association_not_flagged"]], "0.010", "0.058"), fixed = TRUE)
+    plain <- html(check("not_calibrated"))
+    expect_match(plain, sprintf(texts[["association_not_calibrated"]], "0.210"), fixed = TRUE)
+    expect_false(grepl("Warning", plain, fixed = TRUE))
+    expect_false(grepl(texts[["association_dia_limpa"]], plain, fixed = TRUE))
+    expect_match(html(check("not_calibrated"), "dia_limpa"), texts[["association_dia_limpa"]], fixed = TRUE)
+    legacy <- as.character(omicNormRuvResultTags(omicNormRuvLegacyResult(), presets, texts))
+    expect_match(legacy, htmltools::htmlEscape(presets$legacy$label), fixed = TRUE)
+    expect_match(legacy, texts[["association_legacy"]], fixed = TRUE)
+    # the texts with a number to fill take exactly that many
+    expect_identical(lengths(regmatches(texts[c("association_flagged", "association_not_flagged", "association_not_calibrated")],
+        gregexpr("%s", texts[c("association_flagged", "association_not_flagged", "association_not_calibrated")], fixed = TRUE))),
+        c(association_flagged = 2L, association_not_flagged = 2L, association_not_calibrated = 1L))
 })

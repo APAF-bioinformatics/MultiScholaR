@@ -394,3 +394,102 @@ ruvExactContrastsFit <- function(fit, contrasts, design, refit) {
     }
     contrasted
 }
+
+# ------------------------------------------------------------------------------------------------
+# KIT-129 fourth pass item 4: the warning that an estimated unwanted factor follows the groups (decisions M11, M23,
+# M24, M27). The statistic is KIT-129 section 3's (the multiple correlation of each estimated factor with the groups,
+# as `docs/qa/workflow-execution/kit/kit-129/r0/association.R` on branch `sim-k129-r0b` computes it); the thresholds
+# are the calibration's, validated on runs never used to set them, for the design and k rule each was measured with.
+# ------------------------------------------------------------------------------------------------
+
+#' The validated thresholds of the factor-tied-to-groups warning (decision M27), one row per omic, design and k rule.
+#' A combination without a row has no validated threshold: its value is recorded and shown without a verdict. The
+#' threshold fires when the largest association is strictly above it. `false_alarms` and `detection` are the shares
+#' fired on the validation runs at correlation 0 (C0, C3, C4) and at 0.3 or more (C5, S11, S3).
+#' @return A data frame: `omic` (`proteomics` is classic proteomics), `ruv_design`, `ruv_k_rule`, `threshold`,
+#'   `simulator`, `arm`, `false_alarms`, `detection`, `rule` (`per_design`, M23; `follow_up`, M24), `source`,
+#'   `setting_run`, `validation_run`.
+#' @noRd
+ruvGroupAssociationThresholds <- function() {
+    r0 <- "docs/qa/workflow-execution/kit/kit-129/r0/"
+    row <- function(omic, ruv_design, threshold, simulator, arm, false_alarms, detection, rule, source, validation_run) {
+        data.frame(omic = omic, ruv_design = ruv_design, ruv_k_rule = if (identical(arm, 5L)) "sweep_bounded" else "num_sv_be",
+            threshold = threshold, simulator = simulator, arm = arm, false_alarms = false_alarms, detection = detection, rule = rule,
+            source = paste0(r0, source), setting_run = "44203265622", validation_run = validation_run, stringsAsFactors = FALSE)
+    }
+    rbind(
+        row("proteomics", "groups_all_features", 0.058077853, "S1", 7L, 0.051, 1.000, "follow_up", "threshold-followup-S1.tsv", "44238222543"),
+        row("proteomics", "supplied_controls", 0.070068989, "S1", 8L, 0.043, 1.000, "follow_up", "threshold-followup-S1.tsv", "44238222543"),
+        row("proteomics", "first_pass_nulls", 0.16376377, "S1", 5L, 0.047, 0.989, "follow_up", "threshold-followup-S1.tsv", "44238222543"),
+        row("transcriptomics", "groups_all_features", 0.038965628, "S3", 7L, 0.091, 1.000, "per_design", "threshold-by-design-S3.tsv",
+            "44227129836"),
+        row("lipidomics", "groups_all_features", 0.088611623, "S4", 7L, 0.095, 0.929, "per_design", "threshold-by-design-S4.tsv",
+            "44227129836"),
+        row("metabolomics", "groups_all_features", 0.088611623, "S4", 7L, 0.095, 0.929, "per_design", "threshold-by-design-S4.tsv",
+            "44227129836"),
+        row("lipidomics", "supplied_controls", 0.19494193, "S4", 8L, 0.060, 0.915, "follow_up", "threshold-followup-S4.tsv", "44238222543"),
+        row("metabolomics", "supplied_controls", 0.19494193, "S4", 8L, 0.060, 0.915, "follow_up", "threshold-followup-S4.tsv", "44238222543"))
+}
+
+#' The association of each estimated factor with the groups: the square root of R squared of `lm(W_j ~ group)`.
+#' @param W The factors, samples in rows (a matrix or a data frame).
+#' @param group The group of each row.
+#' @return One number per factor.
+#' @noRd
+ruvFactorGroupAssociations <- function(W, group) {
+    W <- as.matrix(W)
+    stopifnot(nrow(W) == length(group), !anyNA(W))
+    group <- factor(group)
+    vapply(seq_len(ncol(W)), function(j) sqrt(summary(stats::lm(W[, j] ~ group))$r.squared), numeric(1L))
+}
+
+#' The check of one run's factors (decision M27): the largest association, and against the validated threshold of the
+#' omic, design and k rule a verdict, or none where no threshold was validated. Section 1e's record fields.
+#' @param W The run's estimated factors (samples in rows), or NULL (no factor).
+#' @param group The group of each row of `W`.
+#' @param omic `proteomics` (classic), `dia_limpa`, `transcriptomics`, `lipidomics` or `metabolomics`.
+#' @param ruv_design,ruv_k_rule The run's design and k rule.
+#' @return `list(ruv_group_association, ruv_group_association_factors, ruv_group_association_threshold,
+#'   ruv_group_association_flag, ruv_group_association_outcome, ruv_group_association_source)`; the outcome is
+#'   `flagged`, `not_flagged`, `not_calibrated` (the value without a verdict; the flag NA), `no_factors`, or
+#'   `not_computed` (the factors' samples not found in the design).
+#' @noRd
+ruvGroupAssociationCheck <- function(W, group, omic, ruv_design, ruv_k_rule) {
+    out <- list(ruv_group_association = NA_real_, ruv_group_association_factors = numeric(), ruv_group_association_threshold = NA_real_,
+        ruv_group_association_flag = NA, ruv_group_association_outcome = "no_factors", ruv_group_association_source = NA_character_)
+    if (is.null(W) || !NCOL(W)) return(out)
+    if (length(group) != NROW(W) || anyNA(group)) {
+        out$ruv_group_association_outcome <- "not_computed"
+        return(out)
+    }
+    values <- ruvFactorGroupAssociations(W, group)
+    out$ruv_group_association <- max(values)
+    out$ruv_group_association_factors <- values
+    thresholds <- ruvGroupAssociationThresholds()
+    row <- thresholds[thresholds$omic == omic & thresholds$ruv_design == (ruv_design %||% "") &
+        thresholds$ruv_k_rule == (ruv_k_rule %||% ""), , drop = FALSE]
+    if (!nrow(row)) {
+        out$ruv_group_association_outcome <- "not_calibrated"
+        return(out)
+    }
+    out$ruv_group_association_threshold <- row$threshold
+    out$ruv_group_association_flag <- out$ruv_group_association > row$threshold
+    out$ruv_group_association_outcome <- if (out$ruv_group_association_flag) "flagged" else "not_flagged"
+    out$ruv_group_association_source <- sprintf("%s (simulator %s, arm %d; set on run %s, validated on run %s)", row$source,
+        row$simulator, row$arm, row$setting_run, row$validation_run)
+    out
+}
+
+#' The group of each row of a factor matrix, from the design (rows named by sample).
+#' @noRd
+ruvFactorGroups <- function(W, design, sample_id, group_id) {
+    if (is.null(W)) return(NULL)
+    design <- as.data.frame(design)
+    as.character(design[[group_id]][match(rownames(W), as.character(design[[sample_id]]))])
+}
+
+#' The fields of the check a step's record keeps (KIT-129 section 1e: `ruv_group_association`, its flag; with the
+#' threshold, the outcome and the threshold's source).
+#' @noRd
+ruvGroupAssociationRecordFields <- c("ruv_group_association", "ruv_group_association_threshold", "ruv_group_association_flag",
+    "ruv_group_association_outcome", "ruv_group_association_source")

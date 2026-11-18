@@ -146,6 +146,9 @@ workflowRecordStepOutcomes <- function(context, state, operation, record, sizes)
                 saved$ruv_result$ruv_k_estimate %||% NA_integer_, saved$ruv_result$ruv_k_seed %||% NA_integer_,
                 isTRUE(saved$ruv_result$ruv_applied), saved$ruv_result$ruv_not_applied_reason %||% NA_character_)
             if (isTRUE(saved$ruv_result$ruv_applied)) outcomes$k <- saved$best_k
+            # KIT-129 fourth pass item 4: the factor-tied-to-groups check (statistic, threshold, outcome).
+            association <- saved$ruv_result$ruv_group_association
+            if (!is.null(association)) outcomes[ruvGroupAssociationRecordFields] <- association[ruvGroupAssociationRecordFields]
         }
     }
     # KIT-031/032 (KIT-094: the binding's hook): an omics step's own outcomes, from the binding whose prefix it carries.
