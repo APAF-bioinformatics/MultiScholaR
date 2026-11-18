@@ -620,8 +620,8 @@ Calculated from the observed 259 and this run's longest worker figure (`summary_
 
 | Host | readline | BLAS | LAPACK | curl | gfortran | quadmath | host objects mapped in R |
 |---|---|---|---|---|---|---|---|
-| ubuntu-22.04, before | host 8.1 | **host** OpenBLAS 0.3.20 (`openblas-pthread/libblas.so.3`) | **host** | host 4.7.0 | host | host | many |
-| ubuntu-22.04, after | bundle | bundle (`syslib/libblas.so.3`, `libopenblas.so.0`) | bundle | bundle | bundle | bundle | C library only |
+| ubuntu-22.04, before | host 8.1 | **host** OpenBLAS 0.3.20 (`openblas-pthread/libblas.so.3`) | **host** | host 4.7.0 | host | host | 52 |
+| ubuntu-22.04, after | bundle | bundle (`syslib/libblas.so.3`, `libopenblas.so.0`) | bundle | bundle | bundle | bundle | 4 (libc, libm, libresolv, the loader) |
 | ubuntu-24.04, before | host 8.2 | bundle | bundle | host 4.8.0 | host | none | 50 |
 | ubuntu-24.04, after | bundle | bundle | bundle | bundle | bundle | bundle | 4 (libc, libm, libresolv, the loader) |
 | Arch, Fedora, before and after | bundle | bundle | bundle | bundle | bundle | bundle | 5 (C library, nss_systemd) |
