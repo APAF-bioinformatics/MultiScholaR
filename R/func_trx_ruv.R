@@ -41,11 +41,18 @@ trxRuvGrid <- function(filtered_counts, log_cpm_tmm, design, params = list()) {
 #' that is the notebook's `coef = 2`.
 #' @noRd
 trxPrelimOrder <- function(dge_filtered, design_prelim) {
+    order(trxPrelimPValues(dge_filtered, design_prelim), decreasing = TRUE)
+}
+
+#' The p-values of the preliminary non-robust QL test, in gene order: what `trxPrelimOrder` ranks, kept for the
+#' first-pass control rule (KIT-129 W4), which drops the most significant quarter.
+#' @noRd
+trxPrelimPValues <- function(dge_filtered, design_prelim) {
     dge_prelim <- edgeR::estimateDisp(dge_filtered, design_prelim)
     fit_prelim <- edgeR::glmQLFit(dge_prelim, design_prelim)
     lrt_prelim <- edgeR::glmQLFTest(fit_prelim, coef = 2:ncol(design_prelim))
     tt_prelim <- edgeR::topTags(lrt_prelim, n = nrow(dge_filtered), sort.by = "none")$table
-    order(tt_prelim$PValue, decreasing = TRUE)
+    tt_prelim$PValue
 }
 
 #' The CCA call of a grid member (the seam a test replaces to force a member failure).
@@ -188,4 +195,120 @@ trxRuviiiM <- function(design, m_source, technical_replicate_id) {
     if (any(spans > 1L)) refuse(sprintf("replicate set(s) span two groups: %s", paste(names(spans)[spans > 1L], collapse = ", ")))
     if (max(table(sets)) < 2L) refuse("no technical-replicate set has two or more runs")
     ruv::replicate.matrix(sets)
+}
+
+# ---------------------------------------------------------------------------------------------------------------
+# KIT-129 W4: the RUV designs beside today's grid, as KIT-124's simulator S3 ran them
+# (docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R). The factors are estimated on upper-quartile normalised
+# counts (the RUVSeq vignette's usage) and enter the edgeR model; the test reads the filtered counts. k is an
+# argument: the rule that gives it is shared by every omic (KIT-129 W6) and is not computed here. Nothing below is
+# called by today's path.
+# ---------------------------------------------------------------------------------------------------------------
+
+#' The declared RUV designs (KIT-129 section 1c): the recommended one (arm 7), a supplied control list (arm 8), the
+#' first-pass nulls (arm 5) and no RUV (arm 1). Today's grid is not one of them: it is the default path.
+#' @noRd
+TRX_RUV_DESIGNS <- c("groups_all_features", "supplied_controls", "first_pass_nulls", "none")
+
+#' The share of the first pass's most significant genes the first-pass control rule leaves out (arm 5).
+#' @noRd
+TRX_FIRST_PASS_DROPPED_SHARE <- 0.25
+
+#' The controls and the RUVSeq method of a declared design.
+#' @param filtered_counts The filtered counts (genes by runs).
+#' @param design The validated design (`Run`, `group`).
+#' @param ruv_design One of `TRX_RUV_DESIGNS`.
+#' @param control_ids The supplied control gene ids, for `supplied_controls`.
+#' @return A list: `control_genes`, `control_rule` (`all_features`, `supplied_list`, `first_pass_drop_top_25` or NA),
+#'   `method` (`RUVs`, `RUVg` or NA) and `unmatched` (supplied ids that are not in the matrix). A supplied list is
+#'   taken in the matrix's row order, so the order it was given in changes nothing. Refuses
+#'   `trx_ruv_controls_invalid` when no supplied id is in the matrix.
+#' @noRd
+trxRuvDesignControls <- function(filtered_counts, design, ruv_design, control_ids = character()) {
+    genes <- rownames(filtered_counts)
+    controls <- function(control_genes, control_rule, method, unmatched = character()) {
+        list(control_genes = control_genes, control_rule = control_rule, method = method, unmatched = unmatched)
+    }
+    switch(ruv_design,
+        groups_all_features = controls(genes, "all_features", "RUVs"),
+        supplied_controls = {
+            if (!any(genes %in% control_ids)) {
+                trxAbort(sprintf("none of the %d supplied control ids is a gene of the filtered counts", length(unique(control_ids))),
+                    c("trx_ruv_controls_invalid", "trx_error"))
+            }
+            controls(genes[genes %in% control_ids], "supplied_list", "RUVg", setdiff(control_ids, genes))
+        },
+        first_pass_nulls = {
+            requireOptionalPackage("edgeR", "the first pass of the RUV controls")
+            first_p <- trxPrelimPValues(trxFilteredDge(filtered_counts, design$group), stats::model.matrix(~ group, data = design))
+            dropped <- seq_len(ceiling(TRX_FIRST_PASS_DROPPED_SHARE * length(genes)))
+            controls(genes[order(first_p)[-dropped]], "first_pass_drop_top_25", "RUVg")
+        },
+        none = controls(character(), NA_character_, NA_character_),
+        trxAbort(sprintf("RUV design '%s' has no control rule", ruv_design), c("trx_ruv_design_unsupported", "trx_error")))
+}
+
+#' Upper-quartile normalised counts, the scale RUVSeq's factors are estimated on (the vignette's
+#' `betweenLaneNormalization(which = "upper")`, as every RUV arm of the simulator but today's).
+#' @param filtered_counts The filtered counts (genes by runs).
+#' @return The normalised counts, rounded. Refuses `trx_ruv_upper_quartile_invalid` when a run's upper quartile is 0.
+#' @noRd
+trxUpperQuartileCounts <- function(filtered_counts) {
+    requireOptionalPackage("EDASeq", "the upper-quartile normalisation of the RUV step")
+    uq <- EDASeq::betweenLaneNormalization(filtered_counts, which = "upper", round = TRUE)
+    if (!all(is.finite(uq))) {
+        trxAbort("a run's upper-quartile count is 0, so its counts cannot be upper-quartile normalised",
+            c("trx_ruv_upper_quartile_invalid", "trx_error"))
+    }
+    uq
+}
+
+#' The RUV factors of a declared design (KIT-129 W4): `RUVSeq::RUVs` with the groups as replicate sets, or
+#' `RUVSeq::RUVg`, on upper-quartile counts with the given controls and k.
+#' @param filtered_counts The filtered counts (genes by runs); the test's input, returned unchanged.
+#' @param log_cpm_tmm Their TMM logCPM.
+#' @param design The validated design (`Run`, `group`).
+#' @param control_genes The control genes (`trxRuvDesignControls`).
+#' @param k The number of factors, a whole number; 0 gives no factor.
+#' @param method `"RUVs"` or `"RUVg"`; not read when k is 0.
+#' @return `trxRuvs`' list without `control_source`: `W` (`W_1..W_k`, a data frame by run, no column when k is 0),
+#'   `ruvs_counts` (the filtered counts), `log_cpm_ruvs` (visualisation and export only: `removeBatchEffect` with W;
+#'   the TMM logCPM itself when k is 0) and `pdata` (the design with W, the DA kernel's input). Refuses
+#'   `trx_ruv_controls_invalid` (a control that is not a gene of the matrix) and `trx_ruv_k_unavailable` (k leaves no
+#'   residual degree of freedom beside the groups, is not below the number of controls, or RUVSeq returned fewer
+#'   factors: k is never reduced).
+#' @noRd
+trxRuvFactors <- function(filtered_counts, log_cpm_tmm, design, control_genes, k, method = c("RUVs", "RUVg")) {
+    validateTrxCounts(filtered_counts)
+    k <- checkmate::assert_count(k, coerce = TRUE)
+    pdata <- data.frame(design, row.names = design$Run)
+    if (k == 0L) {
+        return(list(W = pdata[, character(), drop = FALSE], ruvs_counts = filtered_counts, log_cpm_ruvs = log_cpm_tmm, pdata = pdata))
+    }
+    method <- match.arg(method)
+    requireOptionalPackage("RUVSeq", "the transcriptomics RUV factors")
+    refuse_k <- function(why) trxAbort(sprintf("k = %d cannot be estimated: %s", k, why), c("trx_ruv_k_unavailable", "trx_error"))
+    if (!all(control_genes %in% rownames(filtered_counts))) {
+        trxAbort(sprintf("%d control gene(s) are not in the filtered counts", sum(!control_genes %in% rownames(filtered_counts))),
+            c("trx_ruv_controls_invalid", "trx_error"))
+    }
+    residual_limit <- ncol(filtered_counts) - length(unique(as.character(design$group))) - 1L
+    if (k > residual_limit) {
+        refuse_k(sprintf("%d runs in %d groups leave a residual degree of freedom for at most %d factor(s)", ncol(filtered_counts),
+            length(unique(as.character(design$group))), max(residual_limit, 0L)))
+    }
+    if (k >= length(control_genes)) refuse_k(sprintf("there are %d control gene(s) and k must be below their number", length(control_genes)))
+    uq <- trxUpperQuartileCounts(filtered_counts)
+    fit <- if (method == "RUVs") {
+        RUVSeq::RUVs(uq, control_genes, k, RUVSeq::makeGroups(design$group))
+    } else {
+        RUVSeq::RUVg(uq, control_genes, k)
+    }
+    # RUVSeq drops the factors whose singular value is below its tolerance without saying so.
+    if (ncol(fit$W) != k) refuse_k(sprintf("RUVSeq::%s returned %d factor(s)", method, ncol(fit$W)))
+    w_matrix <- data.frame(fit$W, row.names = design$Run)
+    names(w_matrix) <- paste0("W_", seq_len(k))
+    pdata <- cbind(pdata, w_matrix)
+    log_cpm_corrected <- limma::removeBatchEffect(log_cpm_tmm, covariates = w_matrix, design = stats::model.matrix(~ group, data = pdata))
+    list(W = w_matrix, ruvs_counts = filtered_counts, log_cpm_ruvs = log_cpm_corrected, pdata = pdata)
 }
