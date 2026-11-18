@@ -614,7 +614,7 @@ updateProteinFiltering <- function(data, step_name,
           derived_time_dir,
           sprintf("%s_%s.%s", step_name, plot_name, fmt)
         )
-        tryCatch(
+        saved <- tryCatch(
           {
             ggsave(filename,
               plot = plot_list[[plot_name]],
@@ -622,9 +622,15 @@ updateProteinFiltering <- function(data, step_name,
               height = 8,
               dpi = 300
             )
+            TRUE
           },
-          error = function(e) message(sprintf("Warning: Failed to save %s as %s: %s", plot_name, fmt, e$message))
+          error = function(e) {
+            message(sprintf("Warning: Failed to save %s as %s: %s", plot_name, fmt, e$message))
+            FALSE
+          }
         )
+        # KIT-052: a device can fail with a warning only and leave no file; that is an error here.
+        if (saved) checkWorkflowFigureFiles(filename)
       }
     }
   }
@@ -677,6 +683,7 @@ updateProteinFiltering <- function(data, step_name,
               height = if (!is_protein_quant || !all(is.na(filtering_progress@total_peptides))) 18 else 12,
               dpi = 300
             )
+            checkWorkflowFigureFiles(filename)
           }
         }
 
@@ -686,6 +693,8 @@ updateProteinFiltering <- function(data, step_name,
         return(invisible(grid_plot))
       },
       error = function(e) {
+        # KIT-052: an unwritten figure is not a grid that could not be drawn; it stays an error.
+        if (inherits(e, "workflow_figure_unwritten")) stop(e)
         message(sprintf("ERROR in grid generation: %s", e$message))
         return(NULL)
       }

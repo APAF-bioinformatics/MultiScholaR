@@ -101,3 +101,26 @@ test_that("the figure check names the missing files and, on Windows, the over-lo
     expect_error(checkWorkflowFigureFiles(empty, class = "saved_entity_outputs_pending"),
         class = "saved_entity_outputs_pending")
 })
+
+test_that("the filtering renderer fails when the device warns and leaves a figure unwritten", {
+    manager <- figurePathManager()
+    summary <- withDIAStateScope(manager, function() readDIAProteinProgress(manager, getDIAStateReference(manager)))
+    time_dir <- withr::local_tempdir()
+    grDevices::pdf(NULL)
+    device <- grDevices::dev.cur()
+    withr::defer(if (device %in% grDevices::dev.list()) grDevices::dev.off(device))
+    render <- function(unwritten) {
+        testthat::local_mocked_bindings(ggsave = function(filename, ...) {
+            if (grepl(unwritten, filename)) warning("agg could not write to the given file") else
+                writeLines("figure", filename)
+        }, .package = "MultiScholaR")
+        suppressWarnings(suppressMessages(updateProteinFiltering(summary, "9_protein_s4_created", "proteomics",
+            "fixture", overwrite = TRUE, return_grid = TRUE, progress_owner = new.env(parent = emptyenv()),
+            project_dirs = list(proteomics_fixture = list(time_dir = time_dir, publication_graphs_dir = time_dir)))))
+    }
+    error <- expect_error(render("proteins_per_run[.]png$"), class = "workflow_figure_unwritten")
+    expect_match(cli::ansi_strip(paste(conditionMessage(error), collapse = "\n")),
+        "9_protein_s4_created_proteins_per_run.png", fixed = TRUE)
+    expect_error(render("combined_plots[.]png$"), class = "workflow_figure_unwritten")
+    expect_s3_class(render("^$"), "gtable")
+})
