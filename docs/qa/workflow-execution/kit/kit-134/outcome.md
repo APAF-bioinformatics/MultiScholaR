@@ -726,3 +726,52 @@ Also: the four non-DIA e2e lanes on Windows (expected 88, 190, 16, 153). Table i
 **Run 1: [44368107499](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44368107499) on `1542823e` (18:17 to about 19:30 UTC, 2026-11-18).** Windows: **instrumentation/build fault, nothing tested.** Both internal packages failed to build (`fast_duckdb@e724f90b`, `fast_limpa_dpc@87a90b89`, "R CMD INSTALL failed"; their build output is deliberately not printed), so MultiScholaR could not install. The pins were the same as in 44275615462, where both built. What changed: runner image 20261103.298.1 to 20261116.315.1, and Rust stable (unpinned, audit F6) 1.99.1 to 1.100.0. The Linux jobs built both packages with Rust 1.100.0, so the failure is specific to Windows (the toolchain on the GNU target, or the image). The cause between the two was not isolated. Linux (both runners): lanes as before (metab fixture, defect 4; everything else identical to its oracle); ubuntu-22.04 e2e 88, 190, 16, 42, 86, 98, 153. **trx_screen identical to its oracle on both runners**: one distinct copy of `top_de_genes.tsv` (10 read by the recorder), the same bytes on 22.04 and 24.04 (sha256 `0de193f5614262e0`, 2,975 bytes, 20 lines, LF, 19 rows by 10 columns), its masked form `605111e573e3ed73` = the oracle's. That is the reference fingerprint for any differing copy. In 44275615462 the differing copy (ubuntu-22.04 only) had digest `8c3a4a5f380990c6`, from step `da` on (7 steps on `da_genes/`, 3 on `Publication_tables/`). So the difference does not recur on every run of the same commit and runner type (seen in 44195739758 and 44275615462; absent in 44232555102, 44241609555 and here).
 
 **Correction pass (the single one), declared before launch.** Purpose: the same Windows cases (unchanged), with the Windows Rust toolchain pinned to 1.99.1 (the one that built these pins in 44275615462), and one more chance at a differing `top_de_genes.tsv`: trx_screen runs eight times per Linux runner (labelled `trx_screen_r2` .. `_r8`; about 45 s each). Both platforms, stage full, on the commit carrying this paragraph. Ceilings as declared above. If Windows fails to build again, or the table does not differ, that is the result: no further run.
+
+**Correction pass: [44379470655](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44379470655) on `075a2640`.** The budget is now spent. With Rust 1.99.1, Windows built both internal packages again (image 20261116.315.1 unchanged), so the run-1 failure was Rust 1.100.0 on the Windows GNU target. Every Windows step ran. 0 artifacts, no cache. Root lengths are those the trace reached (trx = the fixture's project folder; prot_tmt = the lane's project). "Final ok" = every copy and rename of a drawn figure is present and not empty.
+
+| Long paths (as R read it) | Root reached | Route | Drawn / final ok | Refused loudly | Lost silently |
+|---|---|---|---|---|---|
+| on (1) | 101 to 110 | figure tests 116/0 (2 skipped); trx managed DA 8/0; worker routes; old-layout DA check 25/0 | 8/8, 42/42, 299/299, 5/5 | none | none |
+| on | 124 | trx managed DA 8/0; worker routes | 42/42, 299/299 (longest final 301) | none | none |
+| on | 130 | trx managed DA 8/0; worker routes | 42/42, 299/299 (longest final 307) | none | none |
+| on | 126, 128, 131 | prot_tmt entry lane (in process) 35/2 each (the summary-text root, harness) | 121/121 each; `da_proteins_num_sig_da_molecules.png` present (final 261, 263, 266) | none | **none** (was lost at 125 in 44275615462) |
+| off (0) | 62 to 72 | figure tests 84 passed, 7 errors; trx managed DA 8/0; worker routes; old-layout DA check 25/0 | 42/42, 299/299, 5/5 (longest final 240) | none | none |
+| off | 69 | trx managed DA 8/0; worker routes | 42/42, 299/299 (245) | none | none |
+| off | 76 | trx managed DA 8/0; worker routes | 42/42, 299/299 (252) | none | none |
+| off | 85 | trx managed DA 5 passed, 3 failed; omic file +1 failure | final ok 38/42 and 297/299 | **yes**: the 4 and 2 trx bar plots (261, 262), named, class `workflow_figure_unwritten/saved_entity_outputs_pending`, "the project folder's path is too long for Windows with long paths disabled" | none |
+| off | 94 | trx managed DA 5/3; omic file +6 | final ok 32/40 and 293/297 | **yes**: the `.xlsx` (266, 267), volcanoes (262, 263), bar plots (269, 270), named | none |
+| off | 91 | prot_tmt entry lane (QC, normalisation, RUV covariates, DA in process) | 89/89 final ok (DA PNG final 226) | none | none among the figures; **but the lane errors at `summary_report`: no Summary report `.docx` in `results_summary`** (see below) |
+| off | 117 | prot_tmt entry lane | 61 drawn, 13 final ok | **yes**: QC's Q-value staged copies, 4 refusals naming 48 files (263 to 271) | none |
+
+Every final file missing at 85, 94 and 117 is named in a refusal (FIGPAIR against RAISED). Lipid and metabolomics worker routes: everything present at every root up to 94, long paths on or off. The baseline 9 failures of `test-omic-da-module.R` (frozen-capture `*_da_results_<DATE>.csv` sha and trx rows, as in 44241609555) are present in every case.
+
+- **Observed safe project root, long paths off, worker routes:** passes at 76, refused at 85. The fixture's longest trx file is 177 characters after its root, so its limit is 82. The calculation gives 77 for a 15-character contrast in the application's layout; the fixture's contrast has 12 characters (+3) and its `.dia-native-` suffix is 12 hex, not 14 (+2): 82. **The observation agrees with the calculation.** Lipid 85, metabolomics 78 and proteomics 80 are not bounded by these fixtures (their files stay shorter).
+- **In process, long paths off, from above 115:** the lane stops loudly at QC (the Q-value staged copy, calculated 99), so normalisation and RUV covariates are not reached there. They are shown under long paths off at 91 (every figure present) and on at 126 to 131. In `test-workflow-figure-paths.R` (with doubles) they pass on Windows with long paths on.
+- **New finding, long paths off, root 91:** the prot_tmt lane reached `summary_report` but no report `.docx` was written (the helper's `rendered[[1L]]` is empty; 32 fewer drawn figures than with long paths on, so the report's own figures were never drawn). At root 80 in 44241609555 (before these merges) the lane passed, so the Summary report's limit with long paths off lies between about 80 and 91. Whether the application said so to the user is not captured (the lane's notifications are in its record, not printed). Report rendering is not one of the routes KIT-052 repaired; package code; not changed.
+- **Figure tests, long paths off:** 7 errors (3 in 44275615462). Only 4 of the non-passes are printed: folder creation over 248 characters ("cannot create dir"; the `.pending` stage folder under a 190-character project) and one "invalid export publication request" error after it. These are fixtures that need long paths, as before. The other 3 are not shown.
+- **Old layout on Windows:** `test-workflow-dia-products.R`'s DA worker handler test (which publishes a request staged as `da-publication/<role>`) 25/0 with long paths on and off; the omics old-layout test inside the figure tests passes with long paths on.
+- **Windows e2e:** lipidomics-canonical 88, metabolomics-lc-gc 190, transcriptomics-screen 16, proteomics-tmt-lfq 153: the laptop's counts. GUI-entry lanes as before (prot_tmt and prot_lfq 35/2, fragpipe 31/6, lipid 27/8, metab 25/10, trx_screen error). ubuntu-22.04 e2e: 88, 190, 16, 42, 86, 98, 153.
+
+### trx_screen `top_de_genes.tsv`: classified numeric, within the rule
+
+In this pass ubuntu-22.04 gave the differing table in all 8 repeats: 2,979 bytes, sha256 `6460b0a3b12cc950`, masked form `8c3a4a5f380990c6`, the digest of 44275615462. ubuntu-24.04 gave the oracle's table in 8 of 8 (`0de193f5614262e0`, masked `605111e573e3ed73`), as both runners did in run 1. So within one build the table is deterministic; between builds of the same commit on ubuntu-22.04 runners it is not (inferred cause: the runner's CPU, through the bundle's OpenBLAS kernel choice; not shown).
+
+- **Not structural, not textual:** header identical, 19 rows by 10 columns, row order identical (first-column order digest the same), LF only, no BOM; every text column (`GeneID`, `GeneName`, `DisplaySymbol`, `regulation`, `comparison`) identical, so gene membership and the up/down calls are the same.
+- **Numeric**, 22.04 against the reference (24.04 = oracle):
+
+| Column | Equal at (significant digits) | Not at | Relative bound | Sample |
+|---|---|---|---|---|
+| `logCPM` | 15 | (text differs in the 16th or 17th digit only) | below 1e-14 | 14.866874080741063 (identical sample) |
+| `logFC` | 12 | 13 | below 1e-11 | 1.8590001946067354 vs 1.8590001946067227: 6.8e-15 |
+| `PValue` | 10 | 11 | below 1e-9 | 2.0058636769723173e-9 vs 2.0058636769655497e-9: 3.4e-12 |
+| `FDR` | 10 | 11 | below 1e-9 | 3.7509650759382335e-7 vs 3.750965075925578e-7: 3.4e-12 |
+| `F` | 9 | 10 | below 1e-8 | 141.48639598552006 vs 141.48639598564907: 9.1e-13 |
+
+(Equal after rounding to s significant digits bounds the relative difference by 10^(1-s).) **Every column is within the fixed rule** (relative 1e-6, absolute floor 1e-9; the discrete columns exact). The oracle sees it only through `FDR`: of the per-column masked digests only FDR's differs, so at least one FDR cell prints with a digit run shorter than the mask's 10 characters. The printed-digit range of `logFC` (14 to 17 against 15 to 17) accounts for the 4 bytes.
+
+### What remains
+
+- The Summary report is not written at a project root of about 91 with long paths off (limit between about 80 and 91); whether the user is told is not shown. Package code (KIT-052's scope or the report's), next bounded item if wanted.
+- The worker routes' limit with long paths off is 82 in the fixture's layout, which is 77 in the application's for a 15-character contrast, as calculated. Next limits (store `.pending` 95, Q-value staged copy 99) belong to the harness revision (v1.11 names).
+- Windows Rust is now pinned at 1.99.1 in this workflow. Rust 1.100.0 does not build the internal packages on the Windows GNU target (cause inside the packages' build, not printed by rule). This needs a decision or a fix in the internal repositories before Rust is moved (F6).
+- trx_screen's oracle digest depends on the ubuntu-22.04 runner build; the values agree within the rule. The recorder's mask is the weakness, as with FragPipe (not changed).
