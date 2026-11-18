@@ -613,7 +613,7 @@ writeLines(c(
     "seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22",
     sprintf("library paths: %s", paste(.libPaths(), collapse = ":")),
     sprintf("R: %s; BLAS %s", R.version.string, extSoftVersion()[["BLAS"]]),
-    sprintf("MultiScholaR (load_all): %s", as.character(utils::packageVersion("MultiScholaR"))),
+    sprintf("MultiScholaR (%s): %s", if (installed) "installed" else "load_all", as.character(utils::packageVersion("MultiScholaR"))),
     sprintf("packages: %s", paste(names(versions), versions, collapse = "; ")),
     sprintf("started %s; finished %s", format(started), format(Sys.time())),
     sprintf("wall seconds per cell: %s", paste(done, vapply(stored, function(s) sprintf("%.0f", s$wall_seconds), ""), collapse = "; "))),
