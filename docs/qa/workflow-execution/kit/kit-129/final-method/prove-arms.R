@@ -53,6 +53,10 @@
 #         assays as one list, against the confirmation round's arm 35 call of the shipped kernel (the estimated count) and
 #         against arm 8 under arm 25's standard error at E (200 permutations) as the user's k, on the view of the features
 #         complete in study and pooled-QC injections with the standards beside them
+#   separation KIT-129 fifth pass item 4: transcriptomics' separation rule as the declared run path computes it
+#         (`trxSeparationRuleK`, then `trxChooseRuvDesign` with its record, `trxRuvFactors`, the DA halves), run 1 of
+#         C0 of S3, against arm 22 (RUVg on arm 8's 50 oracle genes, k by the separation rule on them) and arm 24 (RUVg on
+#         the first pass's controls, k by the separation rule on them); k, the controls and the DA table
 # Writes <out dir>/<stage>-simulator.rds and <stage>-package.rds (named lists: per data set, arm and omic, the table
 # keyed by feature and contrast, and k), compares them with packaging/verify/compare-results.R (relative 1e-6,
 # absolute floor 1e-9, discrete values exact) into <stage>-compare.tsv, and writes <stage>-summary.tsv (one row per
@@ -76,7 +80,7 @@
 
 stage <- commandArgs(TRUE)[[1L]]
 out_dir <- commandArgs(TRUE)[[2L]]
-stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath", "techrep", "firstpass", "supplied"))
+stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath", "techrep", "firstpass", "supplied", "separation"))
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -154,7 +158,7 @@ add_tables <- function(name, simulator_table, package_table) {
     add(name, pick(simulator_table), pick(package_table), note)
 }
 
-cells <- if (stage == "techrep") c("C6", "C8") else if (stage == "supplied") "C0" else c("C0", "C6")
+cells <- if (stage == "techrep") c("C6", "C8") else if (stage %in% c("supplied", "separation")) "C0" else c("C0", "C6")
 
 # ---- S1, classic proteomics ------------------------------------------------------------------------------------------
 s1 <- simulator("s1_classic.R", "2ba5cf87", "^# ---- the study")
@@ -810,6 +814,69 @@ if (stage == "count") {
             trxRuvDesignParameters("groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = seed), log_cpm = prep$n$log_cpm_tmm))
         add(sprintf("S3/%s/arm31/kernel_k", cell_name), E200, choice$ruv_design$k,
             "arm 31's E (B = 200; C6's libraries are not summed on this simulator tree) against trxChooseRuvDesign's own count")
+    }
+}
+
+# ---- S3, transcriptomics (fifth pass item 4: stage separation) -------------------------------------------------------
+if (stage == "separation") {
+    s3 <- simulator("s3_trx.R", "2ba5cf87", "^selected <- if")
+    for (cell_name in cells) {
+        cl <- s3$CELLS[[cell_name]]
+        seed <- 100000L + 10000L * cl$idx + 1L
+        # the shared preparation of every arm as `oneRun` forms it (s3_trx.R lines 320-338)
+        prep <- silently({
+            d <- s3$generate(cl, seed)
+            y <- trxExpressionFilter(d$counts, d$design$group)$filtered_counts
+            n <- trxTmmLogCpm(y, d$design$group)
+            model <- stats::model.matrix(~ group, data = d$design)
+            first <- edgeR::glmQLFit(edgeR::estimateDisp(trxFilteredDge(y, d$design$group), model), model)
+            first_p <- edgeR::topTags(edgeR::glmQLFTest(first, coef = 2:ncol(model)), n = nrow(y), sort.by = "none")$table$PValue
+            uq <- EDASeq::betweenLaneNormalization(y, which = "upper", round = TRUE)
+            list(d = d, y = y, n = n, model = model, first_p = first_p, uq = uq)
+        })
+        design <- prep$d$design
+        genes <- rownames(prep$y)
+        # `separationK` (lines 428-431)
+        separation_k <- function(controls) {
+            cancor_p <- trxCancor(Y = t(prep$n$log_cpm_tmm), X = prep$model[, -1, drop = FALSE], ctl = rownames(prep$n$log_cpm_tmm) %in% controls)
+            trxFindBestK(cancor_p, max_k = if (ncol(prep$y) < 15) 3L else 4L)
+        }
+        arm_table <- function(controls, k) {
+            W <- silently(RUVSeq::RUVg(prep$uq, controls, k)$W)
+            s3$daTest(prep$y, design, W)$table
+        }
+        # the run path's computation: the rule's record, the choice, the factors on upper-quartile counts, the DA halves
+        package <- function(parameters) silently({
+            x <- list(counts = prep$y, design = design)
+            canonical <- trxCanonicalRuvDesignParameters(parameters)
+            separated <- trxSeparationRuleK(x, prep$n$log_cpm_tmm, canonical)
+            choice <- trxChooseRuvDesign(x, parameters, k_record = separated$k_record)
+            s <- trxRuvFactors(prep$y, prep$n$log_cpm_tmm, design, choice$chosen$control_genes, choice$chosen$k, choice$ruv_design$method)
+            top <- trxDaApply(trxDaFit(s$ruvs_counts, s$pdata, trxDaFormula(s$pdata)), s3$ENTRY)$results[[1L]]$top_table
+            list(k = choice$chosen$k, controls = choice$chosen$control_genes, table = top[genes, c("logFC", "PValue", "FDR")])
+        })
+        tables <- function(name, ref, got) add_tables(name, keyed(rownames(ref), "contrast", ref$logFC, ref$PValue, ref$FDR),
+            keyed(rownames(got), "contrast", got$logFC, got$PValue, got$FDR))
+        # arm 22 (lines 432-438): arm 8's 50 oracle genes, drawn from arm 8's stream
+        nulls <- genes[prep$d$null_all[genes]]
+        set.seed(seed * 100L + s3$ARM_STREAM[["8"]])
+        oracle <- sample(nulls, 50L)
+        k22 <- separation_k(oracle)
+        set.seed(seed * 100L + s3$ARM_STREAM[["22"]])
+        ref22 <- arm_table(oracle, k22)
+        got22 <- package(trxRuvDesignParameters("supplied_controls", ruv_k_rule = "sweep_bounded", ruv_control_ids = rev(oracle)))
+        add(sprintf("S3/%s/arm22/k", cell_name), k22, got22$k, "arm 22's separation k against the run path's")
+        add(sprintf("S3/%s/arm22/controls", cell_name), sort(oracle), sort(got22$controls), "arm 8's oracle genes as the list")
+        tables(sprintf("S3/%s/arm22/runpath", cell_name), ref22, got22$table)
+        # arm 24 (lines 445-448): every gene but the first pass's most significant quarter
+        controls24 <- genes[order(prep$first_p)[-seq_len(ceiling(0.25 * length(genes)))]]
+        k24 <- separation_k(controls24)
+        set.seed(seed * 100L + s3$ARM_STREAM[["24"]])
+        ref24 <- arm_table(controls24, k24)
+        got24 <- package(trxRuvDesignParameters("first_pass_nulls", ruv_k_rule = "sweep_bounded"))
+        add(sprintf("S3/%s/arm24/k", cell_name), k24, got24$k, "arm 24's separation k against the run path's")
+        add(sprintf("S3/%s/arm24/controls", cell_name), sort(controls24), sort(got24$controls), "the first pass's controls")
+        tables(sprintf("S3/%s/arm24/runpath", cell_name), ref24, got24$table)
     }
 }
 

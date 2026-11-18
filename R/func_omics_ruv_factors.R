@@ -383,6 +383,42 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
             ruv_control_ids = ruv_control_ids, ruv_grouping_variable = grouping))
 }
 
+#' The separation rule for k per assay on a design's own controls (KIT-129 fifth pass item 4), as simulator S4 computes
+#' it for arm 22 (the supplied standards) and arm 5 (the first pass's controls), `elbowK`: today's rule on a given control
+#' set, `ruvCancor` on the object prepared as the sweep prepares it (`prepareOmicsRuvCancorObject`) with those controls,
+#' then `findBestKElbow`. The run path hands the k to `runOmicsRuvFactors` under `"sweep_bounded"`; an assay whose rule
+#' gives no k (`NA`) is refused there, as any other (no RUV, the warning).
+#' @param theObject The normalised `LipidomicsAssayData` or `MetaboliteAssayData` object.
+#' @param ruv_design `"supplied_controls"` or `"first_pass_nulls"`.
+#' @param ruv_control_ids For `"supplied_controls"`: the controls per assay, by assay name.
+#' @param ruv_grouping_variable The grouping column of the plot (the replicate sets' column).
+#' @return `list(k, plots, controls)`, each per assay: `k` a whole number or `NA`, `plots` the canonical-correlation plot.
+#' @noRd
+omicsRuvSeparationRuleK <- function(theObject, ruv_design, ruv_control_ids = NULL, ruv_grouping_variable = NULL) {
+    if (!checkmate::test_choice(ruv_design, c("supplied_controls", "first_pass_nulls"))) {
+        abortOmicsRuvFactors("the separation rule is defined for the designs supplied_controls and first_pass_nulls only")
+    }
+    slots <- omicsRuvAssaySlots(theObject)
+    assays <- methods::slot(theObject, slots$data)
+    id_column <- methods::slot(theObject, slots$id)
+    design <- as.data.frame(theObject@design_matrix)
+    design_samples <- as.character(design[[theObject@sample_id]])
+    grouping <- ruv_grouping_variable %||% theObject@group_id
+    lipid <- inherits(theObject, "LipidomicsAssayData")
+    controls <- lapply(stats::setNames(names(assays), names(assays)), function(assay_name) {
+        if (identical(ruv_design, "supplied_controls")) return(as.character(ruv_control_ids[[assay_name]]))
+        values <- omicsRuvAssayValues(assays[[assay_name]], id_column, design_samples, assay_name)
+        assay_design <- design[match(colnames(values), design_samples), , drop = FALSE]
+        omicsRuvFirstPassControls(values, assay_design, theObject@sample_id, theObject@group_id, theObject@technical_replicate_id,
+            if (lipid) fitLipidDaAssayModel else fitMetabDaAssayModel, if (lipid) applyLipidDaContrasts else applyMetabDaContrasts)
+    })
+    plots <- ruvCancor(prepareOmicsRuvCancorObject(theObject, slots$data, slots$id), ctrl = controls, ruv_grouping_variable = grouping)
+    plots <- lapply(stats::setNames(names(assays), names(assays)), function(assay) {
+        if (is.list(plots) && assay %in% names(plots)) plots[[assay]] else plots
+    })
+    list(k = lapply(plots, function(plot) as.integer(findBestKElbow(plot))), plots = plots, controls = controls)
+}
+
 #' Stop when an object this kernel has corrected is given to the DA together with factors: W in the model of
 #' corrected values removes the unwanted variation twice (audit F3).
 #' @noRd

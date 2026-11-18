@@ -438,6 +438,7 @@ omicsRuvDesignOperation <- function(binding, supplied = FALSE) {
             listed <- if (!identical(design, "none")) ruvDeclaredSuppliedList(parameters)
             if (!is.null(listed) != supplied) invalid("the design supplied_controls runs under its own declaration, with its list")
             unmatched <- character()
+            separation_plots <- NULL
             if (supplied) {
                 id_column <- methods::slot(object, slots$id)
                 held <- lapply(assays, \(assay) as.character(assay[[id_column]]))
@@ -469,6 +470,16 @@ omicsRuvDesignOperation <- function(binding, supplied = FALSE) {
                 arguments <- list(theObject = object, ruv_design = kernel_design, ruv_k_rule = rule, ruv_control_ids = parameters$ruv_control_ids,
                     ruv_grouping_variable = grouping, ruv_k_seed = seed)
                 if (!counted) arguments$ruv_k <- parameters$ruv_k
+                # KIT-129 fifth pass item 4: the separation rule, computed here per assay on the design's own controls
+                # (`omicsRuvSeparationRuleK`; arms 22 and 5 of simulator S4), when the request gives no k under it.
+                if (identical(rule, "sweep_bounded") && omicsRuvAbsent(parameters$ruv_k) &&
+                    design %in% c("supplied_controls", "first_pass_nulls")) {
+                    separated <- omicsRuvSeparationRuleK(object, design, parameters$ruv_control_ids, grouping)
+                    arguments$ruv_k <- separated$k
+                    separation_plots <- lapply(separated$plots, function(plot) {
+                        if (inherits(plot, c("gg", "ggplot"))) ggplot2::ggplotGrob(stripProtNormQcPlotOwners(plot))
+                    })
+                }
                 result <- do.call(runOmicsRuvFactors, arguments)
                 corrected <- result$corrected
                 factors <- result$factors
@@ -520,7 +531,9 @@ omicsRuvDesignOperation <- function(binding, supplied = FALSE) {
                 # KIT-129 fifth pass item 3: the supplied list by section 1e's names; per assay its controls are
                 # `control_count` (those observed in every sample) and the records' `control_ids`.
                 ruv_control_rule = if (supplied) "supplied_list", ruv_control_list_sha256 = if (supplied) parameters$ruv_control_list_sha256,
-                ruv_control_list_count = if (supplied) length(listed), ruv_control_list_unmatched = if (supplied) unmatched)
+                ruv_control_list_count = if (supplied) length(listed), ruv_control_list_unmatched = if (supplied) unmatched,
+                # KIT-129 fifth pass item 4: the separation rule's plot per assay, where the run computed the rule
+                separation_plots = separation_plots)
         })
 }
 

@@ -1415,6 +1415,26 @@ protRuvFirstPassControls <- function(values, groups) {
   wide
 }
 
+#' The separation rule for k on a given control set (KIT-129 fifth pass item 4), as simulator S1's `separation_k`
+#' computes it for arm 22 (a supplied list): the canonical-correlation plot of the NIPALS-prepared matrix
+#' (`prepareRuvCancorInput`, 5 components) against the grouping with those controls (`ruvCancorFromInput`), restricted to
+#' K up to `calculateAdaptiveMaxK` of the samples, then `findBestKElbow`.
+#' @param theObject The normalised `ProteinQuantitativeData` object.
+#' @param controls A logical vector over the protein rows.
+#' @param grouping The grouping column.
+#' @return `list(k, plot)`; refuses with `ruv_k_not_estimated` (and `ruv_k_refused`) when the rule gives no k.
+#' @noRd
+protRuvSeparationRuleK <- function(theObject, controls, grouping) {
+  plot <- ruvCancorFromInput(prepareRuvCancorInput(theObject, 5), theObject, unname(controls), grouping)
+  plot$data <- plot$data[plot$data$K <= calculateAdaptiveMaxK(nrow(theObject@design_matrix)), , drop = FALSE]
+  k <- findBestKElbow(plot)
+  if (is.na(k)) {
+    cli::cli_abort("the number of unwanted factors (k) is refused: the separation rule returned no k for the supplied list",
+      class = c("ruv_k_not_estimated", "ruv_k_refused"), call = NULL)
+  }
+  list(k = as.integer(k), plot = plot)
+}
+
 #' The design a value of `computeProtRuvModelFactors` computed (KIT-129 section 1e).
 #' @noRd
 protRuvModelDesign <- function(factors) {

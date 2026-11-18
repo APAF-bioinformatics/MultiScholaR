@@ -514,11 +514,9 @@ test_that("(fourth pass item 2) only the options a route's run path takes can be
                 "groups_all_features", info = paste(name, technical))
         }
     }
-    # transcriptomics: technical replicates disabled with the table's reason (M6, U3); the separation rule not on the run path
-    trx <- tables[["transcriptomics.genes"]]
-    expect_identical(names(trx$k_rules_not_offered), "sweep_bounded")
-    expect_identical(unname(trx$k_rules_not_offered), unname(trx$texts[["separation_not_connected"]]))
-    for (name in setdiff(names(tables), "transcriptomics.genes")) expect_null(tables[[name]]$k_rules_not_offered, info = name)
+    # transcriptomics: technical replicates disabled with the table's reason (M6, U3); (fifth pass item 4) the separation
+    # rule is on every route's run path where it is defined
+    for (name in names(tables)) expect_null(tables[[name]]$k_rules_not_offered, info = name)
     # every new text is plain words: no internal names
     internal <- "\\b(arm|arms|KIT-[0-9]+|C[0-9]|S[0-9]{1,2}|U[0-9]{1,2}|W[0-9]{1,2}|R0|B[0-9]|num_sv_be|sweep_bounded)\\b"
     for (name in names(tables)) expect_identical(grep(internal, unname(tables[[name]]$texts), value = TRUE), character(), info = name)
@@ -575,7 +573,9 @@ test_that("(fourth pass item 2) the panel's choice reads the design, the k rule,
     refused(ruvDesignInput(ruv_design = "legacy_correction"), classic, texts[["not_available"]])
     trx <- omicNormRuvRunTable("transcriptomics")
     refused(ruvDesignInput(ruv_design = "technical_replicates"), trx, trx$options[[2L]]$unavailable)
-    refused(ruvDesignInput(ruv_design = "first_pass_nulls", ruv_k_rule = "sweep_bounded"), trx, trx$texts[["separation_not_connected"]])
+    expect_identical(omicNormRuvDesignChoice(ruvDesignInput(ruv_design = "first_pass_nulls", ruv_k_rule = "sweep_bounded"), trx)$ruv_k_rule,
+        "sweep_bounded")
+    refused(ruvDesignInput(ruv_k_rule = "sweep_bounded"), trx, texts[["k_rule_not_available"]])
 })
 
 test_that("(fourth pass item 2) each omic's tab builds the run path's request from the choice; legacy builds today's; the gate off changes nothing", {

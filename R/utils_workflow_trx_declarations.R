@@ -323,9 +323,17 @@ trxRuvDesignOperation <- function(binding) {
             }
             estimated <- !none && is.na(canonical$ruv_k) && identical(canonical$ruv_k_rule, "num_sv_be")
             user <- !none && identical(canonical$ruv_k_rule, "user")
+            # KIT-129 fifth pass item 4: the separation rule (`ruv_k_rule = "sweep_bounded"` with no `ruv_k`) is computed
+            # here too, on the design's own controls (`trxSeparationRuleK`; arms 22 and 24 of simulator S3).
+            separation <- !none && is.na(canonical$ruv_k) && identical(canonical$ruv_k_rule, "sweep_bounded")
             x <- trxAssayInputs(object)
-            log_cpm <- if (estimated || user) trxSavedMatrix(store$manager, trxProductValue(store$manager, parameters$logcpm)$log_cpm)
-            choice <- trxChooseRuvDesign(x, parameters, log_cpm = if (estimated) log_cpm)
+            log_cpm <- if (estimated || user || separation) trxSavedMatrix(store$manager, trxProductValue(store$manager, parameters$logcpm)$log_cpm)
+            separated <- if (separation) trxSeparationRuleK(x, log_cpm, canonical)
+            choice <- trxChooseRuvDesign(x, parameters, k_record = separated$k_record, log_cpm = if (estimated) log_cpm)
+            # the plot the rule read, as the classic sweep keeps its own (a grob, without its owners)
+            if (separation && inherits(separated$plot, c("gg", "ggplot"))) {
+                choice$separation_plot <- ggplot2::ggplotGrob(stripProtNormQcPlotOwners(separated$plot))
+            }
             if (user) {
                 beside <- recordRuvFactorCountBesideUserK(log_cpm, as.character(x$design$group))
                 choice$k_record[c("k_estimate", "k_estimate_reason")] <- beside[c("k_estimate", "k_estimate_reason")]
@@ -334,6 +342,29 @@ trxRuvDesignOperation <- function(binding) {
             }
             choice
         })
+}
+
+#' The separation rule for k on a declared design's own controls (KIT-129 fifth pass item 4), as simulator S3's arms 22
+#' (a supplied list) and 24 (the first pass's controls) compute it: `trxCancor` of the TMM logCPM against the group
+#' columns of `~ group` with those controls, then `trxFindBestK` up to the grid's cap (3 below 15 runs, else 4), and the
+#' shared resolver's limit (`resolveRuvFactorCount`; undefined, and refused, with all genes as controls).
+#' @param x The validated inputs (`counts`, `design`). @param log_cpm Their TMM logCPM.
+#' @param parameters `trxCanonicalRuvDesignParameters`' list.
+#' @return `list(k_record, plot)`: the resolver's record (the `k_record` of `trxChooseRuvDesign`) and the
+#'   canonical-correlation plot the rule read.
+#' @noRd
+trxSeparationRuleK <- function(x, log_cpm, parameters) {
+    trxRuvCheckAlignment(x$counts, x$design, log_cpm)
+    controls <- trxRuvDesignControls(x$counts, x$design, parameters$ruv_design, parameters$ruv_control_ids)
+    groups <- as.character(x$design$group)
+    limit <- ruvFactorCountLimit(ncol(x$counts), length(unique(groups)), length(unique(groups)), length(controls$control_genes))
+    plot <- NULL
+    k_record <- resolveRuvFactorCount("sweep_bounded", controls$control_rule, limit, separation_rule = function() {
+        plot <<- trxCancor(Y = t(log_cpm), X = stats::model.matrix(~ group, data = x$design)[, -1, drop = FALSE],
+            ctl = rownames(log_cpm) %in% controls$control_genes)
+        trxFindBestK(plot, max_k = if (ncol(x$counts) < 15) 3L else 4L)
+    })
+    list(k_record = k_record, plot = plot)
 }
 
 #' Run the grid in the parameters' mode and choose k, the percentage and the controls.

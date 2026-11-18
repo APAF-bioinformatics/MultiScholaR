@@ -446,7 +446,10 @@ omicNormRuvKDiagnosticSlots <- function(ns, view) {
             ns = ns, shiny::hr(),
             shiny::h5(design$tables[[1L]]$texts[["separation_plot_heading"]], style = "text-align: center;"),
             shiny::helpText(design$k_rules$sweep_bounded$diagnostic),
-            shinyjqui::jqui_resizable(shiny::plotOutput(ns("ruv_k_separation_plot"), height = "400px"))))
+            # KIT-129 fifth pass item 4: one plot per assay row where the omic has several (lipid/metab)
+            if ((view$assay_slots %||% 1L) > 1L) lapply(seq_len(view$assay_slots), \(n) shinyjqui::jqui_resizable(
+                shiny::plotOutput(ns(sprintf("ruv_k_separation_assay%d", n)), height = "400px"))) else
+                shinyjqui::jqui_resizable(shiny::plotOutput(ns("ruv_k_separation_plot"), height = "400px"))))
 }
 
 #' The table of a design group for a workflow type: the route's where the group names one, else the first.
@@ -566,6 +569,16 @@ registerOmicNormRuvDesignOutputs <- function(output, normData, design, slots = 1
         plot <- normData$ruv_design_result$separation_plot
         shiny::req(!is.null(plot))
         if (inherits(plot, "grob")) grid::grid.draw(plot) else print(plot)
+    })
+    # KIT-129 fifth pass item 4: per assay row, the separation rule's plot of a lipid/metab run that computed it
+    if ((slots %||% 1L) > 1L) for (n in seq_len(slots)) local({
+        slot <- n
+        output[[sprintf("ruv_k_separation_assay%d", slot)]] <- shiny::renderPlot({
+            result <- normData$ruv_design_result
+            plot <- if (length(result$assays) >= slot) result$assays[[slot]]$separation_plot
+            shiny::req(!is.null(plot))
+            if (inherits(plot, "grob")) grid::grid.draw(plot) else print(plot)
+        })
     })
     invisible(NULL)
 }
@@ -711,7 +724,8 @@ omicsRuvDesignResult <- function(value) {
         list(k = record$k, k_estimate = record$ruv_k_estimate, k_estimate_reason = record$k_estimate_reason,
             applied = isTRUE(value$ruv_applied[[assay]]), reason = record$reason, estimate = value$k_estimate[[assay]],
             association = record$ruv_group_association,
-            control_count = if (!is.null(value$ruv_control_list_count)) value$control_count[[assay]])
+            control_count = if (!is.null(value$ruv_control_list_count)) value$control_count[[assay]],
+            separation_plot = value$separation_plots[[assay]])
     })
     omicNormRuvDesignResult(design, value$ruv_k_rule, value$ruv_k_seed, value$ruv_replicate_structure, assays,
         control_list = omicNormRuvControlList(value))
@@ -729,7 +743,9 @@ trxRuvDesignResult <- function(value, outcomes = NULL) {
         if (identical(d$method, "RUVs")) "group", list(all = list(k = d$k, k_estimate = value$k_record$k_estimate,
             k_estimate_reason = value$k_record$k_estimate_reason, applied = isTRUE(d$applied), reason = d$reason,
             estimate = value$k_estimate, association = if (!is.null(outcomes$ruv_group_association_outcome))
-                outcomes[ruvGroupAssociationRecordFields])))
+                outcomes[ruvGroupAssociationRecordFields])),
+        # KIT-129 fifth pass item 4: the separation rule's plot, where the run computed the rule
+        separation_plot = value[["separation_plot", exact = TRUE]])
 }
 
 #' Why an option cannot be chosen on this session (KIT-129 fourth pass item 2): the reason the run path does not take

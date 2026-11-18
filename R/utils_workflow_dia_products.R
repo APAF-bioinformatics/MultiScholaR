@@ -419,6 +419,13 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
                         unmatched <- warnRuvSuppliedListUnmatched(listed, protein_ids, "proteins")
                         list_controls <- protein_ids %in% listed
                     }
+                    # KIT-129 fifth pass item 4: with a supplied list the separation rule reads that list (arm 22 of
+                    # simulator S1), not the sweep's own controls; its plot is the one shown.
+                    if (!is.null(listed) && identical(parameters$ruv_k_rule, "sweep_bounded")) {
+                        separated <- protRuvSeparationRuleK(normalized, list_controls, parameters$grouping)
+                        resolved$k <- separated$k
+                        ruv_result$best_cancor_plot <- ggplot2::ggplotGrob(stripProtNormQcPlotOwners(separated$plot))
+                    }
                     ruv_model <- computeProtRuvModelFactors(normalized,
                         ruv_k = if (!identical(parameters$ruv_k_rule, "num_sv_be")) resolved$k, ruv_k_rule = parameters$ruv_k_rule,
                         controls = list_controls,

@@ -1498,7 +1498,6 @@ omicGuiRuvTexts <- function(features) {
     c(no_technical_replicates = "the experimental design declares no technical replicates.",
         technical_replicates_declared = paste("the experimental design declares technical replicates, so the approach",
             "within your technical replicates is used instead."),
-        separation_not_connected = "the separation rule cannot be used for this workflow in this version.",
         not_available = "This approach is not available:",
         k_rule_not_available = "This rule for the number of factors is not available here:",
         control_list = sprintf("Your control %s: one identifier per line, or separated by commas or spaces", features),
@@ -1693,10 +1692,7 @@ omicGuiRuvTableTrx <- function() {
             note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
                 "target, but almost no real differences are found when unwanted variation is strong."),
             source = "KIT-129 1c; KIT-124 S3 arm 1: worst cell C3 0.044, power C0 0.005")),
-        selected_with_technical_replicates = NULL,
-        # KIT-129 fourth pass item 2: the declared choice takes k from the count or the user; the grid's k is not
-        # computed for a declared design on the run path.
-        k_rules_not_offered = c(sweep_bounded = omicGuiRuvTexts("genes")[["separation_not_connected"]]))
+        selected_with_technical_replicates = NULL)
 }
 
 #' Lipidomics and metabolomics: ticket section 1d, simulator S4 (one table for both, scored over two assays).

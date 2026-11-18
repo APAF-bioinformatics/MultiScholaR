@@ -1223,3 +1223,86 @@ test_that("(fifth pass item 3) lipidomics and metabolomics: one supplied list on
     expect_identical(warning[c("matched", "listed", "unmatched")], list(matched = length(listed) - 1L, listed = length(listed),
         unmatched = "absent_f999"))
 })
+
+# ---- Fifth pass item 4: the separation rule on the run path where it is defined ---------------------------------------
+
+test_that("(fifth pass item 4) transcriptomics: the separation rule on the declared run path reads the design's own controls", {
+    fixture <- kit129TrxOwner()
+    owner <- fixture$owner
+    filtered <- trxAssayInputs(withWorkflowStateScope(owner, function() readTrxWorkflowState(owner, "trx_qc_complete")))
+    genes <- rownames(filtered$counts)
+    for (design in list(trxRuvDesignParameters("first_pass_nulls", ruv_k_rule = "sweep_bounded"),
+        trxRuvDesignParameters("supplied_controls", ruv_k_rule = "sweep_bounded", ruv_control_ids = genes[seq(1L, length(genes), by = 7L)]))) {
+        run <- kit129Quiet(runTrxReferenceRuvs(owner, NULL, list(), design_parameters = design))
+        choice <- run$grid$value
+        expect_identical(choice$ruv_design[c("id", "k_rule")], list(id = design$ruv_design, k_rule = "sweep_bounded"))
+        expect_s3_class(choice$separation_plot, "grob")
+        # arms 22 and 24 of simulator S3: trxCancor on the TMM logCPM with the design's controls, trxFindBestK to the cap
+        log_cpm <- withWorkflowStateScope(owner, function() trxSavedMatrix(owner, run$logcpm$value$log_cpm))
+        controls <- kit129Quiet(trxRuvDesignControls(filtered$counts, filtered$design, design$ruv_design, design$ruv_control_ids))
+        k <- trxFindBestK(trxCancor(Y = t(log_cpm), X = stats::model.matrix(~ group, data = filtered$design)[, -1, drop = FALSE],
+            ctl = rownames(log_cpm) %in% controls$control_genes), max_k = if (ncol(filtered$counts) < 15) 3L else 4L)
+        expect_identical(choice$chosen$k, k, info = design$ruv_design)
+        expect_identical(choice$chosen$control_genes, controls$control_genes, info = design$ruv_design)
+        # the panel shows the rule's plot
+        expect_s3_class(trxRuvDesignResult(choice, run$value$outcomes)$separation_plot, "grob")
+    }
+    # undefined with all genes as controls
+    expect_error(kit129Quiet(runTrxReferenceRuvs(owner, NULL, list(), design_parameters = trxRuvDesignParameters("groups_all_features",
+        ruv_k_rule = "sweep_bounded"))), class = "ruv_k_separation_undefined")
+})
+
+test_that("(fifth pass item 4) classic proteomics: with a supplied list the separation rule reads the list (arm 22)", {
+    contrast <- "a=grouptreated-groupcontrol"
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    ids <- as.character(object@protein_quant_table[[object@protein_id_column]])
+    listed <- ids[seq(1L, length(ids), by = 2L)]
+    automatic <- kit129ProtParameters("automatic", NULL)
+    automatic[c("auto_percentage_min", "auto_percentage_max", "separation_metric", "k_penalty_weight", "adaptive_k_penalty")] <-
+        list(5, 10, "max_difference", 0.5, TRUE)
+    declared <- c(automatic, list(ruv_design = "supplied_controls", ruv_k_rule = "sweep_bounded", ruv_k_seed = NULL, ruv_control_ids = listed))
+    out <- tryCatch(kit129ProtRunPath(declared, contrast, object = object), ruv_k_refused = function(e) e)
+    separated <- kit129Quiet(tryCatch(protRuvSeparationRuleK(kit129ProtRunPath(c(kit129ProtParameters("skip", NULL)), contrast,
+        object = object)$normalised, ids %in% listed, "group"), ruv_k_refused = function(e) e))
+    if (inherits(out, "ruv_k_refused")) {
+        # the rule's k is refused on this fixture (no k, or above the limit): refused, never reduced
+        expect_true(inherits(separated, "ruv_k_refused") || separated$k > 0L)
+    } else {
+        expect_identical(out$value$ruv_model$ruv_k_rule, "sweep_bounded")
+        expect_identical(as.integer(out$value$best_k), separated$k)
+        expect_s3_class(out$value$ruv_result$best_cancor_plot, "grob")
+        expect_s3_class(protNormRuvDesignResult(out$value)$separation_plot, "grob")
+        factors <- kit129Quiet(computeProtRuvModelFactors(out$normalised, ruv_k = separated$k, ruv_k_rule = "sweep_bounded",
+            ruv_grouping_variable = "group", controls = ids %in% listed, ruv_design = "supplied_controls"))
+        expected <- kit129ProtKernelDa(out$normalised, factors, "group", contrast)
+        expect_identical(out$table$Protein.Group, expected$Protein.Group)
+        expect_equal(out$table[-1L], expected[-1L], tolerance = 1e-12)
+    }
+})
+
+test_that("(fifth pass item 4) lipidomics and metabolomics: the separation rule on the run path, per assay, with its plots", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    controls <- list(pos = sprintf("pos_f%03d", 11:40), neg = sprintf("neg_f%03d", 11:40))
+    for (omic in c("lipidomics", "metabolomics")) {
+        long <- if (identical(omic, "lipidomics")) "da_lipids_long" else "da_metabolites_long"
+        for (design in c("first_pass_nulls", "supplied_controls")) {
+            parameters <- utils::modifyList(kit129OmicsRuvParameters(design, ruv_k = NULL, ruv_k_rule = "sweep_bounded"),
+                list(ruv_control_ids = if (identical(design, "supplied_controls")) unlist(controls, use.names = FALSE)))
+            run <- kit129OmicsRunPath(omic, parameters)
+            value <- run$ruv$value
+            separated <- kit129Quiet(omicsRuvSeparationRuleK(run$fixture$object, design,
+                if (identical(design, "supplied_controls")) controls, "group"))
+            expect_identical(value$ruv_k_rule, "sweep_bounded", info = paste(omic, design))
+            kernel_k <- lapply(separated$k, function(k) k)
+            direct <- kit129Quiet(runOmicsRuvFactors(run$fixture$object, design, kernel_k, "sweep_bounded",
+                ruv_control_ids = if (identical(design, "supplied_controls")) controls))
+            expect_identical(value$best_k, lapply(direct$factors, `[[`, "k"), info = paste(omic, design))
+            kernel <- kit129OmicsKernelDa(omic, run$fixture, direct$factors)
+            expect_equal(kit129OmicsKey(omic, run$da$results[[long]]), kit129OmicsKey(omic, kernel[[long]]), tolerance = 1e-12,
+                info = paste(omic, design))
+            # the plot per assay, for the panel's assay rows
+            shown <- omicsRuvDesignResult(value)
+            for (assay in names(shown$assays)) expect_s3_class(shown$assays[[assay]]$separation_plot, "grob")
+        }
+    }
+})
