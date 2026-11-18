@@ -325,7 +325,8 @@ publishWorkflowActionOutputs <- function(manager, reference, label, destinations
     destinations <- destinations[!vapply(destinations, is.null, logical(1))]
     root <- context$experiment_paths$source_dir %||% destinations[[1L]]
     request_key <- digest::digest(list(state = reference$entity_id, action = label, identity = identity), algo = "sha256")
-    request_id <- paste0("dia-", label, "-", substr(request_key, 1L, 32L))
+    staging <- workflowStagedRequest(root, "action", request_key, label)
+    request_id <- staging$request_id
     paths <- workflowExportPaths(root, request_id)
     journal_path <- file.path(paths$request_dir, "journal.json")
     owner <- function() {
@@ -349,7 +350,7 @@ publishWorkflowActionOutputs <- function(manager, reference, label, destinations
     }
     was_complete <- identical(journal$status, "complete")
     writeWorkflowExportJournal(paths, journal)
-    staged_root <- file.path(paths$request_dir, "files")
+    staged_root <- file.path(paths$request_dir, staging$staged)
     # Until an inventory is journaled, staged files belong to no accepted attempt.
     if (is.null(journal$files)) unlink(staged_root, recursive = TRUE)
     staged <- stats::setNames(lapply(names(destinations), function(role) {
@@ -603,6 +604,26 @@ workflowExportPaths <- function(output_dir, request_id) {
     }
     list(root = root, staging_root = normalizePath(staging_root, winslash = "/"),
         request_dir = normalizePath(request_dir, winslash = "/"))
+}
+
+#' Name the staging folder of one figure or action publication under `<root>/.workflow-export` (KIT-052,
+#' decision M18). The names are short because the staged path counts against the 259 characters a Windows
+#' path may have; a publication journaled under the earlier long name keeps that name and its inner
+#' folder, so one left pending is still found. Every caller that builds a staged path asks here.
+#' @param root Publication root holding `.workflow-export`.
+#' @param kind "qvalue" (key: the state's entity id) or "action" (key: the request digest).
+#' @param key Hexadecimal identity of the publication.
+#' @param label Action label, part of the earlier action name only.
+#' @return `request_id` (the folder under `.workflow-export`) and `staged` (the folder of files inside it).
+#' @noRd
+workflowStagedRequest <- function(root, kind = c("qvalue", "action"), key, label = NULL) {
+    kind <- match.arg(kind)
+    earlier <- if (kind == "qvalue") paste0("qvalue-", substr(key, 1L, 40L)) else
+        paste0("dia-", label, "-", substr(key, 1L, 32L))
+    if (file.exists(file.path(root, ".workflow-export", earlier, "journal.json"))) {
+        return(list(request_id = earlier, staged = if (kind == "qvalue") "figures" else "files"))
+    }
+    list(request_id = paste0(if (kind == "qvalue") "q-" else "a-", substr(key, 1L, 16L)), staged = "f")
 }
 
 #' Abort when an expected figure is missing or empty after rendering (KIT-052). A graphics device can
@@ -987,8 +1008,8 @@ resumeDIAQvalueOutput <- function(manager, record, hydrate = TRUE) {
     product <- manager$.context$snapshot$output_products[[reference$entity_id]] %||% product
     root <- manager$.context$experiment_paths$time_dir
     if (is.null(product) || is.null(root)) return(NULL)
-    path <- file.path(root, ".workflow-export", paste0("qvalue-", substr(reference$entity_id, 1L, 40L)),
-        "journal.json")
+    path <- file.path(root, ".workflow-export",
+        workflowStagedRequest(root, "qvalue", reference$entity_id)$request_id, "journal.json")
     if (file.exists(path)) {
         if (file.size(path) > 65536) cli::cli_abort("oversized Q-value journal", class = "saved_entity_corrupt")
         journal <- jsonlite::read_json(path)
@@ -1027,7 +1048,8 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
     key <- paste(arguments$omic_type, arguments$experiment_label, sep = "_")
     directories <- arguments$project_dirs[[key]]
     root <- directories$time_dir
-    paths <- workflowExportPaths(root, paste0("qvalue-", substr(reference$entity_id, 1L, 40L)))
+    staging <- workflowStagedRequest(root, "qvalue", reference$entity_id)
+    paths <- workflowExportPaths(root, staging$request_id)
     journal_path <- file.path(paths$request_dir, "journal.json")
     journal <- if (file.exists(journal_path)) {
         if (file.size(journal_path) > 65536) cli::cli_abort("oversized Q-value journal", class = "saved_entity_corrupt")
@@ -1046,7 +1068,7 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
         cli::cli_abort("Q-value publication identity differs", class = "saved_entity_scope")
     }
     was_complete <- identical(journal$status, "complete")
-    staged <- file.path(paths$request_dir, "figures")
+    staged <- file.path(paths$request_dir, staging$staged)
     grid_path <- file.path(paths$request_dir, "display.rds")
     expected <- as.vector(outer(paste0(arguments$step_name, "_", c("proteins_total",
         "proteins_per_run", "peptides_total", "peptides_per_protein", "peptides_per_run",
@@ -1054,7 +1076,7 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
     if (is.null(journal$files)) {
         if (!dir.exists(staged)) dir.create(staged)
         # KIT-052: the figures are rendered in a short scratch folder and copied into the staged one: the
-        # staged path is 73 characters longer than the project's, and the PNG device on Windows fails with
+        # staged path is longer than the project's, and the PNG device on Windows fails with
         # a warning only on a path longer than 259 characters.
         scratch <- tempfile("qvalue-")
         dir.create(scratch)
