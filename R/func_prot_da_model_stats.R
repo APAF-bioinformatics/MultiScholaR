@@ -246,6 +246,14 @@ fitProtDaBaseModel <- function(data_subset, design_m, design_matrix,
     counterFn("duplicateCorrelation")
     duplicate_correlation <- duplicateCorrelationFn(data_subset,
       design = design_m, block = block)
+    # KIT-129 B1: lipidomics' and metabolomics' guard (KIT-128 K128-3); without it lmFit stops on a non-finite
+    # correlation with an unclassed error.
+    correlation <- duplicate_correlation$consensus.correlation
+    if (length(correlation) != 1L || !is.finite(correlation)) {
+      rlang::abort(sprintf(paste("the correlation between technical replicates of one biological unit could not be",
+        "estimated (limma's duplicateCorrelation gave %s), so the model with technical replicates cannot be fitted"),
+        paste(format(correlation), collapse = ", ")), class = "omics_da_block_correlation_failed")
+    }
     messageFn(sprintf("   runTestsContrasts: Consensus correlation = %.4f",
       duplicate_correlation$consensus.correlation))
     messageFn("   runTestsContrasts: Running lmFit with duplicateCorrelation...")

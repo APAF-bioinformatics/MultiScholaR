@@ -656,3 +656,35 @@ test_that("the shared runner refuses today's declaration a request that names th
     expect_identical(workflowLegacyDesignRefusal(diaNormalizationOperation()), assertProtNormLegacyRuvParameters)
     expect_null(diaNormalizationOperation()$validate)
 })
+
+# KIT-129 B1 (the rehearsal's probe b): 2 groups of 4 biological units, each injected twice, the units declared as
+# technical replicates; a unit effect, one unwanted factor and 10% missing values.
+ruvModelTechRepFixture <- function(seed = 31L, proteins = 300L, units_per_group = 4L, injections = 2L, missing = 0.1) {
+    set.seed(seed)
+    groups <- rep(c("control", "treated"), each = units_per_group * injections)
+    unit <- rep(rep(seq_len(units_per_group), each = injections), times = 2L)
+    unit_id <- paste(groups, unit, sep = "_")
+    n <- length(groups)
+    u <- match(unit_id, unique(unit_id))
+    f <- stats::residuals(stats::lm(stats::rnorm(n) ~ factor(groups)))
+    x <- stats::rnorm(proteins, 22, 2) + matrix(stats::rnorm(proteins * max(u), 0, sqrt(0.1875)), proteins)[, u] +
+        outer(stats::rnorm(proteins, sd = 0.5), f / sqrt(mean(f^2))) + matrix(stats::rnorm(proteins * n, 0, 0.25), proteins)
+    if (missing > 0) x[sample.int(length(x), round(missing * length(x)))] <- NA_real_
+    dimnames(x) <- list(sprintf("PG_%05d", seq_len(proteins)), sprintf("run_%03d", seq_len(n)))
+    keep <- rowSums(is.finite(x[, groups == "control"])) >= n / 4 & rowSums(is.finite(x[, groups == "treated"])) >= n / 4
+    design <- data.frame(Run = colnames(x), group = groups, replicates = unit, tech_rep_group = unit_id,
+        stringsAsFactors = FALSE)
+    list(x = x[keep, , drop = FALSE], design = design)
+}
+
+test_that("with technical replicates, a k whose block correlation cannot be estimated is refused with a class (KIT-129 B1)", {
+    fixture <- ruvModelTechRepFixture()
+    # within the kernel's bound (13 on 16 injections), but the units' correlation is no longer estimable
+    refused <- tryCatch(ruvModelDa(ruvModelPackageState(fixture, 12L)$state), error = function(e) e)
+    expect_s3_class(refused, "omics_da_block_correlation_failed")
+    expect_match(conditionMessage(refused), "could not be estimated", fixed = TRUE)
+    # a k the block can carry still fits with the units as the block
+    fitted <- ruvModelDa(ruvModelPackageState(fixture, 1L)$state)
+    expect_identical(fitted$da_model$formula_used, "~ 0 + group + W1")
+    expect_gt(nrow(fitted$contrasts_results$results[[1L]]), 0L)
+})
