@@ -1,0 +1,45 @@
+simulator	cell	role	status	runs	void_subsets	arm2_rule12	realised_missing_share	realised_factor_group_cor
+S3	C0	core	run	1000		full:pass	NA	NA
+S3	C1	core	run	1000		full:pass	NA	NA
+S3	C2	core	run	1000		full:pass	NA	NA
+S3	C3	core	run	1000		full:pass	NA	NA
+S3	C4	core	run	1000		full:inconclusive	NA	NA
+S3	C5	core	run	1000		full:pass	NA	NA
+S3	C6	reported	run	1000	full	full:fail	NA	NA
+S3	C7	core	run	1000		full:pass	NA	NA
+S3	S1	stress	run	500		full:pass	NA	NA
+S3	S2	stress	run	500		full:pass	NA	NA
+S3	S3	stress	run	500		full:pass	NA	NA
+S3	S4	stress	run	500		full:pass	NA	NA
+S3	S5	stress	run	500		full:pass	NA	NA
+S3	S6	stress	not run	0			NA	NA
+S3	S7	stress	run	500	full	full:fail	NA	NA
+S3	S8	stress	run	500		full:pass	NA	NA
+S3	S9	stress	run	500	full	full:fail	NA	NA
+S3	S10	stress	run	500		full:pass	NA	NA
+S3	S11	stress	not run	0			NA	NA
+S3	S12	stress	not run	0			NA	NA
+S3	S13	stress	not run	0			NA	NA
+S3	S14	stress	not run	0			NA	NA
+S4	C0	core	run	1000		complete:pass full:pass	0.158619	NA
+S4	C1	core	run	1000		complete:pass full:pass	0.178172	NA
+S4	C2	core	run	1000		complete:inconclusive full:pass	0.15881	NA
+S4	C3	core	run	1000		complete:pass full:pass	0.0917457	NA
+S4	C4	core	run	1000	complete,full	complete:fail full:fail	0.160329	NA
+S4	C5	core	run	1000		complete:pass full:pass	0.151809	NA
+S4	C6	reported	run	1000	complete,full	complete:fail full:fail	0.164277	NA
+S4	C7	core	run	1000		complete:inconclusive full:pass	0.146734	NA
+S4	S1	stress	run	500	complete,full	complete:fail full:fail	0.127722	NA
+S4	S2	stress	run	500		complete:pass full:pass	0.156411	NA
+S4	S3	stress	run	500		complete:inconclusive full:inconclusive	0.135934	NA
+S4	S4	stress	run	500		complete:inconclusive full:pass	0.158228	NA
+S4	S5	stress	run	500		complete:pass full:pass	0	NA
+S4	S6	stress	run	500		complete:inconclusive full:pass	0.281427	NA
+S4	S7	stress	run	500		complete:pass full:pass	0.15383	NA
+S4	S8	stress	run	500		complete:pass full:pass	0.1511	NA
+S4	S9	stress	run	500		complete:pass full:pass	0.158801	NA
+S4	S10	stress	run	500		complete:pass full:pass	0.157654	NA
+S4	S11	stress	run	500	complete,full	complete:fail full:fail	0.123425	NA
+S4	S12	stress	not run	0			NA	NA
+S4	S13	stress	not run	0			NA	NA
+S4	S14	stress	not run	0			NA	NA

@@ -1,0 +1,24 @@
+KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
+script: /home/doktersmol/Projects/APAF/MultiScholaR/docs/qa/workflow-execution/kit/kit-124/aggregate.R
+script sha256: c5c6275f099166ab59bb479b4557ca598c96004f71494de785883bdbe5f4d200
+commit: de8c35b7eb4900583653b8696e8810b9e1744f66
+script differs from commit: FALSE
+command: Rscript /home/doktersmol/Projects/APAF/MultiScholaR/docs/qa/workflow-execution/kit/kit-124/aggregate.R /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/k124-agg/s1-core S1=/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s1-confirm
+working directory: /home/doktersmol/Projects/APAF/MultiScholaR
+R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
+packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
+library paths: /home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+run at: 2026-11-17 06:34:24 AEDT
+inputs (sha256, bytes, path):
+  9d821f7947ac3f9644f5da5dfcffeb5d97a5ee3d288a7ccf9c71a00dbccc416d 30395765 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s1-confirm/s1-runs.tsv
+  aa8c994998b143f9b7f66f8df301183af2ef18c25dcd0eae64cc93d11dfafb35 25051 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s1-confirm/s1-runs.log
+  fd52b9b84662a0601f02eb795823fd3d5f96c9c4a839a9b8892f4eec6218e172 4727 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s1-confirm/s1-runs.meta.txt
+simulator S1 meta (/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s1-confirm):
+  == s1_classic.R started 2026-11-16 11:54:59 AEDT ==
+  commit: 0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22; uncommitted changes in the work tree: FALSE
+  script md5: 0098f5aef833874dba821ca1025eaac6
+  command: /usr/lib64/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-confirm 1000 500 6 C0,C1,C2,C3,C4,C5,C6,C7
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 1 onward
+  cells: C0,C1,C2,C3,C4,C5,C6,C7; runs per core cell 1000, per stress cell 500
+  == finished 2026-11-17 06:15:25 AEDT ==

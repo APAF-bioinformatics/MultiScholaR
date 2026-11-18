@@ -1,0 +1,10 @@
+           path   kind   n      max_rel      max_abs outside verdict note
+ S1 C0$null_p05 double 160 0.000000e+00 0.000000e+00       0   agree     
+ S1 C0$null_p01 double 160 0.000000e+00 0.000000e+00       0   agree     
+      S1 C0$fdp double 160 0.000000e+00 0.000000e+00       0   agree     
+    S1 C0$power double 160 0.000000e+00 0.000000e+00       0   agree     
+     S1 C0$bias double 160 1.033735e-12 6.036838e-16       0   agree     
+     S1 C0$rmse double 160 6.017107e-15 1.026956e-15       0   agree     
+
+18 leaves compared: 18 agree, 0 outside the rule, 0 differ (discrete or structure)
+largest relative difference over the doubles: 1.03e-12 (S1 C0$bias)

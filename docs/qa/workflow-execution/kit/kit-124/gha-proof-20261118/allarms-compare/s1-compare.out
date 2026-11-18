@@ -1,0 +1,23 @@
+           path    kind   n      max_rel      max_abs outside verdict note
+ S1 C0$null_p05  double 500 0.000000e+00 0.000000e+00       0   agree     
+ S1 C0$null_p01  double 500 0.000000e+00 0.000000e+00       0   agree     
+      S1 C0$fdp  double 500 0.000000e+00 0.000000e+00       0   agree     
+    S1 C0$power  double 500 0.000000e+00 0.000000e+00       0   agree     
+     S1 C0$bias  double 500 8.514692e-10 6.968500e-13       0   agree     
+     S1 C0$rmse  double 500 5.493039e-12 9.999779e-13       0   agree     
+ S1 C5$null_p05  double 500 0.000000e+00 0.000000e+00       0   agree     
+ S1 C5$null_p01  double 500 0.000000e+00 0.000000e+00       0   agree     
+      S1 C5$fdp  double 500 0.000000e+00 0.000000e+00       0   agree     
+    S1 C5$power  double 500 0.000000e+00 0.000000e+00       0   agree     
+     S1 C5$bias  double 500 1.265125e-11 1.465997e-13       0   agree     
+     S1 C5$rmse  double 500 9.551376e-14 1.801337e-14       0   agree     
+  S1 C6$n_calls integer 580           NA           NA       7  differ     
+ S1 C6$null_p05  double 580 4.000000e-01 1.013514e-02       4 outside     
+ S1 C6$null_p01  double 580 4.000000e-01 3.327787e-03       5 outside     
+      S1 C6$fdp  double 580 4.852941e-01 2.773109e-02       5 outside     
+    S1 C6$power  double 580 3.703704e-02 2.127660e-02       6 outside     
+     S1 C6$bias  double 580 1.387483e+00 3.571574e+00       6 outside     
+     S1 C6$rmse  double 580 9.560056e-01 4.937315e+01       6 outside     
+
+54 leaves compared: 47 agree, 6 outside the rule, 1 differ (discrete or structure)
+largest relative difference over the doubles: 1.39 (S1 C6$bias)
