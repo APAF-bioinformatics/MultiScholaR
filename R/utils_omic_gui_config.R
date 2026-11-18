@@ -1535,7 +1535,9 @@ omicGuiRuvTexts <- function(features) {
         association_dia_limpa = paste("In DIA with limpa this value detects only strong ties to the groups: in simulation it",
             "exceeded the threshold in 86% of data sets at a correlation of 0.6 and in 37% at 0.3."),
         association_legacy = paste("The check that an unwanted factor follows your groups is not available for the approach",
-            "of earlier versions: its factors do not show this condition."))
+            "of earlier versions: its factors do not show this condition."),
+        # KIT-129 fifth pass item 5: the RUV QC tab's column heading of the check.
+        association_column = "Unwanted factors and your groups")
 }
 
 #' The scenarios of KIT-124's simulations in words, for `fdp_where`: the condition only (the column heading says

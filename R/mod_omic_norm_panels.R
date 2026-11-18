@@ -436,7 +436,9 @@ omicNormRuvKDiagnosticSlots <- function(ns, view) {
     if (!isTRUE(design$enabled)) return(NULL)
     with_k <- names(Filter(\(preset) length(preset$k_rules) > 0L, omicNormRuvPresets(design)))
     with_separation <- names(Filter(\(preset) "sweep_bounded" %in% preset$k_rules, omicNormRuvPresets(design)))
-    list(shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", with_k), ns = ns, shiny::hr(),
+    # KIT-129 fifth pass item 5: the check that a factor follows the groups, one column (ticket section 3 (2))
+    list(shiny::tableOutput(ns("ruv_design_association_table")),
+        shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", with_k), ns = ns, shiny::hr(),
         shiny::h5("Number of factors (k): the estimated number", style = "text-align: center;"),
         shiny::helpText(design$k_rules$num_sv_be$diagnostic),
         lapply(seq_len(view$assay_slots), \(n) shinyjqui::jqui_resizable(
@@ -556,6 +558,12 @@ registerOmicNormRuvDesignOutputs <- function(output, normData, design, slots = 1
     presets <- omicNormRuvPresets(design)
     texts <- design$tables[[1L]]$texts
     output$ruv_design_summary <- shiny::renderUI(omicNormRuvResultTags(normData$ruv_design_result, presets, texts))
+    # KIT-129 fifth pass item 5: the RUV QC tab's column of the check, from the same recorded values
+    output$ruv_design_association_table <- shiny::renderTable({
+        rows <- omicNormRuvAssociationRows(normData$ruv_design_result, texts)
+        shiny::req(nrow(rows) > 0L)
+        rows
+    }, striped = TRUE, width = "100%")
     for (n in seq_len(slots %||% 1L)) local({
         slot <- n
         output[[sprintf("ruv_k_estimate_assay%d", slot)]] <- shiny::renderPlot({
@@ -622,17 +630,13 @@ omicNormRuvResultTags <- function(result, presets, texts) {
     # a threshold was validated, the value without a verdict elsewhere, and under a legacy design that it is not available.
     association_lines <- lapply(names(assays), function(name) {
         a <- assays[[name]]$association
-        if (is.null(a) || is.na(a$ruv_group_association %||% NA)) return(NULL)
+        words <- omicNormRuvAssociationText(a, texts, result$route)
+        if (is.null(words)) return(NULL)
         prefix <- if (several) paste(texts[["result_assay"]], name, "-") else NULL
-        value <- sprintf("%.3f", a$ruv_group_association)
-        threshold <- sprintf("%.3f", a$ruv_group_association_threshold)
-        switch(a$ruv_group_association_outcome,
-            flagged = shiny::tags$p(class = "ruv-design-warning", role = "alert", shiny::tags$strong(paste(c(prefix,
-                sprintf(texts[["association_flagged"]], value, threshold)), collapse = " "))),
-            not_flagged = line(paste(c(prefix, sprintf(texts[["association_not_flagged"]], value, threshold)), collapse = " ")),
-            not_calibrated = line(paste(c(prefix, sprintf(texts[["association_not_calibrated"]], value),
-                if (identical(result$route, "dia_limpa")) texts[["association_dia_limpa"]]), collapse = " ")),
-            NULL)
+        if (identical(a$ruv_group_association_outcome, "flagged")) {
+            return(shiny::tags$p(class = "ruv-design-warning", role = "alert", shiny::tags$strong(paste(c(prefix, words), collapse = " "))))
+        }
+        line(paste(c(prefix, words), collapse = " "))
     })
     shiny::tags$div(class = "ruv-design-result", `aria-live` = "polite",
         shiny::tags$h5(texts[["result_heading"]]),
@@ -643,6 +647,39 @@ omicNormRuvResultTags <- function(result, presets, texts) {
         if (!is.na(result$seed %||% NA) && result$k_rule %in% c("num_sv_be", "user")) line(texts[["result_seed"]], result$seed),
         association_lines,
         if (isTRUE(result$legacy)) line(texts[["association_legacy"]]))
+}
+
+#' The check that a factor follows the groups in the panel's words (KIT-129 fourth pass item 4; fifth pass item 5: shared
+#' by the panel, the RUV QC tab's table and the DA tab's line): the warning, its absence or the value without a verdict,
+#' with the recorded value and threshold to 3 decimals; NULL without a value or for another outcome.
+#' @param a The recorded check (`ruvGroupAssociationRecordFields`). @param texts The table's texts.
+#' @param route The result's route (`dia_limpa` adds its sentence).
+#' @noRd
+omicNormRuvAssociationText <- function(a, texts, route = NA_character_) {
+    if (is.null(a) || is.na(a$ruv_group_association %||% NA)) return(NULL)
+    value <- sprintf("%.3f", a$ruv_group_association)
+    threshold <- sprintf("%.3f", a$ruv_group_association_threshold %||% NA_real_)
+    switch(a$ruv_group_association_outcome %||% "",
+        flagged = sprintf(texts[["association_flagged"]], value, threshold),
+        not_flagged = sprintf(texts[["association_not_flagged"]], value, threshold),
+        not_calibrated = paste(c(sprintf(texts[["association_not_calibrated"]], value),
+            if (identical(route, "dia_limpa")) texts[["association_dia_limpa"]]), collapse = " "),
+        NULL)
+}
+
+#' The RUV QC tab's table of the check (KIT-129 fifth pass item 5, ticket section 3 (2)): one row per assay with a
+#' recorded value, its column the panel's words for it; the assay column only where the omic has several assays.
+#' @param result `omicNormRuvDesignResult`'s value, or NULL. @param texts The table's texts.
+#' @return A data frame, with no row when there is nothing to show.
+#' @noRd
+omicNormRuvAssociationRows <- function(result, texts) {
+    assays <- result$assays %||% list()
+    words <- lapply(assays, function(assay) omicNormRuvAssociationText(assay$association, texts, result$route))
+    shown <- names(Filter(Negate(is.null), words))
+    rows <- stats::setNames(data.frame(unlist(words[shown], use.names = FALSE) %||% character(), stringsAsFactors = FALSE),
+        texts[["association_column"]])
+    if (length(assays) > 1L) rows <- cbind(stats::setNames(data.frame(shown, stringsAsFactors = FALSE), texts[["result_assay"]]), rows)
+    rows
 }
 
 #' One run's result for the panel (KIT-129 fourth pass item 3), in one shape for every omic.

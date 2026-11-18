@@ -887,3 +887,76 @@ test_that("(fourth pass item 4) the panel shows the check: a warning, its absenc
         gregexpr("%s", texts[c("association_flagged", "association_not_flagged", "association_not_calibrated")], fixed = TRUE))),
         c(association_flagged = 2L, association_not_flagged = 2L, association_not_calibrated = 1L))
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-129 fifth pass item 5: the warning's other two places (ticket section 3 (2) and (3)).
+# ------------------------------------------------------------------------------------------------
+
+ruvDesignCheck <- function(outcome, value = 0.21, threshold = 0.058077853) list(ruv_group_association = value,
+    ruv_group_association_threshold = if (outcome %in% c("flagged", "not_flagged")) threshold else NA_real_,
+    ruv_group_association_flag = if (outcome %in% c("flagged", "not_flagged")) identical(outcome, "flagged") else NA,
+    ruv_group_association_outcome = outcome, ruv_group_association_source = "a source")
+
+test_that("(fifth pass item 5) the RUV QC tab's column holds the panel's words for the recorded check", {
+    texts <- omicNormRuvRunTable("lipidomics")$texts
+    two <- omicNormRuvDesignResult("groups_all_features", "num_sv_be", 7L, "group", list(
+        pos = list(k = 1L, applied = TRUE, association = ruvDesignCheck("flagged")),
+        neg = list(k = 0L, applied = FALSE, association = ruvDesignCheck("no_factors", NA))))
+    rows <- omicNormRuvAssociationRows(two, texts)
+    expect_identical(names(rows), c(texts[["result_assay"]], texts[["association_column"]]))
+    expect_identical(rows[[1L]], "pos")
+    expect_identical(rows[[2L]], sprintf(texts[["association_flagged"]], "0.210", "0.058"))
+    # the panel shows the same words
+    shown <- as.character(omicNormRuvResultTags(two, omicNormRuvPresets(omicGuiConfig("lipidomics")$norm$ruv_design), texts))
+    expect_match(shown, paste("Assay pos -", sprintf(texts[["association_flagged"]], "0.210", "0.058")), fixed = TRUE)
+    one <- omicNormRuvAssociationRows(omicNormRuvDesignResult("groups_all_features", "user", 7L, "group",
+        list(all = list(k = 1L, applied = TRUE, association = ruvDesignCheck("not_calibrated")))), texts)
+    expect_identical(names(one), texts[["association_column"]])
+    expect_identical(one[[1L]], sprintf(texts[["association_not_calibrated"]], "0.210"))
+    expect_identical(nrow(omicNormRuvAssociationRows(NULL, texts)), 0L)
+    expect_identical(nrow(omicNormRuvAssociationRows(omicNormRuvLegacyResult(), texts)), 0L)
+    # the slot is in the RUV QC tab with the gate on only
+    expect_match(ruvDesignHtml("lipidomics", TRUE), 'id="norm-ruv_design_association_table"', fixed = TRUE)
+    expect_false(grepl("ruv_design_association_table", ruvDesignHtml("lipidomics", FALSE), fixed = TRUE))
+})
+
+test_that("(fifth pass item 5) the DA tab shows the warning above the run button when the run that feeds it was flagged", {
+    texts <- omicGuiRuvTexts("features")
+    steps <- list()
+    testthat::local_mocked_bindings(buildWorkflowAnalysisRecord = function(manager, now = Sys.time()) list(steps = steps),
+        .package = "MultiScholaR")
+    manager <- structure(list(), class = "DIAStateAdapter")
+    single <- function(outcome) c(list(rows = 10L), ruvDesignCheck(outcome))
+    steps <- list(list(operation = "normalization-ruv", outcomes = single("flagged")))
+    expect_identical(omicDaRuvAssociationLines(manager), character())   # the gate off: nothing
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    expect_identical(omicDaRuvAssociationLines(manager), sprintf(texts[["association_flagged"]], "0.210", "0.058"))
+    # the last RUV step is the one that feeds the test
+    steps <- list(list(operation = "normalization-ruv", outcomes = single("flagged")),
+        list(operation = "normalization-ruv", outcomes = single("not_flagged")))
+    expect_identical(omicDaRuvAssociationLines(manager), character())
+    steps <- list(list(operation = "trx_ruvs", outcomes = single("not_calibrated")))
+    expect_identical(omicDaRuvAssociationLines(manager), character())
+    # lipid/metab: per assay
+    per <- function(field, values) stats::setNames(list(values), paste0(field, "_per_assay"))
+    steps <- list(list(operation = "lipid_ruv", outcomes = c(per("ruv_group_association", list(pos = 0.21, neg = 0.01)),
+        per("ruv_group_association_threshold", list(pos = 0.088611623, neg = 0.088611623)),
+        per("ruv_group_association_flag", list(pos = TRUE, neg = FALSE)),
+        per("ruv_group_association_outcome", list(pos = "flagged", neg = "not_flagged")),
+        per("ruv_group_association_source", list(pos = "s", neg = "s")))))
+    expect_identical(omicDaRuvAssociationLines(manager), paste("Assay pos -", sprintf(texts[["association_flagged"]], "0.210", "0.089")))
+    expect_identical(omicDaRuvAssociationLines(NULL), character())
+    tags <- as.character(omicDaRuvAssociationTags(omicDaRuvAssociationLines(manager)))
+    expect_match(tags, 'role="alert"', fixed = TRUE)
+    expect_null(omicDaRuvAssociationTags(character()))
+    # the slot sits above the run button with the gate on, in both layouts; nothing with the gate off
+    for (omic in c("lipidomics", "proteomics")) {
+        html <- function(enabled) withr::with_options(list(MultiScholaR.ruv_design_panel = enabled),
+            ruvDesignMaskTabs(as.character(htmltools::renderTags(mod_omic_da_ui("da", omicGuiConfig(omic)$da))$html)))
+        on <- html(TRUE)
+        expect_lt(regexpr('id="da-ruv_association_warning"', on, fixed = TRUE), regexpr('id="da-run_da_analysis"', on, fixed = TRUE),
+            label = omic)
+        expect_gt(regexpr('id="da-ruv_association_warning"', on, fixed = TRUE), 0L, label = omic)
+        expect_identical(html(NULL), gsub('<div id="da-ruv_association_warning" class="shiny-html-output"></div>\\s*', "", on), info = omic)
+    }
+})
