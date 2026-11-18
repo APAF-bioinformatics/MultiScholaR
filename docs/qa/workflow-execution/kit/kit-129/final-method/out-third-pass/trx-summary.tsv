@@ -1,0 +1,6 @@
+entry	leaves	max_rel	verdict	note
+S3/C0/arm31/k	1	NA	pass	arm 31's E, the W the route was given
+S3/C0/arm31/contrast_vs_reparameterised	4	2.20320970672428e-07	pass	keys: 4631 common, 0 simulator only, 0 package only
+S3/C6/arm31/k	1	NA	pass	arm 31's E, the W the route was given
+S3/C6/arm31/contrast_vs_reparameterised	4	4.09167919207201e-08	pass	keys: 4645 common, 0 simulator only, 0 package only
+S3/edgeR_contrast_reformulation	NA	NA	info	glmLRT calls contrastAsCoef: FALSE; glmQLFTest calls glmLRT: TRUE

@@ -314,7 +314,8 @@ test_that("a saved enrichment result with no plots restores what its plot is reb
 
 test_that("a declared owned args entry is saved out of line, reattached on hydrate and reused when unchanged (KIT-047)", {
     protein <- workflowClassDeclaration("ProteinQuantitativeData")
-    expect_identical(protein$args_as_owned, "limpa_dpc_quant_results")
+    # KIT-126: the normalised matrix of the classic route's factors-in-the-model RUV state is the second owned entry.
+    expect_identical(protein$args_as_owned, c("limpa_dpc_quant_results", "ruv_uncorrected_quant"))
     expect_identical(workflowClassDeclaration("PeptideQuantitativeData")$args_as_owned, character())
     broken <- protein
     broken$args_as_owned <- c("a", "a")

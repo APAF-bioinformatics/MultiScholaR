@@ -1,0 +1,61 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S1/C0/arm25/k	integer	1			0	agree	
+S1/C0/arm25/classic$key	character	786			0	agree	
+S1/C0/arm25/classic$estimate	double	786	0	0	0	agree	
+S1/C0/arm25/classic$p	double	786	1.06297290543035e-12	6.68354260824344e-14	0	agree	
+S1/C0/arm25/classic$q	double	786	9.9598131583142e-13	1.13686837721616e-13	0	agree	
+S1/C6/arm25/k	integer	1			0	agree	
+S1/C6/arm25/classic$key	character	783			0	agree	
+S1/C6/arm25/classic$estimate	double	783	4.1119025423565e-11	4.83502127224256e-14	0	agree	
+S1/C6/arm25/classic$p	double	783	1.09735947957851e-12	2.16604512104368e-13	0	agree	
+S1/C6/arm25/classic$q	double	783	1.00992333593981e-12	1.82742709853301e-13	0	agree	
+S2/C0/arm25/k	integer	1			0	agree	
+S2/C0/arm25/dia$key	character	1000			0	agree	
+S2/C0/arm25/dia$estimate	double	1000	0	0	0	agree	
+S2/C0/arm25/dia$p	double	1000	1.18011769739979e-12	3.66373598126302e-14	0	agree	
+S2/C0/arm25/dia$q	double	1000	9.20672668933028e-13	4.03566069451244e-14	0	agree	
+S2/C6/arm25/k	integer	1			0	agree	
+S2/C6/arm25/dia$key	character	1000			0	agree	
+S2/C6/arm25/dia$estimate	double	1000	0	0	0	agree	
+S2/C6/arm25/dia$p	double	1000	1.12719038299619e-12	2.1094237467878e-14	0	agree	
+S2/C6/arm25/dia$q	double	1000	1.1271009116831e-12	4.79616346638068e-14	0	agree	
+S4/C0/arm25/lipid/pos/k	integer	1			0	agree	
+S4/C0/arm25/lipid/pos$key	character	145			0	agree	
+S4/C0/arm25/lipid/pos$estimate	double	145	0	0	0	agree	
+S4/C0/arm25/lipid/pos$p	double	145	1.00980329538245e-11	3.81694675866129e-13	0	agree	
+S4/C0/arm25/lipid/pos$q	double	145	7.84729313000574e-12	8.03579425223688e-13	0	agree	
+S4/C0/arm25/lipid/neg/k	integer	1			0	agree	
+S4/C0/arm25/lipid/neg$key	character	142			0	agree	
+S4/C0/arm25/lipid/neg$estimate	double	142	0	0	0	agree	
+S4/C0/arm25/lipid/neg$p	double	142	2.09827102307487e-10	8.27660162627808e-12	0	agree	
+S4/C0/arm25/lipid/neg$q	double	142	2.09827012242122e-10	2.73320255317344e-11	0	agree	
+S4/C0/arm25/metab/pos/k	integer	1			0	agree	
+S4/C0/arm25/metab/pos$key	character	145			0	agree	
+S4/C0/arm25/metab/pos$estimate	double	145	0	0	0	agree	
+S4/C0/arm25/metab/pos$p	double	145	1.00980329538245e-11	3.81694675866129e-13	0	agree	
+S4/C0/arm25/metab/pos$q	double	145	7.84729313000574e-12	8.03579425223688e-13	0	agree	
+S4/C0/arm25/metab/neg/k	integer	1			0	agree	
+S4/C0/arm25/metab/neg$key	character	142			0	agree	
+S4/C0/arm25/metab/neg$estimate	double	142	0	0	0	agree	
+S4/C0/arm25/metab/neg$p	double	142	2.09827102307487e-10	8.27660162627808e-12	0	agree	
+S4/C0/arm25/metab/neg$q	double	142	2.09827012242122e-10	2.73320255317344e-11	0	agree	
+S4/C6/arm25/lipid/pos/k	integer	1			0	agree	
+S4/C6/arm25/lipid/pos$key	character	145			0	agree	
+S4/C6/arm25/lipid/pos$estimate	double	145	1.45848288160831e-12	2.1316282072803e-14	0	agree	
+S4/C6/arm25/lipid/pos$p	double	145	6.33347616629083e-12	1.30728761149612e-13	0	agree	
+S4/C6/arm25/lipid/pos$q	double	145	6.33347673690824e-12	2.34645636254527e-13	0	agree	
+S4/C6/arm25/lipid/neg/k	integer	1			0	agree	
+S4/C6/arm25/lipid/neg$key	character	142			0	agree	
+S4/C6/arm25/lipid/neg$estimate	double	142	5.20332112141212e-12	1.97619698383278e-14	0	agree	
+S4/C6/arm25/lipid/neg$p	double	142	2.98897993681715e-13	2.73114864057789e-14	0	agree	
+S4/C6/arm25/lipid/neg$q	double	142	2.98782977790345e-13	2.08444372873373e-14	0	agree	
+S4/C6/arm25/metab/pos/k	integer	1			0	agree	
+S4/C6/arm25/metab/pos$key	character	145			0	agree	
+S4/C6/arm25/metab/pos$estimate	double	145	1.45848288160831e-12	2.1316282072803e-14	0	agree	
+S4/C6/arm25/metab/pos$p	double	145	6.33347616629083e-12	1.30728761149612e-13	0	agree	
+S4/C6/arm25/metab/pos$q	double	145	6.33347673690824e-12	2.34645636254527e-13	0	agree	
+S4/C6/arm25/metab/neg/k	integer	1			0	agree	
+S4/C6/arm25/metab/neg$key	character	142			0	agree	
+S4/C6/arm25/metab/neg$estimate	double	142	5.20332112141212e-12	1.97619698383278e-14	0	agree	
+S4/C6/arm25/metab/neg$p	double	142	2.98897993681715e-13	2.73114864057789e-14	0	agree	
+S4/C6/arm25/metab/neg$q	double	142	2.98782977790345e-13	2.08444372873373e-14	0	agree	

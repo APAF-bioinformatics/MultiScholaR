@@ -110,7 +110,9 @@ omicDaFeatureLayout <- function(da) {
         node("h5", "Analysis Parameters"), numeric("da_q_val_thresh", da$threshold), numeric("treat_lfc_cutoff", da$lfc),
         node("hr"),
         node("h5", "Available Contrasts"), node("verbatimTextOutput", id = "contrasts_display"),
-        node("helpText", "Contrasts defined in design matrix"), node("hr")), load, list(
+        node("helpText", "Contrasts defined in design matrix"), node("hr")), load,
+        # KIT-129 fifth pass item 5: the factor-tied-to-groups warning above the run button, with the gate on only
+        if (omicGuiRuvDesignEnabled()) list(node("uiOutput", id = "ruv_association_warning")), list(
         node("actionButton", "Run DA Analysis", class = "btn-primary", width = "100%", icon = "play", id = "run_da_analysis",
             testid = da$testids[["run"]]),
         node("br"), node("br"),
@@ -440,7 +442,7 @@ omicDaPluginLayout <- function(da) {
     numeric <- function(id, spec) {
         node("numericInput", spec$label, value = spec$value, min = spec$min, max = spec$max, step = spec$step, id = id)
     }
-    sidebar <- node("wellPanel", children = list(node("h4", "DA Analysis Settings"),
+    sidebar <- node("wellPanel", children = c(list(node("h4", "DA Analysis Settings"),
         node("textAreaInput", da$model$label, value = da$model$default, height = "60px", id = "formula_string"),
         node("helpText", da$model$help), node("hr"),
         node("h5", "Analysis Parameters"), numeric("da_q_val_thresh", da$threshold), numeric("treat_lfc_cutoff", da$lfc),
@@ -450,14 +452,16 @@ omicDaPluginLayout <- function(da) {
         list(plugin = da$plugins[["archive"]]),
         node("actionButton", "Load Filtered Session", class = "btn-info", width = "100%", icon = "upload",
             id = "load_filtered_session", testid = da$testids[["load_session"]]),
-        node("helpText", "Load the latest session, a portable native DIA archive, or a historical RDS session."), node("br"),
+        node("helpText", "Load the latest session, a portable native DIA archive, or a historical RDS session."), node("br")),
+        # KIT-129 fifth pass item 5: the factor-tied-to-groups warning above the run button, with the gate on only
+        if (omicGuiRuvDesignEnabled()) list(node("uiOutput", id = "ruv_association_warning")), list(
         node("actionButton", "Run DA Analysis", class = "btn-primary", width = "100%", icon = "play", id = "run_da_analysis",
             testid = da$testids[["run"]]),
         node("br"), node("br"),
         node("downloadButton", "Download All Results", class = "btn-success", width = "100%", id = "download_da_results",
             testid = da$testids[["download"]]),
         node("br"), node("br"),
-        node("h5", "Analysis Status"), node("verbatimTextOutput", id = "da_status")))
+        node("h5", "Analysis Status"), node("verbatimTextOutput", id = "da_status"))))
     tabset <- node("tabsetPanel", ns_id = "da_results_tabs", testid = da$testids[["results_tabs"]],
         children = list(omicDaPluginVolcanoTab(da), omicDaPluginHeatmapTab(da), omicDaPluginTableTab(da)))
     node("wellPanel", children = list(node("fluidRow", children = list(node("column", 3, children = list(sidebar)),

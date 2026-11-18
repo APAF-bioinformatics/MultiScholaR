@@ -1,0 +1,103 @@
+side	file	test	passed	failed	errors	skipped	first_message
+base	test-kit129-run-path.R	(item 1) a request runs the new design's declaration only when it names the design, and today's otherwise	13	0	0	0	
+base	test-kit129-run-path.R	(item 1) today's declarations refuse the new design's parameters, the RUV step's and the DA method	14	0	0	0	
+base	test-kit129-run-path.R	(item 1) with the gate off the tab's requests are today's; with it on they carry the design the tab names	8	0	0	0	
+base	test-kit129-run-path.R	(item 1) classic proteomics: the compute half runs the new design and its DA names the method in the identity	8	0	0	0	
+base	test-kit129-run-path.R	(item 1) lipidomics and metabolomics: the new design and its DA in process and on the worker	28	0	0	0	
+base	test-kit129-run-path.R	(item 2) classic proteomics: the option set's None declares itself and is tested with the trend and robust settings (M30)	10	0	0	0	
+base	test-kit129-run-path.R	(item 2) classic proteomics: a count of 0 declares the design without factors and is tested as None	4	0	0	0	
+base	test-kit129-run-path.R	(item 2) classic proteomics: the factors-in-the-model test is saved under identities that name it	3	0	0	0	
+base	test-kit129-run-path.R	(item 2) DIA with limpa: the DA declaration of a declared state refuses a source whose declaration names another method	3	0	0	0	
+base	test-kit129-run-path.R	(item 2) lipidomics: the option set's None is tested as today's test, under its own identity	4	0	0	0	
+base	test-kit129-run-path.R	(item 3) transcriptomics: a k given under the estimated count is refused on the run path; the user's k records the count beside it	5	1	0	0	Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`. Differences: `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f" `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344" 
+base	test-kit129-run-path.R	(item 3) classic proteomics: the step's record names the design, the rule, the estimate and the seed	4	0	0	0	
+base	test-kit129-run-path.R	(item 3) lipidomics: the step's record names the design, the rule, the estimate per assay and the seed	8	0	0	0	
+base	test-kit129-run-path.R	(item 5) classic proteomics: in process, by the worker's handlers and by the kernel, one result	3	0	0	1	
+base	test-kit129-run-path.R	(item 5) DIA with limpa: in process, by the worker's handlers and by the kernel, one result	6	0	0	0	
+base	test-kit129-run-path.R	(item 5) transcriptomics: the declared design in process, on the worker and by the kernel, one result	6	1	0	0	Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`. Differences: `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f" `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344" 
+base	test-kit129-run-path.R	(item 5) lipidomics and metabolomics: in process, on the worker and by the kernel, one result	8	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) classic proteomics: the technical-replicate design on the run path equals the kernel; refused without technical replicates	10	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) classic proteomics: first-pass nulls on the run path equal the kernel, with the user's k and the separation rule	8	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) lipidomics and metabolomics: the technical-replicate design on the run path equals the kernel and records its structure	23	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) lipidomics and metabolomics: first-pass nulls on the run path equal the kernel	8	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) DIA with limpa and transcriptomics: first-pass nulls reach the run path's declared step	9	0	0	0	
+base	test-kit129-run-path.R	(fourth pass item 1) lipidomics and metabolomics: the declared RUV step's identity states the replicate structure by design	4	2	0	0	Expected `fixed$replicate_sets` to match string "under the design technical_replicates the declared technical replicates". Actual text: x | the groups (RUV-III) lipid
+base	test-kit129-run-path.R	(fourth pass item 2) the panel's choice runs in process and on the worker as one product; the head's technical replicates are read	0	0	1	0	Error in `omicNormRuvHeadTechnicalReplicates(plain$owner)`: could not find function "omicNormRuvHeadTechnicalReplicates"
+base	test-kit129-run-path.R	(fourth pass item 4) the thresholds table is the calibration's: validated designs only, with their sources	0	0	1	0	Error in `ruvGroupAssociationThresholds()`: could not find function "ruvGroupAssociationThresholds"
+base	test-kit129-run-path.R	(fourth pass item 4) the statistic is the calibration's; the check gives a verdict where validated and none elsewhere	0	0	1	0	Error in `ruvFactorGroupAssociations(W, group)`: could not find function "ruvFactorGroupAssociations"
+base	test-kit129-run-path.R	(fourth pass item 4) each omic's step writes the check on its W into the record; the panel shows it	0	0	1	0	Error in `ruvFactorGroupAssociations(record$W, groups)`: could not find function "ruvFactorGroupAssociations"
+base	test-kit129-run-path.R	(fourth pass item 4) transcriptomics: the RUVs step's outcomes carry the check of its W	1	2	1	0	Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`. Differences: `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f" `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344" 
+base	test-kit129-run-path.R	(fourth pass item 5) transcriptomics: a declared design's run publishes what exists for it and shows no grid	6	5	0	0	Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`. Differences: `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f" `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344" 
+base	test-kit129-run-path.R	(fourth pass item 5) the RUV QC tab shows the legacy grid's frame only for a legacy run	1	0	1	0	Error in `omicNormSetRuvDesignResult(session$returned, omicNormRuvDesignResult("groups_all_features", "user", 7L, "group", list(all = list(k = 1L, applied = TRUE))))`: could not find function "omicNormSetRuvDesignResult"
+base	test-omic-norm-ruv-design.R	every omic carries the preset table: every design once, in four tiers, one recommended	177	5	0	0	Expected `tables[[name]]$selected` to be identical to "groups_all_features". Differences: `actual`:   "legacy"              `expected`: "groups_all_features" proteomics.classic
+base	test-omic-norm-ruv-design.R	each measured figure is the ticket's; the cells still running are pending, not numbers	106	0	0	0	
+base	test-omic-norm-ruv-design.R	each design offers the k rules defined for it, with the rule its figure was measured with selected	97	0	0	0	
+base	test-omic-norm-ruv-design.R	the texts shown name no internal arm, cell, ticket or question	4	0	0	0	
+base	test-omic-norm-ruv-design.R	the schema refuses an incomplete or inconsistent preset table by class, naming the field	40	0	0	0	
+base	test-omic-norm-ruv-design.R	the gate is off by default: no omic's tab shows the section, and its HTML is today's	17	0	0	0	
+base	test-omic-norm-ruv-design.R	with the gate off the server registers nothing for the section	1	0	0	0	
+base	test-omic-norm-ruv-design.R	with the gate on each omic's tab shows every design with its figure and note, today's controls under today's design	0	0	1	0	Error in `omicNormRuvMarkTable(design$tables[[1L]], technical = FALSE)`: could not find function "omicNormRuvMarkTable"
+base	test-omic-norm-ruv-design.R	with the gate on the section is a block above the options column, its designs a comparison list	4	0	1	0	Error in `omicNormRuvMarkTable(design$tables[[1L]], technical = FALSE)`: could not find function "omicNormRuvMarkTable"
+base	test-omic-norm-ruv-design.R	the figure text is the table's numbers in words; a pending or unavailable cell shows no number	9	0	0	0	
+base	test-omic-norm-ruv-design.R	the k rule's choices follow the selected design, and the route's table replaces the options	24	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) only the options a route's run path takes can be chosen; the others say why; the defaults are M2 and M6	0	0	1	0	Error in `omicNormRuvMarkTable(tables[[name]], technical)`: could not find function "omicNormRuvMarkTable"
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) the panel's choice reads the design, the k rule, the typed k, the seed and the list, and refuses in words	0	0	1	0	Error in `omicNormRuvRunTable("proteomics", "DIA_LIMPA")`: could not find function "omicNormRuvRunTable"
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) each omic's tab builds the run path's request from the choice; legacy builds today's; the gate off changes nothing	0	0	1	0	Error in `applyProtNormRuvDesign(resolveProtNormReferenceSettings(input), omicNormRuvDesignChoice(input, omicNormRuvRunTable("proteomics", "LFQ")))`: could not find function "applyProtNormRuvDesign"
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) on a design with technical replicates the panel selects that design and refuses a closed one	0	0	1	0	Error in `testthat::local_mocked_bindings(omicNormRuvHeadTechnicalReplicates = function(manager) head$technical, .package = "MultiScholaR")`: Can't find binding for `omicNormRuvHeadTechnicalReplicates`
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) a refused choice is the tab's error notice and the run does not start	0	0	1	0	Error in `omicNormReadRuvDesign(ruvDesignInput(ruv_k_rule = "user", ruv_k_user = NA), "lipidomics", function(line) lines <<- c(lines, line))`: could not find function "omicNormReadRuvDesign"
+base	test-omic-norm-ruv-design.R	(fourth pass item 3) each omic's product gives one result: the design, k and its rule, the count beside a typed k, the sets	0	0	1	0	Error in `protNormRuvDesignResult(list(parameters = list(ruv_design = "groups_all_features"), best_k = 2L, ruv_model = list(replicate_structure = "group"), ruv_result = list(ruv_k_rule = "user", ruv_k_estimate = 1L, ruv_applied = TRUE, ruv_k_seed = 7L, k_estimate = list(k = 1L), ruv_not_applied_reason = NA_character_)))`: could not find function "protNormRuvDesignResult"
+base	test-omic-norm-ruv-design.R	(fourth pass item 3) the summary says what was done in the table's words	0	0	1	0	Error in `omicNormRuvResultTags(result, presets, texts)`: could not find function "omicNormRuvResultTags"
+base	test-omic-norm-ruv-design.R	(fourth pass item 3) the tab renders the last run's summary and the estimated number's plot; the gate off sets nothing	0	0	1	0	Error in `omicNormSetRuvDesignResult(state, list(design = "x"))`: could not find function "omicNormSetRuvDesignResult"
+base	test-omic-norm-ruv-design.R	(fourth pass item 3) refusals reach the tab's error notice with the kernel's message; DIA's None is shown as done	1	5	0	0	Expected `...[]` to be identical to `list(...)`. Differences: `actual` is NULL `expected` is a list 
+base	test-omic-norm-ruv-design.R	(fourth pass item 4) the panel shows the check: a warning, its absence, the value without a verdict, not available	0	0	1	0	Error in `omicNormRuvResultTags(omicNormRuvDesignResult("groups_all_features", "num_sv_be", 7L, "group", list(all = list(k = 1L, applied = TRUE, association = association)), route = route), presets, texts)`: could not find function "omicNormRuvResultTags"
+head	test-kit129-run-path.R	(item 1) a request runs the new design's declaration only when it names the design, and today's otherwise	13	0	0	0	
+head	test-kit129-run-path.R	(item 1) today's declarations refuse the new design's parameters, the RUV step's and the DA method	14	0	0	0	
+head	test-kit129-run-path.R	(item 1) with the gate off the tab's requests are today's; with it on they carry the design the tab names	8	0	0	0	
+head	test-kit129-run-path.R	(item 1) classic proteomics: the compute half runs the new design and its DA names the method in the identity	8	0	0	0	
+head	test-kit129-run-path.R	(item 1) lipidomics and metabolomics: the new design and its DA in process and on the worker	28	0	0	0	
+head	test-kit129-run-path.R	(item 2) classic proteomics: the option set's None declares itself and is tested with the trend and robust settings (M30)	10	0	0	0	
+head	test-kit129-run-path.R	(item 2) classic proteomics: a count of 0 declares the design without factors and is tested as None	4	0	0	0	
+head	test-kit129-run-path.R	(item 2) classic proteomics: the factors-in-the-model test is saved under identities that name it	3	0	0	0	
+head	test-kit129-run-path.R	(item 2) DIA with limpa: the DA declaration of a declared state refuses a source whose declaration names another method	3	0	0	0	
+head	test-kit129-run-path.R	(item 2) lipidomics: the option set's None is tested as today's test, under its own identity	4	0	0	0	
+head	test-kit129-run-path.R	(item 3) transcriptomics: a k given under the estimated count is refused on the run path; the user's k records the count beside it	5	1	0	0	Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`. Differences: `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f" `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344" 
+head	test-kit129-run-path.R	(item 3) classic proteomics: the step's record names the design, the rule, the estimate and the seed	4	0	0	0	
+head	test-kit129-run-path.R	(item 3) lipidomics: the step's record names the design, the rule, the estimate per assay and the seed	8	0	0	0	
+head	test-kit129-run-path.R	(item 5) classic proteomics: in process, by the worker's handlers and by the kernel, one result	3	0	0	1	
+head	test-kit129-run-path.R	(item 5) DIA with limpa: in process, by the worker's handlers and by the kernel, one result	6	0	0	0	
+head	test-kit129-run-path.R	(item 5) transcriptomics: the declared design in process, on the worker and by the kernel, one result	6	1	0	0	Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`. Differences: `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f" `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344" 
+head	test-kit129-run-path.R	(item 5) lipidomics and metabolomics: in process, on the worker and by the kernel, one result	8	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) classic proteomics: the technical-replicate design on the run path equals the kernel; refused without technical replicates	10	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) classic proteomics: first-pass nulls on the run path equal the kernel, with the user's k and the separation rule	8	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) lipidomics and metabolomics: the technical-replicate design on the run path equals the kernel and records its structure	23	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) lipidomics and metabolomics: first-pass nulls on the run path equal the kernel	8	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) DIA with limpa and transcriptomics: first-pass nulls reach the run path's declared step	9	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 1) lipidomics and metabolomics: the declared RUV step's identity states the replicate structure by design	6	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 2) the panel's choice runs in process and on the worker as one product; the head's technical replicates are read	10	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 4) the thresholds table is the calibration's: validated designs only, with their sources	13	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 4) the statistic is the calibration's; the check gives a verdict where validated and none elsewhere	13	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 4) each omic's step writes the check on its W into the record; the panel shows it	15	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 4) transcriptomics: the RUVs step's outcomes carry the check of its W	4	1	0	0	Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`. Differences: `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f" `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344" 
+head	test-kit129-run-path.R	(fourth pass item 5) transcriptomics: a declared design's run publishes what exists for it and shows no grid	10	1	0	0	Expected `digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")` to be identical to `store$corpus_manifest_sha256`. Differences: `actual`:   "faa19db7fdaf245d4b37c564685d13f5217a34b09e70acbd1dc9c2d914fa797f" `expected`: "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344" 
+head	test-kit129-run-path.R	(fourth pass item 5) the RUV QC tab shows the legacy grid's frame only for a legacy run	3	0	0	0	
+head	test-omic-norm-ruv-design.R	every omic carries the preset table: every design once, in four tiers, one recommended	182	0	0	0	
+head	test-omic-norm-ruv-design.R	each measured figure is the ticket's; the cells still running are pending, not numbers	106	0	0	0	
+head	test-omic-norm-ruv-design.R	each design offers the k rules defined for it, with the rule its figure was measured with selected	97	0	0	0	
+head	test-omic-norm-ruv-design.R	the texts shown name no internal arm, cell, ticket or question	4	0	0	0	
+head	test-omic-norm-ruv-design.R	the schema refuses an incomplete or inconsistent preset table by class, naming the field	40	0	0	0	
+head	test-omic-norm-ruv-design.R	the gate is off by default: no omic's tab shows the section, and its HTML is today's	17	0	0	0	
+head	test-omic-norm-ruv-design.R	with the gate off the server registers nothing for the section	1	0	0	0	
+head	test-omic-norm-ruv-design.R	with the gate on each omic's tab shows every design with its figure and note, today's controls under today's design	284	0	0	0	
+head	test-omic-norm-ruv-design.R	with the gate on the section is a block above the options column, its designs a comparison list	148	0	0	0	
+head	test-omic-norm-ruv-design.R	the figure text is the table's numbers in words; a pending or unavailable cell shows no number	9	0	0	0	
+head	test-omic-norm-ruv-design.R	the k rule's choices follow the selected design, and the route's table replaces the options	24	0	0	0	
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) only the options a route's run path takes can be chosen; the others say why; the defaults are M2 and M6	40	4	0	0	Expected `names(closed)` to be identical to `names(expected)`. Differences: `actual` is a character vector () `expected` is NULL transcriptomics.genes FALSE
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) the panel's choice reads the design, the k rule, the typed k, the seed and the list, and refuses in words	15	0	0	0	
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) each omic's tab builds the run path's request from the choice; legacy builds today's; the gate off changes nothing	32	0	0	0	
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) on a design with technical replicates the panel selects that design and refuses a closed one	7	0	0	0	
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) a refused choice is the tab's error notice and the run does not start	4	0	0	0	
+head	test-omic-norm-ruv-design.R	(fourth pass item 3) each omic's product gives one result: the design, k and its rule, the count beside a typed k, the sets	12	0	0	0	
+head	test-omic-norm-ruv-design.R	(fourth pass item 3) the summary says what was done in the table's words	12	0	0	0	
+head	test-omic-norm-ruv-design.R	(fourth pass item 3) the tab renders the last run's summary and the estimated number's plot; the gate off sets nothing	3	0	0	0	
+head	test-omic-norm-ruv-design.R	(fourth pass item 3) refusals reach the tab's error notice with the kernel's message; DIA's None is shown as done	6	0	0	0	
+head	test-omic-norm-ruv-design.R	(fourth pass item 4) the panel shows the check: a warning, its absence, the value without a verdict, not available	10	0	0	0	

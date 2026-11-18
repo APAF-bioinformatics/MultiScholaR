@@ -125,7 +125,9 @@ protIntegrationInputSource <- function(manager) {
   slots <- record$slots
   matrixSource <- reference
   product <- NULL
-  if (identical(final, "ruv_covariates")) {
+  # KIT-129 (audit F2): a `ruv_covariates` state committed without RUV has no adjusted product; its own table is
+  # the matrix.
+  if (identical(final, "ruv_covariates") && length(ruvState)) {
     science <- hydrateSavedWorkflowEntity(manager$.context$store, record$products$ruv_covariates_science)$value
     matrixSource <- science$adjusted
     product <- list(type = "ruv-adjusted-science", entity_id = matrixSource$entity_id,

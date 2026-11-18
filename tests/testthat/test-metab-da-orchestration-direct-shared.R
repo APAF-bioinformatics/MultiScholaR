@@ -81,7 +81,8 @@ test_that("metabolomics DA orchestration preserves assay aggregation and skip br
     sample_id_col = "Run",
     treat_lfc_cutoff = NA,
     eBayes_trend = TRUE,
-    eBayes_robust = TRUE
+    eBayes_robust = TRUE,
+    ...
   ) {
     observed$sample_cols <- colnames(data)
     observed$contrast_strings <- contrast_strings
@@ -251,26 +252,27 @@ test_that("metabolomics DA orchestration preserves assay error handling", {
     stop("mock long-format failure")
   })
 
-  result <- runMetabolitesDA(
-    theObject = makeMetabDaObject(list(
-      LCMS_Pos = data.frame(
-        database_identifier = c("M1", "M2"),
-        Name = c("Met One", "Met Two"),
-        S1 = c(10, 11),
-        S2 = c(20, 21),
-        check.names = FALSE,
+  # KIT-128 (decision D4): the only assay failed, so the run stops naming it (before: an empty table). The formatting
+  # step's error reaches the orchestrator wrapped by purrr, whose own message is the index.
+  expect_error(
+    runMetabolitesDA(
+      theObject = makeMetabDaObject(list(
+        LCMS_Pos = data.frame(
+          database_identifier = c("M1", "M2"),
+          Name = c("Met One", "Met Two"),
+          S1 = c(10, 11),
+          S2 = c(20, 21),
+          check.names = FALSE,
+          stringsAsFactors = FALSE
+        )
+      )),
+      contrasts_tbl = data.frame(
+        contrasts = "groupB-groupA",
+        friendly_names = "B vs A",
         stringsAsFactors = FALSE
       )
-    )),
-    contrasts_tbl = data.frame(
-      contrasts = "groupB-groupA",
-      friendly_names = "B vs A",
-      stringsAsFactors = FALSE
-    )
+    ),
+    "LCMS_Pos:",
+    class = "omics_da_all_assays_failed"
   )
-
-  expect_identical(result$per_assay_results$LCMS_Pos, NULL)
-  expect_identical(length(result$contrasts_results), 1L)
-  expect_equal(nrow(result$da_metabolites_long), 0)
-  expect_identical(length(result$significant_counts), 0L)
 })

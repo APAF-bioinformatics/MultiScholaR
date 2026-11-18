@@ -722,13 +722,24 @@ buildOmicsDesignSaveContrastsTable <- function(contrastData, formulaString) {
 }
 
 #' C5. The builder's save payload: the saved design, the assays subset to its runs in its order, the
-#' contrasts table and the configuration with the formula. NULL when no run is assigned.
-#' @return A list (`design_matrix`, `data_cln`, `contrasts_tbl`, `config_list`), or NULL.
+#' contrasts table and the configuration with the formula. NULL when no run is assigned. KIT-128 (audit K128-2): a
+#' replicate number shared inside a group is a technical replicate set (`tech_rep_group`), so it is refused unless
+#' every run sharing it was marked by the technical-replicate action (`tech_reps`); the refusal is its message.
+#' @return A list (`design_matrix`, `data_cln`, `contrasts_tbl`, `config_list`), NULL, or the refusal's text.
 #' @noRd
 buildOmicsDesignSavePayload <- function(designMatrix, removedSamples = character(0), dataCln, colMap, contrastData,
                                         configList, formulaString, idKey) {
     designMatrixFinal <- buildOmicsDesignSaveDesignMatrix(designMatrix, removedSamples)
     if (nrow(designMatrixFinal) == 0) return(NULL)
+    marked <- if ("tech_reps" %in% names(designMatrixFinal)) !is.na(designMatrixFinal$tech_reps) else rep(FALSE, nrow(designMatrixFinal))
+    shared <- designMatrixFinal$tech_rep_group %in% designMatrixFinal$tech_rep_group[duplicated(designMatrixFinal$tech_rep_group)]
+    unmarked <- designMatrixFinal$tech_rep_group %in% designMatrixFinal$tech_rep_group[shared & !marked]
+    if (any(unmarked)) {
+        return(paste0("Runs ", paste(designMatrixFinal$Run[unmarked], collapse = ", "), " share a replicate number within ",
+            "their group but were not marked as technical replicates, so they would be analysed as one biological sample. ",
+            "Give each biological replicate its own number (the starting replicate number), or mark the runs of one ",
+            "biological sample with 'Assign Technical Replicates'."))
+    }
     configList[["deAnalysisParameters"]][["formula_string"]] <- formulaString
     list(design_matrix = designMatrixFinal,
         data_cln = buildOmicsDesignSaveDataList(dataCln, designMatrixFinal$Run, colMap, idKey),

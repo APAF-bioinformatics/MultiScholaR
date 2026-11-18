@@ -414,6 +414,20 @@ resolveProtTechnicalReplicateBlock <- function(design_matrix, group_id, technica
     blocks = length(unique(block)))
 }
 
+#' Refuse a differential analysis without biological replication (KIT-128 K128-1, the user's rule of 2026-11-17, every
+#' omic): a design whose every group is one biological unit measured more than once (the rule's `spanned_by_design`)
+#' has no biological replicate to test against, and its technical replicates are not independent samples.
+#' @param replicate `resolveProtTechnicalReplicateBlock`'s result.
+#' @param groups The group of each row the rule read.
+#' @return `replicate`, invisibly; otherwise an error of class `omics_da_no_biological_replication` naming the groups.
+#' @noRd
+refuseNoBiologicalReplication <- function(replicate, groups) {
+  if (!identical(replicate$reason, "spanned_by_design")) return(invisible(replicate))
+  rlang::abort(sprintf(paste("no biological replication: every group is one biological unit measured more than once",
+    "(groups %s), so there is no biological replicate to test against. Each group needs at least two biological units."),
+    paste(unique(as.character(groups)), collapse = ", ")), class = "omics_da_no_biological_replication")
+}
+
 resolveProtRuvReplicateBlocks <- function(design_matrix, sample_id, group_id, technical_replicate_id,
                                           ruv_grouping_variable) {
   stopifnot(is.data.frame(design_matrix), sample_id %in% names(design_matrix))
@@ -1202,4 +1216,417 @@ computeRuvCovariates <- function(theObject, k, controls, ruv_grouping_variable =
   adjusted <- t(Y - W %*% alpha)
   list(W = W, adjusted = adjusted, alpha = alpha, k = k, controls = controls,
        replicate_structure = replicate_blocks$structure, block_reason = block$reason, blocks = replicate_blocks$blocks)
+}
+
+# ----------------------------------------------------------------------------
+# RUV with the factors in the model, classic proteomics (KIT-126)
+# ----------------------------------------------------------------------------
+#' Refusal of an input the factors-in-the-model kernel cannot take (KIT-126 audit F-08), as a classed condition.
+#' @param reason What is wrong, in plain words.
+#' @noRd
+abortProtRuvModelInput <- function(reason) {
+  cli::cli_abort("the RUV factors-in-the-model input is invalid: {reason}", class = "prot_ruv_model_input")
+}
+
+#' The number of factors of the factors-in-the-model design (KIT-126 audit F-08): one whole number of at least 1.
+#' A fractional or missing k is refused, not truncated or replaced (today's `validateProtNormRuvK` and its callers
+#' are unchanged).
+#' @param k The value given.
+#' @return `k` as an integer.
+#' @noRd
+validateProtRuvModelK <- function(k) {
+  if (!is.numeric(k) || length(k) != 1L || !is.finite(k) || k < 1 || k != round(k)) {
+    abortProtRuvModelInput(sprintf("k must be one whole number of at least 1, not %s", paste(format(k), collapse = ", ")))
+  }
+  as.integer(k)
+}
+
+#' Refusal of a design that already has columns named like the factors (KIT-126 audit F-08): the factors are stored
+#' as the design columns `W1..Wk` and the DA reads every column of that form as a factor, so a user's column of the
+#' same form would be overwritten or enter the model as one.
+#' @param design_matrix The design.
+#' @noRd
+refuseProtRuvModelFactorColumns <- function(design_matrix) {
+  taken <- grep("^W[0-9]+$", names(design_matrix), value = TRUE)
+  if (length(taken)) {
+    abortProtRuvModelInput(sprintf("the design already has the column(s) %s; the factors are stored as W1..Wk: rename the column(s)",
+      paste(taken, collapse = ", ")))
+  }
+  invisible(design_matrix)
+}
+
+#' The protein object with the groups as RUV-III's replicate sets (KIT-126): the technical replicate declaration is
+#' withdrawn for the RUV step only, so `resolveProtRuvReplicateBlocks` takes the RUV grouping variable. The DA keeps
+#' the true declaration (`attachProtRuvModelFactors` restores it on the corrected object).
+#' @param theObject A `ProteinQuantitativeData` object.
+#' @return `theObject` with no technical replicate column declared.
+#' @noRd
+protRuvGroupReplicateObject <- function(theObject) {
+  theObject@technical_replicate_id <- NA_character_
+  theObject
+}
+
+#' RUV-III factors for the DA model of the classic proteomics route (KIT-126; KIT-124's gate, arm 7 of the simulator
+#' S1): the groups as replicate sets, every protein a negative control unless a set is given, W computed by
+#' `computeRuvCovariates` on the proteins observed in every sample (RUV-III takes no missing values; the DA then reads
+#' the full matrix with W as covariates). k comes from the shared resolver (`resolveRuvFactorCount`, KIT-129 item 3)
+#' under the rule given, and the rule is recorded: the estimated count (`num_sv_be`: `estimateRuvFactorCount` with 200
+#' permutations, the biological units removed on a design with declared technical replicates, decision M28), the
+#' separation rule (`sweep_bounded`: the sweep's estimate, given as `ruv_k`; undefined, and refused, with every protein
+#' a control) or the user's number. k cannot exceed the limit `ruvFactorCountLimit` gives (a residual degree of freedom
+#' for the group model, fewer factors than controls, and on technical-replicate designs a residual degree of freedom
+#' between the biological units); a k above it is refused (`ruv_k_above_limit`, never reduced). A count of 0 is a
+#' result: no factor, `status = "none"`. When no factor can be computed the function refuses with the reason
+#' (`prot_ruv_factors_unavailable`). An input it cannot take is refused with `prot_ruv_model_input` (audit F-08): a k
+#' that is not one whole number of at least 1 (or a k given with the estimated count), a grouping variable that is
+#' absent or has missing values, a design that already has a column named `W<n>`, controls of the wrong shape.
+#' @param theObject The normalised `ProteinQuantitativeData` object (missing values allowed).
+#' @param ruv_k The user's k, or the sweep's estimate under `"sweep_bounded"` (a positive whole number); NULL under
+#'   `"num_sv_be"`.
+#' @param ruv_k_rule Where k comes from, recorded with it (KIT-129 section 1e): `"user"`, `"sweep_bounded"` or
+#'   `"num_sv_be"`.
+#' @param controls NULL for every protein, or a logical vector over the protein rows (the design `supplied_controls`).
+#' @param ruv_design The control rule, by the names of KIT-129 section 1e: NULL (taken from `controls`),
+#'   `"groups_all_features"`, `"supplied_controls"` or `"first_pass_nulls"` (decision M7; arms 5, 23 and 24 of
+#'   simulator S1: `limma::lmFit(~ group)` and `eBayes` on the normalised matrix, the F test of the groups, and every
+#'   protein outside the 25% most significant a control; `protRuvFirstPassControls`). The controls of the first pass
+#'   are a subset, so the separation rule is defined for it (`ruv_k` the sweep's estimate) as is the estimated count;
+#'   they are tested like every other protein.
+#' @param ruv_grouping_variable Design column whose levels are the replicate sets. The declared technical-replicate
+#'   column gives the technical-replicate design (the biological units as the replicate sets, arms 15 and 16 of
+#'   simulator S1; `replicate_structure = "technical_replicates"`): k is then limited by the units and the groups across
+#'   them (decision M28), not by the units counted as groups.
+#' @param ruv_k_seed The estimated count's seed (recorded with it).
+#' @return `list(W, k, ruv_k_rule, ruv_k_estimate, k_max, k_estimate, status, reason, controls, ruv_controls,
+#'   control_count, protein_count, replicate_structure, ruv_grouping_variable)`: `W` a sample-by-k matrix in the
+#'   design's sample order (NULL when k is 0), `ruv_k_estimate` what the rule returned, `k_estimate` the estimated
+#'   count's record for `plotRuvFactorCount` (NULL under the other rules), `status` `"ok"` or `"none"` (k = 0, with
+#'   `reason`), `controls` the named logical control vector over all proteins, `control_count` the controls observed in
+#'   every sample.
+#' @noRd
+computeProtRuvModelFactors <- function(theObject, ruv_k = NULL, ruv_k_rule = c("user", "sweep_bounded", "num_sv_be"),
+                                       controls = NULL, ruv_grouping_variable = "group", ruv_k_seed = RUV_FACTOR_COUNT_SEED,
+                                       ruv_design = NULL) {
+  if (!inherits(theObject, "ProteinQuantitativeData")) abortProtRuvModelInput("theObject must be a ProteinQuantitativeData object")
+  ruv_design <- ruv_design %||% if (is.null(controls)) "groups_all_features" else "supplied_controls"
+  if (!checkmate::test_choice(ruv_design, c("groups_all_features", "supplied_controls", "first_pass_nulls"))) {
+    abortProtRuvModelInput("ruv_design must be \"groups_all_features\", \"supplied_controls\" or \"first_pass_nulls\"")
+  }
+  if (identical(ruv_design, "supplied_controls") == is.null(controls)) {
+    abortProtRuvModelInput("controls are given for the design supplied_controls, and for no other design")
+  }
+  if (!is.character(ruv_k_rule) || !length(ruv_k_rule) || !ruv_k_rule[[1L]] %in% RUV_K_RULES) {
+    abortProtRuvModelInput("ruv_k_rule must be \"user\", \"sweep_bounded\" or \"num_sv_be\"")
+  }
+  ruv_k_rule <- ruv_k_rule[[1L]]
+  counted <- identical(ruv_k_rule, "num_sv_be")
+  if (counted && !is.null(ruv_k)) abortProtRuvModelInput("ruv_k is not given with the estimated count (num_sv_be): the count gives k")
+  k_given <- if (!counted) validateProtRuvModelK(ruv_k)
+  if (!checkmate::test_int(ruv_k_seed)) abortProtRuvModelInput("ruv_k_seed must be a whole number")
+  design_matrix <- theObject@design_matrix
+  if (!is.character(ruv_grouping_variable) || length(ruv_grouping_variable) != 1L ||
+      !ruv_grouping_variable %in% names(design_matrix)) {
+    abortProtRuvModelInput(sprintf("the RUV grouping variable `%s` is absent from the design matrix",
+      paste(format(ruv_grouping_variable), collapse = ", ")))
+  }
+  if (anyNA(design_matrix[[ruv_grouping_variable]])) {
+    abortProtRuvModelInput(sprintf("the RUV grouping variable `%s` has missing values: every sample needs a group", ruv_grouping_variable))
+  }
+  refuseProtRuvModelFactorColumns(design_matrix)
+  sample_ids <- as.character(design_matrix[[theObject@sample_id]])
+  ids <- as.character(theObject@protein_quant_table[[theObject@protein_id_column]])
+  if (!all(sample_ids %in% names(theObject@protein_quant_table))) abortProtRuvModelInput("the design names samples absent from the protein table")
+  values <- as.matrix(theObject@protein_quant_table[, sample_ids, drop = FALSE])
+  # The groups of the test (the object's group column), not the replicate sets: on the technical-replicate design the
+  # replicate sets are the biological units, and the limit counts the groups across them.
+  group_column <- if (isTRUE(theObject@group_id %in% names(design_matrix))) theObject@group_id else ruv_grouping_variable
+  group_count <- length(unique(as.character(design_matrix[[group_column]])))
+  ruv_controls <- switch(ruv_design, groups_all_features = "all", supplied_controls = "supplied", first_pass_nulls = "first_pass")
+  if (identical(ruv_design, "first_pass_nulls")) controls <- protRuvFirstPassControls(values, design_matrix[[group_column]])
+  if (is.null(controls)) controls <- rep(TRUE, length(ids))
+  if (!is.logical(controls) || length(controls) != length(ids)) abortProtRuvModelInput("controls must be a logical vector over the protein rows")
+  controls <- stats::setNames(!is.na(controls) & unname(controls), ids)
+  complete <- rowSums(!is.finite(values)) == 0
+  control_count <- sum(controls & complete)
+  replicate_sets <- as.character(design_matrix[[ruv_grouping_variable]])
+  # Decision M28: on a design with declared technical replicates the biological units, not the injections, limit k.
+  technical <- resolveProtTechnicalReplicateBlock(design_matrix, theObject@group_id, theObject@technical_replicate_id)
+  unit_count <- if (isTRUE(technical$technical)) length(unique(technical$block))
+  # The technical-replicate design (arms 15, 16 and 29 of simulator S1): the replicate sets are the biological units.
+  sets_are_units <- ruvReplicateSetsAreUnits(replicate_sets, if (isTRUE(technical$technical)) technical$block)
+  # min(samples - replicate sets, samples - groups - 1, controls - 1), and the units' limit beside it when there are
+  # technical replicates (units - groups - 1: the rank of the group design across the units). With the groups as the
+  # replicate sets this is the limit as before.
+  limit <- ruvFactorCountLimit(length(sample_ids), length(unique(replicate_sets)), group_count, control_count, units = unit_count)
+  k_max <- limit$k_max
+  refuse <- function(reason) cli::cli_abort(c("the RUV factors for the model cannot be computed: {reason}",
+    i = "{control_count} control protein{?s} observed in every sample, {length(sample_ids)} sample{?s}, {group_count} group{?s}",
+    i = if (!is.null(unit_count)) paste0("the design has technical replicates: ", unit_count, " biological units carry the ",
+      "test, which leaves at most ", limit$k_max_units, " factor(s) (", limit$binding, ")")),
+    class = "prot_ruv_factors_unavailable")
+  if (k_max < 1L) refuse(if (control_count < 2L) "fewer than 2 control proteins are observed in every sample" else
+    "the samples leave no residual degree of freedom for a factor beside the groups")
+  # KIT-129 item 3: k by the shared resolver, as the other omics' new designs take it. The count removes the groups, or
+  # the biological units on a design with technical replicates (M28). A k above the limit is refused there
+  # (`ruv_k_above_limit`), never reduced.
+  control_rule <- switch(ruv_controls, all = "all_features", supplied = "supplied_list", first_pass = "first_pass_drop_top_25")
+  resolved <- resolveRuvFactorCount(ruv_k_rule, control_rule, limit,
+    k_user = if (identical(ruv_k_rule, "user")) k_given,
+    estimate_count = if (counted) \() estimateRuvFactorCount(values, design_matrix[[ruv_grouping_variable]], seed = ruv_k_seed,
+      technical_replicates = isTRUE(technical$technical), units = if (isTRUE(technical$technical)) technical$block),
+    separation_rule = \() k_given)
+  k <- resolved$k
+  record <- function(W, replicate_structure) {
+    list(W = W, k = k, ruv_k_rule = ruv_k_rule, ruv_k_estimate = resolved$k_estimate, k_max = k_max, k_estimate = resolved$estimate,
+      status = resolved$status, reason = resolved$reason, controls = controls, ruv_controls = ruv_controls,
+      control_count = control_count, protein_count = length(ids), replicate_structure = replicate_structure,
+      ruv_grouping_variable = ruv_grouping_variable)
+  }
+  if (k == 0L) return(record(NULL, if (sets_are_units) "technical_replicates" else NA_character_))
+  complete_object <- protRuvGroupReplicateObject(theObject)
+  complete_object@protein_quant_table <- theObject@protein_quant_table[complete, , drop = FALSE]
+  rownames(complete_object@protein_quant_table) <- NULL # `computeRuvCovariates` moves the id column to the row names
+  factors <- computeRuvCovariates(complete_object, k = k, controls = unname(controls[complete]),
+    ruv_grouping_variable = ruv_grouping_variable)
+  record(factors$W, if (sets_are_units) "technical_replicates" else factors$replicate_structure)
+}
+
+#' The designs of the classic route's factors-in-the-model kernel, by the names of KIT-129 section 1e: every protein a
+#' control with the groups as replicate sets, a supplied control set, or every protein a control with the declared
+#' biological units as replicate sets (the technical-replicate design).
+#' @noRd
+PROT_RUV_MODEL_DESIGNS <- c("groups_all_features", "supplied_controls", "technical_replicates", "first_pass_nulls")
+
+#' The controls of the design `first_pass_nulls` (decision M7; KIT-124 simulator S1, arms 5, 23 and 24, `wide_controls`
+#' and `first_pass`): a first test without RUV, `limma::lmFit(~ group)` and `limma::eBayes` on the normalised matrix
+#' (missing values kept), the F test over the group coefficients; every protein outside the 25% most significant of the
+#' proteins with a p-value is a control (ranked with ties in row order); a protein without a p-value is none.
+#' @param values Protein-by-sample matrix.
+#' @param groups The group of each column.
+#' @return A logical vector over the rows.
+#' @noRd
+protRuvFirstPassControls <- function(values, groups) {
+  model <- stats::model.matrix(~ group, data.frame(group = if (is.factor(groups)) droplevels(groups) else groups))
+  if (ncol(model) < 2L) abortProtRuvModelInput("the first pass of the design first_pass_nulls needs two groups or more")
+  first <- limma::topTable(limma::eBayes(suppressWarnings(limma::lmFit(values, model))), coef = seq(2L, ncol(model)),
+    number = Inf, sort.by = "none")$P.Value
+  wide <- rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))
+  wide[is.na(wide)] <- FALSE
+  wide
+}
+
+#' The separation rule for k on a given control set (KIT-129 fifth pass item 4), as simulator S1's `separation_k`
+#' computes it for arm 22 (a supplied list): the canonical-correlation plot of the NIPALS-prepared matrix
+#' (`prepareRuvCancorInput`, 5 components) against the grouping with those controls (`ruvCancorFromInput`), restricted to
+#' K up to `calculateAdaptiveMaxK` of the samples, then `findBestKElbow`.
+#' @param theObject The normalised `ProteinQuantitativeData` object.
+#' @param controls A logical vector over the protein rows.
+#' @param grouping The grouping column.
+#' @return `list(k, plot)`; refuses with `ruv_k_not_estimated` (and `ruv_k_refused`) when the rule gives no k.
+#' @noRd
+protRuvSeparationRuleK <- function(theObject, controls, grouping) {
+  plot <- ruvCancorFromInput(prepareRuvCancorInput(theObject, 5), theObject, unname(controls), grouping)
+  plot$data <- plot$data[plot$data$K <= calculateAdaptiveMaxK(nrow(theObject@design_matrix)), , drop = FALSE]
+  k <- findBestKElbow(plot)
+  if (is.na(k)) {
+    cli::cli_abort("the number of unwanted factors (k) is refused: the separation rule returned no k for the supplied list",
+      class = c("ruv_k_not_estimated", "ruv_k_refused"), call = NULL)
+  }
+  list(k = as.integer(k), plot = plot)
+}
+
+#' The design a value of `computeProtRuvModelFactors` computed (KIT-129 section 1e).
+#' @noRd
+protRuvModelDesign <- function(factors) {
+  if (identical(factors$ruv_controls, "supplied")) return("supplied_controls")
+  if (identical(factors$ruv_controls, "first_pass")) return("first_pass_nulls")
+  if (identical(factors$replicate_structure, "technical_replicates")) return("technical_replicates")
+  "groups_all_features"
+}
+
+#' The replicate-set column the classic run path hands `computeProtRuvModelFactors` for a declared design (KIT-129
+#' third pass item 3), as simulator S1's arms define it: `groups_all_features` the grouping (arm 7); `technical_replicates`
+#' the declared technical-replicate column, the biological units (arm 16), refused when the design declares no technical
+#' replicates or when that column does not name each unit alone; `first_pass_nulls` what the design resolves (arm 23:
+#' the units when the design declares technical replicates, the grouping otherwise); `supplied_controls` the grouping
+#' (arm 8; KIT-129 fifth pass item 3).
+#' @param theObject The normalised `ProteinQuantitativeData` object.
+#' @param ruv_design The declared design.
+#' @param grouping The step's grouping column.
+#' @return One design column name; an error of class `workflow_execution_invalid` otherwise.
+#' @noRd
+protRuvModelReplicateSets <- function(theObject, ruv_design, grouping) {
+  invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
+  designs <- c("groups_all_features", "technical_replicates", "first_pass_nulls", "supplied_controls")
+  if (!checkmate::test_choice(ruv_design, designs)) {
+    invalid(sprintf("ruv_design must be one of %s on the classic route's new design", paste(designs, collapse = ", ")))
+  }
+  if (ruv_design %in% c("groups_all_features", "supplied_controls")) return(grouping)
+  design_matrix <- theObject@design_matrix
+  technical <- resolveProtTechnicalReplicateBlock(design_matrix, theObject@group_id, theObject@technical_replicate_id)
+  if (!isTRUE(technical$technical)) {
+    if (identical(ruv_design, "first_pass_nulls")) return(grouping)
+    invalid(sprintf("the design technical_replicates needs declared technical replicates; this design has none (%s)", technical$reason))
+  }
+  if (!ruvReplicateSetsAreUnits(design_matrix[[theObject@technical_replicate_id]], technical$block)) {
+    invalid(sprintf(paste("the technical-replicate column `%s` does not name each biological unit alone (the same value",
+      "in more than one group); give each unit its own value"), theObject@technical_replicate_id))
+  }
+  theObject@technical_replicate_id
+}
+
+#' The RUV state of the factors-in-the-model design (KIT-126): the corrected object (its protein table stays the
+#' corrected matrix, for figures, export and integration) gains the factors as design columns `W1..Wk`, the
+#' declaration `args$ruvCovariates` (`ruv_mode = "covariates"`, k and its source, the controls, the replicate
+#' structure) and the normalised matrix the DA reads, `args$ruv_uncorrected_quant` (stored out of line by the
+#' checkpoint, see `workflowClassDeclarations`).
+#' @param corrected The RUV-III-C corrected object (`ruvIII_C_Varying` with the factors' controls and k).
+#' @param normalised The normalised object the factors were computed on.
+#' @param factors The value of `computeProtRuvModelFactors`.
+#' @return `corrected`, carrying the factors and the normalised matrix.
+#' @noRd
+attachProtRuvModelFactors <- function(corrected, normalised, factors) {
+  samples <- as.character(corrected@design_matrix[[corrected@sample_id]])
+  if (!all(samples %in% rownames(factors$W))) abortProtRuvModelInput("the corrected object names samples the factors do not cover")
+  refuseProtRuvModelFactorColumns(corrected@design_matrix)
+  for (i in seq_len(factors$k)) corrected@design_matrix[[paste0("W", i)]] <- unname(factors$W[samples, i])
+  corrected@technical_replicate_id <- normalised@technical_replicate_id
+  normalised_samples <- as.character(normalised@design_matrix[[normalised@sample_id]])
+  uncorrected <- as.matrix(normalised@protein_quant_table[, normalised_samples, drop = FALSE])
+  rownames(uncorrected) <- as.character(normalised@protein_quant_table[[normalised@protein_id_column]])
+  corrected@args$ruv_uncorrected_quant <- uncorrected
+  corrected@args$ruvCovariates <- c(list(ruv_mode = "covariates", ruv_design = protRuvModelDesign(factors)),
+    factors[c("k", "ruv_k_rule", "ruv_k_estimate", "k_max", "ruv_controls", "control_count", "protein_count",
+      "replicate_structure", "ruv_grouping_variable")], list(tested_matrix = "uncorrected"))
+  corrected
+}
+
+#' Declare a new design without factors on the normalised object (KIT-129 integration item 2): the option set's None
+#' (`ruv_design = "none"`) or a design whose k rule gave no factor (a count of 0). The object's table is the normalised
+#' matrix and is what the DA tests (`resolveProtRuvModelInput`), with the test settings of the new designs (decision
+#' M30); there is no W and no stored second matrix.
+#' @param normalised The normalised object.
+#' @param record `ruv_design`, and the k rule's `ruv_k_rule`, `ruv_k_estimate` and `reason` where a rule ran.
+#' @return `normalised`, its `args$ruvCovariates` the declaration (`ruv_mode = "none"`, `k = 0`).
+#' @noRd
+declareProtRuvNoFactors <- function(normalised, record) {
+  normalised@args$ruvCovariates <- list(ruv_mode = "none", ruv_design = record$ruv_design, k = 0L,
+    ruv_k_rule = record$ruv_k_rule %||% NA_character_, ruv_k_estimate = record$ruv_k_estimate %||% NA_integer_,
+    ruv_applied = FALSE, ruv_not_applied_reason = record$reason %||% NA_character_, tested_matrix = "normalised")
+  normalised
+}
+
+#' Whether a protein object declares a new design without factors (`declareProtRuvNoFactors`).
+#' @param theObject A `ProteinQuantitativeData` object.
+#' @return TRUE or FALSE.
+#' @noRd
+protRuvNoFactorsDeclared <- function(theObject) {
+  declaration <- theObject@args$ruvCovariates
+  is.list(declaration) && identical(declaration$ruv_mode, "none") && isTRUE(declaration$ruv_design %in% c(PROT_RUV_MODEL_DESIGNS, "none"))
+}
+
+#' Whether a protein object declares the factors-in-the-model design (KIT-126 audit F-01): the declaration
+#' `args$ruvCovariates$ruv_design`, written by `attachProtRuvModelFactors`. A DIA_LIMPA state's declaration
+#' (`ruv_mode = "covariates"` with no `ruv_design`) is not one.
+#' @param theObject A `ProteinQuantitativeData` object.
+#' @return TRUE or FALSE.
+#' @noRd
+protRuvModelDeclared <- function(theObject) {
+  declaration <- theObject@args$ruvCovariates
+  is.list(declaration) && isTRUE(declaration$ruv_design %in% PROT_RUV_MODEL_DESIGNS) && !protRuvNoFactorsDeclared(theObject)
+}
+
+#' Refusal of the DA entry points that test an object's own table (KIT-126 audit F-02): `daAnalysisWrapperFunction`,
+#' `protein_deAnalysisWrapperFunction` and the legacy helper would test the corrected matrix of a
+#' factors-in-the-model object without the factors. Any other object passes untouched.
+#' @param theObject The object handed to the entry point.
+#' @param caller The entry point's name, for the message.
+#' @return `theObject`, invisibly.
+#' @noRd
+refuseProtRuvModelObject <- function(theObject, caller) {
+  if (!inherits(theObject, "ProteinQuantitativeData")) return(invisible(theObject))
+  if (protRuvModelDeclared(theObject) || !is.null(theObject@args$ruv_uncorrected_quant)) {
+    cli::cli_abort(c("{caller} cannot test an object of the RUV factors-in-the-model design: it would test the corrected matrix without the factors",
+      i = "use differentialAbundanceAnalysis(), which reads the normalised matrix with the factors in the model"),
+      class = "prot_ruv_model_unsupported")
+  }
+  invisible(theObject)
+}
+
+#' What the limma DA reads from a protein object (KIT-126). An object that declares the factors-in-the-model design
+#' (`args$ruvCovariates$ruv_design`) or carries the normalised matrix (`args$ruv_uncorrected_quant`) is tested on that
+#' matrix, the samples that are in the object's protein table, with the design's W columns added to the formula. Every
+#' other object returns NULL and is tested on its own table with the formula as given. An object whose declaration,
+#' stored matrix and W columns do not agree is refused: a declared object whose matrix is absent is never tested the
+#' legacy way (audit F-01).
+#' @param theObject A `ProteinQuantitativeData` object.
+#' @param formula_string The DA formula.
+#'
+#' The matrix returned holds every protein of the stored normalised matrix (audit F-03, decision M14), not only the
+#' proteins that RUV-III-C and the missing-value cleanup left in the corrected table: limma's own handling of missing
+#' values applies and no filter is added. `no_corrected_intensity` names the proteins tested without a corrected row.
+#' The test is refused (`omics_ruv_no_residual_df`) when the samples left at DA time minus the rank of the model
+#' matrix (groups, covariates of the formula, W) is below 1 (audit F-04).
+#' @return NULL, or `list(matrix, formula_used, w_terms, declaration, no_corrected_intensity)` (`matrix` NULL and `exact`
+#'   FALSE for a new design without factors: the object's own table is tested).
+#' @noRd
+resolveProtRuvModelInput <- function(theObject, formula_string) {
+  # KIT-129 integration item 2: a new design without factors tests its own (normalised) table with the formula as given,
+  # by the new designs' test (`exact = FALSE`: no W in the model, decision M29; the TREAT settings, M30).
+  if (protRuvNoFactorsDeclared(theObject)) {
+    if (!is.null(theObject@args$ruv_uncorrected_quant) || length(grep("^W[0-9]+$", names(theObject@design_matrix)))) {
+      cli::cli_abort("the object declares a RUV design without factors but carries factors or a second matrix; the test is refused",
+        class = "prot_ruv_model_invalid")
+    }
+    return(list(matrix = NULL, formula_used = formula_string, w_terms = character(), declaration = theObject@args$ruvCovariates,
+      no_corrected_intensity = character(), exact = FALSE))
+  }
+  uncorrected <- theObject@args$ruv_uncorrected_quant
+  declared <- protRuvModelDeclared(theObject)
+  if (!declared && is.null(uncorrected)) return(NULL)
+  refuse <- function(reason) cli::cli_abort("the object declares RUV factors in the model but {reason}; the test is refused",
+    class = "prot_ruv_model_invalid")
+  declaration <- theObject@args$ruvCovariates
+  if (!declared || !identical(declaration$ruv_mode, "covariates")) refuse("its RUV declaration does not say so")
+  if (is.null(uncorrected)) refuse("its stored normalised matrix is absent")
+  w_terms <- grep("^W[0-9]+$", names(theObject@design_matrix), value = TRUE)
+  if (!length(w_terms) || !isTRUE(length(w_terms) == declaration$k)) {
+    refuse(sprintf("its design carries %d W column(s) for a declared k of %s", length(w_terms), format(declaration$k %||% NA)))
+  }
+  if (!all(vapply(theObject@design_matrix[w_terms], function(w) is.numeric(w) && all(is.finite(w)), logical(1)))) {
+    refuse("a W column has missing or non-numeric values")
+  }
+  ids <- as.character(theObject@protein_quant_table[[theObject@protein_id_column]])
+  samples <- setdiff(names(theObject@protein_quant_table), theObject@protein_id_column)
+  if (!is.matrix(uncorrected) || !is.numeric(uncorrected) || !all(ids %in% rownames(uncorrected)) ||
+      !all(samples %in% colnames(uncorrected))) {
+    refuse("the stored normalised matrix does not cover its protein table")
+  }
+  formula_used <- paste(c(formula_string, w_terms), collapse = " + ")
+  # Audit F-04: the residual degrees of freedom of the model that will be fitted (groups, any covariates of the
+  # formula, W) on the samples left at DA time. The RUV step checked the groups-only model on its own samples.
+  model <- stats::model.matrix(stats::as.formula(formula_used), theObject@design_matrix)
+  residual_df <- nrow(model) - qr(model)$rank
+  if (residual_df < 1L) {
+    cli::cli_abort(c("the model {formula_used} leaves no residual degree of freedom on {nrow(model)} sample{?s}; the test is refused",
+      i = "the model has {qr(model)$rank} independent term{?s}: fewer factors (k), fewer covariates or more samples are needed"),
+      class = "omics_ruv_no_residual_df")
+  }
+  # Decision M28: with declared technical replicates the biological units carry the test (the block), so the model needs
+  # a residual degree of freedom between the units too.
+  technical <- resolveProtTechnicalReplicateBlock(theObject@design_matrix, theObject@group_id, theObject@technical_replicate_id)
+  unit_df <- if (isTRUE(technical$technical)) ruvUnitResidualDf(model, technical$block) else NA_integer_
+  if (!is.na(unit_df) && unit_df < 1L) {
+    units <- length(unique(technical$block))
+    cli::cli_abort(c(paste0("the model {formula_used} leaves no residual degree of freedom between the biological units; ",
+      "the test is refused"),
+      i = paste0("the design has technical replicates: {units} biological units, not {nrow(model)} injections, carry the test, ",
+        "and with this formula at most {length(w_terms) + unit_df - 1L} factor{?s} (k) fit"),
+      i = "fewer factors (k) or fewer covariates are needed"),
+      class = "omics_ruv_no_residual_df")
+  }
+  # Audit F-03 (decision M14): every protein of the stored normalised matrix is tested, the population the
+  # simulation's arm 7 tested; the proteins that have no row in the corrected table are named, not dropped.
+  list(matrix = uncorrected[, samples, drop = FALSE], formula_used = formula_used, w_terms = w_terms,
+       declaration = declaration, no_corrected_intensity = setdiff(rownames(uncorrected), ids))
 }

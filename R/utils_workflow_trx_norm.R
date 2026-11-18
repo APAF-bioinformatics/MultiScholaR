@@ -26,11 +26,18 @@
 #' @noRd
 trxNormGridParameters <- function(input) {
     number <- function(value, default) if (is.null(value) || !length(value) || is.na(value)) default else as.numeric(value)
-    if (identical(input$ruv_mode, "manual")) {
-        return(trxRuvGridParameters("manual", manual_k = as.integer(number(input$ruv_k, NA)), manual_percentage = number(input$ruv_percentage, NA)))
+    grid <- if (identical(input$ruv_mode, "manual")) {
+        trxRuvGridParameters("manual", manual_k = as.integer(number(input$ruv_k, NA)), manual_percentage = number(input$ruv_percentage, NA))
+    } else {
+        trxRuvGridParameters("automatic", number(input$auto_percentage_min, 5), number(input$auto_percentage_max, 30),
+            number(input$auto_percentage_step, 5), number(input$k_penalty_weight, 0.05))
     }
-    trxRuvGridParameters("automatic", number(input$auto_percentage_min, 5), number(input$auto_percentage_max, 30),
-        number(input$auto_percentage_step, 5), number(input$k_penalty_weight, 0.05))
+    # KIT-129 fourth pass item 2: with the gate on, the RUV design section's choice travels with the grid's parameters,
+    # and `trxNormRuvRequest` takes the design's alone; the seed only where the kernel estimates k (its canonical form).
+    choice <- omicNormRuvDesignChoice(input, omicNormRuvRunTable("transcriptomics"))
+    if (is.null(choice) || isTRUE(choice$legacy)) return(grid)
+    c(grid, list(ruv_design = choice$ruv_design, ruv_k = choice$ruv_k, ruv_k_rule = choice$ruv_k_rule,
+        ruv_control_ids = choice$ruv_control_ids, ruv_k_seed = if (identical(choice$ruv_k_rule, "num_sv_be")) choice$ruv_k_seed))
 }
 
 #' What the lipid RUV QC renderers show for the one count table, from the grid product: the CCA panels, k, percentage,
@@ -78,16 +85,22 @@ runTrxNormManaged <- function(binding, runner, manager, settings, normData, conf
     figures <- function(stage) omicsManagedProduct("trx_qc_figures", list(stage = stage), function(result) addLog(sprintf("PCA and RLE (%s) generated", stage)))
     after_grid <- function() runner$run(list(
         omicsManagedCommit(trxNormRuvsStep(held$logcpm, held$grid, held$k), config, function(result) {
+            # KIT-129 fourth pass items 3, 4: what the run did, with the RUVs step's check, for the RUV design section.
+            omicNormSetRuvDesignResult(normData, trxRuvDesignResult(held$grid_value, result$value$outcomes))
             normData$ruv_corrected_obj <- result$stateReference
             addLog(sprintf("RUVs applied: W_1..W_%d added to the design (state 'trx_ruvs')", held$k))
         }),
         figures("tmm"), figures("ruvs"), omicsManagedProduct("trx_ruv_publication", list(), function(result) invisible(NULL)),
         omicsManagedProduct("trx_composite_figure", list(figure = "normalization_comparison"),
             function(result) addLog("CCA panels, grid workbook and the normalisation comparison grid saved"))), done = finish, failed = failed)
-    after_logcpm <- function() runner$run(list(omicsManagedProduct("trx_ruv_grid", c(list(logcpm = held$logcpm), settings), function(result) {
+    request <- trxNormRuvRequest(settings)
+    after_logcpm <- function() runner$run(list(omicsManagedProduct("trx_ruv_grid", c(list(logcpm = held$logcpm), request$design %||% settings), function(result) {
         held$grid <- result$reference$entity_id
         held$k <- result$value$chosen$k
-        normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(result$value))
+        held$grid_value <- result$value
+        # A declared design has no grid to show (KIT-129 integration item 1; its diagnostic is the panel's), and a grid of
+        # an earlier run is not shown for it (fourth pass item 5).
+        normData$ruv_optimization_results <- if (is.null(result$value[["ruv_design", exact = TRUE]])) list(counts = trxNormRuvQcResult(result$value)) else list()
         addLog(sprintf("RUV grid (%s): k = %d, %s%% inferred negative controls", result$value$mode, result$value$chosen$k, result$value$chosen$percentage))
     })), done = after_grid, failed = failed)
     runner$run(list(figures("raw"), omicsManagedProduct("trx_tmm_logcpm", list(), function(result) {
@@ -102,8 +115,11 @@ runTrxNormManaged <- function(binding, runner, manager, settings, normData, conf
 #' @noRd
 runTrxNormInProcess <- function(binding, manager, settings, normData, config, addLog, experimentPaths, finish, failed) {
     tryCatch({
-        run <- runTrxReferenceRuvs(manager, settings, config)
-        normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(run$grid$value))
+        request <- trxNormRuvRequest(settings)
+        run <- runTrxReferenceRuvs(manager, settings, config, design_parameters = request$design)
+        omicNormSetRuvDesignResult(normData, trxRuvDesignResult(run$grid$value, run$value$outcomes))
+        # KIT-129 fourth pass item 5: a declared design has no grid, and a grid of an earlier run is not shown for it.
+        normData$ruv_optimization_results <- if (is.null(run$grid$value[["ruv_design", exact = TRUE]])) list(counts = trxNormRuvQcResult(run$grid$value)) else list()
         normData$ruv_corrected_obj <- run$reference
         addLog(sprintf("RUVs applied: W_1..W_%d added to the design (state 'trx_ruvs')", run$grid$value$chosen$k))
         runTrxNormPublicationsInProcess(manager, experimentPaths, addLog)

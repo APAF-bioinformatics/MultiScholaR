@@ -1,0 +1,31 @@
+entry	leaves	max_rel	verdict	note
+S1/C0/arm26/classic	4	0	pass	keys: 786 common, 0 simulator only, 0 package only
+S1/C0/arm32/k	1	NA	pass	arm 32's E against the package's count
+S1/C0/arm32/classic	4	6.07330749536416e-13	pass	keys: 786 common, 0 simulator only, 0 package only
+S1/C6/arm26/classic	4	0	pass	keys: 783 common, 0 simulator only, 0 package only
+S1/C6/arm32/k	1	NA	pass	arm 32's E against the package's count
+S1/C6/arm32/classic	4	4.1119025423565e-11	pass	keys: 783 common, 0 simulator only, 0 package only
+S2/C0/arm32/k	1	NA	pass	arm 32's E against the declared kernel's own count
+S2/C0/arm32/dia	4	1.18011769739979e-12	pass	keys: 1000 common, 0 simulator only, 0 package only
+S2/C6/arm32/k	1	NA	pass	arm 32's E against the declared kernel's own count
+S2/C6/arm32/dia	4	1.12719038299619e-12	pass	keys: 1000 common, 0 simulator only, 0 package only
+S4/C0/arm32/lipid/pos/k	1	NA	pass	
+S4/C0/arm32/lipid/pos	4	1.00980329538245e-11	pass	keys: 145 common, 0 simulator only, 0 package only
+S4/C0/arm32/lipid/neg/k	1	NA	pass	
+S4/C0/arm32/lipid/neg	4	2.09827102307487e-10	pass	keys: 142 common, 0 simulator only, 0 package only
+S4/C0/arm32/metab/pos/k	1	NA	pass	
+S4/C0/arm32/metab/pos	4	1.00980329538245e-11	pass	keys: 145 common, 0 simulator only, 0 package only
+S4/C0/arm32/metab/neg/k	1	NA	pass	
+S4/C0/arm32/metab/neg	4	2.09827102307487e-10	pass	keys: 142 common, 0 simulator only, 0 package only
+S4/C6/arm32/lipid/pos/k	1	NA	pass	
+S4/C6/arm32/lipid/pos	4	6.33347673690824e-12	pass	keys: 145 common, 0 simulator only, 0 package only
+S4/C6/arm32/lipid/neg/k	1	NA	pass	
+S4/C6/arm32/lipid/neg	4	5.20332112141212e-12	pass	keys: 142 common, 0 simulator only, 0 package only
+S4/C6/arm32/metab/pos/k	1	NA	pass	
+S4/C6/arm32/metab/pos	4	6.33347673690824e-12	pass	keys: 145 common, 0 simulator only, 0 package only
+S4/C6/arm32/metab/neg/k	1	NA	pass	
+S4/C6/arm32/metab/neg	4	5.20332112141212e-12	pass	keys: 142 common, 0 simulator only, 0 package only
+S4/C0/arm32/pos/W_package_vs_simulator	NA	NA	info	max abs 0.0367
+S4/C0/arm32/neg/W_package_vs_simulator	NA	NA	info	max abs 0.143
+S4/C6/arm32/pos/W_package_vs_simulator	NA	NA	info	max abs 0.0705
+S4/C6/arm32/neg/W_package_vs_simulator	NA	NA	info	max abs 0.0374

@@ -16,6 +16,8 @@ daAnalysisWrapperFunction <- function(
   qvalue_column = "fdr_qvalue",
   raw_pvalue_column = "raw_pvalue"
 ) {
+  # KIT-126 audit F-02: this entry point tests the object's own table; a factors-in-the-model object is refused.
+  refuseProtRuvModelObject(theObject, "daAnalysisWrapperFunction")
   contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
   formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", " ~ 0 + group")
   group_id <- checkParamsObjectFunctionSimplify(theObject, "group_id", "group")

@@ -1,0 +1,7 @@
+stage: runpath
+tree: 85daae0270a4c412ac1c81925a4fceb2a647d8b6
+uncommitted changes under R/: FALSE
+R version 4.6.1 (2026-06-24)
+BLAS: /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+versions: limma 3.68.4; sva 3.60.0; limpa 1.4.2; fastlimpadpc 0.1.0; ruv 0.9.7.1; qvalue 2.44.0
+finished: 2026-11-18 19:54:33 UTC

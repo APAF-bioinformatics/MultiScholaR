@@ -1,0 +1,15 @@
+entry	leaves	max_rel	verdict	note
+S1/C0/arm32/kernel_k	1	NA	pass	arm 32's E against the classic kernel's own count (computeProtRuvModelFactors, num_sv_be)
+S1/C6/arm32/kernel_k	1	NA	pass	arm 32's E against the classic kernel's own count (computeProtRuvModelFactors, num_sv_be)
+S2/C0/arm31/kernel_k	1	NA	pass	arm 31's E (C0) or arm 32's E (C6, the units removed) against the declared kernel's own k
+S2/C6/arm32/kernel_k	1	NA	pass	arm 31's E (C0) or arm 32's E (C6, the units removed) against the declared kernel's own k
+S3/C0/arm31/kernel_k	1	NA	pass	arm 31's E (B = 200; C6's libraries are not summed on this simulator tree) against trxChooseRuvDesign's own count
+S3/C6/arm31/kernel_k	1	NA	pass	arm 31's E (B = 200; C6's libraries are not summed on this simulator tree) against trxChooseRuvDesign's own count
+S4/C0/arm32/lipid/pos/kernel_k	1	NA	pass	arm 32's E against runOmicsRuvFactors' own count (num_sv_be)
+S4/C0/arm32/lipid/neg/kernel_k	1	NA	pass	arm 32's E against runOmicsRuvFactors' own count (num_sv_be)
+S4/C0/arm32/metab/pos/kernel_k	1	NA	pass	arm 32's E against runOmicsRuvFactors' own count (num_sv_be)
+S4/C0/arm32/metab/neg/kernel_k	1	NA	pass	arm 32's E against runOmicsRuvFactors' own count (num_sv_be)
+S4/C6/arm32/lipid/pos/kernel_k	1	NA	pass	arm 32's E against runOmicsRuvFactors' own count (num_sv_be)
+S4/C6/arm32/lipid/neg/kernel_k	1	NA	pass	arm 32's E against runOmicsRuvFactors' own count (num_sv_be)
+S4/C6/arm32/metab/pos/kernel_k	1	NA	pass	arm 32's E against runOmicsRuvFactors' own count (num_sv_be)
+S4/C6/arm32/metab/neg/kernel_k	1	NA	pass	arm 32's E against runOmicsRuvFactors' own count (num_sv_be)

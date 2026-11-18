@@ -301,8 +301,12 @@ omicsRuvParameterNames <- c("ruv_mode", "ruv_grouping_variable", "percentage_min
 #' RUV-III (whole matrix): the per-assay optimisation (automatic sweep or manual), then `ruvIII_C_Varying` with the
 #' best k and the control features per assay (the module's optimisation and correction in one declaration). The
 #' optimisation results are a product of the step.
+#' @param ruv_design KIT-129 integration item 1. `"legacy"` (the default): today's declaration, unchanged. `"declared"`:
+#'   the new design's declaration (`omicsRuvDesignOperation`).
+#' @param supplied KIT-129 fifth pass item 3: under `"declared"`, the declaration of the design `supplied_controls`.
 #' @noRd
-omicsRuvOperation <- function(binding) {
+omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), supplied = FALSE) {
+    if (identical(match.arg(ruv_design), "declared")) return(omicsRuvDesignOperation(binding, supplied = supplied))
     newOmicsOperation(binding, paste0(binding$prefix, "_ruv"), "whole_matrix", parameters = omicsRuvParameterNames,
         product_type = paste0(binding$prefix, ".ruv_result"),
         kernel = function(object, parameters, store) {
@@ -325,6 +329,211 @@ omicsRuvOperation <- function(binding) {
                 best_k = best_k,
                 control_count = lapply(controls, function(x) if (is.null(x)) NA_integer_ else if (is.logical(x)) sum(x, na.rm = TRUE) else length(x)),
                 percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_))
+        })
+}
+
+#' The new design's RUV parameters (KIT-129 integration item 1), by the names of KIT-129 section 1e: the design, the
+#' replicate-set column, k (a whole number, or one per assay by name; not given under the estimated count), its rule,
+#' the count's seed and the supplied controls per assay.
+#' @noRd
+omicsRuvDesignParameterNames <- c("ruv_design", "ruv_grouping_variable", "ruv_k", "ruv_k_rule", "ruv_k_seed", "ruv_control_ids")
+
+#' The new design's parameters today's declaration does not declare (its refusal reads these).
+#' @noRd
+omicsRuvDesignOnlyParameterNames <- setdiff(omicsRuvDesignParameterNames, omicsRuvParameterNames)
+
+#' The designs the new declaration takes: the factors kernel's three (all features, supplied controls, first-pass
+#' nulls), the technical-replicate design (KIT-129 third pass item 3: all features as controls, the declared units as
+#' the replicate sets) and `none` (no RUV, the option set's None).
+#' @noRd
+OMICS_RUV_DESIGNS <- c("groups_all_features", "technical_replicates", "supplied_controls", "first_pass_nulls", "none")
+
+#' The replicate sets of a declared lipidomics or metabolomics design (KIT-129 third pass item 3), as simulator S4's arms
+#' define them: the technical-replicate design (arm 16) the declared technical-replicate column, the biological units,
+#' refused when the design declares no technical replicates, when that column does not name each unit alone, or when
+#' the request names another replicate-set column; every other design the request's column, or the groups (arms 7, 8,
+#' 5 and 23).
+#' @param object The normalised object.
+#' @param design The declared design.
+#' @param grouping The request's `ruv_grouping_variable`, or NULL.
+#' @return `list(grouping, structure)`: the replicate-set column and the record's `ruv_replicate_structure` (`group` or
+#'   `technical_replicates`, KIT-129 section 1e).
+#' @noRd
+omicsRuvDesignReplicateSets <- function(object, design, grouping) {
+    invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
+    if (!identical(design, "technical_replicates")) return(list(grouping = grouping %||% object@group_id, structure = "group"))
+    column <- object@technical_replicate_id
+    frame <- as.data.frame(object@design_matrix)
+    technical <- resolveProtTechnicalReplicateBlock(frame, object@group_id, column)
+    if (!isTRUE(technical$technical)) {
+        invalid(sprintf("the design technical_replicates needs declared technical replicates; this design has none (%s)", technical$reason))
+    }
+    if (!is.null(grouping) && !identical(grouping, column)) {
+        invalid(sprintf("the design technical_replicates takes the technical-replicate column `%s` as its replicate sets, not `%s`",
+            column, grouping))
+    }
+    if (!ruvReplicateSetsAreUnits(frame[[column]], technical$block)) {
+        invalid(sprintf(paste("the technical-replicate column `%s` does not name each biological unit alone (the same value",
+            "in more than one group); give each unit its own value"), column))
+    }
+    list(grouping = column, structure = "technical_replicates")
+}
+
+#' Today's RUV declaration takes none of the new design's parameters (KIT-129 integration item 1): its identity reads its
+#' nine parameters only, so `runSavedOperation` calls this before the identity, and a request that names the new design
+#' is refused rather than served today's product (the legacy refusal of every omic, `workflow_execution_invalid`).
+#' @param parameters A request's parameters.
+#' @return `parameters`, invisibly.
+#' @noRd
+assertOmicsLegacyRuvParameters <- function(parameters) {
+    given <- Filter(\(name) !is.null(parameters[[name, exact = TRUE]]), omicsRuvDesignOnlyParameterNames)
+    if (length(given)) {
+        cli::cli_abort(c("today's RUV declaration takes none of the new design's parameters; the request carries {.val {given}}",
+            i = "the new design runs under omicsRuvOperation(binding, \"declared\")"), class = "workflow_execution_invalid", call = NULL)
+    }
+    invisible(parameters)
+}
+
+#' A value that is not given: NULL, or one NA.
+#' @noRd
+omicsRuvAbsent <- function(value) is.null(value) || (length(value) == 1L && !is.list(value) && is.na(value))
+
+#' The new design's RUV step for lipidomics and metabolomics (KIT-129 integration item 1): `runOmicsRuvFactors` (KIT-127;
+#' k by the shared resolver, KIT-129 item 3) per assay, or no RUV for the design `none`. The state is the corrected object
+#' (figures, export and integration read it, decision M10) and carries what the DA tests: the uncorrected assays
+#' (`args$ruv_uncorrected_assays`), the per-assay factor records (`args$ruv_factors`; both stored out of line, see
+#' `workflowClassDeclarations`) and the declaration `args$ruvFactorsDeclaration` (the design, the k rule and seed, k per
+#' assay), which names the DA's method (`workflowSourceRuvDaMethod`). A k is not given under the estimated count: the
+#' count gives it, once, here.
+#' @param supplied KIT-129 fifth pass item 3: the declaration of the design `supplied_controls`. Its identity names the
+#'   list by its hash and count (`RUV_SUPPLIED_LIST_PARAMETERS`) in place of `ruv_control_ids`; the request's one list
+#'   (`ruvDeclaredSuppliedList`) is applied to each assay as the listed features that assay holds, and an assay that
+#'   holds none of them is refused (the factors kernel needs controls in every assay); listed ids in no assay are named
+#'   in a warning (`ruv_control_ids_unmatched`) and in the product. Too few controls in an assay are the kernel's
+#'   refusal (k below the controls observed in every sample, decision M32).
+#' @noRd
+omicsRuvDesignOperation <- function(binding, supplied = FALSE) {
+    supplied <- isTRUE(supplied)
+    declared_names <- if (supplied) c(setdiff(omicsRuvDesignParameterNames, "ruv_control_ids"), RUV_SUPPLIED_LIST_PARAMETERS) else
+        omicsRuvDesignParameterNames
+    newOmicsOperation(binding, paste0(binding$prefix, "_ruv"), "whole_matrix", parameters = declared_names,
+        product_type = paste0(binding$prefix, ".ruv_result"),
+        # KIT-129 fourth pass item 1: the replicate sets by design (`omicsRuvDesignReplicateSets`), not the groups alone.
+        fixed = list(replicate_sets = paste("the groups (RUV-III); under the design technical_replicates the declared",
+            "technical replicates, the biological units (RUV-III)"), test = "the uncorrected values with W1..Wk in the limma model"),
+        kernel = function(object, parameters, store) {
+            invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
+            design <- parameters$ruv_design
+            if (!checkmate::test_choice(design, OMICS_RUV_DESIGNS)) {
+                invalid(sprintf("ruv_design must be one of %s", paste(OMICS_RUV_DESIGNS, collapse = ", ")))
+            }
+            slots <- omicsRuvAssaySlots(object)
+            assays <- methods::slot(object, slots$data)
+            sets <- omicsRuvDesignReplicateSets(object, design, parameters$ruv_grouping_variable)
+            grouping <- sets$grouping
+            rule <- parameters$ruv_k_rule
+            seed <- if (omicsRuvAbsent(parameters$ruv_k_seed)) RUV_FACTOR_COUNT_SEED else parameters$ruv_k_seed
+            # KIT-129 fifth pass item 3: the one supplied list, checked against the request's identity of it, then per
+            # assay the listed features that assay holds.
+            listed <- if (!identical(design, "none")) ruvDeclaredSuppliedList(parameters)
+            if (!is.null(listed) != supplied) invalid("the design supplied_controls runs under its own declaration, with its list")
+            unmatched <- character()
+            separation_plots <- NULL
+            if (supplied) {
+                id_column <- methods::slot(object, slots$id)
+                held <- lapply(assays, \(assay) as.character(assay[[id_column]]))
+                for (assay in names(assays)) {
+                    if (!any(listed %in% held[[assay]])) {
+                        invalid(sprintf("assay '%s': none of the %d listed control identifiers is a feature of this assay", assay, length(listed)))
+                    }
+                }
+                unmatched <- warnRuvSuppliedListUnmatched(listed, unlist(held, use.names = FALSE),
+                    if (identical(binding$omic_type, "lipidomics")) "lipids" else "metabolites")
+                parameters$ruv_control_ids <- lapply(held, \(ids) listed[listed %in% ids])
+            }
+            if (identical(design, "none")) {
+                if (!omicsRuvAbsent(parameters$ruv_k) || !omicsRuvAbsent(rule) || !is.null(parameters$ruv_control_ids)) {
+                    invalid("the design none takes no k, no k rule and no controls")
+                }
+                rule <- NA_character_
+                factors <- lapply(stats::setNames(names(assays), names(assays)), function(assay) list(assay = assay, status = "none",
+                    reason = "the design none: no correction for unwanted variation", reason_class = NA_character_, W = NULL, k = 0L,
+                    k_requested = NA_integer_, ruv_k_rule = NA_character_, ruv_k_estimate = NA_integer_, k_estimate = NULL,
+                    control_ids = character(), control_count = 0L, controls_left_out = character(), complete_features = NA_integer_,
+                    not_tested = character(), ruv_design = "none", ruv_grouping_variable = grouping))
+                corrected <- object
+            } else {
+                counted <- identical(rule, "num_sv_be")
+                if (counted && !omicsRuvAbsent(parameters$ruv_k)) invalid("a k is not given with ruv_k_rule num_sv_be: the count gives k")
+                # the technical-replicate design is the factors kernel's all-features design on the units (arm 16)
+                kernel_design <- if (identical(design, "technical_replicates")) "groups_all_features" else design
+                arguments <- list(theObject = object, ruv_design = kernel_design, ruv_k_rule = rule, ruv_control_ids = parameters$ruv_control_ids,
+                    ruv_grouping_variable = grouping, ruv_k_seed = seed)
+                if (!counted) arguments$ruv_k <- parameters$ruv_k
+                # KIT-129 fifth pass item 4: the separation rule, computed here per assay on the design's own controls
+                # (`omicsRuvSeparationRuleK`; arms 22 and 5 of simulator S4), when the request gives no k under it.
+                if (identical(rule, "sweep_bounded") && omicsRuvAbsent(parameters$ruv_k) &&
+                    design %in% c("supplied_controls", "first_pass_nulls")) {
+                    separated <- omicsRuvSeparationRuleK(object, design, parameters$ruv_control_ids, grouping)
+                    arguments$ruv_k <- separated$k
+                    separation_plots <- lapply(separated$plots, function(plot) {
+                        if (inherits(plot, c("gg", "ggplot"))) ggplot2::ggplotGrob(stripProtNormQcPlotOwners(plot))
+                    })
+                }
+                result <- do.call(runOmicsRuvFactors, arguments)
+                corrected <- result$corrected
+                factors <- result$factors
+                # KIT-129 integration item 3: under the user's k the count is recorded beside it, per assay, on the
+                # values and with the units the count would read (`runOmicsRuvFactors`'s own).
+                if (identical(rule, "user")) {
+                    design_frame <- as.data.frame(object@design_matrix)
+                    design_samples <- as.character(design_frame[[object@sample_id]])
+                    for (assay in names(assays)) {
+                        values <- omicsRuvAssayValues(assays[[assay]], methods::slot(object, slots$id), design_samples, assay)
+                        rows <- design_frame[match(colnames(values), design_samples), , drop = FALSE]
+                        technical <- resolveProtTechnicalReplicateBlock(rows, object@group_id, object@technical_replicate_id)
+                        beside <- recordRuvFactorCountBesideUserK(values, rows[[grouping]], seed,
+                            units = if (isTRUE(technical$technical)) technical$block)
+                        factors[[assay]]$ruv_k_estimate <- beside$k_estimate
+                        factors[[assay]]$k_estimate_reason <- beside$k_estimate_reason
+                        factors[[assay]]$k_estimate <- beside$estimate
+                    }
+                }
+            }
+            # KIT-129 fourth pass item 4: the groups of the samples, for the factor-tied-to-groups check of each assay's W.
+            group_design <- list(design = object@design_matrix, sample_id = object@sample_id, group_id = object@group_id)
+            omic <- binding$omic_type
+            object <- NULL
+            # KIT-129 third pass item 3: each record names the declared design and its replicate structure (section 1e)
+            records <- lapply(factors, function(record) {
+                record$k_estimate <- NULL
+                record$ruv_design <- design
+                record$ruv_replicate_structure <- sets$structure
+                record$ruv_group_association <- ruvGroupAssociationCheck(record$W, ruvFactorGroups(record$W, group_design$design,
+                    group_design$sample_id, group_design$group_id), omic, design, rule)
+                record
+            })
+            k <- lapply(factors, `[[`, "k")
+            corrected@args$ruv_uncorrected_assays <- assays
+            corrected@args$ruv_factors <- records
+            seed_used <- if (rule %in% c("num_sv_be", "user")) as.integer(seed) else NA_integer_
+            corrected@args$ruvFactorsDeclaration <- list(ruv_design = design, ruv_k_rule = rule, ruv_k_seed = seed_used, k = k,
+                tested_matrix = "uncorrected", ruv_replicate_structure = sets$structure, ruv_grouping_variable = grouping)
+            final <- store$checkpoint(corrected, paste0(binding$prefix, "-ruv-corrected"))
+            corrected <- assays <- NULL
+            list(final = final, ruv_design = design, ruv_replicate_structure = sets$structure, ruv_grouping_variable = grouping,
+                best_k = k, control_count = lapply(factors, `[[`, "control_count"),
+                percentage = lapply(factors, function(record) NA_real_), ruv_k_rule = rule, ruv_k_seed = seed_used,
+                ruv_k_estimate = lapply(factors, `[[`, "ruv_k_estimate"), k_estimate = lapply(factors, `[[`, "k_estimate"),
+                ruv_applied = lapply(factors, function(record) identical(record$status, "ok")),
+                ruv_not_applied_reason = lapply(factors, `[[`, "reason"), factors = records,
+                parameters = parameters[declared_names],
+                # KIT-129 fifth pass item 3: the supplied list by section 1e's names; per assay its controls are
+                # `control_count` (those observed in every sample) and the records' `control_ids`.
+                ruv_control_rule = if (supplied) "supplied_list", ruv_control_list_sha256 = if (supplied) parameters$ruv_control_list_sha256,
+                ruv_control_list_count = if (supplied) length(listed), ruv_control_list_unmatched = if (supplied) unmatched,
+                # KIT-129 fifth pass item 4: the separation rule's plot per assay, where the run computed the rule
+                separation_plots = separation_plots)
         })
 }
 
@@ -387,10 +596,28 @@ omicsDaOperation <- function(binding) {
             accepted$products$da_results <- store$product(result, "da_results", paste0(binding$prefix, "-da-results"))
             accepted$rows <- if (is.data.frame(result[[long_table]])) nrow(result[[long_table]]) else 0L
             accepted$columns <- names(result[[long_table]])
-            accepted$model <- list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
-                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))
+            # KIT-128: the assays the kernel could not compute, as it names them.
+            if (length(result$failed_assays)) accepted$failed_assays <- result$failed_assays
+            accepted$model <- c(list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
+                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0)),
+                omicsDaBlockRecord(list(list(
+                    block_reason = lapply(result$contrasts_results, function(entry) entry$fit.eb$block_reason),
+                    uses_duplicate_correlation = lapply(result$contrasts_results, function(entry) entry$fit.eb$uses_duplicate_correlation)))))
             accepted
         })
+}
+
+#' The DA model record's replicate fields (KIT-128), as the proteomics record names them: `block_reason` (the rule's
+#' reason; the distinct ones joined when assays differ) and `uses_duplicate_correlation` (whether any assay was fitted
+#' with the biological unit as block).
+#' @param models Lists with `block_reason` and `uses_duplicate_correlation` per assay (a contrast's, or the kernel's).
+#' @return The two fields, or an empty list when no fit recorded a reason (a transcriptomics fit, a fit saved earlier).
+#' @noRd
+omicsDaBlockRecord <- function(models) {
+    reasons <- unique(as.character(unlist(lapply(models, `[[`, "block_reason"))))
+    if (!length(reasons)) return(list())
+    list(block_reason = paste(reasons, collapse = "; "),
+        uses_duplicate_correlation = any(as.logical(unlist(lapply(models, `[[`, "uses_duplicate_correlation")))))
 }
 
 #' Identify one assay's uncontrasted limma fit (KIT-076): the values in order, the design and formula, the software.
@@ -400,33 +627,52 @@ omicsDaOperation <- function(binding) {
 #' @param formula_string The model formula.
 #' @param assay The assay's name.
 #' @param software Installed software identity.
+#' @param block The fit's block (KIT-128): the biological unit per sample when the design has technical replicates, else
+#'   NULL, which leaves the identity as it was. A fit saved before KIT-128 on such a design is therefore not a hit.
 #' @return The store's scientific identity.
 #' @noRd
-newWorkflowOmicsDaFitIdentity <- function(data, design, formula_string, assay, software) {
+newWorkflowOmicsDaFitIdentity <- function(data, design, formula_string, assay, software, block = NULL, ruv = NULL) {
     newSavedWorkflowScientificIdentity(
         digest::digest(list(values = data, feature_order = rownames(data), sample_order = colnames(data)), algo = "sha256"),
-        digest::digest(list(formula = formula_string, design = design), algo = "sha256"),
-        digest::digest(list(layer = "omics_da_base_fit"), algo = "sha256"),
+        digest::digest(c(list(formula = formula_string, design = design), if (!is.null(block)) list(block = block)), algo = "sha256"),
+        # KIT-129 integration item 1: a fit of a new RUV design names its method (NULL leaves today's identity as it was).
+        digest::digest(c(list(layer = "omics_da_base_fit"), if (!is.null(ruv)) list(ruv = ruv)), algo = "sha256"),
         digest::digest(list(assay = assay), algo = "sha256"), software)
 }
 
 #' One assay's fit for the contrast operations (KIT-076): the saved `da_fit` when the identity has one, else the fit half
-#' of the omic's kernel, saved once. A fit failure drops the assay (the orchestrator's silent drop, kept for the
-#' fit half only and recorded in the KIT-076 outcome); ids the store's envelope refuses keep the fit unsaved.
-#' @return `list(fit, reference)`, or NULL when the fit failed.
+#' of the omic's kernel, saved once. A fit failure is returned as its message (KIT-128; before, the assay was dropped
+#' silently) and the caller records it under the contrast's `errors`; ids the store's envelope refuses keep the fit
+#' unsaved.
+#' @param ruv,fitFn KIT-129 integration item 1: the DA method of a new RUV design, named in the fit's identity (NULL:
+#'   today's identity), and the fit half (the binding's by default).
+#' @param group_id,technical_replicate_id The object's declared columns (KIT-128), handed to the fit half; the default
+#'   NULL keeps the fit and its identity as they were.
+#' @return `list(fit, reference)`, or `list(error)` when the fit failed.
 #' @noRd
-omicsDaAssayFit <- function(binding, store, data, design, formula_string, sample_id, assay) {
+omicsDaAssayFit <- function(binding, store, data, design, formula_string, sample_id, assay, group_id = NULL,
+                            technical_replicate_id = NULL, ruv = NULL, fitFn = binding$da_fit) {
     manager <- store$manager
-    identity <- newWorkflowOmicsDaFitIdentity(data, design, formula_string, assay, manager$.context$software)
+    # KIT-128: the block of the samples the fit reads, by the rule the fit half applies; only a technical one is in the
+    # identity.
+    block <- if (!is.null(technical_replicate_id) && sample_id %in% names(design)) {
+        replicate <- resolveProtTechnicalReplicateBlock(as.data.frame(design)[design[[sample_id]] %in% colnames(data), , drop = FALSE],
+            group_id, technical_replicate_id)
+        if (isTRUE(replicate$technical)) replicate$block
+    }
+    identity <- newWorkflowOmicsDaFitIdentity(data, design, formula_string, assay, manager$.context$software, block = block, ruv = ruv)
     factors <- list(route = binding$prefix, layer = "base_fit")
     hit <- resolveSavedWorkflowEntity(manager$.context$store, "da_fit", identity, factors = factors)
     if (identical(hit$status, "hit")) return(list(fit = hit$value$fit, reference = hit$reference))
-    fit <- tryCatch(binding$da_fit(data, design, formula_string, sample_id), error = function(e) {
+    failure <- NULL
+    fit <- tryCatch(fitFn(data, design, formula_string, sample_id, group_id = group_id,
+        technical_replicate_id = technical_replicate_id), error = function(e) {
         cat(sprintf("[ERROR] Processing assay %s: %s\n", assay, e$message))
         logger::log_error(sprintf("   ERROR processing assay %s: %s", assay, e$message))
+        failure <<- conditionMessage(e)
         NULL
     })
-    if (is.null(fit)) return(NULL)
+    if (!is.null(failure)) return(list(error = failure))
     features <- rownames(fit$coefficients)
     if (anyDuplicated(features) || anyNA(features) || !all(nzchar(features))) return(list(fit = fit, reference = NULL))
     reference <- saveWorkflowConsumerEntity(manager$.context$store,
@@ -441,8 +687,11 @@ omicsDaAssayFit <- function(binding, store, data, design, formula_string, sample
 #' `errors` and costs nothing else; store errors are not caught. The product keeps what the module's list is rebuilt
 #' from (`readWorkflowOmicsDaResults`). KIT-095: the fixed settings and the design the kernel halves read are the
 #' binding's (`da_fixed`, `da_design`); lipid and metab keep the limma settings and the object's design.
+#' @param ruv_design KIT-129 integration item 1. `"legacy"` (the default): today's declaration, unchanged. `"declared"`:
+#'   `omicsDaContrastDeclaredOperation` (lipidomics and metabolomics).
 #' @noRd
-omicsDaContrastOperation <- function(binding) {
+omicsDaContrastOperation <- function(binding, ruv_design = c("legacy", "declared")) {
+    if (identical(match.arg(ruv_design), "declared")) return(omicsDaContrastDeclaredOperation(binding))
     long_table <- binding$long_table
     da_design <- binding$da_design %||% function(object) object@design_matrix
     newOmicsOperation(binding, paste0(binding$prefix, "_da_contrast"), "whole_matrix",
@@ -470,8 +719,18 @@ omicsDaContrastOperation <- function(binding) {
                 input <- binding$da_assay_input(assays[[assay]], assay, design, object@sample_id,
                     methods::slot(object, binding$id_slot), object@annotation_id_column)
                 if (is.null(input)) next
-                fit <- omicsDaAssayFit(binding, store, input$expr_matrix, design, parameters$formula, object@sample_id, assay)
-                if (is.null(fit)) next
+                fit <- omicsDaAssayFit(binding, store, input$expr_matrix, design, parameters$formula, object@sample_id, assay,
+                    group_id = object@group_id, technical_replicate_id = object@technical_replicate_id)
+                # KIT-128: a failed fit is named in the errors channel the contrast half uses; the other assays go on.
+                if (!is.null(fit$error)) {
+                    accepted$errors[[assay]] <- fit$error
+                    next
+                }
+                # KIT-128: which model the assay's fit is (the fit half records it; a trx fit carries none).
+                if (!is.null(fit$fit$block_reason)) {
+                    accepted$model$block_reason[[assay]] <- fit$fit$block_reason
+                    accepted$model$uses_duplicate_correlation[[assay]] <- isTRUE(fit$fit$uses_duplicate_correlation)
+                }
                 outcome <- tryCatch({
                     applied <- binding$da_apply(fit$fit, contrast, if (parameters$lfc > 0) parameters$lfc else NA, TRUE, TRUE)
                     list(applied = applied, table = binding$da_format(applied$results[[contrast]], contrast, assay,
@@ -492,6 +751,105 @@ omicsDaContrastOperation <- function(binding) {
                 products[[assay]] <- list(results = outcome$applied$results[[contrast]], table = outcome$table,
                     fit.eb = outcome$applied$fit.eb)
             }
+            object <- NULL
+            accepted$products$da_contrast <- store$product(list(assays = products), "da_contrast", paste0(binding$prefix, "-da-contrast"))
+            accepted$rows <- sum(vapply(accepted$assays, function(entry) entry$rows, integer(1)))
+            accepted$columns <- if (length(products)) names(products[[1L]]$table)
+            accepted
+        })
+}
+
+#' The DA of a new-design RUV state for one contrast (KIT-129 integration item 1; lipidomics and metabolomics): today's
+#' contrast declaration (`omicsDaContrastOperation`), with the method declared as the parameter `ruv_da_method`:
+#' per assay the uncorrected values (`args$ruv_uncorrected_assays`) with the assay's W in the model
+#' (`applyOmicsRuvFactorsToDaInput`), each comparison's standard error exact (decision M29,
+#' `omicsRuvExactContrastsFitFn`), the fit's identity naming the method; an assay without factors is tested as
+#' `runLipidsDA` / `runMetabolitesDA` test it with its records (decision M10: the corrected matrix is for display).
+#' A separate declaration so that today's kernel is unchanged.
+#' @noRd
+omicsDaContrastDeclaredOperation <- function(binding) {
+    long_table <- binding$long_table
+    da_design <- binding$da_design %||% function(object) object@design_matrix
+    newOmicsOperation(binding, paste0(binding$prefix, "_da_contrast"), "whole_matrix",
+        parameters = c("formula", "qvalue", "lfc", "contrast", "friendly_name", "ruv_da_method"),
+        product_type = paste0(binding$prefix, "-da-contrast-references"), output_class = NULL,
+        fixed = binding$da_fixed %||% list(eBayes_trend = TRUE, eBayes_robust = TRUE),
+        kernel = function(object, parameters, store) {
+            ruv_factors <- object@args$ruv_factors
+            if (!is.list(ruv_factors) || !identical(workflowRuvDaMethodOfArgs(object@args), parameters$ruv_da_method)) {
+                cli::cli_abort("the DA of a new RUV design needs a source that declares it, and its method",
+                    class = "workflow_execution_invalid", call = NULL)
+            }
+            contrast <- parameters$contrast
+            accepted <- list(schema = paste0(binding$prefix, ".da_contrast_reference.v1"), source = store$source,
+                contrast = contrast, comparison = parameters$friendly_name, assays = list(), errors = list(),
+                qvalue_warnings = list(), products = list())
+            assays <- methods::slot(object, binding$data_slot)
+            design <- da_design(object)
+            preflight <- tryCatch({
+                binding$da_preflight(object, data.frame(contrasts = contrast, friendly_names = parameters$friendly_name,
+                    stringsAsFactors = FALSE), parameters$formula)
+                NULL
+            }, error = function(e) conditionMessage(e))
+            if (!is.null(preflight)) {
+                accepted$errors <- stats::setNames(rep(list(preflight), length(assays)), names(assays))
+                return(accepted)
+            }
+            products <- list()
+            for (assay in names(assays)) {
+                tested <- object@args$ruv_uncorrected_assays[[assay]] %||% assays[[assay]]
+                input <- binding$da_assay_input(tested, assay, design, object@sample_id,
+                    methods::slot(object, binding$id_slot), object@annotation_id_column)
+                if (is.null(input)) next
+                # KIT-127's DA input: the supplied controls left out, W in the design and the formula (M28's checks).
+                ruv_input <- tryCatch(applyOmicsRuvFactorsToDaInput(input$expr_matrix, design, parameters$formula,
+                    object@sample_id, ruv_factors[[assay]], assay, object@group_id, object@technical_replicate_id),
+                    error = function(e) list(error = conditionMessage(e)))
+                if (!is.null(ruv_input$error)) {
+                    accepted$errors[[assay]] <- ruv_input$error
+                    next
+                }
+                fit <- omicsDaAssayFit(binding, store, ruv_input$expr_matrix, ruv_input$design_matrix, ruv_input$formula_string,
+                    object@sample_id, assay, group_id = object@group_id, technical_replicate_id = object@technical_replicate_id,
+                    ruv = parameters$ruv_da_method, fitFn = function(...) withOmicsRuvKOnBlockFailure(binding$da_fit(...), ruv_factors[[assay]]))
+                # KIT-128: a failed fit is named in the errors channel the contrast half uses; the other assays go on.
+                if (!is.null(fit$error)) {
+                    accepted$errors[[assay]] <- fit$error
+                    next
+                }
+                # KIT-128: which model the assay's fit is (the fit half records it; a trx fit carries none).
+                if (!is.null(fit$fit$block_reason)) {
+                    accepted$model$block_reason[[assay]] <- fit$fit$block_reason
+                    accepted$model$uses_duplicate_correlation[[assay]] <- isTRUE(fit$fit$uses_duplicate_correlation)
+                }
+                # Decision M29: an assay with W in the model forms each comparison's standard error exactly.
+                contrasts_fit <- if (is.null(ruv_factors[[assay]]$W)) limma::contrasts.fit else omicsRuvExactContrastsFitFn(fit$fit,
+                    ruv_input$expr_matrix, ruv_input$design_matrix, object@sample_id, object@group_id, object@technical_replicate_id)
+                outcome <- tryCatch({
+                    applied <- binding$da_apply(fit$fit, contrast, if (parameters$lfc > 0) parameters$lfc else NA, TRUE, TRUE,
+                        contrastsFitFn = contrasts_fit)
+                    list(applied = applied, table = binding$da_format(applied$results[[contrast]], contrast, assay,
+                        parameters$friendly_name, input$annotation_info, ruv_input$expr_matrix, design, object@sample_id,
+                        object@group_id, parameters$qvalue, parameters$lfc))
+                }, error = function(e) {
+                    logger::log_error(sprintf("   ERROR in contrast %s, assay %s: %s", contrast, assay, conditionMessage(e)))
+                    list(error = conditionMessage(e))
+                })
+                if (!is.null(outcome$error)) {
+                    accepted$errors[[assay]] <- outcome$error
+                    next
+                }
+                table <- as.data.frame(outcome$table)
+                accepted$assays[[assay]] <- list(assay = assay, tables = stats::setNames(list(store$table(table)), long_table),
+                    rows = nrow(table), fit = fit$reference, significant_counts = binding$da_count(outcome$table))
+                if (length(outcome$applied$qvalue_warnings)) accepted$qvalue_warnings[[assay]] <- outcome$applied$qvalue_warnings
+                products[[assay]] <- list(results = outcome$applied$results[[contrast]], table = outcome$table,
+                    fit.eb = outcome$applied$fit.eb)
+                # KIT-127: what the new design did not test, by assay.
+                accepted$ruv_features_not_tested[[assay]] <- ruv_input$not_tested
+            }
+            accepted$model <- c(accepted$model, list(ruv_da_method = parameters$ruv_da_method, tested_matrix = "uncorrected",
+                w_terms = lapply(ruv_factors, function(record) colnames(record$W) %||% character())))
             object <- NULL
             accepted$products$da_contrast <- store$product(list(assays = products), "da_contrast", paste0(binding$prefix, "-da-contrast"))
             accepted$rows <- sum(vapply(accepted$assays, function(entry) entry$rows, integer(1)))
@@ -657,6 +1015,23 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
         outcomes$negative_control_count_per_assay <- as.list(saved$control_count)
         outcomes$negative_control_percentage <- if (length(percentage) && !all(is.na(percentage))) mean(percentage, na.rm = TRUE) else NA_real_
         outcomes$negative_control_percentage_per_assay <- as.list(saved$percentage)
+        # KIT-129 integration item 3: a new design's product records its design and its k per assay: whether RUV was
+        # applied, the rule, the estimate and the seed (today's product names none, and its outcomes are as before).
+        if (!is.null(saved$ruv_design)) {
+            outcomes$ruv_applied <- any(unlist(saved$ruv_applied))
+            outcomes[c("ruv_design", "ruv_k_rule", "ruv_k_seed")] <- list(saved$ruv_design, saved$ruv_k_rule, saved$ruv_k_seed)
+            # KIT-129 third pass item 3: the replicate structure and its column (products before it name neither)
+            if (!is.null(saved$ruv_replicate_structure)) {
+                outcomes[c("ruv_replicate_structure", "ruv_grouping_variable")] <- list(saved$ruv_replicate_structure, saved$ruv_grouping_variable)
+            }
+            outcomes$ruv_applied_per_assay <- as.list(saved$ruv_applied)
+            outcomes$ruv_k_estimate_per_assay <- as.list(saved$ruv_k_estimate)
+            outcomes$ruv_not_applied_reason_per_assay <- as.list(saved$ruv_not_applied_reason)
+            # KIT-129 fourth pass item 4: the factor-tied-to-groups check per assay (statistic, threshold, outcome).
+            for (field in ruvGroupAssociationRecordFields) {
+                outcomes[[paste0(field, "_per_assay")]] <- lapply(saved$factors, function(record) record$ruv_group_association[[field]])
+            }
+        }
     }
     if (identical(operation, paste0(binding$prefix, "_itsd_normalisation"))) outcomes$itsd_applied <- TRUE
     outcomes
@@ -979,7 +1354,11 @@ omicsBetweenSampleNormalisationStep <- function(binding, method, description = N
 #' @param parameters The nine RUV parameters by their declared names (the tab's `ruv_params` plus the mode and grouping).
 #' @noRd
 omicsRuvStep <- function(binding, parameters, description = NULL, state_name = NULL) {
-    list(operation = paste0(binding$prefix, "_ruv"), parameters = parameters[omicsRuvParameterNames],
+    # KIT-129 integration item 1: with the gate on, a request that names a new design keeps the new design's parameters.
+    declared <- omicGuiRuvDesignEnabled() && !omicsRuvAbsent(parameters[["ruv_design", exact = TRUE]]) &&
+        !identical(parameters$ruv_design, "legacy")
+    list(operation = paste0(binding$prefix, "_ruv"), parameters = if (declared) stats::setNames(lapply(omicsRuvDesignParameterNames,
+        \(name) parameters[[name, exact = TRUE]]), omicsRuvDesignParameterNames) else parameters[omicsRuvParameterNames],
         state_name = state_name %||% paste0(binding$prefix, "_ruv_corrected"),
         description = description %||% "RUV-III batch correction complete")
 }
@@ -1000,7 +1379,9 @@ runWorkflowOmicsReferenceStep <- function(manager, step, config, source = NULL, 
     # KIT-089: a step whose default is not `whole` runs that variant in process too, as in the worker, so the record names
     # what ran. Other steps get no variant parameter.
     if (is.null(parameters$variant) && !identical(entry$default_variant %||% "whole", "whole")) parameters$variant <- entry$default_variant
-    runWorkflowOmicsReferenceOperation(manager, entry$declaration, parameters, step$state_name,
+    # KIT-129 integration item 1: the new design's declaration when the request names it, as on the worker.
+    chosen <- workflowRequestOperation(manager, entry, source, parameters)
+    runWorkflowOmicsReferenceOperation(manager, chosen$declaration, chosen$parameters, step$state_name,
         config, step$description, source = source, dependencies = dependencies, hydrate = hydrate)
 }
 
@@ -1039,7 +1420,8 @@ runWorkflowOmicsReferenceBetweenSampleNormalisation <- function(binding, manager
 runWorkflowOmicsReferenceRuv <- function(binding, manager, parameters, config, description = NULL, state_name = NULL,
     hydrate = FALSE) {
     result <- runWorkflowOmicsReferenceStep(manager, omicsRuvStep(binding, parameters, description, state_name), config, hydrate = hydrate)
-    result$optimisation <- hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value
+    # A new design's product has no sweep (KIT-129 integration item 1).
+    if (!is.null(result$value$optimisation)) result$optimisation <- hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value
     result
 }
 
@@ -1128,7 +1510,9 @@ runWorkflowOmicsReferenceDaAnalysis <- function(binding, manager, source, settin
         steps <- omicsDaContrastSteps(binding, settings, contrasts)
         results <- list()
         for (step in steps) {
-            run <- runSavedOperation(manager, workflowOperationEntry(step$operation)$declaration, source, step$parameters)
+            # KIT-129 integration item 1: a source of a new RUV design is tested by the DA declaration naming its method.
+            chosen <- workflowRequestOperation(manager, workflowOperationEntry(step$operation), source, step$parameters)
+            run <- runSavedOperation(manager, chosen$declaration, source, chosen$parameters)
             if (identical(run$status, "computed")) {
                 snapshot <- context$snapshot
                 snapshot$da_dependencies[[run$reference$entity_id]] <- collectWorkflowNativeReferences(run$value)
@@ -1168,6 +1552,7 @@ acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, co
     # KIT-095: the model record is the binding's (`da_model`); lipid and metab keep the limma one.
     model <- if (is.function(binding$da_model)) binding$da_model(parameters) else list(model = "limma",
         formula_used = parameters$formula, eBayes_trend = TRUE, eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))
+    model <- c(model, omicsDaBlockRecord(lapply(results, `[[`, "model")))
     manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v2"), source = source),
         stats::setNames(list(metadata$slots[[binding$id_slot]]), binding$id_slot),
         list(sample_id = metadata$slots$sample_id, assays = metadata$assay_names, contrasts = contrasts, results = results,
@@ -1214,10 +1599,12 @@ omicsFilteringMetricsReference <- function(binding, manager, state) {
 #' @noRd
 computeWorkflowOmicsOperationAction <- function(manager, request, variant) {
     entry <- workflowActionSpec(request$operation)
-    declaration <- entry$declaration
     binding <- omicsDeclarationBindings()[[entry$omic_type]]
     source <- request$input_references$state
-    parameters <- request$parameters
+    # KIT-129 integration item 1: the declaration the request runs, as in process (the new design's when it names it).
+    chosen <- workflowRequestOperation(manager, entry, source, request$parameters)
+    declaration <- chosen$declaration
+    parameters <- chosen$parameters
     parameters$variant <- variant
     parameters$worker_cap <- request$worker_cap
     dependencies <- lapply(intersect(binding$dependency_parameters, declaration$parameters),

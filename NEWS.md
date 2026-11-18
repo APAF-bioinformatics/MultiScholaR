@@ -4,6 +4,30 @@
 
 ### Scientific changes
 
+ * Lipidomics and metabolomics differential abundance: technical replicates declared in the design
+   (several runs of one biological unit, the design step's `tech_rep_group`) are now fitted with the
+   biological unit as a block (`limma::duplicateCorrelation`, then `lmFit(block, correlation)`; limma
+   User's Guide 11.3), the rule proteomics already applies. Before, each injection was tested as an
+   independent sample, which made P-values too small (null rate 0.16 at a nominal 0.05 on duplicated
+   injections; at most 0.075 now). The DA record names the model (`block_reason`,
+   `uses_duplicate_correlation`). Designs without technical replicates give the same results as before.
+   The RUV-III replicate structure of these omics is unchanged here.
+ * Transcriptomics: technical replicates declared in the design are summed per biological unit at the
+   design step (`edgeR::sumTechReps`; edgeR User's Guide 4.9.1), before the expression filter, TMM, RUVs and
+   the edgeR QL test, which takes no block. Before, each library was tested as an independent sample (null
+   rate 0.29 at a nominal 0.05 on duplicated libraries through the route; at most 0.075 now). On such designs
+   the samples are now the units (named by `tech_rep_group`), the summed runs are recorded with the design
+   state, results no longer equal the notebook on library counts, and the RUVIII export no longer offers a
+   technical-replicate M. Designs without technical replicates are unchanged.
+ * A design whose every group is one biological unit measured more than once is refused in every omic: no
+   biological replication. Proteomics, lipidomics and metabolomics stop the differential analysis with an error
+   (class `omics_da_no_biological_replication`) naming the groups; before, the runs were tested as independent
+   samples. Import, design saving and normalisation are unchanged.
+ * Transcriptomics design check: a group needs two biological units, as in every omic. A group of one unit
+   sequenced twice (two libraries, one `tech_rep_group`) is now refused at save; before, it passed as two samples.
+ * Lipidomics and metabolomics differential abundance: an error on one assay is no longer dropped silently.
+   `runLipidsDA` and `runMetabolitesDA` name the failed assay in `failed_assays` with a warning and keep the
+   other assays, and stop when every assay failed; the DA tab records and warns about a failed assay fit.
  * DIA-NN import: a precursor quantity of exactly 0 (a precursor DIA-NN did not quantify) is now read as a
    missing value in both quantity columns (`Precursor.Quantity` and `Precursor.Normalised`),
    with a notice of the count per column, as the LFQ and TMT readers already did. Before, a 0 counted as an
@@ -22,6 +46,21 @@
    lists the supported names. Before, the name was matched as a substring and the first hit taken
    ("saccharomyces" picked one of two yeasts), and an unmatched name fell back to *Homo sapiens* without
    notice. Results change only where the name given was not a species' full name.
+ * Transcriptomics RUV (KIT-129): three designs and a mode without RUV are available to the RUV step beside
+   today's grid (the kernels only; no screen offers them yet and no default changes). The factors are
+   estimated on upper-quartile normalised counts (`EDASeq::betweenLaneNormalization(which = "upper")`, the
+   RUVSeq vignette's usage) by `RUVSeq::RUVs` with every gene as a control and the groups as replicate sets,
+   or by `RUVSeq::RUVg` with a supplied list of control genes or with the genes outside the 25% most
+   significant of the first test of the groups. The factors enter the edgeR model and the test reads the
+   filtered counts, as today; the display matrix for figures and export is still `removeBatchEffect` with
+   the factors. The number of factors k is given to the step with the rule that produced it; a k of 0, or the
+   mode without RUV, fits `~ 0 + group` and leaves the display matrix uncorrected. A k the data cannot carry
+   is refused, never reduced (RUVSeq itself returns fewer factors without notice). A supplied list is taken
+   once per id and in the matrix's gene order, as are the first test's controls; an id that is NA or empty is
+   refused, every id not found among the filtered genes is warned of, a list with fewer than two genes found
+   is refused, and the sha256 of the sorted list is recorded (`ruv_control_list_sha256`). Today's grid, when it is computed, refuses a request that also carries a
+   parameter of these designs (`trx_ruv_grid_declared_parameters`) instead of dropping it. Today's design (the grid's
+   controls and k, RUVs on the filtered counts) is the default and every result is as before.
  * Proteomics RUV-III correction (`ruvIII_C_Varying()` for protein data, and the adjusted matrix of the
    DIA_LIMPA route): each protein keeps its mean abundance. Before, the corrected values of a protein were
    shifted by a constant that depended on its loadings (a median of 27 log2 on one synthetic DIA dataset).
@@ -30,10 +69,71 @@
    adjusted matrix and the results that use them change. Abundance-dependent steps after RUV can change:
    the low-intensity filter that follows the classic correction may now remove a different protein.
    Lipidomics, metabolomics and the peptide method are not changed.
+ * RUV, the number of unwanted factors k (KIT-129): an estimated count is available to the RUV step of every
+   omic (the kernel only; no screen offers it yet and no default changes). It is `sva::num.sv()` (method "be",
+   20 permutations, a fixed and recorded seed) on the features observed in every sample: the groups are
+   removed, and a component of the residuals is counted while at most 10% of the permutations reach its share
+   of the residual variance. `sva` is a suggested package; without it the estimate is refused with the reason
+   and k has to be given, never replaced by another rule. The estimate is also refused when fewer than 20
+   features are observed in every sample or the samples leave fewer than two residual components; a count
+   of 0 means no RUV for the run, with a notice. A k above what the design can carry (samples minus replicate
+   sets, a residual degree of freedom beside the groups, fewer factors than controls) is refused, not
+   reduced. The estimate has its own diagnostic plot (observed share of residual variance per component
+   against the permutation null, the count marked). Today's rule on the canonical-correlation plot is
+   unchanged and stays the rule of today's designs; it is not defined when all features are the controls.
+   The estimate draws under a fixed and recorded random-number kind, so it does not depend on the session's
+   `RNGkind()`; a sample without a group and a single group are refusals with their reason; a given k is
+   used whatever error the estimate raises, the reason recorded. The count removes the groups only: on a
+   design with declared technical replicates its record says so (`technical_replicates_ignored`).
+ * DIA_LIMPA RUV covariates (KIT-129): the control rule and the rule for k are now parameters of the step
+   (the kernel only; no screen offers them yet and no default changes). Besides today's sweep (the limpa
+   script's rule: the least significant proteins as controls, k from the canonical-correlation plot), the
+   step can take all proteins as controls, a supplied list of control proteins, or the proteins outside the
+   25% most significant of a first test of the groups (`limpa::dpcDE` without RUV, the F test of the
+   differences between the groups); k is the estimated count, today's estimate where a separate control set
+   exists, or a given number. These designs depart from the limpa script; they run in the covariates mode
+   only, the quantified matrix is unchanged and the factors enter the `dpcDE` model as today. Declared
+   technical replicates stay RUV-III's replicate sets. When the estimated count is 0, or the data cannot
+   give a k, the run has no RUV and says why. With the defaults every result is as before.
+   Such a run is recorded as one: mode `none` and `ruv_applied = FALSE` in the product, the state and the
+   commit, with the reason; no percentage, controls or control count are given as used, and the integration
+   input labels its matrix `normalised`. A declared run's commit names its control rule, its control count,
+   k and the rule that gave it; the sweep's own record, when the sweep gave k, is kept apart
+   (`ruv_result$k_sweep`). Supplied control ids that are not in the protein table raise a warning with the
+   matched and listed counts. Today's declaration refuses a request that carries a rule parameter.
+ * DIA_LIMPA differential abundance (KIT-129): a model that leaves no residual degree of freedom (the
+   formula's terms and the RUV factors against the samples) is refused with a message that names k, instead
+   of failing inside the fit with "NA/NaN/Inf in 'y'".
  * Proteomics automatic RUV parameters (`findBestNegCtrlPercentage()`): the number of factors k is now chosen
    among the values up to the sample-size limit (`max_acceptable_k`). Before, the limit was applied only to
    the penalty, and a larger k could be returned. Results change only where the canonical-correlation curve
    pointed above the limit.
+ * Classic proteomics (DIA with IQ, LFQ, TMT) can account for RUV in the test itself (KIT-126): the
+   differential-abundance model reads the normalised, uncorrected matrix with the RUV-III factors as
+   covariates, the groups as replicate sets and every protein as a negative control. The factors are
+   computed on the proteins observed in every sample (validated to 25% missing values); the RUV-III-C
+   corrected matrix is still produced for figures, export and integration. Every protein of the normalised
+   matrix is tested, also the few that RUV-III-C cannot correct: those are named with the result and have no
+   corrected intensity. The test is refused, with the reason, when the samples left cannot carry the model. The number of factors k is the
+   automatic sweep's estimate, reduced to what the samples and complete proteins can carry, or the value
+   given; its source is recorded with the result. The design is available to the normalisation step
+   (`ruv_design = "groups_all_features"`) and is not selected by default or from the application yet: every
+   result is unchanged until it is chosen. Today's design (the corrected matrix tested) stays as it is.
+ * Lipidomics and metabolomics RUV: a second design is available to `runLipidsDA()` and `runMetabolitesDA()`
+   through the new argument `ruv_factors` (the kernel only; no screen offers it yet and no default changes).
+   The RUV-III factors are computed per assay from the features observed in every sample, with the groups as
+   replicate sets and either all those features or a supplied list (internal standards) as controls, and the
+   differential test reads the uncorrected values with the factors in the limma model instead of testing the
+   corrected matrix. Supplied controls are not tested; a feature with too few values to estimate the
+   factors' coefficients is not tested and is named in the result; a feature with no value in one whole group
+   is tested between the groups where it is observed and listed as not observed in that group. The number of
+   factors has no default: it is given, or (with supplied controls only) taken from the automatic sweep and
+   limited by the sample-size limit, and is recorded with its source. An assay whose factors cannot be
+   computed is analysed without RUV, with a warning; a model left without a residual degree of freedom, or the
+   corrected object given together with the factors, stops. The corrected matrix of this design
+   (for figures, export and integration) keeps each feature's mean abundance. Without `ruv_factors` every
+   result is as before: `ruvIII_C_Varying()` for lipid and metabolite data is not changed and still shifts
+   each feature by a constant.
 
 ### Other changes
 

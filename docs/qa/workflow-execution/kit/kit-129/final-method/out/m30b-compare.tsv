@@ -1,0 +1,69 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S1/C0/arm26/classic$key	character	786			0	agree	
+S1/C0/arm26/classic$estimate	double	786	0	0	0	agree	
+S1/C0/arm26/classic$p	double	786	0	0	0	agree	
+S1/C0/arm26/classic$q	double	786	0	0	0	agree	
+S1/C0/arm32/k	integer	1			0	agree	
+S1/C0/arm32/classic$key	character	786			0	agree	
+S1/C0/arm32/classic$estimate	double	786	0	0	0	agree	
+S1/C0/arm32/classic$p	double	786	6.07330749536416e-13	3.95239396766556e-14	0	agree	
+S1/C0/arm32/classic$q	double	786	5.23084696577204e-13	6.58362253602718e-14	0	agree	
+S1/C6/arm26/classic$key	character	783			0	agree	
+S1/C6/arm26/classic$estimate	double	783	0	0	0	agree	
+S1/C6/arm26/classic$p	double	783	0	0	0	agree	
+S1/C6/arm26/classic$q	double	783	0	0	0	agree	
+S1/C6/arm32/k	integer	1			0	agree	
+S1/C6/arm32/classic$key	character	783			0	agree	
+S1/C6/arm32/classic$estimate	double	783	4.1119025423565e-11	4.83502127224256e-14	0	agree	
+S1/C6/arm32/classic$p	double	783	7.23320917893611e-13	2.17603712826531e-13	0	agree	
+S1/C6/arm32/classic$q	double	783	7.23247840872041e-13	2.00395255944841e-13	0	agree	
+S2/C0/arm32/k	integer	1			0	agree	
+S2/C0/arm32/dia$key	character	1000			0	agree	
+S2/C0/arm32/dia$estimate	double	1000	0	0	0	agree	
+S2/C0/arm32/dia$p	double	1000	1.18011769739979e-12	3.66373598126302e-14	0	agree	
+S2/C0/arm32/dia$q	double	1000	9.20672668933028e-13	4.03566069451244e-14	0	agree	
+S2/C6/arm32/k	integer	1			0	agree	
+S2/C6/arm32/dia$key	character	1000			0	agree	
+S2/C6/arm32/dia$estimate	double	1000	0	0	0	agree	
+S2/C6/arm32/dia$p	double	1000	1.12719038299619e-12	2.1094237467878e-14	0	agree	
+S2/C6/arm32/dia$q	double	1000	1.1271009116831e-12	4.79616346638068e-14	0	agree	
+S4/C0/arm32/lipid/pos/k	integer	1			0	agree	
+S4/C0/arm32/lipid/pos$key	character	145			0	agree	
+S4/C0/arm32/lipid/pos$estimate	double	145	0	0	0	agree	
+S4/C0/arm32/lipid/pos$p	double	145	1.00980329538245e-11	3.81694675866129e-13	0	agree	
+S4/C0/arm32/lipid/pos$q	double	145	7.84729313000574e-12	8.03579425223688e-13	0	agree	
+S4/C0/arm32/lipid/neg/k	integer	1			0	agree	
+S4/C0/arm32/lipid/neg$key	character	142			0	agree	
+S4/C0/arm32/lipid/neg$estimate	double	142	0	0	0	agree	
+S4/C0/arm32/lipid/neg$p	double	142	2.09827102307487e-10	8.27660162627808e-12	0	agree	
+S4/C0/arm32/lipid/neg$q	double	142	2.09827012242122e-10	2.73320255317344e-11	0	agree	
+S4/C0/arm32/metab/pos/k	integer	1			0	agree	
+S4/C0/arm32/metab/pos$key	character	145			0	agree	
+S4/C0/arm32/metab/pos$estimate	double	145	0	0	0	agree	
+S4/C0/arm32/metab/pos$p	double	145	1.00980329538245e-11	3.81694675866129e-13	0	agree	
+S4/C0/arm32/metab/pos$q	double	145	7.84729313000574e-12	8.03579425223688e-13	0	agree	
+S4/C0/arm32/metab/neg/k	integer	1			0	agree	
+S4/C0/arm32/metab/neg$key	character	142			0	agree	
+S4/C0/arm32/metab/neg$estimate	double	142	0	0	0	agree	
+S4/C0/arm32/metab/neg$p	double	142	2.09827102307487e-10	8.27660162627808e-12	0	agree	
+S4/C0/arm32/metab/neg$q	double	142	2.09827012242122e-10	2.73320255317344e-11	0	agree	
+S4/C6/arm32/lipid/pos/k	integer	1			0	agree	
+S4/C6/arm32/lipid/pos$key	character	145			0	agree	
+S4/C6/arm32/lipid/pos$estimate	double	145	1.45848288160831e-12	2.1316282072803e-14	0	agree	
+S4/C6/arm32/lipid/pos$p	double	145	6.33347616629083e-12	1.30728761149612e-13	0	agree	
+S4/C6/arm32/lipid/pos$q	double	145	6.33347673690824e-12	2.34645636254527e-13	0	agree	
+S4/C6/arm32/lipid/neg/k	integer	1			0	agree	
+S4/C6/arm32/lipid/neg$key	character	142			0	agree	
+S4/C6/arm32/lipid/neg$estimate	double	142	5.20332112141212e-12	1.97619698383278e-14	0	agree	
+S4/C6/arm32/lipid/neg$p	double	142	2.98897993681715e-13	2.73114864057789e-14	0	agree	
+S4/C6/arm32/lipid/neg$q	double	142	2.98782977790345e-13	2.08444372873373e-14	0	agree	
+S4/C6/arm32/metab/pos/k	integer	1			0	agree	
+S4/C6/arm32/metab/pos$key	character	145			0	agree	
+S4/C6/arm32/metab/pos$estimate	double	145	1.45848288160831e-12	2.1316282072803e-14	0	agree	
+S4/C6/arm32/metab/pos$p	double	145	6.33347616629083e-12	1.30728761149612e-13	0	agree	
+S4/C6/arm32/metab/pos$q	double	145	6.33347673690824e-12	2.34645636254527e-13	0	agree	
+S4/C6/arm32/metab/neg/k	integer	1			0	agree	
+S4/C6/arm32/metab/neg$key	character	142			0	agree	
+S4/C6/arm32/metab/neg$estimate	double	142	5.20332112141212e-12	1.97619698383278e-14	0	agree	
+S4/C6/arm32/metab/neg$p	double	142	2.98897993681715e-13	2.73114864057789e-14	0	agree	
+S4/C6/arm32/metab/neg$q	double	142	2.98782977790345e-13	2.08444372873373e-14	0	agree	

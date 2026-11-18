@@ -1,0 +1,36 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S1/C0/arm32/runpath_k	integer	1			0	agree	
+S1/C0/arm32/runpath$key	character	786			0	agree	
+S1/C0/arm32/runpath$estimate	double	786	0	0	0	agree	
+S1/C0/arm32/runpath$p	double	786	5.95259579359307e-13	3.8968828164343e-14	0	agree	
+S1/C0/arm32/runpath$q	double	786	5.1159253920092e-13	6.51145803942654e-14	0	agree	
+S1/C0/arm23/runpath_controls	integer	1			0	agree	
+S1/C0/arm23/runpath$key	character	786			0	agree	
+S1/C0/arm23/runpath$estimate	double	786	0	0	0	agree	
+S1/C0/arm23/runpath$p	double	786	3.10504534531153e-13	2.12052597703405e-14	0	agree	
+S1/C0/arm23/runpath$q	double	786	3.10613711668428e-13	3.30291349825984e-14	0	agree	
+S1/C6/arm32/runpath_k	integer	1			0	agree	
+S1/C6/arm32/runpath$key	character	783			0	agree	
+S1/C6/arm32/runpath$estimate	double	783	4.56867724442591e-12	3.42781358853017e-14	0	agree	
+S1/C6/arm32/runpath$p	double	783	4.78236513952903e-13	1.61204383175573e-13	0	agree	
+S1/C6/arm32/runpath$q	double	783	3.90937451873936e-13	1.18460796727504e-13	0	agree	
+S1/C6/arm33/runpath_k	integer	1			0	agree	
+S1/C6/arm33/runpath$key	character	783			0	agree	
+S1/C6/arm33/runpath$estimate	double	783	4.45376555880528e-11	2.42028619368284e-14	0	agree	
+S1/C6/arm33/runpath$p	double	783	4.2454048689135e-13	9.32587340685131e-14	0	agree	
+S1/C6/arm33/runpath$q	double	783	4.24496866001241e-13	1.21069820835373e-13	0	agree	
+S1/C6/arm23/runpath_controls	integer	1			0	agree	
+S1/C6/arm23/runpath$key	character	783			0	agree	
+S1/C6/arm23/runpath$estimate	double	783	3.10512488498589e-11	3.46528361561127e-14	0	agree	
+S1/C6/arm23/runpath$p	double	783	4.69864302997982e-13	1.96731519963578e-13	0	agree	
+S1/C6/arm23/runpath$q	double	783	4.69715991179244e-13	1.63757896132211e-13	0	agree	
+S2/C0/arm32/runpath_k	integer	1			0	agree	
+S2/C0/arm32/runpath$key	character	1000			0	agree	
+S2/C0/arm32/runpath$estimate	double	1000	0	0	0	agree	
+S2/C0/arm32/runpath$p	double	1000	1.8549283218298e-12	8.27116153345742e-14	0	agree	
+S2/C0/arm32/runpath$q	double	1000	1.85509099254985e-12	3.81916720471054e-14	0	agree	
+S2/C6/arm32/runpath_k	integer	1			0	agree	
+S2/C6/arm32/runpath$key	character	1000			0	agree	
+S2/C6/arm32/runpath$estimate	double	1000	0	0	0	agree	
+S2/C6/arm32/runpath$p	double	1000	3.71480825446728e-13	1.16573417585641e-14	0	agree	
+S2/C6/arm32/runpath$q	double	1000	2.8782035850154e-13	2.61457522299224e-14	0	agree	

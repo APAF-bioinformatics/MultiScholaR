@@ -25,6 +25,8 @@ protein_deAnalysisWrapperFunction <- function(
   args_group_pattern = NULL,
   args_row_id = NULL
 ) {
+  # KIT-126 audit F-02: this entry point tests the object's own table; a factors-in-the-model object is refused.
+  refuseProtRuvModelObject(theObject, "protein_deAnalysisWrapperFunction")
   # ... (rest of function remains same)
 
   contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)

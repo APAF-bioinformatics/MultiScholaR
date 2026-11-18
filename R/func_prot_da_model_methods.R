@@ -387,11 +387,42 @@ setMethod(
       elist <- elist[, samples_in_model]
       replicate <- resolveProtTechnicalReplicateBlock(theObject@design_matrix[samples_in_model, , drop = FALSE],
         theObject@group_id, theObject@technical_replicate_id)
+      refuseNoBiologicalReplication(replicate, theObject@design_matrix[samples_in_model, theObject@group_id]) # KIT-128 K128-1
       block <- if (isTRUE(replicate$technical)) replicate$block else NULL
+      # KIT-129 (audit F4): the fit needs a residual degree of freedom in the model that is fitted (the formula's
+      # terms and the RUV factors; the technical-replicate block is a correlation, not a column). The k limit of the
+      # RUV step knows the groups only, so a covariate of the formula can leave none.
+      residual_df <- nrow(design_for_dpcde) - qr(design_for_dpcde)$rank
+      if (residual_df < 1L) {
+        cli::cli_abort(c(paste0("the DA model leaves no residual degree of freedom with k = {length(w_terms)} RUV factor{?s}: ",
+          "{nrow(design_for_dpcde)} samples, {ncol(design_for_dpcde)} model columns ",
+          "({ncol(design_for_dpcde) - length(w_terms)} from the formula {.val {formula_string}})"),
+          i = "use fewer RUV factors or fewer terms in the formula"),
+          class = "omics_ruv_no_residual_df", call = NULL)
+      }
+      # Decision M28: on a design with declared technical replicates the biological units carry the test; a state of the
+      # declared RUV rules (KIT-129 W3) needs a residual degree of freedom between the units. Today's sweep is not checked.
+      unit_df <- ruvUnitResidualDf(design_for_dpcde, block)
+      if (length(w_terms) && !is.null(theObject@args$ruvCovariates$ruv_k_rule) && !is.na(unit_df) && unit_df < 1L) {
+        cli::cli_abort(c(paste0("the DA model leaves no residual degree of freedom between the biological units with k = ",
+          "{length(w_terms)} RUV factor{?s}: the design has technical replicates, so the {length(unique(block))} units, not the ",
+          "{nrow(design_for_dpcde)} injections, carry the test, and at most {length(w_terms) + unit_df - 1L} factor{?s} fit beside ",
+          "the formula {.val {formula_string}}"),
+          i = "use fewer RUV factors or fewer terms in the formula"),
+          class = "omics_ruv_no_residual_df", call = NULL)
+      }
       dpcDEFn <- limpa::dpcDE
       dpc_fit <- dpcDEFn(elist, design_for_dpcde, plot = FALSE, block = block)
-      contrasts_results <- convertDpcDAToStandardFormat(dpc_fit = dpc_fit, contrast_strings = contrast_strings_to_use,
-        design_matrix = design_for_dpcde, eBayes_trend = as.logical(eBayes_trend), eBayes_robust = as.logical(eBayes_robust))
+      # Decision M29: a state of the declared RUV rules with factors in the model forms each comparison's standard
+      # error exactly (dpcDE fits with per-observation weights); today's covariates and no RUV are as before.
+      contrasts_results <- if (length(w_terms) && !is.null(theObject@args$ruvCovariates$ruv_k_rule)) {
+        moderateDpcDaContrastFit(ruvExactContrastsFit(dpc_fit, dpcDaContrastMatrix(contrast_strings_to_use, design_for_dpcde),
+          design_for_dpcde, \(design) dpcDEFn(elist, design, plot = FALSE, block = block)), contrast_strings_to_use,
+          as.logical(eBayes_trend), as.logical(eBayes_robust))
+      } else {
+        convertDpcDAToStandardFormat(dpc_fit = dpc_fit, contrast_strings = contrast_strings_to_use,
+          design_matrix = design_for_dpcde, eBayes_trend = as.logical(eBayes_trend), eBayes_robust = as.logical(eBayes_robust))
+      }
       # The converter names the protein and the comparison as columns; the shared path below adds both from the
       # row names, as it does for the limma tables.
       contrasts_results$results <- lapply(contrasts_results$results, function(table) {
@@ -405,16 +436,42 @@ setMethod(
         block_reason = replicate$reason, uses_duplicate_correlation = isTRUE(replicate$technical),
         treat_applied = FALSE, treat_lfc_cutoff_requested = as.double(treat_lfc_cutoff))
     } else {
-    contrasts_results <- runTestsContrasts(protein_quant_matrix,
-      contrast_strings = contrast_strings_to_use,
-      design_matrix = theObject@design_matrix,
-      group_id = theObject@group_id, technical_replicate_id = theObject@technical_replicate_id, # KIT-035
-      formula_string = formula_string,
-      weights = NA,
-      treat_lfc_cutoff = as.double(treat_lfc_cutoff),
-      eBayes_trend = as.logical(eBayes_trend),
-      eBayes_robust = as.logical(eBayes_robust)
-    )
+    # KIT-126: the classic route's factors-in-the-model design. An object that declares it (`attachProtRuvModelFactors`)
+    # is tested on its stored normalised matrix (`args$ruv_uncorrected_quant`), every protein of it, with the design's
+    # W columns in the model; the object's own table (the corrected matrix) is not tested and keeps its own cleanup:
+    # `no_corrected_intensity` names the proteins tested without a corrected value. Every other object: as before.
+    ruv_model <- resolveProtRuvModelInput(theObject, formula_string)
+    if (!is.null(ruv_model)) {
+      message("   differentialAbundanceAnalysisHelper: RUV factors in the model; testing the normalised matrix (KIT-126)")
+      # KIT-129 integration item 2: a new design without factors tests its own table (the normalised matrix).
+      protein_quant_matrix <- ruv_model$matrix %||% protein_quant_matrix
+      formula_string <- ruv_model$formula_used
+      factors <- length(ruv_model$w_terms) > 0L
+      da_model <- utils::modifyList(da_model, list(formula_used = ruv_model$formula_used, w_terms = ruv_model$w_terms,
+        k = length(ruv_model$w_terms), ruv_mode = if (factors) "covariates" else "none", ruv_k_rule = ruv_model$declaration$ruv_k_rule,
+        ruv_controls = ruv_model$declaration$ruv_controls, tested_matrix = if (factors) "uncorrected" else "normalised",
+        tested_proteins = nrow(protein_quant_matrix), no_corrected_intensity = ruv_model$no_corrected_intensity,
+        ruv_design = ruv_model$declaration$ruv_design, exact_standard_errors = !isFALSE(ruv_model$exact)))
+    }
+    # Decision M29: the factors-in-the-model design forms each comparison's standard error exactly per protein; the
+    # legacy design keeps runTestsContrasts unchanged.
+    contrasts_results <- if (!is.null(ruv_model)) {
+      runProtRuvModelContrasts(protein_quant_matrix, contrast_strings_to_use, theObject@design_matrix, formula_string,
+        treat_lfc_cutoff = as.double(treat_lfc_cutoff), eBayes_trend = as.logical(eBayes_trend),
+        eBayes_robust = as.logical(eBayes_robust), group_id = theObject@group_id,
+        technical_replicate_id = theObject@technical_replicate_id, exact = !isFALSE(ruv_model$exact))
+    } else {
+      runTestsContrasts(protein_quant_matrix,
+        contrast_strings = contrast_strings_to_use,
+        design_matrix = theObject@design_matrix,
+        group_id = theObject@group_id, technical_replicate_id = theObject@technical_replicate_id, # KIT-035
+        formula_string = formula_string,
+        weights = NA,
+        treat_lfc_cutoff = as.double(treat_lfc_cutoff),
+        eBayes_trend = as.logical(eBayes_trend),
+        eBayes_robust = as.logical(eBayes_robust)
+      )
+    }
     }
 
     message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!")

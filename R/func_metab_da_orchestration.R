@@ -138,6 +138,15 @@ countMetabDaSignificant <- function(df) {
 #' @param treat_lfc_cutoff Log fold-change cutoff for TREAT (default 0, standard analysis).
 #' @param eBayes_trend Logical, use trend in eBayes (default TRUE).
 #' @param eBayes_robust Logical, use robust eBayes (default TRUE).
+#' @param ruv_factors NULL (the default): the test reads the object's values with `formula_string`, as before.
+#'   Or the per-assay RUV-III factors of the factors-in-the-model design (KIT-127): `theObject` is then the
+#'   uncorrected object (the corrected object is refused), and per assay the factors W are added to the design and
+#'   to the model and the supplied controls are not tested. A feature is left out only when its observed samples
+#'   cannot estimate a W coefficient. A feature with no value in one whole group is tested in the comparisons
+#'   between the groups where it is observed (limma's handling of missing values) and listed as not observed in
+#'   that group. A model that leaves no residual degree of freedom stops. Fold changes and p-values come from the
+#'   uncorrected values with W in the model; the RUV-corrected matrix is for display and export and need not
+#'   reproduce them exactly.
 #'
 #' @return A list containing:
 #'   - theObject: The input S4 object (unchanged)
@@ -146,6 +155,12 @@ countMetabDaSignificant <- function(df) {
 #'   - per_assay_results: List of per-assay result tables
 #'   - significant_counts: Summary of significant metabolites per assay
 #'   - qvalue_warnings: Any qvalue computation warnings
+#'   - failed_assays: Present only when an assay's analysis stopped: the message per failed assay. The
+#'     other assays are kept and a warning (class `omics_da_assay_failed`) names the failed ones; when every
+#'     assay failed the function stops (class `omics_da_all_assays_failed`).
+#'   - ruv_features_not_tested, ruv_features_not_observed: with `ruv_factors` only. Per assay, the ids not tested
+#'     (`supplied_controls`, `not_estimable`), and a table (`feature`, `group`) of the tested features with no
+#'     value in one whole group
 #'
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr mutate bind_rows select left_join
@@ -159,7 +174,8 @@ runMetabolitesDA <- function(
   da_q_val_thresh = 0.05,
   treat_lfc_cutoff = 0,
   eBayes_trend = TRUE,
-  eBayes_robust = TRUE
+  eBayes_robust = TRUE,
+  ruv_factors = NULL
 ) {
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
@@ -221,10 +237,20 @@ runMetabolitesDA <- function(
     ))
     logger::log_info(sprintf("   Contrasts: %s", paste(contrast_strings, collapse = ", ")))
 
+    # KIT-127: an object the factors kernel has corrected is not tested with the factors as well.
+    if (!is.null(ruv_factors)) refuseOmicsRuvCorrectedObject(theObject)
+    ruv_not_tested <- list()
+    ruv_not_observed <- list()
+
     # Initialize results storage
     per_assay_results <- list()
     contrasts_results <- list()
     all_qvalue_warnings <- list()
+    # KIT-128: the assays whose kernel stopped, with the message.
+    failed_assays <- list()
+    # KIT-128 K128-1: a design without biological replication is refused before any assay.
+    refuseNoBiologicalReplication(resolveProtTechnicalReplicateBlock(as.data.frame(design_matrix), group_col,
+        theObject@technical_replicate_id), design_matrix[[group_col]])
 
     # Process each assay
     for (assay_name in assay_names) {
@@ -237,23 +263,43 @@ runMetabolitesDA <- function(
         if (is.null(assay_input)) next
         expr_matrix <- assay_input$expr_matrix
         annotation_info <- assay_input$annotation_info
+        # KIT-127: with RUV factors the test reads these (uncorrected) values with W in the model.
+        da_design <- design_matrix
+        da_formula <- formula_string
+        if (!is.null(ruv_factors)) {
+            da_input <- applyOmicsRuvFactorsToDaInput(expr_matrix, design_matrix, formula_string, sample_id_col,
+                ruv_factors[[assay_name]], assay_name, group_col, theObject@technical_replicate_id)
+            ruv_not_tested[[assay_name]] <- da_input$not_tested
+            ruv_not_observed[[assay_name]] <- da_input$not_observed
+            expr_matrix <- da_input$expr_matrix
+            da_design <- da_input$design_matrix
+            da_formula <- da_input$formula_string
+        }
 
         # Run limma DA
         tryCatch(
             {
-                limma_results <- runTestsContrastsMetabDA(
-                    data = expr_matrix,
-                    contrast_strings = contrast_strings,
-                    design_matrix = design_matrix,
-                    formula_string = formula_string,
-                    sample_id_col = sample_id_col,
-                    treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA,
-                    eBayes_trend = eBayes_trend,
-                    eBayes_robust = eBayes_robust
-                )
-
-                # Store fit object for Glimma
-                contrasts_results[[assay_name]] <- limma_results
+                # KIT-129 B1: with RUV factors, a technical-replicate correlation that cannot be estimated names k.
+                # Decision M29: an assay with W in the model forms each comparison's standard error exactly.
+                limma_results <- withOmicsRuvKOnBlockFailure(if (!is.null(ruv_factors[[assay_name]]$W)) {
+                    runOmicsRuvFactorsDaKernel(fitMetabDaAssayModel, applyMetabDaContrasts, expr_matrix, contrast_strings, da_design, da_formula,
+                        sample_id_col, if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA, eBayes_trend, eBayes_robust,
+                        group_col, theObject@technical_replicate_id)
+                } else {
+                    runTestsContrastsMetabDA(
+                        data = expr_matrix,
+                        contrast_strings = contrast_strings,
+                        design_matrix = da_design,
+                        formula_string = da_formula,
+                        sample_id_col = sample_id_col,
+                        treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA,
+                        eBayes_trend = eBayes_trend,
+                        eBayes_robust = eBayes_robust,
+                        # KIT-128: the declared technical replicates, for the block.
+                        group_id = group_col,
+                        technical_replicate_id = theObject@technical_replicate_id
+                    )
+                }, if (!is.null(ruv_factors)) ruv_factors[[assay_name]])
 
                 # Collect qvalue warnings
                 if (length(limma_results$qvalue_warnings) > 0) {
@@ -278,6 +324,8 @@ runMetabolitesDA <- function(
                 # Combine all contrasts for this assay
                 assay_combined <- dplyr::bind_rows(assay_results_list)
                 per_assay_results[[assay_name]] <- assay_combined
+                # Store fit object for Glimma (KIT-128 K128-5: only once the assay's tables are formatted).
+                contrasts_results[[assay_name]] <- limma_results
 
                 logger::log_info(sprintf(
                     "   Completed assay %s: %d total results",
@@ -288,8 +336,23 @@ runMetabolitesDA <- function(
                 cat(sprintf("[ERROR] Processing assay %s: %s\n", assay_name, e$message))
                 logger::log_error(sprintf("   ERROR processing assay %s: %s", assay_name, e$message))
                 per_assay_results[[assay_name]] <<- NULL
+                # KIT-128: the root cause; an error of the formatting step arrives wrapped by purrr (its message is the index).
+                cause <- e
+                while (inherits(cause$parent, "condition")) cause <- cause$parent
+                failed_assays[[assay_name]] <<- conditionMessage(cause)
             }
         )
+    }
+
+    # KIT-128 (parked row 24 b): a failed assay is named and warned about and the others are kept; the run stops only
+    # when every assay failed (before: printed, logged and dropped, down to an empty table).
+    if (length(failed_assays) > 0) {
+        failures <- stats::setNames(sprintf("%s: %s", names(failed_assays), unlist(failed_assays)), rep("x", length(failed_assays)))
+        if (length(per_assay_results) == 0) {
+            rlang::abort(c("differential abundance failed for every assay", failures), class = "omics_da_all_assays_failed")
+        }
+        rlang::warn(c("differential abundance failed for some assays; the other assays are kept", failures),
+            class = "omics_da_assay_failed")
     }
 
     # Combine all assay results
@@ -301,7 +364,7 @@ runMetabolitesDA <- function(
 
     logger::log_info("=== Completed runMetabolitesDA ===")
 
-    return(list(
+    result <- list(
         theObject = theObject,
         contrasts_results = contrasts_results,
         da_metabolites_long = da_metabolites_long,
@@ -310,5 +373,12 @@ runMetabolitesDA <- function(
         qvalue_warnings = all_qvalue_warnings,
         da_q_val_thresh = da_q_val_thresh,
         treat_lfc_cutoff = treat_lfc_cutoff
-    ))
+    )
+    if (length(failed_assays) > 0) result$failed_assays <- failed_assays
+    # KIT-127: with RUV factors, what was not tested and what was not observed in a whole group, by assay.
+    if (!is.null(ruv_factors)) {
+        result$ruv_features_not_tested <- ruv_not_tested
+        result$ruv_features_not_observed <- ruv_not_observed
+    }
+    return(result)
 }

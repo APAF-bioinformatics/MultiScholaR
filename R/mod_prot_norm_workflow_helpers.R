@@ -76,8 +76,12 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
   if (!identical(tryCatch(manager$workflow_type, error = function(e) NULL), "DIA_LIMPA")) return(invisible(NULL))
   tryCatch({
     if (!isTRUE(normData$correlation_filtering_complete)) stop("apply or skip the correlation filter first")
-    mode <- input$ruv_mode %||% "covariates"
+    # KIT-129 fourth pass item 2: with the gate on, the RUV design section's choice gives the mode and the rules.
+    choice <- omicNormRuvDesignChoice(input, omicNormRuvRunTable("proteomics", "DIA_LIMPA"))
+    mode <- protNormDiaRuvDesignMode(choice) %||% input$ruv_mode %||% "covariates"
     if (identical(mode, "skip")) {
+      # KIT-129 fourth pass item 3: under the gate the design none is what was done.
+      omicNormSetRuvDesignResult(normData, if (identical(choice$ruv_design, "none")) omicNormRuvDesignResult("none", NA, NA, NA, list()))
       messageFn("*** RUV covariates skipped by the user (DIA with limpa) ***")
       normData$ruv_covariates_complete <- TRUE
       text <- "RUV-III covariates skipped by the user; the DA model carries no W terms."
@@ -86,7 +90,8 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
       return(invisible(NULL))
     }
     if (!mode %in% c("covariates", "correction")) stop("the RUV mode must be covariates, correction or skip")
-    settings <- list(ruv_mode = mode, color_variable = input$color_variable, shape_variable = input$shape_variable)
+    settings <- c(list(ruv_mode = mode, color_variable = input$color_variable, shape_variable = input$shape_variable),
+      protNormDiaRuvDesignRules(choice))
     finish <- function(accepted) finishProtNormRuvCovariates(accepted, mode, output, workflowData, normData, renderTextFn,
       showNotificationFn, messageFn)
     # KIT-111 D3: on a managed session the declaration runs on the worker and the delivery finishes the tab.
@@ -98,6 +103,53 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
       generateRuvCorrectedQcFn, getRuvGroupingVariableFn)
     finish(accepted)
   }, error = function(e) reportProtNormRuvCovariatesError(e, output, renderTextFn, showNotificationFn, messageFn))
+}
+
+#' The DIA with limpa RUV mode of the RUV design section's choice (KIT-129 fourth pass item 2): the legacy designs'
+#' covariates and correction modes, `skip` for none, the covariates mode for the new designs; NULL without a choice.
+#' @param choice `omicNormRuvDesignChoice`'s value, or NULL.
+#' @noRd
+protNormDiaRuvDesignMode <- function(choice) {
+  if (is.null(choice)) return(NULL)
+  switch(choice$ruv_design, legacy_correction = "correction", none = "skip", "covariates")
+}
+
+#' The DIA with limpa declared rules of the RUV design section's choice (KIT-129 fourth pass item 2), by the names
+#' `diaRuvCovariatesRequestParameters` reads: the design's control rule (all proteins for the recommended design and the
+#' technical-replicate design, which the route computes on the declared units either way), the k rule, the typed k, the
+#' supplied list and the seed. An empty list without a new design: today's request.
+#' @noRd
+protNormDiaRuvDesignRules <- function(choice) {
+  if (is.null(choice) || isTRUE(choice$legacy) || identical(choice$ruv_design, "none")) return(list())
+  rule <- c(groups_all_features = "all_features", technical_replicates = "all_features", supplied_controls = "supplied_list",
+    first_pass_nulls = "first_pass_drop_top_25")[[choice$ruv_design]]
+  list(ruv_control_rule = rule, ruv_k_rule = choice$ruv_k_rule, ruv_k = choice$ruv_k, ruv_control_ids = choice$ruv_control_ids,
+    ruv_k_seed = choice$ruv_k_seed, ruv_design = choice$ruv_design)
+}
+
+#' The classic normalisation's settings under the RUV design section's choice (KIT-129 fourth pass item 2): the new
+#' design, its k rule and seed and its supplied list (`diaNormalizationRequest` sends them), the step's mode from the rule (the typed k under
+#' `manual`, the estimated number or the separation rule under `automatic`), and the design `none` with the skip mode.
+#' A legacy design, or no choice, keeps today's settings.
+#' @param settings `resolveProtNormReferenceSettings`' list.
+#' @param choice `omicNormRuvDesignChoice`'s value, or NULL.
+#' @return `settings`.
+#' @noRd
+applyProtNormRuvDesign <- function(settings, choice) {
+  if (is.null(choice) || isTRUE(choice$legacy)) return(settings)
+  if (identical(choice$ruv_design, "none")) {
+    settings$ruv_mode <- "skip"
+    settings$ruv_design <- "none"
+    return(settings)
+  }
+  settings$ruv_mode <- if (identical(choice$ruv_k_rule, "user")) "manual" else "automatic"
+  if (!is.null(choice$ruv_k)) settings$ruv_k <- choice$ruv_k
+  settings$ruv_design <- choice$ruv_design
+  settings$ruv_k_rule <- choice$ruv_k_rule
+  settings$ruv_k_seed <- choice$ruv_k_seed
+  # KIT-129 fifth pass item 3: the supplied list (`diaNormalizationRequest` sends it under that design only).
+  settings$ruv_control_ids <- choice$ruv_control_ids
+  settings
 }
 
 #' The RUV covariates' completion on the tab (KIT-041/053/056), after the runner or the managed delivery: the RUV audit
@@ -246,7 +298,7 @@ dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normDa
     request <- withDIAStateScope(manager, function() {
       assertDIAExportReady(manager, allow_action = "ruv-covariates")
       list(source = diaRuvCovariatesSource(manager, normData),
-        parameters = resolveDIARuvCovariatesParameters(workflowData$config_list, group, settings$ruv_mode %||% "covariates"))
+        parameters = diaRuvCovariatesRequestParameters(workflowData$config_list, group, settings))
     })
     list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
       function(result) held$result <- result))
@@ -441,6 +493,9 @@ runProtNormNormalizationWorkflow <- function(
       return(dispatchProtNormPassThrough(runner, settings, workflowData, normData, pass_through,
         function(e) handleErrorFn(error = e)))
     }
+    # KIT-129 fourth pass item 2: with the gate on, the RUV design section's choice (the classic routes' table).
+    settings <- applyProtNormRuvDesign(settings, omicNormRuvDesignChoice(input, omicNormRuvRunTable("proteomics",
+      workflowData$state_manager$workflow_type)))
     recordProtNormMethod(workflowData, settings$norm_method)
     finish <- function(completed) finishProtNormNormalization(completed, settings, workflowData, normData,
       buildCompletionNotificationFn, showNotificationFn, messageFn)

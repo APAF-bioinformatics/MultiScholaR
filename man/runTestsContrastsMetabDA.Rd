@@ -12,7 +12,9 @@ runTestsContrastsMetabDA(
   sample_id_col = "Run",
   treat_lfc_cutoff = NA,
   eBayes_trend = TRUE,
-  eBayes_robust = TRUE
+  eBayes_robust = TRUE,
+  group_id = NULL,
+  technical_replicate_id = NULL
 )
 }
 \arguments{
@@ -35,6 +37,11 @@ Set to NA for standard analysis.}
 \item{eBayes_trend}{Logical, whether to use trend in eBayes.}
 
 \item{eBayes_robust}{Logical, whether to use robust eBayes.}
+
+\item{group_id, technical_replicate_id}{Optional names of the design's group column and of the column that names
+the biological unit of each run. When given and the design has technical replicates (several runs of one unit,
+not spanned by the group), the model is fitted with the unit as block (\code{limma::duplicateCorrelation}, then
+\code{limma::lmFit(block, correlation)}). \code{NULL} (the default) fits every run as an independent sample.}
 }
 \value{
 A list containing:
