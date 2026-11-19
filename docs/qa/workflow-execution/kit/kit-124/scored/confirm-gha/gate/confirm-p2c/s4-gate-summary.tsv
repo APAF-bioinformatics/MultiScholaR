@@ -1,0 +1,163 @@
+simulator	reading	cell	column	verdict	max_rel	rule_bearing
+S4	gate	C0	simulator	agree		FALSE
+S4	gate	C0	cell	agree		FALSE
+S4	gate	C0	cell_class	agree		FALSE
+S4	gate	C0	run	agree		FALSE
+S4	gate	C0	arm	agree		FALSE
+S4	gate	C0	subset	agree		FALSE
+S4	gate	C0	status	agree		TRUE
+S4	gate	C0	seed	agree		FALSE
+S4	gate	C0	k	agree		TRUE
+S4	gate	C0	n_features	agree		TRUE
+S4	gate	C0	n_true	agree		TRUE
+S4	gate	C0	n_calls	agree		TRUE
+S4	gate	C0	null_p05	agree	0	TRUE
+S4	gate	C0	null_p01	agree	0	TRUE
+S4	gate	C0	fdp	agree	0	TRUE
+S4	gate	C0	power	agree	0	TRUE
+S4	gate	C0	bias	agree	0	FALSE
+S4	gate	C0	rmse	agree	0	FALSE
+S4	gate	C1	simulator	agree		FALSE
+S4	gate	C1	cell	agree		FALSE
+S4	gate	C1	cell_class	agree		FALSE
+S4	gate	C1	run	agree		FALSE
+S4	gate	C1	arm	agree		FALSE
+S4	gate	C1	subset	agree		FALSE
+S4	gate	C1	status	agree		TRUE
+S4	gate	C1	seed	agree		FALSE
+S4	gate	C1	k	agree		TRUE
+S4	gate	C1	n_features	agree		TRUE
+S4	gate	C1	n_true	agree		TRUE
+S4	gate	C1	n_calls	agree		TRUE
+S4	gate	C1	null_p05	agree	0	TRUE
+S4	gate	C1	null_p01	agree	0	TRUE
+S4	gate	C1	fdp	agree	0	TRUE
+S4	gate	C1	power	agree	0	TRUE
+S4	gate	C1	bias	agree	0	FALSE
+S4	gate	C1	rmse	agree	0	FALSE
+S4	gate	C2	simulator	agree		FALSE
+S4	gate	C2	cell	agree		FALSE
+S4	gate	C2	cell_class	agree		FALSE
+S4	gate	C2	run	agree		FALSE
+S4	gate	C2	arm	agree		FALSE
+S4	gate	C2	subset	agree		FALSE
+S4	gate	C2	status	agree		TRUE
+S4	gate	C2	seed	agree		FALSE
+S4	gate	C2	k	agree		TRUE
+S4	gate	C2	n_features	agree		TRUE
+S4	gate	C2	n_true	agree		TRUE
+S4	gate	C2	n_calls	agree		TRUE
+S4	gate	C2	null_p05	agree	0	TRUE
+S4	gate	C2	null_p01	agree	0	TRUE
+S4	gate	C2	fdp	agree	0	TRUE
+S4	gate	C2	power	agree	0	TRUE
+S4	gate	C2	bias	agree	0	FALSE
+S4	gate	C2	rmse	agree	0	FALSE
+S4	gate	C3	simulator	agree		FALSE
+S4	gate	C3	cell	agree		FALSE
+S4	gate	C3	cell_class	agree		FALSE
+S4	gate	C3	run	agree		FALSE
+S4	gate	C3	arm	agree		FALSE
+S4	gate	C3	subset	agree		FALSE
+S4	gate	C3	status	agree		TRUE
+S4	gate	C3	seed	agree		FALSE
+S4	gate	C3	k	agree		TRUE
+S4	gate	C3	n_features	agree		TRUE
+S4	gate	C3	n_true	agree		TRUE
+S4	gate	C3	n_calls	agree		TRUE
+S4	gate	C3	null_p05	agree	0	TRUE
+S4	gate	C3	null_p01	agree	0	TRUE
+S4	gate	C3	fdp	agree	0	TRUE
+S4	gate	C3	power	agree	0	TRUE
+S4	gate	C3	bias	agree	0	FALSE
+S4	gate	C3	rmse	agree	0	FALSE
+S4	gate	C4	simulator	agree		FALSE
+S4	gate	C4	cell	agree		FALSE
+S4	gate	C4	cell_class	agree		FALSE
+S4	gate	C4	run	agree		FALSE
+S4	gate	C4	arm	agree		FALSE
+S4	gate	C4	subset	agree		FALSE
+S4	gate	C4	status	agree		TRUE
+S4	gate	C4	seed	agree		FALSE
+S4	gate	C4	k	agree		TRUE
+S4	gate	C4	n_features	agree		TRUE
+S4	gate	C4	n_true	agree		TRUE
+S4	gate	C4	n_calls	agree		TRUE
+S4	gate	C4	null_p05	agree	0	TRUE
+S4	gate	C4	null_p01	agree	0	TRUE
+S4	gate	C4	fdp	agree	0	TRUE
+S4	gate	C4	power	agree	0	TRUE
+S4	gate	C4	bias	agree	0	FALSE
+S4	gate	C4	rmse	agree	0	FALSE
+S4	gate	C5	simulator	agree		FALSE
+S4	gate	C5	cell	agree		FALSE
+S4	gate	C5	cell_class	agree		FALSE
+S4	gate	C5	run	agree		FALSE
+S4	gate	C5	arm	agree		FALSE
+S4	gate	C5	subset	agree		FALSE
+S4	gate	C5	status	agree		TRUE
+S4	gate	C5	seed	agree		FALSE
+S4	gate	C5	k	agree		TRUE
+S4	gate	C5	n_features	agree		TRUE
+S4	gate	C5	n_true	agree		TRUE
+S4	gate	C5	n_calls	agree		TRUE
+S4	gate	C5	null_p05	agree	0	TRUE
+S4	gate	C5	null_p01	agree	0	TRUE
+S4	gate	C5	fdp	agree	0	TRUE
+S4	gate	C5	power	agree	0	TRUE
+S4	gate	C5	bias	agree	0	FALSE
+S4	gate	C5	rmse	agree	0	FALSE
+S4	gate	C6	simulator	agree		FALSE
+S4	gate	C6	cell	agree		FALSE
+S4	gate	C6	cell_class	agree		FALSE
+S4	gate	C6	run	agree		FALSE
+S4	gate	C6	arm	agree		FALSE
+S4	gate	C6	subset	agree		FALSE
+S4	gate	C6	status	agree		TRUE
+S4	gate	C6	seed	agree		FALSE
+S4	gate	C6	k	agree		TRUE
+S4	gate	C6	n_features	agree		TRUE
+S4	gate	C6	n_true	agree		TRUE
+S4	gate	C6	n_calls	agree		TRUE
+S4	gate	C6	null_p05	agree	0	TRUE
+S4	gate	C6	null_p01	agree	0	TRUE
+S4	gate	C6	fdp	agree	0	TRUE
+S4	gate	C6	power	agree	0	TRUE
+S4	gate	C6	bias	agree	0	FALSE
+S4	gate	C6	rmse	agree	0	FALSE
+S4	gate	C7	simulator	agree		FALSE
+S4	gate	C7	cell	agree		FALSE
+S4	gate	C7	cell_class	agree		FALSE
+S4	gate	C7	run	agree		FALSE
+S4	gate	C7	arm	agree		FALSE
+S4	gate	C7	subset	agree		FALSE
+S4	gate	C7	status	agree		TRUE
+S4	gate	C7	seed	agree		FALSE
+S4	gate	C7	k	agree		TRUE
+S4	gate	C7	n_features	agree		TRUE
+S4	gate	C7	n_true	agree		TRUE
+S4	gate	C7	n_calls	agree		TRUE
+S4	gate	C7	null_p05	agree	0	TRUE
+S4	gate	C7	null_p01	agree	0	TRUE
+S4	gate	C7	fdp	agree	0	TRUE
+S4	gate	C7	power	agree	0	TRUE
+S4	gate	C7	bias	agree	0	FALSE
+S4	gate	C7	rmse	agree	0	FALSE
+S4	gate	C8	simulator	agree		FALSE
+S4	gate	C8	cell	agree		FALSE
+S4	gate	C8	cell_class	agree		FALSE
+S4	gate	C8	run	agree		FALSE
+S4	gate	C8	arm	agree		FALSE
+S4	gate	C8	subset	agree		FALSE
+S4	gate	C8	status	agree		TRUE
+S4	gate	C8	seed	agree		FALSE
+S4	gate	C8	k	agree		TRUE
+S4	gate	C8	n_features	agree		TRUE
+S4	gate	C8	n_true	agree		TRUE
+S4	gate	C8	n_calls	agree		TRUE
+S4	gate	C8	null_p05	agree	0	TRUE
+S4	gate	C8	null_p01	agree	0	TRUE
+S4	gate	C8	fdp	agree	0	TRUE
+S4	gate	C8	power	agree	0	TRUE
+S4	gate	C8	bias	agree	0	FALSE
+S4	gate	C8	rmse	agree	0	FALSE

@@ -242,3 +242,7 @@ cp .github/k124-sim/params-confirm-part2-extra.json .github/k124-sim/params.json
 ```
 
 `params.json` holds the last lifecycle's parameters (`confirm-lc3`); a push that leaves it alone starts nothing.
+
+## 11. Part 2 and the scoring (2026-11-19; results in `confirm-round-results.md`, tables in `confirm-gha/`)
+
+Part 2 core run 44443281402 (`confirm-p2c`, 72 jobs) and extra-hard run 44443334468 (`confirm-p2x`, 4 jobs) on the bound commit, with L1 and L2, launched as listed in section 8 (decision M38). Two jobs, S3 C1 and S3 C7, reached the 300-minute limit and uploaded nothing; per section 8 they are reported and not relaunched (a relaunch in run ranges is a settings change: the user's decision). Scored once by the scoring workflow (run 44480610832) with `aggregate.R` 089d852c (named in `score.json` before any result was read), one call per simulator. Gate: every gated cell agrees on every rule-bearing value; the S1 legacy comparison differs in C6 and C8 (machine-dependent, as in 7b). Nothing was re-set or adjusted after reading.

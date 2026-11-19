@@ -1,0 +1,159 @@
+KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
+script: /home/runner/work/_temp/aggregate.R
+script sha256: 089d852c1f3b08d70096b1218ef26550f393cffd213e4bdd9980453075fd2a66
+commit: NA
+script differs from commit: TRUE
+command: Rscript /home/runner/work/_temp/aggregate.R /home/runner/work/_temp/out/confirm-gha/s1 S1=/home/runner/work/_temp/raw/s1
+working directory: /home/runner/work/MultiScholaR/MultiScholaR
+R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
+packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
+library paths: /opt/R/4.6.1/lib/R/library
+run at: 2026-11-19 07:35:13 UTC
+inputs (sha256, bytes, path):
+  15e67d3278a4398886c3a45583e8d7070f8ae5853ff58dde6f209a876c925dc7 24805807 /home/runner/work/_temp/raw/s1/s1-runs.tsv
+  e4b1689f4f6b5b5047aba5a7d1c0e45a1d9bb8efbace9f5f39a28561ca43b050 58860 /home/runner/work/_temp/raw/s1/s1-runs.meta.txt
+simulator S1 meta (/home/runner/work/_temp/raw/s1):
+  == s1_classic.R started 2026-11-19 02:26:30 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C0
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 1 onward
+  cells: C0; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:13:59 UTC ==
+  == s1_classic.R started 2026-11-19 02:26:16 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C0 501
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 501 onward
+  cells: C0; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:13:13 UTC ==
+  == s1_classic.R started 2026-11-19 02:28:09 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C1
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 1 onward
+  cells: C1; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:48:56 UTC ==
+  == s1_classic.R started 2026-11-19 02:26:52 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C1 501
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 501 onward
+  cells: C1; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:16:13 UTC ==
+  == s1_classic.R started 2026-11-19 02:26:08 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C2
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 1 onward
+  cells: C2; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:12:36 UTC ==
+  == s1_classic.R started 2026-11-19 02:27:58 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C2 501
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 501 onward
+  cells: C2; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:54:11 UTC ==
+  == s1_classic.R started 2026-11-19 02:25:04 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C3
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 1 onward
+  cells: C3; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 03:39:09 UTC ==
+  == s1_classic.R started 2026-11-19 02:29:05 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C3 501
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 501 onward
+  cells: C3; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:58:13 UTC ==
+  == s1_classic.R started 2026-11-19 02:27:46 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C4
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 1 onward
+  cells: C4; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:50:32 UTC ==
+  == s1_classic.R started 2026-11-19 02:27:02 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C4 501
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 501 onward
+  cells: C4; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:13:27 UTC ==
+  == s1_classic.R started 2026-11-19 02:26:57 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C5
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 1 onward
+  cells: C5; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:14:14 UTC ==
+  == s1_classic.R started 2026-11-19 02:27:20 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C5 501
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 501 onward
+  cells: C5; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:16:38 UTC ==
+  == s1_classic.R started 2026-11-19 02:24:44 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C6
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 1 onward
+  cells: C6; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 03:57:34 UTC ==
+  == s1_classic.R started 2026-11-19 02:27:13 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C6 501
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 501 onward
+  cells: C6; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:41:19 UTC ==
+  == s1_classic.R started 2026-11-19 02:26:36 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C7
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 1 onward
+  cells: C7; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:12:03 UTC ==
+  == s1_classic.R started 2026-11-19 02:26:21 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C7 501
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 501 onward
+  cells: C7; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:12:37 UTC ==
+  == s1_classic.R started 2026-11-19 02:26:18 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C8
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 1 onward
+  cells: C8; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 04:37:49 UTC ==
+  == s1_classic.R started 2026-11-19 02:27:59 UTC ==
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099; uncommitted changes in the work tree: FALSE
+  script md5: 1d2a72db0602457ba28fe556945c0003
+  command: /opt/R/4.6.1/lib/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-gha 500 500 4 C8 501
+  R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C8 = 22); data under set.seed(seed); arm a under set.seed(seed * 100 + a) (arms 25 to 33: the stream of the arm each varies); E under stream 0; runs 501 onward
+  cells: C8; runs per core cell 500, per stress cell 500
+  == finished 2026-11-19 05:12:28 UTC ==

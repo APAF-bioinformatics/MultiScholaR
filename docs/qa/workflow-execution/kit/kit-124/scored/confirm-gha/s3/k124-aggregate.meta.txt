@@ -1,0 +1,94 @@
+KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
+script: /home/runner/work/_temp/aggregate.R
+script sha256: 089d852c1f3b08d70096b1218ef26550f393cffd213e4bdd9980453075fd2a66
+commit: NA
+script differs from commit: TRUE
+command: Rscript /home/runner/work/_temp/aggregate.R /home/runner/work/_temp/out/confirm-gha/s3 S3=/home/runner/work/_temp/raw/s3
+working directory: /home/runner/work/MultiScholaR/MultiScholaR
+R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
+packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
+library paths: /opt/R/4.6.1/lib/R/library
+run at: 2026-11-19 07:35:15 UTC
+inputs (sha256, bytes, path):
+  ce13f6c511ca97bd5457c4a7efe23f4bd1652e11b72d53edd426dfa20653a6c5 337982 /home/runner/work/_temp/raw/s3/cells/s3-C0.rds
+  c766c7e2e024905371fcbe686392a3dafdd5356b29d1d3844484bab2e99d025b 323012 /home/runner/work/_temp/raw/s3/cells/s3-C2.rds
+  6477bcb315a73a53a2b02b1af6c0a7f16f57cd8412e6e5fce60962d101ee56e7 267601 /home/runner/work/_temp/raw/s3/cells/s3-C3.rds
+  02966d73097888095e53ee6e1fda370841a8932e85f4362f9427615b692698f3 133721 /home/runner/work/_temp/raw/s3/cells/s3-C4.rds
+  a5c8006d668bf26674f51161b5a0f24b3b374313a85b4456fae886d005125e04 356622 /home/runner/work/_temp/raw/s3/cells/s3-C5.rds
+  415fc282f81b88b04889f0f1294df190843ab6745a1b04aa1d9e43d290ad9e6c 333249 /home/runner/work/_temp/raw/s3/cells/s3-C6.rds
+  7a636d3fae86a226ead56f3c9c9d8d2014520dba3dcf113ff0bb148109328fa2 228380 /home/runner/work/_temp/raw/s3/cells/s3-C8.rds
+  a480907eaa472532fe8c3e03df616691e17850eb485262864df408ac708d70d0 109313 /home/runner/work/_temp/raw/s3/cells/s3-S3.rds
+  ddd6ea5942ae6c4102bf57feaff8cc7eeeeb95729e7cdbb3dcd0fd7f389bdef5 10057 /home/runner/work/_temp/raw/s3/s3-runs.meta.txt
+simulator S3 meta (/home/runner/work/_temp/raw/s3):
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099
+  script sha256: 082600f5bf478ee08178ee7ec1f10aaba61971822a5d9f2ccedf242da83a9e72
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C0
+  cells run by this command: C0; cells in the tables: C0
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-19 02:26:30; finished 2026-11-19 05:37:49
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099
+  script sha256: 082600f5bf478ee08178ee7ec1f10aaba61971822a5d9f2ccedf242da83a9e72
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C2
+  cells run by this command: C2; cells in the tables: C2
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-19 02:26:54; finished 2026-11-19 05:40:02
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099
+  script sha256: 082600f5bf478ee08178ee7ec1f10aaba61971822a5d9f2ccedf242da83a9e72
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C3
+  cells run by this command: C3; cells in the tables: C3
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-19 02:27:52; finished 2026-11-19 06:00:40
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099
+  script sha256: 082600f5bf478ee08178ee7ec1f10aaba61971822a5d9f2ccedf242da83a9e72
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C4
+  cells run by this command: C4; cells in the tables: C4
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-19 02:26:28; finished 2026-11-19 05:36:39
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099
+  script sha256: 082600f5bf478ee08178ee7ec1f10aaba61971822a5d9f2ccedf242da83a9e72
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C5
+  cells run by this command: C5; cells in the tables: C5
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-19 02:26:52; finished 2026-11-19 05:38:48
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099
+  script sha256: 082600f5bf478ee08178ee7ec1f10aaba61971822a5d9f2ccedf242da83a9e72
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C6
+  cells run by this command: C6; cells in the tables: C6
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-19 02:26:17; finished 2026-11-19 05:29:27
+  commit: 599f591d3853e83d430ef74caaee1c8c58f02099
+  script sha256: 082600f5bf478ee08178ee7ec1f10aaba61971822a5d9f2ccedf242da83a9e72
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 1000 0 4 C8
+  cells run by this command: C8; cells in the tables: C8
+  runs: core 1000, stress 0, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-19 02:28:16; finished 2026-11-19 06:12:59
+  commit: 86e4e0ad1d1166996cee26cc1ce90568b98a664e
+  script sha256: 082600f5bf478ee08178ee7ec1f10aaba61971822a5d9f2ccedf242da83a9e72
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-gha 0 500 4 S3
+  cells run by this command: S3; cells in the tables: S3
+  runs: core 0, stress 500, first run 1; cores 4
+  seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19; arm 31: arm 7's stream); cell index of C8 = 22
+  R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+  started 2026-11-19 02:29:08; finished 2026-11-19 04:07:51
