@@ -150,7 +150,10 @@ protIntegrationInputSource <- function(manager) {
       protein_id_column = slots$protein_id_column,
       matrix = list(entity_id = table$entity_id, sha256 = table$payload$sha256), product = product),
     sample_id_column = slots$sample_id, group_column = slots$group_id,
-    technical_replicate_column = slots$technical_replicate_id %||% NA_character_)
+    technical_replicate_column = slots$technical_replicate_id %||% NA_character_,
+    # KIT-062: the biological sample's column, by the rule the other omics' writers use (INT-2).
+    biological_sample_column = integrationInputBiologicalSampleColumn(design,
+      slots$technical_replicate_id %||% NA_character_, slots$sample_id))
   list(manifest = manifest, samples = design, matrix = matrix)
 }
 

@@ -241,6 +241,9 @@ test_that("KIT-061: a classic route with RUV writes the corrected matrix after t
     expect_identical(manifest$source_state$name, "correlation_filtered")
     expect_identical(manifest$source_state$entity_id, getDIAStateReference(manager, "correlation_filtered")$entity_id)
     expect_null(manifest$source_state$product)
+    # KIT-062: the biological sample's column, by the other omics' rule (the declared technical-replicate column).
+    expect_identical(manifest$biological_sample_column, "tech_rep_group")
+    expect_true(manifest$biological_sample_column %in% names(input$samples))
     expect_identical(manifest$correction[c("state", "id", "method", "ruv_mode", "k", "percentage_as_neg_ctrl",
         "control_count", "grouping_variable")], list(state = "ruv_corrected", id = "C1", method = "RUVIII_C_Varying",
         ruv_mode = "automatic", k = 3L, percentage_as_neg_ctrl = 5L, control_count = 7L, grouping_variable = "group"))
