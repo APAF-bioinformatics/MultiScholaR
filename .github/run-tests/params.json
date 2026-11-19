@@ -1,39 +1,16 @@
 {
-  "label": "KIT-129 final figures correction (base 75f418fe, head 303217ac): RUV design files, GUI config, run path, four gui-entry files, check",
-  "package_commit": "303217ac19c314f92094b0a339ef9e8211e9fa21",
+  "label": "KIT-063 correction pass (base 6c423b7a, head 9cbcfe4e): affected files and check",
+  "package_commit": "9cbcfe4e4fafbc812dcf708635ad516e64e97d02",
   "base_commit": "6c423b7a9b98b5e69a085e67b00398302a63e2dd",
   "tools_ref": "",
   "tests": [
+    "test-workflow-operation-registry.R",
     "test-integration-sample-match.R",
     "test-integration-results.R",
-    "test-integration-results-mofa.R",
     "test-integration-gui.R",
-    "test-integration-model.R",
-    "test-integration-model-tab-mofa.R",
-    "test-integration-mofa-model.R",
-    "test-integration-corpus.R",
-    "test-workflow-integration-input.R",
-    "test-integration-input-lipid-metab.R",
-    "test-integration-input-transcriptomics.R",
-    "test-workflow-operation-registry.R",
-    "test-workflow-analysis-record.R",
-    "test-workflow-omics-worker.R",
-    "test-workflow-saved-exports.R",
-    "test-workflow-execution-adapters.R",
-    "test-workflow-omics-application-reads.R",
-    "test-workflow-omics-sessions.R",
-    "test-workflow-partitions.R",
-    "test-perf107-audit.R",
-    "test-app-shell-shared.R",
-    "test-e2e-test-mode-integration.R",
-    "test-workflow-ui-shared.R",
-    "test-omic-gui-config.R",
-    "test-launch-test-mode.R",
-    "test-e2e-browser-harness.R",
-    "test-run-packaged-application.R",
-    "test-workflow-saved-installed.R"
+    "test-integration-model.R"
   ],
-  "shards": 10,
+  "shards": 5,
   "file_timeout_minutes": 45,
   "file_timeouts": {},
   "extra_packages": [
@@ -45,36 +22,5 @@
   "check": true,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": [
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
-      "args": [
-        "6c423b7a9b98b5e69a085e67b00398302a63e2dd",
-        "kit063-failing-first",
-        "test-integration-sample-match.R",
-        "test-integration-results.R",
-        "test-integration-gui.R"
-      ],
-      "out": "kit063-failing-first",
-      "timeout_minutes": 90
-    },
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
-      "args": [
-        "6c423b7a9b98b5e69a085e67b00398302a63e2dd",
-        "kit063-gate-off"
-      ],
-      "out": "kit063-gate-off",
-      "timeout_minutes": 60
-    },
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-063/match-identity.R",
-      "args": [
-        "6c423b7a9b98b5e69a085e67b00398302a63e2dd",
-        "kit063-match-identity"
-      ],
-      "out": "kit063-match-identity",
-      "timeout_minutes": 60
-    }
-  ]
+  "scripts": []
 }
