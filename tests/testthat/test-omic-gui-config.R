@@ -1670,7 +1670,7 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
     expect_identical(summaries$metabolomics$integration, list(filename = "%s_%s_final_s4.RDS",
         operation = "metab_integration_export", write = metabSummaryIntegrationWrite, requires = NULL))
     expect_identical(summaries$transcriptomics$integration, list(filename = "transcriptomics_normalized_data.tsv",
-        operation = "trx_integration_export", write = trxSummaryIntegrationWrite, requires = "trx_ruviii_export",
+        operation = "trx_integration_export", write = trxSummaryIntegrationWrite, requires = trxSummaryIntegrationRequires,
         missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again."))
     # The report.
     # The report flow's per-omic order (W1's captures, test-omic-summary-module.R): metab renders after a failed

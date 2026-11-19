@@ -918,14 +918,139 @@ trxWriteSummaryText <- function(summary, dataset, path) {
 }
 
 #' The integration export's writer (the binding's `integration_export`): the accepted RUVIII matrix, samples by genes with
-#' a `Run` column, as the notebook writes it for MOFA (rmd:714-724).
+#' a `Run` column, as the notebook writes it for MOFA (rmd:714-724). KIT-136: when the head's RUV step applied no RUV
+#' (design `none`, or k of 0; KIT-129), the TMM logCPM it read, in the same layout.
 #' @noRd
 trxWriteIntegrationExport <- function(manager, parameters, path) {
+    state <- trxIntegrationRuvState(manager)
+    if (!is.null(state) && !state$applied) {
+        log_cpm <- trxSavedMatrix(manager, trxProductValue(manager, state$ruvs$logcpm)$log_cpm)
+        vroom::vroom_write(as.data.frame(t(log_cpm)) |> tibble::rownames_to_column("Run"), path)
+        return(invisible(path))
+    }
     export <- manager$.context$snapshot$exports$trx_ruviii_export
     if (is.null(export)) cli::cli_abort("no accepted RUVIII export", class = "workflow_execution_invalid")
     newY <- hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value$newY
     vroom::vroom_write(as.data.frame(newY) |> tibble::rownames_to_column("Run"), path)
     invisible(path)
+}
+
+#' The head lineage's RUVs state (KIT-136): its reference, record and product, and whether it applied RUV (the
+#' product's `ruv_applied` with k above 0; today's grid always does, a declared design `none` or a k of 0 does not).
+#' @param manager The session's owner, inside its state scope.
+#' @return `list(reference, record, ruvs, applied)`, or NULL when the head's lineage has no RUVs state.
+#' @noRd
+trxIntegrationRuvState <- function(manager) {
+    lineage <- protIntegrationInputLineage(manager, until = "trx_ruvs")
+    if (!"trx_ruvs" %in% names(lineage) || is.null(lineage$trx_ruvs)) return(NULL)
+    reference <- getWorkflowStateReference(manager, "trx_ruvs")
+    ruvs <- trxStateRuvs(manager, reference)
+    list(reference = reference, record = lineage$trx_ruvs, ruvs = ruvs,
+        applied = isTRUE(ruvs$outcomes$ruv_applied) && isTRUE(as.integer(ruvs$k) > 0L))
+}
+
+#' Write the transcriptomics integration input (KIT-136; KIT-061's contract): one view, `transcriptomics`, from the head
+#' lineage's RUVs state (`trxIntegrationInputSource`); with no such state, or a manager that is not an owner, none is
+#' written and an earlier one is removed (K061-3).
+#' @param binding The binding (the shared writers' signature).
+#' @param dir The omic's folder, `<project>/integration/transcriptomics/`.
+#' @return TRUE when an input was written, else FALSE, invisibly.
+#' @noRd
+trxWriteIntegrationInput <- function(binding, manager, dir) {
+    source <- if (inherits(manager, "DIAStateAdapter")) withWorkflowStateScope(manager, function() trxIntegrationInputSource(manager))
+    if (is.null(source)) {
+        removeIntegrationInput(dir)
+        return(invisible(FALSE))
+    }
+    writeIntegrationInput(dir, source$manifest, source$samples, list(transcriptomics = source$matrix),
+        list(transcriptomics = source$features))
+    invisible(TRUE)
+}
+
+#' The transcriptomics integration input (KIT-136; KIT-060 audit rows C3a, C3b). Where the head's RUVs state applied RUV
+#' the matrix is the accepted RUVIII export (INT-1, audit row C3b: RUV-III on the TMM logCPM with the RUV step's controls
+#' and k, `newY`), genes by runs, role `corrected`; the export must have been made from that state. Where it applied
+#' none (design `none` or k of 0) the matrix is the TMM logCPM the step read (no file held it before), role
+#' `normalised`. Never the removeBatchEffect display matrix (C3a). The samples are the state's design without the RUVs
+#' factors `W_1..W_k` (they are the DA model's, not the export's); the features are the gene id and name.
+#' @param manager The session's owner, inside its state scope.
+#' @return `list(manifest, samples, matrix, features)`, or NULL when the head's lineage has no RUVs state.
+#' @noRd
+trxIntegrationInputSource <- function(manager) {
+    state <- trxIntegrationRuvState(manager)
+    if (is.null(state)) return(NULL)
+    reference <- state$reference
+    spec <- readWorkflowStateMetadata(manager, reference)$data
+    slots <- spec$slots
+    design <- as.data.frame(materializeWorkflowTable(manager$.context, spec$components$design_matrix))
+    design <- design[, !startsWith(names(design), "W_"), drop = FALSE]
+    export <- NULL
+    if (state$applied) {
+        export <- manager$.context$snapshot$exports$trx_ruviii_export
+        if (is.null(export)) {
+            abortIntegrationInput("the corrected transcriptomics matrix is the RUVIII export: run the export, then save again")
+        }
+        if (!identical(export$source$entity_id, reference$entity_id)) {
+            abortIntegrationInput("the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again")
+        }
+        export$value <- hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value
+        values <- t(export$value$newY)
+        product <- list(type = "trx.ruviii", entity_id = export$reference$entity_id, sha256 = export$reference$payload$sha256)
+    } else {
+        values <- trxSavedMatrix(manager, trxProductValue(manager, state$ruvs$logcpm)$log_cpm)
+        product <- list(type = "trx.tmm_logcpm", entity_id = state$ruvs$logcpm$entity_id, sha256 = state$ruvs$logcpm$payload$sha256)
+    }
+    sample_ids <- as.character(design[[slots$sample_id]])
+    runs <- intersect(sample_ids, colnames(values))
+    samples <- design[match(runs, sample_ids), , drop = FALSE]
+    rownames(samples) <- NULL
+    ids <- rownames(values)
+    matrix <- data.frame(feature_id = ids, values[, runs, drop = FALSE], check.names = FALSE, stringsAsFactors = FALSE,
+        row.names = NULL)
+    values <- NULL
+    gene_column <- slots$gene_id_column
+    name_column <- slots$annotation_id_column
+    genes <- materializeWorkflowTable(manager$.context, spec$components$count_data[[1L]], selected_columns = c(gene_column, name_column))
+    gene_names <- as.character(genes[[name_column]])[match(ids, as.character(genes[[gene_column]]))]
+    features <- data.frame(feature_id = ids, display_name = ifelse(is.na(gene_names) | !nzchar(gene_names), ids, gene_names),
+        stringsAsFactors = FALSE)
+    if (!name_column %in% names(features)) features[[name_column]] <- gene_names
+    technical <- slots$technical_replicate_id
+    if (!is.character(technical) || length(technical) != 1L || !isTRUE(technical %in% names(samples))) technical <- NA_character_
+    manifest <- list(omic_type = "transcriptomics",
+        workflow = manager$workflow_type %||% manager$.context$snapshot$workflow_type %||% NA_character_,
+        matrix_role = if (state$applied) "corrected" else "normalised", scale = "log2_cpm",
+        correction = if (state$applied) trxIntegrationInputCorrection(manager, state, export, samples, technical) else NULL,
+        source_state = list(name = "trx_ruvs", entity_id = reference$entity_id, sha256 = reference$payload$sha256,
+            gene_id_column = gene_column, annotation_id_column = name_column, product = product),
+        sample_id_column = slots$sample_id, group_column = slots$group_id, technical_replicate_column = technical,
+        biological_sample_column = integrationInputBiologicalSampleColumn(samples, technical, slots$sample_id))
+    list(manifest = manifest, samples = samples, matrix = matrix, features = features)
+}
+
+#' The correction behind a corrected transcriptomics input (KIT-136; audit row C3b): the RUVIII export's replicate
+#' structure M, k and controls, and the RUV step that chose them (a new design's every field of
+#' `RUV_DESIGN_RECORD_FIELDS`, as the analysis record reads them; today's grid names none).
+#' @param state `trxIntegrationRuvState`'s value.
+#' @param export The accepted export with its hydrated `value`.
+#' @param samples The input's samples (for the replicate sets' levels).
+#' @param technical The design's technical-replicate column, or NA.
+#' @return The manifest's `correction`.
+#' @noRd
+trxIntegrationInputCorrection <- function(manager, state, export, samples, technical) {
+    value <- export$value
+    by_technical <- identical(value$m_source, "technical_replicate")
+    grouping <- if (by_technical) technical else "group"
+    correction <- list(id = "C3b", method = "RUVIII", m_source = value$m_source, k = value$k,
+        control_count = value$control_count %||% sum(value$ctl_mask), control_source = value$control_source,
+        replicate_structure = if (by_technical) "technical_replicates" else "group", grouping_variable = grouping,
+        matrix = "ruviii_export_values", da_tests = "counts_with_ruvs_factors_in_model")
+    outcomes <- workflowRecordStepOutcomes(manager$.context, "trx_ruvs", "trx_ruvs", state$record, list())
+    if (all(RUV_DESIGN_RECORD_FIELDS %in% names(outcomes))) correction <- c(correction, outcomes[RUV_DESIGN_RECORD_FIELDS])
+    correction <- lapply(correction, function(value) if (is.null(value)) NA else value)
+    correction$grouping_levels <- I(if (is.character(grouping) && length(grouping) == 1L && isTRUE(grouping %in% names(samples)))
+        unique(as.character(samples[[grouping]])) else character())
+    c(list(state = "trx_ruvs"), correction)
 }
 
 #' The interactive volcano of one contrast (rmd:673-693; the binding's `volcano_widget`): Glimma on the contrast's DGELRT
@@ -1013,7 +1138,9 @@ transcriptomicsDeclarationBinding <- list(
     filtering_metrics = trxFilteringMetrics,
     final_pca = trxFinalPca,
     volcano_widget = trxVolcanoWidget,
-    integration_export = trxWriteIntegrationExport
+    integration_export = trxWriteIntegrationExport,
+    # KIT-136: the declared integration input, written beside the integration export (`trxWriteIntegrationInput`).
+    integration_input = trxWriteIntegrationInput
 )
 
 #' Identify the transcriptomics DA manifest.

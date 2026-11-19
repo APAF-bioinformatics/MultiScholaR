@@ -384,8 +384,9 @@ omicGuiConfigSchema <- function() {
         summary_copy = c(inherits = "lgl1"),
         summary_copy_optional = c(gate = "ref_or_null"),
         # `operation` and `requires` are present, NULL or a string; `filename` a string or a function; `write` the
-        # in-process writer (NULL: the final object's RDS).
-        summary_integration = c(requires = "chr1_or_null"),
+        # in-process writer (NULL: the final object's RDS). KIT-136: `requires` may also be a function of the session's
+        # bus giving the export's name or NULL (transcriptomics needs no RUVIII export when RUV was not applied).
+        summary_integration = c(requires = "chr1_or_ref_or_null"),
         summary_integration_optional = c(write = "ref_or_null", missing_message = "chr1"),
         # `template`: a file name, or the route's resolver; a file name needs the `label` of the one-template status.
         # KIT-108 W1's captures: the report flow's per-omic order (`render_after_failed_template`: metab renders after
@@ -1025,6 +1026,7 @@ omicGuiFieldHasType <- function(value, type) {
         int1 = is_num1 && value >= 1 && value == round(value),
         chr1 = is_chr1,
         chr1_or_null = is.null(value) || is_chr1,
+        chr1_or_ref_or_null = is.null(value) || is_chr1 || is.function(value),
         chr = is_chr && length(value) >= 1L,
         chr0 = is_chr,
         named_chr = is_chr && length(value) >= 1L && named,
@@ -2797,7 +2799,7 @@ omicGuiTrxSummary <- function() {
         record_class = NULL,
         copy = omicGuiFeatureSummaryCopy(),
         integration = list(filename = "transcriptomics_normalized_data.tsv", operation = "trx_integration_export",
-            write = trxSummaryIntegrationWrite, requires = "trx_ruviii_export",
+            write = trxSummaryIntegrationWrite, requires = trxSummaryIntegrationRequires,
             missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again."),
         report = list(dir = "transcriptomics", template = "transcriptomics_report.rmd", label = "Transcriptomics",
             status = NULL, render_after_failed_template = FALSE, checking_progress_always = FALSE,
