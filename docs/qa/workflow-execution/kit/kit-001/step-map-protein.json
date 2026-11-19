@@ -126,17 +126,20 @@
       "label": "Normalisation and RUV",
       "unit": "whole_matrix",
       "in_journey": true,
-      "module": "R/utils_workflow_dia_products.R (runDIAReferenceNormalization; normalization-ruv declaration)",
-      "kernel": "normaliseBetweenSamples, ruvIII_C_Varying",
+      "module": "R/utils_workflow_dia_products.R (runDIAReferenceNormalization; normalization-ruv declaration); KIT-129 (gate MultiScholaR.ruv_design_panel): the preset read at R/mod_prot_norm_workflow_helpers.R:497-498 (the classic table for LFQ and TMT, omicNormRuvRunTable R/mod_omic_norm_panels.R:914-919), diaNormalizationOperation(\"declared\", supplied) by workflowRequestOperation (R/utils_workflow_operations.R:227)",
+      "kernel": "normaliseBetweenSamples, ruvIII_C_Varying; KIT-129 new designs: computeProtRuvModelFactors (R/func_prot_norm_optimization_helpers.R:1307-1392) with resolveRuvFactorCount and estimateRuvFactorCount (R/func_general_ruv_factor_count.R:306, :89-152), then ruvIII_C_Varying and attachProtRuvModelFactors (:1488-1502), or declareProtRuvNoFactors (:1512-1517) for a count of 0 and the design none",
       "writes": [
-        "state ruv_corrected (or normalized when RUV is skipped)"
+        "state ruv_corrected (or normalized when RUV is skipped)",
+        "KIT-129: state ruv_corrected under every new design that ran, a count of 0 included (the normalised matrix declared without factors, config ruv_applied FALSE); normalized under the design none (the skip mode, the normalised object declaring none)",
+        "KIT-129: design_matrix W1..Wk, args$ruvCovariates (the declaration) and args$ruv_uncorrected_quant (the normalised matrix the DA tests); the product's new-design parameters and ruv_result fields as in the DIA step map's row"
       ],
       "global_statistics": [],
       "merge": null,
       "mode": "in_process",
       "flag": null,
       "notes": [
-        "same kernel and unit as the DIA step map's row"
+        "same kernel and unit as the DIA step map's row",
+        "KIT-129 (protocol v1.11): the RUV design preset (`ruv_design`) selects groups_all_features, technical_replicates, supplied_controls, first_pass_nulls (k by ruv_k_rule) or none on the declared declaration, as on the DIA route (the DIA step map's normalisation_ruv row has the evidence); legacy is today's path. Unit unchanged (whole_matrix)."
       ]
     },
     {
@@ -180,17 +183,19 @@
       "label": "Differential abundance",
       "unit": "whole_matrix",
       "in_journey": true,
-      "module": "R/utils_workflow_dia_da.R (runDIAReferenceDaAnalysis; DA-contrast-output declaration)",
-      "kernel": "differentialAbundanceAnalysis (limma)",
+      "module": "R/utils_workflow_dia_da.R (runDIAReferenceDaAnalysis; DA-contrast-output declaration); KIT-129: diaContrastOperation(route, ruv_da_method) for a new-design source (computeDIAReferenceDaContrast R/utils_workflow_dia_da.R:474-488)",
+      "kernel": "differentialAbundanceAnalysis (limma); KIT-129 new designs: runProtRuvModelContrasts (R/func_prot_da_model_stats.R:437; ruvExactContrastsFit R/func_general_ruv_factor_count.R:383 with W)",
       "writes": [
-        "DA arguments committed onto correlation_filtered; contrast products"
+        "DA arguments committed onto correlation_filtered; contrast products",
+        "KIT-129: the contrast declaration gains ruv_da_method (ruv_factors_exact_se_trend_robust, or ruv_none_trend_robust for a count of 0 and the design none)"
       ],
       "global_statistics": [],
       "merge": null,
       "mode": "in_process",
       "flag": null,
       "notes": [
-        "same kernel and unit as the DIA step map's row"
+        "same kernel and unit as the DIA step map's row",
+        "KIT-129 (protocol v1.11): a new-design source is tested on the uncorrected matrix with W in the model (exact standard errors), or without W on its normalised matrix; legacy is today's test on the corrected matrix (the DIA step map's da row has the evidence). Unit unchanged."
       ]
     }
   ]

@@ -563,19 +563,26 @@
       "unit": "whole_matrix",
       "grouping": null,
       "in_journey": true,
-      "module": "R/mod_prot_norm_workflow_helpers.R: runProtNormNormalizationWorkflow :451 (reference: runDIAReferenceNormalization, R/utils_workflow_dia_products.R:299) -> runProtNormBetweenSamplesStep :23; RUV: R/mod_prot_norm_ruv_helpers.R resolveProtNormRuvParameters :98, applyProtNormRuvCorrectionStep :274, finalizeProtNormRuvCleanupStep :301",
-      "kernel": "normaliseBetweenSamples (R/func_prot_s4_norm_methods.R:48-106) -> limma::normalizeCyclicLoess (:77); findBestNegCtrlPercentage (R/func_prot_norm_optimization_helpers.R:584-901) -> getNegCtrlProtAnova (R/func_prot_s4_norm_controls.R:62-128); ruvCancor (norm_methods.R:108-170); ruvIII_C_Varying (norm_methods.R:174-239) -> RUVIIIC::RUVIII_C_Varying; then removeRowsWithMissingValuesPercent",
+      "module": "R/mod_prot_norm_workflow_helpers.R: runProtNormNormalizationWorkflow :451 (reference: runDIAReferenceNormalization, R/utils_workflow_dia_products.R:299) -> runProtNormBetweenSamplesStep :23; RUV: R/mod_prot_norm_ruv_helpers.R resolveProtNormRuvParameters :98, applyProtNormRuvCorrectionStep :274, finalizeProtNormRuvCleanupStep :301; KIT-129 (gate MultiScholaR.ruv_design_panel): runProtNormNormalizationWorkflow reads the preset at R/mod_prot_norm_workflow_helpers.R:497-498 (omicNormRuvDesignChoice, R/mod_omic_norm_panels.R:873-908; applyProtNormRuvDesign :138-153) -> diaNormalizationRequest (R/utils_workflow_dia_products.R:755-771) -> computeDIAReferenceNormalization (:777-781): workflowRequestOperation (R/utils_workflow_operations.R:215-243, :227) runs diaNormalizationOperation(\"declared\", supplied) when the request names ruv_design",
+      "kernel": "normaliseBetweenSamples (R/func_prot_s4_norm_methods.R:48-106) -> limma::normalizeCyclicLoess (:77); findBestNegCtrlPercentage (R/func_prot_norm_optimization_helpers.R:584-901) -> getNegCtrlProtAnova (R/func_prot_s4_norm_controls.R:62-128); ruvCancor (norm_methods.R:108-170); ruvIII_C_Varying (norm_methods.R:174-239) -> RUVIIIC::RUVIII_C_Varying; then removeRowsWithMissingValuesPercent; KIT-129 new designs (diaNormalizationOperation(\"declared\"), R/utils_workflow_dia_products.R:354-520): protRuvModelReplicateSets (R/func_prot_norm_optimization_helpers.R:1458-1476) -> computeProtRuvModelFactors (:1307-1392; protRuvFirstPassControls :1408-1416; resolveRuvFactorCount R/func_general_ruv_factor_count.R:306 with estimateRuvFactorCount :89-152, the typed k, or the separation rule (the sweep's k, or protRuvSeparationRuleK :1427-1436 on a supplied list); computeRuvCovariates :1188) -> ruvIII_C_Varying with the same replicate sets, k and controls -> attachProtRuvModelFactors (:1488-1502); a count of 0 or the design none: declareProtRuvNoFactors (:1512-1517)",
       "evidence": [
         "R/func_prot_s4_norm_methods.R:65-69 whole table to matrix; :77 normalizeCyclicLoess over the full protein x sample matrix",
         "R/func_prot_norm_optimization_helpers.R:379 num_neg_ctrl = round(nrow(all proteins) * pct / 100); :456 per-row aov; :471 qvalue over ALL p-values; :487 control set = top-N by q (stable sort)",
         "R/func_prot_s4_norm_methods.R:154-158 mixOmics::impute.nipals on the full matrix; :162-166 ruv_cancorplot(Y, X = grouping, ctl)",
         "R/func_prot_s4_norm_methods.R: M = replicate matrix from resolveProtRuvReplicateBlocks (technical replicates = group x replicate blocks when the design has duplicates, else ruv_grouping_variable; R/func_prot_norm_optimization_helpers.R); RUVIII_C_Varying(k, Y = all samples x all proteins, M, potentialControls)",
-        "R/mod_prot_norm_ruv_helpers.R:319-321 post-RUV removeRowsWithMissingValuesPercent (dataset-wide quantile again)"
+        "R/mod_prot_norm_ruv_helpers.R:319-321 post-RUV removeRowsWithMissingValuesPercent (dataset-wide quantile again)",
+        "KIT-129 R/utils_workflow_dia_products.R:396 the sweep (resolveProtRuvParameters) still runs under a new design (automatic: the sweep; manual: the typed k), its values kept as ruv_result$sweep_diagnostic (:443-444); its k is handed on only under sweep_bounded, the typed k under user, nothing under num_sv_be (:430); :409 replicate sets by design (protRuvModelReplicateSets: the grouping, or the declared technical-replicate column for technical_replicates, refused without one, R/func_prot_norm_optimization_helpers.R:1467-1469); :413-421 a supplied list matched against every protein id",
+        "KIT-129 R/func_prot_norm_optimization_helpers.R:1339 values = every protein x every sample; :1345 first_pass_nulls: protRuvFirstPassControls (:1408-1416) lmFit(~ group) and eBayes over every protein, the F test, the 25% most significant by rank (ties first) over all p-values left out; :1349-1350 controls observed in every sample; :1360 ruvFactorCountLimit over samples, replicate sets, groups and controls (the biological units when technical replicates are declared, M28); :1373-1377 resolveRuvFactorCount; :1385 k = 0 returns no W; :1389 computeRuvCovariates on the complete proteins over every sample",
+        "KIT-129 R/func_general_ruv_factor_count.R:89-152 estimateRuvFactorCount: sva::num.sv(method be, B = 200, seed) on the features complete in every sample (:115), the groups or the biological units removed (:125-126); the permutations are row-wise draws from one seeded stream under a fixed RNG kind (:18, :39-55, :129-133)",
+        "KIT-129 R/utils_workflow_dia_products.R:478-483 the corrected table: ruvIII_C_Varying with the design's replicate sets, k and controls, removeRowsWithMissingValuesPercent, then W1..Wk and the normalised matrix attached; :485-487 ruvGroupAssociationCheck on W; :496-499 a count of 0 checkpoints the normalised object declaring no factors (ruv-none-science); :380-392 the design none runs with ruv_mode skip only and checkpoints the normalised object declaring none",
+        "KIT-129 R/utils_workflow_dia_products.R:789-806 diaNormalizationCommit: state ruv_corrected for every new design that ran, a count of 0 included (config ruv_applied FALSE, :798); normalized for the design none (ruv_mode skip, :799)"
       ],
       "reads_outside_assay": [
         "design_matrix (grouping variable, pool detection)",
         "config_list (.GlobalEnv)",
-        "GUI inputs"
+        "GUI inputs",
+        "KIT-129 GUI inputs under the gate: ruv_design, ruv_k_rule, ruv_k_user, ruv_k_seed, ruv_control_list (R/mod_omic_norm_panels.R:873-908); today's inputs still read under a new design (ruv_grouping_variable, the sweep's settings, ruv_percentage)",
+        "KIT-129 design_matrix technical_replicate_id (the replicate sets of technical_replicates; the biological units that limit k and that the count removes, M28)"
       ],
       "writes": [
         "protein_quant_table",
@@ -583,19 +590,27 @@
         "args$normaliseBetweenSamples, args$ruvIII_C_Varying (grouping, k, ctrl)",
         "normData holders and ruv_optimization_result",
         "ruv_optimization_results.RDS, normalized_protein_matrix_pre_ruv.tsv, 11_RUV_filtered plot, QC plots",
-        "reference path: owned values normalized-science and ruv-science, product dia-normalization-ruv, state ruv_corrected"
+        "reference path: owned values normalized-science and ruv-science, product dia-normalization-ruv, state ruv_corrected",
+        "KIT-129 new designs: design_matrix W1..Wk; args$ruvCovariates (ruv_mode covariates, ruv_design, k, ruv_k_rule, ruv_k_estimate, k_max, ruv_controls, control_count, protein_count, replicate_structure, ruv_grouping_variable, tested_matrix uncorrected) and args$ruv_uncorrected_quant (the normalised matrix the DA tests) on the ruv-science checkpoint",
+        "KIT-129 a count of 0 or the design none: checkpoint ruv-none-science, the normalised object with args$ruvCovariates (ruv_mode none, ruv_design, k 0, ruv_k_rule, ruv_k_estimate, ruv_applied FALSE, ruv_not_applied_reason, tested_matrix normalised)",
+        "KIT-129 ruv_result: ruv_design, ruv_k_rule, ruv_k_seed, ruv_k_estimate (and ruv_k_estimate_reason beside a typed k), k_estimate (plotRuvFactorCount), ruv_applied, ruv_not_applied_reason, ruv_group_association, sweep_diagnostic; supplied_controls: ruv_control_rule, ruv_control_list_sha256, ruv_control_list_count, ruv_control_list_unmatched",
+        "KIT-129 product parameters gain ruv_design, ruv_k_rule, ruv_k_seed (and RUV_SUPPLIED_LIST_PARAMETERS, the list's hash and count, under supplied_controls) and value$ruv_model"
       ],
       "global_statistics": [],
       "merge": null,
       "holders": [
         "R/mod_prot_norm_workflow_helpers.R:47 normalized_protein_obj, :105 ruv_normalized_obj, :128 saveState(normalized)",
-        "R/mod_prot_norm_ruv_helpers.R:295, :375 ruv_normalized_obj; :380 saveState(ruv_corrected)"
+        "R/mod_prot_norm_ruv_helpers.R:295, :375 ruv_normalized_obj; :380 saveState(ruv_corrected)",
+        "KIT-129 R/utils_workflow_dia_products.R:825 normData$ruv_design_result (protNormRuvDesignResult, the RUV design section's summary)"
       ],
       "mode": "in_process (reference path: runDIAReferenceNormalization, one declaration for normalisation + RUV per audit B4)",
       "flag": null,
       "notes": [
         "Changed 2026-10-09 (user decision): RUV-III uses technical replicates (group x replicate blocks) as its replicate sets when the design has them, else the grouping variable; the structure used is recorded in args$ruvIII_C_Varying$ruv_replicate_structure. Control selection (ANOVA by group) and the canonical-correlation k search keep the biological grouping.",
-        "Control-protein ties at q = 1 make the control set depend on row order (:487): the projected object must preserve row order."
+        "Control-protein ties at q = 1 make the control set depend on row order (:487): the projected object must preserve row order.",
+        "KIT-129 (protocol v1.11): the RUV design preset (`ruv_design`, the classic table omicGuiRuvTableClassic for DIA with IQ, LFQ and TMT) selects the declared declaration: groups_all_features (the groups as replicate sets, every protein a control), technical_replicates (the declared units as replicate sets), supplied_controls (the listed proteins; its own declaration, identity by the list's hash and count), first_pass_nulls (the proteins outside the first pass's 25% most significant), each with k by ruv_k_rule (num_sv_be pre-selected; user = ruv_mode manual with the typed k; sweep_bounded for supplied_controls and first_pass_nulls only); none runs the skip mode and declares no factors. legacy (and the gate off) is today's path, unchanged. Unit stays whole_matrix: every new design reads statistics over all proteins and samples (the count's SVD and permutations, the first pass's F test and its quantile, RUV-III over every sample).",
+        "KIT-129: the estimated count draws its permutations row by row from one seeded stream and the first pass ranks ties in row order: the projected object must preserve row order.",
+        "KIT-129: under a new design today's sweep parameters stay declared (they enter the identity) and the sweep runs as a diagnostic; under a k rule the state name is ruv_corrected even when the count gives 0 and no RUV is applied."
       ]
     },
     {
@@ -664,24 +679,27 @@
       "unit": "whole_matrix",
       "grouping": null,
       "in_journey": true,
-      "module": "R/mod_prot_da_handlers_run_analysis.R: da_server_run_analysis_handler :2 (reference: runDIAReferenceDaAnalysis, R/utils_workflow_dia_da.R:265); legacy loop over contrasts :104-110",
-      "kernel": "differentialAbundanceAnalysis (R/func_prot_da_model_methods.R:5-63) -> differentialAbundanceAnalysisHelper (:87-596) -> runTestsContrasts (R/func_prot_da_model_stats.R:413+) -> fitProtDaBaseModel (:225-268) / fitDIAExecutionBaseModel (R/utils_workflow_dia_da.R:66-95) -> applyProtDaContrastModel (:277-307) -> adjustProtDaResultTable (:317-356)",
+      "module": "R/mod_prot_da_handlers_run_analysis.R: da_server_run_analysis_handler :2 (reference: runDIAReferenceDaAnalysis, R/utils_workflow_dia_da.R:265); legacy loop over contrasts :104-110; KIT-129: computeDIAReferenceDaContrast (R/utils_workflow_dia_da.R:474-488) reads the source's method (workflowSourceRuvDaMethod, R/utils_workflow_operations.R:254-273) and runs diaContrastOperation(route, ruv_da_method) (R/utils_workflow_dia_da.R:297-307), which refuses a source whose declaration names another method",
+      "kernel": "differentialAbundanceAnalysis (R/func_prot_da_model_methods.R:5-63) -> differentialAbundanceAnalysisHelper (:87-596) -> runTestsContrasts (R/func_prot_da_model_stats.R:413+) -> fitProtDaBaseModel (:225-268) / fitDIAExecutionBaseModel (R/utils_workflow_dia_da.R:66-95) -> applyProtDaContrastModel (:277-307) -> adjustProtDaResultTable (:317-356); KIT-129 new designs: differentialAbundanceAnalysisHelper's declared branch (R/func_prot_da_model_methods.R:439-462) -> resolveProtRuvModelInput (R/func_prot_norm_optimization_helpers.R:1573) -> runProtRuvModelContrasts (R/func_prot_da_model_stats.R:437; ruvExactContrastsFit R/func_general_ruv_factor_count.R:383 with W, limma::contrasts.fit without; treat with trend and robust)",
       "evidence": [
         "R/func_prot_da_model_stats.R fitProtDaBaseModel: the block from the object's declared technical replicate column (technical_replicate_id, `tech_rep_group` from the design step) through resolveProtTechnicalReplicateBlock, shared with RUV-III (KIT-035); a block spanned by the design's group is standard lmFit with block_reason recorded, otherwise duplicateCorrelation consensus over all proteins then lmFit(block)",
         "R/func_prot_da_model_stats.R:289-296 contrasts.fit, eBayes(trend, robust) over all proteins, treat(lfc)",
         "R/func_prot_da_model_stats.R:327-353 qvalue over all valid p-values per contrast (BH fallback)",
-        "R/func_prot_da_model_methods.R:343 design rownames = sample_id; :346 full matrix; :356 contrast = contrasts_tbl[,1]"
+        "R/func_prot_da_model_methods.R:343 design rownames = sample_id; :346 full matrix; :356 contrast = contrasts_tbl[,1]",
+        "KIT-129 R/func_prot_da_model_methods.R:443-454 a new-design state is tested on args$ruv_uncorrected_quant (every protein of the normalised matrix) with W1..Wk added to the formula, or (a count of 0, the design none) on its own normalised table with the formula as given; R/func_prot_da_model_stats.R:470-477 with W each comparison is refitted as a coefficient over all proteins (contrastAsCoef, exact standard errors, M29), then eBayes and treat with the trend and robust settings (M30)"
       ],
       "reads_outside_assay": [
         "design_matrix (group_id, technical_replicate_id columns)",
         "contrasts_tbl (workflow or .GlobalEnv; utils_workflow_dia_da.R:271-275)",
         "protein_id_table",
-        "uniprot_dat_cln (workflow or .GlobalEnv; :379-383)"
+        "uniprot_dat_cln (workflow or .GlobalEnv; :379-383)",
+        "KIT-129 args$ruvCovariates (the new design's declaration: ruv_design, ruv_mode, k, ruv_k_rule) and args$ruv_uncorrected_quant"
       ],
       "writes": [
         "per contrast: da_proteins_long, da_proteins_wide, contrasts_results_table, significant_rows, norm_counts, num_sig_da_molecules(_first_go), qvalue_warnings, plots",
         "args$differentialAbundanceAnalysis(+Helper), args$daAnalysisUI",
-        "reference path: table components, products, da_fit, manifest da-result-references, published TSV/XLSX/PNG/PDF/HTML (utils_workflow_dia_da.R:314-408)"
+        "reference path: table components, products, da_fit, manifest da-result-references, published TSV/XLSX/PNG/PDF/HTML (utils_workflow_dia_da.R:314-408)",
+        "KIT-129: the contrast declaration gains the parameter ruv_da_method (ruv_factors_exact_se_trend_robust, or ruv_none_trend_robust for a count of 0 and the design none); the stored base fit and result name the test (R/func_prot_da_model_stats.R:449-451); the manifest's model records ruv_design, ruv_k_rule, ruv_controls, w_terms, tested_matrix, tested_proteins, no_corrected_intensity and exact_standard_errors"
       ],
       "global_statistics": [],
       "merge": null,
@@ -692,7 +710,8 @@
       "mode": "in_process (reference path: runDIAReferenceDaAnalysis)",
       "flag": null,
       "notes": [
-        "KIT-035: the DA model and RUV-III take their replicate block from the one declaration (technical_replicate_id); the fit artifact, the da_fit factors and the manifest's `model` record group_id, technical_replicate_id, block_reason, uses_duplicate_correlation and consensus_correlation. The DA checks for a global group_mapping object (methods.R:399)."
+        "KIT-035: the DA model and RUV-III take their replicate block from the one declaration (technical_replicate_id); the fit artifact, the da_fit factors and the manifest's `model` record group_id, technical_replicate_id, block_reason, uses_duplicate_correlation and consensus_correlation. The DA checks for a global group_mapping object (methods.R:399).",
+        "KIT-129 (protocol v1.11): the RUV design preset of the normalisation decides the test through the source's declaration: a new design with factors is tested on the uncorrected matrix with W in the model (exact standard errors); a count of 0 or the design none on the normalised matrix without W, by the same test; legacy (no ruv_design in the declaration) is today's runTestsContrasts on the corrected matrix. The DA reads the head (correlation_filtered after the journey's filter) and commits only its arguments onto it. Unit unchanged (whole_matrix)."
       ]
     },
     {
@@ -912,20 +931,28 @@
       "route": "DIA_LIMPA",
       "unit": "whole_matrix",
       "in_journey": false,
-      "module": "R/mod_prot_norm_*: on DIA_LIMPA the correlation sub-step's observer runs runDIAReferenceRuvCovariates after the correlation filter when ruv_mode = covariates (R/mod_prot_norm_workflow_helpers.R runProtNormApplyCorrelationObserver); declared by diaRuvCovariatesOperation (registered protein_ruv_covariates, in process, whole)",
-      "kernel": "findBestNegCtrlPercentageCapped (R/func_prot_norm_optimization_helpers.R; the script's optimiser: getNegCtrlProtAnova, ruvCancorFromInput, calculateSeparationScore, calculateCompositeScore, calculateAdaptiveMaxK) then computeRuvCovariates (ruv::RUVIII with the replicate matrix of resolveProtRuvReplicateBlocks; W = Y[, ctl] %*% t(ac) %*% solve(ac %*% t(ac)))",
+      "module": "R/mod_prot_norm_*: on DIA_LIMPA the correlation sub-step's observer runs runDIAReferenceRuvCovariates after the correlation filter when ruv_mode = covariates (R/mod_prot_norm_workflow_helpers.R runProtNormApplyCorrelationObserver); declared by diaRuvCovariatesOperation (registered protein_ruv_covariates, in process, whole); KIT-129 (gate MultiScholaR.ruv_design_panel): the apply_ruv_covariates action (runProtNormRuvCovariatesObserver, R/mod_prot_norm_workflow_helpers.R:71-106) reads the preset (:80), the mode from it (protNormDiaRuvDesignMode :112-115: legacy_correction correction, none skip, every other preset covariates) and the rules (protNormDiaRuvDesignRules :122-128) -> diaRuvCovariatesRequestParameters (R/utils_workflow_dia_products.R:1459-1464) -> computeDIAReferenceRuvCovariates (:1443-1450): workflowRequestOperation (R/utils_workflow_operations.R:228) runs diaRuvCovariatesOperation(\"declared\") when the request names ruv_control_rule",
+      "kernel": "findBestNegCtrlPercentageCapped (R/func_prot_norm_optimization_helpers.R; the script's optimiser: getNegCtrlProtAnova, ruvCancorFromInput, calculateSeparationScore, calculateCompositeScore, calculateAdaptiveMaxK) then computeRuvCovariates (ruv::RUVIII with the replicate matrix of resolveProtRuvReplicateBlocks; W = Y[, ctl] %*% t(ac) %*% solve(ac %*% t(ac))); KIT-129 declared rules (diaRuvCovariatesOperation(\"declared\"), R/utils_workflow_dia_products.R:991-1000): diaRuvCovariatesByRuleKernel (:1340-1397) -> computeDiaRuvCovariatesByRule (:1228-1318): controls by ruv_control_rule (all_features, supplied_list, or first_pass_drop_top_25 by diaRuvFirstPassPValues :1165-1185), k by resolveRuvFactorCount (R/func_general_ruv_factor_count.R:306: estimateRuvFactorCount :89-152 on the quantified matrix, the typed k, or the separation rule: diaRuvSeparationRuleK :1196-1207 on a supplied list, else the sweep's best_k) under ruvFactorCountLimit (:236), then computeRuvCovariates",
       "evidence": [
         "the negative-control ANOVA ranks every protein over every sample (func_prot_s4_norm_controls.R); the canonical correlation uses the whole sample-by-protein matrix (NIPALS over all when values are missing)",
         "ruv::RUVIII estimates the factors from every sample and every control; W is a function of the whole control block",
-        "the adjusted matrix t(newY) is a product (QC plots), never a state"
+        "the adjusted matrix t(newY) is a product (QC plots), never a state",
+        "KIT-129 R/utils_workflow_dia_products.R:1244-1262 controls: every protein, the listed proteins of the table, or every protein outside the 25% most significant of diaRuvFirstPassPValues (limpa::dpcDE on the whole quantified EList, the moderated F test of the groups, rank with ties first over all proteins)",
+        "KIT-129 R/utils_workflow_dia_products.R:1265-1271 replicate blocks and the k limit from the whole design (the biological units when technical replicates are declared, M28); :1289-1296 the count on every protein complete in every sample (estimateRuvFactorCount, seeded row-wise permutations); :1298-1310 under an automatic rule what the data cannot give leaves the run without RUV (warning dia_ruv_not_applied); :1313 computeRuvCovariates over every sample and control",
+        "KIT-129 R/utils_workflow_dia_products.R:1346-1357 the state keeps the quantified matrix, gains W1..Wk (none when k = 0: ruv_mode none) and args$ruvCovariates with the rules; :1388-1389 ruvGroupAssociationCheck on W; :1475-1520 diaRuvCovariatesCommit: state ruv_covariates (ruv_corrected only in the correction mode, :1483), the declared rules and ruv_applied in the config (:1499-1515)"
       ],
       "reads_outside_assay": [
-        "design_matrix (group, technical replicate block, the RUV grouping variable)"
+        "design_matrix (group, technical replicate block, the RUV grouping variable)",
+        "KIT-129 args$limpa_dpc_quant_results$quantified_elist (the first pass of first_pass_drop_top_25)",
+        "KIT-129 GUI inputs under the gate: ruv_design, ruv_k_rule, ruv_k_user, ruv_k_seed, ruv_control_list (R/mod_omic_norm_panels.R:873-908)"
       ],
       "writes": [
         "design_matrix (W1..Wk appended)",
         "args$ruvCovariates (k, percentage, control_count, replicate_structure, block_reason)",
-        "products: optimisation table, cancor plot, adjusted matrix"
+        "products: optimisation table, cancor plot, adjusted matrix",
+        "KIT-129 declared rules: args$ruvCovariates gains ruv_control_rule, ruv_k_rule, ruv_k_estimate, ruv_applied, ruv_not_applied_reason, ruv_controls_selected (ruv_mode none, k 0 and no W when no RUV was applied; percentage and the sweep's scores NA)",
+        "KIT-129 product parameters gain ruv_control_rule, ruv_k_rule, ruv_k, ruv_control_ids, ruv_k_seed (diaRuvCovariatesRuleParameters, :1102); ruv_result gains k_estimate (plotRuvFactorCount), k_sweep (the sweep's or the separation rule's own record and plot), controls_unmatched, ruv_group_association",
+        "KIT-129 state config: the rules, ruv_applied and the outcomes with k_seed and the group-association fields"
       ],
       "global_statistics": [
         {
@@ -935,16 +962,27 @@
         {
           "name": "ruv_factors",
           "why": "W estimated from every sample and control"
+        },
+        {
+          "name": "ruv_factor_count",
+          "why": "KIT-129 num_sv_be: the estimated count over every protein complete in every sample, with seeded row-wise permutations"
+        },
+        {
+          "name": "first_pass_controls",
+          "why": "KIT-129 first_pass_drop_top_25: every protein's dpcDE F-test p-value ranked, the top 25% left out"
         }
       ],
       "merge": null,
       "holders": [
-        "R/utils_workflow_dia_products.R runDIAReferenceRuvCovariates -> commitDIAReferenceState (state ruv_covariates)"
+        "R/utils_workflow_dia_products.R runDIAReferenceRuvCovariates -> commitDIAReferenceState (state ruv_covariates)",
+        "KIT-129 R/utils_workflow_dia_products.R:1535 normData$ruv_design_result (diaRuvDesignResult, the RUV design section's summary)"
       ],
       "mode": "in_process",
       "flag": null,
       "notes": [
-        "KIT-041: unit recorded under the afk authorisation (decision record), which also records the replicate-structure rule (KIT-035's: the technical block when declared, else the grouping variable; the script used group)."
+        "KIT-041: unit recorded under the afk authorisation (decision record), which also records the replicate-structure rule (KIT-035's: the technical block when declared, else the grouping variable; the script used group).",
+        "KIT-129 (protocol v1.11): the RUV design preset (`ruv_design`, table omicGuiRuvTableDiaLimpa) selects: legacy the sweep in covariates mode and legacy_correction the sweep in correction mode (today's path, unchanged); groups_all_features and technical_replicates the control rule all_features (one calculation on this route: the replicate structure follows the declared technical replicates either way), supplied_controls supplied_list, first_pass_nulls first_pass_drop_top_25, each in covariates mode with its k rule (num_sv_be pre-selected; user; sweep_bounded for the supplied list and the first pass); none runs nothing (no commit: the head stays correlation_filtered). Unit stays whole_matrix: every rule reads all proteins and samples.",
+        "KIT-129: the count's permutations and the first pass's ranking (ties first) depend on row order: the projected object must preserve it."
       ]
     },
     {
@@ -954,23 +992,30 @@
       "unit": "whole_matrix",
       "in_journey": false,
       "module": "R/mod_prot_da_handlers_run_analysis.R: da_server_run_analysis_handler (reference: runDIAReferenceDaAnalysis, R/utils_workflow_dia_da.R) with the contrast declaration diaContrastOperation(route = limpa)",
-      "kernel": "differentialAbundanceAnalysis -> differentialAbundanceAnalysisHelper (R/func_prot_da_model_methods.R): the dpcDE branch when the object carries the quantified EList: limpa::dpcDE(elist, model.matrix(formula + W1..Wk), plot = FALSE, block = KIT-035's resolved block) -> convertDpcDAToStandardFormat (R/func_prot_limpa_da_helpers.R:17; contrasts.fit, eBayes, topTable, qvalue)",
+      "kernel": "differentialAbundanceAnalysis -> differentialAbundanceAnalysisHelper (R/func_prot_da_model_methods.R): the dpcDE branch when the object carries the quantified EList: limpa::dpcDE(elist, model.matrix(formula + W1..Wk), plot = FALSE, block = KIT-035's resolved block) -> convertDpcDAToStandardFormat (R/func_prot_limpa_da_helpers.R:17; contrasts.fit, eBayes, topTable, qvalue); KIT-129 declared rules (args$ruvCovariates$ruv_k_rule present) with W: ruvExactContrastsFit (R/func_general_ruv_factor_count.R:383) refitting dpcDE per comparison, then moderateDpcDaContrastFit (R/func_prot_da_model_methods.R:418-421); without W (k = 0) convertDpcDAToStandardFormat as today",
       "evidence": [
         "limpa::dpcDE fits every protein against the whole design with imputation weights from every sample (voomaLmFitWithImputation); duplicateCorrelation over all proteins when a block is given",
         "the W covariates come from the ruv_covariates state's design (whole matrix)",
-        "no TREAT step on this branch (the converter uses eBayes/topTable); treat_lfc_cutoff recorded as not applied"
+        "no TREAT step on this branch (the converter uses eBayes/topTable); treat_lfc_cutoff recorded as not applied",
+        "KIT-129 R/func_prot_da_model_methods.R:405-413 a declared-rule state with W needs a residual degree of freedom between the biological units (M28; omics_ruv_no_residual_df); :418-425 each comparison's standard error exact by refitting dpcDE on the whole EList with the comparison as a coefficient (M29)"
       ],
       "reads_outside_assay": [
         "design_matrix (the formula's factors and W1..Wk)",
-        "args$limpa_dpc_quant_results$quantified_elist (the owned entry, reattached on hydrate)"
+        "args$limpa_dpc_quant_results$quantified_elist (the owned entry, reattached on hydrate)",
+        "KIT-129 args$ruvCovariates (ruv_k_rule and ruv_mode: the declared rules' declaration)"
       ],
       "writes": [
-        "DA contrast products (da_proteins_long/wide, contrasts_results_table, significant_rows, norm_counts) per contrast; the manifest's model (dpcDE, formula_used, k, block_reason, treat_applied)"
+        "DA contrast products (da_proteins_long/wide, contrasts_results_table, significant_rows, norm_counts) per contrast; the manifest's model (dpcDE, formula_used, k, block_reason, treat_applied)",
+        "KIT-129: the contrast declaration gains ruv_da_method (dpcde_ruv_factors_exact_se, or dpcde_ruv_none for k = 0; workflowRuvDaMethodOfArgs R/utils_workflow_operations.R:271, computeDIAReferenceDaContrast R/utils_workflow_dia_da.R:484-486)"
       ],
       "global_statistics": [
         {
           "name": "dpcDE_fit",
           "why": "one linear model fit over every protein and sample with the DPC imputation weights"
+        },
+        {
+          "name": "dpcDE_exact_contrast_refits",
+          "why": "KIT-129: with declared-rule W, one dpcDE refit per comparison over every protein and sample (ruvExactContrastsFit)"
         }
       ],
       "merge": null,
@@ -980,7 +1025,8 @@
       "mode": "in_process",
       "flag": null,
       "notes": [
-        "KIT-053: unit recorded under the afk authorisation (decision record 2026-10-21)."
+        "KIT-053: unit recorded under the afk authorisation (decision record 2026-10-21).",
+        "KIT-129 (protocol v1.11): the RUV design preset decides the test through the source's declaration: a declared-rule state with W gets exact per-comparison standard errors; with k = 0 it is today's dpcDE without W under the method dpcde_ruv_none; legacy (W terms) and legacy_correction (the corrected EList, no W) are today's; under none the source is correlation_filtered with no RUV declaration, so today's declaration runs (no ruv_da_method). Unit unchanged (whole_matrix)."
       ]
     },
     {
