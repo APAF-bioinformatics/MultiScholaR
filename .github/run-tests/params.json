@@ -1,6 +1,6 @@
 {
-  "label": "KIT-063 items A (sample match) and B (Results tab) (base 6c423b7a, head f0067320): targeted files, check, failing-first, gate-off and match identity",
-  "package_commit": "f0067320f4a77d1afc42a58bfa7c91e88c6f1cb6",
+  "label": "KIT-129 final figures correction (base 75f418fe, head 303217ac): RUV design files, GUI config, run path, four gui-entry files, check",
+  "package_commit": "303217ac19c314f92094b0a339ef9e8211e9fa21",
   "base_commit": "6c423b7a9b98b5e69a085e67b00398302a63e2dd",
   "tools_ref": "",
   "tests": [
