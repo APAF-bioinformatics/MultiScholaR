@@ -151,10 +151,12 @@ test_that("KIT-135: a new RUV design writes the RUV state's corrected table and 
     uncorrected <- as.data.frame(state@args$ruv_uncorrected_assays$LCMS_Pos, check.names = FALSE)
     expect_false(isTRUE(all.equal(unname(as.matrix(input$views$lipidomics_LCMS_Pos$matrix[input$samples$Run])),
         unname(as.matrix(uncorrected[input$samples$Run])))))
-    # The internal-standard step's hand selection is marked with the regex's standards.
+    # The internal-standard step removes the standards it used (`remove_itsd_after_norm`), so the hand-selected one is
+    # gone; the selection is recorded, and the regex's standards it did not use stay, marked.
     features <- input$views$lipidomics_LCMS_Pos$features
-    expect_identical(features$is_internal_standard[features$feature_id == "pos_L05"], "TRUE")
+    expect_false("pos_L05" %in% features$feature_id)
     expect_true(manifest$internal_standards$selected_by_hand)
+    expect_identical(features$is_internal_standard, ifelse(startsWith(features$feature_id, "IS_"), "TRUE", "FALSE"))
 
     # Design none: the same state name, no factor; the input is normalised, with no correction.
     none <- integrationOmicsNormalised(integrationOmicsOwner("lipidomics", file.path(root, "none")))
@@ -191,6 +193,10 @@ test_that("KIT-135: without RUV the normalised matrix is written; with no final 
 })
 
 test_that("KIT-135: the worker's integration export writes the same input beside its RDS", {
+    skip_if_not(workflowOwnerCapable())
+    # The in-test worker under load_all (test-workflow-omics-application-reads.R's `omicsReadMocks`).
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) }, .package = "MultiScholaR")
     root <- withr::local_tempdir()
     fixture <- integrationOmicsOwner("metabolomics", file.path(root, "owner"))
     integrationOmicsQuiet(metabDeclarationsJourney(fixture))
