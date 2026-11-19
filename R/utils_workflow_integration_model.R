@@ -768,14 +768,22 @@ integrationMofaRecordedNames <- function(parameters) {
 #' @param source The inputs state's reference.
 #' @param run The operation's run (`reference`, `value`).
 #' @param parameters The resolved declared parameters.
+#' @param confirmation KIT-142: the sample table's confirmation as the record keeps it (`integrationConfirmationRecord`),
+#'   or NULL; kept with the model. The same model accepted again keeps the results saved from it.
 #' @noRd
-acceptIntegrationModel <- function(manager, source, run, parameters) {
+acceptIntegrationModel <- function(manager, source, run, parameters, confirmation = NULL) {
     context <- manager$.context
     clearWorkflowStepProvenance(manager)
     if (is.null(context$snapshot$products[[run$reference$entity_id]])) rootWorkflowProduct(manager, run$reference, list(source))
     snapshot <- context$snapshot
-    snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- list(operation = INTEGRATION_MODEL_OPERATION, source = source,
+    previous <- snapshot$exports[[INTEGRATION_MODEL_OPERATION]]
+    export <- list(operation = INTEGRATION_MODEL_OPERATION, source = source,
         reference = run$reference, parameters = parameters[integrationMofaRecordedNames(parameters)])
+    if (!is.null(confirmation)) export$confirmation <- confirmation
+    if (identical(previous$reference$entity_id, run$reference$entity_id) && !is.null(previous$results)) {
+        export$results <- previous$results
+    }
+    snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- export
     publishWorkflowStateHead(context, snapshot)
     invisible(run)
 }
@@ -789,10 +797,11 @@ acceptIntegrationModel <- function(manager, source, run, parameters) {
 #' @param check_inputs Check each input's manifest on disk (the replay checks its inputs itself and passes FALSE).
 #' @param probe The capability probe (`integrationMofaCapability`).
 #' @param trainer NULL for MOFA2, or a stand-in with `integrationTrainMofa`'s form (tests; then nothing is probed).
+#' @param confirmation KIT-142: the sample table's confirmation, kept with the model (`acceptIntegrationModel`).
 #' @return The run (`status`, `value`, `reference`).
 #' @noRd
 runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRUE, probe = integrationMofaCapability,
-    trainer = NULL) {
+    trainer = NULL, confirmation = NULL) {
     if (!usesWorkflowReferenceStates(manager)) {
         cli::cli_abort("the integration model needs the integration owner", class = "saved_entity_scope")
     }
@@ -815,7 +824,7 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
         # A refused or failed training leaves no pending provenance for a later commit to take.
         run <- withCallingHandlers(runSavedOperation(manager, declaration, source, c(resolved, list(trainer = trainer))),
             error = function(error) clearWorkflowStepProvenance(manager))
-        acceptIntegrationModel(manager, source, run, resolved)
+        acceptIntegrationModel(manager, source, run, resolved, confirmation)
         run
     })
 }

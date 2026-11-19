@@ -1,4 +1,4 @@
-# Integration GUI: every user-facing string (KIT-138, KIT-139, KIT-140)
+# Integration GUI: every user-facing string (KIT-138, KIT-139, KIT-140, KIT-063, KIT-142)
 
 Drafts for the user to set the final wording. All of them live in one table, `integrationGuiTexts()` in
 `R/utils_integration_gui.R`; change a string there and nowhere else. `%s` and `%d` are filled in the order given.
@@ -244,3 +244,56 @@ the table's, never these strings'.
 | save_heading; save_button | Save the results; Save tables and figures to the project | |
 | save_done | Saved at %s: %d tables to %s and %d figures to %s. | time, counts, folders |
 | save_refused | The results were not saved. %s | the refusal's sentence |
+
+## Record tab, study parameters, methods paragraph, report and replay (KIT-142)
+
+These strings live in their own table, `integrationRecordTexts()` in `R/utils_integration_record.R` (the tab's title and
+step are `integrationGuiTexts()`'s). The same words are used by the Record tab, the saved `study_parameters.txt`, the
+record's workbook (sheets `integration_*`) and the report (`inst/reports/integration/integration_report.rmd`). The
+methods paragraph is a draft for the user: each sentence is filled from the record, nothing is hard-coded.
+Words that appear: "checksum (SHA-256)" (the record's identity of a file), "provisional default", "data set".
+
+| Key | Text | Where |
+|---|---|---|
+| tab_record; step_record | " Record"; Record | tab title; stepper |
+| record_heading; record_intro | Record and report; Save the integration's analysis record (what was combined, how samples were matched, every setting, the software versions and the model's checksum), its study parameters and a report with a draft methods paragraph. | Record tab |
+| record_button; record_working | Save the record and the report; Writing the record and the report. | button; progress |
+| record_not_ready | Train a model at the Model tab and save its results at the Results tab first. | before a model |
+| record_done | Saved at %s: %d files in %s. | time, files, folder |
+| record_refused | The record was not saved. %s | the refusal's sentence |
+| record_methods_heading | Methods paragraph (draft, from the record) | Record tab |
+| record_no_model | There is no trained model to record. Train a model at the Model tab first. | refusal |
+| status_decided, status_provisional_default, status_user_set, status_input | decided; provisional default; set by the user; from the data | a setting's status |
+| legend_decided, legend_provisional_default, legend_user_set, legend_input | a decision recorded in the methods ledger; not expected to change / the current default; the integration methods may still change it / changed by the user from the default / taken from the imported data | report legend |
+| report_title; report_intro | Multi-omics integration report; This report was written by MultiScholaR from the integration's analysis record. Every value below is read from the record. | report, study parameters |
+| section_methods; methods_draft_note | Methods (draft); A draft for the methods section, written from the record: check the wording before using it. | |
+| section_inputs, section_matching, section_samples, section_settings, section_model, section_variance, section_results, section_notes, section_legend | Data sets combined; Sample matching; Biological samples in the model; Settings; The trained model; Variance explained per data set (all factors together); Saved results; Notes from the model; What the status of a setting means | headings |
+| none_recorded; not_recorded; yes; no | None recorded.; not recorded; yes; no | |
+| col_omic, col_datasets_in_model, col_values, col_correction, col_group_corrected, col_checksum | Omic; Data sets in the model; Values; Correction for unwanted variation (RUV); Corrected with the groups as replicate sets; Checksum of the saved data (SHA-256) | inputs table |
+| col_field, col_value, col_setting, col_name, col_status, col_settled_by, col_applies_to, col_file, col_view, col_variance, col_note, col_status_meaning | Item; Value; Setting; Internal name; Status; Settled by; Applies to; File; Data set; Variance explained (%); Note; Meaning | headers |
+| applies_model; applies_results | model; results | settings table |
+| values_corrected; values_normalised | corrected for unwanted variation; normalised, not corrected | inputs table |
+| match_rule, match_rule_saved, match_rule_user | How samples were matched; by the biological-sample column each omic saved; by the biological-sample column each omic saved, corrected by an uploaded table (%d runs moved) | runs |
+| match_table_checksum, match_samples, match_shared, match_confirmed_at, match_design_file, match_design_checksum, match_file | Checksum of the uploaded match (SHA-256); Biological samples in the model; Measured in every data set; Sample table confirmed at; Sample table saved as; Checksum of the saved sample table (SHA-256); Uploaded match saved as | matching table |
+| model_mofa2 ... model_identity | MOFA2; mofapy2; Python; R; reticulate; Numeric precision; Training rounds; Training settled; Factors (kept, asked for); Checksum of the model file (SHA-256); Size of the model file (bytes); Model's identifier in the project; Checksum of the model's identity (data and settings) | model table |
+| model_factors_value | %d of %d | kept, asked for |
+| note_few_samples | Only %d biological samples are measured in every data set (fewer than %d). | samples, threshold |
+| methods_inputs; methods_input_item | %d data sets from %d omics were combined: %s.; %s (%s; %s) | counts, list; omic, data sets, values |
+| methods_input_corrected; methods_input_normalised | corrected for unwanted variation, %s; normalised, not corrected for unwanted variation | the approach in the Import tab's words |
+| methods_software | Shared factors were learned with multi-omics factor analysis, MOFA2 %s (mofapy2 %s, Python %s, R %s), in %s precision. | versions, precision |
+| methods_matching_saved; methods_matching_user | Samples were matched across omics by the biological-sample column each omic saved.; ... corrected by a user-supplied match table that assigned %d runs to another biological sample (SHA-256 %s). | runs, checksum |
+| methods_replicates_average | Runs of the same biological sample were averaged (the mean of the observed values). | INT-2 |
+| methods_standards_drop; methods_standards_keep | Internal standards were removed (%d features).; Internal standards were kept. | INT-3 |
+| methods_missing_keep_missing; methods_missing_drop_incomplete | Biological samples missing from a data set were kept, with that data set's values missing.; Only the biological samples measured in every data set were kept. | D4 |
+| methods_sparse | Features measured in fewer than two biological samples were left out. | |
+| methods_selection_none; methods_selection_top_variance; methods_scaling_none; methods_scaling_feature_zscore | All remaining features were used; The %d most variable features of each data set were used; without per-feature scaling.; each scaled to mean 0 and standard deviation 1. | joined with ", " |
+| methods_model | The model was asked for %d factors (convergence mode %s, at most %d training rounds, seed %d; each data set scaled to the same total variance: %s; features centred: %s). | |
+| methods_trained_settled; methods_trained_not_settled | Training settled after %d rounds and kept %d factors; %d biological samples entered the model, %d of them measured in every data set.; Training stopped at the maximum of %d rounds without settling and kept %d factors; ... | |
+| methods_association | Each factor was related to the experimental groups after training: a one-way analysis of variance of the factor's values on the group, with the share of the factor's variance that lies between the groups (R-squared) as the effect size, and p-values adjusted across the factors tested (%s). | only when results were saved |
+| methods_claim_limit; methods_claim_none | In %s, unwanted variation had been removed with the groups as replicate sets, which keeps the differences between groups by construction; p-values for the association of the factors with the groups are therefore not reported, and the factors are described, not tested.; The factors were learned without the groups; their association with the groups describes the model. | D10 |
+| methods_provisional; methods_user_set | Settings that were provisional defaults at the time of the analysis: %s.; Settings changed from their defaults: %s. | settings in the Model tab's words |
+| replay_no_model | This record holds no integration model, so there is nothing to repeat. | replay refusal |
+| replay_input_missing | The saved data of %s is no longer at %s, so the analysis cannot be repeated. Give its new location, or save it again at that omic's Summary tab. | omic, file |
+| replay_input_changed | The saved data of %s has changed since this analysis was recorded (its checksum differs), so the analysis cannot be repeated on it. | omic |
+| replay_mofa_unavailable | The analysis cannot be repeated on this computer: the MOFA2 software, or the Python it uses, is not installed. | |
+| replay_versions_differ; replay_version_item | The analysis was recorded with other software versions (%s); it is repeated and compared with the recorded model numerically.; %s %s, here %s | warning |

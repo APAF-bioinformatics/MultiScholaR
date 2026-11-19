@@ -110,10 +110,12 @@ mod_integration_model_server <- function(id, workflow_data, paths, texts = integ
             }
             tryCatch({
                 parameters <- integrationModelParameters(confirmed$parameters, integrationModelSettings(settings_values(), spec, texts))
+                # KIT-142: the confirmation of the sample table is kept with the model, for the record.
+                confirmation <- integrationConfirmationRecord(confirmed)
                 runner <- workflowOmicsManagedActions("integration")
                 if (is.null(runner)) {
                     run <- withProgressFn(message = texts[["run_working"]], value = 0.5,
-                        quiet(runIntegrationModel(manager, parameters, probe = probe, trainer = trainer)))
+                        quiet(runIntegrationModel(manager, parameters, probe = probe, trainer = trainer, confirmation = confirmation)))
                     export <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]
                     deliver(run$value, run$reference, run$status, export$parameters)
                     return(invisible(NULL))
@@ -122,7 +124,7 @@ mod_integration_model_server <- function(id, workflow_data, paths, texts = integ
                 model$running <- TRUE
                 runner$run(list(omicsManagedProduct(INTEGRATION_MODEL_OPERATION, checked$parameters, function(result) {
                     acceptIntegrationModel(manager, checked$source, list(reference = result$reference, value = result$value),
-                        checked$parameters)
+                        checked$parameters, confirmation)
                     deliver(result$value, result$reference, result$display$status %||% "computed", checked$parameters)
                 })), failed = refuse)
             }, error = refuse)

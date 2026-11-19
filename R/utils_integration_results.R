@@ -21,7 +21,8 @@
 # use), drawn in a short folder and every file checked (`withWorkflowShortStaging`, `checkWorkflowFigureFiles`;
 # KIT-052). Every choice the user's integration workbook would make (how many features, which factors, the statistic,
 # figure size and format) is a declared parameter with a provisional default in one table,
-# `integrationResultsParameterSpec()`. Enrichment on the weights is KIT-141, the record and report KIT-142.
+# `integrationResultsParameterSpec()`. Enrichment on the weights is KIT-141, the record and report KIT-142 (a saved
+# publication is kept with its model for the record, `integrationRecordResultsPublication`).
 
 #' The label of the results' publication on the owner's action-output journal.
 #' @noRd
@@ -486,5 +487,9 @@ integrationSaveResults <- function(manager, model_reference, results, paths, tex
                 "the integration results could not be copied into the project's staging folder"),
             identity = identity)
     })
+    # KIT-142: the saved results are kept with their model, for the analysis record.
+    integrationRecordResultsPublication(manager, model_reference, results,
+        list(tables = file.path(destinations$mofa_tables_dir, display$tables),
+            figures = file.path(destinations$mofa_plots_dir, display$figures)), identity)
     c(display, list(tables_dir = destinations$mofa_tables_dir, plots_dir = destinations$mofa_plots_dir))
 }

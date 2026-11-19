@@ -529,6 +529,12 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     # KIT-095: a product-only export accepted on the head after the DA (the transcriptomics RUVIII matrix) is listed as an
     # analysis with its parameters and the outcomes its binding records.
     for (name in names(snapshot$exports)) analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
+    # KIT-142: an integration store's model analysis carries what the integration adds (inputs, the confirmed match, each
+    # setting's status, the model's identity, the saved results, the claim limit); an omic's record is as before.
+    if (identical(context$omic_type, "integration") && !is.null(analyses[[INTEGRATION_MODEL_OPERATION]])) {
+        analyses[[INTEGRATION_MODEL_OPERATION]] <- integrationRecordAnalysis(manager, analyses[[INTEGRATION_MODEL_OPERATION]],
+            snapshot$exports[[INTEGRATION_MODEL_OPERATION]])
+    }
     inputs <- list()
     for (name in names(snapshot$file_dependencies)) {
         dependency <- snapshot$file_dependencies[[name]]
@@ -949,6 +955,8 @@ workflowAnalysisRecordTables <- function(record) {
     # KIT-129 sixth pass item 6: a new RUV design in words, as the study parameters state it (none for today's design).
     ruv <- workflowRuvDesignSummary(record)
     if (!is.null(ruv)) out$ruv_design <- ruv$rows
+    # KIT-142: an integration record's own sheets (none for an omic's record).
+    if (identical(record$omic_type, "integration")) out <- c(out, integrationRecordTables(record))
     out
 }
 
@@ -958,7 +966,7 @@ workflowAnalysisRecordTables <- function(record) {
 writeWorkflowAnalysisRecordWorkbook <- function(record, path) {
     tables <- workflowAnalysisRecordTables(record)
     openxlsx::write.xlsx(tables[intersect(c("software", "inputs", "design", "parameters", "external_resources", "steps", "analyses",
-        "packages", "ruv_design"), names(tables))], path, overwrite = TRUE)
+        "packages", "ruv_design", INTEGRATION_RECORD_SHEETS), names(tables))], path, overwrite = TRUE)
     invisible(path)
 }
 

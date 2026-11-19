@@ -377,12 +377,15 @@ integrationGuiTexts <- function() {
         # %s: the time; %d: tables; %s: their folder; %d: figures; %s: their folder.
         save_done = "Saved at %s: %d tables to %s and %d figures to %s.",
         # %s: the reason.
-        save_refused = "The results were not saved. %s"
+        save_refused = "The results were not saved. %s",
+        # KIT-142: the Record tab (its own words are `integrationRecordTexts()`).
+        tab_record = " Record",
+        step_record = "Record"
     )
 }
 
 #' The integration GUI's configuration (KIT-138): the shell group only, in the single-omic shell's form, validated by
-#' `validateOmicGuiShell`. KIT-140 adds its tab to `tabs`.
+#' `validateOmicGuiShell`. KIT-140 adds its tab to `tabs`, KIT-063 the Results tab, KIT-142 the Record tab.
 #' @return `list(shell, texts)`.
 #' @noRd
 integrationGuiConfig <- function() {
@@ -396,12 +399,14 @@ integrationGuiConfig <- function() {
         tab("integration_alignment", "alignment", "tab_alignment", "th", "step_alignment"),
         tab("integration_model", "model", "tab_model", "cubes", "step_model"),
         # KIT-063: the Results tab.
-        tab("integration_results", "results", "tab_results", "chart-bar", "step_results"))
+        tab("integration_results", "results", "tab_results", "chart-bar", "step_results"),
+        # KIT-142: the Record tab (the analysis record, the study parameters and the report).
+        tab("integration_record", "record", "tab_record", "file-alt", "step_record"))
     shell <- list(omic_type = "integration", prefix = "integration", testid = "integration",
         label = texts[["workflow_label"]], label_lower = "integration", header_icon = NULL,
         tabset_id = "integration_tabs", tab_style = "icon_in_title", routes = "integration", tabs = tabs,
         bus = list(state_manager = NULL, tab_status = NULL, integration_scan = NULL, integration_import = NULL,
-            integration_alignment = NULL, integration_model = NULL, integration_results = NULL),
+            integration_alignment = NULL, integration_model = NULL, integration_results = NULL, integration_record = NULL),
         bus_registration = "userData")
     validateOmicGuiShell(shell, omicGuiConfigSchema())
     list(shell = shell, texts = texts)

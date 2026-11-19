@@ -1,0 +1,66 @@
+---
+title: "`r MultiScholaR:::integrationRecordTexts()[['report_title']]`"
+output: word_document
+params:
+  record_path: ""
+---
+
+```{r setup, include = FALSE}
+# KIT-142: the integration report. Every value and every heading is read from the analysis record and the wording
+# table (`integrationRecordTexts()`); nothing is described that the record does not carry.
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+record <- jsonlite::read_json(params$record_path, simplifyVector = FALSE)
+texts <- MultiScholaR:::integrationRecordTexts()
+tables <- MultiScholaR:::integrationRecordTables(record, texts)
+show <- function(table) if (is.data.frame(table) && nrow(table)) knitr::kable(table, row.names = FALSE) else cat(texts[["none_recorded"]], "\n")
+heading <- function(key) cat("\n\n# ", texts[[key]], "\n\n", sep = "")
+```
+
+```{r intro, results = "asis"}
+cat(texts[["report_intro"]], "\n")
+heading("section_methods")
+cat("*", texts[["methods_draft_note"]], "*\n\n", sep = "")
+cat(MultiScholaR:::integrationMethodsText(record, texts), "\n")
+```
+
+```{r inputs, results = "asis"}
+heading("section_inputs")
+show(tables$integration_inputs)
+```
+
+```{r matching, results = "asis"}
+heading("section_matching")
+show(tables$integration_matching)
+```
+
+```{r settings, results = "asis"}
+heading("section_settings")
+show(tables$integration_settings)
+cat("\n\n## ", texts[["section_legend"]], "\n\n", sep = "")
+legend <- data.frame(unname(texts[c("status_decided", "status_provisional_default", "status_user_set", "status_input")]),
+    unname(texts[c("legend_decided", "legend_provisional_default", "legend_user_set", "legend_input")]), stringsAsFactors = FALSE)
+names(legend) <- unname(texts[c("col_status", "col_status_meaning")])
+show(legend)
+```
+
+```{r model, results = "asis"}
+heading("section_model")
+show(tables$integration_model)
+heading("section_variance")
+show(tables$integration_variance)
+```
+
+```{r claim, results = "asis"}
+heading("section_notes")
+show(tables$integration_notes)
+```
+
+```{r results, results = "asis"}
+heading("section_results")
+show(tables$integration_results)
+```
+
+```{r samples, results = "asis"}
+heading("section_samples")
+show(tables$integration_samples)
+```
