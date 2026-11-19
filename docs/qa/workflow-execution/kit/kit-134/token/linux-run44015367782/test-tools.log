@@ -1,0 +1,37 @@
+testthat needs, not in the bundle: testthat, brio, desc, pkgload, praise, waldo, pkgbuild, diffobj 
+trying URL 'https://packagemanager.posit.co/cran/__linux__/jammy/2026-07-30/src/contrib/testthat_3.3.2.tar.gz'
+trying URL 'https://packagemanager.posit.co/cran/__linux__/jammy/2026-07-30/src/contrib/brio_1.1.5.tar.gz'
+trying URL 'https://packagemanager.posit.co/cran/__linux__/jammy/2026-07-30/src/contrib/desc_1.4.3.tar.gz'
+trying URL 'https://packagemanager.posit.co/cran/__linux__/jammy/2026-07-30/src/contrib/pkgload_1.5.3.tar.gz'
+trying URL 'https://packagemanager.posit.co/cran/__linux__/jammy/2026-07-30/src/contrib/praise_1.0.0.tar.gz'
+trying URL 'https://packagemanager.posit.co/cran/__linux__/jammy/2026-07-30/src/contrib/waldo_0.6.2.tar.gz'
+trying URL 'https://packagemanager.posit.co/cran/__linux__/jammy/2026-07-30/src/contrib/pkgbuild_1.4.8.tar.gz'
+trying URL 'https://packagemanager.posit.co/cran/__linux__/jammy/2026-07-30/src/contrib/diffobj_0.3.8.tar.gz'
+* installing *binary* package ‘brio’ ...
+* package ‘brio’ successfully unpacked and SHA256 sums checked
+* DONE (brio)
+* installing *binary* package ‘desc’ ...
+* package ‘desc’ successfully unpacked and SHA256 sums checked
+* DONE (desc)
+* installing *binary* package ‘praise’ ...
+* package ‘praise’ successfully unpacked and SHA256 sums checked
+* DONE (praise)
+* installing *binary* package ‘diffobj’ ...
+* package ‘diffobj’ successfully unpacked and SHA256 sums checked
+* DONE (diffobj)
+* installing *binary* package ‘waldo’ ...
+* package ‘waldo’ successfully unpacked and SHA256 sums checked
+* DONE (waldo)
+* installing *binary* package ‘pkgbuild’ ...
+* package ‘pkgbuild’ successfully unpacked and SHA256 sums checked
+* DONE (pkgbuild)
+* installing *binary* package ‘pkgload’ ...
+* package ‘pkgload’ successfully unpacked and SHA256 sums checked
+* DONE (pkgload)
+* installing *binary* package ‘testthat’ ...
+* package ‘testthat’ successfully unpacked and SHA256 sums checked
+* DONE (testthat)
+
+The downloaded source packages are in
+	‘/tmp/RtmpBF6kix/downloaded_packages’
+testthat 3.3.2 from /home/runner/work/_temp/test-tools/testthat 

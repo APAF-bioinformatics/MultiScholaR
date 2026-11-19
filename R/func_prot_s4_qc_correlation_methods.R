@@ -88,9 +88,6 @@ setMethod(
   f = "pearsonCorForSamplePairs",
   signature = "ProteinQuantitativeData",
   definition = function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA, exclude_pool_samples = TRUE) {
-    message("+===========================================================================+")
-    message("|  DEBUG66: Entering pearsonCorForSamplePairs                               |")
-    message("+===========================================================================+")
 
     # Memory tracking - Entry
     entry_mem <- checkMemoryBoth("Entry", context = "pearsonCorForSamplePairs")
@@ -114,7 +111,6 @@ setMethod(
     theObject <- updateParamInObject(theObject, "exclude_pool_samples")
 
     # --- OPTIMIZED MATRIX APPROACH ---
-    message("--- DEBUG66 [pearsonCorForSamplePairs]: Using optimized matrix correlation ---")
 
     # 1. Extract numeric matrix
     # Get sample columns (exclude ID)
@@ -205,9 +201,6 @@ setMethod(
     # Memory tracking - Exit
     reportMemoryDelta(entry_mem, "TOTAL pearsonCorForSamplePairs", context = "pearsonCorForSamplePairs")
 
-    message("+===========================================================================+")
-    message("|  DEBUG66: Exiting pearsonCorForSamplePairs                                |")
-    message("+===========================================================================+")
 
     # Ensure the returned dataframe has the expected columns for the next step
     # filterSamplesByProteinCorrelationThreshold expects:

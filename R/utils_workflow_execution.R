@@ -1427,6 +1427,15 @@ workflowLaunchService <- function(config, unit, role, path, hash, cap = NULL, bi
     dir.create(scratch, showWarnings = FALSE)
     args <- c(args, paste0("--setenv=TMPDIR=", scratch))
     if (role == "worker") args <- c(args, "--setenv=MULTISCHOLAR_WORKFLOW_WORKER=1")
+    # KIT-134 (F3, U3): inside the packaged bundle (`MSR_BUNDLE` set by its launcher) the bundled R/bin/Rscript needs
+    # the bundle's R home and shared libraries, and a unit gets the bundle's library, Python, pandoc, PATH and locale
+    # rather than the user manager's. Without `MSR_BUNDLE` the arguments are unchanged.
+    if (nzchar(Sys.getenv("MSR_BUNDLE"))) {
+        variables <- c("RHOME", "LD_LIBRARY_PATH", "R_LIBS_USER", "R_LIBS_SITE", "RETICULATE_PYTHON", "PYTHONNOUSERSITE",
+            "RSTUDIO_PANDOC", "MSR_BUNDLE", "PATH", "LANG", "LC_CTYPE", "LC_ALL")
+        values <- unname(Sys.getenv(variables))
+        args <- c(args, paste0("--setenv=", variables, "=", values)[nzchar(values)])
+    }
     args <- c(args, file.path(R.home("bin"), "Rscript"), "--vanilla", "-e", expression, path, hash)
     workflowSystemd(args, command = "systemd-run")
     invisible(NULL)
@@ -2706,7 +2715,13 @@ computeWorkflowOmicsAction <- function(request) {
     if (!identical(entry$compute, "omics")) cli::cli_abort("scientific adapter unavailable")
     manager$.context$deferred_roots <- list()
     manager$.context$deferred_owned <- list()
-    value <- withWorkflowStateScope(manager, function() get(entry$handler, mode = "function")(manager, request, variant))
+    # KIT-052: a publication's files are drawn in a short folder (`omicsStagedPublicationDir`) and copied into the request
+    # folder, whose paths can pass Windows' 259 characters; an action that stages nothing copies nothing.
+    publication <- workflowRequestPublication(request$directory, "omics-publication")
+    value <- withWorkflowShortFigureFolder(publication$path, function(scratch) {
+        request$publication_dir <- scratch
+        withWorkflowStateScope(manager, function() get(entry$handler, mode = "function")(manager, request, variant))
+    }, folders = publication$roles)
     value$operation <- request$operation
     value$roots <- manager$.context$deferred_roots
     value$owned <- manager$.context$deferred_owned
@@ -2894,23 +2909,29 @@ computeWorkflowDaPublicationAction <- function(manager, request, variant) {
     # As the in-process path: no annotation table means an empty one.
     annotations <- if (!is.null(request$parameters$annotations))
         materializeWorkflowTable(manager$.context, request$parameters$annotations) else data.frame()
-    root <- file.path(request$directory, "da-publication")
-    staged <- stats::setNames(lapply(c("da_output_dir", "publication_graphs_dir"), function(role) {
-        path <- file.path(root, role)
-        dir.create(path, recursive = TRUE, showWarnings = FALSE)
-        path
-    }), c("da_output_dir", "publication_graphs_dir"))
-    # KIT-022: the state scope names its owner for the publication kernels' readers; no session is needed.
-    withWorkflowStateScope(manager, function()
-        produceDIADaPublication(manager, manifest, annotations, manifest$parameters$qvalue, staged, save_assets = FALSE))
-    files <- list.files(root, recursive = TRUE)
+    publication <- workflowRequestPublication(request$directory, "da-publication")
+    # KIT-052: drawn in a short folder and copied into the request folder, whose paths can pass Windows' 259 characters.
+    # The inventory is taken there, by role, before the roles take their short folders.
+    inventory <- withWorkflowShortFigureFolder(publication$path, function(scratch) {
+        staged <- stats::setNames(lapply(c("da_output_dir", "publication_graphs_dir"), function(role) {
+            path <- file.path(scratch, role)
+            dir.create(path, recursive = TRUE, showWarnings = FALSE)
+            path
+        }), c("da_output_dir", "publication_graphs_dir"))
+        # KIT-022: the state scope names its owner for the publication kernels' readers; no session is needed.
+        withWorkflowStateScope(manager, function()
+            produceDIADaPublication(manager, manifest, annotations, manifest$parameters$qvalue, staged, save_assets = FALSE))
+        files <- list.files(scratch, recursive = TRUE)
+        list(files = files, bytes = sum(file.size(file.path(scratch, files))))
+    }, folders = publication$roles)
+    files <- inventory$files
     # GUI audit A112-06: the digest of the annotation table the pages were built with travels in the summary, the part
     # of this value the acceptance keeps for the controller's publication (its key and the saved pages' record). It is
     # absent without a table, so that value is as before.
     built_with <- diaAnnotationDigest(annotations)
     list(checkpoint = head_record, reference = head, state_reference = head,
         state_name = manager$current_state, manifest_reference = manifest_reference,
-        summary = c(list(files = length(files), bytes = sum(file.size(file.path(root, files)))),
+        summary = c(list(files = length(files), bytes = inventory$bytes),
             if (!is.null(built_with)) list(annotations_digest = built_with)), files = files)
 }
 
@@ -2951,15 +2972,13 @@ publishWorkflowDaResult <- function(owner, paths, result) {
     manifest_reference <- manager$.context$snapshot$da_results
     if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
     manifest <- resolveWorkflowStateValue(manager$.context, manifest_reference)
-    staged_root <- file.path(paths$request_dir, "da-publication")
+    publication <- workflowRequestPublication(paths$request_dir, "da-publication")
     workflowExecutionBoundary("publication")
     publishDIAActionOutputs(manager, reference, "da", experiment_paths[c("da_output_dir", "publication_graphs_dir")],
         function(staged) {
-            for (role in names(staged)) {
-                members <- list.files(file.path(staged_root, role), full.names = TRUE, all.files = TRUE, no.. = TRUE)
-                if (length(members) && !all(file.copy(members, staged[[role]], recursive = TRUE)))
-                    cli::cli_abort("cannot stage the worker's DA files", class = "saved_entity_outputs_pending")
-            }
+            for (role in names(staged)) copyWorkflowFolder(
+                file.path(publication$path, workflowRequestRoleFolder(role, publication$roles)), staged[[role]],
+                "cannot stage the worker's DA files", class = "saved_entity_outputs_pending")
             interactive <- file.path(staged$publication_graphs_dir, "Interactive_Volcano_Plots")
             pages <- file.path(interactive, paste0(gsub("[^A-Za-z0-9_-]", "_", manifest$contrasts$friendly_names), ".html"))
             # KIT-101 F-08: a contrast with nothing to plot has the not-available record instead of a page.
@@ -2978,13 +2997,19 @@ publishWorkflowDaResult <- function(owner, paths, result) {
 #' file and publishes nothing here: its figures are drawn when the tab delivers it.
 #' @noRd
 publishWorkflowOmicsResult <- function(owner, paths, result) {
-    staged_root <- file.path(paths$request_dir, "omics-publication")
+    publication_folder <- workflowRequestPublication(paths$request_dir, "omics-publication")
+    staged_root <- publication_folder$path
     # An empty file means a figure with nothing to draw; the journal refuses one, and no reader wants it.
     files <- list.files(staged_root, recursive = TRUE, full.names = TRUE)
     unlink(files[file.size(files) == 0])
-    roles <- list.dirs(staged_root, full.names = FALSE, recursive = FALSE)
-    roles <- roles[vapply(roles, function(role) length(list.files(file.path(staged_root, role), recursive = TRUE)) > 0L, logical(1))]
-    if (!length(roles)) return(invisible(NULL))
+    folders <- list.dirs(staged_root, full.names = FALSE, recursive = FALSE)
+    folders <- folders[vapply(folders, function(folder) length(list.files(file.path(staged_root, folder), recursive = TRUE)) > 0L,
+        logical(1))]
+    if (!length(folders)) return(invisible(NULL))
+    # KIT-052: the roles in the order of their names, as when the folders had the roles' names.
+    roles <- workflowRequestRoleFolder(folders, publication_folder$roles, role = FALSE)
+    folders <- stats::setNames(folders[order(roles)], sort(roles))
+    roles <- names(folders)
     manager <- owner$manager
     publication <- readRDS(file.path(paths$request_dir, "publication-context.rds"))
     experiment_paths <- publication$experiment_paths
@@ -2992,11 +3017,8 @@ publishWorkflowOmicsResult <- function(owner, paths, result) {
         cli::cli_abort("publication context is invalid", class = "workflow_execution_invalid")
     workflowExecutionBoundary("publication")
     publishWorkflowActionOutputs(manager, result$state_reference, result$operation, experiment_paths[roles], function(staged) {
-        for (role in names(staged)) {
-            members <- list.files(file.path(staged_root, role), full.names = TRUE, all.files = TRUE, no.. = TRUE)
-            if (!all(file.copy(members, staged[[role]], recursive = TRUE)))
-                cli::cli_abort("cannot stage the worker's files", class = "saved_entity_outputs_pending")
-        }
+        for (role in names(staged)) copyWorkflowFolder(file.path(staged_root, folders[[role]]), staged[[role]],
+            "cannot stage the worker's files", class = "saved_entity_outputs_pending")
         list(completed = TRUE)
     }, identity = basename(paths$request_dir))
     invisible(NULL)

@@ -1586,10 +1586,11 @@ acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, co
 # to the controller's completion (`completeWorkflowOmicsAction`). Nothing here reads a Shiny session.
 # ---------------------------------------------------------------------------------------------------------------
 
-#' A directory the worker stages one role's files in; the controller publishes them (`publishWorkflowOmicsResult`).
+#' A directory the worker stages one role's files in; the controller publishes them (`publishWorkflowOmicsResult`). On the
+#' worker it lies in the short folder `computeWorkflowOmicsAction` copies into `<request>/p` (KIT-052).
 #' @noRd
 omicsStagedPublicationDir <- function(request, role) {
-    path <- file.path(request$directory, "omics-publication", role)
+    path <- file.path(request$publication_dir %||% file.path(request$directory, "omics-publication"), role)
     dir.create(path, recursive = TRUE, showWarnings = FALSE)
     path
 }

@@ -1,0 +1,22 @@
+### Windows bundle, size (MiB)
+```
+  2172  bundle\.
+  1465  bundle\R
+  1351  bundle\R\library
+   484  bundle\python
+   223  bundle\pandoc
+files: 50294
+largest R packages:
+   123  BH
+    67  GO.db
+    67  magick
+    48  arrow
+    40  duckdb
+    35  V8
+    34  stringi
+    24  mixOmics
+    19  h5mread
+    19  rhdf5
+    18  Rhtslib
+    17  MultiScholaR
+```

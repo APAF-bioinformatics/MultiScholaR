@@ -1,0 +1,33 @@
+Client:
+ Version:           29.7.2
+ API version:       1.55
+ Go version:        go1.26.5
+ Git commit:        a7dcaa6
+ Built:             Wed Aug  5 18:31:33 2026
+ OS/Arch:           windows/amd64
+ Context:           default
+Server: Docker Engine - Community
+ Engine:
+  Version:          29.7.2
+  API version:      1.55 (minimum version 1.40)
+  Go version:       go1.26.5
+  Git commit:       6a43e3d
+  Built:            Wed Aug  5 18:28:13 2026
+  OS/Arch:          windows/amd64
+  Experimental:     false
+mcr.microsoft.com/windows/servercore:ltsc2025
+pulled mcr.microsoft.com/windows/servercore:ltsc2025 in 296 s
+ok   R is 4.6.1: R version 4.6.1 (2026-06-24 ucrt)
+ok   R home is inside the bundle: C:/msr/R
+ok   every library path is inside the bundle: C:/msr/R/library
+ok   the network is offline: a connection to cran.r-project.org failed
+FAILED rgl: .onLoad failed in loadNamespace() for 'rgl', details:   call: fun(libname, pkgname)   error: Loading failed.
+FAIL every bundled package loads (383 packages): 382 loaded, 1 failed, 0 not reported, 127 s
+ok   every loaded namespace comes from the bundle: 0 outside
+ok   MultiScholaR attaches from the bundle and has run_app: MultiScholaR 0.5.0 TRUE C:/msr/R/library/MultiScholaR 
+KIT-134 CHECK FAILED: every bundled package loads (383 packages)
+HTTP status after about 2 s: 200
+MSR-LAUNCHER {"launcher":"in-process","reason":"this MultiScholaR has no runPackagedApplication yet (the package side of KIT-134 P3 waits for KIT-131), so steps run inside the application","probe":null}
+KIT-134 CHECK PASSED: the application answers HTTP 200 in Server Core
+library check: exit 1; application: exit 0
+[31;1mException: [0mD:\a\_temp\a7d5d13c-6400-4c88-98e3-01d1e349326f.ps1:38[0m

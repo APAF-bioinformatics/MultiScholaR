@@ -1,0 +1,7 @@
+date: 2026-07-30
+rule: duckdb 1.5.5; most hard-closure packages at the lock; most packages at the lock; latest
+scored: 2026-04-29 to 2026-11-16 (202 dates, 199 with indexes)
+eligible window: 2026-07-27 to 2026-09-29 (65 dates)
+hard closure at the lock: 152 of 160
+all at the lock: 365 of 394
+windows bioconductor: snapshot

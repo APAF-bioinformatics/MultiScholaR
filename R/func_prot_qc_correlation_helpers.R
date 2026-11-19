@@ -235,7 +235,6 @@ calulatePearsonCorrelationForSamplePairsHelper <- function(
   num_pairs <- nrow(pairs_for_comparison)
   message(sprintf("*** PEARSON HELPER: Generated %d sample pairs for correlation analysis ***", num_pairs))
 
-  message(sprintf("--- DEBUG66 [calulatePearsonCorrelationForSamplePairsHelper]: Processing %d pairs ---", num_pairs))
 
   # Track total calculation time
   total_start_time <- Sys.time()
@@ -397,7 +396,6 @@ filterSamplesByProteinCorrelationThresholdHelper <- function(
   protein_id_column = Protein.Ids,
   correlation_column = pearson_correlation
 ) {
-  message("--- DEBUG66 [filterSamplesByProteinCorrelationThresholdHelper]: Entry ---")
   message(sprintf(
     "   [filterSamplesByProteinCorrelationThresholdHelper] protein_intensity_table dims: %d x %d",
     nrow(protein_intensity_table), ncol(protein_intensity_table)

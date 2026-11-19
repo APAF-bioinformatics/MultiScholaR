@@ -57,7 +57,6 @@ runReactomeEnrichment <- function(ranked_list,
                                  assay_name,
                                  reactome_organism = NULL) {
   
-  message(sprintf("--- Entering runReactomeEnrichment ---"))
   message(sprintf("   runReactomeEnrichment Args: assay_name = %s", assay_name))
   message(sprintf("   runReactomeEnrichment Args: reactome_organism = %s", as.character(reactome_organism)))
   message(sprintf("   runReactomeEnrichment Args: ranked_list length = %d", length(ranked_list)))
@@ -160,16 +159,11 @@ runReactomeEnrichment <- function(ranked_list,
     reactome_ranked_list <- sort(reactome_ranked_list, decreasing = TRUE)
     
     # Diagnostic: Check for ties in the data
-    message("   runReactomeEnrichment DEBUG: Analyzing score distribution...")
     # Count exact duplicates in values
     duplicate_count <- sum(duplicated(reactome_ranked_list))
     duplicate_percentage <- (duplicate_count / length(reactome_ranked_list)) * 100
-    message(sprintf("   runReactomeEnrichment DEBUG: Found %d exact duplicate values (%.2f%% of total)",
-                   duplicate_count, duplicate_percentage))
     
     # Show basic statistics
-    message(sprintf("   runReactomeEnrichment DEBUG: Score range: [%.4f, %.4f], Median: %.4f", 
-                   min(reactome_ranked_list), max(reactome_ranked_list), median(reactome_ranked_list)))
     
     # Add small random noise to break ties in the ranked list
     message("   runReactomeEnrichment Step: Adding small random noise to break ties in ranked list...")
@@ -244,7 +238,6 @@ runReactomeEnrichment <- function(ranked_list,
     print(head(term2name, 5))
     
     # Debug: check for duplicate pathways
-    message("   runReactomeEnrichment DEBUG: Checking for duplicate pathway IDs...")
     duplicated_terms <- term2name$term[duplicated(term2name$term)]
     if (length(duplicated_terms) > 0) {
       message(sprintf("   runReactomeEnrichment WARNING: Found %d duplicate pathway IDs", length(duplicated_terms)))
@@ -254,8 +247,6 @@ runReactomeEnrichment <- function(ranked_list,
         message(sprintf("   Term: %s has %d entries:", dup_term, nrow(dup_entries)))
         print(dup_entries)
       }
-    } else {
-      message("   runReactomeEnrichment DEBUG: No duplicate pathway IDs found in TERM2NAME")
     }
     
     # Add fallback in case term2name is empty
@@ -325,7 +316,6 @@ runReactomeEnrichment <- function(ranked_list,
       if (length(positive_genes) > 0) {
         tryCatch({
           message("   runReactomeEnrichment Step: Running enricher analysis...")
-          message("   runReactomeEnrichment DEBUG: Top 10 genes for enricher:")
           message(paste(head(positive_genes, 10), collapse=", "))
           
           # Try with higher p-value cutoff
@@ -419,7 +409,6 @@ runReactomeEnrichment <- function(ranked_list,
         duplicate_count <- sum(duplicated(reactome_results$termDescription))
         if (duplicate_count > 0) {
           message(sprintf("   runReactomeEnrichment WARNING: Found %d duplicate pathway descriptions after processing", duplicate_count))
-          message("   runReactomeEnrichment DEBUG: Applying additional distinct() operation...")
           reactome_results <- reactome_results |> distinct(termDescription, .keep_all = TRUE)
         }
       }
@@ -436,7 +425,6 @@ runReactomeEnrichment <- function(ranked_list,
       )
     }
     
-    message(sprintf("--- Exiting runReactomeEnrichment. Returning table with %d rows ---", nrow(reactome_results)))
     return(reactome_results)
     
   }, error = function(e) {

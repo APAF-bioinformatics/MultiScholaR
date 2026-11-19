@@ -7,7 +7,6 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
     shiny::observeEvent(selected_tab(),
       {
         withDIAStateScope(getDIAActiveManager(), function() {
-        cat("--- Entering tab selection observer ---\n")
         cat(sprintf("   tab_observer Step: Selected tab = %s\n", selected_tab()))
 
         # Only trigger if DA tab is selected
@@ -174,7 +173,6 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
           cat(sprintf("   tab_observer Step: Tab '%s' is not DA tab, ignoring\n", selected_tab()))
         }
 
-        cat("--- Exiting tab selection observer ---\n")
         })
       },
       ignoreInit = TRUE
@@ -187,7 +185,6 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
   shiny::observeEvent(workflow_data$state_update_trigger,
     {
       withDIAStateScope(getDIAActiveManager(), function() {
-      cat("--- Entering state update trigger observer ---\n")
       cat("\n\n=== DA TAB TRIGGERED VIA STATE UPDATE: Checking for S4 object and contrasts ===\n")
 
       # Get current S4 object from state manager
@@ -298,7 +295,6 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
       }
 
       cat("=== DA TAB: Contrast detection complete ===\n")
-      cat("--- Exiting state update trigger observer ---\n")
       })
     },
     ignoreInit = TRUE

@@ -38,6 +38,7 @@ Collate:
     'func_general_s4_plotting_methods.R'
     'func_omics_da_shared.R'
     'func_omics_design_shared.R'
+    'func_omics_norm_shared.R'
     'func_pept_s4_core.R'
     'func_pept_s4_objects.R'
     'func_pept_s4_norm_methods.R'
@@ -408,7 +409,6 @@ Suggests:
     testthat (>= 3.0.0),
     covr,
     dynamicTreeCut,
-    fastduckdb (>= 0.2.0),
     nanoarrow (>= 0.9.0),
     GlimmaV2,
     GO.db,
@@ -449,6 +449,7 @@ Imports:
     digest,
     dplyr,
     duckdb,
+    fastduckdb (>= 0.2.0),
     filelock (>= 1.0.3),
     parallel,
     forcats,
@@ -476,6 +477,7 @@ Imports:
     janitor,
     jsonlite,
     knitr,
+    later,
     lazyeval,
     limma,
     logger,

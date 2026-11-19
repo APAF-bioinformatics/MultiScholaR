@@ -36,12 +36,8 @@ runLipidPerAssayRuvOptimization <- function(
     , params = list()
     , experiment_paths = NULL
 ) {
-    message("+===========================================================================+")
-    message("|  DEBUG66: Entering runLipidPerAssayRuvOptimization                        |")
-    message("+===========================================================================+")
 
     ruv_mode <- match.arg(ruv_mode)
-    message(sprintf("   DEBUG66 [runLipidPerAssayRuvOptimization] ruv_mode = '%s'", ruv_mode))
 
     stopifnot(inherits(theObject, "LipidomicsAssayData"))
 
@@ -68,30 +64,14 @@ runLipidPerAssayRuvOptimization <- function(
         )
     }
 
-    message(sprintf(
-        "   DEBUG66 [runLipidPerAssayRuvOptimization] percentage_min=%s, percentage_max=%s"
-        , percentage_min, percentage_max
-    ))
-    message(sprintf(
-        "   DEBUG66 [runLipidPerAssayRuvOptimization] ruv_grouping_variable='%s'"
-        , ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable)
-    ))
 
     # --- Validate grouping variable ---
     if (is.null(ruv_grouping_variable) || !ruv_grouping_variable %in% colnames(theObject@design_matrix)) {
-        message(sprintf(
-            "   DEBUG66 [runLipidPerAssayRuvOptimization] fallback ruv_grouping_variable -> '%s'"
-            , theObject@group_id
-        ))
         ruv_grouping_variable <- theObject@group_id
     }
 
     assay_list  <- theObject@lipid_data
     assay_names <- names(assay_list)
-    message(sprintf(
-        "   DEBUG66 [runLipidPerAssayRuvOptimization] Found %d assays: %s"
-        , length(assay_names), paste(assay_names, collapse = ", ")
-    ))
     logger::log_info(paste("Running RUV optimization for", length(assay_names), "assays in", ruv_mode, "mode"))
 
     # =========================================================================
@@ -100,10 +80,6 @@ runLipidPerAssayRuvOptimization <- function(
     if (ruv_mode == "automatic") {
 
         percentage_range <- seq(percentage_min, percentage_max, by = 1)
-        message(sprintf(
-            "   DEBUG66 [runLipidPerAssayRuvOptimization] Testing %d percentages: %s-%s"
-            , length(percentage_range), percentage_min, percentage_max
-        ))
 
         # --- Percentage-first whole-object loop ---
         # getNegCtrlMetabAnova() and ruvCancor() are called ONCE PER PERCENTAGE,
@@ -113,9 +89,6 @@ runLipidPerAssayRuvOptimization <- function(
             , error = function(e) theObject
         )
         percentage_results <- purrr::map(percentage_range, function(pct) {
-            message(sprintf(
-                "   DEBUG66 [runLipidPerAssayRuvOptimization] Whole-object pass: pct=%d%%", pct
-            ))
 
             ctrl_list <- tryCatch(
                 getNegCtrlMetabAnova(
@@ -165,10 +138,6 @@ runLipidPerAssayRuvOptimization <- function(
         design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
 
         results <- purrr::imap(assay_list, function(assay_data, assay_name) {
-            message(sprintf(
-                "   DEBUG66 [runLipidPerAssayRuvOptimization] Deriving per-assay results: '%s'"
-                , assay_name
-            ))
 
             # Sample size: assay columns that appear in the design matrix
             sample_size <- length(intersect(colnames(assay_data), design_samples))
@@ -388,13 +357,6 @@ runLipidPerAssayRuvOptimization <- function(
             )[[1L]]
             winner <- assay_pct_rows[[winner_idx]]
 
-            message(sprintf(
-                "   DEBUG66 [runLipidPerAssayRuvOptimization] Assay '%s': winner pct=%d%%, k=%d, composite=%.4f"
-                , assay_name
-                , winner$percentage_requested
-                , winner$best_k
-                , winner$composite_score
-            ))
 
             list(
                 success                      = TRUE
@@ -412,13 +374,6 @@ runLipidPerAssayRuvOptimization <- function(
         })
 
         names(results) <- assay_names
-        message(sprintf(
-            "   DEBUG66 [runLipidPerAssayRuvOptimization] Automatic mode complete. %d assay results."
-            , length(results)
-        ))
-        message("+===========================================================================+")
-        message("|  DEBUG66: Exiting runLipidPerAssayRuvOptimization                         |")
-        message("+===========================================================================+")
         return(results)
     }
 
@@ -426,9 +381,6 @@ runLipidPerAssayRuvOptimization <- function(
     # MANUAL MODE (unchanged semantics)
     # =========================================================================
     results <- purrr::imap(assay_list, function(assay_data, assay_name) {
-        message(sprintf(
-            "   DEBUG66 [runLipidPerAssayRuvOptimization] Assay '%s': MANUAL mode", assay_name
-        ))
         logger::log_info(paste("Processing assay:", assay_name))
 
         tryCatch({
@@ -456,10 +408,6 @@ runLipidPerAssayRuvOptimization <- function(
                 cancor_result
             }
 
-            message(sprintf(
-                "   DEBUG66 [runLipidPerAssayRuvOptimization] Assay '%s': MANUAL mode SUCCESS - k=%s"
-                , assay_name, manual_k
-            ))
 
             list(
                 success               = TRUE
@@ -473,10 +421,6 @@ runLipidPerAssayRuvOptimization <- function(
             )
 
         }, error = function(e) {
-            message(sprintf(
-                "   DEBUG66 [runLipidPerAssayRuvOptimization] Assay '%s': MANUAL ERROR - %s"
-                , assay_name, e$message
-            ))
             logger::log_warn(paste("RUV manual mode failed for", assay_name, ":", e$message))
             list(
                 success               = FALSE
@@ -492,13 +436,6 @@ runLipidPerAssayRuvOptimization <- function(
     })
 
     names(results) <- assay_names
-    message(sprintf(
-        "   DEBUG66 [runLipidPerAssayRuvOptimization] Manual mode complete. %d assay results."
-        , length(results)
-    ))
-    message("+===========================================================================+")
-    message("|  DEBUG66: Exiting runLipidPerAssayRuvOptimization                         |")
-    message("+===========================================================================+")
     return(results)
 }
 

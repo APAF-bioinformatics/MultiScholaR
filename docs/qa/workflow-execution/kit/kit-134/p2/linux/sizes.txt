@@ -1,0 +1,23 @@
+### Linux bundle, size (MiB)
+```
+2301	/home/runner/work/_temp/stage/bundle
+1410	/home/runner/work/_temp/stage/bundle/R
+1383	/home/runner/work/_temp/stage/bundle/R/library
+606	/home/runner/work/_temp/stage/bundle/python
+131	/home/runner/work/_temp/stage/bundle/syslib
+157	/home/runner/work/_temp/stage/bundle/pandoc
+files: 48570
+largest R packages:
+156	/home/runner/work/_temp/stage/bundle/R/library/BH
+96	/home/runner/work/_temp/stage/bundle/R/library/RUVIIIC
+68	/home/runner/work/_temp/stage/bundle/R/library/GO.db
+61	/home/runner/work/_temp/stage/bundle/R/library/Rhdf5lib
+59	/home/runner/work/_temp/stage/bundle/R/library/arrow
+47	/home/runner/work/_temp/stage/bundle/R/library/duckdb
+36	/home/runner/work/_temp/stage/bundle/R/library/V8
+25	/home/runner/work/_temp/stage/bundle/R/library/mixOmics
+19	/home/runner/work/_temp/stage/bundle/R/library/Rhtslib
+18	/home/runner/work/_temp/stage/bundle/R/library/rhdf5filters
+18	/home/runner/work/_temp/stage/bundle/R/library/MultiScholaR
+16	/home/runner/work/_temp/stage/bundle/R/library/rgl
+```

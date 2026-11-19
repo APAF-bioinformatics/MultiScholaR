@@ -825,8 +825,10 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
     skipped <- identical(settings$ruv_mode, "skip")
     final <- readDIAStateMetadata(manager, saved$final)$data
     accepted <- getDIAStateReference(manager)
+    # KIT-052: drawn in a short folder and copied into the action staging folder (`withWorkflowShortStaging`); drawn
+    # there, a QC figure, the cancor figure and the composite were lost without a word from 260 characters on Windows.
     display <- publishDIAActionOutputs(manager, accepted, "normalization",
-        paths[c("source_dir", "protein_qc_dir", "time_dir")], function(staged) {
+        paths[c("source_dir", "protein_qc_dir", "time_dir")], function(staging) withWorkflowShortStaging(staging, function(staged) {
             norm_data$publication_paths <- staged
             on.exit({ norm_data$publication_paths <- NULL }, add = TRUE)
             pre_files <- list.files(paths$protein_qc_dir, pattern = "^pre_norm_.*[.]png$", full.names = TRUE)
@@ -862,7 +864,7 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
                 generateProtNormCompositeQcFigure(settings$ruv_mode, staged$protein_qc_dir, omic_type)
             list(qc_paths = norm_data$qc_plot_paths, filtering_plot = norm_data$post_norm_filtering_plot,
                 filtering_text = norm_data$filtering_summary_text, staged_qc_dir = staged$protein_qc_dir)
-        }, identity = list(product = product$entity_id, color = settings$color_variable,
+        }, "the normalisation's files could not be copied into the project's staging folder"), identity = list(product = product$entity_id, color = settings$color_variable,
             shape = settings$shape_variable, output_schema = 2L))
     norm_data$qc_plot_paths <- lapply(display$qc_paths, function(group) lapply(group, function(path) {
         if (is.character(path)) sub(display$staged_qc_dir, paths$protein_qc_dir, path, fixed = TRUE) else path
@@ -1534,8 +1536,9 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
     norm_data$ruv_normalized_obj <- accepted
     norm_data$correlation_filtered_obj <- accepted
     workflow$ruv_normalised_for_da_analysis_obj <- accepted
+    # KIT-052: drawn in a short folder and copied into the action staging folder, as the normalisation.
     display <- publishDIAActionOutputs(manager, accepted, "ruv-covariates", paths[c("source_dir", "protein_qc_dir")],
-        function(staged) {
+        function(staging) withWorkflowShortStaging(staging, function(staged) {
             norm_data$publication_paths <- staged
             on.exit({ norm_data$publication_paths <- NULL }, add = TRUE)
             writeDIADesignTable(manager, readDIAStateMetadata(manager, saved$covariates)$data$components$design_matrix,
@@ -1554,7 +1557,7 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
                 saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
             ruv_qc(saved$adjusted)
             list(completed = TRUE, qc_paths = norm_data$qc_plot_paths, staged_qc_dir = staged$protein_qc_dir)
-        }, identity = list(product = product$entity_id, color = settings$color_variable,
+        }, "the RUV covariates' files could not be copied into the project's staging folder"), identity = list(product = product$entity_id, color = settings$color_variable,
             shape = settings$shape_variable, output_schema = 1L))
     # GUI audit A111-08 (F111-05): the tab's QC images are the published files, not the staging copy, as after the
     # normalisation. A display saved before this fix names no staging directory and is left as it was.

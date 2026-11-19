@@ -535,9 +535,6 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
                                                , abundance_threshold = 0
                                                , abundance_column = "Abundance") {
 
-  message("+===========================================================================+")
-  message("|  DEBUG66: Entering removePeptidesWithMissingValuesPercentHelper (OPTIMIZED)|")
-  message("+===========================================================================+")
 
   input_cols <- colnames(input_table)
   design_cols <- colnames(design_matrix)
@@ -572,8 +569,6 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
     environment()
   )
 
-  message(sprintf("   DEBUG66: Args: threshold=%g, group_cutoff=%g%%, max_groups_fail=%g%%", 
-                  abundance_threshold, groupwise_percentage_cutoff, max_groups_percentage_cutoff))
   check_case_collision_columns(design_matrix, "design_matrix")
 
   # Case-insensitive column resolution for design matrix
@@ -581,8 +576,6 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
   if (!group_var_str %in% dm_cols) {
     match_idx <- which(tolower(dm_cols) == tolower(group_var_str))
     if (length(match_idx) == 1) {
-      message(sprintf("   DEBUG66: Column '%s' not found in design matrix, using '%s' (case-insensitive match)", 
-                      group_var_str, dm_cols[match_idx]))
       group_var_str <- dm_cols[match_idx]
     } else {
       stop(sprintf("Column '%s' not found in design matrix. Available: %s", 
@@ -592,8 +585,6 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
   if (!sample_id_str %in% dm_cols) {
     match_idx <- which(tolower(dm_cols) == tolower(sample_id_str))
     if (length(match_idx) == 1) {
-      message(sprintf("   DEBUG66: Column '%s' not found in design matrix, using '%s' (case-insensitive match)", 
-                      sample_id_str, dm_cols[match_idx]))
       sample_id_str <- dm_cols[match_idx]
     }
   }
@@ -607,7 +598,6 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
   is_long <- sample_id_str %in% colnames(input_table)
   
   if (is_long) {
-    message("   DEBUG66: Input table appears to be in LONG format. Skipping pivot.")
     abundance_long <- input_table |>
       dplyr::mutate(
         !!rlang::sym(sample_id_str) := as.character(!!rlang::sym(sample_id_str)),
@@ -619,7 +609,6 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
       ) |>
       dplyr::left_join(design_matrix_minimal, by = sample_id_str)
   } else {
-    message("   DEBUG66: Input table appears to be in WIDE format. Pivoting long.")
     abundance_long <- input_table |>
       tidyr::pivot_longer(
         cols = !c(!!rlang::sym(protein_id_str), !!rlang::sym(peptide_seq_str)),
@@ -695,9 +684,6 @@ removePeptidesWithMissingValuesPercentHelper <- function(input_table
 
   message(sprintf("   Results: Peptides: %d -> %d", nrow(input_table), nrow(filtered_tbl)))
   
-  message("+===========================================================================+")
-  message("|  Exiting removePeptidesWithMissingValuesPercentHelper                     |")
-  message("+===========================================================================+")
 
   gc()
   return(filtered_tbl)

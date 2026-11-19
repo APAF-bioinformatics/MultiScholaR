@@ -1,0 +1,59 @@
+#!/bin/sh
+# MultiScholaR bundle (KIT-134): the launcher for the bundled R on Linux, and the one definition of
+# the environment R runs in. It finds the bundle from its own location, so the folder can sit
+# anywhere, and it gives R nothing from the host but the C library and the core utilities.
+# From the KIT-130 spike (tools/dist-spike/linux/Rscript on branch kit-130-dist-spike).
+bundle="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd -P)"
+
+# Nothing from the host steers R or Python to another installation, library or profile.
+# LD_LIBRARY_PATH is removed, not set: the bundle's R, its modules and its packages find the bundled
+# shared libraries (syslib/) through the run path written into each of them at build time
+# (packaging/linux/assemble.sh), so the programs R starts (the host's sh and bash, systemctl, ps)
+# load the host's own libraries. An exported path to syslib/ put Ubuntu's libreadline in front of
+# the host's and stopped bash, and with it R, on hosts whose bash links readline (Arch family).
+unset R_HOME R_LIBS R_ENVIRON R_ENVIRON_USER R_PROFILE R_PROFILE_USER LD_LIBRARY_PATH R_LD_LIBRARY_PATH \
+    PYTHONPATH PYTHONHOME RETICULATE_PYTHON_ENV CONDA_PREFIX VIRTUAL_ENV
+
+# Rscript execs $RHOME/bin/R; without RHOME it uses the build-time prefix compiled into it.
+RHOME="$bundle/R"
+# Neither folder exists: R then keeps only its own library on the search path, even if the user
+# has a personal or site library.
+R_LIBS_USER="$bundle/R/no-user-library"
+R_LIBS_SITE="$bundle/R/no-site-library"
+RETICULATE_PYTHON="$bundle/python/bin/python3"
+PYTHONNOUSERSITE=1
+# rmarkdown finds pandoc here before it looks on the PATH.
+RSTUDIO_PANDOC="$bundle/pandoc"
+PATH=/usr/bin:/bin
+MSR_BUNDLE="$bundle"
+export RHOME R_LIBS_USER R_LIBS_SITE RETICULATE_PYTHON PYTHONNOUSERSITE RSTUDIO_PANDOC \
+    PATH MSR_BUNDLE
+
+# R needs a UTF-8 locale for the application's text; C.UTF-8 is in every glibc from 2.35 on.
+case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
+    *UTF-8* | *utf8* | *UTF8* | *utf-8*) ;;
+    *)
+        unset LC_ALL
+        LANG=C.UTF-8
+        LC_CTYPE=C.UTF-8
+        export LANG LC_CTYPE
+        ;;
+esac
+
+# Decision M25 (the user, 2026-11-18): /usr/bin/which is a host requirement. R's Sys.which() runs
+# that fixed path, and R's utils package needs it as it loads; without it R starts without utils
+# and stats and the application cannot start. Minimal installations (container images) may lack it.
+# The shell (packaging/electron/main.js) shows the same advice for exit status 69.
+if [ ! -x /usr/bin/which ]; then
+    cat >&2 <<'MESSAGE'
+MultiScholaR cannot start: this computer has no /usr/bin/which, a small standard program that
+MultiScholaR needs. Install it, then start MultiScholaR again:
+  Fedora, RHEL, Rocky, Alma:  sudo dnf install which
+  Arch Linux, Manjaro:        sudo pacman -S which
+  Debian, Ubuntu:             sudo apt install debianutils
+  openSUSE:                   sudo zypper install which
+MESSAGE
+    exit 69
+fi
+
+exec "$bundle/R/bin/Rscript" "$@"

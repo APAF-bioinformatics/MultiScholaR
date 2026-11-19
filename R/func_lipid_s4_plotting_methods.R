@@ -194,7 +194,6 @@ setMethod(
             warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
         }
 
-        message("--- Entering plotRle for LipidomicsAssayData ---")
         message(sprintf("   plotRle: grouping_variable = %s", grouping_variable))
         message(sprintf("   plotRle: yaxis_limit = %s", paste(yaxis_limit, collapse = ", ")))
         message(sprintf("   plotRle: sample_label = %s", ifelse(is.null(sample_label), "NULL", sample_label)))

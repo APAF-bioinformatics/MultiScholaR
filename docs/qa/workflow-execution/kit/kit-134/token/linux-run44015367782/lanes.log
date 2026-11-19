@@ -1,0 +1,222 @@
+library paths: /home/runner/work/_temp/relocated/msr moved/R/library | /home/runner/work/_temp/test-tools
+test-tool library: brio, desc, diffobj, pkgbuild, pkgload, praise, testthat, waldo
+MultiScholaR 0.5.0 (/home/runner/work/_temp/relocated/msr moved/R/library)
+testthat 3.3.2 (/home/runner/work/_temp/test-tools)
+fastduckdb 0.1.0 (/home/runner/work/_temp/relocated/msr moved/R/library)
+fastlimpadpc 0.1.0 (/home/runner/work/_temp/relocated/msr moved/R/library)
+limpa 1.4.2 (/home/runner/work/_temp/relocated/msr moved/R/library)
+duckdb 1.5.5 (/home/runner/work/_temp/relocated/msr moved/R/library)
+locale: LC_CTYPE=en_GB.UTF-8;LC_NUMERIC=C;LC_TIME=en_AU.UTF-8;LC_COLLATE=en_GB.UTF-8;LC_MONETARY=en_AU.UTF-8;LC_MESSAGES=en_GB.UTF-8;LC_PAPER=en_AU.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_AU.UTF-8;LC_IDENTIFICATION=C
+network: closed (cran.r-project.org not reached)
+DPC engine resolved by default: fastlimpadpc
+INFO [2026-11-17 04:23:45] --- Processing setup for omic type: proteomics ---
+INFO [2026-11-17 04:23:45] Ensured omic-specific data directory exists: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/data/proteomics
+INFO [2026-11-17 04:23:45] Ensured timestamped directory exists: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/publication_graphs/filtering_qc/20261117_042345
+INFO [2026-11-17 04:23:45] Creating directory structure for 'proteomics'...
+WARN [2026-11-17 04:23:45] Source script directory not found for proteomics: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics. No scripts copied.
+INFO [2026-11-17 04:23:45] Ensured UniProt annotation directory exists: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/data/UniProt
+INFO [2026-11-17 04:23:45] Stored paths for proteomics.
+INFO [2026-11-17 04:23:45] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia (5 items)
+  data_dir                       : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics (0 items)
+  results_dir                    : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results_summary/proteomics (4 items)
+  timestamp                      : 20261117_042345
+  time_dir                       : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/publication_graphs/filtering_qc/20261117_042345 (0 items)
+  clean_features_dir             : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/integration (0 items)
+  pathway_dir                    : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/data/UniProt (0 items)
+------------------------------------------
+
+INFO [2026-11-17 04:23:48] Added base_dir to volumes for easier navigation: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia
+INFO [2026-11-17 04:23:48] === PROTEOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 04:23:48] Module ID: normalization
+INFO [2026-11-17 04:23:50] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 04:23:50] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 04:23:50] Detected format: diann (confidence: 1)
+INFO [2026-11-17 04:23:51] Reading diann data from /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/inputs/report.tsv
+INFO [2026-11-17 04:23:51] Starting DIA-NN import from: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/inputs/report.tsv
+INFO [2026-11-17 04:23:51] Read 8989 rows and 16 columns
+INFO [2026-11-17 04:23:51] Converting Precursor.Normalised to numeric
+INFO [2026-11-17 04:23:51] Using quantity column: Precursor.Normalised
+INFO [2026-11-17 04:23:51] Data imported successfully. Rows: 8989
+INFO [2026-11-17 04:23:51] Sanitized 8 unique sample names.
+INFO [2026-11-17 04:23:51] Processing FASTA file...
+INFO [2026-11-17 04:23:51] Checking experiment_paths...
+INFO [2026-11-17 04:23:52] Saved aa_seq_tbl_final to scripts directory: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics/aa_seq_tbl_final.RDS
+INFO [2026-11-17 04:23:52] Saved FASTA metadata to scripts directory: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics/fasta_metadata.RDS
+INFO [2026-11-17 04:23:52] FASTA Format: standard_uniprot, Sequences: 400
+INFO [2026-11-17 04:23:52] FASTA file processed successfully. Found 400 sequences
+INFO [2026-11-17 04:23:52] Using default configuration
+INFO [2026-11-17 04:23:52] config.ini not found in project. Retrieving default config.
+INFO [2026-11-17 04:23:52] Found default config.ini in package: /home/runner/work/_temp/relocated/msr moved/R/library/MultiScholaR/config/config.ini
+INFO [2026-11-17 04:23:52] Default config.ini copied to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics/config.ini
+INFO [2026-11-17 04:23:52] Stored config_list on workflow_data
+INFO [2026-11-17 04:23:52] Creating processing log...
+INFO [2026-11-17 04:23:52] Processing log created successfully
+INFO [2026-11-17 04:23:54] Received results from design matrix builder module. Now saving to workflow and disk.
+INFO [2026-11-17 04:23:54] Writing design matrix to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics/design_matrix.tab
+INFO [2026-11-17 04:23:54] Writing cleaned data to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics/data_cln.tab
+INFO [2026-11-17 04:23:54] Writing contrasts to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics/contrast_strings.tab
+INFO [2026-11-17 04:23:54] Saved manifest.json to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics/manifest.json
+INFO [2026-11-17 04:23:54] Added workflow_type to config.ini: DIA
+INFO [2026-11-17 04:23:54] Writing config.ini to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics/config.ini
+INFO [2026-11-17 04:23:54] Saved config.ini for future import/export.
+INFO [2026-11-17 04:23:54] Created tech_rep_group column for proper technical replicate identification
+INFO [2026-11-17 04:23:54] Design Matrix complete. Triggering UniProt annotation.
+INFO [2026-11-17 04:23:54] Saved uniprot_dat_cln to scripts directory: /tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/scripts/proteomics/uniprot_dat_cln.RDS
+INFO [2026-11-17 04:23:54] UniProt annotations retrieved successfully. Found 400 annotations
+INFO [2026-11-17 04:23:54]  QC: starting the sub-modules on DIA
+INFO [2026-11-17 04:23:54] Peptide QC orchestrator: workflow type is DIA
+INFO [2026-11-17 04:23:54] Running DIA peptide processing sub-modules.
+INFO [2026-11-17 04:23:55] Protein QC orchestrator: workflow type is DIA
+INFO [2026-11-17 04:23:55] Running DIA protein rollup sub-module.
+INFO [2026-11-17 04:23:55] Running common protein processing sub-modules.
+INFO [2026-11-17 04:23:55] Protein replicate filter server registered for input: proteomics_workflow-quality_control-protein_qc-replicate_filter-apply_protein_replicate_filter
+INFO [2026-11-17 04:23:56] Q-value filter: S4 class = PeptideQuantitativeData
+INFO [2026-11-17 04:23:56] Q-value filter: S4 @peptide_data has 0 rows, 16 columns
+INFO [2026-11-17 04:23:56] Q-value filter: input_matrix_column_ids length = 9
+INFO [2026-11-17 04:23:56] Q-value filter: input_matrix_column_ids values: ['Run', 'Precursor.Id', 'Protein.Group', 'Protein.Ids', 'Stripped.Sequence', 'Modified.Sequence', 'Precursor.Charge', 'Precursor.Quantity', 'Precursor.Normalised']
+INFO [2026-11-17 04:23:56] QC Step: Applying DIA-NN confidence filter at 0.01 for Q.Value, Global.Q.Value, and Global.PG.Q.Value
+INFO [2026-11-17 04:24:04] Q-value filter applied successfully
+INFO [2026-11-17 04:24:13] Protein peptide count filter applied successfully
+ERROR [2026-11-17 04:24:15] Error applying precursor rollup: direct writer requires the qualified incremental fastduckdb build
+ERROR [2026-11-17 04:24:16] Error applying intensity filter: peptideIntensityFilteringHelper: duplicate (protein, peptide, run) quantitative identities detected: P00004/GFSWWGCGR/ko_2, P00004/GFSWWGCGR/ko_4, P00004/GFSWWGCGR/wt_2, P00004/GFSWWGCGR/wt_3, P00005/VTHSNGHCK/ko_1. Roll up or deduplicate precursor rows before intensity filtering.
+ERROR [2026-11-17 04:24:17] Error applying sample quality filter: direct writer requires the qualified incremental fastduckdb build
+INFO [2026-11-17 04:24:25] Replicate filter applied successfully
+ERROR [2026-11-17 04:24:27] Error applying missing value imputation: peptideMissingValueImputationHelper: duplicate run-feature observation(s) must be resolved before imputation: wt_2/P00004/GFSWWGCGR, wt_3/P00004/GFSWWGCGR, ko_2/P00004/GFSWWGCGR, ko_4/P00004/GFSWWGCGR, wt_1/P00005/VTHSNGHCK, wt_2/P00005/VTHSNGHCK, wt_3/P00005/VTHSNGHCK, wt_4/P00005/VTHSNGHCK, ko_1/P00005/VTHSNGHCK, ko_2/P00005/VTHSNGHCK.
+ERROR [2026-11-17 04:24:28] Error in IQ protein rollup & S4 creation: IQ rollup input is missing required column(s): Peptide.Imputed
+ERROR [2026-11-17 04:24:29] Error in protein accession cleanup: a protein state is required
+ERROR [2026-11-17 04:24:30] Error applying protein intensity filter: a protein state is required
+ERROR [2026-11-17 04:24:31] Error removing duplicate proteins: a protein state is required
+INFO [2026-11-17 04:24:32] Protein replicate filter apply observed via module input
+ERROR [2026-11-17 04:24:32] Error applying protein replicate filter: protein replicate filter needs a protein state
+INFO [2026-11-17 04:24:32] Protein replicate filter apply observed via root input
+ERROR [2026-11-17 04:24:32] Error applying protein replicate filter: protein replicate filter needs a protein state
+ERROR [2026-11-17 04:24:33] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+ERROR [2026-11-17 04:24:38] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+INFO [2026-11-17 04:24:43] Results summary directory for proteomics_prot_dia (/tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 04:24:43] Results summary directory for proteomics_prot_dia (/tmp/RtmpAuJ2wR/gui-entry-prot_dia-59bb2ce6f641/project/prot_dia/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+ERROR [2026-11-17 04:24:44] Failed to copy files: native latest pointer is missing or oversized
+LANE prot_dia: pass 1 fail 0 error 1 skip 0; record FALSE; differing steps 0 (discrete 0, digest 0); 61 s
+INFO [2026-11-17 04:24:45] --- Processing setup for omic type: proteomics ---
+INFO [2026-11-17 04:24:45] Ensured omic-specific data directory exists: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/data/proteomics
+INFO [2026-11-17 04:24:45] Ensured timestamped directory exists: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc/20261117_042445
+INFO [2026-11-17 04:24:45] Creating directory structure for 'proteomics'...
+WARN [2026-11-17 04:24:45] Source script directory not found for proteomics: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics. No scripts copied.
+INFO [2026-11-17 04:24:45] Ensured UniProt annotation directory exists: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/data/UniProt
+INFO [2026-11-17 04:24:45] Stored paths for proteomics.
+INFO [2026-11-17 04:24:45] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa (5 items)
+  data_dir                       : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics (0 items)
+  results_dir                    : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results_summary/proteomics (4 items)
+  timestamp                      : 20261117_042445
+  time_dir                       : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc/20261117_042445 (0 items)
+  clean_features_dir             : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/integration (0 items)
+  pathway_dir                    : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/data/UniProt (0 items)
+------------------------------------------
+INFO [2026-11-17 04:24:45] Added base_dir to volumes for easier navigation: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa
+INFO [2026-11-17 04:24:45] === PROTEOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 04:24:45] Module ID: normalization
+INFO [2026-11-17 04:24:46] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 04:24:46] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 04:24:46] Detected format: diann (confidence: 1)
+INFO [2026-11-17 04:24:46] Reading diann data from /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/inputs/report.tsv
+INFO [2026-11-17 04:24:46] Starting DIA-NN import from: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/inputs/report.tsv
+INFO [2026-11-17 04:24:46] Read 8886 rows and 16 columns
+INFO [2026-11-17 04:24:46] Converting Precursor.Normalised to numeric
+INFO [2026-11-17 04:24:46] Using quantity column: Precursor.Normalised
+INFO [2026-11-17 04:24:46] Data imported successfully. Rows: 8886
+INFO [2026-11-17 04:24:46] Sanitized 8 unique sample names.
+INFO [2026-11-17 04:24:47] Processing FASTA file...
+INFO [2026-11-17 04:24:47] Checking experiment_paths...
+INFO [2026-11-17 04:24:47] Saved aa_seq_tbl_final to scripts directory: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics/aa_seq_tbl_final.RDS
+INFO [2026-11-17 04:24:47] Saved FASTA metadata to scripts directory: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics/fasta_metadata.RDS
+INFO [2026-11-17 04:24:47] FASTA Format: standard_uniprot, Sequences: 400
+INFO [2026-11-17 04:24:47] FASTA file processed successfully. Found 400 sequences
+INFO [2026-11-17 04:24:47] Using default configuration
+INFO [2026-11-17 04:24:47] config.ini not found in project. Retrieving default config.
+INFO [2026-11-17 04:24:47] Found default config.ini in package: /home/runner/work/_temp/relocated/msr moved/R/library/MultiScholaR/config/config.ini
+INFO [2026-11-17 04:24:47] Default config.ini copied to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics/config.ini
+INFO [2026-11-17 04:24:47] Stored config_list on workflow_data
+INFO [2026-11-17 04:24:47] Creating processing log...
+INFO [2026-11-17 04:24:47] Processing log created successfully
+INFO [2026-11-17 04:24:49] Received results from design matrix builder module. Now saving to workflow and disk.
+INFO [2026-11-17 04:24:49] Writing design matrix to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics/design_matrix.tab
+INFO [2026-11-17 04:24:49] Writing cleaned data to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics/data_cln.tab
+INFO [2026-11-17 04:24:49] Writing contrasts to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics/contrast_strings.tab
+INFO [2026-11-17 04:24:49] Saved manifest.json to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics/manifest.json
+INFO [2026-11-17 04:24:49] Added workflow_type to config.ini: DIA_LIMPA
+INFO [2026-11-17 04:24:49] Writing config.ini to: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics/config.ini
+INFO [2026-11-17 04:24:49] Saved config.ini for future import/export.
+INFO [2026-11-17 04:24:49] Created tech_rep_group column for proper technical replicate identification
+INFO [2026-11-17 04:24:50] Design Matrix complete. Triggering UniProt annotation.
+INFO [2026-11-17 04:24:50] Saved uniprot_dat_cln to scripts directory: /tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/scripts/proteomics/uniprot_dat_cln.RDS
+INFO [2026-11-17 04:24:50] UniProt annotations retrieved successfully. Found 400 annotations
+INFO [2026-11-17 04:24:50]  QC: starting the sub-modules on DIA_LIMPA
+INFO [2026-11-17 04:24:50] Peptide QC orchestrator: workflow type is DIA_LIMPA
+INFO [2026-11-17 04:24:50] Running DIA_LIMPA peptide processing sub-modules.
+INFO [2026-11-17 04:24:50] Protein QC orchestrator: workflow type is DIA_LIMPA
+INFO [2026-11-17 04:24:50] Running common protein processing sub-modules.
+INFO [2026-11-17 04:24:52] Q-value filter: S4 class = PeptideQuantitativeData
+INFO [2026-11-17 04:24:52] Q-value filter: S4 @peptide_data has 0 rows, 16 columns
+INFO [2026-11-17 04:24:52] Q-value filter: input_matrix_column_ids length = 9
+INFO [2026-11-17 04:24:52] Q-value filter: input_matrix_column_ids values: ['Run', 'Precursor.Id', 'Protein.Group', 'Protein.Ids', 'Stripped.Sequence', 'Modified.Sequence', 'Precursor.Charge', 'Precursor.Quantity', 'Precursor.Normalised']
+INFO [2026-11-17 04:24:52] QC Step: Applying DIA-NN confidence filter at 0.01 for Q.Value, Global.Q.Value, and Global.PG.Q.Value
+INFO [2026-11-17 04:24:59] Q-value filter applied successfully
+ERROR [2026-11-17 04:25:01] Error applying precursor rollup: direct writer requires the qualified incremental fastduckdb build
+ERROR [2026-11-17 04:25:02] Error calculating the log2 peptide matrix: Peptide matrix input contains duplicate protein/peptide/sample identities.
+INFO [2026-11-17 04:25:03] Choosing best protein accession at the peptide level...
+INFO [2026-11-17 04:25:03] Aggregation method for duplicate peptides will be: 'mean'
+INFO [2026-11-17 04:25:03] Aggregating peptide quantities for newly resolved protein groups...
+INFO [2026-11-17 04:25:05] Aggregation complete. Before: 8265 rows. After: 6851 rows.
+INFO [2026-11-17 04:25:05] Recalculating peptide matrix with updated protein accessions...
+INFO [2026-11-17 04:25:14] Peptide accession cleanup completed
+ERROR [2026-11-17 04:25:16] Error in Limpa DPC quantification: DPC quantification needs a log2 transformed peptide state
+ERROR [2026-11-17 04:25:17] Error in between-sample normalisation: between-sample normalisation needs the quantified protein state ('protein_dpc_quant') that DPC Quantification makes from the log2 peptide matrix; run DPC Quantification first
+ERROR [2026-11-17 04:25:18] Error in peptide count filter: the peptide count filter needs the quantified protein state ('protein_dpc_quant') that DPC Quantification makes from the log2 peptide matrix; run DPC Quantification first
+ERROR [2026-11-17 04:25:19] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+ERROR [2026-11-17 04:25:24] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+INFO [2026-11-17 04:25:27] Results summary directory for proteomics_prot_dia_limpa (/tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 04:25:27] Results summary directory for proteomics_prot_dia_limpa (/tmp/RtmpAuJ2wR/gui-entry-prot_dia_limpa-59bb2c0f35d9/project/prot_dia_limpa/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+ERROR [2026-11-17 04:25:28] Failed to copy files: native latest pointer is missing or oversized
+LANE prot_dia_limpa: pass 0 fail 0 error 1 skip 0; record FALSE; differing steps 0 (discrete 0, digest 0); 44 s
+first problems of prot_dia:
+   expectation_error : Error in `file(con, "r")`: cannot open the connection 
+first problems of prot_dia_limpa:
+   expectation_error : Error in `file(con, "r")`: cannot open the connection 
+KIT-134 LANES FAILED 

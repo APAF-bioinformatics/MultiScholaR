@@ -1,0 +1,59 @@
+{
+  "name": "multischolar",
+  "productName": "MultiScholaR",
+  "version": "0.5.0",
+  "description": "MultiScholaR: interactive multi-omics analysis, with its own R, R packages and Python",
+  "private": true,
+  "main": "main.js",
+  "author": "APAF bioinformatics",
+  "license": "LGPL-3.0-or-later",
+  "devDependencies": {
+    "electron": "45.3.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "au.edu.mq.apaf.multischolar",
+    "productName": "MultiScholaR",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "runtime",
+        "to": "runtime"
+      },
+      {
+        "from": "entry.R",
+        "to": "entry.R"
+      },
+      {
+        "from": "stamp",
+        "to": "."
+      }
+    ],
+    "linux": {
+      "target": "dir",
+      "category": "Science",
+      "executableName": "multischolar",
+      "icon": "build/icon.png"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": false,
+      "differentialPackage": false,
+      "shortcutName": "MultiScholaR",
+      "createStartMenuShortcut": true,
+      "artifactName": "MultiScholaR-Setup-${version}.exe"
+    }
+  }
+}
