@@ -1,6 +1,15 @@
 {
-  "label": "score-lifecycle-lc4b",
-  "runs": [{"run": 44434645817, "label": "confirm-lc4"}],
+  "label": "confirm-gha",
+  "runs": [
+    {
+      "run": 44443281402,
+      "label": "confirm-p2c"
+    },
+    {
+      "run": 44443334468,
+      "label": "confirm-p2x"
+    }
+  ],
   "aggregate": {
     "commit": "2ba5cf87fd2bb370fe8d9bb8a5afdd2c2c8336ec",
     "path": "docs/qa/workflow-execution/kit/kit-124/aggregate.R",
