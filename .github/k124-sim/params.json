@@ -1,8 +1,8 @@
 {
-  "label": "confirm-lc3",
+  "label": "confirm-lc4",
   "package": "installed",
-  "package_commit": "2bbb1f6d29e4f4a1767ebb461c08858883370680",
-  "tools_ref": "2bbb1f6d29e4f4a1767ebb461c08858883370680",
+  "package_commit": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
+  "tools_ref": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
   "runs_core": 2,
   "runs_stress": 0,
   "cores": 2,

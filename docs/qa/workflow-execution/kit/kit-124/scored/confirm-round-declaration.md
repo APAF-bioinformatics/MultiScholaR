@@ -8,7 +8,7 @@ Every choice below that is not carried over from an earlier declaration (`exact-
 
 ## 1. Package under test
 
-**BINDING LINE (open; the one line the final commit changes): `package_commit = tools_ref = ________________________________________`** (the `kit-129-integration` tip after the KIT-129 sixth pass, sent by the main session; M38 rejected 2bbb1f6d. The sixth pass makes DIA's supplied list with the separation rule follow the rule on the list, so DIA's pair 41~22 is then expected identical in k.) Binding: merge it here with the `ours` strategy (the tree of this branch does not change), write its hash in this line and in the three launch files, and repeat section 7's lifecycle on it (section 10).
+**BINDING LINE (open; the one line the final commit changes): `package_commit = tools_ref = 44b5f2195e355bb6e6efe1dae21905e30b81c26c`** (the `kit-129-integration` tip after the KIT-129 sixth pass, sent by the main session; M38 rejected 2bbb1f6d. The sixth pass makes DIA's supplied list with the separation rule follow the rule on the list, so DIA's pair 41~22 is then expected identical in k.) Binding: merge it here with the `ours` strategy (the tree of this branch does not change), write its hash in this line and in the three launch files, and repeat section 7's lifecycle on it (section 10).
 
 The lifecycles below ran on 2bbb1f6d (`kit-129-integration`, fifth pass item 5), made reachable by 1880f7df (merge, `ours`); it carries
 

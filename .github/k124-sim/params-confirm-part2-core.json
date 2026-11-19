@@ -1,8 +1,8 @@
 {
   "label": "confirm-p2c",
   "package": "installed",
-  "package_commit": "BINDING-COMMIT-SENT-BY-THE-MAIN-SESSION",
-  "tools_ref": "BINDING-COMMIT-SENT-BY-THE-MAIN-SESSION",
+  "package_commit": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
+  "tools_ref": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
   "runs_core": 1000,
   "runs_stress": 0,
   "cores": 4,
