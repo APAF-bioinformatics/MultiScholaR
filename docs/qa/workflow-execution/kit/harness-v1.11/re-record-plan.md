@@ -12,7 +12,7 @@ with Bioconductor 3.23 `sva` 3.60.0, `genefilter` 1.94.0 and `annotate` 1.90.0.
 1. The user approves `protocol-v1.11-draft.md` item 6 (items 1 to 5 were approved as U11).
 2. The user gives the go for the laptop's machine time (section 5). The machine is quiet, on the balanced power profile
    (KIT-123 lost four measurements to the power-saver profile).
-3. `kit-harness-v1.11` is reviewed. The branch is not merged. Its runner evidence is `run-tests` run [see the report].
+3. `kit-harness-v1.11` is reviewed. The branch is not merged. Its runner evidence is `runner-evidence.md` (runs 44461036735 and 44467185692).
 4. The open decisions D1 to D4 in section 7 are answered. D2 decides whether P4 joins.
 
 ## 2. The builds and what each one adds
