@@ -13,6 +13,8 @@
 # lines that read it are recorded.
 
 arguments <- commandArgs(trailingOnly = TRUE)
+# packaging/verify/windows-clean-run.ps1 passes the bundle's folder first (as smoke.R expects); it is not used here.
+if (length(arguments) == 5L) arguments <- arguments[-1L]
 stopifnot(length(arguments) == 4L)
 out_dir <- arguments[[1L]]
 label <- arguments[[2L]]

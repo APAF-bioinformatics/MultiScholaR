@@ -3,5 +3,6 @@
   "repeats": 2,
   "threads": ["default"],
   "precisions": ["float64"],
-  "windows_repeats": 2
+  "windows_repeats": 2,
+  "note": "correction after run 44465778521: windows-clean-run.ps1 passes the bundle folder first"
 }
