@@ -39,6 +39,7 @@ jobs:
       commit: ${{ steps.plan.outputs.commit }}
       tests: ${{ steps.plan.outputs.tests }}
       record: ${{ steps.plan.outputs.record }}
+      runs: ${{ steps.plan.outputs.runs }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,17 +51,22 @@ jobs:
           jq -e '(.label | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")) and
             (.package_commit | type == "string" and test("^[0-9a-f]{40}$")) and
             (.tests | type == "array" and length >= 1 and all(type == "string" and test("^test-[A-Za-z0-9_.-]+[.]R$"))) and
-            (.record | type == "boolean")' "$p" > /dev/null || { echo "::error::package-params.json is not valid"; exit 1; }
+            (.record | type == "boolean") and ((.runs // 1) | type == "number" and . == floor and . >= 1 and . <= 4)' "$p" > /dev/null || { echo "::error::package-params.json is not valid"; exit 1; }
           {
             echo "label=$(jq -r .label "$p")"
             echo "commit=$(jq -r .package_commit "$p")"
             echo "tests=$(jq -r '.tests | join(" ")' "$p")"
             echo "record=$(jq -r .record "$p")"
+            echo "runs=$(jq -c '[range(1; (.runs // 1) + 1)]' "$p")"
           } | tee -a "$GITHUB_OUTPUT"
 
   linux:
-    name: Linux (package ${{ needs.plan.outputs.commit }})
+    name: Linux ${{ matrix.run }} (package ${{ needs.plan.outputs.commit }})
     needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        run: ${{ fromJSON(needs.plan.outputs.runs) }}
     runs-on: ubuntu-22.04
     timeout-minutes: 180
     steps:
@@ -90,6 +96,7 @@ jobs:
             echo "RES=$RUNNER_TEMP/result"
           } >> "$GITHUB_ENV"
           mkdir -p "$RUNNER_TEMP/evidence" "$RUNNER_TEMP/result"
+          lscpu > "$RUNNER_TEMP/result/lscpu.txt"; nproc >> "$RUNNER_TEMP/result/lscpu.txt"
 
       - name: R 4.6.1, the KIT-134 library, the internal packages and MultiScholaR at package_commit (no cache)
         uses: ./.github/actions/snapshot-library
@@ -155,6 +162,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: mofa-package-linux
+          name: mofa-package-linux-${{ matrix.run }}
           path: ${{ runner.temp }}/result
           retention-days: 14

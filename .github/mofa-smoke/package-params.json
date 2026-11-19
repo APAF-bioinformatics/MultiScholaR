@@ -1,6 +1,7 @@
 {
-  "label": "k062-compare",
-  "package_commit": "449b9de7750c96b5f4a1e3eb196fd914c776be2b",
+  "label": "k062-record-double",
+  "package_commit": "23f218176c126daf0e66154b3778cb3b66963d1f",
   "tests": ["test-integration-mofa-model.R", "test-integration-model.R"],
-  "record": false
+  "record": true,
+  "runs": 1
 }
