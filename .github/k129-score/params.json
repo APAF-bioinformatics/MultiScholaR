@@ -1,1 +1,1 @@
-{"purpose": "lifecycle", "run": 44419142081, "label": "r0b-random-lc", "cells": "C0R", "first_run": 1, "runs": 4}
+{"purpose": "score", "run": 44421250021, "label": "r0b-random", "cells": "C0R,C4R,S1R", "first_run": 3001, "runs": 500}
