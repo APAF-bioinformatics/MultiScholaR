@@ -1,0 +1,21 @@
+{
+  "requested_by": "run-tests mechanism: lifecycle proof B of one-file-per-request (two other quick files, base = head)",
+  "label": "run-tests lifecycle B: head 75f418fe against base 75f418fe, two other quick files",
+  "package_commit": "75f418fe16228398b0dfd7649fcd6b6c1f555175",
+  "base_commit": "75f418fe16228398b0dfd7649fcd6b6c1f555175",
+  "tools_ref": "",
+  "tests": [
+    "test-module-ci-harness.R",
+    "test-lipid_norm_exclusion.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

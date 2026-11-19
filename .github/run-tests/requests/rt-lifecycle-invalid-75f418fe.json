@@ -1,0 +1,20 @@
+{
+  "requested_by": "run-tests mechanism: lifecycle proof, invalid request (short base hash) must fail at plan",
+  "label": "run-tests lifecycle invalid: short base hash",
+  "package_commit": "75f418fe16228398b0dfd7649fcd6b6c1f555175",
+  "base_commit": "a204230e",
+  "tools_ref": "",
+  "tests": [
+    "test-ci-impact-scorecard.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

@@ -1,0 +1,21 @@
+{
+  "requested_by": "run-tests mechanism: lifecycle proof A of one-file-per-request (two quick files, base = parent)",
+  "label": "run-tests lifecycle A: head 75f418fe against base a204230e, two quick files",
+  "package_commit": "75f418fe16228398b0dfd7649fcd6b6c1f555175",
+  "base_commit": "a204230ed37d8ca524195c252d1bd8393f79a340",
+  "tools_ref": "",
+  "tests": [
+    "test-ci-impact-scorecard.R",
+    "test-workflow-sleep-guard.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
