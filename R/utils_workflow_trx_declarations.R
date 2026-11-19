@@ -528,14 +528,20 @@ trxSaveFigure <- function(plot, directory, name, width, height) {
     for (extension in c(".png", ".pdf")) {
         ggplot2::ggsave(file.path(directory, paste0(name, extension)), plot, width = width, height = height, dpi = 300)
     }
+    # KIT-131: the PNG device on Windows writes nothing, and says nothing, from 260 characters.
+    checkWorkflowFigureFiles(file.path(directory, paste0(name, c(".png", ".pdf"))), "a figure was drawn but its file was not written")
     invisible(NULL)
 }
 
-#' A publication's completion value: the source's checkpoint, the display; a failure is the display's message.
+#' A publication's completion value: the source's checkpoint, the display; a failure is the display's message, except a
+#' figure drawn but not written (`workflow_figure_unwritten`, KIT-131), which stops the step.
 #' @noRd
 trxPublicationResult <- function(manager, request, produce) {
     source <- request$input_references$state
-    display <- tryCatch(produce(source), error = function(error) list(saved = FALSE, message = substr(conditionMessage(error), 1L, 1024L)))
+    display <- tryCatch(produce(source), error = function(error) {
+        if (inherits(error, "workflow_figure_unwritten")) stop(error)
+        list(saved = FALSE, message = substr(conditionMessage(error), 1L, 1024L))
+    })
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source, display = display)
 }
 
@@ -572,6 +578,7 @@ computeWorkflowTrxQcFiguresAction <- function(manager, request, variant) {
         directory <- omicsStagedPublicationDir(request, "gene_qc_dir")
         ggplot2::ggsave(file.path(directory, paste0("trx_", stage, "_pca.png")), trxPcaPlot(stats$pca, paste("PCA:", stage)), width = 7, height = 6, dpi = 150)
         ggplot2::ggsave(file.path(directory, paste0("trx_", stage, "_rle.png")), trxRlePlot(stats$rle, paste("RLE:", stage)), width = 9, height = 6, dpi = 150)
+        checkWorkflowFigureFiles(file.path(directory, paste0("trx_", stage, c("_pca.png", "_rle.png"))), "a figure was drawn but its file was not written")
         list(saved = TRUE, stats = saveWorkflowStateValue(manager$.context, stats, "trx-qc-stats", codec = "rds"))
     })
 }

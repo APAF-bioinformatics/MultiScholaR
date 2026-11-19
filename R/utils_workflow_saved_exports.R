@@ -680,9 +680,24 @@ copyWorkflowFolder <- function(from, to, message, class = NULL) {
     invisible(target)
 }
 
-#' Draw a publication's files in a short scratch folder under `tempdir()` and copy them into `target` (KIT-052): the
-#' worker's request folder lies deep in the project, and ggsave's PNG device on Windows writes nothing, and says
-#' nothing, at a path of 260 characters or more. A file whose copy fails stops the step by name (`copyWorkflowFolder`).
+#' The folder a short scratch folder is made in (KIT-131): `tempdir()`, except in a worker, whose `tempdir()` is under its
+#' request-owned `TMPDIR` (`<request folder>/worker-scratch`, deep in the project, as both launchers set it): there the
+#' system's temporary folder (`TMP`, else `TEMP`) when one is set and exists. A worker on Windows always has one, so a
+#' figure drawn there stays well under 260 characters; a worker without one keeps `tempdir()`.
+#' @return A folder.
+#' @noRd
+workflowShortScratchRoot <- function() {
+    if (!identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")) return(tempdir())
+    for (name in c("TMP", "TEMP")) {
+        folder <- Sys.getenv(name)
+        if (nzchar(folder) && dir.exists(folder)) return(folder)
+    }
+    tempdir()
+}
+
+#' Draw a publication's files in a short scratch folder (`workflowShortScratchRoot`) and copy them into `target`
+#' (KIT-052): the worker's request folder lies deep in the project, and ggsave's PNG device on Windows writes nothing, and
+#' says nothing, at a path of 260 characters or more. A file whose copy fails stops the step by name (`copyWorkflowFolder`).
 #' @param target The folder the files belong in.
 #' @param produce `function(scratch)` writing into `scratch`.
 #' @param message First line of the condition when a copy fails (the in-process DA publication names its own folder).
@@ -692,7 +707,7 @@ copyWorkflowFolder <- function(from, to, message, class = NULL) {
 #' @noRd
 withWorkflowShortFigureFolder <- function(target, produce,
     message = "the worker's publication files could not be copied into its request folder", folders = character()) {
-    scratch <- tempfile("wfx-")
+    scratch <- tempfile("wfx-", tmpdir = workflowShortScratchRoot())
     dir.create(scratch)
     on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
     value <- produce(scratch)

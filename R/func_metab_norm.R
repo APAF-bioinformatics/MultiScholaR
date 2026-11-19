@@ -150,6 +150,8 @@ generateMetabQcPlots <- function(
             if (!is.null(pca_path)) saved_paths[[paste0(assay_name, "_pca")]] <- pca_path
         }, error = function(e) {
             logger::log_warn(paste("Error generating PCA for", assay_name, ":", e$message))
+            # KIT-131: a figure drawn but not written stops the step; any other failure costs this figure only.
+            if (inherits(e, "workflow_figure_unwritten")) stop(e)
         })
 
         # --- RLE Plot ---
@@ -178,6 +180,7 @@ generateMetabQcPlots <- function(
             if (!is.null(rle_path)) saved_paths[[paste0(assay_name, "_rle")]] <- rle_path
         }, error = function(e) {
             logger::log_warn(paste("Error generating RLE for", assay_name, ":", e$message))
+            if (inherits(e, "workflow_figure_unwritten")) stop(e)
         })
 
         # --- Density Plot ---
@@ -217,6 +220,7 @@ generateMetabQcPlots <- function(
             if (!is.null(density_path)) saved_paths[[paste0(assay_name, "_density")]] <- density_path
         }, error = function(e) {
             logger::log_warn(paste("Error generating Density for", assay_name, ":", e$message))
+            if (inherits(e, "workflow_figure_unwritten")) stop(e)
         })
 
         # --- Pearson Correlation Plot ---
@@ -244,6 +248,7 @@ generateMetabQcPlots <- function(
             if (!is.null(corr_path)) saved_paths[[paste0(assay_name, "_correlation")]] <- corr_path
         }, error = function(e) {
             logger::log_warn(paste("Error generating Correlation for", assay_name, ":", e$message))
+            if (inherits(e, "workflow_figure_unwritten")) stop(e)
         })
     }
 

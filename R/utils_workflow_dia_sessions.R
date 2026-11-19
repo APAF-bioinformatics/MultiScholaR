@@ -25,7 +25,8 @@ runDIANativeTarR <- function(arguments, log_path, output_path = NULL) {
         # KIT-052 (KIT-134 run 44379470655): the members are staged under tempdir(), not beside the archive in the
         # export's request folder (`<source>/.workflow-export/native-export-<12>/`), where a DA entity's member path was
         # 195 characters after the project root and could not be copied on Windows with long paths disabled.
-        staging <- tempfile("archive-stage-")
+        # KIT-131: in a worker, not under its request-owned temporary folder (`workflowShortScratchRoot`).
+        staging <- tempfile("archive-stage-", tmpdir = workflowShortScratchRoot())
         if (!dir.create(staging, mode = "0700")) cli::cli_abort("cannot stage the native archive", class = "saved_entity_write")
         on.exit(unlink(staging, recursive = TRUE), add = TRUE)
         members <- character()
@@ -36,8 +37,9 @@ runDIANativeTarR <- function(arguments, log_path, output_path = NULL) {
             if (!dir.exists(dirname(target)) && !dir.create(dirname(target), recursive = TRUE)) cli::cli_abort("cannot stage the native archive", class = "saved_entity_write")
             # Copies, not hard links: a link changes the source's status time and the packaging identity check
             # (`workflowTableFileIdentity`) would read it as a change.
-            if (!isTRUE(file.copy(source, target, overwrite = FALSE, copy.date = FALSE)))
-                cli::cli_abort("cannot stage the native archive member", class = "saved_entity_write")
+            # KIT-131: a member not copied is named, with its length (`checkWorkflowFigureFiles`).
+            if (!isTRUE(file.copy(source, target, overwrite = FALSE, copy.date = FALSE))) checkWorkflowFigureFiles(target,
+                "a file of the session archive could not be copied into its staging folder", class = "saved_entity_write", copied = FALSE)
             members <- c(members, member)
         }
         previous <- setwd(staging)

@@ -312,6 +312,8 @@ saveProtNormQcPlotArtifact <- function(
       return(artifactPath)
     }
     savePlotFn(artifactPath, plotObject, width = width, height = height, dpi = dpi)
+    # KIT-131: the PNG device on Windows writes nothing, and says nothing, from 260 characters.
+    checkWorkflowFigureFiles(artifactPath, "a figure was drawn but its file was not written")
     asset <- newSavedWorkflowRenderedAsset(readBin(artifactPath, "raw", n = file.size(artifactPath)),
       "image/png", dimensions)
     reference <- saveWorkflowDiaQcAsset(manager$.context$store, asset,
