@@ -480,3 +480,105 @@ follows the table if a limit is added later. Still the user's to tweak.
 |---|---|---|---|
 | Proteomics (DIA with IQ, LFQ, TMT) | 0.164 | If the check below reports a detectable association, choose the recommended approach. | unchanged |
 | Proteomics (DIA with limpa), transcriptomics, lipidomics, metabolomics | none | If the check below reports a detectable association, choose the recommended approach. | The check below shows how strongly the estimated unwanted factors are associated with your groups, but gives no verdict for this approach. Unless you know the unwanted variation does not differ between your groups, choose the recommended approach. |
+
+## Final figures (2026-11-20): the shipped method's figures from the confirmation round (decisions M36, M40, M41)
+
+The user approved (2026-11-20) updating the figures the panel quotes to the confirmation round's numbers. Every figure is
+now the shipped method's: from `kit-124/scored/confirm-gha` where the option was re-measured on the shipped code (Part 2),
+or the simulator arm the round found identical (Part 1; `kit-124/scored/confirm-round-declaration.md` section 3): arm 32 in
+classic proteomics and DIA (recommended, DIA technical replicates), arm 31 in transcriptomics (recommended), arm 1 for "No
+RUV" in DIA and transcriptomics (`exact-gha` and the gate-identical arm 1 rows). Subset `full`; the worst scenario is the
+worst judged core cell with true differences, as before. Shown values use the existing rule (false discoveries to 3
+decimals, shown to one decimal of a percent; power to 2 decimals). One row per figure with its unrounded value, table,
+arm and cell: `docs/qa/workflow-execution/kit/kit-129/final-figures.tsv`. Only strings and figures changed; no
+computation, gate or k rule. The user sets the final wording of every changed sentence below.
+
+### Figures shown in the option rows (false discoveries, worst scenario / power, reference scenario)
+
+| Omic | Option | Was | Now (unrounded) | Source (arm, cell) | Kind |
+|---|---|---|---|---|---|
+| Classic | Recommended | 6.6% / 91% (arm 7) | 6.7% (0.0671751) / 92% (0.916433) | exact-gha arm 32, C1 / C0 | identical (34~32) |
+| Classic | Technical replicates | 5.4% / 90% (arm 16) | 5.5% (0.0549355) / 90% (0.897137) | confirm-gha arm 38, C6 | re-measured (= arm 33) |
+| Classic | Your own list | 5.3% / 91% (arm 8) | 5.4% (0.0540003) / 91% (0.91436) | confirm-gha arm 35, C5 / C0 | re-measured |
+| Classic | Your own list, separation rule | 6.0% / 90% (arm 22) | 6.0% (0.0600184) / 91% (0.90574) | confirm-gha arm 41, C6 / C0 | re-measured |
+| Classic | Controls from the data | 7.7% / 91% (arm 23) | 7.9% (0.0793748) / 92% (0.915863) | confirm-gha arm 39, C5 / C0 | re-measured |
+| Classic | Controls from the data, separation rule | 7.8% / 91% (arm 5) | 7.9% (0.0794385) / 91% (0.910937) | confirm-gha arm 40, C5 / C0 | re-measured |
+| Classic | Earlier versions | 38.5% / 92% | 38.5% (0.384525) / 92% (0.919715) | confirm-gha arm 3, C5 / C0 | re-measured (C6, C8 machine-dependent); source only |
+| Classic | No RUV | 5.2% / 49% (arm 1) | 5.2% (0.0523783) / 49% (0.492762) | confirm-gha arm 37, C3 / C0 | re-measured (= arm 27); source only |
+| DIA with limpa | Recommended | 5.5% / 91% (arm 7) | 5.6% (0.0560783) / 91% (0.91002) | exact-gha arm 32, C6 / C0 | identical (34~32) |
+| DIA with limpa | Technical replicates | 5.5% / 77% (arm 16) | 5.6% (0.0560783) / 77% (0.76982) | exact-gha arm 32, C6 | identical (same computation) |
+| DIA with limpa | Your own list | 5.6% / 91% | 5.6% (0.0564713) / 91% (0.906845) | confirm-gha arm 35, C6 / C0 | re-measured; source only |
+| DIA with limpa | Your own list, separation rule | 5.6% / 90% (arm 22) | 5.7% (0.0565197) / 90% (0.90432) | confirm-gha arm 41, C5 / C0 | re-measured |
+| DIA with limpa | Controls from the data | 14.6% / 92% (arm 23) | 14.7% (0.147405) / 92% (0.9177) | confirm-gha arm 39, C5 / C0 | re-measured |
+| DIA with limpa | Controls from the data, separation rule | 14.9% / 92% (arm 5) | 15.1% (0.151014) / 92% (0.917225) | confirm-gha arm 40, C5 / C0 | re-measured |
+| DIA with limpa | Earlier versions, factors in the test | 43.5% / 90% | 43.5% (0.435003) / 90% (0.897355) | confirm-gha arm 4 | re-measured; source only |
+| DIA with limpa | Earlier versions, values corrected | 46.6% / 91% | 46.6% (0.465609) / 91% (0.911365) | confirm-gha arm 3 | re-measured; source only |
+| DIA with limpa | No RUV | 19.1% / 56% | 19.1% (0.190804) / 56% (0.55758) | arm 1 (37~1), C5 / C0 | identical; source only |
+| Transcriptomics | Recommended | 5.5% / 77% | 5.5% (0.0554354) / 77% (0.773852) | exact-gha arm 31, C2 / C0 | identical (34~31); source only |
+| Transcriptomics | Your own list | 5.6% / 76% | 5.6% (0.0559125) / 76% (0.762509) | confirm-gha arm 35 | re-measured; source only |
+| Transcriptomics | Your own list, separation rule | 5.3% / 61% | 5.3% (0.0533861) / 61% (0.612047) | confirm-gha arm 41 (= 22) | source only |
+| Transcriptomics | Controls from the data | 7.1% / 77% | 7.1% (0.070703) / 77% (0.773545) | confirm-gha arm 39 | re-measured; source only |
+| Transcriptomics | Controls from the data, separation rule | 6.4% / 60% | 6.4% (0.0643636) / 60% (0.600096) | confirm-gha arm 40 (= 24) | source only |
+| Transcriptomics | Earlier versions | 29.9% / 73% | 29.9% (0.298566) / 73% (0.729098) | confirm-gha arm 3 | re-measured; source only |
+| Transcriptomics | No RUV | 4.4% / 0.5% | 4.4% (0.0439979) / 0.5% (0.00457457) | arm 1 (37~1) | identical; source only |
+| Lipid/metab | Recommended | 7.2% / 43% (arm 7) | **8.5% (0.0853125) / 47% (0.473617)** | confirm-gha arm 34, C5 / C0 | re-measured |
+| Lipid/metab | Technical replicates | 5.8% / 36% (arm 16, r0a) | **6.3% (0.0626227) / 34% (0.340933)** | confirm-gha arm 38, C6 (reported cell) | re-measured |
+| Lipid/metab | Your own list (standards) | 6.8% / 37% (arm 8) | **7.9% (0.0788929) / 40% (0.3986)** | confirm-gha arm 35, C5 / C0 | re-measured |
+| Lipid/metab | Your own list, separation rule | 11.8% (C2) / 26% (arm 22) | **9.5% (0.0945251), now worst with unwanted variation tied to the groups (C5)** / 26% (0.264417) | confirm-gha arm 41 | re-measured; 2,327 of 9,000 rows refused (M32) and scored without RUV |
+| Lipid/metab | Controls from the data | 17.4% / 44% (arm 23) | **20.3% (0.203193) / 48% (0.4752)** | confirm-gha arm 39, C5 / C0 | re-measured |
+| Lipid/metab | Controls from the data, separation rule | 23.9% / 50% (arm 5) | **26.1% (0.261378) / 53% (0.527167)** | confirm-gha arm 40, C5 / C0 | re-measured |
+| Lipid/metab | Earlier versions | 55.6% / 42% | 55.7% (0.556626) / 42% (0.423083) | confirm-gha arm 3, C2 / C0 | re-measured |
+| Lipid/metab | No RUV | 5.9% / 0.3% | 5.9% (0.0586529) / 0.3% (0.0027) | confirm-gha arm 37 (= 1), C7 / C0 | source only |
+
+### Changed sentences (old -> new)
+
+| Omic | Option | Old | New |
+|---|---|---|---|
+| Classic | Recommended | ... 11.5% of simulated data sets had more than 10% false discoveries (acceptance limit 5.7%). 5.4% false discoveries in the reference scenario. | ... 11.7% of simulated data sets had more than 10% false discoveries (acceptance limit 5.7%). 5.5% false discoveries in the reference scenario. |
+| Classic | Your own list | ... when one listed feature in five truly differed, false discoveries rose to 11.9%. | ... rose to 12.1%. |
+| Classic | Controls from the data (caution) | When it did in simulation, this approach reported far more false discoveries than the 5% target (27.3% under strong association, a correlation of 0.6, with the separation rule for the number of factors). | When it did in simulation, this approach reported more false discoveries than the 5% target (7.9% at a correlation of 0.3, with the estimated number of factors). |
+| Classic | Controls from the data | ... (7.7% false discoveries, as shown). At most 5.2% in the other scenarios tested. | ... (7.9% false discoveries, as shown). At most 5.3% in the other scenarios tested. |
+| DIA with limpa | Your own list | ... false discoveries rose to 8.9%. | ... rose to 9.0%. |
+| DIA with limpa | Controls from the data (caution) | ... far more false discoveries than the 5% target (30.1% under strong association, a correlation of 0.6, with the separation rule for the number of factors). | ... far more false discoveries than the 5% target (14.7% at a correlation of 0.3, with the estimated number of factors). |
+| DIA with limpa | Controls from the data | ... (7.1% to 14.6%; 9.0% in the reference scenario). | ... (7.2% to 14.7%; 9.2% in the reference scenario). |
+| Lipid/metab | Recommended | ... (13% at a correlation of 0.6) and with 3 samples per group (10%); 5.7% in the reference scenario. ... 14% false discoveries when an unbalanced batch was left for RUV to find. | ... (15% at a correlation of 0.6) and with 3 samples per group (11%); 7.2% in the reference scenario. ... 18% false discoveries when an unbalanced batch was left for RUV to find. |
+| Lipid/metab | Your own list | ... when 2 of 10 did, false discoveries rose to 37%. The separation rule gives more false discoveries and less power here (as shown). | ... when 2 of 10 did, false discoveries rose to 40%. The separation rule gives more false discoveries and less power here (as shown). **New:** With 5 standards per assay, the separation rule's number of factors was not below the number of standards in about a quarter of simulated data sets (2,327 of 9,000), which were then analysed without RUV. |
+| Lipid/metab | Controls from the data (caution) | ... far more false discoveries than the 5% target (53.7% under strong association, a correlation of 0.6, with the separation rule for the number of factors). | ... far more false discoveries than the 5% target (20.3% at a correlation of 0.3, with the estimated number of factors). |
+| Lipid/metab | Controls from the data | ... (17.4% false discoveries, as shown). With three groups it missed one acceptance criterion (7.2% false discoveries). 4.1% to 6.2% in the other scenarios tested. ... (9.7% in the reference scenario). | ... (20.3% false discoveries, as shown). With three groups it missed two acceptance criteria (8.4% false discoveries). 5.2% to 7.3% in the other scenarios tested. ... (10.8% in the reference scenario). |
+
+Unchanged at the shown precision (source strings only): classic earlier versions (3% to 39%, 9.8%), classic and
+transcriptomics No RUV, DIA recommended's 5.3% at 0.3, DIA earlier versions (5% to 44%, 29.0%; 8% to 47%, over the judged
+cells C0 to C7; DIA's corrected legacy gives 4.6% in the reported cell C8), DIA No RUV (15%, 6.5%), every
+transcriptomics note (5.2% at 0.6, 7.6%, 61% against 76%, 7.1%, 5.5%, power 25% and 5% (0.0486019, as ruled in R1), 30%,
+72%, 5.4%), lipid/metab earlier versions (more than 90%, 47.0%).
+
+**First-pass-nulls caution (R3) resolved.** The 27.3% / 30.1% / 53.7% were arm 5's at association 0.6: the earlier
+method (20 permutations, `contrasts.fit` standard errors). The round ran the association-0.6 cell for the recommended
+design only (transcriptomics and lipid/metab), so the shipped method's first-pass nulls have no 0.6 figure. The caution
+now quotes the shipped method's figure at 0.3 with the pre-selected rule (arm 39, the estimated number); the 0.6 figure
+is not kept. In classic proteomics 7.9% is not "far" above the target, so the word is "more" there, as in
+transcriptomics. Transcriptomics' caution already quoted the shipped method (arm 24 = arm 40, 6.4% at 0.3): unchanged.
+
+### The check's figures (`ruvGroupAssociationConsequences()`, shown only above a detection limit)
+
+Each figure is the shipped method's; "not measured" where the shipped method did not run in the cell (never another
+method's figure). Order: no association (C0) / 0.3 (C5) / 0.6 (stress S3) / without correction at 0.6 (arm 1).
+
+| Omic | Approach (k rule) | Was | Now | Sources |
+|---|---|---|---|---|
+| Classic | Recommended (estimated) | 5.4% / 5.6% / 6.2% / 59.3% (arm 7, arm 1) | 5.5% / 5.8% / not measured / not measured | exact-gha arm 32 C0, C5; 0.6 not run; without correction: the shipped No RUV (M30's test, arm 27 = 37) was not run at 0.6, and arm 1 uses the earlier test |
+| Classic | Your own list (estimated) | 5.1% / 5.3% / 5.8% / 59.3% (arm 8) | 5.2% / 5.4% / not measured / not measured | confirm-gha arm 35 C0, C5 |
+| Classic | Controls from the data (separation rule) | 5.2% / 7.8% / 27.3% / 59.3% (arm 5) | 5.3% / 7.9% / not measured / not measured | confirm-gha arm 40 C0, C5 |
+| DIA with limpa (no limit: recorded, not shown) | Recommended | 5.1% / 5.3% / 6.5% / 53.3% | 5.2% / 5.3% / not measured / 53.3% | exact-gha arm 32 C0, C5; final-20261118 S2 arm 1 S3 (37~1) |
+| DIA with limpa | Your own list | 5.1% / 5.4% / 7.3% / 53.3% | 5.2% / 5.5% / not measured / 53.3% | confirm-gha arm 35; arm 1 as above |
+| DIA with limpa | Controls from the data (separation rule) | 9.4% / 14.9% / 30.1% / 53.3% | 9.5% / 15.1% / not measured / 53.3% | confirm-gha arm 40; arm 1 as above |
+| Transcriptomics | Recommended | 4.8% / 4.8% / 5.2% / 45.0% | unchanged | exact-gha arm 31 C0, C5; confirm-gha arm 34 S3, arm 1 S3 |
+| Transcriptomics | Your own list (no limit) | 4.8% / 4.8% / 4.8% / 45.0% | 4.8% / 4.8% / not measured / 45.0% | confirm-gha arm 35 C0, C5, arm 1 S3 |
+| Transcriptomics | Controls from the data, separation rule (no limit) | 4.7% / 6.4% / not measured / 45.0% | unchanged | confirm-gha arm 40 (= 24), arm 1 S3 |
+| Lipid/metab | Recommended | 5.7% / 7.2% / 13.0% / 64.2% | **7.2% / 8.5% / 14.8% / 64.2%** | confirm-gha arm 34 C0, C5, S3; arm 1 S3 |
+| Lipid/metab | Your own list | 5.0% / 6.8% / 12.0% / 64.2% | **6.3% / 7.9% / not measured / 64.2%** | confirm-gha arm 35 C0, C5; arm 1 S3 |
+| Lipid/metab | Controls from the data, separation rule (no limit) | 9.7% / 23.9% / 53.7% / 64.2% | 10.8% / 26.1% / not measured / 64.2% | confirm-gha arm 40 C0, C5; arm 1 S3 |
+
+For the user: classic proteomics' check now reads "... 5.5% with no association, 5.8% at 0.3 and not measured at 0.6.
+Without correction it was not measured at 0.6." If arm 1 (the earlier test, 59.3%) is acceptable as "without
+correction", it is a one-value change in `ruvGroupAssociationConsequences()`.
