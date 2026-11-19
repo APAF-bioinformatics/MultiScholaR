@@ -209,7 +209,6 @@ convertEnsemblToUniprot <- function(ensembl_ids, organism_code) {
     
     if (!is.null(conversion_result) && nrow(conversion_result) > 0) {
       cat("First 3 conversions from gprofiler2:\n")
-      print(head(conversion_result[, c("input", "target", "name")], 3))
     }
     
     # Create mapping table for STRIPPED -> UniProt

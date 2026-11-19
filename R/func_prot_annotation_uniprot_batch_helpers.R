@@ -12,7 +12,6 @@ subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, unipr
     dplyr::filter(round == subset) |>
     dplyr::pull({ { accessions_col_name } })
 
-   print(head( my_keys) )
 
   # print(uniprot_keytype)
   # Learning in progress

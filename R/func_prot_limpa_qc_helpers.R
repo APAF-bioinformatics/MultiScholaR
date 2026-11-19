@@ -70,7 +70,6 @@ generateLimpaQCPlots <- function(after_object,
     stop("stringr package is required")
   }
 
-  message("   Step: Detecting limpa results type and extracting DPC results")
   # Detect limpa results type and extract DPC results
   dpc_results <- NULL
   analysis_type <- "unknown"
@@ -93,10 +92,8 @@ generateLimpaQCPlots <- function(after_object,
   if (is.null(dpc_results)) {
     stop("No limpa DPC results found in the provided object. Please run limpa imputation/quantification first.")
   }
-  message(sprintf("   Results: analysis_type=%s, dpc_results structure=%s", analysis_type, capture.output(str(dpc_results))))
 
   # Try to get the correct save directory from project_dirs GLOBAL OBJECT
-  message("   Step: Determining save directory")
   if (save_dir == "peptide_qc") {
     tryCatch(
       {
@@ -122,13 +119,11 @@ generateLimpaQCPlots <- function(after_object,
   message(sprintf("   Results: save_dir=%s", save_dir))
 
   # Extract DPC parameters (handle both formats)
-  message("   Step: Extracting DPC parameters")
   if (!is.null(dpc_results$dpc_parameters_used)) {
     dpc_params <- dpc_results$dpc_parameters_used
   } else {
     dpc_params <- dpc_results$dpc_parameters
   }
-  message(sprintf("   Results: dpc_params=%s", capture.output(str(dpc_params))))
 
   if (verbose) {
     cat("\n=== limpa DPC Analysis Results ===\n")
@@ -163,31 +158,24 @@ generateLimpaQCPlots <- function(after_object,
       if (verbose) cat("Generating DPC curve plot...\n")
 
       # Validate dpc_params first
-      message("   Step: Validating DPC parameters...")
-      message(sprintf("      dpc_params: %s", capture.output(str(dpc_params))))
       if (is.null(dpc_params) || !is.numeric(dpc_params) || length(dpc_params) < 2) {
         message("   Warning: Invalid DPC parameters detected, using defaults")
         if (verbose) cat("Warning: Invalid DPC parameters, using defaults\n")
         dpc_params <- c(-1.335, 0.074) # Use the known values from your data
       }
-      message(sprintf("      Final dpc_params: %s", capture.output(str(dpc_params))))
 
-      message("   Step: Extracting stored DPC object")
       # Extract stored DPC object based on analysis type
       stored_dpc <- NULL
       message(sprintf("      analysis_type: %s", analysis_type))
-      message(sprintf("      dpc_results structure: %s", capture.output(str(names(dpc_results)))))
 
       if (analysis_type == "protein_quantification" && !is.null(dpc_results$dpc_object_used)) {
         stored_dpc <- dpc_results$dpc_object_used
         message("     Using dpc_object_used for protein quantification")
         message(sprintf("      stored_dpc class: %s", class(stored_dpc)))
-        message(sprintf("      stored_dpc structure: %s", capture.output(str(stored_dpc))))
       } else if (analysis_type == "peptide_imputation" && !is.null(dpc_results$dpc_object)) {
         stored_dpc <- dpc_results$dpc_object
         message("     Using dpc_object for peptide imputation")
         message(sprintf("      stored_dpc class: %s", class(stored_dpc)))
-        message(sprintf("      stored_dpc structure: %s", capture.output(str(stored_dpc))))
       } else if (!is.null(dpc_results$y_peptide_for_dpc)) {
         message("     Recreating DPC from stored y_peptide_for_dpc")
         message(sprintf("      y_peptide_for_dpc dims: %d x %d", nrow(dpc_results$y_peptide_for_dpc), ncol(dpc_results$y_peptide_for_dpc)))
@@ -199,7 +187,6 @@ generateLimpaQCPlots <- function(after_object,
 
       # Generate plot using plotDPC if we have the object
       if (!is.null(stored_dpc)) {
-        message("   Step: Attempting to call limpa::plotDPC")
         message("      Checking if limpa package is available...")
         if (!requireNamespace("limpa", quietly = TRUE)) {
           stop("limpa package is required for DPC plotting")
@@ -267,7 +254,6 @@ generateLimpaQCPlots <- function(after_object,
             message("        About to call plotDPC directly")
             graphics::par(mar = c(6, 4.5, 2, 1.5))
             direct_plot <- limpa::plotDPC(stored_dpc, main = "")
-            message(sprintf("        Direct plotDPC returned: %s", capture.output(str(direct_plot))))
             message(sprintf("        Direct plotDPC class: %s", class(direct_plot)))
           },
           error = function(e) {
@@ -318,7 +304,6 @@ generateLimpaQCPlots <- function(after_object,
             message("        Removing temporary file")
             unlink(temp_file)
 
-            message(sprintf("        temp file approach result: %s", capture.output(str(temp_plot))))
           },
           error = function(e) {
             message(sprintf("        temp file approach FAILED: %s", e$message))
@@ -750,7 +735,6 @@ generateLimpaQCPlots <- function(after_object,
 
   # Save individual plots if requested
   if (save_plots && !is.null(save_dir)) {
-    message(sprintf("   Step: Saving plots to directory: %s", save_dir))
     if (verbose) cat("Saving individual plots...\n")
 
     tryCatch(

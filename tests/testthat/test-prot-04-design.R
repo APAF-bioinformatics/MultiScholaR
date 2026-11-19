@@ -6593,9 +6593,7 @@ test_that("mod_prot_design_server keeps the wrapper entry logging ordered around
     call_log,
     c(
       "message:--- Entering mod_prot_design_server ---",
-      "message:   mod_prot_design_server Arg: id = design-entry",
       "moduleServer",
-      "message:   mod_prot_design_server Step: Inside moduleServer function",
       "bootstrap",
       "modal",
       "importObserver",

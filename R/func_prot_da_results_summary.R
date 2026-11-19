@@ -61,7 +61,6 @@ countStatDaGenesHelper <- function(
   message(paste("   countStatDaGenesHelper: da_table is list =", is.list(da_table)))
   message(paste("   countStatDaGenesHelper: da_table length =", length(da_table)))
   message("   countStatDaGenesHelper: da_table names:")
-  print(names(da_table))
 
   # CRITICAL FIX 1: If da_table is a list of tables from limma, we need to process each one
   da_table_updated <- if (is.list(da_table) && !is.data.frame(da_table)) {
@@ -89,7 +88,6 @@ countStatDaGenesHelper <- function(
   message("   countStatDaGenesHelper: da_table_updated created")
   message(paste("   countStatDaGenesHelper: da_table_updated length =", length(da_table_updated)))
   message("   countStatDaGenesHelper: da_table_updated names:")
-  print(names(da_table_updated))
 
   list_of_tables <- purrr::map2(
     da_table_updated,
@@ -243,13 +241,11 @@ getSignificantData <- function(
   message(paste("   getSignificantData: list_of_da_tables class =", class(list_of_da_tables)))
   message(paste("   getSignificantData: list_of_da_tables length =", length(list_of_da_tables)))
   message("   getSignificantData: list_of_da_tables structure:")
-  str(list_of_da_tables, max.level = 2)
 
   get_row_binded_table <- function(de_table_list, description) {
     message(paste("      get_row_binded_table: de_table_list class =", class(de_table_list)))
     message(paste("      get_row_binded_table: de_table_list length =", length(de_table_list)))
     message("      get_row_binded_table: de_table_list names:")
-    print(names(de_table_list))
 
     # This internal helper is now more robust. It checks if the table
     # already has the row_id as a column. If not, it converts rownames.

@@ -25,34 +25,24 @@
 #' @importFrom stringr str_extract
 #' @export
 importProteomeDiscovererTMTData <- function(filepath) {
-  message(sprintf("   Arg: filepath = %s", filepath))
-  message(sprintf("   Arg: filepath class = %s", paste(class(filepath), collapse = ", ")))
-  message(sprintf("   Arg: filepath exists = %s", file.exists(filepath)))
   log_info(paste("Starting Proteome Discoverer TMT import from:", filepath))
   
   process_single_file <- function(file_path, batch_name = NULL) {
-    message(sprintf("      Arg: file_path = %s", file_path))
-    message(sprintf("      Arg: batch_name = %s", ifelse(is.null(batch_name), "NULL", batch_name)))
     log_info(sprintf("Reading file: %s", basename(file_path)))
     
     # Read file based on extension
-    message(sprintf("      Step: Checking file extension..."))
     if (endsWith(file_path, ".xlsx")) {
-      message(sprintf("      Step: File is .xlsx, using readxl"))
       if (!requireNamespace("readxl", quietly = TRUE)) {
         stop("The 'readxl' package is required for .xlsx files.", call. = FALSE)
       }
       data <- tryCatch({
-        message(sprintf("      Step: Reading Excel file..."))
         readxl::read_excel(file_path)
       }, error = function(e) {
         message(sprintf("      ERROR reading Excel file: %s", e$message))
         stop("Failed to read Excel file: ", e$message, call. = FALSE)
       })
     } else {
-      message(sprintf("      Step: File is not .xlsx, using vroom"))
       data <- tryCatch({
-        message(sprintf("      Step: Reading file with vroom..."))
         vroom::vroom(file_path, show_col_types = FALSE)
       }, error = function(e) {
         message(sprintf("      ERROR reading file: %s", e$message))
@@ -60,9 +50,6 @@ importProteomeDiscovererTMTData <- function(filepath) {
       })
     }
     
-    message(sprintf("      Step: File read complete"))
-    message(sprintf("      Data State: Dims = %d rows, %d cols", nrow(data), ncol(data)))
-    message(sprintf("      Data State: Column names (first 10): %s", paste(head(names(data), 10), collapse = ", ")))
     log_info(sprintf("File contains %d rows and %d columns", nrow(data), ncol(data)))
     
     # Check for a protein accession column. Proteome Discoverer exports vary by
@@ -154,7 +141,6 @@ importProteomeDiscovererTMTData <- function(filepath) {
     data <- checkProtImportQuantityColumns(data, abundance_cols, file_path)
 
     # Pivot the uniquely named columns
-    message(sprintf("      Step: Pivoting %d columns to long format...", length(abundance_cols)))
     log_info("Pivoting data to long format...")
     long_data <- tryCatch({
       data |>
@@ -173,37 +159,29 @@ importProteomeDiscovererTMTData <- function(filepath) {
     # MaxQuant and FragPipe readers do (F-18), instead of a log2 0 after the design checkpoint.
     if (is.numeric(long_data$Abundance)) long_data$Abundance <- dplyr::na_if(long_data$Abundance, 0)
 
-    message(sprintf("      Step: Pivot complete. Pivoted to %d rows", nrow(long_data)))
     log_info(sprintf("Pivoted to %d rows", nrow(long_data)))
     
     if (!is.null(batch_name)) {
       long_data$Batch <- batch_name
-      message(sprintf("      Step: Added Batch column with value '%s'", batch_name))
     }
     
     return(long_data)
   }
   
   # Check if the file is a zip archive
-  message(sprintf("   Step: Checking if file is ZIP..."))
   message(sprintf("   File extension: %s", tools::file_ext(filepath)))
   if (tolower(tools::file_ext(filepath)) == "zip") {
     message(sprintf("   Condition TRUE: File is ZIP archive"))
     log_info("ZIP archive detected. Unzipping and processing batch files.")
     
-    message(sprintf("   Step: Creating temp directory..."))
     temp_dir <- tempfile()
     dir.create(temp_dir)
     message(sprintf("   Temp directory: %s", temp_dir))
     
-    message(sprintf("   Step: Unzipping file..."))
     unzip(filepath, exdir = temp_dir)
-    message(sprintf("   Step: Unzip complete"))
     
-    message(sprintf("   Step: Searching for data files in extracted directory..."))
     files_to_process <- list.files(temp_dir, pattern = "\\.(xlsx|csv|tsv)$", 
                                      full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
-    message(sprintf("   Step: File search complete"))
     message(sprintf("   Found %d files", length(files_to_process)))
     
     if (length(files_to_process) == 0) {
@@ -216,7 +194,6 @@ importProteomeDiscovererTMTData <- function(filepath) {
                      paste(basename(files_to_process), collapse = ", ")))
     
     # Use purrr::imap to iterate and process files with better error handling
-    message(sprintf("   Step: Starting iteration over %d files...", length(files_to_process)))
     all_data_list <- purrr::imap(files_to_process, ~{
       # Use the index provided by imap to create a guaranteed unique batch name
       batch_name <- paste0("b", .y) # .y is the index (1, 2, 3...)
@@ -244,7 +221,6 @@ importProteomeDiscovererTMTData <- function(filepath) {
     })
     
     # Combine all processed data with error handling
-    message(sprintf("   Step: Combining data from all %d files...", length(all_data_list)))
     log_info("Combining data from all files...")
     all_data <- tryCatch({
       dplyr::bind_rows(all_data_list)
@@ -253,11 +229,8 @@ importProteomeDiscovererTMTData <- function(filepath) {
       stop("Error combining data from multiple files. Files may have incompatible structures: ", 
            e$message, call. = FALSE)
     })
-    message(sprintf("   Step: Data combination complete. Combined %d rows", nrow(all_data)))
     
-    message(sprintf("   Step: Cleaning up temp directory..."))
     unlink(temp_dir, recursive = TRUE)
-    message(sprintf("   Step: Cleanup complete"))
     
     final_data <- all_data
     
@@ -267,7 +240,6 @@ importProteomeDiscovererTMTData <- function(filepath) {
     final_data <- process_single_file(filepath)
   }
   
-  message(sprintf("   Step: Preparing return value..."))
   message(sprintf("   Final data rows: %d", nrow(final_data)))
   log_info(sprintf("Total reshaped data rows: %d.", nrow(final_data)))
   

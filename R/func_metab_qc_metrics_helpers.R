@@ -117,11 +117,6 @@ calculateMissingness <- function(assay_data, sample_id_col, sample_columns = NUL
     # Calculate percentage
     missing_pct <- (missing_values / total_cells) * 100
 
-    # Debug output to verify calculation
-    message(
-        "DEBUG: Missing values: ", missing_values, ", Total cells: ", total_cells,
-        ", Percentage: ", missing_pct, "%"
-    )
 
     return(missing_pct)
 }

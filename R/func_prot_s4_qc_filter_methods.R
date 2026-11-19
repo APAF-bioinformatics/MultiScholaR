@@ -169,9 +169,7 @@ setMethod(
     flush.console()
 
     flush.console()
-    message(sprintf("      Data State (protein_quant_table): Dims = %d rows, %d cols", nrow(protein_quant_table), ncol(protein_quant_table)))
     flush.console()
-    message(sprintf("      Data State (design_matrix): Dims = %d rows, %d cols", nrow(design_matrix), ncol(design_matrix)))
     flush.console()
     message(paste("        ", paste(names(design_matrix), collapse = ", ")))
     flush.console()

@@ -157,7 +157,6 @@ getUniprotAnnotationsFull <- function(data_tbl,
                    length(raw_protein_groups), length(cleaned_proteins)))
   cat(sprintf("First 10 individual proteins: %s\n", paste(head(cleaned_proteins, 10), collapse = ", ")))
   
-  print(head(cleaned_proteins, 10))
   
   # === ENSEMBL ID CONVERSION LOGIC ===
   # Detect if protein IDs are Ensembl format and convert to UniProt if necessary
@@ -201,7 +200,6 @@ getUniprotAnnotationsFull <- function(data_tbl,
         cat(sprintf("  - UniProt IDs extracted for API query: %d\n", length(proteins_to_query)))
         cat(sprintf("\n[OK] CRITICAL CHECK - First 5 IDs to be submitted to UniProt API:\n"))
         cat(sprintf("  Type: %s\n", if(any(grepl("^ENS", head(proteins_to_query, 5)))) "[FAIL] ENSEMBL (WRONG!)" else "[OK] UniProt (CORRECT)"))
-        print(head(proteins_to_query, 5))
         cat("=== END ENSEMBL CONVERSION ===\n\n")
       } else {
         cat("[FAIL] ERROR: gprofiler2 conversion returned 0 results!\n")
@@ -232,7 +230,6 @@ getUniprotAnnotationsFull <- function(data_tbl,
   cat("\n=== FINAL CHECK BEFORE UniProt API SUBMISSION ===\n")
   cat(sprintf("Temporary table dimensions: %d rows x %d cols\n", nrow(temp_protein_table), ncol(temp_protein_table)))
   cat(sprintf("First 5 IDs in temp_protein_table$Protein.Ids:\n"))
-  print(head(temp_protein_table$Protein.Ids, 5))
   cat(sprintf("ID Type Check: %s\n", 
               if(any(grepl("^ENS", head(temp_protein_table$Protein.Ids, 10)))) {
                 "[FAIL] STILL ENSEMBL IDS - BUG IN CONVERSION LOGIC!"
