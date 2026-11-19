@@ -1,5 +1,5 @@
 {
-  "label": "score-lifecycle-lc4",
+  "label": "score-lifecycle-lc4b",
   "runs": [{"run": 44434645817, "label": "confirm-lc4"}],
   "aggregate": {
     "commit": "2ba5cf87fd2bb370fe8d9bb8a5afdd2c2c8336ec",

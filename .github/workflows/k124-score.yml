@@ -121,7 +121,11 @@ jobs:
               gh api "repos/$K124_REPO/actions/runs/$run/artifacts" --paginate -q '.artifacts[] | [.name, .size_in_bytes, .digest] | @tsv' > "$RUNNER_TEMP/artifacts.tsv"
               gh api "repos/$K124_REPO/actions/runs/$run/jobs?filter=all" --paginate -q '.jobs[] | [.id, .name, .conclusion, .run_attempt, .started_at, .completed_at] | @tsv' |
                 while IFS=$'\t' read -r id name conclusion attempt started completed; do
-                  art=$(awk -F'\t' -v n="$name" 'BEGIN { split(n, w, " ") } $1 ~ ("-" w[1] "-" w[2] "$") { print; exit }' "$RUNNER_TEMP/artifacts.tsv")
+                  art=""
+                  if [[ "$name" =~ ^s[1-4]\ [CS][0-9] ]]; then
+                    art=$(awk -F'\t' -v n="$name" 'BEGIN { split(n, w, " "); suf = "-" w[1] "-" w[2] }
+                      length($1) >= length(suf) && substr($1, length($1) - length(suf) + 1) == suf { print; exit }' "$RUNNER_TEMP/artifacts.tsv")
+                  fi
                   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$run" "$id" "$name" "$conclusion" "$attempt" "$started" "$completed" "${art:-			}" | cut -f1-10
                 done
             done; } > "$out/jobs.tsv"
