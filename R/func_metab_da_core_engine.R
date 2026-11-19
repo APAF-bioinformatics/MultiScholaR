@@ -22,11 +22,6 @@ fitMetabDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
     design_m <- stats::model.matrix(ff, mod_frame)
     logger::log_info(sprintf("   design_m dims = %d x %d", nrow(design_m), ncol(design_m)))
 
-    # [D66:START] -------------------------
-    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("  runTestsContrastsMetabDA - Model matrix created:")
-    d66_log("    design_m levels (colnames) = ", paste(colnames(design_m), collapse = ", "))
-    # [D66:END] ---------------------------
 
     # Subset data to match design matrix samples
     common_samples <- intersect(colnames(data), rownames(design_m))
@@ -72,14 +67,8 @@ fitMetabDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
 #' @noRd
 applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, eBayes_trend = TRUE, eBayes_robust = TRUE,
                                   contrastsFitFn = limma::contrasts.fit) {
-    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     design_m <- fit$design
 
-    # [D66:START] -------------------------
-    d66_log("  About to call makeContrasts:")
-    d66_log("    contrasts = ", paste(contrast_strings, collapse = ", "))
-    d66_log("    levels = ", paste(colnames(design_m), collapse = ", "))
-    # [D66:END] ---------------------------
 
     # =====================================================================
     # VALIDATION: Check that contrast terms exist in design matrix levels
@@ -107,11 +96,9 @@ applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
                 paste(missing_terms, collapse = ", "),
                 paste(available_levels, collapse = ", ")
             )
-            d66_log("  VALIDATION FAILED: ", error_msg)
             stop(error_msg)
         }
     }
-    d66_log("  VALIDATION PASSED: All contrast terms exist in design matrix levels")
 
     # Create contrast matrix
     logger::log_info("   Creating contrast matrix...")

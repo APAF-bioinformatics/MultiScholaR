@@ -504,7 +504,6 @@ runTestsContrasts <- function(data,
                               eBayes_robust = FALSE,
                               group_id = "group",
                               technical_replicate_id = "replicates") {
-  message("--- Entering runTestsContrasts ---")
   message(sprintf("   runTestsContrasts: data dims = %d x %d, %d contrasts", nrow(data), ncol(data), length(contrast_strings)))
   message(sprintf("   runTestsContrasts: contrasts = %s", paste(contrast_strings, collapse = ", ")))
   message(sprintf("   runTestsContrasts: treat_lfc_cutoff = %s", treat_lfc_cutoff))
@@ -822,7 +821,6 @@ runTestsContrasts <- function(data,
   }
 
   names(result_tables) <- contrast_strings
-  message("--- Exiting runTestsContrasts ---")
   result <- list(results = result_tables, fit.eb = t.fit, qvalue_warnings = qvalue_failures)
   if (!is.null(saved_identity)) {
     saved_reference <- saveWorkflowDiaResult(saved_manager$.context$store,

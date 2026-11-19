@@ -22,11 +22,6 @@ fitLipidDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
     design_m <- stats::model.matrix(ff, mod_frame)
     logger::log_info(sprintf("   design_m dims = %d x %d", nrow(design_m), ncol(design_m)))
 
-    # [D66:START] -------------------------
-    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("  runTestsContrastsLipidDA - Model matrix created:")
-    d66_log("    design_m levels (colnames) = ", paste(colnames(design_m), collapse = ", "))
-    # [D66:END] ---------------------------
 
     # Subset data to match design matrix samples
     common_samples <- intersect(colnames(data), rownames(design_m))
@@ -72,14 +67,8 @@ fitLipidDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
 #' @noRd
 applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, eBayes_trend = TRUE, eBayes_robust = TRUE,
                                   contrastsFitFn = limma::contrasts.fit) {
-    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     design_m <- fit$design
 
-    # [D66:START] -------------------------
-    d66_log("  About to call makeContrasts:")
-    d66_log("    contrasts = ", paste(contrast_strings, collapse = ", "))
-    d66_log("    levels = ", paste(colnames(design_m), collapse = ", "))
-    # [D66:END] ---------------------------
 
     # =====================================================================
     # VALIDATION: Check that contrast terms exist in design matrix levels
@@ -107,11 +96,9 @@ applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
                 paste(missing_terms, collapse = ", "),
                 paste(available_levels, collapse = ", ")
             )
-            d66_log("  VALIDATION FAILED: ", error_msg)
             stop(error_msg)
         }
     }
-    d66_log("  VALIDATION PASSED: All contrast terms exist in design matrix levels")
 
     # Create contrast matrix
     logger::log_info("   Creating contrast matrix...")
@@ -348,7 +335,6 @@ formatLipidDaContrastTable <- function(da_tbl, contrast_name, assay_name, friend
     )
 
     # Add sample intensity columns using createLipidDaResultsLongFormat
-    cat(sprintf("[D66] Calling createLipidDaResultsLongFormat for contrast: %s\n", contrast_name))
     da_tbl <- createLipidDaResultsLongFormat(
         lfc_qval_tbl = da_tbl,
         expr_matrix = expr_matrix,
@@ -430,13 +416,6 @@ runLipidsDA <- function(
   eBayes_robust = TRUE,
   ruv_factors = NULL
 ) {
-    # [D66:START] -------------------------
-    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    d66_log("=== ENTER runLipidsDA ===")
-    d66_log("  formula_string = ", formula_string)
-    d66_log("  contrasts_tbl columns = ", paste(colnames(contrasts_tbl), collapse = ", "))
-    d66_log("  contrasts_tbl$contrasts = ", paste(contrasts_tbl$contrasts, collapse = ", "))
-    # [D66:END] ---------------------------
 
     logger::log_info("=== Starting runLipidsDA ===")
 
@@ -453,14 +432,6 @@ runLipidsDA <- function(
     lipid_id_col <- theObject@lipid_id_column
     annotation_col <- theObject@annotation_id_column
 
-    # [D66:START] -------------------------
-    d66_log("  S4 slots extracted:")
-    d66_log("    sample_id_col = ", sample_id_col)
-    d66_log("    group_col = ", group_col)
-    d66_log("    design_matrix columns = ", paste(colnames(design_matrix), collapse = ", "))
-    d66_log("    design_matrix nrow = ", nrow(design_matrix))
-    d66_log("    assay_list names = ", paste(names(assay_list), collapse = ", "))
-    # [D66:END] ---------------------------
 
     preflight <- validateLipidDaAnalysisPreflight(
         currentS4 = theObject,
@@ -487,10 +458,6 @@ runLipidsDA <- function(
         contrast_strings
     }
 
-    # [D66:START] -------------------------
-    d66_log("  contrast_strings = ", paste(contrast_strings, collapse = ", "))
-    d66_log("  friendly_names = ", paste(friendly_names, collapse = ", "))
-    # [D66:END] ---------------------------
 
     assay_names <- names(assay_list)
     logger::log_info(sprintf(

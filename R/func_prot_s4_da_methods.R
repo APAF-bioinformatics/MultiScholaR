@@ -17,10 +17,8 @@
   ) {
     # KIT-126 audit F-02: this entry point tests the object's own table; a factors-in-the-model object is refused.
     refuseProtRuvModelObject(theObject, ".differentialAbundanceAnalysisHelperProteomicsLegacy")
-    message("--- Entering differentialAbundanceAnalysisHelper ---")
 
     # IMMEDIATE PARAMETER VALIDATION TO CATCH INDEX ERROR
-    message("   PARAMETER VALIDATION Step: Checking all input parameters...")
     message(sprintf("      theObject is NULL: %s", is.null(theObject)))
     message(sprintf("      contrasts_tbl is NULL: %s", is.null(contrasts_tbl)))
     if (!is.null(contrasts_tbl)) {
@@ -42,16 +40,6 @@
       )
     }
 
-    message("   DEBUG66: Initial parameter inspection")
-    message(sprintf("      DEBUG66: theObject class = %s", class(theObject)))
-    message(sprintf("      DEBUG66: contrasts_tbl param is.null = %s", is.null(contrasts_tbl)))
-    if (!is.null(contrasts_tbl)) {
-      message(sprintf("      DEBUG66: contrasts_tbl param class = %s", class(contrasts_tbl)))
-      message("      DEBUG66: contrasts_tbl param structure:")
-      str(contrasts_tbl)
-    }
-
-    message("   differentialAbundanceAnalysisHelper Step: Extracting parameters...")
     # Extract parameters from S4 object with fallbacks
     contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", contrasts_tbl)
     formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", "~ 0 + group")
@@ -63,16 +51,11 @@
     args_group_pattern <- checkParamsObjectFunctionSimplify(theObject, "args_group_pattern", "(\\d+)")
     args_row_id <- checkParamsObjectFunctionSimplify(theObject, "args_row_id", "uniprot_acc")
 
-    message("   DEBUG66: After parameter extraction")
-    message(sprintf("      DEBUG66: contrasts_tbl class = %s", class(contrasts_tbl)))
-    message("      DEBUG66: contrasts_tbl structure:")
-    str(contrasts_tbl)
 
     message(sprintf("   differentialAbundanceAnalysisHelper: formula_string = %s", formula_string))
     message(sprintf("   differentialAbundanceAnalysisHelper: group_id = %s", group_id))
     message(sprintf("   differentialAbundanceAnalysisHelper: da_q_val_thresh = %f", da_q_val_thresh))
 
-    message("   differentialAbundanceAnalysisHelper Step: Processing group names...")
     # Handle group names that start with numbers (same pattern as original wrapper)
     design_matrix <- theObject@design_matrix
     group_col <- design_matrix[[group_id]]
@@ -84,7 +67,6 @@
     message(sprintf("   differentialAbundanceAnalysisHelper: any start with number? %s", any(starts_with_number)))
 
     if (any(starts_with_number)) {
-      message("   differentialAbundanceAnalysisHelper Step: Fixing group names that start with numbers...")
 
       original_groups <- unique(group_col)
       message(sprintf("   differentialAbundanceAnalysisHelper: original_groups = %s", paste(original_groups, collapse = ", ")))
@@ -92,27 +74,14 @@
 
       tryCatch(
         {
-          message("      DEBUG66: Before safe_groups purrr::map_chr")
-          message(sprintf("      DEBUG66: original_groups class = %s", class(original_groups)))
-          message(sprintf("      DEBUG66: original_groups length = %d", length(original_groups)))
-          message("      DEBUG66: original_groups content:")
-          print(original_groups)
-
           safe_groups <- purrr::map_chr(original_groups, \(x) {
-            message(sprintf("         DEBUG66: Processing group item: '%s' (class: %s)", x, class(x)))
             result <- if (grepl("^[0-9]", x)) paste0("grp_", x) else x
-            message(sprintf("         DEBUG66: Result for '%s' -> '%s'", x, result))
             result
           })
           message("   differentialAbundanceAnalysisHelper: safe_groups processing SUCCESS")
-          message("      DEBUG66: safe_groups result:")
-          print(safe_groups)
         },
         error = function(e) {
           message(sprintf("   differentialAbundanceAnalysisHelper ERROR in safe_groups purrr::map_chr: %s", e$message))
-          message("      DEBUG66: Error details:")
-          message(sprintf("      DEBUG66: Error class: %s", class(e)))
-          print(str(e))
           stop(e)
         }
       )
@@ -140,38 +109,19 @@
         message("   differentialAbundanceAnalysisHelper: About to update contrasts table with purrr::map_chr")
         message(sprintf("   differentialAbundanceAnalysisHelper: contrasts_tbl[[1]] = %s", paste(contrasts_tbl[[1]], collapse = ", ")))
 
-        message("      DEBUG66: Contrasts table inspection before purrr::map_chr")
-        message(sprintf("      DEBUG66: contrasts_tbl class = %s", class(contrasts_tbl)))
-        message(sprintf("      DEBUG66: contrasts_tbl dim = %d x %d", nrow(contrasts_tbl), ncol(contrasts_tbl)))
-        message("      DEBUG66: contrasts_tbl structure:")
-        str(contrasts_tbl)
-        message(sprintf("      DEBUG66: contrasts_tbl[[1]] class = %s", class(contrasts_tbl[[1]])))
-        message(sprintf("      DEBUG66: contrasts_tbl[[1]] length = %d", length(contrasts_tbl[[1]])))
-        message("      DEBUG66: group_mapping content:")
-        print(group_mapping)
-
         tryCatch(
           {
             contrasts_tbl[[1]] <- purrr::map_chr(contrasts_tbl[[1]], \(x) {
-              message(sprintf("         DEBUG66: Processing contrast: '%s' (class: %s)", x, class(x)))
-              message(sprintf("         DEBUG66: group_mapping names: %s", paste(names(group_mapping), collapse = ", ")))
               result <- x
               for (orig in names(group_mapping)) {
-                message(sprintf("            DEBUG66: Checking gsub: '%s' -> '%s'", group_mapping[orig], orig))
                 result <- gsub(group_mapping[orig], orig, result, fixed = TRUE)
               }
-              message(sprintf("         DEBUG66: Final result: '%s' -> '%s'", x, result))
               result
             })
             message("   differentialAbundanceAnalysisHelper: contrasts table update SUCCESS")
-            message("      DEBUG66: Updated contrasts_tbl[[1]]:")
-            print(contrasts_tbl[[1]])
           },
           error = function(e) {
             message(sprintf("   differentialAbundanceAnalysisHelper ERROR in contrasts table purrr::map_chr: %s", e$message))
-            message("      DEBUG66: Error details:")
-            message(sprintf("      DEBUG66: Error class: %s", class(e)))
-            print(str(e))
             stop(e)
           }
         )
@@ -180,7 +130,6 @@
       theObject@design_matrix <- design_matrix
     }
 
-    message("   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...")
     # Update object with validated parameters
     theObject <- updateParamInObject(theObject, "contrasts_tbl")
     theObject <- updateParamInObject(theObject, "formula_string")
@@ -195,7 +144,6 @@
     return_list <- list()
     return_list$theObject <- theObject
 
-    message("   differentialAbundanceAnalysisHelper Step: Generating QC plots...")
 
     # Generate QC plots (RLE, PCA, density)
     rle_plot <- plotRle(theObject = theObject, theObject@group_id) +
@@ -247,18 +195,11 @@
     # Count the number of values
     return_list$plot_num_of_values <- plotNumOfValuesNoLog(theObject@protein_quant_table)
 
-    message("   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...")
 
     # Prepare design matrix for limma
-    message("   DEBUG66: About to prepare design matrix rownames")
-    message(paste("      DEBUG66: theObject@sample_id =", theObject@sample_id))
-    message(paste("      DEBUG66: design_matrix dims before =", nrow(theObject@design_matrix), "x", ncol(theObject@design_matrix)))
-    message("      DEBUG66: design_matrix column names:")
-    print(colnames(theObject@design_matrix))
 
     rownames(theObject@design_matrix) <- theObject@design_matrix |> dplyr::pull(one_of(theObject@sample_id))
 
-    message("      DEBUG66: design_matrix rownames set successfully")
 
     # Run the core limma analysis using existing function
     protein_quant_matrix <- as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column))
@@ -277,7 +218,6 @@
       eBayes_robust = as.logical(eBayes_robust)
     )
 
-    message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!")
 
     # The result from runTestsContrasts is a LIST with a 'results'
     # element, which ITSELF is a list of tables. For a single contrast run, we
@@ -325,11 +265,8 @@
     # Extract qvalue warnings if present
     if (!is.null(contrasts_results$qvalue_warnings) && length(contrasts_results$qvalue_warnings) > 0) {
       return_list$qvalue_warnings <- contrasts_results$qvalue_warnings
-      message(sprintf("   differentialAbundanceAnalysisHelper Step: qvalue() failed for %d contrast(s)", length(contrasts_results$qvalue_warnings)))
     }
 
-    message("   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...")
-    message(paste("   DEBUG66: contrast_name for list naming =", contrast_name))
 
     # Prepare data for volcano plots
     # CRITICAL FIX: getSignificantData expects list_of_de_tables to be a list where each element
@@ -388,7 +325,6 @@
 
     return_list$pvalhist <- pvalhist
 
-    message("   differentialAbundanceAnalysisHelper Step: Creating results tables...")
 
     # Create wide format output
     counts_table_to_use <- theObject@protein_quant_table
@@ -499,6 +435,5 @@
       return_list$num_sig_da_genes_barplot_with_not_significant <- num_sig_da_genes_barplot_with_not_significant
     }
 
-    message("--- Exiting differentialAbundanceAnalysisHelper ---")
     return(return_list)
   }

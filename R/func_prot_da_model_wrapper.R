@@ -142,10 +142,6 @@ daAnalysisWrapperFunction <- function(
   if (!is.null(theObject@args$limpa_dpc_quant_results)) {
     dpc_quant_results <- theObject@args$limpa_dpc_quant_results
     use_dpc_de <- TRUE
-    cat("   DA ANALYSIS Step: Detected DPC-Quant results - using limpa dpcDA for uncertainty-weighted analysis\n")
-    cat("   DA ANALYSIS Step: DPC parameters used:", paste(dpc_quant_results$dpc_parameters_used, collapse = ", "), "\n")
-  } else {
-    cat("   DA ANALYSIS Step: No DPC-Quant results found - using standard limma analysis\n")
   }
 
   # CRITICAL FIX: Use the correct column for contrast strings
@@ -153,9 +149,7 @@ daAnalysisWrapperFunction <- function(
   # NOT just the raw contrast expression (from contrasts column)
   if ("full_format" %in% names(contrasts_tbl)) {
     contrast_strings_to_use <- contrasts_tbl$full_format # Use full_format column
-    cat("   DA ANALYSIS Step: Using full_format column for contrast strings\n")
   } else {
-    cat("   DA ANALYSIS Step: No full_format column found, auto-generating from raw contrasts\n")
     # Auto-generate full_format column from raw contrasts
     raw_contrasts <- contrasts_tbl[, 1][[1]]
 
@@ -176,13 +170,10 @@ daAnalysisWrapperFunction <- function(
     })
 
     contrast_strings_to_use <- full_format_strings
-    cat("   DA ANALYSIS Step: Auto-generated full_format strings:\n")
-    print(contrast_strings_to_use)
   }
 
   # Run differential expression analysis
   if (use_dpc_de && requireNamespace("limpa", quietly = TRUE)) {
-    cat("   DA ANALYSIS Step: Running limpa dpcDE analysis with uncertainty weights\n")
 
     # The EList is now pre-filtered and stored, so we can use it directly
     y_elist_filtered <- dpc_quant_results$quantified_elist
@@ -194,9 +185,6 @@ daAnalysisWrapperFunction <- function(
     # Create design matrix for dpcDA
     design_matrix_for_dpcde <- model.matrix(as.formula(formula_string), theObject@design_matrix)
 
-    cat("   DA ANALYSIS Step: Calling limpa::dpcDE\n")
-    cat("   DA ANALYSIS Step: Protein matrix dims:", nrow(y_elist_filtered$E), "x", ncol(y_elist_filtered$E), "\n")
-    cat("   DA ANALYSIS Step: Design matrix dims:", nrow(design_matrix_for_dpcde), "x", ncol(design_matrix_for_dpcde), "\n")
 
     # Run dpcDE using the synchronized EList
     dpc_fit <- limpa::dpcDE(y_elist_filtered, design_matrix_for_dpcde, plot = FALSE)
@@ -210,10 +198,8 @@ daAnalysisWrapperFunction <- function(
       eBayes_robust = as.logical(eBayes_robust)
     )
 
-    cat("   DA ANALYSIS Step: dpcDE analysis completed successfully\n")
   } else {
     # Standard limma analysis (existing code)
-    cat("   DA ANALYSIS Step: Running standard limma analysis\n")
 
     data_matrix <- getDataMatrix(theObject)
 
@@ -231,7 +217,6 @@ daAnalysisWrapperFunction <- function(
 
   # Extract the contrast name (contains "=" delimiter needed for downstream functions)
   contrast_name <- names(contrasts_results$results)[1]
-  message(paste("   DEBUG66: contrast_name extracted =", contrast_name))
 
   # Map back to original group names in results if needed
   if (exists("group_mapping")) {
@@ -350,7 +335,6 @@ daAnalysisWrapperFunction <- function(
     set_colnames(paste0(colnames(counts_table_to_use[-1]), ".log2norm")) |>
     rownames_to_column(args_row_id)
 
-  print(head(norm_counts))
 
   return_list$norm_counts <- norm_counts
 
@@ -450,26 +434,17 @@ daAnalysisWrapperFunction <- function(
 
 
   # Generate volcano plots with gene names
-  cat("DEBUG_66: About to generate volcano plots with gene names\n")
-  cat(sprintf("DEBUG_66: static_volcano_plot_data has %d rows\n", nrow(static_volcano_plot_data)))
-  cat("DEBUG_66: static_volcano_plot_data structure:\n")
-  str(static_volcano_plot_data)
 
   list_of_volcano_plots_with_gene_names <- tryCatch(
     {
-      cat("DEBUG_66: Starting volcano plot generation pipeline\n")
 
       # Step 1: Group by comparison
       grouped_data <- static_volcano_plot_data %>%
         group_by(comparison)
-      cat(sprintf("DEBUG_66: Grouped data has %d groups\n", n_groups(grouped_data)))
 
       # Step 2: Nest
       nested_data <- grouped_data %>%
         nest()
-      cat(sprintf("DEBUG_66: Nested data has %d rows\n", nrow(nested_data)))
-      cat("DEBUG_66: Nested data structure:\n")
-      str(nested_data)
 
       # Step 3: Ungroup
       ungrouped_data <- nested_data %>%
@@ -478,28 +453,19 @@ daAnalysisWrapperFunction <- function(
       # Step 4: Add title
       with_title <- ungrouped_data %>%
         mutate(title = paste(comparison))
-      cat("DEBUG_66: Added titles successfully\n")
 
       # Step 5: Add plots with detailed error handling
       with_plots <- with_title %>%
         mutate(plot = purrr::map(data, \(x) {
-          cat(sprintf("DEBUG_66: Processing plot for data with %d rows\n", nrow(x)))
 
           # Check uniprot_tbl structure
-          cat(sprintf("DEBUG_66: uniprot_tbl has %d rows\n", nrow(uniprot_tbl)))
-          cat("DEBUG_66: uniprot_tbl columns:\n")
-          print(colnames(uniprot_tbl))
 
           # Check if gene_names column exists
           if (!"gene_names" %in% colnames(uniprot_tbl)) {
-            cat("DEBUG_66: ERROR - gene_names column not found in uniprot_tbl!\n")
-            cat("DEBUG_66: Available columns in uniprot_tbl:\n")
-            print(colnames(uniprot_tbl))
             stop("gene_names column missing from uniprot_tbl")
           }
 
           # Process gene names with detailed debugging
-          cat("DEBUG_66: Processing gene names\n")
           uniprot_with_gene_names <- tryCatch(
             {
               uniprot_tbl |>
@@ -521,14 +487,10 @@ daAnalysisWrapperFunction <- function(
                 }))
             },
             error = function(e) {
-              cat(sprintf("DEBUG_66: ERROR in gene name processing: %s\n", e$message))
-              cat("DEBUG_66: Error details:\n")
-              print(e)
               stop(e)
             }
           )
 
-          cat("DEBUG_66: Gene names processed successfully\n")
 
           # Call plot function
           printOneVolcanoPlotWithProteinLabel(
@@ -541,7 +503,6 @@ daAnalysisWrapperFunction <- function(
           )
         }))
 
-      cat("DEBUG_66: All plots generated successfully\n")
       with_plots
     },
     error = function(e) {

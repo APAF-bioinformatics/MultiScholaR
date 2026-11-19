@@ -53,7 +53,6 @@ formatMetabDaContrastTable <- function(da_tbl, contrast_name, assay_name, friend
                                         design_matrix, sample_id_col, group_col, da_q_val_thresh, treat_lfc_cutoff) {
     tryCatch(
         {
-            cat(sprintf("[D66] Processing contrast: %s (assay: %s)\n", contrast_name, assay_name))
 
             # Validate da_tbl
             if (!is.data.frame(da_tbl)) {
@@ -61,11 +60,9 @@ formatMetabDaContrastTable <- function(da_tbl, contrast_name, assay_name, friend
             }
 
             # Add metabolite_id from rownames
-            cat("[D66]   Step: rownames_to_column\n")
             da_tbl <- tibble::rownames_to_column(da_tbl, "metabolite_id")
 
             # Add metadata columns
-            cat("[D66]   Step: adding assay/comparison/friendly_name\n")
             da_tbl$assay <- assay_name
             da_tbl$comparison <- contrast_name
 
@@ -73,7 +70,6 @@ formatMetabDaContrastTable <- function(da_tbl, contrast_name, assay_name, friend
             da_tbl$friendly_name <- friendly_name
 
             # Join annotation info
-            cat("[D66]   Step: left_join annotation\n")
             da_tbl <- dplyr::left_join(
                 da_tbl,
                 annotation_info,
@@ -81,7 +77,6 @@ formatMetabDaContrastTable <- function(da_tbl, contrast_name, assay_name, friend
             )
 
             # Classify significance
-            cat("[D66]   Step: classifying significance\n")
             da_tbl$significant <- ifelse(
                 da_tbl$fdr_qvalue < da_q_val_thresh & abs(da_tbl$logFC) >= treat_lfc_cutoff,
                 ifelse(da_tbl$logFC > 0, "Up", "Down"),
@@ -89,7 +84,6 @@ formatMetabDaContrastTable <- function(da_tbl, contrast_name, assay_name, friend
             )
 
             # Add sample intensity columns using createMetabDaResultsLongFormat
-            cat(sprintf("[D66]   Calling createMetabDaResultsLongFormat for contrast: %s\n", contrast_name))
             da_tbl <- createMetabDaResultsLongFormat(
                 lfc_qval_tbl = da_tbl,
                 expr_matrix = expr_matrix,
@@ -177,13 +171,6 @@ runMetabolitesDA <- function(
   eBayes_robust = TRUE,
   ruv_factors = NULL
 ) {
-    # [D66:START] -------------------------
-    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    cat("[D66] === ENTER runMetabolitesDA [AG-v3] ===\n")
-    d66_log("  formula_string = ", formula_string)
-    d66_log("  contrasts_tbl columns = ", paste(colnames(contrasts_tbl), collapse = ", "))
-    d66_log("  contrasts_tbl$contrasts = ", paste(contrasts_tbl$contrasts, collapse = ", "))
-    # [D66:END] ---------------------------
 
     logger::log_info("=== Starting runMetabolitesDA ===")
 
@@ -200,14 +187,6 @@ runMetabolitesDA <- function(
     metabolite_id_col <- theObject@metabolite_id_column
     annotation_col <- theObject@annotation_id_column
 
-    # [D66:START] -------------------------
-    d66_log("  S4 slots extracted:")
-    d66_log("    sample_id_col = ", sample_id_col)
-    d66_log("    group_col = ", group_col)
-    d66_log("    design_matrix columns = ", paste(colnames(design_matrix), collapse = ", "))
-    d66_log("    design_matrix nrow = ", nrow(design_matrix))
-    d66_log("    assay_list names = ", paste(names(assay_list), collapse = ", "))
-    # [D66:END] ---------------------------
 
     # Extract contrast strings
     if ("contrasts" %in% colnames(contrasts_tbl)) {
@@ -225,10 +204,6 @@ runMetabolitesDA <- function(
         contrast_strings
     }
 
-    # [D66:START] -------------------------
-    d66_log("  contrast_strings = ", paste(contrast_strings, collapse = ", "))
-    d66_log("  friendly_names = ", paste(friendly_names, collapse = ", "))
-    # [D66:END] ---------------------------
 
     assay_names <- names(assay_list)
     logger::log_info(sprintf(
@@ -306,8 +281,6 @@ runMetabolitesDA <- function(
                     all_qvalue_warnings[[assay_name]] <- limma_results$qvalue_warnings
                 }
 
-                cat(sprintf("[D66] Assay %s: limma_results$results length = %d\n", assay_name, length(limma_results$results)))
-                cat(sprintf("[D66] Assay %s: names(limma_results$results) = [%s]\n", assay_name, paste(names(limma_results$results), collapse = ", ")))
 
                 # Process results for each contrast
                 assay_results_list <- purrr::map2(
