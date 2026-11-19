@@ -312,7 +312,7 @@ test_that("frozen WFX-004 comparison member emits science and complete-operation
         receipt$science <- identical(data, expected$data) && identical(result$summary, expected$summary)
         receipt$output_fingerprint <- digest::digest(data, algo = "sha256")
     }
-    files <- list.files(file.path(owner$manager$.context$store$directory, ".workflow-export", id),
+    files <- list.files(file.path(workflowExportStagingRoot(owner$manager$.context$store$directory), id),
         recursive = TRUE, full.names = TRUE)
     figures <- files[grepl("[.](png|pdf)$", files) & !grepl("/figures/", files)]
     expect_length(figures, 12L)

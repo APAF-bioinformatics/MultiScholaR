@@ -339,7 +339,7 @@ test_that("reference action publication resumes after process loss without repea
     expect_error(assertDIAExportReady(manager), class = "saved_entity_outputs_pending")
     expect_null(manager$.context$reclaim_pending)
     request <- manager$.context$snapshot$action_outputs[[reference$entity_id]]
-    backup <- file.path(source, ".workflow-export", request$request_id, "previous", "protein_qc_dir", "a.tsv")
+    backup <- file.path(workflowExportStagingRoot(source), request$request_id, "previous", "protein_qc_dir", "a.tsv")
     expect_identical(readLines(backup), "previous a")
     closeDIAStateAdapter(manager)
     manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "reference-publication", "DIA"), reopen = TRUE)
@@ -806,7 +806,7 @@ test_that("latest publication resumes from latest.replacement after an interrupt
     }
     expect_error(runWorkflowLegacyExport(session, output, "retry-latest",
         "20260916_160400", renameFn = lose_final_rename), "lost between latest renames")
-    replacement <- file.path(output, ".workflow-export", "retry-latest", "latest.replacement")
+    replacement <- file.path(workflowExportStagingRoot(output), "retry-latest", "latest.replacement")
     expect_true(file.exists(replacement))
     completed <- runWorkflowLegacyExport(NULL, output, "retry-latest",
         "20260916_160400", serializeFn = function(...) stop("must not serialize"))
@@ -823,7 +823,7 @@ test_that("an interrupted journal write never leaves an unparseable export journ
         session <- makeExportSessionTemplate(makeSavedExportProtein(0L),
             makeSavedExportProtein(1L))
         request <- paste0("journal-", sub("_", "-", target))
-        journal_path <- file.path(output, ".workflow-export", request, "journal.json")
+        journal_path <- file.path(workflowExportStagingRoot(output), request, "journal.json")
         interrupted <- FALSE
         local({
             testthat::local_mocked_bindings(write_json = function(x, path, ...) {

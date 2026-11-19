@@ -444,7 +444,7 @@ test_that("a selected table and its map survive store relocation", {
         workflowSavedTableMetadata(expected, "id", 3L), "view", identity("view"))
     releaseWorkflowTableReadScope(scope)
     closeWorkflowEntityStore(store)
-    expect_true(file.copy(file.path(source_root, ".workflow-entities"),
+    expect_true(file.copy(workflowEntityDirectory(source_root),
         destination_root, recursive = TRUE, copy.date = TRUE))
     relocated <- newWorkflowEntityStore(destination_root, "perf103-relocation", "DIA")
     on.exit(closeWorkflowEntityStore(relocated), add = TRUE)

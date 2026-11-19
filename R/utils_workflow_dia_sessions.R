@@ -230,8 +230,10 @@ runDIANativeTar <- function(arguments, log_path, output_path = NULL) {
 #' @return TRUE invisibly; aliases/traversal/duplicates are rejected.
 #' @noRd
 checkDIANativeMemberNames <- function(names) {
+    # KIT-052 option A (protocol v1.11): the store's members sit under the store folder's name, `.we` for a store
+    # written since, `.workflow-entities` before (both read; one archive holds one of them).
     pattern <- paste0("^(manifest\\.json|session-references\\.rds|",
-        "\\.workflow-entities/(store\\.json|dia-state-head\\.rds|",
+        "\\.(workflow-entities|we)/(store\\.json|dia-state-head\\.rds|",
         "entities/[A-Za-z0-9_-]{1,80}/(commit\\.json|descriptor\\.rds|",
         "payload\\.(rds|qs2|parquet)))|files/[a-f0-9]{64})$")
     if (!is.character(names) || !length(names) || length(names) > 40004L ||
@@ -239,6 +241,31 @@ checkDIANativeMemberNames <- function(names) {
         cli::cli_abort("invalid native archive member paths", class = "saved_entity_path")
     }
     invisible(TRUE)
+}
+
+#' The store folder's name inside a native archive (protocol v1.11): `.we`, or `.workflow-entities` in an archive
+#' written before; an archive holding both, or neither, is refused.
+#' @param names Archive member names (already checked).
+#' @return One folder name.
+#' @noRd
+workflowNativeArchiveStorePrefix <- function(names) {
+    prefixes <- unique(sub("/.*$", "", grep("^[.](workflow-entities|we)/", names, value = TRUE)))
+    if (length(prefixes) != 1L) cli::cli_abort("native archive store folder is missing or ambiguous", class = "saved_entity_corrupt")
+    prefixes
+}
+
+#' A new session folder under a project's source directory (KIT-052 option A, protocol v1.11): `.n-<8>`, eight
+#' hexadecimal characters (was `.dia-native-<14>`, a `tempfile` name; those folders keep their names and still open).
+#' @param root The directory that holds it.
+#' @return An unused path; the caller creates it.
+#' @noRd
+newWorkflowSessionFolder <- function(root) {
+    for (attempt in seq_len(20L)) {
+        path <- file.path(root, paste0(".n-", substr(digest::digest(list(Sys.time(), Sys.getpid(), tempfile(), attempt),
+            algo = "sha256"), 1L, 8L)))
+        if (!file.exists(path)) return(path)
+    }
+    cli::cli_abort("cannot name a new session folder", class = "saved_entity_write")
 }
 
 #' Inspect every archive member before extraction into a private directory.
@@ -273,9 +300,10 @@ inspectDIANativeArchive <- function(path, directory) {
         sizes <- unname(entries)
     }
     checkDIANativeMemberNames(names)
+    prefix <- workflowNativeArchiveStorePrefix(names)
     if (any(!is.finite(sizes) | sizes < 0) || sum(sizes) > info$size ||
-        !all(c("manifest.json", "session-references.rds", ".workflow-entities/store.json",
-            ".workflow-entities/dia-state-head.rds") %in% names) ||
+        !all(c("manifest.json", "session-references.rds", paste0(prefix, "/store.json"),
+            paste0(prefix, "/dia-state-head.rds")) %in% names) ||
         any(sizes[names %in% c("manifest.json", "session-references.rds")] > 67108864)) {
         cli::cli_abort("native archive sizes or required entries differ", class = "saved_entity_corrupt")
     }
@@ -369,7 +397,7 @@ stageDIANativeSession <- function(manager, metadata_reference, extra_references,
             reference$payload$relative_path)
         for (member in relative) {
             path <- file.path(store$directory, member)
-            archive_name <- paste0(".workflow-entities/", member)
+            archive_name <- paste0(basename(store$directory), "/", member)
             # Payload validation already computed this fingerprint. Descriptor
             # and commit files are small, independent archived files.
             inventory[[archive_name]] <- if (identical(member, reference$payload$relative_path))
@@ -379,7 +407,7 @@ stageDIANativeSession <- function(manager, metadata_reference, extra_references,
             store_members <- c(store_members, archive_name)
         }
     }
-    staged_store <- file.path(paths$request_dir, ".workflow-entities")
+    staged_store <- file.path(paths$request_dir, basename(store$directory))
     if (!dir.exists(staged_store) && !dir.create(staged_store)) {
         cli::cli_abort("cannot stage native session metadata", class = "saved_entity_write")
     }
@@ -387,7 +415,7 @@ stageDIANativeSession <- function(manager, metadata_reference, extra_references,
     saveRDS(context$head, file.path(staged_store, "dia-state-head.rds"), version = 3)
     roots <- list(metadata = metadata_reference, extra = extra_references)
     saveRDS(roots, file.path(paths$request_dir, "session-references.rds"), version = 3)
-    stage_members <- c(".workflow-entities/store.json", ".workflow-entities/dia-state-head.rds",
+    stage_members <- c(paste0(basename(store$directory), "/store.json"), paste0(basename(store$directory), "/dia-state-head.rds"),
         "session-references.rds")
     if (!is.list(dependencies) || length(dependencies) > store$max_entries ||
         length(dependencies) && (is.null(names(dependencies)) || anyDuplicated(names(dependencies)))) {
@@ -546,7 +574,7 @@ publishDIANativeSession <- function(paths, owned_staged = FALSE) {
 #' @return Matching journal, or NULL; ambiguous recovery is refused.
 #' @noRd
 findDIANativePendingExport <- function(manager, output_dir) {
-    root <- file.path(output_dir, ".workflow-export")
+    root <- workflowExportStagingRoot(output_dir)
     if (!dir.exists(root)) return(NULL)
     entries <- list.dirs(root, recursive = FALSE, full.names = TRUE)
     if (length(entries) > 10000L) cli::cli_abort("export recovery index exceeds limits", class = "saved_entity_limit")
@@ -701,7 +729,8 @@ openDIANativeSession <- function(path, project_root) {
             cli::cli_abort("native session file integrity differs", class = "saved_entity_corrupt")
         }
     }
-    identity <- readSavedStoreIdentity(file.path(directory, ".workflow-entities", "store.json"))
+    store_folder <- workflowNativeArchiveStorePrefix(names(listed))
+    identity <- readSavedStoreIdentity(file.path(directory, store_folder, "store.json"))
     if (!identical(identity, manifest$identity) || !identical(manifest$workflow, identity$workflow_id)) {
         cli::cli_abort("native session store identity differs", class = "saved_entity_scope")
     }
@@ -719,7 +748,7 @@ openDIANativeSession <- function(path, project_root) {
         commit <- jsonlite::read_json(commit_path)
         expected <- newSavedWorkflowDescriptor(store, descriptor$kind, descriptor$identity,
             descriptor$payload, descriptor$metadata, descriptor$parent_id, descriptor$revision)
-        payload_member <- paste0(".workflow-entities/", descriptor$payload$relative_path)
+        payload_member <- paste0(store_folder, "/", descriptor$payload$relative_path)
         inventory <- manifest$files[[payload_member]]
         if (!identical(descriptor, expected) || !identical(commit$schema, 1L) ||
             !identical(commit$entity_id, descriptor$entity_id) ||
@@ -887,7 +916,7 @@ createWorkflowSessionOwner <- function(workflow_data, experiment_paths, session,
         cli::cli_abort("{omic_type} needs the qs2, DuckDB and Arrow packages for its state owner", class = "saved_entity_unsupported")
     }
     root <- normalizePath(experiment_paths$source_dir, winslash = "/", mustWork = TRUE)
-    state_root <- tempfile(".dia-native-", tmpdir = root)
+    state_root <- newWorkflowSessionFolder(root)
     if (!dir.create(state_root, mode = "0700")) {
         cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
     }
@@ -950,7 +979,7 @@ bindDIASessionOwnerType <- function(manager, format, workflow_type, workflow_dat
         cli::cli_abort("reset the project before activating an on-disk session", class = "saved_entity_scope")
     }
     root <- normalizePath(paths$source_dir, winslash = "/", mustWork = TRUE)
-    state_root <- tempfile(".dia-native-", tmpdir = root)
+    state_root <- newWorkflowSessionFolder(root)
     if (!dir.create(state_root, mode = "0700")) {
         cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
     }
@@ -1028,7 +1057,7 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
             }
         }
     }
-    state_root <- tempfile(".dia-native-", tmpdir = root)
+    state_root <- newWorkflowSessionFolder(root)
     if (!dir.create(state_root, mode = "0700")) {
         cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
     }
@@ -1807,7 +1836,7 @@ discardDIANativeGuiFiles <- function(created) {
 #' @param paths Experiment paths whose `source_dir` must contain the folder.
 #' @return TRUE when the folder was removed, FALSE when the rule did not apply, invisibly. Only the
 #'   application's own dot-prefixed folders directly under the project's source directory qualify
-#'   (`.dia-native-*`, `.dia-native-import-*`, `.dia-gui-adoption-*`); a user's folder is never
+#'   (`.n-<8>` since protocol v1.11, `.dia-native-*`, `.dia-native-import-*`, `.dia-gui-adoption-*`); a user's folder is never
 #'   touched.
 #' @noRd
 removeDIAReplacedSessionFolder <- function(root, keep, paths) {
@@ -1819,7 +1848,7 @@ removeDIAReplacedSessionFolder <- function(root, keep, paths) {
     source <- normalizePath(paths$source_dir, winslash = "/", mustWork = TRUE)
     kept <- if (is.character(keep) && length(keep) == 1L && dir.exists(keep)) normalizePath(keep, winslash = "/") else ""
     if (identical(root, kept) || !identical(dirname(root), source) ||
-        !grepl("^[.]dia-(native|native-import|gui-adoption)-", basename(root))) {
+        !grepl("^([.]dia-(native|native-import|gui-adoption)-|[.]n-[a-f0-9]{8}$)", basename(root))) {
         return(invisible(FALSE))
     }
     unlink(root, recursive = TRUE)

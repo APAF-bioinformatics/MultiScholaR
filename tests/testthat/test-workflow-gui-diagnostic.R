@@ -317,6 +317,7 @@ test_that("retained QC figure replay attributes live heap and allocator residenc
     library_path <- Sys.getenv("MULTISCHOLAR_DIA008_LIBRARY")
     proof_root <- dirname(dirname(library_path))
     member <- file.path(proof_root, "browser-smoke.FKZX69")
+    # Compatibility: a member written before KIT-052 option A (protocol v1.11), so its earlier `.workflow-export` name.
     source <- file.path(member, "dia_baseline_smoke", "results", "proteomics",
         "publication_graphs", "filtering_qc", "20260925_131212", ".workflow-export",
         "qvalue-a277baf727685fa6432f382a889f20fdbb42cbcd", "display.rds")

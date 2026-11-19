@@ -525,6 +525,7 @@ test_that("canonical fingerprints drop run-specific ids, times and plot objects 
         ignore_products = h$kitOperationIdentityProducts), "step/products/normalization_science")
     expect_true(h$kitStateFingerprintMatches(c(fingerprint("x"), list(extra = 1)), fingerprint("x")))
     expect_false(h$kitStateFingerprintMatches(fingerprint("x"), fingerprint("y")))
+    # Compatibility: the earlier `.workflow-export` staging name (protocol v1.11 reads it beside `.wx`).
     files <- function(pdf, png, stamp = "20261010_184024", id = "3005b574e4ee6") data.frame(
         path = c("a.pdf", paste0("filtering_qc/", stamp, "/b.png"), paste0("filtering_qc/", stamp, "/.workflow-export/qvalue-", strrep("a", 40), "/journal.json"),
             paste0("filtered_session_", stamp, "_native-export-", id, ".msdia.tar"), "filtered_session_summary.txt", "fasta_metadata.RDS"),
@@ -560,6 +561,7 @@ test_that("a journey population is identified by its per-step checkpoint descrip
     expect_null(h$kitPopulationInvalid(live))
     expect_identical(h$kitPopulationStore(live, file.path(store, "..", "unused")), store)
     snapshot <- h$kitPopulationStore(journey, file.path(dirname(store), "member", "population-store"))
+    # Compatibility: the harness's snapshot store keeps the earlier name; the package opens it as a store from before v1.11.
     expect_identical(basename(snapshot), ".workflow-entities")
     expect_true(dir.exists(file.path(snapshot, "entities", "dia-state-bbb")))
     expect_identical(digest::digest(file = file.path(snapshot, "dia-state-head.rds"), algo = "sha256"), step_head)
@@ -873,7 +875,7 @@ test_that("a journey population's input component is read from its snapshot head
     manager$saveState("replicate_filtered", object, list(), "fixture")
     state_id <- getDIAStateReference(manager)$entity_id
     closeDIAStateAdapter(manager)
-    store_dir <- file.path(root, ".workflow-entities")
+    store_dir <- workflowEntityDirectory(root)
     component <- h$kitPopulationInputComponent(store_dir, "replicate_filtered", api)
     expect_true(is.character(component) && nzchar(component))
     expect_false(identical(component, state_id))
@@ -886,7 +888,7 @@ test_that("a journey population's input component is read from its snapshot head
     manager2$saveState("duplicates_removed", protein, list(), "fixture")
     expected <- readDIAStateMetadata(manager2)$data$components$protein_quant_table$entity_id
     closeDIAStateAdapter(manager2)
-    expect_identical(h$kitPopulationInputComponent(file.path(root2, ".workflow-entities"), "duplicates_removed", api), expected)
+    expect_identical(h$kitPopulationInputComponent(workflowEntityDirectory(root2), "duplicates_removed", api), expected)
 })
 
 test_that("the adapters vehicle names a member's input component through the class declaration, not a fixed table (KIT-010 audit PH-01)", {
@@ -929,8 +931,12 @@ test_that("a ticket's gui-mode member runs the screen journey with no record on 
         support = list(), products = list(`dia-rollup-progress:1` = list(sha256 = "p")), summary_sha256 = "s", rows = 10L)))
     saveRDS(list(status = "complete", populations = populations), file.path(reference, "journey-result.rds"))
     saveRDS(list(status = "complete", populations = populations), file.path(member, "journey-result.rds"))
+    # Compatibility: the layout before protocol v1.11 (`.workflow-entities/.workflow-export/wfx-<32>`); the harness reads
+    # only well-formed request ids (`KIT_REQUEST_RE`), so each fixture request is `wfx-` and the operation's 32-hex md5.
+    request_dir <- function(operation) file.path(member, "project", ".workflow-entities", ".workflow-export",
+        paste0("wfx-", digest::digest(operation, algo = "md5", serialize = FALSE)))
     for (operation in c("precursor_rollup", "minimum_peptides_per_sample")) {
-        wfx <- file.path(member, "project", ".workflow-entities", ".workflow-export", paste0("wfx-", operation))
+        wfx <- request_dir(operation)
         dir.create(wfx, recursive = TRUE)
         saveRDS(list(schema = 1L, operation = operation), file.path(wfx, "request.rds"))
         writeLines('{"status":"complete"}', file.path(wfx, "journal.json"))
@@ -943,11 +949,11 @@ test_that("a ticket's gui-mode member runs the screen journey with no record on 
     expect_identical(decision$reproduction$fingerprint_mismatches, 0L)
     expect_false(decision$promotion_authorized)
     # Without the sample-filter dispatch the member is rejected; a changed state is a reference mismatch.
-    unlink(file.path(member, "project", ".workflow-entities", ".workflow-export", "wfx-minimum_peptides_per_sample"), recursive = TRUE)
+    unlink(request_dir("minimum_peptides_per_sample"), recursive = TRUE)
     rejected <- h$kitGuiMemberDecision(receipt, cases, b, member_dir = member)
     expect_identical(rejected$status, "rejected")
     expect_identical(rejected$failing_rule, "worker_dispatch_missing")
-    wfx <- file.path(member, "project", ".workflow-entities", ".workflow-export", "wfx-minimum_peptides_per_sample")
+    wfx <- request_dir("minimum_peptides_per_sample")
     dir.create(wfx, recursive = TRUE)
     saveRDS(list(schema = 1L, operation = "minimum_peptides_per_sample"), file.path(wfx, "request.rds"))
     writeLines('{"status":"complete"}', file.path(wfx, "journal.json"))
@@ -1843,8 +1849,11 @@ test_that("KIT-098: a trx journey needs a completed worker journal for each list
     case <- h$kitCases(b, "kit-journey-098a")[[1L]]
     ids <- h$kitStepIds("transcriptomics")
     member <- withr::local_tempdir()
-    journal <- function(operation, status) {
-        dir <- file.path(member, "project", ".dia-native-x", ".workflow-entities", ".workflow-export", paste0("wfx-", operation))
+    # The layout since protocol v1.11 (`.n-<8>/.we/.wx/w-<16>`; the KIT-008 test above keeps the earlier one); `key` names
+    # the request, by default the operation.
+    journal <- function(operation, status, key = operation) {
+        dir <- file.path(member, "project", ".n-0123abcd", ".we", ".wx",
+            paste0("w-", substr(digest::digest(key, algo = "md5", serialize = FALSE), 1L, 16L)))
         dir.create(dir, recursive = TRUE)
         saveRDS(list(operation = operation), file.path(dir, "request.rds"))
         jsonlite::write_json(list(status = status), file.path(dir, "journal.json"), auto_unbox = TRUE)
@@ -1860,10 +1869,8 @@ test_that("KIT-098: a trx journey needs a completed worker journal for each list
     expect_identical(missing$status, "invalid")
     expect_identical(missing$failing_rule, "worker_dispatch_missing")
     expect_identical(missing$dispatched$trx_ruviii_export, list(requests = 1L, complete = 0L))
-    journal("trx_ruviii_export_again", "complete")
-    file.rename(file.path(member, "project/.dia-native-x/.workflow-entities/.workflow-export/wfx-trx_ruviii_export_again"),
-        file.path(member, "project/.dia-native-x/.workflow-entities/.workflow-export/wfx-2"))
-    saveRDS(list(operation = "trx_ruviii_export"), file.path(member, "project/.dia-native-x/.workflow-entities/.workflow-export/wfx-2/request.rds"))
+    # A second request of the same operation, complete.
+    journal("trx_ruviii_export", "complete", key = "trx_ruviii_export_again")
     accepted <- h$kitSingleJourneyDecision(receipt, list(case), b, member_dir = member)
     expect_identical(accepted$status, "accepted")
     expect_identical(accepted$worker_steps, c("trx_expression_filter", "trx_tmm_logcpm", "trx_ruv_grid", "trx_ruvs", "trx_da_contrast", "trx_ruviii_export"))

@@ -47,6 +47,17 @@ WorkflowEntityStore <- R6::R6Class("WorkflowEntityStore", cloneable = FALSE,
         table_bytes = 0, open_resources = 0L, closed = FALSE,
         table_action = NULL, io_counts = NULL, progress = NULL, execution_owner = NULL))
 
+#' The store folder under a project or session root (KIT-052 option A, protocol v1.11). A new store is `.we`; a store
+#' written before, `.workflow-entities`, keeps its name and opens as before (a user's folders are never renamed). The
+#' short name keeps the worker's request folder within Windows' 259-character path limit from a longer project path.
+#' @param root The project or session root.
+#' @return The store folder's path (it may not exist yet).
+#' @noRd
+workflowEntityDirectory <- function(root) {
+    earlier <- file.path(root, ".workflow-entities")
+    if (dir.exists(earlier)) earlier else file.path(root, ".we")
+}
+
 #' Create a metadata-only store handle in a dedicated project subdirectory.
 #' @param root Existing project directory.
 #' @param project_id,workflow_id Explicit ownership identifiers.
@@ -70,7 +81,7 @@ newWorkflowEntityStore <- function(root, project_id, workflow_id,
         cli::cli_abort("invalid saved-entity store limits or root", class = "saved_entity_invalid")
     }
     root <- normalizePath(root, winslash = "/", mustWork = TRUE)
-    directory <- file.path(root, ".workflow-entities")
+    directory <- workflowEntityDirectory(root)
     created <- dir.create(directory, showWarnings = FALSE)
     if (!dir.exists(directory) || !startsWith(normalizePath(directory, winslash = "/"), paste0(root, "/"))) {
         cli::cli_abort("saved-entity directory escapes project", class = "saved_entity_path")

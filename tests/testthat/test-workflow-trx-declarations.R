@@ -18,7 +18,7 @@ trxDeclReplayProject <- function(fixture, harness, api) {
 
 #' Open a replayed project's store for reading its products.
 trxDeclOpen <- function(root) {
-  identity <- readSavedStoreIdentity(file.path(root, ".workflow-entities", "store.json"))
+  identity <- readSavedStoreIdentity(file.path(workflowEntityDirectory(root), "store.json"))
   newWorkflowStateOwner(newWorkflowEntityStore(root, identity$project_id, identity$workflow_id), reopen = TRUE)
 }
 

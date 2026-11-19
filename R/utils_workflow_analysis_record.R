@@ -653,7 +653,7 @@ workflowReplayParameters <- function(parameters, declared) {
 #' their reference wrappers make; DA through `runDIAReferenceDaAnalysis` with the recorded settings and
 #' contrasts (publication deferred). The store must hold nothing else, so no step can reuse a saved result.
 #' @param record Analysis record (as built, or read with `jsonlite::read_json(simplifyVector = FALSE)`).
-#' @param project_root Store root of the prepared project (the directory holding `.workflow-entities`).
+#' @param project_root Store root of the prepared project (the directory holding the store folder, `.we` or `.workflow-entities`).
 #' @param inputs Named character vector, record input role to the file to check (`diann_report`, `fasta`, ...).
 #' @param paths Experiment paths of the prepared project.
 #' @param scratch Directory for request and publication scratch.
@@ -684,7 +684,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")
         }
     }
-    identity <- readSavedStoreIdentity(file.path(project_root, ".workflow-entities", "store.json"))
+    identity <- readSavedStoreIdentity(file.path(workflowEntityDirectory(project_root), "store.json"))
     manager <- newWorkflowStateOwner(newWorkflowEntityStore(project_root, identity$project_id, identity$workflow_id), reopen = TRUE)
     on.exit(closeWorkflowStateOwner(manager), add = TRUE)
     manager$.context$session_format <- "native_v1"

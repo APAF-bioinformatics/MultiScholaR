@@ -43,7 +43,7 @@ test_that("Q-value figures publish from a project whose staged paths exceed 259 
     time_dir <- normalizePath(time_dir, winslash = "/")
     reference <- getDIAStateReference(manager)
     names <- figurePathNames("9_protein_s4_created")
-    request <- file.path(time_dir, ".workflow-export", paste0("q-", substr(reference$entity_id, 1L, 16L)))
+    request <- file.path(workflowExportStagingRoot(time_dir), paste0("q-", substr(reference$entity_id, 1L, 16L)))
     expect_true(all(nchar(file.path(request, "f", names)) > 259L))
     scratch_before <- list.files(tempdir(), pattern = "^qvalue-")
     grid <- publishDIAQvalueOutput(manager, list(stateReference = reference), figurePathArguments(time_dir),
@@ -132,6 +132,7 @@ test_that("the staging folders have the short names, built by one helper", {
     id <- strrep("0123456789abcdef", 4L)
     expect_identical(workflowStagedRequest(root, "qvalue", id), list(request_id = "q-0123456789abcdef", staged = "f"))
     expect_identical(workflowStagedRequest(root, "action", id, "da"), list(request_id = "a-0123456789abcdef", staged = "f"))
+    # Compatibility: requests journaled under the earlier staging root `.workflow-export` (before protocol v1.11).
     earlier <- file.path(root, ".workflow-export", c(paste0("qvalue-", substr(id, 1L, 40L)), paste0("dia-da-", substr(id, 1L, 32L))))
     for (directory in earlier) dir.create(directory, recursive = TRUE)
     # An earlier folder without a journal belongs to no publication.
@@ -154,13 +155,13 @@ test_that("Q-value figures stage under the short name and resume reads the same 
     renderer <- figurePathRenderer(function(path) TRUE)
     publishDIAQvalueOutput(manager, list(stateReference = reference), figurePathArguments(time_dir),
         function(...) {
-            seen <<- list.files(file.path(time_dir, ".workflow-export"))
+            seen <<- list.files(workflowExportStagingRoot(time_dir))
             renderer(...)
         })
     expect_identical(seen, paste0("q-", substr(reference$entity_id, 1L, 16L)))
-    expect_identical(list.files(file.path(time_dir, ".workflow-export")), seen)
-    expect_true(dir.exists(file.path(time_dir, ".workflow-export", seen, "f")))
-    expect_identical(jsonlite::read_json(file.path(time_dir, ".workflow-export", seen, "journal.json"))$status, "complete")
+    expect_identical(list.files(workflowExportStagingRoot(time_dir)), seen)
+    expect_true(dir.exists(file.path(workflowExportStagingRoot(time_dir), seen, "f")))
+    expect_identical(jsonlite::read_json(file.path(workflowExportStagingRoot(time_dir), seen, "journal.json"))$status, "complete")
     # The acknowledgement aside, the journal alone says the publication is complete.
     manager$.context$snapshot$completed_outputs[[reference$entity_id]]$qc <- NULL
     expect_null(resumeDIAQvalueOutput(manager, record, hydrate = FALSE))
@@ -173,6 +174,7 @@ test_that("a Q-value publication left pending under the earlier name is found an
     manager$.context$experiment_paths <- list(time_dir = time_dir)
     manager$.context$snapshot$output_products[[reference$entity_id]] <- "product"
     names <- figurePathNames("9_protein_s4_created")
+    # Compatibility: the earlier request name under the earlier staging root `.workflow-export` (before protocol v1.11).
     earlier <- file.path(time_dir, ".workflow-export", paste0("qvalue-", substr(reference$entity_id, 1L, 40L)))
     dir.create(file.path(earlier, "figures"), recursive = TRUE)
     for (name in names) writeBin(charToRaw(name), file.path(earlier, "figures", name))
@@ -207,12 +209,13 @@ test_that("action outputs stage under the short name; one pending under the earl
         list(completed = TRUE)
     })
     short <- paste0("a-", substr(key, 1L, 16L))
-    expect_identical(staged_at, file.path(destination, ".workflow-export", short, "f", "protein_qc_dir"))
+    expect_identical(staged_at, file.path(workflowExportStagingRoot(destination), short, "f", "protein_qc_dir"))
     expect_identical(manager$.context$snapshot$action_outputs[[reference$entity_id]]$request_id, short)
     expect_identical(readLines(file.path(destination, "a.tsv")), "new")
     expect_null(assertWorkflowExportReady(manager))
 
     earlier_root <- normalizePath(withr::local_tempdir(), winslash = "/")
+    # Compatibility: the earlier request name under the earlier staging root `.workflow-export` (before protocol v1.11).
     earlier <- file.path(earlier_root, ".workflow-export", paste0("dia-protein-qc-", substr(key, 1L, 32L)))
     dir.create(file.path(earlier, "files", "protein_qc_dir"), recursive = TRUE)
     writeLines("earlier", file.path(earlier, "files", "protein_qc_dir", "a.tsv"))
@@ -269,7 +272,8 @@ test_that("the omics worker draws its figures in a short folder: from a long pro
             owner$job <- NULL
             list(status = status)
         }, .package = "MultiScholaR")
-    fixture <- lipidDeclarationsOwner(file.path(withr::local_tempdir(), strrep("p", 60L), strrep("q", 60L)))
+    # 80 + 80 (was 60 + 60): the request folder is 43 characters shorter since protocol v1.11 (`.n-<8>/.we/.wx`).
+    fixture <- lipidDeclarationsOwner(file.path(withr::local_tempdir(), strrep("p", 80L), strrep("q", 80L)))
     withr::defer(closeDIAStateAdapter(fixture$owner))
     suppressWarnings(suppressMessages(runWorkflowOmicsReferenceDuplicateResolution(lipidomicsDeclarationBinding, fixture$owner, list())))
     controller <- omicsWorkerController(fixture)
@@ -404,7 +408,8 @@ test_that("a failed copy says, on Windows, that the project's path is too long w
 test_that("the in-process DA publication draws in a short folder: from a long staging path none is lost", {
     manager <- figurePathManager()
     root <- normalizePath(withr::local_tempdir(), winslash = "/")
-    project <- file.path(root, strrep("p", 150L - nchar(root)))
+    # 165 (was 150): the staging root `.wx` is 13 characters shorter than `.workflow-export` (protocol v1.11).
+    project <- file.path(root, strrep("p", 165L - nchar(root)))
     paths <- list(da_output_dir = file.path(project, "da"), publication_graphs_dir = file.path(project, "graphs"))
     for (path in paths) dir.create(path, recursive = TRUE)
     names <- c("Volcano_Plots/groupB-groupA.png", "Volcano_Plots/groupB-groupA.pdf",
@@ -434,7 +439,7 @@ test_that("the in-process DA publication draws in a short folder: from a long st
     key <- digest::digest(list(state = reference$entity_id, action = "da",
         identity = diaDaPublicationIdentity(manifest, NULL)), algo = "sha256")
     # Drawn in the action staging folder, the number-significant figure's path would be 260 characters or more.
-    expect_gte(nchar(file.path(paths$da_output_dir, ".workflow-export", paste0("a-", substr(key, 1L, 16L)), "f",
+    expect_gte(nchar(file.path(workflowExportStagingRoot(paths$da_output_dir), paste0("a-", substr(key, 1L, 16L)), "f",
         "publication_graphs_dir", names[[3L]])), 260L)
     expect_true(all(nchar(drawn) < 260L))
     published <- file.path(paths$publication_graphs_dir, names)
@@ -448,6 +453,8 @@ test_that("the in-process DA publication draws in a short folder: from a long st
 # KIT-052, decision of 2026-11-19 (option A): inside the worker's request folder the publication folder and its role folders
 # have one-letter names. The request folder itself, `<root>/scripts/<omic>/.dia-native-<14>/.workflow-entities/
 # .workflow-export/wfx-<32>`, keeps its names: the profiling harness and the GUI-entry oracles read them (protocol v1.11).
+# Protocol v1.11 item 6 then shortened it for a new project to `.n-<8>/.we/.wx/w-<16>`; `figurePathLongestPath` below
+# still builds the earlier request folder, so its margins are the earlier layout's (a project from before still uses it).
 
 # The longest files each omic's worker publishes, by role (the GUI-entry lanes' names; a 15-character contrast).
 figurePathLongestFiles <- function(contrast = "groupKO-groupWT") list(
@@ -548,7 +555,7 @@ test_that("a worker's publication staged under the earlier folder names is publi
             list(state_reference = getDIAStateReference(manager), operation = "lipid_da_export"))
         expect_true(manager$.context$snapshot$completed_outputs[[getDIAStateReference(manager)$entity_id]]$lipid_da_export)
         relative <- setdiff(list.files(project, recursive = TRUE), "")
-        relative <- relative[!grepl("(^|/)[.]workflow-export/", relative)]
+        relative <- relative[!grepl("(^|/)[.](workflow-export|wx)/", relative)]
         stats::setNames(vapply(file.path(project, relative), digest::digest, "", algo = "sha256", file = TRUE), relative)
     }, c(short = short, earlier = earlier), projects)
     expect_identical(published$earlier, published$short)
@@ -561,10 +568,11 @@ test_that("a worker's publication staged under the earlier folder names is publi
 # KIT-052 item 3: the in-process proteomics publications that drew in the action staging folder and did not check every
 # figure (normalisation, RUV covariates, protein QC's limpa figures) draw in a short folder and copy in, as the DA does.
 
-# A project whose action staging folder (`<source_dir>/.workflow-export/a-<16>/f/<role>/`) makes a figure's path 260+.
+# A project whose action staging folder (`<source_dir>/.wx/a-<16>/f/<role>/`) makes a figure's path 260+ (205 characters,
+# was 190 under the earlier `.workflow-export`, 13 characters longer).
 figurePathLongProject <- function(env = parent.frame()) {
     root <- normalizePath(withr::local_tempdir(.local_envir = env), winslash = "/")
-    project <- file.path(root, strrep("p", 190L - nchar(root)))
+    project <- file.path(root, strrep("p", 205L - nchar(root)))
     paths <- list(source_dir = project, protein_qc_dir = file.path(project, "qc"), time_dir = file.path(project, "t"),
         publication_graphs_dir = file.path(project, "g"))
     for (path in paths) dir.create(path, recursive = TRUE, showWarnings = FALSE)
@@ -594,7 +602,7 @@ test_that("the normalisation publication draws in a short folder: from a long st
     post_qc <- function(object) figurePathRagg(file.path(norm_data$publication_paths$protein_qc_dir, "post_norm_pca.png"))
     run <- list(value = list(normalized = "normalized", final = "final", best_k = 0L, controls = NULL, percentage = 0,
         ruv_result = list(optimization_results = data.frame())), reference = list(entity_id = "product"))
-    expect_gte(nchar(file.path(paths$source_dir, ".workflow-export", strrep("a", 18L), "f", "protein_qc_dir",
+    expect_gte(nchar(file.path(workflowExportStagingRoot(paths$source_dir), strrep("a", 18L), "f", "protein_qc_dir",
         "post_norm_pca.png")), 260L)
     expect_true(publishDIAReferenceNormalization(manager, list(ruv_mode = "skip", norm_method = "median"), run, workflow,
         norm_data, paths, "proteomics", "fixture", post_qc, function(object) NULL))
@@ -667,6 +675,7 @@ figurePathLongCopyFails <- function(env = parent.frame()) {
 test_that("the session archive (R's tar) stages its members in a short folder: from a long request folder it is written", {
     root <- normalizePath(withr::local_tempdir(), winslash = "/")
     store_parent <- file.path(root, "s")
+    # Compatibility: members under the earlier store name (an archive from before protocol v1.11; the longer of the two).
     members <- file.path(".workflow-entities", "entities", figurePathArchiveEntity, c("descriptor.rds", "commit.json", "payload.rds"))
     for (member in members) {
         dir.create(dirname(file.path(store_parent, member)), recursive = TRUE, showWarnings = FALSE)

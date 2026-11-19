@@ -436,7 +436,7 @@ test_that("recorded-history verification compares science outside measured membe
             paths <- list.files(file.path(directory, "dia_baseline_smoke", "results", "proteomics",
                 "publication_graphs", "filtering_qc"), pattern = "^2_qval_filtered_.*[.]png$",
                 recursive = TRUE, full.names = TRUE)
-            paths <- paths[!grepl("/.workflow-export/", paths, fixed = TRUE)]
+            paths <- paths[!grepl("/[.](workflow-export|wx)/", paths)]
             stopifnot(length(paths) == 6L, !anyDuplicated(basename(paths)))
             stats::setNames(vapply(paths, function(path) digest::digest(file = path, algo = "sha256"),
                 character(1)), basename(paths))
@@ -647,7 +647,7 @@ test_that("retained rollup attribution separates bounded read and kernel work", 
         for (key in c("Protein.Group", "Run")) saveWorkflowGroupIndex(fixture_scope, key)
         releaseWorkflowTableReadScope(fixture_scope)
         closeWorkflowEntityStore(fixture_store)
-        directory <- file.path(fixture_root, ".workflow-entities")
+        directory <- workflowEntityDirectory(fixture_root)
         request_id <- "source"
     } else {
         member <- file.path(dirname(output), "browser-smoke.cuurUw")
@@ -1867,7 +1867,7 @@ test_that("bulk rollup experiment preserves complete operations and rejects rela
             elapsed <- proc.time()[["elapsed"]] - started
             receipt$results[[arm]] <- c(value, list(complete_operation_seconds = elapsed, samples = samples))
             # Independent bounded readback follows the complete-operation timer.
-            identity <- readSavedStoreIdentity(file.path(owned, ".workflow-entities", "store.json"))
+            identity <- readSavedStoreIdentity(file.path(workflowEntityDirectory(owned), "store.json"))
             check_store <- newWorkflowEntityStore(owned, identity$project_id, identity$workflow_id)
             check_scope <- newWorkflowTableReadScope(check_store, value$reference, reader = "arrow")
             hashes <- character()

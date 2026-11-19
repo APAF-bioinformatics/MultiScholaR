@@ -358,7 +358,7 @@ test_that("recorded history replay releases owners and preserves native exports"
     expect_true(failed_store$closed)
     expect_identical(failed_store$open_resources, 0L)
     expect_false(file.exists(file.path(failed_member, "recorded-member.json")))
-    expect_length(list.dirs(file.path(failed_member, ".workflow-entities", "entities"),
+    expect_length(list.dirs(file.path(workflowEntityDirectory(failed_member), "entities"),
         recursive = FALSE), 5L)
     changed <- manifest
     changed$records$raw_data_s4$bytes <- 1

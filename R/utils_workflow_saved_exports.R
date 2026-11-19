@@ -585,6 +585,16 @@ releaseWorkflowExportHydrationScope <- function(scope) {
 #' @noRd
 workflowExportBoundary <- function(phase) invisible(NULL)
 
+#' The staging and request root under a folder (KIT-052 option A, protocol v1.11): `.wx` for a new one; a root written
+#' before, `.workflow-export`, keeps its name, so a request or publication left pending there is still found.
+#' @param output_dir The folder that holds the root.
+#' @return The root's path (it may not exist yet).
+#' @noRd
+workflowExportStagingRoot <- function(output_dir) {
+    earlier <- file.path(output_dir, ".workflow-export")
+    if (dir.exists(earlier)) earlier else file.path(output_dir, ".wx")
+}
+
 #' Validate a request-owned export directory and token.
 #' @param output_dir Existing destination directory.
 #' @param request_id Idempotent request token.
@@ -598,7 +608,7 @@ workflowExportPaths <- function(output_dir, request_id) {
         cli::cli_abort("invalid export publication request", class = "saved_entity_invalid")
     }
     root <- normalizePath(output_dir, winslash = "/", mustWork = TRUE)
-    staging_root <- file.path(root, ".workflow-export")
+    staging_root <- workflowExportStagingRoot(root)
     if (!dir.exists(staging_root) && !dir.create(staging_root)) {
         cli::cli_abort("cannot create export staging root", class = "saved_entity_write")
     }
@@ -610,21 +620,21 @@ workflowExportPaths <- function(output_dir, request_id) {
         request_dir = normalizePath(request_dir, winslash = "/"))
 }
 
-#' Name the staging folder of one figure or action publication under `<root>/.workflow-export` (KIT-052,
+#' Name the staging folder of one figure or action publication under `<root>/.wx` (`.workflow-export` before; KIT-052,
 #' decision M18). The names are short because the staged path counts against the 259 characters a Windows
 #' path may have; a publication journaled under the earlier long name keeps that name and its inner
 #' folder, so one left pending is still found. Every caller that builds a staged path asks here.
-#' @param root Publication root holding `.workflow-export`.
+#' @param root Publication root holding the staging root (`workflowExportStagingRoot`).
 #' @param kind "qvalue" (key: the state's entity id) or "action" (key: the request digest).
 #' @param key Hexadecimal identity of the publication.
 #' @param label Action label, part of the earlier action name only.
-#' @return `request_id` (the folder under `.workflow-export`) and `staged` (the folder of files inside it).
+#' @return `request_id` (the folder under the staging root) and `staged` (the folder of files inside it).
 #' @noRd
 workflowStagedRequest <- function(root, kind = c("qvalue", "action"), key, label = NULL) {
     kind <- match.arg(kind)
     earlier <- if (kind == "qvalue") paste0("qvalue-", substr(key, 1L, 40L)) else
         paste0("dia-", label, "-", substr(key, 1L, 32L))
-    if (file.exists(file.path(root, ".workflow-export", earlier, "journal.json"))) {
+    if (file.exists(file.path(workflowExportStagingRoot(root), earlier, "journal.json"))) {
         return(list(request_id = earlier, staged = if (kind == "qvalue") "figures" else "files"))
     }
     list(request_id = paste0(if (kind == "qvalue") "q-" else "a-", substr(key, 1L, 16L)), staged = "f")
@@ -725,8 +735,8 @@ withWorkflowShortStaging <- function(staged, produce, message) {
 
 #' The folder a worker's publication is copied into inside its request folder, and the folder of each role there (KIT-052,
 #' decision of 2026-11-19, option A). The request folder lies deep in the project
-#' (`<root>/scripts/<omic>/.dia-native-<14>/.workflow-entities/.workflow-export/wfx-<32>`, names the profiling harness
-#' reads), and a copy into a path longer than 259 characters fails on Windows with long paths disabled; so the
+#' (`<root>/scripts/<omic>/.n-<8>/.we/.wx/w-<16>` since protocol v1.11; `.dia-native-<14>/.workflow-entities/
+#' .workflow-export/wfx-<32>` before, still read), and a copy into a path longer than 259 characters fails on Windows with long paths disabled; so the
 #' publication folder and its role folders have one-letter names. A request staged under the earlier names (`earlier`,
 #' each role in its own name) is read there: one left pending in a project from before is published as before.
 #' @param request_dir The request folder.
@@ -1110,7 +1120,7 @@ resumeDIAQvalueOutput <- function(manager, record, hydrate = TRUE) {
     product <- manager$.context$snapshot$output_products[[reference$entity_id]] %||% product
     root <- manager$.context$experiment_paths$time_dir
     if (is.null(product) || is.null(root)) return(NULL)
-    path <- file.path(root, ".workflow-export",
+    path <- file.path(workflowExportStagingRoot(root),
         workflowStagedRequest(root, "qvalue", reference$entity_id)$request_id, "journal.json")
     if (file.exists(path)) {
         if (file.size(path) > 65536) cli::cli_abort("oversized Q-value journal", class = "saved_entity_corrupt")

@@ -694,7 +694,7 @@ test_that("a DIA_LIMPA record names the dpcDE model and replays its protein stag
     expect_identical(overlay$ruvcov_k, ruv_step$outcomes$k)
     expect_identical(overlay$limpa_min_peptides_per_protein, 1)
     # Replay from the DPC state on a copy of the store: every later state hash-identical, the DA refitted.
-    origin <- file.path(root, ".workflow-entities")
+    origin <- workflowEntityDirectory(root)
     copy <- withr::local_tempdir()
     stopifnot(system2("cp", c("-a", file.path(root, "."), copy)) == 0L)
     h <- new.env(parent = globalenv())

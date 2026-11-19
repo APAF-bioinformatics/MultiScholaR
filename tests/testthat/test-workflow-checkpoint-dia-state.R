@@ -245,7 +245,7 @@ test_that("session-owned GUI holders stay cold and resolve inside their original
     # KIT-011: the capacity-trial session is gone; the on-disk owner is attached the way the import does it,
     # with the harness receipt directory the trial used to pass.
     attach_adapter <- function(native, workflow, session) {
-        state_root <- tempfile(".dia-native-", tmpdir = source)
+        state_root <- newWorkflowSessionFolder(source)
         dir.create(state_root, mode = "0700")
         manager <- newDIAStateAdapter(newWorkflowEntityStore(state_root, "DIA-IQ-native", "DIA", max_cache_bytes = 0), native)
         # The retired capacity trial ran the adapter in the legacy session format without reference states;

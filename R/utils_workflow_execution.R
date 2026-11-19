@@ -315,15 +315,31 @@ recoverWorkflowHeadAcceptance <- function(owner) {
     invisible(NULL)
 }
 
+#' Whether a value is a worker request id: `w-<16>` (KIT-052 option A, protocol v1.11) or `wfx-<32>`, the earlier form,
+#' which a project from before still holds (a pending request, an active worker registration).
+#' @param id The value.
+#' @return One logical.
+#' @noRd
+isWorkflowRequestId <- function(id) {
+    is.character(id) && length(id) == 1L && !is.na(id) && grepl("^(w-[a-f0-9]{16}|wfx-[a-f0-9]{32})$", id)
+}
+
+#' The 12 hexadecimal characters a request's systemd unit names carry (`<stem>-w<12>.service`), the same for either id
+#' form (`wfx-<32>` gave characters 5 to 16).
+#' @param id A worker request id.
+#' @return One string.
+#' @noRd
+workflowRequestUnitKey <- function(id) substr(sub("^(wfx|w)-", "", id), 1L, 12L)
+
 #' Release a recovery conflict after an operator has verified the durable head.
-#' @param root Project directory containing `.workflow-entities`.
+#' @param root Project directory containing the store folder (`.we` or `.workflow-entities`).
 #' @param request_id Request recorded as `conflict` in its journal.
 #' @param head Entity id the operator verified as the current durable head, or NULL
 #'   when the project has no durable head.
 #' @return The acknowledged journal, invisibly; the proposed head is never applied.
 #' @noRd
 acknowledgeWorkflowExecutionConflict <- function(root, request_id, head) {
-    identity <- readSavedStoreIdentity(file.path(root, ".workflow-entities", "store.json"))
+    identity <- readSavedStoreIdentity(file.path(workflowEntityDirectory(root), "store.json"))
     store <- newWorkflowEntityStore(root, identity$project_id, identity$workflow_id)
     on.exit(closeWorkflowEntityStore(store), add = TRUE)
     lease <- acquireWorkflowMutationLease(store)
@@ -1606,7 +1622,7 @@ workflowMonitorMain <- function(arguments) {
             if (!is.null(active)) {
                 valid_active <- is.list(active) && identical(active$schema, 1L) &&
                     is.character(active$request_id) && length(active$request_id) == 1L &&
-                    grepl("^wfx-[a-f0-9]{32}$", active$request_id) &&
+                    isWorkflowRequestId(active$request_id) &&
                     is.character(active$worker_unit) && length(active$worker_unit) == 1L &&
                     is.numeric(active$reservation) && length(active$reservation) == 1L &&
                     is.finite(active$reservation) && active$reservation >= 0
@@ -1625,7 +1641,7 @@ workflowMonitorMain <- function(arguments) {
                 snapshot <- readRDS(snapshot_path)
                 if (is.list(snapshot) && identical(snapshot$schema, 1L) &&
                     is.character(snapshot$request_id) && length(snapshot$request_id) == 1L &&
-                    grepl("^wfx-[a-f0-9]{32}$", snapshot$request_id)) {
+                    isWorkflowRequestId(snapshot$request_id)) {
                     writeWorkflowExecutionMessage(file.path(request$directory, paste0(
                         "application-monitor-snapshot-", snapshot$request_id, ".rds")),
                     list(schema = 1L, scope = "application", max_anon = max_anon,
@@ -1833,7 +1849,8 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     validateWorkflowActionInput(operation, owner$manager, input_references)
     parameters <- resolveWorkflowActionParameters(operation, owner$manager,
         input_references$state, parameters, app$config$policy)
-    id <- paste0("wfx-", substr(digest::digest(list(Sys.time(), tempfile(), owner$control$generation), algo = "sha256"), 1, 32))
+    # KIT-052 option A (protocol v1.11): `w-<16>` (was `wfx-<32>`), a shorter request folder.
+    id <- paste0("w-", substr(digest::digest(list(Sys.time(), tempfile(), owner$control$generation), algo = "sha256"), 1, 16))
     paths <- workflowExportPaths(store$directory, id)
     token <- list(request_id = id, incarnation = store$identity$incarnation,
         input_ids = vapply(input_references, `[[`, character(1), "entity_id"),
@@ -1854,10 +1871,10 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     job$paths <- paths
     job$admission <- admission
     job$stage <- "admitting"
-    job$worker_unit <- paste0(app$config$stem, "-w", substr(token$request_id, 5, 16), ".service")
+    job$worker_unit <- paste0(app$config$stem, "-w", workflowRequestUnitKey(token$request_id), ".service")
     job$monitor_borrowed <- identical(app$config$mode, "gui")
     job$monitor_unit <- if (job$monitor_borrowed) app$config$application_monitor_unit else
-        paste0(app$config$stem, "-m", substr(token$request_id, 5, 16), ".service")
+        paste0(app$config$stem, "-m", workflowRequestUnitKey(token$request_id), ".service")
     job$worker_request <- file.path(paths$request_dir, "request.rds")
     writeWorkflowExecutionMessage(job$worker_request, request)
     if (outer) {
@@ -2028,9 +2045,9 @@ acceptWorkflowActionResult <- function(owner, message) {
         cli::cli_abort("invalid completion token", class = "workflow_execution_invalid")
     if (is.null(job) || !identical(message$token$request_id, job$request$token$request_id)) {
         id <- message$token$request_id
-        if (!is.character(id) || length(id) != 1L || !grepl("^wfx-[a-f0-9]{32}$", id))
+        if (!isWorkflowRequestId(id))
             cli::cli_abort("unknown completion", class = "workflow_execution_stale")
-        if (!dir.exists(file.path(owner$manager$.context$store$directory, ".workflow-export", id)))
+        if (!dir.exists(file.path(workflowExportStagingRoot(owner$manager$.context$store$directory), id)))
             cli::cli_abort("unknown completion", class = "workflow_execution_stale")
         paths <- workflowExportPaths(owner$manager$.context$store$directory, id)
         journal <- readWorkflowExecutionJournal(paths)
@@ -2344,7 +2361,7 @@ workflowControllerFaultMain <- function(application) {
         c("before_head_publication", "after_head_publication")) stop("invalid diagnostic fault case")
     project <- normalizePath(config$fault_project, mustWork = TRUE)
     if (!startsWith(project, paste0(config$root, "/"))) stop("fault project escapes owned application")
-    identity <- readSavedStoreIdentity(file.path(project, ".workflow-entities", "store.json"))
+    identity <- readSavedStoreIdentity(file.path(workflowEntityDirectory(project), "store.json"))
     store <- newWorkflowEntityStore(project, identity$project_id, identity$workflow_id)
     manager <- newWorkflowStateOwner(store, reopen = TRUE)
     owner <- newWorkflowExecutionController(manager, application)

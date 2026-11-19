@@ -311,7 +311,7 @@ test_that("production rollup qualification uses frozen prepared cases", {
             value <- runDIABulkOperation(manager, owned, proof, arm, NULL, phase)
             phase("teardown", function() closeDIAStateAdapter(manager))
             receipt$result <- c(value, list(complete_operation_seconds = proc.time()[["elapsed"]] - started))
-            identity <- readSavedStoreIdentity(file.path(owned, ".workflow-entities", "store.json"))
+            identity <- readSavedStoreIdentity(file.path(workflowEntityDirectory(owned), "store.json"))
             check_store <- newWorkflowEntityStore(owned, identity$project_id, identity$workflow_id)
             on.exit(closeWorkflowEntityStore(check_store), add = TRUE)
             scope <- newWorkflowTableReadScope(check_store, value$reference, reader = "arrow")

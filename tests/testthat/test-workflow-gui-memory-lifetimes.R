@@ -143,7 +143,7 @@ test_that("active-owner diagnostics record cleanup and failure without payload t
     shiny::testServer(function(input, output, session) {
         workflow <- shiny::reactiveValues(state_manager = WorkflowState$new(audit_enabled = FALSE))
         # KIT-011: the on-disk owner attached as the import does it, with the harness receipt directory.
-        state_root <- tempfile(".dia-native-", tmpdir = source)
+        state_root <- newWorkflowSessionFolder(source)
         dir.create(state_root, mode = "0700")
         manager <- newDIAStateAdapter(newWorkflowEntityStore(state_root, "DIA-IQ-native", "DIA", max_cache_bytes = 0),
             workflow$state_manager)

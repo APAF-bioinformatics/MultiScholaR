@@ -110,7 +110,7 @@ test_that("native export streams keep named file caches bounded and propagate I/
     result <- runDIANativeSessionExport(fixture$manager, fixture$metadata, output,
         dependencies = list(input = list(source = source, destination = "inputs/input.bin")))
     archive <- result$publication$archive_path
-    staged <- file.path(output, ".workflow-export", result$publication$request_id, "files", expected)
+    staged <- file.path(workflowExportStagingRoot(output), result$publication$request_id, "files", expected)
     # Inspect residency before correctness reads deliberately warm these files.
     residency <- vapply(c(source, staged, archive), cache_bytes, numeric(1))
     expect_true(all(residency <= 4194304))
