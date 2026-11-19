@@ -1,12 +1,17 @@
 {
-  "label": "run-tests mechanism: deprecated params.json path still launches (one quick file, head 75f418fe, no base)",
-  "package_commit": "75f418fe16228398b0dfd7649fcd6b6c1f555175",
+  "label": "KIT-142 correction (base 9cbcfe4e, head b20d4fd7): affected files and check",
+  "package_commit": "b20d4fd7b105107b44195dc5fb1df792a936e649",
   "base_commit": "",
   "tools_ref": "",
   "tests": [
-    "test-ci-impact-scorecard.R"
+    "test-integration-record.R",
+    "test-integration-results.R",
+    "test-integration-gui.R",
+    "test-integration-model.R",
+    "test-integration-sample-match.R",
+    "test-workflow-analysis-record.R"
   ],
-  "shards": 1,
+  "shards": 6,
   "file_timeout_minutes": 45,
   "file_timeouts": {},
   "extra_packages": [],
