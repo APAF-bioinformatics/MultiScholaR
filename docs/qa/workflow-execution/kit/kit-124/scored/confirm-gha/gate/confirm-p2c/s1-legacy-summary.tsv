@@ -1,0 +1,163 @@
+simulator	reading	cell	column	verdict	max_rel	rule_bearing
+S1	legacy	C0	simulator	agree		FALSE
+S1	legacy	C0	cell	agree		FALSE
+S1	legacy	C0	cell_class	agree		FALSE
+S1	legacy	C0	run	agree		FALSE
+S1	legacy	C0	arm	agree		FALSE
+S1	legacy	C0	subset	agree		FALSE
+S1	legacy	C0	status	agree		TRUE
+S1	legacy	C0	seed	agree		FALSE
+S1	legacy	C0	k	agree		TRUE
+S1	legacy	C0	n_features	agree		TRUE
+S1	legacy	C0	n_true	agree		TRUE
+S1	legacy	C0	n_calls	agree		TRUE
+S1	legacy	C0	null_p05	agree	0	TRUE
+S1	legacy	C0	null_p01	agree	0	TRUE
+S1	legacy	C0	fdp	agree	0	TRUE
+S1	legacy	C0	power	agree	0	TRUE
+S1	legacy	C0	bias	agree	0	FALSE
+S1	legacy	C0	rmse	agree	0	FALSE
+S1	legacy	C1	simulator	agree		FALSE
+S1	legacy	C1	cell	agree		FALSE
+S1	legacy	C1	cell_class	agree		FALSE
+S1	legacy	C1	run	agree		FALSE
+S1	legacy	C1	arm	agree		FALSE
+S1	legacy	C1	subset	agree		FALSE
+S1	legacy	C1	status	agree		TRUE
+S1	legacy	C1	seed	agree		FALSE
+S1	legacy	C1	k	agree		TRUE
+S1	legacy	C1	n_features	agree		TRUE
+S1	legacy	C1	n_true	agree		TRUE
+S1	legacy	C1	n_calls	agree		TRUE
+S1	legacy	C1	null_p05	agree	0	TRUE
+S1	legacy	C1	null_p01	agree	0	TRUE
+S1	legacy	C1	fdp	agree	0	TRUE
+S1	legacy	C1	power	agree	0	TRUE
+S1	legacy	C1	bias	agree	1.72216500386806e-07	FALSE
+S1	legacy	C1	rmse	agree	6.36115562794903e-08	FALSE
+S1	legacy	C2	simulator	agree		FALSE
+S1	legacy	C2	cell	agree		FALSE
+S1	legacy	C2	cell_class	agree		FALSE
+S1	legacy	C2	run	agree		FALSE
+S1	legacy	C2	arm	agree		FALSE
+S1	legacy	C2	subset	agree		FALSE
+S1	legacy	C2	status	agree		TRUE
+S1	legacy	C2	seed	agree		FALSE
+S1	legacy	C2	k	agree		TRUE
+S1	legacy	C2	n_features	agree		TRUE
+S1	legacy	C2	n_true	agree		TRUE
+S1	legacy	C2	n_calls	agree		TRUE
+S1	legacy	C2	null_p05	agree	0	TRUE
+S1	legacy	C2	null_p01	agree	0	TRUE
+S1	legacy	C2	fdp	agree	0	TRUE
+S1	legacy	C2	power	agree	0	TRUE
+S1	legacy	C2	bias	agree	0	FALSE
+S1	legacy	C2	rmse	agree	0	FALSE
+S1	legacy	C3	simulator	agree		FALSE
+S1	legacy	C3	cell	agree		FALSE
+S1	legacy	C3	cell_class	agree		FALSE
+S1	legacy	C3	run	agree		FALSE
+S1	legacy	C3	arm	agree		FALSE
+S1	legacy	C3	subset	agree		FALSE
+S1	legacy	C3	status	agree		TRUE
+S1	legacy	C3	seed	agree		FALSE
+S1	legacy	C3	k	agree		TRUE
+S1	legacy	C3	n_features	agree		TRUE
+S1	legacy	C3	n_true	agree		TRUE
+S1	legacy	C3	n_calls	agree		TRUE
+S1	legacy	C3	null_p05	agree	0	TRUE
+S1	legacy	C3	null_p01	agree	0	TRUE
+S1	legacy	C3	fdp	agree	0	TRUE
+S1	legacy	C3	power	agree	0	TRUE
+S1	legacy	C3	bias	agree	6.66347856221789e-09	FALSE
+S1	legacy	C3	rmse	agree	1.27190209877052e-10	FALSE
+S1	legacy	C4	simulator	agree		FALSE
+S1	legacy	C4	cell	agree		FALSE
+S1	legacy	C4	cell_class	agree		FALSE
+S1	legacy	C4	run	agree		FALSE
+S1	legacy	C4	arm	agree		FALSE
+S1	legacy	C4	subset	agree		FALSE
+S1	legacy	C4	status	agree		TRUE
+S1	legacy	C4	seed	agree		FALSE
+S1	legacy	C4	k	agree		TRUE
+S1	legacy	C4	n_features	agree		TRUE
+S1	legacy	C4	n_true	agree		TRUE
+S1	legacy	C4	n_calls	agree		TRUE
+S1	legacy	C4	null_p05	agree	0	TRUE
+S1	legacy	C4	null_p01	agree	0	TRUE
+S1	legacy	C4	fdp	agree	0	TRUE
+S1	legacy	C4	power	agree	0	TRUE
+S1	legacy	C4	bias	agree	0	FALSE
+S1	legacy	C4	rmse	agree	0	FALSE
+S1	legacy	C5	simulator	agree		FALSE
+S1	legacy	C5	cell	agree		FALSE
+S1	legacy	C5	cell_class	agree		FALSE
+S1	legacy	C5	run	agree		FALSE
+S1	legacy	C5	arm	agree		FALSE
+S1	legacy	C5	subset	agree		FALSE
+S1	legacy	C5	status	agree		TRUE
+S1	legacy	C5	seed	agree		FALSE
+S1	legacy	C5	k	agree		TRUE
+S1	legacy	C5	n_features	agree		TRUE
+S1	legacy	C5	n_true	agree		TRUE
+S1	legacy	C5	n_calls	agree		TRUE
+S1	legacy	C5	null_p05	agree	0	TRUE
+S1	legacy	C5	null_p01	agree	0	TRUE
+S1	legacy	C5	fdp	agree	0	TRUE
+S1	legacy	C5	power	agree	0	TRUE
+S1	legacy	C5	bias	agree	7.94773787818878e-10	FALSE
+S1	legacy	C5	rmse	agree	7.00198749637534e-10	FALSE
+S1	legacy	C6	simulator	agree		FALSE
+S1	legacy	C6	cell	agree		FALSE
+S1	legacy	C6	cell_class	agree		FALSE
+S1	legacy	C6	run	agree		FALSE
+S1	legacy	C6	arm	agree		FALSE
+S1	legacy	C6	subset	agree		FALSE
+S1	legacy	C6	status	agree		TRUE
+S1	legacy	C6	seed	agree		FALSE
+S1	legacy	C6	k	agree		TRUE
+S1	legacy	C6	n_features	differ		TRUE
+S1	legacy	C6	n_true	agree		TRUE
+S1	legacy	C6	n_calls	differ		TRUE
+S1	legacy	C6	null_p05	outside	1	TRUE
+S1	legacy	C6	null_p01	outside	1	TRUE
+S1	legacy	C6	fdp	outside	1	TRUE
+S1	legacy	C6	power	outside	1	TRUE
+S1	legacy	C6	bias	outside	1.97764843278236	FALSE
+S1	legacy	C6	rmse	outside	0.998376044633919	FALSE
+S1	legacy	C7	simulator	agree		FALSE
+S1	legacy	C7	cell	agree		FALSE
+S1	legacy	C7	cell_class	agree		FALSE
+S1	legacy	C7	run	agree		FALSE
+S1	legacy	C7	arm	agree		FALSE
+S1	legacy	C7	subset	agree		FALSE
+S1	legacy	C7	status	agree		TRUE
+S1	legacy	C7	seed	agree		FALSE
+S1	legacy	C7	k	agree		TRUE
+S1	legacy	C7	n_features	agree		TRUE
+S1	legacy	C7	n_true	agree		TRUE
+S1	legacy	C7	n_calls	agree		TRUE
+S1	legacy	C7	null_p05	agree	0	TRUE
+S1	legacy	C7	null_p01	agree	0	TRUE
+S1	legacy	C7	fdp	agree	0	TRUE
+S1	legacy	C7	power	agree	0	TRUE
+S1	legacy	C7	bias	agree	0	FALSE
+S1	legacy	C7	rmse	agree	0	FALSE
+S1	legacy	C8	simulator	agree		FALSE
+S1	legacy	C8	cell	agree		FALSE
+S1	legacy	C8	cell_class	agree		FALSE
+S1	legacy	C8	run	agree		FALSE
+S1	legacy	C8	arm	agree		FALSE
+S1	legacy	C8	subset	agree		FALSE
+S1	legacy	C8	status	agree		TRUE
+S1	legacy	C8	seed	agree		FALSE
+S1	legacy	C8	k	agree		TRUE
+S1	legacy	C8	n_features	differ		TRUE
+S1	legacy	C8	n_true	agree		TRUE
+S1	legacy	C8	n_calls	differ		TRUE
+S1	legacy	C8	null_p05	outside	1	TRUE
+S1	legacy	C8	null_p01	outside	1	TRUE
+S1	legacy	C8	fdp	outside	1	TRUE
+S1	legacy	C8	power	outside	0.127272727272725	TRUE
+S1	legacy	C8	bias	outside	1.99163605578999	FALSE
+S1	legacy	C8	rmse	outside	0.998109378493244	FALSE

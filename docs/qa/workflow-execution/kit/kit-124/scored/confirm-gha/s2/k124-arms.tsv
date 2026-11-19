@@ -1,0 +1,10 @@
+simulator	arm	subset	primary	ruv_design	verdict	verdict_without_rule4_in_C4	judged_core_cells	void_core_cells	core_cells_not_run	failing_core_cells	inconclusive_core_cells	stress_cells_failing	stress_cells_void	reported_cells	mean_fdp10_share_core	power_C0	refused_designed	refused_method	crashed	runs	arm1_rules_1_2_6_7
+S2	1	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(3,4) C1(3,4) C2(3,4) C4(4) C5(1,2,3,4) C6(3,4) C7(3,4)				C8	0.153125	0.55758	0	0	0	9000	fail
+S2	2	full	TRUE	FALSE	inconclusive	pass	C0,C1,C2,C3,C4,C5,C6,C7				C4			C8	0.013125	0.90523	0	0	0	9000	NA
+S2	3	full	TRUE	TRUE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(1,2,3) C1(1,2,3) C2(1,2,3) C3(2,3) C4(1,2,3,4,7) C5(1,2,3) C6(1,2,3) C7(1,2,3)				C8	0.643	0.911365	0	0	0	9000	NA
+S2	4	full	TRUE	TRUE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(1,2,3) C1(1,2,3) C2(1,2,3) C4(1,2,3,4,7) C5(1,2,3) C6(1,2,3) C7(1,2,3)				C8	0.570375	0.897355	0	0	0	9000	NA
+S2	35	full	TRUE	FALSE	inconclusive	inconclusive	C0,C1,C2,C3,C4,C5,C6,C7				C4,C5			C8	0.033625	0.906845	0	0	0	9000	NA
+S2	36	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C5,C6,C7			C0(3) C1(1,2,3) C2(3) C5(3) C6(3) C7(3)				C8	0.163143	0.904785	0	0	0	8000	NA
+S2	39	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(1,2,3) C1(3) C2(1,2,3) C4(1,2,3,4,7) C5(1,2,3) C6(1,2,3) C7(1,2,3)				C8	0.251875	0.9177	0	0	0	9000	NA
+S2	40	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(1,2,3) C1(3) C2(1,2,3) C4(1,2,3,4,7) C5(1,2,3) C6(3) C7(1,2,3)				C8	0.26425	0.917225	0	0	0	9000	NA
+S2	41	full	TRUE	FALSE	inconclusive	inconclusive	C0,C1,C2,C3,C4,C5,C6,C7				C2,C4,C5			C8	0.0335	0.90432	0	0	0	9000	NA

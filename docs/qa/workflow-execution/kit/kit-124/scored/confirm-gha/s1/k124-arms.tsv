@@ -1,0 +1,21 @@
+simulator	arm	subset	primary	ruv_design	verdict	verdict_without_rule4_in_C4	judged_core_cells	void_core_cells	core_cells_not_run	failing_core_cells	inconclusive_core_cells	stress_cells_failing	stress_cells_void	reported_cells	mean_fdp10_share_core	power_C0	refused_designed	refused_method	crashed	runs	arm1_rules_1_2_6_7
+S1	1	complete	FALSE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(4) C1(4) C2(4) C4(4) C5(4) C6(4) C7(4)				C8	0.014125	0.599279	0	0	0	9000	pass
+S1	1	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(4) C1(4) C2(4) C4(4) C5(4) C6(4) C7(4)				C8	0.0055	0.493141	0	0	0	9000	pass
+S1	2	complete	FALSE	FALSE	fail	pass	C0,C1,C2,C3,C4,C5,C6,C7			C4(4)				C8	0.079625	0.950894	0	0	0	9000	NA
+S1	2	full	TRUE	FALSE	fail	inconclusive	C0,C1,C2,C3,C4,C5,C6,C7			C4(4)				C8	0.028	0.914143	0	0	0	9000	NA
+S1	3	complete	FALSE	TRUE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(2,3) C1(3) C2(2,3) C3(3,5) C4(4) C5(1,2,3) C7(1,2,3)				C8	0.310375	0.945699	0	0	0	9000	NA
+S1	3	full	TRUE	TRUE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(1,2,3) C1(3) C2(1,2,3) C3(1,2,3,5) C4(1,2,3,4,7) C5(1,2,3) C7(1,2,3)				C8	0.4165	0.919715	0	0	0	9000	NA
+S1	35	complete	FALSE	FALSE	fail	pass	C0,C1,C2,C3,C4,C5,C6,C7			C4(4)				C8	0.078625	0.950485	0	0	0	9000	NA
+S1	35	full	TRUE	FALSE	fail	inconclusive	C0,C1,C2,C3,C4,C5,C6,C7			C4(4)				C8	0.036375	0.91436	0	0	0	9000	NA
+S1	36	complete	FALSE	FALSE	fail	fail	C0,C1,C2,C3,C5,C6,C7			C0(3) C1(1,2,3) C2(3) C5(3) C6(3) C7(3)				C8	0.241857	0.950731	0	0	0	8000	NA
+S1	36	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C5,C6,C7			C0(3) C1(1,2,3) C2(2,3) C5(3) C6(3) C7(3)				C8	0.197857	0.914894	0	0	0	8000	NA
+S1	37	complete	FALSE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C0(4) C1(4) C2(4) C4(4) C7(4)	C5,C6			C8	0.01375	0.594599	0	0	0	9000	NA
+S1	37	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C1(4)	C0,C2,C4,C5,C6,C7			C8	0.006125	0.492762	0	0	0	9000	NA
+S1	38	complete	FALSE	FALSE	pass	pass	C6							C8	0.09	NA	0	0	0	2000	NA
+S1	38	full	TRUE	FALSE	pass	pass	C6							C8	0.034	NA	0	0	0	2000	NA
+S1	39	complete	FALSE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C4(4) C5(2,3)				C8	0.10675	0.951135	0	0	0	9000	NA
+S1	39	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C4(4) C5(2,3)				C8	0.055875	0.915863	0	0	0	9000	NA
+S1	40	complete	FALSE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C4(4) C5(2,3)	C3,C7			C8	0.12	0.951518	0	0	0	9000	NA
+S1	40	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C4(4) C5(2,3)				C8	0.060125	0.910937	0	0	0	9000	NA
+S1	41	complete	FALSE	FALSE	fail	inconclusive	C0,C1,C2,C3,C4,C5,C6,C7			C4(4)	C6,C7			C8	0.10025	0.948967	0	0	0	9000	NA
+S1	41	full	TRUE	FALSE	fail	fail	C0,C1,C2,C3,C4,C5,C6,C7			C3(5) C4(4)	C6			C8	0.04375	0.90574	0	0	0	9000	NA

@@ -1,0 +1,55 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S4 S1$simulator	character	2000			0	agree	
+S4 S1$cell	character	2000			0	agree	
+S4 S1$cell_class	character	2000			0	agree	
+S4 S1$run	integer	2000			0	agree	
+S4 S1$arm	character	2000			0	agree	
+S4 S1$subset	character	2000			0	agree	
+S4 S1$status	character	2000			0	agree	
+S4 S1$seed	integer	2000			0	agree	
+S4 S1$k	integer	2000			0	agree	
+S4 S1$n_features	integer	2000			0	agree	
+S4 S1$n_true	integer	2000			0	agree	
+S4 S1$n_calls	integer	2000			0	agree	
+S4 S1$null_p05	double	2000	0	0	0	agree	
+S4 S1$null_p01	double	2000	0	0	0	agree	
+S4 S1$fdp	double	2000	0	0	0	agree	
+S4 S1$power	double	2000	0	0	0	agree	
+S4 S1$bias	double	2000	0	0	0	agree	
+S4 S1$rmse	double	2000	0	0	0	agree	
+S4 S3$simulator	character	2000			0	agree	
+S4 S3$cell	character	2000			0	agree	
+S4 S3$cell_class	character	2000			0	agree	
+S4 S3$run	integer	2000			0	agree	
+S4 S3$arm	character	2000			0	agree	
+S4 S3$subset	character	2000			0	agree	
+S4 S3$status	character	2000			0	agree	
+S4 S3$seed	integer	2000			0	agree	
+S4 S3$k	integer	2000			0	agree	
+S4 S3$n_features	integer	2000			0	agree	
+S4 S3$n_true	integer	2000			0	agree	
+S4 S3$n_calls	integer	2000			0	agree	
+S4 S3$null_p05	double	2000	0	0	0	agree	
+S4 S3$null_p01	double	2000	0	0	0	agree	
+S4 S3$fdp	double	2000	0	0	0	agree	
+S4 S3$power	double	2000	0	0	0	agree	
+S4 S3$bias	double	2000	0	0	0	agree	
+S4 S3$rmse	double	2000	0	0	0	agree	
+S4 S8$simulator	character	2000			0	agree	
+S4 S8$cell	character	2000			0	agree	
+S4 S8$cell_class	character	2000			0	agree	
+S4 S8$run	integer	2000			0	agree	
+S4 S8$arm	character	2000			0	agree	
+S4 S8$subset	character	2000			0	agree	
+S4 S8$status	character	2000			0	agree	
+S4 S8$seed	integer	2000			0	agree	
+S4 S8$k	integer	2000			0	agree	
+S4 S8$n_features	integer	2000			0	agree	
+S4 S8$n_true	integer	2000			0	agree	
+S4 S8$n_calls	integer	2000			0	agree	
+S4 S8$null_p05	double	2000	0	0	0	agree	
+S4 S8$null_p01	double	2000	0	0	0	agree	
+S4 S8$fdp	double	2000	0	0	0	agree	
+S4 S8$power	double	2000	0	0	0	agree	
+S4 S8$bias	double	2000	0	0	0	agree	
+S4 S8$rmse	double	2000	0	0	0	agree	
