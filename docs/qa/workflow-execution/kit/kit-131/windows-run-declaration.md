@@ -182,3 +182,45 @@ cache, no artifact.
 probe that never ran) is recorded as such and not rerun within this item's budget.
 
 **Decision.** The cause stated with its evidence, then the package repair on `kit-131-win-worker`.
+
+### Diagnostic run result (run 44464483568, 2c3a9b21 + eb1f9bd4)
+
+- **Cause read (valid):** the `lipid_qc_figures` worker's own log ends "Generated 0 QC plots for stage: post_filter"
+  after drawing every plot (plotRle, notch messages), with no error or warning from the figure code; all 16 QC PNGs and
+  the composite are absent on workers and present in process (`norm_refusal`, `norm` difference printed in full; the
+  normalisation tab's 16 plot outputs are `<table>` digests because their files are missing). The worker's `TMPDIR` is
+  `<project>/scripts/lipidomics/.dia-native-<14>/.workflow-entities/.workflow-export/wfx-<32>/worker-scratch`, so its
+  `tempfile("wfx-")` figure folder gives about 209 characters after a project root of at least 66 on this runner:
+  every QC file name is drawn at 266 to 275 characters, where ragg writes nothing (KIT-052, run 44241609555) and
+  `writeWorkflowOmicsFigure` returned NULL for the absent file. On Linux nothing limits the path.
+- **Instrumentation faults (recorded, not rerun as declared):** (1) the LAUNCH and PROBE lines were printed while the
+  lane ran and the lane's harness captured them, so the probe's environment, device and replay lines are lost;
+  (2) the long-paths-off step failed before its case started (`$OUT\figures` is created by the skipped long-paths-on
+  step), so S4's trace (item 3) was not taken. Both are fixed for the confirmation run below.
+
+## Confirmation run (declared 2026-11-19, before launch)
+
+**Purpose.** KIT-131 step 7 on Windows again, with the repair `kit-131-win-worker` (d1fa3ada: in a worker the short
+figure folder is made in `TMP`/`TEMP`, not under the request-owned `TMPDIR`; a figure drawn but not written stops the
+step with `workflow_figure_unwritten`; F10), verified on Linux in run-tests 44468417325 (no new failure, check identical).
+
+**Bindings.** Branch `run-win-k131` = this declaration's commit, then the instrumentation fixes, then a merge of
+`kit-131-win-worker` at d1fa3ada; workflow `KIT-134 distributable`, stage `full`, platform `windows`; same image,
+R 4.6.1, Rust 1.99.1, token handling, no cache, no artifact.
+
+**Instrumentation changes.** `lane-worker.R` keeps the LAUNCH and PROBE lines and prints them after the lane;
+`windows-figure-cases.ps1` creates its evidence folder; the e2e step runs again; the long-paths-off step runs
+`prot_tmt_lane` at about 90, 120 and 130 (TMPDIR 31, 60, 70) with CONN and TRACE lines.
+
+**Cases and what counts as a pass.**
+
+| # | Item | Pass |
+|---|---|---|
+| C1 | `lipid_canonical` on plain workers (long paths as the runner has them) | runs to its end; every step identical to the in-process lane of the same runner after the working notice is set aside, except the store-internal entity counts (accepted at Linux step 8); any other difference explained; no worker left; the probe's replay draws the QC figures under `TMP` at fewer than 260 characters |
+| C2 | the four browser e2e lanes | 88, 190, 16, 153 |
+| C3 | prot_tmt lane, long paths off, roots about 90, 120, 130 | 90: Summary `.docx` written as in 44457268709; 120: stops loudly at QC (classed refusal), as before; 130: the CONN/TRACE lines name the file, its length and the call that raised "cannot open the connection" (item 3 read, not repaired in this run) |
+
+**Ceiling and attempts.** The job's own ceilings; one run. The one bounded correction pass of this work item is kept
+for a repair after this run if C1 fails for a package reason.
+
+**Decision.** C1 met or not met per step; item 3's cause stated with its evidence; then the tickets' Status lines.
