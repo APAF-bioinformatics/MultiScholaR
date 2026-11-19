@@ -1,22 +1,16 @@
 {
-  "label": "Harness v1.11 change set (KIT-052 option A folder names; v1.11 items 1, 3, 4), full suite and check, base 039ce71d (kit-129-integration) vs head 4a7c211f (kit-harness-v1.11)",
-  "package_commit": "4a7c211ffca3bbf25ff4fc29419a5f0520499fe9",
-  "base_commit": "039ce71d2a87d8330ade665c857fa538112aeb0a",
+  "label": "KIT-062 fixed unit file and the precision parameter (INT-6), base 6501e008 vs head 23f21817 (kit-062-integration-model)",
+  "package_commit": "23f218176c126daf0e66154b3778cb3b66963d1f",
+  "base_commit": "6501e008196b48109cd943bead9c694f3e599362",
   "tools_ref": "",
-  "tests": "all",
-  "shards": 20,
+  "tests": ["test-integration-model.R", "test-integration-mofa-model.R", "test-workflow-operation-registry.R", "test-workflow-analysis-record.R"],
+  "shards": 4,
   "file_timeout_minutes": 45,
-  "file_timeouts": {"test-gui-entry-lipidomics.R": 120, "test-gui-entry-metabolomics.R": 120, "test-gui-entry-proteomics.R": 120,
-    "test-gui-entry-transcriptomics.R": 120, "test-prot-norm-core.R": 120, "test-kit129-run-path.R": 90},
+  "file_timeouts": {},
   "extra_packages": ["sva"],
   "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
   "check": true,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": [
-    {"path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
-     "args": ["039ce71d2a87d8330ade665c857fa538112aeb0a", "harness-v1.11-failing-first", "test-workflow-folder-names.R",
-       "test-workflow-kit-harness.R"],
-     "out": "harness-v1.11-failing-first", "timeout_minutes": 120}
-  ]
+  "scripts": []
 }
