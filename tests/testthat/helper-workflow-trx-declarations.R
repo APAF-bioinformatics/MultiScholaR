@@ -30,41 +30,55 @@ trxDeclReference <- function(corpus, env = parent.frame()) {
   sys.source(file.path(trxDeclRoot(), "tools/profiling/kit_omics_corpus.R"), h)
   dir <- withr::local_tempdir(.local_envir = env)
   h$writeKitTrxCorpus(dir, h$kitOmicsRecipe("trx_screen", TRX_DECL_PER_GROUP[[corpus]]))
-  if (!trxDeclManifestNoted(dir, store, corpus)) {
-    testthat::expect_identical(digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256"), store$corpus_manifest_sha256)
-  }
+  trxDeclCorpusFiles(dir, store, corpus)
   list(store = store, dir = dir, corpus = corpus)
 }
 
-#' KIT-129 fifth pass: the off-laptop switch for the corpus manifest check. Unset (the default), it returns FALSE and the
-#' manifest digest is checked as before. With MULTISCHOLAR_TRX_MANIFEST_NOTE=1 (set only by a run-tests request) and a
-#' manifest that differs, the corpus files that the products read (counts.tsv, design_matrix.tab, contrast_strings.tab,
-#' design.tsv) are checked against their KIT-040 digests (kit-040/bindings.json), the difference is printed as a note,
-#' and the test continues. On GitHub runners only truth.json differs, in the last bits of simulated batch loadings that
-#' no product reads (KIT-134 B-01), and truth.json's digest is part of the manifest.
-trxDeclManifestNoted <- function(dir, store, corpus) {
-  if (!identical(Sys.getenv("MULTISCHOLAR_TRX_MANIFEST_NOTE"), "1")) return(FALSE)
-  actual <- digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")
-  if (identical(actual, store$corpus_manifest_sha256)) return(FALSE)
+#' Protocol v1.11 item 4 (KIT-129, KIT-134 B-01): the regenerated corpus is checked by the files the products read
+#' (counts.tsv, design_matrix.tab, contrast_strings.tab, design.tsv) against their KIT-040 digests
+#' (kit-040/bindings.json), exactly, on every machine. The manifest digest also covers truth.json, whose simulated batch
+#' loadings differ in the last bits off the laptop and are read by no product; a manifest that differs is printed as a
+#' note. Before v1.11 this was the off-laptop switch `MULTISCHOLAR_TRX_MANIFEST_NOTE=1` (now the rule; the variable is
+#' no longer read).
+trxDeclCorpusFiles <- function(dir, store, corpus) {
   bound <- jsonlite::read_json(file.path(trxDeclRoot(), "docs/qa/workflow-execution/kit/kit-040/bindings.json"))$corpora[[corpus]]$files
   read <- c("counts.tsv", "design_matrix.tab", "contrast_strings.tab", "design.tsv")
   for (file in read) {
     testthat::expect_identical(digest::digest(file = file.path(dir, file), algo = "sha256"), bound[[file]]$sha256,
       info = paste(corpus, file, "against kit-040/bindings.json"))
   }
+  actual <- digest::digest(file = file.path(dir, "manifest.json"), algo = "sha256")
+  if (identical(actual, store$corpus_manifest_sha256)) return(invisible(TRUE))
   others <- setdiff(names(bound), read)
   differ <- others[vapply(others, function(file) !identical(digest::digest(file = file.path(dir, file), algo = "sha256"),
     bound[[file]]$sha256), logical(1))]
-  message(sprintf("NOTE trx corpus %s: manifest sha256 %s, stored %s (MULTISCHOLAR_TRX_MANIFEST_NOTE=1); the files the products read are checked against kit-040/bindings.json; differing unread files: %s",
+  message(sprintf("NOTE trx corpus %s: manifest sha256 %s, stored %s; the files the products read match kit-040/bindings.json; differing unread files: %s",
     corpus, actual, store$corpus_manifest_sha256, if (length(differ)) paste(differ, collapse = ", ") else "none"))
-  TRUE
+  invisible(FALSE)
+}
+
+#' Protocol v1.11 item 4: whether a transcriptomics product digest is judged here. On the laptop (the default) the
+#' exact digest is the gate. Off the laptop (`MULTISCHOLAR_TRX_DIGEST_RULE=values`, set by module-ci.yml and run-tests
+#' requests) the values behind the digest are judged by .github/scripts/save-trx-products.R and
+#' packaging/verify/compare-results.R under KIT-134's rule (relative 1e-6, absolute 1e-9), and a differing digest is
+#' a note, not a failure.
+trxDeclDigestOffLaptop <- function() identical(Sys.getenv("MULTISCHOLAR_TRX_DIGEST_RULE"), "values")
+
+#' One product digest against its KIT-040 value, under the rule above.
+expectTrxDeclDigest <- function(actual, expected, info = NULL) {
+  if (trxDeclDigestOffLaptop() && !identical(actual, expected)) {
+    message(sprintf("NOTE %s: sha256 %s, KIT-040 %s; judged by compare-results.R off the laptop (protocol v1.11 item 4)",
+      info %||% "trx product", actual, expected))
+    return(testthat::succeed(paste("digest noted:", info)))
+  }
+  testthat::expect_identical(actual, expected, info = info)
 }
 
 #' Every named product's sha256 equals its KIT-040 fingerprint.
 expectTrxDeclProducts <- function(products, reference, what = "") {
   prints <- reference$store$fingerprints
   for (name in names(products)) {
-    testthat::expect_identical(trxDeclSha(products[[name]]), prints$sha256[prints$product == name], info = paste(reference$corpus, what, name))
+    expectTrxDeclDigest(trxDeclSha(products[[name]]), prints$sha256[prints$product == name], info = paste(reference$corpus, what, name))
   }
 }
 

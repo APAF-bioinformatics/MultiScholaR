@@ -28,6 +28,9 @@ permissions:
 env:
   NOT_CRAN: "true"
   R_KEEP_PKG_SOURCE: "yes"
+  # Protocol v1.11 item 4: off the laptop the transcriptomics product digests are notes; their values are judged by
+  # save-trx-products.R and compare-results.R (the full gate's step below). On the laptop the exact digest is the gate.
+  MULTISCHOLAR_TRX_DIGEST_RULE: "values"
 
 jobs:
   detect-impact:
@@ -452,6 +455,15 @@ jobs:
       - name: "KIT-134 B-01: the runner's transcriptomics values behind the digest oracles (package outputs only)"
         if: always() && matrix.kind == 'module-ci'
         run: Rscript --vanilla .github/scripts/save-trx-products.R "${{ matrix.artifact_dir }}/trx-products"
+      - name: "Protocol v1.11 item 4: the transcriptomics values under KIT-134's rule (relative 1e-6, absolute 1e-9)"
+        if: always() && matrix.kind == 'module-ci'
+        run: |
+          Rscript --vanilla packaging/verify/compare-results.R \
+            "${{ matrix.artifact_dir }}/trx-products/trx-products.rds" \
+            docs/qa/workflow-execution/kit/kit-040/reference-trx_edge_12.rds \
+            "${{ matrix.artifact_dir }}/trx-products/compare.tsv" top_genes best_control_genes best_res ruviii_newY
+          Rscript --vanilla -e 'x <- utils::read.delim(commandArgs(TRUE)[[1L]]); bad <- x[x$verdict != "agree", ]; print(bad); if (nrow(bad)) quit(status = 1L)' \
+            "${{ matrix.artifact_dir }}/trx-products/compare.tsv"
       - name: Upload full-gate artifacts
         if: always()
         uses: actions/upload-artifact@v4

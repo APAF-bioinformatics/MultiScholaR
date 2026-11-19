@@ -62,8 +62,8 @@ test_that("MCI-032.1 after DA the RUVIII export records M = group, leaves the DA
   # The export's matrix is the reference newY (above); the file is the notebook's (vroom_write of that matrix, as rmd:714-724),
   # byte-identical to KIT-040's stable output.
   stable <- reference$store$stable_outputs
-  expect_identical(digest::digest(file = tsv, algo = "sha256"),
-    stable$sha256[stable$path == "results/transcriptomics/transcriptomics_normalized_data.tsv"])
+  expectTrxDeclDigest(digest::digest(file = tsv, algo = "sha256"),
+    stable$sha256[stable$path == "results/transcriptomics/transcriptomics_normalized_data.tsv"], "transcriptomics_normalized_data.tsv")
   exported <- as.data.frame(vroom::vroom(tsv, show_col_types = FALSE))
   expect_identical(exported$Run, rownames(value$newY))
   expect_identical(names(exported)[-1L], colnames(value$newY))
