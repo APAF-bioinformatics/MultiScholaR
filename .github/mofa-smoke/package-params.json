@@ -1,6 +1,6 @@
 {
-  "label": "k142-record-1",
-  "package_commit": "77e999b091edf17e576a2259adca2cf33559d18a",
+  "label": "k142-record-2",
+  "package_commit": "b20d4fd7b105107b44195dc5fb1df792a936e649",
   "tests": [
     "test-integration-record-mofa.R",
     "test-integration-results-mofa.R",
