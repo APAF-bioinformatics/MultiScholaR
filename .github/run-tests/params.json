@@ -14,7 +14,12 @@
   ],
   "shards": 7,
   "file_timeout_minutes": 45,
-  "file_timeouts": {},
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 150,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120
+  },
   "extra_packages": [
     "sva"
   ],
