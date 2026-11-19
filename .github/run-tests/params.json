@@ -1,7 +1,7 @@
 {
-  "label": "merge-check 791cc5f3",
-  "package_commit": "791cc5f346715f9aa4fe790dde5c015f37c1dab3",
-  "base_commit": "78e9c2775b54e686b3c04565c9249c0e1f389c67",
+  "label": "KIT-129 seventh pass item 1: merge of performance-v2 791cc5f3 into kit-129-integration, full suite base 44b5f219 vs head d9a8889d",
+  "package_commit": "d9a8889d1e8bd84320dfd59527b3430f061a31e2",
+  "base_commit": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
   "tools_ref": "",
   "tests": "all",
   "shards": 20,
@@ -13,8 +13,8 @@
     "test-gui-entry-transcriptomics.R": 120,
     "test-prot-norm-core.R": 120
   },
-  "extra_packages": [],
-  "env": {},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
   "check": true,
   "blas": "reference",
   "fetch_refs": [],
