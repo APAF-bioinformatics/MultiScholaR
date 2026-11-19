@@ -354,7 +354,9 @@ workflowRecordExportAnalysis <- function(context, snapshot, export, shipped) {
         parameters = lapply(names(export$parameters), function(name) list(name = name, source = "export",
             value = encodeWorkflowRecordValue(export$parameters[[name]]),
             provenance = workflowParameterProvenance(entry$defaults[[name]], export$parameters[[name]], shipped))),
-        outcomes = if (is.null(binding)) list() else binding$record_outcomes(binding, context, export$operation,
+        # KIT-062: the integration model's outcomes are its own (it has no omics binding).
+        outcomes = if (identical(export$operation, INTEGRATION_MODEL_OPERATION)) integrationModelRecordOutcomes(context, export) else
+            if (is.null(binding)) list() else binding$record_outcomes(binding, context, export$operation,
             list(data = list(products = product)), list()))
 }
 
@@ -862,6 +864,12 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     }
     # KIT-095: the exports after the DA, through their binding's replay entry with the recorded parameters.
     for (analysis in record$analyses[setdiff(names(record$analyses %||% list()), "differential_abundance")]) {
+        # KIT-062: the integration model, on the replayed inputs state with the recorded parameters.
+        if (identical(analysis$operation, INTEGRATION_MODEL_OPERATION)) {
+            replayIntegrationModel(manager, analysis)
+            if (is.function(on_step)) on_step(list(state = manager$current_state, operation = analysis$operation), manager)
+            next
+        }
         binding <- Find(function(b) isTRUE(startsWith(analysis$operation, paste0(b$prefix, "_"))), omicsDeclarationBindings())
         entry <- tryCatch(workflowOperationEntry(analysis$operation), error = function(e) NULL)
         if (is.null(binding) || is.null(entry)) cli::cli_abort("analysis {.val {analysis$operation}} cannot be replayed", class = "workflow_replay_unsupported")
