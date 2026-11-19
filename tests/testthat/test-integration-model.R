@@ -74,7 +74,7 @@ test_that("KIT-062: the inputs state aligns the views on the biological sample, 
     parameters <- integrationResolveMofaParameters(object)
     expect_identical(names(parameters), integrationMofaParameterNames())
     expect_identical(parameters$views, c("lipidomics_LCMS_Pos", "proteomics"))
-    aligned <- expect_warning(integrationAlignViews(object, parameters), class = "integration_few_samples")
+    expect_warning(aligned <- integrationAlignViews(object, parameters), class = "integration_few_samples")
     lipid <- aligned$views$lipidomics_LCMS_Pos
     proteomics <- aligned$views$proteomics
     # Samples of every view kept (D4): A_3 is missing in lipidomics only.
@@ -184,7 +184,7 @@ test_that("KIT-062: the owner commits the inputs state, the identity follows the
         class = "integration_mofa_unavailable", regexp = "no Python here")
     expect_null(manager$.context$pending_provenance)
     # A stand-in trainer: computed, accepted under the exports, then reused for the same identity.
-    run <- expect_warning(runIntegrationModel(manager, trainer = intModelFakeTrainer), class = "integration_few_samples")
+    expect_warning(run <- runIntegrationModel(manager, trainer = intModelFakeTrainer), class = "integration_few_samples")
     expect_identical(run$status, "computed")
     expect_identical(manager$getHistory(), c("initial", "integration_inputs"))
     expect_null(manager$.context$pending_provenance)
