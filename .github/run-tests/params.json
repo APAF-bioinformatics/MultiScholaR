@@ -1,24 +1,21 @@
 {
-  "label": "KIT-135 correction + KIT-136 trx integration input, base 0cb92e0e (kit-129-integration) vs head 6501e008 (kit-135-integration-inputs)",
-  "package_commit": "6501e008196b48109cd943bead9c694f3e599362",
-  "base_commit": "0cb92e0e7828829cd0ab1133ef8ac8a640a8a79c",
+  "label": "KIT-062 prerequisites (a) proteomics biological_sample_column and (b) corpus generator, base 6501e008 vs head 3e3f5ef6 (kit-062-integration-model); composer regenerates the corpus",
+  "package_commit": "3e3f5ef62ffb418cccbc3b122f180559341f90e2",
+  "base_commit": "6501e008196b48109cd943bead9c694f3e599362",
   "tools_ref": "",
-  "tests": ["test-integration-input-lipid-metab.R", "test-integration-input-transcriptomics.R", "test-omic-gui-config.R",
-    "test-omics-summary-core.R", "test-omic-summary-module.R", "test-workflow-trx-declarations.R", "test-module-ci-trx-summary.R",
-    "test-trx-ruv-designs.R", "test-workflow-operation-registry.R", "test-e2e-trx-journey.R", "test-kit129-run-path.R",
-    "test-workflow-figure-paths.R", "test-workflow-integration-input.R", "test-gui-entry-transcriptomics.R"],
-  "shards": 8,
+  "tests": ["test-workflow-integration-input.R", "test-integration-corpus.R", "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R", "test-kit129-run-path.R"],
+  "shards": 5,
   "file_timeout_minutes": 45,
-  "file_timeouts": {"test-gui-entry-transcriptomics.R": 120, "test-omic-summary-module.R": 90, "test-kit129-run-path.R": 90},
+  "file_timeouts": {"test-kit129-run-path.R": 90},
   "extra_packages": ["sva"],
   "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
   "check": true,
   "blas": "reference",
   "fetch_refs": [],
   "scripts": [
-    {"path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
-     "args": ["0cb92e0e7828829cd0ab1133ef8ac8a640a8a79c", "kit136-failing-first", "test-integration-input-lipid-metab.R",
-       "test-integration-input-transcriptomics.R", "test-omic-gui-config.R"],
-     "out": "kit136-failing-first", "timeout_minutes": 120}
+    {"path": "tests/testdata/integration/compose_integration_corpus.R",
+     "args": ["kit062-corpus"],
+     "out": "kit062-corpus", "timeout_minutes": 30}
   ]
 }
