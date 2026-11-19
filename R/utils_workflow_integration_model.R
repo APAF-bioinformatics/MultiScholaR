@@ -669,7 +669,14 @@ integrationTrainMofa <- function(views, options) {
         integrationRefuse("MOFA2 could not use the configured Python with mofapy2 and fell back to basilisk; the model is not trained",
             "integration_mofa_unavailable")
     }
-    model <- MOFA2::load_model(outfile)
+    # KIT-063: MOFA2 checks the trained model when it loads it (for example a factor that follows each sample's overall
+    # level); those warnings are kept with the model, for the Results tab, rather than left to the console. A warning
+    # already kept from run_mofa is not kept twice. Nothing else of the loading changes.
+    model <- withCallingHandlers(MOFA2::load_model(outfile), warning = function(w) {
+        text <- paste("WARNING:", trimws(conditionMessage(w)))
+        if (!text %in% messages) messages <<- c(messages, text)
+        invokeRestart("muffleWarning")
+    })
     variance <- MOFA2::get_variance_explained(model)
     r2 <- variance$r2_per_factor[[1L]]
     if (all(rownames(r2) %in% names(views))) r2 <- t(r2)

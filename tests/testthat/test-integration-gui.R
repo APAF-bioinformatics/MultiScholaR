@@ -137,7 +137,7 @@ test_that("KIT-138: with the gate off the home page and the integration module a
     expect_null(mod_integration_server("integration_workflow", list(integration = list())))
 })
 
-test_that("KIT-138: with the gate on the Integration tile is live and the shell has the Import, Sample Matching and Model tabs", {
+test_that("KIT-138: with the gate on the Integration tile is live and the shell has the Import, Sample Matching, Model and Results tabs", {
     withr::local_options(MultiScholaR.integration_gui = TRUE)
     texts <- integrationGuiTexts()
     page <- intGuiHtml(app_ui(NULL))
@@ -148,27 +148,30 @@ test_that("KIT-138: with the gate on the Integration tile is live and the shell 
     expect_match(page, "if (true) { // KIT-138: the Integration tile stays enabled", fixed = TRUE)
     expect_error(integrationHomeScript("a script without the lines"), class = "integration_gui_invalid")
     config <- integrationGuiConfig()
-    # KIT-140 adds the Model tab.
+    # KIT-140 adds the Model tab, KIT-063 the Results tab.
     expect_identical(vapply(config$shell$tabs, `[[`, "", "status_key"), c("integration_import", "integration_alignment",
-        "integration_model"))
+        "integration_model", "integration_results"))
     ui <- intGuiHtml(mod_integration_ui("integration_workflow"))
     for (id in c("integration-workflow-tabs", "integration-tab-import", "integration-tab-alignment",
-        "integration-import-commit", "integration-alignment-confirm", "integration-tab-model", "integration-model-run")) {
+        "integration-import-commit", "integration-alignment-confirm", "integration-tab-model", "integration-model-run",
+        "integration-tab-results", "integration-results-save")) {
         expect_match(ui, sprintf('data-testid="%s"', id), fixed = TRUE)
     }
     expect_match(ui, texts[["tab_alignment"]], fixed = TRUE)
     expect_match(ui, texts[["tab_model"]], fixed = TRUE)
+    expect_match(ui, texts[["tab_results"]], fixed = TRUE)
     project <- intGuiProject()
     shiny::testServer(mod_integration_server, args = list(project_dirs = list(integration = project$paths),
         omic_type = "integration", experiment_label = "kit138"), {
         session$flushReact()
         bus <- session$returned
         expect_identical(bus$tab_status, list(integration_import = "pending", integration_alignment = "disabled",
-            integration_model = "disabled"))
+            integration_model = "disabled", integration_results = "disabled"))
         progress <- output$workflow_progress$html
         expect_match(progress, texts[["step_import"]], fixed = TRUE)
         expect_match(progress, texts[["step_alignment"]], fixed = TRUE)
         expect_match(progress, texts[["step_model"]], fixed = TRUE)
+        expect_match(progress, texts[["step_results"]], fixed = TRUE)
         # The status chain opens the Model tab once the sample table is confirmed (KIT-140).
         status <- bus$tab_status
         status$integration_import <- "complete"
@@ -176,6 +179,13 @@ test_that("KIT-138: with the gate on the Integration tile is live and the shell 
         bus$tab_status <- status
         session$flushReact()
         expect_identical(bus$tab_status$integration_model, "pending")
+        # KIT-063: the Results tab opens once a model is trained.
+        expect_identical(bus$tab_status$integration_results, "disabled")
+        status <- bus$tab_status
+        status$integration_model <- "complete"
+        bus$tab_status <- status
+        session$flushReact()
+        expect_identical(bus$tab_status$integration_results, "pending")
         # The Import tab scanned the project when the module started.
         expect_identical(bus$integration_scan$omics$omic, intGuiOmics)
     })

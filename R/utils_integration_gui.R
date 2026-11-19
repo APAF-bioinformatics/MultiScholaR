@@ -291,7 +291,93 @@ integrationGuiTexts <- function() {
         refusal_sample_match_invalid = paste("Check that the table has the columns omic, run and biological_sample, that",
             "every run listed has a biological sample, and that each run appears only once."),
         # %d: runs (Model tab, the settings the confirmed table fixed).
-        setting_sample_match = "Sample match: your uploaded table, which gives %d runs a different biological sample"
+        setting_sample_match = "Sample match: your uploaded table, which gives %d runs a different biological sample",
+        # KIT-063: the Results tab.
+        tab_results = " Results",
+        step_results = "Results",
+        results_heading = "Results of the factor model",
+        results_intro = paste("What the trained model found: how much of each data set's variation each factor explains,",
+            "how the factors relate to the groups, which features weigh most on each factor, and how the factors relate to",
+            "each other."),
+        results_not_trained = "Train a model at the Model tab first.",
+        # %s: the time the model was trained.
+        results_model = "Results of the model trained at %s.",
+        # %s: the reason.
+        results_refused = "The results cannot be shown. %s",
+        results_provisional = paste("How many features are listed, which factors are shown, how the factors are related to",
+            "the groups and how the figures look are provisional: the integration methods may still change them."),
+        advisories_heading = "Notes from the model",
+        # %s: the factors (Factor1, Factor2).
+        advisory_overall_level = paste("%s rises and falls with each sample's overall level in at least one data set.",
+            "Such a factor often reflects differences in overall level between samples, for example from normalisation,",
+            "rather than biology. Read it with care."),
+        advisory_other = "MOFA2 gave a warning while training; its text is under Technical detail.",
+        variance_heading = "Variance explained",
+        variance_intro = paste("The percentage of each data set's variation that each factor explains. A factor that",
+            "explains variation in several data sets is shared between them; one that explains variation in only one data",
+            "set is specific to it."),
+        variance_total_heading = "All factors together, per data set",
+        col_factor = "Factor",
+        association_heading = "Factors and the groups",
+        # %s: the adjustment's name.
+        association_intro = paste("For each factor: the share of its variation that lies between the groups (one-way",
+            "analysis of variance of the factor's values on the group), the test's p-value, and the p-value adjusted for",
+            "the number of factors tested (%s)."),
+        padjust_BH = "Benjamini-Hochberg",
+        padjust_holm = "Holm",
+        padjust_bonferroni = "Bonferroni",
+        padjust_none = "not adjusted",
+        claim_heading = "How to read this",
+        claim_descriptive = paste("The factors were found without using the groups. How they relate to the groups describes",
+            "the model; it is not a test of the experiment."),
+        # %s: the data sets.
+        claim_group_corrected = paste("In %s, unwanted variation was removed with the groups as replicate sets, which keeps",
+            "the differences between groups by construction. Factors can then separate the groups more than the data",
+            "alone would, so no p-value is given for the groups."),
+        # %s: the omic, then its correction in words.
+        claim_correction = "%s: correction for unwanted variation %s",
+        col_samples_tested = "Samples",
+        col_groups_n = "Groups",
+        col_group_r2 = "Variation between groups (%)",
+        col_f = "F",
+        col_df = "Degrees of freedom",
+        col_p = "p-value",
+        col_p_adjusted = "Adjusted p-value",
+        cell_not_tested = "not given (see How to read this)",
+        cell_cannot_test = "cannot be computed (fewer than two groups or too few samples)",
+        factor_values_heading = "Factor values per biological sample",
+        weights_heading = "Features with the largest weights",
+        # %d: the number of features.
+        weights_intro = paste("The %d features with the largest weights, in absolute value, on the chosen factor in the",
+            "chosen data set. A feature's weight says how strongly it follows the factor; its sign says in which",
+            "direction. The scaled weight divides by the largest weight of that factor in that data set, so 1 or -1 marks",
+            "the strongest feature."),
+        weights_factor = "Factor",
+        weights_view = "Data set",
+        col_rank = "Rank",
+        col_feature = "Feature",
+        col_feature_id = "Identifier",
+        col_weight = "Weight",
+        col_weight_scaled = "Scaled weight",
+        correlation_heading = "How the factors relate to each other",
+        correlation_intro = paste("The correlation (Pearson) of the factors' values across the biological samples. Each",
+            "factor is meant to capture its own pattern; a correlation far from 0 means two factors share part of theirs."),
+        plot_dataset = "Data set",
+        plot_factor = "Factor",
+        plot_variance = "Variance explained (%)",
+        plot_group = "Group",
+        plot_factor_value = "Factor value",
+        plot_weight = "Weight",
+        plot_weight_scaled = "Scaled weight",
+        plot_correlation = "Correlation",
+        # %s: the factor, then the data set.
+        plot_weights_title = "%s, %s",
+        save_heading = "Save the results",
+        save_button = "Save tables and figures to the project",
+        # %s: the time; %d: tables; %s: their folder; %d: figures; %s: their folder.
+        save_done = "Saved at %s: %d tables to %s and %d figures to %s.",
+        # %s: the reason.
+        save_refused = "The results were not saved. %s"
     )
 }
 
@@ -308,12 +394,14 @@ integrationGuiConfig <- function() {
     tabs <- list(
         tab("integration_import", "import", "tab_import", "file-import", "step_import"),
         tab("integration_alignment", "alignment", "tab_alignment", "th", "step_alignment"),
-        tab("integration_model", "model", "tab_model", "cubes", "step_model"))
+        tab("integration_model", "model", "tab_model", "cubes", "step_model"),
+        # KIT-063: the Results tab.
+        tab("integration_results", "results", "tab_results", "chart-bar", "step_results"))
     shell <- list(omic_type = "integration", prefix = "integration", testid = "integration",
         label = texts[["workflow_label"]], label_lower = "integration", header_icon = NULL,
         tabset_id = "integration_tabs", tab_style = "icon_in_title", routes = "integration", tabs = tabs,
         bus = list(state_manager = NULL, tab_status = NULL, integration_scan = NULL, integration_import = NULL,
-            integration_alignment = NULL, integration_model = NULL),
+            integration_alignment = NULL, integration_model = NULL, integration_results = NULL),
         bus_registration = "userData")
     validateOmicGuiShell(shell, omicGuiConfigSchema())
     list(shell = shell, texts = texts)

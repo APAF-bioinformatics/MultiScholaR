@@ -206,3 +206,41 @@ the table's, never these strings'.
 | match_refused | The uploaded table cannot be used. %s | the refusal's sentence |
 | refusal_sample_match_invalid | Check that the table has the columns omic, run and biological_sample, that every run listed has a biological sample, and that each run appears only once. | the refusal's sentence; the check's own message under "Technical detail" |
 | setting_sample_match | Sample match: your uploaded table, which gives %d runs a different biological sample | Model tab, the settings the confirmed table fixed |
+
+## Results tab (KIT-063)
+
+| Key | Text | Where |
+|---|---|---|
+| tab_results; step_results | " Results"; Results | tab title; stepper |
+| results_heading | Results of the factor model | |
+| results_intro | What the trained model found: how much of each data set's variation each factor explains, how the factors relate to the groups, which features weigh most on each factor, and how the factors relate to each other. | |
+| results_not_trained | Train a model at the Model tab first. | before a model |
+| results_model | Results of the model trained at %s. | time |
+| results_refused | The results cannot be shown. %s | the refusal's sentence |
+| results_provisional | How many features are listed, which factors are shown, how the factors are related to the groups and how the figures look are provisional: the integration methods may still change them. | above the save button |
+| advisories_heading | Notes from the model | MOFA2's warnings |
+| advisory_overall_level | %s rises and falls with each sample's overall level in at least one data set. Such a factor often reflects differences in overall level between samples, for example from normalisation, rather than biology. Read it with care. | factors; MOFA2's text under "Technical detail" |
+| advisory_other | MOFA2 gave a warning while training; its text is under Technical detail. | any other MOFA2 warning |
+| variance_heading; variance_intro | Variance explained; The percentage of each data set's variation that each factor explains. A factor that explains variation in several data sets is shared between them; one that explains variation in only one data set is specific to it. | |
+| variance_total_heading | All factors together, per data set | |
+| col_factor | Factor | table header |
+| association_heading | Factors and the groups | |
+| association_intro | For each factor: the share of its variation that lies between the groups (one-way analysis of variance of the factor's values on the group), the test's p-value, and the p-value adjusted for the number of factors tested (%s). | the adjustment's name |
+| padjust_BH, _holm, _bonferroni, _none | Benjamini-Hochberg; Holm; Bonferroni; not adjusted | |
+| claim_heading | How to read this | the claim limit (KIT-060 D10), beside the factors-against-groups figure |
+| claim_descriptive | The factors were found without using the groups. How they relate to the groups describes the model; it is not a test of the experiment. | always |
+| claim_group_corrected | In %s, unwanted variation was removed with the groups as replicate sets, which keeps the differences between groups by construction. Factors can then separate the groups more than the data alone would, so no p-value is given for the groups. | data sets; only then |
+| claim_correction | %s: correction for unwanted variation %s | per omic, the Import tab's words |
+| col_samples_tested, col_groups_n, col_group_r2, col_f, col_df, col_p, col_p_adjusted | Samples; Groups; Variation between groups (%); F; Degrees of freedom; p-value; Adjusted p-value | table headers |
+| cell_not_tested; cell_cannot_test | not given (see How to read this); cannot be computed (fewer than two groups or too few samples) | table cells |
+| factor_values_heading | Factor values per biological sample | |
+| weights_heading | Features with the largest weights | |
+| weights_intro | The %d features with the largest weights, in absolute value, on the chosen factor in the chosen data set. A feature's weight says how strongly it follows the factor; its sign says in which direction. The scaled weight divides by the largest weight of that factor in that data set, so 1 or -1 marks the strongest feature. | number of features |
+| weights_factor; weights_view | Factor; Data set | the two choices |
+| col_rank, col_feature, col_feature_id, col_weight, col_weight_scaled | Rank; Feature; Identifier; Weight; Scaled weight | table headers |
+| correlation_heading; correlation_intro | How the factors relate to each other; The correlation (Pearson) of the factors' values across the biological samples. Each factor is meant to capture its own pattern; a correlation far from 0 means two factors share part of theirs. | |
+| plot_dataset, plot_factor, plot_variance, plot_group, plot_factor_value, plot_weight, plot_weight_scaled, plot_correlation | Data set; Factor; Variance explained (%); Group; Factor value; Weight; Scaled weight; Correlation | figure axes and legends |
+| plot_weights_title | %s, %s | factor, data set |
+| save_heading; save_button | Save the results; Save tables and figures to the project | |
+| save_done | Saved at %s: %d tables to %s and %d figures to %s. | time, counts, folders |
+| save_refused | The results were not saved. %s | the refusal's sentence |
