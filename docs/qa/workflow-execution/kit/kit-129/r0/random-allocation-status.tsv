@@ -1,0 +1,75 @@
+simulator	table	cell	arm	status	rows
+S1	runs (full subset)	C0R	1	ok	500
+S3	runs (full subset)	C0R	1	ok	500
+S4	runs (full subset)	C0R	1	ok	500
+S1	runs (full subset)	C4R	1	ok	500
+S3	runs (full subset)	C4R	1	ok	500
+S4	runs (full subset)	C4R	1	ok	500
+S1	runs (full subset)	S1R	1	ok	500
+S3	runs (full subset)	S1R	1	ok	500
+S4	runs (full subset)	S1R	1	ok	500
+S1	runs (full subset)	C0R	2	ok	500
+S3	runs (full subset)	C0R	2	ok	500
+S4	runs (full subset)	C0R	2	ok	500
+S1	runs (full subset)	C4R	2	ok	500
+S3	runs (full subset)	C4R	2	ok	500
+S4	runs (full subset)	C4R	2	ok	500
+S1	runs (full subset)	S1R	2	ok	500
+S3	runs (full subset)	S1R	2	ok	500
+S4	runs (full subset)	S1R	2	ok	500
+S1	runs (full subset)	C0R	5	ok	500
+S1	runs (full subset)	C4R	5	ok	500
+S1	runs (full subset)	S1R	5	ok	500
+S1	runs (full subset)	C0R	7	ok	500
+S3	runs (full subset)	C0R	7	ok	500
+S4	runs (full subset)	C0R	7	ok	500
+S1	runs (full subset)	C4R	7	ok	500
+S3	runs (full subset)	C4R	7	ok	500
+S4	runs (full subset)	C4R	7	ok	500
+S1	runs (full subset)	S1R	7	ok	500
+S3	runs (full subset)	S1R	7	ok	500
+S4	runs (full subset)	S1R	7	ok	500
+S1	runs (full subset)	C0R	8	ok	500
+S4	runs (full subset)	C0R	8	ok	500
+S1	runs (full subset)	C4R	8	ok	500
+S4	runs (full subset)	C4R	8	ok	500
+S1	runs (full subset)	S1R	8	ok	500
+S4	runs (full subset)	S1R	8	ok	500
+S1	association	C0R	1	no_factor	500
+S3	association	C0R	1	no_factor	500
+S4	association	C0R	1	no_factor	1000
+S1	association	C4R	1	no_factor	500
+S3	association	C4R	1	no_factor	500
+S4	association	C4R	1	no_factor	1000
+S1	association	S1R	1	no_factor	500
+S3	association	S1R	1	no_factor	500
+S4	association	S1R	1	no_factor	1000
+S1	association	C0R	2	no_factor	500
+S4	association	C0R	2	no_factor	1000
+S1	association	C4R	2	no_factor	500
+S4	association	C4R	2	no_factor	1000
+S1	association	S1R	2	no_factor	500
+S4	association	S1R	2	no_factor	1000
+S1	association	S1R	7	no_factor	1
+S1	association	S1R	8	no_factor	1
+S3	association	C0R	2	ok	500
+S3	association	C4R	2	ok	500
+S3	association	S1R	2	ok	500
+S1	association	C0R	5	ok	500
+S1	association	C4R	5	ok	500
+S1	association	S1R	5	ok	500
+S1	association	C0R	7	ok	500
+S3	association	C0R	7	ok	500
+S4	association	C0R	7	ok	1000
+S1	association	C4R	7	ok	500
+S3	association	C4R	7	ok	500
+S4	association	C4R	7	ok	1000
+S1	association	S1R	7	ok	499
+S3	association	S1R	7	ok	500
+S4	association	S1R	7	ok	1000
+S1	association	C0R	8	ok	500
+S4	association	C0R	8	ok	1000
+S1	association	C4R	8	ok	500
+S4	association	C4R	8	ok	1000
+S1	association	S1R	8	ok	499
+S4	association	S1R	8	ok	1000
