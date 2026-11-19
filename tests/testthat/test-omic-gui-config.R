@@ -1664,10 +1664,11 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
     # The integration export (KIT-108 W4: proteomics' file name and writer, utils_workflow_dia_summary.R).
     expect_identical(summaries$proteomics$integration, list(filename = protSummaryIntegrationFilename, operation = NULL,
         write = protSummaryIntegrationWrite, requires = NULL))
+    # KIT-135: lipid's and metab's in-process writers write today's RDS, then the declared integration input.
     expect_identical(summaries$lipidomics$integration, list(filename = "%s_%s_final_s4.RDS",
-        operation = "lipid_integration_export", write = NULL, requires = NULL))
+        operation = "lipid_integration_export", write = lipidSummaryIntegrationWrite, requires = NULL))
     expect_identical(summaries$metabolomics$integration, list(filename = "%s_%s_final_s4.RDS",
-        operation = "metab_integration_export", write = NULL, requires = NULL))
+        operation = "metab_integration_export", write = metabSummaryIntegrationWrite, requires = NULL))
     expect_identical(summaries$transcriptomics$integration, list(filename = "transcriptomics_normalized_data.tsv",
         operation = "trx_integration_export", write = trxSummaryIntegrationWrite, requires = "trx_ruviii_export",
         missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again."))

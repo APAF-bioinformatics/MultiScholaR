@@ -2344,7 +2344,8 @@ omicGuiLipidSummary <- function() {
             "lipid_normalized", "loaded_for_de", "lipid_qc_complete"), read_ids = readLipidWorkflowIds),
         record_class = NULL,
         copy = omicGuiFeatureSummaryCopy(),
-        integration = list(filename = "%s_%s_final_s4.RDS", operation = "lipid_integration_export", write = NULL,
+        # KIT-135: the in-process writer writes the RDS as before, then the declared integration input beside it.
+        integration = list(filename = "%s_%s_final_s4.RDS", operation = "lipid_integration_export", write = lipidSummaryIntegrationWrite,
             requires = NULL),
         report = list(dir = "lipidomics", template = "lipidomics_report.rmd", label = "Lipidomics", status = NULL,
             render_after_failed_template = FALSE, checking_progress_always = FALSE, record_after_success = FALSE),
@@ -2561,7 +2562,8 @@ omicGuiMetabSummary <- function() {
             "metab_normalized", "loaded_for_de", "metab_qc_complete"), read_ids = readMetabWorkflowIds),
         record_class = NULL,
         copy = omicGuiFeatureSummaryCopy(),
-        integration = list(filename = "%s_%s_final_s4.RDS", operation = "metab_integration_export", write = NULL,
+        # KIT-135: the in-process writer writes the RDS as before, then the declared integration input beside it.
+        integration = list(filename = "%s_%s_final_s4.RDS", operation = "metab_integration_export", write = metabSummaryIntegrationWrite,
             requires = NULL),
         report = list(dir = "metabolomics", template = "metabolomics_report.rmd", label = "Metabolomics", status = NULL,
             render_after_failed_template = TRUE, checking_progress_always = FALSE, record_after_success = FALSE),

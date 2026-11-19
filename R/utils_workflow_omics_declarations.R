@@ -1800,7 +1800,199 @@ computeWorkflowOmicsIntegrationExportAction <- function(manager, request, varian
     if (is.function(binding$integration_export)) binding$integration_export(manager, parameters, temporary) else
         saveRDS(manager$getState(parameters$state_name), temporary)
     if (!file.rename(temporary, parameters$path)) cli::cli_abort("cannot write the integration object", class = "saved_entity_write")
+    # KIT-135: the declared integration input (KIT-061's contract) beside today's file, at `integration/<omic>/`.
+    if (is.function(binding$integration_input)) binding$integration_input(binding, manager, file.path(dirname(parameters$path), binding$omic_type))
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
+}
+
+#' The lipidomics and metabolomics Summary's in-process integration writer (a route writer of the shared Summary core,
+#' `startWorkflowSummaryIntegrationExport`): today's file, the final object's RDS, unchanged, then the declared
+#' integration input (KIT-135) beside it, at `integration/<omic>/`.
+#' @param path Today's RDS path; its folder is the project's integration folder.
+#' @param object The final object (today's RDS content).
+#' @param sourceDir Unused (the route writer's argument).
+#' @return TRUE: the save shows today's notice.
+#' @noRd
+omicsSummaryIntegrationWrite <- function(binding, workflowData, path, object = NULL, sourceDir = NULL, saveRDSFn = saveRDS) {
+    saveRDSFn(object, path)
+    object <- NULL
+    writeOmicsIntegrationInput(binding, workflowData$state_manager, file.path(dirname(path), binding$omic_type))
+    TRUE
+}
+
+#' The lipidomics Summary's route writer (`omicsSummaryIntegrationWrite`).
+#' @noRd
+lipidSummaryIntegrationWrite <- function(workflowData, path, object = NULL, sourceDir = NULL, saveRDSFn = saveRDS) {
+    omicsSummaryIntegrationWrite(lipidomicsDeclarationBinding, workflowData, path, object = object, sourceDir = sourceDir,
+        saveRDSFn = saveRDSFn)
+}
+
+#' The metabolomics Summary's route writer (`omicsSummaryIntegrationWrite`).
+#' @noRd
+metabSummaryIntegrationWrite <- function(workflowData, path, object = NULL, sourceDir = NULL, saveRDSFn = saveRDS) {
+    omicsSummaryIntegrationWrite(metabolomicsDeclarationBinding, workflowData, path, object = object, sourceDir = sourceDir,
+        saveRDSFn = saveRDSFn)
+}
+
+#' Write the lipidomics or metabolomics integration input (KIT-135; KIT-061's contract): one view per assay, named
+#' `<omic>_<assay>` (INT-4), from the head's final normalised state; on a session with no such state, or a manager that
+#' is not an owner, none is written and an earlier one is removed (K061-3).
+#' @param binding The omic's binding.
+#' @param manager The session's owner.
+#' @param dir The omic's folder, `<project>/integration/<omic>/`.
+#' @return TRUE when an input was written, else FALSE, invisibly.
+#' @noRd
+writeOmicsIntegrationInput <- function(binding, manager, dir) {
+    source <- if (inherits(manager, "DIAStateAdapter")) withWorkflowStateScope(manager, function() omicsIntegrationInputSource(binding, manager))
+    if (is.null(source)) {
+        removeIntegrationInput(dir)
+        return(invisible(FALSE))
+    }
+    writeIntegrationInput(dir, source$manifest, source$samples, source$matrices, source$features)
+    invisible(TRUE)
+}
+
+#' The lipidomics or metabolomics integration input (KIT-135; KIT-060 audit 4.3, row C4): the final state nearest the
+#' head in the head's own lineage (K061-1), the first of `<prefix>_correlation_filtered`, `<prefix>_norm_complete`,
+#' `<prefix>_ruv_corrected` and `<prefix>_normalized`, never a name kept in the history from an earlier run. Its assays
+#' are the matrices: the RUV step's corrected values after RUV (decision M10: under a new design the state's table is
+#' the corrected matrix, for figures, export and integration, while the DA tests the uncorrected values with W1..Wk in
+#' the model), else the normalised values. The role is `corrected` when the lineage's RUV state applied RUV to at least
+#' one assay (k above 0), else `normalised`; `correction` names the RUV design and, per view, whether it was applied.
+#' Internal standards are kept and marked (INT-3: dropping them is the model's step).
+#' @param binding The omic's binding.
+#' @param manager The session's owner, inside its state scope.
+#' @return `list(manifest, samples, matrices, features)`, or NULL when the lineage has no final state or it is stored
+#'   as a whole legacy object.
+#' @noRd
+omicsIntegrationInputSource <- function(binding, manager) {
+    prefix <- binding$prefix
+    ruvState <- paste0(prefix, "_ruv_corrected")
+    normalised <- paste0(prefix, "_normalized")
+    # The whole lineage (`protIntegrationInputLineage`, K061-1): the RUV or normalisation state decides the role, and
+    # the internal-standard step's selection marks the standards.
+    lineage <- protIntegrationInputLineage(manager, until = paste0(prefix, c("_itsd_norm", "_qc_complete")))
+    final <- utils::head(intersect(names(lineage), paste0(prefix, c("_correlation_filtered", "_norm_complete", "_ruv_corrected",
+        "_normalized"))), 1L)
+    if (!length(final) || is.null(lineage[[final]])) return(NULL)
+    decider <- utils::head(intersect(names(lineage), c(ruvState, normalised)), 1L)
+    reference <- getWorkflowStateReference(manager, final)
+    object <- readWorkflowOmicsState(binding, manager, reference)
+    assays <- methods::slot(object, binding$data_slot)
+    id_column <- methods::slot(object, binding$id_slot)
+    annotation_column <- object@annotation_id_column
+    design <- as.data.frame(object@design_matrix)
+    sample_column <- object@sample_id
+    group_column <- object@group_id
+    technical <- object@technical_replicate_id
+    # The samples every assay holds, in the design's order.
+    held <- Reduce(intersect, lapply(assays, names), as.character(design[[sample_column]]))
+    samples <- design[match(held, as.character(design[[sample_column]])), , drop = FALSE]
+    rownames(samples) <- NULL
+    views <- stats::setNames(names(assays), vapply(names(assays), \(assay) integrationInputViewName(binding$omic_type, assay), ""))
+    if (anyDuplicated(names(views))) abortIntegrationInput("two assays give the same view name")
+    standards <- omicsIntegrationInputStandards(binding, manager, lineage, object)
+    matrices <- list()
+    features <- list()
+    for (view in names(views)) {
+        table <- as.data.frame(assays[[views[[view]]]], check.names = FALSE, stringsAsFactors = FALSE)
+        ids <- as.character(table[[id_column]])
+        matrices[[view]] <- data.frame(feature_id = ids, table[held], check.names = FALSE, stringsAsFactors = FALSE)
+        annotation <- table[setdiff(names(table), c(as.character(design[[sample_column]]), "feature_id", "display_name", "assay",
+            "is_internal_standard"))]
+        display <- if (annotation_column %in% names(table)) as.character(table[[annotation_column]]) else ids
+        features[[view]] <- data.frame(feature_id = ids, display_name = ifelse(is.na(display) | !nzchar(display), ids, display),
+            assay = views[[view]], is_internal_standard = standards$mark(views[[view]], table, ids), annotation,
+            check.names = FALSE, stringsAsFactors = FALSE)
+    }
+    object <- assays <- NULL
+    correction <- if (identical(decider, ruvState)) omicsIntegrationInputCorrection(binding, manager, ruvState, lineage[[ruvState]],
+        views, samples)
+    components <- readWorkflowStateMetadata(manager, reference)$data$components[[binding$data_slot]]
+    workflow <- manager$workflow_type %||% manager$.context$snapshot$workflow_type %||% NA_character_
+    if (!is.character(technical) || length(technical) != 1L || !isTRUE(technical %in% names(samples))) technical <- NA_character_
+    manifest <- list(omic_type = binding$omic_type, workflow = workflow,
+        matrix_role = if (!is.null(correction)) "corrected" else "normalised", scale = "log2", correction = correction,
+        source_state = list(name = final, entity_id = reference$entity_id, sha256 = reference$payload$sha256,
+            feature_id_column = id_column, annotation_id_column = annotation_column,
+            assays = lapply(stats::setNames(views, names(views)), \(assay) list(assay = assay,
+                entity_id = components[[assay]]$entity_id, sha256 = components[[assay]]$payload$sha256))),
+        sample_id_column = sample_column, group_column = group_column, technical_replicate_column = technical,
+        biological_sample_column = integrationInputBiologicalSampleColumn(samples, technical, sample_column),
+        internal_standards = standards$rule)
+    list(manifest = manifest, samples = samples, matrices = matrices, features = features)
+}
+
+#' Which features of a lipidomics or metabolomics input are internal standards (KIT-135; INT-3: the writer marks them,
+#' the model drops them): a feature whose id or annotation matches the object's `internal_standard_regex`, or one the
+#' lineage's internal-standard step was given by hand (`itsd_feature_ids`, per assay, as its provenance recorded it).
+#' @param lineage The head's lineage (`protIntegrationInputLineage`).
+#' @param object The final state's object.
+#' @return `list(mark, rule)`: `mark(assay, table, ids)` the logical marks of one assay's rows; `rule` the manifest's
+#'   record of the rule.
+#' @noRd
+omicsIntegrationInputStandards <- function(binding, manager, lineage, object) {
+    regex <- object@internal_standard_regex
+    if (!is.character(regex) || length(regex) != 1L || is.na(regex) || !nzchar(regex)) regex <- NA_character_
+    step <- paste0(binding$prefix, "_itsd_norm")
+    selected <- if (step %in% names(lineage)) manager$.context$snapshot$step_provenance[[step]]$values$itsd_feature_ids
+    # A selection too large for the provenance is recorded by class and size only; it is not read back.
+    if (!is.list(selected) || identical(names(selected), c("omitted", "bytes"))) selected <- NULL
+    columns <- unique(c(methods::slot(object, binding$id_slot), object@annotation_id_column))
+    mark <- function(assay, table, ids) {
+        marked <- ids %in% as.character(unlist(selected[[assay]]))
+        if (!is.na(regex)) {
+            for (column in intersect(columns, names(table))) {
+                marked <- marked | stringr::str_detect(as.character(table[[column]]), regex) %in% TRUE
+            }
+        }
+        marked
+    }
+    list(mark = mark, rule = list(regex = regex, columns = I(columns), selected_by_hand = !is.null(selected),
+        selected_count = length(unlist(selected))))
+}
+
+#' The RUV design behind a corrected lipidomics or metabolomics input (KIT-135; KIT-060 audit row C4), from the RUV
+#' state's record as the analysis record reads it (`workflowRecordStepOutcomes`): today's RUV-III-C, or a new design's
+#' RUV-III with every field of `RUV_DESIGN_RECORD_FIELDS` (as the proteomics writer names them, KIT-129 seventh pass
+#' item 3), and per view whether RUV was applied (k above 0), its k and its control count.
+#' @param state The RUV state's name.
+#' @param record The RUV state's record.
+#' @param views The view names' assays (named by view).
+#' @param samples The input's samples (for the grouping variable's levels).
+#' @return The manifest's `correction`, or NULL when RUV was applied to no assay (a no-RUV or no-factor state is not
+#'   labelled corrected).
+#' @noRd
+omicsIntegrationInputCorrection <- function(binding, manager, state, record, views, samples) {
+    outcomes <- workflowRecordStepOutcomes(manager$.context, state, paste0(binding$prefix, "_ruv"), record, list())
+    values <- manager$.context$snapshot$step_provenance[[state]]$values
+    declared <- !is.null(outcomes$ruv_design) && !is.na(outcomes$ruv_design)
+    k <- if (declared) outcomes$ruv_k_per_assay else outcomes$k_per_assay
+    controls <- if (declared) outcomes$ruv_control_count_per_assay else outcomes$negative_control_count_per_assay
+    one <- function(value, cast) {
+        value <- suppressWarnings(cast(unlist(value)))
+        if (length(value) == 1L) value else cast(NA)
+    }
+    per_view <- lapply(views, function(assay) {
+        k_assay <- one(k[[assay]], as.integer)
+        applied <- isTRUE(k_assay > 0L) && (!declared || isTRUE(one(outcomes$ruv_applied_per_assay[[assay]], as.logical)))
+        list(assay = assay, applied = applied, k = k_assay, control_count = one(controls[[assay]], as.integer),
+            not_applied_reason = if (declared && !applied) one(outcomes$ruv_not_applied_reason_per_assay[[assay]], as.character) else NA)
+    })
+    if (!any(vapply(per_view, `[[`, logical(1), "applied"))) return(NULL)
+    grouping <- if (declared) outcomes$ruv_grouping_variable else values$ruv_grouping_variable
+    correction <- list(id = "C4", method = if (declared) "RUVIII" else "RUVIII_C_Varying",
+        ruv_mode = if (declared) NA else values$ruv_mode,
+        replicate_structure = if (declared) outcomes$ruv_replicate_structure else "group", grouping_variable = grouping,
+        # Decision M10: the matrix is the RUV step's corrected values; under a new design the DA does not test them.
+        matrix = "ruv_corrected_values",
+        da_tests = if (declared) "uncorrected_values_with_factors_in_model" else "this_matrix",
+        views = per_view)
+    if (declared && all(RUV_DESIGN_RECORD_FIELDS %in% names(outcomes))) correction <- c(correction, outcomes[RUV_DESIGN_RECORD_FIELDS])
+    correction <- lapply(correction, function(value) if (is.null(value)) NA else value)
+    correction$grouping_levels <- I(if (is.character(grouping) && length(grouping) == 1L && grouping %in% names(samples))
+        unique(as.character(samples[[grouping]])) else character())
+    c(list(state = state), correction)
 }
 
 #' What the tab reads from an accepted omics action (KIT-078): the declaration's value (the product the worker saved) and

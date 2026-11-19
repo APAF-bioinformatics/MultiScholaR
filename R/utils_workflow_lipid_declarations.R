@@ -43,6 +43,8 @@ lipidomicsDeclarationBinding <- list(
     dependency_parameters = "pairs",
     replay = omicsRouteReplay,
     record_outcomes = omicsRouteRecordOutcomes,
+    # KIT-135: the declared integration input, written beside the integration object (`writeOmicsIntegrationInput`).
+    integration_input = writeOmicsIntegrationInput,
     filter_intensity = function(object, parameters) {
         lipidIntensityFilteringFn <- lipidIntensityFiltering
         lipidIntensityFilteringFn(object,
