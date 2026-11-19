@@ -1,21 +1,20 @@
 {
-  "label": "KIT-062 prerequisites (a) proteomics biological_sample_column and (b) corpus generator, base 6501e008 vs head 3e3f5ef6 (kit-062-integration-model); composer regenerates the corpus",
-  "package_commit": "3e3f5ef62ffb418cccbc3b122f180559341f90e2",
-  "base_commit": "6501e008196b48109cd943bead9c694f3e599362",
+  "label": "KIT-129 R3 follow-up (last sentence from the detection limits; strings only), base 039ce71d vs head a9fec790",
+  "package_commit": "a9fec790ea80250b4195f0a0139d2c4e8d23c55c",
+  "base_commit": "039ce71d2a87d8330ade665c857fa538112aeb0a",
   "tools_ref": "",
-  "tests": ["test-workflow-integration-input.R", "test-integration-corpus.R", "test-integration-input-lipid-metab.R",
-    "test-integration-input-transcriptomics.R", "test-kit129-run-path.R"],
-  "shards": 5,
+  "tests": ["test-omic-norm-ruv-design.R", "test-omic-gui-config.R", "test-kit129-run-path.R", "test-trx-ruv-designs.R",
+    "test-dia-limpa-ruv-rules.R", "test-kit127-omics-ruv-factors.R", "test-prot-ruv-factors-in-model.R",
+    "test-gui-entry-proteomics.R", "test-gui-entry-transcriptomics.R", "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R"],
+  "shards": 8,
   "file_timeout_minutes": 45,
-  "file_timeouts": {"test-kit129-run-path.R": 90},
+  "file_timeouts": {"test-gui-entry-proteomics.R": 120, "test-gui-entry-transcriptomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120, "test-gui-entry-metabolomics.R": 120},
   "extra_packages": ["sva"],
   "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
   "check": true,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": [
-    {"path": "tests/testdata/integration/compose_integration_corpus.R",
-     "args": ["kit062-corpus"],
-     "out": "kit062-corpus", "timeout_minutes": 30}
-  ]
+  "scripts": []
 }
