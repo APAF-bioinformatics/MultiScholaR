@@ -2451,7 +2451,7 @@ output_enrich_mofa_proteomics <- runOneStringDbRankEnrichmentMofa( protein_go_en
                                   ,   value_column_name = "value"
                                   ,  result_label = "GO_enrich_proteome"
                                   , results_dir = file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir)
-                                  , api_key = "bsjXYSW0kKTt"
+                                  , api_key = Sys.getenv("STRING_API_KEY")
                                   , species = "STRG0A62HCE"
                                   , ge_fdr = 0.05
                                   , ge_enrichment_rank_direction = -1
@@ -2493,7 +2493,7 @@ enrichment_combined_score <- runStringDbEnrichmentFromDAResults(
   filter_significant = FALSE,  # Include all proteins (you can set to TRUE to filter)
   result_label = "T2_vs_MSO_combined_score",
   results_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir),
-  api_key = "bsjXYSW0kKTt",
+  api_key = Sys.getenv("STRING_API_KEY"),
   species = "STRG0A62HCE",  # Adjust for your species
   ge_fdr = 0.05,
   ge_enrichment_rank_direction = -1,
@@ -2510,7 +2510,7 @@ enrichment_fdr_ranking <- runStringDbEnrichmentFromDAResults(
   fdr_threshold = 0.05,
   result_label = "T3_vs_MSO_fdr_ranking",
   results_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir),
-  api_key = "bsjXYSW0kKTt",
+  api_key = Sys.getenv("STRING_API_KEY"),
   species = "STRG0A62HCE"
 )
 
@@ -2522,7 +2522,7 @@ enrichment_fc_ranking <- runStringDbEnrichmentFromDAResults(
   filter_significant = FALSE,
   result_label = "T3_vs_T2_fc_ranking",
   results_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir),
-  api_key = "bsjXYSW0kKTt",
+  api_key = Sys.getenv("STRING_API_KEY"),
   species = "STRG0A62HCE"
 )
 
@@ -2533,7 +2533,7 @@ all_contrast_enrichment <- runStringDbEnrichmentFromDAResultsMultiple(
   ranking_method = "combined_score",
   filter_significant = FALSE,
   results_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir),
-  api_key = "bsjXYSW0kKTt",
+  api_key = Sys.getenv("STRING_API_KEY"),
   species = "STRG0A62HCE"
 )
 
@@ -2647,7 +2647,7 @@ output_enrich_mofa_transcriptomics <- runOneStringDbRankEnrichmentMofa( go_enric
                                   ,   value_column_name = "value"
                                   ,  result_label = "GO_enrich_transcriptome"
                                   , results_dir = file.path( project_dirs[[paste0(omic_type, "_", experiment_label)]]$integration_enrichment_tables_dir)
-                                  , api_key = "bsjXYSW0kKTt"
+                                  , api_key = Sys.getenv("STRING_API_KEY")
                                   , species = "STRG0A62HCE"
                                   , ge_fdr = 0.05
                                   , ge_enrichment_rank_direction = -1

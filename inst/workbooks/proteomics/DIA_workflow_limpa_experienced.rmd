@@ -1591,7 +1591,7 @@ all_enrichment_results <- runStringDbEnrichmentAllContrasts(
   project_dirs = project_dirs,
   omic_type = omic_type,
   experiment_label = experiment_label,
-  api_key = "bjcR4Px5rByQ",  # Replace with your STRING API key if needed
+  api_key = Sys.getenv("STRING_API_KEY"),  # Replace with your STRING API key if needed
   species = taxon_id,         # Using organism taxon ID defined earlier
   force_refresh = FALSE       # Set to TRUE to ignore cache and re-run analysis
 )
