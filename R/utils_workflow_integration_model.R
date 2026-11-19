@@ -441,8 +441,10 @@ integrationAlignViews <- function(object, parameters) {
             features_model = nrow(m), samples_present = length(here), stringsAsFactors = FALSE)
     }
     samples <- data.frame(biological_sample = kept,
-        group = vapply(kept, function(name) if (length(groups[[name]])) groups[[name]][[1L]] else NA_character_, character(1)),
-        views_present = vapply(kept, function(name) sum(vapply(present, function(p) name %in% p, logical(1))), integer(1)),
+        group = unname(vapply(kept, function(name) if (length(groups[[name]])) groups[[name]][[1L]] else NA_character_,
+            character(1))),
+        views_present = unname(vapply(kept, function(name) sum(vapply(present, function(p) name %in% p, logical(1))),
+            integer(1))),
         stringsAsFactors = FALSE, row.names = NULL)
     for (view in views) samples[[paste0(view, "_runs")]] <- unname(ifelse(kept %in% names(runs[[view]]),
         runs[[view]][kept], ""))
