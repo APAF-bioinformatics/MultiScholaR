@@ -10,8 +10,9 @@ Declaration: `confirm-round-declaration.md` (decisions M29, M34, M38). Package u
 | 1 identity | 44436553563 | confirm-p1 | 40 | every expected identity held except S1 legacy (C6): added to Part 2 by the declared rule |
 | 2 core | 44443281402 | confirm-p2c | 72 | 70 succeeded; **S3 C1 and S3 C7 reached the 300-minute limit** (nothing uploaded; one attempt; a limit is not an infrastructure failure, so not rerun) |
 | 2 extra-hard | 44443334468 | confirm-p2x | 4 | all succeeded |
+| 2 transcriptomics C1, C7 (amendment, section 12) | 44596252326 | confirm-p2t | 8 (ranges of 250 runs) | all succeeded; longest job 80 minutes; 33.8 core-hours; gate passed |
 
-Consequence of the two missing cells: in transcriptomics C1 (12 per group) and C7 (three groups) have no Part 2 rows, so `aggregate.R` lists them as "core cells not run" and no S3 Part 2 design can obtain "pass" (a design with a failing judged cell still fails). Measuring them needs a new launch in run ranges (`chunk`), which is a settings change: **the user's decision**.
+The two cells that timed out (transcriptomics C1, 12 per group; C7, three groups) were rerun in run ranges after the user's approval of 2026-11-20 (declaration section 12; nothing else changed). Transcriptomics was then scored once more with the same workflow and `aggregate.R` (run 44612000970, label `confirm-gha-s3`, from the top-level tables because C1 and C7 come in ranges), **only because those two cells were missing**; classic proteomics, DIA and lipid/metab were not re-scored. The seven earlier transcriptomics cells' rows of `k124-cells.tsv` are identical in the two scores (60 rows). `confirm-gha/s3/` holds the complete score; `confirm-gha/s3-rescore/` its inventory, jobs and raw-table hashes; `confirm-gha/gate/confirm-p2t/` the gate of C1 and C7 (arms 1 and 2 agree with the committed reference in every rule-bearing value).
 
 ## Gate (arms 1 and 2 against the committed reference; M19 values)
 
@@ -49,18 +50,20 @@ Columns: verdict over the judged core cells (rules 1 to 7; the C4 reading withou
 | Legacy, corrected (3) | fail | 0.194 (0.287 C5) | 0.331 / 0.466 | 0.466 C5 | 0.911 | 0 | app: arm 3, 0.466, 0.91 (identical) |
 | No RUV (37) | identity with arm 1 (Part 1) | 0.047 (0.116 C5) | 0.065 / 0.191 | 0.191 C5 | 0.558 | 0 | app: arm 1, 0.191 C5, 0.56 |
 
-### Transcriptomics (S3; C1 and C7 not run in Part 2)
+### Transcriptomics (S3; every core cell, C0 to C8, and the extra-hard S3)
 
-| Option | Verdict | Type I C0 (max) | FDP C0 / C5 / S3 | Worst core FDP | Power C0 | Refused | Was |
-|---|---|---|---|---|---|---|---|
-| Recommended (34) | identity with arm 31 (Part 1); S3: pass | — | 0.048 / 0.048 / **0.052** | 0.055 C2 (arm 31) | 0.774 | 0 | app: arm 7, 0.055 C2, S3 0.052, 0.77 |
-| Supplied list (35) | fail (C3 rule 5, C4 rule 4) | 0.056 (0.056 C0) | 0.048 / 0.048 / — | 0.056 C2 | 0.763 | 0 | app: arm 8, 0.056 C2, 0.76 |
-| Contaminated list (36) | fail | 0.064 (0.065 C5) | 0.061 / 0.065 / — | 0.075 C2 | 0.757 | 0 | arm 9: 0.076 C1 (app 7.6 %; C1 not run now) |
-| Supplied list, separation rule (41) | fail (C3, C4) | 0.054 | 0.047 / 0.046 / — | 0.053 C2 | 0.612 | 0 | app: arm 22, 0.053 C2, 0.61 |
-| First-pass nulls (39) | fail (C4; C5 rule 1) | 0.056 (0.071 C5) | 0.048 / 0.071 / — | 0.071 C5 | 0.774 | 0 | app: arm 23, 0.071 C5, 0.77 |
-| First-pass nulls, separation rule (40) | fail (C4; C5 rule 3) | 0.055 (0.061 C5) | 0.047 / 0.064 / — | 0.064 C5 | 0.600 | 0 | app: arm 5, 0.064 C5, 0.60 (earlier also failed C7, not run now) |
-| Legacy (3) | fail | 0.055 (0.179 C5) | 0.047 / 0.299 / 0.724 | 0.299 C5 | 0.729 | 0 | app: arm 3, 0.299 C5, S3 0.724, 0.73 (identical) |
-| No RUV (37) | identity with arm 1 (Part 1) | 0.010 (0.053 C3) | 0.000 / 0.003 / 0.450 | 0.044 C3 | 0.005 | 0 | app: arm 1, 0.044 C3, 0.005 |
+| Option | Verdict (failing cells) | Type I C0 (max) | FDP C0 / C5 / S3 | Worst core FDP | Power C0 | C1: FDP, power | C7: FDP, power | Was (app's arm): worst FDP, power, C7 |
+|---|---|---|---|---|---|---|---|---|
+| Recommended (34) | identity with arm 31 (Part 1); extra-hard S3: pass | 0.056 (0.058 C7) | 0.048 / 0.048 / **0.052** | 0.055 C2 | 0.774 | 0.049, 0.956 | 0.051, 0.763 | arm 7: 0.055 C2, 0.77; S3 0.052 |
+| Supplied list (35) | fail (C3 rule 5, C4 rule 4) | 0.056 (0.057 C7) | 0.048 / 0.048 / — | 0.056 C2 | 0.763 | 0.049, 0.954 | 0.051, 0.752 | arm 8: 0.056 C2, 0.76 (same cells) |
+| Contaminated list (36) | fail (C0, C1, C2, C3, C4, C5, C7) | 0.064 (0.073 C1) | 0.061 / 0.065 / — | 0.076 C1 | 0.757 | 0.076, 0.951 | 0.064, 0.748 | arm 9: 0.076 C1 (app 7.6 %), same failing cells |
+| Supplied list, separation rule (41) | fail (C3, C4) | 0.054 (0.056 C7) | 0.047 / 0.046 / — | 0.053 C2 | 0.612 | 0.048, 0.934 | 0.050, 0.666 | arm 22: 0.053 C2, 0.61 (identical) |
+| First-pass nulls (39) | fail (C4; C5 rule 1) | 0.056 (0.071 C5) | 0.048 / 0.071 / — | 0.071 C5 | 0.774 | 0.050, 0.956 | 0.051, 0.763 | arm 23: 0.071 C5, 0.77 (identical) |
+| First-pass nulls, separation rule (40) | fail (C4; C5 rule 3; C7 rules 3, 4) | 0.055 (0.061 C5) | 0.047 / 0.064 / — | 0.064 C5 | 0.600 | 0.050, 0.827 | 0.064, **0.049** | app: arm 5, 0.064 C5, 0.60, C7 power **0.023** ("2 %"); arm 24 identical to the shipped arm |
+| Legacy (3) | fail (C3, C4, C5) | 0.055 (0.179 C5) | 0.047 / 0.299 / 0.724 | 0.299 C5 | 0.729 | 0.051, 0.948 | 0.050, 0.731 | arm 3: identical |
+| No RUV (37) | identity with arm 1 (Part 1) | 0.010 (0.053 C3) | 0.000 / 0.003 / 0.450 | 0.044 C3 | 0.005 | | | arm 1: identical |
+
+No transcriptomics verdict changes: every option fails exactly where its earlier arm failed (C1 and C7 now included). One quoted number changes: with three groups (C7) first-pass nulls with the separation rule find 4.9 % of the real differences on the shipped code (the app's note says 2 %, from arm 5, whose k came from the sweep; the shipped rule is arm 24's, the separation rule on the first pass's own controls).
 
 ### Lipidomics and metabolomics (S4; one table for both)
 
@@ -81,6 +84,6 @@ Columns: verdict over the judged core cells (rules 1 to 7; the C4 reading withou
 
 ## What changed
 
-- **Verdicts:** no option changes verdict between the earlier figure and the shipped code, except where the earlier arm failed in transcriptomics C7 (first-pass with the separation rule, contaminated list): C7 was not run now, so those fails are absent, not removed. Classic technical replicates still pass.
-- **Figures that move (shipped code against the figure the app quotes):** lipid/metab recommended worst core FDP 0.072 -> 0.085 (C5) and power 0.43 -> 0.47, extra-hard S3 0.130 -> 0.148, S1 0.101 -> 0.111, S8 0.139 -> 0.180 (M29's exact standard error and M30's 200 permutations, as the exactness round showed); lipid/metab supplied 0.068 -> 0.079; first-pass 0.174 -> 0.203; first-pass with the separation rule 0.239 -> 0.261; contaminated standards 0.371 -> 0.399; standards with the separation rule 0.118 -> 0.095 with 26 % of rows refused by M32 (the option then runs without RUV in a quarter of data sets); lipid/metab technical replicates C6 0.058 -> 0.063. Classic, DIA and transcriptomics figures move by at most 0.004.
+- **Verdicts:** no option in any omic changes verdict between the earlier figure and the shipped code (transcriptomics complete over C0 to C8 since the amendment run). Classic technical replicates still pass.
+- **Figures that move (shipped code against the figure the app quotes):** lipid/metab recommended worst core FDP 0.072 -> 0.085 (C5) and power 0.43 -> 0.47, extra-hard S3 0.130 -> 0.148, S1 0.101 -> 0.111, S8 0.139 -> 0.180 (M29's exact standard error and M30's 200 permutations, as the exactness round showed); lipid/metab supplied 0.068 -> 0.079; first-pass 0.174 -> 0.203; first-pass with the separation rule 0.239 -> 0.261; contaminated standards 0.371 -> 0.399; standards with the separation rule 0.118 -> 0.095 with 26 % of rows refused by M32 (the option then runs without RUV in a quarter of data sets); lipid/metab technical replicates C6 0.058 -> 0.063. Classic, DIA and transcriptomics figures move by at most 0.004, except transcriptomics first-pass nulls with the separation rule at three groups: power 0.023 -> 0.049 (the app's note: 2 %).
 - **Machine-dependent:** the legacy corrected design in classic proteomics (C6, C8) and lipid/metab (section 7 of the declaration): the same seed gives different calls on different runner machines. DIA's bias and rmse differ at 1e-15 between machines (not rule-bearing).
