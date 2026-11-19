@@ -230,3 +230,108 @@ Per touched file:
 | `R/mod_prot_norm_correlation_helpers.R` | test-dia-baseline-compatibility.R test-module-ci-prot-norm.R test-prot-05b-norm-module-contracts.R test-prot-05d-norm-module-characterization.R test-workflow-native-session.R |
 | `R/mod_prot_norm_render_helpers.R` | test-omic-norm-module.R test-prot-05b-norm-module-contracts.R test-workflow-dia-products.R |
 | `R/mod_prot_norm_ruv_helpers.R` | test-dia-baseline-compatibility.R test-module-ci-prot-dia-limpa.R test-module-ci-prot-norm.R test-prot-05b-norm-module-contracts.R test-prot-05d-norm-module-characterization.R test-prot-norm-core.R |
+
+## Outcome, second part (2026-11-19, branch kit-146-debug-cleanup-2)
+
+Base: `kit-129-integration` 039ce71d (contains performance-v2 791cc5f3 with the first part). Scope (user, 2026-11-19, "yes" to the three recommendations): the 11 held files (A, B, C as in the first part), decision 1 (pattern D and the untagged `Step:`/`Arg:`/`Data State` trace family, key S below, in every `R/` file), decision 2 (the three `gc()` messages). Not in this pass: decision 3 (`D66_debug.log` in the inst/reports templates, with the re-record) and the "needs a proper message" list.
+
+How it was done: candidate statements found with the R parser (`message`, `cat`, `catFn`, `messageFn`, `print`, `str`, `d66_log` calls); a statement was removed only when it is a direct child of a `{` block, shares its lines with no other code, has no side-effecting arguments, and either is not the block's last expression or the block's value is unused (checked by walking up through `if`/`{` to an unused statement, a loop body or a `tryCatch` whose value is discarded). Then: the local `d66_log` helpers and the `[D66:START]`/`[D66:END]` markers once nothing called them; the dump bodies (`print(x)`, `message(paste(head(x)))`) whose label line was removed; the `if`/`else` shells left empty (side-effect-free conditions: `is.null`, `nrow`, `names`, `%in%`), as whole `if` statements or as the empty `else { }` branch; label comments directly above removed code. Arguments forced only by a removed line: none except the injected `catFn` parameters of eight enrichment helpers, which stay in the signatures. `getNegCtrlProtAnovaHelper`'s lazy default `num_neg_ctrl` was forced by a removed `Arg:` message; it is otherwise forced (or overwritten) in the first `if` before anything changes `data_matrix` or `percentage_as_neg_ctrl`, so its value is unchanged. In the DA model files no computation changed: only output calls and the `print()` dumps of values already computed.
+
+Key S = non-comment lines naming `Step:`, `Arg:` or `Data State` outside logger calls; D additionally counts `capture.output(str(...))` dumps. Counts are line greps on the base 039ce71d and the head (a multi-line statement counts each matching line).
+
+### Counts before -> after (second part)
+
+| Group | A all | A in code | B | C | D | S |
+|---|---|---|---|---|---|---|
+| Held files (11) | 111 -> 4 | 108 -> 1 | 75 -> 4 | 8 -> 0 | 17 -> 0 | 38 -> 0 |
+| Other `R/` files | 16 -> 13 | 13 -> 10 | 8 -> 6 | 2 -> 2 | 81 -> 2 | 320 -> 1 |
+| inst/reports (decision 3, not this pass) | 0 -> 0 | 0 -> 0 | 78 -> 78 | 0 -> 0 | 0 -> 0 | 0 -> 0 |
+| inst/workbooks (out of scope) | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 13 -> 13 | 0 -> 0 |
+| **All** | 127 -> 17 | 121 -> 11 | 161 -> 88 | 10 -> 2 | 111 -> 15 | 358 -> 1 |
+
+Overall from the original base b35d8089 (first-part measure for A to D): A all 748 -> 17, A in code 734 -> 11, B 304 -> 88 (78 in inst/reports), C 56 -> 2, D 102 -> 15 (13 in workbooks). The remaining S line is the `QC Step:` text of a `logInfoFn()` call in `utils_workflow_dia_state.R` (app logging, kept). 878 lines removed, 3 added (the `invisible(gc())` calls), in 41 `R/` files.
+
+Per touched file (A all | A in code | B | C | D | S):
+
+| File | A | A code | B | C | D | S | Pass |
+|---|---|---|---|---|---|---|---|
+| `R/func_general_enrichment_core.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 1 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_general_enrichment_engine_helpers.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 5 -> 0 | 37 -> 0 | decision 1/2 |
+| `R/func_general_enrichment_orchestration.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 12 -> 0 | 39 -> 0 | decision 1/2 |
+| `R/func_general_plotting_volcano_glimma_helpers.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 4 -> 0 | decision 1/2 |
+| `R/func_lipid_da_model.R` | 0 -> 0 | 0 -> 0 | 23 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | held (A-D, S) |
+| `R/func_lipid_qc_progress_helpers.R` | 0 -> 0 | 0 -> 0 | 1 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_lipid_s4_da_analysis_methods.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 2 -> 0 | decision 1/2 |
+| `R/func_lipid_s4_results_accessors.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 1 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_metab_da_core_engine.R` | 0 -> 0 | 0 -> 0 | 9 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | held (A-D, S) |
+| `R/func_metab_da_orchestration.R` | 0 -> 0 | 0 -> 0 | 21 -> 0 | 0 -> 0 | 0 -> 0 | 4 -> 0 | held (A-D, S) |
+| `R/func_metab_qc_metrics_helpers.R` | 0 -> 0 | 0 -> 0 | 1 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_metab_s4_da_methods.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 2 -> 0 | decision 1/2 |
+| `R/func_metab_s4_da_results.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 1 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_multiomics_enrich_kegg_helpers.R` | 0 -> 0 | 0 -> 0 | 2 -> 2 | 0 -> 0 | 17 -> 0 | 36 -> 0 | decision 1/2 |
+| `R/func_multiomics_enrich_metabolomics_helpers.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 5 -> 0 | 19 -> 0 | decision 1/2 |
+| `R/func_multiomics_enrich_reactome_helpers.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 7 -> 0 | 18 -> 0 | decision 1/2 |
+| `R/func_omics_da_list_methods.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 1 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_omics_design_shared.R` | 1 -> 1 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | held (A-D, S) |
+| `R/func_prot_annotation_ensembl_helpers.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 1 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_prot_annotation_uniprot_batch_helpers.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 2 -> 1 | 0 -> 0 | decision 1/2 |
+| `R/func_prot_annotation_uniprot_full_helpers.R` | 1 -> 1 | 1 -> 1 | 0 -> 0 | 0 -> 0 | 4 -> 1 | 0 -> 0 | decision 1/2 |
+| `R/func_prot_annotation_uniprot_helpers.R` | 2 -> 2 | 2 -> 2 | 0 -> 0 | 0 -> 0 | 5 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_prot_da_model_methods.R` | 38 -> 1 | 38 -> 1 | 0 -> 0 | 4 -> 0 | 6 -> 0 | 11 -> 0 | held (A-D, S) |
+| `R/func_prot_da_model_stats.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 2 -> 0 | 0 -> 0 | 0 -> 0 | held (A-D, S) |
+| `R/func_prot_da_model_wrapper.R` | 1 -> 0 | 1 -> 0 | 22 -> 4 | 0 -> 0 | 5 -> 0 | 12 -> 0 | held (A-D, S) |
+| `R/func_prot_da_results_summary.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 4 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_prot_import_tmt.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 28 -> 0 | decision 1/2 |
+| `R/func_prot_limpa_qc_helpers.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 9 -> 0 | 7 -> 0 | decision 1/2 |
+| `R/func_prot_norm_optimization_helpers.R` | 31 -> 0 | 31 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | held (A-D, S) |
+| `R/func_prot_qc_correlation_helpers.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 1 -> 0 | decision 1/2 |
+| `R/func_prot_qc_filtering_helpers.R` | 3 -> 0 | 3 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/func_prot_qc_filtering_progress_helpers.R` | 2 -> 1 | 1 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | held (A-D, S) |
+| `R/func_prot_s4_da_methods.R` | 37 -> 0 | 37 -> 0 | 0 -> 0 | 2 -> 0 | 6 -> 0 | 11 -> 0 | held (A-D, S) |
+| `R/func_prot_s4_qc_filter_methods.R` | 2 -> 2 | 2 -> 2 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 2 -> 0 | decision 1/2 |
+| `R/func_prot_s4_qc_plot_methods.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 1 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/mod_omic_design_builder.R` | 1 -> 1 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | held (A-D, S) |
+| `R/mod_omic_enrich.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 8 -> 0 | decision 1/2 |
+| `R/mod_prot_da_handlers_init.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 4 -> 0 | 62 -> 0 | decision 1/2 |
+| `R/mod_prot_design.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 1 -> 1 | 0 -> 0 | 2 -> 0 | decision 1/2 |
+| `R/mod_prot_import_server.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 2 -> 0 | decision 1/2 |
+| `R/mod_prot_norm_ruv_helpers.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 1 -> 0 | 0 -> 0 | decision 1/2 |
+| `R/utils_workflow_dia_enrichment.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 33 -> 0 | decision 1/2 |
+| `R/utils_workflow_enrichment.R` | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 17 -> 0 | decision 1/2 |
+
+### Decision 2: the `gc()` messages
+
+`R/func_prot_qc_filtering_helpers.R` (`removeRowsWithMissingValuesPercentHelper`): each of the three `message(sprintf("   DEBUG66: ... Memory: %.1f MB", ..., sum(gc()[, 2])))` statements is replaced by `invisible(gc())` at the same point (the same `gc()` call with default arguments; the other message arguments were `nrow`/`ncol`, no side effects). The existing bare `gc()` calls after them are unchanged.
+
+### Kept in this part, with the reason
+
+| File:line (after) | Line | Reason |
+|---|---|---|
+| `R/func_prot_da_model_methods.R:291` | `WARNING DEBUG66: protein_quant_matrix has blank or NA rownames!` | the only signal of blank rownames (the next line prints a sample); needs a proper message |
+| `R/func_prot_da_model_wrapper.R:483` | `DEBUG_66: Error processing gene name: %s` | handler returns `""`; the only failure signal; needs a proper message |
+| `R/func_prot_da_model_wrapper.R:509-513` | `DEBUG_66: CRITICAL ERROR in volcano plot generation` with `Full error object:`/`Traceback:` and their `print(e)`, `print(traceback())` | handler returns `NULL`; the only failure signal; kept as one unit; needs a proper message |
+| `R/func_prot_annotation_uniprot_batch_helpers.R:24` | `print(head(output))` | last expression of `subsetQuery`, so its (invisible) return value |
+| `R/func_prot_annotation_uniprot_full_helpers.R:326` | `print(str(e))` | part of the listed "needs a proper message" handler |
+| `R/mod_omic_enrich.R:556` | empty first branch of `if (is.null(selected) \|\| selected != config$tab_value) { } else if ...` | its trace was removed; the branch is the guard of an `else if` chain, so it stays empty rather than rewriting the condition |
+| `R/func_omics_design_shared.R:9`, `R/mod_omic_design_builder.R:28` | provenance comments naming `DEBUG66` | KIT-103 divergence records (as `utils_workflow_omics_design.R:10` in the first part) |
+| `R/func_prot_qc_filtering_progress_helpers.R:148` | `# DEBUG66: Memory check` | labels the untagged memory messages and `gc()` that remain |
+| first-part kept lines | see the first-part table | unchanged (test-expected, roxygen/default argument, provenance, the "needs a proper message" list) |
+
+Also removed though outside the strict patterns, because they were the other half of a removed labelled dump or debug check: `print(range(...))` and `message(paste(head(custom_bg, 5)))` under `[OK] DEBUG 66` labels and two `Debug:` cutoff messages in `func_general_enrichment_orchestration.R`; `print(original_groups|safe_groups|group_mapping|contrasts_tbl[[1]])` after removed `DEBUG66` labels in the two DA helper files; `print(contrast_strings_to_use)`, `print(e)` (a handler that re-raises) in the wrapper; `print(contrasts_tbl)` in `mod_prot_da_handlers_init.R`; the two `DEBUG:` missingness messages in `func_lipid_qc_progress_helpers.R` and `func_metab_qc_metrics_helpers.R` that the first part's line grep missed (the tag sat on a continuation line). Left: other untagged `print(...)` statements (about 100 in `R/`, never inventoried), untagged progress messages without the S keys (e.g. `gost organism: %s`), and `logger::log_info` entering/exiting lines (app logging).
+
+Needs a proper message (added in this part): the three wrapper handler lines above and the blank-rownames warning.
+
+### Tests
+
+Searched both ways: string fragments of every removed line against `tests/` (literal and with `sprintf` placeholders as wildcards, word windows of 15+ characters), and every test literal against the removed text; injected `catFn`/`messageFn` callers checked (all enrichment callers pass silent functions); `expect_output`/`expect_message`/`capture.output` on the touched functions; tests that deparse touched function bodies (none); snapshots (none).
+
+| Test | Change | Reason |
+|---|---|---|
+| `test-prot-04-design.R` ("keeps the wrapper entry logging ordered", quarantined Q-46) | the expected call log drops `mod_prot_design_server Arg: id = design-entry` and `... Step: Inside moduleServer function` | the two trace lines are removed; the order of the entry message and the seams is still asserted |
+| `test-prot-11-enrichment-module-contracts.R` | not changed | the whole file is quarantined (Q-163, `skip()` on line 1; its seams were deleted in KIT-107 W3); about 20 of its log assertions name removed `ENRICHMENT Step:`/`mod_prot_enrich_server Step:` text and go with the quarantine |
+
+No other test names removed text (the remaining matches were unrelated messages, e.g. "VALIDATION FAILED" of `validatePostImputationData`).
+
+### Verification, second part
+
+Local: every touched file parses (`parse()`, one at a time); no local tests, build, check or install. Runner run 44458381730 (GitHub, reference BLAS, sva, `MULTISCHOLAR_TRX_MANIFEST_NOTE=1`): the full suite, 20 shards, base 039ce71d vs head dbb76f57 (the code commits; this record is the only later change). `compare.tsv`: 426 files, all `same`; `compare-failures.txt`: no non-identical failure. Head totals 40,226 passed, 837 failed, 13 errors, 560 skipped; 33 files fail on both trees with identical messages (stored-hash gui-entry oracles, trx kernels/publication, `test-prot-norm-core.R`, `test-workflow-saved-da.R` and others, all pre-existing on 039ce71d). `R CMD check` (build exit 0, check exit 0): 0 ERRORs, 3 WARNINGs, 3 NOTEs on both, identical findings, none only on head.
