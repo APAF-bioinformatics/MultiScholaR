@@ -1,8 +1,10 @@
 {
-  "label": "k063-results-2",
-  "package_commit": "9cbcfe4e4fafbc812dcf708635ad516e64e97d02",
+  "label": "k142-record-1",
+  "package_commit": "77e999b091edf17e576a2259adca2cf33559d18a",
   "tests": [
-    "test-integration-results-mofa.R"
+    "test-integration-record-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-integration-mofa-model.R"
   ],
   "record": false,
   "runs": 1

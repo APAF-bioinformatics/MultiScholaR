@@ -7,7 +7,8 @@ name: MOFA2 package test (KIT-062)
 # against the bundle's) and the bundle's Python (packaging/linux/build.sh python, hashes checked). R is started through
 # the bundle's launcher (packaging/linux/Rscript), which sets RETICULATE_PYTHON to the bundle's Python.
 #
-# Start: change .github/mofa-smoke/package-params.json in a commit and push it to run-mofa-smoke-k063 (KIT-063 copy).
+# Start: change .github/mofa-smoke/package-params.json in a commit and push it to run-mofa-smoke-k142 (KIT-142 copy:
+# pandoc installed for the integration report; MULTISCHOLAR_INTEGRATION_EVIDENCE_OUT set to the upload's kit142 folder).
 #   package_commit  40-digit commit of MultiScholaR to install and test
 #   tests           test-*.R files of that commit's tests/testthat
 #   record          true: MULTISCHOLAR_MOFA_REFERENCE_OUT is set, the trained tables are written to the upload
@@ -18,7 +19,7 @@ name: MOFA2 package test (KIT-062)
 on:
   push:
     branches:
-      - "run-mofa-smoke-k063"
+      - "run-mofa-smoke-k142"
     paths:
       - .github/mofa-smoke/package-params.json
   workflow_dispatch:
@@ -124,6 +125,15 @@ jobs:
           install -m 0755 lane/packaging/linux/Rscript "$BUNDLE/bin/Rscript"
           ln -s "/opt/R/$R_VERSION/lib/R" "$BUNDLE/R"
 
+      - name: pandoc for the integration report (KIT-142; the distribution's package)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq pandoc
+          # Where the bundle carries pandoc (the launcher sets RSTUDIO_PANDOC to it).
+          mkdir -p "$BUNDLE/pandoc"
+          ln -s /usr/bin/pandoc "$BUNDLE/pandoc/pandoc"
+          pandoc --version | head -n 1 | tee "$RES/pandoc-version.txt"
+
       - name: The test files (installed MultiScholaR, the bundle's launcher)
         env:
           RECORD: ${{ needs.plan.outputs.record }}
@@ -131,6 +141,7 @@ jobs:
         run: |
           set -o pipefail
           if [ "$RECORD" = true ]; then export MULTISCHOLAR_MOFA_REFERENCE_OUT="$RES/mofa_reference"; fi
+          export MULTISCHOLAR_INTEGRATION_EVIDENCE_OUT="$RES/kit142"
           started=$(date +%s)
           set +e
           # shellcheck disable=SC2086
