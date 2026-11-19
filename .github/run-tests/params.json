@@ -1,25 +1,46 @@
 {
-  "label": "KIT-129 final figures correction, fresh request (base 75f418fe, head 303217ac): RUV design files, GUI config, run path, four gui-entry files, check",
-  "package_commit": "303217ac19c314f92094b0a339ef9e8211e9fa21",
-  "base_commit": "75f418fe16228398b0dfd7649fcd6b6c1f555175",
+  "label": "KIT-142 record, replay and report (base 9cbcfe4e, head 77e999b0): targeted files and dependents, check, failing-first, gate-off identity",
+  "package_commit": "77e999b091edf17e576a2259adca2cf33559d18a",
+  "base_commit": "9cbcfe4e4fafbc812dcf708635ad516e64e97d02",
   "tools_ref": "",
   "tests": [
-    "test-omic-norm-ruv-design.R",
+    "test-integration-record.R",
+    "test-integration-gui.R",
+    "test-integration-results.R",
+    "test-integration-sample-match.R",
+    "test-integration-model.R",
+    "test-integration-record-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-mofa-model.R",
+    "test-integration-corpus.R",
+    "test-workflow-integration-input.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-analysis-record.R",
+    "test-workflow-omics-worker.R",
+    "test-workflow-saved-exports.R",
+    "test-workflow-execution-adapters.R",
+    "test-workflow-omics-application-reads.R",
+    "test-workflow-omics-sessions.R",
+    "test-workflow-partitions.R",
+    "test-perf107-audit.R",
+    "test-app-shell-shared.R",
+    "test-e2e-test-mode-integration.R",
+    "test-workflow-ui-shared.R",
     "test-omic-gui-config.R",
-    "test-kit129-run-path.R",
-    "test-gui-entry-proteomics.R",
-    "test-gui-entry-lipidomics.R",
-    "test-gui-entry-metabolomics.R",
-    "test-gui-entry-transcriptomics.R"
+    "test-launch-test-mode.R",
+    "test-e2e-browser-harness.R",
+    "test-run-packaged-application.R",
+    "test-workflow-saved-installed.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-trx-declarations.R"
   ],
-  "shards": 7,
+  "shards": 12,
   "file_timeout_minutes": 45,
-  "file_timeouts": {
-    "test-gui-entry-proteomics.R": 120,
-    "test-gui-entry-lipidomics.R": 150,
-    "test-gui-entry-metabolomics.R": 120,
-    "test-gui-entry-transcriptomics.R": 120
-  },
+  "file_timeouts": {},
   "extra_packages": [
     "sva"
   ],
@@ -29,5 +50,26 @@
   "check": true,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": []
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "9cbcfe4e4fafbc812dcf708635ad516e64e97d02",
+        "kit142-failing-first",
+        "test-integration-record.R",
+        "test-integration-gui.R"
+      ],
+      "out": "kit142-failing-first",
+      "timeout_minutes": 90
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "9cbcfe4e4fafbc812dcf708635ad516e64e97d02",
+        "kit142-gate-off"
+      ],
+      "out": "kit142-gate-off",
+      "timeout_minutes": 60
+    }
+  ]
 }
