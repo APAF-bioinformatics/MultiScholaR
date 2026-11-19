@@ -1,7 +1,10 @@
 {
-  "label": "k062-compare-double",
-  "package_commit": "596e25e2d71ef451ab8b22884edeb4835afb2d97",
-  "tests": ["test-integration-mofa-model.R", "test-integration-model.R"],
+  "label": "k140-model-tab",
+  "package_commit": "6c423b7a9b98b5e69a085e67b00398302a63e2dd",
+  "tests": [
+    "test-integration-model-tab-mofa.R",
+    "test-integration-mofa-model.R"
+  ],
   "record": false,
-  "runs": 2
+  "runs": 1
 }
