@@ -665,6 +665,31 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
     })
 }
 
+#' The model on the managed worker (KIT-140; the registry's `omics` handler for `integration_mofa_model`): the same
+#' declaration `runIntegrationModel` runs, on the request's inputs state with its resolved parameters, MOFA2 probed in
+#' the worker's own process (the worker may not reach the Python the app reaches). The product commits no state; the
+#' app accepts it on the head (`acceptIntegrationModel`) when the action is delivered, as in process.
+#' @param manager The worker's reopened integration store, inside its state scope.
+#' @param request The worker request (`input_references$state`, `parameters`).
+#' @param variant Unused (one variant, `whole`).
+#' @return The completion value: the source's checkpoint, the product's reference and the run's status (computed or hit).
+#' @noRd
+computeWorkflowIntegrationModelAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    object <- readWorkflowExecutionComponents(manager, source, fields = "inputs")
+    resolved <- integrationResolveMofaParameters(object, request$parameters)
+    capability <- integrationMofaCapability()
+    if (!isTRUE(capability$available)) {
+        integrationRefuse(sprintf("the integration model cannot be trained here: %s", capability$reason),
+            "integration_mofa_unavailable")
+    }
+    run <- runSavedOperation(manager, workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$declaration, source, resolved)
+    # A product an earlier worker computed, whose action never completed, has no root yet (the omics handler's rule).
+    if (identical(run$status, "hit")) rootWorkflowProduct(manager, run$reference, list(source))
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = run$reference,
+        display = list(status = run$status))
+}
+
 #' The realised outcomes the analysis record lists for an accepted model: the views and their feature counts, the
 #' samples, the factors, the training's length and last ELBO, the versions and the model file's sha256.
 #' @param context The owner's context.

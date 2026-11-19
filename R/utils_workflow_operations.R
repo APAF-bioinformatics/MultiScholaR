@@ -902,14 +902,15 @@ registerBuiltinWorkflowOperations <- function() {
                 diagnostic_only = FALSE, inclusion_absence = FALSE, section = NULL))
         }
     }
-    # KIT-062: the integration model (MOFA2) on the integration owner's inputs state: whole matrix, in process, product
-    # only (accepted on the head as the transcriptomics RUVIII export is).
+    # KIT-062: the integration model (MOFA2) on the integration owner's inputs state: whole matrix, product only
+    # (accepted on the head as the transcriptomics RUVIII export is). KIT-140: on the managed worker's `omics` role (its
+    # own handler; no `@args` section, `section = NULL`); `runIntegrationModel` runs the same declaration in process.
     model <- integrationMofaOperation()
     registerWorkflowOperation(list(name = model$name, input = "checkpoint", input_class = model$input_class,
-        compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
-        parameter_limit = 65536, parameters = model$parameters, completion = "in_process", publication = "in_process",
+        compute = "omics", handler = "computeWorkflowIntegrationModelAction", validate = "validateWorkflowOmicsParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = model$parameters, completion = "omics", publication = "omics",
         step_label = NULL, omic_type = "integration", variants = "whole", default_variant = "whole",
-        diagnostic_only = FALSE, inclusion_absence = FALSE, declaration = model))
+        diagnostic_only = FALSE, inclusion_absence = FALSE, declaration = model, section = NULL))
     invisible(workflowOperationNames())
 }
 

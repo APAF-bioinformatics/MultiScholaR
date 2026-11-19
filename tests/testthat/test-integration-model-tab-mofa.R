@@ -6,7 +6,9 @@
 #   - the tab's model equals `runIntegrationModel` called directly on its own store of the same import (identical: one
 #     machine, double precision);
 #   - its factors, weights and variance explained equal the stored double-precision result
-#     (tests/testdata/integration/mofa_reference) within 1e-5 relative, the tolerance of test-integration-mofa-model.R.
+#     (tests/testdata/integration/mofa_reference) within 1e-5 relative, the tolerance of test-integration-mofa-model.R;
+#   - the same training as a managed-worker action (the worker's entry point and the controller's acceptance in this
+#     process, helper-workflow-omics-worker.R) gives the identical model.
 
 intTabRoot <- function() normalizePath(testthat::test_path("..", ".."), mustWork = FALSE)
 intTabCorpus <- function() file.path(intTabRoot(), "tests", "testdata", "integration", "corpus")
@@ -100,5 +102,41 @@ test_that("KIT-140: MOFA2 trained through the Model tab equals the model step an
             }
             expect_equal(tables[[name]], stored, tolerance = 1e-5, info = name)
         }
+    })
+})
+
+test_that("KIT-140: MOFA2 trained as a managed-worker action through the Model tab gives the identical model", {
+    intTabSkip()
+    testthat::skip_if_not(exists("omicsWorkerAction", mode = "function"), "helper-workflow-omics-worker.R is not loaded")
+    paths <- intTabProject()
+    bus <- intTabConfirmed(paths)
+    manager <- shiny::isolate(bus$state_manager)
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) }, .package = "MultiScholaR")
+    fixture <- list(owner = manager, source_dir = paths$source_dir, paths = paths)
+    controller <- omicsWorkerController(fixture)
+    runner <- list(run = function(actions, done = NULL, failed = NULL, dropped = NULL) {
+        for (action in actions) {
+            result <- tryCatch(omicsWorkerAction(fixture, controller, action$operation, action$parameters),
+                error = function(error) error)
+            if (inherits(result, "error")) {
+                if (is.function(failed)) failed(result)
+                return(invisible(NULL))
+            }
+            withWorkflowStateScope(manager, function() action$deliver(result))
+        }
+        if (is.function(done)) done()
+    })
+    testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) {
+        if (identical(omic_type, "integration")) runner else NULL
+    }, .package = "MultiScholaR")
+    shiny::testServer(mod_integration_model_server, args = list(workflow_data = bus, paths = paths), {
+        session$setInputs(run = 1)
+        model <- bus$integration_model
+        expect_identical(model$status, "computed", info = output$run_status$html)
+        value <- session$returned()$value
+        direct <- runIntegrationModel(intTabDirect(paths, bus$integration_import$views), bus$integration_alignment$parameters)
+        for (name in intTabFields) expect_identical(value[[name]], direct$value[[name]], info = name)
+        expect_identical(manager$.context$snapshot$exports$integration_mofa_model$reference, model$reference)
     })
 })

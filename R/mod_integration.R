@@ -62,6 +62,12 @@ mod_integration_server <- function(id, project_dirs, omic_type = "integration", 
         }
         paths <- project_dirs[[omic_type]]
         workflow_data$active_tab <- shiny::reactive(input[[shell$tabset_id]])
+        # KIT-140: under a managed application the Model tab trains on the managed worker through the omics' runner
+        # (NULL without one: `run_app()`, a test; the tab then trains in process).
+        if (is.character(experiment_label) && length(experiment_label) == 1L && !is.na(experiment_label) &&
+            nzchar(experiment_label)) {
+            installWorkflowOmicsActions(session, workflow_data, omic_type, experiment_label, paths)
+        }
         session$onSessionEnded(function() {
             manager <- shiny::isolate(workflow_data$state_manager)
             if (!is.null(manager)) closeWorkflowStateOwner(manager)

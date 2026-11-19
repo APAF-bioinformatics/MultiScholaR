@@ -830,6 +830,32 @@ integrationModelParameters <- function(confirmed, settings) {
     parameters
 }
 
+#' The checks a model run makes before any training (KIT-140; `runIntegrationModel`'s, made in the app's process before
+#' a run is handed to the managed worker): the inputs imported and at the head, every input unchanged on disk, the
+#' parameters resolved against the inputs, MOFA2 and its Python available. Refused in the model's words and classes.
+#' @param manager The integration store.
+#' @param parameters The run's parameters.
+#' @param probe The capability probe.
+#' @return `list(source, parameters)`: the inputs state's reference and the resolved parameters.
+#' @noRd
+integrationModelPrecheck <- function(manager, parameters, probe = integrationMofaCapability) {
+    withWorkflowStateScope(manager, function() {
+        source <- getWorkflowStateReference(manager, INTEGRATION_INPUTS_STATE)
+        if (is.null(source) || !identical(manager$current_state, INTEGRATION_INPUTS_STATE)) {
+            integrationRefuse("the integration inputs are not imported; import them first", "integration_inputs_missing")
+        }
+        object <- readWorkflowExecutionComponents(manager, source, fields = "inputs")
+        integrationAssertInputsCurrent(object)
+        resolved <- integrationResolveMofaParameters(object, parameters)
+        capability <- probe()
+        if (!isTRUE(capability$available)) {
+            integrationRefuse(sprintf("the integration model cannot be trained here: %s", capability$reason),
+                "integration_mofa_unavailable")
+        }
+        list(source = source, parameters = resolved)
+    })
+}
+
 #' What the Model tab shows of a trained model (KIT-140; only this, anything richer is KIT-063's): whether training
 #' settled (rounds against the maximum), the factors kept against those asked for, the samples, the variance explained
 #' per data set as a compact table and the model file's checksum.

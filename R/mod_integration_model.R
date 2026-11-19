@@ -18,7 +18,9 @@
 # (`integrationMofaParameterSpec`: every default is the table's, the provisional ones marked), the software check
 # (`integrationMofaCapability`), the training on the confirmed sample table (KIT-139) through KIT-062's model step, and
 # what the trained model is in a few lines: whether training settled, the factors kept, the variance explained per data
-# set, the saved model's checksum. The training runs in process (`runIntegrationModel`). Each model is
+# set, the saved model's checksum. Under a managed application the training is a managed-worker action (the omics'
+# runner, `installWorkflowOmicsActions`, installed by the shell); without one it runs in process
+# (`runIntegrationModel`). Both run the one declaration and accept the model on the head the same way. Each model is
 # kept in the project's integration store; a run with other settings is a new model, one with the same settings reuses
 # the saved one. Anything richer about the model (plots, weights, factors against the design) is KIT-063's.
 
@@ -108,10 +110,21 @@ mod_integration_model_server <- function(id, workflow_data, paths, texts = integ
             }
             tryCatch({
                 parameters <- integrationModelParameters(confirmed$parameters, integrationModelSettings(settings_values(), spec, texts))
-                run <- withProgressFn(message = texts[["run_working"]], value = 0.5,
-                    quiet(runIntegrationModel(manager, parameters, probe = probe, trainer = trainer)))
-                export <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]
-                deliver(run$value, run$reference, run$status, export$parameters)
+                runner <- workflowOmicsManagedActions("integration")
+                if (is.null(runner)) {
+                    run <- withProgressFn(message = texts[["run_working"]], value = 0.5,
+                        quiet(runIntegrationModel(manager, parameters, probe = probe, trainer = trainer)))
+                    export <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]
+                    deliver(run$value, run$reference, run$status, export$parameters)
+                    return(invisible(NULL))
+                }
+                checked <- integrationModelPrecheck(manager, parameters, probe)
+                model$running <- TRUE
+                runner$run(list(omicsManagedProduct(INTEGRATION_MODEL_OPERATION, checked$parameters, function(result) {
+                    acceptIntegrationModel(manager, checked$source, list(reference = result$reference, value = result$value),
+                        checked$parameters)
+                    deliver(result$value, result$reference, result$display$status %||% "computed", checked$parameters)
+                })), failed = refuse)
             }, error = refuse)
         })
 

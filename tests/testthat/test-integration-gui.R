@@ -745,3 +745,66 @@ test_that("KIT-140: the Import tab states a refused input in plain words, the re
             fixed = TRUE)
     })
 })
+
+test_that("KIT-140: on the managed worker the Model tab trains the same model as in process", {
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    entry <- workflowActionSpec(INTEGRATION_MODEL_OPERATION)
+    expect_identical(entry[c("compute", "handler", "validate", "completion", "publication", "omic_type")],
+        list(compute = "omics", handler = "computeWorkflowIntegrationModelAction", validate = "validateWorkflowOmicsParameters",
+            completion = "omics", publication = "omics", omic_type = "integration"))
+    expect_identical(assertWorkflowOperationDispatchable(INTEGRATION_MODEL_OPERATION)$compute, "omics")
+    expect_identical(entry$declaration$name, INTEGRATION_MODEL_OPERATION)
+    project <- intGuiProject()
+    bus <- intGuiConfirmed(project$paths)
+    manager <- shiny::isolate(bus$state_manager)
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) },
+        integrationTrainMofa = intGuiTrainer(), integrationMofaCapability = intGuiAvailable, .package = "MultiScholaR")
+    fixture <- list(owner = manager, source_dir = project$paths$source_dir, paths = project$paths)
+    controller <- omicsWorkerController(fixture)
+    dispatched <- list()
+    # The omics runner as a managed session drives it: each action through the worker's entry point and the controller's
+    # acceptance in this process (helper-workflow-omics-worker.R), then the tab's delivery in the owner's scope.
+    runner <- list(run = function(actions, done = NULL, failed = NULL, dropped = NULL) {
+        for (action in actions) {
+            dispatched[[length(dispatched) + 1L]] <<- action[c("operation", "parameters", "context")]
+            result <- tryCatch(suppressWarnings(omicsWorkerAction(fixture, controller, action$operation, action$parameters)),
+                error = function(error) error)
+            if (inherits(result, "error")) {
+                if (is.function(failed)) failed(result)
+                return(invisible(NULL))
+            }
+            withWorkflowStateScope(manager, function() action$deliver(result))
+        }
+        if (is.function(done)) done()
+    })
+    testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) {
+        if (identical(omic_type, "integration")) runner else NULL
+    }, .package = "MultiScholaR")
+    shiny::testServer(mod_integration_model_server, args = list(workflow_data = bus, paths = project$paths,
+        probe = intGuiAvailable), {
+        session$setInputs(run = 1)
+        expect_length(dispatched, 1L)
+        expect_identical(dispatched[[1L]]$operation, INTEGRATION_MODEL_OPERATION)
+        expect_null(dispatched[[1L]]$context)
+        expect_identical(names(dispatched[[1L]]$parameters), integrationMofaParameterNames())
+        managed <- bus$integration_model
+        expect_identical(managed$status, "computed")
+        expect_identical(manager$getHistory(), c("initial", "integration_inputs"))
+        expect_identical(manager$.context$snapshot$exports$integration_mofa_model$reference, managed$reference)
+        expect_identical(manager$.context$snapshot$exports$integration_mofa_model$parameters, managed$parameters)
+        expect_identical(bus$tab_status$integration_model, "complete")
+        value <- session$returned()$value
+        direct <- runIntegrationModel(intGuiDirectStore(project$paths, bus$integration_import$views),
+            bus$integration_alignment$parameters, trainer = intGuiTrainer())
+        for (name in intGuiModelFields) expect_identical(value[[name]], direct$value[[name]], info = name)
+        # The record lists the model accepted from the worker as it lists one trained in process.
+        record <- buildWorkflowAnalysisRecord(manager)
+        expect_true(validateWorkflowAnalysisRecord(record)$valid)
+        expect_identical(record$analyses$integration_mofa_model$outcomes$factors, 5L)
+        # The same settings again on the worker: the saved model.
+        session$setInputs(run = 2)
+        expect_identical(bus$integration_model$status, "hit")
+        expect_identical(bus$integration_model$reference$entity_id, managed$reference$entity_id)
+    })
+})
