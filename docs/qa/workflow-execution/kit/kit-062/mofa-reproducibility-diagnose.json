@@ -1,0 +1,626 @@
+{
+  "jobs": {
+    "diag-default-float32-1": {
+      "combination": "default-float32",
+      "cpu": "AMD EPYC 9V45 96-Core Processor",
+      "threads": "openblas:4;openmp:4;openblas:4;openblas:4;openmp:4",
+      "iterations": 186,
+      "seconds_train": 1.05,
+      "elbo_last": -27000.324393622,
+      "planted": {
+        "Z1": 0.993669400539402,
+        "Z2": 0.993603826104592,
+        "Z3": 0.989169791812008
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "29f363abdabc03c3021dc29bbf97e6a4"
+    },
+    "diag-default-float32-2": {
+      "combination": "default-float32",
+      "cpu": "AMD EPYC 7763 64-Core Processor",
+      "threads": "openmp:4;openblas:4;openmp:4;openblas:4;openblas:4",
+      "iterations": 186,
+      "seconds_train": 1.83,
+      "elbo_last": -27000.3251752755,
+      "planted": {
+        "Z1": 0.993669506320826,
+        "Z2": 0.993603931694134,
+        "Z3": 0.989169791891287
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "1a5340d26d686017827cd9d85326358a"
+    },
+    "diag-default-float32-3": {
+      "combination": "default-float32",
+      "cpu": "AMD EPYC 9V45 96-Core Processor",
+      "threads": "openblas:4;openmp:4;openmp:4;openblas:4;openblas:4",
+      "iterations": 186,
+      "seconds_train": 0.97,
+      "elbo_last": -27000.324393622,
+      "planted": {
+        "Z1": 0.993669400539402,
+        "Z2": 0.993603826104592,
+        "Z3": 0.989169791812008
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "29f363abdabc03c3021dc29bbf97e6a4"
+    },
+    "diag-default-float32-4": {
+      "combination": "default-float32",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openblas:4;openblas:4;openmp:4;openmp:4;openblas:4",
+      "iterations": 191,
+      "seconds_train": 1.4,
+      "elbo_last": -26999.6483567435,
+      "planted": {
+        "Z1": 0.993837378438588,
+        "Z2": 0.993775394815427,
+        "Z3": 0.989167671600714
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "b92a8ad49f2763c42b4358d949630f3d"
+    },
+    "diag-default-float64-1": {
+      "combination": "default-float64",
+      "cpu": "AMD EPYC 9V45 96-Core Processor",
+      "threads": "openmp:4;openblas:4;openblas:4;openmp:4;openblas:4",
+      "iterations": 186,
+      "seconds_train": 1.06,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "d41fd116789aa5fc9420f8cd8d725162"
+    },
+    "diag-default-float64-2": {
+      "combination": "default-float64",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openmp:4;openblas:4;openmp:4;openblas:4;openblas:4",
+      "iterations": 186,
+      "seconds_train": 1.36,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "7a326abb0c538c39676d828f1fcbc2be"
+    },
+    "diag-default-float64-3": {
+      "combination": "default-float64",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openblas:4;openblas:4;openmp:4;openmp:4;openblas:4",
+      "iterations": 186,
+      "seconds_train": 1.36,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "7a326abb0c538c39676d828f1fcbc2be"
+    },
+    "diag-default-float64-4": {
+      "combination": "default-float64",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openmp:4;openmp:4;openblas:4;openblas:4;openblas:4",
+      "iterations": 186,
+      "seconds_train": 1.77,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562792,
+        "Z2": 0.993603624683961,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "59588a0ca70e6ba1787a58ffe69de224"
+    },
+    "diag-single-float32-1": {
+      "combination": "single-float32",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openmp:1;openmp:1;openblas:1;openblas:1;openblas:1",
+      "iterations": 191,
+      "seconds_train": 1.33,
+      "elbo_last": -26999.6483567435,
+      "planted": {
+        "Z1": 0.993837378438588,
+        "Z2": 0.993775394815427,
+        "Z3": 0.989167671600714
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "b92a8ad49f2763c42b4358d949630f3d"
+    },
+    "diag-single-float32-2": {
+      "combination": "single-float32",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openblas:1;openblas:1;openblas:1;openmp:1;openmp:1",
+      "iterations": 191,
+      "seconds_train": 1.31,
+      "elbo_last": -26999.6483567435,
+      "planted": {
+        "Z1": 0.993837378438588,
+        "Z2": 0.993775394815427,
+        "Z3": 0.989167671600714
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "b92a8ad49f2763c42b4358d949630f3d"
+    },
+    "diag-single-float32-3": {
+      "combination": "single-float32",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openblas:1;openmp:1;openmp:1;openblas:1;openblas:1",
+      "iterations": 191,
+      "seconds_train": 1.24,
+      "elbo_last": -26999.6483567435,
+      "planted": {
+        "Z1": 0.993837378438588,
+        "Z2": 0.993775394815427,
+        "Z3": 0.989167671600714
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "b92a8ad49f2763c42b4358d949630f3d"
+    },
+    "diag-single-float32-4": {
+      "combination": "single-float32",
+      "cpu": "AMD EPYC 7763 64-Core Processor",
+      "threads": "openblas:1;openmp:1;openblas:1;openmp:1;openblas:1",
+      "iterations": 191,
+      "seconds_train": 1.74,
+      "elbo_last": -26999.6486433098,
+      "planted": {
+        "Z1": 0.993837336073707,
+        "Z2": 0.99377534534874,
+        "Z3": 0.989167670123578
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "073ec410ff95021ade636fd05914ec2a"
+    },
+    "diag-single-float64-1": {
+      "combination": "single-float64",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openmp:1;openblas:1;openblas:1;openmp:1;openblas:1",
+      "iterations": 186,
+      "seconds_train": 1.36,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "7a326abb0c538c39676d828f1fcbc2be"
+    },
+    "diag-single-float64-2": {
+      "combination": "single-float64",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openblas:1;openmp:1;openblas:1;openmp:1;openblas:1",
+      "iterations": 186,
+      "seconds_train": 1.27,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "7a326abb0c538c39676d828f1fcbc2be"
+    },
+    "diag-single-float64-3": {
+      "combination": "single-float64",
+      "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "threads": "openblas:1;openmp:1;openmp:1;openblas:1;openblas:1",
+      "iterations": 186,
+      "seconds_train": 1.69,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "5607e3fb53ac36487958cc046aae0417"
+    },
+    "diag-single-float64-4": {
+      "combination": "single-float64",
+      "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+      "threads": "openmp:1;openblas:1;openblas:1;openblas:1;openmp:1",
+      "iterations": 186,
+      "seconds_train": 1.85,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562792,
+        "Z2": 0.993603624683962,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "bcd3619d9b2022e54a661e1191b755d9"
+    }
+  },
+  "within": {
+    "diag-default-float32-1 vs diag-default-float32-2": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "1.91e-06 (1.1e-06 rel)",
+      "weights": "1.67e-06 (1.06e-06 rel)",
+      "r2": "1.19e-05 (4.2e-07 rel)",
+      "elbo": "0.000782 (2.89e-08 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float32-1 vs diag-default-float32-3": {
+      "same_cpu": true,
+      "iterations": "186/186",
+      "factors": "identical",
+      "weights": "identical",
+      "r2": "identical",
+      "elbo": "identical",
+      "bit_identical": true,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float32-1 vs diag-default-float32-4": {
+      "same_cpu": false,
+      "iterations": "186/191",
+      "factors": "0.0194 (0.0112 rel)",
+      "weights": "0.0165 (0.0105 rel)",
+      "r2": "0.00758 (0.000267 rel)",
+      "elbo": "0.676 (2.5e-05 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": false,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 0.999998
+    },
+    "diag-default-float32-2 vs diag-default-float32-3": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "1.91e-06 (1.1e-06 rel)",
+      "weights": "1.67e-06 (1.06e-06 rel)",
+      "r2": "1.19e-05 (4.2e-07 rel)",
+      "elbo": "0.000782 (2.89e-08 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float32-2 vs diag-default-float32-4": {
+      "same_cpu": false,
+      "iterations": "186/191",
+      "factors": "0.0194 (0.0112 rel)",
+      "weights": "0.0165 (0.0105 rel)",
+      "r2": "0.00758 (0.000267 rel)",
+      "elbo": "0.677 (2.51e-05 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": false,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 0.999998
+    },
+    "diag-default-float32-3 vs diag-default-float32-4": {
+      "same_cpu": false,
+      "iterations": "186/191",
+      "factors": "0.0194 (0.0112 rel)",
+      "weights": "0.0165 (0.0105 rel)",
+      "r2": "0.00758 (0.000267 rel)",
+      "elbo": "0.676 (2.5e-05 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": false,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 0.999998
+    },
+    "diag-default-float64-1 vs diag-default-float64-2": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "1.08e-14 (6.18e-15 rel)",
+      "weights": "5.55e-15 (3.53e-15 rel)",
+      "r2": "3.55e-14 (1.25e-15 rel)",
+      "elbo": "7.28e-12 (2.69e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-1 vs diag-default-float64-3": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "1.08e-14 (6.18e-15 rel)",
+      "weights": "5.55e-15 (3.53e-15 rel)",
+      "r2": "3.55e-14 (1.25e-15 rel)",
+      "elbo": "7.28e-12 (2.69e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-1 vs diag-default-float64-4": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "2.13e-14 (1.22e-14 rel)",
+      "weights": "1.47e-14 (9.32e-15 rel)",
+      "r2": "5.68e-14 (2e-15 rel)",
+      "elbo": "identical",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-2 vs diag-default-float64-3": {
+      "same_cpu": true,
+      "iterations": "186/186",
+      "factors": "identical",
+      "weights": "identical",
+      "r2": "identical",
+      "elbo": "identical",
+      "bit_identical": true,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-2 vs diag-default-float64-4": {
+      "same_cpu": true,
+      "iterations": "186/186",
+      "factors": "2.84e-14 (1.63e-14 rel)",
+      "weights": "1.92e-14 (1.22e-14 rel)",
+      "r2": "9.24e-14 (3.25e-15 rel)",
+      "elbo": "7.28e-12 (2.69e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-3 vs diag-default-float64-4": {
+      "same_cpu": true,
+      "iterations": "186/186",
+      "factors": "2.84e-14 (1.63e-14 rel)",
+      "weights": "1.92e-14 (1.22e-14 rel)",
+      "r2": "9.24e-14 (3.25e-15 rel)",
+      "elbo": "7.28e-12 (2.69e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float32-1 vs diag-single-float32-2": {
+      "same_cpu": true,
+      "iterations": "191/191",
+      "factors": "identical",
+      "weights": "identical",
+      "r2": "identical",
+      "elbo": "identical",
+      "bit_identical": true,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float32-1 vs diag-single-float32-3": {
+      "same_cpu": true,
+      "iterations": "191/191",
+      "factors": "identical",
+      "weights": "identical",
+      "r2": "identical",
+      "elbo": "identical",
+      "bit_identical": true,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float32-1 vs diag-single-float32-4": {
+      "same_cpu": false,
+      "iterations": "191/191",
+      "factors": "2.03e-06 (1.16e-06 rel)",
+      "weights": "2.15e-06 (1.37e-06 rel)",
+      "r2": "1.19e-05 (4.2e-07 rel)",
+      "elbo": "0.000287 (1.06e-08 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float32-2 vs diag-single-float32-3": {
+      "same_cpu": true,
+      "iterations": "191/191",
+      "factors": "identical",
+      "weights": "identical",
+      "r2": "identical",
+      "elbo": "identical",
+      "bit_identical": true,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float32-2 vs diag-single-float32-4": {
+      "same_cpu": false,
+      "iterations": "191/191",
+      "factors": "2.03e-06 (1.16e-06 rel)",
+      "weights": "2.15e-06 (1.37e-06 rel)",
+      "r2": "1.19e-05 (4.2e-07 rel)",
+      "elbo": "0.000287 (1.06e-08 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float32-3 vs diag-single-float32-4": {
+      "same_cpu": false,
+      "iterations": "191/191",
+      "factors": "2.03e-06 (1.16e-06 rel)",
+      "weights": "2.15e-06 (1.37e-06 rel)",
+      "r2": "1.19e-05 (4.2e-07 rel)",
+      "elbo": "0.000287 (1.06e-08 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float64-1 vs diag-single-float64-2": {
+      "same_cpu": true,
+      "iterations": "186/186",
+      "factors": "identical",
+      "weights": "identical",
+      "r2": "identical",
+      "elbo": "identical",
+      "bit_identical": true,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float64-1 vs diag-single-float64-3": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "4.33e-15 (2.49e-15 rel)",
+      "weights": "4.66e-15 (2.96e-15 rel)",
+      "r2": "3.55e-14 (1.25e-15 rel)",
+      "elbo": "identical",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float64-1 vs diag-single-float64-4": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "2.2e-14 (1.26e-14 rel)",
+      "weights": "1.21e-14 (7.69e-15 rel)",
+      "r2": "6.75e-14 (2.38e-15 rel)",
+      "elbo": "1.09e-11 (4.04e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float64-2 vs diag-single-float64-3": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "4.33e-15 (2.49e-15 rel)",
+      "weights": "4.66e-15 (2.96e-15 rel)",
+      "r2": "3.55e-14 (1.25e-15 rel)",
+      "elbo": "identical",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float64-2 vs diag-single-float64-4": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "2.2e-14 (1.26e-14 rel)",
+      "weights": "1.21e-14 (7.69e-15 rel)",
+      "r2": "6.75e-14 (2.38e-15 rel)",
+      "elbo": "1.09e-11 (4.04e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float64-3 vs diag-single-float64-4": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "1.93e-14 (1.11e-14 rel)",
+      "weights": "9.88e-15 (6.28e-15 rel)",
+      "r2": "6.75e-14 (2.38e-15 rel)",
+      "elbo": "1.09e-11 (4.04e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    }
+  },
+  "across": {
+    "diag-default-float32-1 vs diag-default-float64-1": {
+      "same_cpu": true,
+      "iterations": "186/186",
+      "factors": "4.32e-06 (2.48e-06 rel)",
+      "weights": "2.51e-06 (1.59e-06 rel)",
+      "r2": "1.89e-05 (6.67e-07 rel)",
+      "elbo": "0.00161 (5.95e-08 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": false,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float32-1 vs diag-single-float32-1": {
+      "same_cpu": false,
+      "iterations": "186/191",
+      "factors": "0.0194 (0.0112 rel)",
+      "weights": "0.0165 (0.0105 rel)",
+      "r2": "0.00758 (0.000267 rel)",
+      "elbo": "0.676 (2.5e-05 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": false,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 0.999998
+    },
+    "diag-default-float32-1 vs diag-single-float64-1": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "4.32e-06 (2.48e-06 rel)",
+      "weights": "2.51e-06 (1.59e-06 rel)",
+      "r2": "1.89e-05 (6.67e-07 rel)",
+      "elbo": "0.00161 (5.95e-08 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": false,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-1 vs diag-single-float32-1": {
+      "same_cpu": false,
+      "iterations": "186/191",
+      "factors": "0.0194 (0.0112 rel)",
+      "weights": "0.0165 (0.0105 rel)",
+      "r2": "0.00759 (0.000268 rel)",
+      "elbo": "0.674 (2.5e-05 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": false,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 0.999998
+    },
+    "diag-default-float64-1 vs diag-single-float64-1": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "1.08e-14 (6.18e-15 rel)",
+      "weights": "5.55e-15 (3.53e-15 rel)",
+      "r2": "3.55e-14 (1.25e-15 rel)",
+      "elbo": "7.28e-12 (2.69e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-single-float32-1 vs diag-single-float64-1": {
+      "same_cpu": true,
+      "iterations": "191/186",
+      "factors": "0.0194 (0.0111 rel)",
+      "weights": "0.0165 (0.0106 rel)",
+      "r2": "0.00759 (0.000268 rel)",
+      "elbo": "0.674 (2.5e-05 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": false,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 0.999998
+    }
+  },
+  "reference": {
+    "diag-default-float32-1": 0.019440174102783203,
+    "diag-default-float32-2": 0.019441723823547363,
+    "diag-default-float32-3": 0.019440174102783203,
+    "diag-default-float32-4": 0.0,
+    "diag-default-float64-1": 0.019440086014789193,
+    "diag-default-float64-2": 0.01944008601479008,
+    "diag-default-float64-3": 0.01944008601479008,
+    "diag-default-float64-4": 0.01944008601479008,
+    "diag-single-float32-1": 0.0,
+    "diag-single-float32-2": 0.0,
+    "diag-single-float32-3": 0.0,
+    "diag-single-float32-4": 2.0265579223632812e-06,
+    "diag-single-float64-1": 0.01944008601479008,
+    "diag-single-float64-2": 0.01944008601479008,
+    "diag-single-float64-3": 0.019440086014788527,
+    "diag-single-float64-4": 0.019440086014790303
+  }
+}
