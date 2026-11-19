@@ -180,8 +180,8 @@ integrationFactorAssociation <- function(values, factors, tested = TRUE, adjust 
 }
 
 #' MOFA2's own warnings, kept with the model (`integrationTrainMofa`'s `messages`, prefix "WARNING:"), in plain words
-#' (KIT-063). The warning that factors follow each sample's overall level ("strongly correlated with the total number
-#' of expressed features") is named with its factors; any other warning is said to exist, its text as the detail.
+#' (KIT-063). The warning that factors follow each sample's overall level ("strongly correlated with the average
+#' expression of features", earlier "with the total number of expressed features") is named with its factors; any other warning is said to exist, its text as the detail.
 #' @param value The model's product.
 #' @param texts `integrationGuiTexts()`.
 #' @return A list of `list(kind, sentence, detail)`.
@@ -191,7 +191,9 @@ integrationModelAdvisories <- function(value, texts = integrationGuiTexts()) {
     raw <- unique(trimws(sub("^WARNING:\\s*", "", raw[startsWith(raw, "WARNING:")])))
     raw <- raw[nzchar(raw)]
     lapply(raw, function(message) {
-        if (grepl("correlated with the total number of expressed features", message, fixed = TRUE)) {
+        # MOFA2 1.22.0's wording is "strongly correlated with the average expression of features" (MOFA2 lane run
+        # 44616769378); earlier releases said "the total number of expressed features".
+        if (grepl("correlated with the (average expression of features|total number of expressed features)", message)) {
             listed <- regmatches(message, regexpr("Factor\\(s\\)\\s*[0-9][0-9, ]*", message))
             numbers <- if (length(listed)) regmatches(listed, gregexpr("[0-9]+", listed))[[1L]] else character()
             factors <- if (length(numbers)) paste(paste0("Factor", numbers), collapse = ", ") else "?"

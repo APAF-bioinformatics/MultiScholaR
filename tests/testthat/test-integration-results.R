@@ -17,7 +17,8 @@
 
 intResData <- function() normalizePath(testthat::test_path("..", "testdata", "integration"), mustWork = FALSE)
 intResOmics <- c("lipidomics", "metabolomics", "proteomics", "transcriptomics")
-intResOverallLevel <- paste("WARNING: Factor(s) 2 are strongly correlated with the total number of expressed features for",
+# MOFA2 1.22.0's text (MOFA2 lane run 44616769378, on the tier-1 corpus).
+intResOverallLevel <- paste("WARNING: Factor(s) 2 are strongly correlated with the average expression of features for",
     "at least one of your omics. Such factors appear when there are differences in the total 'levels' between your",
     "samples, *sometimes* because of poor normalisation in the preprocessing steps.")
 
@@ -209,7 +210,12 @@ test_that("KIT-063: MOFA2's warnings are shown in plain words; D10 withholds the
     kinds <- vapply(results$advisories, `[[`, "", "kind")
     expect_identical(kinds, c("overall_level", "other"))
     expect_identical(results$advisories[[1L]]$sentence, sprintf(texts[["advisory_overall_level"]], "Factor2"))
-    expect_match(results$advisories[[1L]]$detail, "total number of expressed features", fixed = TRUE)
+    expect_match(results$advisories[[1L]]$detail, "average expression of features", fixed = TRUE)
+    # The wording of earlier MOFA2 releases, and two factors named.
+    earlier <- integrationModelAdvisories(list(messages = paste("WARNING: Factor(s) 2, 4 are strongly correlated with the",
+        "total number of expressed features for at least one of your omics.")), texts)
+    expect_identical(earlier[[1L]]$kind, "overall_level")
+    expect_identical(earlier[[1L]]$sentence, sprintf(texts[["advisory_overall_level"]], "Factor2, Factor4"))
     expect_identical(results$advisories[[2L]]$sentence, texts[["advisory_other"]])
     # The corpus is normalised, not corrected: the factors are descriptive, the p-values given.
     expect_identical(results$claim$group_corrected, character())
