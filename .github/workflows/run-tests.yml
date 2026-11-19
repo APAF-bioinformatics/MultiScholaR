@@ -1,14 +1,19 @@
 name: run-tests
+run-name: ${{ inputs.request != '' && format('run-tests {0}', inputs.request) || github.event.head_commit.message || 'run-tests params.json' }}
 
 # MultiScholaR's test files, R CMD check and proof scripts on hosted runners (4 cores, 16 GB) instead of the laptop.
-# How to launch, the params and the token rules: .github/run-tests/README.md.
+# How to launch, the request fields and the token rules: .github/run-tests/README.md.
 #
-# A run starts when a push to the branch run-tests changes .github/run-tests/params.json (or by workflow_dispatch,
-# with the branch's params). The package under test is the commit package_commit (checked out on its own, path pkg);
-# the library's tools (.github/actions/snapshot-library, packaging/r/install-library.R, packaging/multischolar.lock.json)
-# are read from tools_ref: package_commit itself when its tree has them, otherwise the named ref (default kit-134).
+# A request is its own file .github/run-tests/requests/<name>.json. A push to the branch run-tests that adds such
+# files starts .github/workflows/run-tests-requests.yml, which dispatches this workflow once per added file (input
+# request = <name>): one independent run per request, its title "run-tests <name>". Deprecated, for a transition
+# period: a push changing .github/run-tests/params.json still starts a run on that file, with a warning; and
+# workflow_dispatch without a request reads params.json. The package under test is the commit package_commit (checked
+# out on its own, path pkg); the library's tools (.github/actions/snapshot-library, packaging/r/install-library.R,
+# packaging/multischolar.lock.json) are read from tools_ref: package_commit itself when its tree has them, otherwise
+# the named ref (default kit-134).
 #
-# Jobs: plan (params checked, files listed and sharded); tests (one job per shard: R 4.6.1 and the snapshot library
+# Jobs: plan (request checked, printed at the top of the summary, files listed and sharded); tests (one job per shard: R 4.6.1 and the snapshot library
 # with the two internal packages, built in the job from the read token; the tools' MultiScholaR removed; each file in
 # its own R process with pkgload::load_all of package_commit's tree, as the laptop's per-file runs); check (R CMD build
 # and R CMD check --no-manual --no-tests, _R_CHECK_FORCE_SUGGESTS_=false); scripts (package_commit installed, the
@@ -28,12 +33,20 @@ on:
     paths:
       - .github/run-tests/params.json
   workflow_dispatch:
+    inputs:
+      request:
+        description: "request name: the file .github/run-tests/requests/<name>.json (empty: the deprecated params.json)"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
 
 env:
   NOT_CRAN: "true"
+  REQUEST_NAME: ${{ inputs.request }}
+  REQUEST: ${{ inputs.request != '' && format('.github/run-tests/requests/{0}.json', inputs.request) || '.github/run-tests/params.json' }}
 
 jobs:
   plan:
@@ -57,17 +70,44 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Read .github/run-tests/params.json
+      - name: Read the request (.github/run-tests/requests/<name>.json; deprecated .github/run-tests/params.json)
         id: plan
         run: |
           set -euo pipefail
-          p=.github/run-tests/params.json
+          fail() {
+            echo "::error::$1"
+            { echo "### Request refused: \`$REQUEST\`"; echo; echo "$1"; echo
+              if [ -f "$REQUEST" ]; then echo '```json'; cat "$REQUEST"; echo '```'; fi; } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          if [ -n "$REQUEST_NAME" ]; then
+            [[ "$REQUEST_NAME" =~ ^[a-z0-9][a-z0-9._-]{0,79}$ ]] || fail "request name '$REQUEST_NAME' is not a short slug (a-z, 0-9, '.', '_', '-'; up to 80 characters)"
+          else
+            echo "::warning::params.json is deprecated: write a new request file with .github/run-tests/new-request.sh <name> (.github/run-tests/README.md)"
+          fi
+          p="$REQUEST"
+          [ -f "$p" ] || fail "$p does not exist at $GITHUB_SHA"
+          jq -e 'type == "object"' "$p" > /dev/null 2>&1 || fail "$p is not a JSON object"
+          if [ -n "$REQUEST_NAME" ]; then
+            # a request file states every key the run depends on: nothing is inherited from another request
+            missing="$(jq -r '[("requested_by", "label", "package_commit", "base_commit", "tests") as $k | select(has($k) | not) | $k] | join(", ")' "$p")"
+            [ -z "$missing" ] || fail "$p lacks: $missing (start from .github/run-tests/new-request.sh)"
+            jq -e '.requested_by | type == "string" and (test("[\n\r]") | not) and (gsub("\\s"; "") | length) >= 1 and length <= 300' "$p" > /dev/null \
+              || fail "requested_by must state who asks and why (ticket and purpose), one line, at most 300 characters"
+            jq -e '.package_commit | type == "string" and test("^[0-9a-f]{40}$")' "$p" > /dev/null \
+              || fail "package_commit must be a full 40-digit commit hash (got $(jq -c .package_commit "$p"))"
+            jq -e '.base_commit | type == "string" and test("^([0-9a-f]{40}|none)$")' "$p" > /dev/null \
+              || fail "base_commit must be a full 40-digit commit hash, or \"none\" for no base run (got $(jq -c .base_commit "$p"))"
+          fi
+          jq -e '(.label | type == "string" and length >= 1 and length <= 200)' "$p" > /dev/null 2>&1 \
+            || fail "label must be one line of 1 to 200 characters (got $(jq -r '.label | if type == "string" then length else type end' "$p"))"
           if ! jq -e '
             def str: type == "string" and (test("[\n\r]") | not);
             def relpath: str and test("^[A-Za-z0-9._][A-Za-z0-9._/-]*$") and (test("(^|/)[.][.](/|$)") | not);
             (.label | str and length >= 1 and length <= 200) and
+            ((.requested_by // "") | str and length <= 300) and
             (.package_commit | type == "string" and test("^[0-9a-f]{40}$")) and
-            ((.base_commit // "") | type == "string" and test("^([0-9a-f]{40})?$")) and
+            ((.base_commit // "") | type == "string" and test("^([0-9a-f]{40}|none)?$")) and
             ((.fetch_refs // []) | type == "array" and all(type == "string" and test("^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"))) and
             ((.file_timeouts // {}) | type == "object" and (to_entries | all((.key | test("^test-[A-Za-z0-9._-]+[.]R$")) and
               (.value | type == "number" and . == floor and . >= 1 and . <= 280)))) and
@@ -86,16 +126,15 @@ jobs:
             ((.blas // "reference") | . == "reference" or . == "openblas") and
             ((.os // "ubuntu-22.04") == "ubuntu-22.04")
           ' "$p" > /dev/null; then
-            echo "::error::params.json is not valid; see .github/run-tests/README.md (label; package_commit as a 40-digit commit; tools_ref empty, a commit or a branch; tests \"all\" or test-*.R names; shards 1 to 20; file_timeout_minutes 1 to 280; base_commit empty or a 40-digit commit; fetch_refs branch names; file_timeouts {file: minutes}; extra_packages names; env names and one-line values; check true or false; blas reference or openblas; scripts {path, args, env, out, timeout_minutes}; os ubuntu-22.04 only: no Windows here)"
-            exit 1
+            fail "$p is not valid; see .github/run-tests/README.md (requested_by one line; label; package_commit as a 40-digit commit; tools_ref empty, a commit or a branch; tests \"all\" or test-*.R names; shards 1 to 20; file_timeout_minutes 1 to 280; base_commit empty, \"none\" or a 40-digit commit; fetch_refs branch names; file_timeouts {file: minutes}; extra_packages names; env names and one-line values; check true or false; blas reference or openblas; scripts {path, args, env, out, out_pattern, timeout_minutes}; os ubuntu-22.04 only: no Windows here)"
           fi
           commit="$(jq -r .package_commit "$p")"
           if ! git fetch --quiet --no-tags --depth 1 origin "$commit"; then
-            echo "::error::package_commit $commit is not reachable on origin: push its branch first"; exit 1
+            fail "package_commit $commit is not reachable on origin: push its branch first"
           fi
-          base="$(jq -r '.base_commit // ""' "$p")"
+          base="$(jq -r '.base_commit // "" | if . == "none" then "" else . end' "$p")"
           if [ -n "$base" ] && ! git fetch --quiet --no-tags --depth 1 origin "$base"; then
-            echo "::error::base_commit $base is not reachable on origin: push its branch first"; exit 1
+            fail "base_commit $base is not reachable on origin: push its branch first"
           fi
           tooling=(.github/actions/snapshot-library/action.yml packaging/r/install-library.R packaging/multischolar.lock.json)
           has_tools() { local c="$1" f; for f in "${tooling[@]}"; do git cat-file -e "$c:$f" 2>/dev/null || return 1; done; }
@@ -105,11 +144,11 @@ jobs:
           fi
           if ! [[ "$tools" =~ ^[0-9a-f]{40}$ ]]; then
             sha="$(git ls-remote origin "refs/heads/$tools" | cut -f1)"
-            if [ -z "$sha" ]; then echo "::error::tools_ref $tools is not a branch on origin"; exit 1; fi
+            if [ -z "$sha" ]; then fail "tools_ref $tools is not a branch on origin"; fi
             echo "tools_ref $tools = $sha"; tools="$sha"
           fi
           git fetch --quiet --no-tags --depth 1 origin "$tools"
-          if ! has_tools "$tools"; then echo "::error::tools_ref $tools lacks ${tooling[*]}"; exit 1; fi
+          if ! has_tools "$tools"; then fail "tools_ref $tools lacks ${tooling[*]}"; fi
           if [ "$(jq -r '.tests | type' "$p")" = "string" ]; then
             git ls-tree --name-only "$commit" tests/testthat/ | sed -n 's#^tests/testthat/\(test-.*\.R\)$#\1#p' | jq -R . | jq -sc . > "$RUNNER_TEMP/files.json"
           else
@@ -144,10 +183,33 @@ jobs:
             echo "blas=$(jq -r '.blas // "reference"' "$p")"
             echo "sides=$(jq -c '{include: .}' <<< "$sides")"
           } >> "$GITHUB_OUTPUT"
+          # the resolved request, first on the run's page: what this run tests, at a glance
           {
-            echo "### Request"
-            echo '```json'; cat "$p"; echo '```'
-            echo "package_commit $commit; base_commit ${base:-none}; tools_ref $tools; $n test files in $shards shard(s) per side"
+            echo "### Request \`$p\`"
+            if [ -z "$REQUEST_NAME" ]; then echo; echo "> **Deprecated:** launched from params.json. New requests: one file each, \`.github/run-tests/new-request.sh <name>\`."; fi
+            echo
+            echo "| field | resolved |"
+            echo "|---|---|"
+            jq -r --arg head "$commit" --arg base "${base:-none}" --arg tools "$tools" --arg n "$n" --arg shards "$shards" --arg sha "$GITHUB_SHA" '
+              def cell: tostring | gsub("\\|"; "\\|");
+              "| requested_by | \(.requested_by // "not stated" | cell) |",
+              "| label | \(.label | cell) |",
+              "| head (package_commit) | \($head) |",
+              "| base (base_commit) | \($base) |",
+              "| tools_ref | \($tools) |",
+              "| request commit | \($sha) |",
+              "| tests | \($n) file(s) in \($shards) shard(s) per side |",
+              "| check | \(.check // false) |",
+              "| scripts | \((.scripts // []) | if length == 0 then "none" else map("\(.path) \((.args // []) | join(" ")) (out \(.out // "-"), \(.timeout_minutes // 120) min)") | join("; ") end | cell) |",
+              "| extra_packages | \((.extra_packages // []) | join(", ") | if . == "" then "none" else . end) |",
+              "| env | \(.env // {} | tojson | cell) |",
+              "| file_timeout_minutes / file_timeouts | \(.file_timeout_minutes // 45) / \(.file_timeouts // {} | tojson | cell) |",
+              "| fetch_refs | \((.fetch_refs // []) | join(", ") | if . == "" then "none" else . end) |",
+              "| blas | \(.blas // "reference") |"' "$p"
+            echo
+            echo "Test files: $(jq -r 'if length == 0 then "none" else join(", ") end' "$RUNNER_TEMP/files.json")"
+            echo
+            echo '<details><summary>request file</summary>'; echo; echo '```json'; cat "$p"; echo '```'; echo; echo '</details>'
           } >> "$GITHUB_STEP_SUMMARY"
 
   tests:
@@ -218,10 +280,10 @@ jobs:
           echo "library install: $(( $(date +%s) - JOB_START )) s since job start" | tee "$RUNNER_TEMP/out/setup-seconds.txt"
       - name: Run the shard's files, one R process each
         run: |
-          while IFS= read -r -d '' kv; do export "$kv"; echo "env: ${kv%%=*}"; done < <(jq -j '.env // {} | to_entries[] | "\(.key)=\(.value)\u0000"' rt/.github/run-tests/params.json)
+          while IFS= read -r -d '' kv; do export "$kv"; echo "env: ${kv%%=*}"; done < <(jq -j '.env // {} | to_entries[] | "\(.key)=\(.value)\u0000"' "rt/$REQUEST")
           mapfile -t files < <(jq -r '.[]' <<< "$FILES")
           deadline=$(( JOB_START + (300 - 12) * 60 ))
-          export FILE_TIMEOUTS="$(jq -c '.file_timeouts // {}' rt/.github/run-tests/params.json)"
+          export FILE_TIMEOUTS="$(jq -c '.file_timeouts // {}' "rt/$REQUEST")"
           echo "side $SIDE, commit $(git -C pkg rev-parse HEAD)"
           bash rt/.github/run-tests/run-shard.sh pkg "$RUNNER_TEMP/out" "$FILE_TIMEOUT" "$deadline" "${files[@]}"
       - name: Scan before upload (a matching file is withheld)
@@ -355,7 +417,7 @@ jobs:
       - name: The refs the scripts read (params fetch_refs; as remote-tracking and local branches)
         working-directory: pkg
         run: |
-          for ref in $(jq -r '(.fetch_refs // [])[]' ../rt/.github/run-tests/params.json); do
+          for ref in $(jq -r '(.fetch_refs // [])[]' ../"rt/$REQUEST"); do
             git fetch --quiet --no-tags origin "+refs/heads/$ref:refs/remotes/origin/$ref"
             git branch -f "$ref" "origin/$ref" > /dev/null
             echo "$ref = $(git rev-parse "origin/$ref")"
@@ -372,7 +434,7 @@ jobs:
           tail -n 2 "$RUNNER_TEMP/install.log"
           git status --short | head -n 5
       - name: Run the scripts
-        run: bash rt/.github/run-tests/run-scripts.sh rt/.github/run-tests/params.json pkg "$RUNNER_TEMP/scripts-out"
+        run: bash rt/.github/run-tests/run-scripts.sh "rt/$REQUEST" pkg "$RUNNER_TEMP/scripts-out"
       - name: Scan before upload (a matching file is withheld)
         run: Rscript --vanilla rt/.github/run-tests/scan.R "$RUNNER_TEMP/scripts-out" strict
       - name: Upload the scripts' outputs
@@ -424,8 +486,9 @@ jobs:
           cat "$RUNNER_TEMP/assemble.out"
           first="$(ls -d "$dl"/shard-head-* "$dl"/check-head "$dl"/scripts 2>/dev/null | head -n 1 || true)"
           {
-            printf 'run\t%s\nattempt\t%s\nrequest_commit\t%s\nlabel\t%s\npackage_commit\t%s\nbase_commit\t%s\ntools_ref\t%s\n' \
-              "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$(jq -r .label .github/run-tests/params.json)" "$PACKAGE_COMMIT" "${BASE_COMMIT:-none}" "$TOOLS_REF"
+            printf 'run\t%s\nattempt\t%s\nrequest_commit\t%s\nrequest\t%s\nrequested_by\t%s\nlabel\t%s\npackage_commit\t%s\nbase_commit\t%s\ntools_ref\t%s\n' \
+              "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$REQUEST" "$(jq -r '.requested_by // "not stated"' "$REQUEST")" \
+              "$(jq -r .label "$REQUEST")" "$PACKAGE_COMMIT" "${BASE_COMMIT:-none}" "$TOOLS_REF"
             printf 'runner\tubuntu-22.04 (GitHub-hosted)\nR\t%s\n' "$(cat "$first/r-version.txt" 2>/dev/null || echo unknown)"
             printf 'jobs\ttests %s; check %s; scripts %s\n' "$TESTS_RESULT" "$CHECK_RESULT" "$SCRIPTS_RESULT"
             for s in "$dl"/shard-* "$dl"/check-* "$dl"/scripts; do
@@ -433,7 +496,7 @@ jobs:
               printf '%s\t%s; %s; %s\n' "$(basename "$s")" "$(cat "$s/setup-seconds.txt" 2>/dev/null || echo "setup not recorded")" \
                 "$(cat "$s/cpu.txt" 2>/dev/null || echo "cpu not recorded")" "$(head -n 1 "$s/blas.txt" 2>/dev/null || echo "blas not recorded")"
             done
-            printf 'env\t%s\n' "$(jq -c '.env // {}' .github/run-tests/params.json)"
+            printf 'env\t%s\n' "$(jq -c '.env // {}' "$REQUEST")"
             echo; echo "library (package, version, library):"
             cat "$first/library.tsv" 2>/dev/null || echo "no library table"
           } > "$res/meta.txt"

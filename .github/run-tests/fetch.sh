@@ -1,13 +1,20 @@
 #!/bin/bash
 # run-tests: wait for a run, download its `results` artifact and print the tables (bash and gh only).
 #
-# Usage: fetch.sh [<run id>] [<out dir>]
-#   <run id>   default: the latest run-tests run on the branch run-tests
+# Usage: fetch.sh [<run id> | <request name>] [<out dir>]
+#   <run id>        default: the latest run-tests run on the branch run-tests
+#   <request name>  the latest run titled "run-tests <name>" (the request file requests/<name>.json); it may take a
+#                   minute after the push before the dispatched run exists
 #   <out dir>  default: ./run-tests-<run id> (must not exist)
 set -euo pipefail
 repo="${RUN_TESTS_REPO:-APAF-bioinformatics/MultiScholaR}"
 run="${1:-}"
-if [ -z "$run" ]; then
+if [ -n "$run" ] && ! [[ "$run" =~ ^[0-9]+$ ]]; then
+    name="$run"
+    run="$(gh run list -R "$repo" -w run-tests.yml -b run-tests -L 100 --json databaseId,displayTitle \
+        -q "[.[] | select(.displayTitle == \"run-tests $name\")][0].databaseId // empty")"
+    [ -n "$run" ] || { echo "no run titled 'run-tests $name' (yet)" >&2; exit 1; }
+elif [ -z "$run" ]; then
     run="$(gh run list -R "$repo" -w run-tests.yml -b run-tests -L 1 --json databaseId -q '.[0].databaseId')"
     [ -n "$run" ] || { echo "no run-tests run found" >&2; exit 1; }
 fi

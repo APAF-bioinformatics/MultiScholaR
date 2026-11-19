@@ -1,0 +1,62 @@
+name: run-tests requests
+
+# One run-tests run per request: a push to the branch run-tests that adds files .github/run-tests/requests/<name>.json
+# dispatches .github/workflows/run-tests.yml once per added file (input request = <name>), so each request is its own
+# independent run, titled "run-tests <name>". A request file is never edited or reused: a changed file, or a name
+# that the branch's history already holds, is refused here (add a new file instead; .github/run-tests/README.md).
+# Deleted files start nothing. This job reads only file names and git history; it never sees DEPS_READ_TOKEN.
+
+on:
+  push:
+    branches:
+      - run-tests
+    paths:
+      - .github/run-tests/requests/**
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  dispatch:
+    name: dispatch
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: One run-tests run per added request file
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          if [[ "$BEFORE" =~ ^0+$ ]] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            echo "::error::no previous commit to compare with ($BEFORE)"; exit 1
+          fi
+          bad=0; names=()
+          while IFS=$'\t' read -r status path; do
+            case "$status" in
+              D) echo "deleted, nothing to run: $path"; continue ;;
+              A) ;;
+              *) echo "::error::$path was changed ($status): a request file is never edited; add a new file (new-request.sh <name>)"; bad=1; continue ;;
+            esac
+            if ! [[ "$path" =~ ^\.github/run-tests/requests/([a-z0-9][a-z0-9._-]{0,79})\.json$ ]]; then
+              echo "::error::$path is not a request file name (.github/run-tests/requests/<slug>.json; a-z, 0-9, '.', '_', '-')"; bad=1; continue
+            fi
+            if [ -n "$(git log --oneline -1 "$BEFORE" -- "$path")" ]; then
+              echo "::error::$path was used before on this branch: a request name is used once; add a new file"; bad=1; continue
+            fi
+            names+=("${BASH_REMATCH[1]}")
+          done < <(git diff --no-renames --name-status "$BEFORE" "$GITHUB_SHA" -- .github/run-tests/requests/)
+          { echo "### Requests in $GITHUB_SHA"; echo; } >> "$GITHUB_STEP_SUMMARY"
+          for name in "${names[@]}"; do
+            out="$(gh workflow run run-tests.yml --ref run-tests -f request="$name" 2>&1)" || { echo "::error::dispatch of $name failed: $out"; bad=1; continue; }
+            echo "$name: $out"
+            echo "- \`$name\`: dispatched as \"run-tests $name\" $(grep -o 'https://[^ ]*actions/runs/[0-9]*' <<< "$out" || true)" >> "$GITHUB_STEP_SUMMARY"
+          done
+          [ "${#names[@]}" -gt 0 ] || echo "no request to run" >> "$GITHUB_STEP_SUMMARY"
+          exit "$bad"
