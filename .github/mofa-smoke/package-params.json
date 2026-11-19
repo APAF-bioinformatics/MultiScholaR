@@ -1,7 +1,8 @@
 {
-  "label": "k140-model-tab",
-  "package_commit": "6c423b7a9b98b5e69a085e67b00398302a63e2dd",
+  "label": "k063-results",
+  "package_commit": "f0067320f4a77d1afc42a58bfa7c91e88c6f1cb6",
   "tests": [
+    "test-integration-results-mofa.R",
     "test-integration-model-tab-mofa.R",
     "test-integration-mofa-model.R"
   ],
