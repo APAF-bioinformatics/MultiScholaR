@@ -1,5 +1,5 @@
 {
-  "label": "KIT-131 follow-up: DIA worker QC figures and session archive through workflowShortScratchRoot; base d1fa3ada vs head d5c4e8d1 (kit-131-win-worker), proteomics QC, DIA products, saved exports, figure paths, process, worker, gui-entry-proteomics, check",
+  "label": "KIT-131 follow-up: DIA worker QC figures and session archive via workflowShortScratchRoot; base d1fa3ada vs head d5c4e8d1, proteomics QC, DIA products, exports, figure paths, check",
   "package_commit": "d5c4e8d1f4f3e64572ae9a31801c10f375d1481c",
   "base_commit": "d1fa3ada3e28feb4f6f714a8ad6f2309eef93cd4",
   "tools_ref": "",
