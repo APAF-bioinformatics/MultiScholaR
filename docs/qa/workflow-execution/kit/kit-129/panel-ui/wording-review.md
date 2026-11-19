@@ -456,8 +456,7 @@ unchanged (in transcriptomics with R1's figures). The figure is the omic's own f
 (the M36 table above: first-pass nulls with the separation rule).
 
 Caution: "Use this approach only when the unwanted variation is unlikely to differ between your groups. When it did in
-simulation, this approach reported {far more | more} false discoveries than the 5% target ({figure}). If the check
-below reports a detectable association, choose the recommended approach."
+simulation, this approach reported {far more | more} false discoveries than the 5% target ({figure}). {last sentence}"
 
 | Omic | {figure} | Source (`fdp_06` / `fdp_03`) |
 |---|---|---|
@@ -469,5 +468,15 @@ below reports a detectable association, choose the recommended approach."
 For the user's tweak: the draft's range (27% to 54%) is per omic here, so each note gives one figure, and each names the
 separation rule because the table's figures were measured with it (the pre-selected estimated number was not measured
 at 0.6). The check gives a verdict for this approach in classic proteomics only (detection limit 0.164); in DIA with
-limpa, transcriptomics, lipidomics and metabolomics it has no detection limit for this approach (texts 174 / 177), so the
-caution's last sentence cannot be triggered there.
+limpa, transcriptomics, lipidomics and metabolomics it has no detection limit for this approach (texts 174 / 177).
+
+**R3 follow-up (2026-11-19): the last sentence follows the detection limits.** As first shipped (039ce71d) every omic
+read "If the check below reports a detectable association, choose the recommended approach.", which points at a verdict
+the check never gives where it has no detection limit for this approach. The sentence is now chosen from
+`ruvGroupAssociationThresholds()` (a row for the omic and `first_pass_nulls` or not), not from a list of omics, so it
+follows the table if a limit is added later. Still the user's to tweak.
+
+| Omic | Detection limit for this approach | Old last sentence | New last sentence |
+|---|---|---|---|
+| Proteomics (DIA with IQ, LFQ, TMT) | 0.164 | If the check below reports a detectable association, choose the recommended approach. | unchanged |
+| Proteomics (DIA with limpa), transcriptomics, lipidomics, metabolomics | none | If the check below reports a detectable association, choose the recommended approach. | The check below shows how strongly the estimated unwanted factors are associated with your groups, but gives no verdict for this approach. Unless you know the unwanted variation does not differ between your groups, choose the recommended approach. |

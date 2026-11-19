@@ -1653,15 +1653,28 @@ omicGuiRuvSuppliedNote <- function(features, contaminated) {
 }
 
 #' The caution that leads the note of controls chosen from the data (ruling R3, the user, 2026-11-19), with the omic's
-#' own false discovery proportion under association with the groups (`ruvGroupAssociationConsequences()`).
+#' own false discovery proportion under association with the groups (`ruvGroupAssociationConsequences()`). Its last
+#' sentence follows `ruvGroupAssociationThresholds()`: it points at the check's verdict only where the check has a
+#' detection limit for this approach in this omic.
+#' @param omic The check's omic key (`proteomics` for classic, `dia_limpa`, `transcriptomics`, `lipidomics`,
+#'   `metabolomics`).
 #' @param more How far above the target (`far more`, `more`).
 #' @param measured The omic's measured figure and where it was measured.
 #' @return One string.
 #' @noRd
-omicGuiRuvFirstPassCaution <- function(more, measured) {
-    sprintf(paste("Use this approach only when the unwanted variation is unlikely to differ between your groups. When",
-        "it did in simulation, this approach reported %s false discoveries than the 5%% target (%s). If the check below",
-        "reports a detectable association, choose the recommended approach."), more, measured)
+omicGuiRuvFirstPassCaution <- function(omic, more, measured) {
+    thresholds <- ruvGroupAssociationThresholds()
+    has_limit <- any(thresholds$omic == omic & thresholds$ruv_design == "first_pass_nulls")
+    check <- if (has_limit) {
+        "If the check below reports a detectable association, choose the recommended approach."
+    } else {
+        paste("The check below shows how strongly the estimated unwanted factors are associated with your groups, but",
+            "gives no verdict for this approach. Unless you know the unwanted variation does not differ between your",
+            "groups, choose the recommended approach.")
+    }
+    paste(sprintf(paste("Use this approach only when the unwanted variation is unlikely to differ between your groups.",
+        "When it did in simulation, this approach reported %s false discoveries than the 5%% target (%s)."), more, measured),
+        check)
 }
 
 #' Classic proteomics (DIA with IQ, LFQ, TMT): ticket section 1a, simulator S1.
@@ -1685,7 +1698,7 @@ omicGuiRuvTableClassic <- function() {
                 source = "KIT-124 S1 arm 22 (scored/newarms-gha): worst cell C6 0.060, power C0 0.90")),
             source = "KIT-129 1a; KIT-124 S1 arm 8: worst cell C5 0.053, power C0 0.91; arm 9: C1 0.119"),
         first_pass_nulls = list(status = "measured", fdp = 0.077, fdp_where = cell[["c5"]], power = 0.91,
-            note = paste(omicGuiRuvFirstPassCaution("far more", paste("27.3% under strong association, a correlation of",
+            note = paste(omicGuiRuvFirstPassCaution("proteomics", "far more", paste("27.3% under strong association, a correlation of",
                 "0.6, with the separation rule for the number of factors")),
                 "Not when the unwanted variation is tied to the groups: it fails there with either rule",
                 "for the number of factors (7.7% false discoveries, as shown). At most 5.2% in the other scenarios",
@@ -1731,7 +1744,7 @@ omicGuiRuvTableDiaLimpa <- function() {
                 source = "KIT-124 S2 arm 22 (scored/newarms-gha): worst cell C5 0.056, power C0 0.90")),
             source = "KIT-129 1b; KIT-124 S2 arm 8: worst cell C6 0.056, power C0 0.91; arm 9: C1 0.089"),
         first_pass_nulls = list(status = "measured", fdp = 0.146, fdp_where = cell[["c5"]], power = 0.92,
-            note = paste(omicGuiRuvFirstPassCaution("far more", paste("30.1% under strong association, a correlation of",
+            note = paste(omicGuiRuvFirstPassCaution("dia_limpa", "far more", paste("30.1% under strong association, a correlation of",
                 "0.6, with the separation rule for the number of factors")),
                 "Fails in DIA with limpa, with either rule for the number of factors: too many false",
                 "discoveries in every scenario tested that had unwanted variation (7.1% to 14.6%; 9.0% in the",
@@ -1781,7 +1794,7 @@ omicGuiRuvTableTrx <- function() {
                 source = "KIT-124 S3 arm 22 (scored/newarms-gha; C6 void, not used): worst cell C2 0.053, power C0 0.61")),
             source = "KIT-129 1c; KIT-124 S3 arm 8: worst cell C2 0.056, power C0 0.76; arm 9: C1 0.076"),
         first_pass_nulls = list(status = "measured", fdp = 0.071, fdp_where = cell[["c5"]], power = 0.77,
-            note = paste(omicGuiRuvFirstPassCaution("more", paste("6.4% at a correlation of 0.3, with the separation",
+            note = paste(omicGuiRuvFirstPassCaution("transcriptomics", "more", paste("6.4% at a correlation of 0.3, with the separation",
                 "rule for the number of factors; a stronger association was not measured")),
                 "Not when the unwanted variation is tied to the groups: it fails there (7.1% false",
                 "discoveries, as shown, and 7.1% of unchanged genes with p below 0.05, more than the acceptance",
@@ -1837,8 +1850,9 @@ omicGuiRuvTableFeature <- function(features) {
                 source = "KIT-124 S4 arm 22 (scored/newarms-gha; C4, C6 void, not used): worst cell C2 0.118, C0 0.077, power C0 0.26")),
             source = "KIT-129 1d; KIT-124 S4 arm 8 (standards): worst cell C5 0.068, power C0 0.37; arm 9: C1 0.371"),
         first_pass_nulls = list(status = "measured", fdp = 0.174, fdp_where = cell[["c5"]], power = 0.44,
-            note = paste(omicGuiRuvFirstPassCaution("far more", paste("53.7% under strong association, a correlation of",
-                "0.6, with the separation rule for the number of factors")),
+            note = paste(omicGuiRuvFirstPassCaution(c(lipids = "lipidomics", metabolites = "metabolomics")[[features]],
+                "far more", paste("53.7% under strong association, a correlation of 0.6, with the separation rule for",
+                    "the number of factors")),
                 "Not when the unwanted variation is tied to the groups: it fails there (17.4% false",
                 "discoveries, as shown). With three groups it missed one acceptance criterion (7.2% false",
                 "discoveries). 4.1% to 6.2% in the other scenarios tested. With the separation rule it reports too",

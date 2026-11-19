@@ -145,13 +145,27 @@ test_that("the wording rulings of 2026-11-19 are the shipped notes and labels (R
         lipidomics.features = "far more false discoveries than the 5% target (53.7% under strong association",
         metabolomics.features = "far more false discoveries than the 5% target (53.7% under strong association",
         transcriptomics.genes = "more false discoveries than the 5% target (6.4% at a correlation of 0.3")
+    # The last sentence points at the check's verdict only where the check has a detection limit for this approach
+    # (classic proteomics today); elsewhere it says the check gives none.
+    verdict <- "If the check below reports a detectable association, choose the recommended approach."
+    no_verdict <- paste("The check below shows how strongly the estimated unwanted factors are associated with your groups,",
+        "but gives no verdict for this approach. Unless you know the unwanted variation does not differ between your groups,",
+        "choose the recommended approach.")
     for (name in names(caution)) {
         note <- ruvDesignOptions(tables[[name]])$first_pass_nulls$note
         expect_true(startsWith(note, "Use this approach only when the unwanted variation is unlikely to differ"), info = name)
         expect_match(note, caution[[name]], fixed = TRUE, info = name)
-        expect_match(note, "If the check below reports a detectable association, choose the recommended approach.",
-            fixed = TRUE, info = name)
+        with_limit <- identical(name, "proteomics.classic")
+        expect_identical(grepl(verdict, note, fixed = TRUE), with_limit, info = name)
+        expect_identical(grepl(no_verdict, note, fixed = TRUE), !with_limit, info = name)
     }
+    # The sentence follows the thresholds table, not a list of omics.
+    expect_match(omicGuiRuvFirstPassCaution("proteomics", "more", "x"), verdict, fixed = TRUE)
+    expect_match(omicGuiRuvFirstPassCaution("dia_limpa", "more", "x"), no_verdict, fixed = TRUE)
+    testthat::local_mocked_bindings(ruvGroupAssociationThresholds = function() data.frame(omic = "lipidomics",
+        ruv_design = "first_pass_nulls"))
+    expect_match(omicGuiRuvFirstPassCaution("lipidomics", "more", "x"), verdict, fixed = TRUE)
+    expect_match(omicGuiRuvFirstPassCaution("proteomics", "more", "x"), no_verdict, fixed = TRUE)
     # R1: transcriptomics quotes the separation rule that runs (power 25% tied to the groups, 5% with three groups).
     expect_match(ruvDesignOptions(tables[["transcriptomics.genes"]])$first_pass_nulls$note,
         "tied to the groups (power 25%) or with three groups (5%).", fixed = TRUE)
