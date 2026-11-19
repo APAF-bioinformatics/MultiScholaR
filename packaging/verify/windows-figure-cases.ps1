@@ -44,7 +44,7 @@ foreach ($case in $Cases) {
     & $runner -Bundle $Runtime -Script $script -NoBundleArgument -Arguments (@($Checkout, $TestTools, (Join-Path $Out "figures-$name"), $name) + $items) *> $log
     $code = $LASTEXITCODE
     "case ${name}: exit $code after $([math]::Round($clock.Elapsed.TotalSeconds)) s"
-    Get-Content $log | Where-Object { $_ -match '^(CASE|TEST|ITEM|FIGSUM|FIGURES|DEVICES|DEVROW|FIGROW|FIGPAIR|FIGPAIRSUM|RAISED|\s+expectation_)' }
+    Get-Content $log | Where-Object { $_ -match '^(CASE|TEST|ITEM|FIGSUM|FIGURES|DEVICES|DEVROW|FIGROW|FIGPAIR|FIGPAIRSUM|RAISED|SUMMARY|RENDER|REPORT|\s+expectation_)' }
     if ($code -ne 0) {
         $status = 1
         "case ${name}: the end of its log:"

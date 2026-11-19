@@ -132,6 +132,20 @@ for (item in items) {
             lines <- readLines(file.path(checkout, "tests", "testthat", "test-gui-entry-proteomics.R"))
             block <- gsub("^.*test_that\\(\"|\"$", "", regmatches(lines, regexpr("test_that\\(\"KIT-101 entry lane prot_tmt:[^\"]+\"", lines)))
             runBlock("test-gui-entry-proteomics.R", block)
+            # KIT-052 Summary confirmation (767ad7d6): the lane's record, when the lane wrote one, at its Summary steps.
+            record_path <- file.path(out_dir, "records", "prot_tmt.json")
+            if (file.exists(record_path)) {
+                record <- jsonlite::read_json(record_path, simplifyVector = FALSE)$steps
+                for (id in c("summary_refusal", "summary_save", "summary_copy", "summary_report", "summary_export")) {
+                    step <- record[[id]]
+                    if (is.null(step)) { cat(sprintf("REPORT %s %s: no such step in the record\n", case, id)); next }
+                    documents <- grep("\\.docx$", names(step$artifacts), value = TRUE)
+                    notes <- vapply(step$notifications, function(note) paste0(note$type, ": ", note$message), character(1))
+                    cat(sprintf("REPORT %s %s: .docx %s; notifications: %s\n", case, id,
+                        if (length(documents)) paste(documents, collapse = ", ") else "none",
+                        substr(gsub("[\r\n\t]+", " ", paste(notes, collapse = " | ")), 1L, 1200L)))
+                }
+            } else cat(sprintf("REPORT %s: the lane wrote no record (it stopped before its end)\n", case))
         },
         cat("unknown item", item, "\n"))
     cat(sprintf("ITEM %s %s: %.0f s\n", case, item, as.numeric(difftime(Sys.time(), started, units = "secs"))))
