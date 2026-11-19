@@ -1902,7 +1902,12 @@ checkCheckpointSummaryFiles <- function(member_dir, label, ruv_diagnostic = FALS
     session_state <- list.files(source, "^session_state_[0-9]{4}-[0-9]{2}-[0-9]{2}\\.RDS$", full.names = TRUE)
     if (length(session_state) != 1L) stop("missing or ambiguous summary session-state file")
     files <- c(study_source = file.path(source, "study_parameters.txt"),
-        integration_s4 = file.path(integration, sprintf(if (native_first) "proteomics_%s_final.msdia.tar" else "proteomics_%s_final_s4.RDS", label)),
+        # Protocol v1.11 item 3 (KIT-061): the integration input is the contract's folder `integration/proteomics/`;
+        # the S4 object and the native archive copy are no longer written there.
+        integration_manifest = file.path(integration, "proteomics", "integration_input.json"),
+        integration_matrix = file.path(integration, "proteomics", "matrix_proteomics.tsv"),
+        integration_features = file.path(integration, "proteomics", "features_proteomics.tsv"),
+        integration_samples = file.path(integration, "proteomics", "samples.tsv"),
         session_state = session_state,
         study_design = file.path(summary, "Study_report", "design_matrix.tab"),
         study_contrasts = file.path(summary, "Study_report", "contrasts_tbl.tab"),
@@ -1942,13 +1947,12 @@ checkCheckpointSummaryFiles <- function(member_dir, label, ruv_diagnostic = FALS
     if (native_first) {
         archive <- MultiScholaR:::readDIANativeLatestPath(file.path(source, "filtered_session_latest.json"))
         expected <- digest::digest(file = archive, algo = "sha256")
-        if (!identical(hashes[["integration_s4"]], expected) ||
-            !identical(hashes[["table_rds"]], expected)) stop("Summary native archive copy differs")
-    } else {
-        object <- readRDS(files[["integration_s4"]])
-        if (!methods::is(object, "ProteinQuantitativeData") || !methods::validObject(object)) {
-            stop("summary integration output is not a valid protein S4 object")
-        }
+        if (!identical(hashes[["table_rds"]], expected)) stop("Summary native archive copy differs")
+    }
+    # v1.11 item 3: the package's own reader validates the manifest, every file's sha256 and the tables' shapes.
+    input <- MultiScholaR:::readIntegrationInput(file.path(integration, "proteomics"))
+    if (!identical(input$manifest$omic_type, "proteomics") || !identical(names(input$views), "proteomics")) {
+        stop("summary integration input is not the proteomics view of KIT-061's contract")
     }
     figures <- checkCheckpointPublicationFigures(project)
     list(status = "passed_small_summary_files", files = as.list(files), sha256 = as.list(hashes),

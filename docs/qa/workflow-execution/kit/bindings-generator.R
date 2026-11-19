@@ -1587,7 +1587,12 @@ files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_drive
 # its PERF-107 lifecycle scenarios are retired): it is hashed with the kit harness files above instead.
 core_pinned <- c("tools/profiling/run_workflow_checkpoint_proof.R", "tools/profiling/run_workflow_checkpoint_proof.sh",
     "tools/profiling/workflow_perf106_repair.R")
-for (file in core_pinned) stopifnot(identical(hash(file.path(repo, file)), core$harness$files[[file]]))
+# Protocol v1.11 item 3 (user, U5, 2026-11-18): the CORE pin on run_workflow_checkpoint_proof.R is lifted for one edit
+# of checkCheckpointSummaryFiles (KIT-061's integration input); the file's new hash is bound with the kit harness files
+# below. The other CORE-pinned files stay equal to the CORE bindings.
+core_lifted <- "tools/profiling/run_workflow_checkpoint_proof.R"
+for (file in setdiff(core_pinned, core_lifted)) stopifnot(identical(hash(file.path(repo, file)), core$harness$files[[file]]))
+files <- c(files, core_lifted)
 b$harness <- list(root = file.path(proof, "kit/runtime"),
     coordinator = "tools/profiling/workflow_kit_coordinator.R", driver = "tools/profiling/workflow_kit_driver.R",
     member = "tools/profiling/workflow_kit_member.R",
@@ -1611,6 +1616,8 @@ b$harness <- list(root = file.path(proof, "kit/runtime"),
     step_map_trx = "docs/qa/workflow-execution/kit/kit-001/step-map-trx.json",
     step_map_trx_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-trx.json")),
     core_pinned_unchanged = TRUE,
+    # v1.11 item 3: the one file whose CORE pin is lifted; its hash is in `files`.
+    core_pin_lifted = core_lifted,
     files = as.list(stats::setNames(vapply(file.path(repo, files), hash, character(1), USE.NAMES = FALSE), files)))
 jsonlite::write_json(b, path, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)
 cat("bindings written:", path, "\nprotocol", b$harness$protocol_sha256, "\nstep map", b$harness$step_map_sha256, "\n")
