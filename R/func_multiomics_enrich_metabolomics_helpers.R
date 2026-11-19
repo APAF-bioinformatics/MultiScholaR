@@ -35,17 +35,14 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   dir.create(file.path(results_dir, assay_name), recursive = TRUE, showWarnings = FALSE)
   
   # 1. Extract metabolite weights from MOFA for the specific assay
-  message("   runMetabolomicsEnrichmentAnalysis Step: Extracting metabolite weights for assay...")
   metabolite_weights <- weights |>
     dplyr::filter(view == assay_name & factor == "Factor1") |>
     mutate(feature = str_replace_all(feature, paste0("_", assay_name), ""))
   
   message(sprintf("   runMetabolomicsEnrichmentAnalysis: Found %d metabolite weights", nrow(metabolite_weights)))
   message("   runMetabolomicsEnrichmentAnalysis: Sample weights:")
-  print(head(metabolite_weights, 5))
   
   # 2. Get ChEBI IDs from metabolomics object
-  message("   runMetabolomicsEnrichmentAnalysis Step: Getting ChEBI IDs from metabolomics object...")
   assay_index <- if(assay_name == "metabolome_lc") 1 else 2
   
   # Extract ChEBI IDs and corresponding metabolite names
@@ -58,44 +55,36 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   
   message(sprintf("   runMetabolomicsEnrichmentAnalysis: Extracted %d ChEBI IDs", nrow(chebi_mapping)))
   message("   runMetabolomicsEnrichmentAnalysis: Sample ChEBI mappings:")
-  print(head(chebi_mapping, 5))
   
   # Check missing ChEBI IDs
   missing_chebi_count <- sum(is.na(chebi_mapping$chebi_id))
   if (missing_chebi_count > 0) {
     message(sprintf("   runMetabolomicsEnrichmentAnalysis WARNING: %d metabolites missing ChEBI IDs", missing_chebi_count))
     message("Sample entries with missing ChEBI IDs:")
-    print(head(chebi_mapping[is.na(chebi_mapping$chebi_id),], 5))
   }
   
   # 3. Join metabolite weights with ChEBI IDs
-  message("   runMetabolomicsEnrichmentAnalysis Step: Joining weights with ChEBI IDs...")
   metabolite_weights_with_ids <- metabolite_weights |>
     left_join(chebi_mapping, by = c("feature" = "metabolite"))
   
   message(sprintf("   runMetabolomicsEnrichmentAnalysis: Joined table has %d rows", nrow(metabolite_weights_with_ids)))
   message("   runMetabolomicsEnrichmentAnalysis: Sample joined data:")
-  print(head(metabolite_weights_with_ids, 5))
   
   # 4. Filter out entries without ChEBI IDs
-  message("   runMetabolomicsEnrichmentAnalysis Step: Filtering out entries without ChEBI IDs...")
   metabolite_weights_with_ids <- metabolite_weights_with_ids |>
     dplyr::filter(!is.na(chebi_id))
   
   message(sprintf("   runMetabolomicsEnrichmentAnalysis: After filtering, %d entries remain", nrow(metabolite_weights_with_ids)))
   
   # Create ranked gene list for GSEA
-  message("   runMetabolomicsEnrichmentAnalysis Step: Creating ranked list for GSEA...")
   ranked_list <- metabolite_weights_with_ids |>
     dplyr::arrange(desc(value)) |>
     dplyr::pull(value, name = chebi_id)
   
   message(sprintf("   runMetabolomicsEnrichmentAnalysis: Created ranked list with %d entries", length(ranked_list)))
   message("   runMetabolomicsEnrichmentAnalysis: Top metabolites in ranked list:")
-  print(head(ranked_list, 5))
   
   # Run KEGG pathway enrichment analysis
-  message("   runMetabolomicsEnrichmentAnalysis Step: Running KEGG pathway enrichment...")
   kegg_results <- runKeggEnrichment(
     ranked_list = ranked_list, 
     mapping_table = mapping_table,
@@ -109,7 +98,6 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   message(sprintf("   runMetabolomicsEnrichmentAnalysis: KEGG analysis returned %d results", nrow(kegg_results)))
   
   # Run Reactome pathway enrichment analysis  
-  message("   runMetabolomicsEnrichmentAnalysis Step: Running Reactome pathway enrichment...")
   reactome_results <- runReactomeEnrichment(
     ranked_list = ranked_list, 
     mapping_table = mapping_table,
@@ -123,7 +111,6 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   message(sprintf("   runMetabolomicsEnrichmentAnalysis: Reactome analysis returned %d results", nrow(reactome_results)))
   
   # Combine results and format for visualization
-  message("   runMetabolomicsEnrichmentAnalysis Step: Combining KEGG and Reactome results...")
   combined_results <- bind_rows(
     kegg_results |> mutate(category = "KEGG"),
     reactome_results |> mutate(category = "Reactome")
@@ -133,8 +120,6 @@ runMetabolomicsEnrichmentAnalysis <- function(weights,
   message(sprintf("   runMetabolomicsEnrichmentAnalysis: Combined %d results total", nrow(combined_results)))
   
   # Save the combined results
-  message(sprintf("   runMetabolomicsEnrichmentAnalysis Step: Saving results to %s...", 
-                 file.path(results_dir, paste0(assay_name, "_enrichment_results.tab"))))
   vroom::vroom_write(combined_results, 
                     file.path(results_dir, paste0(assay_name, "_enrichment_results.tab")))
   
@@ -173,19 +158,16 @@ runMetabolomicsPathwayEnrichment <- function(weights,
   results_dir <- getProjectPaths(omic_type, experiment_label)$integration_enrichment_plots_dir
   
   # Inspect the structure of input objects
-  message("   runMetabolomicsPathwayEnrichment Step: Inspecting metabolomics object structure...")
   message(sprintf("   runMetabolomicsPathwayEnrichment: Metabolomics object has %d assays", length(metabolomics_obj@metabolite_data)))
   message(sprintf("   runMetabolomicsPathwayEnrichment: Assay 1 (LC) has %d metabolites", nrow(metabolomics_obj@metabolite_data[[1]])))
   message(sprintf("   runMetabolomicsPathwayEnrichment: Assay 2 (GC) has %d metabolites", nrow(metabolomics_obj@metabolite_data[[2]])))
   
-  message("   runMetabolomicsPathwayEnrichment Step: Inspecting weights data frame...")
   message(sprintf("   runMetabolomicsPathwayEnrichment: Weights data frame has %d entries", nrow(weights)))
   metabolome_lc_weights <- sum(weights$view == "metabolome_lc")
   metabolome_gc_weights <- sum(weights$view == "metabolome_gc")
   message(sprintf("   runMetabolomicsPathwayEnrichment: Found %d LC-MS weights and %d GC-MS weights", 
                  metabolome_lc_weights, metabolome_gc_weights))
   
-  message("   runMetabolomicsPathwayEnrichment Step: Inspecting mapping table...")
   message(sprintf("   runMetabolomicsPathwayEnrichment: Mapping table has %d entries", nrow(mapping_table)))
   kegg_mappings <- sum(!is.na(mapping_table$KEGG))
   chebi_mappings <- sum(!is.na(mapping_table$ChEBI))
@@ -193,7 +175,6 @@ runMetabolomicsPathwayEnrichment <- function(weights,
                  kegg_mappings, chebi_mappings))
   
   # Run enrichment for LC-MS metabolomics
-  message("   runMetabolomicsPathwayEnrichment Step: Running LC-MS metabolomics enrichment...")
   lc_results <- runMetabolomicsEnrichmentAnalysis(
     weights = weights,
     metabolomics_obj = metabolomics_obj,
@@ -209,7 +190,6 @@ runMetabolomicsPathwayEnrichment <- function(weights,
   message(sprintf("   runMetabolomicsPathwayEnrichment: LC-MS analysis returned %d results", nrow(lc_results)))
   
   # Run enrichment for GC-MS metabolomics
-  message("   runMetabolomicsPathwayEnrichment Step: Running GC-MS metabolomics enrichment...")
   gc_results <- runMetabolomicsEnrichmentAnalysis(
     weights = weights,
     metabolomics_obj = metabolomics_obj,
@@ -225,7 +205,6 @@ runMetabolomicsPathwayEnrichment <- function(weights,
   message(sprintf("   runMetabolomicsPathwayEnrichment: GC-MS analysis returned %d results", nrow(gc_results)))
   
   # Combine results
-  message("   runMetabolomicsPathwayEnrichment Step: Combining LC-MS and GC-MS results...")
   combined_results <- bind_rows(
     lc_results |> mutate(assay = "LC-MS"),
     gc_results |> mutate(assay = "GC-MS")
@@ -236,10 +215,8 @@ runMetabolomicsPathwayEnrichment <- function(weights,
   message(sprintf("   runMetabolomicsPathwayEnrichment: Combined results has %d entries", nrow(combined_results)))
   
   # Add original metabolite names
-  message("   runMetabolomicsPathwayEnrichment Step: Adding original metabolite names...")
   
   # Create a mapping from KEGG IDs to metabolite names
-  message("   runMetabolomicsPathwayEnrichment Step: Creating ID to name mapping tables...")
   
   # Extract all metabolite names and IDs from metabolomics object
   lc_names_mapping <- metabolomics_obj@metabolite_data[[1]] |>
@@ -270,7 +247,6 @@ runMetabolomicsPathwayEnrichment <- function(weights,
     )
   
   # Apply the mapping function to each row
-  message("   runMetabolomicsPathwayEnrichment Step: Mapping IDs to names...")
 
   if (nrow(combined_results) == 0) {
     message("   runMetabolomicsPathwayEnrichment: No results to map. Adding empty mappedNames column.")
@@ -346,8 +322,6 @@ runMetabolomicsPathwayEnrichment <- function(weights,
   }
   
   # Save combined results
-  message(sprintf("   runMetabolomicsPathwayEnrichment Step: Saving combined results to %s...", 
-                 file.path(results_dir, "combined_metabolomics_enrichment_results.tab")))
   vroom::vroom_write(combined_results, 
                     file.path(results_dir, "combined_metabolomics_enrichment_results.tab"))
   

@@ -244,7 +244,6 @@ calulatePearsonCorrelationForSamplePairsHelper <- function(
   message("*** PEARSON HELPER: Using matrix-based correlation (fast vectorized approach) ***")
 
   # Compute full correlation matrix in one call
-  message(sprintf("   [calulatePearsonCorrelationForSamplePairsHelper] Step: Computing correlation matrix..."))
   mat_start <- Sys.time()
   cor_matrix <- calculatePearsonCorrelationMatrix(
     input_table = input_table,

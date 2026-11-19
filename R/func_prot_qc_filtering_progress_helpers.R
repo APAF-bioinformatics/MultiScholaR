@@ -146,7 +146,6 @@ updateProteinFiltering <- function(data, step_name,
   filtering_progress <- readWorkflowFilteringProgress(progress_owner)
 
   # DEBUG66: Memory check
-  message("--- DEBUG66 [updatePeptideFiltering]: Entry ---")
   message(sprintf("   [updatePeptideFiltering] Step Name: %s", step_name))
   message(sprintf("   [updatePeptideFiltering] filtering_progress size: %s", format(object.size(filtering_progress), units = "auto")))
   gc()

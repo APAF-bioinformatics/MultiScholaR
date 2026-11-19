@@ -469,13 +469,6 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , ruv_fdr_method = "qvalue"
                                 , exclude_pool_samples = TRUE) {
 
-  message("--- DEBUG66: Entering getNegCtrlProtAnovaHelper ---")
-  message(sprintf("   DEBUG66 Arg: grouping_variable = %s", grouping_variable))
-  message(sprintf("   DEBUG66 Arg: percentage_as_neg_ctrl = %s", ifelse(is.null(percentage_as_neg_ctrl), "NULL", percentage_as_neg_ctrl)))
-  message(sprintf("   DEBUG66 Arg: num_neg_ctrl = %s", ifelse(is.null(num_neg_ctrl), "NULL", num_neg_ctrl)))
-  message(sprintf("   DEBUG66 Arg: exclude_pool_samples = %s", exclude_pool_samples))
-  message(sprintf("   DEBUG66 Data State: data_matrix dims = %d x %d", nrow(data_matrix), ncol(data_matrix)))
-  message(sprintf("   DEBUG66 Data State: design_matrix dims = %d x %d", nrow(design_matrix), ncol(design_matrix)))
 
   ## Both percentage_as_neg_ctrl and num_neg_ctrl is missing, and number of proteins >= 50 use only 10 percent of the proteins as negative control by default
   if((is.null(percentage_as_neg_ctrl) ||
@@ -488,7 +481,6 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
       getFunctionName(),
       ": Using 10% of proteins from the input matrix as negative controls by default."
     )
-    message("   DEBUG66: Defaulting to 10% negative controls")
   } else if (!is.null(percentage_as_neg_ctrl) &
              !is.na(percentage_as_neg_ctrl)) {
     num_neg_ctrl <- round( nrow(data_matrix)*percentage_as_neg_ctrl/100, 0)
@@ -499,7 +491,6 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
     stop(paste0( getFunctionName(), ": Please provide either percentage_as_neg_ctrl or num_neg_ctrl.\n"))
   }
   
-  message(sprintf("   DEBUG66: Target num_neg_ctrl = %d", num_neg_ctrl))
 
   # --- Pool/QC Sample Handling ---
   # Pool/QC samples should not influence negative control selection but can help
@@ -508,14 +499,12 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
   design_matrix_for_anova <- design_matrix
   
   if (exclude_pool_samples) {
-    message("   DEBUG66: Checking for Pool/QC samples to exclude...")
     # Detect Pool/QC groups (case-insensitive detection)
     all_groups <- unique(design_matrix[[grouping_variable]])
     is_pool_group <- grepl("pool", all_groups, ignore.case = TRUE)
     pool_group_names <- all_groups[is_pool_group]
     
     if (length(pool_group_names) > 0) {
-      message(sprintf("   DEBUG66: Found pool groups: %s", paste(pool_group_names, collapse=", ")))
       # Identify samples that belong to Pool groups
       samples_in_design <- rownames(design_matrix)
       pool_samples <- samples_in_design[design_matrix[[grouping_variable]] %in% pool_group_names]
@@ -529,7 +518,6 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
                        length(pool_group_names), paste(pool_group_names, collapse = ", ")))
         message(sprintf("*** NEG CTRL ANOVA: Excluding %d Pool samples from ANOVA ***", 
                        length(pool_samples_in_data)))
-        message(sprintf("   DEBUG66: Pool samples: %s", paste(pool_samples_in_data, collapse=", ")))
         
         # Create filtered matrices excluding Pool samples
         non_pool_samples <- setdiff(colnames(data_matrix), pool_samples_in_data)
@@ -564,9 +552,7 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
 
   ## Inspired by matANOVA function from PhosR package: http://www.bioconductor.org/packages/release/bioc/html/PhosR.html
 
-  message("   DEBUG66: Preparing for ANOVA...")
   grps <- design_matrix_for_anova[colnames(data_matrix_for_anova), grouping_variable]
-  message(sprintf("   DEBUG66: ANOVA groups vector length: %d", length(grps)))
 
   ps <- apply(data_matrix_for_anova, 1, function(x) {
        if( length( unique( grps[!is.na(x)] )  ) > 1 ) {
@@ -576,28 +562,22 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
        }
     })
 
-  message(sprintf("   DEBUG66: ANOVA p-values calculated. NA count: %d", sum(is.na(ps))))
   ps[is.na(ps)] <- 1
 
   aov <- c()
 
   if ( ruv_fdr_method == "qvalue") {
-    message("   DEBUG66: Calculating q-values...")
     aov <- qvalue(unlist(ps))$qvalues
   } else if ( ruv_fdr_method == "BH") {
-    message("   DEBUG66: Calculating BH adjusted p-values...")
     aov <- qvalue(unlist(ps), pi0=1)$qvalues
   } else {
     stop("Input FDR method ", ruv_fdr_method, " is not valid")
   }
 
-  message(sprintf("   DEBUG66: q-values calculated. Range: %.4f - %.4f", min(aov, na.rm=TRUE), max(aov, na.rm=TRUE)))
 
   filtered_list <- aov[aov > ruv_qval_cutoff]
-  message(sprintf("   DEBUG66: Proteins with q > %.4f: %d", ruv_qval_cutoff, length(filtered_list)))
 
   list_size <- ifelse(num_neg_ctrl > length(filtered_list), length(filtered_list), num_neg_ctrl)
-  message(sprintf("   DEBUG66: Selecting top %d proteins", list_size))
 
   control_genes <- names(sort(filtered_list, decreasing = TRUE)[1:list_size])
 
@@ -605,8 +585,6 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
   control_genes_index <- rownames(data_matrix) %in% control_genes
   names(control_genes_index) <- rownames(data_matrix)
 
-  message(sprintf("   DEBUG66: Final control genes selected: %d", sum(control_genes_index)))
-  message("--- DEBUG66: Exiting getNegCtrlProtAnovaHelper ---")
 
   return(control_genes_index)
 
@@ -720,10 +698,6 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     )
   }
 
-  message("--- DEBUG66: Entering findBestNegCtrlPercentage ---")
-  message(sprintf("   DEBUG66: percentage_range: %s", paste(range(percentage_range), collapse = "-")))
-  message(sprintf("   DEBUG66: adaptive_k_penalty: %s", adaptive_k_penalty))
-  message(sprintf("   DEBUG66: separation_metric: %s", separation_metric))
 
   # Input validation
   if (!inherits(normalised_protein_matrix_obj, "ProteinQuantitativeData")) {
@@ -825,7 +799,6 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
 
   # Process a single percentage, returning a fully annotated trace record
   process_percentage <- function(current_percentage, index) {
-    message(sprintf("   DEBUG66 Loop: Processing percentage %d%%", current_percentage))
     if (verbose && index %% 5 == 0) {
       log_info("Testing percentage {index}/{length(percentage_range)}: {current_percentage}%")
     }
@@ -860,7 +833,6 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     } else {
       NA_real_
     }
-    message(sprintf("      DEBUG66: realized_num_controls = %d", realized_num_controls))
 
     if (realized_num_controls < 5L) {
       if (verbose) {
@@ -901,8 +873,6 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
       bounded_curve$data <- bounded_curve$data[bounded_curve$data$K <= max_acceptable_k, , drop = FALSE]
     }
     separation_score <- calculateSeparationScore(bounded_curve, separation_metric)
-    message(sprintf("      DEBUG66: separation_score = %.4f",
-      ifelse(is.finite(separation_score), separation_score, NaN)))
 
     best_k <- tryCatch(
       findBestKElbow(bounded_curve),
@@ -940,8 +910,6 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
       k_penalty_weight,
       max_acceptable_k
     )
-    message(sprintf("      DEBUG66: composite_score = %.4f",
-      ifelse(is.finite(composite_score), composite_score, NaN)))
 
     if (!is.finite(composite_score)) {
       return(.make_failed_row(current_percentage, "error_scoring",
@@ -1036,7 +1004,6 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     log_info("  - Number of control genes: {sum(best_control_genes_index, na.rm = TRUE)}")
   }
 
-  message("--- DEBUG66: Exiting findBestNegCtrlPercentage ---")
 
   list(
     best_percentage          = best_percentage,

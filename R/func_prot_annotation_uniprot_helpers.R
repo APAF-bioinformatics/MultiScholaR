@@ -150,7 +150,6 @@ directUniprotDownload <- function(input_tbl,
   }
   
   message(paste("Querying", length(protein_ids), "valid UniProt IDs"))
-  print(head(protein_ids, 10))
   
   # Split into batches
   chunks <- split(protein_ids, ceiling(seq_along(protein_ids)/batch_size))
@@ -209,10 +208,6 @@ directUniprotDownload <- function(input_tbl,
           read.delim(temp_file, sep="\t", quote="", stringsAsFactors=FALSE)
         )
         
-        if (ncol(chunk_result) > 0) {
-          print(names(chunk_result))
-        }
-        
         if (nrow(chunk_result) > 0) {
           message(paste("  Found", nrow(chunk_result), "results"))
           return(chunk_result)
@@ -224,7 +219,6 @@ directUniprotDownload <- function(input_tbl,
         message(paste("      Error message:", e$message))
         message(paste("      Error class:", paste(class(e), collapse = ", ")))
         message(paste("      Error occurred at chunk", chunk_idx))
-        print(str(e))
         return(NULL)
       })
     } else {
@@ -239,7 +233,6 @@ directUniprotDownload <- function(input_tbl,
   total_chunks <- length(chunks)
   
   message("   First chunk protein IDs:")
-  print(head(chunks[[1]], 10))
   
   # Wrap purrr::imap in tryCatch to catch errors with full context
   results <- tryCatch({
@@ -250,7 +243,6 @@ directUniprotDownload <- function(input_tbl,
     message(sprintf("   Error message: %s", e$message))
     message(sprintf("   Error class: %s", paste(class(e), collapse = ", ")))
     message("   Full error structure:")
-    print(str(e))
     stop(e)
   })
   

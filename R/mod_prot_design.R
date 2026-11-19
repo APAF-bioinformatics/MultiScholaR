@@ -140,10 +140,8 @@ registerProtDesignServerShells <- function(
 
 mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes = NULL, qc_trigger = NULL) {
   message(sprintf("--- Entering mod_prot_design_server ---"))
-  message(sprintf("   mod_prot_design_server Arg: id = %s", id))
   
   shiny::moduleServer(id, function(input, output, session) {
-    message(sprintf("   mod_prot_design_server Step: Inside moduleServer function"))
 
     registerProtDesignServerShells(
       input = input,

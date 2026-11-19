@@ -153,7 +153,6 @@ setMethod(
         colnames(matrix_data) <- colnames(theObject@lipid_data[[1]])[-1]
         rownames(matrix_data) <- theObject@lipid_data[[1]]$Name
         data_matrix <- matrix_data
-        message("   differentialAbundanceAnalysisHelper Step: Calling runTestsContrasts...")
         contrasts_results <- runTestsContrasts(
             data_matrix,
             contrast_strings = contrasts_tbl$contrasts,
@@ -163,7 +162,6 @@ setMethod(
             eBayes_trend = eBayes_trend,
             eBayes_robust = eBayes_robust
         )
-        message("   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed.")
 
         #  # Combine all contrast results into a single data frame
         # # message("   Data State (contrasts_results$results) Structure:")

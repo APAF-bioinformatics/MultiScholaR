@@ -215,14 +215,9 @@ resolveProtEnrichOrganismMapping <- function(workflowData,
       !is.null(workflowData$mixed_species_analysis$organism_mapping)) {
     organismMapping <- workflowData$mixed_species_analysis$organism_mapping
     mappingSource <- "workflow_data"
-    catFn("   ENRICHMENT Step: Using organism_mapping from import module\n")
   }
 
   if (is.null(organismMapping) && !is.null(uniprotDatCln)) {
-    catFn(sprintf(
-      "   ENRICHMENT Step: Checking uniprot_dat_cln columns: %s\n",
-      paste(names(uniprotDatCln), collapse = ", ")
-    ))
 
     organismNameToTaxid <- c(
       "Homo sapiens" = "9606", "Human" = "9606",
@@ -249,7 +244,6 @@ resolveProtEnrichOrganismMapping <- function(workflowData,
     }
 
     if ("Organism" %in% names(uniprotDatCln) && !is.null(accessionColumn)) {
-      catFn("   ENRICHMENT Step: Found 'Organism' column with organism names - mapping to taxon IDs\n")
 
       mapOrganismToTaxid <- function(orgName) {
         if (is.na(orgName) || orgName == "") {
@@ -274,38 +268,15 @@ resolveProtEnrichOrganismMapping <- function(workflowData,
           dplyr::select(uniprot_acc, taxon_id)
       }, error = function(e) {
         warningMessage <<- e$message
-        catFn(sprintf("   ENRICHMENT Step: Error creating organism_mapping from names: %s\n", e$message))
         NULL
       })
 
       if (!is.null(organismMapping)) {
         mappingSource <- "organism_names"
         availableTaxonIds <- unique(organismMapping$taxon_id)
-        catFn(sprintf(
-          "   ENRICHMENT Step: Created organism_mapping from organism names (%d entries)\n",
-          nrow(organismMapping)
-        ))
-        catFn(sprintf(
-          "   ENRICHMENT Step: Unique taxon IDs mapped: %s\n",
-          paste(availableTaxonIds[!is.na(availableTaxonIds)], collapse = ", ")
-        ))
 
         if (targetTaxon %in% availableTaxonIds) {
           targetCount <- sum(organismMapping$taxon_id == targetTaxon, na.rm = TRUE)
-          catFn(sprintf(
-            "   ENRICHMENT Step: Found %d proteins matching target taxon %s\n",
-            targetCount,
-            targetTaxon
-          ))
-        } else {
-          catFn(sprintf(
-            "   ENRICHMENT Step: WARNING - Target taxon %s not found in mapped taxon IDs!\n",
-            targetTaxon
-          ))
-          catFn(sprintf(
-            "   ENRICHMENT Step: Available taxon IDs: %s\n",
-            paste(availableTaxonIds[!is.na(availableTaxonIds)], collapse = ", ")
-          ))
         }
       }
     } else {
@@ -317,7 +288,6 @@ resolveProtEnrichOrganismMapping <- function(workflowData,
       for (col in possibleTaxonCols) {
         if (col %in% names(uniprotDatCln)) {
           taxonColumn <- col
-          catFn(sprintf("   ENRICHMENT Step: Found taxon column: %s\n", taxonColumn))
           break
         }
       }
@@ -339,28 +309,17 @@ resolveProtEnrichOrganismMapping <- function(workflowData,
             dplyr::select(uniprot_acc, taxon_id)
         }, error = function(e) {
           warningMessage <<- e$message
-          catFn(sprintf("   ENRICHMENT Step: Error creating organism_mapping: %s\n", e$message))
           NULL
         })
 
         if (!is.null(organismMapping)) {
           mappingSource <- "taxon_column"
-          catFn(sprintf(
-            "   ENRICHMENT Step: Created organism_mapping from taxon column (%d entries)\n",
-            nrow(organismMapping)
-          ))
         }
       } else if (!is.null(accessionColumn)) {
-        catFn("   ENRICHMENT Step: No organism column found - creating single-species mapping\n")
         organismMapping <- uniprotDatCln |>
           dplyr::select(uniprot_acc = dplyr::all_of(accessionColumn)) |>
           dplyr::mutate(taxon_id = targetTaxon)
         mappingSource <- "single_species_fallback"
-        catFn(sprintf(
-          "   ENRICHMENT Step: Created single-species organism_mapping (%d entries, all assigned to taxon %s)\n",
-          nrow(organismMapping),
-          targetTaxon
-        ))
       }
     }
   }
@@ -406,11 +365,6 @@ applyProtEnrichOrganismFilter <- function(daResultsForEnrichment,
     unique()
   targetProteinsClean <- unique(normalizeUniprotFn(targetProteins, remove_isoform = TRUE))
 
-  catFn(sprintf(
-    "   ENRICHMENT Step: Found %d proteins for target taxon %s\n",
-    length(targetProteins),
-    targetTaxon
-  ))
 
   if (!is.null(daResultsForEnrichment@da_data) &&
       length(daResultsForEnrichment@da_data) > 0) {
@@ -429,13 +383,6 @@ applyProtEnrichOrganismFilter <- function(daResultsForEnrichment,
         filteredData <- contrastData[keepRows, , drop = FALSE]
         filteredCount <- nrow(filteredData)
 
-        catFn(sprintf(
-          "   ENRICHMENT Step: Contrast '%s': %d -> %d proteins (removed %d non-target organism)\n",
-          contrastName,
-          originalCount,
-          filteredCount,
-          originalCount - filteredCount
-        ))
 
         proteinsBefore <<- proteinsBefore + originalCount
         proteinsAfter <<- proteinsAfter + filteredCount
@@ -453,12 +400,6 @@ applyProtEnrichOrganismFilter <- function(daResultsForEnrichment,
 
     daResultsForEnrichment@da_data <- filteredDeData
 
-    catFn(sprintf(
-      "*** ENRICHMENT Step: Organism filtering complete - kept %d/%d proteins (%.1f%%) ***\n",
-      proteinsAfter,
-      proteinsBefore,
-      (proteinsAfter / max(proteinsBefore, 1)) * 100
-    ))
   }
 
   filterStats <- list(
@@ -505,40 +446,23 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
     uniprotDatCln <- workflowData$uniprot_dat_cln
     shareAnnotations(uniprotDatCln)
     annotationSource <- "workflow_data"
-    catFn("   ENRICHMENT Step: Found uniprot_dat_cln in workflow_data\n")
   } else if (!is.null(globalEnv) && exists("uniprot_dat_cln", envir = globalEnv)) {
     # Script/test seam only: the application passes no environment (KIT-013).
     uniprotDatCln <- get("uniprot_dat_cln", envir = globalEnv)
     annotationSource <- "global_environment"
-    catFn("   ENRICHMENT Step: Found uniprot_dat_cln in workflow_data\n")
   } else {
-    catFn("   ENRICHMENT Step: No uniprot_dat_cln found - checking source directory\n")
 
     sourcePath <- filePathFn(experimentPaths$source_dir, "uniprot_dat_cln.RDS")
     if (fileExistsFn(sourcePath)) {
-      catFn(sprintf("   ENRICHMENT Step: Found uniprot_dat_cln.RDS at %s\n", sourcePath))
       tryCatch({
         uniprotDatCln <- readRdsFn(sourcePath)
         workflowData$uniprot_dat_cln <- uniprotDatCln
         shareAnnotations(uniprotDatCln)
         annotationSource <- "source_directory"
-        catFn(sprintf(
-          "   ENRICHMENT Step: Successfully loaded %d UniProt annotations from source directory\n",
-          nrow(uniprotDatCln)
-        ))
       }, error = function(e) {
         loadError <<- e$message
         uniprotDatCln <<- NULL
-        catFn(sprintf(
-          "   ENRICHMENT Step: Error loading UniProt from source directory: %s\n",
-          e$message
-        ))
       })
-    } else {
-      catFn(sprintf(
-        "   ENRICHMENT Step: No uniprot_dat_cln.RDS found at %s\n",
-        sourcePath
-      ))
     }
   }
 
@@ -550,14 +474,9 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
     workflowData$uniprot_dat_cln <- uniprotDatCln
     shareAnnotations(uniprotDatCln)
     annotationSource <- "test_mode_deterministic"
-    catFn(sprintf(
-      "   ENRICHMENT Step: Created %d deterministic test-mode UniProt annotations\n",
-      nrow(uniprotDatCln)
-    ))
   }
 
   if (is.null(uniprotDatCln)) {
-    catFn("   ENRICHMENT Step: Attempting to create UniProt annotations on-the-fly\n")
 
     tryCatch({
       cacheDir <- filePathFn(experimentPaths$results_dir, "cache", "uniprot_annotations")
@@ -576,13 +495,9 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
         workflowData$uniprot_dat_cln <- uniprotDatCln
         shareAnnotations(uniprotDatCln)
         annotationSource <- "generated"
-        catFn("   ENRICHMENT Step: Successfully created uniprot_dat_cln on-the-fly\n")
-      } else {
-        catFn("   ENRICHMENT Step: No protein table available for annotation creation\n")
       }
     }, error = function(e) {
       creationError <<- e$message
-      catFn(sprintf("   ENRICHMENT Step: Error creating UniProt annotations: %s\n", e$message))
     })
   }
 
@@ -614,7 +529,6 @@ resolveProtEnrichAnnotationMatching <- function(uniprotDatCln,
     ))
   }
 
-  catFn("   ENRICHMENT Step: Attempting UniProt annotation matching\n")
 
   proteinIdCol <- tryCatch(
     currentS4Object@protein_id_column,
@@ -634,15 +548,9 @@ resolveProtEnrichAnnotationMatching <- function(uniprotDatCln,
     )
 
     matchRate <- annotationMatchResults$match_statistics$match_rate
-    catFn(sprintf(
-      "   ENRICHMENT Step: Annotation matching completed - %d%% match rate\n",
-      matchRate
-    ))
   }, error = function(e) {
     warningMessage <<- e$message
     annotationMatchResults <<- NULL
-    catFn(sprintf("   ENRICHMENT Step: Warning in annotation matching: %s\n", e$message))
-    catFn("   ENRICHMENT Step: Continuing with enrichment analysis...\n")
   })
 
   list(

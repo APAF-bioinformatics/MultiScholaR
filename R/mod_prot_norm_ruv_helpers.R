@@ -100,10 +100,6 @@ resolveProtNormRuvParameters <- function(
           verbose = TRUE
         )
 
-        if (!is.null(optimization_result$optimization_results)) {
-          print(head(optimization_result$optimization_results, 3))
-        }
-
         if (is.data.frame(optimization_result$optimization_results)) {
           print(optimization_result$optimization_results)
         }

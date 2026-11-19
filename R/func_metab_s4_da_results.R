@@ -238,7 +238,6 @@ setClass("MetabolomicsDifferentialAbundanceResults",
                 dplyr::left_join(counts_table_to_use, by = join_by(!!sym(id_col_name) == !!sym(id_col_name))) |>
                 dplyr::distinct()
 
-            print(head(long_results))
 
             # Assign to the correct slot and return the object
             object@results_table_long <- long_results

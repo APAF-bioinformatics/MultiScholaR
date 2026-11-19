@@ -67,7 +67,6 @@ runReactomeEnrichment <- function(ranked_list,
   
   # Load ChEBI to Reactome mapping
   tryCatch({
-    message(sprintf("   runReactomeEnrichment Step: Loading ChEBI to Reactome mapping from %s...", file.path(data_dir, "chebi_to_reactome.tab")))
     
     # Check if file exists
     if (!file.exists(file.path(data_dir, "chebi_to_reactome.tab"))) {
@@ -88,8 +87,6 @@ runReactomeEnrichment <- function(ranked_list,
       dplyr::select(chebi_id, reactome_id, reactome_term, organism)
     
     message(sprintf("   runReactomeEnrichment: Loaded %d rows from chebi_to_reactome.tab", nrow(chebi_to_reactome)))
-    message("   runReactomeEnrichment Step: Sample of ChEBI to Reactome mapping:")
-    print(head(chebi_to_reactome, 5))
     
     # List available organisms in the data
     unique_organisms <- unique(chebi_to_reactome$organism)
@@ -107,15 +104,12 @@ runReactomeEnrichment <- function(ranked_list,
     }
     
     # Extract just the numeric part from ChEBI IDs to match our format
-    message("   runReactomeEnrichment Step: Formatting ChEBI IDs...")
     modified_chebi_to_reactome <- chebi_to_reactome |>
       dplyr::mutate(
         numeric_id = as.numeric(str_extract(chebi_id, "\\d+")),
         new_chebi_id = paste0("CHEBI:", numeric_id)
       )
     
-    message("   runReactomeEnrichment Step: Sample after numeric ID extraction:")
-    print(head(modified_chebi_to_reactome, 5))
     
     chebi_to_reactome <- modified_chebi_to_reactome |>
       dplyr::select(-chebi_id) |>
@@ -123,18 +117,10 @@ runReactomeEnrichment <- function(ranked_list,
       dplyr::filter(!is.na(numeric_id))  # Remove any that didn't convert properly
     
     message(sprintf("   runReactomeEnrichment: After ChEBI ID formatting, %d rows remain", nrow(chebi_to_reactome)))
-    message("   runReactomeEnrichment Step: Sample of formatted ChEBI IDs:")
-    print(head(chebi_to_reactome, 5))
     
     # Check which ChEBI IDs overlap with our ranked list
-    message("   runReactomeEnrichment Step: Checking for ChEBI IDs that overlap with ranked list...")
     chebi_ids_in_ranked_list <- intersect(chebi_to_reactome$chebi_id, names(ranked_list))
     message(paste("Found", length(chebi_ids_in_ranked_list), "metabolites that overlap with Reactome pathways."))
-    
-    if (length(chebi_ids_in_ranked_list) > 0) {
-      message("   runReactomeEnrichment Step: Sample matching ChEBI IDs:")
-      message(paste(head(chebi_ids_in_ranked_list, 5), collapse=", "))
-    }
     
     if (length(chebi_ids_in_ranked_list) == 0) {
       message("No overlap between ChEBI IDs in ranked list and Reactome database. Returning empty result.")
@@ -148,12 +134,9 @@ runReactomeEnrichment <- function(ranked_list,
     }
     
     # Create a subset of the ranked list with only IDs that are in Reactome
-    message("   runReactomeEnrichment Step: Creating filtered ranked list...")
     reactome_ranked_list <- ranked_list[chebi_ids_in_ranked_list]
     
     message(sprintf("   runReactomeEnrichment: Created ranked list with %d metabolites", length(reactome_ranked_list)))
-    message("   runReactomeEnrichment Step: Sample values from ranked list:")
-    print(head(reactome_ranked_list))
     
     # Sort the ranked list in decreasing order 
     reactome_ranked_list <- sort(reactome_ranked_list, decreasing = TRUE)
@@ -166,7 +149,6 @@ runReactomeEnrichment <- function(ranked_list,
     # Show basic statistics
     
     # Add small random noise to break ties in the ranked list
-    message("   runReactomeEnrichment Step: Adding small random noise to break ties in ranked list...")
     set.seed(42) # For reproducibility (KIT-064, roar BUG-22: intentional; the tie-break noise must be identical across runs)
     original_reactome_ranked_list <- reactome_ranked_list # Store original for reference
     reactome_ranked_list <- reactome_ranked_list + runif(length(reactome_ranked_list), min=-0.0001, max=0.0001)
@@ -198,15 +180,12 @@ runReactomeEnrichment <- function(ranked_list,
     }
     
     # Create TERM2GENE mapping
-    message("   runReactomeEnrichment Step: Creating TERM2GENE mapping...")
     term2gene <- chebi_to_reactome |>
       dplyr::filter(chebi_id %in% names(reactome_ranked_list)) |>
       dplyr::select(reactome_id, chebi_id) |>
       dplyr::rename(term = reactome_id, gene = chebi_id)
     
     message(sprintf("   runReactomeEnrichment: Created TERM2GENE mapping with %d rows", nrow(term2gene)))
-    message("   runReactomeEnrichment Step: Sample TERM2GENE mapping:")
-    print(head(term2gene, 5))
     
     # Check if we have pathways
     if (nrow(term2gene) == 0) {
@@ -227,15 +206,12 @@ runReactomeEnrichment <- function(ranked_list,
                    length(unique_terms), length(unique_genes)))
     
     # Create TERM2NAME mapping
-    message("   runReactomeEnrichment Step: Creating TERM2NAME mapping...")
     term2name <- chebi_to_reactome |>
       dplyr::select(reactome_id, reactome_term) |>
       dplyr::distinct() |>  # FIXED: Added distinct here to avoid duplicates
       dplyr::rename(term = reactome_id, name = reactome_term)
     
     message(sprintf("   runReactomeEnrichment: Created TERM2NAME mapping with %d rows", nrow(term2name)))
-    message("   runReactomeEnrichment Step: Sample TERM2NAME mapping:")
-    print(head(term2name, 5))
     
     # Debug: check for duplicate pathways
     duplicated_terms <- term2name$term[duplicated(term2name$term)]
@@ -258,11 +234,9 @@ runReactomeEnrichment <- function(ranked_list,
         dplyr::mutate(name = term)
       
       message("   runReactomeEnrichment: Created fallback term2name mapping:")
-      print(head(term2name, 3))
     }
     
     # Try to run GSEA analysis
-    message("   runReactomeEnrichment Step: Running GSEA analysis...")
     
     # ABSOLUTE FINAL SAFETY CHECK - verify both term2gene and term2name exist
     if (!exists("term2gene") || nrow(term2gene) == 0) {
@@ -315,11 +289,9 @@ runReactomeEnrichment <- function(ranked_list,
       
       if (length(positive_genes) > 0) {
         tryCatch({
-          message("   runReactomeEnrichment Step: Running enricher analysis...")
           message(paste(head(positive_genes, 10), collapse=", "))
           
           # Try with higher p-value cutoff
-          message("   runReactomeEnrichment Step: Using higher p-value cutoff (0.1)...")
           enricher_result <- clusterProfiler::enricher(
             gene = positive_genes,
             universe = names(reactome_ranked_list),
@@ -348,7 +320,6 @@ runReactomeEnrichment <- function(ranked_list,
     
     # Format results for visualization
     if (!is.null(gsea_result)) {
-      message("   runReactomeEnrichment Step: Formatting results...")
       
       if (class(gsea_result)[1] == "enrichResult") {
         # Result from enricher

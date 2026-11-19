@@ -31,7 +31,6 @@ setMethod(
     }
 
     print(rownames(design_matrix))
-    print(colnames(frozen_protein_matrix))
     print(rowinfo_vector)
     # Handle missing/non-finite values
     working_matrix <- frozen_protein_matrix
