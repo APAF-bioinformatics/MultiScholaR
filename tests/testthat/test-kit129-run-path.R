@@ -1530,7 +1530,8 @@ test_that("(sixth pass items 4 and 5) lipidomics and metabolomics: the record ca
         listed <- c(sprintf("neg_f%03d", 21:40), sprintf("pos_f%03d", 11:30), "NOT_A_FEATURE")
         parameters <- utils::modifyList(kit129OmicsRuvParameters("supplied_controls", ruv_k = 1L, ruv_k_rule = "user"),
             list(ruv_control_ids = rev(listed)))
-        kit129Quiet(runWorkflowOmicsReferenceRuv(binding, fixture$owner, parameters, list()))
+        # the module's configuration, as the tab passes it (the replay commits with the head's)
+        kit129Quiet(runWorkflowOmicsReferenceRuv(binding, fixture$owner, parameters, fixture$workflow$config_list))
         record <- buildWorkflowAnalysisRecord(fixture$owner)
         step <- Filter(function(step) identical(step$operation, paste0(binding$prefix, "_ruv")), record$steps)[[1L]]
         o <- step$outcomes
@@ -1611,7 +1612,8 @@ test_that("(sixth pass items 4 and 5) DIA with limpa: the record carries the dec
         c(ruv_k_typed = 1, ruv_k = 1, ruv_k_seed = 5, ruv_control_list_count = length(listed), ruv_control_list_found = length(listed),
             ruv_control_count = length(listed)))
     expect_true(isTRUE(o$ruv_applied))
-    expect_identical(kit129StepParameter(step, "ruv_control_ids"), rev(listed))
+    # the list as the declaration holds it: its canonical form (each id once, sorted)
+    expect_identical(kit129StepParameter(step, "ruv_control_ids"), trxCanonicalControlIds(listed))
     saved <- kit129SaveReopenReplay(manager, root, c("initial", "correlation_filtered"))
     expect_identical(saved$replay$states, unlist(manager$.context$snapshot$state_history))
     expect_identical(as.character(saved$replay$mismatches), character())
