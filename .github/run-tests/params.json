@@ -1,21 +1,21 @@
 {
-  "label": "KIT-129 sixth pass correction: bbeb3740 against a9d6b240, test-kit129-run-path.R with sva",
-  "package_commit": "bbeb374038d8f0783a3773fbe05148531b77e2c9",
-  "base_commit": "a9d6b24086e572b2bb2b76e503d6299a0eb1cc88",
+  "label": "merge-check 791cc5f3",
+  "package_commit": "791cc5f346715f9aa4fe790dde5c015f37c1dab3",
+  "base_commit": "78e9c2775b54e686b3c04565c9249c0e1f389c67",
   "tools_ref": "",
-  "tests": [
-    "test-kit129-run-path.R"
-  ],
-  "shards": 1,
+  "tests": "all",
+  "shards": 20,
   "file_timeout_minutes": 45,
-  "file_timeouts": {},
-  "extra_packages": [
-    "sva"
-  ],
-  "env": {
-    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
   },
-  "check": false,
+  "extra_packages": [],
+  "env": {},
+  "check": true,
   "blas": "reference",
   "fetch_refs": [],
   "scripts": []
