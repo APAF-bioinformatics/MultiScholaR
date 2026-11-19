@@ -1,0 +1,6 @@
+run	what	jobs	attempts	job_seconds	core_hours
+44419142081	lifecycle (C0, C0R, runs 1 to 4)	6 + plan	all first	3369	3.74
+44421002832	scoring lifecycle	1	first	32	0.04
+44421250021	the declared run (C0R, C4R, S1R, runs 3001 to 3500)	9 + plan	all first	19300	21.44
+44431538031	the declared scoring, once	1	first	37	0.04
+	total			22738	25.26

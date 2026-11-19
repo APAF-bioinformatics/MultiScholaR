@@ -1,0 +1,7 @@
+purpose: score
+label: r0b-random
+cells: C0R,C4R,S1R
+runs: 3001 to 3500
+R: R version 4.6.1 (2026-06-24)
+finished: 2026-11-19 00:45:52 UTC
+run_id 44431538031; commit cb7a3d8c467bbc01893740224a6e7f8a3ba5e9e8; scored run 44421250021

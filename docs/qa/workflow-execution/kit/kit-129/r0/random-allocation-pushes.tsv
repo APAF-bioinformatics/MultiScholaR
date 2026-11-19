@@ -1,0 +1,7 @@
+commit	pushed_utc	activity	what
+c2bd327e	2026-11-18T23:15:11Z	push	variant cells, workflows, scoring script
+120c689c	2026-11-18T23:15:24Z	push	lifecycle launch (run 44419142081)
+d3538ff4	2026-11-18T23:28:08Z	push	scoring lifecycle (run 44421002832)
+29093154	2026-11-18T23:29:47Z	push	declaration, alone
+62c052bc	2026-11-18T23:29:57Z	push	launch params (run 44421250021)
+cb7a3d8c	2026-11-19T00:45:14Z	push	scoring params, purpose score (run 44431538031)
