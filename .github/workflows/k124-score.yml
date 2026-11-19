@@ -91,13 +91,19 @@ jobs:
               done
             done
             echo "$sim: merged ${#parts[@]} part(s): ${parts[*]##*/}"
+            # score.json `top_level` (list of simulators): aggregate.R reads cells/ when it has files and the top-level
+            # tables otherwise; a simulator whose cells come partly in run ranges is scored from its top-level tables
+            if jq -e --arg s "$sim" '(.top_level // []) | index($s)' "$p" > /dev/null; then
+              rm -rf "$out/cells"; echo "$sim: cells/ dropped, scored from the top-level tables"
+            fi
           done
       - name: aggregate.R, once per simulator
         env:
           LABEL: ${{ steps.plan.outputs.label }}
         run: |
           raw="$RUNNER_TEMP/raw"; out="$RUNNER_TEMP/out/$LABEL"; mkdir -p "$out"
-          for sim in s1 s2 s3 s4; do
+          # score.json `sims` (optional): the simulators scored; default all that have tables
+          for sim in $(jq -r '(.sims // ["s1", "s2", "s3", "s4"]) | join(" ")' .github/k124-sim/score.json); do
             [ -d "$raw/$sim" ] || continue
             mkdir -p "$out/$sim"
             Rscript "$RUNNER_TEMP/aggregate.R" "$out/$sim" "${sim^^}=$raw/$sim" > "$out/$sim/run.log" 2>&1

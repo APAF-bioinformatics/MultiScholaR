@@ -1,5 +1,5 @@
 {
-  "label": "confirm-gha",
+  "label": "confirm-gha-s3",
   "runs": [
     {
       "run": 44443281402,
@@ -8,11 +8,21 @@
     {
       "run": 44443334468,
       "label": "confirm-p2x"
+    },
+    {
+      "run": 44596252326,
+      "label": "confirm-p2t"
     }
   ],
   "aggregate": {
     "commit": "2ba5cf87fd2bb370fe8d9bb8a5afdd2c2c8336ec",
     "path": "docs/qa/workflow-execution/kit/kit-124/aggregate.R",
     "sha256": "089d852c1f3b08d70096b1218ef26550f393cffd213e4bdd9980453075fd2a66"
-  }
+  },
+  "sims": [
+    "s3"
+  ],
+  "top_level": [
+    "s3"
+  ]
 }
