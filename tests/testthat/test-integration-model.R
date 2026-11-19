@@ -142,7 +142,13 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
     table <- integrationMofaParameterTable()
     expect_identical(table$parameter, setdiff(integrationMofaParameterNames(), c("input_manifests", "views")))
     expect_true(all(nzchar(table$settled_by)))
-    expect_true(all(grepl("workbook", table$settled_by)))
+    # Every method choice is the workbook's to settle, except the precision, decided by the user (INT-6).
+    expect_true(all(grepl("workbook", table$settled_by[table$parameter != "precision"])))
+    expect_identical(table$default[table$parameter == "precision"], "double")
+    expect_match(table$settled_by[table$parameter == "precision"], "INT-6")
+    expect_identical(integrationResolveMofaParameters(object)$precision, "double")
+    expect_identical(integrationMofaOptions(integrationResolveMofaParameters(object, list(precision = "single")))$precision, "single")
+    expect_error(integrationResolveMofaParameters(object, list(precision = "half")), class = "integration_parameters_invalid")
     # The package loads without MOFA2; the probe then says so.
     if (!requireNamespace("MOFA2", quietly = TRUE)) {
         capability <- integrationMofaCapability()
@@ -175,6 +181,9 @@ test_that("KIT-062: the owner commits the inputs state, the identity follows the
     expect_false(identical(identity(defaults), identity(changed)))
     changed <- defaults
     changed$input_manifests[["proteomics"]] <- strrep("0", 64L)
+    expect_false(identical(identity(defaults), identity(changed)))
+    changed <- defaults
+    changed$precision <- "single"
     expect_false(identical(identity(defaults), identity(changed)))
     changed <- defaults
     changed$views <- rev(defaults$views)

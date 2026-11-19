@@ -520,7 +520,7 @@ workflowOperationDefaults <- local({
             internal_standards = "no_shipped_default", missing_samples = "no_shipped_default", feature_selection = "no_shipped_default",
             features_per_view = "no_shipped_default", scaling = "no_shipped_default", scale_views = "no_shipped_default",
             center_groups = "no_shipped_default", num_factors = "no_shipped_default", convergence_mode = "no_shipped_default",
-            maxiter = "no_shipped_default", seed = "no_shipped_default"))
+            maxiter = "no_shipped_default", seed = "no_shipped_default", precision = "no_shipped_default"))
 })
 
 #' A reader's label for every declared parameter (KIT-039, IM-07): one line per parameter, keyed by operation.
@@ -640,7 +640,9 @@ workflowParameterLabels <- local({
             feature_selection = "Feature selection per view (none, or the most variable)", features_per_view = "Features kept per view (most variable)",
             scaling = "Per-feature scaling (none, or Z-score within its view)", scale_views = "Scale each view to unit variance (MOFA2 scale_views)",
             center_groups = "Centre the features (MOFA2 center_groups)", num_factors = "Number of factors",
-            convergence_mode = "Convergence mode (fast, medium or slow)", maxiter = "Maximum iterations", seed = "Training seed"))
+            convergence_mode = "Convergence mode (fast, medium or slow)", maxiter = "Maximum iterations", seed = "Training seed",
+            precision = paste("Numeric precision: double gives the same model on every computer; single uses less memory",
+                "for very large studies, and its results can differ slightly between computers")))
 })
 
 #' Register one operation.

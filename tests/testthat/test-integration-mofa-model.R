@@ -118,8 +118,19 @@ test_that("KIT-062: the trained factors, weights and variance explained equal th
     reference <- intMofaReference()
     for (name in names(tables)) {
         path <- file.path(reference, paste0(name, ".tsv"))
-        if (!file.exists(path)) fail(sprintf("no stored result %s (written by the MOFA2 lane's recording run)", path))
-        else expect_equal(tables[[name]], intMofaReadTable(path), tolerance = 1e-5, info = name)
+        if (!file.exists(path)) {
+            fail(sprintf("no stored result %s (written by the MOFA2 lane's recording run)", path))
+            next
+        }
+        stored <- intMofaReadTable(path)
+        numeric <- names(stored)[vapply(stored, is.numeric, logical(1))]
+        if (identical(dim(stored), dim(tables[[name]]))) {
+            a <- as.matrix(tables[[name]][numeric])
+            b <- as.matrix(stored[numeric])
+            message(sprintf("KIT-062 stored-result comparison, %s: largest relative difference %.3g (absolute %.3g)",
+                name, max(abs(a - b)) / max(abs(b)), max(abs(a - b))))
+        }
+        expect_equal(tables[[name]], stored, tolerance = 1e-5, info = name)
     }
 })
 

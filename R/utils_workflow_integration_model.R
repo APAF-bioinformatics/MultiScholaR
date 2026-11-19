@@ -200,7 +200,13 @@ integrationMofaParameterSpec <- function() {
         num_factors = list(default = 5L, choices = NULL, settled_by = workbook),
         convergence_mode = list(default = "fast", choices = c("fast", "medium", "slow"), settled_by = workbook),
         maxiter = list(default = 1000L, choices = NULL, settled_by = workbook),
-        seed = list(default = 20261119L, choices = NULL, settled_by = workbook))
+        seed = list(default = 20261119L, choices = NULL, settled_by = workbook),
+        # INT-6 (user, 2026-11-19): decided, not provisional. Double precision gives the same model on every computer
+        # (KIT-062 diagnosis run 44462198417: MOFA2's float32 default followed one of two training paths depending on
+        # the CPU model and thread count); single precision uses less memory for very large studies, and its results
+        # can differ slightly between computers.
+        precision = list(default = "double", choices = c("double", "single"),
+            settled_by = "INT-6 (decided 2026-11-19: double, the same model on every computer)"))
 }
 
 #' The provisional-parameter table (one row per method parameter), for the ticket, the ledger and the GUI.
@@ -456,7 +462,7 @@ integrationAlignViews <- function(object, parameters) {
 #' The MOFA2 options the declared parameters set (every other MOFA2 option stays at its default).
 #' @noRd
 integrationMofaOptions <- function(parameters) {
-    parameters[c("scale_views", "center_groups", "num_factors", "convergence_mode", "maxiter", "seed")]
+    parameters[c("scale_views", "center_groups", "num_factors", "convergence_mode", "maxiter", "seed", "precision")]
 }
 
 #' Whether MOFA2 can train here (KIT-062; D6: Python optional and probed): the R packages MOFA2 and reticulate, and a
@@ -506,6 +512,8 @@ integrationTrainMofa <- function(views, options) {
     data_options <- MOFA2::get_default_data_options(object)
     data_options$scale_views <- options$scale_views
     data_options$center_groups <- options$center_groups
+    # INT-6: MOFA2 trains in single precision unless told otherwise; double is the shipped setting.
+    data_options$use_float32 <- identical(options$precision, "single")
     model_options <- MOFA2::get_default_model_options(object)
     model_options$num_factors <- options$num_factors
     training_options <- MOFA2::get_default_training_options(object)
