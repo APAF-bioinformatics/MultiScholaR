@@ -224,3 +224,30 @@ R 4.6.1, Rust 1.99.1, token handling, no cache, no artifact.
 for a repair after this run if C1 fails for a package reason.
 
 **Decision.** C1 met or not met per step; item 3's cause stated with its evidence; then the tickets' Status lines.
+
+### Confirmation run result (run 44472789530 on 6b08bace = 3330b3ae + merge of kit-131-win-worker d1fa3ada)
+
+The run's conclusion is "failure" only through the in-process lanes step's known oracle differences (27/8, as before).
+No instrumentation fault.
+
+- **C1 (met, with one difference explained):** `lipid_canonical` on plain workers ran to its end (9 managed waits,
+  38 worker processes, 0 left after close). Against the in-process lane of the same runner: no figure, plot output,
+  file or notification differs any more (the 16 QC PNGs, the composite and the 16 normalisation plot outputs are now
+  present and identical). What remains: (a) the store's entity counts at every step (accepted at Linux step 8);
+  (b) the normalisation log text (`norm-norm_log`, 8 steps from `session_export`) and `session_summary` (2 steps):
+  the same keys also differ between the in-process lane and the oracle, and the in-process `norm_log` digest itself
+  changed between two runs of the same lane on the same image (8c3a5ec9... in 44464483568, 97c7723c... here), so it is
+  run-dependent text the recorder does not mask, not a worker difference.
+  Probe evidence: the worker's `TMPDIR` is 244 characters and its `tempdir()` 255; before the repair a ggsave or
+  `ragg::agg_png` in its `wfx-` folder (317 to 318 characters) wrote nothing and said nothing, while
+  `grDevices::png` wrote; the worker has `TMP`/`TEMP` = `C:\Users\RUNNER~1\AppData\Local\Temp` (36). With the repair
+  the replayed `lipid_qc_figures` handler drew all 8 figures under `TMP` at 91 to 99 characters and copied them into
+  the request folder (259 to 267 characters, long paths on).
+- **C2 (met):** e2e lanes 88, 190, 16, 153, 0 failures.
+- **C3:** root 89: the Summary `.docx` written, 0 of 346 figures missing (35/2, the two known mask failures).
+  Roots 118 and 129: the lane stops loudly at QC with the four classed refusals naming the 48 Q-value staged copies
+  (`workflow_figure_unwritten/saved_entity_outputs_pending`). **Item 3:** the unclassed "cannot open the connection"
+  is raised by the lane's own test step, `helper-gui-entry.R:794` (`summary_report`: `readLines` of
+  `filtered_session_summary.txt`, which the refused workflow never wrote), not by package code; it is not a path-length
+  failure of the package. The earlier 33-second stop at root 130 (44457268709) was not reproduced (root reached 129
+  here, same TMPDIR); the CONN lines were again captured by the lane harness.
