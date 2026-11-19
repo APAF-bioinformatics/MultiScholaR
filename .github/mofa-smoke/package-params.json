@@ -1,0 +1,6 @@
+{
+  "label": "k062-record",
+  "package_commit": "96f892fad387dc8a0edb57a1c20192ae0129766d",
+  "tests": ["test-integration-mofa-model.R", "test-integration-model.R"],
+  "record": true
+}
