@@ -1,0 +1,37 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S3 C1$simulator	character	2000			0	agree	
+S3 C1$cell	character	2000			0	agree	
+S3 C1$cell_class	character	2000			0	agree	
+S3 C1$run	integer	2000			0	agree	
+S3 C1$arm	character	2000			0	agree	
+S3 C1$subset	character	2000			0	agree	
+S3 C1$status	character	2000			0	agree	
+S3 C1$seed	integer	2000			0	agree	
+S3 C1$k	integer	2000			0	agree	
+S3 C1$n_features	integer	2000			0	agree	
+S3 C1$n_true	integer	2000			0	agree	
+S3 C1$n_calls	integer	2000			0	agree	
+S3 C1$null_p05	double	2000	0	0	0	agree	
+S3 C1$null_p01	double	2000	0	0	0	agree	
+S3 C1$fdp	double	2000	0	0	0	agree	
+S3 C1$power	double	2000	0	0	0	agree	
+S3 C1$bias	double	2000	6.17102243416242e-08	7.97125004892152e-11	0	agree	
+S3 C1$rmse	double	2000	7.98620374582459e-10	1.753510114888e-10	0	agree	
+S3 C7$simulator	character	2000			0	agree	
+S3 C7$cell	character	2000			0	agree	
+S3 C7$cell_class	character	2000			0	agree	
+S3 C7$run	integer	2000			0	agree	
+S3 C7$arm	character	2000			0	agree	
+S3 C7$subset	character	2000			0	agree	
+S3 C7$status	character	2000			0	agree	
+S3 C7$seed	integer	2000			0	agree	
+S3 C7$k	integer	2000			0	agree	
+S3 C7$n_features	integer	2000			0	agree	
+S3 C7$n_true	integer	2000			0	agree	
+S3 C7$n_calls	integer	2000			0	agree	
+S3 C7$null_p05	double	2000	0	0	0	agree	
+S3 C7$null_p01	double	2000	0	0	0	agree	
+S3 C7$fdp	double	2000	0	0	0	agree	
+S3 C7$power	double	2000	0	0	0	agree	
+S3 C7$bias	double	2000	0	0	0	agree	
+S3 C7$rmse	double	2000	0	0	0	agree	

@@ -1,0 +1,37 @@
+simulator	reading	cell	column	verdict	max_rel	rule_bearing
+S3	gate	C1	simulator	agree		FALSE
+S3	gate	C1	cell	agree		FALSE
+S3	gate	C1	cell_class	agree		FALSE
+S3	gate	C1	run	agree		FALSE
+S3	gate	C1	arm	agree		FALSE
+S3	gate	C1	subset	agree		FALSE
+S3	gate	C1	status	agree		TRUE
+S3	gate	C1	seed	agree		FALSE
+S3	gate	C1	k	agree		TRUE
+S3	gate	C1	n_features	agree		TRUE
+S3	gate	C1	n_true	agree		TRUE
+S3	gate	C1	n_calls	agree		TRUE
+S3	gate	C1	null_p05	agree	0	TRUE
+S3	gate	C1	null_p01	agree	0	TRUE
+S3	gate	C1	fdp	agree	0	TRUE
+S3	gate	C1	power	agree	0	TRUE
+S3	gate	C1	bias	agree	6.17102243416242e-08	FALSE
+S3	gate	C1	rmse	agree	7.98620374582459e-10	FALSE
+S3	gate	C7	simulator	agree		FALSE
+S3	gate	C7	cell	agree		FALSE
+S3	gate	C7	cell_class	agree		FALSE
+S3	gate	C7	run	agree		FALSE
+S3	gate	C7	arm	agree		FALSE
+S3	gate	C7	subset	agree		FALSE
+S3	gate	C7	status	agree		TRUE
+S3	gate	C7	seed	agree		FALSE
+S3	gate	C7	k	agree		TRUE
+S3	gate	C7	n_features	agree		TRUE
+S3	gate	C7	n_true	agree		TRUE
+S3	gate	C7	n_calls	agree		TRUE
+S3	gate	C7	null_p05	agree	0	TRUE
+S3	gate	C7	null_p01	agree	0	TRUE
+S3	gate	C7	fdp	agree	0	TRUE
+S3	gate	C7	power	agree	0	TRUE
+S3	gate	C7	bias	agree	0	FALSE
+S3	gate	C7	rmse	agree	0	FALSE
