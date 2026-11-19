@@ -1038,32 +1038,45 @@ test_that("(sixth pass M36) each limit's measured consequences are its approach'
     # every validated limit has its approach's figures
     expect_true(all(key(thresholds) %in% key(consequences)))
     expect_identical(anyDuplicated(key(consequences)), 0L)
-    # the arm each shipped combination reproduces
-    expect_identical(consequences$arm[match(key(thresholds), key(consequences))], thresholds$arm)
+    # the shipped arm of each calibrated combination (KIT-129 final figures, 2026-11-20): recommended 34 (calibrated on
+    # arm 7), supplied list 35 (arm 8), first-pass nulls with the separation rule 40 (arm 5)
+    expect_identical(consequences$arm[match(key(thresholds), key(consequences))],
+        unname(c(`7` = 34L, `8` = 35L, `5` = 40L)[as.character(thresholds$arm)]))
     root <- testthat::test_path("..", "..")
     read <- function(path) {
         file <- file.path(root, "docs/qa/workflow-execution/kit/kit-124/scored", path)
         if (file.exists(file)) utils::read.delim(file, stringsAsFactors = FALSE)
     }
-    figure <- function(table, simulator, cell, arm) {
-        hit <- table$mean_fdp[table$simulator == simulator & table$cell == cell & table$arm == arm & table$subset == "full" & !table$void]
-        if (length(hit)) hit else NA_real_
-    }
+    # each figure is the mean FDP of the table, arm and cell its source names; NA (not measured) with no source
+    fields <- c(fdp_0 = "source_0", fdp_03 = "source_03", fdp_06 = "source_06", uncorrected_06 = "source_uncorrected_06")
     for (i in seq_len(nrow(consequences))) {
         row <- consequences[i, ]
-        final <- read(sprintf("final-20261118/%s/k124-cells.tsv", tolower(row$simulator)))
-        own <- if (row$arm == 24L) read("newarms-gha/k124-cells.tsv") else final
-        if (is.null(final) || is.null(own)) next
-        expect_equal(c(row$fdp_0, row$fdp_03, row$fdp_06), c(figure(own, row$simulator, "C0", row$arm), figure(own, row$simulator, "C5", row$arm),
-            figure(own, row$simulator, "S3", row$arm)), tolerance = 1e-6, info = key(row))
-        expect_equal(row$uncorrected_06, figure(final, row$simulator, "S3", 1L), tolerance = 1e-6, info = key(row))
+        for (field in names(fields)) {
+            source <- row[[fields[[field]]]]
+            expect_identical(is.na(source), is.na(row[[field]]), info = paste(key(row), field))
+            if (is.na(source)) next
+            parts <- regmatches(source, regexec("^(\\S+) arm ([0-9]+) (\\S+)$", source))[[1L]]
+            expect_length(parts, 4L)
+            table <- read(parts[[2L]])
+            if (is.null(table)) next
+            hit <- table$mean_fdp[table$simulator == row$simulator & table$cell == parts[[4L]] & table$arm == as.integer(parts[[3L]]) &
+                table$subset == "full" & !table$void]
+            expect_length(hit, 1L)
+            expect_equal(row[[field]], hit, tolerance = 1e-6, info = paste(key(row), field))
+        }
     }
-    # M36's quoted figures for the recommended design
+    # only the shipped method's figures: the confirmation round's tables, or the exactness round's arm the round
+    # found identical (32 in classic and DIA, 31 in transcriptomics) for the recommended design's C0 and C5
+    sources <- unlist(consequences[startsWith(names(consequences), "source_")], use.names = FALSE)
+    sources <- sources[!is.na(sources)]
+    expect_true(all(startsWith(sources, "confirm-gha/") | grepl("^exact-gha/k124-cells.tsv arm 3[12] C[05]$", sources) |
+        grepl("^final-20261118/s2/k124-cells.tsv arm 1 S3$", sources)))
+    # M36's quoted figures for the recommended design, as shipped after the confirmation round
     recommended <- consequences[consequences$ruv_design == "groups_all_features", ]
     expect_identical(sprintf("%.3f", unlist(recommended[recommended$omic == "proteomics", c("fdp_0", "fdp_03", "fdp_06", "uncorrected_06")])),
-        c("0.054", "0.056", "0.062", "0.593"))
+        c("0.055", "0.058", "NA", "NA"))
     expect_identical(sprintf("%.3f", unlist(recommended[recommended$omic == "lipidomics", c("fdp_0", "fdp_03", "fdp_06", "uncorrected_06")])),
-        c("0.057", "0.072", "0.130", "0.642"))
+        c("0.072", "0.085", "0.148", "0.642"))
     # a check against a limit records its approach's figures
     group <- rep(c("A", "B"), each = 6L)
     check <- ruvGroupAssociationCheck(cbind(W1 = rep(c(1, -1), 6L)), group, "transcriptomics", "groups_all_features", "num_sv_be")

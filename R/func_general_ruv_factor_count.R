@@ -445,38 +445,57 @@ ruvFactorGroupAssociations <- function(W, group) {
 
 #' Each approach's measured consequences of an unwanted factor associated with the groups (decision M36): the mean
 #' false discovery proportion at a 5% target (`mean_fdp`, subset `full`) in KIT-124's cells with association 0 (C0),
-#' 0.3 (C5) and 0.6 (stress S3), the approach's own arm, and without correction (arm 1) at 0.6. One row per omic,
-#' design and k rule: the arm each shipped combination reproduces (7 recommended, 8 supplied list, with the estimated
-#' number; first-pass nulls with the separation rule: arm 5, in transcriptomics arm 24). NA where the cell was not
-#' measured for that arm (never another approach's figure).
-#' @return A data frame: `omic`, `ruv_design`, `ruv_k_rule`, `simulator`, `arm`, `fdp_0`, `fdp_03`, `fdp_06`,
-#'   `uncorrected_06`, `source`.
+#' 0.3 (C5) and 0.6 (stress S3), of the shipped method, and without correction at 0.6. One row per omic, design and k
+#' rule. Every figure is the shipped method's (KIT-129 final figures, 2026-11-20, decisions M40, M41): the
+#' confirmation round's own arm (34 recommended, 35 supplied list, 40 first-pass nulls with the separation rule;
+#' `scored/confirm-gha`), or, where the round found the shipped arm identical to a simulator arm and did not re-run it,
+#' that arm (32 in classic proteomics and DIA, 31 in transcriptomics; `scored/exact-gha`). Without correction is arm 1,
+#' which the shipped "No RUV" equals except in classic proteomics (M30's test, arm 27, not run at 0.6). NA where the
+#' shipped method was not measured in the cell (never another method's figure). `source_*` name each figure's table
+#' (under `scored/`), arm and cell, NA with the figure.
+#' @return A data frame: `omic`, `ruv_design`, `ruv_k_rule`, `simulator`, `arm` (the shipped arm), `fdp_0`, `fdp_03`,
+#'   `fdp_06`, `uncorrected_06`, `source_0`, `source_03`, `source_06`, `source_uncorrected_06`, `source`.
 #' @noRd
 ruvGroupAssociationConsequences <- function() {
     scored <- "docs/qa/workflow-execution/kit/kit-124/scored/"
-    row <- function(omic, ruv_design, ruv_k_rule, simulator, arm, fdp_0, fdp_03, fdp_06, uncorrected_06, source) {
-        data.frame(omic = omic, ruv_design = ruv_design, ruv_k_rule = ruv_k_rule, simulator = simulator, arm = arm, fdp_0 = fdp_0,
-            fdp_03 = fdp_03, fdp_06 = fdp_06, uncorrected_06 = uncorrected_06,
-            source = paste0(scored, source, if (!identical(source, sprintf("final-20261118/%s/k124-cells.tsv", tolower(simulator))))
-                sprintf("; arm 1: %sfinal-20261118/%s/k124-cells.tsv", scored, tolower(simulator))), stringsAsFactors = FALSE)
+    # figures: c(fdp_0, fdp_03, fdp_06, uncorrected_06); sources: the same four, "<table> arm <n> <cell>" or NA
+    row <- function(omic, ruv_design, ruv_k_rule, simulator, arm, figures, sources) {
+        names(sources) <- c("source_0", "source_03", "source_06", "source_uncorrected_06")
+        data.frame(omic = omic, ruv_design = ruv_design, ruv_k_rule = ruv_k_rule, simulator = simulator, arm = arm,
+            fdp_0 = figures[[1L]], fdp_03 = figures[[2L]], fdp_06 = figures[[3L]], uncorrected_06 = figures[[4L]], as.list(sources),
+            source = paste0(scored, paste(stats::na.omit(sources), collapse = paste0("; ", scored))), stringsAsFactors = FALSE)
     }
+    at <- function(table, arm, cells) sprintf("%s arm %d %s", table, arm, cells)
+    confirm <- function(simulator) sprintf("confirm-gha/%s/k124-cells.tsv", tolower(simulator))
     final <- function(simulator) sprintf("final-20261118/%s/k124-cells.tsv", tolower(simulator))
+    exact <- "exact-gha/k124-cells.tsv"
     lipid_metab <- function(omic) rbind(
-        row(omic, "groups_all_features", "num_sv_be", "S4", 7L, 0.0574542, 0.0723922, 0.130459, 0.641749, final("S4")),
-        row(omic, "supplied_controls", "num_sv_be", "S4", 8L, 0.0500134, 0.0676851, 0.120356, 0.641749, final("S4")),
-        row(omic, "first_pass_nulls", "sweep_bounded", "S4", 5L, 0.0974275, 0.238564, 0.537242, 0.641749, final("S4")))
+        row(omic, "groups_all_features", "num_sv_be", "S4", 34L, c(0.0718345, 0.0853125, 0.147893, 0.641749),
+            c(at(confirm("S4"), 34L, c("C0", "C5", "S3")), at(confirm("S4"), 1L, "S3"))),
+        row(omic, "supplied_controls", "num_sv_be", "S4", 35L, c(0.0625196, 0.0788929, NA_real_, 0.641749),
+            c(at(confirm("S4"), 35L, c("C0", "C5")), NA, at(confirm("S4"), 1L, "S3"))),
+        row(omic, "first_pass_nulls", "sweep_bounded", "S4", 40L, c(0.108193, 0.261378, NA_real_, 0.641749),
+            c(at(confirm("S4"), 40L, c("C0", "C5")), NA, at(confirm("S4"), 1L, "S3"))))
     rbind(
-        row("proteomics", "groups_all_features", "num_sv_be", "S1", 7L, 0.0535118, 0.0560489, 0.0616284, 0.593446, final("S1")),
-        row("proteomics", "supplied_controls", "num_sv_be", "S1", 8L, 0.0506339, 0.0530153, 0.0584843, 0.593446, final("S1")),
-        row("proteomics", "first_pass_nulls", "sweep_bounded", "S1", 5L, 0.0515094, 0.077624, 0.272569, 0.593446, final("S1")),
-        row("dia_limpa", "groups_all_features", "num_sv_be", "S2", 7L, 0.0514045, 0.0525753, 0.0651367, 0.532737, final("S2")),
-        row("dia_limpa", "supplied_controls", "num_sv_be", "S2", 8L, 0.0514643, 0.0542155, 0.0727574, 0.532737, final("S2")),
-        row("dia_limpa", "first_pass_nulls", "sweep_bounded", "S2", 5L, 0.0935895, 0.149448, 0.300619, 0.532737, final("S2")),
-        row("transcriptomics", "groups_all_features", "num_sv_be", "S3", 7L, 0.048062, 0.0480989, 0.0524544, 0.450032, final("S3")),
-        row("transcriptomics", "supplied_controls", "num_sv_be", "S3", 8L, 0.0484711, 0.0475697, 0.0479324, 0.450032, final("S3")),
-        # arm 24 (the separation rule on the first pass's own controls) was not run in stress S3
-        row("transcriptomics", "first_pass_nulls", "sweep_bounded", "S3", 24L, 0.0467308, 0.0643636, NA_real_, 0.450032,
-            "newarms-gha/k124-cells.tsv"),
+        # classic proteomics: the shipped "No RUV" (M30's test) was not run at 0.6, so no figure without correction
+        row("proteomics", "groups_all_features", "num_sv_be", "S1", 34L, c(0.0547652, 0.0575541, NA_real_, NA_real_),
+            c(at(exact, 32L, c("C0", "C5")), NA, NA)),
+        row("proteomics", "supplied_controls", "num_sv_be", "S1", 35L, c(0.0519283, 0.0540003, NA_real_, NA_real_),
+            c(at(confirm("S1"), 35L, c("C0", "C5")), NA, NA)),
+        row("proteomics", "first_pass_nulls", "sweep_bounded", "S1", 40L, c(0.052777, 0.0794385, NA_real_, NA_real_),
+            c(at(confirm("S1"), 40L, c("C0", "C5")), NA, NA)),
+        row("dia_limpa", "groups_all_features", "num_sv_be", "S2", 34L, c(0.0519799, 0.0534066, NA_real_, 0.532737),
+            c(at(exact, 32L, c("C0", "C5")), NA, at(final("S2"), 1L, "S3"))),
+        row("dia_limpa", "supplied_controls", "num_sv_be", "S2", 35L, c(0.0522004, 0.0548745, NA_real_, 0.532737),
+            c(at(confirm("S2"), 35L, c("C0", "C5")), NA, at(final("S2"), 1L, "S3"))),
+        row("dia_limpa", "first_pass_nulls", "sweep_bounded", "S2", 40L, c(0.0947208, 0.151014, NA_real_, 0.532737),
+            c(at(confirm("S2"), 40L, c("C0", "C5")), NA, at(final("S2"), 1L, "S3"))),
+        row("transcriptomics", "groups_all_features", "num_sv_be", "S3", 34L, c(0.048062, 0.0480989, 0.0524544, 0.450032),
+            c(at(exact, 31L, c("C0", "C5")), at(confirm("S3"), 34L, "S3"), at(confirm("S3"), 1L, "S3"))),
+        row("transcriptomics", "supplied_controls", "num_sv_be", "S3", 35L, c(0.0484711, 0.0475697, NA_real_, 0.450032),
+            c(at(confirm("S3"), 35L, c("C0", "C5")), NA, at(confirm("S3"), 1L, "S3"))),
+        row("transcriptomics", "first_pass_nulls", "sweep_bounded", "S3", 40L, c(0.0467308, 0.0643636, NA_real_, 0.450032),
+            c(at(confirm("S3"), 40L, c("C0", "C5")), NA, at(confirm("S3"), 1L, "S3"))),
         lipid_metab("lipidomics"), lipid_metab("metabolomics"))
 }
 

@@ -8,28 +8,29 @@ ruvDesignOmics <- c("proteomics", "lipidomics", "metabolomics", "transcriptomics
 ruvDesignIds <- c("groups_all_features", "technical_replicates", "supplied_controls", "first_pass_nulls", "legacy", "none")
 
 # Each table's measured figures: false discovery proportion in the worst cell, and power (ticket 1a to 1d; since
-# decision M15 of 2026-11-18 the first-pass nulls' is the one measured with the estimated number, and the
-# technical-replicate design of lipid and metab is the re-measurement: kit-124/outcome.md, "New arms and the
-# technical-duplicate re-measurement").
+# decision M15 of 2026-11-18 the first-pass nulls' is the one measured with the estimated number). Since the KIT-129
+# final figures (2026-11-20, decisions M40, M41) every figure is the shipped method's: KIT-124's confirmation round
+# (scored/confirm-gha), or the simulator arm the round found identical (docs/qa/workflow-execution/kit/kit-129/
+# final-figures.tsv).
 ruvDesignFigures <- list(
-    classic = list(groups_all_features = c(0.066, 0.91), technical_replicates = c(0.054, 0.90),
-        supplied_controls = c(0.053, 0.91), first_pass_nulls = c(0.077, 0.91), legacy = c(0.385, 0.92),
+    classic = list(groups_all_features = c(0.067, 0.92), technical_replicates = c(0.055, 0.90),
+        supplied_controls = c(0.054, 0.91), first_pass_nulls = c(0.079, 0.92), legacy = c(0.385, 0.92),
         none = c(0.052, 0.49)),
-    dia_limpa = list(groups_all_features = c(0.055, 0.91), technical_replicates = c(0.055, 0.77),
-        supplied_controls = c(0.056, 0.91), first_pass_nulls = c(0.146, 0.92), legacy = c(0.435, 0.90),
+    dia_limpa = list(groups_all_features = c(0.056, 0.91), technical_replicates = c(0.056, 0.77),
+        supplied_controls = c(0.056, 0.91), first_pass_nulls = c(0.147, 0.92), legacy = c(0.435, 0.90),
         legacy_correction = c(0.466, 0.91), none = c(0.191, 0.56)),
     transcriptomics = list(groups_all_features = c(0.055, 0.77), supplied_controls = c(0.056, 0.76),
         first_pass_nulls = c(0.071, 0.77), legacy = c(0.299, 0.73), none = c(0.044, 0.005)),
-    feature = list(groups_all_features = c(0.072, 0.43), technical_replicates = c(0.058, 0.36),
-        supplied_controls = c(0.068, 0.37), first_pass_nulls = c(0.174, 0.44), legacy = c(0.556, 0.42),
+    feature = list(groups_all_features = c(0.085, 0.47), technical_replicates = c(0.063, 0.34),
+        supplied_controls = c(0.079, 0.40), first_pass_nulls = c(0.203, 0.48), legacy = c(0.557, 0.42),
         none = c(0.059, 0.003)))
 
 # The figures measured with the separation rule, where it is not the pre-selected rule (the same definition).
 ruvDesignSeparationFigures <- list(
-    classic = list(supplied_controls = c(0.060, 0.90), first_pass_nulls = c(0.078, 0.91)),
-    dia_limpa = list(supplied_controls = c(0.056, 0.90), first_pass_nulls = c(0.149, 0.92)),
+    classic = list(supplied_controls = c(0.060, 0.91), first_pass_nulls = c(0.079, 0.91)),
+    dia_limpa = list(supplied_controls = c(0.057, 0.90), first_pass_nulls = c(0.151, 0.92)),
     transcriptomics = list(supplied_controls = c(0.053, 0.61), first_pass_nulls = c(0.064, 0.60)),
-    feature = list(supplied_controls = c(0.118, 0.26), first_pass_nulls = c(0.239, 0.50)))
+    feature = list(supplied_controls = c(0.095, 0.26), first_pass_nulls = c(0.261, 0.53)))
 
 # The k rules each design offers and the one pre-selected (ticket section 2, the user's direction U1).
 ruvDesignKRules <- list(
@@ -140,10 +141,11 @@ test_that("each measured figure is the ticket's; the cells still running are pen
 test_that("the wording rulings of 2026-11-19 are the shipped notes and labels (R1 to R3)", {
     tables <- ruvDesignTables()
     # R3: the caution leads the note of controls from the data, with the omic's own figure under association.
-    caution <- c(proteomics.classic = "far more false discoveries than the 5% target (27.3% under strong association",
-        proteomics.dia_limpa = "far more false discoveries than the 5% target (30.1% under strong association",
-        lipidomics.features = "far more false discoveries than the 5% target (53.7% under strong association",
-        metabolomics.features = "far more false discoveries than the 5% target (53.7% under strong association",
+    # KIT-129 final figures (2026-11-20): the shipped method's figure at a correlation of 0.3 (its 0.6 cell was not run).
+    caution <- c(proteomics.classic = "reported more false discoveries than the 5% target (7.9% at a correlation of 0.3",
+        proteomics.dia_limpa = "far more false discoveries than the 5% target (14.7% at a correlation of 0.3",
+        lipidomics.features = "far more false discoveries than the 5% target (20.3% at a correlation of 0.3",
+        metabolomics.features = "far more false discoveries than the 5% target (20.3% at a correlation of 0.3",
         transcriptomics.genes = "more false discoveries than the 5% target (6.4% at a correlation of 0.3")
     # The last sentence points at the check's verdict only where the check has a detection limit for this approach
     # (classic proteomics today); elsewhere it says the check gives none.
@@ -464,9 +466,11 @@ test_that("the figure text is the table's numbers in words; a pending or unavail
     expect_identical(omicNormRuvFigureParts(list(fdp = 0.066, fdp_where = "x", power = 0.91, single_scenario = TRUE))[c("fdp_where",
         "power_where")], c(fdp_where = "only scenario tested: x", power_where = "in that scenario"))
     # The power of every table as a percentage, exactly.
-    powers <- c(0.91, 0.90, 0.92, 0.49, 0.77, 0.56, 0.76, 0.60, 0.73, 0.005, 0.43, 0.37, 0.50, 0.42, 0.003)
+    powers <- c(0.91, 0.90, 0.92, 0.49, 0.77, 0.56, 0.76, 0.60, 0.61, 0.73, 0.005, 0.47, 0.34, 0.40, 0.26, 0.48, 0.53, 0.42,
+        0.003)
     expect_identical(vapply(powers, \(power) omicNormRuvFigureParts(list(fdp = 0, fdp_where = "", power = power))[["power"]], ""),
-        c("91%", "90%", "92%", "49%", "77%", "56%", "76%", "60%", "73%", "0.5%", "43%", "37%", "50%", "42%", "0.3%"))
+        c("91%", "90%", "92%", "49%", "77%", "56%", "76%", "60%", "61%", "73%", "0.5%", "47%", "34%", "40%", "26%", "48%", "53%",
+            "42%", "0.3%"))
     expect_identical(omicNormRuvFigureText(list(status = "pending")), "Not yet measured in simulation.")
     # The figure with the other rule for k, in words; none where there is none.
     expect_identical(omicNormRuvAltText(list(k_rule_figures = list(sweep_bounded = list(fdp = 0.118, fdp_where = "x",
