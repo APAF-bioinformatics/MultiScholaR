@@ -369,3 +369,57 @@ The transcriptomics report is not changed (see the handoff). No string holds "="
 | 232 | `controls_all` | all %s |
 | 233 | `controls_supplied` | a supplied list of %s %s |
 | 234 | `controls_first_pass` | the %s outside the 25%% most significant of a first test |
+
+## Seventh pass (2026-11-19): material for the check's wording from decision M39. Not shipped; the user sets the wording
+
+Source: `docs/qa/workflow-execution/kit/kit-129/r0/random-allocation-results.md` (decision M37's supplementary simulation,
+runs 44421250021 and 44431538031; descriptive, no limit or earlier record changed). The unwanted factor was allocated at
+random across the samples of unrelated data sets, instead of exactly balanced as in the calibration. Arm numbers as in
+the table above: 7 recommended (estimated number), 8 your own list (estimated number), 5 controls from the data
+(first-pass nulls, separation rule). No shipped string is changed by this section.
+
+### (a) How often each approach's detection limit is exceeded with the factor allocated at random
+
+| Omic | Approach (arm) | Limit | Exceeded: 6 per group (C0R + C4R) | Exceeded: 3 per group (S1R) |
+|---|---|---|---|---|
+| Proteomics (DIA with IQ, LFQ, TMT) | Controls from the data (5) | 0.164 | 52.9% | 64.0% |
+| Proteomics (DIA with IQ, LFQ, TMT) | Recommended (7) | 0.058 | 86.6% | 90.6% |
+| Proteomics (DIA with IQ, LFQ, TMT) | Your own list (8) | 0.070 | 81.9% | 89.4% |
+| Transcriptomics | Recommended (7) | 0.039 | 89.1% | 93.2% |
+| Lipidomics, metabolomics | Recommended (7) | 0.089 | 78.4% | 75.9% |
+| Lipidomics, metabolomics | Your own list (8) | 0.195 | 53.9% | 54.7% |
+
+With 6 per group the true association of a randomly allocated factor had a median of about 0.23 and a 90th percentile
+of about 0.50; with 3 per group a median of 0.34 to 0.39. In the calibration (true association exactly 0) the same
+limits were exceeded in 4.3% to 6.0% (limits set at 5%) or 9.1% to 9.5% (set at 10%) of unrelated data sets.
+
+False discovery proportion where the factor was allocated at random (C0R, the centre with true effects; mean at a 5%
+target; "exceeded" = the runs in which the approach's limit was exceeded):
+
+| Omic | Approach (arm) | All runs | Limit exceeded | No correction (arm 1): all / exceeded |
+|---|---|---|---|---|
+| Proteomics (DIA with IQ, LFQ, TMT) | Controls from the data (5) | 9.0% | 11.9% | 7.7% / 13.5% |
+| Proteomics (DIA with IQ, LFQ, TMT) | Recommended (7) | 5.6% | 5.6% | 7.7% / 8.8% |
+| Proteomics (DIA with IQ, LFQ, TMT) | Your own list (8) | 5.2% | 5.2% | 7.7% / 9.1% |
+| Transcriptomics | Recommended (7) | 4.9% | 4.9% | 5.4% / 5.9% |
+| Lipidomics, metabolomics | Recommended (7) | 6.9% | 7.2% | 3.3% / 3.7% |
+| Lipidomics, metabolomics | Your own list (8) | 6.1% | 6.9% | 3.3% / 4.7% |
+
+Plain statement for the wording: **"the check fires in about 5% of unrelated data sets" holds for an exactly balanced
+factor only.** With the factor allocated at random it fires in 53% to 89% of unrelated data sets at 6 per group (55% to
+93% at 3 per group): it detects chance imbalance between the factor and the groups. For the recommended approaches
+(proteomics 7 and 8, transcriptomics 7) false discoveries stay at the target whether the check fires or not.
+
+### (b) First-pass nulls (controls from the data): figures that call for a plainer caution — caution wording — user
+
+The measured figures below are above the 5% target by more than the other approaches' and are not stated as plainly
+in today's texts. They are material for a caution; the wording is the user's.
+
+| Where | Figure (mean false discovery proportion at a 5% target) | Source |
+|---|---|---|
+| Classic proteomics, factor allocated at random, 6 per group, all runs | 9.0% | M39, C0R, arm 5 |
+| Classic proteomics, factor allocated at random, highest third of the association (C0R + C4R) | 17.6% (type I 0.097) | M39, `random-allocation-errors.tsv` |
+| Classic proteomics, factor allocated at random, 3 per group, highest third | 26.5% (type I 0.142) | M39, S1R, arm 5 |
+| Classic proteomics (DIA with IQ, LFQ, TMT), association 0.6 | 27.3% | M36 table above, arm 5 |
+| DIA with limpa, association 0.6 | 30.1% | M36 table above, arm 5 |
+| Lipidomics, metabolomics, association 0.6 | 53.7% | M36 table above, arm 5 |
