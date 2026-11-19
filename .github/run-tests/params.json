@@ -1,32 +1,18 @@
 {
-  "label": "KIT-139 Sample Matching tab and KIT-138 correction (base 6b34ca8e, head 5d1189ee): targeted files, check, failing-first, gate-off identity",
-  "package_commit": "5d1189ee59684837e471a1be636f468dc1f83187",
-  "base_commit": "6b34ca8eb48116dd6ee5db8fe8c446a0b6123a9e",
+  "label": "merge-check KIT-146 cleanup part 2 a204230e",
+  "package_commit": "a204230ed37d8ca524195c252d1bd8393f79a340",
+  "base_commit": "648fe0103f3b9bba7d5e589013d9e5dc81b24fd2",
   "tools_ref": "",
-  "tests": [
-    "test-integration-gui.R",
-    "test-app-shell-shared.R",
-    "test-e2e-test-mode-integration.R",
-    "test-perf-107.R",
-    "test-workflow-ui-shared.R",
-    "test-launch-test-mode.R",
-    "test-module-ci-trx-app.R",
-    "test-module-ci-lipid-norm.R",
-    "test-module-ci-metab-norm.R",
-    "test-prot-05d-norm-module-characterization.R",
-    "test-integration-model.R",
-    "test-integration-corpus.R",
-    "test-workflow-integration-input.R",
-    "test-omic-gui-config.R",
-    "test-e2e-browser-harness.R",
-    "test-e2e-trx-journey.R",
-    "test-run-packaged-application.R",
-    "test-workflow-execution-process.R",
-    "test-workflow-saved-installed.R"
-  ],
-  "shards": 8,
+  "tests": "all",
+  "shards": 20,
   "file_timeout_minutes": 45,
-  "file_timeouts": {},
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
   "extra_packages": [
     "sva"
   ],
@@ -36,25 +22,5 @@
   "check": true,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": [
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
-      "args": [
-        "6b34ca8eb48116dd6ee5db8fe8c446a0b6123a9e",
-        "kit139-failing-first",
-        "test-integration-gui.R"
-      ],
-      "out": "kit139-failing-first",
-      "timeout_minutes": 60
-    },
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
-      "args": [
-        "6b34ca8eb48116dd6ee5db8fe8c446a0b6123a9e",
-        "kit139-gate-off"
-      ],
-      "out": "kit139-gate-off",
-      "timeout_minutes": 60
-    }
-  ]
+  "scripts": []
 }
