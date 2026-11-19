@@ -1,0 +1,161 @@
+name: MOFA2 reproducibility diagnosis (KIT-062)
+
+# Run-only lane (branch run-mofa-smoke-k062): two Linux runs of the package's MOFA2 training on the tier-1 corpus gave
+# different models (191 against 186 iterations). This lane trains the same views (.github/mofa-smoke/diagnose.R) in
+# many small jobs: threads (the default, or one thread: OPENBLAS_NUM_THREADS, OMP_NUM_THREADS, MKL_NUM_THREADS = 1 set
+# before R and Python start) x precision (MOFA2's default float32, or float64 through the MOFA2 option that names
+# float32) x repeats, each job recording its CPU model, BLAS libraries and thread counts, numpy's configuration and the
+# trained values in hexadecimal. The compare job pairs them (.github/mofa-smoke/diagnose-compare.py).
+# R, MOFA2's closure and the bundle's Python are installed as the smoke lane installs them; no MultiScholaR, no
+# internal packages, no read token, no cache. The corpus is read from the package commit named in the parameters.
+#
+# Start: change .github/mofa-smoke/diagnose-params.json in a commit and push it to run-mofa-smoke-k062.
+
+on:
+  push:
+    branches:
+      - "run-mofa-smoke-k062"
+    paths:
+      - .github/mofa-smoke/diagnose-params.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mofa-diagnose-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  R_LIBS_USER: /nonexistent-user-library
+  R_LIBS_SITE: /nonexistent-site-library
+
+jobs:
+  plan:
+    name: Parameters
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.plan.outputs.commit }}
+      repeats: ${{ steps.plan.outputs.repeats }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/mofa-smoke
+          persist-credentials: false
+      - id: plan
+        run: |
+          p=.github/mofa-smoke/diagnose-params.json
+          jq -e '(.package_commit | type == "string" and test("^[0-9a-f]{40}$")) and
+            (.repeats | type == "number" and . == floor and . >= 1 and . <= 6)' "$p" > /dev/null \
+            || { echo "::error::diagnose-params.json is not valid"; exit 1; }
+          echo "commit=$(jq -r .package_commit "$p")" | tee -a "$GITHUB_OUTPUT"
+          echo "repeats=$(jq -c '[range(1; .repeats + 1)]' "$p")" | tee -a "$GITHUB_OUTPUT"
+
+  diagnose:
+    name: "${{ matrix.threads }} ${{ matrix.precision }} ${{ matrix.repeat }}"
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        threads: [default, single]
+        precision: [float32, float64]
+        repeat: ${{ fromJSON(needs.plan.outputs.repeats) }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: The corpus at the package commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.commit }}
+          path: pkg
+          sparse-checkout: tests/testdata/integration
+          persist-credentials: false
+
+      - name: Versions from the distributable workflow; paths
+        run: |
+          for key in R_VERSION PBS_RELEASE PBS_PYTHON; do
+            value="$(sed -n "s/^  $key: \"\(.*\)\"$/\1/p" .github/workflows/distributable.yml)"
+            test -n "$value" || { echo "::error::$key not found in distributable.yml"; exit 1; }
+            echo "$key=$value" | tee -a "$GITHUB_ENV"
+          done
+          {
+            echo "BUNDLE=$RUNNER_TEMP/bundle"
+            echo "TOOLS_LIB=$RUNNER_TEMP/tools-lib"
+            echo "OUT=$RUNNER_TEMP/evidence"
+            echo "RES=$RUNNER_TEMP/result"
+          } >> "$GITHUB_ENV"
+
+      - name: R, MOFA2's closure, the bundle's Python (as the smoke lane)
+        run: |
+          set -o pipefail
+          bash packaging/linux/build.sh r
+          R_LIBS="$TOOLS_LIB" "/opt/R/$R_VERSION/bin/Rscript" --vanilla .github/mofa-smoke/install-mofa-library.R plan . "$OUT"
+          bash packaging/linux/build.sh sysreqs
+          R_LIBS="$TOOLS_LIB" "/opt/R/$R_VERSION/bin/Rscript" --vanilla .github/mofa-smoke/install-mofa-library.R install . "$OUT" \
+            > "$OUT/install-mofa-library.log" 2>&1 || { tail -n 60 "$OUT/install-mofa-library.log"; exit 1; }
+          tail -n 3 "$OUT/install-mofa-library.log"
+          bash packaging/linux/build.sh python
+          mkdir -p "$BUNDLE/bin"
+          install -m 0755 packaging/linux/Rscript "$BUNDLE/bin/Rscript"
+          ln -s "/opt/R/$R_VERSION/lib/R" "$BUNDLE/R"
+
+      - name: Train once (${{ matrix.threads }} threads, ${{ matrix.precision }})
+        env:
+          THREADS: ${{ matrix.threads }}
+        run: |
+          mkdir -p "$RES"
+          if [ "$THREADS" = single ]; then
+            export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+          fi
+          "$BUNDLE/bin/Rscript" --vanilla .github/mofa-smoke/diagnose.R "$RES" \
+            "diag-${{ matrix.threads }}-${{ matrix.precision }}-${{ matrix.repeat }}" \
+            "$GITHUB_WORKSPACE/pkg/tests/testdata/integration/corpus" "${{ matrix.precision }}" 2>&1 \
+            | grep -vE '^Iteration [0-9]+:' | tail -n 80
+          jq -e '.trained == true' "$RES/result.json" > /dev/null
+
+      - name: Nothing token-like in the upload
+        if: ${{ !cancelled() }}
+        run: |
+          if grep -rlE 'ghp_|github_pat_|gho_|Bearer ' "$RES"; then echo "::error::token-like text in the result"; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: diag-${{ matrix.threads }}-${{ matrix.precision }}-${{ matrix.repeat }}
+          path: ${{ runner.temp }}/result
+          retention-days: 14
+
+  compare:
+    name: Compare the jobs
+    needs: [plan, diagnose]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/mofa-smoke
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.commit }}
+          path: pkg
+          sparse-checkout: tests/testdata/integration/mofa_reference
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: diag-*
+          path: ${{ runner.temp }}/jobs
+      - name: Pairwise
+        run: |
+          python3 -I .github/mofa-smoke/diagnose-compare.py "$RUNNER_TEMP/jobs" \
+            "$GITHUB_WORKSPACE/pkg/tests/testdata/integration/mofa_reference" "$RUNNER_TEMP/compare"
+          cat "$RUNNER_TEMP/compare/diagnose.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compare
+          path: ${{ runner.temp }}/compare
+          retention-days: 14
