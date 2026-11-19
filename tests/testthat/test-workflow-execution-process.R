@@ -246,6 +246,30 @@ test_that("L1.6 a unit that was never started is unavailable, empty, and silent 
     expect_true(workflowServiceEmpty(application, unit))
 })
 
+# Audit F10: the stop's errors were discarded. A failure is logged; with the unit still running after the wait, it is raised.
+test_that("L1.6b a stop that fails is logged and, when the unit is left running, raised with the failure's message", {
+    root <- withr::local_tempdir()
+    unit <- processTestStart(root, "unstoppable", "Sys.sleep(60)")
+    logged <- character()
+    testthat::local_mocked_bindings(ps_kill_tree = function(...) stop("access is denied"), .package = "ps")
+    testthat::local_mocked_bindings(log_warn = function(...) logged <<- c(logged, paste(...)), .package = "logger")
+    testthat::local_mocked_bindings(workflowProcessEmpty = function(unit) FALSE, .package = "MultiScholaR")
+    error <- expect_error(workflowProcessStop(unit), class = "workflow_execution_stop_failed")
+    expect_match(cli::ansi_strip(paste(conditionMessage(error), collapse = " ")), "access is denied", fixed = TRUE)
+    expect_match(logged, "access is denied", fixed = TRUE)
+})
+
+test_that("L1.6c a stop whose tree kill fails but whose unit ends anyway is logged only", {
+    root <- withr::local_tempdir()
+    unit <- processTestStart(root, "stoppable", "Sys.sleep(60)")
+    logged <- character()
+    testthat::local_mocked_bindings(ps_kill_tree = function(...) stop("access is denied"), .package = "ps")
+    testthat::local_mocked_bindings(log_warn = function(...) logged <<- c(logged, paste(...)), .package = "logger")
+    expect_null(workflowProcessStop(unit))
+    expect_true(workflowProcessEmpty(unit))
+    expect_match(logged, "access is denied", fixed = TRUE)
+})
+
 test_that("L1.7 the option chooses the launcher; without it only a system with systemctl gets systemd", {
     expect_identical(workflowLauncherChoice("process", "Linux", "/usr/bin/systemctl"), "process")
     expect_identical(workflowLauncherChoice("systemd", "Windows", ""), "systemd")

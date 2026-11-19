@@ -552,16 +552,24 @@ workflowProcessState <- function(unit) {
 
 #' Stop a plain unit and everything it started (KIT-131), then wait a bounded time for the processes to go.
 #' @param unit Unit name; a unit never started or already gone is not an error.
-#' @return NULL invisibly.
+#' @return NULL invisibly. A stop that fails is logged (audit F10) and, when something of the unit is still running
+#'   after the wait, raised as `workflow_execution_stop_failed` with the failure's message.
 #' @noRd
 workflowProcessStop <- function(unit) {
     record <- .workflowProcessUnits[[unit]]
     if (is.null(record)) return(invisible(NULL))
+    failures <- character()
+    failed <- function(error) failures <<- c(failures, conditionMessage(error))
     # The marked tree first, so that a descendant outside the unit's process group goes too.
-    tryCatch(ps::ps_kill_tree(record$marker), error = function(error) NULL)
-    tryCatch(record$process$kill(), error = function(error) NULL)
+    tryCatch(ps::ps_kill_tree(record$marker), error = failed)
+    tryCatch(record$process$kill(), error = failed)
     deadline <- proc.time()[["elapsed"]] + 2
     while (!workflowProcessEmpty(unit) && proc.time()[["elapsed"]] < deadline) Sys.sleep(0.02)
+    if (length(failures)) {
+        logger::log_warn(sprintf("stopping managed unit %s failed: %s", unit, paste(failures, collapse = "; ")))
+        if (!workflowProcessEmpty(unit)) cli::cli_abort(c("managed unit {unit} could not be stopped", "x" = "{failures}"),
+            class = "workflow_execution_stop_failed")
+    }
     invisible(NULL)
 }
 
