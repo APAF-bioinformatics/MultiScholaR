@@ -1,4 +1,7 @@
 {
-  "package_commit": "449b9de7750c96b5f4a1e3eb196fd914c776be2b",
-  "repeats": 4
+  "package_commit": "23f218176c126daf0e66154b3778cb3b66963d1f",
+  "repeats": 2,
+  "threads": ["default"],
+  "precisions": ["float64"],
+  "windows_repeats": 2
 }

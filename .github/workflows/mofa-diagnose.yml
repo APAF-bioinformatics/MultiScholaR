@@ -37,6 +37,9 @@ jobs:
     outputs:
       commit: ${{ steps.plan.outputs.commit }}
       repeats: ${{ steps.plan.outputs.repeats }}
+      threads: ${{ steps.plan.outputs.threads }}
+      precisions: ${{ steps.plan.outputs.precisions }}
+      windows: ${{ steps.plan.outputs.windows }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,10 +49,16 @@ jobs:
         run: |
           p=.github/mofa-smoke/diagnose-params.json
           jq -e '(.package_commit | type == "string" and test("^[0-9a-f]{40}$")) and
-            (.repeats | type == "number" and . == floor and . >= 1 and . <= 6)' "$p" > /dev/null \
+            (.repeats | type == "number" and . == floor and . >= 1 and . <= 6) and
+            ((.threads // ["default", "single"]) | all(IN("default", "single"))) and
+            ((.precisions // ["float32", "float64"]) | all(IN("float32", "float64"))) and
+            ((.windows_repeats // 0) | type == "number" and . == floor and . >= 0 and . <= 4)' "$p" > /dev/null \
             || { echo "::error::diagnose-params.json is not valid"; exit 1; }
           echo "commit=$(jq -r .package_commit "$p")" | tee -a "$GITHUB_OUTPUT"
           echo "repeats=$(jq -c '[range(1; .repeats + 1)]' "$p")" | tee -a "$GITHUB_OUTPUT"
+          echo "threads=$(jq -c '.threads // ["default", "single"]' "$p")" | tee -a "$GITHUB_OUTPUT"
+          echo "precisions=$(jq -c '.precisions // ["float32", "float64"]' "$p")" | tee -a "$GITHUB_OUTPUT"
+          echo "windows=$(jq -c '[range(1; (.windows_repeats // 0) + 1)]' "$p")" | tee -a "$GITHUB_OUTPUT"
 
   diagnose:
     name: "${{ matrix.threads }} ${{ matrix.precision }} ${{ matrix.repeat }}"
@@ -57,8 +66,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        threads: [default, single]
-        precision: [float32, float64]
+        threads: ${{ fromJSON(needs.plan.outputs.threads) }}
+        precision: ${{ fromJSON(needs.plan.outputs.precisions) }}
         repeat: ${{ fromJSON(needs.plan.outputs.repeats) }}
     runs-on: ubuntu-22.04
     timeout-minutes: 60
@@ -129,9 +138,100 @@ jobs:
           path: ${{ runner.temp }}/result
           retention-days: 14
 
+  windows:
+    name: "windows default float64 ${{ matrix.repeat }}"
+    needs: plan
+    if: needs.plan.outputs.windows != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        repeat: ${{ fromJSON(needs.plan.outputs.windows) }}
+    runs-on: windows-2025
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: The corpus at the package commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.commit }}
+          path: pkg
+          sparse-checkout: tests/testdata/integration
+          persist-credentials: false
+
+      # As the smoke lane's Windows job (.github/workflows/mofa-smoke.yml): R, MOFA2's closure, the bundle's Python.
+      - name: Versions and paths
+        run: |
+          foreach ($key in 'R_VERSION', 'PBS_RELEASE', 'PBS_PYTHON') {
+            $value = (Select-String -Path .github\workflows\distributable.yml -Pattern "^  ${key}: `"(.*)`"$").Matches[0].Groups[1].Value
+            if (-not $value) { throw "$key not found in distributable.yml" }
+            "$key=$value" | Tee-Object -Append -FilePath $env:GITHUB_ENV
+          }
+          "BUNDLE=$env:RUNNER_TEMP\bundle" >> $env:GITHUB_ENV
+          "TOOLS_LIB=$env:RUNNER_TEMP\tools-lib" >> $env:GITHUB_ENV
+          "OUT=$env:RUNNER_TEMP\evidence" >> $env:GITHUB_ENV
+          "RES=$env:RUNNER_TEMP\result" >> $env:GITHUB_ENV
+          "R_LIBS_USER=$env:RUNNER_TEMP\nonexistent-user-library" >> $env:GITHUB_ENV
+          "R_LIBS_SITE=$env:RUNNER_TEMP\nonexistent-site-library" >> $env:GITHUB_ENV
+
+      - name: R into the folder; jsonlite in a build-tool library
+        run: |
+          pwsh -NoProfile -File packaging\windows\assemble.ps1 -Action r -Bundle $env:BUNDLE -RVersion $env:R_VERSION
+          if ($LASTEXITCODE -ne 0) { throw "assemble.ps1 -Action r failed" }
+          New-Item -ItemType Directory -Force $env:TOOLS_LIB, $env:OUT, $env:RES | Out-Null
+          & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla -e "install.packages('jsonlite', lib = commandArgs(TRUE)[[1]], repos = 'https://packagemanager.posit.co/cran/latest', type = 'binary')" $env:TOOLS_LIB
+          if ($LASTEXITCODE -ne 0) { throw "could not install jsonlite into the build-tool library" }
+
+      - name: Install MOFA2 and its dependencies (versions against the bundle's)
+        run: |
+          $env:PATH = "C:\rtools45\x86_64-w64-mingw32.static.posix\bin;C:\rtools45\usr\bin;$env:PATH"
+          $env:R_LIBS = $env:TOOLS_LIB
+          $rscript = "$env:BUNDLE\R\bin\Rscript.exe"
+          & $rscript --vanilla .github\mofa-smoke\install-mofa-library.R plan . $env:OUT
+          if ($LASTEXITCODE -ne 0) { throw "plan failed" }
+          & $rscript --vanilla .github\mofa-smoke\install-mofa-library.R install . $env:OUT *> "$env:OUT\install-mofa-library.log"
+          $status = $LASTEXITCODE
+          Get-Content "$env:OUT\install-mofa-library.log" | Select-Object -Last 5
+          if ($status -ne 0) { throw "install failed" }
+
+      - name: The bundle's Python (hashes checked)
+        run: |
+          curl.exe -fsSL -o "$env:RUNNER_TEMP\python.tar.gz" "https://github.com/astral-sh/python-build-standalone/releases/download/${env:PBS_RELEASE}/cpython-${env:PBS_PYTHON}%2B${env:PBS_RELEASE}-x86_64-pc-windows-msvc-install_only.tar.gz"
+          & "$env:SystemRoot\System32\tar.exe" -xzf "$env:RUNNER_TEMP\python.tar.gz" -C $env:BUNDLE
+          if ($LASTEXITCODE -ne 0) { throw "could not unpack Python" }
+          $env:PYTHONNOUSERSITE = '1'
+          & "$env:BUNDLE\python\python.exe" -m pip install --no-cache-dir --no-warn-script-location --require-hashes --only-binary=:all: --no-deps -r packaging\python\requirements.txt
+          if ($LASTEXITCODE -ne 0) { throw "pip install failed" }
+
+      - name: Train once (default threads, float64; packaging/verify/windows-clean-run.ps1)
+        run: |
+          $script = Join-Path $env:GITHUB_WORKSPACE '.github\mofa-smoke\diagnose.R'
+          $corpus = Join-Path $env:GITHUB_WORKSPACE 'pkg\tests\testdata\integration\corpus'
+          $arguments = @($env:RES, 'diag-windows-default-float64-${{ matrix.repeat }}', $corpus, 'float64')
+          & packaging\verify\windows-clean-run.ps1 -Bundle $env:BUNDLE -Script $script -Arguments $arguments
+          if ($LASTEXITCODE -ne 0) { throw "the diagnosis did not train" }
+
+      - name: Nothing token-like in the upload
+        if: ${{ !cancelled() }}
+        run: |
+          $hits = Get-ChildItem -Recurse -File $env:RES | Select-String -Pattern 'ghp_|github_pat_|gho_|Bearer ' -List
+          if ($hits) { $hits.Path; throw "token-like text in the result" }
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: diag-windows-default-float64-${{ matrix.repeat }}
+          path: ${{ runner.temp }}\result
+          retention-days: 14
+
   compare:
     name: Compare the jobs
-    needs: [plan, diagnose]
+    needs: [plan, diagnose, windows]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:

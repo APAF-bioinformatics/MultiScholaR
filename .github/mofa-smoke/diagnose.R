@@ -30,8 +30,15 @@ md5 <- function(x) {
 result <- list(label = label, precision = precision, trained = FALSE)
 result$environment <- as.list(Sys.getenv(c("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS",
     "NUMEXPR_NUM_THREADS", "RETICULATE_PYTHON"), unset = NA_character_))
-result$cpu <- tryCatch(system("lscpu", intern = TRUE), error = function(e) conditionMessage(e))
-result$cpu_model <- trimws(sub("^Model name:", "", grep("^Model name:", result$cpu, value = TRUE)[1L]))
+result$platform <- R.version$platform
+if (.Platform$OS.type == "windows") {
+    result$cpu <- tryCatch(system2("powershell", c("-NoProfile", "-Command", "(Get-CimInstance Win32_Processor).Name"),
+        stdout = TRUE), error = function(e) conditionMessage(e))
+    result$cpu_model <- trimws(result$cpu[[1L]])
+} else {
+    result$cpu <- tryCatch(system("lscpu", intern = TRUE), error = function(e) conditionMessage(e))
+    result$cpu_model <- trimws(sub("^Model name:", "", grep("^Model name:", result$cpu, value = TRUE)[1L]))
+}
 result$nproc <- parallel::detectCores()
 result$r_blas <- list(blas = unname(extSoftVersion()["BLAS"]), lapack = La_library(), la_version = La_version())
 
