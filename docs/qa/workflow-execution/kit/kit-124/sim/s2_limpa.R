@@ -176,8 +176,8 @@
 #   37  no RUV: differentialAbundanceAnalysis on the quantified object (simulator arm 1)
 #   39  first-pass nulls (the kernel's own first pass: dpcDE, the F test over the groups), the estimated count
 #   40  first-pass nulls, the separation rule (the kernel's default for this control rule: today's sweep's k)
-#   41  supplied controls (arm 8's oracle set), the separation rule: on this route the kernel's separation rule is
-#       today's sweep's k whatever the control rule (KIT-129 W3), not arm 22's rule on the list
+#   41  supplied controls (arm 8's oracle set), the separation rule: from the KIT-129 sixth pass the kernel runs the rule
+#       on the list (diaRuvSeparationRuleK, arm 22's separationK); before it, today's sweep's k whatever the control rule
 # Arm 38 (technical replicates as their own design) is not formed: on this route it is arm 34's computation.
 # K124_FAULT=<arm> (environment, the lifecycle test only): that arm stops with an unclassed error in the first run of
 # the invocation, so that a crash of a shipped-kernel arm can be seen to be reported.

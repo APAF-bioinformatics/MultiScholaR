@@ -51,7 +51,7 @@ Refusals (carried over, R-07): a classed refusal of the package (`ruv_k_refused`
 | DIA | `groups_all_features` / `technical_replicates` | 34 ~ 32 | yes | proven (`runpath`, `m30b`) | 1 |
 | DIA | `supplied_controls` | 35 ~ 8 | no | 20 permutations, `contrasts.fit` standard error | 2 |
 | DIA | supplied, contaminated | 36 ~ 9 | no | as 35 | 2 |
-| DIA | supplied, separation rule | 41 ~ 22 | no | **the kernel's rule is today's sweep's k, not arm 22's rule on the list** (see 9.4) | 2 |
+| DIA | supplied, separation rule | 41 ~ 22 | k yes, values no | from the bound commit's code (sixth pass item 3): the kernel runs `diaRuvSeparationRuleK` on the list, S2's `separationK` (proven `diaseparation`, C0 run 1), so k equals arm 22's; arm 22 tests with `contrasts.fit`'s standard error, the shipped DA with M29's exact one, so the values differ (as 35~8). Written before `confirm-lc4` was read. At 2bbb1f6d the kernel used the sweep's k (lifecycle 44419300892: k differed) | 2 |
 | DIA | `first_pass_nulls` | 39 ~ 23 | no | 20 permutations, standard error; with 3 groups (C7) the first pass is an F test, arm 23's a B-A test | 2 |
 | DIA | first-pass, separation rule | 40 ~ 5 | k yes, values no | standard error | 2 |
 | DIA | `legacy` (factors in test), `legacy_correction` | 4, 3 (installed) ~ earlier rows | yes | code unchanged; the earlier rows are laptop rows only (section 5) | 2 |
