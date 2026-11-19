@@ -143,3 +143,42 @@ transcriptomics-screen 16, proteomics-tmt-lfq 153: the laptop's counts, 0 failur
 2. KIT-131: the screen journeys under systemd on the laptop; F10 (record the stop error), a package change.
 3. KIT-052: the decision whether S6 stands for the ">125, long paths off" refusal; S4 (an unclassed early error at
    130 with long paths off) to be read.
+
+## Diagnostic run (declared 2026-11-19, before launch)
+
+**Purpose.** Read the cause of the silent loss of the lipid normalisation QC figures on Windows workers (W1 above) and
+of S4's unclassed early stop, before any package change. Instrumentation only; nothing under `R/`, `tests/`,
+`DESCRIPTION`, `NAMESPACE`, oracles or the harness-bound folder names.
+
+**Hypothesis to falsify (from the code, not yet observed).** The plain launcher (`workflowLaunchProcess`) gives the
+worker `TMPDIR = <request folder>/worker-scratch`, deep in the project. R on Windows takes its temporary folder from
+`TMPDIR`, so `withWorkflowShortFigureFolder`'s `tempfile("wfx-")` is not short in the worker: a QC figure is drawn at
+a path over 259 characters, ragg writes nothing and says nothing, `writeWorkflowOmicsFigure` returns NULL for a file
+that is not there, and `generateLipidQcPlots` logs and continues. On Linux nothing limits the path, so the same lane is
+identical. Falsified if the probe's ggsave in the worker's `wfx-` folder writes the file, or the replayed figures are
+drawn at paths of 259 characters or fewer and are still missing.
+
+**Bindings.** Branch `run-win-k131` at the instrumentation commit after this one (on `32cbe69e`); workflow
+`KIT-134 distributable`, stage `full`, platform `windows`; same runner image, R 4.6.1, Rust 1.99.1, token handling, no
+cache, no artifact.
+
+**Instrumentation.**
+- `packaging/verify/lane-worker.R`: traces `workflowLaunchProcess` (LAUNCH lines: operation, the worker's `TMPDIR` and
+  its length). Before the first worker, the first `lipid_qc_figures` and the first `lipid_composite_figure` worker, it
+  starts `packaging/verify/worker-probe.R` through the same function with the same request (the worker's environment,
+  `TMPDIR`, working directory) and prints its log: environment, `tempdir()`, `capabilities()`, `bitmapType`, ragg/Cairo/png,
+  ggsave's device, ggsave/agg_png/png/writeLines of `lcms_pos_pre_norm_correlation` in the worker's `wfx-` folder and in
+  the controller's temporary folder; for the `qc_figures` request the handler replayed with the figure store switched
+  off (nothing saved) and every figure traced (drawn path, final path, lengths, existence), then the replay's publication
+  folder removed so the real worker starts as before. After the lane: every worker's log (in full for the norm-tab
+  publications), its result and its request publication folder; the `norm_refusal` and `norm` steps' difference with
+  the in-process record in full.
+- `packaging/verify/figure-paths.R`: for `prot_tmt_lane`, every failing `file()`/`gzfile()` call with its path, length,
+  folder existence and calls (CONN lines), and the testthat trace of each error (TRACE lines).
+- Workflow copy: in-process `lipid_canonical` (reference) and the worker lane as before; e2e lanes and the long-paths-on
+  figure step not run; with long paths off only `off-tmt130=70:prot_tmt_lane`.
+
+**Ceiling and attempts.** The job's own ceilings; this is the one diagnostic run. An instrumentation fault (script error,
+probe that never ran) is recorded as such and not rerun within this item's budget.
+
+**Decision.** The cause stated with its evidence, then the package repair on `kit-131-win-worker`.
