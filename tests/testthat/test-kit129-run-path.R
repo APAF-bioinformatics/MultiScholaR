@@ -1659,3 +1659,46 @@ test_that("(seventh pass item 2) classic proteomics: a new design whose count ga
     names(expected)[[1L]] <- "feature_id"
     expect_equal(out$input$views$proteomics$matrix, as.data.frame(expected), tolerance = 0, ignore_attr = TRUE)
 })
+
+test_that("(seventh pass item 3) classic proteomics: the integration input names the new design, the k applied and the replicate structure; a legacy run's manifest is as before", {
+    skip_if_not_installed("sva")
+    declared <- c(kit129ProtParameters(), list(ruv_design = "groups_all_features", ruv_k_rule = "user", ruv_k_seed = 11L))
+    out <- kit129IntegrationInput(declared)
+    manifest <- out$input$manifest
+    expect_identical(manifest$matrix_role, "corrected")
+    correction <- manifest$correction
+    # every field of the step record, by its name, read back by the contract's reader
+    expect_true(all(RUV_DESIGN_RECORD_FIELDS %in% names(correction)))
+    expect_identical(correction[c("ruv_design", "ruv_grouping_variable", "ruv_k_rule", "ruv_control_rule")],
+        list(ruv_design = "groups_all_features", ruv_grouping_variable = "group", ruv_k_rule = "user", ruv_control_rule = "all_features"))
+    expect_identical(correction$ruv_replicate_structure, out$run$value$ruv_model$replicate_structure)
+    expect_equal(c(correction$ruv_k, correction$ruv_k_typed, correction$ruv_k_seed), c(1, 1, 11))
+    expect_equal(correction$ruv_k_estimate, out$run$value$ruv_result$ruv_k_estimate)
+    expect_identical(correction$ruv_da_method, "ruv_factors_exact_se_trend_robust")
+    # the fields before them are today's
+    expect_identical(names(correction)[1:9], c("state", "id", "method", "ruv_mode", "k", "percentage_as_neg_ctrl", "control_count",
+        "replicate_structure", "grouping_variable"))
+    # today's design: the correction's fields are today's, and the manifest's bytes are those written without the new fields
+    legacy <- kit129IntegrationInput(kit129ProtParameters())
+    expect_identical(legacy$input$manifest$matrix_role, "corrected")
+    expect_identical(names(legacy$input$manifest$correction), c("state", "id", "method", "ruv_mode", "k", "percentage_as_neg_ctrl",
+        "control_count", "replicate_structure", "grouping_variable", "grouping_levels"))
+    manager <- kit129ProtStore()
+    manager$setWorkflowType("DIA")
+    kit129Quiet(withDIAStateScope(manager, function() {
+        run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), kit129ProtParameters())
+        commit <- diaNormalizationCommit(manager, kit129ProtParameters(), run)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+    }))
+    write_manifest <- function(dir) {
+        source <- withDIAStateScope(manager, function() protIntegrationInputSource(manager))
+        path <- writeIntegrationInput(dir, source$manifest, source$samples, list(proteomics = source$matrix),
+            list(proteomics = protIntegrationInputFeatures(source$matrix$feature_id, NULL)), now = as.POSIXct("2026-11-19", tz = "UTC"))
+        readBin(path, "raw", file.size(path))
+    }
+    root <- withr::local_tempdir()
+    head_bytes <- write_manifest(file.path(root, "head", "proteomics"))
+    testthat::local_mocked_bindings(workflowRecordStepOutcomes = function(...) list(), .package = "MultiScholaR")
+    without <- write_manifest(file.path(root, "without", "proteomics"))
+    expect_identical(head_bytes, without)
+})

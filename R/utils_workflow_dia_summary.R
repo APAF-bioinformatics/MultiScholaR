@@ -183,6 +183,12 @@ protIntegrationInputCorrection <- function(manager, state, design) {
       replicate_structure = record$data$slots$args$ruvIII_C_Varying$ruv_replicate_structure,
       grouping_variable = value$parameters$grouping)
   }
+  # KIT-129 seventh pass item 3: a new design's run also names its design, the k applied, the replicate structure and
+  # the rest of the step record's fields (`RUV_DESIGN_RECORD_FIELDS`, as the analysis record reads them). A legacy run
+  # records none, and its correction is as before.
+  operation <- if (!is.null(products$ruv_covariates_science)) "protein_ruv_covariates" else "normalization-ruv"
+  outcomes <- workflowRecordStepOutcomes(manager$.context, state, operation, record, list())
+  if (all(RUV_DESIGN_RECORD_FIELDS %in% names(outcomes))) correction <- c(correction, outcomes[RUV_DESIGN_RECORD_FIELDS])
   correction <- lapply(correction, function(value) if (is.null(value)) NA else value)
   grouping <- correction$grouping_variable
   correction$grouping_levels <- I(if (is.character(grouping) && grouping %in% names(design))
