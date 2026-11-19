@@ -165,19 +165,47 @@ Seconds per run with the savings (one core; the first arm that needs the count o
 | S3 C0 | 34: 19.5 (count); 35, 36: 1.3; 39: 2.0; 40: 2.8; 41: 1.5 | about 72 s (was about 100) |
 | S4 C6 | 34-36, 38: 1.7-1.8; 39: 1.5; 40: 2.3; 41: 1.3 | about 60 s |
 
-## 8. Budget (with L1 and L2; core-hours are simulator compute; one cell measured per simulator, and runner machines differ by up to about 2 times in the sweep, so a cell may differ by about half either way)
+## 7b. Binding lifecycle and Part 1 (2026-11-19, on 44b5f2195e355bb6e6efe1dae21905e30b81c26c)
 
-In Part 2 the first arm that needs a count or a sweep pays for it (S3 arm 35 in place of 34; S2 arm 40), so the saving is all but one call per data set.
+**Binding lifecycle `confirm-lc4`, run 44434645817** (lc3's cells, runs, arms and savings, with the reference verified): every job succeeded; every pair as section 3 declares, DIA 41~22 now equal in k (values differ, as written before the run); the gate passed (status 0).
+
+**Part 1 `confirm-p1`, run 44436553563** (runs 1 to 50; 40 simulator jobs, all succeeded; 49 minutes wall; about 42 core-hours of simulator compute: S1 8.0, S2 15.3, S3 12.9, S4 6.1). Every shipped arm `ok` in every row, but S4's 40 and 41 (and some 34 to 39 assays) `refused` in 473 of 8,600 rows, by the kernel's limits (below). Tables not committed; sha256 in `confirm-p1-tables.sha256`.
+
+Identity, per pair and subset, read once (rule-bearing values; "identical" = every run of the cell agrees):
+
+| Pair | Subset | Cells | Identical cells | Largest relative difference | Declared | As declared? |
+|---|---|---|---|---|---|---|
+| S1 34~32 | full, complete | 9 | 9 | 0 | yes | yes |
+| S1 37~27 | full, complete | 9 | 9 | 0 | yes | yes |
+| S1 38~33 | full, complete | 2 (C6, C8) | 2 | 0 | yes | yes |
+| S1 35~8, 36~9, 39~23 | both | 9 (36: 8) | 0 | up to 1 | no | yes |
+| S1 40~5, 41~22 | both | 9 | 0 (k equal in all 9) | up to 1 | k yes, values no | yes |
+| S2 34~32, 37~1 | full | 9 | 9 | 0 | yes | yes |
+| S2 35~8, 36~9, 39~23 | full | 9 (36: 8) | 0 | up to 1 | no | yes |
+| S2 40~5, 41~22 | full | 9 | 0 (k equal in all 9) | 0.5, 1 | k yes, values no | yes |
+| S3 34~31, 37~1, 40~24, 41~22 | full | 10 (C0 to C8, S3) | 10 | 0 | yes | yes |
+| S3 35~8, 36~9, 39~23 | full | 10 | 8 (not C3, C8) | 0.81, 1, 0.14 | no (by construction) | yes |
+| S4 34~32, 38~33, 37~1 | complete | 12 (38: 2) | all | 0 | yes | yes |
+| S4 37~1 | full | 12 | 12 | 0 | yes | yes |
+| S4 34~32, 38~33 | full | 12, 2 | 1, 1 | 1 | no | yes |
+| S4 35~8, 36~9, 39~23 | both | 12 | 6 on complete, 0 on full | 1 | no | yes |
+| S4 40~5, 41~22 | complete | 12 | 11, 3 | 0.78, 1 | k yes on complete, values no | **no, in k**: see below |
+
+**Not as declared (S4 40~5 and 41~22, k on `complete`).** The separation rule gives the same k on both sides; the shipped kernel then refuses an assay where that k is not below the controls observed in every sample (decision M32; 5 standards per assay for 41) or leaves no residual degree of freedom, and reports k = 0 for it (scored as arm 1), where arms 5 and 22 accepted k equal to the controls. It follows from M32, not from a call error; both pairs were in Part 2 already, so nothing is added.
+
+**Gate.** Arms 1 and 2 agree with the committed reference in every gated cell of S1 to S4 (C0 to C8; S4 S1, S3, S8). S3's cell S3: no reference (declared). **The S1 legacy comparison failed in C6:** 21 of the 100 rows of arm 3 (runs 1 to 50, both subsets) differ from `exact-gha` (same k; calls, null rates, fdp and power differ; e.g. run 1); C0 to C5, C7, C8 agree. In `confirm-lc4` runs 1 and 2 of C6 had agreed, and in this run run 1 differs: the same code and seed give different legacy results on different runner machines in C6, as S4's legacy arm 3 did in section 7 (RUV-III-C's correction on the technical-duplicate design is not reproducible across machines). The gate job therefore ended `failure` (by design, after the upload).
+
+**Section 4's rule applied:** the expected-identical pair S1 legacy (arm 3) failed, so arm 3 joins Part 2 for S1 at 1,000 runs in every core cell (`params-confirm-part2-core.json`, S1 arms now 1, 2, 3, 35 to 41). No other expected-identical pair failed; no shipped arm crashed. Note for the reading: S1 legacy C6 (and S4 legacy) figures are machine-dependent; Part 2 measures them once, on whichever machines run them.
+
+## 8. Budget (with L1 and L2; from Part 1's measured seconds)
 
 | | Runs | Core-hours, about | Jobs (4 cores, limit 300 min) | Wall time at 20 concurrent jobs |
 |---|---|---|---|---|
-| Part 1 (`params-confirm-part1.json`) | S1 450, S2 450, S3 500, S4 600 | S1 6-9, S2 8-11, S3 10, S4 10: **35 to 40** | 40, one per simulator and cell | **about 1.5 h** |
-| Part 2 core (`params-confirm-part2-core.json`) | 9,000 per simulator | S1 60-95 (the sweep of arm 40: 13 to 27 s per run), S2 about 135 (C0-type cells about 41 s per run, C6 and C8 about 95), S3 about 95 (about 38 s), S4 about 95: **about 385 to 420** | 54 (S2 in ranges of 400 runs: 27; S1, S3, S4 one per cell) | **about 12 to 15 h** |
-| Part 2 extra-hard (`params-confirm-part2-extra.json`) | S3 500, S4 1,500 | **about 13** | 4 | about 1 h |
+| Part 1 (done) | 2,000 | 42 measured | 40 | 49 min |
+| Part 2 core (`params-confirm-part2-core.json`, final list: S1 1, 2, 3, 35 to 41; S2 1, 2, 3, 4, 35, 36, 39, 40, 41; S3 1, 2, 3, 35, 36, 39, 40, 41; S4 1, 2, 3, 34 to 41) | 9,000 per simulator | S1 about 150 (about 60 s per run: the legacy sweep and arm 40's sweep), S2 about 250 (about 100 s: quantification, legacy sweep, arm 40's sweep; C8 about 145 s), S3 about 110 (about 44 s; arm 35 pays the count), S4 about 90 (about 37 s): **about 600** | 72 (S1 in ranges of 500 runs, S2 of 300) | **about 12 to 14 h** |
+| Part 2 extra-hard (`params-confirm-part2-extra.json`) | S3 500, S4 1,500 | **about 14** | 4 | about 1 h |
 
-Each job also spends about 6 to 8 minutes building the library (about 5 job-hours in Part 1, 7 in Part 2), and every run adds the gate job (under 10 minutes). One attempt per job; one infrastructure rerun (`gh run rerun <run> --failed`, the same rows). A job that reaches its limit, a crash of a shipped arm, or a gate failure is reported, not relaunched with other settings. The carried-over limit of about 120 core-hours is lifted for this round (M38).
-
-Not built (M38 approved L1 and L2 only): L3 (Part 2 reusing Part 1's runs 1 to 50, about 5 %) and L4 (dropping S1 37 and 38 from Part 2 if Part 1 shows identity, about 5 core-hours).
+The core estimate counts the whole job time per run on 4 cores (load imbalance at a job's end included), so it is an upper reading; by arm seconds alone it is about 470. Each job also builds the library (6 to 8 minutes) and every run has a gate job. One attempt per job; one infrastructure rerun. The limit of about 120 core-hours is lifted (M38).
 
 ## 9. Decisions (M38) and what remains open
 
