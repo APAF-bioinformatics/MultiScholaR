@@ -1,0 +1,145 @@
+{
+  "jobs": {
+    "diag-default-float64-1": {
+      "combination": "default-float64",
+      "cpu": "AMD EPYC 9V45 96-Core Processor",
+      "threads": "openblas:4;openblas:4;openmp:4;openblas:4;openmp:4",
+      "iterations": 186,
+      "seconds_train": 0.91,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "d41fd116789aa5fc9420f8cd8d725162"
+    },
+    "diag-default-float64-2": {
+      "combination": "default-float64",
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "threads": "openmp:4;openblas:4;openblas:4;openblas:4;openmp:4",
+      "iterations": 186,
+      "seconds_train": 1.61,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "7a326abb0c538c39676d828f1fcbc2be"
+    },
+    "diag-windows-default-float64-1": {
+      "combination": "default-float64",
+      "cpu": "AMD EPYC 9V45 96-Core Processor",
+      "threads": "openblas:4;openmp:4;openblas:4",
+      "iterations": 186,
+      "seconds_train": 1.38,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "ce2141018b00e37416fc93eccc3c8c4e"
+    },
+    "diag-windows-default-float64-2": {
+      "combination": "default-float64",
+      "cpu": "AMD EPYC 9V45 96-Core Processor",
+      "threads": "openblas:4;openmp:4;openblas:4",
+      "iterations": 186,
+      "seconds_train": 1.2,
+      "elbo_last": -27000.3227874521,
+      "planted": {
+        "Z1": 0.993669202562793,
+        "Z2": 0.993603624683963,
+        "Z3": 0.989169789703989
+      },
+      "float32_option": "data$use_float32",
+      "factors_md5": "ce2141018b00e37416fc93eccc3c8c4e"
+    }
+  },
+  "within": {
+    "diag-default-float64-1 vs diag-default-float64-2": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "1.08e-14 (6.18e-15 rel)",
+      "weights": "5.55e-15 (3.53e-15 rel)",
+      "r2": "3.55e-14 (1.25e-15 rel)",
+      "elbo": "7.28e-12 (2.69e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-1 vs diag-windows-default-float64-1": {
+      "same_cpu": true,
+      "iterations": "186/186",
+      "factors": "2e-15 (1.15e-15 rel)",
+      "weights": "3.33e-15 (2.12e-15 rel)",
+      "r2": "2.13e-14 (7.51e-16 rel)",
+      "elbo": "3.64e-12 (1.35e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-1 vs diag-windows-default-float64-2": {
+      "same_cpu": true,
+      "iterations": "186/186",
+      "factors": "2e-15 (1.15e-15 rel)",
+      "weights": "3.33e-15 (2.12e-15 rel)",
+      "r2": "2.13e-14 (7.51e-16 rel)",
+      "elbo": "3.64e-12 (1.35e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-2 vs diag-windows-default-float64-1": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "9.21e-15 (5.29e-15 rel)",
+      "weights": "4.33e-15 (2.75e-15 rel)",
+      "r2": "3.55e-14 (1.25e-15 rel)",
+      "elbo": "1.09e-11 (4.04e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-default-float64-2 vs diag-windows-default-float64-2": {
+      "same_cpu": false,
+      "iterations": "186/186",
+      "factors": "9.21e-15 (5.29e-15 rel)",
+      "weights": "4.33e-15 (2.75e-15 rel)",
+      "r2": "3.55e-14 (1.25e-15 rel)",
+      "elbo": "1.09e-11 (4.04e-16 rel)",
+      "bit_identical": false,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    },
+    "diag-windows-default-float64-1 vs diag-windows-default-float64-2": {
+      "same_cpu": true,
+      "iterations": "186/186",
+      "factors": "identical",
+      "weights": "identical",
+      "r2": "identical",
+      "elbo": "identical",
+      "bit_identical": true,
+      "r2_equal_3dp": true,
+      "planted_equal_3dp": true,
+      "min_matched_factor_abs_r": 1.0
+    }
+  },
+  "across": {},
+  "reference": {
+    "diag-default-float64-1": 0.019440086014789193,
+    "diag-default-float64-2": 0.01944008601479008,
+    "diag-windows-default-float64-1": 0.019440086014790525,
+    "diag-windows-default-float64-2": 0.019440086014790525
+  }
+}
