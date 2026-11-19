@@ -57,6 +57,7 @@ driver$pids <- integer()
 driver$launches <- list()
 driver$probing <- FALSE
 driver$probed <- character()
+driver$notes <- character()
 Sys.setenv(KIT131_PROBE = file.path(checkout, "packaging", "verify", "worker-probe.R"), KIT131_CHECKOUT = checkout,
     KIT131_OUT = out_dir, KIT131_SHORT = tempdir())
 .kit131Launch <- function(config, unit, path) {
@@ -64,8 +65,9 @@ Sys.setenv(KIT131_PROBE = file.path(checkout, "packaging", "verify", "worker-pro
     operation <- tryCatch(readRDS(path)$operation, error = function(error) "?")
     scratch <- file.path(dirname(path), "worker-scratch")
     driver$launches[[length(driver$launches) + 1L]] <- list(unit = unit, path = path, operation = operation, scratch = scratch)
-    cat(sprintf("KIT-131 LAUNCH %d %s: unit %s; TMPDIR (worker-scratch) %d characters: %s\n", length(driver$launches), operation,
-        unit, nchar(scratch), gsub("\\\\", "/", scratch)))
+    # Kept and printed after the lane: the lane's harness captures what is printed while it runs (run 44464483568).
+    driver$notes <- c(driver$notes, sprintf("KIT-131 LAUNCH %d %s: unit %s; TMPDIR (worker-scratch) %d characters: %s", length(driver$launches),
+        operation, unit, nchar(scratch), gsub("\\\\", "/", scratch)))
     kind <- if (grepl("_qc_figures$", operation)) "qc_figures" else if (grepl("_composite_figure$", operation)) "composite" else
         if (!length(driver$probed)) "first" else ""
     if (!nzchar(kind) || kind %in% driver$probed) return(invisible())
@@ -81,9 +83,9 @@ Sys.setenv(KIT131_PROBE = file.path(checkout, "packaging", "verify", "worker-pro
         paste("exit", status)
     }, error = function(error) paste("error:", conditionMessage(error)))
     log <- file.path(config$root, paste0("worker-", probe, ".log"))
-    cat(sprintf("KIT-131 PROBE %s for %s (%s); its log:\n", probe, operation, result))
-    if (file.exists(log)) for (line in readLines(log, warn = FALSE))
-        cat("KIT-131 PROBE |", substr(gsub("[\r\t]+", " ", line), 1L, 700L), "\n")
+    driver$notes <- c(driver$notes, sprintf("KIT-131 PROBE %s for %s (%s); its log:", probe, operation, result))
+    if (file.exists(log)) driver$notes <- c(driver$notes, paste("KIT-131 PROBE |", substr(gsub("[\r\t]+", " ",
+        readLines(log, warn = FALSE)), 1L, 700L)))
     invisible()
 }
 suppressMessages(trace("workflowLaunchProcess", tracer = quote(.kit131Launch(config, unit, path)), where = ns, print = FALSE))
@@ -172,6 +174,7 @@ driver$error <- tryCatch(withCallingHandlers({
 }), error = function(error) error)
 closed <- tryCatch({ ns$closeWorkflowManagedApplication(app); "closed" }, error = function(error) paste("close failed:", conditionMessage(error)))
 cat(sprintf("KIT-131 APPLICATION %s; worker processes still running under the controller: %d\n", closed, length(workers())))
+cat(paste0(driver$notes, "\n"), sep = "")
 # Diagnostic: each worker's log; in full for the norm tab's publications (qc_figures, composite) and the norm steps,
 # else its warnings and errors only; the request's publication folder and result where they are still there.
 for (i in seq_along(driver$launches)) {

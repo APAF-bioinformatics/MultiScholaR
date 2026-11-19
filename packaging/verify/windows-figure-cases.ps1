@@ -16,6 +16,7 @@ param(
 )
 
 $status = 0
+New-Item -ItemType Directory -Force $Out | Out-Null
 $runner = Join-Path $Checkout 'packaging\verify\windows-clean-run.ps1'
 $script = Join-Path $Checkout 'packaging\verify\figure-paths.R'
 $env:MSR_PROBE_DIR = Join-Path $env:RUNNER_TEMP 'dp'
