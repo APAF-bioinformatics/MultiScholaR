@@ -1,8 +1,9 @@
-# KIT-138: the integration shell and its Import tab. The scanned project is the KIT-137 tier-1 corpus copied into
-# `<project>/integration/<omic>/` (four omics, six data sets, twenty biological samples, KO_7 absent from
-# metabolomics; the lipidomics, metabolomics and transcriptomics runs two per sample). Expected counts are read from
-# the corpus files themselves, not from the code under test. The whole surface is behind
-# `MultiScholaR.integration_gui` (off by default).
+# KIT-138 (the integration shell and its Import tab) and KIT-139 (its Sample Matching tab). The scanned project is the
+# KIT-137 tier-1 corpus copied into `<project>/integration/<omic>/` (four omics, six data sets, twenty biological
+# samples, KO_7 absent from metabolomics; the lipidomics, metabolomics and transcriptomics runs two per sample), and,
+# for the internal standards, the few-samples note and the refusals, two small inputs written by the contract's writer
+# in the form of test-integration-model.R. Expected counts are read from the corpus files themselves, not from the
+# code under test. The whole surface is behind `MultiScholaR.integration_gui` (off by default).
 
 intGuiCorpus <- function() normalizePath(testthat::test_path("..", "testdata", "integration", "corpus"), mustWork = FALSE)
 intGuiOmics <- c("lipidomics", "metabolomics", "proteomics", "transcriptomics")
@@ -46,8 +47,70 @@ intGuiCorpusCounts <- function() {
     list(views = do.call(rbind, views), samples = samples)
 }
 
+# Two small inputs (test-integration-model.R's form): proteomics one run per biological sample (A_1..A_3, B_1, B_2; P4
+# observed once), lipidomics two runs per biological sample (A_3 absent; ITSD1 an internal standard).
+intGuiInput <- function(root, omic, views, samples, standards = list()) {
+    matrices <- lapply(views, function(m) data.frame(feature_id = rownames(m), m, check.names = FALSE,
+        stringsAsFactors = FALSE))
+    features <- lapply(stats::setNames(names(views), names(views)), function(view) {
+        table <- data.frame(feature_id = rownames(views[[view]]), display_name = tolower(rownames(views[[view]])),
+            stringsAsFactors = FALSE)
+        if (!is.null(standards[[view]])) table$is_internal_standard <- standards[[view]]
+        table
+    })
+    manifest <- list(omic_type = omic, workflow = "TEST", matrix_role = "normalised", scale = "log2", correction = NULL,
+        source_state = list(name = "kit138-test"), sample_id_column = "Run", group_column = "group",
+        technical_replicate_column = "tech_rep_group", biological_sample_column = "tech_rep_group")
+    dir <- file.path(root, "integration", omic)
+    writeIntegrationInput(dir, manifest, samples, matrices, features)
+    dir
+}
+
+intGuiSamples <- function(runs, biological) {
+    data.frame(Run = runs, group = sub("_.*$", "", biological), replicates = as.integer(sub("^.*_", "", biological)),
+        tech_rep_group = biological, stringsAsFactors = FALSE)
+}
+
+intGuiSmallProject <- function(lipid_biological = c("A_1", "A_1", "A_2", "A_2", "B_1", "B_1", "B_2", "B_2"),
+    shift = 0, .local_envir = parent.frame()) {
+    root <- withr::local_tempdir(.local_envir = .local_envir)
+    paths <- intGuiPaths(root)
+    biological <- c("A_1", "A_2", "A_3", "B_1", "B_2")
+    runs <- paste0("p", seq_along(biological))
+    values <- rbind(P1 = c(10, 11, 12, 13, 14), P2 = c(5, 7, 6, 9, 8), P3 = c(1, 1.5, 2, 2.5, 3.5),
+        P4 = c(NA, NA, 4, NA, NA)) + shift
+    colnames(values) <- runs
+    intGuiInput(root, "proteomics", list(proteomics = values), intGuiSamples(runs, biological))
+    runs <- paste0("l", seq_along(lipid_biological))
+    values <- rbind(L1 = c(20, 22, 21, 23, 25, 27, 26, 28), L2 = c(3, NA, 4, 5, 6, 7, NA, NA),
+        ITSD1 = c(15, 15, 15, 15, 15, 15, 15, 15))
+    colnames(values) <- runs
+    intGuiInput(root, "lipidomics", list(lipidomics_LCMS_Pos = values), intGuiSamples(runs, lipid_biological),
+        standards = list(lipidomics_LCMS_Pos = c(FALSE, FALSE, TRUE)))
+    list(root = root, paths = paths)
+}
+
 intGuiBus <- function() {
     do.call(shiny::reactiveValues, omicWorkflowInitialBus(integrationGuiConfig()$shell))
+}
+
+# An import committed on a store outside the app (the Sample Matching tab's starting point).
+intGuiImported <- function(paths, views = NULL, .local_envir = parent.frame()) {
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    manager <- newIntegrationStateOwner(file.path(paths$source_dir, "store"))
+    withr::defer(closeWorkflowStateOwner(manager), envir = .local_envir)
+    scan <- integrationScanProject(paths$integration_dir)
+    request <- integrationImportRequest(scan, views %||% scan$views$view)
+    bus <- intGuiBus()
+    shiny::isolate({
+        bus$state_manager <- manager
+        bus$integration_import <- integrationCommitImport(manager, request)
+        status <- bus$tab_status
+        status$integration_import <- "complete"
+        status$integration_alignment <- "pending"
+        bus$tab_status <- status
+    })
+    bus
 }
 
 intGuiHtml <- function(tag) as.character(htmltools::renderTags(tag)$html)
@@ -74,7 +137,7 @@ test_that("KIT-138: with the gate off the home page and the integration module a
     expect_null(mod_integration_server("integration_workflow", list(integration = list())))
 })
 
-test_that("KIT-138: with the gate on the Integration tile is live and the shell has the Import tab", {
+test_that("KIT-138: with the gate on the Integration tile is live and the shell has the Import and Sample Matching tabs", {
     withr::local_options(MultiScholaR.integration_gui = TRUE)
     texts <- integrationGuiTexts()
     page <- intGuiHtml(app_ui(NULL))
@@ -85,20 +148,22 @@ test_that("KIT-138: with the gate on the Integration tile is live and the shell 
     expect_match(page, "if (true) { // KIT-138: the Integration tile stays enabled", fixed = TRUE)
     expect_error(integrationHomeScript("a script without the lines"), class = "integration_gui_invalid")
     config <- integrationGuiConfig()
-    expect_identical(vapply(config$shell$tabs, `[[`, "", "status_key"), "integration_import")
+    expect_identical(vapply(config$shell$tabs, `[[`, "", "status_key"), c("integration_import", "integration_alignment"))
     ui <- intGuiHtml(mod_integration_ui("integration_workflow"))
-    for (id in c("integration-workflow-tabs", "integration-tab-import", "integration-import-commit")) {
+    for (id in c("integration-workflow-tabs", "integration-tab-import", "integration-tab-alignment",
+        "integration-import-commit", "integration-alignment-confirm")) {
         expect_match(ui, sprintf('data-testid="%s"', id), fixed = TRUE)
     }
-    expect_match(ui, texts[["tab_import"]], fixed = TRUE)
+    expect_match(ui, texts[["tab_alignment"]], fixed = TRUE)
     project <- intGuiProject()
     shiny::testServer(mod_integration_server, args = list(project_dirs = list(integration = project$paths),
         omic_type = "integration", experiment_label = "kit138"), {
         session$flushReact()
         bus <- session$returned
-        expect_identical(bus$tab_status, list(integration_import = "pending"))
+        expect_identical(bus$tab_status, list(integration_import = "pending", integration_alignment = "disabled"))
         progress <- output$workflow_progress$html
         expect_match(progress, texts[["step_import"]], fixed = TRUE)
+        expect_match(progress, texts[["step_alignment"]], fixed = TRUE)
         # The Import tab scanned the project when the module started.
         expect_identical(bus$integration_scan$omics$omic, intGuiOmics)
     })
@@ -252,4 +317,143 @@ test_that("KIT-138: the Import tab refuses fewer than two omics and commits the 
     expect_identical(integrationImportStatus(list(integration_import = "complete", second = "complete", third = "pending")),
         list(integration_import = "complete", second = "pending", third = "disabled"))
     expect_identical(integrationImportStatus(list(integration_import = "pending")), list(integration_import = "complete"))
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-139: the Sample Matching tab.
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-139: the corpus's samples are matched by the biological sample, with missing samples and averaged runs stated", {
+    project <- intGuiProject()
+    counts <- intGuiCorpusCounts()
+    texts <- integrationGuiTexts()
+    bus <- intGuiImported(project$paths)
+    spec <- integrationMofaParameterSpec()
+    shiny::testServer(mod_integration_alignment_server, args = list(workflow_data = bus, paths = project$paths), {
+        preview <- session$returned()
+        views <- shiny::isolate(bus$integration_import$views)
+        # The parameters as resolved, never set by the tab: the provisional defaults.
+        for (name in c("technical_replicates", "internal_standards", "missing_samples")) {
+            expect_identical(preview$parameters[[name]], spec[[name]]$default)
+        }
+        expect_identical(preview$parameters$views, views)
+        everyone <- unique(unlist(counts$samples))
+        shared <- Reduce(intersect, counts$samples)
+        expect_identical(preview$all_samples, length(everyone))
+        expect_identical(preview$aligned$shared_samples, length(shared))
+        facts <- integrationAlignmentFacts(preview)
+        expect_identical(facts[[1L]], sprintf(texts[["fact_samples"]], length(everyone), length(shared)))
+        expect_identical(facts[[2L]], sprintf(texts[["fact_missing_keep_missing"]], length(everyone) - length(shared)))
+        for (view in views) {
+            omic <- counts$views$omic[counts$views$view == view]
+            per_sample <- table(counts$samples[[omic]])
+            expected <- if (any(per_sample > 1L)) {
+                sprintf(texts[["fact_replicates_average"]], view, length(counts$samples[[omic]]), length(per_sample),
+                    sum(per_sample > 1L))
+            } else {
+                sprintf(texts[["fact_replicates_single"]], view, length(counts$samples[[omic]]))
+            }
+            expect_true(expected %in% facts, info = view)
+        }
+        expect_false(isTRUE(preview$few_samples))
+        expect_match(output$facts$html, texts[["align_provisional"]], fixed = TRUE)
+        status <- output$alignment_status$html
+        expect_match(status, sprintf(texts[["align_key"]], "Metabolomics", "tech_rep_group"), fixed = TRUE)
+        # One row per biological sample; the sample missing from metabolomics is shown as missing there (D4).
+        table <- integrationAlignmentSampleTable(preview)
+        expect_identical(table[[texts[["col_sample"]]]], sort(everyone, method = "radix"))
+        absent <- setdiff(everyone, counts$samples$metabolomics)
+        expect_identical(table[table[[1L]] %in% absent, "metabolomics_LCMS_Pos"], rep(texts[["cell_missing"]], length(absent)))
+        metabolomics_views <- sum(counts$views$omic[match(views, counts$views$view)] == "metabolomics")
+        expect_identical(table[table[[1L]] %in% absent, texts[["col_views_present"]]],
+            rep(length(views) - metabolomics_views, length(absent)))
+        lipid_runs <- table[table[[1L]] == "WT_7", "lipidomics_LCMS_Pos"]
+        expect_identical(length(strsplit(lipid_runs, ", ", fixed = TRUE)[[1L]]), sum(counts$samples$lipidomics == "WT_7"))
+        # Not confirmed until the user confirms; then saved as the integration design.
+        expect_match(output$confirm_status$html, texts[["not_confirmed"]], fixed = TRUE)
+        session$setInputs(confirm = 1)
+        confirmed <- bus$integration_alignment
+        expect_identical(confirmed$samples, preview$aligned$samples)
+        expect_identical(confirmed$parameters, preview$parameters)
+        expect_identical(confirmed$manifests, bus$integration_import$manifests)
+        expect_identical(confirmed$file, file.path(project$paths$multiomic_inputs_dir, "integration_design.tsv"))
+        saved <- utils::read.delim(confirmed$file, stringsAsFactors = FALSE, na.strings = "NA")
+        expect_identical(saved$biological_sample, preview$aligned$samples$biological_sample)
+        expect_identical(names(saved), names(preview$aligned$samples))
+        expect_identical(bus$tab_status$integration_alignment, "complete")
+        expect_match(output$confirm_status$html, "Sample table confirmed at", fixed = TRUE)
+        # A new import (on its own store, as the Import tab commits it) clears the confirmation: it is for the import it
+        # was made on.
+        again <- newIntegrationStateOwner(file.path(project$paths$source_dir, "store-again"))
+        withr::defer(closeWorkflowStateOwner(again))
+        bus$state_manager <- again
+        bus$integration_import <- integrationCommitImport(again,
+            integrationImportRequest(integrationScanProject(project$paths$integration_dir), views))
+        session$flushReact()
+        expect_null(bus$integration_alignment)
+        expect_match(output$confirm_status$html, texts[["not_confirmed"]], fixed = TRUE)
+    })
+})
+
+test_that("KIT-139: internal standards, features seen once and few samples are stated with their counts", {
+    project <- intGuiSmallProject()
+    texts <- integrationGuiTexts()
+    bus <- intGuiImported(project$paths)
+    shiny::testServer(mod_integration_alignment_server, args = list(workflow_data = bus, paths = project$paths), {
+        preview <- session$returned()
+        facts <- integrationAlignmentFacts(preview)
+        expect_identical(facts, c(sprintf(texts[["fact_samples"]], 5L, 4L), sprintf(texts[["fact_missing_keep_missing"]], 1L),
+            sprintf(texts[["fact_replicates_average"]], "lipidomics_LCMS_Pos", 8L, 4L, 4L),
+            sprintf(texts[["fact_standards_drop"]], "lipidomics_LCMS_Pos", 1L),
+            sprintf(texts[["fact_replicates_single"]], "proteomics", 5L),
+            sprintf(texts[["fact_sparse"]], "proteomics", 1L)))
+        expect_true(preview$few_samples)
+        expect_match(output$alignment_status$html, sprintf(texts[["few_samples"]], 4L, INTEGRATION_FEW_SAMPLES), fixed = TRUE)
+        views <- integrationAlignmentViewTable(preview)
+        expect_identical(views[[texts[["col_standards_removed"]]]], c(1L, 0L))
+        expect_identical(views[[texts[["col_features_used"]]]], c(2L, 3L))
+        # A warning (D7), not a refusal: the table can be confirmed.
+        session$setInputs(confirm = 1)
+        expect_identical(bus$tab_status$integration_alignment, "complete")
+    })
+})
+
+test_that("KIT-139: no shared sample, fewer than two data sets and a changed input are refused in words", {
+    texts <- integrationGuiTexts()
+    project <- intGuiSmallProject(lipid_biological = c("C_1", "C_1", "C_2", "C_2", "D_1", "D_1", "D_2", "D_2"))
+    bus <- intGuiImported(project$paths)
+    shiny::testServer(mod_integration_alignment_server, args = list(workflow_data = bus, paths = project$paths), {
+        preview <- session$returned()
+        expect_s3_class(preview, "integration_alignment_refused")
+        expected <- sprintf(texts[["align_refused"]], sprintf(texts[["refuse_no_shared"]], "lipidomics_LCMS_Pos, proteomics"))
+        expect_identical(preview$refusal, expected)
+        expect_match(output$alignment_status$html, expected, fixed = TRUE)
+        session$setInputs(confirm = 1)
+        expect_null(bus$integration_alignment)
+        expect_identical(bus$tab_status$integration_alignment, "pending")
+        expect_match(output$confirm_status$html, expected, fixed = TRUE)
+    })
+    project <- intGuiSmallProject()
+    bus <- intGuiImported(project$paths)
+    object <- integrationImportedObject(shiny::isolate(bus$state_manager))
+    refusal <- tryCatch(integrationAlignmentPreview(object, "proteomics"), integration_refused = function(error) error)
+    expect_s3_class(refusal, "integration_too_few_views")
+    expect_identical(integrationAlignmentRefusal(refusal, "proteomics"),
+        sprintf(texts[["align_refused"]], sprintf(texts[["refuse_too_few_views"]], 1L)))
+    shiny::testServer(mod_integration_alignment_server, args = list(workflow_data = bus, paths = project$paths), {
+        expect_false(inherits(session$returned(), "integration_alignment_refused"))
+        # The proteomics input saved again after the import: the confirmation is refused, nothing is saved.
+        root <- project$root
+        biological <- c("A_1", "A_2", "A_3", "B_1", "B_2")
+        values <- rbind(P1 = c(10, 11, 12, 13, 14), P2 = c(5, 7, 6, 9, 8), P3 = c(1, 1.5, 2, 2.5, 3.5),
+            P4 = c(NA, NA, 4, NA, NA)) + 1
+        colnames(values) <- paste0("p", seq_along(biological))
+        intGuiInput(root, "proteomics", list(proteomics = values), intGuiSamples(colnames(values), biological))
+        session$setInputs(confirm = 1)
+        expect_null(bus$integration_alignment)
+        expect_match(output$confirm_status$html, "A data set has changed since it was imported", fixed = TRUE)
+        expect_false(file.exists(file.path(project$paths$multiomic_inputs_dir, "integration_design.tsv")))
+        scan <- integrationScanProject(project$paths$integration_dir, bus$integration_import$manifests)
+        expect_identical(scan$omics$status[scan$omics$omic == "proteomics"], "changed")
+    })
 })

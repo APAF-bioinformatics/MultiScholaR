@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# KIT-138: the integration GUI's configuration, its wording table and the helpers its tabs call (the project scan,
-# the import request). The model layer is KIT-062's
+# KIT-138, KIT-139: the integration GUI's configuration, its wording table and the helpers its tabs call (the project
+# scan, the import request, the sample-matching preview). The model layer is KIT-062's
 # (utils_workflow_integration_model.R); nothing here computes beyond reading what it returns. The whole surface sits
 # behind the option `MultiScholaR.integration_gui` (off by default): with it off, the home page and the app are today's,
 # byte for byte. The single-omic `validateOmicGuiConfig` does not fit (it requires design, qc and da groups); the shell
@@ -29,7 +29,7 @@ integrationGuiEnabled <- function() {
     isTRUE(getOption("MultiScholaR.integration_gui", FALSE))
 }
 
-#' Every user-facing string of the integration GUI (KIT-138): one table, drafts the user sets the final
+#' Every user-facing string of the integration GUI (KIT-138, KIT-139): one table, drafts the user sets the final
 #' wording of (docs/qa/workflow-execution/kit/kit-138/wording.md). The RUV approaches' names are the RUV panel's
 #' (`omicGuiRuvRecordTexts`), so that one approach reads the same everywhere. `%s`/`%d` are filled in the order the
 #' comment beside each entry gives.
@@ -44,6 +44,8 @@ integrationGuiTexts <- function() {
         # The tabs and the stepper.
         tab_import = " Import",
         step_import = "Import",
+        tab_alignment = " Sample Matching",
+        step_alignment = "Samples",
         workflow_label = "Integration",
         # The Import tab.
         import_heading = "Import processed omics",
@@ -115,7 +117,59 @@ integrationGuiTexts <- function() {
         # %d: omics, data sets, runs, biological samples.
         import_done = "Imported %d omics: %d data sets, %d runs, %d biological samples.",
         # %s: the reason.
-        store_unavailable = "Integration cannot keep its work in this project: %s"
+        store_unavailable = "Integration cannot keep its work in this project: %s",
+        # The Sample Matching tab.
+        align_heading = "Match samples across omics",
+        align_intro = paste("Each row is one biological sample, matched across omics by the sample column each omic",
+            "saved. Check that every row is one biological sample, then confirm the table."),
+        align_not_imported = "Import two or more omics at the Import tab first.",
+        align_key_heading = "How samples are matched",
+        # %s: the omic, then its column.
+        align_key = "%s: by the column %s",
+        align_caution = paste("Samples are matched by name: a sample must carry the same name in every omic. A sample",
+            "named differently in two omics appears as two rows."),
+        align_rules_heading = "What happens before the model",
+        align_provisional = "These rules are provisional: the integration methods may still change them.",
+        # %d: all biological samples, those measured in every data set.
+        fact_samples = "%d biological samples in all; %d measured in every data set.",
+        # %d: samples missing from at least one data set.
+        fact_missing_keep_missing = paste("%d biological samples are missing from at least one data set; they are kept,",
+            "with that data set's values missing."),
+        fact_missing_drop_incomplete = "%d biological samples missing from at least one data set are left out.",
+        # %s: the data set; %d: runs, biological samples, samples measured more than once.
+        fact_replicates_average = paste("%s: %d runs from %d biological samples; the runs of the %d samples measured more",
+            "than once are averaged."),
+        # %s: the data set; %d: runs. Every biological sample measured once.
+        fact_replicates_single = "%s: %d runs, one per biological sample; nothing to average.",
+        # %s: the data set; %d: internal standards.
+        fact_standards_drop = "%s: %d internal standards removed.",
+        fact_standards_keep = "%s: %d internal standards kept.",
+        # %s: the data set; %d: features.
+        fact_sparse = "%s: %d features measured in fewer than two samples are left out.",
+        # %d: samples in every data set, the threshold.
+        few_samples = paste("Only %d biological samples are measured in every data set (fewer than %d). A factor model",
+            "needs more samples; its results may be unstable."),
+        view_table_heading = "Data sets",
+        col_standards_removed = "Internal standards removed",
+        col_sparse = "Features left out (fewer than two samples)",
+        col_features_used = "Features used",
+        sample_table_heading = "Biological samples",
+        col_sample = "Biological sample",
+        col_group = "Group",
+        col_views_present = "Data sets measured",
+        cell_missing = "missing",
+        confirm_button = "Confirm this sample table",
+        # %s: the time, then the file.
+        confirmed = "Sample table confirmed at %s and saved to %s.",
+        not_confirmed = "Not confirmed yet.",
+        # %s: the reason.
+        align_refused = "The samples cannot be matched: %s",
+        # %s: the data sets.
+        refuse_no_shared = "These data sets share no biological sample (%s). Check that each omic names its samples the same way.",
+        # %d: the data sets selected.
+        refuse_too_few_views = "Two or more data sets are needed; %d selected.",
+        # %s: the reason.
+        refuse_changed = "A data set has changed since it was imported: %s"
     )
 }
 
@@ -130,11 +184,13 @@ integrationGuiConfig <- function() {
             paste0("integration-tab-", value), texts[[step]])
     }
     tabs <- list(
-        tab("integration_import", "import", "tab_import", "file-import", "step_import"))
+        tab("integration_import", "import", "tab_import", "file-import", "step_import"),
+        tab("integration_alignment", "alignment", "tab_alignment", "th", "step_alignment"))
     shell <- list(omic_type = "integration", prefix = "integration", testid = "integration",
         label = texts[["workflow_label"]], label_lower = "integration", header_icon = NULL,
         tabset_id = "integration_tabs", tab_style = "icon_in_title", routes = "integration", tabs = tabs,
-        bus = list(state_manager = NULL, tab_status = NULL, integration_scan = NULL, integration_import = NULL),
+        bus = list(state_manager = NULL, tab_status = NULL, integration_scan = NULL, integration_import = NULL,
+            integration_alignment = NULL),
         bus_registration = "userData")
     validateOmicGuiShell(shell, omicGuiConfigSchema())
     list(shell = shell, texts = texts)
@@ -379,4 +435,130 @@ integrationImportedObject <- function(manager) {
         source <- getWorkflowStateReference(manager, INTEGRATION_INPUTS_STATE)
         readWorkflowExecutionComponents(manager, source, fields = TRUE)
     })
+}
+
+# ------------------------------------------------------------------------------------------------
+# The Sample Matching tab (KIT-139).
+# ------------------------------------------------------------------------------------------------
+
+#' The sample-matching preview of the imported data sets (KIT-139): the model layer's alignment
+#' (`integrationAlignViews`) under the parameters as resolved for the selected data sets (the provisional defaults of
+#' `integrationMofaParameterSpec`, never set here), with its facts counted for the tab. The few-samples warning (D7)
+#' is kept as a note, not raised. Refused (`integration_refused`): an input changed since the import, fewer than two
+#' data sets, no shared biological sample, a sample in two groups.
+#' @param object The imported inputs state (`integrationImportedObject`).
+#' @param views The selected data sets.
+#' @return `list(parameters, aligned, few_samples, keys, views, replicates)`.
+#' @noRd
+integrationAlignmentPreview <- function(object, views) {
+    integrationAssertInputsCurrent(object)
+    parameters <- integrationResolveMofaParameters(object, list(views = views))
+    few <- FALSE
+    aligned <- withCallingHandlers(integrationAlignViews(object, parameters), integration_few_samples = function(warning) {
+        few <<- TRUE
+        invokeRestart("muffleWarning")
+    })
+    design <- object@design_matrix
+    view_omic <- unlist(unname(lapply(object@inputs, function(entry) stats::setNames(rep(entry$omic, length(entry$views)),
+        entry$views))))
+    all_samples <- character()
+    replicates <- do.call(rbind, lapply(parameters$views, function(view) {
+        runs <- names(object@views[[view]])[-1L]
+        rows <- design[design$omic == view_omic[[view]] & design$run %in% runs, , drop = FALSE]
+        all_samples <<- union(all_samples, rows$biological_sample)
+        per_sample <- table(rows$biological_sample)
+        standards <- sum(integrationInternalStandards(object@features[[view]]))
+        data.frame(view = view, omic = view_omic[[view]], runs = length(runs), biological_samples = length(per_sample),
+            repeated = sum(per_sample > 1L), standards = standards, stringsAsFactors = FALSE)
+    }))
+    keys <- data.frame(omic = names(object@inputs), column = vapply(object@inputs, function(entry)
+        as.character(entry$biological_sample_column), character(1)), stringsAsFactors = FALSE, row.names = NULL)
+    list(parameters = parameters, aligned = aligned, few_samples = few, keys = keys, views = parameters$views,
+        replicates = replicates, all_samples = length(all_samples))
+}
+
+#' The facts the Sample Matching tab states, in words, each from the preview's counts and the parameter's value (so a
+#' changed default changes the sentence, not a hard-coded rule).
+#' @param preview `integrationAlignmentPreview()`'s value.
+#' @return A character vector.
+#' @noRd
+integrationAlignmentFacts <- function(preview, texts = integrationGuiTexts()) {
+    parameters <- preview$parameters
+    summary <- preview$aligned$view_summary
+    text <- function(prefix, value) texts[[paste0(prefix, value)]]
+    # Counted over the union of the data sets' biological samples, whichever rule keeps them.
+    total <- preview$all_samples
+    missing <- total - preview$aligned$shared_samples
+    facts <- c(sprintf(texts[["fact_samples"]], total, preview$aligned$shared_samples),
+        sprintf(text("fact_missing_", parameters$missing_samples), missing))
+    for (i in seq_len(nrow(preview$replicates))) {
+        row <- preview$replicates[i, ]
+        facts <- c(facts, if (row$repeated == 0L) sprintf(texts[["fact_replicates_single"]], row$view, row$runs) else
+            sprintf(text("fact_replicates_", parameters$technical_replicates), row$view, row$runs,
+                row$biological_samples, row$repeated))
+        if (row$standards > 0L) {
+            facts <- c(facts, sprintf(text("fact_standards_", parameters$internal_standards), row$view, row$standards))
+        }
+        sparse <- summary$sparse_dropped[summary$view == row$view]
+        if (length(sparse) && sparse > 0L) facts <- c(facts, sprintf(texts[["fact_sparse"]], row$view, sparse))
+    }
+    unname(facts)
+}
+
+#' The Sample Matching tab's table of data sets: runs, biological samples, internal standards removed, features left
+#' out and used.
+#' @noRd
+integrationAlignmentViewTable <- function(preview, texts = integrationGuiTexts()) {
+    summary <- preview$aligned$view_summary
+    replicates <- preview$replicates[match(summary$view, preview$replicates$view), , drop = FALSE]
+    table <- data.frame(summary$view, replicates$runs, replicates$biological_samples, summary$internal_standards_dropped,
+        summary$sparse_dropped, summary$features_model, stringsAsFactors = FALSE)
+    names(table) <- unname(texts[c("col_view", "col_runs", "col_biological_samples", "col_standards_removed",
+        "col_sparse", "col_features_used")])
+    table
+}
+
+#' The Sample Matching tab's sample table: one row per biological sample, its group, the number of data sets it is
+#' measured in, and per data set the runs it comes from or "missing" (D4).
+#' @noRd
+integrationAlignmentSampleTable <- function(preview, texts = integrationGuiTexts()) {
+    samples <- preview$aligned$samples
+    table <- data.frame(samples$biological_sample, samples$group, samples$views_present, stringsAsFactors = FALSE)
+    names(table) <- unname(texts[c("col_sample", "col_group", "col_views_present")])
+    for (view in preview$views) {
+        runs <- samples[[paste0(view, "_runs")]]
+        table[[view]] <- ifelse(nzchar(runs), gsub(";", ", ", runs, fixed = TRUE), texts[["cell_missing"]])
+    }
+    table
+}
+
+#' A refusal of the sample matching in words: the tab's own sentence for the refusals it names (KIT-139: no shared
+#' sample, fewer than two data sets, a changed input), the model layer's message for the others.
+#' @param condition The `integration_refused` condition.
+#' @param views The selected data sets.
+#' @noRd
+integrationAlignmentRefusal <- function(condition, views, texts = integrationGuiTexts()) {
+    reason <- if (inherits(condition, "integration_no_shared_samples")) {
+        sprintf(texts[["refuse_no_shared"]], paste(views, collapse = ", "))
+    } else if (inherits(condition, "integration_too_few_views")) {
+        sprintf(texts[["refuse_too_few_views"]], length(views))
+    } else if (inherits(condition, "integration_input_stale")) {
+        sprintf(texts[["refuse_changed"]], conditionMessage(condition))
+    } else {
+        conditionMessage(condition)
+    }
+    sprintf(texts[["align_refused"]], reason)
+}
+
+#' Save the confirmed sample table as the integration design (KIT-139): the aligned sample table, tab-separated, in the
+#' integration results' inputs folder.
+#' @param samples The aligned sample table (`integrationAlignViews()$samples`).
+#' @param dir The folder.
+#' @return The file's path.
+#' @noRd
+integrationSaveDesign <- function(samples, dir) {
+    dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+    path <- file.path(dir, "integration_design.tsv")
+    vroom::vroom_write(samples, path, delim = "\t", na = "NA", progress = FALSE)
+    path
 }

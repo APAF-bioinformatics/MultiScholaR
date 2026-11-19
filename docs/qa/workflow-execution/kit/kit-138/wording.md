@@ -21,6 +21,8 @@ Rules followed: plain words, exact numbers, none of "manifest", "owner", "declar
 | tab_import | Import | tab title |
 | step_import | Import | stepper |
 | workflow_label | Integration | the shell's label |
+| tab_alignment | Sample Matching | tab title (KIT-139) |
+| step_alignment | Samples | stepper (KIT-139) |
 
 ## Import tab
 
@@ -65,6 +67,40 @@ Rules followed: plain words, exact numbers, none of "manifest", "owner", "declar
 | import_done | Imported %d omics: %d data sets, %d runs, %d biological samples. | |
 | store_unavailable | Integration cannot keep its work in this project: %s | the reason |
 
+## Sample Matching tab (KIT-139)
+
+| Key | Text | Fills |
+|---|---|---|
+| align_heading | Match samples across omics | |
+| align_intro | Each row is one biological sample, matched across omics by the sample column each omic saved. Check that every row is one biological sample, then confirm the table. | |
+| align_not_imported | Import two or more omics at the Import tab first. | |
+| align_key_heading | How samples are matched | |
+| align_key | %s: by the column %s | omic, column |
+| align_caution | Samples are matched by name: a sample must carry the same name in every omic. A sample named differently in two omics appears as two rows. | |
+| align_rules_heading | What happens before the model | |
+| align_provisional | These rules are provisional: the integration methods may still change them. | |
+| fact_samples | %d biological samples in all; %d measured in every data set. | |
+| fact_missing_keep_missing | %d biological samples are missing from at least one data set; they are kept, with that data set's values missing. | D4 |
+| fact_missing_drop_incomplete | %d biological samples missing from at least one data set are left out. | the other choice of the parameter |
+| fact_replicates_average | %s: %d runs from %d biological samples; the runs of the %d samples measured more than once are averaged. | INT-2 |
+| fact_replicates_single | %s: %d runs, one per biological sample; nothing to average. | |
+| fact_standards_drop | %s: %d internal standards removed. | INT-3 |
+| fact_standards_keep | %s: %d internal standards kept. | the other choice |
+| fact_sparse | %s: %d features measured in fewer than two samples are left out. | the model's rule |
+| few_samples | Only %d biological samples are measured in every data set (fewer than %d). A factor model needs more samples; its results may be unstable. | D7 (a warning) |
+| view_table_heading | Data sets | |
+| col_standards_removed, col_sparse, col_features_used | Internal standards removed; Features left out (fewer than two samples); Features used | table headers (with col_view, col_runs, col_biological_samples) |
+| sample_table_heading | Biological samples | |
+| col_sample, col_group, col_views_present | Biological sample; Group; Data sets measured | table headers; then one column per data set |
+| cell_missing | missing | a data set without that sample |
+| confirm_button | Confirm this sample table | button |
+| confirmed | Sample table confirmed at %s and saved to %s. | time, file |
+| not_confirmed | Not confirmed yet. | |
+| align_refused | The samples cannot be matched: %s | reason |
+| refuse_no_shared | These data sets share no biological sample (%s). Check that each omic names its samples the same way. | data sets |
+| refuse_too_few_views | Two or more data sets are needed; %d selected. | |
+| refuse_changed | A data set has changed since it was imported: %s | the check's message |
+
 ## Shown verbatim, not from the table (for the user's decision)
 
 - **The contract reader's refusals** (`readIntegrationInput`, KIT-061) appear as the reason of a "cannot be used" omic
@@ -75,3 +111,6 @@ Rules followed: plain words, exact numbers, none of "manifest", "owner", "declar
 - **The data type** column shows the omic's own route name as saved (`LFQ`, `DIA`, `TMT`, `LIPIDOMICS`,
   `METABOLOMICS`, `TRANSCRIPTOMICS`).
 - **Data set names** are the saved names (`lipidomics_LCMS_Pos`, INT-4).
+- **The model layer's other refusals** of the sample matching (a biological sample in two groups, a run its omic's
+  design does not list, a data set left without features) and the changed-input detail after `refuse_changed` are
+  KIT-062's messages, shown as they are; they use "view", "biological-sample column" and "manifest's sha256".
