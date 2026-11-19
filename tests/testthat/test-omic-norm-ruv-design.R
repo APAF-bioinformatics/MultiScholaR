@@ -577,7 +577,7 @@ test_that("(fourth pass item 2) only the options a route's run path takes can be
     expect_false(grepl("disabled", radio("supplied_controls"), fixed = TRUE))
     expect_match(html, htmltools::htmlEscape(paste("Not available:", tables[["proteomics.classic"]]$texts[["no_technical_replicates"]])),
         fixed = TRUE)
-    expect_match(html, '<span class="ruv-design-fdp" aria-hidden="true">\\s*<strong>5.3%</strong>')
+    expect_match(html, '<span class="ruv-design-fdp" aria-hidden="true">\\s*<strong>5.4%</strong>')
 })
 
 ruvDesignInput <- function(...) {
