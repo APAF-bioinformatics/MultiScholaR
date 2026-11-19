@@ -1236,7 +1236,8 @@ computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
     } else if (identical(parameters$figures, "composite")) {
         saveWorkflowDiaCompositeFigure(manager, request, aesthetics)
     } else {
-        directory <- tempfile("dia-qc-figures-")
+        # KIT-131: in a worker, not under its request-owned temporary folder (on Windows past 259 characters).
+        directory <- tempfile("dia-qc-figures-", tmpdir = workflowShortScratchRoot())
         dir.create(directory)
         on.exit(unlink(directory, recursive = TRUE), add = TRUE)
         for (kind in names(diaQcStageFigureSizes)) {
@@ -1312,7 +1313,7 @@ saveWorkflowDiaCompositeFigure <- function(manager, request, aesthetics) {
     if (is.null(product)) cli::cli_abort("the normalisation product is not in the session", class = "workflow_operation_parameters")
     saved <- hydrateSavedWorkflowEntity(store, product)$value
     skipped <- identical(parameters$ruv_mode, "skip")
-    directory <- tempfile("dia-qc-composite-")
+    directory <- tempfile("dia-qc-composite-", tmpdir = workflowShortScratchRoot())
     dir.create(directory)
     on.exit(unlink(directory, recursive = TRUE), add = TRUE)
     published <- workflowRequestExperimentPaths(request)$protein_qc_dir

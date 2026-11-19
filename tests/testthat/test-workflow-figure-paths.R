@@ -762,6 +762,62 @@ test_that("the session archive (R's tar) stages its members in a short folder: f
     expect_identical(list.files(tempdir(), pattern = "^archive-stage-"), scratch_before)
 })
 
+# KIT-131: in a worker the archive's members are staged in the system's temporary folder, not under the worker's own
+# (`<request folder>/worker-scratch`, 244 characters on the Windows runner); a member not copied is named.
+figurePathArchiveRequest <- function(env = parent.frame()) {
+    root <- normalizePath(withr::local_tempdir(.local_envir = env), winslash = "/")
+    store_parent <- file.path(root, "s")
+    members <- file.path(".workflow-entities", "entities", figurePathArchiveEntity, c("descriptor.rds", "commit.json"))
+    for (member in members) {
+        dir.create(dirname(file.path(store_parent, member)), recursive = TRUE, showWarnings = FALSE)
+        writeLines(member, file.path(store_parent, member))
+    }
+    writeBin(members, file.path(root, "store-members.nul"))
+    list(root = root, members = members, run = function() suppressWarnings(runDIANativeTarR(c("--create", "--file", "-",
+        "--directory", store_parent, "--files-from", file.path(root, "store-members.nul")), file.path(root, "archive-create.log"),
+        output_path = file.path(root, "session.msdia.tar"))))
+}
+
+test_that("KIT-131: in a worker the session archive stages its members in the system's temporary folder", {
+    request <- figurePathArchiveRequest()
+    system_temp <- normalizePath(withr::local_tempdir(), winslash = "/")
+    seen <- new.env(parent = emptyenv())
+    suppressMessages(trace("file.copy", tracer = bquote(assign("to", c(get0("to", envir = .(seen), inherits = FALSE), to),
+        envir = .(seen))), where = baseenv(), print = FALSE))
+    withr::defer(suppressMessages(untrace("file.copy", where = baseenv())))
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1", TMP = system_temp, TEMP = NA), request$run())
+    expect_length(seen$to, length(request$members))
+    # Each target is <staging>/.workflow-entities/entities/<entity>/<file>; the staging folder is in the system's folder.
+    expect_true(all(dirname(dirname(dirname(dirname(dirname(seen$to))))) == system_temp))
+    expect_setequal(names(readDIANativeTarEntriesR(file.path(request$root, "session.msdia.tar"))), request$members)
+    expect_length(list.files(system_temp, pattern = "^archive-stage-"), 0L)
+})
+
+test_that("KIT-131: a member the session archive cannot stage stops the archive with the classed error and is named", {
+    request <- figurePathArchiveRequest()
+    deep <- file.path(withr::local_tempdir(), strrep("w", 120L), strrep("x", 120L))
+    dir.create(deep, recursive = TRUE)
+    testthat::local_mocked_bindings(workflowShortScratchRoot = function() deep, .package = "MultiScholaR")
+    figurePathLongCopyFails()
+    error <- expect_error(request$run(), class = "workflow_figure_unwritten")
+    expect_s3_class(error, "saved_entity_write")
+    expect_match(figurePathText(error), "could not be copied into its staging folder", fixed = TRUE)
+    expect_match(figurePathText(error), "descriptor.rds", fixed = TRUE)
+})
+
+test_that("KIT-131: a proteomics QC figure the device leaves unwritten stops with the classed error, not an unreadable file", {
+    testthat::local_mocked_bindings(
+        getDIAActiveManager = function() list(.context = list(store = NULL, software = "s")),
+        isSavedWorkflowReference = function(x) TRUE,
+        newSavedWorkflowRenderIdentity = function(...) "identity",
+        resolveSavedWorkflowAsset = function(...) list(status = "miss"),
+        .package = "MultiScholaR")
+    plot <- structure(list(), dia_product_reference = list(entity_id = "product"), dia_render_aesthetics = list())
+    error <- expect_error(saveProtNormQcPlotArtifact(withr::local_tempdir(), "post_norm_pca.png", plot, 8, 6,
+        savePlotFn = function(path, ...) invisible(path)), class = "workflow_figure_unwritten")
+    expect_match(figurePathText(error), "post_norm_pca.png", fixed = TRUE)
+})
+
 test_that("a file the session archive cannot copy into its request folder stops the export and is named", {
     testthat::local_mocked_bindings(workflowToolsAvailable = function(names) FALSE, .package = "MultiScholaR")
     root <- withr::local_tempdir()
