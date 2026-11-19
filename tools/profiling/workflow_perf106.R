@@ -168,7 +168,7 @@ verifyPerf106RepairP14 <- function(run_dir, repo, slot, stage = "p14") {
             identical(digest::digest(file = binding$accepted_receipt, algo = "sha256"),
                 binding$accepted_receipt_sha256))
         project <- member$project_root
-        owner <- readSavedStoreIdentity(file.path(project, ".workflow-entities/store.json"))
+        owner <- readSavedStoreIdentity(file.path(perf106StoreDirectory(project), "store.json"))
         manager <- newDIAStateAdapter(newWorkflowEntityStore(project,
             owner$project_id, owner$workflow_id), reopen = TRUE)
         on.exit(closeDIAStateAdapter(manager), add = TRUE)
@@ -178,7 +178,7 @@ verifyPerf106RepairP14 <- function(run_dir, repo, slot, stage = "p14") {
             envir = environment())
         hashes <- fingerprintDIAWriterOutput(project, reference)
         encode <- function(x) jsonlite::toJSON(x, auto_unbox = TRUE, null = "null", digits = NA)
-        request <- file.path(project, ".workflow-entities/.workflow-export",
+        request <- perf106RequestDirectory(perf106StoreDirectory(project),
             operation$execution$request_id)
         worker <- readRDS(file.path(request, "worker-result.rds"))
         execution <- worker$result$execution
@@ -259,14 +259,14 @@ verifyPerf106RepairScreen <- function(library_path, run_dir, repo, slot) {
             identical(operation$member$input_entity_id, expected$reference$entity_id),
             identical(member$project_root, file.path(owned, "project")))
         project <- member$project_root
-        owner <- readSavedStoreIdentity(file.path(project, ".workflow-entities/store.json"))
+        owner <- readSavedStoreIdentity(file.path(perf106StoreDirectory(project), "store.json"))
         manager <- newDIAStateAdapter(newWorkflowEntityStore(project,
             owner$project_id, owner$workflow_id), reopen = TRUE)
         on.exit(closeDIAStateAdapter(manager), add = TRUE)
         reference <- getDIAStateReference(manager)
         receipt$verification <- verifyPerf106Result(project, reference)
-        worker_path <- file.path(project, ".workflow-entities", ".workflow-export",
-            operation$execution$request_id, "worker-result.rds")
+        worker_path <- file.path(perf106RequestDirectory(perf106StoreDirectory(project),
+            operation$execution$request_id), "worker-result.rds")
         worker <- readRDS(worker_path)
         receipt$science_execution <- worker$result$execution
         stopifnot(identical(receipt$science_execution$bulk_query$settings,
@@ -483,7 +483,7 @@ checkPerf106RepairAttribution <- function(library_path, run_dir, repo, verificat
             member <- readRDS(path)
             stopifnot(identical(member$status, "complete"), isTRUE(member$small_science_exact))
             project <- member$project_root
-            owner_identity <- readSavedStoreIdentity(file.path(project, ".workflow-entities/store.json"))
+            owner_identity <- readSavedStoreIdentity(file.path(perf106StoreDirectory(project), "store.json"))
             manager <- newDIAStateAdapter(newWorkflowEntityStore(project,
                 owner_identity$project_id, owner_identity$workflow_id), reopen = TRUE)
             reference <- getDIAStateReference(manager)
@@ -1003,7 +1003,7 @@ runPerf106ScreenMember <- function(member, binding, run_dir, copy_checkpoint,
 #' @return Stable table, design, summary and support fingerprints.
 #' @noRd
 verifyPerf106Result <- function(owned, state_reference) {
-    identity <- readSavedStoreIdentity(file.path(owned, ".workflow-entities", "store.json"))
+    identity <- readSavedStoreIdentity(file.path(perf106StoreDirectory(owned), "store.json"))
     manager <- newDIAStateAdapter(newWorkflowEntityStore(owned,
         identity$project_id, identity$workflow_id), reopen = TRUE)
     on.exit(closeDIAStateAdapter(manager), add = TRUE)
@@ -1343,4 +1343,15 @@ preparePerf106Inputs <- function(binding, run_dir, repo, copy_checkpoint) {
     stopifnot(identical(digest::digest(file = source_head, algo = "sha256"), before))
     saveRDS(outputs, file.path(binding$output_root, "PERF106-inputs.rds"))
     outputs
+}
+
+# Protocol v1.11 item 6 (KIT-052 option A): the store folder `.workflow-entities` (earlier) or `.we`, and the request
+# root `.workflow-export` (earlier) or `.wx`; a folder that exists keeps its name.
+perf106StoreDirectory <- function(root) {
+    earlier <- file.path(root, ".workflow-entities")
+    if (dir.exists(earlier)) earlier else file.path(root, ".we")
+}
+perf106RequestDirectory <- function(store, request_id) {
+    earlier <- file.path(store, ".workflow-export")
+    file.path(if (dir.exists(earlier)) earlier else file.path(store, ".wx"), request_id)
 }

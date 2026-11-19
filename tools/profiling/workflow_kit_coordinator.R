@@ -237,18 +237,20 @@ tryCatch({
             swap <- if (!is.null(counters)) counters$swap else safe_max(trace$swap_peak)
             head_unchanged <- NA
             if (!is.null(result$execution$request_id)) {
-                events_path <- file.path(owned, "project/.workflow-entities/.workflow-export", result$execution$request_id, "phase-events.tsv")
+                # Protocol v1.11 item 6: either folder layout (helpers$kitStoreDirectory, helpers$kitRequestDirectory).
+                events_path <- file.path(helpers$kitRequestDirectory(helpers$kitStoreDirectory(file.path(owned, "project")),
+                    result$execution$request_id), "phase-events.tsv")
                 phases <- if (file.exists(events_path)) helpers$kitOperationPhaseMeasures(
                     utils::read.delim(events_path, stringsAsFactors = FALSE), trace) else NULL
             } else phases <- NULL
             if (case$expect_failure && !is.null(result)) {
-                current <- tryCatch(helpers$kitCurrentInputComponentId(file.path(owned, "project/.workflow-entities"), api),
+                current <- tryCatch(helpers$kitCurrentInputComponentId(helpers$kitStoreDirectory(file.path(owned, "project")), api),
                     error = function(error) NULL)
                 head_unchanged <- !is.null(current) && identical(current, case$input$entity_id)
             }
             # The worker's scientific execution record (admission, batches, phases) for the decision (KIT-006).
-            worker_path <- if (!is.null(result$execution$request_id)) file.path(owned, "project/.workflow-entities/.workflow-export",
-                result$execution$request_id, "worker-result.rds") else ""
+            worker_path <- if (!is.null(result$execution$request_id)) file.path(helpers$kitRequestDirectory(
+                helpers$kitStoreDirectory(file.path(owned, "project")), result$execution$request_id), "worker-result.rds") else ""
             science <- if (nzchar(worker_path) && file.exists(worker_path)) tryCatch(readRDS(worker_path)$result$execution,
                 error = function(error) NULL) else NULL
             operation <- c(list(status = if (!is.null(outer_guard)) outer_guard else if (is.null(result)) "controller_failed" else result$status,

@@ -1116,15 +1116,41 @@ kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL, ap
     result
 }
 
+#' Protocol v1.11 item 6 (KIT-052 option A, user 2026-11-19): the folder names the package writes are shortened, and
+#' projects written before still open under their old names, never renamed. The harness reads both layouts, as the
+#' package does: the store folder `.workflow-entities` (earlier) or `.we`; the request and staging root
+#' `.workflow-export` (earlier) or `.wx`; the session folder `.dia-native-<14>` / `.dia-gui-adoption-<14>` (earlier) or
+#' `.n-<8>`; the worker request `wfx-<32>` (earlier) or `w-<16>`. Where both could exist the earlier name is taken
+#' when present (the package's rule: a folder that exists keeps its name).
+#' @noRd
+KIT_STORE_DIR_RE <- "[.](workflow-entities|we)"
+KIT_EXPORT_DIR_RE <- "[.](workflow-export|wx)"
+KIT_OWNER_DIR_RE <- "[.](dia-(native|gui-adoption)-[^/]*|n-[a-f0-9]{8})"
+KIT_REQUEST_RE <- "(wfx-[a-f0-9]{32}|w-[a-f0-9]{16})"
+
+#' The store folder under a project or session root (either layout).
+#' @noRd
+kitStoreDirectory <- function(root) {
+    earlier <- file.path(root, ".workflow-entities")
+    if (dir.exists(earlier)) earlier else file.path(root, ".we")
+}
+
+#' A worker request's folder under a store folder (either layout).
+#' @noRd
+kitRequestDirectory <- function(store, request_id) {
+    earlier <- file.path(store, ".workflow-export")
+    file.path(if (dir.exists(earlier)) earlier else file.path(store, ".wx"), request_id)
+}
+
 #' Worker dispatches under a member's directory (KIT-008; shared with the KIT-098 journeys): the requests under the project
-#' store's `.workflow-export/wfx-*`, by operation, with the number whose journal reads `complete`.
+#' store's `.workflow-export/wfx-*` or `.wx/w-*` (v1.11), by operation, with the number whose journal reads `complete`.
 #' @return Named list by operation of `requests` and `complete`; empty without the directory.
 #' @noRd
 kitWorkerDispatches <- function(member_dir) {
     dispatched <- list()
     if (!is.null(member_dir) && dir.exists(member_dir)) {
         requests <- list.files(member_dir, "^request[.]rds$", recursive = TRUE, full.names = TRUE, all.files = TRUE)
-        requests <- requests[grepl("/[.]workflow-export/wfx-", requests)]
+        requests <- requests[grepl(paste0("/", KIT_EXPORT_DIR_RE, "/", KIT_REQUEST_RE, "/request[.]rds$"), requests)]
         for (path in requests) {
             request <- tryCatch(readRDS(path), error = function(error) NULL)
             operation <- request$operation %||% NA_character_
@@ -1298,7 +1324,7 @@ kitFingerprintState <- function(store, reference, api, memo = NULL) {
 kitFingerprintFiles <- function(project, previous = NULL) {
     files <- list.files(project, recursive = TRUE, full.names = TRUE, all.files = TRUE)
     # KIT-027/029: the analysis record and its rendered bundle carry their generation time; they are a view of the store.
-    files <- files[!grepl("/[.]workflow-entities/|/[.]dia-(native|gui-adoption)-[^/]*/|[.]log$|/checkpoint-io[.]log$|/analysis_record[.](json|docx|xlsx|html)$", files)]
+    files <- files[!grepl(paste0("/", KIT_STORE_DIR_RE, "/|/", KIT_OWNER_DIR_RE, "/|[.]log$|/checkpoint-io[.]log$|/analysis_record[.](json|docx|xlsx|html)$"), files)]
     files <- files[!dir.exists(files)]
     relative <- substring(files, nchar(project) + 2L)
     info <- file.info(files, extra_cols = FALSE)
@@ -1345,7 +1371,7 @@ kitFingerprintFiles <- function(project, previous = NULL) {
 #' @noRd
 kitFindStore <- function(project) {
     heads <- list.files(project, "^dia-state-head[.]rds$", recursive = TRUE, full.names = TRUE, all.files = TRUE)
-    heads <- heads[grepl("/[.]dia-(native|gui-adoption)-[^/]*/[.]workflow-entities/dia-state-head[.]rds$", heads)]
+    heads <- heads[grepl(paste0("/", KIT_OWNER_DIR_RE, "/", KIT_STORE_DIR_RE, "/dia-state-head[.]rds$"), heads)]
     if (!length(heads)) return(NULL)
     if (length(heads) != 1L) stop("DIA state store is ambiguous")
     dirname(heads)
@@ -1557,7 +1583,7 @@ kitStateFingerprintMatches <- function(expected, recomputed) {
 #' @noRd
 kitFileMismatches <- function(reference, candidate) {
     canonical <- function(files) {
-        files <- files[!grepl("/[.]workflow-export/", files$path), , drop = FALSE]
+        files <- files[!grepl(paste0("/", KIT_EXPORT_DIR_RE, "/"), files$path), , drop = FALSE]
         files$path <- gsub("[0-9]{8}_[0-9]{6}", "<time>", files$path)
         files$path <- gsub("[0-9a-f]{13,}", "<id>", files$path)
         files
@@ -1767,11 +1793,11 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
             identical(source_head$states[[case$input$state]], case$input$entity_id))
     }
     project <- file.path(owned, "project")
-    owner <- api("readSavedStoreIdentity")(file.path(project, ".workflow-entities/store.json"))
+    owner <- api("readSavedStoreIdentity")(file.path(kitStoreDirectory(project), "store.json"))
     manager <- api("newDIAStateAdapter")(api("newWorkflowEntityStore")(project, owner$project_id, owner$workflow_id), reopen = TRUE)
     on.exit(api("closeDIAStateAdapter")(manager), add = TRUE, after = FALSE)
     checkpoint <- api("readDIAStateMetadata")(manager)$data
-    request <- file.path(project, ".workflow-entities/.workflow-export", operation$execution$request_id)
+    request <- kitRequestDirectory(kitStoreDirectory(project), operation$execution$request_id)
     journal <- jsonlite::read_json(file.path(request, "journal.json"))
     completion <- readRDS(file.path(request, "completion.rds"))
     worker <- readRDS(file.path(request, "worker-result.rds"))
@@ -1827,7 +1853,7 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
         # KIT-099: a product-only operation member, judged on the product it created (kitOracleProductMismatches); its head
         # state stays the bound input state. A product its same-build population store already held is a cache hit.
         oracle <- bindings$oracles[[case$oracle]]
-        snapshot <- api("hydrateSavedWorkflowCheckpoint")(store, readRDS(file.path(project, ".workflow-entities", "dia-state-head.rds")))
+        snapshot <- api("hydrateSavedWorkflowCheckpoint")(store, readRDS(file.path(kitStoreDirectory(project), "dia-state-head.rds")))
         before <- names(kitReadHead(source_store, api)$products)
         new_ids <- setdiff(names(snapshot$products), before)
         memo <- new.env(parent = emptyenv())
@@ -1955,13 +1981,13 @@ kitFingerprintTablePages <- function(store, reference, api) {
 #' Prepare a replay store (KIT-028) in a copy of the origin project: its head is cut to the record's precondition
 #' states (the import and the design), so the reopened index (rebuilt from the head's roots) finds no saved result
 #' of any later step. Refuses when a scientific product is still indexed.
-#' @param root Store root inside the copied project (the directory holding `.workflow-entities`); never the origin.
+#' @param root Store root inside the copied project (the directory holding `.workflow-entities` or `.we`); never the origin.
 #' @param preconditions Names of the precondition states, in order.
 #' @return The prepared store root.
 #' @noRd
 kitPrepareReplayProject <- function(root, preconditions, api) {
-    stopifnot(dir.exists(file.path(root, ".workflow-entities")))
-    identity <- api("readSavedStoreIdentity")(file.path(root, ".workflow-entities", "store.json"))
+    stopifnot(dir.exists(kitStoreDirectory(root)))
+    identity <- api("readSavedStoreIdentity")(file.path(kitStoreDirectory(root), "store.json"))
     open <- function() api("newDIAStateAdapter")(api("newWorkflowEntityStore")(root, identity$project_id, identity$workflow_id), reopen = TRUE)
     manager <- open()
     snapshot <- manager$.context$snapshot
@@ -1994,8 +2020,8 @@ kitReplayJourney <- function(record, prepared_root, origin_root, inputs, paths, 
     api("replayWorkflowAnalysisRecord")(record, prepared_root, inputs, paths, scratch, on_step = function(step, manager) {
         per_step[[length(per_step) + 1L]] <<- list(state = step$state, operation = step$operation, at = format(Sys.time()))
     })
-    origin <- kitFingerprintStore(file.path(origin_root, ".workflow-entities"), api)
-    replay <- kitFingerprintStore(file.path(prepared_root, ".workflow-entities"), api)
+    origin <- kitFingerprintStore(kitStoreDirectory(origin_root), api)
+    replay <- kitFingerprintStore(kitStoreDirectory(prepared_root), api)
     as_populations <- function(fingerprints) lapply(fingerprints$states, function(x) list(fingerprint = x))
     list(states = names(replay$states), per_step = per_step,
         mismatches = as.vector(kitReproduceMismatches(as_populations(origin), as_populations(replay))),

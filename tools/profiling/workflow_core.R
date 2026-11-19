@@ -478,11 +478,11 @@ verifyCoreMember <- function(run_dir, repo, selection) {
         identical(digest::digest(file = file.path(case$input$store, "dia-state-head.rds"),
             algo = "sha256"), case$input$head_sha256))
     project <- member$project_root
-    owner <- readSavedStoreIdentity(file.path(project, ".workflow-entities/store.json"))
+    owner <- readSavedStoreIdentity(file.path(coreStoreDirectory(project), "store.json"))
     manager <- newDIAStateAdapter(newWorkflowEntityStore(project, owner$project_id, owner$workflow_id), reopen = TRUE)
     on.exit(closeDIAStateAdapter(manager), add = TRUE, after = FALSE)
     checkpoint <- readDIAStateMetadata(manager)$data
-    request <- file.path(project, ".workflow-entities/.workflow-export", operation$execution$request_id)
+    request <- coreRequestDirectory(coreStoreDirectory(project), operation$execution$request_id)
     journal <- jsonlite::read_json(file.path(request, "journal.json"))
     completion <- readRDS(file.path(request, "completion.rds"))
     worker <- readRDS(file.path(request, "worker-result.rds"))
@@ -527,4 +527,15 @@ verifyCoreMember <- function(run_dir, repo, selection) {
     receipt$execution <- execution
     receipt$status <- "complete"
     receipt
+}
+
+# Protocol v1.11 item 6 (KIT-052 option A): the store folder `.workflow-entities` (earlier) or `.we`, and the request
+# root `.workflow-export` (earlier) or `.wx`; a folder that exists keeps its name.
+coreStoreDirectory <- function(root) {
+    earlier <- file.path(root, ".workflow-entities")
+    if (dir.exists(earlier)) earlier else file.path(root, ".we")
+}
+coreRequestDirectory <- function(store, request_id) {
+    earlier <- file.path(store, ".workflow-export")
+    file.path(if (dir.exists(earlier)) earlier else file.path(store, ".wx"), request_id)
 }

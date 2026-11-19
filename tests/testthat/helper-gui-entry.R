@@ -165,8 +165,9 @@ guiEntryOutputValue <- function(value, roots) {
 #' counted per masked entity path (store and request ids masked), so the capture is a deterministic list.
 guiEntryArtifacts <- function(base_dir, roots) {
   files <- sort(list.files(base_dir, recursive = TRUE, all.files = TRUE, no.. = TRUE))
-  store <- grepl("(^|/)\\.multischolar(/|$)|(^|/)\\.workflow|\\.duckdb|\\.qs2$|\\.wal$", files)
-  commits <- grep("(^|/)\\.workflow-entities/entities/[^/]+/commit\\.json$", files[store], value = TRUE)
+  # Protocol v1.11 item 6 (KIT-052 option A): the store `.we` and staging `.wx` folders beside the earlier names.
+  store <- grepl("(^|/)\\.multischolar(/|$)|(^|/)\\.workflow|(^|/)\\.(we|wx)(/|$)|\\.duckdb|\\.qs2$|\\.wal$", files)
+  commits <- grep("(^|/)\\.(workflow-entities|we)/entities/[^/]+/commit\\.json$", files[store], value = TRUE)
   # F-22: a store or request id's whole random suffix is masked (a hex run shorter than 10 escaped the text mask).
   entry_path <- function(path) {
     parts <- strsplit(guiEntryMask(path, roots), "/", fixed = TRUE)[[1L]]

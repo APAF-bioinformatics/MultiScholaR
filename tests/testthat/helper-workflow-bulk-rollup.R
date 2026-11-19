@@ -7,7 +7,9 @@
 #' @return Ordered SHA256 fingerprints, without retaining result batches.
 #' @noRd
 fingerprintDIAWriterOutput <- function(owned, reference, samples = NULL) {
-    identity <- readSavedStoreIdentity(file.path(owned, ".workflow-entities", "store.json"))
+    # Protocol v1.11 item 6: the store folder under either name (`.workflow-entities` earlier, `.we`).
+    store_dir <- if (dir.exists(file.path(owned, ".workflow-entities"))) file.path(owned, ".workflow-entities") else file.path(owned, ".we")
+    identity <- readSavedStoreIdentity(file.path(store_dir, "store.json"))
     store <- newWorkflowEntityStore(owned, identity$project_id, identity$workflow_id)
     on.exit(closeWorkflowEntityStore(store), add = TRUE)
     # JSON receipts simplify empty lists and descriptor types. The immutable RDS

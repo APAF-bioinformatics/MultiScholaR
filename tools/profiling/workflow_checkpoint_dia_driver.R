@@ -878,7 +878,7 @@ runPerf107GuiScience <- function(driver, run_dir, application_root, inputs, entr
         !is.na(value("b2", 5L))) stop("sample-filter anchor differs")
     figures <- list.files(run_dir, pattern = "^6_sample_filtered_.*[.](png|pdf)$",
         recursive = TRUE, full.names = TRUE)
-    figures <- figures[!grepl("/[.]workflow-export/", figures)]
+    figures <- figures[!grepl("/[.](workflow-export|wx)/", figures)]  # protocol v1.11 item 6: either staging root
     if (length(figures) != 12L || any(file.size(figures) <= 0)) {
         stop("sample-filter required figures differ")
     }
@@ -1048,7 +1048,8 @@ runPerf107CheckpointActions <- function(driver, run_dir, application_root, archi
     if (length(heads) != 1L) stop("opened checkpoint owner is ambiguous")
     root <- dirname(dirname(heads))
     reopen <- function() {
-        identity <- api("readSavedStoreIdentity")(file.path(root, ".workflow-entities", "store.json"))
+        store_dir <- if (dir.exists(file.path(root, ".workflow-entities"))) file.path(root, ".workflow-entities") else file.path(root, ".we")
+        identity <- api("readSavedStoreIdentity")(file.path(store_dir, "store.json"))  # protocol v1.11 item 6
         api("newDIAStateAdapter")(api("newWorkflowEntityStore")(root,
             identity$project_id, identity$workflow_id, max_cache_bytes = 0), reopen = TRUE)
     }
@@ -5076,7 +5077,7 @@ runCheckpointExportScenarios <- function(library_path, run_dir, contract_path) {
 checkCheckpointFirstQc <- function(driver, run_dir) {
     plots <- file.path(run_dir, "dia_baseline_smoke", "results", "proteomics", "publication_graphs", "filtering_qc")
     files <- list.files(plots, pattern = "^2_qval_filtered_.*[.](png|pdf)$", recursive = TRUE, full.names = TRUE)
-    files <- files[!grepl("/.workflow-export/", files, fixed = TRUE)]
+    files <- files[!grepl("/[.](workflow-export|wx)/", files)]  # protocol v1.11 item 6: either staging root
     expected <- as.vector(outer(paste0("2_qval_filtered_", c("proteins_total", "proteins_per_run",
         "peptides_total", "peptides_per_protein", "peptides_per_run", "combined_plots")),
         c("png", "pdf"), paste, sep = "."))
