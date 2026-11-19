@@ -1,0 +1,18 @@
+ok   R is 4.6.1: R version 4.6.1 (2026-06-24)
+ok   R home is inside the bundle: /srv/any where/msr app/R
+ok   every library path is inside the bundle: /srv/any where/msr app/R/library
+ok   the network is offline: a connection to cran.r-project.org failed
+
+
+ok   every bundled package loads (385 packages): 385 loaded, 0 failed, 0 not reported, 130 s
+ok   every loaded namespace comes from the bundle: 0 outside
+ok   MultiScholaR attaches from the bundle and has run_app: Warning message: | Failed to locate timezone database  | MultiScholaR 0.5.0 TRUE /srv/any where/msr app/R/library/MultiScholaR 
+MINIMUM R >= 4.1.0: bundled 4.6.1, met
+MINIMUM filelock >= 1.0.3: bundled 1.0.3, met
+MINIMUM duckplyr >= 1.2.1: bundled 1.2.1, met
+MINIMUM testthat >= 3.0.0: bundled none, not bundled
+MINIMUM fastduckdb >= 0.1.0: bundled 0.1.0, met
+MINIMUM nanoarrow >= 0.9.0: bundled 0.9.0, met
+MINIMUM qs2 >= 0.2.2: bundled 0.2.2, met
+ok   every bundled package meets DESCRIPTION's declared version (7 declared): 6 met, 0 not met (), 1 not bundled (testthat)
+KIT-134 CHECK PASSED: the bundle's R and library from the moved folder

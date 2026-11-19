@@ -1,0 +1,180 @@
+KIT-134 run 44146578653 (commit d958b479, stage installer): the lines of the job logs that outcome.md quotes.
+Timestamps, colour codes and the log's ::notice/::error prefixes removed; lines cut at 600 characters; nothing else changed.
+https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44146578653
+
+== Linux build, ubuntu-22.04 (lifecycle on the build runner)
+runner's own R: /usr/bin/R; Python: /usr/bin/python3
+apparmor_restrict_unprivileged_userns: 0
+ok   no process from the bundle before the start: 0 found
+ok   the network is closed: a connection to 1.1.1.1:443 failed
+ok   the shell started: {"electron":"45.3.3","noSandbox":false}
+ok   the probe ran: {"time":"2026-11-17T18:29:15.396Z","event":"probe","launcher":"process","reason":"kernel 6.8 is older than 6.12","facts":{"platform":"linux","kernel":"6.8.0-1070-azure","tools":{"systemctl":true,"systemd-run":true,"busctl":true},"userManager":true,"cgroup":"0::/system.slice/hosted-compute-agent.service","controllers":"memory pids"},"ms":10}
+ok   the window loaded the application and a live session rendered the first tab: {"time":"2026-11-17T18:29:19.789Z","event":"first-tab","connected":true,"home":true,"rendered":true,"title":"MultiScholaR"}; 5.0 s after launch
+ok   the launcher is process: {"time":"2026-11-17T18:29:18.722Z","event":"launcher","launcher":"process","reason":"kernel 6.8 is older than 6.12"}
+ok   the port serves the application: http://127.0.0.1:39919/ -> 200
+ok   R from the bundle is running: 19090 /home/runner/work/MultiScholaR/MultiScholaR/packaging/electron/dist/linux-unpacked/resources/runtime/R/bin/exec/R
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 19090; after 19090
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:39919
+ok   started again, R running: 1 R processes
+ok   R is gone within 10 s of the shell being killed: 0.3 s
+KIT-134 CHECK PASSED: Linux, unpacked, ubuntu-22.04 build runner
+
+== Linux install, fresh ubuntu-22.04 (lifecycle, report check)
+runner's own R: /usr/bin/R; glibc glibc 2.35
+MultiScholaR 0.5.0 is installed. Start it from the applications menu, or run:
+unpacked and installed in 25 s into /home/runner/.local/share/multischolar/0.5.0
+installed: 2588 MiB in 49412 files
+apparmor_restrict_unprivileged_userns: 0
+ok   no process from the bundle before the start: 0 found
+ok   the network is closed: a connection to 1.1.1.1:443 failed
+ok   the shell started: {"electron":"45.3.3","noSandbox":false}
+ok   the probe ran: {"time":"2026-11-17T18:32:32.728Z","event":"probe","launcher":"process","reason":"kernel 6.8 is older than 6.12","facts":{"platform":"linux","kernel":"6.8.0-1070-azure","tools":{"systemctl":true,"systemd-run":true,"busctl":true},"userManager":true,"cgroup":"0::/system.slice/hosted-compute-agent.service","controllers":"memory pids"},"ms":5}
+ok   the window loaded the application and a live session rendered the first tab: {"time":"2026-11-17T18:32:35.991Z","event":"first-tab","connected":true,"home":true,"rendered":true,"title":"MultiScholaR"}; 5.0 s after launch
+ok   the launcher is process: {"time":"2026-11-17T18:32:35.168Z","event":"launcher","launcher":"process","reason":"kernel 6.8 is older than 6.12"}
+ok   the port serves the application: http://127.0.0.1:40297/ -> 200
+ok   R from the bundle is running: 2122 /home/runner/.local/share/multischolar/0.5.0/app/resources/runtime/R/bin/exec/R
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 2122; after 2122
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:40297
+ok   started again, R running: 1 R processes
+ok   R is gone within 10 s of the shell being killed: 0.5 s
+KIT-134 CHECK PASSED: Linux, installed with install.sh, ubuntu-22.04
+testthat 3.3.2 from /home/runner/work/_temp/test-tools/testthat 
+hiding /usr/bin/google-chrome (/opt/google/chrome/google-chrome)
+hiding /usr/bin/google-chrome-stable (/opt/google/chrome/google-chrome)
+hiding /usr/bin/chromium (/usr/local/share/chromium/chrome-linux/chrome)
+hiding /usr/bin/chromium-browser (/usr/local/share/chromium/chrome-linux/chrome)
+hiding /usr/bin/microsoft-edge (/opt/microsoft/msedge/microsoft-edge)
+hiding /usr/bin/microsoft-edge-stable (/opt/microsoft/msedge/microsoft-edge)
+library paths: /home/runner/.local/share/multischolar/0.5.0/app/resources/runtime/R/library | /home/runner/work/_temp/test-tools
+MultiScholaR 0.5.0 (/home/runner/.local/share/multischolar/0.5.0/app/resources/runtime/R/library)
+testthat 3.3.2 (/home/runner/work/_temp/test-tools)
+fastduckdb absent
+duckdb 1.5.5 (/home/runner/.local/share/multischolar/0.5.0/app/resources/runtime/R/library)
+locale: LC_CTYPE=en_GB.UTF-8;LC_NUMERIC=C;LC_TIME=en_AU.UTF-8;LC_COLLATE=en_GB.UTF-8;LC_MONETARY=en_AU.UTF-8;LC_MESSAGES=en_GB.UTF-8;LC_PAPER=en_AU.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_AU.UTF-8;LC_IDENTIFICATION=C
+network: closed (cran.r-project.org not reached)
+DPC engine resolved by default: limpa
+BROWSERS PATH: /usr/bin:/bin
+BROWSERS on the PATH: none
+BROWSERS CHROMOTE_CHROME: '/nonexistent/no-browser/chrome' (exists: FALSE); chromote::find_chrome(): '/nonexistent/no-browser/chrome'
+rmarkdown::render traced: TRUE
+Error applying lipid intensity filter: optional fastduckdb reader is unavailable
+RENDER lipidomics_report_lipidomics_lipid_canonical.docx: 280956 bytes, zip container TRUE, 18:33:36
+RENDER analysis_record.docx: 16851 bytes, zip container TRUE, 18:33:37
+REPORT lipid_canonical: rendered; .docx: results_summary/lipidomics/lipidomics_report_lipidomics_lipid_canonical.docx; notifications: message: lipidomics_report.rmd template copied from package | message: Report generated successfully!
+LANE lipid_canonical: pass 19 fail 16 error 0 skip 0; record TRUE; differing steps 16 (discrete 280, digest 119); 51 s
+Error applying metabolite intensity filter: optional fastduckdb reader is unavailable
+RENDER metabolomics_report_metabolomics_metab_lc.docx: 232280 bytes, zip container TRUE, 18:34:21
+RENDER analysis_record.docx: 17188 bytes, zip container TRUE, 18:34:22
+REPORT metab_lc: rendered; .docx: results_summary/metabolomics/metabolomics_report_metabolomics_metab_lc.docx; notifications: message: metabolomics_report.rmd template copied from package | message: Report generated successfully!
+LANE metab_lc: pass 19 fail 16 error 0 skip 0; record TRUE; differing steps 16 (discrete 226, digest 79); 45 s
+KIT-134 LANES FAILED 
+KIT-134 REPORT CHECK PASSED: rendered to .docx with no browser to be found (lipid_canonical, metab_lc)
+
+== Linux install, fresh ubuntu-24.04 (lifecycle)
+runner's own R: none; glibc glibc 2.39
+MultiScholaR 0.5.0 is installed. Start it from the applications menu, or run:
+unpacked and installed in 25 s into /home/runner/.local/share/multischolar/0.5.0
+installed: 2588 MiB in 49412 files
+apparmor_restrict_unprivileged_userns: 1
+ok   no process from the bundle before the start: 0 found
+ok   the network is closed: a connection to 1.1.1.1:443 failed
+ok   the shell started: {"electron":"45.3.3","noSandbox":true}
+ok   the probe ran: {"time":"2026-11-17T18:32:35.751Z","event":"probe","launcher":"process","reason":"the user D-Bus does not answer","facts":{"platform":"linux","kernel":"7.0.0-1017-azure","tools":{"systemctl":true,"systemd-run":true,"busctl":true},"userManager":true,"cgroup":"0::/system.slice/hosted-compute-agent.service","controllers":"cpu memory pids","userBus":false},"ms":43}
+ok   the window loaded the application and a live session rendered the first tab: {"time":"2026-11-17T18:32:40.913Z","event":"first-tab","connected":true,"home":true,"rendered":true,"title":"MultiScholaR"}; 5.5 s after launch
+ok   the launcher is process: {"time":"2026-11-17T18:32:39.598Z","event":"launcher","launcher":"process","reason":"the user D-Bus does not answer"}
+ok   the launcher's reason names "D-Bus": "the user D-Bus does not answer"
+ok   the port serves the application: http://127.0.0.1:46465/ -> 200
+ok   R from the bundle is running: 2430 /home/runner/.local/share/multischolar/0.5.0/app/resources/runtime/R/bin/exec/R
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 2430; after 2430
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:46465
+ok   started again, R running: 1 R processes
+ok   R is gone within 10 s of the shell being killed: 1.0 s
+KIT-134 CHECK PASSED: Linux, installed with install.sh, ubuntu-24.04
+
+== Windows build, windows-2025 (lifecycle on the build runner)
+runner's own R on the PATH: C:\Program Files\R\R-4.6.2\bin\x64\Rscript.exe; Python: C:\hostedtoolcache\windows\Python\3.12.10\x64\python.exe
+outbound traffic blocked for the bundle's 36 programs
+outbound traffic blocked for the application's 38 programs
+ok   no process from the bundle before the start: 0 found
+ok   the shell started: {"electron":"45.3.3","noSandbox":false}
+ok   the probe ran: {"time":"2026-11-17T18:39:59.955Z","event":"probe","launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}
+ok   the window loaded the application and a live session rendered the first tab: {"time":"2026-11-17T18:40:06.062Z","event":"first-tab","connected":true,"home":true,"rendered":true,"title":"MultiScholaR"}; 6.6 s after launch
+ok   the launcher is process: {"time":"2026-11-17T18:40:04.223Z","event":"launcher","launcher":"process","reason":"win32: no systemd"}
+ok   the port serves the application: http://127.0.0.1:50726/ -> 200
+ok   R from the bundle is running: 8064 d:/a/multischolar/multischolar/packaging/electron/dist/win-unpacked/resources/runtime/r/bin/rscript.exe; 4432 d:/a/multischolar/multischolar/packaging/electron/dist/win-unpacked/resources/runtime/r/bin/x64/rscript.exe
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 8064,4432; after 8064,4432
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:50726
+ok   started again, R running: 2 R processes
+ok   R is gone within 10 s of the shell being killed: 1.2 s
+KIT-134 CHECK PASSED: Windows, unpacked, windows-2025 build runner
+
+== Windows install, fresh windows-2025 (lifecycle, report check)
+installer: MultiScholaR-Setup-0.5.0.exe, 805855646 bytes
+runner's own R on the PATH: C:\Program Files\R\R-4.6.2\bin\x64\Rscript.exe
+silent install: exit 0 after 372 s
+installed per user at: C:\Users\runneradmin\AppData\Local\Programs\multischolar
+installed size: 2544 MiB in 51133 files
+longest installed path: 200 characters
+testthat 3.3.2 from D:/a/_temp/test-tools/testthat 
+outbound traffic blocked for the installed application's 39 programs
+ok   no process from the bundle before the start: 0 found
+ok   the shell started: {"electron":"45.3.3","noSandbox":false}
+ok   the probe ran: {"time":"2026-11-17T18:47:30.303Z","event":"probe","launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}
+ok   the window loaded the application and a live session rendered the first tab: {"time":"2026-11-17T18:47:35.477Z","event":"first-tab","connected":true,"home":true,"rendered":true,"title":"MultiScholaR"}; 5.5 s after launch
+ok   the launcher is process: {"time":"2026-11-17T18:47:33.623Z","event":"launcher","launcher":"process","reason":"win32: no systemd"}
+ok   the port serves the application: http://127.0.0.1:51234/ -> 200
+ok   R from the bundle is running: 9364 c:/users/runneradmin/appdata/local/programs/multischolar/resources/runtime/r/bin/rscript.exe; 4400 c:/users/runneradmin/appdata/local/programs/multischolar/resources/runtime/r/bin/x64/rscript.exe
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 9364,4400; after 9364,4400
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:51234
+ok   started again, R running: 2 R processes
+ok   R is gone within 10 s of the shell being killed: 2.2 s
+KIT-134 CHECK PASSED: Windows, installed per user, fresh windows-2025
+on the runner's PATH, chrome.exe: 
+on the runner's PATH, msedge.exe: 
+on the runner's PATH, chromium.exe: 
+installed on the runner, C:\Program Files\Google\Chrome\Application\chrome.exe: True
+installed on the runner, C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe: True
+library paths: C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library | D:/a/_temp/test-tools
+MultiScholaR 0.5.0 (C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library)
+testthat 3.3.2 (D:/a/_temp/test-tools)
+fastduckdb absent
+duckdb 1.5.5 (C:/Users/runneradmin/AppData/Local/Programs/multischolar/resources/runtime/R/library)
+locale: LC_COLLATE=English_United States.utf8;LC_CTYPE=English_United States.utf8;LC_MONETARY=English_United States.utf8;LC_NUMERIC=C;LC_TIME=English_United States.utf8
+network: closed (cran.r-project.org not reached)
+DPC engine resolved by default: limpa
+BROWSERS PATH: C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/x86_64-w64-mingw32.static.posix/bin;C:\Users\runneradmin\AppData\Local\Programs\multischolar\resources\runtime\no-rtools/usr/bin;C:\Windows\System32;C:\Windows;C:\Windows\System32\WindowsPowerShell\v1.0
+BROWSERS on the PATH: none
+BROWSERS CHROMOTE_CHROME: 'C:\no-browser\chrome.exe' (exists: FALSE); chromote::find_chrome(): 'C:\no-browser\chrome.exe'
+rmarkdown::render traced: TRUE
+Error applying lipid intensity filter: optional fastduckdb reader is unavailable
+RENDER lipidomics_report_lipidomics_lipid_canonical.docx: 278962 bytes, zip container TRUE, 18:49:28
+RENDER analysis_record.docx: 16834 bytes, zip container TRUE, 18:49:30
+REPORT lipid_canonical: rendered; .docx: results_summary/lipidomics/lipidomics_report_lipidomics_lipid_canonical.docx; notifications: message: lipidomics_report.rmd template copied from package | message: Report generated successfully!
+LANE lipid_canonical: pass 19 fail 16 error 0 skip 0; record TRUE; differing steps 16 (discrete 290, digest 119); 105 s
+Error applying metabolite intensity filter: optional fastduckdb reader is unavailable
+RENDER metabolomics_report_metabolomics_metab_lc.docx: 234993 bytes, zip container TRUE, 18:51:19
+RENDER analysis_record.docx: 17171 bytes, zip container TRUE, 18:51:20
+REPORT metab_lc: rendered; .docx: results_summary/metabolomics/metabolomics_report_metabolomics_metab_lc.docx; notifications: message: metabolomics_report.rmd template copied from package | message: Report generated successfully!
+LANE metab_lc: pass 19 fail 16 error 0 skip 0; record TRUE; differing steps 16 (discrete 236, digest 79); 110 s
+KIT-134 LANES FAILED 
+KIT-134 REPORT CHECK PASSED: rendered to .docx with no browser to be found (lipid_canonical, metab_lc)

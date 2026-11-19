@@ -1,0 +1,886 @@
+name: KIT-134 distributable
+
+# The distributable (ticket KIT-134, revision 2.0): Electron around a bundled R, library and Python,
+# for Linux and Windows. Sources under packaging/.
+#
+# fastduckdb is in DESCRIPTION's Imports (the user, 2026-11-18), so every build needs the read token
+# (secret DEPS_READ_TOKEN, given as GITHUB_PAT to the one step that installs the library, which reads
+# it once and removes it from its environment). While the repository fast_duckdb is internal
+# (decision M20, 2026-11-18: public only at the public build) nothing built may leave the job that
+# built it: one job per platform builds the library, the shell and the archive or installer,
+# installs it on the same runner, tests the installed application there and discards everything.
+# The build jobs upload nothing (no library, shell, archive, installer, log or summary), use no
+# cache (actions/cache or a setup action's; Cargo's home is the package's own temporary folder, pip
+# runs with --no-cache-dir) and print only pass or fail lines and comparison tables; the plan job
+# fails if this file names a cache or an upload outside the token-free snapshot job.
+# What the single job cannot show: an install on a runner that never held the build (see
+# docs/qa/workflow-execution/kit/kit-134/outcome.md, "In-job build and test").
+#
+# A push to kit-134 runs a stage only when its commit message names one:
+#   [dist:snapshot]   P2 step 1: score the snapshot dates and probe Windows' Bioconductor binaries (no token)
+#   [dist:library]    P2: the library on both platforms, moved and loaded with the network off
+#   [dist:full]       P2 to P6 in one job per platform: the library; the shell; the Linux archive or
+#                     the Windows installer; installed on that runner; the lifecycle test, the
+#                     GUI-entry lanes and the browser e2e lanes from the installed application with
+#                     the network closed (Linux: ubuntu-22.04 with all lanes, and ubuntu-24.04 with the GUI-entry lanes and
+#                     the lifecycle, its bundle built in an ubuntu:22.04 container; Windows: the
+#                     lanes without DIA, D4); on Linux the installed R on other distributions
+#   [dist:container]  D5: the Windows library, then loaded in a Server Core container
+# [dist-linux] or [dist-windows] limits the run to one platform.
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: "Stage"
+        type: choice
+        default: library
+        options: [snapshot, library, full, container]
+      platform:
+        description: "Platform"
+        type: choice
+        default: both
+        options: [both, linux, windows]
+  push:
+    branches: [kit-134]
+    paths:
+      - "packaging/**"
+      - ".github/workflows/distributable.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: distributable-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  R_VERSION: "4.6.1"
+  # Bioconductor 3.23's release (bioconductor.org/config.yaml): the first snapshot date scored.
+  BIOC_RELEASE_DATE: "2026-04-29"
+  # python-build-standalone (astral-sh) release and the CPython in it; MOFA2 pins Python 3.12.
+  PBS_RELEASE: "20261110"
+  PBS_PYTHON: "3.12.16"
+  PANDOC_VERSION: "3.11"
+  NODE_VERSION: "22"
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    outputs:
+      stage: ${{ steps.plan.outputs.stage }}
+      linux: ${{ steps.plan.outputs.linux }}
+      windows: ${{ steps.plan.outputs.windows }}
+      build: ${{ steps.plan.outputs.build }}
+      full: ${{ steps.plan.outputs.full }}
+      container: ${{ steps.plan.outputs.container }}
+      linux_runners: ${{ steps.plan.outputs.linux_runners }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/workflows
+      - name: No cache and no upload from a build job (decision M20; revision 1.2, IR-B2)
+        run: |
+          file=.github/workflows/distributable.yml
+          if grep -nE 'uses: *actions/cache|^ *cache(-dependency-path)?:|uses: *actions/download-artifact' "$file"; then
+            echo "::error::the distributable workflow must not use a cache or pass an artifact between jobs"; exit 1
+          fi
+          # one upload in the file: the snapshot job's text scores (no token, nothing built)
+          uploads="$(grep -cE 'uses: *actions/upload-artifact' "$file")"
+          snapshot_uploads="$(awk '/^  [a-z-]+:$/ { job = $1 } /uses: *actions\/upload-artifact/ && job == "snapshot:" { n++ } END { print n + 0 }' "$file")"
+          if [ "$uploads" != 1 ] || [ "$snapshot_uploads" != 1 ]; then
+            echo "::error::an upload outside the snapshot job ($uploads in the file, $snapshot_uploads in snapshot)"; exit 1
+          fi
+          echo "no cache, no artifact passed between jobs, no upload from a build job"
+      - id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+          INPUT_STAGE: ${{ inputs.stage }}
+          INPUT_PLATFORM: ${{ inputs.platform }}
+        run: |
+          if [ "$EVENT" = workflow_dispatch ]; then
+            stage="$INPUT_STAGE"; platform="$INPUT_PLATFORM"
+          else
+            stage="$(printf '%s' "$MESSAGE" | grep -o '\[dist:[a-z]*\]' | head -n 1 | sed 's/^\[dist:\(.*\)\]$/\1/')"
+            stage="${stage:-none}"
+            platform=both
+            case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
+          fi
+          case "$stage" in none|snapshot|library|full|container) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          build=false; full=false; container=false; linux_runners='["ubuntu-22.04"]'
+          case "$stage" in
+            library) build=true ;;
+            full) build=true; full=true; linux_runners='["ubuntu-22.04", "ubuntu-24.04"]' ;;
+            container) build=true; container=true; platform=windows ;;
+          esac
+          linux=false; windows=false
+          case "$platform" in both) linux=true; windows=true ;; linux) linux=true ;; windows) windows=true ;; esac
+          {
+            echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
+            echo "build=$build"; echo "full=$full"; echo "container=$container"
+            echo "linux_runners=$linux_runners"
+          } | tee -a "$GITHUB_OUTPUT"
+          echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
+
+  # ------------------------------------------------------- P2 step 1: the snapshot date
+  snapshot:
+    name: "P2: snapshot date and Windows Bioconductor probe"
+    needs: plan
+    if: needs.plan.outputs.stage == 'snapshot'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: R ${{ env.R_VERSION }} (Posit r-builds) and jsonlite in a build-tool library
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-${R_VERSION}_1_amd64.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb"
+          mkdir -p "$RUNNER_TEMP/tools-lib"
+          "/opt/R/${R_VERSION}/bin/Rscript" --vanilla -e 'install.packages("jsonlite", lib = commandArgs(TRUE)[[1]], repos = "https://packagemanager.posit.co/cran/latest")' "$RUNNER_TEMP/tools-lib"
+      - name: Score every snapshot date from Bioconductor 3.23's release to today
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/snapshot"
+          R_LIBS="$RUNNER_TEMP/tools-lib" "/opt/R/${R_VERSION}/bin/Rscript" --vanilla packaging/r/snapshot-date.R \
+            packaging/multischolar.lock.json "$BIOC_RELEASE_DATE" "$(date -u +%F)" "$RUNNER_TEMP/snapshot" \
+            2>&1 | tee "$RUNNER_TEMP/snapshot/snapshot-date.log"
+          { echo '### Snapshot date'; echo '```'; cat "$RUNNER_TEMP/snapshot/snapshot-choice.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: snapshot-date
+          path: ${{ runner.temp }}/snapshot
+          retention-days: 14
+
+  # ------------------------------------------------------------------------- Linux
+  linux:
+    name: "Linux on ${{ matrix.runner }}: build, install, test, discard (one job; nothing uploaded)"
+    needs: plan
+    if: needs.plan.outputs.build == 'true' && needs.plan.outputs.linux == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        # ubuntu-24.04 only in stage full, for the lifecycle (Electron's sandbox restriction, F10)
+        runner: ${{ fromJSON(needs.plan.outputs.linux_runners) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 300
+    env:
+      R_LIBS_USER: /nonexistent-user-library
+      R_LIBS_SITE: /nonexistent-site-library
+    steps:
+      - uses: actions/checkout@v4
+
+      # The bundle is built against Ubuntu 22.04 (D1): on the ubuntu-22.04 runner itself, elsewhere in
+      # an ubuntu:22.04 container that sees the runner's temporary folder and the checkout at their
+      # own paths. BUILD_EXEC is empty or that container's `docker exec`; variables are passed by
+      # name, so the token is never on a command line.
+      - name: Paths; the build container where the runner is not Ubuntu 22.04
+        run: |
+          {
+            echo "BUNDLE=$RUNNER_TEMP/stage/bundle"
+            echo "MOVED=$RUNNER_TEMP/relocated/msr moved"
+            echo "TOOLS_LIB=$RUNNER_TEMP/tools-lib"
+            echo "OUT=$RUNNER_TEMP/evidence"
+            echo "RLIB=/opt/R/$R_VERSION/lib/R/library"
+          } >> "$GITHUB_ENV"
+          docker pull -q ubuntu:22.04
+          if [ "${{ matrix.runner }}" != ubuntu-22.04 ]; then
+            docker run -d --name msr-build --env MSR_BUILD_CONTAINER=1 --env DEBIAN_FRONTEND=noninteractive --env LANG=C.UTF-8 \
+              --volume "$RUNNER_TEMP:$RUNNER_TEMP" --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" --workdir "$GITHUB_WORKSPACE" \
+              ubuntu:22.04 sleep infinity
+            # the build script's sudo, for a root that needs none (and keeps its environment)
+            docker exec msr-build sh -c 'printf "#!/bin/sh\nexec \"\$@\"\n" > /usr/local/bin/sudo && chmod 0755 /usr/local/bin/sudo'
+            names="R_VERSION RUNNER_TEMP BUNDLE TOOLS_LIB OUT RLIB PBS_RELEASE PBS_PYTHON PANDOC_VERSION GITHUB_STEP_SUMMARY R_LIBS_USER R_LIBS_SITE MSR_INTERNAL GITHUB_PAT"
+            echo "BUILD_EXEC=docker exec$(printf ' --env %s' $names) msr-build" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build tools (patchelf; in the container also what the runner's image already has)
+        run: $BUILD_EXEC bash packaging/linux/build.sh tools
+
+      - name: R ${{ env.R_VERSION }} at its build prefix (Posit r-builds); jsonlite in a build-tool library
+        run: $BUILD_EXEC bash packaging/linux/build.sh r
+
+      - name: Resolve the library (plan; nothing installed)
+        run: $BUILD_EXEC bash packaging/linux/build.sh plan
+
+      - name: System libraries the packages need (Posit Package Manager's requirements for jammy)
+        run: $BUILD_EXEC bash packaging/linux/build.sh sysreqs
+
+      - name: Rust for the internal packages (rustc 1.88 or later)
+        run: $BUILD_EXEC bash packaging/linux/build.sh rust
+
+      - name: "Install the library: snapshot binaries, the source builds, the internal packages (read token), MultiScholaR from this commit"
+        env:
+          MSR_INTERNAL: required
+          GITHUB_PAT: ${{ secrets.DEPS_READ_TOKEN }}
+        run: $BUILD_EXEC bash packaging/linux/build.sh library
+
+      - name: The version table against the laptop's lockfile
+        run: $BUILD_EXEC bash packaging/linux/build.sh versions
+
+      - name: Standalone Python with mofapy2 (hashes checked)
+        run: $BUILD_EXEC bash packaging/linux/build.sh python
+
+      - name: Pandoc ${{ env.PANDOC_VERSION }}
+        run: $BUILD_EXEC bash packaging/linux/build.sh pandoc
+
+      - name: Assemble the bundle (run paths to the bundled libraries); remove R from its build prefix
+        run: $BUILD_EXEC bash packaging/linux/build.sh assemble
+
+      - name: Move the folder; the build container is removed
+        id: move
+        run: |
+          if [ -n "${BUILD_EXEC:-}" ]; then
+            docker rm -f msr-build > /dev/null
+            sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP" "$GITHUB_WORKSPACE"
+          fi
+          mkdir -p "$(dirname "$MOVED")"
+          mv "$BUNDLE" "$MOVED"
+          test ! -e "/opt/R/${R_VERSION}"
+
+      - name: "Check: every bundled package loads (moved, bare ubuntu:22.04, path with spaces, network off)"
+        id: check
+        run: |
+          set -o pipefail
+          bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-library.R offline \
+            2>&1 | tee "$OUT/check-library.log"
+
+      - name: "Check: the internal packages, the DIA manifest and the engines (moved, bare ubuntu:22.04, network off)"
+        id: internal
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-internal.R required \
+            2>&1 | tee "$OUT/check-internal.log"
+
+      # ------------------------------------------------ stage full: the shell, the archive, the install
+      - uses: actions/setup-node@v4
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Version stamp and third-party notices
+        id: stamp
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          version="$(sed -n 's/^Version: *//p' DESCRIPTION)"
+          test "$(node -p "require('./packaging/electron/package.json').version")" = "$version"
+          electron="$(node -p "require('./packaging/electron/package-lock.json').packages['node_modules/electron'].version")"
+          "$MOVED/bin/Rscript" --vanilla packaging/r/notices.R "$MOVED" . "$OUT/bundle-sources.tsv" packaging/electron/stamp "$electron" \
+            2>&1 | tee "$OUT/notices.log"
+          cat packaging/electron/stamp/VERSION.json
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: The Electron shell (directory target)
+        id: electron
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.stamp.outcome == 'success' }}
+        working-directory: packaging/electron
+        run: |
+          mkdir -p build
+          cp ../../inst/shiny/www/MultiScholaR.png build/icon.png
+          mv "$MOVED" runtime
+          npm ci --no-audit --no-fund
+          npx electron-builder --linux dir --publish never
+          rm -rf runtime
+          ls -l dist/linux-unpacked
+
+      - name: The Linux archive (per-user install.sh, D2); the build's own copies are deleted
+        id: archive
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.electron.outcome == 'success' }}
+        run: |
+          name="MultiScholaR-${VERSION}"
+          stage="$RUNNER_TEMP/archive/$name"
+          mkdir -p "$stage" "$RUNNER_TEMP/dist"
+          mv packaging/electron/dist/linux-unpacked "$stage/app"
+          install -m 0755 packaging/linux/install.sh packaging/linux/uninstall.sh "$stage/"
+          cp packaging/linux/multischolar.desktop "$stage/"
+          cp packaging/electron/build/icon.png "$stage/multischolar.png"
+          cp packaging/electron/stamp/VERSION.json packaging/electron/stamp/THIRD-PARTY-NOTICES.txt "$stage/"
+          archive="$RUNNER_TEMP/dist/$name-linux-x86_64.tar.gz"
+          start=$(date +%s)
+          tar -C "$RUNNER_TEMP/archive" -czf "$archive" "$name"
+          (cd "$RUNNER_TEMP/dist" && sha256sum "$(basename "$archive")" > "$(basename "$archive").sha256")
+          {
+            echo "### Linux archive (${{ matrix.runner }}; built, installed and discarded in this job)"
+            echo '```'
+            echo "$(basename "$archive"): $(stat -c %s "$archive") bytes ($(( $(stat -c %s "$archive") / 1048576 )) MiB), packed in $(( $(date +%s) - start )) s"
+            echo "unpacked: $(du -sm "$stage" | cut -f1) MiB in $(find "$stage" -type f | wc -l) files"
+            cat "$archive.sha256"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          rm -rf "$RUNNER_TEMP/archive" packaging/electron/dist
+          echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
+
+      - name: Install from the archive with install.sh into a scratch folder, as the runner's user; the archive is deleted
+        id: install
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.archive.outcome == 'success' }}
+        run: |
+          command -v xvfb-run >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq xvfb; }
+          export XDG_DATA_HOME="$RUNNER_TEMP/scratch-install/share"
+          mkdir -p "$RUNNER_TEMP/unpack" "$XDG_DATA_HOME"
+          cd "$RUNNER_TEMP/unpack"
+          (cd "$(dirname "$ARCHIVE")" && sha256sum -c ./*.sha256)
+          echo "runner's own R: $(command -v R || echo none); glibc $(getconf GNU_LIBC_VERSION)"
+          start=$(date +%s)
+          tar -xzf "$ARCHIVE"
+          ./MultiScholaR-*/install.sh
+          version="$(sed -n 's/^ *"release": *"\([^"]*\)".*$/\1/p' MultiScholaR-*/VERSION.json | head -n 1)"
+          dest="$XDG_DATA_HOME/multischolar/$version"
+          {
+            echo "### Linux install on ${{ matrix.runner }}"
+            echo '```'
+            echo "unpacked and installed in $(( $(date +%s) - start )) s into $dest"
+            echo "installed: $(du -sm "$dest" | cut -f1) MiB in $(find "$dest" -type f | wc -l) files"
+            echo "menu entry: $(ls "$XDG_DATA_HOME/applications/multischolar.desktop")"
+            echo "apparmor_restrict_unprivileged_userns: $(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null || echo absent)"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          grep -q "Exec=\"$dest/multischolar\"" "$XDG_DATA_HOME/applications/multischolar.desktop"
+          grep -q '/usr/bin/which' "$dest/THIRD-PARTY-NOTICES.txt" && echo "the notices name the /usr/bin/which requirement (M25)"
+          cd "$RUNNER_TEMP"
+          rm -rf "$RUNNER_TEMP/unpack" "$RUNNER_TEMP/dist"
+          test ! -e "$MOVED" && test ! -e "$GITHUB_WORKSPACE/packaging/electron/runtime" && test ! -e "$GITHUB_WORKSPACE/packaging/electron/dist" && test ! -e "$ARCHIVE"
+          echo "the installed copy is the only copy of the build left on this runner"
+          echo "DEST=$dest" >> "$GITHUB_ENV"
+          echo "XDG_DATA_HOME=$XDG_DATA_HOME" >> "$GITHUB_ENV"
+
+      - name: "P3 lifecycle: the installed application (plain launcher, network closed; on 24.04 because no user D-Bus answers)"
+        id: lifecycle
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          # ubuntu-22.04: the kernel is older than 6.12. ubuntu-24.04: every host requirement holds except a user
+          # D-Bus, which a desktop session has and the hosted runner lacks (runs 44055833237, 44059705566,
+          # 44146578653); the shell's probe then gives the plain launcher with that reason. The systemd worker
+          # from the bundle is tested on the laptop (a real login session), not on a hosted runner.
+          reason=""
+          if [ "${{ matrix.runner }}" = ubuntu-24.04 ]; then reason="D-Bus"; fi
+          sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -E -u "$0" env PATH="$1" HOME="$2" \
+            xvfb-run -a node packaging/electron/lifecycle-test.js "$3" "$4/multischolar" "$4" --expect-launcher process \
+            --network-closed ${5:+--expect-reason "$5"}' \
+            "$(id -un)" "$PATH" "$HOME" "Linux, installed with install.sh in the job that built it, ${{ matrix.runner }}" "$DEST" "$reason"
+
+      # The Linux library path (outcome.md, defect 2): the installed application's R on this runner and
+      # in containers of other distributions; bash and sh started from R, a child R, the entry.
+      # Decision M25: /usr/bin/which is a host requirement; the launcher stops without it (shown in the Arch Linux and
+      # Fedora images as published), and the full check runs in those images with `which` added. Decision M26: R's
+      # etc/ldpaths keeps only R's own lib folder (assemble.sh); measured before and after on this installed copy by
+      # putting R's original file back for the "before" rows, then the build's (the only difference between the two).
+      - name: "Hosts: the installed R without and with /usr/bin/which (M25); host programs, child R, the entry, and the libraries R loads before and after etc/ldpaths (M26); this runner, Arch Linux, Fedora, Debian (network off)"
+        id: hosts
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        timeout-minutes: 60
+        run: |
+          status=0
+          for image in archlinux:latest fedora:latest debian:stable; do docker pull -q "$image"; done
+          bash packaging/verify/linux-host-check.sh --no-which "$DEST" archlinux:latest fedora:latest | tee "$OUT/hosts-no-which.log" || status=1
+          # the images with which (the network only here, as root, before any check)
+          docker run --name msr-arch archlinux:latest sh -c 'pacman -Sy --noconfirm which > /dev/null' && docker commit msr-arch msr-arch-which > /dev/null
+          docker run --name msr-fedora fedora:latest sh -c 'dnf -y -q install which > /dev/null' && docker commit msr-fedora msr-fedora-which > /dev/null
+          docker run --name msr-debian debian:stable sh -c 'test -x /usr/bin/which || { apt-get update -qq && apt-get install -y -qq debianutils; }' && docker commit msr-debian msr-debian-which > /dev/null
+          for image in msr-arch-which msr-fedora-which msr-debian-which; do
+            echo "$image: $(docker run --rm "$image" sh -c 'ls -l /usr/bin/which; . /etc/os-release; echo "$PRETTY_NAME"' | tr '\n' ' ')"
+          done
+          ldpaths="$DEST/app/resources/runtime/R/etc/ldpaths"
+          cp "$ldpaths" "$RUNNER_TEMP/ldpaths.build"
+          echo "etc/ldpaths, R's original against the build's:"; diff "$OUT/ldpaths.original" "$ldpaths" || true
+          cp "$OUT/ldpaths.original" "$ldpaths"
+          bash packaging/verify/linux-host-check.sh "$DEST" before msr-arch-which msr-fedora-which msr-debian-which | tee "$OUT/hosts-before.log" || status=1
+          cp "$RUNNER_TEMP/ldpaths.build" "$ldpaths"
+          cmp "$RUNNER_TEMP/ldpaths.build" "$ldpaths"
+          bash packaging/verify/linux-host-check.sh "$DEST" after msr-arch-which msr-fedora-which msr-debian-which | tee "$OUT/hosts-after.log" || status=1
+          {
+            echo "### Hosts (${{ matrix.runner }}): M25, and the libraries R loads before and after M26"; echo '```'
+            grep -h '^NOWHICH' "$OUT/hosts-no-which.log" || true
+            sed -n '/^== hosts/,$p' "$OUT/hosts-before.log" "$OUT/hosts-after.log"
+            printf 'LIBS\thost (phase)\tprocess\trole\tcopy\tpath\n'
+            grep -h '^LIBS' "$OUT/hosts-before.log" "$OUT/hosts-after.log"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library (installed application's R)"
+        id: testtools
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          echo "TEST_TOOLS=$RUNNER_TEMP/test-tools" >> "$GITHUB_ENV"
+          "$DEST/app/resources/runtime/bin/Rscript" --vanilla packaging/verify/test-tools.R "$RUNNER_TEMP/test-tools" \
+            "$(jq -r .Snapshot.Date packaging/multischolar.lock.json)" shinytest2 > "$OUT/test-tools.log" 2>&1 \
+            || { tail -n 30 "$OUT/test-tools.log"; exit 1; }
+          tail -n 3 "$OUT/test-tools.log"
+
+      # On both runners since M26 (ubuntu-24.04: the host's libraries no longer taken by R; the lanes show whether
+      # the results still agree with the laptop's oracles there).
+      # trx_screen runs eight times (KIT-134 correction pass of run 44368107499): its top_de_genes.tsv differed from the
+      # oracle on ubuntu-22.04 in run 44275615462 only; the repeats are labelled trx_screen_r2 .. _r8.
+      - name: "Lanes: every GUI-entry lane in process with the installed application's R (network closed, the laptop's locale)"
+        id: lanes
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' }}
+        timeout-minutes: 90
+        run: |
+          sudo locale-gen en_GB.UTF-8 en_AU.UTF-8 > /dev/null
+          mkdir -p "$OUT/lanes"
+          status=0
+          sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -u "$0" env HOME="$1" LANG=en_GB.UTF-8 \
+            LC_CTYPE=en_GB.UTF-8 LC_COLLATE=en_GB.UTF-8 LC_MESSAGES=en_GB.UTF-8 LC_NUMERIC=en_AU.UTF-8 LC_TIME=en_AU.UTF-8 \
+            LC_MONETARY=en_AU.UTF-8 LC_PAPER=en_AU.UTF-8 LC_MEASUREMENT=en_AU.UTF-8 \
+            "$2/bin/Rscript" --vanilla "$3/packaging/verify/run-lanes.R" "$3" "$4" "$5" prot_dia prot_dia_limpa \
+            prot_tmt prot_lfq prot_lfq_fragpipe metab_lc metab_gc metab_combined lipid_canonical trx_screen \
+            trx_screen trx_screen trx_screen trx_screen trx_screen trx_screen trx_screen' \
+            "$(id -un)" "$HOME" "$DEST/app/resources/runtime" "$GITHUB_WORKSPACE" "$TEST_TOOLS" "$OUT/lanes" > "$OUT/lanes.log" 2>&1 || status=$?
+          {
+            echo '### GUI-entry lanes, installed application (${{ matrix.runner }})'; echo '```'
+            if [ -f "$OUT/lanes/lane-summary.tsv" ]; then
+              cat "$OUT/lanes/lane-summary.tsv"
+              echo; echo "differences by lane, step count and kind:"
+              awk -F'\t' 'NR > 1 { n[$1 "\t" $5]++; s[$1 "\t" $5 "\t" $2] = 1 } END { for (k in s) { split(k, p, "\t"); c[p[1] "\t" p[2]]++ } for (k in n) print k "\t" n[k] " differences in " c[k] " steps" }' \
+                "$OUT/lanes/lane-differences.tsv" | sort
+              echo; echo "states and artifacts that differ:"
+              awk -F'\t' 'NR > 1 { print $1 "\t" $3 "\t" $4 "\t" $5 }' "$OUT/lanes/lane-differences.tsv" | sort | uniq -c
+              echo; echo "failures (first 300 characters each):"; cut -c1-300 "$OUT/lanes/lane-failures.tsv" | sort -u | sed -n 1,60p
+            else
+              echo "no lane table was written (exit $status); the end of the log:"; tail -n 40 "$OUT/lanes.log"
+            fi
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "fingerprints of trx_screen's top_de_genes.tsv (the table stays in the job):"
+          grep -a '^FPRINT' "$OUT/lanes.log" | cut -c1-1700 || true
+          exit "$status"
+
+      # P5: the seven browser e2e lanes, the application being the installed application's package
+      # (MULTISCHOLAR_E2E_INSTALLED=1); Chrome is the runner's. CI=true as in Module CI's e2e jobs.
+      - name: "e2e lanes: the seven browser lanes against the installed application's package (network closed, the laptop's locale)"
+        id: e2e
+        if: ${{ !cancelled() && matrix.runner == 'ubuntu-22.04' && steps.testtools.outcome == 'success' }}
+        timeout-minutes: 120
+        run: |
+          sudo locale-gen en_GB.UTF-8 en_AU.UTF-8 > /dev/null
+          mkdir -p "$OUT/e2e"
+          status=0
+          sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -u "$0" env HOME="$1" CI=true LANG=en_GB.UTF-8 \
+            LC_CTYPE=en_GB.UTF-8 LC_COLLATE=en_GB.UTF-8 LC_MESSAGES=en_GB.UTF-8 LC_NUMERIC=en_AU.UTF-8 LC_TIME=en_AU.UTF-8 \
+            LC_MONETARY=en_AU.UTF-8 LC_PAPER=en_AU.UTF-8 LC_MEASUREMENT=en_AU.UTF-8 \
+            "$2/bin/Rscript" --vanilla "$3/packaging/verify/run-e2e.R" "$3" "$4" "$5" lipidomics-canonical \
+            metabolomics-lc-gc transcriptomics-screen proteomics-dia proteomics-dia-limpa proteomics-enrichment \
+            proteomics-tmt-lfq' \
+            "$(id -un)" "$HOME" "$DEST/app/resources/runtime" "$GITHUB_WORKSPACE" "$TEST_TOOLS" "$OUT/e2e" > "$OUT/e2e.log" 2>&1 || status=$?
+          {
+            echo '### Browser e2e lanes, installed application (ubuntu-22.04)'; echo '```'
+            if [ -f "$OUT/e2e/e2e-summary.tsv" ]; then
+              cat "$OUT/e2e/e2e-summary.tsv"
+              echo; echo "failures (first 300 characters each):"; cut -c1-300 "$OUT/e2e/e2e-failures.tsv" | sed -n 1,40p
+            else
+              echo "no e2e table was written (exit $status); the end of the log:"; tail -n 40 "$OUT/e2e.log"
+            fi
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: Uninstall; nothing of the build is left
+        id: uninstall
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          "$DEST/uninstall.sh"
+          test ! -e "$DEST"
+          test ! -e "$XDG_DATA_HOME/applications/multischolar.desktop"
+
+      - name: Results
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo "### Results, Linux on ${{ matrix.runner }} (stage ${{ needs.plan.outputs.stage }})"
+            echo '```'
+            printf '%s\t%s\n' \
+              "library loads from the moved folder (bare ubuntu:22.04, network off)" "${{ steps.check.outcome }}" \
+              "internal packages, DIA manifest, engines" "${{ steps.internal.outcome }}" \
+              "shell" "${{ steps.electron.outcome }}" \
+              "archive" "${{ steps.archive.outcome }}" \
+              "install.sh into a scratch folder" "${{ steps.install.outcome }}" \
+              "lifecycle, installed application, network closed" "${{ steps.lifecycle.outcome }}" \
+              "hosts: M25 without which; this runner, Arch Linux, Fedora, Debian before and after M26" "${{ steps.hosts.outcome }}" \
+              "GUI-entry lanes, installed application" "${{ steps.lanes.outcome }}" \
+              "browser e2e lanes, installed application" "${{ steps.e2e.outcome }}" \
+              "uninstall" "${{ steps.uninstall.outcome }}"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+  # ------------------------------------------------------------------------ Windows
+  windows:
+    name: "Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container"
+    needs: plan
+    if: needs.plan.outputs.build == 'true' && needs.plan.outputs.windows == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 300
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Paths
+        run: |
+          "BUNDLE=$env:RUNNER_TEMP\stage\bundle" >> $env:GITHUB_ENV
+          "MOVED=$env:RUNNER_TEMP\re located\msr moved" >> $env:GITHUB_ENV
+          "TOOLS_LIB=$env:RUNNER_TEMP\tools-lib" >> $env:GITHUB_ENV
+          "OUT=$env:RUNNER_TEMP\evidence" >> $env:GITHUB_ENV
+          "R_LIBS_USER=$env:RUNNER_TEMP\nonexistent-user-library" >> $env:GITHUB_ENV
+          "R_LIBS_SITE=$env:RUNNER_TEMP\nonexistent-site-library" >> $env:GITHUB_ENV
+          "runner's own R on the PATH: $((Get-Command Rscript.exe -ErrorAction SilentlyContinue).Source); Python: $((Get-Command python -ErrorAction SilentlyContinue).Source)"
+
+      - name: R ${{ env.R_VERSION }} into the folder (CRAN installer, silent); Rtools45 for the build
+        run: |
+          pwsh -NoProfile -File packaging\windows\assemble.ps1 -Action r -Bundle $env:BUNDLE -RVersion $env:R_VERSION
+          New-Item -ItemType Directory -Force $env:TOOLS_LIB, $env:OUT | Out-Null
+          & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla -e "install.packages('jsonlite', lib = commandArgs(TRUE)[[1]], repos = 'https://packagemanager.posit.co/cran/latest', type = 'binary')" $env:TOOLS_LIB
+          if ($LASTEXITCODE -ne 0) { throw "could not install jsonlite into the build-tool library" }
+
+      - name: "Rust for the internal packages: the GNU target R links against"
+        # Pinned to the toolchain that built fast_duckdb@e724f90b and fast_limpa_dpc@87a90b89 on Windows in run
+        # 44275615462 (stable moved to 1.100.0 with image 20261116 and both failed to build in run 44368107499).
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal --target x86_64-pc-windows-gnu
+          "RUSTUP_TOOLCHAIN=1.99.1" >> $env:GITHUB_ENV
+          $env:RUSTUP_TOOLCHAIN = '1.99.1'
+          rustc --version; cargo --version; rustup show
+
+      - name: "Install the library: snapshot binaries, the source builds, the internal packages attempted (read token), MultiScholaR from this commit"
+        env:
+          MSR_INTERNAL: attempt
+          GITHUB_PAT: ${{ secrets.DEPS_READ_TOKEN }}
+        run: |
+          $env:PATH = "C:\rtools45\x86_64-w64-mingw32.static.posix\bin;C:\rtools45\usr\bin;$env:PATH"
+          $env:R_LIBS = $env:TOOLS_LIB
+          $rscript = "$env:BUNDLE\R\bin\Rscript.exe"
+          & $rscript --vanilla packaging\r\install-library.R plan . $env:OUT
+          if ($LASTEXITCODE -ne 0) { throw "plan failed" }
+          & $rscript --vanilla packaging\r\install-library.R install . $env:OUT *>&1 | Tee-Object -FilePath "$env:OUT\install-library.log"
+          if ($LASTEXITCODE -ne 0) { throw "install failed" }
+          "built from source:"; Select-String -Path "$env:OUT\install-library.log" -Pattern 'installing \*source\* package' | ForEach-Object Line
+          Select-String -Path "$env:OUT\install-library.log" -Pattern '^INTERNAL ' | ForEach-Object Line
+
+      - name: The version table against the laptop's lockfile
+        run: |
+          $env:R_LIBS = $env:TOOLS_LIB
+          & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla packaging\r\version-table.R . "$env:BUNDLE\R\library" "$env:OUT\bundle-sources.tsv" "$env:OUT\install-library.log" $env:OUT *>&1 | Tee-Object -FilePath "$env:OUT\version-table.log"
+          if ($LASTEXITCODE -ne 0) { throw "version table failed" }
+          Get-Content "$env:OUT\version-table.md" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Standalone Python with mofapy2 (hashes checked)
+        run: |
+          curl.exe -fsSL -o "$env:RUNNER_TEMP\python.tar.gz" "https://github.com/astral-sh/python-build-standalone/releases/download/${env:PBS_RELEASE}/cpython-${env:PBS_PYTHON}%2B${env:PBS_RELEASE}-x86_64-pc-windows-msvc-install_only.tar.gz"
+          & "$env:SystemRoot\System32\tar.exe" -xzf "$env:RUNNER_TEMP\python.tar.gz" -C $env:BUNDLE
+          if ($LASTEXITCODE -ne 0) { throw "could not unpack Python" }
+          $env:PYTHONNOUSERSITE = '1'
+          & "$env:BUNDLE\python\python.exe" -m pip install --no-cache-dir --no-warn-script-location --require-hashes --only-binary=:all: --no-deps -r packaging\python\requirements.txt
+          if ($LASTEXITCODE -ne 0) { throw "pip install failed" }
+          & "$env:BUNDLE\python\python.exe" -m pip list | Tee-Object -FilePath "$env:OUT\python-packages.txt"
+
+      - name: Pandoc ${{ env.PANDOC_VERSION }}
+        run: |
+          curl.exe -fsSL -o "$env:RUNNER_TEMP\pandoc.zip" "https://github.com/jgm/pandoc/releases/download/${env:PANDOC_VERSION}/pandoc-${env:PANDOC_VERSION}-windows-x86_64.zip"
+          Expand-Archive -LiteralPath "$env:RUNNER_TEMP\pandoc.zip" -DestinationPath "$env:RUNNER_TEMP\pandoc"
+          New-Item -ItemType Directory -Force "$env:BUNDLE\pandoc" | Out-Null
+          Copy-Item "$env:RUNNER_TEMP\pandoc\pandoc-${env:PANDOC_VERSION}\*" "$env:BUNDLE\pandoc\" -Recurse
+          & "$env:BUNDLE\pandoc\pandoc.exe" --version | Select-Object -First 1
+
+      # The test tools are fetched before the check step cuts the network for the bundle's programs.
+      - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library"
+        id: testtools
+        if: needs.plan.outputs.full == 'true'
+        run: |
+          "TEST_TOOLS=$env:RUNNER_TEMP\test-tools" >> $env:GITHUB_ENV
+          $date = (Get-Content packaging\multischolar.lock.json -Raw | ConvertFrom-Json).Snapshot.Date
+          & packaging\verify\windows-clean-run.ps1 -Bundle $env:BUNDLE -Script packaging\verify\test-tools.R -NoBundleArgument -Arguments "$env:RUNNER_TEMP\test-tools", $date, shinytest2 *> "$env:OUT\test-tools.log"
+          $status = $LASTEXITCODE
+          Get-Content "$env:OUT\test-tools.log" -Tail $(if ($status -ne 0) { 30 } else { 3 })
+          if ($status -ne 0) { throw "the test tools were not installed" }
+
+      - name: Size; move the folder to a path with spaces
+        id: move
+        run: |
+          function Get-SizeMiB($path) { [math]::Round((Get-ChildItem -LiteralPath $path -Recurse -File -Force | Measure-Object Length -Sum).Sum / 1MB) }
+          $lines = @('### Windows bundle, size (MiB)', '```')
+          foreach ($part in '.', 'R', 'R\library', 'python', 'pandoc') { $lines += "{0,6}  bundle\{1}" -f (Get-SizeMiB (Join-Path $env:BUNDLE $part)), $part }
+          $lines += "files: $((Get-ChildItem -LiteralPath $env:BUNDLE -Recurse -File -Force).Count)"
+          $lines += 'largest R packages:'
+          $lines += Get-ChildItem "$env:BUNDLE\R\library" -Directory | ForEach-Object { [pscustomobject]@{ MiB = Get-SizeMiB $_.FullName; Name = $_.Name } } | Sort-Object MiB -Descending | Select-Object -First 12 | ForEach-Object { "{0,6}  {1}" -f $_.MiB, $_.Name }
+          $lines += '```'
+          $lines | Tee-Object -FilePath "$env:OUT\sizes.txt" | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          New-Item -ItemType Directory -Force (Split-Path $env:MOVED) | Out-Null
+          Move-Item -LiteralPath $env:BUNDLE -Destination $env:MOVED
+          if (Test-Path $env:BUNDLE) { throw "the bundle is still at its build location" }
+
+      - name: "Check: every bundled package loads (moved, reduced environment, network cut for the bundle's programs)"
+        id: check
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          Set-NetFirewallProfile -All -Enabled True
+          $programs = Get-ChildItem -LiteralPath $env:MOVED -Recurse -File -Filter *.exe
+          foreach ($program in $programs) {
+            New-NetFirewallRule -DisplayName "kit-134 block $($program.FullName)" -Direction Outbound -Action Block -Program $program.FullName | Out-Null
+          }
+          "outbound traffic blocked for the bundle's $($programs.Count) programs"
+          pwsh -NoProfile -File packaging\verify\windows-clean-run.ps1 -Bundle $env:MOVED -Script packaging\verify\check-library.R -Arguments offline *>&1 | Tee-Object -FilePath "$env:OUT\check-library.log"
+          if ($LASTEXITCODE -ne 0) { throw "the library check failed" }
+
+      - name: "Check: the internal packages that built, from the moved folder (reduced environment, network cut)"
+        id: internal
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          pwsh -NoProfile -File packaging\verify\windows-clean-run.ps1 -Bundle $env:MOVED -Script packaging\verify\check-internal.R -Arguments attempt *>&1 | Tee-Object -FilePath "$env:OUT\check-internal.log"
+          if ($LASTEXITCODE -ne 0) { throw "the internal-package check failed" }
+
+      # ---------------------------------------- D5: a clean Windows (stage container)
+      - name: "D5: the bundle's R in a Windows Server Core container (network off)"
+        if: needs.plan.outputs.container == 'true' && steps.check.outcome == 'success'
+        run: |
+          docker version
+          $image = 'mcr.microsoft.com/windows/servercore:ltsc2025'
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          docker pull -q $image
+          "pulled $image in $([math]::Round($clock.Elapsed.TotalSeconds)) s"
+          $checks = Join-Path $env:RUNNER_TEMP 'container-checks'
+          New-Item -ItemType Directory -Force $checks | Out-Null
+          Copy-Item packaging\verify\check-library.R, packaging\verify\windows-clean-run.ps1, packaging\electron\entry.R $checks
+          # The application answers HTTP 200 inside the container: the shell's entry with the shell's
+          # environment for R (packaging/electron/main.js, rEnvironment); no window there.
+          @'
+          $bundle = 'C:\msr'
+          Get-ChildItem Env: | Where-Object { $_.Name -match '^(RHOME|R_.*|RTOOLS.*|RETICULATE_.*|PYTHON.*)$' } | ForEach-Object { Remove-Item "Env:$($_.Name)" }
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot;$env:SystemRoot\System32\WindowsPowerShell\v1.0"
+          $env:R_LIBS_USER = "$bundle\R\no-user-library"; $env:R_LIBS_SITE = "$bundle\R\no-site-library"
+          $env:RTOOLS45_HOME = "$bundle\no-rtools"; $env:RETICULATE_PYTHON = "$bundle\python\python.exe"; $env:PYTHONNOUSERSITE = '1'
+          $env:RSTUDIO_PANDOC = "$bundle\pandoc"; $env:MULTISCHOLAR_DISABLE_TOOLS = 'bash,dd,sha256sum,sync,tar,cp'; $env:MSR_BUNDLE = $bundle
+          $run = 'C:\Users\ContainerAdministrator\msr-run'; New-Item -ItemType Directory -Force $run | Out-Null
+          $r = Start-Process -FilePath "$bundle\R\bin\Rscript.exe" -ArgumentList '--vanilla', 'C:\checks\entry.R', '8765', $run, "$PID" -PassThru -NoNewWindow -RedirectStandardOutput "$run\r.out" -RedirectStandardError "$run\r.err"
+          $status = $null
+          for ($waited = 0; $waited -lt 300 -and -not $status -and -not $r.HasExited; $waited += 2) {
+            Start-Sleep -Seconds 2
+            try { $status = (Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 'http://127.0.0.1:8765/').StatusCode } catch { }
+          }
+          "HTTP status after about $waited s: $status"
+          Get-Content "$run\r.out" -ErrorAction SilentlyContinue | Select-Object -First 5
+          if ($status -ne 200) { Get-Content "$run\r.err" -ErrorAction SilentlyContinue | Select-Object -Last 40 }
+          & taskkill.exe /PID $r.Id /T /F | Out-Null
+          if ($status -eq 200) { 'KIT-134 CHECK PASSED: the application answers HTTP 200 in Server Core'; exit 0 } else { exit 1 }
+          '@ | Set-Content -Encoding UTF8 (Join-Path $checks 'serve.ps1')
+          $mounts = @('-v', "${env:MOVED}:C:\msr:ro", '-v', "${checks}:C:\checks:ro")
+          docker run --rm --network none @mounts $image powershell -NoProfile -ExecutionPolicy Bypass -File C:\checks\windows-clean-run.ps1 -Bundle C:\msr -Script C:\checks\check-library.R -Arguments offline *>&1 | Tee-Object -FilePath "$env:OUT\container-check-library.log"
+          $libraryStatus = $LASTEXITCODE
+          docker run --rm --network none @mounts $image powershell -NoProfile -ExecutionPolicy Bypass -File C:\checks\serve.ps1 *>&1 | Tee-Object -FilePath "$env:OUT\container-serve.log"
+          $serveStatus = $LASTEXITCODE
+          "library check: exit $libraryStatus; application: exit $serveStatus"
+          if ($libraryStatus -ne 0 -or $serveStatus -ne 0) { throw "the Server Core container check failed" }
+
+      # ------------------------------------------------ stage full: the shell, the installer, the install
+      - uses: actions/setup-node@v4
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Version stamp and third-party notices
+        id: stamp
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
+        run: |
+          $version = (Select-String -Path DESCRIPTION -Pattern '^Version:\s*(.+)$').Matches[0].Groups[1].Value.Trim()
+          $packageVersion = node -p "require('./packaging/electron/package.json').version"
+          if ($packageVersion -ne $version) { throw "package.json has $packageVersion, DESCRIPTION $version" }
+          $electron = node -p "require('./packaging/electron/package-lock.json').packages['node_modules/electron'].version"
+          & "$env:MOVED\R\bin\Rscript.exe" --vanilla packaging\r\notices.R $env:MOVED . "$env:OUT\bundle-sources.tsv" packaging\electron\stamp $electron *>&1 | Tee-Object -FilePath "$env:OUT\notices.log"
+          if ($LASTEXITCODE -ne 0) { throw "notices failed" }
+          Get-Content packaging\electron\stamp\VERSION.json
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: The Electron shell and the NSIS per-user installer
+        id: electron
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.stamp.outcome == 'success' }}
+        working-directory: packaging/electron
+        run: |
+          New-Item -ItemType Directory -Force build | Out-Null
+          Copy-Item ..\..\inst\shiny\www\MultiScholaR.png build\icon.png
+          Move-Item -LiteralPath $env:MOVED -Destination runtime
+          npm ci --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { throw "npm ci failed" }
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          npx electron-builder --win nsis --publish never
+          if ($LASTEXITCODE -ne 0) { throw "electron-builder failed" }
+          "electron-builder --win nsis: $([math]::Round($clock.Elapsed.TotalSeconds)) s"
+          Remove-Item -LiteralPath runtime -Recurse -Force -ErrorAction Continue
+          Get-ChildItem dist | Format-Table Name, Length
+
+      - name: "P4: path lengths under the application folder (limit 170)"
+        id: pathlength
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.electron.outcome == 'success' }}
+        run: |
+          pwsh -NoProfile -File packaging\windows\assemble.ps1 -Action pathlength -Folder packaging\electron\dist\win-unpacked -Limit 170
+          if ($LASTEXITCODE -ne 0) { throw "a path is too long" }
+
+      - name: Silent per-user install from the installer; the installer and the build's own copies are deleted
+        id: install
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.electron.outcome == 'success' }}
+        run: |
+          $setup = Get-Item packaging\electron\dist\MultiScholaR-Setup-*.exe
+          $hash = (Get-FileHash -Algorithm SHA256 $setup.FullName).Hash.ToLower()
+          "runner's own R on the PATH: $((Get-Command Rscript.exe -ErrorAction SilentlyContinue).Source)"
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          $process = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -Wait -PassThru
+          $seconds = [math]::Round($clock.Elapsed.TotalSeconds)
+          $application = $null
+          for ($waited = 0; -not $application -and $waited -lt 120; $waited += 5) {
+            $application = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Depth 2 -Filter MultiScholaR.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $application) { Start-Sleep -Seconds 5 }
+          }
+          if (-not $application) { throw "MultiScholaR.exe was not installed under $env:LOCALAPPDATA\Programs" }
+          $folder = $application.Directory.FullName
+          $files = Get-ChildItem -LiteralPath $folder -Recurse -File -Force
+          $shortcut = Get-ChildItem "$env:APPDATA\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter 'MultiScholaR*.lnk' -ErrorAction SilentlyContinue | Select-Object -First 1
+          $lines = @('### Windows installer and install (windows-2025; built, installed and discarded in this job)', '```',
+            "$($setup.Name): $($setup.Length) bytes ($([math]::Round($setup.Length / 1MB)) MiB), sha256 $hash",
+            "silent install: exit $($process.ExitCode) after $seconds s",
+            "installed per user at: $folder",
+            "installed size: $([math]::Round(($files | Measure-Object Length -Sum).Sum / 1MB)) MiB in $($files.Count) files",
+            "longest installed path: $(($files | ForEach-Object { $_.FullName.Length } | Measure-Object -Maximum).Maximum) characters",
+            "Start-menu shortcut: $($shortcut.FullName)", '```')
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          $lines
+          if (-not $shortcut) { throw "no Start-menu shortcut" }
+          Remove-Item -LiteralPath packaging\electron\dist -Recurse -Force -ErrorAction Continue
+          $left = @($env:MOVED, 'packaging\electron\runtime', 'packaging\electron\dist') | Where-Object { Test-Path -LiteralPath $_ }
+          if ($left) { "::warning::not fully deleted (the runner is discarded with it): $($left -join ', ')" } else { "the installed copy is the only copy of the build left on this runner" }
+          "APP=$($application.FullName)" >> $env:GITHUB_ENV
+          "APP_FOLDER=$folder" >> $env:GITHUB_ENV
+
+      - name: "P3 lifecycle: the installed application (network cut for its programs)"
+        id: lifecycle
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          Set-NetFirewallProfile -All -Enabled True
+          $programs = Get-ChildItem -LiteralPath $env:APP_FOLDER -Recurse -File -Filter *.exe
+          foreach ($program in $programs) {
+            New-NetFirewallRule -DisplayName "kit-134 block $($program.FullName)" -Direction Outbound -Action Block -Program $program.FullName | Out-Null
+          }
+          "outbound traffic blocked for the installed application's $($programs.Count) programs"
+          node packaging\electron\lifecycle-test.js "Windows, installed per user in the job that built it, windows-2025" $env:APP $env:APP_FOLDER --expect-launcher process
+          if ($LASTEXITCODE -ne 0) { throw "the lifecycle test failed" }
+
+      # P6 (D4: no DIA on Windows): the lanes without DIA, in process with the installed application's R in the
+      # shell's environment; the network is cut for the installed programs by the lifecycle step's rules.
+      - name: "Lanes: the GUI-entry lanes without DIA with the installed application's R (reduced environment, network cut)"
+        id: lanes
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.lifecycle.outcome != 'skipped' && steps.install.outcome == 'success' }}
+        timeout-minutes: 90
+        run: |
+          New-Item -ItemType Directory -Force "$env:OUT\lanes" | Out-Null
+          & packaging\verify\windows-clean-run.ps1 -Bundle "$env:APP_FOLDER\resources\runtime" -Script packaging\verify\run-lanes.R -NoBundleArgument -Arguments $env:GITHUB_WORKSPACE, $env:TEST_TOOLS, "$env:OUT\lanes", prot_tmt, prot_lfq, prot_lfq_fragpipe, metab_lc, metab_gc, metab_combined, lipid_canonical, trx_screen *> "$env:OUT\lanes.log"
+          $status = $LASTEXITCODE
+          $lines = @('### GUI-entry lanes, installed application (windows-2025)', '```')
+          if (Test-Path "$env:OUT\lanes\lane-summary.tsv") {
+            $lines += Get-Content "$env:OUT\lanes\lane-summary.tsv"
+            $differences = @(Import-Csv -Delimiter "`t" "$env:OUT\lanes\lane-differences.tsv")
+            $lines += '', 'states and artifacts that differ (count, lane, field, key, kind):'
+            $lines += $differences | Group-Object lane, field, key, kind | Sort-Object Name | ForEach-Object { "{0,4}  {1}" -f $_.Count, $_.Name }
+            $lines += '', 'failures (first 300 characters each):'
+            $lines += Get-Content "$env:OUT\lanes\lane-failures.tsv" | ForEach-Object { $_.Substring(0, [math]::Min(300, $_.Length)) } | Sort-Object -Unique | Select-Object -First 60
+          } else {
+            $lines += "no lane table was written (exit $status); the end of the log:"
+            $lines += Get-Content "$env:OUT\lanes.log" -Tail 40
+          }
+          $lines += '```'
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          $lines
+          "fingerprints of trx_screen's top_de_genes.tsv (the table stays in the job):"
+          Get-Content "$env:OUT\lanes.log" | Where-Object { $_ -match '^FPRINT' } | ForEach-Object { $_.Substring(0, [math]::Min(1700, $_.Length)) }
+          if ($status -ne 0) { throw "the lanes did not pass (exit $status)" }
+
+      - name: "e2e lanes: the four browser lanes without DIA against the installed application's package (reduced environment, network cut)"
+        id: e2e
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.lifecycle.outcome != 'skipped' && steps.install.outcome == 'success' }}
+        timeout-minutes: 120
+        run: |
+          New-Item -ItemType Directory -Force "$env:OUT\e2e" | Out-Null
+          & packaging\verify\windows-clean-run.ps1 -Bundle "$env:APP_FOLDER\resources\runtime" -Script packaging\verify\run-e2e.R -NoBundleArgument -Arguments $env:GITHUB_WORKSPACE, $env:TEST_TOOLS, "$env:OUT\e2e", lipidomics-canonical, metabolomics-lc-gc, transcriptomics-screen, proteomics-tmt-lfq *> "$env:OUT\e2e.log"
+          $status = $LASTEXITCODE
+          $lines = @('### Browser e2e lanes, installed application (windows-2025)', '```')
+          if (Test-Path "$env:OUT\e2e\e2e-summary.tsv") {
+            $lines += Get-Content "$env:OUT\e2e\e2e-summary.tsv"
+            $lines += '', 'failures (first 300 characters each):'
+            $lines += Get-Content "$env:OUT\e2e\e2e-failures.tsv" | ForEach-Object { $_.Substring(0, [math]::Min(300, $_.Length)) } | Select-Object -First 40
+          } else {
+            $lines += "no e2e table was written (exit $status); the end of the log:"
+            $lines += Get-Content "$env:OUT\e2e.log" -Tail 40
+          }
+          $lines += '```'
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          $lines
+          if ($status -ne 0) { throw "the e2e lanes did not pass (exit $status)" }
+
+      # KIT-052 / KIT-134 Windows figure paths, third confirmation (kit-052-win-paths 4b6770fd merged as e7cabee5: the
+      # in-process DA, normalisation, RUV covariates and protein QC publications drawn in a short folder and copied with a
+      # check; the worker's request folder `p/<role letter>`), with the installed application's R and the test tools:
+      # KIT-052's tests, the transcriptomics managed DA (MCI-031.2), the lipid/metab/trx worker routes of
+      # test-omic-da-module.R, the old-layout DA check of test-workflow-dia-products.R and the prot_tmt entry lane (QC,
+      # normalisation, RUV covariates and DA in process). The root's length is set through TMPDIR, under which every
+      # fixture makes its project (trx root = TMPDIR + 43, prot_tmt root = TMPDIR + 59 to 60 in run 44275615462); no
+      # package or test code is changed. Every figure is listed with where it was drawn and where it ended, each path's
+      # length and whether it is there (packaging/verify/figure-trace.R, FIGPAIR lines), and every refusal of unwritten
+      # figures with its message (RAISED lines).
+      - name: "Figure paths (KIT-052), long paths as the runner has them"
+        id: figures
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' }}
+        timeout-minutes: 120
+        run: |
+          $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          "LongPathsEnabled in the registry: $((Get-ItemProperty $key).LongPathsEnabled)"
+          "RUNNER_TEMP $env:RUNNER_TEMP ($($env:RUNNER_TEMP.Length) characters); TEMP $env:TEMP"
+          New-Item -ItemType Directory -Force "$env:OUT\figures" | Out-Null
+          & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
+            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" `
+            -Cases 'on-root102=59:figure_tests,trx_worker_da,omic_worker_da,dia_products_old_layout', `
+            'on-root124=81:trx_worker_da,omic_worker_da', 'on-root130=87:trx_worker_da,omic_worker_da', `
+            'on-tmt125=66:prot_tmt_lane', 'on-tmt127=68:prot_tmt_lane', 'on-tmt130=71:prot_tmt_lane'
+          if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
+
+      # The same with Windows' default: LongPathsEnabled set to 0 for the rest of this job (the runner is
+      # discarded with it). Windows reads the value per process, so the R processes started after this see it
+      # (each case prints the value its R process reads). Worker routes at roots of about 63, 70, 77 (calculated safe:
+      # trx 77 at a 15-character contrast, the fixture's is 12) and 85, 95 (expected: a loud classed refusal naming the
+      # files); the prot_tmt lane in process at about 90 (below the Q-value staged copy's calculated 99) and about 118.
+      - name: "Figure paths (KIT-052), long paths turned off (HKLM LongPathsEnabled = 0 for this disposable runner)"
+        id: figuresoff
+        if: ${{ !cancelled() && steps.figures.outcome != 'skipped' && steps.install.outcome == 'success' }}
+        timeout-minutes: 120
+        run: |
+          $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          Set-ItemProperty -Path $key -Name LongPathsEnabled -Value 0 -Type DWord
+          "LongPathsEnabled in the registry now: $((Get-ItemProperty $key).LongPathsEnabled)"
+          & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
+            -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" `
+            -Cases 'off-root63=20:figure_tests,trx_worker_da,omic_worker_da,dia_products_old_layout', `
+            'off-root70=27:trx_worker_da,omic_worker_da', 'off-root77=34:trx_worker_da,omic_worker_da', `
+            'off-root85=42:trx_worker_da,omic_worker_da', 'off-root95=52:trx_worker_da,omic_worker_da', `
+            'off-tmt90=31:prot_tmt_lane', 'off-tmt118=59:prot_tmt_lane'
+          if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
+
+      - name: Results
+        if: ${{ !cancelled() }}
+        run: |
+          $rows = [ordered]@{
+            "library loads from the moved folder (reduced environment, network cut)" = '${{ steps.check.outcome }}'
+            "internal packages" = '${{ steps.internal.outcome }}'
+            "shell and NSIS installer" = '${{ steps.electron.outcome }}'
+            "path lengths (limit 170)" = '${{ steps.pathlength.outcome }}'
+            "silent per-user install" = '${{ steps.install.outcome }}'
+            "lifecycle, installed application, network cut" = '${{ steps.lifecycle.outcome }}'
+            "GUI-entry lanes without DIA, installed application" = '${{ steps.lanes.outcome }}'
+            "browser e2e lanes without DIA, installed application" = '${{ steps.e2e.outcome }}'
+            "figure paths, long paths as the runner has them" = '${{ steps.figures.outcome }}'
+            "figure paths, long paths off" = '${{ steps.figuresoff.outcome }}'
+          }
+          $lines = @('### Results, Windows on windows-2025 (stage ${{ needs.plan.outputs.stage }})', '```')
+          $lines += $rows.GetEnumerator() | ForEach-Object { "{0}`t{1}" -f $_.Key, $_.Value }
+          $lines += '```'
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          $lines

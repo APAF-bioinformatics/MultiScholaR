@@ -61,7 +61,8 @@ test_that("KIT-078: a worker's QC figures are staged and saved, and it leaves th
     head <- fixture$owner$.context$head
     result <- omicsWorkerRun(fixture, paste0(binding$prefix, "_qc_figures"), list(stage = "post_filter", grouping_variable = "group", shape_variable = NULL))
     expect_identical(result$status, "complete", info = result$error)
-    staged <- list.files(file.path(result$directory, "omics-publication", binding$qc_dir_role))
+    publication <- workflowRequestPublication(result$directory, "omics-publication")
+    staged <- list.files(file.path(publication$path, workflowRequestRoleFolder(binding$qc_dir_role, publication$roles)))
     expect_true(any(grepl("_pre_norm_pca[.]png$", staged)), info = omic)
     expect_identical(fixture$owner$.context$head, head)
     # Each figure file's product and asset wait for the controller's root.

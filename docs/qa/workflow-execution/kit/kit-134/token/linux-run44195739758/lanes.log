@@ -1,0 +1,1539 @@
+library paths: /home/runner/work/_temp/relocated/msr moved/R/library | /home/runner/work/_temp/test-tools
+test-tool library: brio, desc, diffobj, pingr, pkgbuild, pkgload, praise, shinytest2, testthat, waldo
+MultiScholaR 0.5.0 (/home/runner/work/_temp/relocated/msr moved/R/library)
+testthat 3.3.2 (/home/runner/work/_temp/test-tools)
+fastduckdb 0.2.0 (/home/runner/work/_temp/relocated/msr moved/R/library)
+fastlimpadpc 0.1.0 (/home/runner/work/_temp/relocated/msr moved/R/library)
+limpa 1.4.2 (/home/runner/work/_temp/relocated/msr moved/R/library)
+duckdb 1.5.5 (/home/runner/work/_temp/relocated/msr moved/R/library)
+locale: LC_CTYPE=en_GB.UTF-8;LC_NUMERIC=C;LC_TIME=en_AU.UTF-8;LC_COLLATE=en_GB.UTF-8;LC_MONETARY=en_AU.UTF-8;LC_MESSAGES=en_GB.UTF-8;LC_PAPER=en_AU.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_AU.UTF-8;LC_IDENTIFICATION=C
+network: closed (cran.r-project.org not reached)
+DPC engine resolved by default: fastlimpadpc
+INFO [2026-11-17 23:11:56] --- Processing setup for omic type: proteomics ---
+INFO [2026-11-17 23:11:56] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/data/proteomics
+INFO [2026-11-17 23:11:56] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/publication_graphs/filtering_qc/20261117_231156
+INFO [2026-11-17 23:11:56] Creating directory structure for 'proteomics'...
+WARN [2026-11-17 23:11:56] Source script directory not found for proteomics: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics. No scripts copied.
+INFO [2026-11-17 23:11:56] Ensured UniProt annotation directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/data/UniProt
+INFO [2026-11-17 23:11:56] Stored paths for proteomics.
+INFO [2026-11-17 23:11:56] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results_summary/proteomics (4 items)
+  timestamp                      : 20261117_231156
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/publication_graphs/filtering_qc/20261117_231156 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/integration (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/data/UniProt (0 items)
+------------------------------------------
+
+INFO [2026-11-17 23:11:59] Added base_dir to volumes for easier navigation: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia
+INFO [2026-11-17 23:11:59] === PROTEOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:11:59] Module ID: normalization
+INFO [2026-11-17 23:12:00] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:12:00] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:12:00] Detected format: diann (confidence: 1)
+INFO [2026-11-17 23:12:00] Reading diann data from /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/inputs/report.tsv
+INFO [2026-11-17 23:12:00] Starting DIA-NN import from: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/inputs/report.tsv
+INFO [2026-11-17 23:12:00] Read 8989 rows and 16 columns
+INFO [2026-11-17 23:12:00] Converting Precursor.Normalised to numeric
+INFO [2026-11-17 23:12:00] Using quantity column: Precursor.Normalised
+INFO [2026-11-17 23:12:00] Data imported successfully. Rows: 8989
+INFO [2026-11-17 23:12:00] Sanitized 8 unique sample names.
+INFO [2026-11-17 23:12:01] Processing FASTA file...
+INFO [2026-11-17 23:12:01] Checking experiment_paths...
+INFO [2026-11-17 23:12:01] Saved aa_seq_tbl_final to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/aa_seq_tbl_final.RDS
+INFO [2026-11-17 23:12:01] Saved FASTA metadata to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/fasta_metadata.RDS
+INFO [2026-11-17 23:12:01] FASTA Format: standard_uniprot, Sequences: 400
+INFO [2026-11-17 23:12:01] FASTA file processed successfully. Found 400 sequences
+INFO [2026-11-17 23:12:01] Using default configuration
+INFO [2026-11-17 23:12:01] config.ini not found in project. Retrieving default config.
+INFO [2026-11-17 23:12:01] Found default config.ini in package: /home/runner/work/_temp/relocated/msr moved/R/library/MultiScholaR/config/config.ini
+INFO [2026-11-17 23:12:01] Default config.ini copied to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/config.ini
+INFO [2026-11-17 23:12:01] Stored config_list on workflow_data
+INFO [2026-11-17 23:12:01] Creating processing log...
+INFO [2026-11-17 23:12:01] Processing log created successfully
+INFO [2026-11-17 23:12:02] Received results from design matrix builder module. Now saving to workflow and disk.
+INFO [2026-11-17 23:12:03] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/design_matrix.tab
+INFO [2026-11-17 23:12:03] Writing cleaned data to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/data_cln.tab
+INFO [2026-11-17 23:12:03] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/contrast_strings.tab
+INFO [2026-11-17 23:12:03] Saved manifest.json to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/manifest.json
+INFO [2026-11-17 23:12:03] Added workflow_type to config.ini: DIA
+INFO [2026-11-17 23:12:03] Writing config.ini to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/config.ini
+INFO [2026-11-17 23:12:03] Saved config.ini for future import/export.
+INFO [2026-11-17 23:12:03] Created tech_rep_group column for proper technical replicate identification
+INFO [2026-11-17 23:12:03] Design Matrix complete. Triggering UniProt annotation.
+INFO [2026-11-17 23:12:03] Saved uniprot_dat_cln to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/uniprot_dat_cln.RDS
+INFO [2026-11-17 23:12:03] UniProt annotations retrieved successfully. Found 400 annotations
+INFO [2026-11-17 23:12:03]  QC: starting the sub-modules on DIA
+INFO [2026-11-17 23:12:03] Peptide QC orchestrator: workflow type is DIA
+INFO [2026-11-17 23:12:03] Running DIA peptide processing sub-modules.
+INFO [2026-11-17 23:12:03] Protein QC orchestrator: workflow type is DIA
+INFO [2026-11-17 23:12:03] Running DIA protein rollup sub-module.
+INFO [2026-11-17 23:12:03] Running common protein processing sub-modules.
+INFO [2026-11-17 23:12:03] Protein replicate filter server registered for input: proteomics_workflow-quality_control-protein_qc-replicate_filter-apply_protein_replicate_filter
+INFO [2026-11-17 23:12:04] Q-value filter: S4 class = PeptideQuantitativeData
+INFO [2026-11-17 23:12:04] Q-value filter: S4 @peptide_data has 0 rows, 16 columns
+INFO [2026-11-17 23:12:04] Q-value filter: input_matrix_column_ids length = 9
+INFO [2026-11-17 23:12:04] Q-value filter: input_matrix_column_ids values: ['Run', 'Precursor.Id', 'Protein.Group', 'Protein.Ids', 'Stripped.Sequence', 'Modified.Sequence', 'Precursor.Charge', 'Precursor.Quantity', 'Precursor.Normalised']
+INFO [2026-11-17 23:12:04] QC Step: Applying DIA-NN confidence filter at 0.01 for Q.Value, Global.Q.Value, and Global.PG.Q.Value
+INFO [2026-11-17 23:12:10] Q-value filter applied successfully
+INFO [2026-11-17 23:12:17] Protein peptide count filter applied successfully
+INFO [2026-11-17 23:12:25] Precursor rollup applied successfully
+INFO [2026-11-17 23:12:39] Sample quality filter applied successfully
+INFO [2026-11-17 23:12:47] Replicate filter applied successfully
+INFO [2026-11-17 23:12:55] Missing value imputation applied successfully
+INFO [2026-11-17 23:13:03] IQ protein rollup and S4 object creation completed successfully
+INFO [2026-11-17 23:13:13] Protein accession cleanup completed
+INFO [2026-11-17 23:13:25] Protein intensity filter applied successfully
+INFO [2026-11-17 23:13:34] Duplicate protein removal completed successfully
+INFO [2026-11-17 23:13:37] Protein replicate filter apply observed via module input
+INFO [2026-11-17 23:13:45] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:13:45] Protein replicate filter applied successfully
+INFO [2026-11-17 23:13:45] Protein replicate filter apply observed via root input
+INFO [2026-11-17 23:13:45] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:13:45] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:13:45] Quality Control complete. Normalization is ready.
+ERROR [2026-11-17 23:13:47] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+INFO [2026-11-17 23:13:55] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:13:55] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:13:59] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:13:59] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:14:05] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:14:05] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:14:30] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:14:30] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:14:42] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:14:42] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:14:46] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:14:46] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:14:49] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:14:49] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:14:58] --- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+INFO [2026-11-17 23:14:58]    selected_contrast = KO_vs_WT
+INFO [2026-11-17 23:14:58]    Glimma: Available contrasts in data: KO_vs_WT
+INFO [2026-11-17 23:14:58]    Glimma: Target contrast: KO_vs_WT
+INFO [2026-11-17 23:14:58]    Glimma: Grouping expression plot by 'group' with 8 samples
+INFO [2026-11-17 23:14:58]    Glimma: Unique groups detected: KO, WT
+INFO [2026-11-17 23:14:58]    Glimma: Synchronized 385 proteins with expression data
+INFO [2026-11-17 23:14:58]    Glimma: Calling glimmaXY with 385 proteins and 8 samples
+INFO [2026-11-17 23:14:58]    Glimma: Highlighting 15 significant genes (10 up, 5 down)
+INFO [2026-11-17 23:14:58] --- Exiting generateProtDAVolcanoPlotGlimma ---
+INFO [2026-11-17 23:15:00] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:15:00] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:15:02] === Starting protein annotation matching ===
+INFO [2026-11-17 23:15:02] Using protein ID column: Protein.Group
+INFO [2026-11-17 23:15:02] UniProt annotations: 400 entries
+INFO [2026-11-17 23:15:02] UniProt ID column: Entry
+INFO [2026-11-17 23:15:02] Gene names column: gene_names
+INFO [2026-11-17 23:15:02] Detected da_results_for_enrichment S4 object
+INFO [2026-11-17 23:15:02] Available DE contrasts: groupKO-groupWT
+INFO [2026-11-17 23:15:02] Extracted protein IDs from DE contrast: groupKO-groupWT
+INFO [2026-11-17 23:15:02] Found 385 unique protein IDs in DE results
+INFO [2026-11-17 23:15:02] Performing exact matching...
+INFO [2026-11-17 23:15:02] Exact matches found: 385
+INFO [2026-11-17 23:15:02] Proteins requiring fuzzy matching: 0
+INFO [2026-11-17 23:15:02] === Annotation matching completed ===
+INFO [2026-11-17 23:15:02] Total proteins: 385
+INFO [2026-11-17 23:15:02] Matched proteins: 385 (100.0%)
+INFO [2026-11-17 23:15:02] Exact matches: 385 (100.0%)
+INFO [2026-11-17 23:15:02] Fuzzy matches: 0 (0.0%)
+INFO [2026-11-17 23:15:02] Unmatched proteins: 0 (0.0%)
+INFO [2026-11-17 23:15:04] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:15:04] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:15:14] Results summary directory for proteomics_prot_dia (/tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:15:14] Results summary directory for proteomics_prot_dia (/tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:15:21] Attempting to render report:
+INFO [2026-11-17 23:15:21] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/scripts/proteomics/DIANN_report.rmd
+INFO [2026-11-17 23:15:21] - Output File: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results_summary/proteomics/DIANN_report_proteomics_prot_dia.docx
+INFO [2026-11-17 23:15:21] - Params: omic_type='proteomics', experiment_label='prot_dia'
+INFO [2026-11-17 23:15:21] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia-5ac4681ce1a/project/prot_dia/results_summary/proteomics/DIANN_report_proteomics_prot_dia.docx
+LANE prot_dia: pass 44 fail 0 error 0 skip 0; record TRUE; differing steps 0 (discrete 0, digest 0); 212 s
+INFO [2026-11-17 23:15:27] --- Processing setup for omic type: proteomics ---
+INFO [2026-11-17 23:15:27] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/data/proteomics
+INFO [2026-11-17 23:15:27] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc/20261117_231527
+INFO [2026-11-17 23:15:27] Creating directory structure for 'proteomics'...
+WARN [2026-11-17 23:15:27] Source script directory not found for proteomics: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics. No scripts copied.
+INFO [2026-11-17 23:15:27] Ensured UniProt annotation directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/data/UniProt
+INFO [2026-11-17 23:15:27] Stored paths for proteomics.
+INFO [2026-11-17 23:15:27] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results_summary/proteomics (4 items)
+  timestamp                      : 20261117_231527
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc/20261117_231527 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/integration (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/data/UniProt (0 items)
+------------------------------------------
+INFO [2026-11-17 23:15:27] Added base_dir to volumes for easier navigation: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa
+INFO [2026-11-17 23:15:27] === PROTEOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:15:27] Module ID: normalization
+INFO [2026-11-17 23:15:28] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:15:28] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:15:28] Detected format: diann (confidence: 1)
+INFO [2026-11-17 23:15:28] Reading diann data from /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/inputs/report.tsv
+INFO [2026-11-17 23:15:28] Starting DIA-NN import from: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/inputs/report.tsv
+INFO [2026-11-17 23:15:28] Read 8886 rows and 16 columns
+INFO [2026-11-17 23:15:28] Converting Precursor.Normalised to numeric
+INFO [2026-11-17 23:15:28] Using quantity column: Precursor.Normalised
+INFO [2026-11-17 23:15:28] Data imported successfully. Rows: 8886
+INFO [2026-11-17 23:15:28] Sanitized 8 unique sample names.
+INFO [2026-11-17 23:15:29] Processing FASTA file...
+INFO [2026-11-17 23:15:29] Checking experiment_paths...
+INFO [2026-11-17 23:15:29] Saved aa_seq_tbl_final to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/aa_seq_tbl_final.RDS
+INFO [2026-11-17 23:15:29] Saved FASTA metadata to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/fasta_metadata.RDS
+INFO [2026-11-17 23:15:29] FASTA Format: standard_uniprot, Sequences: 400
+INFO [2026-11-17 23:15:29] FASTA file processed successfully. Found 400 sequences
+INFO [2026-11-17 23:15:29] Using default configuration
+INFO [2026-11-17 23:15:29] config.ini not found in project. Retrieving default config.
+INFO [2026-11-17 23:15:29] Found default config.ini in package: /home/runner/work/_temp/relocated/msr moved/R/library/MultiScholaR/config/config.ini
+INFO [2026-11-17 23:15:29] Default config.ini copied to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/config.ini
+INFO [2026-11-17 23:15:29] Stored config_list on workflow_data
+INFO [2026-11-17 23:15:29] Creating processing log...
+INFO [2026-11-17 23:15:29] Processing log created successfully
+INFO [2026-11-17 23:15:31] Received results from design matrix builder module. Now saving to workflow and disk.
+INFO [2026-11-17 23:15:31] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/design_matrix.tab
+INFO [2026-11-17 23:15:31] Writing cleaned data to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/data_cln.tab
+INFO [2026-11-17 23:15:31] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/contrast_strings.tab
+INFO [2026-11-17 23:15:31] Saved manifest.json to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/manifest.json
+INFO [2026-11-17 23:15:31] Added workflow_type to config.ini: DIA_LIMPA
+INFO [2026-11-17 23:15:31] Writing config.ini to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/config.ini
+INFO [2026-11-17 23:15:31] Saved config.ini for future import/export.
+INFO [2026-11-17 23:15:31] Created tech_rep_group column for proper technical replicate identification
+INFO [2026-11-17 23:15:31] Design Matrix complete. Triggering UniProt annotation.
+INFO [2026-11-17 23:15:31] Saved uniprot_dat_cln to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/uniprot_dat_cln.RDS
+INFO [2026-11-17 23:15:31] UniProt annotations retrieved successfully. Found 400 annotations
+INFO [2026-11-17 23:15:31]  QC: starting the sub-modules on DIA_LIMPA
+INFO [2026-11-17 23:15:31] Peptide QC orchestrator: workflow type is DIA_LIMPA
+INFO [2026-11-17 23:15:31] Running DIA_LIMPA peptide processing sub-modules.
+INFO [2026-11-17 23:15:32] Protein QC orchestrator: workflow type is DIA_LIMPA
+INFO [2026-11-17 23:15:32] Running common protein processing sub-modules.
+INFO [2026-11-17 23:15:33] Q-value filter: S4 class = PeptideQuantitativeData
+INFO [2026-11-17 23:15:33] Q-value filter: S4 @peptide_data has 0 rows, 16 columns
+INFO [2026-11-17 23:15:33] Q-value filter: input_matrix_column_ids length = 9
+INFO [2026-11-17 23:15:33] Q-value filter: input_matrix_column_ids values: ['Run', 'Precursor.Id', 'Protein.Group', 'Protein.Ids', 'Stripped.Sequence', 'Modified.Sequence', 'Precursor.Charge', 'Precursor.Quantity', 'Precursor.Normalised']
+INFO [2026-11-17 23:15:33] QC Step: Applying DIA-NN confidence filter at 0.01 for Q.Value, Global.Q.Value, and Global.PG.Q.Value
+INFO [2026-11-17 23:15:40] Q-value filter applied successfully
+INFO [2026-11-17 23:15:49] Precursor rollup applied successfully
+INFO [2026-11-17 23:15:59] Log2 peptide matrix calculated
+INFO [2026-11-17 23:16:01] Choosing best protein accession at the peptide level...
+INFO [2026-11-17 23:16:01] Aggregation method for duplicate peptides will be: 'mean'
+INFO [2026-11-17 23:16:01] Aggregating peptide quantities for newly resolved protein groups...
+INFO [2026-11-17 23:16:01] Aggregation complete. Before: 6851 rows. After: 6851 rows.
+INFO [2026-11-17 23:16:01] Recalculating peptide matrix with updated protein accessions...
+INFO [2026-11-17 23:16:10] Peptide accession cleanup completed
+INFO [2026-11-17 23:16:21] Limpa DPC quantification completed
+INFO [2026-11-17 23:16:32] Between-sample normalisation step completed
+INFO [2026-11-17 23:16:41] Peptide count filter completed
+INFO [2026-11-17 23:16:41] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:16:41] Quality Control complete. Normalization is ready.
+ERROR [2026-11-17 23:16:43] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+INFO [2026-11-17 23:16:52] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:16:52] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:17:03] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:17:03] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:17:11] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:17:11] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:17:29] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:17:29] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:17:32] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:17:32] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:17:33] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:17:33] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:17:40] --- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+INFO [2026-11-17 23:17:40]    selected_contrast = KO_vs_WT
+INFO [2026-11-17 23:17:40]    Glimma: Available contrasts in data: KO_vs_WT
+INFO [2026-11-17 23:17:40]    Glimma: Target contrast: KO_vs_WT
+INFO [2026-11-17 23:17:40]    Glimma: Grouping expression plot by 'group' with 8 samples
+INFO [2026-11-17 23:17:40]    Glimma: Unique groups detected: KO, WT
+INFO [2026-11-17 23:17:40]    Glimma: Synchronized 393 proteins with expression data
+INFO [2026-11-17 23:17:40]    Glimma: Calling glimmaXY with 393 proteins and 8 samples
+INFO [2026-11-17 23:17:40]    Glimma: Highlighting 15 significant genes (11 up, 4 down)
+INFO [2026-11-17 23:17:40] --- Exiting generateProtDAVolcanoPlotGlimma ---
+INFO [2026-11-17 23:17:40] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:17:40] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:17:46] Results summary directory for proteomics_prot_dia_limpa (/tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:17:46] Results summary directory for proteomics_prot_dia_limpa (/tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:17:52] Attempting to render report:
+INFO [2026-11-17 23:17:52] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/scripts/proteomics/DIANN_limpa_report.rmd
+INFO [2026-11-17 23:17:52] - Output File: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results_summary/proteomics/DIANN_limpa_report_proteomics_prot_dia_limpa.docx
+INFO [2026-11-17 23:17:52] - Params: omic_type='proteomics', experiment_label='prot_dia_limpa'
+INFO [2026-11-17 23:17:52] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-prot_dia_limpa-5ac47765adb2/project/prot_dia_limpa/results_summary/proteomics/DIANN_limpa_report_proteomics_prot_dia_limpa.docx
+LANE prot_dia_limpa: pass 38 fail 0 error 0 skip 0; record TRUE; differing steps 0 (discrete 0, digest 0); 149 s
+INFO [2026-11-17 23:17:56] --- Processing setup for omic type: proteomics ---
+INFO [2026-11-17 23:17:56] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/data/proteomics
+INFO [2026-11-17 23:17:56] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/publication_graphs/filtering_qc/20261117_231756
+INFO [2026-11-17 23:17:56] Creating directory structure for 'proteomics'...
+WARN [2026-11-17 23:17:56] Source script directory not found for proteomics: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics. No scripts copied.
+INFO [2026-11-17 23:17:56] Ensured UniProt annotation directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/data/UniProt
+INFO [2026-11-17 23:17:56] Stored paths for proteomics.
+INFO [2026-11-17 23:17:56] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results_summary/proteomics (4 items)
+  timestamp                      : 20261117_231756
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/publication_graphs/filtering_qc/20261117_231756 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/integration (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/data/UniProt (0 items)
+------------------------------------------
+INFO [2026-11-17 23:17:56] Added base_dir to volumes for easier navigation: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt
+INFO [2026-11-17 23:17:56] === PROTEOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:17:56] Module ID: normalization
+INFO [2026-11-17 23:17:57] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:17:57] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:17:57] Detected format: pd_tmt (confidence: 0.4)
+INFO [2026-11-17 23:17:57] Reading pd_tmt data from /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/inputs/pd_tmt_peptides.tsv
+INFO [2026-11-17 23:17:57] Starting Proteome Discoverer TMT import from: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/inputs/pd_tmt_peptides.tsv
+INFO [2026-11-17 23:17:57] Reading file: pd_tmt_peptides.tsv
+INFO [2026-11-17 23:17:57] File contains 400 rows and 12 columns
+INFO [2026-11-17 23:17:57] Found 10 abundance columns before renaming
+INFO [2026-11-17 23:17:57] Found 10 abundance columns to pivot
+INFO [2026-11-17 23:17:57] Pivoting data to long format...
+INFO [2026-11-17 23:17:57] Pivoted to 4000 rows
+INFO [2026-11-17 23:17:57] Total reshaped data rows: 4000.
+INFO [2026-11-17 23:17:57] Data imported successfully. Rows: 4000
+INFO [2026-11-17 23:17:57] Sanitized 10 unique sample names.
+INFO [2026-11-17 23:17:57] Processing FASTA file...
+INFO [2026-11-17 23:17:57] Checking experiment_paths...
+INFO [2026-11-17 23:17:57] Saved aa_seq_tbl_final to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/aa_seq_tbl_final.RDS
+INFO [2026-11-17 23:17:57] Saved FASTA metadata to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/fasta_metadata.RDS
+INFO [2026-11-17 23:17:57] FASTA Format: standard_uniprot, Sequences: 400
+INFO [2026-11-17 23:17:57] FASTA file processed successfully. Found 400 sequences
+INFO [2026-11-17 23:17:57] Using default configuration
+INFO [2026-11-17 23:17:57] config.ini not found in project. Retrieving default config.
+INFO [2026-11-17 23:17:57] Found default config.ini in package: /home/runner/work/_temp/relocated/msr moved/R/library/MultiScholaR/config/config.ini
+INFO [2026-11-17 23:17:57] Default config.ini copied to: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/config.ini
+INFO [2026-11-17 23:17:57] Stored config_list on workflow_data
+INFO [2026-11-17 23:17:57] Creating processing log...
+INFO [2026-11-17 23:17:57] Processing log created successfully
+INFO [2026-11-17 23:17:59] Received results from design matrix builder module. Now saving to workflow and disk.
+INFO [2026-11-17 23:17:59] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/design_matrix.tab
+INFO [2026-11-17 23:17:59] Writing cleaned data to: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/data_cln.tab
+INFO [2026-11-17 23:17:59] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/contrast_strings.tab
+INFO [2026-11-17 23:17:59] Saved manifest.json to: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/manifest.json
+INFO [2026-11-17 23:17:59] Added workflow_type to config.ini: TMT
+INFO [2026-11-17 23:17:59] Writing config.ini to: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/config.ini
+INFO [2026-11-17 23:17:59] Saved config.ini for future import/export.
+INFO [2026-11-17 23:17:59] Created tech_rep_group column for proper technical replicate identification
+INFO [2026-11-17 23:17:59] TMT workflow: Reshaping protein data from long to wide format for S4 creation.
+INFO [2026-11-17 23:17:59] TMT Save Design: Pivoted data from 4000 rows (long) to 400 rows (wide)
+INFO [2026-11-17 23:17:59] TMT Save Design: Wide format has 400 protein rows, 10 sample columns
+INFO [2026-11-17 23:17:59] TMT Save Design: Applying log2 transformation to abundance values...
+INFO [2026-11-17 23:17:59] TMT Save Design: Log2 transformation completed
+INFO [2026-11-17 23:17:59] Saving S4 object to R6 state manager as: protein_s4_initial
+INFO [2026-11-17 23:18:00] Design Matrix complete. Triggering UniProt annotation.
+INFO [2026-11-17 23:18:00] Saved uniprot_dat_cln to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/uniprot_dat_cln.RDS
+INFO [2026-11-17 23:18:00] UniProt annotations retrieved successfully. Found 400 annotations
+INFO [2026-11-17 23:18:00]  QC: starting the sub-modules on TMT
+INFO [2026-11-17 23:18:00] Protein QC orchestrator: workflow type is TMT
+INFO [2026-11-17 23:18:00] Running common protein processing sub-modules.
+INFO [2026-11-17 23:18:00] Protein replicate filter server registered for input: proteomics_workflow-quality_control-protein_qc-replicate_filter-apply_protein_replicate_filter
+INFO [2026-11-17 23:18:00] TMT workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:18:00] TMT workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:18:10] Protein accession cleanup completed
+ERROR [2026-11-17 23:18:11] Error applying protein intensity filter: intensity percentile must lie in [0, 100]
+INFO [2026-11-17 23:18:24] Protein intensity filter applied successfully
+INFO [2026-11-17 23:18:32] Duplicate protein removal completed successfully
+INFO [2026-11-17 23:18:33] Protein replicate filter apply observed via module input
+INFO [2026-11-17 23:18:41] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:18:41] Protein replicate filter applied successfully
+INFO [2026-11-17 23:18:41] Protein replicate filter apply observed via root input
+INFO [2026-11-17 23:18:41] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:18:41] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:18:41] Quality Control complete. Normalization is ready.
+ERROR [2026-11-17 23:18:43] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+INFO [2026-11-17 23:18:49] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:18:49] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:18:55] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:18:55] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:19:00] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:19:00] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:19:24] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:19:24] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:19:34] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:19:34] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:19:34] TMT workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:19:36] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:19:36] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:19:36] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:19:36] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:19:42] --- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+INFO [2026-11-17 23:19:42]    selected_contrast = KO_vs_WT
+INFO [2026-11-17 23:19:42]    Glimma: Available contrasts in data: KO_vs_WT
+INFO [2026-11-17 23:19:42]    Glimma: Target contrast: KO_vs_WT
+INFO [2026-11-17 23:19:42]    Glimma: Grouping expression plot by 'group' with 10 samples
+INFO [2026-11-17 23:19:42]    Glimma: Unique groups detected: WT, KO
+INFO [2026-11-17 23:19:42]    Glimma: Synchronized 400 proteins with expression data
+INFO [2026-11-17 23:19:42]    Glimma: Calling glimmaXY with 400 proteins and 10 samples
+INFO [2026-11-17 23:19:42]    Glimma: Highlighting 13 significant genes (4 up, 9 down)
+INFO [2026-11-17 23:19:42] --- Exiting generateProtDAVolcanoPlotGlimma ---
+INFO [2026-11-17 23:19:42] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:19:42] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:19:43] TMT workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:19:45] Results summary directory for proteomics_prot_tmt (/tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:19:45] Results summary directory for proteomics_prot_tmt (/tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:19:50] Attempting to render report:
+INFO [2026-11-17 23:19:50] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/scripts/proteomics/TMT_report.rmd
+INFO [2026-11-17 23:19:50] - Output File: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results_summary/proteomics/TMT_report_proteomics_prot_tmt.docx
+INFO [2026-11-17 23:19:50] - Params: omic_type='proteomics', experiment_label='prot_tmt'
+INFO [2026-11-17 23:19:51] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-prot_tmt-5ac41813e0ed/project/prot_tmt/results_summary/proteomics/TMT_report_proteomics_prot_tmt.docx
+LANE prot_tmt: pass 37 fail 0 error 0 skip 0; record TRUE; differing steps 0 (discrete 0, digest 0); 117 s
+INFO [2026-11-17 23:19:53] --- Processing setup for omic type: proteomics ---
+INFO [2026-11-17 23:19:53] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/data/proteomics
+INFO [2026-11-17 23:19:53] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/publication_graphs/filtering_qc/20261117_231953
+INFO [2026-11-17 23:19:53] Creating directory structure for 'proteomics'...
+WARN [2026-11-17 23:19:53] Source script directory not found for proteomics: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics. No scripts copied.
+INFO [2026-11-17 23:19:53] Ensured UniProt annotation directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/data/UniProt
+INFO [2026-11-17 23:19:53] Stored paths for proteomics.
+INFO [2026-11-17 23:19:53] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results_summary/proteomics (4 items)
+  timestamp                      : 20261117_231953
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/publication_graphs/filtering_qc/20261117_231953 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/integration (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/data/UniProt (0 items)
+------------------------------------------
+INFO [2026-11-17 23:19:53] Added base_dir to volumes for easier navigation: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq
+INFO [2026-11-17 23:19:53] === PROTEOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:19:53] Module ID: normalization
+INFO [2026-11-17 23:19:54] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:19:54] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:19:54] Detected format: maxquant (confidence: 0.633333333333333)
+INFO [2026-11-17 23:19:54] Reading maxquant data from /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/inputs/proteinGroups.txt
+INFO [2026-11-17 23:19:54] Data imported successfully. Rows: 4000
+INFO [2026-11-17 23:19:54] Sanitized 10 unique sample names.
+INFO [2026-11-17 23:19:54] Processing FASTA file...
+INFO [2026-11-17 23:19:54] Checking experiment_paths...
+INFO [2026-11-17 23:19:54] Saved aa_seq_tbl_final to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/aa_seq_tbl_final.RDS
+INFO [2026-11-17 23:19:54] Saved FASTA metadata to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/fasta_metadata.RDS
+INFO [2026-11-17 23:19:54] FASTA Format: standard_uniprot, Sequences: 400
+INFO [2026-11-17 23:19:54] FASTA file processed successfully. Found 400 sequences
+INFO [2026-11-17 23:19:54] Using default configuration
+INFO [2026-11-17 23:19:54] config.ini not found in project. Retrieving default config.
+INFO [2026-11-17 23:19:54] Found default config.ini in package: /home/runner/work/_temp/relocated/msr moved/R/library/MultiScholaR/config/config.ini
+INFO [2026-11-17 23:19:54] Default config.ini copied to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/config.ini
+INFO [2026-11-17 23:19:54] Stored config_list on workflow_data
+INFO [2026-11-17 23:19:54] Creating processing log...
+INFO [2026-11-17 23:19:54] Processing log created successfully
+INFO [2026-11-17 23:19:56] Received results from design matrix builder module. Now saving to workflow and disk.
+INFO [2026-11-17 23:19:56] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/design_matrix.tab
+INFO [2026-11-17 23:19:56] Writing cleaned data to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/data_cln.tab
+INFO [2026-11-17 23:19:56] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/contrast_strings.tab
+INFO [2026-11-17 23:19:56] Saved manifest.json to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/manifest.json
+INFO [2026-11-17 23:19:56] Added workflow_type to config.ini: LFQ
+INFO [2026-11-17 23:19:56] Writing config.ini to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/config.ini
+INFO [2026-11-17 23:19:56] Saved config.ini for future import/export.
+INFO [2026-11-17 23:19:56] Created tech_rep_group column for proper technical replicate identification
+INFO [2026-11-17 23:19:56] LFQ workflow: Reshaping protein data from long to wide format for S4 creation.
+INFO [2026-11-17 23:19:56] LFQ Save Design: Pivoted data from 4000 rows (long) to 400 rows (wide)
+INFO [2026-11-17 23:19:56] LFQ Save Design: Wide format has 400 protein rows, 10 sample columns
+INFO [2026-11-17 23:19:56] LFQ Save Design: Applying log2 transformation to abundance values...
+INFO [2026-11-17 23:19:56] LFQ Save Design: Log2 transformation completed
+INFO [2026-11-17 23:19:56] Saving S4 object to R6 state manager as: protein_s4_initial
+INFO [2026-11-17 23:19:57] Design Matrix complete. Triggering UniProt annotation.
+INFO [2026-11-17 23:19:57] Saved uniprot_dat_cln to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/uniprot_dat_cln.RDS
+INFO [2026-11-17 23:19:57] UniProt annotations retrieved successfully. Found 400 annotations
+INFO [2026-11-17 23:19:57]  QC: starting the sub-modules on LFQ
+INFO [2026-11-17 23:19:57] Protein QC orchestrator: workflow type is LFQ
+INFO [2026-11-17 23:19:57] Running common protein processing sub-modules.
+INFO [2026-11-17 23:19:57] Protein replicate filter server registered for input: proteomics_workflow-quality_control-protein_qc-replicate_filter-apply_protein_replicate_filter
+INFO [2026-11-17 23:19:57] LFQ workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:19:57] LFQ workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:20:06] Protein accession cleanup completed
+ERROR [2026-11-17 23:20:08] Error applying protein intensity filter: intensity percentile must lie in [0, 100]
+INFO [2026-11-17 23:20:20] Protein intensity filter applied successfully
+INFO [2026-11-17 23:20:28] Duplicate protein removal completed successfully
+INFO [2026-11-17 23:20:30] Protein replicate filter apply observed via module input
+INFO [2026-11-17 23:20:38] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:20:38] Protein replicate filter applied successfully
+INFO [2026-11-17 23:20:38] Protein replicate filter apply observed via root input
+INFO [2026-11-17 23:20:38] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:20:38] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:20:38] Quality Control complete. Normalization is ready.
+ERROR [2026-11-17 23:20:40] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+INFO [2026-11-17 23:20:47] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:20:47] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:20:52] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:20:52] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:20:58] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:20:58] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:21:21] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:21:21] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:21:31] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:21:31] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:21:31] LFQ workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:21:32] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:21:32] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:21:33] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:21:33] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:21:39] --- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+INFO [2026-11-17 23:21:39]    selected_contrast = KO_vs_WT
+INFO [2026-11-17 23:21:39]    Glimma: Available contrasts in data: KO_vs_WT
+INFO [2026-11-17 23:21:39]    Glimma: Target contrast: KO_vs_WT
+INFO [2026-11-17 23:21:39]    Glimma: Grouping expression plot by 'group' with 10 samples
+INFO [2026-11-17 23:21:39]    Glimma: Unique groups detected: WT, KO
+INFO [2026-11-17 23:21:39]    Glimma: Synchronized 400 proteins with expression data
+INFO [2026-11-17 23:21:39]    Glimma: Calling glimmaXY with 400 proteins and 10 samples
+INFO [2026-11-17 23:21:39]    Glimma: Highlighting 14 significant genes (7 up, 7 down)
+INFO [2026-11-17 23:21:39] --- Exiting generateProtDAVolcanoPlotGlimma ---
+INFO [2026-11-17 23:21:39] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:21:39] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:21:39] LFQ workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:21:42] Results summary directory for proteomics_prot_lfq (/tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:21:42] Results summary directory for proteomics_prot_lfq (/tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:21:47] Attempting to render report:
+INFO [2026-11-17 23:21:47] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/scripts/proteomics/LFQ_report.rmd
+INFO [2026-11-17 23:21:47] - Output File: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results_summary/proteomics/LFQ_report_proteomics_prot_lfq.docx
+INFO [2026-11-17 23:21:47] - Params: omic_type='proteomics', experiment_label='prot_lfq'
+INFO [2026-11-17 23:21:47] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq-5ac433e5edf/project/prot_lfq/results_summary/proteomics/LFQ_report_proteomics_prot_lfq.docx
+LANE prot_lfq: pass 37 fail 0 error 0 skip 0; record TRUE; differing steps 0 (discrete 0, digest 0); 117 s
+INFO [2026-11-17 23:21:50] --- Processing setup for omic type: proteomics ---
+INFO [2026-11-17 23:21:50] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/data/proteomics
+INFO [2026-11-17 23:21:50] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/publication_graphs/filtering_qc/20261117_232150
+INFO [2026-11-17 23:21:50] Creating directory structure for 'proteomics'...
+WARN [2026-11-17 23:21:50] Source script directory not found for proteomics: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics. No scripts copied.
+INFO [2026-11-17 23:21:50] Ensured UniProt annotation directory exists: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/data/UniProt
+INFO [2026-11-17 23:21:50] Stored paths for proteomics.
+INFO [2026-11-17 23:21:50] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/data/proteomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results_summary/proteomics (4 items)
+  timestamp                      : 20261117_232150
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/publication_graphs/filtering_qc/20261117_232150 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/protein_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/integration (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/data/UniProt (0 items)
+------------------------------------------
+INFO [2026-11-17 23:21:50] Added base_dir to volumes for easier navigation: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe
+INFO [2026-11-17 23:21:50] === PROTEOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:21:50] Module ID: normalization
+INFO [2026-11-17 23:21:50] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:21:50] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-17 23:21:50] Detected format: fragpipe (confidence: 0.92)
+INFO [2026-11-17 23:21:51] Reading fragpipe data from /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/inputs/combined_protein.tsv
+INFO [2026-11-17 23:21:51] Starting FragPipe LFQ import from: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/inputs/combined_protein.tsv
+INFO [2026-11-17 23:21:51] Read 400 rows and 20 columns
+INFO [2026-11-17 23:21:51] Found Protein ID column: Protein ID
+INFO [2026-11-17 23:21:51] Found 10 columns ending with 'Intensity'
+INFO [2026-11-17 23:21:51] Using MaxLFQ Intensity columns (10 columns)
+INFO [2026-11-17 23:21:51] Converting data from wide to long format...
+INFO [2026-11-17 23:21:51] Converted to long format: 4000 rows
+INFO [2026-11-17 23:21:51] Unique proteins: 400, Unique samples: 10
+INFO [2026-11-17 23:21:51] Data imported successfully. Rows: 4000
+INFO [2026-11-17 23:21:51] Sanitized 10 unique sample names.
+INFO [2026-11-17 23:21:51] Processing FASTA file...
+INFO [2026-11-17 23:21:51] Checking experiment_paths...
+INFO [2026-11-17 23:21:51] Saved aa_seq_tbl_final to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/aa_seq_tbl_final.RDS
+INFO [2026-11-17 23:21:51] Saved FASTA metadata to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/fasta_metadata.RDS
+INFO [2026-11-17 23:21:51] FASTA Format: standard_uniprot, Sequences: 400
+INFO [2026-11-17 23:21:51] FASTA file processed successfully. Found 400 sequences
+INFO [2026-11-17 23:21:51] Using default configuration
+INFO [2026-11-17 23:21:51] config.ini not found in project. Retrieving default config.
+INFO [2026-11-17 23:21:51] Found default config.ini in package: /home/runner/work/_temp/relocated/msr moved/R/library/MultiScholaR/config/config.ini
+INFO [2026-11-17 23:21:51] Default config.ini copied to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/config.ini
+INFO [2026-11-17 23:21:51] Stored config_list on workflow_data
+INFO [2026-11-17 23:21:51] Creating processing log...
+INFO [2026-11-17 23:21:51] Processing log created successfully
+INFO [2026-11-17 23:21:53] Received results from design matrix builder module. Now saving to workflow and disk.
+INFO [2026-11-17 23:21:53] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/design_matrix.tab
+INFO [2026-11-17 23:21:53] Writing cleaned data to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/data_cln.tab
+INFO [2026-11-17 23:21:53] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/contrast_strings.tab
+INFO [2026-11-17 23:21:53] Saved manifest.json to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/manifest.json
+INFO [2026-11-17 23:21:53] Added workflow_type to config.ini: LFQ
+INFO [2026-11-17 23:21:53] Writing config.ini to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/config.ini
+INFO [2026-11-17 23:21:53] Saved config.ini for future import/export.
+INFO [2026-11-17 23:21:53] Created tech_rep_group column for proper technical replicate identification
+INFO [2026-11-17 23:21:53] LFQ workflow: Reshaping protein data from long to wide format for S4 creation.
+INFO [2026-11-17 23:21:53] LFQ Save Design: Pivoted data from 4000 rows (long) to 400 rows (wide)
+INFO [2026-11-17 23:21:53] LFQ Save Design: Wide format has 400 protein rows, 10 sample columns
+INFO [2026-11-17 23:21:53] LFQ Save Design: Applying log2 transformation to abundance values...
+INFO [2026-11-17 23:21:53] LFQ Save Design: Log2 transformation completed
+INFO [2026-11-17 23:21:53] Saving S4 object to R6 state manager as: protein_s4_initial
+INFO [2026-11-17 23:21:54] Design Matrix complete. Triggering UniProt annotation.
+INFO [2026-11-17 23:21:54] Saved uniprot_dat_cln to scripts directory: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/uniprot_dat_cln.RDS
+INFO [2026-11-17 23:21:54] UniProt annotations retrieved successfully. Found 400 annotations
+INFO [2026-11-17 23:21:54]  QC: starting the sub-modules on LFQ
+INFO [2026-11-17 23:21:54] Protein QC orchestrator: workflow type is LFQ
+INFO [2026-11-17 23:21:54] Running common protein processing sub-modules.
+INFO [2026-11-17 23:21:54] Protein replicate filter server registered for input: proteomics_workflow-quality_control-protein_qc-replicate_filter-apply_protein_replicate_filter
+INFO [2026-11-17 23:21:54] LFQ workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:21:54] LFQ workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:22:03] Protein accession cleanup completed
+ERROR [2026-11-17 23:22:05] Error applying protein intensity filter: intensity percentile must lie in [0, 100]
+INFO [2026-11-17 23:22:18] Protein intensity filter applied successfully
+INFO [2026-11-17 23:22:26] Duplicate protein removal completed successfully
+INFO [2026-11-17 23:22:28] Protein replicate filter apply observed via module input
+INFO [2026-11-17 23:22:36] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:22:36] Protein replicate filter applied successfully
+INFO [2026-11-17 23:22:36] Protein replicate filter apply observed via root input
+INFO [2026-11-17 23:22:36] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:22:36] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:22:36] Quality Control complete. Normalization is ready.
+ERROR [2026-11-17 23:22:38] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+INFO [2026-11-17 23:22:45] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:22:45] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:22:50] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:22:50] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:22:56] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:22:56] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:23:19] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:23:19] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:23:29] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:23:29] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:23:29] LFQ workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:23:31] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:23:31] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:23:31] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:23:31] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:23:38] --- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+INFO [2026-11-17 23:23:38]    selected_contrast = KO_vs_WT
+INFO [2026-11-17 23:23:38]    Glimma: Available contrasts in data: KO_vs_WT
+INFO [2026-11-17 23:23:38]    Glimma: Target contrast: KO_vs_WT
+INFO [2026-11-17 23:23:38]    Glimma: Grouping expression plot by 'group' with 10 samples
+INFO [2026-11-17 23:23:38]    Glimma: Unique groups detected: WT, KO
+INFO [2026-11-17 23:23:38]    Glimma: Synchronized 400 proteins with expression data
+INFO [2026-11-17 23:23:38]    Glimma: Calling glimmaXY with 400 proteins and 10 samples
+INFO [2026-11-17 23:23:38]    Glimma: Highlighting 18 significant genes (11 up, 7 down)
+INFO [2026-11-17 23:23:38] --- Exiting generateProtDAVolcanoPlotGlimma ---
+INFO [2026-11-17 23:23:38] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-17 23:23:38] Quality Control complete. Normalization is ready.
+INFO [2026-11-17 23:23:38] LFQ workflow detected, bypassing QC tab.
+INFO [2026-11-17 23:23:41] Results summary directory for proteomics_prot_lfq_fragpipe (/tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:23:41] Results summary directory for proteomics_prot_lfq_fragpipe (/tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:23:46] Attempting to render report:
+INFO [2026-11-17 23:23:46] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/scripts/proteomics/LFQ_report.rmd
+INFO [2026-11-17 23:23:46] - Output File: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results_summary/proteomics/LFQ_report_proteomics_prot_lfq_fragpipe.docx
+INFO [2026-11-17 23:23:46] - Params: omic_type='proteomics', experiment_label='prot_lfq_fragpipe'
+INFO [2026-11-17 23:23:47] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-prot_lfq_fragpipe-5ac44c4cd0a0/project/prot_lfq_fragpipe/results_summary/proteomics/LFQ_report_proteomics_prot_lfq_fragpipe.docx
+LANE prot_lfq_fragpipe: pass 37 fail 0 error 0 skip 0; record TRUE; differing steps 0 (discrete 0, digest 0); 119 s
+INFO [2026-11-17 23:23:49] --- Processing setup for omic type: metabolomics ---
+INFO [2026-11-17 23:23:49] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/data/metabolomics
+INFO [2026-11-17 23:23:49] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/publication_graphs/filtering_qc/20261117_232349
+INFO [2026-11-17 23:23:49] Creating directory structure for 'metabolomics'...
+WARN [2026-11-17 23:23:49] Source script directory not found for metabolomics: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics. No scripts copied.
+INFO [2026-11-17 23:23:49] Stored paths for metabolomics.
+INFO [2026-11-17 23:23:49] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'metabolomics' (Type: metabolomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/data/metabolomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results_summary/metabolomics (4 items)
+  timestamp                      : 20261117_232349
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/publication_graphs/filtering_qc/20261117_232349 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/clean_metabolites (0 items)
+  clean_metabolites_dir          : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/clean_metabolites (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/da_metabolites (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/metabolite_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/integration (0 items)
+  metabolite_qc_dir              : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/metabolite_qc (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/pathway_enrichment (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results_summary/metabolomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results_summary/metabolomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results/metabolomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results_summary/metabolomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results_summary/metabolomics/Study_report (0 items)
+------------------------------------------
+INFO [2026-11-17 23:23:49] Added base_dir to volumes: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc
+INFO [2026-11-17 23:23:49] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:23:49] Module ID: norm
+WARN [2026-11-17 23:23:49] Could not detect assay names: state requires explicit legacy conversion
+INFO [2026-11-17 23:23:50] Starting MS-DIAL import from: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/inputs/lcms_pos_features.tsv
+INFO [2026-11-17 23:23:50] Read 3 rows and 10 columns
+INFO [2026-11-17 23:23:50] Detected 8 sample columns and 2 annotation columns
+INFO [2026-11-17 23:23:50] Imported assay 1: 3 rows, 10 columns, format: unknown
+ERROR [2026-11-17 23:23:50] Error processing import: Metabolomics import requires non-empty assay names.
+INFO [2026-11-17 23:23:50] Starting MS-DIAL import from: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/inputs/lcms_pos_features.tsv
+INFO [2026-11-17 23:23:50] Read 3 rows and 10 columns
+INFO [2026-11-17 23:23:50] Detected 8 sample columns and 2 annotation columns
+INFO [2026-11-17 23:23:50] Imported assay 1: 3 rows, 10 columns, format: unknown
+INFO [2026-11-17 23:23:50] Starting MS-DIAL import from: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/inputs/lcms_neg_features.tsv
+INFO [2026-11-17 23:23:50] Read 3 rows and 10 columns
+INFO [2026-11-17 23:23:50] Detected 8 sample columns and 2 annotation columns
+INFO [2026-11-17 23:23:50] Workflow type set to: METABOLOMICS
+INFO [2026-11-17 23:23:50] Metabolomics import complete: 2 assays, 6 total metabolites
+WARN [2026-11-17 23:23:50] Could not detect assay names: state requires explicit legacy conversion
+INFO [2026-11-17 23:23:51] Received results from metabolomics design builder. Saving to workflow and disk.
+INFO [2026-11-17 23:23:51] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics/design_matrix.tab
+INFO [2026-11-17 23:23:51] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics/contrast_strings.tab
+INFO [2026-11-17 23:23:51] Writing assay data to: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics/data_cln_LCMS_Pos.tab
+INFO [2026-11-17 23:23:51] Writing assay data to: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics/data_cln_LCMS_Neg.tab
+INFO [2026-11-17 23:23:51] Saved assay manifest with 2 assays: LCMS_Pos, LCMS_Neg
+INFO [2026-11-17 23:23:52] Design save complete. Files saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics
+INFO [2026-11-17 23:23:52] Metabolomics QC: starting the sub-modules on METABOLOMICS
+INFO [2026-11-17 23:23:53] Applying metabolite intensity filter: percentile = 10 , proportion = 0.5
+INFO [2026-11-17 23:23:57] Metabolite intensity filter applied: removed 0 metabolites
+INFO [2026-11-17 23:23:58] Detected 0 duplicate feature IDs across assays
+INFO [2026-11-17 23:24:03] Resolved duplicates: removed 0 rows
+INFO [2026-11-17 23:24:03] Analyzing internal standards with pattern: ^ITSD|_d[0-9]+$
+ERROR [2026-11-17 23:24:04] Error analyzing internal standards: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: Feature.Name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+INFO [2026-11-17 23:24:08] Metabolomics QC finalized successfully
+INFO [2026-11-17 23:24:08] === LOAD FILTERED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:24:09] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:24:09] Auto-triggering pre-normalization QC plots
+INFO [2026-11-17 23:24:09] === GENERATING PRE-NORMALIZATION QC PLOTS ===
+INFO [2026-11-17 23:24:09] Set assay names: LCMS_Pos, LCMS_Neg
+INFO [2026-11-17 23:24:09] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-17 23:24:10] Generating QC plots for assay: LCMS_Neg
+INFO [2026-11-17 23:24:11] Generated 8 QC plots for stage: post_filter
+INFO [2026-11-17 23:24:11] Pre-normalization QC plots generated successfully
+WARN [2026-11-17 23:24:11] Could not read the ITSD candidate tables: Can't extract column with `annotation_cols[1]`.
+x Subscript `annotation_cols[1]` must be a location, not a character `NA`.
+INFO [2026-11-17 23:24:11] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-17 23:24:11] ITSD selection updated for LCMS_Neg : 0 features selected
+INFO [2026-11-17 23:24:11] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:24:12] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:24:12] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-17 23:24:12] Generating QC plots for assay: LCMS_Neg
+INFO [2026-11-17 23:24:12] Generated 8 QC plots for stage: post_filter
+INFO [2026-11-17 23:24:14] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-17 23:24:14] Between-sample normalization process finished for all assays.
+INFO [2026-11-17 23:24:16] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-17 23:24:17] Generating QC plots for assay: LCMS_Neg
+INFO [2026-11-17 23:24:19] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Generating composite from 16 files...
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Added row: lcms_neg_pca
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Added row: lcms_neg_density
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Added row: lcms_neg_rle
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Added row: lcms_neg_correlation
+INFO [2026-11-17 23:24:19] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-17 23:24:28] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:24:28] Calculating Pearson correlations per sample pair...
+INFO [2026-11-17 23:24:31] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:24:31] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:24:31] *** EXPORT: Gathered session data successfully ***
+INFO [2026-11-17 23:24:31] *** EXPORT: Assays: LCMS_Pos, LCMS_Neg ***
+INFO [2026-11-17 23:24:31] *** EXPORT: Contrasts available: 1 ***
+INFO [2026-11-17 23:24:32] *** EXPORT: Session data saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics/metab_filtered_session_data_20261117_232431.rds ***
+INFO [2026-11-17 23:24:32] *** EXPORT: Latest version saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics/metab_filtered_session_data_latest.rds ***
+INFO [2026-11-17 23:24:32] *** EXPORT: Summary saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics/metab_filtered_session_summary.txt ***
+INFO [2026-11-17 23:24:32] === EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===
+INFO [2026-11-17 23:24:33] === LOAD FILTERED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:24:33]    Loaded session from: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics/metab_filtered_session_data_latest.rds
+INFO [2026-11-17 23:24:33]    Reopened the session owner at its head
+INFO [2026-11-17 23:24:33]    Restored 1 contrasts
+INFO [2026-11-17 23:24:34] === RUN DA ANALYSIS BUTTON CLICKED ===
+INFO [2026-11-17 23:24:34]    Expression matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:24:34]    design_m dims = 6 x 2
+INFO [2026-11-17 23:24:34]    data_subset dims = 3 x 6
+INFO [2026-11-17 23:24:34]    Running lmFit...
+INFO [2026-11-17 23:24:34]    Creating contrast matrix...
+INFO [2026-11-17 23:24:34]    Running contrasts.fit...
+INFO [2026-11-17 23:24:34]    Running eBayes...
+INFO [2026-11-17 23:24:34]    Running standard analysis...
+INFO [2026-11-17 23:24:34]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:24:34]       Extracted 3 rows
+INFO [2026-11-17 23:24:34]       qvalue() computation successful
+INFO [2026-11-17 23:24:34]    lfc_qval_tbl: 3 rows
+INFO [2026-11-17 23:24:34]    expr_matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:24:35]    Expression matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:24:35]    design_m dims = 6 x 2
+INFO [2026-11-17 23:24:35]    data_subset dims = 3 x 6
+INFO [2026-11-17 23:24:35]    Running lmFit...
+INFO [2026-11-17 23:24:35]    Creating contrast matrix...
+INFO [2026-11-17 23:24:35]    Running contrasts.fit...
+INFO [2026-11-17 23:24:35]    Running eBayes...
+INFO [2026-11-17 23:24:35]    Running standard analysis...
+INFO [2026-11-17 23:24:35]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:24:35]       Extracted 3 rows
+INFO [2026-11-17 23:24:35]       qvalue() computation successful
+INFO [2026-11-17 23:24:35]    lfc_qval_tbl: 3 rows
+INFO [2026-11-17 23:24:35]    expr_matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:24:37]    DA analysis completed successfully
+INFO [2026-11-17 23:24:37]    Updated dropdowns: 1 contrasts, 2 assays
+INFO [2026-11-17 23:24:37]    Writing DA results to disk...
+INFO [2026-11-17 23:24:37] --- Entering outputMetabDaResultsAllContrasts ---
+INFO [2026-11-17 23:24:37]    da_output_dir = /tmp/RtmpY7H7Qv/metab-publication-5ac44574f2e7/omics-publication/da_output_dir
+INFO [2026-11-17 23:24:37]    publication_graphs_dir = /tmp/RtmpY7H7Qv/metab-publication-5ac44574f2e7/omics-publication/publication_graphs_dir
+INFO [2026-11-17 23:24:37]    Created Volcano_Plots directory: /tmp/RtmpY7H7Qv/metab-publication-5ac44574f2e7/omics-publication/publication_graphs_dir/Volcano_Plots
+INFO [2026-11-17 23:24:37]    Created Heatmaps directory: /tmp/RtmpY7H7Qv/metab-publication-5ac44574f2e7/omics-publication/publication_graphs_dir/Heatmaps
+INFO [2026-11-17 23:24:37]    Created NumSigDeMolecules directory: /tmp/RtmpY7H7Qv/metab-publication-5ac44574f2e7/omics-publication/publication_graphs_dir/NumSigDeMolecules
+INFO [2026-11-17 23:24:37]    Found 2 assays: LCMS_Pos, LCMS_Neg
+INFO [2026-11-17 23:24:37]    Found 1 contrasts: groupKO-groupWT
+INFO [2026-11-17 23:24:37]    Processing assay: LCMS_Pos (mode: posmode)
+INFO [2026-11-17 23:24:37]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:24:37]       Wrote TSV: de_posmode_metabolites_groupKO-groupWT_long_annot.tsv (3 rows, 23 cols)
+INFO [2026-11-17 23:24:37]       Wrote Excel: de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+INFO [2026-11-17 23:24:37]       Saved volcano PNG: posmode_groupKO-groupWT.png
+INFO [2026-11-17 23:24:38]       Saved volcano PDF: posmode_groupKO-groupWT.pdf
+INFO [2026-11-17 23:24:38] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:24:38]    selected_contrast = groupKO-groupWT, top_n = 50
+WARN [2026-11-17 23:24:38]    No significant metabolites found
+WARN [2026-11-17 23:24:38]       No significant metabolites for heatmap: LCMS_Pos / groupKO-groupWT
+INFO [2026-11-17 23:24:38]    Processing assay: LCMS_Neg (mode: negmode)
+INFO [2026-11-17 23:24:38]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:24:38]       Wrote TSV: de_negmode_metabolites_groupKO-groupWT_long_annot.tsv (3 rows, 23 cols)
+INFO [2026-11-17 23:24:38]       Wrote Excel: de_negmode_metabolites_groupKO-groupWT_long_annot.xlsx
+INFO [2026-11-17 23:24:38]       Saved volcano PNG: negmode_groupKO-groupWT.png
+INFO [2026-11-17 23:24:38]       Saved volcano PDF: negmode_groupKO-groupWT.pdf
+INFO [2026-11-17 23:24:38] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:24:38]    selected_contrast = groupKO-groupWT, top_n = 50
+WARN [2026-11-17 23:24:38]    No significant metabolites found
+WARN [2026-11-17 23:24:38]       No significant metabolites for heatmap: LCMS_Neg / groupKO-groupWT
+INFO [2026-11-17 23:24:38]    Created combined volcano PDF: 2 plots
+INFO [2026-11-17 23:24:38]    Wrote NumSigDE table: metabolites_num_sig_de_molecules.tab
+INFO [2026-11-17 23:24:38]    Wrote NumSigDE Excel: metabolites_num_sig_de_molecules.xlsx
+INFO [2026-11-17 23:24:39]    Saved NumSigDE barplot: metabolites_num_sig_barplot.png
+INFO [2026-11-17 23:24:39] --- Exiting outputMetabDaResultsAllContrasts ---
+INFO [2026-11-17 23:24:39]    All DA results written to disk successfully
+INFO [2026-11-17 23:24:39] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:24:39]    selected_contrast = KO_vs_WT, top_n = 50
+WARN [2026-11-17 23:24:39]    No significant metabolites found
+INFO [2026-11-17 23:24:39] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:24:39]    selected_contrast = KO_vs_WT, top_n = 50
+WARN [2026-11-17 23:24:39]    No significant metabolites found
+INFO [2026-11-17 23:24:41] Results summary directory for metabolomics_metab_lc (/tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results_summary/metabolomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:24:41] Results summary directory for metabolomics_metab_lc (/tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results_summary/metabolomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:24:49] Attempting to render report:
+INFO [2026-11-17 23:24:49] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/scripts/metabolomics/metabolomics_report.rmd
+INFO [2026-11-17 23:24:49] - Output File: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results_summary/metabolomics/metabolomics_report_metabolomics_metab_lc.docx
+INFO [2026-11-17 23:24:49] - Params: omic_type='metabolomics', experiment_label='metab_lc'
+INFO [2026-11-17 23:24:49] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-metab_lc-5ac46e6de84f/project/metab_lc/results_summary/metabolomics/metabolomics_report_metabolomics_metab_lc.docx
+LANE metab_lc: pass 25 fail 10 error 0 skip 0; record TRUE; differing steps 10 (discrete 0, digest 31); 63 s
+INFO [2026-11-17 23:24:51] --- Processing setup for omic type: metabolomics ---
+INFO [2026-11-17 23:24:51] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/data/metabolomics
+INFO [2026-11-17 23:24:51] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/publication_graphs/filtering_qc/20261117_232451
+INFO [2026-11-17 23:24:51] Creating directory structure for 'metabolomics'...
+WARN [2026-11-17 23:24:51] Source script directory not found for metabolomics: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics. No scripts copied.
+INFO [2026-11-17 23:24:51] Stored paths for metabolomics.
+INFO [2026-11-17 23:24:51] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'metabolomics' (Type: metabolomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/data/metabolomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results_summary/metabolomics (4 items)
+  timestamp                      : 20261117_232451
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/publication_graphs/filtering_qc/20261117_232451 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/clean_metabolites (0 items)
+  clean_metabolites_dir          : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/clean_metabolites (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/da_metabolites (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/metabolite_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/integration (0 items)
+  metabolite_qc_dir              : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/metabolite_qc (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/pathway_enrichment (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results_summary/metabolomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results_summary/metabolomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results/metabolomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results_summary/metabolomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results_summary/metabolomics/Study_report (0 items)
+------------------------------------------
+INFO [2026-11-17 23:24:52] Added base_dir to volumes: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc
+INFO [2026-11-17 23:24:52] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:24:52] Module ID: norm
+WARN [2026-11-17 23:24:52] Could not detect assay names: state requires explicit legacy conversion
+INFO [2026-11-17 23:24:52] Starting MS-DIAL import from: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/inputs/gcms_features.tsv
+INFO [2026-11-17 23:24:52] Read 3 rows and 9 columns
+INFO [2026-11-17 23:24:52] Detected 8 sample columns and 1 annotation columns
+INFO [2026-11-17 23:24:52] Imported assay 1: 3 rows, 9 columns, format: unknown
+ERROR [2026-11-17 23:24:52] Error processing import: Metabolomics import requires non-empty assay names.
+INFO [2026-11-17 23:24:52] Starting MS-DIAL import from: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/inputs/gcms_features.tsv
+INFO [2026-11-17 23:24:52] Read 3 rows and 9 columns
+INFO [2026-11-17 23:24:52] Detected 8 sample columns and 1 annotation columns
+INFO [2026-11-17 23:24:52] Imported assay 1: 3 rows, 9 columns, format: unknown
+INFO [2026-11-17 23:24:53] Workflow type set to: METABOLOMICS
+INFO [2026-11-17 23:24:53] Metabolomics import complete: 1 assays, 3 total metabolites
+WARN [2026-11-17 23:24:53] Could not detect assay names: state requires explicit legacy conversion
+INFO [2026-11-17 23:24:53] Received results from metabolomics design builder. Saving to workflow and disk.
+INFO [2026-11-17 23:24:53] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics/design_matrix.tab
+INFO [2026-11-17 23:24:53] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics/contrast_strings.tab
+INFO [2026-11-17 23:24:53] Writing assay data to: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics/data_cln_GCMS.tab
+INFO [2026-11-17 23:24:53] Saved assay manifest with 1 assays: GCMS
+INFO [2026-11-17 23:24:54] Design save complete. Files saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics
+INFO [2026-11-17 23:24:54] Metabolomics QC: starting the sub-modules on METABOLOMICS
+INFO [2026-11-17 23:24:55] Applying metabolite intensity filter: percentile = 10 , proportion = 0.5
+INFO [2026-11-17 23:24:59] Metabolite intensity filter applied: removed 0 metabolites
+INFO [2026-11-17 23:24:59] Detected 0 duplicate feature IDs across assays
+INFO [2026-11-17 23:25:06] Resolved duplicates: removed 0 rows
+INFO [2026-11-17 23:25:06] Analyzing internal standards with pattern: ^ITSD|_d[0-9]+$
+ERROR [2026-11-17 23:25:06] Error analyzing internal standards: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: Feature.Name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+INFO [2026-11-17 23:25:10] Metabolomics QC finalized successfully
+INFO [2026-11-17 23:25:11] === LOAD FILTERED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:25:11] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:25:11] Auto-triggering pre-normalization QC plots
+INFO [2026-11-17 23:25:11] === GENERATING PRE-NORMALIZATION QC PLOTS ===
+INFO [2026-11-17 23:25:11] Set assay names: GCMS
+INFO [2026-11-17 23:25:11] Generating QC plots for assay: GCMS
+INFO [2026-11-17 23:25:12] Generated 4 QC plots for stage: post_filter
+INFO [2026-11-17 23:25:12] Pre-normalization QC plots generated successfully
+WARN [2026-11-17 23:25:12] Could not read the ITSD candidate tables: Can't extract column with `annotation_cols[1]`.
+x Subscript `annotation_cols[1]` must be a location, not a character `NA`.
+INFO [2026-11-17 23:25:12] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-17 23:25:13] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:25:13] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:25:13] Generating QC plots for assay: GCMS
+INFO [2026-11-17 23:25:13] Generated 4 QC plots for stage: post_filter
+INFO [2026-11-17 23:25:15] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-17 23:25:15] Between-sample normalization process finished for all assays.
+INFO [2026-11-17 23:25:16] Generating QC plots for assay: GCMS
+INFO [2026-11-17 23:25:18] Generated 4 QC plots for stage: post_norm
+INFO [2026-11-17 23:25:18] [generateCompositeFromFiles] Generating composite from 8 files...
+INFO [2026-11-17 23:25:18] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-17 23:25:18] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-17 23:25:18] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-17 23:25:18] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-17 23:25:18] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-17 23:25:18] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-17 23:25:23] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:25:23] Calculating Pearson correlations per sample pair...
+INFO [2026-11-17 23:25:26] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:25:26] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:25:26] *** EXPORT: Gathered session data successfully ***
+INFO [2026-11-17 23:25:26] *** EXPORT: Assays: GCMS ***
+INFO [2026-11-17 23:25:26] *** EXPORT: Contrasts available: 1 ***
+INFO [2026-11-17 23:25:27] *** EXPORT: Session data saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics/metab_filtered_session_data_20261117_232526.rds ***
+INFO [2026-11-17 23:25:27] *** EXPORT: Latest version saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics/metab_filtered_session_data_latest.rds ***
+INFO [2026-11-17 23:25:27] *** EXPORT: Summary saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics/metab_filtered_session_summary.txt ***
+INFO [2026-11-17 23:25:27] === EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===
+INFO [2026-11-17 23:25:28] === LOAD FILTERED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:25:28]    Loaded session from: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics/metab_filtered_session_data_latest.rds
+INFO [2026-11-17 23:25:28]    Reopened the session owner at its head
+INFO [2026-11-17 23:25:28]    Restored 1 contrasts
+INFO [2026-11-17 23:25:28] === RUN DA ANALYSIS BUTTON CLICKED ===
+INFO [2026-11-17 23:25:28]    Expression matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:25:28]    design_m dims = 6 x 2
+INFO [2026-11-17 23:25:28]    data_subset dims = 3 x 6
+INFO [2026-11-17 23:25:28]    Running lmFit...
+INFO [2026-11-17 23:25:28]    Creating contrast matrix...
+INFO [2026-11-17 23:25:28]    Running contrasts.fit...
+INFO [2026-11-17 23:25:28]    Running eBayes...
+INFO [2026-11-17 23:25:28]    Running standard analysis...
+INFO [2026-11-17 23:25:28]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:25:28]       Extracted 3 rows
+INFO [2026-11-17 23:25:28]       qvalue() computation successful
+INFO [2026-11-17 23:25:28]    lfc_qval_tbl: 3 rows
+INFO [2026-11-17 23:25:28]    expr_matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:25:30]    DA analysis completed successfully
+INFO [2026-11-17 23:25:30]    Updated dropdowns: 1 contrasts, 1 assays
+INFO [2026-11-17 23:25:30]    Writing DA results to disk...
+INFO [2026-11-17 23:25:30] --- Entering outputMetabDaResultsAllContrasts ---
+INFO [2026-11-17 23:25:30]    da_output_dir = /tmp/RtmpY7H7Qv/metab-publication-5ac46e29e5b2/omics-publication/da_output_dir
+INFO [2026-11-17 23:25:30]    publication_graphs_dir = /tmp/RtmpY7H7Qv/metab-publication-5ac46e29e5b2/omics-publication/publication_graphs_dir
+INFO [2026-11-17 23:25:30]    Created Volcano_Plots directory: /tmp/RtmpY7H7Qv/metab-publication-5ac46e29e5b2/omics-publication/publication_graphs_dir/Volcano_Plots
+INFO [2026-11-17 23:25:30]    Created Heatmaps directory: /tmp/RtmpY7H7Qv/metab-publication-5ac46e29e5b2/omics-publication/publication_graphs_dir/Heatmaps
+INFO [2026-11-17 23:25:30]    Created NumSigDeMolecules directory: /tmp/RtmpY7H7Qv/metab-publication-5ac46e29e5b2/omics-publication/publication_graphs_dir/NumSigDeMolecules
+INFO [2026-11-17 23:25:30]    Found 1 assays: GCMS
+INFO [2026-11-17 23:25:30]    Found 1 contrasts: groupKO-groupWT
+INFO [2026-11-17 23:25:30]    Processing assay: GCMS (mode: gcms)
+INFO [2026-11-17 23:25:30]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:25:30]       Wrote TSV: de_gcms_metabolites_groupKO-groupWT_long_annot.tsv (3 rows, 23 cols)
+INFO [2026-11-17 23:25:30]       Wrote Excel: de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+INFO [2026-11-17 23:25:30]       Saved volcano PNG: gcms_groupKO-groupWT.png
+INFO [2026-11-17 23:25:31]       Saved volcano PDF: gcms_groupKO-groupWT.pdf
+INFO [2026-11-17 23:25:31] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:25:31]    selected_contrast = groupKO-groupWT, top_n = 50
+WARN [2026-11-17 23:25:31]    No significant metabolites found
+WARN [2026-11-17 23:25:31]       No significant metabolites for heatmap: GCMS / groupKO-groupWT
+INFO [2026-11-17 23:25:31]    Created combined volcano PDF: 1 plots
+INFO [2026-11-17 23:25:31]    Wrote NumSigDE table: metabolites_num_sig_de_molecules.tab
+INFO [2026-11-17 23:25:31]    Wrote NumSigDE Excel: metabolites_num_sig_de_molecules.xlsx
+INFO [2026-11-17 23:25:31]    Saved NumSigDE barplot: metabolites_num_sig_barplot.png
+INFO [2026-11-17 23:25:31] --- Exiting outputMetabDaResultsAllContrasts ---
+INFO [2026-11-17 23:25:31]    All DA results written to disk successfully
+INFO [2026-11-17 23:25:31] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:25:31]    selected_contrast = KO_vs_WT, top_n = 50
+WARN [2026-11-17 23:25:31]    No significant metabolites found
+INFO [2026-11-17 23:25:32] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:25:32]    selected_contrast = KO_vs_WT, top_n = 50
+WARN [2026-11-17 23:25:32]    No significant metabolites found
+INFO [2026-11-17 23:25:33] Results summary directory for metabolomics_metab_gc (/tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results_summary/metabolomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:25:33] Results summary directory for metabolomics_metab_gc (/tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results_summary/metabolomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:25:39] Attempting to render report:
+INFO [2026-11-17 23:25:39] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/scripts/metabolomics/metabolomics_report.rmd
+INFO [2026-11-17 23:25:39] - Output File: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results_summary/metabolomics/metabolomics_report_metabolomics_metab_gc.docx
+INFO [2026-11-17 23:25:39] - Params: omic_type='metabolomics', experiment_label='metab_gc'
+INFO [2026-11-17 23:25:39] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-metab_gc-5ac4583aeed/project/metab_gc/results_summary/metabolomics/metabolomics_report_metabolomics_metab_gc.docx
+LANE metab_gc: pass 25 fail 10 error 0 skip 0; record TRUE; differing steps 10 (discrete 9, digest 25); 50 s
+INFO [2026-11-17 23:25:41] --- Processing setup for omic type: metabolomics ---
+INFO [2026-11-17 23:25:41] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/data/metabolomics
+INFO [2026-11-17 23:25:41] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/publication_graphs/filtering_qc/20261117_232541
+INFO [2026-11-17 23:25:41] Creating directory structure for 'metabolomics'...
+WARN [2026-11-17 23:25:41] Source script directory not found for metabolomics: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics. No scripts copied.
+INFO [2026-11-17 23:25:41] Stored paths for metabolomics.
+INFO [2026-11-17 23:25:41] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'metabolomics' (Type: metabolomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/data/metabolomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results_summary/metabolomics (4 items)
+  timestamp                      : 20261117_232541
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/publication_graphs/filtering_qc/20261117_232541 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/clean_metabolites (0 items)
+  clean_metabolites_dir          : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/clean_metabolites (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/da_metabolites (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/metabolite_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/integration (0 items)
+  metabolite_qc_dir              : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/metabolite_qc (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/pathway_enrichment (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results_summary/metabolomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results_summary/metabolomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results/metabolomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results_summary/metabolomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results_summary/metabolomics/Study_report (0 items)
+------------------------------------------
+INFO [2026-11-17 23:25:41] Added base_dir to volumes: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined
+INFO [2026-11-17 23:25:41] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:25:41] Module ID: norm
+WARN [2026-11-17 23:25:42] Could not detect assay names: state requires explicit legacy conversion
+INFO [2026-11-17 23:25:42] Starting MS-DIAL import from: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/inputs/combined_lcms_features.tsv
+INFO [2026-11-17 23:25:42] Read 3 rows and 10 columns
+INFO [2026-11-17 23:25:42] Detected 8 sample columns and 2 annotation columns
+INFO [2026-11-17 23:25:42] Imported assay 1: 3 rows, 10 columns, format: unknown
+ERROR [2026-11-17 23:25:42] Error processing import: Metabolomics import requires non-empty assay names.
+INFO [2026-11-17 23:25:42] Starting MS-DIAL import from: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/inputs/combined_lcms_features.tsv
+INFO [2026-11-17 23:25:42] Read 3 rows and 10 columns
+INFO [2026-11-17 23:25:42] Detected 8 sample columns and 2 annotation columns
+INFO [2026-11-17 23:25:42] Imported assay 1: 3 rows, 10 columns, format: unknown
+INFO [2026-11-17 23:25:42] Starting MS-DIAL import from: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/inputs/combined_gcms_features.tsv
+INFO [2026-11-17 23:25:42] Read 3 rows and 10 columns
+INFO [2026-11-17 23:25:42] Detected 8 sample columns and 2 annotation columns
+INFO [2026-11-17 23:25:42] Workflow type set to: METABOLOMICS
+INFO [2026-11-17 23:25:42] Metabolomics import complete: 2 assays, 6 total metabolites
+WARN [2026-11-17 23:25:42] Could not detect assay names: state requires explicit legacy conversion
+INFO [2026-11-17 23:25:43] Received results from metabolomics design builder. Saving to workflow and disk.
+INFO [2026-11-17 23:25:43] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics/design_matrix.tab
+INFO [2026-11-17 23:25:43] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics/contrast_strings.tab
+INFO [2026-11-17 23:25:43] Writing assay data to: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics/data_cln_LCMS_Pos.tab
+INFO [2026-11-17 23:25:43] Writing assay data to: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics/data_cln_GCMS.tab
+INFO [2026-11-17 23:25:43] Saved assay manifest with 2 assays: LCMS_Pos, GCMS
+INFO [2026-11-17 23:25:44] Design save complete. Files saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics
+INFO [2026-11-17 23:25:44] Metabolomics QC: starting the sub-modules on METABOLOMICS
+INFO [2026-11-17 23:25:45] Applying metabolite intensity filter: percentile = 10 , proportion = 0.5
+INFO [2026-11-17 23:25:50] Metabolite intensity filter applied: removed 0 metabolites
+INFO [2026-11-17 23:25:50] Detected 0 duplicate feature IDs across assays
+INFO [2026-11-17 23:25:56] Resolved duplicates: removed 0 rows
+INFO [2026-11-17 23:25:56] Analyzing internal standards with pattern: ^ITSD|_d[0-9]+$
+ERROR [2026-11-17 23:25:56] Error analyzing internal standards: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: Feature.Name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+INFO [2026-11-17 23:26:01] Metabolomics QC finalized successfully
+INFO [2026-11-17 23:26:01] === LOAD FILTERED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:26:02] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:26:02] Auto-triggering pre-normalization QC plots
+INFO [2026-11-17 23:26:02] === GENERATING PRE-NORMALIZATION QC PLOTS ===
+INFO [2026-11-17 23:26:02] Set assay names: LCMS_Pos, GCMS
+INFO [2026-11-17 23:26:02] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-17 23:26:03] Generating QC plots for assay: GCMS
+INFO [2026-11-17 23:26:04] Generated 8 QC plots for stage: post_filter
+INFO [2026-11-17 23:26:04] Pre-normalization QC plots generated successfully
+WARN [2026-11-17 23:26:05] Could not read the ITSD candidate tables: Can't extract column with `annotation_cols[1]`.
+x Subscript `annotation_cols[1]` must be a location, not a character `NA`.
+INFO [2026-11-17 23:26:05] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-17 23:26:05] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-17 23:26:05] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:26:05] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:26:05] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-17 23:26:05] Generating QC plots for assay: GCMS
+INFO [2026-11-17 23:26:05] Generated 8 QC plots for stage: post_filter
+INFO [2026-11-17 23:26:08] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-17 23:26:08] Between-sample normalization process finished for all assays.
+INFO [2026-11-17 23:26:10] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-17 23:26:11] Generating QC plots for assay: GCMS
+INFO [2026-11-17 23:26:13] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Generating composite from 16 files...
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-17 23:26:13] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-17 23:26:22] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:26:22] Calculating Pearson correlations per sample pair...
+INFO [2026-11-17 23:26:25] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:26:25] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:26:25] *** EXPORT: Gathered session data successfully ***
+INFO [2026-11-17 23:26:25] *** EXPORT: Assays: LCMS_Pos, GCMS ***
+INFO [2026-11-17 23:26:25] *** EXPORT: Contrasts available: 1 ***
+INFO [2026-11-17 23:26:27] *** EXPORT: Session data saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics/metab_filtered_session_data_20261117_232625.rds ***
+INFO [2026-11-17 23:26:27] *** EXPORT: Latest version saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics/metab_filtered_session_data_latest.rds ***
+INFO [2026-11-17 23:26:27] *** EXPORT: Summary saved to: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics/metab_filtered_session_summary.txt ***
+INFO [2026-11-17 23:26:27] === EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===
+INFO [2026-11-17 23:26:27] === LOAD FILTERED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:26:27]    Loaded session from: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics/metab_filtered_session_data_latest.rds
+INFO [2026-11-17 23:26:27]    Reopened the session owner at its head
+INFO [2026-11-17 23:26:27]    Restored 1 contrasts
+INFO [2026-11-17 23:26:28] === RUN DA ANALYSIS BUTTON CLICKED ===
+INFO [2026-11-17 23:26:28]    Expression matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:26:28]    design_m dims = 6 x 2
+INFO [2026-11-17 23:26:28]    data_subset dims = 3 x 6
+INFO [2026-11-17 23:26:28]    Running lmFit...
+INFO [2026-11-17 23:26:28]    Creating contrast matrix...
+INFO [2026-11-17 23:26:28]    Running contrasts.fit...
+INFO [2026-11-17 23:26:28]    Running eBayes...
+INFO [2026-11-17 23:26:28]    Running standard analysis...
+INFO [2026-11-17 23:26:28]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:26:28]       Extracted 3 rows
+INFO [2026-11-17 23:26:28]       qvalue() computation successful
+INFO [2026-11-17 23:26:28]    lfc_qval_tbl: 3 rows
+INFO [2026-11-17 23:26:28]    expr_matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:26:30]    Expression matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:26:30]    design_m dims = 6 x 2
+INFO [2026-11-17 23:26:30]    data_subset dims = 3 x 6
+INFO [2026-11-17 23:26:30]    Running lmFit...
+INFO [2026-11-17 23:26:30]    Creating contrast matrix...
+INFO [2026-11-17 23:26:30]    Running contrasts.fit...
+INFO [2026-11-17 23:26:30]    Running eBayes...
+INFO [2026-11-17 23:26:30]    Running standard analysis...
+INFO [2026-11-17 23:26:30]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:26:30]       Extracted 3 rows
+INFO [2026-11-17 23:26:30]       qvalue() computation successful
+INFO [2026-11-17 23:26:30]    lfc_qval_tbl: 3 rows
+INFO [2026-11-17 23:26:30]    expr_matrix: 3 metabolites x 6 samples
+INFO [2026-11-17 23:26:31]    DA analysis completed successfully
+INFO [2026-11-17 23:26:31]    Updated dropdowns: 1 contrasts, 2 assays
+INFO [2026-11-17 23:26:31]    Writing DA results to disk...
+INFO [2026-11-17 23:26:32] --- Entering outputMetabDaResultsAllContrasts ---
+INFO [2026-11-17 23:26:32]    da_output_dir = /tmp/RtmpY7H7Qv/metab-publication-5ac461035ca4/omics-publication/da_output_dir
+INFO [2026-11-17 23:26:32]    publication_graphs_dir = /tmp/RtmpY7H7Qv/metab-publication-5ac461035ca4/omics-publication/publication_graphs_dir
+INFO [2026-11-17 23:26:32]    Created Volcano_Plots directory: /tmp/RtmpY7H7Qv/metab-publication-5ac461035ca4/omics-publication/publication_graphs_dir/Volcano_Plots
+INFO [2026-11-17 23:26:32]    Created Heatmaps directory: /tmp/RtmpY7H7Qv/metab-publication-5ac461035ca4/omics-publication/publication_graphs_dir/Heatmaps
+INFO [2026-11-17 23:26:32]    Created NumSigDeMolecules directory: /tmp/RtmpY7H7Qv/metab-publication-5ac461035ca4/omics-publication/publication_graphs_dir/NumSigDeMolecules
+INFO [2026-11-17 23:26:32]    Found 2 assays: LCMS_Pos, GCMS
+INFO [2026-11-17 23:26:32]    Found 1 contrasts: groupKO-groupWT
+INFO [2026-11-17 23:26:32]    Processing assay: LCMS_Pos (mode: posmode)
+INFO [2026-11-17 23:26:32]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:26:32]       Wrote TSV: de_posmode_metabolites_groupKO-groupWT_long_annot.tsv (3 rows, 23 cols)
+INFO [2026-11-17 23:26:32]       Wrote Excel: de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+INFO [2026-11-17 23:26:32]       Saved volcano PNG: posmode_groupKO-groupWT.png
+INFO [2026-11-17 23:26:32]       Saved volcano PDF: posmode_groupKO-groupWT.pdf
+INFO [2026-11-17 23:26:32] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:26:32]    selected_contrast = groupKO-groupWT, top_n = 50
+WARN [2026-11-17 23:26:32]    No significant metabolites found
+WARN [2026-11-17 23:26:32]       No significant metabolites for heatmap: LCMS_Pos / groupKO-groupWT
+INFO [2026-11-17 23:26:32]    Processing assay: GCMS (mode: gcms)
+INFO [2026-11-17 23:26:32]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:26:32]       Wrote TSV: de_gcms_metabolites_groupKO-groupWT_long_annot.tsv (3 rows, 23 cols)
+INFO [2026-11-17 23:26:32]       Wrote Excel: de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+INFO [2026-11-17 23:26:33]       Saved volcano PNG: gcms_groupKO-groupWT.png
+INFO [2026-11-17 23:26:33]       Saved volcano PDF: gcms_groupKO-groupWT.pdf
+INFO [2026-11-17 23:26:33] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:26:33]    selected_contrast = groupKO-groupWT, top_n = 50
+WARN [2026-11-17 23:26:33]    No significant metabolites found
+WARN [2026-11-17 23:26:33]       No significant metabolites for heatmap: GCMS / groupKO-groupWT
+INFO [2026-11-17 23:26:33]    Created combined volcano PDF: 2 plots
+INFO [2026-11-17 23:26:33]    Wrote NumSigDE table: metabolites_num_sig_de_molecules.tab
+INFO [2026-11-17 23:26:33]    Wrote NumSigDE Excel: metabolites_num_sig_de_molecules.xlsx
+INFO [2026-11-17 23:26:34]    Saved NumSigDE barplot: metabolites_num_sig_barplot.png
+INFO [2026-11-17 23:26:34] --- Exiting outputMetabDaResultsAllContrasts ---
+INFO [2026-11-17 23:26:34]    All DA results written to disk successfully
+INFO [2026-11-17 23:26:34] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:26:34]    selected_contrast = KO_vs_WT, top_n = 50
+WARN [2026-11-17 23:26:34]    No significant metabolites found
+INFO [2026-11-17 23:26:34] --- Entering generateMetabDAHeatmap ---
+INFO [2026-11-17 23:26:34]    selected_contrast = KO_vs_WT, top_n = 50
+WARN [2026-11-17 23:26:34]    No significant metabolites found
+INFO [2026-11-17 23:26:36] Results summary directory for metabolomics_metab_combined (/tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results_summary/metabolomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:26:36] Results summary directory for metabolomics_metab_combined (/tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results_summary/metabolomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:26:44] Attempting to render report:
+INFO [2026-11-17 23:26:44] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/scripts/metabolomics/metabolomics_report.rmd
+INFO [2026-11-17 23:26:44] - Output File: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results_summary/metabolomics/metabolomics_report_metabolomics_metab_combined.docx
+INFO [2026-11-17 23:26:44] - Params: omic_type='metabolomics', experiment_label='metab_combined'
+INFO [2026-11-17 23:26:44] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-metab_combined-5ac478c878a7/project/metab_combined/results_summary/metabolomics/metabolomics_report_metabolomics_metab_combined.docx
+LANE metab_combined: pass 25 fail 10 error 0 skip 0; record TRUE; differing steps 10 (discrete 9, digest 31); 66 s
+INFO [2026-11-17 23:26:47] --- Processing setup for omic type: lipidomics ---
+INFO [2026-11-17 23:26:47] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/data/lipidomics
+INFO [2026-11-17 23:26:47] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/publication_graphs/filtering_qc/20261117_232647
+INFO [2026-11-17 23:26:47] Creating directory structure for 'lipidomics'...
+WARN [2026-11-17 23:26:47] Source script directory not found for lipidomics: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics. No scripts copied.
+INFO [2026-11-17 23:26:47] Stored paths for lipidomics.
+INFO [2026-11-17 23:26:47] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'lipidomics' (Type: lipidomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/data/lipidomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results_summary/lipidomics (4 items)
+  timestamp                      : 20261117_232647
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/publication_graphs/filtering_qc/20261117_232647 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/clean_lipids (0 items)
+  clean_lipids_dir               : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/clean_lipids (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/da_lipids (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/lipid_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/integration (0 items)
+  lipid_qc_dir                   : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/lipid_qc (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/pathway_enrichment (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results_summary/lipidomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results_summary/lipidomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results/lipidomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results_summary/lipidomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results_summary/lipidomics/Study_report (0 items)
+------------------------------------------
+INFO [2026-11-17 23:26:47] Added base_dir to volumes: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical
+INFO [2026-11-17 23:26:47] === LIPIDOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:26:47] Module ID: norm
+WARN [2026-11-17 23:26:47] Could not detect assay names: state requires explicit legacy conversion
+INFO [2026-11-17 23:26:47] Starting LipidSearch import from: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/inputs/lipidsearch_lcms_pos.txt
+INFO [2026-11-17 23:26:47] Read 10 rows and 13 columns
+INFO [2026-11-17 23:26:47] Detected 6 sample columns and 7 annotation columns
+INFO [2026-11-17 23:26:47] Imported assay 1: 10 rows, 13 columns, format: lipidsearch
+ERROR [2026-11-17 23:26:48] Error processing import: Primary lipidomics assay name is required
+INFO [2026-11-17 23:26:48] Starting LipidSearch import from: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/inputs/lipidsearch_lcms_pos.txt
+INFO [2026-11-17 23:26:48] Read 10 rows and 13 columns
+INFO [2026-11-17 23:26:48] Detected 6 sample columns and 7 annotation columns
+INFO [2026-11-17 23:26:48] Imported assay 1: 10 rows, 13 columns, format: lipidsearch
+INFO [2026-11-17 23:26:48] Starting LipidSearch import from: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/inputs/lipidsearch_lcms_neg.txt
+INFO [2026-11-17 23:26:48] Read 10 rows and 13 columns
+INFO [2026-11-17 23:26:48] Detected 6 sample columns and 7 annotation columns
+INFO [2026-11-17 23:26:48] Workflow type set to: LIPIDOMICS
+INFO [2026-11-17 23:26:48] Lipidomics import complete: 2 assays, 20 total lipids
+WARN [2026-11-17 23:26:48] Could not detect assay names: state requires explicit legacy conversion
+INFO [2026-11-17 23:26:49] Received results from lipidomics design builder. Saving to workflow and disk.
+INFO [2026-11-17 23:26:49] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics/design_matrix.tab
+INFO [2026-11-17 23:26:49] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics/contrast_strings.tab
+INFO [2026-11-17 23:26:49] Writing assay data to: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics/data_cln_LCMS_Pos.tab
+INFO [2026-11-17 23:26:49] Writing assay data to: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics/data_cln_LCMS_Neg.tab
+INFO [2026-11-17 23:26:49] Saved assay manifest with 2 assays: LCMS_Pos, LCMS_Neg
+INFO [2026-11-17 23:26:50] Design save complete. Files saved to: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics
+INFO [2026-11-17 23:26:50] Lipidomics QC: starting the sub-modules on LIPIDOMICS
+INFO [2026-11-17 23:26:51] Applying lipid intensity filter: percentile = 10 , proportion = 0.5
+INFO [2026-11-17 23:26:55] Lipid intensity filter applied: removed 3 lipids
+INFO [2026-11-17 23:26:56] Detected 0 duplicate feature IDs across assays
+INFO [2026-11-17 23:27:01] Resolved duplicates: removed 0 rows
+INFO [2026-11-17 23:27:02] Analyzing internal standards with pattern: ^IS_|ISTD|Internal|_IS
+ERROR [2026-11-17 23:27:02] Error analyzing internal standards: No internal standards found. Pattern: ^IS_|ISTD|Internal|_IS
+Columns searched: LipidName, LipidClass
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+INFO [2026-11-17 23:27:06] Lipidomics QC finalized successfully
+INFO [2026-11-17 23:27:07] === LOAD FILTERED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:27:07] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:27:07] Auto-triggering pre-normalization QC plots
+INFO [2026-11-17 23:27:07] === GENERATING PRE-NORMALIZATION QC PLOTS ===
+INFO [2026-11-17 23:27:07] Set assay names: LCMS_Pos, LCMS_Neg
+INFO [2026-11-17 23:27:07] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-17 23:27:09] Generating QC plots for assay: LCMS_Neg
+INFO [2026-11-17 23:27:10] Generated 8 QC plots for stage: post_filter
+INFO [2026-11-17 23:27:10] Pre-normalization QC plots generated successfully
+INFO [2026-11-17 23:27:11] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-17 23:27:11] ITSD selection updated for LCMS_Neg : 0 features selected
+INFO [2026-11-17 23:27:11] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:27:11] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:27:11] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-17 23:27:11] Generating QC plots for assay: LCMS_Neg
+INFO [2026-11-17 23:27:11] Generated 8 QC plots for stage: post_filter
+INFO [2026-11-17 23:27:14] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-17 23:27:14] Between-sample normalization process finished for all assays.
+INFO [2026-11-17 23:27:16] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-17 23:27:18] Generating QC plots for assay: LCMS_Neg
+INFO [2026-11-17 23:27:19] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-17 23:27:19] [generateCompositeFromFiles] Generating composite from 16 files...
+INFO [2026-11-17 23:27:19] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-17 23:27:19] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-17 23:27:19] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-17 23:27:19] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-17 23:27:19] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-17 23:27:19] [generateCompositeFromFiles] Added row: lcms_neg_pca
+INFO [2026-11-17 23:27:20] [generateCompositeFromFiles] Added row: lcms_neg_density
+INFO [2026-11-17 23:27:20] [generateCompositeFromFiles] Added row: lcms_neg_rle
+INFO [2026-11-17 23:27:20] [generateCompositeFromFiles] Added row: lcms_neg_correlation
+INFO [2026-11-17 23:27:20] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-17 23:27:29] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:27:29] Calculating Pearson correlations per sample pair...
+INFO [2026-11-17 23:27:32] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-17 23:27:32] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:27:32] *** EXPORT: Gathered session data successfully ***
+INFO [2026-11-17 23:27:32] *** EXPORT: Assays: LCMS_Pos, LCMS_Neg ***
+INFO [2026-11-17 23:27:32] *** EXPORT: Contrasts available: 1 ***
+INFO [2026-11-17 23:27:34] *** EXPORT: Session data saved to: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_data_20261117_232732.rds ***
+INFO [2026-11-17 23:27:34] *** EXPORT: Latest version saved to: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_data_latest.rds ***
+INFO [2026-11-17 23:27:34] *** EXPORT: Summary saved to: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_summary.txt ***
+INFO [2026-11-17 23:27:34] === EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===
+INFO [2026-11-17 23:27:34] === LOAD FILTERED SESSION BUTTON CLICKED ===
+INFO [2026-11-17 23:27:34]    Loaded session from: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_data_latest.rds
+INFO [2026-11-17 23:27:34]    Reopened the session owner at its head
+INFO [2026-11-17 23:27:34]    Restored 1 contrasts
+INFO [2026-11-17 23:27:35] === RUN DA ANALYSIS BUTTON CLICKED ===
+INFO [2026-11-17 23:27:35]    Expression matrix: 9 lipids x 6 samples
+INFO [2026-11-17 23:27:35]    design_m dims = 6 x 2
+INFO [2026-11-17 23:27:35]    data_subset dims = 9 x 6
+INFO [2026-11-17 23:27:35]    Running lmFit...
+INFO [2026-11-17 23:27:35]    Creating contrast matrix...
+INFO [2026-11-17 23:27:35]    Running contrasts.fit...
+INFO [2026-11-17 23:27:35]    Running eBayes...
+INFO [2026-11-17 23:27:35]    Running standard analysis...
+INFO [2026-11-17 23:27:35]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:27:35]       Extracted 9 rows
+WARN [2026-11-17 23:27:35]       qvalue() failed: missing or infinite values in inputs are not allowed, using BH
+INFO [2026-11-17 23:27:35] --- Entering createLipidDaResultsLongFormat ---
+INFO [2026-11-17 23:27:35]    lfc_qval_tbl: 9 rows
+INFO [2026-11-17 23:27:35]    expr_matrix: 9 lipids x 6 samples
+INFO [2026-11-17 23:27:35]    intensity_long: 54 rows
+INFO [2026-11-17 23:27:35]    intensity_wide: 9 lipids x 7 columns
+INFO [2026-11-17 23:27:35]    Processing 1 contrasts: groupKO-groupWT
+INFO [2026-11-17 23:27:35]    Final da_results_long: 9 rows x 23 columns
+INFO [2026-11-17 23:27:35] --- Exiting createLipidDaResultsLongFormat ---
+INFO [2026-11-17 23:27:37]    Expression matrix: 8 lipids x 6 samples
+INFO [2026-11-17 23:27:37]    design_m dims = 6 x 2
+INFO [2026-11-17 23:27:37]    data_subset dims = 8 x 6
+INFO [2026-11-17 23:27:37]    Running lmFit...
+INFO [2026-11-17 23:27:37]    Creating contrast matrix...
+INFO [2026-11-17 23:27:37]    Running contrasts.fit...
+INFO [2026-11-17 23:27:37]    Running eBayes...
+INFO [2026-11-17 23:27:37]    Running standard analysis...
+INFO [2026-11-17 23:27:37]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:27:37]       Extracted 8 rows
+WARN [2026-11-17 23:27:37]       qvalue() failed: missing or infinite values in inputs are not allowed, using BH
+INFO [2026-11-17 23:27:37] --- Entering createLipidDaResultsLongFormat ---
+INFO [2026-11-17 23:27:37]    lfc_qval_tbl: 8 rows
+INFO [2026-11-17 23:27:37]    expr_matrix: 8 lipids x 6 samples
+INFO [2026-11-17 23:27:37]    intensity_long: 48 rows
+INFO [2026-11-17 23:27:37]    intensity_wide: 8 lipids x 7 columns
+INFO [2026-11-17 23:27:37]    Processing 1 contrasts: groupKO-groupWT
+INFO [2026-11-17 23:27:37]    Final da_results_long: 8 rows x 23 columns
+INFO [2026-11-17 23:27:37] --- Exiting createLipidDaResultsLongFormat ---
+INFO [2026-11-17 23:27:39]    DA analysis completed successfully
+INFO [2026-11-17 23:27:39]    Updated dropdowns: 1 contrasts, 2 assays
+INFO [2026-11-17 23:27:39]    Writing DA results to disk...
+INFO [2026-11-17 23:27:39] --- Entering outputLipidDaResultsAllContrasts ---
+INFO [2026-11-17 23:27:39]    da_output_dir = /tmp/RtmpY7H7Qv/lipid-publication-5ac41e134bb8/omics-publication/da_output_dir
+INFO [2026-11-17 23:27:39]    publication_graphs_dir = /tmp/RtmpY7H7Qv/lipid-publication-5ac41e134bb8/omics-publication/publication_graphs_dir
+INFO [2026-11-17 23:27:39]    Created Volcano_Plots directory: /tmp/RtmpY7H7Qv/lipid-publication-5ac41e134bb8/omics-publication/publication_graphs_dir/Volcano_Plots
+INFO [2026-11-17 23:27:39]    Created Heatmaps directory: /tmp/RtmpY7H7Qv/lipid-publication-5ac41e134bb8/omics-publication/publication_graphs_dir/Heatmaps
+INFO [2026-11-17 23:27:39]    Created NumSigDeMolecules directory: /tmp/RtmpY7H7Qv/lipid-publication-5ac41e134bb8/omics-publication/publication_graphs_dir/NumSigDeMolecules
+INFO [2026-11-17 23:27:39]    Found 2 assays: LCMS_Pos, LCMS_Neg
+INFO [2026-11-17 23:27:39]    Found 1 contrasts: groupKO-groupWT
+INFO [2026-11-17 23:27:39]    Processing assay: LCMS_Pos (mode: posmode)
+INFO [2026-11-17 23:27:39]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:27:39]       Wrote TSV: de_posmode_lipids_groupKO-groupWT_long_annot.tsv (9 rows, 23 cols)
+INFO [2026-11-17 23:27:39]       Wrote Excel: de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+INFO [2026-11-17 23:27:39]       Saved volcano PNG: posmode_groupKO-groupWT.png
+INFO [2026-11-17 23:27:39]       Saved volcano PDF: posmode_groupKO-groupWT.pdf
+INFO [2026-11-17 23:27:39] --- Entering generateLipidDAHeatmap ---
+INFO [2026-11-17 23:27:39]    selected_contrast = groupKO-groupWT, top_n = 50
+INFO [2026-11-17 23:27:39]    Selected 4 top lipids
+INFO [2026-11-17 23:27:39]    Expression matrix: 4 x 6
+INFO [2026-11-17 23:27:39] --- Exiting generateLipidDAHeatmap (success) ---
+INFO [2026-11-17 23:27:40]       Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+INFO [2026-11-17 23:27:41]       Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+INFO [2026-11-17 23:27:41]    Processing assay: LCMS_Neg (mode: negmode)
+INFO [2026-11-17 23:27:41]       Processing contrast: groupKO-groupWT
+INFO [2026-11-17 23:27:42]       Wrote TSV: de_negmode_lipids_groupKO-groupWT_long_annot.tsv (8 rows, 23 cols)
+INFO [2026-11-17 23:27:42]       Wrote Excel: de_negmode_lipids_groupKO-groupWT_long_annot.xlsx
+INFO [2026-11-17 23:27:42]       Saved volcano PNG: negmode_groupKO-groupWT.png
+INFO [2026-11-17 23:27:42]       Saved volcano PDF: negmode_groupKO-groupWT.pdf
+INFO [2026-11-17 23:27:42] --- Entering generateLipidDAHeatmap ---
+INFO [2026-11-17 23:27:42]    selected_contrast = groupKO-groupWT, top_n = 50
+WARN [2026-11-17 23:27:42]    No significant lipids found
+WARN [2026-11-17 23:27:42]       No significant lipids for heatmap: LCMS_Neg / groupKO-groupWT
+INFO [2026-11-17 23:27:42]    Created combined volcano PDF: 2 plots
+INFO [2026-11-17 23:27:43]    Created combined heatmap PDF: 1 plots
+INFO [2026-11-17 23:27:43]    Wrote NumSigDE table: lipids_num_sig_de_molecules.tab
+INFO [2026-11-17 23:27:43]    Wrote NumSigDE Excel: lipids_num_sig_de_molecules.xlsx
+INFO [2026-11-17 23:27:43]    Saved NumSigDE barplot: lipids_num_sig_barplot.png
+INFO [2026-11-17 23:27:43] --- Exiting outputLipidDaResultsAllContrasts ---
+INFO [2026-11-17 23:27:43]    All DA results written to disk successfully
+INFO [2026-11-17 23:27:43] --- Entering generateLipidDAHeatmap ---
+INFO [2026-11-17 23:27:43]    selected_contrast = KO_vs_WT, top_n = 50
+INFO [2026-11-17 23:27:43]    Selected 4 top lipids
+INFO [2026-11-17 23:27:43]    Expression matrix: 4 x 6
+INFO [2026-11-17 23:27:43] --- Exiting generateLipidDAHeatmap (success) ---
+INFO [2026-11-17 23:27:44] --- Entering generateLipidDAHeatmap ---
+INFO [2026-11-17 23:27:44]    selected_contrast = KO_vs_WT, top_n = 50
+INFO [2026-11-17 23:27:44]    Selected 4 top lipids
+INFO [2026-11-17 23:27:44]    Expression matrix: 4 x 6
+INFO [2026-11-17 23:27:44] --- Exiting generateLipidDAHeatmap (success) ---
+INFO [2026-11-17 23:27:46] Results summary directory for lipidomics_lipid_canonical (/tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results_summary/lipidomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:27:46] Results summary directory for lipidomics_lipid_canonical (/tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results_summary/lipidomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:27:55] Attempting to render report:
+INFO [2026-11-17 23:27:55] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/scripts/lipidomics/lipidomics_report.rmd
+INFO [2026-11-17 23:27:55] - Output File: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results_summary/lipidomics/lipidomics_report_lipidomics_lipid_canonical.docx
+INFO [2026-11-17 23:27:55] - Params: omic_type='lipidomics', experiment_label='lipid_canonical'
+INFO [2026-11-17 23:27:55] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-lipid_canonical-5ac4600a1076/project/lipid_canonical/results_summary/lipidomics/lipidomics_report_lipidomics_lipid_canonical.docx
+LANE lipid_canonical: pass 35 fail 0 error 0 skip 0; record TRUE; differing steps 0 (discrete 0, digest 0); 70 s
+INFO [2026-11-17 23:27:57] --- Processing setup for omic type: transcriptomics ---
+INFO [2026-11-17 23:27:57] Ensured omic-specific data directory exists: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/data/transcriptomics
+INFO [2026-11-17 23:27:57] Ensured timestamped directory exists: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/publication_graphs/filtering_qc/20261117_232757
+INFO [2026-11-17 23:27:57] Creating directory structure for 'transcriptomics'...
+WARN [2026-11-17 23:27:57] Source script directory not found for transcriptomics: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/scripts/transcriptomics. No scripts copied.
+INFO [2026-11-17 23:27:57] Stored paths for transcriptomics.
+INFO [2026-11-17 23:27:57] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'transcriptomics' (Type: transcriptomics)
+  base_dir                       : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen (5 items)
+  data_dir                       : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/data/transcriptomics (0 items)
+  source_dir                     : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/scripts/transcriptomics (0 items)
+  results_dir                    : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics (6 items)
+  results_summary_dir            : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results_summary/transcriptomics (4 items)
+  timestamp                      : 20261117_232757
+  time_dir                       : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/publication_graphs/filtering_qc/20261117_232757 (0 items)
+  clean_features_dir             : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/normalized_counts (0 items)
+  da_output_dir                  : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/da_genes (0 items)
+  feature_qc_dir                 : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/gene_qc (0 items)
+  gene_qc_dir                    : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/gene_qc (0 items)
+  integration_dir                : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/integration (0 items)
+  normalized_counts_dir          : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/normalized_counts (0 items)
+  pathway_dir                    : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/pathway_enrichment (0 items)
+  publication_figures_dir        : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results_summary/transcriptomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results_summary/transcriptomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results_summary/transcriptomics/QC_figures (0 items)
+  raw_counts_dir                 : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results/transcriptomics/count_data (0 items)
+  study_report_dir               : /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results_summary/transcriptomics/Study_report (0 items)
+------------------------------------------
+INFO [2026-11-17 23:27:57] Added base_dir to volumes: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen
+INFO [2026-11-17 23:27:57] === TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-17 23:27:57] Module ID: norm
+INFO [2026-11-17 23:27:58] Imported assay 1: 300 rows, 14 columns, format: trx_counts
+ERROR [2026-11-17 23:27:58] Error processing import: negative count (1 cell(s); first: gene 1, sample RPMI_03_r2) (trx_counts_negative)
+INFO [2026-11-17 23:27:58] Imported assay 1: 300 rows, 14 columns, format: trx_counts
+INFO [2026-11-17 23:27:58] Workflow type set to: TRANSCRIPTOMICS
+INFO [2026-11-17 23:27:58] Transcriptomics import complete: 1 assays, 300 total lipids
+INFO [2026-11-17 23:27:59] Received results from transcriptomics design builder. Saving to workflow and disk.
+INFO [2026-11-17 23:27:59] Writing design matrix to: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/scripts/transcriptomics/design_matrix.tab
+INFO [2026-11-17 23:27:59] Writing contrasts to: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/scripts/transcriptomics/contrast_strings.tab
+INFO [2026-11-17 23:27:59] Writing assay data to: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/scripts/transcriptomics/data_cln_counts.tab
+INFO [2026-11-17 23:27:59] Saved assay manifest with 1 assays: counts
+INFO [2026-11-17 23:28:01] Design save complete. Files saved to: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/scripts/transcriptomics
+INFO [2026-11-17 23:28:01] Transcriptomics QC: starting the sub-modules on TRANSCRIPTOMICS
+INFO [2026-11-17 23:28:03] Transcriptomics QC finalized successfully
+INFO [2026-11-17 23:28:03] === RUN DA ANALYSIS BUTTON CLICKED ===
+ERROR [2026-11-17 23:28:04] Normalization error: manual k 50 is above the cap of 3 for 12 samples (trx_ruv_k_above_cap)
+INFO [2026-11-17 23:28:17] === RUN DA ANALYSIS BUTTON CLICKED ===
+INFO [2026-11-17 23:28:18]    DA analysis completed successfully
+INFO [2026-11-17 23:28:18]    Updated dropdowns: 1 contrasts, 1 assays
+INFO [2026-11-17 23:28:18]    Writing DA results to disk...
+INFO [2026-11-17 23:28:20]    All DA results written to disk successfully
+INFO [2026-11-17 23:28:25] Results summary directory for transcriptomics_trx_screen (/tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results_summary/transcriptomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:28:25] Results summary directory for transcriptomics_trx_screen (/tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results_summary/transcriptomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-17 23:28:32] Attempting to render report:
+INFO [2026-11-17 23:28:32] - Rmd Source (Template): /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/scripts/transcriptomics/transcriptomics_report.rmd
+INFO [2026-11-17 23:28:32] - Output File: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results_summary/transcriptomics/transcriptomics_report_transcriptomics_trx_screen.docx
+INFO [2026-11-17 23:28:32] - Params: omic_type='transcriptomics', experiment_label='trx_screen'
+INFO [2026-11-17 23:28:33] Report successfully rendered to: /tmp/RtmpY7H7Qv/gui-entry-trx_screen-5ac4de65e3/project/trx_screen/results_summary/transcriptomics/transcriptomics_report_transcriptomics_trx_screen.docx
+LANE trx_screen: pass 22 fail 7 error 0 skip 0; record TRUE; differing steps 7 (discrete 0, digest 10); 37 s
+first problems of metab_lc:
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a" + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032" metab_lc at step 'norm' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a" + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a" + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032" metab_lc at step 'correlation' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a" + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a" + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032" metab_lc at step 'session_export' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a" + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a" + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032" metab_lc at step 'da_load' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a" + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a" + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032" actual$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_l 
+first problems of metab_gc:
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e" + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c" metab_gc at step 'norm' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e" + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e" + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c" lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(exp 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e" + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e" + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c" lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(exp 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e" + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e" + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c" lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(exp 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e" + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e" + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c" lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(exp 
+first problems of metab_combined:
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f" + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736" metab_combined at step 'norm' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f" + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f" + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736" lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(ex 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f" + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f" + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736" lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(ex 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f" + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f" + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736" lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(ex 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$metab_normalized vs expected$states$metab_normalized - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f" + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736" actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f" + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736" lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(ex 
+first problems of trx_screen:
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv vs expected$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv - "8c3a4a5f380990c6bbc170a8d1fc972f427ec9220a32c04a976e70746e2a01eb" + "605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27" trx_screen at step 'da' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv vs expected$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv - "8c3a4a5f380990c6bbc170a8d1fc972f427ec9220a32c04a976e70746e2a01eb" + "605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27" trx_screen at step 'summary_refusal' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv vs expected$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv - "8c3a4a5f380990c6bbc170a8d1fc972f427ec9220a32c04a976e70746e2a01eb" + "605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27" trx_screen at step 'summary_ruviii' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv vs expected$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv - "8c3a4a5f380990c6bbc170a8d1fc972f427ec9220a32c04a976e70746e2a01eb" + "605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27" trx_screen at step 'summary_save' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52) 
+   expectation_failure : Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv vs expected$artifacts$results/transcriptomics/da_genes/top_de_genes.tsv - "8c3a4a5f380990c6bbc170a8d1fc972f427ec9220a32c04a976e70746e2a01eb" + "605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27" actual$artifacts$results_summary/transcriptomics/Publication_tables/top_de_genes.tsv vs expected$artifacts$results_summary/transcriptomics/Publication_tables/top_de_genes.tsv - "8c3a4a5f380990c6bbc170a8d1fc972f427ec9220a32c04a976e70746e2a01eb" +  
+KIT-134 LANES FAILED 

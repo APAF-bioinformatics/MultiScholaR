@@ -179,6 +179,15 @@ for (package in if (nzchar(internal_mode)) names(INTERNAL_REMOTES) else characte
 }
 declared <-dependencyNames(description[1L, intersect(c("Depends", "Imports", "LinkingTo", "Suggests"),
     colnames(description))])
+# An internal package that DESCRIPTION declares outside Suggests (fastduckdb: Imports since 2026-11-18, the
+# user's decision) must be installed before MultiScholaR. A build without the read token stops here,
+# before anything is installed, instead of at MultiScholaR's own install after every other package.
+internal_required <- intersect(INTERNAL, dependencyNames(description[1L, intersect(c("Depends", "Imports", "LinkingTo"),
+    colnames(description))]))
+if (identical(mode, "install") && length(internal_required) && !nzchar(internal_mode)) {
+    stop(sprintf("DESCRIPTION requires %s (an internal repository): this build needs MSR_INTERNAL and the read token",
+        paste(internal_required, collapse = ", ")))
+}
 never_installed <- setdiff(unlist(lockfile$Lockfile$NotInstalled), ADDED)
 roots <- setdiff(unique(c(declared, ADDED)), c(INTERNAL, never_installed, excluded))
 base_packages <- rownames(utils::installed.packages(lib.loc = .Library, priority = "base"))
@@ -324,6 +333,18 @@ if (nzchar(internal_mode)) {
     utils::write.table(do.call(rbind, internal_rows), file.path(out_dir, "internal-packages.tsv"), sep = "\t",
         quote = FALSE, row.names = FALSE)
     unlink(internal_root, recursive = TRUE)
+}
+
+# Linux bundle build (MSR_BUNDLE_RUNPATH=1, packaging/linux/build.sh): the run path to the bundle's
+# syslib/ goes into duckdb's, duckplyr's and fastduckdb's libraries now. MultiScholaR's install
+# records their sha256 (src/build_dia_rsum.R), and the DIA rollup and the direct writer refuse a
+# build whose binaries changed afterwards; assemble.sh writes the run path of everything else.
+if (!is_windows && identical(Sys.getenv("MSR_BUNDLE_RUNPATH"), "1")) {
+    hashed <- file.path(lib, intersect(c("duckdb", "duckplyr", "fastduckdb"), rownames(utils::installed.packages(lib.loc = lib))))
+    if (any(c("duckdb", "duckplyr", "fastduckdb") %in% loadedNamespaces())) stop("a package whose libraries are about to be rewritten is loaded")
+    status <- system2("bash", shQuote(c(file.path(checkout, "packaging", "linux", "runpath.sh"),
+        file.path(dirname(R.home()), "syslib"), hashed)))
+    if (status != 0L) stop("the run path could not be written into ", paste(basename(hashed), collapse = ", "))
 }
 
 # (3) MultiScholaR from the checkout.

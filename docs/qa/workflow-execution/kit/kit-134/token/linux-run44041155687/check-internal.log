@@ -1,0 +1,43 @@
+ok   fastduckdb loads from the bundle: version 0.2.0, APAF-bioinformatics/fast_duckdb/fastduckdb@2694b972393013b12479c49a2deb2d7514960744
+ok   fastlimpadpc loads from the bundle: version 0.1.0, APAF-bioinformatics/fast_limpa_dpc@87a90b894b2057744fc9c315a4fb7d7db3ce3af7
+duckdb keeps downloaded extensions and secrets in a temporary directory:
+ℹ /tmp/RtmpzAnK75/duckdb
+This is removed when the R session ends.
+• Extensions are re-downloaded each session.
+• Secrets are lost.
+ℹ Run duckdb(shared_home = TRUE) (or create ~/.duckdb) to keep them (suitable for most users).
+ℹ Run duckdb(shared_home = FALSE) to accept the temporary directory (and silence this message).
+ℹ See ?duckdb_storage for details and alternatives.
+Warning messages:
+1: In OlsonNames() : no Olson database found
+2: Invalid time zone 'UTC', falling back to UTC.
+Set the `timezone_out` argument to a valid time zone.
+ 
+3: In OlsonNames() : no Olson database found
+4: Invalid time zone 'UTC', falling back to UTC.
+Set the `timezone_out` argument to a valid time zone.
+ 
+5: In OlsonNames() : no Olson database found
+6: Invalid time zone 'UTC', falling back to UTC.
+Set the `timezone_out` argument to a valid time zone.
+ 
+ok   fastduckdb's reader reads back a 100-column Parquet file written by duckdb, identical: 500 rows, 100 columns
+ok   the DIA manifest: supported
+ok   the DIA manifest: native_query present: duckdb-c-scope-v1
+ok   the DIA manifest: the fastduckdb writer recorded
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+ok   the DIA precursor rollup admits this build: admitted
+ok   the direct Parquet writer admits this build: admitted
+ok   the DIA_LIMPA route resolves the fastlimpadpc engine: fastlimpadpc
+Warning message:
+Failed to locate timezone database 
+KIT-134 CHECK PASSED: the internal packages in the bundle

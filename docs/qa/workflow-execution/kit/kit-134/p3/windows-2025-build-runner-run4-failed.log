@@ -1,0 +1,33 @@
+Windows, unpacked, windows-2025 build runner: D:\a\MultiScholaR\MultiScholaR\packaging\electron\dist\win-unpacked\MultiScholaR.exe
+application folder: d:/a/multischolar/multischolar/packaging/electron/dist/win-unpacked
+ok   no process from the bundle before the start: 0 found
+ok   the shell started: {"electron":"45.3.3","noSandbox":false}
+ok   the probe ran: {"time":"2026-11-16T20:15:51.798Z","event":"probe","launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}
+FAIL the window loaded the application and a live session rendered the first tab: {"time":"2026-11-16T20:17:55.034Z","event":"first-tab","connected":false,"home":true,"rendered":false,"title":"MultiScholaR"}; 123.5 s after launch
+ok   the launcher is in-process: {"time":"2026-11-16T20:15:54.305Z","event":"launcher","launcher":"in-process","reason":"this MultiScholaR has no runPackagedApplication yet (the package side of KIT-134 P3 waits for KIT-131), so steps run inside the application","probe":{"launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}}
+ok   the port serves the application: http://127.0.0.1:60490/ -> 200
+ok   R from the bundle is running: 2216 d:/a/multischolar/multischolar/packaging/electron/dist/win-unpacked/resources/runtime/r/bin/rscript.exe; 4676 d:/a/multischolar/multischolar/packaging/electron/dist/win-unpacked/resources/runtime/r/bin/x64/rscript.exe
+ok   a second start exits: exit 0
+ok   the first window received the second start
+ok   no second R started: before 2216,4676; after 2216,4676
+ok   the application exited 0 after the window closed: exit 0
+ok   no process from the bundle is left: none
+ok   the port refuses: Error: connect ECONNREFUSED 127.0.0.1:60490
+ok   started again, R running: 2 R processes
+ok   R is gone within 10 s of the shell being killed: 0.9 s
+--- shell events (first start)
+{"time":"2026-11-16T20:15:51.797Z","event":"start","release":"0.5.0","resources":"D:\\a\\MultiScholaR\\MultiScholaR\\packaging\\electron\\dist\\win-unpacked\\resources","runtime":"D:\\a\\MultiScholaR\\MultiScholaR\\packaging\\electron\\dist\\win-unpacked\\resources\\runtime","packaged":true,"platform":"win32","electron":"45.3.3","pid":8760,"noSandbox":false}
+{"time":"2026-11-16T20:15:51.798Z","event":"probe","launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}
+{"time":"2026-11-16T20:15:51.876Z","event":"r-started","pid":2216,"rscript":"D:\\a\\MultiScholaR\\MultiScholaR\\packaging\\electron\\dist\\win-unpacked\\resources\\runtime\\R\\bin\\Rscript.exe","port":60490,"runFolder":"C:\\Users\\runneradmin\\AppData\\Local\\MultiScholaR\\run\\2026-11-16T20-15-51-764Z"}
+{"time":"2026-11-16T20:15:52.146Z","event":"did-finish-load","url":"data:text/html;charset=utf-8,%3C!doctype%20html%3E%3Cmeta%20charset%3D%22utf-8%22%3E%3Ctitle%3EMultiScholaR%3C%2Ftitle%3E%3Cbody%20style%3D%22font%3A15px%20sans-serif%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3Bheight%3A90vh%3Bcolor%3A%23444%22%3EStarting%20MultiScholaR%200.5.0%26hellip%3B%3C%2Fbody%3E"}
+{"time":"2026-11-16T20:15:54.305Z","event":"launcher","launcher":"in-process","reason":"this MultiScholaR has no runPackagedApplication yet (the package side of KIT-134 P3 waits for KIT-131), so steps run inside the application","probe":{"launcher":"process","reason":"win32: no systemd","facts":{"platform":"win32","kernel":"10.0.26100"},"ms":0}}
+{"time":"2026-11-16T20:15:54.525Z","event":"application-answered","port":60490,"ms":2634}
+{"time":"2026-11-16T20:15:54.927Z","event":"did-finish-load","url":"http://127.0.0.1:60490/"}
+{"time":"2026-11-16T20:15:54.928Z","event":"notice-shown"}
+{"time":"2026-11-16T20:17:55.034Z","event":"first-tab","connected":false,"home":true,"rendered":false,"title":"MultiScholaR"}
+{"time":"2026-11-16T20:17:55.629Z","event":"second-instance"}
+{"time":"2026-11-16T20:17:55.630Z","event":"second-start-joined","pid":4696}
+{"time":"2026-11-16T20:17:58.453Z","event":"window-closed"}
+{"time":"2026-11-16T20:17:58.532Z","event":"r-exited","code":1,"signal":null}
+{"time":"2026-11-16T20:17:58.532Z","event":"quit","rExited":true}
+KIT-134 CHECK FAILED: Windows, unpacked, windows-2025 build runner: the window loaded the application and a live session rendered the first tab

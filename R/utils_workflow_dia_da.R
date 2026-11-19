@@ -363,9 +363,13 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
         manifest <- acceptDIADaManifest(manager, request$manifest, results)
         # KIT-019: under a managed application the DA module requests the publication from the worker
         # (`da_publication`); in process the publication runs here as before.
+        # KIT-052 (KIT-134 run 44275615462): drawn in a short folder and copied into the action staging folder, as the
+        # worker does; drawn in place, ggsave's PNG device on Windows wrote nothing, and said nothing, from 260 characters.
         if (publish) publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
             paths[c("da_output_dir", "publication_graphs_dir")], function(staged)
-                produceDIADaPublication(manager, manifest, request$annotations, settings$da_q_val_thresh, staged),
+                withWorkflowShortStaging(staged, function(short)
+                    produceDIADaPublication(manager, manifest, request$annotations, settings$da_q_val_thresh, short),
+                    "the DA publication's files could not be copied into the project's staging folder"),
             identity = diaDaPublicationIdentity(manifest, diaAnnotationDigest(request$annotations)))
         if (publish) completeDIADaDisplay(da_data, workflow, manifest)
         manifest

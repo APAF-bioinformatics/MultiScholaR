@@ -1,0 +1,10 @@
+ok   R is 4.6.1: R version 4.6.1 (2026-06-24 ucrt)
+ok   R home is inside the bundle: D:/a/_temp/re located/msr moved/R
+ok   every library path is inside the bundle: D:/a/_temp/re located/msr moved/R/library
+ok   the network is offline: a connection to cran.r-project.org failed
+
+
+ok   every bundled package loads (383 packages): 383 loaded, 0 failed, 0 not reported, 109 s
+ok   every loaded namespace comes from the bundle: 0 outside
+ok   MultiScholaR attaches from the bundle and has run_app: MultiScholaR 0.5.0 TRUE D:/a/_temp/re located/msr moved/R/library/MultiScholaR 
+KIT-134 CHECK PASSED: the bundle's R and library from the moved folder

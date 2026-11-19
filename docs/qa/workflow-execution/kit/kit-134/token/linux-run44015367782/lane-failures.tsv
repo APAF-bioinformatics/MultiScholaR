@@ -1,0 +1,3 @@
+lane	class	message
+prot_dia	expectation_error	Error in `file(con, "r")`: cannot open the connection
+prot_dia_limpa	expectation_error	Error in `file(con, "r")`: cannot open the connection

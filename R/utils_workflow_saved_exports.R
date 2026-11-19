@@ -325,7 +325,8 @@ publishWorkflowActionOutputs <- function(manager, reference, label, destinations
     destinations <- destinations[!vapply(destinations, is.null, logical(1))]
     root <- context$experiment_paths$source_dir %||% destinations[[1L]]
     request_key <- digest::digest(list(state = reference$entity_id, action = label, identity = identity), algo = "sha256")
-    request_id <- paste0("dia-", label, "-", substr(request_key, 1L, 32L))
+    staging <- workflowStagedRequest(root, "action", request_key, label)
+    request_id <- staging$request_id
     paths <- workflowExportPaths(root, request_id)
     journal_path <- file.path(paths$request_dir, "journal.json")
     owner <- function() {
@@ -349,7 +350,7 @@ publishWorkflowActionOutputs <- function(manager, reference, label, destinations
     }
     was_complete <- identical(journal$status, "complete")
     writeWorkflowExportJournal(paths, journal)
-    staged_root <- file.path(paths$request_dir, "files")
+    staged_root <- file.path(paths$request_dir, staging$staged)
     # Until an inventory is journaled, staged files belong to no accepted attempt.
     if (is.null(journal$files)) unlink(staged_root, recursive = TRUE)
     staged <- stats::setNames(lapply(names(destinations), function(role) {
@@ -395,12 +396,16 @@ publishWorkflowActionOutputs <- function(manager, reference, label, destinations
         destination <- file.path(destinations[[fields[[1L]]]], paste(fields[-1L], collapse = "/"))
         if (!dir.exists(dirname(destination))) dir.create(dirname(destination), recursive = TRUE)
         backup <- file.path(previous, member)
+        # KIT-052: a copy into a path longer than 259 characters fails on Windows with long paths disabled; it is named.
         if (file.exists(destination) && !file.exists(backup)) {
             dir.create(dirname(backup), recursive = TRUE, showWarnings = FALSE)
-            if (!file.copy(destination, backup)) cli::cli_abort("cannot retain previous action output")
+            copied <- file.copy(destination, backup)
+            checkWorkflowFigureFiles(backup, "cannot retain previous action output", copied = copied)
         }
         temporary <- tempfile(".publish-", tmpdir = dirname(destination))
-        if (!file.copy(source, temporary)) cli::cli_abort("cannot stage action output publication")
+        copied <- file.copy(source, temporary)
+        checkWorkflowFigureFiles(temporary, paste("cannot stage action output publication of",
+            gsub("([{}])", "\\1\\1", member)), copied = copied)
         syncWorkflowExportPaths(temporary, dirname(destination))
         if (!file.rename(temporary, destination)) cli::cli_abort("cannot publish action output")
         syncWorkflowExportPaths(c(destination, dirname(destination)), dirname(destination))
@@ -603,6 +608,148 @@ workflowExportPaths <- function(output_dir, request_id) {
     }
     list(root = root, staging_root = normalizePath(staging_root, winslash = "/"),
         request_dir = normalizePath(request_dir, winslash = "/"))
+}
+
+#' Name the staging folder of one figure or action publication under `<root>/.workflow-export` (KIT-052,
+#' decision M18). The names are short because the staged path counts against the 259 characters a Windows
+#' path may have; a publication journaled under the earlier long name keeps that name and its inner
+#' folder, so one left pending is still found. Every caller that builds a staged path asks here.
+#' @param root Publication root holding `.workflow-export`.
+#' @param kind "qvalue" (key: the state's entity id) or "action" (key: the request digest).
+#' @param key Hexadecimal identity of the publication.
+#' @param label Action label, part of the earlier action name only.
+#' @return `request_id` (the folder under `.workflow-export`) and `staged` (the folder of files inside it).
+#' @noRd
+workflowStagedRequest <- function(root, kind = c("qvalue", "action"), key, label = NULL) {
+    kind <- match.arg(kind)
+    earlier <- if (kind == "qvalue") paste0("qvalue-", substr(key, 1L, 40L)) else
+        paste0("dia-", label, "-", substr(key, 1L, 32L))
+    if (file.exists(file.path(root, ".workflow-export", earlier, "journal.json"))) {
+        return(list(request_id = earlier, staged = if (kind == "qvalue") "figures" else "files"))
+    }
+    list(request_id = paste0(if (kind == "qvalue") "q-" else "a-", substr(key, 1L, 16L)), staged = "f")
+}
+
+#' Abort when an expected figure is missing or empty after rendering (KIT-052). A graphics device can
+#' fail with a warning only (the PNG device on Windows cannot write a path longer than 259 characters),
+#' so the files are checked and the condition names them and, on Windows, the over-long path.
+#' @param files Expected figure paths.
+#' @param message First line of the condition.
+#' @param class Further condition classes, after `workflow_figure_unwritten`.
+#' @param windows Whether the Windows path limit applies; an argument so the wording is testable.
+#' @param copied For copies, `file.copy`'s result per file: a file is unwritten when its copy failed or it is missing (a
+#'   copy may carry an empty file), and the Windows hint names the limit a copy has (long paths disabled).
+#' @return `files` invisibly when every one exists with content.
+#' @noRd
+checkWorkflowFigureFiles <- function(files, message = "required figures were not written", class = NULL,
+    windows = identical(.Platform$OS.type, "windows"), copied = NULL) {
+    size <- file.size(files)
+    unwritten <- files[if (is.null(copied)) is.na(size) | size <= 0 else !copied | is.na(size)]
+    if (!length(unwritten)) return(invisible(files))
+    lengths <- nchar(enc2utf8(unwritten), type = "bytes")
+    # KIT-052 (KIT-134 run 44241609555): ggsave's PNG device (ragg) writes no file from 260 characters even with Windows
+    # long paths enabled; a copy and every other writer fail from 260 only with them disabled, Windows' default.
+    hint <- if (is.null(copied)) paste("the longest of these paths is {max(lengths)} characters; Windows cannot write a",
+        "figure whose path is longer than 259 characters. Move the project to a folder with a shorter path.") else
+        paste("the longest of these paths is {max(lengths)} characters: the project folder's path is too long for Windows",
+            "with long paths disabled, where a path may have at most 259 characters. Move the project to a folder with a",
+            "shorter path, or enable Windows long paths.")
+    cli::cli_abort(c(message,
+        "x" = "missing or empty: {.file {basename(unwritten)}}",
+        "i" = "in {.path {unique(dirname(unwritten))}}",
+        if (windows && any(lengths > 259L)) c("x" = hint)),
+        class = c("workflow_figure_unwritten", class))
+}
+
+#' Copy every file under one folder into another, keeping the relative layout and the folders, and check that each
+#' arrived (KIT-052): a copy into a path longer than 259 characters fails on Windows with long paths disabled, with a
+#' warning only.
+#' @param from Folder to copy from.
+#' @param to Folder to copy into; created when `from` holds anything.
+#' @param message,class The condition's first line and further classes (`checkWorkflowFigureFiles`).
+#' @return The copied files' paths under `to`, invisibly.
+#' @noRd
+copyWorkflowFolder <- function(from, to, message, class = NULL) {
+    folders <- list.dirs(from, full.names = FALSE, recursive = TRUE)
+    files <- list.files(from, recursive = TRUE, all.files = TRUE, no.. = TRUE)
+    if (!length(files) && !any(nzchar(folders))) return(invisible(character()))
+    for (folder in c(to, file.path(to, folders[nzchar(folders)]))) dir.create(folder, recursive = TRUE, showWarnings = FALSE)
+    target <- file.path(to, files)
+    copied <- file.copy(file.path(from, files), target, overwrite = TRUE)
+    checkWorkflowFigureFiles(target, message, class, copied = copied)
+    invisible(target)
+}
+
+#' Draw a publication's files in a short scratch folder under `tempdir()` and copy them into `target` (KIT-052): the
+#' worker's request folder lies deep in the project, and ggsave's PNG device on Windows writes nothing, and says
+#' nothing, at a path of 260 characters or more. A file whose copy fails stops the step by name (`copyWorkflowFolder`).
+#' @param target The folder the files belong in.
+#' @param produce `function(scratch)` writing into `scratch`.
+#' @param message First line of the condition when a copy fails (the in-process DA publication names its own folder).
+#' @param folders Named folder names: each top-level folder of `scratch` named here arrives in `target` under the given
+#'   name (a role's short folder in a worker's request folder, `workflowRequestPublication`); the others keep theirs.
+#' @return What `produce` returns.
+#' @noRd
+withWorkflowShortFigureFolder <- function(target, produce,
+    message = "the worker's publication files could not be copied into its request folder", folders = character()) {
+    scratch <- tempfile("wfx-")
+    dir.create(scratch)
+    on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
+    value <- produce(scratch)
+    for (role in intersect(names(folders), list.files(scratch, all.files = TRUE, no.. = TRUE))) {
+        if (!file.rename(file.path(scratch, role), file.path(scratch, folders[[role]])))
+            cli::cli_abort("cannot name the publication folder of {role}", class = "saved_entity_write")
+    }
+    copyWorkflowFolder(scratch, target, message, class = "saved_entity_outputs_pending")
+    value
+}
+
+#' Run an in-process action publication's `produce` (`publishWorkflowActionOutputs`) with its staged folders in a short
+#' folder under `tempdir()` and copy them into the staging folder (KIT-052, KIT-134 run 44275615462): drawn in the staging
+#' folder, ggsave's PNG device on Windows wrote nothing, and said nothing, from 260 characters; a copy that fails is named.
+#' @param staged The staged folders by role, all in one folder.
+#' @param produce `function(staged)` writing only into the folders it is given.
+#' @param message First line of the condition when a copy fails.
+#' @return What `produce` returns.
+#' @noRd
+withWorkflowShortStaging <- function(staged, produce, message) {
+    withWorkflowShortFigureFolder(dirname(staged[[1L]]), function(scratch) {
+        short <- lapply(staged, function(path) {
+            path <- file.path(scratch, basename(path))
+            dir.create(path)
+            path
+        })
+        produce(short)
+    }, message)
+}
+
+#' The folder a worker's publication is copied into inside its request folder, and the folder of each role there (KIT-052,
+#' decision of 2026-11-19, option A). The request folder lies deep in the project
+#' (`<root>/scripts/<omic>/.dia-native-<14>/.workflow-entities/.workflow-export/wfx-<32>`, names the profiling harness
+#' reads), and a copy into a path longer than 259 characters fails on Windows with long paths disabled; so the
+#' publication folder and its role folders have one-letter names. A request staged under the earlier names (`earlier`,
+#' each role in its own name) is read there: one left pending in a project from before is published as before.
+#' @param request_dir The request folder.
+#' @param earlier The earlier publication folder: `da-publication` or `omics-publication`.
+#' @return `path`, the publication folder, and `roles`, the role folders by role (none under the earlier name).
+#' @noRd
+workflowRequestPublication <- function(request_dir, earlier) {
+    if (dir.exists(file.path(request_dir, earlier))) return(list(path = file.path(request_dir, earlier), roles = character()))
+    list(path = file.path(request_dir, "p"), roles = c(da_output_dir = "d", publication_graphs_dir = "g",
+        gene_qc_dir = "t", lipid_qc_dir = "l", metabolite_qc_dir = "m"))
+}
+
+#' The folders of roles in a request's publication folder (`workflowRequestPublication`), or with `role = FALSE` the
+#' roles of folders; a role without a short folder keeps its name.
+#' @param x Roles, or folders.
+#' @param roles The `roles` of `workflowRequestPublication`.
+#' @param role TRUE: `x` are roles and their folders are returned; FALSE: the reverse.
+#' @return A character vector as long as `x`.
+#' @noRd
+workflowRequestRoleFolder <- function(x, roles, role = TRUE) {
+    from <- if (role) names(roles) else unname(roles)
+    to <- if (role) unname(roles) else names(roles)
+    ifelse(x %in% from, to[match(x, from)], x)
 }
 
 #' Flush explicit export-owned files and directories.
@@ -963,8 +1110,8 @@ resumeDIAQvalueOutput <- function(manager, record, hydrate = TRUE) {
     product <- manager$.context$snapshot$output_products[[reference$entity_id]] %||% product
     root <- manager$.context$experiment_paths$time_dir
     if (is.null(product) || is.null(root)) return(NULL)
-    path <- file.path(root, ".workflow-export", paste0("qvalue-", substr(reference$entity_id, 1L, 40L)),
-        "journal.json")
+    path <- file.path(root, ".workflow-export",
+        workflowStagedRequest(root, "qvalue", reference$entity_id)$request_id, "journal.json")
     if (file.exists(path)) {
         if (file.size(path) > 65536) cli::cli_abort("oversized Q-value journal", class = "saved_entity_corrupt")
         journal <- jsonlite::read_json(path)
@@ -1003,7 +1150,8 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
     key <- paste(arguments$omic_type, arguments$experiment_label, sep = "_")
     directories <- arguments$project_dirs[[key]]
     root <- directories$time_dir
-    paths <- workflowExportPaths(root, paste0("qvalue-", substr(reference$entity_id, 1L, 40L)))
+    staging <- workflowStagedRequest(root, "qvalue", reference$entity_id)
+    paths <- workflowExportPaths(root, staging$request_id)
     journal_path <- file.path(paths$request_dir, "journal.json")
     journal <- if (file.exists(journal_path)) {
         if (file.size(journal_path) > 65536) cli::cli_abort("oversized Q-value journal", class = "saved_entity_corrupt")
@@ -1022,14 +1170,20 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
         cli::cli_abort("Q-value publication identity differs", class = "saved_entity_scope")
     }
     was_complete <- identical(journal$status, "complete")
-    staged <- file.path(paths$request_dir, "figures")
+    staged <- file.path(paths$request_dir, staging$staged)
     grid_path <- file.path(paths$request_dir, "display.rds")
     expected <- as.vector(outer(paste0(arguments$step_name, "_", c("proteins_total",
         "proteins_per_run", "peptides_total", "peptides_per_protein", "peptides_per_run",
         "combined_plots")), c("png", "pdf"), paste, sep = "."))
     if (is.null(journal$files)) {
         if (!dir.exists(staged)) dir.create(staged)
-        arguments$project_dirs[[key]]$time_dir <- staged
+        # KIT-052: the figures are rendered in a short scratch folder and copied into the staged one: the
+        # staged path is longer than the project's, and the PNG device on Windows fails with
+        # a warning only on a path longer than 259 characters.
+        scratch <- tempfile("qvalue-")
+        dir.create(scratch)
+        on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
+        arguments$project_dirs[[key]]$time_dir <- scratch
         # The renderer accumulates its filtering_progress on the owner the caller named (the
         # proteomics bus, or the session default); a failed render restores what the owner held.
         previous <- shiny::isolate(owner$filtering_progress)
@@ -1041,9 +1195,14 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
         workflowExportBoundary("before_qvalue_figures")
         grid <- do.call(render_fn, arguments)
         files <- file.path(staged, expected)
-        if (is.null(grid) || any(!file.exists(files)) || any(file.size(files) <= 0)) {
+        if (is.null(grid)) {
             cli::cli_abort("required Q-value figures are incomplete", class = "saved_entity_outputs_pending")
         }
+        checkWorkflowFigureFiles(file.path(scratch, expected), "required Q-value figures are incomplete",
+            class = "saved_entity_outputs_pending")
+        copied <- file.copy(file.path(scratch, expected), files, overwrite = TRUE)
+        checkWorkflowFigureFiles(files, "required Q-value figures are incomplete",
+            class = "saved_entity_outputs_pending", copied = copied)
         saveRDS(list(grid = grid, progress = shiny::isolate(owner$filtering_progress)), grid_path)
         journal$files <- stats::setNames(lapply(files, \(path) list(
             sha256 = digest::digest(file = path, algo = "sha256"), bytes = file.size(path))), expected)

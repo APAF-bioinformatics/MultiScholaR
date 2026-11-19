@@ -1,0 +1,24 @@
+INTERNAL fastduckdb fast_duckdb@2694b972: installed 0.2.0 (293 s)
+INTERNAL fastlimpadpc fast_limpa_dpc@87a90b89: installed 0.1.0 (41 s)
+in both: 374; same version: 350; different version: 24 (hard closure 8, compiled 15)
+KIT-134 CHECK PASSED: version table complete; no hard-closure package missing; duckdb 1.5.5 
+ok   R is 4.6.1: R version 4.6.1 (2026-06-24 ucrt)
+ok   R home is inside the bundle: D:/a/_temp/re located/msr moved/R
+ok   every library path is inside the bundle: D:/a/_temp/re located/msr moved/R/library
+ok   the network is offline: a connection to cran.r-project.org failed
+ok   every bundled package loads (385 packages): 385 loaded, 0 failed, 0 not reported, 121 s
+ok   every loaded namespace comes from the bundle: 0 outside
+ok   MultiScholaR attaches from the bundle and has run_app: MultiScholaR 0.5.0 TRUE D:/a/_temp/re located/msr moved/R/library/MultiScholaR 
+MINIMUM R >= 4.1.0: bundled 4.6.1, met
+MINIMUM filelock >= 1.0.3: bundled 1.0.3, met
+MINIMUM duckplyr >= 1.2.1: bundled 1.2.1, met
+MINIMUM testthat >= 3.0.0: bundled none, not bundled
+MINIMUM fastduckdb >= 0.1.0: bundled 0.2.0, met
+MINIMUM nanoarrow >= 0.9.0: bundled 0.9.0, met
+MINIMUM qs2 >= 0.2.2: bundled 0.2.2, met
+ok   every bundled package meets DESCRIPTION's declared version (7 declared): 6 met, 0 not met (), 1 not bundled (testthat)
+KIT-134 CHECK PASSED: the bundle's R and library from the moved folder
+ok   fastduckdb loads from the bundle: version 0.2.0, APAF-bioinformatics/fast_duckdb/fastduckdb@2694b972393013b12479c49a2deb2d7514960744
+ok   fastlimpadpc loads from the bundle: version 0.1.0, APAF-bioinformatics/fast_limpa_dpc@87a90b894b2057744fc9c315a4fb7d7db3ce3af7
+ok   fastduckdb's reader reads back a 100-column Parquet file written by duckdb, identical: 500 rows, 100 columns
+KIT-134 CHECK PASSED: the internal packages in the bundle
