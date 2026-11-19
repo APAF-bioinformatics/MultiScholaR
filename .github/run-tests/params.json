@@ -1,25 +1,22 @@
 {
-  "label": "KIT-137 corpus manifests, run 2b (run 2 44423614767 invalid: params kept another request's fields): 5fd98172 against 74bdf127, test-integration-corpus.R, composer in a second job, check on both",
-  "package_commit": "5fd981722a55cc72442b4a632f5a9e4916c43c17",
-  "base_commit": "74bdf127fe2718182709072ea82697b60a73d825",
+  "label": "KIT-129 sixth pass correction: bbeb3740 against a9d6b240, test-kit129-run-path.R with sva",
+  "package_commit": "bbeb374038d8f0783a3773fbe05148531b77e2c9",
+  "base_commit": "a9d6b24086e572b2bb2b76e503d6299a0eb1cc88",
   "tools_ref": "",
   "tests": [
-    "test-integration-corpus.R"
+    "test-kit129-run-path.R"
   ],
   "shards": 1,
-  "file_timeout_minutes": 30,
+  "file_timeout_minutes": 45,
   "file_timeouts": {},
-  "extra_packages": [],
-  "env": {},
-  "check": true,
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": [
-    {
-      "path": "tests/testdata/integration/compose_integration_corpus.R",
-      "args": ["kit137-out/corpus"],
-      "out": "kit137-out",
-      "timeout_minutes": 30
-    }
-  ]
+  "scripts": []
 }
