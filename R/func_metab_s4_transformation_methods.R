@@ -653,6 +653,13 @@ setMethod(
 
             assay_matrix[!is.finite(assay_matrix)] <- NA # Handle Inf/-Inf
 
+            # KIT-145 (M17): cyclic loess is refused below its minimum number of features. The refusal is raised here,
+            # before the skips below and outside the tryCatch around the fit, so that it is never turned into
+            # unnormalised data with a warning.
+            if (identical(normalisation_method_final, "cyclicloess")) {
+                checkOmicsCyclicLoessMinimum(assay_matrix, assay_name, "metabolites")
+            }
+
             # Check if matrix is valid for normalization
             if (nrow(assay_matrix) < 1 || ncol(assay_matrix) < 1) {
                 warning(sprintf("Assay '%s': Matrix is empty after preparation. Skipping normalization.", assay_name), immediate. = TRUE)
