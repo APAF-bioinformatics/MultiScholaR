@@ -415,7 +415,6 @@ app_server <- function(input, output, session) {
 
     # Generate dynamic tab content
     output$dynamic_tabs <- renderUI({
-      message(sprintf("--- Entering dynamic_tabs renderUI ---"))
       message(sprintf("   Selected omics: %s", paste(values$selected_omics, collapse = ", ")))
 
       tab_items <- lapply(values$selected_omics, function(omic) {
@@ -494,7 +493,6 @@ app_server <- function(input, output, session) {
 
       message(sprintf("   Total tab items created: %d", length(tab_items)))
       result <- do.call(shiny::tagList, tab_items)
-      message(sprintf("--- Exiting dynamic_tabs renderUI ---"))
       return(result)
     })
 

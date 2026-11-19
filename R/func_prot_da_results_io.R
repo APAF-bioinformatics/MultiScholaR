@@ -19,11 +19,6 @@ outputDaAnalysisResults <- function(
   uniprot_id_column = NULL,
   display_columns = NULL
 ) {
-  cat("*** ENTERING outputDaAnalysisResults ***\n")
-  cat("DEBUG: file_prefix =", file_prefix, "\n")
-  cat("DEBUG: da_output_dir =", da_output_dir, "\n")
-  cat("DEBUG: uniprot_tbl is null:", is.null(uniprot_tbl), "\n")
-  cat("DEBUG: da_analysis_results_list names:", paste(names(da_analysis_results_list), collapse = ", "), "\n")
 
 
   uniprot_tbl <- checkParamsObjectFunctionSimplify(theObject, "uniprot_tbl", NULL)
@@ -54,17 +49,14 @@ outputDaAnalysisResults <- function(
   theObject <- updateParamInObject(theObject, "uniprot_id_column")
   theObject <- updateParamInObject(theObject, "display_columns")
 
-  cat("DEBUG: Finished parameter setup, starting plot creation\n")
 
   ## PCA plot
-  cat("DEBUG: Starting PCA plot section\n")
   plot_pca_plot <- da_analysis_results_list$pca_plot
 
   dir.create(file.path(publication_graphs_dir, "PCA"),
     recursive = TRUE,
     showWarnings = FALSE
   )
-  cat("DEBUG: PCA plot section completed\n")
 
   for (format_ext in plots_format) {
     file_name <- file.path(publication_graphs_dir, "PCA", paste0("PCA_plot.", format_ext))
@@ -223,9 +215,7 @@ outputDaAnalysisResults <- function(
 
 
   ## Create wide format output file
-  cat("DEBUG: Starting wide format output section\n")
   da_proteins_wide <- da_analysis_results_list$da_proteins_wide
-  cat("DEBUG: da_proteins_wide extracted successfully\n")
 
   vroom::vroom_write(
     da_proteins_wide,
@@ -242,9 +232,7 @@ outputDaAnalysisResults <- function(
       paste0(file_prefix, "_wide.xlsx")
     )
   )
-  cat("DEBUG: Wide format files written\n")
 
-  cat("DEBUG: Starting wide_annot creation\n")
 
   tryCatch(
     {
@@ -266,14 +254,12 @@ outputDaAnalysisResults <- function(
         )) |>
         relocate(gene_name, .after = !!sym(args_row_id))
 
-      cat("DEBUG: wide_annot creation successful\n")
     },
     error = function(e) {
       cat("DEBUG: ERROR in wide_annot creation:", e$message, "\n")
       # Create a fallback version without annotations
       da_proteins_wide_annot <- da_proteins_wide |>
         mutate(gene_name = "")
-      cat("DEBUG: Created fallback wide_annot without annotations\n")
     }
   )
 
@@ -293,14 +279,11 @@ outputDaAnalysisResults <- function(
     )
   )
 
-  cat("DEBUG: Wide_annot files written, proceeding to long format\n")
 
   ## Create long format output file
   da_proteins_long <- da_analysis_results_list$da_proteins_long
 
-  cat("DEBUG: da_proteins_long exists:", !is.null(da_proteins_long), "\n")
   if (!is.null(da_proteins_long)) {
-    cat("DEBUG: da_proteins_long dimensions:", dim(da_proteins_long), "\n")
   } else {
     cat("DEBUG: da_proteins_long is NULL - cannot create long_annot\n")
     return(NULL)
@@ -322,13 +305,6 @@ outputDaAnalysisResults <- function(
     )
   )
 
-  cat("DEBUG: Starting long_annot creation\n")
-  cat("DEBUG: da_proteins_long dimensions:", dim(da_proteins_long), "\n")
-  cat("DEBUG: uniprot_tbl is null:", is.null(uniprot_tbl), "\n")
-  if (!is.null(uniprot_tbl)) {
-    cat("DEBUG: uniprot_tbl dimensions:", dim(uniprot_tbl), "\n")
-  }
-  cat("DEBUG: args_row_id:", args_row_id, "\n")
 
   da_proteins_long_annot <- da_proteins_long |>
     mutate(uniprot_acc_cleaned = str_split(!!sym(args_row_id), "-") |>
@@ -348,20 +324,15 @@ outputDaAnalysisResults <- function(
     )) |>
     relocate(gene_name, .after = !!sym(args_row_id))
 
-  cat("DEBUG: da_proteins_long_annot dimensions:", dim(da_proteins_long_annot), "\n")
-  cat("DEBUG: da_proteins_long_annot is null:", is.null(da_proteins_long_annot), "\n")
   if (!is.null(da_proteins_long_annot) && nrow(da_proteins_long_annot) > 0) {
-    cat("DEBUG: long_annot columns:", paste(names(da_proteins_long_annot), collapse = ", "), "\n")
   } else {
     cat("DEBUG: long_annot is empty or null - annotation pipeline failed\n")
   }
 
   long_annot_file_path <- file.path(da_output_dir, paste0(file_prefix, "_long_annot.tsv"))
-  cat("DEBUG: Attempting to write long_annot to:", long_annot_file_path, "\n")
 
   vroom::vroom_write(da_proteins_long_annot, long_annot_file_path)
 
-  cat("DEBUG: long_annot file written, checking if exists:", file.exists(long_annot_file_path), "\n")
 
   writexl::write_xlsx(
     da_proteins_long_annot,

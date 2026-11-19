@@ -65,11 +65,6 @@ RenderReport <- function(omic_type,
                          rmd_filename = "DIANN_report.rmd",
                          project_dirs_object_name = "project_dirs",
                          output_format = NULL) {
-    message("--- DEBUG66: Entering RenderReport ---")
-    message(sprintf("   DEBUG66: omic_type = '%s'", omic_type))
-    message(sprintf("   DEBUG66: experiment_label = '%s'", experiment_label))
-    message(sprintf("   DEBUG66: rmd_filename = '%s'", rmd_filename))
-    message(sprintf("   DEBUG66: project_dirs_object_name = '%s'", project_dirs_object_name))
 
     # --- Validate Inputs ---
     if (missing(omic_type) || !is.character(omic_type) || length(omic_type) != 1 || omic_type == "") {
@@ -82,11 +77,9 @@ RenderReport <- function(omic_type,
         rlang::abort("`rmd_filename` must be a single non-empty character string.")
     }
 
-    message("   DEBUG66: Input validation passed")
 
     # --- Retrieve Paths from Global Project Directories Object ---
     # Use the new helper function with automatic fallback
-    message("   DEBUG66: Calling getProjectPaths...")
     current_paths <- tryCatch(
         {
             getProjectPaths(
@@ -100,22 +93,6 @@ RenderReport <- function(omic_type,
         }
     )
 
-    message("   DEBUG66: getProjectPaths completed")
-    if (!is.null(current_paths)) {
-        message(sprintf("      DEBUG66: current_paths is list: %s", is.list(current_paths)))
-        message(sprintf("      DEBUG66: current_paths names: %s", paste(names(current_paths), collapse = ", ")))
-        if ("base_dir" %in% names(current_paths)) {
-            message(sprintf("      DEBUG66: base_dir = %s", current_paths$base_dir))
-        }
-        if ("results_summary_dir" %in% names(current_paths)) {
-            message(sprintf("      DEBUG66: results_summary_dir = %s", current_paths$results_summary_dir))
-        }
-        if ("source_dir" %in% names(current_paths)) {
-            message(sprintf("      DEBUG66: source_dir = %s", current_paths$source_dir))
-        }
-    } else {
-        message("      DEBUG66: current_paths is NULL!")
-    }
 
     if (!is.list(current_paths) ||
         is.null(current_paths$base_dir) || # Need base_dir to find the template Rmd
@@ -124,7 +101,6 @@ RenderReport <- function(omic_type,
         rlang::abort(paste0("Essential paths (base_dir, results_summary_dir) missing from project_dirs"))
     }
 
-    message("   DEBUG66: Path validation passed")
 
     # --- Determine the source Rmd template directory (e.g., scripts/proteomics) ---
     # This logic mirrors part of setupDirectories to find the correct unlabelled script source leaf.
@@ -142,8 +118,6 @@ RenderReport <- function(omic_type,
     rmd_template_dir <- file.path(current_paths$base_dir, "scripts", omic_script_template_leaf)
     rmd_input_path <- file.path(rmd_template_dir, rmd_filename)
 
-    message(sprintf("   DEBUG66: rmd_input_path = %s", rmd_input_path))
-    message(sprintf("   DEBUG66: Template file exists: %s", file.exists(rmd_input_path)))
 
     if (!file.exists(rmd_input_path)) {
         rlang::abort(paste0(
@@ -153,7 +127,6 @@ RenderReport <- function(omic_type,
     }
 
     # --- Construct Output Path (in the labelled results_summary directory) ---
-    message("   DEBUG66: Constructing output file path...")
     output_file_basename <- paste0(
         tools::file_path_sans_ext(rmd_filename),
         "_", omic_type,
@@ -173,8 +146,6 @@ RenderReport <- function(omic_type,
 
     output_file_path <- file.path(current_paths$results_summary_dir, paste0(output_file_basename, output_ext))
 
-    message(sprintf("   DEBUG66: output_file_path = %s", output_file_path))
-    message(sprintf("   DEBUG66: output_ext = %s", output_ext))
 
     logger::log_info("Attempting to render report:")
     logger::log_info("- Rmd Source (Template): {rmd_input_path}")
@@ -182,10 +153,7 @@ RenderReport <- function(omic_type,
     logger::log_info("- Params: omic_type=\'{omic_type}\', experiment_label=\'{experiment_label}\'")
 
     # Read study_parameters.txt to extract workflow_name and timestamp
-    message("   DEBUG66: Reading study_parameters.txt...")
     params_path <- file.path(current_paths$source_dir, "study_parameters.txt")
-    message(sprintf("      DEBUG66: params_path = %s", params_path))
-    message(sprintf("      DEBUG66: params file exists: %s", file.exists(params_path)))
     if (file.exists(params_path)) {
         lines <- readLines(params_path)
         workflow_name_line <- grep("Workflow Name:", lines, value = TRUE)
@@ -197,12 +165,8 @@ RenderReport <- function(omic_type,
         timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     }
 
-    message(sprintf("   DEBUG66: workflow_name = '%s'", workflow_name))
-    message(sprintf("   DEBUG66: timestamp = '%s'", timestamp))
 
     # --- Render the Report ---
-    message("   DEBUG66: About to call rmarkdown::render...")
-    message("      DEBUG66: Render parameters:")
     message(sprintf("         input = %s", rmd_input_path))
     message(sprintf("         output_file = %s", output_file_path))
     message(sprintf("         output_format = %s", ifelse(is.null(output_format), "NULL (using Rmd default)", output_format)))
@@ -227,9 +191,6 @@ RenderReport <- function(omic_type,
             )
         },
         error = function(e) {
-            message("   DEBUG66: rmarkdown::render FAILED")
-            message(sprintf("      DEBUG66: Error message: %s", e$message))
-            message("      DEBUG66: Error traceback:")
             print(e)
             logger::log_error("Failed to render R Markdown report: {e$message}")
             logger::log_error("Input path: {rmd_input_path}")
@@ -238,10 +199,6 @@ RenderReport <- function(omic_type,
         }
     )
 
-    message(sprintf("   DEBUG66: rmarkdown::render returned: %s", ifelse(is.null(rendered_path), "NULL", rendered_path)))
-    if (!is.null(rendered_path)) {
-        message(sprintf("   DEBUG66: Output file exists: %s", file.exists(rendered_path)))
-    }
 
     if (!is.null(rendered_path) && file.exists(rendered_path)) {
         logger::log_info("Report successfully rendered to: {rendered_path}")
@@ -249,8 +206,6 @@ RenderReport <- function(omic_type,
         logger::log_warn("Report rendering failed or output file not found at expected location.")
     }
 
-    message("--- DEBUG66: Exiting RenderReport ---")
-    message(sprintf("   DEBUG66: Returning: %s", ifelse(is.null(rendered_path), "NULL", rendered_path)))
 
     invisible(rendered_path)
 }

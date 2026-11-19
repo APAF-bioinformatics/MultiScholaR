@@ -152,9 +152,6 @@ setMethod(
   f = "pearsonCorForSamplePairs",
   signature = "PeptideQuantitativeData",
   definition = function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA, exclude_pool_samples = TRUE) {
-    message("+===========================================================================+")
-    message("|  DEBUG66: Entering pearsonCorForSamplePairs (Peptides)                   |")
-    message("+===========================================================================+")
 
     design_matrix <- theObject@design_matrix
     sample_id <- theObject@sample_id
@@ -217,7 +214,6 @@ setMethod(
       }
     }
 
-    message("|  DEBUG66: Exiting pearsonCorForSamplePairs (Peptides)                    |")
     return(result_df)
   }
 )

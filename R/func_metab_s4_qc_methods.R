@@ -501,9 +501,6 @@ setMethod(
     f = "pearsonCorForSamplePairs",
     signature = "MetaboliteAssayData",
     definition = function(theObject, tech_rep_remove_regex = NULL, correlation_group = NA) {
-        message("+===========================================================================+")
-        message("|  DEBUG66: Entering pearsonCorForSamplePairs (MetaboliteAssayData)        |")
-        message("+===========================================================================+")
 
         # --- Input Validation ---
         # tech_rep_remove_regex can be NULL, checked inside helper/later use
@@ -515,9 +512,6 @@ setMethod(
         tech_rep_col_name <- theObject@technical_replicate_id # Default grouping if correlation_group is NA
         assay_list <- theObject@metabolite_data
 
-        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] sample_id_col = '%s', metabolite_id_col = '%s'", sample_id_col_name, metabolite_id_col_name))
-        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] tech_rep_col_name = '%s', correlation_group = '%s'", tech_rep_col_name, correlation_group))
-        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Number of assays: %d", length(assay_list)))
 
         if (length(assay_list) == 0) {
             warning("No assays found in `metabolite_data` slot. Returning empty list.")
@@ -529,24 +523,19 @@ setMethod(
             names(assay_list) <- paste0("Assay_", seq_along(assay_list))
             warning("Assay list was unnamed. Using default names (Assay_1, Assay_2, ...).")
         }
-        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay names: %s", paste(names(assay_list), collapse = ", ")))
 
         # Determine the actual grouping column to use for pairing samples
         replicate_group_column_name <- correlation_group
         if (is.na(correlation_group)) {
-            message("   DEBUG66 [pearsonCorForSamplePairs] correlation_group is NA, falling back to tech_rep_col")
             if (is.na(tech_rep_col_name) || !tech_rep_col_name %in% colnames(design_matrix)) {
-                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] FAIL - tech_rep_col '%s' not valid", tech_rep_col_name))
                 stop("`correlation_group` is NA and `technical_replicate_id` ('", tech_rep_col_name, "') is NA or not found in design_matrix. Cannot determine sample pairing.")
             }
             replicate_group_column_name <- tech_rep_col_name
         } else {
             if (!correlation_group %in% colnames(design_matrix)) {
-                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] FAIL - correlation_group '%s' not in design_matrix", correlation_group))
                 stop(sprintf("Specified `correlation_group` ('%s') not found in design_matrix.", correlation_group))
             }
         }
-        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Using replicate_group_column_name = '%s'", replicate_group_column_name))
 
         # Resolve tech_rep_remove_regex from config if needed (or use default)
         # Assuming the helper function or subsequent filtering handles NULL regex gracefully (meaning no filtering)
@@ -558,15 +547,12 @@ setMethod(
         correlation_results_list <- purrr::map(seq_along(assay_list), function(i) {
             assay_name <- names(assay_list)[i]
             current_assay_data <- assay_list[[i]]
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] === Processing assay: %s ===", assay_name))
 
             # --- Correctly identify sample columns based on design matrix ---
             design_samples <- as.character(design_matrix[[sample_id_col_name]]) # Get sample IDs from design matrix
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_samples count = %d", assay_name, length(design_samples)))
             all_assay_cols <- colnames(current_assay_data)
             sample_cols <- intersect(all_assay_cols, design_samples) # Find which design samples are columns in the assay
             metadata_cols <- setdiff(all_assay_cols, sample_cols) # All other columns are metadata/ID
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': sample_cols count = %d, metadata_cols count = %d", assay_name, length(sample_cols), length(metadata_cols)))
 
             # Ensure the primary metabolite ID column is considered metadata
             if (metabolite_id_col_name %in% sample_cols) {
@@ -574,7 +560,6 @@ setMethod(
             }
             metadata_cols <- union(metadata_cols, metabolite_id_col_name) # Ensure metabolite ID is not treated as a sample column
             sample_cols <- setdiff(all_assay_cols, metadata_cols) # Final list of sample columns
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': final sample_cols count = %d", assay_name, length(sample_cols)))
 
             if (length(sample_cols) < 2) { # Need at least 2 samples for correlation
                 warning(sprintf("Assay '%s': Fewer than 2 sample columns found matching design matrix sample IDs. Skipping Pearson correlation.", assay_name))
@@ -596,7 +581,6 @@ setMethod(
 
             # Filter design matrix to match assay samples
             design_matrix_filtered <- design_matrix[design_matrix[[sample_id_col_name]] %in% sample_cols, ]
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_matrix_filtered rows = %d", assay_name, nrow(design_matrix_filtered)))
 
             # Ensure metabolite ID column exists
             if (!metabolite_id_col_name %in% colnames(current_assay_data)) {
@@ -608,10 +592,8 @@ setMethod(
 
 
             # Prepare the design matrix subset for the helper
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Creating design_subset with cols '%s' and '%s'", assay_name, sample_id_col_name, replicate_group_column_name))
             design_subset <- design_matrix_filtered |>
                 dplyr::select(!!rlang::sym(sample_id_col_name), !!rlang::sym(replicate_group_column_name))
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_subset rows = %d, cols = %s", assay_name, nrow(design_subset), paste(colnames(design_subset), collapse = ", ")))
 
 
             # --- Ensure consistent Sample ID type (character) --- #
@@ -626,8 +608,6 @@ setMethod(
             # --- Calculate Correlations Directly --- #
 
             # 1. Get pairs of samples to compare based on the replicate grouping column
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Calling getPairsOfSamplesTable...", assay_name))
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': design_subset unique groups = %s", assay_name, paste(unique(design_subset[[replicate_group_column_name]]), collapse = ", ")))
             pairs_for_comparison <- tryCatch(
                 {
                     getPairsOfSamplesTable(design_subset, # Contains sample_id and replicate_group_column
@@ -636,18 +616,15 @@ setMethod(
                     )
                 },
                 error = function(e) {
-                    message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': ERROR in getPairsOfSamplesTable: %s", assay_name, e$message))
                     warning(sprintf("Assay '%s': Error getting sample pairs: %s. Skipping correlation.", assay_name, e$message))
                     return(NULL)
                 }
             )
 
             if (is.null(pairs_for_comparison) || nrow(pairs_for_comparison) == 0) {
-                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': No valid sample pairs found. Skipping.", assay_name))
                 warning(sprintf("Assay '%s': No valid sample pairs found for correlation. Skipping.", assay_name))
                 return(NULL)
             }
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': pairs_for_comparison rows = %d", assay_name, nrow(pairs_for_comparison)))
 
             # Get the names of the columns containing paired sample IDs (e.g., "Run.x", "Run.y")
             run_id_col_x <- paste0(sample_id_col_name, ".x")
@@ -655,13 +632,11 @@ setMethod(
 
             # Check if these columns exist in the pairs table
             if (!all(c(run_id_col_x, run_id_col_y) %in% colnames(pairs_for_comparison))) {
-                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Missing expected columns. pairs_for_comparison cols = %s", assay_name, paste(colnames(pairs_for_comparison), collapse = ", ")))
                 warning(sprintf("Assay '%s': Expected paired sample columns ('%s', '%s') not found in pairs table. Skipping correlation.", assay_name, run_id_col_x, run_id_col_y))
                 return(NULL)
             }
 
             # Calculate correlations as a separate vector first
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Calculating correlations for %d pairs...", assay_name, nrow(pairs_for_comparison)))
             calculated_correlations <- tryCatch(
                 {
                     calculateSamplePairCorrelations(
@@ -673,7 +648,6 @@ setMethod(
                     )
                 },
                 error = function(e) {
-                    message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': ERROR in correlation: %s", assay_name, e$message))
                     warning(sprintf("Assay '%s': Error during correlation calculation: %s. Returning NULL results.", assay_name, e$message))
                     return(NULL) # Return NULL if the calculation fails
                 }
@@ -686,7 +660,6 @@ setMethod(
                 warning(sprintf("Assay '%s': Number of calculated correlations (%d) does not match number of pairs (%d). Skipping.", assay_name, length(calculated_correlations), nrow(pairs_for_comparison)))
                 correlation_results_raw <- NULL
             } else {
-                message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Successfully calculated %d correlations", assay_name, length(calculated_correlations)))
                 correlation_results_raw <- pairs_for_comparison |>
                     dplyr::mutate(pearson_correlation = calculated_correlations)
             }
@@ -710,7 +683,6 @@ setMethod(
             }
             # If no regex, correlation_results_filtered already holds correlation_results_raw
 
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Returning %d correlation results", assay_name, nrow(correlation_results_filtered)))
             return(correlation_results_filtered)
         })
 
@@ -721,10 +693,6 @@ setMethod(
         non_null_count_before <- sum(!sapply(correlation_results_list, is.null))
         correlation_results_list <- correlation_results_list[!sapply(correlation_results_list, is.null)]
 
-        message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Finished. Returning %d assay results (removed %d NULL)", length(correlation_results_list), length(assay_list) - non_null_count_before))
-        message("+===========================================================================+")
-        message("|  DEBUG66: Exiting pearsonCorForSamplePairs                               |")
-        message("+===========================================================================+")
 
         return(correlation_results_list)
     }

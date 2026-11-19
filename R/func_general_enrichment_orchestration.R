@@ -98,8 +98,6 @@ processEnrichments <- function(da_results,
         message(sprintf("Total proteins before filtering: %d", nrow(de_data)))
         
         # [OK] DIAGNOSTIC: Check protein_id_column and data structure
-        message(sprintf("DEBUG: protein_id_column = '%s'", protein_id_column))
-        message(sprintf("DEBUG: Available columns in de_data: %s", paste(names(de_data), collapse = ", ")))
         
         if (!protein_id_column %in% names(de_data)) {
           stop(sprintf("ERROR: Column '%s' not found in DE data. Available columns: %s", 
@@ -108,27 +106,15 @@ processEnrichments <- function(da_results,
         
         # Check if the column has valid data
         protein_col_data <- de_data[[protein_id_column]]
-        message(sprintf("DEBUG: First 3 values in protein_id_column: %s", 
-                       paste(head(protein_col_data, 3), collapse = ", ")))
-        message(sprintf("DEBUG: Column class: %s", class(protein_col_data)))
 
                  message("   processEnrichments Step: About to apply protein ID splitting and FDR filtering...")
          message(sprintf("      Data State (de_data Before Modify): Dims=%d rows, %d cols. First 5 IDs: %s", nrow(de_data), ncol(de_data), paste(head(de_data[[protein_id_column]], 5), collapse=", ")))
          
-         # [OK] DEBUG66: Check NA values BEFORE filtering
          na_count_before <- sum(is.na(de_data[[protein_id_column]]))
-         message(sprintf("      DEBUG66: NA values in %s column BEFORE filtering: %d out of %d (%.1f%%)", 
-                        protein_id_column, na_count_before, nrow(de_data), (na_count_before/nrow(de_data))*100))
          
-         # [OK] DEBUG66: Check how many pass q-value filter (before NA filter)
          passes_q_filter <- de_data |> dplyr::filter(.data$fdr_qvalue < q_cutoff)
-         message(sprintf("      DEBUG66: Proteins passing q-value filter (< %.3f): %d", q_cutoff, nrow(passes_q_filter)))
          if (nrow(passes_q_filter) > 0) {
            na_in_sig <- sum(is.na(passes_q_filter[[protein_id_column]]))
-           message(sprintf("      DEBUG66: NA values in %s among q-significant proteins: %d out of %d (%.1f%%)",
-                          protein_id_column, na_in_sig, nrow(passes_q_filter), (na_in_sig/nrow(passes_q_filter))*100))
-           message(sprintf("      DEBUG66: First 10 %s values in q-significant proteins: %s",
-                          protein_id_column, paste(head(passes_q_filter[[protein_id_column]], 10), collapse = ", ")))
          }
 
          subset_sig <- de_data |>
@@ -137,10 +123,7 @@ processEnrichments <- function(da_results,
             ) |>
            dplyr::filter(.data$fdr_qvalue < q_cutoff)
          
-         # [OK] DEBUG66: Check if NAs are being filtered somewhere
          na_count_after_q <- sum(is.na(subset_sig[[protein_id_column]]))
-         message(sprintf("      DEBUG66: NA values in %s AFTER q-filter (before any NA removal): %d out of %d",
-                        protein_id_column, na_count_after_q, nrow(subset_sig)))
 
          message("   processEnrichments Step: Protein ID splitting and filtering complete.")
          message(sprintf("      Data State (subset_sig After Modify): Dims=%d rows, %d cols.", nrow(subset_sig), ncol(subset_sig)))
@@ -178,13 +161,8 @@ processEnrichments <- function(da_results,
           dplyr::filter(.data$log2FC > up_cutoff)
         message(sprintf("Up-regulated proteins (log2FC > %g): %d", up_cutoff, nrow(up_matrix)))
         
-        # [OK] DEBUG66: Check NA values in up_matrix
         if (nrow(up_matrix) > 0) {
           na_in_up <- sum(is.na(up_matrix[[protein_id_column]]))
-          message(sprintf("      DEBUG66: NA values in %s for UP-regulated proteins: %d out of %d (%.1f%%)",
-                         protein_id_column, na_in_up, nrow(up_matrix), (na_in_up/nrow(up_matrix))*100))
-          message(sprintf("      DEBUG66: First 10 UP gene names: %s",
-                         paste(head(up_matrix[[protein_id_column]], 10), collapse = ", ")))
         }
         
         # [OK] DEBUG 66: Check up_matrix details
@@ -205,13 +183,8 @@ processEnrichments <- function(da_results,
           dplyr::filter(.data$log2FC < -down_cutoff)
         message(sprintf("Down-regulated proteins (log2FC < -%g): %d", down_cutoff, nrow(down_matrix)))
         
-        # [OK] DEBUG66: Check NA values in down_matrix
         if (nrow(down_matrix) > 0) {
           na_in_down <- sum(is.na(down_matrix[[protein_id_column]]))
-          message(sprintf("      DEBUG66: NA values in %s for DOWN-regulated proteins: %d out of %d (%.1f%%)",
-                         protein_id_column, na_in_down, nrow(down_matrix), (na_in_down/nrow(down_matrix))*100))
-          message(sprintf("      DEBUG66: First 10 DOWN gene names: %s",
-                         paste(head(down_matrix[[protein_id_column]], 10), collapse = ", ")))
         }
         
         # [OK] DEBUG 66: Check down_matrix details
@@ -396,7 +369,6 @@ processEnrichments <- function(da_results,
     # Explicitly ensure the names of plot_results match contrast_names_to_use
     # This guards against issues if names were lost or mismatched during creation
     if (!identical(names(plot_results), contrast_names)) {
-       message("DEBUG: Mismatch detected or names missing in plot_results. Reassigning names.")
        # Check if the number of elements still matches before trying to assign names
        if(length(plot_results) == length(contrast_names)) {
          names(plot_results) <- contrast_names
@@ -528,7 +500,6 @@ processEnrichments <- function(da_results,
       }
       contrast_names_to_use <- contrast_names # Use the short names
     }
-    message("DEBUG: Using the following contrast names for processing and output:")
     print(contrast_names_to_use)
 
     # Initialize lists
@@ -610,7 +581,6 @@ processEnrichments <- function(da_results,
     if(length(results_list_long_names) == length(contrast_names_to_use)) {
         names(results_list_long_names) <- contrast_names_to_use # Rename the temporary list
         enrichment_results@enrichment_data <- results_list_long_names # Assign renamed list
-        message("DEBUG: Assigned enrichment data to S4 object with short names.")
     } else {
         stop("Mismatch between number of processed results and expected contrast names.")
     }

@@ -14,12 +14,6 @@ createDaResultsLongFormat <- function(lfc_qval_tbl,
                                       design_matrix_raw,
                                       expression_column = log_intensity,
                                       protein_id_table) {
-  message("   DEBUG66: createDaResultsLongFormat - Starting norm_counts processing")
-  message(sprintf("      DEBUG66: norm_counts_input_tbl dims = %d x %d", nrow(norm_counts_input_tbl), ncol(norm_counts_input_tbl)))
-  message(sprintf("      DEBUG66: group_pattern = %s", group_pattern))
-  message(sprintf("      DEBUG66: row_id = %s", row_id))
-  message(sprintf("      DEBUG66: sample_id = %s", sample_id))
-  message(sprintf("      DEBUG66: group_id = %s", group_id))
 
   norm_counts <- norm_counts_input_tbl |>
     as.data.frame() |>
@@ -41,7 +35,6 @@ createDaResultsLongFormat <- function(lfc_qval_tbl,
     ) |>
     mutate({{ group_id }} := purrr::map_chr(!!sym(group_id), as.character))
 
-  message("   DEBUG66: norm_counts processing completed")
 
 
   # print(head(norm_counts))

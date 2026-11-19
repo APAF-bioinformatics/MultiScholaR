@@ -34,17 +34,6 @@ createMetabDaResultsLongFormat <- function(
   group_id_col = "group",
   metabolite_id_col = "metabolite_id"
 ) {
-    # [D66:START] -------------------------
-    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
-    cat("[D66] --- Entering createMetabDaResultsLongFormat [AG-v4] ---\n")
-    d66_log("    lfc_qval_tbl columns: ", paste(colnames(lfc_qval_tbl), collapse = ", "))
-    d66_log("    lfc_qval_tbl nrow: ", nrow(lfc_qval_tbl))
-    d66_log("    expr_matrix dim: ", paste(dim(expr_matrix), collapse = "x"))
-    d66_log("    design_matrix columns: ", paste(colnames(design_matrix), collapse = ", "))
-    d66_log("    sample_id_col = ", sample_id_col)
-    d66_log("    group_id_col = ", group_id_col)
-    d66_log("    metabolite_id_col = ", metabolite_id_col)
-    # [D66:END] ---------------------------
 
     logger::log_info(sprintf("   lfc_qval_tbl: %d rows", nrow(lfc_qval_tbl)))
     logger::log_info(sprintf(
@@ -55,7 +44,6 @@ createMetabDaResultsLongFormat <- function(
     # Convert expression matrix to long format with intensity values
     intensity_long <- tryCatch(
         {
-            cat("[D66]   Step: pivot_longer and join design\n")
             expr_matrix |>
                 as.data.frame() |>
                 tibble::rownames_to_column(metabolite_id_col) |>
@@ -72,13 +60,11 @@ createMetabDaResultsLongFormat <- function(
         }
     )
 
-    cat(sprintf("[D66]   intensity_long dim: %s\n", paste(dim(intensity_long), collapse = "x")))
 
     # Create intensity columns per group
     # Format: intensity.{sample_id}.{group}
     intensity_wide <- tryCatch(
         {
-            cat("[D66]   Step: pivot_wider preparation\n")
             intensity_long |>
                 dplyr::mutate(
                     col_name = paste0("intensity.", !!rlang::sym(sample_id_col), ".", !!rlang::sym(group_id_col))
@@ -96,14 +82,12 @@ createMetabDaResultsLongFormat <- function(
         }
     )
 
-    cat(sprintf("[D66]   intensity_wide dim: %d metabolites x %d columns\n", nrow(intensity_wide), ncol(intensity_wide)))
 
     # Parse contrast to get numerator/denominator groups
     if ("comparison" %in% colnames(lfc_qval_tbl)) {
         # Try to parse numerator/denominator
         tryCatch(
             {
-                cat("[D66]   Step: Parsing contrasts\n")
                 lfc_qval_tbl <- lfc_qval_tbl |>
                     tidyr::separate_wider_delim(
                         comparison,
@@ -123,7 +107,6 @@ createMetabDaResultsLongFormat <- function(
     # Join DE results with intensity values
     da_results_long <- tryCatch(
         {
-            cat("[D66]   Step: final join\n")
             lfc_qval_tbl |>
                 dplyr::left_join(intensity_wide, by = metabolite_id_col) |>
                 dplyr::arrange(comparison, fdr_qvalue, logFC) |>
@@ -135,7 +118,6 @@ createMetabDaResultsLongFormat <- function(
         }
     )
 
-    cat("[D66] --- Completed createMetabDaResultsLongFormat ---\n")
     return(da_results_long)
 }
 

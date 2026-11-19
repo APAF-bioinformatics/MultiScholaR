@@ -76,26 +76,11 @@ completeProtDesignPostCheckpoint <- function(
     )
   })
 
-  if (debugQcTrigger) {
-    message("=== DEBUG66: designMatrixApplet Save Design - About to set qc_trigger ===")
-    message(sprintf("   DEBUG66: qc_trigger is NULL = %s", is.null(qcTrigger)))
-  }
 
   if (!is.null(qcTrigger)) {
-    if (debugQcTrigger) {
-      message("   DEBUG66: Setting qc_trigger(TRUE)")
-    }
     qcTrigger(TRUE)
-    if (debugQcTrigger) {
-      message(sprintf("   DEBUG66: qc_trigger set. Current value = %s", qcTrigger()))
-    }
-  } else if (debugQcTrigger) {
-    message("   DEBUG66: qc_trigger is NULL, cannot set")
   }
 
-  if (debugQcTrigger) {
-    message("=== DEBUG66: designMatrixApplet - qc_trigger setting complete ===")
-  }
 
   updatedStatus <- workflowData$tab_status
   updatedStatus$design_matrix <- "complete"

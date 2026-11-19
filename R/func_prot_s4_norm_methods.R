@@ -124,7 +124,6 @@ setMethod(
   f = "ruvCancor",
   signature = "ProteinQuantitativeData",
   definition = function(theObject, ctrl = NULL, num_components_to_impute = NULL, ruv_grouping_variable = NULL) {
-    message("--- DEBUG66: Entering ruvCancor (S4) ---")
 
     protein_quant_table <- theObject@protein_quant_table
     protein_id_column <- theObject@protein_id_column
@@ -136,9 +135,6 @@ setMethod(
     num_components_to_impute <- checkParamsObjectFunctionSimplify(theObject, "num_components_to_impute", 2)
     ruv_grouping_variable <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", NULL)
 
-    message(sprintf("   DEBUG66 S4 Param: num_components_to_impute = %d", num_components_to_impute))
-    message(sprintf("   DEBUG66 S4 Param: ruv_grouping_variable = %s", ruv_grouping_variable))
-    message(sprintf("   DEBUG66 S4 Param: ctrl length = %d (TRUE count: %d)", length(ctrl), sum(ctrl, na.rm = TRUE)))
 
     theObject <- updateParamInObject(theObject, "ctrl")
     theObject <- updateParamInObject(theObject, "num_components_to_impute")
@@ -178,7 +174,6 @@ prepareRuvCancorInput <- function(theObject, num_components_to_impute) {
     as.matrix()
   Y <- t(normalised_frozen_protein_matrix_filt[, sample_columns])
   if (length(which(is.na(normalised_frozen_protein_matrix_filt))) > 0) {
-    message("   DEBUG66 S4: Performing imputation (NIPALS)...")
     Y <- imputeNipalsMatrix(t(normalised_frozen_protein_matrix_filt[, sample_columns]),
       ncomp = num_components_to_impute
     )
@@ -189,13 +184,11 @@ prepareRuvCancorInput <- function(theObject, num_components_to_impute) {
 #' The canonical-correlation plot for one control set on a prepared input (see `prepareRuvCancorInput`).
 #' @noRd
 ruvCancorFromInput <- function(Y, theObject, ctrl, ruv_grouping_variable) {
-  message("   DEBUG66 S4: Calling ruv_cancorplot...")
   cancorplot_r2 <- ruv_cancorplot(Y,
     X = theObject@design_matrix |>
       dplyr::pull(!!sym(ruv_grouping_variable)),
     ctl = ctrl
   )
-  message("   DEBUG66 S4: ruv_cancorplot returned.")
   cancorplot_r2
 }
 
