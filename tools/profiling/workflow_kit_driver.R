@@ -171,7 +171,8 @@ kitSnapshotAfterStep <- function(project, api) {
 #' @return Journey record: populations per step, files, final head, status.
 #' @noRd
 runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, application_root, events, api) {
-    steps <- kitJourneySteps(kitRouteOf(journey), journey$normalisation$ruv_mode %||% "covariates")
+    steps <- kitJourneySteps(kitRouteOf(journey), journey$normalisation$ruv_mode %||% "covariates",
+        journey$normalisation$ruv_design)
     # KIT-018: a single journey member runs import through `journey$stop_after` only.
     if (!is.null(journey$stop_after)) {
         last <- match(journey$stop_after, vapply(steps, `[[`, character(1), "id"))
@@ -260,25 +261,37 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
                 ruv_covariates = {
                     # KIT-053: the DIA_LIMPA route's RUV covariates, the tab's own action after the correlation filter.
                     # KIT-056: the bound mode is set on the tab's radio first; the state follows it.
+                    # v1.11: the bound RUV design preset first (legacy reveals the mode radio; `none` commits no state).
+                    design <- kitRuvDesign(journey$normalisation)
+                    kitSelectRuvDesign(h, driver, norm_prefix, journey$normalisation)
                     limpa_ruv_mode <- journey$normalisation$ruv_mode %||% "covariates"
-                    if (!identical(limpa_ruv_mode, "covariates")) h$checkpointSetInput(driver, paste0(norm_prefix, "ruv_mode"), limpa_ruv_mode)
+                    if (design %in% c("legacy", "legacy_correction") && !identical(limpa_ruv_mode, "covariates"))
+                        h$checkpointSetInput(driver, paste0(norm_prefix, "ruv_mode"), limpa_ruv_mode)
                     h$checkpointSetInput(driver, paste0(norm_prefix, "norm_qc_tabs"), "Correlation Filtering")
                     h$checkpointClickAndWaitText(driver, paste0(norm_prefix, "apply_ruv_covariates"),
                         paste0("#", norm_prefix, "ruv_covariates_summary"),
-                        sprintf("State saved as: '%s'", steps[[match(id, vapply(steps, `[[`, "", "id"))]]$state))
+                        if (identical(design, "none")) "RUV-III covariates skipped" else
+                            sprintf("State saved as: '%s'", steps[[match(id, vapply(steps, `[[`, "", "id"))]]$state))
                 },
                 normalisation_ruv = {
                     h$checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "normalization")
                     h$checkpointSetInput(driver, paste0(norm_prefix, "norm_method"), journey$normalisation$norm_method)
-                    h$checkpointSetInput(driver, paste0(norm_prefix, "ruv_mode"), journey$normalisation$ruv_mode)
-                    for (name in names(journey$normalisation$ruv)) {
-                        h$checkpointSetInput(driver, paste0(norm_prefix, name), journey$normalisation$ruv[[name]])
+                    # v1.11: the bound RUV design preset; the mode and sweep settings are the Legacy preset's controls.
+                    design <- kitRuvDesign(journey$normalisation)
+                    kitSelectRuvDesign(h, driver, norm_prefix, journey$normalisation)
+                    if (design %in% c("legacy", "legacy_correction")) {
+                        h$checkpointSetInput(driver, paste0(norm_prefix, "ruv_mode"), journey$normalisation$ruv_mode)
+                        for (name in names(journey$normalisation$ruv)) {
+                            h$checkpointSetInput(driver, paste0(norm_prefix, name), journey$normalisation$ruv[[name]])
+                        }
                     }
                     # The module's completion text names the RUV mode (buildProtNormCompletionNotification): the fixture
-                    # corpora skip RUV (KIT-021); the 300-sample corpora and the DIA route run it.
+                    # corpora skip RUV (KIT-021); the 300-sample corpora and the DIA route run it. Under v1.11 the `none`
+                    # preset gives the skipped text; every other new design the correction text (a count of 0 included).
+                    skipped <- identical(design, "none") ||
+                        design %in% c("legacy", "legacy_correction") && identical(journey$normalisation$ruv_mode, "skip")
                     kitClickAndWaitText(h, driver, paste0(norm_prefix, "run_normalization"), ".shiny-notification",
-                        if (identical(journey$normalisation$ruv_mode, "skip")) "Normalization completed (RUV skipped)!" else
-                            "Normalization and RUV correction completed!")
+                        if (skipped) "Normalization completed (RUV skipped)!" else "Normalization and RUV correction completed!")
                 },
                 correlation = {
                     if (identical(kitRouteOf(journey), "DIA_LIMPA")) {
@@ -457,6 +470,34 @@ kitClickAndWaitText <- function(h, driver, input_id, selector, text) {
     invisible(TRUE)
 }
 
+#' Select the RUV design preset a journey binds (protocol v1.11 item 1, KIT-129) on the normalisation tab's panel.
+#' The panel exists only where the build shows it (`MultiScholaR.ruv_design_panel`). Without the panel only the
+#' legacy presets can run (the tab is today's); with it, the bound preset is selected, then the binding's
+#' `ruv_design_inputs` (input id suffix to value: `ruv_k_rule`, `ruv_k_user`, `ruv_k_seed`, `ruv_control_list`) are
+#' set. `default` leaves the tab's pre-selection.
+#' @param h Browser helper environment.
+#' @param driver The browser session.
+#' @param prefix The tab's namespaced input prefix.
+#' @param normalisation The journey's normalisation settings.
+#' @return The preset id, invisibly.
+#' @noRd
+kitSelectRuvDesign <- function(h, driver, prefix, normalisation) {
+    design <- kitRuvDesign(normalisation)
+    id <- paste0(prefix, "ruv_design")
+    shown <- isTRUE(driver$get_js(sprintf("document.getElementById(%s) !== null", jsonlite::toJSON(id, auto_unbox = TRUE))))
+    if (!shown) {
+        if (design %in% c("legacy", "legacy_correction")) return(invisible(design))
+        stop("the binding selects the RUV design '", design, "' but the build shows no RUV design panel (protocol v1.11)",
+            call. = FALSE)
+    }
+    if (!identical(design, "default")) h$checkpointSetInput(driver, id, design)
+    if (!design %in% c("legacy", "legacy_correction")) {
+        for (name in names(normalisation$ruv_design_inputs))
+            h$checkpointSetInput(driver, paste0(prefix, name), normalisation$ruv_design_inputs[[name]])
+    }
+    invisible(design)
+}
+
 #' Attach a browser to the managed application and run the journey, recording the result.
 #' @param h Browser helper environment (the pinned driver file sourced from the snapshot).
 #' @param member_dir Member directory; `application_root` its managed application root.
@@ -623,8 +664,11 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             norm <- prefix("norm")
             h$checkpointSetInput(driver, paste0(norm, "apply_itsd"), isTRUE(settings$apply_itsd))
             h$checkpointSetInput(driver, paste0(norm, "norm_method"), settings$norm_method %||% "cyclicloess")
-            h$checkpointSetInput(driver, paste0(norm, "ruv_mode"), settings$ruv_mode %||% "automatic")
-            for (name in names(settings$ruv)) h$checkpointSetInput(driver, paste0(norm, name), settings$ruv[[name]])
+            # v1.11: the bound RUV design preset; the mode and sweep settings are the Legacy preset's controls.
+            if (kitSelectRuvDesign(h, driver, norm, settings) %in% c("legacy", "legacy_correction")) {
+                h$checkpointSetInput(driver, paste0(norm, "ruv_mode"), settings$ruv_mode %||% "automatic")
+                for (name in names(settings$ruv)) h$checkpointSetInput(driver, paste0(norm, name), settings$ruv[[name]])
+            }
             # KIT-082: the ITSD candidate tables, built a page at a time: a data row in every assay's table before the run.
             if (isTRUE(settings$apply_itsd)) {
                 drawn_tables <- sprintf("Array.from(document.querySelectorAll('[id^=\"%sitsd_table_\"]')).filter(el=>el.querySelector('tbody tr td:not(.dataTables_empty)')).length", norm)
@@ -772,9 +816,12 @@ runKitTrxStep <- function(h, driver, project_parent, corpus, journey, step) {
         normalisation = {
             open_tab("norm")
             norm <- prefix("norm")
-            h$checkpointSetInput(driver, paste0(norm, "ruv_mode"), settings$ruv_mode)
-            for (name in c("auto_percentage_min", "auto_percentage_max", "auto_percentage_step", "k_penalty_weight"))
-                h$checkpointSetInput(driver, paste0(norm, name), settings[[name]])
+            # v1.11: the bound RUV design preset; the mode and grid settings are the Legacy preset's controls.
+            if (kitSelectRuvDesign(h, driver, norm, settings) %in% c("legacy", "legacy_correction")) {
+                h$checkpointSetInput(driver, paste0(norm, "ruv_mode"), settings$ruv_mode)
+                for (name in c("auto_percentage_min", "auto_percentage_max", "auto_percentage_step", "k_penalty_weight"))
+                    h$checkpointSetInput(driver, paste0(norm, name), settings[[name]])
+            }
             notify(paste0(norm, "run_normalization"), "Normalization complete!")
         },
         da = {

@@ -2045,3 +2045,30 @@ test_that("KIT-106 (D10, P-23): the lipid-or-metab DA step ticks the interactive
     tick <- grep("checkpointSetInput(driver, paste0(de, \"volcano_interactive\"), TRUE)", lines, fixed = TRUE)
     expect_true(any(tick > start & tick < assay_set))
 })
+
+test_that("protocol v1.11 item 1: the RUV design preset a journey binds, and the states it leaves", {
+    h <- kitHarness()
+    # Without ruv_design a binding reads as before: the legacy preset with its mode, correction the legacy correction.
+    expect_identical(h$kitRuvDesign(list(ruv_mode = "automatic")), "legacy")
+    expect_identical(h$kitRuvDesign(list(ruv_mode = "skip")), "legacy")
+    expect_identical(h$kitRuvDesign(list(ruv_mode = "covariates")), "legacy")
+    expect_identical(h$kitRuvDesign(list(ruv_mode = "correction")), "legacy_correction")
+    expect_identical(h$kitRuvDesign(list(ruv_mode = "skip", ruv_design = "none")), "none")
+    expect_error(h$kitRuvDesign(list(ruv_design = "arm7")), "protocol v1.11")
+    # Without a design the steps are today's, for every route and mode.
+    for (route in c("DIA", "protein", "DIA_LIMPA", "lipidomics", "metabolomics", "transcriptomics"))
+        for (mode in c("automatic", "skip", "covariates", "correction"))
+            expect_identical(h$kitJourneySteps(route, mode, NULL), h$kitJourneySteps(route, mode))
+    # Lipid and metab: every new design commits the RUV state; only legacy with skip leaves the normalised state.
+    expect_identical(h$kitJourneySteps("lipidomics", "skip")[[6]]$state, "lipid_normalized")
+    expect_identical(h$kitJourneySteps("lipidomics", "skip", "none")[[6]]$state, "lipid_ruv_corrected")
+    expect_identical(h$kitJourneySteps("metabolomics", "automatic", "groups_all_features")[[6]]$state, "metab_ruv_corrected")
+    # DIA_LIMPA: the legacy correction preset is the correction; `none` leaves the correlation-filtered head.
+    expect_identical(h$kitJourneySteps("DIA_LIMPA", "covariates", "legacy_correction")[[11]]$state, "ruv_corrected")
+    expect_identical(h$kitJourneySteps("DIA_LIMPA", "covariates", "none")[[11]]$state, "correlation_filtered")
+    expect_identical(h$kitJourneySteps("DIA_LIMPA", "covariates", "none")[[13]]$state, "correlation_filtered")
+    expect_identical(h$kitJourneySteps("DIA_LIMPA", "covariates", "groups_all_features")[[11]]$state, "ruv_covariates")
+    # Classic and transcriptomics leave the same state names under every preset.
+    expect_identical(h$kitJourneySteps("DIA", "automatic", "groups_all_features"), h$kitJourneySteps("DIA"))
+    expect_identical(h$kitJourneySteps("transcriptomics", "automatic", "none"), h$kitJourneySteps("transcriptomics"))
+})

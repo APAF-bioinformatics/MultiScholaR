@@ -9,10 +9,13 @@
 #' `state` is the state-manager name the step leaves current (NULL for store-only steps);
 #' `on_disk_from` is the first step after which the adopted store holds the state.
 #' @noRd
-kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
+kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates", ruv_design = NULL) {
     step <- function(id, label, state, kind, module, action) list(id = id, label = label,
         state = state, kind = kind, module = module, action = action)
     stopifnot(is.character(route), length(route) == 1L, route %in% c("DIA", "protein", "DIA_LIMPA", "lipidomics", "metabolomics", "transcriptomics"))
+    # Protocol v1.11 item 1 (KIT-129): the RUV design preset the journey binds; without one, today's reading of the mode.
+    ruv_design <- kitRuvDesign(list(ruv_mode = ruv_mode, ruv_design = ruv_design))
+    legacy <- ruv_design %in% c("legacy", "legacy_correction")
     # KIT-098 (protocol v1.8): the transcriptomics route in KIT-097's GUI order (kit-098/plan.md section 2). The normalisation
     # button runs three worker steps (TMM/logCPM and the grid are products, RUVs the state); the DA and the RUVIII export
     # leave the RUVs head and add products; the session export is the summary tab's, after the report.
@@ -41,7 +44,8 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
         omic <- if (identical(route, "lipidomics")) "lipid" else "metab"
         state_of <- function(name) paste0(omic, "_", name)
         module <- function(tab) paste0("mod_", omic, "_", tab)
-        norm_state <- if (identical(ruv_mode, "skip")) state_of("normalized") else state_of("ruv_corrected")
+        # v1.11: every new design (`none` included) commits `<omic>_ruv_corrected`; only legacy with skip leaves `_normalized`.
+        norm_state <- if (legacy && identical(ruv_mode, "skip")) state_of("normalized") else state_of("ruv_corrected")
         return(list(
             step("import", "Import", NULL, "store", module("import"), "process_import"),
             step("design", "Design", state_of("raw_data_s4"), "store", module("design"), "builder save_results"),
@@ -55,7 +59,10 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
             step("report", "Report", NULL, "report", module("summary"), "generate_report")))
     }
     # KIT-056: on the DIA_LIMPA route the RUV step's state follows the bound mode (`ruv_corrected` for correction).
-    limpa_ruv_state <- if (identical(route, "DIA_LIMPA") && identical(ruv_mode, "correction")) "ruv_corrected" else "ruv_covariates"
+    # v1.11: `legacy_correction` is the correction; `none` commits no RUV state (the head stays `correlation_filtered`).
+    limpa_ruv_state <- if (identical(route, "DIA_LIMPA") && (identical(ruv_design, "legacy_correction") ||
+        identical(ruv_design, "legacy") && identical(ruv_mode, "correction"))) "ruv_corrected" else
+        if (identical(route, "DIA_LIMPA") && identical(ruv_design, "none")) "correlation_filtered" else "ruv_covariates"
     # KIT-053: the DIA with limpa route (KIT-046/047/041): the shared import, design, Q-value filter and precursor
     # rollup, then the route's own peptide stage (log2 matrix, peptide accession cleanup, DPC quantification), its
     # protein stage (between-sample normalisation, peptide count filter), the shared correlation filter, the RUV-III
@@ -111,6 +118,25 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
         # KIT-065: the summary tab's publication copy and report render close every route's journey (completion-checked;
         # the report is a rendered file recorded by path and size, not a state). The driver dispatches on the kind.
         step("report", "Report", NULL, "report", "mod_prot_summary", "generate_report"))
+}
+
+#' The RUV design preset a journey's normalisation binding selects (protocol v1.11 item 1, KIT-129). A binding that
+#' names `ruv_design` takes it; one without it reads as before: `automatic`, `manual`, `covariates` and `skip` are the
+#' Legacy preset with that mode (the tab's legacy controls reproduce today's route), `correction` is the legacy
+#' correction. A record that reads a binding without `ruv_design` as "None" for `skip` means the same route.
+#' @param normalisation The journey's normalisation settings (`ruv_mode`, optional `ruv_design`).
+#' @return One preset id.
+#' @noRd
+kitRuvDesign <- function(normalisation) {
+    presets <- c("groups_all_features", "technical_replicates", "supplied_controls", "first_pass_nulls", "legacy",
+        "legacy_correction", "none", "default")
+    design <- normalisation$ruv_design
+    if (!is.null(design)) {
+        if (!is.character(design) || length(design) != 1L || !design %in% presets)
+            stop("ruv_design must be one of ", paste(presets, collapse = ", "), " (protocol v1.11)")
+        return(design)
+    }
+    if (identical(normalisation$ruv_mode, "correction")) "legacy_correction" else "legacy"
 }
 
 #' Journey step identifiers in order.
@@ -376,7 +402,7 @@ kitCases <- function(bindings, stage) {
             if (!case$in_memory) {
                 if (is.null(case$oracles) && !(identical(case$route, "DIA") && identical(case$corpus, "full")))
                     stop("KIT-", ticket, " single journey binds no oracles and does not declare in_memory (protocol v1.7)")
-                steps <- kitJourneySteps(case$route)
+                steps <- kitJourneySteps(case$route, case$normalisation$ruv_mode %||% "covariates", case$normalisation$ruv_design)
                 if (!is.null(case$stop_after)) steps <- steps[seq_len(match(case$stop_after, vapply(steps, `[[`, "", "id")))]
                 judged <- vapply(Filter(function(step) !is.null(step$state) && !identical(step$state, "initial"), steps), `[[`, "", "id")
                 oracles <- kitOracleJourneyPopulations(bindings, case$route, case$oracles %||% "journey")
