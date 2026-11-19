@@ -168,8 +168,28 @@ integrationGuiTexts <- function() {
         refuse_no_shared = "These data sets share no biological sample (%s). Check that each omic names its samples the same way.",
         # %d: the data sets selected.
         refuse_too_few_views = "Two or more data sets are needed; %d selected.",
-        # %s: the reason.
-        refuse_changed = "A data set has changed since it was imported: %s"
+        # KIT-140: the check's own message is shown under "Technical detail", not in the sentence.
+        refuse_changed = "A data set has changed since it was imported. Import the data again at the Import tab.",
+        # KIT-140: the refusals in plain words, by the refusal's condition class (`integrationRefusalText`); the check's
+        # own message is kept under a collapsed "Technical detail" line.
+        technical_detail = "Technical detail",
+        refusal_input_invalid = paste("This omic's saved files cannot be used as they are: they are incomplete, or were",
+            "changed after they were saved. Save the omic again at its Summary tab, then search again."),
+        refusal_input_stale = "A data set has changed since it was imported. Import the data again at the Import tab.",
+        refusal_input_duplicate = paste("Two inputs are of the same omic, or two data sets have the same name. Keep one",
+            "input per omic."),
+        refusal_too_few_omics = "Two or more omics are needed.",
+        refusal_too_few_views = "Two or more data sets are needed.",
+        refusal_inputs_missing = "Nothing is imported yet. Import two or more omics at the Import tab first.",
+        refusal_no_shared = paste("The data sets share no biological sample. Check that each omic names its samples the",
+            "same way."),
+        refusal_group_conflict = paste("A biological sample is in different groups in different omics. Check the groups",
+            "in each omic's design."),
+        refusal_view_empty = "A data set has no feature measured in two or more samples, so nothing of it is left for the model.",
+        refusal_parameters_invalid = "A model setting is not valid. Check the values entered.",
+        refusal_mofa_unavailable = paste("The model cannot be trained on this computer: the MOFA2 software, or the Python",
+            "it uses, is not installed."),
+        refusal_other = "This step could not be completed; the technical detail below says why."
     )
 }
 
@@ -533,7 +553,8 @@ integrationAlignmentSampleTable <- function(preview, texts = integrationGuiTexts
 }
 
 #' A refusal of the sample matching in words: the tab's own sentence for the refusals it names (KIT-139: no shared
-#' sample, fewer than two data sets, a changed input), the model layer's message for the others.
+#' sample, fewer than two data sets, a changed input), the plain sentence of the refusal's class for the others
+#' (KIT-140, `integrationRefusalText`). The check's own message is the refusal's detail, shown apart.
 #' @param condition The `integration_refused` condition.
 #' @param views The selected data sets.
 #' @noRd
@@ -543,11 +564,68 @@ integrationAlignmentRefusal <- function(condition, views, texts = integrationGui
     } else if (inherits(condition, "integration_too_few_views")) {
         sprintf(texts[["refuse_too_few_views"]], length(views))
     } else if (inherits(condition, "integration_input_stale")) {
-        sprintf(texts[["refuse_changed"]], conditionMessage(condition))
+        texts[["refuse_changed"]]
     } else {
-        conditionMessage(condition)
+        integrationRefusalText(condition, texts)$sentence
     }
     sprintf(texts[["align_refused"]], reason)
+}
+
+# ------------------------------------------------------------------------------------------------
+# Refusals in plain words (KIT-140): the GUI's sentence by the refusal's condition class. The classes and the messages
+# the checks raise are unchanged (tests and records rely on them); the message is kept as the refusal's detail.
+# ------------------------------------------------------------------------------------------------
+
+#' The plain sentence of each refusal class the integration tabs can meet, in the order they are looked up (a refusal
+#' carries its own class and `integration_refused`).
+#' @noRd
+INTEGRATION_GUI_REFUSALS <- c(
+    integration_input_invalid = "refusal_input_invalid",
+    integration_input_stale = "refusal_input_stale",
+    integration_input_duplicate = "refusal_input_duplicate",
+    integration_too_few_omics = "refusal_too_few_omics",
+    integration_too_few_views = "refusal_too_few_views",
+    integration_inputs_missing = "refusal_inputs_missing",
+    integration_no_shared_samples = "refusal_no_shared",
+    integration_group_conflict = "refusal_group_conflict",
+    integration_view_empty = "refusal_view_empty",
+    integration_parameters_invalid = "refusal_parameters_invalid",
+    integration_mofa_unavailable = "refusal_mofa_unavailable")
+
+#' A refusal in words: a sentence the tab wrote itself (`integration_gui_refusal`) as it is; any other refusal as the
+#' plain sentence of its class, the check's own message as its detail.
+#' @param condition The condition.
+#' @param texts `integrationGuiTexts()`.
+#' @return `list(sentence, detail)`; `detail` NULL for the tab's own sentences.
+#' @noRd
+integrationRefusalText <- function(condition, texts = integrationGuiTexts()) {
+    if (inherits(condition, "integration_gui_refusal")) return(list(sentence = conditionMessage(condition), detail = NULL))
+    known <- names(INTEGRATION_GUI_REFUSALS)[vapply(names(INTEGRATION_GUI_REFUSALS), function(class) inherits(condition, class),
+        logical(1))]
+    key <- if (length(known)) INTEGRATION_GUI_REFUSALS[[known[[1L]]]] else "refusal_other"
+    list(sentence = texts[[key]], detail = conditionMessage(condition))
+}
+
+#' Refuse with one of the tab's own sentences (KIT-140): a plain condition, so that the sentence reaches the screen
+#' exactly as written (no console formatting); classed `integration_gui_refusal` and `integration_refused`.
+#' @param sentence The sentence.
+#' @param class The refusal's own class.
+#' @noRd
+integrationGuiRefuse <- function(sentence, class) {
+    stop(structure(class = c(class, "integration_gui_refusal", "integration_refused", "error", "condition"),
+        list(message = sentence, call = NULL)))
+}
+
+#' A refusal on screen: the sentence, and the check's message under a collapsed "Technical detail" line.
+#' @param sentence The sentence.
+#' @param detail The check's message, or NULL.
+#' @param class The box's class.
+#' @noRd
+integrationRefusalUi <- function(sentence, detail = NULL, class = "alert alert-danger", texts = integrationGuiTexts()) {
+    shiny::div(class = class, shiny::p(sentence),
+        if (!is.null(detail) && length(detail) && nzchar(detail)) {
+            shiny::tags$details(shiny::tags$summary(texts[["technical_detail"]]), shiny::tags$code(detail))
+        })
 }
 
 #' Save the confirmed sample table as the integration design (KIT-139): the aligned sample table, tab-separated, in the

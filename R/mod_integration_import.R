@@ -79,7 +79,13 @@ mod_integration_import_server <- function(id, workflow_data, paths, texts = inte
             rows <- omics[omics$status %in% c("not_saved", "refused", "changed"), , drop = FALSE]
             if (!nrow(rows)) return(NULL)
             items <- lapply(seq_len(nrow(rows)), function(i) {
-                shiny::tags$li(sprintf(texts[["refused_reason"]], tools::toTitleCase(rows$omic[[i]]), rows$reason[[i]]))
+                omic <- tools::toTitleCase(rows$omic[[i]])
+                if (!identical(rows$status[[i]], "refused")) {
+                    return(shiny::tags$li(sprintf(texts[["refused_reason"]], omic, rows$reason[[i]])))
+                }
+                # KIT-140: the contract reader's refusal (`integration_input_invalid`) in plain words; its message apart.
+                shiny::tags$li(sprintf(texts[["refused_reason"]], omic, texts[["refusal_input_invalid"]]),
+                    shiny::tags$details(shiny::tags$summary(texts[["technical_detail"]]), shiny::tags$code(rows$reason[[i]])))
             })
             testid(shiny::div(class = "alert alert-warning", shiny::strong(texts[["refused_heading"]]),
                 do.call(shiny::tags$ul, items)), "integration-import-not-ready")
@@ -106,8 +112,9 @@ mod_integration_import_server <- function(id, workflow_data, paths, texts = inte
         output$import_status <- shiny::renderUI({
             message <- status()
             if (is.null(message)) return(NULL)
-            testid(shiny::div(class = paste("alert", if (identical(message$type, "ok")) "alert-success" else "alert-danger"),
-                message$text), "integration-import-status")
+            testid(integrationRefusalUi(message$text, message$detail,
+                class = paste("alert", if (identical(message$type, "ok")) "alert-success" else "alert-danger"), texts = texts),
+                "integration-import-status")
         })
 
         shiny::observeEvent(input$import, {
@@ -124,10 +131,11 @@ mod_integration_import_server <- function(id, workflow_data, paths, texts = inte
             }, error = function(error) error)
             if (inherits(result, "error")) {
                 if (!is.null(manager)) closeWorkflowStateOwner(manager)
-                # The tab's own refusals are sentences already; the import's are prefixed.
-                text <- if (inherits(result, "integration_gui_refusal")) conditionMessage(result) else
-                    sprintf(texts[["import_refused"]], conditionMessage(result))
-                status(list(type = "error", text = text))
+                # The tab's own refusals are sentences already; the import's are its class's plain sentence, prefixed,
+                # with the check's message as the detail (KIT-140).
+                refusal <- integrationRefusalText(result, texts)
+                text <- if (is.null(refusal$detail)) refusal$sentence else sprintf(texts[["import_refused"]], refusal$sentence)
+                status(list(type = "error", text = text, detail = refusal$detail))
                 return()
             }
             previous <- shiny::isolate(workflow_data$state_manager)

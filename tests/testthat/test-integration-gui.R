@@ -457,3 +457,54 @@ test_that("KIT-139: no shared sample, fewer than two data sets and a changed inp
         expect_identical(scan$omics$status[scan$omics$omic == "proteomics"], "changed")
     })
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-140: refusals in plain words.
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-140: each refusal class has its plain sentence; the condition and its message are unchanged", {
+    texts <- integrationGuiTexts()
+    for (class in names(INTEGRATION_GUI_REFUSALS)) {
+        condition <- tryCatch(integrationRefuse("the check's own words", class), error = function(error) error)
+        expect_s3_class(condition, class)
+        expect_identical(conditionMessage(condition), "the check's own words")
+        expect_identical(integrationRefusalText(condition, texts),
+            list(sentence = texts[[INTEGRATION_GUI_REFUSALS[[class]]]], detail = "the check's own words"), info = class)
+        expect_false(grepl("manifest|sha256|view", texts[[INTEGRATION_GUI_REFUSALS[[class]]]]), info = class)
+    }
+    # The contract reader's refusal (class integration_input_invalid, no integration_refused).
+    reader <- tryCatch(abortIntegrationInput("the file x.tsv does not match its sha256"), error = function(error) error)
+    expect_identical(integrationRefusalText(reader, texts)$sentence, texts[["refusal_input_invalid"]])
+    expect_identical(integrationRefusalText(simpleError("disk full"), texts), list(sentence = texts[["refusal_other"]],
+        detail = "disk full"))
+    own <- tryCatch(integrationRefuse("Select two or more data sets; 1 selected.", c("integration_too_few_views",
+        "integration_gui_refusal")), error = function(error) error)
+    expect_identical(integrationRefusalText(own, texts), list(sentence = "Select two or more data sets; 1 selected.", detail = NULL))
+    html <- intGuiHtml(integrationRefusalUi("A sentence.", "the check's words", texts = texts))
+    expect_match(html, "<p>A sentence.</p>", fixed = TRUE)
+    expect_match(html, sprintf("<summary>%s</summary>", texts[["technical_detail"]]), fixed = TRUE)
+    expect_match(html, "<code>the check&#39;s words</code>|<code>the check's words</code>")
+    # The Sample Matching tab: a refusal it does not name itself is its class's sentence, not the check's words.
+    conflict <- tryCatch(integrationRefuse("biological sample A_1 has more than one group across the omics",
+        "integration_group_conflict"), error = function(error) error)
+    expect_identical(integrationAlignmentRefusal(conflict, c("a", "b"), texts),
+        sprintf(texts[["align_refused"]], texts[["refusal_group_conflict"]]))
+})
+
+test_that("KIT-140: the Import tab states a refused input in plain words, the reader's message as its detail", {
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    project <- intGuiProject(c("lipidomics", "transcriptomics"))
+    texts <- integrationGuiTexts()
+    cat("\n", file = file.path(project$paths$integration_dir, "lipidomics", "matrix_lipidomics_LCMS_Pos.tsv"), append = TRUE)
+    bus <- intGuiBus()
+    shiny::testServer(mod_integration_import_server, args = list(workflow_data = bus, paths = project$paths), {
+        session$flushReact()
+        html <- output$not_ready$html
+        expect_match(html, sprintf(texts[["refused_reason"]], "Lipidomics", texts[["refusal_input_invalid"]]), fixed = TRUE)
+        expect_match(html, "does not match its sha256", fixed = TRUE)
+        expect_match(html, sprintf("<summary>%s</summary>", texts[["technical_detail"]]), fixed = TRUE)
+        # The reason the scan keeps is still the reader's own message.
+        expect_match(bus$integration_scan$omics$reason[bus$integration_scan$omics$omic == "lipidomics"], "does not match its sha256",
+            fixed = TRUE)
+    })
+})

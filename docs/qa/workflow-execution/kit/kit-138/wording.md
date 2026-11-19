@@ -1,4 +1,4 @@
-# Integration GUI: every user-facing string (KIT-138, KIT-139)
+# Integration GUI: every user-facing string (KIT-138, KIT-139; KIT-140 refusals)
 
 Drafts for the user to set the final wording. All of them live in one table, `integrationGuiTexts()` in
 `R/utils_integration_gui.R`; change a string there and nowhere else. `%s` and `%d` are filled in the order given.
@@ -99,18 +99,38 @@ Rules followed: plain words, exact numbers, none of "manifest", "owner", "declar
 | align_refused | The samples cannot be matched: %s | reason |
 | refuse_no_shared | These data sets share no biological sample (%s). Check that each omic names its samples the same way. | data sets |
 | refuse_too_few_views | Two or more data sets are needed; %d selected. | |
-| refuse_changed | A data set has changed since it was imported: %s | the check's message |
+| refuse_changed | A data set has changed since it was imported. Import the data again at the Import tab. | KIT-140: the check's message moved under "Technical detail" |
 
 ## Shown verbatim, not from the table (for the user's decision)
 
-- **The contract reader's refusals** (`readIntegrationInput`, KIT-061) appear as the reason of a "cannot be used" omic
-  and after "The import was refused:". The brief asked for the reader's message; several of its sentences use
-  internal words, for example "no integration input manifest at <path>", "the file matrix_x.tsv does not match its
-  sha256", "the manifest's schema must be multischolar.integration_input.v1". Translating them means a second table
-  keyed by the reader's checks; not done here.
 - **The data type** column shows the omic's own route name as saved (`LFQ`, `DIA`, `TMT`, `LIPIDOMICS`,
   `METABOLOMICS`, `TRANSCRIPTOMICS`).
 - **Data set names** are the saved names (`lipidomics_LCMS_Pos`, INT-4).
-- **The model layer's other refusals** of the sample matching (a biological sample in two groups, a run its omic's
-  design does not list, a data set left without features) and the changed-input detail after `refuse_changed` are
-  KIT-062's messages, shown as they are; they use "view", "biological-sample column" and "manifest's sha256".
+- **The checks' own messages** (the contract reader's, KIT-061; the model layer's, KIT-062) are no longer the
+  sentence on screen (KIT-140): each refusal shows its class's plain sentence (below), and the check's message only
+  under a collapsed "Technical detail" line. Those messages still use internal words ("manifest", "sha256", "view");
+  they are kept unchanged because tests and records rely on them.
+- **Parameter values in the settings' names**: a parameter the workbook adds before it has a label here shows its own
+  name (for example `likelihood`), and a value without a label shows the value.
+
+## Refusals in plain words (KIT-140)
+
+One sentence per refusal class, `integrationRefusalText()`; the check's own message under "Technical detail". The
+tab's own sentences (Import's "Select data sets from two or more omics", the settings' "enter a whole number") are
+shown as written.
+
+| Key | Class | Text |
+|---|---|---|
+| technical_detail | | Technical detail |
+| refusal_input_invalid | integration_input_invalid (the contract reader; a run its omic's design does not list; no biological-sample column) | This omic's saved files cannot be used as they are: they are incomplete, or were changed after they were saved. Save the omic again at its Summary tab, then search again. |
+| refusal_input_stale | integration_input_stale | A data set has changed since it was imported. Import the data again at the Import tab. |
+| refusal_input_duplicate | integration_input_duplicate | Two inputs are of the same omic, or two data sets have the same name. Keep one input per omic. |
+| refusal_too_few_omics | integration_too_few_omics | Two or more omics are needed. |
+| refusal_too_few_views | integration_too_few_views | Two or more data sets are needed. |
+| refusal_inputs_missing | integration_inputs_missing | Nothing is imported yet. Import two or more omics at the Import tab first. |
+| refusal_no_shared | integration_no_shared_samples | The data sets share no biological sample. Check that each omic names its samples the same way. |
+| refusal_group_conflict | integration_group_conflict | A biological sample is in different groups in different omics. Check the groups in each omic's design. |
+| refusal_view_empty | integration_view_empty | A data set has no feature measured in two or more samples, so nothing of it is left for the model. |
+| refusal_parameters_invalid | integration_parameters_invalid | A model setting is not valid. Check the values entered. |
+| refusal_mofa_unavailable | integration_mofa_unavailable (and the software check) | The model cannot be trained on this computer: the MOFA2 software, or the Python it uses, is not installed. |
+| refusal_other | any other error | This step could not be completed; the technical detail below says why. |

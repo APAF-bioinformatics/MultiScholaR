@@ -58,8 +58,8 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
             if (is.null(summary) || is.null(manager)) return(NULL)
             tryCatch(integrationAlignmentPreview(integrationImportedObject(manager), summary$views),
                 integration_refused = function(error) {
-                    structure(list(refusal = integrationAlignmentRefusal(error, summary$views, texts)),
-                        class = "integration_alignment_refused")
+                    structure(list(refusal = integrationAlignmentRefusal(error, summary$views, texts),
+                        detail = conditionMessage(error)), class = "integration_alignment_refused")
                 })
         })
         usable <- function(value) !is.null(value) && !inherits(value, "integration_alignment_refused")
@@ -72,7 +72,7 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
         output$alignment_status <- shiny::renderUI({
             value <- preview()
             if (is.null(value)) return(shiny::div(class = "alert alert-info", texts[["align_not_imported"]]))
-            if (!usable(value)) return(shiny::div(class = "alert alert-danger", value$refusal))
+            if (!usable(value)) return(integrationRefusalUi(value$refusal, value$detail, texts = texts))
             keys <- lapply(seq_len(nrow(value$keys)), function(i) {
                 shiny::tags$li(sprintf(texts[["align_key"]], tools::toTitleCase(value$keys$omic[[i]]), value$keys$column[[i]]))
             })
@@ -102,7 +102,7 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
         })
         output$confirm_status <- shiny::renderUI({
             error <- confirm_error()
-            if (!is.null(error)) return(shiny::div(class = "alert alert-danger", error))
+            if (!is.null(error)) return(integrationRefusalUi(error$text, error$detail, texts = texts))
             confirmed <- workflow_data$integration_alignment
             if (is.null(confirmed)) return(shiny::p(texts[["not_confirmed"]]))
             shiny::div(class = "alert alert-success", sprintf(texts[["confirmed"]],
@@ -114,13 +114,14 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
             summary <- workflow_data$integration_import
             manager <- workflow_data$state_manager
             if (is.null(summary) || is.null(manager)) {
-                confirm_error(texts[["align_not_imported"]])
+                confirm_error(list(text = texts[["align_not_imported"]]))
                 return()
             }
             # Matched again at the confirmation, so that a data set changed on disk since the tab drew is refused.
             value <- tryCatch(integrationAlignmentPreview(integrationImportedObject(manager), summary$views),
-                integration_refused = function(error) integrationAlignmentRefusal(error, summary$views, texts))
-            if (is.character(value)) {
+                integration_refused = function(error) list(text = integrationAlignmentRefusal(error, summary$views, texts),
+                    detail = conditionMessage(error)))
+            if (!is.null(value[["text", exact = TRUE]])) {
                 confirm_error(value)
                 return()
             }
