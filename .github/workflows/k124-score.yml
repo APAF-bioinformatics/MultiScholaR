@@ -1,0 +1,142 @@
+name: KIT-124 scoring
+
+# Scores simulator runs on a hosted runner with aggregate.R unchanged (no computation on the laptop). A run starts when
+# a push to a sim-k* branch changes .github/k124-sim/score.json, and only then. The file names the scored folder
+# (`label`), the runs and their simulator labels (`runs`: [{run, label}]; the same simulator's cells from several
+# runs are merged into one out dir, each cell from one run only), and the aggregate.R to use (`aggregate`: commit,
+# path and sha256; the job stops when the file at that commit has another hash). The job:
+#   1. assembles every run with .github/k124-sim/assemble.sh (gh run download; the layout aggregate.R reads), merges
+#      the out dirs per simulator (cells/ and ranges/ by file, top-level tables appended without their header);
+#   2. runs aggregate.R once per simulator into <label>/s<i>/ (the layout of scored/final-20261118/), each with its
+#      run.log;
+#   3. writes <label>/inventory.tsv (rows per simulator, cell, arm and subset, by status; from the runs tables),
+#      <label>/jobs.tsv (every simulator job of the runs: conclusion, attempt, times, artifact digest) and
+#      <label>/not-committed.sha256 (the raw tables);
+#   4. copies each run's gate artifact (k124-<label>-gate: arms 1 and 2 against the committed reference, every cell)
+#      into <label>/gate/<run label>/;
+#   5. uploads <label>/ as the artifact k124-score-<label>. Nothing here changes a rule, a threshold or a row.
+
+on:
+  push:
+    branches:
+      - "sim-k*"
+    paths:
+      - .github/k124-sim/score.json
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  score:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+      K124_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: The score file and aggregate.R at its commit, by hash
+        id: plan
+        run: |
+          p=.github/k124-sim/score.json
+          jq -e '(.label | test("^[A-Za-z0-9][A-Za-z0-9-]{0,40}$")) and (.runs | length > 0) and
+            (.runs | all((.run | type == "number") and (.label | test("^[A-Za-z0-9-]+$")))) and
+            (.aggregate.commit | test("^[0-9a-f]{40}$")) and (.aggregate.sha256 | test("^[0-9a-f]{64}$"))' "$p" > /dev/null
+          git fetch --quiet --no-tags origin "$(jq -r .aggregate.commit "$p")"
+          git show "$(jq -r .aggregate.commit "$p"):$(jq -r .aggregate.path "$p")" > "$RUNNER_TEMP/aggregate.R"
+          got=$(sha256sum "$RUNNER_TEMP/aggregate.R" | cut -d' ' -f1)
+          if [ "$got" != "$(jq -r .aggregate.sha256 "$p")" ]; then echo "::error::aggregate.R has sha256 $got, not the declared one"; exit 1; fi
+          echo "aggregate.R: $got (commit $(jq -r .aggregate.commit "$p"))"
+          echo "label=$(jq -r .label "$p")" >> "$GITHUB_OUTPUT"
+          { echo '```json'; cat "$p"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: R 4.6.1 (Posit r-builds; base R only, as aggregate.R needs)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-4.6.1_1_amd64.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb" > /dev/null
+          echo "/opt/R/4.6.1/bin" >> "$GITHUB_PATH"
+      - name: Assemble and merge the runs per simulator
+        run: |
+          p=.github/k124-sim/score.json
+          raw="$RUNNER_TEMP/raw"; mkdir -p "$raw"
+          jq -c '.runs[]' "$p" | while read -r entry; do
+            run=$(echo "$entry" | jq -r .run); label=$(echo "$entry" | jq -r .label)
+            bash .github/k124-sim/assemble.sh "$run" "$label" "$raw/parts"
+          done
+          for sim in s1 s2 s3 s4; do
+            mapfile -t parts < <(find "$raw/parts" -maxdepth 1 -type d -name "$sim-*" | sort)
+            [ "${#parts[@]}" -gt 0 ] || continue
+            out="$raw/$sim"; mkdir -p "$out"
+            for part in "${parts[@]}"; do
+              for sub in cells ranges runner; do
+                if [ -d "$part/$sub" ]; then
+                  mkdir -p "$out/$sub"
+                  for f in "$part/$sub"/*; do
+                    if [ -e "$out/$sub/$(basename "$f")" ]; then echo "::error::$sim: $sub/$(basename "$f") in two runs"; exit 1; fi
+                    cp -r "$f" "$out/$sub/"
+                  done
+                fi
+              done
+              for file in "$part"/*; do
+                [ -f "$file" ] || continue
+                name="$(basename "$file")"
+                case "$name" in
+                  *.tsv) if [ -e "$out/$name" ]; then tail -n +2 "$file" >> "$out/$name"; else cp "$file" "$out/$name"; fi ;;
+                  *) cat "$file" >> "$out/$name" ;;
+                esac
+              done
+            done
+            echo "$sim: merged ${#parts[@]} part(s): ${parts[*]##*/}"
+          done
+      - name: aggregate.R, once per simulator
+        env:
+          LABEL: ${{ steps.plan.outputs.label }}
+        run: |
+          raw="$RUNNER_TEMP/raw"; out="$RUNNER_TEMP/out/$LABEL"; mkdir -p "$out"
+          for sim in s1 s2 s3 s4; do
+            [ -d "$raw/$sim" ] || continue
+            mkdir -p "$out/$sim"
+            Rscript "$RUNNER_TEMP/aggregate.R" "$out/$sim" "${sim^^}=$raw/$sim" > "$out/$sim/run.log" 2>&1
+            tail -n 3 "$out/$sim/run.log"
+          done
+      - name: Inventory, jobs, raw-table hashes, the gate tables
+        env:
+          LABEL: ${{ steps.plan.outputs.label }}
+        run: |
+          p=.github/k124-sim/score.json
+          raw="$RUNNER_TEMP/raw"; out="$RUNNER_TEMP/out/$LABEL"
+          { printf 'simulator\tcell\tarm\tsubset\trows\tfirst_run\tlast_run\tok\trefused\tcrashed\n'
+            for sim in s1 s2 s3 s4; do
+              [ -f "$raw/$sim/$sim-runs.tsv" ] || continue
+              awk -F'\t' 'NR > 1 { k = $1 FS $2 FS $6 FS $7; n[k]++; if (!(k in lo) || $4 + 0 < lo[k]) lo[k] = $4 + 0; if ($4 + 0 > hi[k]) hi[k] = $4 + 0; s[k FS $8]++ }
+                END { for (k in n) printf "%s\t%d\t%d\t%d\t%d\t%d\t%d\n", k, n[k], lo[k], hi[k], s[k FS "ok"], s[k FS "refused"], s[k FS "crashed"] }' "$raw/$sim/$sim-runs.tsv"
+            done | LC_ALL=C sort -t "$(printf '\t')" -k1,1 -k2,2V -k3,3n -k4,4; } > "$out/inventory.tsv"
+          { printf 'run\tjob_id\tjob\tconclusion\tattempt\tstarted_utc\tcompleted_utc\tartifact\tartifact_bytes\tartifact_digest\n'
+            jq -c '.runs[]' "$p" | while read -r entry; do
+              run=$(echo "$entry" | jq -r .run)
+              gh api "repos/$K124_REPO/actions/runs/$run/artifacts" --paginate -q '.artifacts[] | [.name, .size_in_bytes, .digest] | @tsv' > "$RUNNER_TEMP/artifacts.tsv"
+              gh api "repos/$K124_REPO/actions/runs/$run/jobs?filter=all" --paginate -q '.jobs[] | [.id, .name, .conclusion, .run_attempt, .started_at, .completed_at] | @tsv' |
+                while IFS=$'\t' read -r id name conclusion attempt started completed; do
+                  art=$(awk -F'\t' -v n="$name" 'BEGIN { split(n, w, " ") } $1 ~ ("-" w[1] "-" w[2] "$") { print; exit }' "$RUNNER_TEMP/artifacts.tsv")
+                  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$run" "$id" "$name" "$conclusion" "$attempt" "$started" "$completed" "${art:-			}" | cut -f1-10
+                done
+            done; } > "$out/jobs.tsv"
+          (cd "$raw" && find . -type f \( -name '*.tsv' -o -name '*.rds' -o -name '*.txt' -o -name '*.log' \) -not -path './parts/*' | LC_ALL=C sort | xargs sha256sum) > "$out/not-committed.sha256"
+          jq -c '.runs[]' "$p" | while read -r entry; do
+            run=$(echo "$entry" | jq -r .run); label=$(echo "$entry" | jq -r .label)
+            gh run download "$run" -R "$K124_REPO" -D "$out/gate/$label" -n "k124-$label-gate"
+            rm -f "$out/gate/$label"/*.rds
+          done
+          cat "$out"/gate/*/status.txt
+          sha256sum "$RUNNER_TEMP/aggregate.R" > "$out/aggregate-used.sha256"
+      - name: Upload the scored folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: k124-score-${{ steps.plan.outputs.label }}
+          path: ${{ runner.temp }}/out
+          if-no-files-found: error
+          retention-days: 30
