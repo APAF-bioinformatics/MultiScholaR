@@ -56,6 +56,24 @@ runBlock <- function(file, desc) {
         if (nzchar(outcome)) paste0("; run error: ", outcome) else ""))
     for (x in utils::head(results[!classes %in% "expectation_success"], 4L))
         cat("  ", class(x)[[1L]], ":", substr(gsub("[\r\n\t]+", " ", conditionMessage(x)), 1L, 700L), "\n")
+    # KIT-131 diagnostic (item 3): where an error was raised, from the trace testthat kept with it.
+    for (x in results[classes == "expectation_error"]) {
+        lines <- tryCatch(format(x$trace, simplify = "none"), error = function(error) paste("no trace:", conditionMessage(error)))
+        for (line in utils::head(lines, 80L)) cat("TRACE", case, substr(cli::ansi_strip(line), 1L, 300L), "\n")
+    }
+}
+
+# KIT-131 diagnostic (item 3, the unclassed "cannot open the connection"): every file() or gzfile() call that fails, with
+# its path, the path's length, whether its folder exists, and the calls that led to it (CONN lines).
+kit131ConnectionTrace <- function() {
+    exit <- quote(try(if (identical(returnValue(quote(KIT131_FAILED)), quote(KIT131_FAILED))) {
+        path <- as.character(description)[[1L]]
+        calls <- vapply(sys.calls(), function(call) paste(deparse(call[[1L]], nlines = 1L), collapse = ""), character(1))
+        cat(sprintf("CONN %s failed: %s %d characters, open '%s', folder exists %s; calls: %s\n", .kit134FigureTrace$item,
+            path, nchar(path), as.character(open)[[1L]], dir.exists(dirname(path)),
+            substr(paste(utils::tail(calls, 25L), collapse = " > "), 1L, 1500L)))
+    }, silent = TRUE))
+    for (what in c("file", "gzfile")) suppressMessages(trace(what, exit = exit, where = baseenv(), print = FALSE))
 }
 
 probeDevices <- function() {
@@ -129,6 +147,7 @@ for (item in items) {
         dia_products_old_layout = runBlock("test-workflow-dia-products.R",
             "the DA publication worker handler stages the exports, figures and pages under the request directory without saving assets (KIT-019)"),
         prot_tmt_lane = {
+            kit131ConnectionTrace()
             lines <- readLines(file.path(checkout, "tests", "testthat", "test-gui-entry-proteomics.R"))
             block <- gsub("^.*test_that\\(\"|\"$", "", regmatches(lines, regexpr("test_that\\(\"KIT-101 entry lane prot_tmt:[^\"]+\"", lines)))
             runBlock("test-gui-entry-proteomics.R", block)

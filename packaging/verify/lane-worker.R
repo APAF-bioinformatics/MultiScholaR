@@ -49,6 +49,44 @@ driver <- new.env()
 driver$waits <- 0L
 driver$worker_seconds <- 0
 driver$pids <- integer()
+
+# Diagnostic (KIT-131, the silent loss on Windows workers): every worker the plain launcher starts is recorded (unit,
+# request, operation, its TMPDIR); before the first worker of each lipid norm-tab publication (qc_figures, composite)
+# and before the first worker at all, a probe (worker-probe.R) is started by the same launcher function with the same
+# request, so it has that worker's environment, TMPDIR and working directory.
+driver$launches <- list()
+driver$probing <- FALSE
+driver$probed <- character()
+Sys.setenv(KIT131_PROBE = file.path(checkout, "packaging", "verify", "worker-probe.R"), KIT131_CHECKOUT = checkout,
+    KIT131_OUT = out_dir, KIT131_SHORT = tempdir())
+.kit131Launch <- function(config, unit, path) {
+    if (isTRUE(driver$probing)) return(invisible())
+    operation <- tryCatch(readRDS(path)$operation, error = function(error) "?")
+    scratch <- file.path(dirname(path), "worker-scratch")
+    driver$launches[[length(driver$launches) + 1L]] <- list(unit = unit, path = path, operation = operation, scratch = scratch)
+    cat(sprintf("KIT-131 LAUNCH %d %s: unit %s; TMPDIR (worker-scratch) %d characters: %s\n", length(driver$launches), operation,
+        unit, nchar(scratch), gsub("\\\\", "/", scratch)))
+    kind <- if (grepl("_qc_figures$", operation)) "qc_figures" else if (grepl("_composite_figure$", operation)) "composite" else
+        if (!length(driver$probed)) "first" else ""
+    if (!nzchar(kind) || kind %in% driver$probed) return(invisible())
+    driver$probed <- c(driver$probed, kind)
+    driver$probing <- TRUE
+    on.exit(driver$probing <- FALSE)
+    probe <- paste0("kit131-probe-", length(driver$probed))
+    result <- tryCatch({
+        ns$workflowLaunchProcess(config, probe, "worker", "source(Sys.getenv(\"KIT131_PROBE\"))", path, "probe", 600L)
+        ns$.workflowProcessUnits[[probe]]$process$wait(600000)
+        status <- ns$.workflowProcessUnits[[probe]]$process$get_exit_status()
+        ns$workflowProcessForget(probe)
+        paste("exit", status)
+    }, error = function(error) paste("error:", conditionMessage(error)))
+    log <- file.path(config$root, paste0("worker-", probe, ".log"))
+    cat(sprintf("KIT-131 PROBE %s for %s (%s); its log:\n", probe, operation, result))
+    if (file.exists(log)) for (line in readLines(log, warn = FALSE))
+        cat("KIT-131 PROBE |", substr(gsub("[\r\t]+", " ", line), 1L, 700L), "\n")
+    invisible()
+}
+suppressMessages(trace("workflowLaunchProcess", tracer = quote(.kit131Launch(config, unit, path)), where = ns, print = FALSE))
 original_spec <- env$guiEntryServerSpec
 env$guiEntryServerSpec <- function(omic) {
     spec <- original_spec(omic)
@@ -134,6 +172,22 @@ driver$error <- tryCatch(withCallingHandlers({
 }), error = function(error) error)
 closed <- tryCatch({ ns$closeWorkflowManagedApplication(app); "closed" }, error = function(error) paste("close failed:", conditionMessage(error)))
 cat(sprintf("KIT-131 APPLICATION %s; worker processes still running under the controller: %d\n", closed, length(workers())))
+# Diagnostic: each worker's log; in full for the norm tab's publications (qc_figures, composite) and the norm steps,
+# else its warnings and errors only; the request's publication folder and result where they are still there.
+for (i in seq_along(driver$launches)) {
+    launch <- driver$launches[[i]]
+    log <- file.path(app$config$root, paste0("worker-", launch$unit, ".log"))
+    lines <- if (file.exists(log)) readLines(log, warn = FALSE) else character()
+    result <- tryCatch(readRDS(file.path(dirname(launch$path), "worker-result.rds")), error = function(error) NULL)
+    published <- list.files(file.path(dirname(launch$path), "p"), recursive = TRUE, full.names = TRUE)
+    cat(sprintf("KIT-131 WORKER %d %s: log %d lines; result %s%s; request publication folder %s\n", i, launch$operation, length(lines),
+        if (is.null(result)) "not there" else result$status, if (!is.null(result$error)) paste0(" (", substr(result$error, 1L, 400L), ")") else "",
+        if (length(published)) paste(length(published), "files, longest", max(nchar(published))) else "empty or gone"))
+    full <- grepl("qc_figures$|composite_figure$|_norm", launch$operation)
+    shown <- if (full) lines else grep("WARN|ERROR|rror|arning|cannot|failed", lines, value = TRUE)
+    for (line in utils::head(shown, if (full) 120L else 12L))
+        cat(sprintf("KIT-131 WLOG %d %s | %s\n", i, launch$operation, substr(gsub("[\r\t]+", " ", line), 1L, 600L)))
+}
 if (!is.null(driver$error)) cat("KIT-131 PROBLEM run error:", substr(gsub("[\r\n\t]+", " ", conditionMessage(driver$error)), 1L, 900L), "\n")
 classes <- vapply(expectations, function(x) class(x)[[1L]], character(1))
 cat(sprintf("KIT-131 LANE %s expectations: pass %d fail %d error %d skip %d\n", lane_id, sum(classes == "expectation_success"),
@@ -173,11 +227,23 @@ compare <- function(label, theirs) {
         s <- strip(mine)
         working_total <- working_total + s$working
         if (identical(s$step, other)) { stripped_same <- stripped_same + 1L; next }
+        # Diagnostic: the norm steps' difference in full (every key, longer values), one line per key.
+        whole <- label == "in-process" && id %in% c("norm_refusal", "norm")
         for (field in union(names(s$step), names(other))) {
             a <- s$step[[field]]; b <- other[[field]]
             if (identical(a, b)) next
             keyed <- is.list(a) && is.list(b) && !is.null(names(a)) && !is.null(names(b))
             keys <- if (keyed) Filter(function(k) !identical(a[[k]], b[[k]]), union(names(a), names(b))) else character()
+            if (whole && length(keys)) {
+                cat(sprintf("KIT-131 DIFF %s %s step %s field %s: %d keys\n", label, lane_id, id, field, length(keys)))
+                for (k in keys) cat(sprintf("KIT-131 FULLDIFF %s field %s key %s || workers: %s || in-process: %s\n", id, field, k,
+                    short(a[[k]], 650L), short(b[[k]], 650L)))
+                next
+            }
+            if (whole) {
+                cat(sprintf("KIT-131 FULLDIFF %s field %s || workers: %s || in-process: %s\n", id, field, short(a, 650L), short(b, 650L)))
+                next
+            }
             cat(sprintf("KIT-131 DIFF %s %s step %s field %s%s\n", label, lane_id, id, field,
                 if (length(keys)) paste0(": ", length(keys), " keys: ", paste(vapply(utils::head(keys, 6L), function(k)
                     sprintf("%s [workers %s | %s %s]", short(k, 120L), short(a[[k]], 60L), label, short(b[[k]], 60L)), ""), collapse = "; "))

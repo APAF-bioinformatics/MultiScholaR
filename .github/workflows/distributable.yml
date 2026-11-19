@@ -799,7 +799,8 @@ jobs:
 
       - name: "e2e lanes: the four browser lanes without DIA against the installed application's package (reduced environment, network cut)"
         id: e2e
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.lifecycle.outcome != 'skipped' && steps.install.outcome == 'success' }}
+        # KIT-131 diagnostic run (run-win-k131): not run (kept in 44457268709; run again at the confirmation).
+        if: ${{ false }}
         timeout-minutes: 120
         run: |
           New-Item -ItemType Directory -Force "$env:OUT\e2e" | Out-Null
@@ -849,7 +850,8 @@ jobs:
       # figures with its message (RAISED lines).
       - name: "Figure paths (KIT-052), long paths as the runner has them"
         id: figures
-        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' }}
+        # KIT-131 diagnostic run (run-win-k131): not run.
+        if: ${{ false }}
         timeout-minutes: 120
         run: |
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
@@ -868,7 +870,9 @@ jobs:
       # files); the prot_tmt lane in process at about 90 (below the Q-value staged copy's calculated 99) and about 118.
       - name: "Figure paths (KIT-052), long paths turned off (HKLM LongPathsEnabled = 0 for this disposable runner)"
         id: figuresoff
-        if: ${{ !cancelled() && steps.figures.outcome != 'skipped' && steps.install.outcome == 'success' }}
+        # KIT-131 diagnostic run (run-win-k131): only the prot_tmt lane at root 130 (item 3, the unclassed early stop),
+        # with every failing file() or gzfile() and the error's trace printed (CONN and TRACE lines).
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' }}
         timeout-minutes: 120
         run: |
           $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
@@ -876,8 +880,7 @@ jobs:
           "LongPathsEnabled in the registry now: $((Get-ItemProperty $key).LongPathsEnabled)"
           & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
             -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" `
-            -Cases 'off-root63=20:figure_tests', 'off-tmt91=31:prot_tmt_lane', 'off-tmt96=36:prot_tmt_lane', `
-            'off-tmt120=60:prot_tmt_lane', 'off-tmt130=70:prot_tmt_lane'
+            -Cases 'off-tmt130=70:prot_tmt_lane'
           if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
 
       - name: Results
