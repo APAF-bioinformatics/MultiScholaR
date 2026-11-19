@@ -297,7 +297,134 @@ integrationResolveMofaParameters <- function(object, parameters = list()) {
     if (length(views) < 2L) {
         integrationRefuse(sprintf("the model needs two or more views; %d selected", length(views)), "integration_too_few_views")
     }
-    out[integrationMofaParameterNames()]
+    out <- out[integrationMofaParameterNames()]
+    # KIT-063 item A (KIT-139 follow-up): an optional user-edited sample match. Absent, or giving no run another
+    # biological sample, it adds nothing, so the parameters and the model's identity are those of before.
+    table <- given("sample_match_table")
+    declared <- given("sample_match")
+    if (!is.null(table)) {
+        match <- integrationResolveSampleMatch(object, table)
+        if (!is.null(match$table)) {
+            if (!is.null(declared) && !identical(declared, match$sha256)) {
+                invalid("the sample match table does not have the checksum recorded with it")
+            }
+            out$sample_match <- match$sha256
+            out$sample_match_table <- match$table
+        }
+    } else if (!is.null(declared)) {
+        invalid("a sample match checksum was given without its table")
+    }
+    out
+}
+
+# ---------------------------------------------------------------------------------------------------------------
+# KIT-063 item A (KIT-139 follow-up): the user-edited sample match. Samples are matched across omics by the
+# biological-sample column each omic saved; a user whose omics name one biological sample differently uploads a match
+# table (per omic, a run or a saved biological-sample name, and the biological sample it belongs to). Only the runs it
+# gives another biological sample enter the model, as the parameter `sample_match` (the sha256 of that canonical table,
+# identity) with the table beside it (`sample_match_table`, not identity, checked against the checksum).
+# ---------------------------------------------------------------------------------------------------------------
+
+#' The sample match as it stands (KIT-063 item A): one row per run of every imported omic, the biological sample its
+#' omic saved and the one it is matched to (the saved one, or the match's).
+#' @param object An `IntegrationViewsData` with its `inputs` hydrated.
+#' @param match NULL, or a canonical match (`integrationResolveSampleMatch()$table`).
+#' @return `data.frame(omic, run, saved_biological_sample, biological_sample)`.
+#' @noRd
+integrationSampleMatchTemplate <- function(object, match = NULL) {
+    rows <- lapply(object@inputs, function(entry) {
+        samples <- entry$samples
+        data.frame(omic = entry$omic, run = as.character(samples[[entry$manifest$sample_id_column]]),
+            saved_biological_sample = as.character(samples[[entry$biological_sample_column]]), stringsAsFactors = FALSE)
+    })
+    table <- do.call(rbind, rows)
+    rownames(table) <- NULL
+    table$biological_sample <- table$saved_biological_sample
+    if (!is.null(match)) {
+        hit <- match(paste(table$omic, table$run, sep = "\r"), paste(match$omic, match$run, sep = "\r"))
+        table$biological_sample[!is.na(hit)] <- match$biological_sample[hit[!is.na(hit)]]
+    }
+    table
+}
+
+#' Check a user's sample match table against the imported omics and reduce it to its canonical form (KIT-063 item A).
+#' Each row names an omic, then a run (`run`) or, with `run` empty, a saved biological-sample name
+#' (`saved_biological_sample`, every run of that name), and the biological sample (`biological_sample`). Refused
+#' (`integration_sample_match_invalid`): a table without those columns, a known run or name left without a biological
+#' sample, a run mapped more than once. Reported, not refused: rows naming an omic, run or saved name the import does
+#' not have (counted, ignored). A biological sample given two groups is refused later by the alignment, as without a
+#' table.
+#' @param object An `IntegrationViewsData` with its `inputs` hydrated.
+#' @param table A data frame, or a list of equal-length columns (the canonical form is accepted as it is).
+#' @return `list(table, sha256, report)`: the runs given another biological sample than their omic saved, as
+#'   `list(omic, run, biological_sample)` sorted by omic and run (NULL when none), its sha256 (NULL when none), and the
+#'   counts (`rows`, `runs_mapped`, `runs_changed`, `unknown_omics`, `unknown_runs`, `unknown_names`, `rows_empty`).
+#' @noRd
+integrationResolveSampleMatch <- function(object, table) {
+    invalid <- function(message) integrationRefuse(message, "integration_sample_match_invalid")
+    if (is.list(table) && !is.data.frame(table)) {
+        table <- tryCatch(as.data.frame(table, stringsAsFactors = FALSE, optional = TRUE),
+            error = function(error) invalid("the sample match table is not a table of equal-length columns"))
+    }
+    if (!is.data.frame(table)) invalid("the sample match table is not a table")
+    names(table) <- trimws(names(table))
+    if (!all(c("omic", "biological_sample") %in% names(table)) || !any(c("run", "saved_biological_sample") %in% names(table))) {
+        invalid("the sample match table needs the columns omic, run (or saved_biological_sample) and biological_sample")
+    }
+    column <- function(name) {
+        value <- table[[name, exact = TRUE]]
+        if (is.null(value)) return(rep("", nrow(table)))
+        value <- trimws(as.character(value))
+        value[is.na(value)] <- ""
+        value
+    }
+    omic <- column("omic")
+    run <- column("run")
+    saved <- column("saved_biological_sample")
+    target <- column("biological_sample")
+    template <- integrationSampleMatchTemplate(object)
+    run_key <- paste(template$omic, template$run, sep = "\r")
+    saved_key <- paste(template$omic, template$saved_biological_sample, sep = "\r")
+    known <- omic %in% template$omic
+    by_run <- nzchar(run)
+    by_name <- !by_run & nzchar(saved)
+    unknown_run <- known & by_run & !paste(omic, run, sep = "\r") %in% run_key
+    unknown_name <- known & by_name & !paste(omic, saved, sep = "\r") %in% saved_key
+    usable <- known & ((by_run & !unknown_run) | (by_name & !unknown_name))
+    empty <- usable & !nzchar(target)
+    if (any(empty)) {
+        invalid(sprintf("%d row(s) of the sample match table give no biological sample (first: %s, %s)", sum(empty),
+            omic[empty][[1L]], if (nzchar(run[empty][[1L]])) run[empty][[1L]] else saved[empty][[1L]]))
+    }
+    rows <- which(usable)
+    hits <- lapply(rows, function(i) if (by_run[[i]]) which(run_key == paste(omic[[i]], run[[i]], sep = "\r")) else
+        which(saved_key == paste(omic[[i]], saved[[i]], sep = "\r")))
+    mapped <- unlist(hits)
+    mapped_target <- rep(target[rows], lengths(hits))
+    twice <- unique(mapped[duplicated(mapped)])
+    if (length(twice)) {
+        invalid(sprintf("%d run(s) are mapped more than once in the sample match table (first: %s, %s); map each run once",
+            length(twice), template$omic[[twice[[1L]]]], template$run[[twice[[1L]]]]))
+    }
+    changed <- mapped_target != template$saved_biological_sample[mapped]
+    sorted <- order(template$omic[mapped][changed], template$run[mapped][changed], method = "radix")
+    canonical <- if (any(changed)) list(omic = template$omic[mapped][changed][sorted],
+        run = template$run[mapped][changed][sorted], biological_sample = mapped_target[changed][sorted])
+    list(table = canonical, sha256 = if (!is.null(canonical)) digest::digest(canonical, algo = "sha256"),
+        report = list(rows = nrow(table), runs_mapped = length(mapped), runs_changed = sum(changed),
+            unknown_omics = sum(!known & (nzchar(omic) | by_run | by_name)), unknown_runs = sum(unknown_run),
+            unknown_names = sum(unknown_name), rows_empty = sum(known & !by_run & !by_name)))
+}
+
+#' The design with the sample match applied (KIT-063 item A): each matched run's biological sample replaced.
+#' @param design The inputs state's design (`omic`, `run`, `group`, `biological_sample`).
+#' @param match NULL (the design as it is), or the canonical match.
+#' @noRd
+integrationApplySampleMatch <- function(design, match) {
+    if (is.null(match)) return(design)
+    hit <- match(paste(design$omic, design$run, sep = "\r"), paste(match$omic, match$run, sep = "\r"))
+    design$biological_sample[!is.na(hit)] <- as.character(match$biological_sample[hit[!is.na(hit)]])
+    design
 }
 
 #' Refuse the model when an imported input has changed on disk since the import (KIT-062): each recorded manifest
@@ -359,7 +486,8 @@ integrationAverageRuns <- function(values, key) {
 #'   the selected order with one column set, the aligned sample table, a summary row per view.
 #' @noRd
 integrationAlignViews <- function(object, parameters) {
-    design <- object@design_matrix
+    # KIT-063 item A: the user's sample match, when one is given (NULL: the design as saved).
+    design <- integrationApplySampleMatch(object@design_matrix, parameters$sample_match_table)
     view_omic <- unlist(unname(lapply(object@inputs, function(entry) stats::setNames(rep(entry$omic, length(entry$views)),
         entry$views))))
     views <- parameters$views
@@ -588,11 +716,15 @@ integrationModelProduct <- function(aligned, fit) {
 #' The MOFA2 model declaration (KIT-062): whole matrix, on the inputs state, product only. Its identity is the state's
 #' (every view's table, the design), the manifests' sha256, the views and every method parameter. A caller may hand
 #' the kernel a `trainer` beside the declared parameters (not identity; the tests' stand-in for MOFA2).
+#' @param match FALSE: the registry's declaration. TRUE (KIT-063 item A): the same declaration with the user's sample
+#'   match as one more parameter (`sample_match`, the match's sha256), the match itself passed beside it
+#'   (`sample_match_table`). A model without a match keeps the registry's declaration, so its identity is unchanged.
 #' @noRd
-integrationMofaOperation <- function() {
+integrationMofaOperation <- function(match = FALSE) {
     newWorkflowOperation(INTEGRATION_MODEL_OPERATION, "IntegrationViewsData",
         fields = c("views", "features", "design_matrix", "inputs"), unit = "whole_matrix", output_class = NULL,
-        parameters = integrationMofaParameterNames(), product_type = "integration.mofa_model",
+        parameters = c(integrationMofaParameterNames(), if (isTRUE(match)) "sample_match"),
+        product_type = "integration.mofa_model",
         kernel = function(object, parameters, store) {
             resolved <- integrationResolveMofaParameters(object, parameters)
             aligned <- integrationAlignViews(object, resolved)
@@ -605,6 +737,21 @@ integrationMofaOperation <- function() {
             names(prefixed) <- names(aligned$views)
             integrationModelProduct(aligned, trainer(prefixed, integrationMofaOptions(resolved)))
         })
+}
+
+#' The declaration a model run takes (KIT-063 item A): the registry's, or with a sample match its declaration with
+#' `sample_match`. In process and on the worker alike.
+#' @param parameters The resolved parameters.
+#' @noRd
+integrationMofaDeclaration <- function(parameters) {
+    if (is.null(parameters[["sample_match", exact = TRUE]])) return(workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$declaration)
+    integrationMofaOperation(match = TRUE)
+}
+
+#' The parameters an accepted model records: the declared ones, and the sample match with its table when one was given.
+#' @noRd
+integrationMofaRecordedNames <- function(parameters) {
+    c(integrationMofaParameterNames(), intersect(c("sample_match", "sample_match_table"), names(parameters)))
 }
 
 #' Accept a model on the head (the RUVIII export's pattern): the product rooted, the step's provenance cleared (it
@@ -620,7 +767,7 @@ acceptIntegrationModel <- function(manager, source, run, parameters) {
     if (is.null(context$snapshot$products[[run$reference$entity_id]])) rootWorkflowProduct(manager, run$reference, list(source))
     snapshot <- context$snapshot
     snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- list(operation = INTEGRATION_MODEL_OPERATION, source = source,
-        reference = run$reference, parameters = parameters[integrationMofaParameterNames()])
+        reference = run$reference, parameters = parameters[integrationMofaRecordedNames(parameters)])
     publishWorkflowStateHead(context, snapshot)
     invisible(run)
 }
@@ -656,7 +803,7 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
                     "integration_mofa_unavailable")
             }
         }
-        declaration <- workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$declaration
+        declaration <- integrationMofaDeclaration(resolved)
         # A refused or failed training leaves no pending provenance for a later commit to take.
         run <- withCallingHandlers(runSavedOperation(manager, declaration, source, c(resolved, list(trainer = trainer))),
             error = function(error) clearWorkflowStepProvenance(manager))
@@ -683,7 +830,7 @@ computeWorkflowIntegrationModelAction <- function(manager, request, variant) {
         integrationRefuse(sprintf("the integration model cannot be trained here: %s", capability$reason),
             "integration_mofa_unavailable")
     }
-    run <- runSavedOperation(manager, workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$declaration, source, resolved)
+    run <- runSavedOperation(manager, integrationMofaDeclaration(resolved), source, resolved)
     # A product an earlier worker computed, whose action never completed, has no root yet (the omics handler's rule).
     if (identical(run$status, "hit")) rootWorkflowProduct(manager, run$reference, list(source))
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = run$reference,
@@ -711,6 +858,8 @@ integrationModelRecordOutcomes <- function(context, export) {
 #' @param analysis The record's analysis entry.
 #' @noRd
 replayIntegrationModel <- function(manager, analysis) {
-    parameters <- workflowReplayParameters(analysis$parameters, workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$parameters)
+    # KIT-063 item A: a model trained on a user's sample match replays with that match.
+    parameters <- workflowReplayParameters(analysis$parameters, c(workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$parameters,
+        "sample_match", "sample_match_table"))
     runIntegrationModel(manager, parameters, check_inputs = FALSE)
 }

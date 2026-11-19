@@ -189,3 +189,20 @@ the table's, never these strings'.
 | col_view, col_model_features, col_variance | Data set; Features in the model; Variance explained (%) | table headers |
 | result_saved | The model file is saved in the project; its SHA-256 checksum is %s. | checksum |
 | few_samples | (KIT-139's) | shown again under a model trained with fewer than 16 shared samples |
+
+## Sample Matching tab: correcting the match with an edited table (KIT-063 item A)
+
+| Key | Text | Where |
+|---|---|---|
+| match_heading | Correct the match (optional) | heading under the sample table |
+| match_intro | If two omics name the same biological sample differently, download the sample table, change the biological_sample column so that each run names its biological sample, and upload the edited table. Runs you leave unchanged keep the name their omic saved. The new match is shown above before you confirm it. | names the file's column as it is written |
+| match_download | Download the sample table | button; the file is integration_sample_match.tsv (columns omic, run, saved_biological_sample, biological_sample) |
+| match_upload | Upload the edited table (tab-separated) | file input |
+| match_clear | Use the names as saved | button |
+| match_active | Your uploaded table is in use. | |
+| match_changed | Your table gives %d runs a different biological sample. | runs |
+| match_unchanged | Your table gives no run a different biological sample; samples are matched as saved. | |
+| match_unknown_omics, _unknown_runs, _unknown_names, _rows_empty | %d rows name an omic that is not imported; they are ignored. / %d rows name a run that is not in the data; they are ignored. / %d rows name a sample name that is not in the data; they are ignored. / %d rows name neither a run nor a sample name; they are ignored. | rows |
+| match_refused | The uploaded table cannot be used. %s | the refusal's sentence |
+| refusal_sample_match_invalid | Check that the table has the columns omic, run and biological_sample, that every run listed has a biological sample, and that each run appears only once. | the refusal's sentence; the check's own message under "Technical detail" |
+| setting_sample_match | Sample match: your uploaded table, which gives %d runs a different biological sample | Model tab, the settings the confirmed table fixed |

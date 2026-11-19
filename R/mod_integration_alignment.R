@@ -21,6 +21,11 @@
 # facts with counts from the parameters as resolved (never set here); the refusals in words. Matching works only
 # through the user's confirmation of this table (KIT-060 D5): the confirmed table is saved as the integration design
 # and kept on the bus with the parameters and manifests it was confirmed on, for the Model tab (KIT-140).
+# KIT-063 item A: the match can be edited outside the app. The tab offers the current match as a file (one row per run:
+# omic, run, the name its omic saved, the biological sample), takes the edited file back (a file input; no grid
+# editor), shows the result before confirmation, and the confirmed parameters carry the match to the Model tab. A
+# recorded divergence from conventions/R-shiny.md ("shinyFiles for file selection"): the edited table is a browser
+# upload of a file the user just downloaded, which `fileInput` is for; the app's test mode uses it too.
 
 #' The Sample Matching tab's UI.
 #' @param id Module id.
@@ -37,6 +42,14 @@ mod_integration_alignment_ui <- function(id) {
         testid(DT::DTOutput(ns("view_table")), "integration-alignment-views"),
         shiny::h4(texts[["sample_table_heading"]]),
         testid(DT::DTOutput(ns("sample_table")), "integration-alignment-samples"),
+        shiny::h4(texts[["match_heading"]]),
+        shiny::p(texts[["match_intro"]]),
+        testid(shiny::downloadButton(ns("match_download"), texts[["match_download"]]), "integration-alignment-match-download"),
+        testid(shiny::fileInput(ns("match_upload"), texts[["match_upload"]], accept = c(".tsv", ".txt", "text/tab-separated-values")),
+            "integration-alignment-match-upload"),
+        testid(shiny::actionButton(ns("match_clear"), texts[["match_clear"]], icon = shiny::icon("undo")),
+            "integration-alignment-match-clear"),
+        testid(shiny::uiOutput(ns("match_status")), "integration-alignment-match-status"),
         testid(shiny::actionButton(ns("confirm"), texts[["confirm_button"]], class = "btn-primary",
             icon = shiny::icon("check")), "integration-alignment-confirm"),
         testid(shiny::uiOutput(ns("confirm_status")), "integration-alignment-confirmed")))
@@ -52,21 +65,26 @@ mod_integration_alignment_ui <- function(id) {
 mod_integration_alignment_server <- function(id, workflow_data, paths, texts = integrationGuiTexts()) {
     shiny::moduleServer(id, function(input, output, session) {
         confirm_error <- shiny::reactiveVal(NULL)
+        # KIT-063 item A: the uploaded match table (NULL: the names as saved) and a refused upload's words.
+        match_table <- shiny::reactiveVal(NULL)
+        match_error <- shiny::reactiveVal(NULL)
         preview <- shiny::reactive({
             summary <- workflow_data$integration_import
             manager <- workflow_data$state_manager
             if (is.null(summary) || is.null(manager)) return(NULL)
-            tryCatch(integrationAlignmentPreview(integrationImportedObject(manager), summary$views),
+            tryCatch(integrationAlignmentPreview(integrationImportedObject(manager), summary$views, match_table()),
                 integration_refused = function(error) {
                     structure(list(refusal = integrationAlignmentRefusal(error, summary$views, texts),
                         detail = conditionMessage(error)), class = "integration_alignment_refused")
                 })
         })
         usable <- function(value) !is.null(value) && !inherits(value, "integration_alignment_refused")
-        # A new import is matched again: a confirmation is for the import it was made on.
+        # A new import is matched again: a confirmation, and an uploaded match, are for the import they were made on.
         shiny::observeEvent(workflow_data$integration_import, {
             workflow_data$integration_alignment <- NULL
             confirm_error(NULL)
+            match_table(NULL)
+            match_error(NULL)
         }, ignoreInit = TRUE)
 
         output$alignment_status <- shiny::renderUI({
@@ -100,6 +118,52 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
             DT::datatable(integrationAlignmentSampleTable(value, texts), rownames = FALSE, selection = "none",
                 options = list(pageLength = 25))
         })
+
+        # KIT-063 item A: the current match as a file, one row per run of every imported omic.
+        output$match_download <- shiny::downloadHandler(filename = "integration_sample_match.tsv", content = function(file) {
+            manager <- shiny::isolate(workflow_data$state_manager)
+            shiny::req(manager)
+            value <- shiny::isolate(preview())
+            current <- if (usable(value)) value$parameters$sample_match_table
+            utils::write.table(integrationSampleMatchTemplate(integrationImportedObject(manager), current), file, sep = "\t",
+                quote = FALSE, row.names = FALSE, na = "")
+        })
+        shiny::observeEvent(input$match_upload, {
+            match_error(NULL)
+            upload <- input$match_upload
+            manager <- workflow_data$state_manager
+            if (is.null(manager) || is.null(workflow_data$integration_import)) {
+                match_error(list(sentence = texts[["align_not_imported"]], detail = NULL))
+                return()
+            }
+            table <- tryCatch({
+                table <- integrationReadSampleMatch(upload$datapath[[1L]])
+                integrationResolveSampleMatch(integrationImportedObject(manager), table)
+                table
+            }, integration_refused = function(error) {
+                match_error(integrationRefusalText(error, texts))
+                NULL
+            })
+            if (is.null(table)) return()
+            match_table(table)
+            # A confirmation made on another match is no longer the table the model would use.
+            workflow_data$integration_alignment <- NULL
+        })
+        shiny::observeEvent(input$match_clear, {
+            match_error(NULL)
+            if (!is.null(match_table())) workflow_data$integration_alignment <- NULL
+            match_table(NULL)
+        })
+        output$match_status <- shiny::renderUI({
+            error <- match_error()
+            refused <- if (!is.null(error)) integrationRefusalUi(sprintf(texts[["match_refused"]], error$sentence),
+                error$detail, texts = texts)
+            value <- preview()
+            if (is.null(match_table()) || !usable(value) || is.null(value$match)) return(refused)
+            shiny::tagList(refused, shiny::div(class = "alert alert-info", shiny::p(texts[["match_active"]]),
+                do.call(shiny::tags$ul, lapply(integrationSampleMatchFacts(value$match$report, texts), shiny::tags$li))))
+        })
+
         output$confirm_status <- shiny::renderUI({
             error <- confirm_error()
             if (!is.null(error)) return(integrationRefusalUi(error$text, error$detail, texts = texts))
@@ -118,7 +182,7 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
                 return()
             }
             # Matched again at the confirmation, so that a data set changed on disk since the tab drew is refused.
-            value <- tryCatch(integrationAlignmentPreview(integrationImportedObject(manager), summary$views),
+            value <- tryCatch(integrationAlignmentPreview(integrationImportedObject(manager), summary$views, match_table()),
                 integration_refused = function(error) list(text = integrationAlignmentRefusal(error, summary$views, texts),
                     detail = conditionMessage(error)))
             if (!is.null(value[["text", exact = TRUE]])) {
@@ -127,9 +191,14 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
             }
             dir <- paths$multiomic_inputs_dir %||% file.path(paths$results_dir, "multiomic_inputs")
             file <- integrationSaveDesign(value$aligned$samples, dir)
-            workflow_data$integration_alignment <- list(samples = value$aligned$samples,
+            confirmed <- list(samples = value$aligned$samples,
                 view_summary = value$aligned$view_summary, parameters = value$parameters,
                 manifests = summary$manifests, file = file, confirmed_at = Sys.time())
+            # KIT-063 item A: the match the model will use is saved beside the design.
+            if (!is.null(value$parameters$sample_match_table)) {
+                confirmed$sample_match_file <- integrationSaveSampleMatch(value$parameters$sample_match_table, dir)
+            }
+            workflow_data$integration_alignment <- confirmed
             tab_status <- workflow_data$tab_status
             tab_status$integration_alignment <- "complete"
             workflow_data$tab_status <- tab_status

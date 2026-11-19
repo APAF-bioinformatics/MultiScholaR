@@ -268,7 +268,30 @@ integrationGuiTexts <- function() {
         col_variance = "Variance explained (%)",
         col_model_features = "Features in the model",
         # %s: the checksum.
-        result_saved = "The model file is saved in the project; its SHA-256 checksum is %s."
+        result_saved = "The model file is saved in the project; its SHA-256 checksum is %s.",
+        # KIT-063 item A: correcting the sample match with an edited table (Sample Matching tab).
+        match_heading = "Correct the match (optional)",
+        match_intro = paste("If two omics name the same biological sample differently, download the sample table, change",
+            "the biological_sample column so that each run names its biological sample, and upload the edited table. Runs",
+            "you leave unchanged keep the name their omic saved. The new match is shown above before you confirm it."),
+        match_download = "Download the sample table",
+        match_upload = "Upload the edited table (tab-separated)",
+        match_clear = "Use the names as saved",
+        match_active = "Your uploaded table is in use.",
+        # %d: runs.
+        match_changed = "Your table gives %d runs a different biological sample.",
+        match_unchanged = "Your table gives no run a different biological sample; samples are matched as saved.",
+        # %d: rows.
+        match_unknown_omics = "%d rows name an omic that is not imported; they are ignored.",
+        match_unknown_runs = "%d rows name a run that is not in the data; they are ignored.",
+        match_unknown_names = "%d rows name a sample name that is not in the data; they are ignored.",
+        match_rows_empty = "%d rows name neither a run nor a sample name; they are ignored.",
+        # %s: the reason.
+        match_refused = "The uploaded table cannot be used. %s",
+        refusal_sample_match_invalid = paste("Check that the table has the columns omic, run and biological_sample, that",
+            "every run listed has a biological sample, and that each run appears only once."),
+        # %d: runs (Model tab, the settings the confirmed table fixed).
+        setting_sample_match = "Sample match: your uploaded table, which gives %d runs a different biological sample"
     )
 }
 
@@ -548,17 +571,22 @@ integrationImportedObject <- function(manager) {
 #' data sets, no shared biological sample, a sample in two groups.
 #' @param object The imported inputs state (`integrationImportedObject`).
 #' @param views The selected data sets.
-#' @return `list(parameters, aligned, few_samples, keys, views, replicates)`.
+#' @param match NULL, or the user's sample match table as uploaded (KIT-063 item A): checked and applied as the model
+#'   applies it; a table that gives no run another biological sample changes nothing.
+#' @return `list(parameters, aligned, few_samples, keys, views, replicates, all_samples, match)`; `match` is the
+#'   match's check (`integrationResolveSampleMatch`) or NULL.
 #' @noRd
-integrationAlignmentPreview <- function(object, views) {
+integrationAlignmentPreview <- function(object, views, match = NULL) {
     integrationAssertInputsCurrent(object)
-    parameters <- integrationResolveMofaParameters(object, list(views = views))
+    parameters <- integrationResolveMofaParameters(object, if (is.null(match)) list(views = views) else
+        list(views = views, sample_match_table = match))
+    checked <- if (!is.null(match)) integrationResolveSampleMatch(object, match)
     few <- FALSE
     aligned <- withCallingHandlers(integrationAlignViews(object, parameters), integration_few_samples = function(warning) {
         few <<- TRUE
         invokeRestart("muffleWarning")
     })
-    design <- object@design_matrix
+    design <- integrationApplySampleMatch(object@design_matrix, parameters$sample_match_table)
     view_omic <- unlist(unname(lapply(object@inputs, function(entry) stats::setNames(rep(entry$omic, length(entry$views)),
         entry$views))))
     all_samples <- character()
@@ -573,8 +601,48 @@ integrationAlignmentPreview <- function(object, views) {
     }))
     keys <- data.frame(omic = names(object@inputs), column = vapply(object@inputs, function(entry)
         as.character(entry$biological_sample_column), character(1)), stringsAsFactors = FALSE, row.names = NULL)
-    list(parameters = parameters, aligned = aligned, few_samples = few, keys = keys, views = parameters$views,
+    out <- list(parameters = parameters, aligned = aligned, few_samples = few, keys = keys, views = parameters$views,
         replicates = replicates, all_samples = length(all_samples))
+    if (!is.null(checked)) out$match <- checked
+    out
+}
+
+#' Read a sample match table the user uploaded (KIT-063 item A): tab-separated, as the tab's download writes it, every
+#' column read as text. Refused in words (`integration_sample_match_invalid`) when the file cannot be read as a table.
+#' @param path The uploaded file.
+#' @return A data frame.
+#' @noRd
+integrationReadSampleMatch <- function(path) {
+    tryCatch(utils::read.delim(path, colClasses = "character", check.names = FALSE, na.strings = character(),
+        stringsAsFactors = FALSE, quote = "", comment.char = ""),
+        error = function(error) integrationRefuse(sprintf("the sample match file cannot be read as a tab-separated table: %s",
+            conditionMessage(error)), "integration_sample_match_invalid"))
+}
+
+#' What an uploaded sample match does, in words (KIT-063 item A): runs given another biological sample, and the rows
+#' that name nothing the import has (ignored), with their counts.
+#' @param report `integrationResolveSampleMatch()$report`.
+#' @return A character vector.
+#' @noRd
+integrationSampleMatchFacts <- function(report, texts = integrationGuiTexts()) {
+    facts <- if (report$runs_changed > 0L) sprintf(texts[["match_changed"]], report$runs_changed) else texts[["match_unchanged"]]
+    ignored <- c(match_unknown_omics = report$unknown_omics, match_unknown_runs = report$unknown_runs,
+        match_unknown_names = report$unknown_names, match_rows_empty = report$rows_empty)
+    for (key in names(ignored)) if (ignored[[key]] > 0L) facts <- c(facts, sprintf(texts[[key]], ignored[[key]]))
+    unname(facts)
+}
+
+#' Save the confirmed sample match beside the integration design (KIT-063 item A): the runs it gives another
+#' biological sample, tab-separated.
+#' @param match The canonical match.
+#' @param dir The folder.
+#' @return The file's path.
+#' @noRd
+integrationSaveSampleMatch <- function(match, dir) {
+    dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+    path <- file.path(dir, "integration_sample_match.tsv")
+    vroom::vroom_write(as.data.frame(match, stringsAsFactors = FALSE), path, delim = "\t", na = "NA", progress = FALSE)
+    path
 }
 
 #' The facts the Sample Matching tab states, in words, each from the preview's counts and the parameter's value (so a
@@ -670,7 +738,8 @@ INTEGRATION_GUI_REFUSALS <- c(
     integration_group_conflict = "refusal_group_conflict",
     integration_view_empty = "refusal_view_empty",
     integration_parameters_invalid = "refusal_parameters_invalid",
-    integration_mofa_unavailable = "refusal_mofa_unavailable")
+    integration_mofa_unavailable = "refusal_mofa_unavailable",
+    integration_sample_match_invalid = "refusal_sample_match_invalid")
 
 #' A refusal in words: a sentence the tab wrote itself (`integration_gui_refusal`) as it is; any other refusal as the
 #' plain sentence of its class, the check's own message as its detail.
@@ -781,8 +850,12 @@ integrationModelSettingsUi <- function(ns, spec = integrationMofaParameterSpec()
 #' @noRd
 integrationModelMatchingSettings <- function(parameters, spec = integrationMofaParameterSpec(), texts = integrationGuiTexts()) {
     names <- intersect(INTEGRATION_GUI_MATCHING_PARAMETERS, names(spec))
-    vapply(names, function(name) sprintf(texts[["setting_fixed"]], integrationParameterText(texts, "param", name),
+    settings <- vapply(names, function(name) sprintf(texts[["setting_fixed"]], integrationParameterText(texts, "param", name),
         integrationParameterText(texts, "choice", name, parameters[[name]])), character(1), USE.NAMES = FALSE)
+    # KIT-063 item A: a confirmed table with the user's sample match says so.
+    match <- parameters[["sample_match_table", exact = TRUE]]
+    if (!is.null(match)) settings <- c(settings, sprintf(texts[["setting_sample_match"]], length(match$run)))
+    settings
 }
 
 #' The method settings as the tab's inputs give them (KIT-140), in the spec's forms: a choice as text, a flag as TRUE or
