@@ -1,0 +1,7 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S2/C0/arm22/runpath_k	integer	1			0	agree	
+S2/C0/arm22/runpath_controls	integer	1			0	agree	
+S2/C0/arm22/runpath$key	character	1000			0	agree	
+S2/C0/arm22/runpath$estimate	double	1000	0	0	0	agree	
+S2/C0/arm22/runpath$p	double	1000	1.38626922144711e-12	3.74145159298678e-14	0	agree	
+S2/C0/arm22/runpath$q	double	1000	1.38622678005113e-12	4.73510120002629e-14	0	agree	
