@@ -1618,3 +1618,44 @@ test_that("(sixth pass items 4 and 5) DIA with limpa: the record carries the dec
     expect_identical(saved$replay$states, unlist(manager$.context$snapshot$state_history))
     expect_identical(as.character(saved$replay$mismatches), character())
 })
+
+# Seventh pass items 2 and 3: the proteomics integration input (KIT-061) of a new design's run, committed as the tab commits
+# it (`diaNormalizationCommit`) and written by the Summary's writer (`protSummaryIntegrationWrite`), read back by the contract.
+kit129IntegrationInput <- function(parameters, env = parent.frame()) {
+    manager <- kit129ProtStore(env)
+    manager$setWorkflowType("DIA")
+    root <- withr::local_tempdir(.local_envir = env)
+    path <- file.path(root, "integration", "proteomics", INTEGRATION_INPUT_MANIFEST)
+    out <- kit129Quiet(withDIAStateScope(manager, function() {
+        run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
+        commit <- diaNormalizationCommit(manager, parameters, run)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        list(run = run, commit = commit, normalised = readDIAExecutionComponents(manager, run$value$normalized))
+    }))
+    out$written <- protSummaryIntegrationWrite(list2env(list(state_manager = manager)), path)
+    out$input <- readIntegrationInput(dirname(path))
+    out$path <- path
+    out
+}
+
+test_that("(seventh pass item 2) classic proteomics: a new design whose count gave no factor is written to the integration input as not corrected", {
+    testthat::local_mocked_bindings(computeProtRuvModelFactors = function(theObject, ...) list(status = "none", k = 0L,
+        reason = "the count found no unwanted factor (k = 0)", ruv_k_rule = "num_sv_be", ruv_k_estimate = 0L, k_estimate = NULL,
+        W = NULL, controls = NULL, ruv_controls = "all"), .package = "MultiScholaR")
+    automatic <- kit129ProtParameters("automatic")
+    automatic[c("auto_percentage_min", "auto_percentage_max", "separation_metric", "k_penalty_weight", "adaptive_k_penalty")] <-
+        list(5, 10, "max_difference", 0.5, TRUE)
+    out <- kit129IntegrationInput(c(automatic, list(ruv_design = "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = NULL)))
+    expect_false(out$run$value$ruv_result$ruv_applied)
+    expect_identical(out$written, "Saved Integration input")
+    # the state keeps its name and its matrix; its record says that no RUV was applied
+    expect_identical(out$commit$state_name, "ruv_corrected")
+    expect_false(out$commit$config$ruv_applied)
+    manifest <- out$input$manifest
+    expect_identical(manifest$matrix_role, "normalised")
+    expect_null(manifest$correction)
+    expect_identical(manifest$source_state$name, "ruv_corrected")
+    expected <- out$normalised@protein_quant_table
+    names(expected)[[1L]] <- "feature_id"
+    expect_equal(out$input$views$proteomics$matrix, as.data.frame(expected), tolerance = 0, ignore_attr = TRUE)
+})

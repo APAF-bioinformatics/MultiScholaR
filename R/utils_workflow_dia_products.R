@@ -793,6 +793,9 @@ diaNormalizationCommit <- function(manager, settings, run) {
     config <- list(norm_method = settings$norm_method, ruv_mode = settings$ruv_mode,
         ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage)
     if (skipped) config$ruv_applied <- FALSE
+    # KIT-129 seventh pass item 2: a new design whose k rule gave no factor (a count of 0) keeps the state's name and its
+    # normalised matrix, and records that no RUV was applied (the integration input then says not corrected).
+    if (!is.null(saved$parameters$ruv_design) && identical(saved$ruv_result$ruv_applied, FALSE)) config$ruv_applied <- FALSE
     state_name <- if (skipped) "normalized" else "ruv_corrected"
     final$products$normalization_science <- run$reference
     previous <- if (manager$current_state == state_name) readDIAStateMetadata(manager) else NULL
