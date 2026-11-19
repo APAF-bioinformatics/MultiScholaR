@@ -123,7 +123,8 @@ writeWorkflowOmicsCompositeFigure <- function(plot, base_path, plot_name, width,
 #' @param type `pca`, `rle`, `density` or `correlation` keep their plot data in the product (schema
 #'   `omics_qc_plot_product_v1`); any other type keeps none (`omics_figure_v1`): grids and multi-page PDFs are bytes only.
 #' @param width,height,dpi The rendered size, in inches and dots per inch.
-#' @return `path`, or NULL when there was nothing to draw.
+#' @return `path`, or NULL when there was nothing to draw. A figure drawn whose file is not there (the PNG device on
+#'   Windows writes nothing, and says nothing, from 260 characters) stops with `workflow_figure_unwritten` (KIT-131).
 #' @noRd
 writeWorkflowOmicsFigure <- function(path, render, omic_type, content, figure, assay = "", type = "figure",
     parameters = list(), width = 7, height = 7, dpi = 150) {
@@ -152,7 +153,8 @@ writeWorkflowOmicsFigure <- function(path, render, omic_type, content, figure, a
         }
     }
     drawn <- render(path)
-    if (is.null(drawn) || !file.exists(path)) return(NULL)
+    if (is.null(drawn)) return(NULL)
+    if (!file.exists(path)) checkWorkflowFigureFiles(path, "a figure was drawn but its file was not written")
     if (is.null(product)) {
         rebuildable <- type %in% c("pca", "rle", "density", "correlation") && is.data.frame(drawn)
         value <- list(schema = if (rebuildable) "omics_qc_plot_product_v1" else "omics_figure_v1", figure = figure, assay = assay,

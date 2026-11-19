@@ -289,6 +289,81 @@ test_that("the omics worker draws its figures in a short folder: from a long pro
     expect_identical(list.files(tempdir(), pattern = "^wfx-"), scratch_before)
 })
 
+# KIT-131 (Windows run 44457268709): in a worker, `tempdir()` lies under its request-owned TMPDIR
+# (`<request folder>/worker-scratch`, as both launchers set it), deep in the project, so the short folder made there was not
+# short: on Windows a QC figure's path passed 259 characters, ragg wrote nothing and the step went on without its figures.
+
+test_that("KIT-131: in a worker the short folder is made in the system's temporary folder, not under the worker's own", {
+    system_temp <- normalizePath(withr::local_tempdir(), winslash = "/")
+    target <- withr::local_tempdir()
+    seen <- NULL
+    draw <- function() withWorkflowShortFigureFolder(target, function(scratch) {
+        seen <<- normalizePath(dirname(scratch), winslash = "/")
+        writeLines("figure", file.path(scratch, "figure.png"))
+    })
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1", TMP = system_temp, TEMP = NA), draw())
+    expect_identical(seen, system_temp)
+    expect_true(file.exists(file.path(target, "figure.png")))
+    expect_length(list.files(system_temp, pattern = "^wfx-"), 0L)
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1", TMP = NA, TEMP = system_temp), draw())
+    expect_identical(seen, system_temp)
+    # Outside a worker, and in a worker with no system temporary folder: tempdir(), as before.
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = NA, TMP = system_temp), draw())
+    expect_identical(seen, normalizePath(tempdir(), winslash = "/"))
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1", TMP = NA, TEMP = NA), draw())
+    expect_identical(seen, normalizePath(tempdir(), winslash = "/"))
+})
+
+# The worker as it was on Windows: its short folder deep (the double below), its device writing nothing from 260.
+figurePathUnwrittenWorker <- function(owner, binding, operation, env = parent.frame()) {
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64), .package = "MultiScholaR", .env = env)
+    fixture <- owner(file.path(withr::local_tempdir(.local_envir = env), "project"))
+    withr::defer(closeDIAStateAdapter(fixture$owner), envir = env)
+    suppressWarnings(suppressMessages(runWorkflowOmicsReferenceDuplicateResolution(binding, fixture$owner, list())))
+    deep <- file.path(withr::local_tempdir(.local_envir = env), strrep("w", 120L), strrep("x", 120L))
+    dir.create(deep, recursive = TRUE)
+    testthat::local_mocked_bindings(workflowShortScratchRoot = function() deep, .package = "MultiScholaR", .env = env)
+    drawn <- figurePathLongDevice(env)
+    message <- omicsWorkerRun(fixture, operation, list(stage = "post_filter", grouping_variable = "group", shape_variable = NULL))
+    list(message = message, drawn = drawn$paths)
+}
+
+test_that("KIT-131: a lipid QC figure the worker draws but cannot write stops the step and is named", {
+    run <- figurePathUnwrittenWorker(lipidDeclarationsOwner, lipidomicsDeclarationBinding, "lipid_qc_figures")
+    expect_identical(run$message$status, "failed")
+    expect_gt(length(run$drawn), 0L)
+    expect_true(all(nchar(run$drawn) >= 260L))
+    text <- gsub("\\s+", " ", cli::ansi_strip(run$message$error))
+    expect_match(text, "a figure was drawn but its file was not written", fixed = TRUE)
+    expect_match(text, basename(run$drawn[[1L]]), fixed = TRUE)
+})
+
+test_that("KIT-131: a metabolomics QC figure the worker draws but cannot write stops the step and is named", {
+    run <- figurePathUnwrittenWorker(metabDeclarationsOwner, metabolomicsDeclarationBinding, "metab_qc_figures")
+    expect_identical(run$message$status, "failed")
+    expect_gt(length(run$drawn), 0L)
+    text <- gsub("\\s+", " ", cli::ansi_strip(run$message$error))
+    expect_match(text, "a figure was drawn but its file was not written", fixed = TRUE)
+    expect_match(text, basename(run$drawn[[1L]]), fixed = TRUE)
+})
+
+test_that("KIT-131: a transcriptomics figure drawn but not written stops the publication; another failure stays its message", {
+    testthat::local_mocked_bindings(readWorkflowStateMetadata = function(manager, reference) list(data = "checkpoint"),
+        .package = "MultiScholaR")
+    directory <- file.path(withr::local_tempdir(), strrep("t", 130L), strrep("u", 130L))
+    drawn <- figurePathLongDevice()
+    plot <- ggplot2::ggplot(data.frame(x = 1:2, y = 1:2), ggplot2::aes(x, y)) + ggplot2::geom_point()
+    request <- list(input_references = list(state = list(entity_id = "state")))
+    error <- expect_error(trxPublicationResult(NULL, request, function(source) {
+        trxSaveFigure(plot, directory, "normalization_comparison_grid", 4, 3)
+        list(saved = TRUE)
+    }), class = "workflow_figure_unwritten")
+    expect_identical(basename(drawn$paths), c("normalization_comparison_grid.png", "normalization_comparison_grid.pdf"))
+    expect_match(figurePathText(error), "normalization_comparison_grid.png", fixed = TRUE)
+    other <- trxPublicationResult(NULL, request, function(source) stop("no grid to draw"))
+    expect_identical(other$display, list(saved = FALSE, message = "no grid to draw"))
+})
+
 figurePathDaWorker <- function(request_dir, draw, env = parent.frame(), graphs = c("Volcano_Plots/groupB-groupA.png",
     "Volcano_Plots/groupB-groupA.pdf", "NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"),
     table = "da_proteins_groupB-groupA_long_annot.tsv") {
