@@ -379,6 +379,9 @@ Collate:
     'mod_omic_enrich_panels.R'
     'mod_omic_enrich.R'
     'mod_omic_summary.R'
+    'utils_integration_gui.R'
+    'mod_integration.R'
+    'mod_integration_import.R'
     'zzz.R'
 Suggests:
     RhpcBLASctl,
