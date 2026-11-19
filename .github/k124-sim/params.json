@@ -1,19 +1,20 @@
 {
-  "label": "confirm-p2x",
+  "label": "confirm-p2t",
   "package": "installed",
   "package_commit": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
   "tools_ref": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
-  "runs_core": 0,
-  "runs_stress": 500,
+  "runs_core": 1000,
+  "runs_stress": 0,
   "cores": 4,
   "timeout_minutes": 300,
+  "chunk": {
+    "s3": 250
+  },
   "arms": {
-    "s3": "1,2,3,34",
-    "s4": "1,2,34"
+    "s3": "1,2,3,35,36,39,40,41"
   },
   "cells": {
-    "s3": "S3",
-    "s4": "S1,S3,S8"
+    "s3": "C1,C7"
   },
   "share": "count,sweep"
 }
