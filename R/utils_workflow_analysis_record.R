@@ -676,9 +676,10 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     omics_roles <- sub("_$", "", vapply(omicsDeclarationBindings(), function(binding) binding$design_input_prefix, character(1)))
     omics_role_pattern <- paste0("^(", paste(omics_roles, collapse = "|"), ")(_|$)")
     for (input in record$inputs) {
+        # KIT-062: the integration's inputs are the omics' manifests, one role `integration_input_<omic>` each.
         if (is.null(input$sha256) || is.na(input$sha256) || !(input$role %in% c("diann_report", "maxquant_report",
             "fragpipe_report", "pd_tmt_report", "spectronaut_report", "fasta", "design_file", omics_roles) ||
-            grepl(omics_role_pattern, input$role))) next
+            grepl(omics_role_pattern, input$role) || startsWith(input$role, INTEGRATION_INPUT_ROLE_PREFIX))) next
         path <- if (input$role %in% names(inputs)) inputs[[input$role]] else NULL
         if (is.null(path) || !file.exists(path) || !identical(digest::digest(file = path, algo = "sha256"), input$sha256)) {
             cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")
@@ -692,7 +693,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     manager$.context$experiment_paths <- paths
     steps <- record$steps
     operations <- vapply(steps, function(step) step$operation, character(1))
-    preconditions <- seq_len(sum(cumprod(operations %in% c("import", "design_builder"))))
+    # KIT-062: the integration import is a precondition too (its state holds the inputs, checked above by sha256).
+    preconditions <- seq_len(sum(cumprod(operations %in% c("import", "design_builder", INTEGRATION_IMPORT_OPERATION))))
     history <- unlist(manager$.context$snapshot$state_history)
     expected <- vapply(steps[preconditions], function(step) step$state, character(1))
     if (!length(preconditions) || !identical(history, expected) || !all(vapply(steps[preconditions], function(step)

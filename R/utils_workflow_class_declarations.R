@@ -58,7 +58,12 @@ workflowClassDeclarations <- function() {
             tables = c("contrasts", "design_matrix"), lists = "da_data", roles = character()),
         EnrichmentResults = declare("EnrichmentResults", "result", NULL, NULL, NULL,
             tables = "contrasts", lists = "enrichment_data",
-            opaque = c("enrichment_plots", "enrichment_plotly", "enrichment_summaries"), roles = character()))
+            opaque = c("enrichment_plots", "enrichment_plotly", "enrichment_summaries"), roles = character()),
+        # KIT-062: the integration owner's inputs state, several omics' views (one table each) with one design row per
+        # run; the inputs' manifests, hashes and samples tables as one value.
+        IntegrationViewsData = declare("IntegrationViewsData", "assay", "views", "wide", "design_matrix",
+            tables = "design_matrix", lists = c("views", "features"), opaque = "inputs",
+            roles = c("sample_id", "group_id", "biological_sample_id")))
 }
 
 #' The declared class names, optionally of one kind (KIT-070: the owner's readers take their class list here).
