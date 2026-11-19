@@ -393,7 +393,8 @@ integrationResolveSampleMatch <- function(object, table) {
     usable <- known & ((by_run & !unknown_run) | (by_name & !unknown_name))
     empty <- usable & !nzchar(target)
     if (any(empty)) {
-        invalid(sprintf("%d row(s) of the sample match table give no biological sample (first: %s, %s)", sum(empty),
+        # Worded without "sample (": the registry test's scan for random-number calls reads message text too.
+        invalid(sprintf("%d row(s) of the sample match table give no biological sample; the first is %s, %s", sum(empty),
             omic[empty][[1L]], if (nzchar(run[empty][[1L]])) run[empty][[1L]] else saved[empty][[1L]]))
     }
     rows <- which(usable)
