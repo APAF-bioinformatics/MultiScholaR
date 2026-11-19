@@ -1,44 +1,18 @@
 {
-  "label": "KIT-140 Model tab, worker route, plain refusals (base 5d1189ee, head 6c423b7a): targeted files, check, failing-first, gate-off identity",
-  "package_commit": "6c423b7a9b98b5e69a085e67b00398302a63e2dd",
-  "base_commit": "5d1189ee59684837e471a1be636f468dc1f83187",
+  "label": "KIT-129 final figures (base 75f418fe, head 672b5e5a): RUV design files, GUI config, run path, four gui-entry files, check",
+  "package_commit": "672b5e5a1ff9a0740ba505c5a1111e141348c5fe",
+  "base_commit": "75f418fe16228398b0dfd7649fcd6b6c1f555175",
   "tools_ref": "",
   "tests": [
-    "test-integration-gui.R",
-    "test-integration-model.R",
-    "test-integration-model-tab-mofa.R",
-    "test-integration-mofa-model.R",
-    "test-integration-corpus.R",
-    "test-workflow-integration-input.R",
-    "test-integration-input-lipid-metab.R",
-    "test-integration-input-transcriptomics.R",
-    "test-workflow-operation-registry.R",
-    "test-workflow-partitions.R",
-    "test-workflow-omics-worker.R",
-    "test-workflow-trx-declarations.R",
-    "test-workflow-omics-binding-steps.R",
-    "test-workflow-execution-adapters.R",
-    "test-workflow-omics-application-reads.R",
-    "test-workflow-omics-sessions.R",
-    "test-workflow-analysis-record.R",
-    "test-perf107-audit.R",
-    "test-app-shell-shared.R",
-    "test-e2e-test-mode-integration.R",
-    "test-perf-107.R",
-    "test-workflow-ui-shared.R",
-    "test-launch-test-mode.R",
-    "test-module-ci-trx-app.R",
-    "test-module-ci-lipid-norm.R",
-    "test-module-ci-metab-norm.R",
-    "test-prot-05d-norm-module-characterization.R",
+    "test-omic-norm-ruv-design.R",
     "test-omic-gui-config.R",
-    "test-e2e-browser-harness.R",
-    "test-e2e-trx-journey.R",
-    "test-run-packaged-application.R",
-    "test-workflow-execution-process.R",
-    "test-workflow-saved-installed.R"
+    "test-kit129-run-path.R",
+    "test-gui-entry-proteomics.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-gui-entry-transcriptomics.R"
   ],
-  "shards": 10,
+  "shards": 7,
   "file_timeout_minutes": 45,
   "file_timeouts": {},
   "extra_packages": [
@@ -50,25 +24,5 @@
   "check": true,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": [
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
-      "args": [
-        "5d1189ee59684837e471a1be636f468dc1f83187",
-        "kit140-failing-first",
-        "test-integration-gui.R"
-      ],
-      "out": "kit140-failing-first",
-      "timeout_minutes": 60
-    },
-    {
-      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
-      "args": [
-        "5d1189ee59684837e471a1be636f468dc1f83187",
-        "kit140-gate-off"
-      ],
-      "out": "kit140-gate-off",
-      "timeout_minutes": 60
-    }
-  ]
+  "scripts": []
 }
