@@ -775,3 +775,23 @@ In this pass ubuntu-22.04 gave the differing table in all 8 repeats: 2,979 bytes
 - The worker routes' limit with long paths off is 82 in the fixture's layout, which is 77 in the application's for a 15-character contrast, as calculated. Next limits (store `.pending` 95, Q-value staged copy 99) belong to the harness revision (v1.11 names).
 - Windows Rust is now pinned at 1.99.1 in this workflow. Rust 1.100.0 does not build the internal packages on the Windows GNU target (cause inside the packages' build, not printed by rule). This needs a decision or a fix in the internal repositories before Rust is moved (F6).
 - trx_screen's oracle digest depends on the ubuntu-22.04 runner build; the values agree within the rule. The recorder's mask is the weakness, as with FragPipe (not changed).
+
+## Release-candidate run on runners (2026-11-20, run 44598642342, branch run-k134-rc)
+
+Declaration and full results: `rc-run-declaration.md` (this folder, branch `run-k134-rc`). From `performance-v2`
+`8b4ff691`, stage `rc`: 2 Linux main, 1 Windows main, 13 suite shards; 0 artifacts, no cache; correction pass unused.
+
+- **The suite on the bundle ran for the first time** (installed package, the bundle's R and library): Linux 383/413 ok,
+  every difference from the runner reference classified (known state; E installed-vs-load_all; numeric under the
+  bundle's OpenBLAS); **no class D on Linux**; open: OpenBLAS digest values not compared. Windows 357 ok, 53 failed,
+  3 timeouts: mostly E (checkout line endings, GNU tools, D4, path forms); **one class D (D-1)**; a few open.
+- **D-1 (Windows, package code):** the R-fallback native archive (`runDIANativeTarR`) leaves its staging folder in TMP
+  (unlink before the working directory is restored). Not changed.
+- NIPALS "bit-identical to mixOmics" holds under reference BLAS only; under the shipped OpenBLAS it agrees to 1e-15.
+- Hosts: 8/8 on ubuntu-22.04, ubuntu-24.04, Arch, Fedora, Debian, before and after M26; M25 stop shown on Arch and Fedora.
+- Windows: e2e 88, 190, 16, 153; Summary `.docx` at roots 90 and 94 with long paths off; figure-paths test on/off only
+  D-1 plus long-folder fixtures; workers draw figures under TMP (shown); the session archive's TMP staging is not
+  reachable on a Windows lane (no native archive outside DIA), shown only by the unit test.
+- MOFA2 in the installed bundle, double precision, both platforms: trains with the bundle's Python, offline; 206
+  iterations, ELBO -24285.131276 on all three machines, factors agree to 5e-15 (the declared 186/-27000.32 belong to
+  another corpus revision).
