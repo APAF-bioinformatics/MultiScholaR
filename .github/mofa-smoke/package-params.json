@@ -1,6 +1,6 @@
 {
-  "label": "k062-record",
-  "package_commit": "96f892fad387dc8a0edb57a1c20192ae0129766d",
+  "label": "k062-compare",
+  "package_commit": "449b9de7750c96b5f4a1e3eb196fd914c776be2b",
   "tests": ["test-integration-mofa-model.R", "test-integration-model.R"],
-  "record": true
+  "record": false
 }
