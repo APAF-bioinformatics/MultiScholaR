@@ -423,3 +423,51 @@ in today's texts. They are material for a caution; the wording is the user's.
 | Classic proteomics (DIA with IQ, LFQ, TMT), association 0.6 | 27.3% | M36 table above, arm 5 |
 | DIA with limpa, association 0.6 | 30.1% | M36 table above, arm 5 |
 | Lipidomics, metabolomics, association 0.6 | 53.7% | M36 table above, arm 5 |
+
+## Accepted 2026-11-19
+
+The user (2026-11-19): "just accept all ill manually tweak it anyway". Rows 1 to 234 are accepted as written, and the
+three open rulings below are taken as recommended. Every string here, accepted or changed, stays the user's to tweak by
+hand. Only the three rulings changed shipped strings (the preset tables of `R/utils_omic_gui_config.R`); no computation,
+figure field or gate changed.
+
+**R1, transcriptomics first-pass nulls note** (the open point "figures to be updated to arm 24" above). The note now
+quotes the separation rule that runs (arm 24, `kit-124/scored/newarms-gha/k124-cells.tsv`, S3, subset `full`: power C5
+0.254603, C7 0.0486019) in place of arm 5's (`final-20261118/s3/k124-cells.tsv`: 0.106754, 0.0225582). The figure line
+(6.4% false discoveries, power 60%) is unchanged (arm 24: 0.0643636, 0.600096).
+
+| Old | New |
+|---|---|
+| ... With the separation rule it finds few of the real differences when the unwanted variation is tied to the groups (power 11%) or with three groups (2%). | ... With the separation rule it finds few of the real differences when the unwanted variation is tied to the groups (power 25%) or with three groups (5%). |
+
+**R2, lipid/metab supplied-list label** (the open point "your own list" label above). The promise of a default list is
+dropped from the label and the description (the description is now the catalogue's, as in the other omics); the note
+is unchanged. Row 92 / 117 and 93 / 118 read:
+
+| Field | Old | New |
+|---|---|---|
+| label | Estimate from a list of control lipids (metabolites) (by default the internal standards) | Your own list of control lipids (metabolites), for example internal standards that were not used for normalisation |
+| description | The unwanted variation is estimated from lipids (metabolites) that do not differ between the groups (negative controls): the internal standards, unless you supply another list (RUV-III). | You supply lipids (metabolites) that you know do not differ between the groups (negative controls); the unwanted variation is estimated from them (RUV-III). |
+
+The draft's final full stop is not shipped: no label of the list ends with one.
+
+**R3, first-pass nulls (controls from the data), every omic.** A caution leads the note; the existing note follows
+unchanged (in transcriptomics with R1's figures). The figure is the omic's own from `ruvGroupAssociationConsequences()`
+(the M36 table above: first-pass nulls with the separation rule).
+
+Caution: "Use this approach only when the unwanted variation is unlikely to differ between your groups. When it did in
+simulation, this approach reported {far more | more} false discoveries than the 5% target ({figure}). If the check
+below reports a detectable association, choose the recommended approach."
+
+| Omic | {figure} | Source (`fdp_06` / `fdp_03`) |
+|---|---|---|
+| Proteomics (DIA with IQ, LFQ, TMT) | far more ... (27.3% under strong association, a correlation of 0.6, with the separation rule for the number of factors) | S1 arm 5, 0.272569 |
+| Proteomics (DIA with limpa) | far more ... (30.1% under strong association, a correlation of 0.6, with the separation rule for the number of factors) | S2 arm 5, 0.300619 |
+| Transcriptomics | more ... (6.4% at a correlation of 0.3, with the separation rule for the number of factors; a stronger association was not measured) | S3 arm 24, 0.0643636 at 0.3; 0.6 not measured |
+| Lipidomics, metabolomics | far more ... (53.7% under strong association, a correlation of 0.6, with the separation rule for the number of factors) | S4 arm 5, 0.537242 |
+
+For the user's tweak: the draft's range (27% to 54%) is per omic here, so each note gives one figure, and each names the
+separation rule because the table's figures were measured with it (the pre-selected estimated number was not measured
+at 0.6). The check gives a verdict for this approach in classic proteomics only (detection limit 0.164); in DIA with
+limpa, transcriptomics, lipidomics and metabolomics it has no detection limit for this approach (texts 174 / 177), so the
+caution's last sentence cannot be triggered there.

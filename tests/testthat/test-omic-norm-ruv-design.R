@@ -137,6 +137,34 @@ test_that("each measured figure is the ticket's; the cells still running are pen
     expect_identical(sum(statuses == "unavailable"), 1L)
 })
 
+test_that("the wording rulings of 2026-11-19 are the shipped notes and labels (R1 to R3)", {
+    tables <- ruvDesignTables()
+    # R3: the caution leads the note of controls from the data, with the omic's own figure under association.
+    caution <- c(proteomics.classic = "far more false discoveries than the 5% target (27.3% under strong association",
+        proteomics.dia_limpa = "far more false discoveries than the 5% target (30.1% under strong association",
+        lipidomics.features = "far more false discoveries than the 5% target (53.7% under strong association",
+        metabolomics.features = "far more false discoveries than the 5% target (53.7% under strong association",
+        transcriptomics.genes = "more false discoveries than the 5% target (6.4% at a correlation of 0.3")
+    for (name in names(caution)) {
+        note <- ruvDesignOptions(tables[[name]])$first_pass_nulls$note
+        expect_true(startsWith(note, "Use this approach only when the unwanted variation is unlikely to differ"), info = name)
+        expect_match(note, caution[[name]], fixed = TRUE, info = name)
+        expect_match(note, "If the check below reports a detectable association, choose the recommended approach.",
+            fixed = TRUE, info = name)
+    }
+    # R1: transcriptomics quotes the separation rule that runs (power 25% tied to the groups, 5% with three groups).
+    expect_match(ruvDesignOptions(tables[["transcriptomics.genes"]])$first_pass_nulls$note,
+        "tied to the groups (power 25%) or with three groups (5%).", fixed = TRUE)
+    # R2: no default list promised for lipids and metabolites.
+    for (name in c("lipidomics.features", "metabolomics.features")) {
+        features <- tables[[name]]$features
+        supplied <- ruvDesignOptions(tables[[name]])$supplied_controls
+        expect_identical(supplied$label, sprintf(paste("Your own list of control %s, for example internal standards that",
+            "were not used for normalisation"), features))
+        expect_false(grepl("by default|unless you supply", paste(supplied$label, supplied$description)), info = features)
+    }
+})
+
 test_that("each design offers the k rules defined for it, with the rule its figure was measured with selected", {
     design <- omicGuiConfig("lipidomics")$norm$ruv_design
     expect_identical(names(design$k_rules), c("num_sv_be", "sweep_bounded", "user"))

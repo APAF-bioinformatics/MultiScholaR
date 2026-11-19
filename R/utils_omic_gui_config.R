@@ -1652,6 +1652,18 @@ omicGuiRuvSuppliedNote <- function(features, contaminated) {
         "listed feature in five truly differed, false discoveries rose to %.1f%%."), features, 100 * contaminated)
 }
 
+#' The caution that leads the note of controls chosen from the data (ruling R3, the user, 2026-11-19), with the omic's
+#' own false discovery proportion under association with the groups (`ruvGroupAssociationConsequences()`).
+#' @param more How far above the target (`far more`, `more`).
+#' @param measured The omic's measured figure and where it was measured.
+#' @return One string.
+#' @noRd
+omicGuiRuvFirstPassCaution <- function(more, measured) {
+    sprintf(paste("Use this approach only when the unwanted variation is unlikely to differ between your groups. When",
+        "it did in simulation, this approach reported %s false discoveries than the 5%% target (%s). If the check below",
+        "reports a detectable association, choose the recommended approach."), more, measured)
+}
+
 #' Classic proteomics (DIA with IQ, LFQ, TMT): ticket section 1a, simulator S1.
 #' @return The table.
 #' @noRd
@@ -1673,7 +1685,9 @@ omicGuiRuvTableClassic <- function() {
                 source = "KIT-124 S1 arm 22 (scored/newarms-gha): worst cell C6 0.060, power C0 0.90")),
             source = "KIT-129 1a; KIT-124 S1 arm 8: worst cell C5 0.053, power C0 0.91; arm 9: C1 0.119"),
         first_pass_nulls = list(status = "measured", fdp = 0.077, fdp_where = cell[["c5"]], power = 0.91,
-            note = paste("Not when the unwanted variation is tied to the groups: it fails there with either rule",
+            note = paste(omicGuiRuvFirstPassCaution("far more", paste("27.3% under strong association, a correlation of",
+                "0.6, with the separation rule for the number of factors")),
+                "Not when the unwanted variation is tied to the groups: it fails there with either rule",
                 "for the number of factors (7.7% false discoveries, as shown). At most 5.2% in the other scenarios",
                 "tested."),
             k_rule_figures = list(sweep_bounded = list(fdp = 0.078, fdp_where = cell[["c5"]], power = 0.91,
@@ -1717,7 +1731,9 @@ omicGuiRuvTableDiaLimpa <- function() {
                 source = "KIT-124 S2 arm 22 (scored/newarms-gha): worst cell C5 0.056, power C0 0.90")),
             source = "KIT-129 1b; KIT-124 S2 arm 8: worst cell C6 0.056, power C0 0.91; arm 9: C1 0.089"),
         first_pass_nulls = list(status = "measured", fdp = 0.146, fdp_where = cell[["c5"]], power = 0.92,
-            note = paste("Fails in DIA with limpa, with either rule for the number of factors: too many false",
+            note = paste(omicGuiRuvFirstPassCaution("far more", paste("30.1% under strong association, a correlation of",
+                "0.6, with the separation rule for the number of factors")),
+                "Fails in DIA with limpa, with either rule for the number of factors: too many false",
                 "discoveries in every scenario tested that had unwanted variation (7.1% to 14.6%; 9.0% in the",
                 "reference scenario). Offered for completeness."),
             k_rule_figures = list(sweep_bounded = list(fdp = 0.149, fdp_where = cell[["c5"]], power = 0.92,
@@ -1765,14 +1781,16 @@ omicGuiRuvTableTrx <- function() {
                 source = "KIT-124 S3 arm 22 (scored/newarms-gha; C6 void, not used): worst cell C2 0.053, power C0 0.61")),
             source = "KIT-129 1c; KIT-124 S3 arm 8: worst cell C2 0.056, power C0 0.76; arm 9: C1 0.076"),
         first_pass_nulls = list(status = "measured", fdp = 0.071, fdp_where = cell[["c5"]], power = 0.77,
-            note = paste("Not when the unwanted variation is tied to the groups: it fails there (7.1% false",
+            note = paste(omicGuiRuvFirstPassCaution("more", paste("6.4% at a correlation of 0.3, with the separation",
+                "rule for the number of factors; a stronger association was not measured")),
+                "Not when the unwanted variation is tied to the groups: it fails there (7.1% false",
                 "discoveries, as shown, and 7.1% of unchanged genes with p below 0.05, more than the acceptance",
                 "criterion allows). At most 5.5% in the other scenarios tested, with as much power as an analysis",
                 "that was given the true unwanted factor. With the separation rule it finds few of the real",
-                "differences when the unwanted variation is tied to the groups (power 11%) or with three groups",
-                "(2%)."),
+                "differences when the unwanted variation is tied to the groups (power 25%) or with three groups",
+                "(5%)."),
             k_rule_figures = list(sweep_bounded = list(fdp = 0.064, fdp_where = cell[["c5"]], power = 0.60,
-                source = "KIT-124 S3 arm 5: worst cell C5 0.064, power C0 0.60, C5 0.11, C7 0.02")),
+                source = "KIT-124 S3 arm 24 (scored/newarms-gha): worst cell C5 0.064, power C0 0.60, C5 0.25, C7 0.05")),
             source = paste("KIT-129 1c; KIT-124 S3 arm 23 (scored/newarms-gha; C6 void, not used): worst cell C5 0.071",
                 "(type I 0.071, rule 1 fail), at most 0.055 elsewhere, power C0 0.77 (arm 2: 0.77)")),
         legacy = list(status = "measured", fdp = 0.299, fdp_where = cell[["c5"]], power = 0.73,
@@ -1810,9 +1828,7 @@ omicGuiRuvTableFeature <- function(features) {
             source = paste("KIT-129 1d; KIT-124 S4 arm 16, run r0a on the KIT-128 tree (scored/r0a-gha; hosted runner,",
                 "no equivalence comparison; the cell is reported, not core): C6 0.058, power C6 0.36")),
         supplied_controls = list(status = "measured", fdp = 0.068, fdp_where = cell[["c5"]], power = 0.37,
-            label = sprintf("Estimate from a list of control %s (by default the internal standards)", features),
-            description = sprintf(paste("The unwanted variation is estimated from %s that do not differ between the",
-                "groups (negative controls): the internal standards, unless you supply another list (RUV-III)."),
+            label = sprintf("Your own list of control %s, for example internal standards that were not used for normalisation",
                 features),
             note = paste("Check that the standards do not differ between the groups: when 2 of 10 did, false",
                 "discoveries rose to 37%. The separation rule gives more false discoveries and less power here (as",
@@ -1821,7 +1837,9 @@ omicGuiRuvTableFeature <- function(features) {
                 source = "KIT-124 S4 arm 22 (scored/newarms-gha; C4, C6 void, not used): worst cell C2 0.118, C0 0.077, power C0 0.26")),
             source = "KIT-129 1d; KIT-124 S4 arm 8 (standards): worst cell C5 0.068, power C0 0.37; arm 9: C1 0.371"),
         first_pass_nulls = list(status = "measured", fdp = 0.174, fdp_where = cell[["c5"]], power = 0.44,
-            note = paste("Not when the unwanted variation is tied to the groups: it fails there (17.4% false",
+            note = paste(omicGuiRuvFirstPassCaution("far more", paste("53.7% under strong association, a correlation of",
+                "0.6, with the separation rule for the number of factors")),
+                "Not when the unwanted variation is tied to the groups: it fails there (17.4% false",
                 "discoveries, as shown). With three groups it missed one acceptance criterion (7.2% false",
                 "discoveries). 4.1% to 6.2% in the other scenarios tested. With the separation rule it reports too",
                 "many false discoveries in most scenarios tested (9.7% in the reference scenario)."),
