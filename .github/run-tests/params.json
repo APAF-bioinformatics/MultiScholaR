@@ -1,18 +1,25 @@
 {
-  "label": "KIT-063 correction pass (base 6c423b7a, head 9cbcfe4e): affected files and check",
-  "package_commit": "9cbcfe4e4fafbc812dcf708635ad516e64e97d02",
-  "base_commit": "6c423b7a9b98b5e69a085e67b00398302a63e2dd",
+  "label": "KIT-129 final figures correction, fresh request (base 75f418fe, head 303217ac): RUV design files, GUI config, run path, four gui-entry files, check",
+  "package_commit": "303217ac19c314f92094b0a339ef9e8211e9fa21",
+  "base_commit": "75f418fe16228398b0dfd7649fcd6b6c1f555175",
   "tools_ref": "",
   "tests": [
-    "test-workflow-operation-registry.R",
-    "test-integration-sample-match.R",
-    "test-integration-results.R",
-    "test-integration-gui.R",
-    "test-integration-model.R"
+    "test-omic-norm-ruv-design.R",
+    "test-omic-gui-config.R",
+    "test-kit129-run-path.R",
+    "test-gui-entry-proteomics.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-gui-entry-transcriptomics.R"
   ],
-  "shards": 5,
+  "shards": 7,
   "file_timeout_minutes": 45,
-  "file_timeouts": {},
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 150,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120
+  },
   "extra_packages": [
     "sva"
   ],
