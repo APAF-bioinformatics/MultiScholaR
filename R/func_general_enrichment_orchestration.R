@@ -107,8 +107,6 @@ processEnrichments <- function(da_results,
         # Check if the column has valid data
         protein_col_data <- de_data[[protein_id_column]]
 
-                 message("   processEnrichments Step: About to apply protein ID splitting and FDR filtering...")
-         message(sprintf("      Data State (de_data Before Modify): Dims=%d rows, %d cols. First 5 IDs: %s", nrow(de_data), ncol(de_data), paste(head(de_data[[protein_id_column]], 5), collapse=", ")))
          
          na_count_before <- sum(is.na(de_data[[protein_id_column]]))
          
@@ -125,10 +123,7 @@ processEnrichments <- function(da_results,
          
          na_count_after_q <- sum(is.na(subset_sig[[protein_id_column]]))
 
-         message("   processEnrichments Step: Protein ID splitting and filtering complete.")
-         message(sprintf("      Data State (subset_sig After Modify): Dims=%d rows, %d cols.", nrow(subset_sig), ncol(subset_sig)))
          if(nrow(subset_sig) > 0) {
-            message(sprintf("      Data State (subset_sig After Modify): First 5 IDs: %s", paste(head(subset_sig[[protein_id_column]], 5), collapse=", ")))
             # Also check for the literal "Protein.Ids" to be sure
             if(any(subset_sig[[protein_id_column]] == "Protein.Ids", na.rm = TRUE)) {
               message("      WARNING: Literal 'Protein.Ids' found in the protein ID column after modification!")
@@ -137,26 +132,9 @@ processEnrichments <- function(da_results,
 
         message(sprintf("Proteins passing q-value cutoff (%.3f): %d", q_cutoff, nrow(subset_sig)))
         
-        # [OK] DEBUG 66: Extensive logging for subset_sig
-        message("      Data State (subset_sig) Structure:")
-        utils::str(subset_sig)
-        if (nrow(subset_sig) > 0) {
-          message("      Data State (subset_sig) Head:")
-          print(head(subset_sig))
-          message("      Data State (subset_sig fdr_qvalue range):")
-          print(range(subset_sig$fdr_qvalue, na.rm = TRUE))
-          message("      Data State (subset_sig log2FC range):")
-          print(range(subset_sig$log2FC, na.rm = TRUE))
-        }
-
         # No longer need subset_for_enrichment, as subset_sig is already filtered
         message(sprintf("Proteins available for enrichment: %d", nrow(subset_sig)))
         
-        # [OK] DEBUG 66: Check subset_for_enrichment
-        if (nrow(subset_sig) == 0) {
-          message("      Data State (subset_sig): NO PROTEINS PASS ENRICHMENT CUTOFF!")
-        }
-
         up_matrix <- subset_sig |>
           dplyr::filter(.data$log2FC > up_cutoff)
         message(sprintf("Up-regulated proteins (log2FC > %g): %d", up_cutoff, nrow(up_matrix)))
@@ -165,20 +143,6 @@ processEnrichments <- function(da_results,
           na_in_up <- sum(is.na(up_matrix[[protein_id_column]]))
         }
         
-        # [OK] DEBUG 66: Check up_matrix details
-        if (nrow(up_matrix) > 0) {
-          message("      Data State (up_matrix) Structure:")
-          utils::str(up_matrix)
-          message("      Data State (up_matrix) Head:")
-          print(head(up_matrix))
-          message("      Data State (up_matrix log2FC values):")
-          print(summary(up_matrix$log2FC))
-        } else {
-          message("      Data State (up_matrix): NO UP-REGULATED PROTEINS FOUND!")
-          message(sprintf("      Debug: up_cutoff = %g, max log2FC in subset_sig = %g", 
-                         up_cutoff, if(nrow(subset_sig) > 0) max(subset_sig$log2FC, na.rm = TRUE) else NA))
-        }
-
         down_matrix <- subset_sig |>
           dplyr::filter(.data$log2FC < -down_cutoff)
         message(sprintf("Down-regulated proteins (log2FC < -%g): %d", down_cutoff, nrow(down_matrix)))
@@ -187,20 +151,6 @@ processEnrichments <- function(da_results,
           na_in_down <- sum(is.na(down_matrix[[protein_id_column]]))
         }
         
-        # [OK] DEBUG 66: Check down_matrix details
-        if (nrow(down_matrix) > 0) {
-          message("      Data State (down_matrix) Structure:")
-          utils::str(down_matrix)
-          message("      Data State (down_matrix) Head:")
-          print(head(down_matrix))
-          message("      Data State (down_matrix log2FC values):")
-          print(summary(down_matrix$log2FC))
-        } else {
-          message("      Data State (down_matrix): NO DOWN-REGULATED PROTEINS FOUND!")
-          message(sprintf("      Debug: down_cutoff = %g, min log2FC in subset_sig = %g", 
-                         down_cutoff, if(nrow(subset_sig) > 0) min(subset_sig$log2FC, na.rm = TRUE) else NA))
-        }
-
         # Get background IDs from the full de_data for this contrast. KIT-119: stripped as the query ids are
         # (they were not, so a query id with a colon suffix was missing from its own background).
         custom_bg <- stripEnrichmentIdSuffix(de_data[[protein_id_column]]) |>
@@ -208,16 +158,11 @@ processEnrichments <- function(da_results,
 
         message(sprintf("Using %d unique proteins as background for enrichment analysis", length(custom_bg)))
         
-        # [OK] DEBUG 66: Check background details
-        message("      Data State (custom_bg): First 5 background proteins:")
-        message(paste(head(custom_bg, 5), collapse = ", "))
-
         # Process up and down regulated genes
         list(
           up = tryCatch({
             if(nrow(up_matrix) > 0) {
               # [OK] DEBUG 66: Log call to perform_enrichment for up-regulated
-              message("   processEnrichments Step: CALLING perform_enrichment for UP-REGULATED proteins...")
               message(sprintf("      About to analyze %d up-regulated proteins", nrow(up_matrix)))
               
               protein_col <- protein_id_column
@@ -238,34 +183,11 @@ processEnrichments <- function(da_results,
                 correction_method = correction_method
               )
               
-              # [OK] DEBUG 66: Log result from perform_enrichment
-              message("   processEnrichments Step: UP-REGULATED enrichment completed")
-              message("      Data State (up_result): Checking perform_enrichment result...")
-              
-              if (is.null(up_result)) {
-                message("      Data State (up_result): Result is NULL")
-              } else {
-                message("      Data State (up_result) Structure:")
-                utils::str(up_result)
-                
-                if ("result" %in% names(up_result) && !is.null(up_result$result)) {
-                  message(sprintf("      Data State (up_result$result): Found %d enriched terms", nrow(up_result$result)))
-                  if (nrow(up_result$result) > 0) {
-                    message("      Data State (up_result$result) Head:")
-                    print(head(up_result$result))
-                  }
-                } else {
-                  message("      Data State (up_result): No 'result' component or result is NULL")
-                }
-              }
-              
               up_result
             } else {
-              message("   processEnrichments Step: SKIPPING UP-REGULATED enrichment (no proteins)")
               NULL
             }
           }, error = function(e) {
-            message(sprintf("   processEnrichments Step: ERROR in up-regulated enrichment: %s", e$message))
             warning(sprintf("Error processing up-regulated genes: %s", e$message))
             message("Debug info for up-regulated genes:")
             message("Number of proteins: ", nrow(up_matrix))
@@ -275,7 +197,6 @@ processEnrichments <- function(da_results,
           down = tryCatch({
             if(nrow(down_matrix) > 0) {
               # [OK] DEBUG 66: Log call to perform_enrichment for down-regulated
-              message("   processEnrichments Step: CALLING perform_enrichment for DOWN-REGULATED proteins...")
               message(sprintf("      About to analyze %d down-regulated proteins", nrow(down_matrix)))
               
               protein_col <- protein_id_column
@@ -296,34 +217,11 @@ processEnrichments <- function(da_results,
                 correction_method = correction_method
               )
               
-              # [OK] DEBUG 66: Log result from perform_enrichment
-              message("   processEnrichments Step: DOWN-REGULATED enrichment completed")
-              message("      Data State (down_result): Checking perform_enrichment result...")
-              
-              if (is.null(down_result)) {
-                message("      Data State (down_result): Result is NULL")
-              } else {
-                message("      Data State (down_result) Structure:")
-                utils::str(down_result)
-                
-                if ("result" %in% names(down_result) && !is.null(down_result$result)) {
-                  message(sprintf("      Data State (down_result$result): Found %d enriched terms", nrow(down_result$result)))
-                  if (nrow(down_result$result) > 0) {
-                    message("      Data State (down_result$result) Head:")
-                    print(head(down_result$result))
-                  }
-                } else {
-                  message("      Data State (down_result): No 'result' component or result is NULL")
-                }
-              }
-              
               down_result
             } else {
-              message("   processEnrichments Step: SKIPPING DOWN-REGULATED enrichment (no proteins)")
               NULL
             }
           }, error = function(e) {
-            message(sprintf("   processEnrichments Step: ERROR in down-regulated enrichment: %s", e$message))
             warning(sprintf("Error processing down-regulated genes: %s", e$message))
             message("Debug info for down-regulated genes:")
             message("Number of proteins: ", nrow(down_matrix))

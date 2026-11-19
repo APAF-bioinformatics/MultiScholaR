@@ -94,12 +94,10 @@ buildProtEnrichAllContrastResults <- function(enrichmentResults,
                                               methodInfo,
                                               isEnrichResultFn = methods::is,
                                               catFn = cat) {
-  catFn("   ENRICHMENT Step: Processing results for ALL contrasts\n")
 
   allContrastResults <- list()
 
   for (rawContrastName in names(enrichmentResults@enrichment_data)) {
-    catFn(sprintf("   ENRICHMENT Step: Processing contrast '%s'\n", rawContrastName))
 
     contrastEnrichment <- enrichmentResults@enrichment_data[[rawContrastName]]
     contrastResults <- list(
@@ -157,11 +155,6 @@ buildProtEnrichAllContrastResults <- function(enrichmentResults,
       }
 
       contrastResults$gprofiler_results <- gprofilerResults
-      catFn(sprintf(
-        "   ENRICHMENT Step: Contrast '%s' - %d gprofiler2 results\n",
-        rawContrastName,
-        nrow(gprofilerResults)
-      ))
     } else if (identical(methodInfo$method, "clusterprofiler")) {
       clusterprofilerResults <- data.frame()
 
@@ -194,11 +187,6 @@ buildProtEnrichAllContrastResults <- function(enrichmentResults,
       }
 
       contrastResults$clusterprofiler_results <- clusterprofilerResults
-      catFn(sprintf(
-        "   ENRICHMENT Step: Contrast '%s' - %d clusterProfileR results\n",
-        rawContrastName,
-        nrow(clusterprofilerResults)
-      ))
     }
 
     allContrastResults[[rawContrastName]] <- contrastResults
@@ -612,7 +600,6 @@ propagateProtEnrichResultsArgs <- function(enrichmentResults,
                                            pathwayDir,
                                            timeFn = Sys.time,
                                            catFn = cat) {
-  catFn("   ENRICHMENT Step: Copying @args from original data object...\n")
 
   dataHasArgs <- tryCatch({
     !is.null(currentS4Object) && !is.null(currentS4Object@args)
@@ -645,7 +632,6 @@ propagateProtEnrichResultsArgs <- function(enrichmentResults,
         pathway_dir = pathwayDir
       )
 
-      catFn("   ENRICHMENT Step: Storing UI parameters in @args\n")
       if (is.null(enrichmentResults@args$enrichmentAnalysisUI)) {
         enrichmentResults@args$enrichmentAnalysisUI <- list()
       }
@@ -662,12 +648,7 @@ propagateProtEnrichResultsArgs <- function(enrichmentResults,
         timestamp = timeFn()
       )
 
-      catFn("   ENRICHMENT Step: Successfully copied and updated @args\n")
-    } else {
-      catFn("   ENRICHMENT Step: EnrichmentResults doesn't have @args slot\n")
     }
-  } else {
-    catFn("   ENRICHMENT Step: Original data object doesn't have @args to copy\n")
   }
 
   list(
@@ -695,7 +676,6 @@ propagateProtEnrichUiParams <- function(currentS4Object,
   })
 
   if (dataHasArgs) {
-    catFn("   ENRICHMENT Step: Storing UI parameters in original data object @args\n")
     if (is.null(currentS4Object@args$enrichmentAnalysisUI)) {
       currentS4Object@args$enrichmentAnalysisUI <- list()
     }
@@ -723,7 +703,6 @@ propagateProtEnrichUiParams <- function(currentS4Object,
       selected_contrast = selectedContrast,
       timestamp = timeFn()
     )
-    catFn("   ENRICHMENT Step: Stored UI parameters in workflow_data for sessionSummary\n")
   }
 
   list(
@@ -754,7 +733,6 @@ updateProtEnrichStateManagerUiParams <- function(workflowData,
     ))
   }
 
-  catFn("   ENRICHMENT Step: Updating R6 state with enrichment UI parameters\n")
 
   currentDataState <- NULL
   availableStates <- NULL
@@ -764,15 +742,8 @@ updateProtEnrichStateManagerUiParams <- function(workflowData,
     availableStates <- diaStateHistory(workflowData$state_manager)
     currentDataState <- detectFn(currentDataStates, ~ .x %in% availableStates)
 
-    if (!is.null(currentDataState)) {
-      catFn("   ENRICHMENT Step: Skipping state update (updateState method verification needed)\n")
-    }
   }, error = function(e) {
     warningMessage <<- e$message
-    catFn(sprintf(
-      "   ENRICHMENT Step: Warning - could not update state with UI parameters: %s\n",
-      e$message
-    ))
   })
 
   list(
@@ -1002,7 +973,6 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
 #' @noRd
 saveWorkflowEnrichmentState <- function(workflow, config, results, declared, method, parameters, pathway_dir,
     outcomes = NULL) {
-    cat("   ENRICHMENT Step: Saving results to R6 state manager...\n")
     manager <- workflow$state_manager
     warning_message <- NULL
     saved <- FALSE
@@ -1027,11 +997,9 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
             description = paste("Enrichment analysis completed using", method$method, "for contrast:",
                 parameters$selected_contrast))
         saved <- TRUE
-        cat("   ENRICHMENT Step: Successfully saved state to R6 state manager\n")
     }, error = function(e) {
         clearWorkflowStepProvenance(manager)
         warning_message <<- e$message
-        cat(sprintf("   ENRICHMENT Step: Warning saving to R6 state manager: %s\n", e$message))
     })
     list(attempted = TRUE, saved = saved, warning = warning_message)
 }

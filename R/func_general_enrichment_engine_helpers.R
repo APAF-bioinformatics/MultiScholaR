@@ -19,33 +19,15 @@ perform_enrichment <- function(data_subset,
                                protein_id_column,
                                correction_method = "gSCS") {
   
-  message(sprintf("   perform_enrichment Arg: species = %s", species))
-  message(sprintf("   perform_enrichment Arg: threshold = %s", threshold))
-  message(sprintf("   perform_enrichment Arg: sources = %s", paste(sources, collapse = ", ")))
-  message(sprintf("   perform_enrichment Arg: domain_scope = %s", domain_scope))
-  message(sprintf("   perform_enrichment Arg: exclude_iea = %s", exclude_iea))
-  message(sprintf("   perform_enrichment Arg: protein_id_column = %s", protein_id_column))
-  message(sprintf("   perform_enrichment Arg: max_retries = %s", max_retries))
   
-  message("      Data State (data_subset): Checking input data...")
-  message(sprintf("      Data State (data_subset): Dims = %d rows, %d cols", nrow(data_subset), ncol(data_subset)))
-  message("      Data State (data_subset) Structure:")
-  utils::str(data_subset)
-  message("      Data State (data_subset) Head:")
-  print(head(data_subset))
   
   if (nrow(data_subset) == 0) {
-    message("   perform_enrichment Step: Data subset is empty, returning NULL")
     return(NULL)
   }
 
-  message("   perform_enrichment Step: Extracting protein IDs from data...")
   # Clean data before enrichment
   protein_ids <- data_subset[[protein_id_column]]
   
-  message(sprintf("      Data State (protein_ids): Length = %d", length(protein_ids)))
-  message(sprintf("      Data State (protein_ids): Class = %s", class(protein_ids)))
-  message(sprintf("      Data State (protein_ids): First 5 values = %s", paste(head(protein_ids, 5), collapse = ", ")))
   
   na_count_initial <- sum(is.na(protein_ids))
   empty_count_initial <- sum(protein_ids == "", na.rm = TRUE)
@@ -68,23 +50,16 @@ perform_enrichment <- function(data_subset,
     warning(paste("NA values found in", protein_id_column, "column"))
     data_subset <- data_subset |> dplyr::filter(!is.na(.data[[protein_id_column]]))
     protein_ids <- data_subset[[protein_id_column]]
-    message(sprintf("      Data State (protein_ids after NA filter): Length = %d", length(protein_ids)))
   }
 
   protein_ids <- unique(protein_ids[!is.na(protein_ids) & protein_ids != ""])
   
 
-  message("   perform_enrichment Step: Checking custom background...")
-  message(sprintf("      Data State (custom_bg): Length = %d", length(custom_bg)))
-  message(sprintf("      Data State (custom_bg): Class = %s", class(custom_bg)))
-  message(sprintf("      Data State (custom_bg): First 5 values = %s", paste(head(custom_bg, 5), collapse = ", ")))
 
   if (any(is.na(custom_bg))) {
     na_bg_count <- sum(is.na(custom_bg))
-    message(sprintf("   perform_enrichment Step: Found %d NA values in custom background, filtering...", na_bg_count))
     warning("NA values found in custom background IDs")
     custom_bg <- custom_bg[!is.na(custom_bg)]
-    message(sprintf("      Data State (custom_bg after NA filter): Length = %d", length(custom_bg)))
   }
 
   custom_bg <- unique(custom_bg)
@@ -96,13 +71,11 @@ perform_enrichment <- function(data_subset,
   answered <- FALSE
   last_error <- NULL
 
-  message(sprintf("   perform_enrichment Step: Starting gprofiler2 gost() retry loop (max %d attempts)...", max_retries))
 
   while (is.null(result) && attempt <= max_retries) {
     message(sprintf("   perform_enrichment Attempt %d: Calling gprofiler2::gost()...", attempt))
     
     tryCatch({
-      message("   perform_enrichment Step: About to call gprofiler2::gost() with parameters:")
       message(sprintf("      gost query: %d protein IDs", length(protein_ids)))
       message(sprintf("      gost organism: %s", species))
       message(sprintf("      gost sources: %s", paste(sources, collapse = ", ")))
@@ -127,33 +100,6 @@ perform_enrichment <- function(data_subset,
       )
       answered <- TRUE
       
-      message("   perform_enrichment Step: gprofiler2::gost() completed successfully")
-      message("      Data State (gost result): Checking gost result structure...")
-      
-      if (is.null(result)) {
-        message("      Data State (gost result): Result is NULL")
-      } else {
-        message("      Data State (gost result) Structure:")
-        utils::str(result)
-        
-        if ("result" %in% names(result)) {
-          if (is.null(result$result)) {
-            message("      Data State (gost result$result): Is NULL")
-          } else {
-            message(sprintf("      Data State (gost result$result): Dims = %d rows, %d cols", nrow(result$result), ncol(result$result)))
-            message("      Data State (gost result$result) Column names:")
-            print(names(result$result))
-            if (nrow(result$result) > 0) {
-              message("      Data State (gost result$result) Head:")
-              print(head(result$result))
-            } else {
-              message("      Data State (gost result$result): NO ROWS - Empty results!")
-            }
-          }
-        } else {
-          message("      Data State (gost result): No 'result' component found")
-        }
-      }
       
     }, error = function(e) {
       last_error <<- e$message
@@ -166,7 +112,6 @@ perform_enrichment <- function(data_subset,
   }
 
   if (is.null(result)) {
-    message("   perform_enrichment Step: All retry attempts failed, returning NULL")
     # A107-04: the return value stays NULL for every caller. When no attempt was answered, a classed condition is
     # signalled first; it does nothing unless a caller handles `multischolar_enrichment_service_failure`
     # (`diaEnrichmentOperation`'s kernel does, and fails the run instead of saving "no terms").
@@ -178,7 +123,6 @@ perform_enrichment <- function(data_subset,
     return(NULL)
   }
 
-  message("   perform_enrichment Step: Successfully obtained gprofiler2 result")
   return(result)
 }
 

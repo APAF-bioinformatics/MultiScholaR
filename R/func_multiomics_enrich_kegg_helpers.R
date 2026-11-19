@@ -33,25 +33,18 @@ runKeggEnrichment <- function(ranked_list,
   message(paste("Sample ChEBI IDs:", paste(head(names(ranked_list), 3), collapse=", ")))
   
   # Load the necessary mappings with better debugging
-  message("   runKeggEnrichment Step: Loading KEGG to ChEBI mappings...")
   kegg_to_chebi <- mapping_table |>
     dplyr::filter(!is.na(KEGG) & !is.na(ChEBI)) 
   
   message(paste("Number of KEGG-ChEBI mappings:", nrow(kegg_to_chebi)))
-  message("   runKeggEnrichment Step: Sample of KEGG-ChEBI mappings:")
-  print(head(kegg_to_chebi, 5))
   
   # Format ChEBI IDs to match our format
-  message("   runKeggEnrichment Step: Formatting ChEBI IDs...")
   kegg_to_chebi <- kegg_to_chebi |>
     dplyr::select(KEGG, ChEBI) |>
     dplyr::mutate(ChEBI = paste0("CHEBI:", ChEBI))
   
-  message("   runKeggEnrichment Step: Formatted KEGG-ChEBI mappings:")
-  print(head(kegg_to_chebi, 5))
   
   # Load pathway to compound mapping
-  message(sprintf("   runKeggEnrichment Step: Loading pathway to compound mapping from %s...", file.path(data_dir, "species_specific_pathway_to_compound_tbl.tab")))
   
   # Check if file exists
   if (!file.exists(file.path(data_dir, "species_specific_pathway_to_compound_tbl.tab"))) {
@@ -72,8 +65,6 @@ runKeggEnrichment <- function(ranked_list,
   )
   
   message(paste("Number of pathway-compound mappings:", nrow(species_specific_pathway_to_compound_tbl)))
-  message("   runKeggEnrichment Step: Pathway to compound column names:")
-  print(colnames(species_specific_pathway_to_compound_tbl))
   
   # Debug - show first few compounds and pathways
   message("First few compounds:")
@@ -83,14 +74,12 @@ runKeggEnrichment <- function(ranked_list,
   message(paste(head(unique(species_specific_pathway_to_compound_tbl$pathway), 5), collapse=", "))
   
   # Directly use KEGG compound IDs from the pathway mapping
-  message("   runKeggEnrichment Step: Extracting unique compound IDs...")
   compound_ids <- sort(unique(species_specific_pathway_to_compound_tbl$compound))
   message(paste("Total unique compounds in KEGG:", length(compound_ids)))
   message("Sample compound IDs in KEGG:")
   message(paste(head(compound_ids, 10), collapse=", "))
   
   # Cross-check with our ranked list - are there any direct KEGG IDs in our list?
-  message("   runKeggEnrichment Step: Checking for direct KEGG IDs in ranked list...")
   kegg_ids_in_ranked_list <- intersect(compound_ids, names(ranked_list))
   message(paste("Direct KEGG IDs in ranked list:", length(kegg_ids_in_ranked_list)))
   if (length(kegg_ids_in_ranked_list) > 0) {
@@ -100,7 +89,6 @@ runKeggEnrichment <- function(ranked_list,
   
   # If there are no direct KEGG IDs, we'll need to rely on the mapping
   if (length(kegg_ids_in_ranked_list) == 0) {
-    message("   runKeggEnrichment Step: No direct KEGG IDs in ranked list, using ChEBI to KEGG mapping...")
     
     # Print the structure of the first few ChEBI IDs to check format
     chebi_ids_in_ranked_list <- names(ranked_list)[grepl("CHEBI:", names(ranked_list))]
@@ -118,20 +106,14 @@ runKeggEnrichment <- function(ranked_list,
     }
     
     # Create a direct lookup from ChEBI to KEGG
-    message("   runKeggEnrichment Step: Creating ChEBI to KEGG lookup...")
     chebi_to_kegg_lookup <- kegg_to_chebi |>
       dplyr::filter(ChEBI %in% chebi_ids_in_ranked_list)
     
     message(paste("ChEBI-KEGG mappings for our ranked list:", nrow(chebi_to_kegg_lookup)))
-    if (nrow(chebi_to_kegg_lookup) > 0) {
-      message("   runKeggEnrichment Step: Sample ChEBI-KEGG mappings:")
-      print(head(chebi_to_kegg_lookup, 5))
-    }
     
     # If we have mappings, create a new ranked list with KEGG IDs
     if (nrow(chebi_to_kegg_lookup) > 0) {
       # Create a new ranked list with KEGG IDs
-      message("   runKeggEnrichment Step: Creating ranked list with KEGG IDs...")
       kegg_ranked_list <- numeric()
       for (i in 1:nrow(chebi_to_kegg_lookup)) {
         chebi_id <- chebi_to_kegg_lookup$ChEBI[i]
@@ -142,10 +124,6 @@ runKeggEnrichment <- function(ranked_list,
       }
       
       message(paste("Created KEGG ranked list with", length(kegg_ranked_list), "entries"))
-      if (length(kegg_ranked_list) > 0) {
-        message("   runKeggEnrichment Step: Sample KEGG IDs in ranked list:")
-        message(paste(head(names(kegg_ranked_list), 5), collapse=", "))
-      }
       
       # If we have KEGG IDs, use them for the analysis
       if (length(kegg_ranked_list) > 0) {
@@ -160,7 +138,6 @@ runKeggEnrichment <- function(ranked_list,
         # Show basic statistics
         
         # Add small random noise to break ties in the ranked list
-        message("   runKeggEnrichment Step: Adding small random noise to break ties in ranked list...")
         set.seed(42) # For reproducibility (KIT-064, roar BUG-22: intentional; the tie-break noise must be identical across runs)
         original_kegg_ranked_list <- kegg_ranked_list # Store original for reference
         kegg_ranked_list <- kegg_ranked_list + runif(length(kegg_ranked_list), min=-0.0001, max=0.0001)
@@ -192,8 +169,6 @@ runKeggEnrichment <- function(ranked_list,
         }
         
         # CRITICAL SECTION - WHERE THE ISSUE LIKELY IS
-        message("   runKeggEnrichment Step: Creating TERM2GENE mapping with KEGG IDs...")
-        message("   runKeggEnrichment Step: Checking for pathway-compound matches...")
         
         # Check if compounds in pathway table have a prefix that's missing in our ranked list
         pathway_compounds <- head(species_specific_pathway_to_compound_tbl$compound, 10)
@@ -211,7 +186,6 @@ runKeggEnrichment <- function(ranked_list,
         names(prefixed_kegg_ranked_list) <- prefixed_kegg_ids
         
         message("Sample prefixed entries:")
-        print(head(prefixed_kegg_ranked_list, 5))
         
         # Use the prefixed version for TERM2GENE mapping
         term2gene <- species_specific_pathway_to_compound_tbl |>
@@ -239,16 +213,13 @@ runKeggEnrichment <- function(ranked_list,
         kegg_ranked_list <- prefixed_kegg_ranked_list
         
         # Create term2name directly in this path - crucial addition
-        message("   runKeggEnrichment Step: Creating TERM2NAME mapping in direct path...")
         # Get all pathways from KEGG if not already done
         if (!exists("pathways_tbl")) {
-          message("   runKeggEnrichment Step: Fetching pathways from KEGG...")
           pathways_tbl <- KEGGREST::keggList("pathway")
           
           message(sprintf("   runKeggEnrichment: Retrieved %d pathways from KEGG", length(pathways_tbl)))
           if (length(pathways_tbl) > 0) {
             message("Sample pathway entries:")
-            print(head(pathways_tbl, 3))
           }
         }
         
@@ -260,7 +231,6 @@ runKeggEnrichment <- function(ranked_list,
         
         # Create a mapping table from pathway IDs (e.g., "path:kpn00010") to names
         # First extract the numeric part of each term
-        message("   runKeggEnrichment Step: Extracting numeric parts from KEGG pathway IDs...")
         term2name_with_numeric <- term2name_initial |>
           dplyr::mutate(
             pathway_num = stringr::str_extract(term, "\\d+"),
@@ -268,7 +238,6 @@ runKeggEnrichment <- function(ranked_list,
             map_format = paste0("map", pathway_num)
           )
         
-        print(head(term2name_with_numeric, 3))
         
         # Create mapping from pathway numbers to pathway names
         pathway_num_to_name <- data.frame(
@@ -279,10 +248,8 @@ runKeggEnrichment <- function(ranked_list,
             map_format = stringr::str_extract(map_id, "map\\d+")
           )
         
-        print(head(pathway_num_to_name, 3))
         
         # Join the terms with pathway names based on numeric part
-        message("   runKeggEnrichment Step: Joining with pathway names...")
         term2name <- term2name_with_numeric |>
           dplyr::left_join(pathway_num_to_name, by = "map_format") |>
           dplyr::select(term, name = pathway_name)
@@ -292,10 +259,8 @@ runKeggEnrichment <- function(ranked_list,
           dplyr::mutate(name = ifelse(is.na(name), term, name))
         
         message("   runKeggEnrichment: Created improved term2name mapping:")
-        print(head(term2name, 3))
         
         # Try running GSEA with tryCatch to handle errors
-        message("   runKeggEnrichment Step: Running GSEA analysis...")
         
         # ABSOLUTE FINAL SAFETY CHECK - verify both term2gene and term2name exist
         if (!exists("term2gene") || nrow(term2gene) == 0) {
@@ -315,7 +280,6 @@ runKeggEnrichment <- function(ranked_list,
           # Create emergency fallback - but try to get proper names first
           # Get all pathways from KEGG if not already done
           if (!exists("pathways_tbl")) {
-            message("   runKeggEnrichment Step: Emergency fetch of pathways from KEGG...")
             pathways_tbl <- tryCatch({
               KEGGREST::keggList("pathway")
             }, error = function(e) {
@@ -389,7 +353,6 @@ runKeggEnrichment <- function(ranked_list,
           
           if (length(positive_genes) > 0) {
             tryCatch({
-              message("   runKeggEnrichment Step: Running enricher analysis...")
               enricher_result <- clusterProfiler::enricher(
                 gene = positive_genes,
                 universe = names(kegg_ranked_list),
@@ -418,7 +381,6 @@ runKeggEnrichment <- function(ranked_list,
         
         # Format results for visualization
         if (!is.null(gsea_result)) {
-          message("   runKeggEnrichment Step: Formatting results...")
           
           if (class(gsea_result)[1] == "enrichResult") {
             # Result from enricher
@@ -506,7 +468,6 @@ runKeggEnrichment <- function(ranked_list,
     }
   } else {
     # Use direct KEGG IDs from the ranked list
-    message("   runKeggEnrichment Step: Using direct KEGG IDs from ranked list")
     kegg_ranked_list <- ranked_list[kegg_ids_in_ranked_list]
     
     # Sort in decreasing order
@@ -520,7 +481,6 @@ runKeggEnrichment <- function(ranked_list,
     # Show basic statistics
     
     # Add small random noise to break ties in the ranked list
-    message("   runKeggEnrichment Step: Adding small random noise to break ties in ranked list...")
     set.seed(42) # For reproducibility (KIT-064, roar BUG-22: intentional; the tie-break noise must be identical across runs)
     original_kegg_ranked_list <- kegg_ranked_list # Store original for reference
     kegg_ranked_list <- kegg_ranked_list + runif(length(kegg_ranked_list), min=-0.0001, max=0.0001)
@@ -529,17 +489,12 @@ runKeggEnrichment <- function(ranked_list,
     message(sprintf("   runKeggEnrichment: Added jitter to %d values to prevent ties", length(kegg_ranked_list)))
     
     # Create TERM2GENE mapping
-    message("   runKeggEnrichment Step: Creating TERM2GENE mapping with direct KEGG IDs...")
     term2gene <- species_specific_pathway_to_compound_tbl |>
       dplyr::filter(compound %in% names(kegg_ranked_list)) |>
       dplyr::select(pathway, compound) |>
       dplyr::rename(term = pathway, gene = compound)
     
     message(paste("Created TERM2GENE mapping with", nrow(term2gene), "entries"))
-    if (nrow(term2gene) > 0) {
-      message("   runKeggEnrichment Step: Sample term2gene mappings:")
-      print(head(term2gene, 5))
-    }
   }
   
   # Check if we have any mappings
@@ -557,17 +512,14 @@ runKeggEnrichment <- function(ranked_list,
   
   # Get pathway ID to name mapping
   # First get all pathways from KEGG
-  message("   runKeggEnrichment Step: Fetching pathways from KEGG...")
   pathways_tbl <- KEGGREST::keggList("pathway")
   
   message(sprintf("   runKeggEnrichment: Retrieved %d pathways from KEGG", length(pathways_tbl)))
   if (length(pathways_tbl) > 0) {
     message("Sample pathway entries:")
-    print(head(pathways_tbl, 3))
   }
   
   # Create mapping from pathway ID to name
-  message("   runKeggEnrichment Step: Creating pathway ID to name mapping...")
   pathway_id_to_name <- data.frame(
     pathway_id = names(pathways_tbl), 
     pathway_name = pathways_tbl
@@ -577,18 +529,13 @@ runKeggEnrichment <- function(ranked_list,
         purrr::map_chr(\(x){paste0(kegg_species_code, x)})
     )
   
-  message("   runKeggEnrichment Step: Sample pathway ID to name mapping:")
-  print(head(pathway_id_to_name, 3))
   
   # Create TERM2NAME mapping
-  message("   runKeggEnrichment Step: Creating TERM2NAME mapping...")
   term2name_initial <- term2gene |>
     distinct(term)
   
   message(sprintf("   runKeggEnrichment: Found %d distinct terms", nrow(term2name_initial)))
   
-  # Debug the term format
-  print(head(term2name_initial$term))
   
   # Approach 1: Direct matching with pathway_id
   pathway_id_to_name_extended <- pathway_id_to_name |>
@@ -598,7 +545,6 @@ runKeggEnrichment <- function(ranked_list,
       term_format2 = paste0("path:", hsa_pathway_id)
     )
   
-  print(head(pathway_id_to_name_extended))
   
   # Try to join using the extended formats
   term2name <- term2name_initial |>
@@ -626,7 +572,6 @@ runKeggEnrichment <- function(ranked_list,
         pathway_num = str_extract(term, "\\d+")
       )
     
-    print(head(term2name))
     
     # Also extract numeric parts from pathway IDs
     pathway_id_to_name_numeric <- pathway_id_to_name |>
@@ -634,7 +579,6 @@ runKeggEnrichment <- function(ranked_list,
         pathway_num = str_extract(pathway_id, "\\d+")
       )
     
-    print(head(pathway_id_to_name_numeric))
     
     # Join on numeric parts
     term2name <- term2name |>
@@ -646,14 +590,11 @@ runKeggEnrichment <- function(ranked_list,
       dplyr::rename(name = pathway_name)
   }
   
-  message("   runKeggEnrichment Step: After joining with pathway names:")
-  print(head(term2name))
   
   term2name <- term2name |>
     dplyr::filter(!is.na(name))  # Make sure we have names
   
   # Try running GSEA with tryCatch to handle errors
-  message("   runKeggEnrichment Step: Running GSEA analysis...")
   gsea_result <- tryCatch({
     # FIXED: Use fgsea and remove nPerm parameter
     clusterProfiler::GSEA(
@@ -681,7 +622,6 @@ runKeggEnrichment <- function(ranked_list,
     
     if (length(positive_genes) > 0) {
       tryCatch({
-        message("   runKeggEnrichment Step: Running enricher analysis...")
         enricher_result <- clusterProfiler::enricher(
           gene = positive_genes,
           universe = names(kegg_ranked_list),
@@ -710,7 +650,6 @@ runKeggEnrichment <- function(ranked_list,
   
   # Format results for visualization
   if (!is.null(gsea_result)) {
-    message("   runKeggEnrichment Step: Formatting results...")
     
     if (class(gsea_result)[1] == "enrichResult") {
       # Result from enricher

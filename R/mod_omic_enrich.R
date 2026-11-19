@@ -434,9 +434,6 @@ omicEnrichTabState <- function() {
 #' (mod_prot_enrich_server.R and its setup layer at 6129b546).
 #' @noRd
 runOmicEnrichServer <- function(input, output, session, id, workflowData, experimentPaths, config, selectedTab) {
-  cat(sprintf("   mod_prot_enrich_server Arg: id = %s\n", id))
-  cat(sprintf("   mod_prot_enrich_server Arg: workflow_data is NULL = %s\n", is.null(workflowData)))
-  cat(sprintf("   mod_prot_enrich_server Arg: selected_tab is NULL = %s\n", is.null(selectedTab)))
   cat("=== ENRICHMENT ANALYSIS MODULE SERVER STARTED ===\n")
   cat(sprintf("Module ID: %s\n", id))
 
@@ -444,7 +441,6 @@ runOmicEnrichServer <- function(input, output, session, id, workflowData, experi
   # KIT-115 (A107-09): the cutoffs of the run whose results the tab shows (this session's Run, or the restored state's
   # provenance); NULL before either. The status text and the download describe that run, not the current inputs.
   ran <- shiny::reactiveVal(NULL)
-  cat("   mod_prot_enrich_server Step: Reactive values initialized\n")
   supported <- shiny::reactive(config[["organism"]]$supported())
   method <- createProtEnrichCurrentAnalysisMethodReactive(input = input, enrichmentData = tab,
     supportedOrganismsFn = supported, resolveAnalysisMethodFn = config[["organism"]]$method)
@@ -452,11 +448,8 @@ runOmicEnrichServer <- function(input, output, session, id, workflowData, experi
   registerOmicEnrichBusObservers(session, workflowData, config)
   registerOmicEnrichSelectedContrastObserver(input, tab, workflowData, config, ran)
   if (!is.null(selectedTab)) {
-    cat("   mod_prot_enrich_server Step: Setting up tab selection observer\n")
     shiny::observeEvent(selectedTab(), selectOmicEnrichTab(session, selectedTab(), tab, workflowData, config),
       ignoreInit = TRUE)
-  } else {
-    cat("   mod_prot_enrich_server Step: No selected_tab parameter provided - tab selection observer NOT set up\n")
   }
   shiny::observeEvent(workflowData$da_analysis_results_list, {
     cat("*** ENRICHMENT: DE results detected - updating contrasts ***\n")
@@ -560,9 +553,7 @@ omicEnrichManifestChoices <- function(manifest) {
 #' initialisation and its "invalid state" warning are retired (D7).
 #' @noRd
 selectOmicEnrichTab <- function(session, selected, tab, workflowData, config) {
-  cat(sprintf("   enrichment_tab_observer Step: Selected tab = %s\n", selected))
   if (is.null(selected) || selected != config$tab_value) {
-    cat(sprintf("   enrichment_tab_observer Step: Tab '%s' is not enrichment tab, ignoring\n", selected))
   } else if (holdOmicEnrichManifest(session, tab, workflowData$da_analysis_results_list)) {
     return(invisible(TRUE))
   } else if (is.null(workflowData$state_manager)) {

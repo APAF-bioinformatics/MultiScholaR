@@ -200,7 +200,6 @@ runOneGoEnrichmentInOutFunction <- function(significant_proteins,
   print(paste("Number of significant proteins:", length(significant_proteins)))
   print(paste("Number of background proteins:", length(background_proteins)))
   print("UniProt data columns:")
-  print(colnames(uniprot_data))
 
 
   significant_df <- data.frame(uniprot_acc = significant_proteins)
