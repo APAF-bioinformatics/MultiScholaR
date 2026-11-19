@@ -172,10 +172,7 @@ removeRowsWithMissingValuesPercentHelper <- function(
   row_id_str <- rlang::as_string(rlang::ensym(row_id))
   group_var_str <- rlang::as_string(rlang::ensym(grouping_variable))
 
-  message(sprintf(
-    "   DEBUG66: Pivoting %d rows x %d cols. Memory: %.1f MB",
-    nrow(input_table), ncol(input_table), sum(gc()[, 2])
-  ))
+  invisible(gc())
 
   # 2. Prepare minimal design matrix (Select only needed columns to save memory in join)
   design_matrix_minimal <- design_matrix |>
@@ -200,10 +197,7 @@ removeRowsWithMissingValuesPercentHelper <- function(
     ) |>
     dplyr::left_join(design_matrix_minimal, by = sample_id_str)
 
-  message(sprintf(
-    "   DEBUG66: Pivot/Join complete. Long table: %d rows. Memory: %.1f MB",
-    nrow(abundance_long), sum(gc()[, 2])
-  ))
+  invisible(gc())
 
   # Force garbage collection after big join
   gc()
@@ -256,10 +250,7 @@ removeRowsWithMissingValuesPercentHelper <- function(
     filtered_tbl <- input_table
   }
 
-  message(sprintf(
-    "   DEBUG66: Final table: %d rows. Memory: %.1f MB",
-    nrow(filtered_tbl), sum(gc()[, 2])
-  ))
+  invisible(gc())
 
   # Final GC
   gc()
