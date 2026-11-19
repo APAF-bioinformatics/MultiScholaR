@@ -16,6 +16,10 @@
       "bytes": 5916,
       "sha256": "77857aacf6dd2d7235216f94ebdac5bae536ec1a6488b1740426c58121fa6c77"
     },
+    "proteomics/integration_input.json": {
+      "bytes": 1275,
+      "sha256": "50de3bab06939e52eee09624471856b1ff3c9a565094f4584dd8d433422f5869"
+    },
     "transcriptomics/samples.tsv": {
       "bytes": 1384,
       "sha256": "e989ddd2a9ac8df9e819dba9242501dd21a7770bb22fed95e4f83918b1cb7604"
@@ -27,6 +31,10 @@
     "transcriptomics/features_transcriptomics.tsv": {
       "bytes": 7624,
       "sha256": "c0b4181bd9cfdfe39d85e9c96c43a6a8af84755646c21b93d085a7d600d8dab8"
+    },
+    "transcriptomics/integration_input.json": {
+      "bytes": 1321,
+      "sha256": "b055deb24ba8f01e8abb207e86ee14fe00e0a395f648c8bf8d2ca4e44bf5b6d9"
     },
     "lipidomics/samples.tsv": {
       "bytes": 1384,
@@ -48,6 +56,10 @@
       "bytes": 5724,
       "sha256": "da2165b0a58d009174538282f804ae275f3a79a42890180d3241cb6801a9365c"
     },
+    "lipidomics/integration_input.json": {
+      "bytes": 1634,
+      "sha256": "0bd50a680631b3f38be2aa7bc47ade72016d190eedbd5ed7cb8c8504e7a9af06"
+    },
     "metabolomics/samples.tsv": {
       "bytes": 1318,
       "sha256": "26d57d1cf90c723109749855c72393f37c0979dd03e55548b8ca506bc7407c7b"
@@ -67,6 +79,10 @@
     "metabolomics/features_GCMS.tsv": {
       "bytes": 4524,
       "sha256": "9b89107e60d8a0d96b4684c646eeb6a1cfc5812f1dc6e5a3c07bc5b2584ca205"
+    },
+    "metabolomics/integration_input.json": {
+      "bytes": 1618,
+      "sha256": "8f0ddd597579e53064c68220709b4f56cfc4dac6938f0298a86e12238143d056"
     },
     "truth_scores.tsv": {
       "bytes": 629,

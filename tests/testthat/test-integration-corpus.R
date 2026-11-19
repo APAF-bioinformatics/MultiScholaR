@@ -92,6 +92,28 @@ test_that("the corpus has the declared design", {
     expect_identical(active("Z3"), c("proteomics", "transcriptomics"))
 })
 
+test_that("each omic's folder is a KIT-061 integration input the contract's reader accepts", {
+    dir <- intCorpusDir()
+    testthat::skip_if_not(dir.exists(dir), "the committed corpus is not present")
+    truth <- jsonlite::read_json(file.path(dir, "truth.json"), simplifyVector = TRUE)
+    workflows <- c(proteomics = "LFQ", transcriptomics = "TRANSCRIPTOMICS", lipidomics = "LIPIDOMICS",
+        metabolomics = "METABOLOMICS")
+    for (omic in names(workflows)) {
+        input <- readIntegrationInput(file.path(dir, omic))
+        manifest <- input$manifest
+        expect_identical(manifest$omic_type, omic)
+        expect_identical(manifest$workflow, workflows[[omic]])
+        expect_identical(manifest$matrix_role, "normalised")
+        expect_null(manifest$correction)
+        expect_identical(manifest$biological_sample_column, "biological_sample")
+        expect_identical(names(input$views), truth$views[[omic]])
+        expect_identical(nrow(input$samples), as.integer(truth$runs[[omic]]))
+        # Nothing in the manifest varies by machine, package version or time of writing.
+        expect_null(manifest$software$version)
+        expect_identical(manifest$written_at, "2026-11-17T00:00:00Z")
+    }
+})
+
 test_that("the known factors are recoverable without a factor model", {
     skipWithoutIntegrationComposer()
     h <- intCorpusComposer()

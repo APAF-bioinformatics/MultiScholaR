@@ -1,0 +1,40 @@
+{
+  "schema": "multischolar.integration_input.v1",
+  "omic_type": "transcriptomics",
+  "workflow": "TRANSCRIPTOMICS",
+  "matrix_role": "normalised",
+  "correction": null,
+  "scale": "log2_cpm",
+  "source_state": {
+    "name": "synthetic",
+    "synthetic": true,
+    "note": "KIT-137 tier 1: written by the composer, not by an omic's journey"
+  },
+  "sample_id_column": "Run",
+  "group_column": "group",
+  "technical_replicate_column": "tech_rep_group",
+  "biological_sample_column": "biological_sample",
+  "feature_id_column": "feature_id",
+  "display_name_column": "display_name",
+  "views": [
+    {
+      "name": "transcriptomics",
+      "matrix_file": "matrix_transcriptomics.tsv",
+      "features_file": "features_transcriptomics.tsv",
+      "rows": 400,
+      "columns": 40
+    }
+  ],
+  "samples_file": "samples.tsv",
+  "files": {
+    "samples.tsv": "e989ddd2a9ac8df9e819dba9242501dd21a7770bb22fed95e4f83918b1cb7604",
+    "matrix_transcriptomics.tsv": "db30904a41c3d630f4468e114218478e02fef6cb1630c906e5ca748f6aa82833",
+    "features_transcriptomics.tsv": "c0b4181bd9cfdfe39d85e9c96c43a6a8af84755646c21b93d085a7d600d8dab8"
+  },
+  "software": {
+    "package": "MultiScholaR",
+    "composer": "tests/testdata/integration/compose_integration_corpus.R"
+  },
+  "written_at": "2026-11-17T00:00:00Z",
+  "synthetic": true
+}
