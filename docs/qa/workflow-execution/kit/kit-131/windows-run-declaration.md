@@ -90,4 +90,56 @@ in `kit-134/outcome.md` and as dated Status lines in the tickets. Nothing is tic
 
 ## Results
 
-(Filled in after the run.)
+**Run [44457268709](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44457268709)**, dispatched
+2026-11-19 on `2c3a9b21` (declaration `eb72cdde`), Windows job only, 04:17 to 05:09 UTC. Image `windows-2025-vs2026`
+20261103.298.1, rustc 1.99.1. Both internal packages built; library, installer, install and lifecycle passed. The
+run's conclusion is "failure" only because the in-process lanes step fails on `lipid_canonical`'s known differences
+from its oracle (27 passed, 8 failed: `norm_log` and `session_summary` text, as in the Windows runs before). 0
+artifacts; no cache. **The correction pass is not used**: no step had an instrumentation fault; the results below are
+valid, some unfavourable.
+
+### KIT-131
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| The installed application chooses the second launcher on Windows | **met** | lifecycle test: probe and launcher `process`, "win32: no systemd"; network cut |
+| W1: a lane with every managed step on a plain worker runs to its end | **met** | `lipid_canonical`, 20 steps in order; 9 managed waits (130 s on workers); 38 distinct worker processes seen as children of the controller; the application closed with 0 workers left; lane 177 s |
+| W1: identical to the in-process lane of the same runner except store-internal counts | **not met** | identical at 6 of 20 steps (5 raw, 6 with the 19 "Applying lipidomics step ..." notices set aside). Beyond the store entry counts (`qc_intensity` 30 against 31, as on Linux; 101 against 144 at the end), from `norm_refusal` on: the lipid QC figures under `results/lipidomics/lipid_qc/` (`lcms_{pos,neg}_{pre,post}_norm_{correlation,density,pca,rle}.png`) are **absent** on workers and present in process, and the normalisation tab's plot outputs are a `<table>` digest on workers where in process they are `<plot> alt=...`. **No notification differs**: the figures are lost without a message (this instrumentation printed at most 6 keys per field). Against the oracle the same 14 steps differ the same way. On Linux (step 8) the same lane on plain workers was identical apart from the store count, so this is Windows-specific. Cause not read here (the worker logs and the full record stayed in the job) |
+| Screen journeys under the worker | **not exercised** | Linux systemd journeys (journey record, DIA routes); refused by design under the plain launcher (L2.8); they need the laptop |
+| Audit F10 (the stop error is swallowed) | **not met, not exercisable** | `R/utils_workflow_execution.R`, `workflowProcessStop`: `tryCatch(..., error = function(error) NULL)` around `ps_kill_tree` and `kill`; a package change |
+
+### KIT-052 (prot_tmt entry lane in process; roots as reached)
+
+| Case | Long paths (as R read it) | Root | Reached | Summary | Figures |
+|---|---|---|---|---|---|
+| S1 | off (0) | 90 | the end | **`.docx` written** (`TMT_report_proteomics_prot_tmt.docx`, "Report generated successfully!"); save "Study parameters saved successfully"; copy "Publication files copied" | 121 of 121 final ok (longest final 250) |
+| S2 | off | 96 | the end | **`.docx` written**, same notifications | 121 of 121 (256) |
+| S3 | off | 120 | QC | **not reached**: the lane stops at QC; 4 classed refusals naming the 48 Q-value staged copies (`workflow_figure_unwritten/saved_entity_outputs_pending`), then the lane's own read fails ("cannot open the connection") | 61 drawn, 13 final ok; every missing final named in a refusal |
+| S4 | off | 130 | the import | **not reached**: the lane errors after 33 s ("cannot open the connection"), 9 figures drawn, **no classed refusal raised**; what the user would see is not captured | 9 of 9 |
+| S5 | on (1) | 130 | the end | **`.docx` written**, same notifications as S1 | 121 of 121 (290) |
+| S6 | off | 48 (fixtures) | `test-workflow-figure-paths.R` | 92 passed, **0 failed**, 7 errors, 4 skipped (44379470655: 84 passed, 7 errors). The 767ad7d6 refusal is raised on Windows with its text: "a file of the session archive could not be copied into its staging folder ... the longest of these paths is 323 characters: the project folder's path is too long for Windows with long paths disabled ..." (class `workflow_figure_unwritten/saved_entity_write`) | the errors printed are fixtures making folders over 248 characters, as before; 3 of the 7 are not printed |
+
+- **767ad7d6 confirmed on Windows where it can be reached:** at 90 and 96 with long paths off the Summary report is
+  written (not at 91 in 44379470655), and with long paths on at 130 nothing else changes.
+- **The ">125 with long paths off" refusal cannot be shown on the real lane:** with long paths off the lane stops at
+  QC from about 99 (S3), or earlier at 130 (S4); with long paths on a copy over 259 succeeds. Only S6 (a copy that
+  really fails at 323 characters in the test) shows the refusal's text on Windows. Reaching it in the lane needs a
+  package change (the Q-value staged copy's path), or S6 is accepted as the evidence.
+- S1's 2 extra failures (33/4): the session archive's name `native-export-<hex>` has 9 hex digits in the oracle, which
+  the recorder's mask (10 or more) leaves, and 10 or more here: the tempfile name's length, not a product difference.
+- **S4 is new:** with long paths off at root 130 the lane stops early with an unclassed file error, before any figure
+  check. Package code; not this run's to repair.
+
+### Kept
+
+Browser e2e lanes from the installed application: lipidomics-canonical 88, metabolomics-lc-gc 190,
+transcriptomics-screen 16, proteomics-tmt-lfq 153: the laptop's counts, 0 failures.
+
+### What remains
+
+1. KIT-131: the Windows worker route loses the lipid normalisation QC figures silently. Next bounded item: one
+   diagnostic run printing the worker logs and the full step difference for `norm_refusal` and `norm`, then a package
+   repair (likely the same family as KIT-052's worker-route copies). Then step 7 on Windows again.
+2. KIT-131: the screen journeys under systemd on the laptop; F10 (record the stop error), a package change.
+3. KIT-052: the decision whether S6 stands for the ">125, long paths off" refusal; S4 (an unclassed early error at
+   130 with long paths off) to be read.

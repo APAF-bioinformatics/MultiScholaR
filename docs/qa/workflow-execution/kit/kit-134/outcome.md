@@ -775,3 +775,26 @@ In this pass ubuntu-22.04 gave the differing table in all 8 repeats: 2,979 bytes
 - The worker routes' limit with long paths off is 82 in the fixture's layout, which is 77 in the application's for a 15-character contrast, as calculated. Next limits (store `.pending` 95, Q-value staged copy 99) belong to the harness revision (v1.11 names).
 - Windows Rust is now pinned at 1.99.1 in this workflow. Rust 1.100.0 does not build the internal packages on the Windows GNU target (cause inside the packages' build, not printed by rule). This needs a decision or a fix in the internal repositories before Rust is moved (F6).
 - trx_screen's oracle digest depends on the ubuntu-22.04 runner build; the values agree within the rule. The recorder's mask is the weakness, as with FragPipe (not changed).
+
+## Windows run for KIT-131 step 7 and the KIT-052 Summary repair (2026-11-19, run 44457268709, branch `run-win-k131`)
+
+Declared in `docs/qa/workflow-execution/kit/kit-131/windows-run-declaration.md` (`eb72cdde`) before the launch; run
+[44457268709](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44457268709) dispatched on `2c3a9b21`
+(performance-v2 `791cc5f3` plus instrumentation in `packaging/verify` and this branch's workflow copy), stage full,
+Windows only, 52 minutes. Image `windows-2025-vs2026` 20261103.298.1, Rust 1.99.1: both internal packages built.
+0 artifacts, no cache. Correction pass not used. Full tables in the declaration's results section.
+
+- **Lifecycle, installed application:** passed; the launcher is `process` ("win32: no systemd").
+- **e2e lanes:** 88, 190, 16, 153, the laptop's counts.
+- **KIT-131 step 7 (lipid_canonical on plain workers):** runs to its end (9 managed waits, 38 worker processes, none
+  left after close), but differs from the same lane in process on the same runner beyond the store counts: the lipid
+  normalisation QC PNGs (`results/lipidomics/lipid_qc/lcms_*_{pre,post}_norm_*.png`) are absent and the normalisation
+  plots are not plots, from `norm_refusal` on, with no notification. Windows-specific (identical on Linux at step 8).
+  Not met; cause not read.
+- **KIT-052 Summary (767ad7d6), prot_tmt in process:** long paths off at roots 90 and 96: the report `.docx` is written
+  ("Report generated successfully!"), every figure present; on at 130: the same. Off at 120: the lane stops loudly at QC
+  (48 Q-value staged copies named), the Summary is not reached; off at 130: the lane stops after 33 s with an unclassed
+  "cannot open the connection", no refusal. The ">125, long paths off" refusal is therefore not reachable on the lane;
+  `test-workflow-figure-paths.R` on Windows with long paths off (92 passed, 0 failed, 7 fixture errors) raises it with
+  its text at 323 characters.
+- In-process `lipid_canonical` against its oracle: 27/8 (norm log and session summary text), as before.
