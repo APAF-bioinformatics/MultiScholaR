@@ -313,13 +313,13 @@ integrationRecordResultsPublication <- function(manager, model_reference, result
         snapshot <- context$snapshot
         export <- snapshot$exports[[INTEGRATION_MODEL_OPERATION]]
         if (is.null(export) || !identical(export$reference$entity_id, model_reference$entity_id)) return(invisible(FALSE))
-        listed <- function(paths) data.frame(file = basename(paths),
-            sha256 = vapply(paths, \(path) digest::digest(file = path, algo = "sha256"), character(1), USE.NAMES = FALSE),
-            stringsAsFactors = FALSE)
+        # Plain lists and vectors only: a reopened store refuses any object (a data frame) among the head's roots.
+        listed <- function(paths) list(file = basename(paths),
+            sha256 = vapply(paths, \(path) digest::digest(file = path, algo = "sha256"), character(1), USE.NAMES = FALSE))
         export$results <- list(label = INTEGRATION_RESULTS_LABEL, identity = identity, model_entity_id = model_reference$entity_id,
             parameters = results$parameters, factors = results$factors,
             saved_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), tables = listed(files$tables), figures = listed(files$figures),
-            association = results$association,
+            association = as.list(results$association),
             claim = list(group_corrected = results$claim$group_corrected, corrections = as.list(results$claim$corrections)))
         snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- export
         publishWorkflowStateHead(context, snapshot)
@@ -370,6 +370,9 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
     iterations <- as.integer(value$elbo$iterations)
     results <- export$results
     if (!is.null(results)) {
+        for (name in c("tables", "figures", "association")) {
+            results[[name]] <- as.data.frame(results[[name]], stringsAsFactors = FALSE)
+        }
         results_spec <- integrationResultsParameterSpec()
         results$parameters <- lapply(names(results$parameters), function(name) list(name = name,
             value = encodeWorkflowRecordValue(results$parameters[[name]]),
