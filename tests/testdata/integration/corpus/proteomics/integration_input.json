@@ -13,7 +13,7 @@
   "sample_id_column": "Run",
   "group_column": "group",
   "technical_replicate_column": "tech_rep_group",
-  "biological_sample_column": "biological_sample",
+  "biological_sample_column": "tech_rep_group",
   "feature_id_column": "feature_id",
   "display_name_column": "display_name",
   "views": [
@@ -27,7 +27,7 @@
   ],
   "samples_file": "samples.tsv",
   "files": {
-    "samples.tsv": "8d4f712ef7710a7b0119e789da0ab71f4f219b65a7f6aa14d704b72f5e1e9bd3",
+    "samples.tsv": "0b8e4e3e5d3edde8755befd872c054b2f12634b12287e6a122288fda5190bbf8",
     "matrix_proteomics.tsv": "6182ba153c6c3bc667f92dfe4c8f355f9fca88faf568d39de80e18953aa44b61",
     "features_proteomics.tsv": "77857aacf6dd2d7235216f94ebdac5bae536ec1a6488b1740426c58121fa6c77"
   },

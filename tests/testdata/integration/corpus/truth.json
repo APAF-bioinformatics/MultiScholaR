@@ -2,12 +2,12 @@
   "corpus": "KIT-137 tier 1",
   "synthetic": true,
   "seed": 20261117,
-  "biological_samples": ["WT_01", "WT_02", "WT_03", "WT_04", "WT_05", "WT_06", "WT_07", "WT_08", "WT_09", "WT_10", "KO_01", "KO_02", "KO_03", "KO_04", "KO_05", "KO_06", "KO_07", "KO_08", "KO_09", "KO_10"],
+  "biological_samples": ["WT_1", "WT_2", "WT_3", "WT_4", "WT_5", "WT_6", "WT_7", "WT_8", "WT_9", "WT_10", "KO_1", "KO_2", "KO_3", "KO_4", "KO_5", "KO_6", "KO_7", "KO_8", "KO_9", "KO_10"],
   "views": {
     "proteomics": "proteomics",
     "transcriptomics": "transcriptomics",
-    "lipidomics": ["LCMS_Pos", "LCMS_Neg"],
-    "metabolomics": ["LCMS_Pos", "GCMS"]
+    "lipidomics": ["lipidomics_LCMS_Pos", "lipidomics_LCMS_Neg"],
+    "metabolomics": ["metabolomics_LCMS_Pos", "metabolomics_GCMS"]
   },
   "factors": {
     "Z1": {
@@ -31,97 +31,97 @@
   },
   "batches": {
     "proteomics": {
-      "WT_01": "B2",
-      "WT_02": "B2",
-      "WT_03": "B1",
-      "WT_04": "B1",
-      "WT_05": "B2",
-      "WT_06": "B1",
-      "WT_07": "B2",
-      "WT_08": "B2",
-      "WT_09": "B1",
+      "WT_1": "B2",
+      "WT_2": "B2",
+      "WT_3": "B1",
+      "WT_4": "B1",
+      "WT_5": "B2",
+      "WT_6": "B1",
+      "WT_7": "B2",
+      "WT_8": "B2",
+      "WT_9": "B1",
       "WT_10": "B1",
-      "KO_01": "B2",
-      "KO_02": "B2",
-      "KO_03": "B2",
-      "KO_04": "B1",
-      "KO_05": "B1",
-      "KO_06": "B1",
-      "KO_07": "B1",
-      "KO_08": "B2",
-      "KO_09": "B2",
+      "KO_1": "B2",
+      "KO_2": "B2",
+      "KO_3": "B2",
+      "KO_4": "B1",
+      "KO_5": "B1",
+      "KO_6": "B1",
+      "KO_7": "B1",
+      "KO_8": "B2",
+      "KO_9": "B2",
       "KO_10": "B1"
     },
     "transcriptomics": {
-      "WT_01": "B3",
-      "WT_02": "B3",
-      "WT_03": "B1",
-      "WT_04": "B2",
-      "WT_05": "B3",
-      "WT_06": "B2",
-      "WT_07": "B1",
-      "WT_08": "B1",
-      "WT_09": "B2",
+      "WT_1": "B3",
+      "WT_2": "B3",
+      "WT_3": "B1",
+      "WT_4": "B2",
+      "WT_5": "B3",
+      "WT_6": "B2",
+      "WT_7": "B1",
+      "WT_8": "B1",
+      "WT_9": "B2",
       "WT_10": "B1",
-      "KO_01": "B1",
-      "KO_02": "B1",
-      "KO_03": "B3",
-      "KO_04": "B3",
-      "KO_05": "B3",
-      "KO_06": "B1",
-      "KO_07": "B1",
-      "KO_08": "B2",
-      "KO_09": "B2",
+      "KO_1": "B1",
+      "KO_2": "B1",
+      "KO_3": "B3",
+      "KO_4": "B3",
+      "KO_5": "B3",
+      "KO_6": "B1",
+      "KO_7": "B1",
+      "KO_8": "B2",
+      "KO_9": "B2",
       "KO_10": "B2"
     },
     "lipidomics": {
-      "WT_01": "B1",
-      "WT_02": "B2",
-      "WT_03": "B2",
-      "WT_04": "B3",
-      "WT_05": "B3",
-      "WT_06": "B1",
-      "WT_07": "B1",
-      "WT_08": "B2",
-      "WT_09": "B3",
+      "WT_1": "B1",
+      "WT_2": "B2",
+      "WT_3": "B2",
+      "WT_4": "B3",
+      "WT_5": "B3",
+      "WT_6": "B1",
+      "WT_7": "B1",
+      "WT_8": "B2",
+      "WT_9": "B3",
       "WT_10": "B1",
-      "KO_01": "B1",
-      "KO_02": "B2",
-      "KO_03": "B3",
-      "KO_04": "B2",
-      "KO_05": "B3",
-      "KO_06": "B2",
-      "KO_07": "B1",
-      "KO_08": "B1",
-      "KO_09": "B3",
+      "KO_1": "B1",
+      "KO_2": "B2",
+      "KO_3": "B3",
+      "KO_4": "B2",
+      "KO_5": "B3",
+      "KO_6": "B2",
+      "KO_7": "B1",
+      "KO_8": "B1",
+      "KO_9": "B3",
       "KO_10": "B1"
     },
     "metabolomics": {
-      "WT_01": "B2",
-      "WT_02": "B1",
-      "WT_03": "B1",
-      "WT_04": "B2",
-      "WT_05": "B1",
-      "WT_06": "B2",
-      "WT_07": "B2",
-      "WT_08": "B1",
-      "WT_09": "B2",
+      "WT_1": "B2",
+      "WT_2": "B1",
+      "WT_3": "B1",
+      "WT_4": "B2",
+      "WT_5": "B1",
+      "WT_6": "B2",
+      "WT_7": "B2",
+      "WT_8": "B1",
+      "WT_9": "B2",
       "WT_10": "B1",
-      "KO_01": "B2",
-      "KO_02": "B2",
-      "KO_03": "B2",
-      "KO_04": "B1",
-      "KO_05": "B1",
-      "KO_06": "B2",
-      "KO_07": "B1",
-      "KO_08": "B1",
-      "KO_09": "B1",
+      "KO_1": "B2",
+      "KO_2": "B2",
+      "KO_3": "B2",
+      "KO_4": "B1",
+      "KO_5": "B1",
+      "KO_6": "B2",
+      "KO_7": "B1",
+      "KO_8": "B1",
+      "KO_9": "B1",
       "KO_10": "B2"
     }
   },
   "dropped": {
     "omic": "metabolomics",
-    "biological_sample": "KO_07"
+    "biological_sample": "KO_7"
   },
   "runs": {
     "proteomics": 20,
@@ -137,12 +137,12 @@
       "transcriptomics": 400
     },
     "lipidomics": {
-      "LCMS_Pos": 150,
-      "LCMS_Neg": 150
+      "lipidomics_LCMS_Pos": 150,
+      "lipidomics_LCMS_Neg": 150
     },
     "metabolomics": {
-      "LCMS_Pos": 150,
-      "GCMS": 150
+      "metabolomics_LCMS_Pos": 150,
+      "metabolomics_GCMS": 150
     }
   },
   "missing_cells": {
@@ -153,12 +153,12 @@
       "transcriptomics": 0
     },
     "lipidomics": {
-      "LCMS_Pos": 180,
-      "LCMS_Neg": 180
+      "lipidomics_LCMS_Pos": 180,
+      "lipidomics_LCMS_Neg": 180
     },
     "metabolomics": {
-      "LCMS_Pos": 172,
-      "GCMS": 171
+      "metabolomics_LCMS_Pos": 172,
+      "metabolomics_GCMS": 171
     }
   },
   "generators": {
@@ -311,7 +311,7 @@
     },
     "dropped": {
       "omic": "metabolomics",
-      "biological_sample": "KO_07"
+      "biological_sample": "KO_7"
     },
     "digits": 4
   }

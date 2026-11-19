@@ -13,32 +13,32 @@
   "sample_id_column": "Run",
   "group_column": "group",
   "technical_replicate_column": "tech_rep_group",
-  "biological_sample_column": "biological_sample",
+  "biological_sample_column": "tech_rep_group",
   "feature_id_column": "feature_id",
   "display_name_column": "display_name",
   "views": [
     {
-      "name": "LCMS_Pos",
-      "matrix_file": "matrix_LCMS_Pos.tsv",
-      "features_file": "features_LCMS_Pos.tsv",
+      "name": "metabolomics_LCMS_Pos",
+      "matrix_file": "matrix_metabolomics_LCMS_Pos.tsv",
+      "features_file": "features_metabolomics_LCMS_Pos.tsv",
       "rows": 150,
       "columns": 38
     },
     {
-      "name": "GCMS",
-      "matrix_file": "matrix_GCMS.tsv",
-      "features_file": "features_GCMS.tsv",
+      "name": "metabolomics_GCMS",
+      "matrix_file": "matrix_metabolomics_GCMS.tsv",
+      "features_file": "features_metabolomics_GCMS.tsv",
       "rows": 150,
       "columns": 38
     }
   ],
   "samples_file": "samples.tsv",
   "files": {
-    "samples.tsv": "26d57d1cf90c723109749855c72393f37c0979dd03e55548b8ca506bc7407c7b",
-    "matrix_LCMS_Pos.tsv": "d9a32eb10b87a69443b7fb89949cc8671371a7ee58b8e726217791d18004a2e5",
-    "features_LCMS_Pos.tsv": "13c0a9c22f257b42b789df8dddfc7e97603d255796b4848c76b84920c2647fa2",
-    "matrix_GCMS.tsv": "a41d9f353a4777f28e537b342d9aab643162a88e6fd863395aba1d776d483bf1",
-    "features_GCMS.tsv": "9b89107e60d8a0d96b4684c646eeb6a1cfc5812f1dc6e5a3c07bc5b2584ca205"
+    "samples.tsv": "fd0b7c177755728b83a9520cbd753fe9698a8ef9e57a1293c4130aba776884f9",
+    "matrix_metabolomics_LCMS_Pos.tsv": "d9a32eb10b87a69443b7fb89949cc8671371a7ee58b8e726217791d18004a2e5",
+    "features_metabolomics_LCMS_Pos.tsv": "13c0a9c22f257b42b789df8dddfc7e97603d255796b4848c76b84920c2647fa2",
+    "matrix_metabolomics_GCMS.tsv": "a41d9f353a4777f28e537b342d9aab643162a88e6fd863395aba1d776d483bf1",
+    "features_metabolomics_GCMS.tsv": "9b89107e60d8a0d96b4684c646eeb6a1cfc5812f1dc6e5a3c07bc5b2584ca205"
   },
   "software": {
     "package": "MultiScholaR",

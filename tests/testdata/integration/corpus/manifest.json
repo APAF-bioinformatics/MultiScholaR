@@ -5,8 +5,8 @@
   "composer": "tests/testdata/integration/compose_integration_corpus.R",
   "files": {
     "proteomics/samples.tsv": {
-      "bytes": 602,
-      "sha256": "8d4f712ef7710a7b0119e789da0ab71f4f219b65a7f6aa14d704b72f5e1e9bd3"
+      "bytes": 446,
+      "sha256": "0b8e4e3e5d3edde8755befd872c054b2f12634b12287e6a122288fda5190bbf8"
     },
     "proteomics/matrix_proteomics.tsv": {
       "bytes": 62954,
@@ -17,12 +17,12 @@
       "sha256": "77857aacf6dd2d7235216f94ebdac5bae536ec1a6488b1740426c58121fa6c77"
     },
     "proteomics/integration_input.json": {
-      "bytes": 1275,
-      "sha256": "50de3bab06939e52eee09624471856b1ff3c9a565094f4584dd8d433422f5869"
+      "bytes": 1272,
+      "sha256": "7bb761c8f7e85ca16aee77354dee79dd62f01d4286ab62c50e38922994deb63a"
     },
     "transcriptomics/samples.tsv": {
-      "bytes": 1384,
-      "sha256": "e989ddd2a9ac8df9e819dba9242501dd21a7770bb22fed95e4f83918b1cb7604"
+      "bytes": 1090,
+      "sha256": "ae7c77271d5c5c747ed56f21bce101d7d28b1c99650651f3db8e260212c6a215"
     },
     "transcriptomics/matrix_transcriptomics.tsv": {
       "bytes": 120758,
@@ -33,68 +33,68 @@
       "sha256": "c0b4181bd9cfdfe39d85e9c96c43a6a8af84755646c21b93d085a7d600d8dab8"
     },
     "transcriptomics/integration_input.json": {
-      "bytes": 1321,
-      "sha256": "b055deb24ba8f01e8abb207e86ee14fe00e0a395f648c8bf8d2ca4e44bf5b6d9"
+      "bytes": 1318,
+      "sha256": "50bd5b75a1287b78d77416547a74e1b6148fa3201374bc8326f9482ad7228ccc"
     },
     "lipidomics/samples.tsv": {
-      "bytes": 1384,
-      "sha256": "da7829dd8060170bc8a05dfd69df2d89b534c74261de6b755b39fd6ca153725b"
+      "bytes": 1090,
+      "sha256": "472f9f6dd3d566563ce8afcd7db29ae606708bdef45a1b005f84bef24c414016"
     },
-    "lipidomics/matrix_LCMS_Pos.tsv": {
+    "lipidomics/matrix_lipidomics_LCMS_Pos.tsv": {
       "bytes": 49860,
       "sha256": "e24a3b2570789db483b8bcdf01d597e499c3213c18d9d841bcf73c46f1a40634"
     },
-    "lipidomics/features_LCMS_Pos.tsv": {
+    "lipidomics/features_lipidomics_LCMS_Pos.tsv": {
       "bytes": 5724,
       "sha256": "76c1c7e0c966e6052a24e080009ca37d3e45fba33eb33e48a316e5ab12769dbb"
     },
-    "lipidomics/matrix_LCMS_Neg.tsv": {
+    "lipidomics/matrix_lipidomics_LCMS_Neg.tsv": {
       "bytes": 49834,
       "sha256": "13e9c9f1240dc15477b0b2f6e8f93b6d86a43722b3000682cf596152459c77a4"
     },
-    "lipidomics/features_LCMS_Neg.tsv": {
+    "lipidomics/features_lipidomics_LCMS_Neg.tsv": {
       "bytes": 5724,
       "sha256": "da2165b0a58d009174538282f804ae275f3a79a42890180d3241cb6801a9365c"
     },
     "lipidomics/integration_input.json": {
-      "bytes": 1634,
-      "sha256": "0bd50a680631b3f38be2aa7bc47ade72016d190eedbd5ed7cb8c8504e7a9af06"
+      "bytes": 1741,
+      "sha256": "3228ce855893be3135e8dd861e5005a7ca4d3c934a11d7b5c1cc5ce622d28c8f"
     },
     "metabolomics/samples.tsv": {
-      "bytes": 1318,
-      "sha256": "26d57d1cf90c723109749855c72393f37c0979dd03e55548b8ca506bc7407c7b"
+      "bytes": 1038,
+      "sha256": "fd0b7c177755728b83a9520cbd753fe9698a8ef9e57a1293c4130aba776884f9"
     },
-    "metabolomics/matrix_LCMS_Pos.tsv": {
+    "metabolomics/matrix_metabolomics_LCMS_Pos.tsv": {
       "bytes": 47426,
       "sha256": "d9a32eb10b87a69443b7fb89949cc8671371a7ee58b8e726217791d18004a2e5"
     },
-    "metabolomics/features_LCMS_Pos.tsv": {
+    "metabolomics/features_metabolomics_LCMS_Pos.tsv": {
       "bytes": 5724,
       "sha256": "13c0a9c22f257b42b789df8dddfc7e97603d255796b4848c76b84920c2647fa2"
     },
-    "metabolomics/matrix_GCMS.tsv": {
+    "metabolomics/matrix_metabolomics_GCMS.tsv": {
       "bytes": 46875,
       "sha256": "a41d9f353a4777f28e537b342d9aab643162a88e6fd863395aba1d776d483bf1"
     },
-    "metabolomics/features_GCMS.tsv": {
+    "metabolomics/features_metabolomics_GCMS.tsv": {
       "bytes": 4524,
       "sha256": "9b89107e60d8a0d96b4684c646eeb6a1cfc5812f1dc6e5a3c07bc5b2584ca205"
     },
     "metabolomics/integration_input.json": {
-      "bytes": 1618,
-      "sha256": "8f0ddd597579e53064c68220709b4f56cfc4dac6938f0298a86e12238143d056"
+      "bytes": 1745,
+      "sha256": "096800143866f7e2da00775ba5cec9b83d72a1e367827d325f7019a18d49f05e"
     },
     "truth_scores.tsv": {
-      "bytes": 629,
-      "sha256": "5b22e0caab95b0043012a174641a26a4adae0ebf48ecc2d89ce61c8aef79d544"
+      "bytes": 611,
+      "sha256": "781b296aa6edd1e44544b9d8d9c86be54ddc8d8a5b09eb7a259dada24f511c60"
     },
     "truth_loadings.tsv": {
-      "bytes": 79693,
-      "sha256": "7b90ee1f002419eeaae80ac900434aece312d99f870127f1f2851469c64c52c4"
+      "bytes": 86893,
+      "sha256": "89182fdf1b7c683f374003fd27c92a2a6cb19d0a18deb021d6db0a3f1c749338"
     },
     "truth.json": {
-      "bytes": 7897,
-      "sha256": "742d7681df3d5d0af4ce9fa5f7da0ea9bfa98aec7a0e196ce868396445f47c59"
+      "bytes": 7949,
+      "sha256": "bdf4d842a6f1e8e5fdb2856a881f2af8354a7d625c118bd5b474cb4b0b01b915"
     }
   }
 }
