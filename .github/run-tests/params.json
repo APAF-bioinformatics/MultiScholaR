@@ -1,19 +1,25 @@
 {
-  "label": "KIT-129 seventh pass items 2 and 3 (integration input of new-design runs), base d9a8889d (merge) vs head 0cb92e0e",
-  "package_commit": "0cb92e0e7828829cd0ab1133ef8ac8a640a8a79c",
-  "base_commit": "d9a8889d1e8bd84320dfd59527b3430f061a31e2",
+  "label": "KIT-135 lipid/metab integration input, base 0cb92e0e (kit-129-integration) vs head f669f2c2 (kit-135-integration-inputs)",
+  "package_commit": "f669f2c2d75b53f8718db311e3ae9b20bac67645",
+  "base_commit": "0cb92e0e7828829cd0ab1133ef8ac8a640a8a79c",
   "tools_ref": "",
-  "tests": ["test-kit129-run-path.R", "test-workflow-integration-input.R", "test-integration-corpus.R", "test-dia-limpa-ruv-rules.R",
-    "test-omic-gui-config.R", "test-omic-norm-ruv-design.R", "test-omics-summary-core.R", "test-omic-summary-module.R",
-    "test-prot-05b-norm-module-contracts.R", "test-prot-05d-norm-module-characterization.R", "test-prot-norm-core.R",
-    "test-workflow-memory-mechanism-member.R", "test-workflow-native-session.R", "test-workflow-saved-qc.R"],
-  "shards": 7,
+  "tests": ["test-integration-input-lipid-metab.R", "test-workflow-integration-input.R", "test-omic-gui-config.R",
+    "test-omics-summary-core.R", "test-omic-summary-module.R", "test-workflow-omics-application-reads.R",
+    "test-lipid-14a-summary-module-characterization.R", "test-lipid-15-summary-module-seams.R",
+    "test-metab-05-summary-module-characterization.R", "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R", "test-workflow-figure-paths.R", "test-workflow-omics-sessions.R",
+    "test-gui-entry-lipidomics.R", "test-gui-entry-metabolomics.R"],
+  "shards": 8,
   "file_timeout_minutes": 45,
-  "file_timeouts": {"test-prot-norm-core.R": 120},
+  "file_timeouts": {"test-gui-entry-lipidomics.R": 120, "test-gui-entry-metabolomics.R": 120, "test-omic-summary-module.R": 90},
   "extra_packages": ["sva"],
   "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
   "check": true,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": []
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+     "args": ["0cb92e0e7828829cd0ab1133ef8ac8a640a8a79c", "kit135-failing-first", "test-integration-input-lipid-metab.R", "test-omic-gui-config.R"],
+     "out": "kit135-failing-first", "timeout_minutes": 90}
+  ]
 }
