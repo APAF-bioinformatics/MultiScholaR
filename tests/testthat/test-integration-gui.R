@@ -137,7 +137,7 @@ test_that("KIT-138: with the gate off the home page and the integration module a
     expect_null(mod_integration_server("integration_workflow", list(integration = list())))
 })
 
-test_that("KIT-138: with the gate on the Integration tile is live and the shell has the Import and Sample Matching tabs", {
+test_that("KIT-138: with the gate on the Integration tile is live and the shell has the Import, Sample Matching and Model tabs", {
     withr::local_options(MultiScholaR.integration_gui = TRUE)
     texts <- integrationGuiTexts()
     page <- intGuiHtml(app_ui(NULL))
@@ -148,22 +148,34 @@ test_that("KIT-138: with the gate on the Integration tile is live and the shell 
     expect_match(page, "if (true) { // KIT-138: the Integration tile stays enabled", fixed = TRUE)
     expect_error(integrationHomeScript("a script without the lines"), class = "integration_gui_invalid")
     config <- integrationGuiConfig()
-    expect_identical(vapply(config$shell$tabs, `[[`, "", "status_key"), c("integration_import", "integration_alignment"))
+    # KIT-140 adds the Model tab.
+    expect_identical(vapply(config$shell$tabs, `[[`, "", "status_key"), c("integration_import", "integration_alignment",
+        "integration_model"))
     ui <- intGuiHtml(mod_integration_ui("integration_workflow"))
     for (id in c("integration-workflow-tabs", "integration-tab-import", "integration-tab-alignment",
-        "integration-import-commit", "integration-alignment-confirm")) {
+        "integration-import-commit", "integration-alignment-confirm", "integration-tab-model", "integration-model-run")) {
         expect_match(ui, sprintf('data-testid="%s"', id), fixed = TRUE)
     }
     expect_match(ui, texts[["tab_alignment"]], fixed = TRUE)
+    expect_match(ui, texts[["tab_model"]], fixed = TRUE)
     project <- intGuiProject()
     shiny::testServer(mod_integration_server, args = list(project_dirs = list(integration = project$paths),
         omic_type = "integration", experiment_label = "kit138"), {
         session$flushReact()
         bus <- session$returned
-        expect_identical(bus$tab_status, list(integration_import = "pending", integration_alignment = "disabled"))
+        expect_identical(bus$tab_status, list(integration_import = "pending", integration_alignment = "disabled",
+            integration_model = "disabled"))
         progress <- output$workflow_progress$html
         expect_match(progress, texts[["step_import"]], fixed = TRUE)
         expect_match(progress, texts[["step_alignment"]], fixed = TRUE)
+        expect_match(progress, texts[["step_model"]], fixed = TRUE)
+        # The status chain opens the Model tab once the sample table is confirmed (KIT-140).
+        status <- bus$tab_status
+        status$integration_import <- "complete"
+        status$integration_alignment <- "complete"
+        bus$tab_status <- status
+        session$flushReact()
+        expect_identical(bus$tab_status$integration_model, "pending")
         # The Import tab scanned the project when the module started.
         expect_identical(bus$integration_scan$omics$omic, intGuiOmics)
     })
@@ -459,8 +471,233 @@ test_that("KIT-139: no shared sample, fewer than two data sets and a changed inp
 })
 
 # ------------------------------------------------------------------------------------------------
-# KIT-140: refusals in plain words.
+# KIT-140: the Model tab and the refusals in plain words. Training uses a stand-in trainer (MOFA2 is absent here);
+# the real training through the tab is test-integration-model-tab-mofa.R on the MOFA2 lane.
 # ------------------------------------------------------------------------------------------------
+
+# A stand-in for `integrationTrainMofa` (test-integration-model.R's form) that records the options it was given.
+intGuiTrainer <- function(seen = NULL) {
+    function(views, options) {
+        if (!is.null(seen)) seen$options <- options
+        samples <- colnames(views[[1L]])
+        k <- options$num_factors
+        labels <- paste0("Factor", seq_len(k))
+        list(factors = matrix(seq_len(length(samples) * k) / 10, length(samples), k, dimnames = list(samples, labels)),
+            weights = lapply(views, function(v) matrix(0.5, nrow(v), k, dimnames = list(rownames(v), labels))),
+            r2_per_factor = matrix(1, k, length(views), dimnames = list(labels, names(views))),
+            r2_total = stats::setNames(seq_along(views) + 0.25, names(views)), elbo = c(-20, -10, NaN), iterations = 2L,
+            options = options, versions = list(MOFA2 = "stand-in"), messages = character(),
+            model_file = list(bytes = as.raw(1:3), sha256 = strrep("a", 64L), size = 3))
+    }
+}
+
+intGuiAvailable <- function() list(available = TRUE, reason = NA_character_)
+intGuiNoProgress <- function(message, value, expr) force(expr)
+
+# An import with its sample table confirmed through the Sample Matching tab.
+intGuiConfirmed <- function(paths, .local_envir = parent.frame()) {
+    bus <- intGuiImported(paths, .local_envir = .local_envir)
+    shiny::testServer(mod_integration_alignment_server, args = list(workflow_data = bus, paths = paths), {
+        session$setInputs(confirm = 1)
+    })
+    stopifnot(!is.null(shiny::isolate(bus$integration_alignment)))
+    bus
+}
+
+# The same import on a store of its own, for the model step called directly.
+intGuiDirectStore <- function(paths, views, .local_envir = parent.frame()) {
+    manager <- newIntegrationStateOwner(file.path(paths$source_dir, paste0("direct-", basename(tempfile()))))
+    withr::defer(closeWorkflowStateOwner(manager), envir = .local_envir)
+    integrationCommitImport(manager, integrationImportRequest(integrationScanProject(paths$integration_dir), views))
+    manager
+}
+
+intGuiModelFields <- c("factors", "weights", "variance_explained", "variance_total", "elbo", "samples", "view_summary",
+    "shared_samples", "notes", "options", "model_file")
+
+test_that("KIT-140: the Model tab's settings are built from the parameter table, provisional ones marked", {
+    texts <- integrationGuiTexts()
+    spec <- integrationMofaParameterSpec()
+    ui <- intGuiHtml(mod_integration_model_ui("m"))
+    method <- setdiff(names(spec), c("technical_replicates", "internal_standards", "missing_samples"))
+    for (name in method) {
+        expect_match(ui, sprintf('data-testid="integration-model-param-%s"', name), fixed = TRUE)
+        expect_match(ui, texts[[paste0("param_", name)]], fixed = TRUE)
+    }
+    # The matching rules are not offered again: the confirmed table set them.
+    for (name in c("technical_replicates", "internal_standards", "missing_samples")) {
+        expect_false(grepl(sprintf("integration-model-param-%s", name), ui, fixed = TRUE))
+    }
+    # Each default is the table's.
+    expect_match(ui, sprintf('name="m-param_precision" value="%s" checked="checked"', spec$precision$default), fixed = TRUE)
+    expect_match(ui, sprintf('name="m-param_feature_selection" value="%s" checked="checked"', spec$feature_selection$default),
+        fixed = TRUE)
+    expect_match(ui, sprintf('id="m-param_num_factors"[^>]*value="%d"', spec$num_factors$default))
+    expect_match(ui, sprintf('id="m-param_seed"[^>]*value="%d"', spec$seed$default))
+    # Precision: double the decided choice, single selectable, its consequence stated; the others provisional.
+    expect_match(ui, texts[["choice_precision_single"]], fixed = TRUE)
+    expect_match(ui, texts[["help_precision"]], fixed = TRUE)
+    marks <- regmatches(ui, gregexpr(sprintf("\\((%s|%s)\\)", texts[["mark_provisional"]], texts[["mark_decided"]]), ui))[[1L]]
+    expect_identical(marks, sprintf("(%s)", ifelse(method == "precision", texts[["mark_decided"]], texts[["mark_provisional"]])))
+    # A default the workbook changes, and a parameter it adds, change the screen with no edit to the tab.
+    changed <- spec
+    changed$num_factors$default <- 7L
+    changed$likelihood <- list(default = "gaussian", choices = c("gaussian", "poisson"), settled_by = "workbook (provisional)")
+    testthat::local_mocked_bindings(integrationMofaParameterSpec = function() changed, .package = "MultiScholaR")
+    ui <- intGuiHtml(mod_integration_model_ui("m"))
+    expect_match(ui, 'id="m-param_num_factors"[^>]*value="7"')
+    expect_match(ui, 'name="m-param_likelihood" value="gaussian" checked="checked"', fixed = TRUE)
+})
+
+test_that("KIT-140: the settings are read back in the model's forms; an empty or broken number is refused in words", {
+    texts <- integrationGuiTexts()
+    spec <- integrationMofaParameterSpec()
+    method <- setdiff(names(spec), c("technical_replicates", "internal_standards", "missing_samples"))
+    defaults <- lapply(spec[method], `[[`, "default")
+    expect_identical(integrationModelSettings(list()), defaults)
+    expect_identical(integrationModelSettings(defaults), defaults)
+    typed <- integrationModelSettings(list(num_factors = 3, seed = 42, feature_selection = "top_variance", features_per_view = 100,
+        scale_views = TRUE))
+    expect_identical(typed[c("num_factors", "seed", "features_per_view", "scale_views")],
+        list(num_factors = 3L, seed = 42L, features_per_view = 100L, scale_views = TRUE))
+    # The number of most variable features applies only to that selection.
+    expect_identical(integrationModelSettings(list(features_per_view = 100))$features_per_view, NA_integer_)
+    refusal <- tryCatch(integrationModelSettings(list(feature_selection = "top_variance")), error = function(error) error)
+    expect_s3_class(refusal, "integration_parameters_invalid")
+    expect_identical(conditionMessage(refusal), sprintf(texts[["setting_not_whole"]], texts[["param_features_per_view"]]))
+    expect_error(integrationModelSettings(list(num_factors = 2.5)), class = "integration_parameters_invalid",
+        regexp = texts[["param_num_factors"]], fixed = TRUE)
+    expect_error(integrationModelSettings(list(seed = NA)), class = "integration_parameters_invalid")
+    confirmed <- list(views = c("a", "b"), technical_replicates = "average", num_factors = 5L)
+    expect_identical(integrationModelParameters(confirmed, list(num_factors = 3L)),
+        list(views = c("a", "b"), technical_replicates = "average", num_factors = 3L))
+})
+
+test_that("KIT-140: the Model tab trains on the confirmed table, states the result and keeps every model it trained", {
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    project <- intGuiProject()
+    counts <- intGuiCorpusCounts()
+    texts <- integrationGuiTexts()
+    spec <- integrationMofaParameterSpec()
+    bus <- intGuiConfirmed(project$paths)
+    seen <- new.env(parent = emptyenv())
+    shiny::testServer(mod_integration_model_server, args = list(workflow_data = bus, paths = project$paths,
+        probe = intGuiAvailable, trainer = intGuiTrainer(seen), withProgressFn = intGuiNoProgress), {
+        session$flushReact()
+        expect_match(output$readiness$html, texts[["readiness_ok"]], fixed = TRUE)
+        expect_match(output$run_status$html, texts[["run_none"]], fixed = TRUE)
+        expect_match(output$matching_settings$html, sprintf(texts[["setting_fixed"]], texts[["param_internal_standards"]],
+            texts[["choice_internal_standards_drop"]]), fixed = TRUE)
+        session$setInputs(run = 1)
+        manager <- bus$state_manager
+        first <- bus$integration_model
+        expect_identical(first$status, "computed")
+        expect_identical(bus$tab_status$integration_model, "complete")
+        # The table's defaults and the confirmed table's data sets and rules.
+        for (name in names(spec)) expect_identical(first$parameters[[name]], spec[[name]]$default, info = name)
+        expect_identical(first$parameters$views, bus$integration_alignment$parameters$views)
+        expect_identical(seen$options$precision, "double")
+        expect_identical(manager$.context$snapshot$exports$integration_mofa_model$reference, first$reference)
+        value <- session$returned()$value
+        # The same model as the model step called directly on the same import.
+        direct <- runIntegrationModel(intGuiDirectStore(project$paths, bus$integration_import$views),
+            bus$integration_alignment$parameters, trainer = intGuiTrainer())
+        for (name in intGuiModelFields) expect_identical(value[[name]], direct$value[[name]], info = name)
+        # What the tab states: training settled, the factors, the samples, the variance per data set, the checksum.
+        everyone <- unique(unlist(counts$samples))
+        shared <- Reduce(intersect, counts$samples)
+        result <- output$result$html
+        expect_match(result, sprintf(texts[["result_converged"]], 2L, spec$maxiter$default), fixed = TRUE)
+        expect_match(result, sprintf(texts[["result_factors"]], spec$num_factors$default, spec$num_factors$default), fixed = TRUE)
+        expect_match(result, sprintf(texts[["result_samples"]], length(everyone), length(shared)), fixed = TRUE)
+        expect_match(result, sprintf(texts[["result_saved"]], strrep("a", 64L)), fixed = TRUE)
+        table <- output$variance_table
+        for (i in seq_len(nrow(value$variance_total))) {
+            expect_match(table, value$variance_total$view[[i]], fixed = TRUE)
+            expect_match(table, sprintf("%.2f", value$variance_total$r2_percent[[i]]), fixed = TRUE)
+        }
+        expect_match(output$run_status$html, sprintf(texts[["run_count"]], 1L), fixed = TRUE)
+        # Other settings: the screen says so, and training again gives a new model; the first stays in the store.
+        session$setInputs(param_num_factors = 3)
+        expect_match(output$run_status$html, texts[["run_settings_changed"]], fixed = TRUE)
+        session$setInputs(run = 2)
+        second <- bus$integration_model
+        expect_identical(second$status, "computed")
+        expect_false(identical(second$reference$entity_id, first$reference$entity_id))
+        expect_identical(manager$.context$snapshot$exports$integration_mofa_model$reference, second$reference)
+        expect_identical(ncol(session$returned()$value$factors) - 1L, 3L)
+        kept <- withWorkflowStateScope(manager, function() hydrateSavedWorkflowEntity(manager$.context$store, first$reference)$value)
+        expect_identical(kept$factors, value$factors)
+        expect_identical(second$models, c(first$reference$entity_id, second$reference$entity_id))
+        expect_match(output$run_status$html, sprintf(texts[["run_count"]], 2L), fixed = TRUE)
+        expect_false(grepl(texts[["run_settings_changed"]], output$run_status$html, fixed = TRUE))
+        expect_match(output$result$html, sprintf(texts[["result_factors"]], 3L, 3L), fixed = TRUE)
+        # The same settings again: the saved model, not a new one.
+        session$setInputs(run = 3)
+        expect_identical(bus$integration_model$status, "hit")
+        expect_identical(bus$integration_model$reference$entity_id, second$reference$entity_id)
+        expect_match(output$run_status$html, texts[["run_reused"]], fixed = TRUE)
+        expect_match(output$run_status$html, sprintf(texts[["run_count"]], 2L), fixed = TRUE)
+        # A new import is a new integration: the tab's model is cleared.
+        again <- newIntegrationStateOwner(file.path(project$paths$source_dir, "store-again"))
+        withr::defer(closeWorkflowStateOwner(again))
+        bus$state_manager <- again
+        session$flushReact()
+        expect_null(bus$integration_model)
+        expect_match(output$run_status$html, texts[["run_none"]], fixed = TRUE)
+    })
+})
+
+test_that("KIT-140: the Model tab refuses in plain words, the check's message kept as a technical detail", {
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    project <- intGuiSmallProject()
+    texts <- integrationGuiTexts()
+    bus <- intGuiImported(project$paths)
+    missing <- function() list(available = FALSE, reason = "the R package MOFA2 is not installed")
+    shiny::testServer(mod_integration_model_server, args = list(workflow_data = bus, paths = project$paths, probe = missing,
+        withProgressFn = intGuiNoProgress), {
+        # Before the sample table is confirmed.
+        expect_match(output$model_status$html, texts[["model_not_confirmed"]], fixed = TRUE)
+        session$setInputs(run = 1)
+        expect_match(output$run_status$html, sprintf(texts[["run_refused"]], texts[["model_not_confirmed"]]), fixed = TRUE)
+        # Confirmed (the few-samples warning is the Sample Matching tab's); the software check fails, nothing is trained.
+        preview <- integrationAlignmentPreview(integrationImportedObject(bus$state_manager), bus$integration_import$views)
+        bus$integration_alignment <- list(samples = preview$aligned$samples, view_summary = preview$aligned$view_summary,
+            parameters = preview$parameters, manifests = bus$integration_import$manifests, file = NA_character_,
+            confirmed_at = Sys.time())
+        session$flushReact()
+        readiness <- output$readiness$html
+        expect_match(readiness, texts[["refusal_mofa_unavailable"]], fixed = TRUE)
+        expect_match(readiness, sprintf("<summary>%s</summary>", texts[["technical_detail"]]), fixed = TRUE)
+        expect_match(readiness, "the R package MOFA2 is not installed", fixed = TRUE)
+        expect_match(readiness, "alert-warning", fixed = TRUE)
+        session$setInputs(run = 2)
+        status <- output$run_status$html
+        expect_match(status, sprintf(texts[["run_refused"]], texts[["refusal_mofa_unavailable"]]), fixed = TRUE)
+        # The check's own message (console-formatted by cli, so matched across line breaks).
+        expect_match(status, "cannot\\s+be\\s+trained\\s+here")
+        expect_match(status, "MOFA2\\s+is\\s+not\\s+installed")
+        expect_null(bus$integration_model)
+        expect_null(bus$state_manager$.context$snapshot$exports$integration_mofa_model)
+        # A number left empty.
+        session$setInputs(param_feature_selection = "top_variance", param_features_per_view = NA, run = 3)
+        expect_match(output$run_status$html, sprintf(texts[["setting_not_whole"]], texts[["param_features_per_view"]]),
+            fixed = TRUE)
+        expect_false(grepl("<details>", output$run_status$html, fixed = TRUE))
+        # An input saved again after the import: refused before the software is asked for.
+        session$setInputs(param_feature_selection = "none")
+        biological <- c("A_1", "A_2", "A_3", "B_1", "B_2")
+        values <- rbind(P1 = c(10, 11, 12, 13, 14), P2 = c(5, 7, 6, 9, 8), P3 = c(1, 1.5, 2, 2.5, 3.5),
+            P4 = c(NA, NA, 4, NA, NA)) + 1
+        colnames(values) <- paste0("p", seq_along(biological))
+        intGuiInput(project$root, "proteomics", list(proteomics = values), intGuiSamples(colnames(values), biological))
+        session$setInputs(run = 4)
+        status <- output$run_status$html
+        expect_match(status, sprintf(texts[["run_refused"]], texts[["refusal_input_stale"]]), fixed = TRUE)
+        expect_match(status, "has\\s+changed\\s+since\\s+it\\s+was\\s+imported")
+        expect_null(bus$integration_model)
+    })
+})
 
 test_that("KIT-140: each refusal class has its plain sentence; the condition and its message are unchanged", {
     texts <- integrationGuiTexts()

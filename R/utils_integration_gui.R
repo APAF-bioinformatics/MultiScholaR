@@ -189,7 +189,86 @@ integrationGuiTexts <- function() {
         refusal_parameters_invalid = "A model setting is not valid. Check the values entered.",
         refusal_mofa_unavailable = paste("The model cannot be trained on this computer: the MOFA2 software, or the Python",
             "it uses, is not installed."),
-        refusal_other = "This step could not be completed; the technical detail below says why."
+        refusal_other = "This step could not be completed; the technical detail below says why.",
+        # The Model tab (KIT-140).
+        tab_model = " Model",
+        step_model = "Model",
+        model_heading = "Train the factor model (MOFA2)",
+        model_intro = paste("MOFA2 looks for a small number of factors that explain the variation the data sets share.",
+            "Check the settings, then train the model."),
+        model_not_confirmed = "Confirm the sample table at the Sample Matching tab first.",
+        readiness_heading = "Software check",
+        readiness_ok = "MOFA2 and the Python it uses are installed: the model can be trained on this computer.",
+        readiness_recheck = "Check again",
+        settings_heading = "Model settings",
+        settings_matching_heading = "Set by the confirmed sample table",
+        settings_provisional = paste("Provisional: the integration methods may still change this default. Values",
+            "marked so are the current defaults, not final ones."),
+        mark_provisional = "provisional default",
+        mark_decided = "decided",
+        # %s: the label, then the value in words.
+        setting_fixed = "%s: %s",
+        # %s: the setting's label.
+        setting_not_whole = "%s: enter a whole number.",
+        # The settings, by the parameter's name (`param_<name>`, `help_<name>`, `choice_<name>_<value>`). A setting
+        # without an entry here shows its name: a parameter the workbook adds appears with no edit to the tab.
+        param_technical_replicates = "Runs of the same biological sample",
+        choice_technical_replicates_average = "averaged",
+        param_internal_standards = "Internal standards",
+        choice_internal_standards_drop = "removed",
+        choice_internal_standards_keep = "kept",
+        param_missing_samples = "Samples missing from a data set",
+        choice_missing_samples_keep_missing = "kept, with that data set's values missing",
+        choice_missing_samples_drop_incomplete = "left out",
+        param_feature_selection = "Features used from each data set",
+        choice_feature_selection_none = "all features",
+        choice_feature_selection_top_variance = "only the most variable features",
+        param_features_per_view = "Number of most variable features kept per data set",
+        help_features_per_view = "Used only when only the most variable features are used.",
+        param_scaling = "Scaling of each feature",
+        choice_scaling_none = "none: the values as saved",
+        choice_scaling_feature_zscore = "each feature scaled to mean 0 and standard deviation 1",
+        param_scale_views = "Give every data set the same total variance",
+        param_center_groups = "Centre each feature on its mean",
+        param_num_factors = "Number of factors",
+        param_convergence_mode = "How closely training must settle before it stops",
+        choice_convergence_mode_fast = "fast",
+        choice_convergence_mode_medium = "medium",
+        choice_convergence_mode_slow = "slow (the closest)",
+        param_maxiter = "Maximum number of training rounds",
+        param_seed = "Random seed",
+        help_seed = "The same data, settings and seed give the same model.",
+        param_precision = "Numeric precision",
+        choice_precision_double = "double: the same model on every computer",
+        choice_precision_single = "single: less memory for very large studies",
+        help_precision = paste("Double precision is the chosen setting: it gives the same model on every computer.",
+            "Single precision uses less memory for very large studies, but the model can differ slightly from one",
+            "computer to another."),
+        run_button = "Train the model",
+        run_working = "Training the model. This can take several minutes.",
+        # %s: the reason.
+        run_refused = "The model was not trained. %s",
+        run_none = "No model trained yet.",
+        # %s: the time.
+        run_done = "Model trained at %s.",
+        run_reused = "These data and settings were trained before; the saved model is shown.",
+        run_settings_changed = "The settings have changed since this model was trained. Train again to apply them.",
+        # %d: models trained since the import.
+        run_count = "Models trained since the import: %d. Each one is kept in the project; the latest is shown.",
+        result_heading = "The trained model",
+        # %d: rounds, then the maximum.
+        result_converged = "Training settled after %d rounds (of at most %d).",
+        result_not_converged = paste("Training stopped at the maximum of %d rounds without settling. Allow more rounds or",
+            "a less close setting, then train again."),
+        # %d: factors kept, factors asked for.
+        result_factors = "Factors in the model: %d (asked for: %d).",
+        # %d: biological samples, those measured in every data set.
+        result_samples = "Biological samples in the model: %d; measured in every data set: %d.",
+        result_variance_heading = "Variance explained per data set (all factors together)",
+        col_variance = "Variance explained (%)",
+        col_model_features = "Features in the model",
+        # %s: the checksum.
+        result_saved = "The model file is saved in the project; its SHA-256 checksum is %s."
     )
 }
 
@@ -205,12 +284,13 @@ integrationGuiConfig <- function() {
     }
     tabs <- list(
         tab("integration_import", "import", "tab_import", "file-import", "step_import"),
-        tab("integration_alignment", "alignment", "tab_alignment", "th", "step_alignment"))
+        tab("integration_alignment", "alignment", "tab_alignment", "th", "step_alignment"),
+        tab("integration_model", "model", "tab_model", "cubes", "step_model"))
     shell <- list(omic_type = "integration", prefix = "integration", testid = "integration",
         label = texts[["workflow_label"]], label_lower = "integration", header_icon = NULL,
         tabset_id = "integration_tabs", tab_style = "icon_in_title", routes = "integration", tabs = tabs,
         bus = list(state_manager = NULL, tab_status = NULL, integration_scan = NULL, integration_import = NULL,
-            integration_alignment = NULL),
+            integration_alignment = NULL, integration_model = NULL),
         bus_registration = "userData")
     validateOmicGuiShell(shell, omicGuiConfigSchema())
     list(shell = shell, texts = texts)
@@ -639,4 +719,138 @@ integrationSaveDesign <- function(samples, dir) {
     path <- file.path(dir, "integration_design.tsv")
     vroom::vroom_write(samples, path, delim = "\t", na = "NA", progress = FALSE)
     path
+}
+
+# ------------------------------------------------------------------------------------------------
+# The Model tab (KIT-140).
+# ------------------------------------------------------------------------------------------------
+
+#' The parameters the confirmed sample table fixes (KIT-139 shows their effect and confirms it): shown on the Model
+#' tab as set, not offered again, so that the model is trained on the table the user confirmed.
+#' @noRd
+INTEGRATION_GUI_MATCHING_PARAMETERS <- c("technical_replicates", "internal_standards", "missing_samples")
+
+#' Whether a parameter's default is provisional: the spec's `settled_by` names the workbook as the one that settles or
+#' may override it (every parameter but `precision`, decided by INT-6, today).
+#' @param entry One entry of `integrationMofaParameterSpec()`.
+#' @noRd
+integrationParameterProvisional <- function(entry) {
+    grepl("provisional|may override", entry$settled_by)
+}
+
+#' A setting's label, its choices' labels and its help, from the wording table; a parameter or value without an entry
+#' shows its own name.
+#' @noRd
+integrationParameterText <- function(texts, prefix, name, value = NULL) {
+    key <- paste(c(prefix, name, value), collapse = "_")
+    if (key %in% names(texts)) texts[[key]] else if (is.null(value)) name else as.character(value)
+}
+
+#' The Model tab's settings, built from the parameter spec (KIT-140): one input per method parameter, its default the
+#' spec's, so a default the workbook changes changes the screen with no edit here; a choice parameter as buttons, a
+#' flag as a tick box, a number as a number box. Each label carries "provisional default" or "decided".
+#' @param ns The module's namespace function.
+#' @param spec `integrationMofaParameterSpec()`.
+#' @return A tag list.
+#' @noRd
+integrationModelSettingsUi <- function(ns, spec = integrationMofaParameterSpec(), texts = integrationGuiTexts()) {
+    inputs <- lapply(setdiff(names(spec), INTEGRATION_GUI_MATCHING_PARAMETERS), function(name) {
+        entry <- spec[[name]]
+        id <- ns(paste0("param_", name))
+        mark <- texts[[if (integrationParameterProvisional(entry)) "mark_provisional" else "mark_decided"]]
+        label <- shiny::tagList(integrationParameterText(texts, "param", name), " ",
+            shiny::tags$small(class = "text-muted", sprintf("(%s)", mark)))
+        input <- if (!is.null(entry$choices)) {
+            shiny::radioButtons(id, label, choiceNames = lapply(entry$choices, function(value)
+                integrationParameterText(texts, "choice", name, value)), choiceValues = entry$choices, selected = entry$default)
+        } else if (is.logical(entry$default)) {
+            shiny::checkboxInput(id, label, value = isTRUE(entry$default))
+        } else {
+            shiny::numericInput(id, label, value = entry$default, step = 1)
+        }
+        help <- paste0("help_", name)
+        shiny::div(`data-testid` = paste0("integration-model-param-", name), input,
+            if (help %in% names(texts)) shiny::helpText(texts[[help]]))
+    })
+    shiny::tagList(shiny::p(shiny::em(texts[["settings_provisional"]])), inputs)
+}
+
+#' The settings the confirmed sample table fixed, in words.
+#' @param parameters The confirmed parameters (`workflow_data$integration_alignment$parameters`).
+#' @return A character vector.
+#' @noRd
+integrationModelMatchingSettings <- function(parameters, spec = integrationMofaParameterSpec(), texts = integrationGuiTexts()) {
+    names <- intersect(INTEGRATION_GUI_MATCHING_PARAMETERS, names(spec))
+    vapply(names, function(name) sprintf(texts[["setting_fixed"]], integrationParameterText(texts, "param", name),
+        integrationParameterText(texts, "choice", name, parameters[[name]])), character(1), USE.NAMES = FALSE)
+}
+
+#' The method settings as the tab's inputs give them (KIT-140), in the spec's forms: a choice as text, a flag as TRUE or
+#' FALSE, a number as a whole number. The number of most variable features is set only when that selection is chosen.
+#' Refused in words (`integration_parameters_invalid`): a number box left empty or not a whole number.
+#' @param values The inputs' values, named by parameter.
+#' @return The method parameters, named.
+#' @noRd
+integrationModelSettings <- function(values, spec = integrationMofaParameterSpec(), texts = integrationGuiTexts()) {
+    refuse <- function(name) integrationGuiRefuse(sprintf(texts[["setting_not_whole"]], integrationParameterText(texts, "param", name)),
+        "integration_parameters_invalid")
+    out <- list()
+    for (name in setdiff(names(spec), INTEGRATION_GUI_MATCHING_PARAMETERS)) {
+        entry <- spec[[name]]
+        value <- values[[name]]
+        out[name] <- list(if (!is.null(entry$choices)) {
+            if (is.null(value)) entry$default else as.character(value)
+        } else if (is.logical(entry$default)) {
+            if (is.null(value)) entry$default else isTRUE(value)
+        } else if (is.null(value)) {
+            # An input not yet drawn takes the table's default, as the screen shows it.
+            entry$default
+        } else if (length(value) != 1L || is.na(value)) {
+            NA_integer_
+        } else {
+            if (!is.numeric(value) || value != round(value)) refuse(name)
+            as.integer(value)
+        })
+    }
+    if (all(c("feature_selection", "features_per_view") %in% names(out)) &&
+        !identical(out$feature_selection, "top_variance")) out$features_per_view <- NA_integer_
+    for (name in names(out)) {
+        if (is.integer(out[[name]]) && is.na(out[[name]]) && !identical(name, "features_per_view")) refuse(name)
+        if (identical(name, "features_per_view") && identical(out$feature_selection, "top_variance") && is.na(out[[name]])) refuse(name)
+    }
+    out
+}
+
+#' The model's parameters for a run: the confirmed table's (inputs, data sets and the matching rules) with the tab's
+#' method settings.
+#' @noRd
+integrationModelParameters <- function(confirmed, settings) {
+    parameters <- confirmed
+    parameters[names(settings)] <- settings
+    parameters
+}
+
+#' What the Model tab shows of a trained model (KIT-140; only this, anything richer is KIT-063's): whether training
+#' settled (rounds against the maximum), the factors kept against those asked for, the samples, the variance explained
+#' per data set as a compact table and the model file's checksum.
+#' @param value The model's product (`integrationModelProduct`).
+#' @param parameters The run's resolved parameters.
+#' @return `list(converged, convergence, factors, samples, variance, saved)`.
+#' @noRd
+integrationModelSummary <- function(value, parameters, texts = integrationGuiTexts()) {
+    iterations <- as.integer(value$elbo$iterations)
+    maxiter <- as.integer(parameters$maxiter)
+    converged <- isTRUE(iterations < maxiter)
+    total <- value$variance_total
+    features <- value$view_summary$features_model[match(total$view, value$view_summary$view)]
+    variance <- data.frame(total$view, as.integer(features), sprintf("%.2f", total$r2_percent), stringsAsFactors = FALSE)
+    names(variance) <- unname(texts[c("col_view", "col_model_features", "col_variance")])
+    sha256 <- value$model_file$sha256
+    list(converged = converged,
+        convergence = if (converged) sprintf(texts[["result_converged"]], iterations, maxiter) else
+            sprintf(texts[["result_not_converged"]], maxiter),
+        factors = sprintf(texts[["result_factors"]], ncol(value$factors) - 1L, as.integer(parameters$num_factors)),
+        samples = sprintf(texts[["result_samples"]], nrow(value$samples), as.integer(value$shared_samples)),
+        variance = variance,
+        saved = if (is.character(sha256) && length(sha256) == 1L && !is.na(sha256)) sprintf(texts[["result_saved"]], sha256))
 }

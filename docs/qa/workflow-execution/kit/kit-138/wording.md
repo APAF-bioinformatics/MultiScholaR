@@ -1,4 +1,4 @@
-# Integration GUI: every user-facing string (KIT-138, KIT-139; KIT-140 refusals)
+# Integration GUI: every user-facing string (KIT-138, KIT-139, KIT-140)
 
 Drafts for the user to set the final wording. All of them live in one table, `integrationGuiTexts()` in
 `R/utils_integration_gui.R`; change a string there and nowhere else. `%s` and `%d` are filled in the order given.
@@ -23,6 +23,8 @@ Rules followed: plain words, exact numbers, none of "manifest", "owner", "declar
 | workflow_label | Integration | the shell's label |
 | tab_alignment | Sample Matching | tab title (KIT-139) |
 | step_alignment | Samples | stepper (KIT-139) |
+| tab_model | Model | tab title (KIT-140) |
+| step_model | Model | stepper (KIT-140) |
 
 ## Import tab
 
@@ -134,3 +136,56 @@ shown as written.
 | refusal_parameters_invalid | integration_parameters_invalid | A model setting is not valid. Check the values entered. |
 | refusal_mofa_unavailable | integration_mofa_unavailable (and the software check) | The model cannot be trained on this computer: the MOFA2 software, or the Python it uses, is not installed. |
 | refusal_other | any other error | This step could not be completed; the technical detail below says why. |
+
+## Model tab (KIT-140)
+
+The settings are built from the model's parameter table (`integrationMofaParameterSpec()`): a label below per
+parameter (`param_<name>`), per choice (`choice_<name>_<value>`) and optional help (`help_<name>`). The defaults are
+the table's, never these strings'.
+
+| Key | Text | Fills |
+|---|---|---|
+| model_heading | Train the factor model (MOFA2) | |
+| model_intro | MOFA2 looks for a small number of factors that explain the variation the data sets share. Check the settings, then train the model. | |
+| model_not_confirmed | Confirm the sample table at the Sample Matching tab first. | |
+| readiness_heading | Software check | |
+| readiness_ok | MOFA2 and the Python it uses are installed: the model can be trained on this computer. | |
+| readiness_recheck | Check again | button |
+| settings_heading | Model settings | |
+| settings_matching_heading | Set by the confirmed sample table | the three matching rules, shown, not offered |
+| settings_provisional | Provisional: the integration methods may still change this default. Values marked so are the current defaults, not final ones. | |
+| mark_provisional | provisional default | after each provisional setting's label |
+| mark_decided | decided | after precision's label (INT-6) |
+| setting_fixed | %s: %s | label, value |
+| setting_not_whole | %s: enter a whole number. | label |
+| param_technical_replicates; choice _average | Runs of the same biological sample; averaged | INT-2 |
+| param_internal_standards; choice _drop, _keep | Internal standards; removed; kept | INT-3 |
+| param_missing_samples; choice _keep_missing, _drop_incomplete | Samples missing from a data set; kept, with that data set's values missing; left out | D4 |
+| param_feature_selection; choice _none, _top_variance | Features used from each data set; all features; only the most variable features | |
+| param_features_per_view; help | Number of most variable features kept per data set; Used only when only the most variable features are used. | |
+| param_scaling; choice _none, _feature_zscore | Scaling of each feature; none: the values as saved; each feature scaled to mean 0 and standard deviation 1 | |
+| param_scale_views | Give every data set the same total variance | tick box |
+| param_center_groups | Centre each feature on its mean | tick box |
+| param_num_factors | Number of factors | |
+| param_convergence_mode; choice _fast, _medium, _slow | How closely training must settle before it stops; fast; medium; slow (the closest) | |
+| param_maxiter | Maximum number of training rounds | |
+| param_seed; help | Random seed; The same data, settings and seed give the same model. | |
+| param_precision; choice _double, _single | Numeric precision; double: the same model on every computer; single: less memory for very large studies | INT-6 |
+| help_precision | Double precision is the chosen setting: it gives the same model on every computer. Single precision uses less memory for very large studies, but the model can differ slightly from one computer to another. | |
+| run_button | Train the model | button |
+| run_working | Training the model. This can take several minutes. | progress and status |
+| run_refused | The model was not trained. %s | the refusal's sentence |
+| run_none | No model trained yet. | |
+| run_done | Model trained at %s. | time |
+| run_reused | These data and settings were trained before; the saved model is shown. | same settings again |
+| run_settings_changed | The settings have changed since this model was trained. Train again to apply them. | |
+| run_count | Models trained since the import: %d. Each one is kept in the project; the latest is shown. | count |
+| result_heading | The trained model | |
+| result_converged | Training settled after %d rounds (of at most %d). | rounds, maximum |
+| result_not_converged | Training stopped at the maximum of %d rounds without settling. Allow more rounds or a less close setting, then train again. | maximum |
+| result_factors | Factors in the model: %d (asked for: %d). | |
+| result_samples | Biological samples in the model: %d; measured in every data set: %d. | |
+| result_variance_heading | Variance explained per data set (all factors together) | |
+| col_view, col_model_features, col_variance | Data set; Features in the model; Variance explained (%) | table headers |
+| result_saved | The model file is saved in the project; its SHA-256 checksum is %s. | checksum |
+| few_samples | (KIT-139's) | shown again under a model trained with fewer than 16 shared samples |

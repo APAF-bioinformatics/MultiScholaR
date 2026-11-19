@@ -383,6 +383,7 @@ Collate:
     'mod_integration.R'
     'mod_integration_import.R'
     'mod_integration_alignment.R'
+    'mod_integration_model.R'
     'zzz.R'
 Suggests:
     RhpcBLASctl,
