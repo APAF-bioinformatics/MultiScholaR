@@ -1,15 +1,14 @@
 {
   "label": "confirm-p2c",
   "package": "installed",
-  "package_commit": "2bbb1f6d29e4f4a1767ebb461c08858883370680",
-  "tools_ref": "2bbb1f6d29e4f4a1767ebb461c08858883370680",
+  "package_commit": "BINDING-COMMIT-SENT-BY-THE-MAIN-SESSION",
+  "tools_ref": "BINDING-COMMIT-SENT-BY-THE-MAIN-SESSION",
   "runs_core": 1000,
   "runs_stress": 0,
   "cores": 4,
   "timeout_minutes": 300,
   "chunk": {
-    "s2": 400,
-    "s3": 500
+    "s2": 400
   },
   "arms": {
     "s1": "1,2,35,36,37,38,39,40,41",

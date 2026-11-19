@@ -1,8 +1,8 @@
 {
   "label": "confirm-p2x",
   "package": "installed",
-  "package_commit": "2bbb1f6d29e4f4a1767ebb461c08858883370680",
-  "tools_ref": "2bbb1f6d29e4f4a1767ebb461c08858883370680",
+  "package_commit": "BINDING-COMMIT-SENT-BY-THE-MAIN-SESSION",
+  "tools_ref": "BINDING-COMMIT-SENT-BY-THE-MAIN-SESSION",
   "runs_core": 0,
   "runs_stress": 500,
   "cores": 4,

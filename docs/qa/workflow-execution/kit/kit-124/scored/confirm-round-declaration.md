@@ -2,13 +2,17 @@
 
 Authority: decisions M29 ("every option's figure is re-measured on the shipped code in a final confirmation round") and M34 (user, 2026-11-19: "(1) for every option, the shipped package code is shown to give the same numbers as the simulator arm it replaces on the same seeds, on a modest number of runs per cell, under the fixed equivalence rule read on the rule-bearing values (M19); where that holds, the earlier measurements stand for the shipped code; (2) options that are not identical are re-measured in full on the shipped code: lipid/metab, the technical-replicate designs once their kernel is repaired, and classic proteomics 'No RUV' under the new test (M30)"), with M28, M30 to M33 (`design-review-20261118.md` section 6 on `performance-v2`). Simulations run on GitHub-hosted runners (M13); no compute on the laptop. Nothing under `R/`, `tests/`, `DESCRIPTION` or `tools/` changes on this branch; the package is installed in each job from the bound commit.
 
+**Approved (decision M38, user, 2026-11-19, recorded on `performance-v2`):** the round as declared here, Part 1 then Part 2, **with savings L1 and L2** (section 8); a pair expected to be identical that fails joins Part 2 (section 4); lipid/metab identity read on the subset `complete`; a typed k not simulated; the carried-over limit of about 120 core-hours lifted for this round. Not yet decided: the binding commit (section 1). **The binding and the launch wait on the main session: nothing of this round is launched from this branch until it sends the commit.** The marks "[for the user to approve]" below are kept as the record of what M38 approved.
+
 Every choice below that is not carried over from an earlier declaration (`exact-round-declaration.md`, the confirming study, `final-20261118`, the first version of this file) is marked **[for the user to approve]**. The first version of this file (cf572809, one round of every option at full size) is replaced by this one; its lifecycle run 44341242746 stays on record (section 8).
 
 ## 1. Package under test
 
-**BINDING LINE (the one line the final commit changes): `package_commit = tools_ref = 2bbb1f6d29e4f4a1767ebb461c08858883370680` (`kit-129-integration`, 2026-11-19, fifth pass item 5).** [for the user to approve: this commit, or the `kit-129-integration` tip at launch; another commit is merged here with the `ours` strategy (the tree of this branch does not change), the hash replaced in this line and in the three launch files, and section 7's lifecycle repeated on it]
+**BINDING LINE (open; the one line the final commit changes): `package_commit = tools_ref = ________________________________________`** (the `kit-129-integration` tip after the KIT-129 sixth pass, sent by the main session; M38 rejected 2bbb1f6d. The sixth pass makes DIA's supplied list with the separation rule follow the rule on the list, so DIA's pair 41~22 is then expected identical in k.) Binding: merge it here with the `ours` strategy (the tree of this branch does not change), write its hash in this line and in the three launch files, and repeat section 7's lifecycle on it (section 10).
 
-It carries M28 to M33, the technical-replicate design and first-pass nulls in every omic, the run-path wiring, classic "No RUV" and a count of 0 as the declared state without factors with M30's test, supplied lists on the classic and lipid/metab run paths, and the separation rule on the run path where it is defined. Made reachable on this branch by 1880f7df (merge, `ours`). Installed as before: params `package: "installed"`, the library action installs MultiScholaR from that checkout with the two internal packages built in the job from `DEPS_READ_TOKEN` (never printed, cached or uploaded); the job checks the checkout is the bound commit and that the namespace holds every entry point the arms call.
+The lifecycles below ran on 2bbb1f6d (`kit-129-integration`, fifth pass item 5), made reachable by 1880f7df (merge, `ours`); it carries
+
+M28 to M33, the technical-replicate design and first-pass nulls in every omic, the run-path wiring, classic "No RUV" and a count of 0 as the declared state without factors with M30's test, supplied lists on the classic and lipid/metab run paths, and the separation rule on the run path where it is defined. Made reachable on this branch by 1880f7df (merge, `ours`). Installed as before: params `package: "installed"`, the library action installs MultiScholaR from that checkout with the two internal packages built in the job from `DEPS_READ_TOKEN` (never printed, cached or uploaded); the job checks the checkout is the bound commit and that the namespace holds every entry point the arms call.
 
 ## 2. The shipped arms (34 to 41) and how each calls the package
 
@@ -94,9 +98,23 @@ Fixed list (launch files `params-confirm-part2-core.json`, `params-confirm-part2
 
 Pass rules 1 to 7 **unchanged** through `aggregate.R` as on `sim-k124-exact` (sha256 `089d852c...`): rule 1 null rate at 0.05 and 0.01 (upper bounds 0.075, 0.015), rule 2 mean false discovery proportion (0.075), rule 3 share above 0.10 against arm 2's share + 0.05, rule 4 the reduction against arm 1 in cells with a factor, rule 5 power loss against arm 1 without one (0.02), rule 6 crash share (0.01), rule 7 global null C4 (0.075); void cells, the primary subset (`full`), C8 reported, extra-hard cells listing failing rules without failing a design: as before. `aggregate.R`'s recommendation table does not know arms 34 to 41 and is not read; the per-arm and per-cell verdicts are. The figure per option is read as before (mean FDP in the worst core cell with true effects; power in C0).
 
-## 6. Gate (carried over, M19)
+## 6. Gate (carried over, M19; built 2026-11-19, decision M38)
 
-Before a cell of either part is scored, its arms 1 and 2 equal the earlier hosted-runner rows of the same seeds under the same rule (references as in section 4; for the extra-hard cells the runner rows of `final-20261118` 44201244793 where they exist). A cell that fails the gate is not scored and is reported. **Not yet built for this round:** the gate and the S1 legacy comparison need a runner step that downloads the reference run's artifacts by run id and runs `compare-laptop.R` and `compare-results.R` (the exact round did this on the laptop, now excluded). The `exact-gha` artifacts expire about 2026-12-18. **[for the user to approve: a `gate` job added to the workflow before Part 1]**
+Before a cell of either part is scored, its arms 1 and 2 equal the earlier rows of the same seeds under the same rule (`compare-results.R` of the bound commit, relative 1e-6, absolute floor 1e-9, discrete values exact, read on the M19 values). A cell that fails the gate is not scored and is reported.
+
+- **The job.** `gate` in `.github/workflows/k124-sim.yml` runs after the simulators of every round with the package installed: per simulator `.github/k124-sim/gate.R` takes the run's arms 1 and 2 (and in S1 arm 3, the legacy comparison of section 4) and the committed reference rows of the same keys through `compare-laptop.R` and `compare-results.R`, and writes `<sim>-gate-summary.tsv` and `s1-legacy-summary.tsv` (artifact `k124-<label>-gate`). A rule-bearing value outside the rule, or a run key the reference does not hold, fails the job after its tables are uploaded; a cell with no reference row at all is reported "no reference" (a warning).
+- **The committed reference** (`scored/confirm-reference/`, so that the round does not depend on artifacts that expire about 2026-12-18): the rows of arms 1 and 2 (and S1 arm 3), every column as written by the simulators, extracted by a fixed text filter (`reference-extract.sh`, `reference-build.sh`, `reference-spec.tsv`: rows selected and sorted, nothing computed):
+
+| File | Rows | Source |
+|---|---|---|
+| `s1-runs.tsv.gz` | 54,000 (arms 1, 2, 3; C0 to C8; runs 1 to 1,000; full and complete) | `exact-gha` 44233215700, 18 artifacts |
+| `s2-runs.tsv.gz` | 18,000 (arms 1, 2; C0 to C8) | `exact-gha`, 9 artifacts |
+| `s3-runs.tsv.gz` | 18,000 (C0 to C5, C7; C6, C8 on the summed tree) | `exact-gha`, 7 artifacts; `exact-k128-gha` 44233219582, 2 |
+| `s4-runs.tsv.gz` | 36,000 (C0 to C5, C7; C6, C8 on the kit-128 tree; both subsets) | `exact-gha`, 7; `exact-k128-gha`, 2 |
+| `s4-runs.laptop-extra.tsv.gz` | 6,000 (arms 1, 2; S1, S3, S8; runs 1 to 500; both subsets) | the laptop confirm run, tree 0b6fcb6d (2026-11-18 04:04 to 06:16): the only rows of those cells |
+
+  `sources.tsv` gives each source table's sha256 and the rows taken, `artifacts.tsv` the artifacts' digests and expiry, `tables.sha256` the decompressed files. **Verified once against the downloaded artifacts** (lifecycle 44423530060, params `verify_reference: true`): every listed artifact present with the recorded table sha256, the rows re-extracted on the runner byte-identical to the committed copy, the laptop rows equal to their recorded sha256 (they cannot be re-downloaded). A missing artifact stops the step with its name.
+- **Extra-hard cells without reference:** S3's cell S3 (its earlier rows are on the laptop in a binary file only, which cannot be read without R there): reported "no reference", its gate not applied **[for the user]**. S4's S1, S3, S8 are gated against laptop rows (reference BLAS against the runners' OpenBLAS, as M19 accepted for the exact round).
 
 ## 7. Lifecycle run (the instrument check; 2026-11-19)
 
@@ -124,44 +142,75 @@ Every expected identity held; every difference is of the declared kind (S3's 35,
 | S3 C0 | 34-36, 39: 16.3-17.9 (each its own count, 200 permutations); 37: 0.6; 40: 2.2; 41: 1.6 | 31: 8.1; 3: 2.4; others 0.6-1.5 | about 100 s |
 | S4 C6 | 34-36, 38-40: 2.2-2.7 (both classes); 37: 0.7; 41: 1.3 | 3: 3.6; others under 1 | about 60 s (both subsets) |
 
-## 8. Budget (from the lifecycle; core-hours are simulator compute; one cell measured per simulator, so a cell may differ by about half either way)
 
-| | Runs | Core-hours | Jobs (4 cores, limit 300 min) | Wall time at 20 concurrent jobs |
-|---|---|---|---|---|
-| Part 1 | S1 450, S2 450, S3 500, S4 600 | S1 6-9, S2 10-11, S3 14, S4 10: **about 40 to 45** | 40 (one per simulator and cell) | **about 1.5 h** |
-| Part 2 core | 9,000 per simulator | S1 70-105, S2 about 195 (C6, C8 at about 140 s per run), S3 about 175, S4 about 100: **about 540 to 575** | 63 (S2 in ranges of 400 runs, S3 of 500) | **about 16 to 18 h** |
-| Part 2 extra-hard | S3 500, S4 1,500 | **about 13** | 4 | about 1 h |
+**Second lifecycle (savings and gate), run 44423530060** (commit bd57e073, label `confirm-lc3`): the cells, runs, arms and package of `confirm-lc2` with `share: "count,sweep"` and `verify_reference: true`. All seven jobs succeeded. The reference verification passed (above). The gate: S1, S2, S3, S4 arms 1 and 2 and S1 arm 3 agree with the committed reference in every rule-bearing value (status 0).
 
-Each job also spends about 6 to 8 minutes building the library (not counted above: about 5 job-hours in Part 1, 8 in Part 2). One attempt per job; one infrastructure rerun (`gh run rerun <run> --failed`, the same rows). A job that reaches its limit or a crash of a shipped arm is reported, not relaunched with other settings.
+Identity of the savings, every row of `confirm-lc3` against `confirm-lc2` by cell, run, arm and subset (the same seeds and package; no sharing in lc2):
 
-**Part 2 is about 4.5 times the carried-over limit of about 120 core-hours [the user's decision].** Levers that keep every number identical (each checked in Part 1 by k identity), none implemented:
-
-| Lever | Saving, about | Note |
+| Simulator | Shipped arms 34 to 41 | Every other arm |
 |---|---|---|
-| L1 One estimated count per data set shared by the shipped arms (the package's own `estimateRuvFactorCount` with the same seed; each kernel otherwise repeats it) | 85 (S3), 10 (others) | k identity per run already shown (prove `count`, lifecycle) |
-| L2 One DIA sweep per data set for arms 40 and 41 (the kernel's sweep call does not depend on the control rule) | 60 (S2) | |
-| L3 Part 2 reuses Part 1's runs 1 to 50 (same seeds, commit, code) | 5 % | needs a first-run entry in the workflow |
-| L4 Drop S1 37 and 38 from Part 2 if Part 1 shows identity (arms 27, 33 have 1,000-run rows) | 5 | M34 names them for Part 2; they are cheap |
+| S1 C6 | byte-identical (76 rows of the table) | byte-identical |
+| S3 C0 | byte-identical | byte-identical |
+| S4 C6 | byte-identical | byte-identical but arm 3 (legacy) run 2, `full`: null_p05 0.300 against 0.295, null_p01, bias, rmse; arm 3 calls neither shared function, so this is the legacy lipid sweep differing between two runner machines |
+| S2 C0 | every rule-bearing value identical; bias or rmse differ in the 15th significant digit (relative about 1e-15) | the same 1e-15 differences in arms 1, 2, 4, 5, 8, 9, 22, 23, 32, which share nothing: the DPC quantification is not bit-reproducible across runner machines |
 
-With L1 and L2 Part 2 is about 400 to 430 core-hours.
+So L1 and L2 change no value: where the table is reproducible across machines it is byte-identical, and in S2 the only differences are the cross-machine rounding every arm shows. Two findings for the reading: S2's bias and rmse are not bit-reproducible across machines (rule-bearing values are; M19 reads those), and S4's legacy arm 3 can differ between machines in a rule-bearing value (null_p05) for the same seed, so lipid/metab legacy figures carry that machine dependence (it is re-measured in Part 2, not read for identity).
 
-## 9. Points for the user
+Seconds per run with the savings (one core; the first arm that needs the count or the sweep pays for it, the others take it):
 
-1. Bind 2bbb1f6d, or the tip at launch (section 1).
-2. Part 1's cells and 50 runs; the extra-hard cells quoted by the notes only (section 4).
-3. The rule adding an unexpected failure to Part 2 (section 4).
-4. **DIA, supplied list with the separation rule:** the app's figure (0.056, `omicGuiRuvTableDiaLimpa`) cites arm 22 (the separation rule on the list); the shipped kernel uses today's sweep k whatever the list (lifecycle: k differs in both runs). Part 2's arm 41 measures what ships; the figure source must change, or the kernel follow arm 22.
-5. Legacy: S1 by identity against `exact-gha`; S2, S3, S4 re-measured (section 4); lipid/metab legacy is not expected to be identical (level repair).
-6. Lipid/metab identity read on subset `complete`; `full` re-measured (section 3).
-7. A user's typed k not simulated (section 2).
-8. The gate job (section 6) must be added before Part 1.
-9. Part 2's size and the levers L1 to L4 (section 8).
+| Simulator, cell | Shipped arms | Whole run |
+|---|---|---|
+| S1 C6 | 34: 2.2 (pays the count); 35, 36, 39: 1.2-1.3; 37: 1.1; 38: 2.1 (units: its own count); 40: 13.4 (sweep); 41: 1.4 | about 51 s |
+| S2 C0 | 34: 5.2 (count); 35, 36, 37, 39: 0.8-1.2; 40: 31.0 (the sweep, on a slower machine than lc2's 15.8); 41: 1.0 | about 84 s on this machine (lc2's machine about 65 s without savings) |
+| S3 C0 | 34: 19.5 (count); 35, 36: 1.3; 39: 2.0; 40: 2.8; 41: 1.5 | about 72 s (was about 100) |
+| S4 C6 | 34-36, 38: 1.7-1.8; 39: 1.5; 40: 2.3; 41: 1.3 | about 60 s |
 
-## 10. Launch, once approved
+## 8. Budget (with L1 and L2; core-hours are simulator compute; one cell measured per simulator, and runner machines differ by up to about 2 times in the sweep, so a cell may differ by about half either way)
 
-1. If the binding changes: merge the commit with `git merge -s ours <hash>`, replace the hash in section 1 and the three launch files, and repeat the lifecycle (`params.json` as for 44419300892, new label).
-2. Add the gate job (item 8) and its own lifecycle check.
-3. Part 1: `cp .github/k124-sim/params-confirm-part1.json .github/k124-sim/params.json`, commit, push `sim-k124-confirm` (the push of `params.json` starts the run). Read the compare artifact `k124-confirm-p1-compare` and the gate; apply section 4's rule; record the outcome here.
-4. Part 2: the same with `params-confirm-part2-core.json`, then `params-confirm-part2-extra.json` (each push one run), plus any pairs Part 1 added. Assemble (`assemble.sh <run> <label>`) and score with `aggregate.R` unchanged.
+In Part 2 the first arm that needs a count or a sweep pays for it (S3 arm 35 in place of 34; S2 arm 40), so the saving is all but one call per data set.
 
-`params.json` holds the lifecycle's parameters; a push that leaves it alone starts nothing.
+| | Runs | Core-hours, about | Jobs (4 cores, limit 300 min) | Wall time at 20 concurrent jobs |
+|---|---|---|---|---|
+| Part 1 (`params-confirm-part1.json`) | S1 450, S2 450, S3 500, S4 600 | S1 6-9, S2 8-11, S3 10, S4 10: **35 to 40** | 40, one per simulator and cell | **about 1.5 h** |
+| Part 2 core (`params-confirm-part2-core.json`) | 9,000 per simulator | S1 60-95 (the sweep of arm 40: 13 to 27 s per run), S2 about 135 (C0-type cells about 41 s per run, C6 and C8 about 95), S3 about 95 (about 38 s), S4 about 95: **about 385 to 420** | 54 (S2 in ranges of 400 runs: 27; S1, S3, S4 one per cell) | **about 12 to 15 h** |
+| Part 2 extra-hard (`params-confirm-part2-extra.json`) | S3 500, S4 1,500 | **about 13** | 4 | about 1 h |
+
+Each job also spends about 6 to 8 minutes building the library (about 5 job-hours in Part 1, 7 in Part 2), and every run adds the gate job (under 10 minutes). One attempt per job; one infrastructure rerun (`gh run rerun <run> --failed`, the same rows). A job that reaches its limit, a crash of a shipped arm, or a gate failure is reported, not relaunched with other settings. The carried-over limit of about 120 core-hours is lifted for this round (M38).
+
+Not built (M38 approved L1 and L2 only): L3 (Part 2 reusing Part 1's runs 1 to 50, about 5 %) and L4 (dropping S1 37 and 38 from Part 2 if Part 1 shows identity, about 5 core-hours).
+
+## 9. Decisions (M38) and what remains open
+
+Approved by M38: sections 2 to 8 as written, with L1 and L2; the rule of section 4; lipid/metab identity on `complete`; a typed k not simulated; the limit lifted. Open:
+
+1. **The binding commit** (section 1): the main session sends it. Until then nothing is launched.
+2. **DIA, supplied list with the separation rule:** at 2bbb1f6d the kernel used today's sweep k whatever the list (k differed from arm 22's in both lifecycle runs); the sixth pass makes it follow the rule on the list. On the bound commit the pair 41~22 is then expected identical in k (values still differ by the standard error, M29), and section 3's row reads "k yes, values no"; the binding lifecycle shows it.
+3. S3's extra-hard cell S3 has no gate reference (section 6).
+4. The cross-machine findings of section 7 (S2 bias and rmse at 1e-15; S4 legacy arm 3 at a rule-bearing value).
+
+## 10. Launch sequence (after the main session sends the binding commit)
+
+```
+cd /home/doktersmol/Projects/APAF/MultiScholaR-sim-k124-confirm
+git fetch origin kit-129-integration sim-k124-confirm && git status        # clean, on sim-k124-confirm
+H=<the binding commit, 40 hex digits>
+git merge -s ours --no-edit -m "KIT-124 confirmation round: kit-129-integration $H made reachable (ours; tree unchanged)" "$H"
+git diff HEAD^1 HEAD --stat                                                 # empty: the tree did not change
+sed -i "s/BINDING-COMMIT-SENT-BY-THE-MAIN-SESSION/$H/g" .github/k124-sim/params-confirm-*.json   # the launch files carry this placeholder, which the workflow refuses
+sed -i "s/package_commit = tools_ref = _\{40\}/package_commit = tools_ref = $H/" docs/qa/workflow-execution/kit/kit-124/scored/confirm-round-declaration.md
+# binding lifecycle: lc3's cells, runs, arms, savings and verification on the bound commit
+T=$(mktemp); jq --arg h "$H" '.label="confirm-lc4" | .package_commit=$h | .tools_ref=$h' .github/k124-sim/params.json > "$T" && cp "$T" .github/k124-sim/params.json
+git commit -am "KIT-124 confirmation round: bound to kit-129-integration $H; the binding lifecycle (confirm-lc4)" && git push origin sim-k124-confirm
+#   read: every job success; k124-confirm-lc4-compare (expected identities as section 3, DIA 41~22 equal in k); k124-confirm-lc4-gate status 0
+# Part 1
+cp .github/k124-sim/params-confirm-part1.json .github/k124-sim/params.json
+git commit -am "KIT-124 confirmation round: Part 1 (confirm-p1) on $H" && git push origin sim-k124-confirm
+#   read k124-confirm-p1-compare and k124-confirm-p1-gate; apply section 4's rule; record the outcome here; add any failing pair to
+#   params-confirm-part2-core.json (its arm to the simulator's arms) before Part 2
+# Part 2 (two pushes, one run each)
+cp .github/k124-sim/params-confirm-part2-core.json .github/k124-sim/params.json && git commit -am "KIT-124 confirmation round: Part 2 core (confirm-p2c) on $H" && git push origin sim-k124-confirm
+cp .github/k124-sim/params-confirm-part2-extra.json .github/k124-sim/params.json && git commit -am "KIT-124 confirmation round: Part 2 extra-hard (confirm-p2x) on $H" && git push origin sim-k124-confirm
+#   assemble.sh <run> <label> <out root>, then aggregate.R unchanged; the gate artifacts decide which cells are scored
+```
+
+`params.json` holds the last lifecycle's parameters (`confirm-lc3`); a push that leaves it alone starts nothing.
