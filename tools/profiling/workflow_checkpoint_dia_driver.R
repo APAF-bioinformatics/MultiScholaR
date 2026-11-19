@@ -3992,13 +3992,18 @@ prepareCheckpointReaderTable <- function(table, case, run_dir, api, adapter = FA
         digest::digest(file = parquet_path, algo = "sha256")
     })
     if (adapter) restoration$reference <- reference
+    # Protocol v1.11 item 6: the adapter's payload sits under the store folder the build wrote (`.we`, or
+    # `.workflow-entities` before).
+    adapter_name <- if (adapter) file.path(if (dir.exists(file.path(directory, ".workflow-entities"))) ".workflow-entities" else
+        ".we", "entities/adapter-table/payload.parquet") else NULL
+    if (adapter) parquet_path <- file.path(directory, adapter_name)
     saveRDS(restoration, metadata_path, compress = FALSE)
     files <- c(rds = rds_path, parquet = parquet_path, metadata = metadata_path)
     list(case = case, rows = nrow(table), columns = names(table),
         directory = normalizePath(directory), native_io_only = large && !adapter,
         store_adapter = adapter,
         files = Map(function(path, name) list(name = if (adapter && name == "parquet")
-            ".workflow-entities/entities/adapter-table/payload.parquet" else basename(path), bytes = file.size(path),
+            adapter_name else basename(path), bytes = file.size(path),
             sha256 = if (name == "metadata") digest::digest(file = path, algo = "sha256") else
                 events[[name]]$value), files, names(files)),
         producer = lapply(events, \(event) event[c("elapsed_seconds", "cpu_seconds")]))
@@ -4061,9 +4066,10 @@ checkpointReaderPaths <- function(spec, root, engine) {
     paths <- vapply(components, function(name) {
         file <- spec$files[[name]]
         expected <- c(rds = "table.rds", parquet = "table.parquet", metadata = "metadata.rds")[[name]]
-        if (isTRUE(spec$store_adapter) && name == "parquet") expected <-
-            ".workflow-entities/entities/adapter-table/payload.parquet"
-        if (!identical(file$name, expected)) stop("invalid reader payload name")
+        # Protocol v1.11 item 6: either store folder name.
+        if (isTRUE(spec$store_adapter) && name == "parquet") expected <- file$name[file$name %in%
+            c(".workflow-entities/entities/adapter-table/payload.parquet", ".we/entities/adapter-table/payload.parquet")]
+        if (!length(expected) || !identical(file$name, expected)) stop("invalid reader payload name")
         path <- file.path(directory, expected)
         if (nzchar(Sys.readlink(path)) || !file.exists(path) ||
             !identical(as.numeric(file.size(path)), as.numeric(file$bytes)) ||
