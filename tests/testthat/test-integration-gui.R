@@ -241,6 +241,12 @@ test_that("KIT-138: the Import tab refuses fewer than two omics and commits the 
         # The project searched again after the import: nothing changed.
         session$setInputs(rescan = 1)
         expect_identical(bus$integration_scan$omics$status, rep("ready", 4L))
+        # Importing again commits on a new store; the earlier one is closed.
+        first <- bus$state_manager
+        session$setInputs(import = 3)
+        expect_false(identical(bus$state_manager, first))
+        expect_identical(bus$state_manager$getHistory(), c("initial", "integration_inputs"))
+        expect_identical(bus$integration_import$views, summary$views)
     })
     # After an import the tab after it opens and every later one closes, whatever the tabs (KIT-140 adds one).
     expect_identical(integrationImportStatus(list(integration_import = "complete", second = "complete", third = "pending")),

@@ -111,25 +111,28 @@ mod_integration_import_server <- function(id, workflow_data, paths, texts = inte
         })
 
         shiny::observeEvent(input$import, {
+            # Each import is committed on a new integration store: an import is a new integration, and a failed one
+            # leaves the previous import and its store as they were.
+            manager <- NULL
             result <- tryCatch({
                 request <- integrationImportRequest(scan(), input$views %||% character(), texts)
-                manager <- shiny::isolate(workflow_data$state_manager)
-                if (is.null(manager)) {
-                    manager <- tryCatch(newOwner(paths), error = function(error) {
-                        integrationRefuse(sprintf(texts[["store_unavailable"]], conditionMessage(error)),
-                            c("integration_store_unavailable", "integration_gui_refusal"))
-                    })
-                    workflow_data$state_manager <- manager
-                }
+                manager <- tryCatch(newOwner(paths), error = function(error) {
+                    integrationRefuse(sprintf(texts[["store_unavailable"]], conditionMessage(error)),
+                        c("integration_store_unavailable", "integration_gui_refusal"))
+                })
                 integrationCommitImport(manager, request)
-            }, integration_refused = function(error) error, integration_input_invalid = function(error) error)
+            }, error = function(error) error)
             if (inherits(result, "error")) {
+                if (!is.null(manager)) closeWorkflowStateOwner(manager)
                 # The tab's own refusals are sentences already; the import's are prefixed.
                 text <- if (inherits(result, "integration_gui_refusal")) conditionMessage(result) else
                     sprintf(texts[["import_refused"]], conditionMessage(result))
                 status(list(type = "error", text = text))
                 return()
             }
+            previous <- shiny::isolate(workflow_data$state_manager)
+            workflow_data$state_manager <- manager
+            if (!is.null(previous)) closeWorkflowStateOwner(previous)
             workflow_data$integration_import <- result
             workflow_data$tab_status <- integrationImportStatus(shiny::isolate(workflow_data$tab_status))
             status(list(type = "ok", text = sprintf(texts[["import_done"]], length(result$omics), length(result$views),
