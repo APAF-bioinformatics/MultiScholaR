@@ -1,0 +1,7 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S1/C0/arm31/k	integer	1			0	agree	
+S1/C0/arm32/k	integer	1			0	agree	
+S1/C6/arm31/k	integer	1			0	agree	
+S1/C6/arm32/k	integer	1			0	agree	
+S2/C0/arm31/k	integer	1			0	agree	
+S2/C6/arm32/k	integer	1			0	agree	

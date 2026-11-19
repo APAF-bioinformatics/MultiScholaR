@@ -1,0 +1,7 @@
+stage: count
+tree: fae560f17ec51a8de34b2a853acec63a1c606de5
+uncommitted changes under R/: TRUE
+R version 4.6.1 (2026-06-24)
+BLAS: /usr/lib/libblas.so.3.12.0
+versions: limma 3.68.4; sva 3.60.0; limpa 1.4.2; fastlimpadpc 0.1.0; ruv 0.9.7.1; qvalue 2.44.0
+finished: 2026-11-19 00:24:38 AEDT

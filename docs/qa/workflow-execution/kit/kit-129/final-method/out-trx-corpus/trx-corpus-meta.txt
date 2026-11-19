@@ -1,0 +1,6 @@
+R version 4.6.1 (2026-06-24)
+jsonlite 2.0.0
+digest 0.6.39
+zlib 1.2.11; bzlib 1.0.8, 13-Jul-2019; xz 5.2.5; libdeflate 1.10; zstd ; PCRE 10.39 2021-10-29; ICU 70.1; TRE TRE 0.8.0 R_fixes (BSD); iconv glibc 2.35; readline 8.1; BLAS /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+BLAS /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+La /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0

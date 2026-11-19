@@ -339,7 +339,11 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
         figures("post_norm", "Post-normalization QC plots generated")))
     if (ruv) {
         actions <- c(actions, list(omicsManagedCommit(omicsRuvStep(binding, settings$ruv_parameters), config, function(result) {
-            normData$ruv_optimization_results <- hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value
+            # KIT-129 fourth pass item 3: what a new design's run did, for the RUV design section (nothing with the gate off).
+            omicNormSetRuvDesignResult(normData, omicsRuvDesignResult(result$value))
+            # A new design's product has no sweep (KIT-129 integration item 1).
+            if (!is.null(result$value$optimisation))
+                normData$ruv_optimization_results <- hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value
             addLog(paste("RUV optimization complete. Best k per assay:",
                 paste(names(result$value$best_k), "=", unlist(result$value$best_k), collapse = ", ")))
             normData$ruv_corrected_obj <- result$stateReference
@@ -445,6 +449,7 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
         if (!identical(settings$ruv_mode, "skip")) {
             addLog(paste("Running RUV-III (mode:", settings$ruv_mode, ")"))
             ruv <- runWorkflowOmicsReferenceRuv(binding, manager, settings$ruv_parameters, config)
+            omicNormSetRuvDesignResult(normData, omicsRuvDesignResult(ruv$value))
             normData$ruv_optimization_results <- ruv$optimisation
             addLog(paste("RUV optimization complete. Best k per assay:",
                 paste(names(ruv$value$best_k), "=", unlist(ruv$value$best_k), collapse = ", ")))

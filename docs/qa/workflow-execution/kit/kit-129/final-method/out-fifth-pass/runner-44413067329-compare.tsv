@@ -1,0 +1,85 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-gui-entry-proteomics.R	187	6	0	0	failed	187	6	0	0	failed	same		
+test-gui-entry-transcriptomics.R	16	13	0	0	failed	16	13	0	0	failed	same		
+test-gui-entry-lipidomics.R	35	0	0	0	ok	35	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	75	30	0	0	failed	75	30	0	0	failed	same		
+test-prot-norm-core.R	1582	272	0	0	failed	1582	272	0	0	failed	same		
+test-omic-da-module.R	1347	22	0	0	failed	1347	22	0	0	failed	same		
+test-omic-summary-module.R	1687	16	0	0	failed	1687	16	0	0	failed	same		
+test-omic-norm-module.R	639	0	0	0	ok	639	0	0	0	ok	same		
+test-omic-enrich-module.R	1069	1	0	0	failed	1069	1	0	0	failed	same		
+test-omic-norm-ruv-design.R	1053	4	0	0	failed	1094	4	0	0	failed	new-failure	new-failure: with the gate on each omic's tab shows every design with its figure and note, today's controls under today's design; fixed: (fourth pass item 2) only the options a route's run path takes can be chosen; the others say why; the defaults are M2 and M6; counts: (fifth pass item 5) the DA tab shows the warning above the run button when the run that feeds it was flagged (passed NA -> 14, skipped NA -> 0); counts: (fifth pass item 5) the RUV QC tab's column holds the panel's words for the recorded check (passed NA -> 10, skipped NA -> 0); counts: (fourth pass item 2) each omic's tab builds the run path's request from the choice; legacy builds today's; the gate off changes nothing (passed 32 -> 44, skipped 0 -> 0); counts: (fourth pass item 2) only the options a route's run path takes can be chosen; the others say why; the defaults are M2 and M6 (passed 40 -> 44, skipped 0 -> 0); counts: (fourth pass item 2) the panel's choice reads the design, the k rule, the typed k, the seed and the list, and refuses in words (passed 15 -> 17, skipped 0 -> 0); counts: (fourth pass item 3) the summary says what was done in the table's words (passed 12 -> 15, skipped 0 -> 0); counts: with the gate on each omic's tab shows every design with its figure and note, today's controls under today's design (passed 284 -> 280, skipped 0 -> 0)	
+test-kit129-run-path.R	267	4	0	1	failed	361	0	0	1	ok	fixed	fixed: (item 3) transcriptomics: a k given under the estimated count is refused on the run path; the user's k records the count beside it; fixed: (item 5) transcriptomics: the declared design in process, on the worker and by the kernel, one result; fixed: (fourth pass item 4) transcriptomics: the RUVs step's outcomes carry the check of its W; fixed: (fourth pass item 5) transcriptomics: a declared design's run publishes what exists for it and shows no grid; counts: (fifth pass item 3) classic proteomics: a supplied list on the run path equals the kernel, named by its hash and count (passed NA -> 17, skipped NA -> 0); counts: (fifth pass item 3) lipidomics and metabolomics: one supplied list on the run path, per assay, equals the kernel (passed NA -> 19, skipped NA -> 0); counts: (fifth pass item 4) classic proteomics: with a supplied list the separation rule reads the list (arm 22) (passed NA -> 6, skipped NA -> 0); counts: (fifth pass item 4) lipidomics and metabolomics: the separation rule on the run path, per assay, with its plots (passed NA -> 20, skipped NA -> 0); counts: (fifth pass item 4) transcriptomics: the separation rule on the declared run path reads the design's own controls (passed NA -> 16, skipped NA -> 0); counts: (fourth pass item 4) transcriptomics: the RUVs step's outcomes carry the check of its W (passed 4 -> 8, skipped 0 -> 0); counts: (fourth pass item 5) transcriptomics: a declared design's run publishes what exists for it and shows no grid (passed 10 -> 14, skipped 0 -> 0); counts: (item 3) transcriptomics: a k given under the estimated count is refused on the run path; the user's k records the count beside it (passed 5 -> 9, skipped 0 -> 0); counts: (item 5) transcriptomics: the declared design in process, on the worker and by the kernel, one result (passed 6 -> 10, skipped 0 -> 0)	
+test-omic-gui-config.R	1906	0	0	0	ok	1906	0	0	0	ok	same		
+test-workflow-operations.R	75	0	0	0	ok	75	0	0	0	ok	same		
+test-workflow-class-declarations.R	188	0	0	0	ok	188	0	0	0	ok	same		
+test-workflow-lipid-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-metab-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-omics-declarations.R	46	22	0	0	failed	46	22	0	0	failed	same		
+test-workflow-prot-declarations.R	303	0	0	2	ok	303	0	0	2	ok	same		
+test-workflow-trx-declarations.R	285	39	0	0	failed	309	33	0	0	failed	message-changed	message-changed: KIT-095: the journey's states and products are the KIT-040 reference's; the record is valid and replays exactly; fixed: KIT-095: the manual mode records its mode and outcomes; skip and a manual k above the cap are refused; fixed: KIT-095: RUVIII with technical replicates is a distinct product with its M, recorded as such; fixed: KIT-095: the partitioned filter and logCPM equal whole on a corpus whose TMM factors are not 1; the template never calls edgeR; fixed: KIT-100: the expression filter and TMM/logCPM run partitioned by default, in the worker and in process, as whole does; message-changed: KIT-095: every trx worker step and publication operation completes through the worker harness, as in process; counts: KIT-095: every trx worker step and publication operation completes through the worker harness, as in process (passed 66 -> 70, skipped 0 -> 0); counts: KIT-095: RUVIII with technical replicates is a distinct product with its M, recorded as such (passed 10 -> 14, skipped 0 -> 0); counts: KIT-095: the journey's states and products are the KIT-040 reference's; the record is valid and replays exactly (passed 48 -> 52, skipped 0 -> 0); counts: KIT-095: the manual mode records its mode and outcomes; skip and a manual k above the cap are refused (passed 9 -> 13, skipped 0 -> 0); counts: KIT-095: the partitioned filter and logCPM equal whole on a corpus whose TMM factors are not 1; the template never calls edgeR (passed 11 -> 15, skipped 0 -> 0); counts: KIT-100: the expression filter and TMM/logCPM run partitioned by default, in the worker and in process, as whole does (passed 15 -> 19, skipped 0 -> 0)	
+test-module-ci-prot-norm.R	60	0	0	4	ok	60	0	0	4	ok	same		
+test-module-ci-prot-dia-limpa.R	38	0	0	2	ok	38	0	0	2	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-module-ci-lipid-norm.R	156	0	0	0	ok	156	0	0	0	ok	same		
+test-module-ci-lipid-da.R	140	0	0	0	ok	140	0	0	0	ok	same		
+test-module-ci-metab-norm.R	156	0	0	0	ok	156	0	0	0	ok	same		
+test-module-ci-metab-da.R	138	0	0	0	ok	138	0	0	0	ok	same		
+test-module-ci-trx-norm.R	59	2	0	0	failed	63	1	0	0	failed	message-changed	message-changed: MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's; counts: MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's (passed 30 -> 34, skipped 0 -> 0)	
+test-module-ci-trx-da.R	48	2	0	0	failed	52	1	0	0	failed	message-changed	message-changed: MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's; counts: MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's (passed 21 -> 25, skipped 0 -> 0)	
+test-module-ci-trx-qc.R	34	1	1	0	failed	38	0	1	0	failed	message-changed	message-changed: MCI-028.2 the QC tab's filter mask on a GUI-built design is identical to the KIT-040 reference mask; counts: MCI-028.2 the QC tab's filter mask on a GUI-built design is identical to the KIT-040 reference mask (passed 2 -> 6, skipped 0 -> 0)	
+test-module-ci-trx-summary.R	67	3	0	0	failed	71	2	0	0	failed	message-changed	message-changed: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report; counts: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report (passed 42 -> 46, skipped 0 -> 0)	
+test-module-ci-trx-app.R	50	0	0	0	ok	50	0	0	0	ok	same		
+test-module-ci-trx-design.R	66	0	1	0	failed	66	0	1	0	failed	same		
+test-module-ci-trx-import.R	96	0	0	0	ok	96	0	0	0	ok	same		
+test-module-ci-lipid-design.R	109	0	0	0	ok	109	0	0	0	ok	same		
+test-module-ci-lipid-import.R	175	0	0	0	ok	175	0	0	0	ok	same		
+test-module-ci-lipid-qc.R	68	0	0	0	ok	68	0	0	0	ok	same		
+test-module-ci-metab-design.R	96	0	0	0	ok	96	0	0	0	ok	same		
+test-module-ci-metab-import.R	94	0	0	0	ok	94	0	0	0	ok	same		
+test-module-ci-metab-qc.R	63	0	0	1	ok	63	0	0	1	ok	same		
+test-module-ci-prot-import.R	107	0	0	0	ok	107	0	0	0	ok	same		
+test-prot-ruv-factors-in-model.R	306	1	0	0	failed	306	1	0	0	failed	same		
+test-kit127-omics-ruv-factors.R	421	1	0	0	failed	421	1	0	0	failed	same		
+test-ruv-factor-count.R	236	0	0	0	ok	236	0	0	0	ok	same		
+test-trx-ruv-designs.R	344	6	0	0	failed	368	0	0	0	ok	fixed	fixed: (KIT-129 W4) through the declarations: the recommended design commits W to the RUVs state and the DA tests the counts with W in the model; fixed: (KIT-129 W4) through the declarations: the none design commits a RUVs state without factors and the DA fits ~ 0 + group; fixed: (KIT-129 audit F-01) a second declared design on a RUVs head leaves the first one's factors out of the state and the test; fixed: (KIT-129 audit F-07) on a session owner, one declared design is one product however its parameters were passed; fixed: (KIT-129 audit F-02) today's grid refuses a request that carries a declared design's parameter, in process and on the worker; fixed: (KIT-129 B1) the shared runner refuses today's grid a declared design's parameter when today's grid is already saved; counts: (KIT-129 audit F-01) a second declared design on a RUVs head leaves the first one's factors out of the state and the test (passed 14 -> 18, skipped 0 -> 0); counts: (KIT-129 audit F-02) today's grid refuses a request that carries a declared design's parameter, in process and on the worker (passed 19 -> 23, skipped 0 -> 0); counts: (KIT-129 audit F-07) on a session owner, one declared design is one product however its parameters were passed (passed 9 -> 13, skipped 0 -> 0); counts: (KIT-129 B1) the shared runner refuses today's grid a declared design's parameter when today's grid is already saved (passed 16 -> 20, skipped 0 -> 0); counts: (KIT-129 W4) through the declarations: the none design commits a RUVs state without factors and the DA fits ~ 0 + group (passed 12 -> 16, skipped 0 -> 0); counts: (KIT-129 W4) through the declarations: the recommended design commits W to the RUVs state and the DA tests the counts with W in the model (passed 16 -> 20, skipped 0 -> 0)	
+test-dia-limpa-ruv-rules.R	329	1	0	0	failed	329	1	0	0	failed	same		
+test-kit128-da-assay-failure.R	38	0	0	0	ok	38	0	0	0	ok	same		
+test-kit128-tech-reps-lipid-metab.R	60	0	0	0	ok	60	0	0	0	ok	same		
+test-kit128-tech-reps-trx.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-metab-da-heatmap-shared.R	18	0	0	0	ok	18	0	0	0	ok	same		
+test-omic-design-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-omic-qc-module.R	157	0	0	0	ok	157	0	0	0	ok	same		
+test-omics-audit-carry-overs.R	20	0	0	0	ok	20	0	0	0	ok	same		
+test-omics-da-core.R	129	0	0	2	ok	129	0	0	2	ok	same		
+test-omics-design-core.R	64	0	0	10	ok	64	0	0	10	ok	same		
+test-omics-design-import-refusal.R	39	0	0	0	ok	39	0	0	0	ok	same		
+test-omics-enrich-core.R	241	0	0	1	ok	241	0	0	1	ok	same		
+test-omics-norm-core.R	62	0	0	14	ok	62	0	0	14	ok	same		
+test-omics-norm-itsd-selection.R	22	0	0	0	ok	22	0	0	0	ok	same		
+test-omics-qc-core.R	115	0	0	0	ok	115	0	0	0	ok	same		
+test-omics-summary-core.R	688	13	0	2	failed	688	13	0	2	failed	same		
+test-prot-01c-import-module-contracts.R	437	0	0	0	ok	437	0	0	0	ok	same		
+test-prot-05b-norm-module-contracts.R	439	0	0	22	ok	439	0	0	22	ok	same		
+test-prot-05c-norm-module-seams.R	0	0	0	4	ok	0	0	0	4	ok	same		
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-trx-norm-core.R	58	0	0	0	ok	58	0	0	0	ok	same		
+test-trx-norm-module.R	109	0	0	0	ok	109	0	0	0	ok	same		
+test-workflow-analysis-record.R	299	0	0	0	ok	299	0	0	0	ok	same		
+test-workflow-dia-products.R	189	0	0	0	ok	189	0	0	0	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-workflow-integration-input.R	130	0	0	0	ok	130	0	0	0	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-workflow-omics-binding-steps.R	56	1	0	0	failed	56	1	0	0	failed	same		
+test-workflow-omics-da-contrasts.R	138	0	0	0	ok	138	0	0	0	ok	same		
+test-workflow-omics-import.R	308	0	0	0	ok	308	0	0	0	ok	same		
+test-workflow-omics-owner.R	79	0	0	0	ok	79	0	0	0	ok	same		
+test-workflow-omics-sessions.R	150	0	0	0	ok	150	0	0	0	ok	same		
+test-workflow-omics-worker.R	289	0	0	0	ok	289	0	0	0	ok	same		
+test-workflow-operation-registry.R	1050	0	0	0	ok	1050	0	0	0	ok	same		
+test-workflow-saved-da.R	780	171	0	0	failed	780	171	0	0	failed	same		
+test-workflow-saved-qc.R	120	0	0	0	ok	120	0	0	0	ok	same		
+test-workflow-server-shared.R	204	0	0	0	ok	204	0	0	0	ok	same		
+test-workflow-ui-shared.R	178	0	0	0	ok	178	0	0	0	ok	same		

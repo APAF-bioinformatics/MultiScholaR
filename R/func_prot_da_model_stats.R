@@ -233,6 +233,7 @@ fitProtDaBaseModel <- function(data_subset, design_m, design_matrix,
   # design is standard lmFit with the reason recorded, never duplicateCorrelation with a zeroed correlation.
   design_subset <- design_matrix[samples_in_model, , drop = FALSE]
   replicate <- resolveProtTechnicalReplicateBlock(design_subset, group_id, technical_replicate_id)
+  refuseNoBiologicalReplication(replicate, design_subset[[group_id]]) # KIT-128 K128-1
   block <- replicate$block
   duplicate_correlation <- NULL
   uses_duplicate_correlation <- isTRUE(replicate$technical)
@@ -245,6 +246,14 @@ fitProtDaBaseModel <- function(data_subset, design_m, design_matrix,
     counterFn("duplicateCorrelation")
     duplicate_correlation <- duplicateCorrelationFn(data_subset,
       design = design_m, block = block)
+    # KIT-129 B1: lipidomics' and metabolomics' guard (KIT-128 K128-3); without it lmFit stops on a non-finite
+    # correlation with an unclassed error.
+    correlation <- duplicate_correlation$consensus.correlation
+    if (length(correlation) != 1L || !is.finite(correlation)) {
+      rlang::abort(sprintf(paste("the correlation between technical replicates of one biological unit could not be",
+        "estimated (limma's duplicateCorrelation gave %s), so the model with technical replicates cannot be fitted"),
+        paste(format(correlation), collapse = ", ")), class = "omics_da_block_correlation_failed")
+    }
     messageFn(sprintf("   runTestsContrasts: Consensus correlation = %.4f",
       duplicate_correlation$consensus.correlation))
     messageFn("   runTestsContrasts: Running lmFit with duplicateCorrelation...")
@@ -407,6 +416,72 @@ buildProtDaResultTables <- function(contrast_artifact, contrast_strings,
   list(schema = "prot_da_result_tables_v1", results = results,
     qvalue_warnings = warnings, valid_p_value_masks = masks,
     fit.eb = contrast_artifact$public_fit)
+}
+
+#' The limma test of the factors-in-the-model design (KIT-126; decisions M29, M30)
+#'
+#' `runTestsContrasts`'s steps from its own halves (`fitProtDaBaseModel`, `applyProtDaContrastModel`,
+#' `buildProtDaResultTables`), with each comparison's standard error exact per protein (`ruvExactContrastsFit`, the
+#' exactness round's arm 25): with RUV factors in the model, `limma::contrasts.fit` only approximates it for a protein
+#' with missing values. The TREAT step applies the moderation settings the kernel sets (`limma::treat(fit, lfc,
+#' trend = eBayes_trend, robust = eBayes_robust)`, the exactness round's arm 26, decision M30); `runTestsContrasts`
+#' calls treat() without them. The technical-replicate block and its consensus correlation are the base fit's. The
+#' legacy design keeps `runTestsContrasts`.
+#' @param data,contrast_strings,design_matrix,formula_string,treat_lfc_cutoff,eBayes_trend,eBayes_robust,group_id,technical_replicate_id
+#'   As `runTestsContrasts`.
+#' @param exact FALSE forms the comparisons with `limma::contrasts.fit`, as `runTestsContrasts` does (kept so that the
+#'   exactness round's arms can be reproduced one change at a time; the test of the new option set's "No RUV", which
+#'   has no W in its model, M29).
+#' @return `list(results, fit.eb, qvalue_warnings)` as `runTestsContrasts`, with the result tables' extra fields.
+#' @noRd
+runProtRuvModelContrasts <- function(data, contrast_strings, design_matrix, formula_string, treat_lfc_cutoff = NA,
+    eBayes_trend = FALSE, eBayes_robust = FALSE, group_id = "group", technical_replicate_id = "replicates",
+    exact = TRUE) {
+  formula <- stats::as.formula(formula_string)
+  design_m <- stats::model.matrix(formula, stats::model.frame(formula, design_matrix))
+  data_subset <- data[, rownames(design_m), drop = FALSE]
+  contrast_matrix <- limma::makeContrasts(contrasts = contrast_strings, levels = colnames(design_m))
+  silent <- \(...) invisible(NULL)
+  # KIT-129 integration item 2: inside the DA declaration the base fit and the result are saved in the reference store
+  # under identities that name this test (the RUV design of the fitted data, the exact or approximate contrast step and
+  # the TREAT step's settings), so neither is ever served for today's `runTestsContrasts` or the other way round.
+  manager <- getDIAActiveManager()
+  stored <- usesDIAReferenceStates(manager) && isTRUE(manager$.context$da_reference_execution)
+  method <- paste("ruv-model-test-v1", if (exact) "contrastAsCoef-exact-se" else "contrasts-fit",
+    sprintf("treat-trend-%s-robust-%s", eBayes_trend, eBayes_robust), sep = ":")
+  base <- if (stored) {
+    fitDIAExecutionBaseModel(data_subset, design_m, design_matrix, rownames(design_m), formula_string, NA,
+      group_id = group_id, technical_replicate_id = technical_replicate_id, ruv = method)
+  } else {
+    fitProtDaBaseModel(data_subset, design_m, design_matrix, rownames(design_m), messageFn = silent,
+      group_id = group_id, technical_replicate_id = technical_replicate_id)
+  }
+  identity <- if (stored) newWorkflowDiaResultIdentity(manager$.context$da_base_fit_reference, contrast_strings,
+    treat_lfc_cutoff, eBayes_trend, eBayes_robust, paste("full-population-qvalue-BH-v1", method, sep = ":"),
+    manager$.context$software)
+  if (!is.null(identity)) {
+    saved <- resolveWorkflowDiaResult(manager$.context$store, identity)
+    if (identical(saved$status, "hit")) return(saved$value$value$public_result)
+  }
+  refit <- function(design) {
+    if (!isTRUE(base$uses_duplicate_correlation)) return(limma::lmFit(data_subset, design = design))
+    limma::lmFit(data_subset, design = design, block = base$block, correlation = base$consensus_correlation)
+  }
+  contrastsFitFn <- if (exact) {
+    \(fit, contrasts) ruvExactContrastsFit(fit, contrasts, design_m, refit)
+  } else {
+    limma::contrasts.fit
+  }
+  model <- applyProtDaContrastModel(base, contrast_matrix, treat_lfc_cutoff = treat_lfc_cutoff,
+    eBayes_trend = eBayes_trend, eBayes_robust = eBayes_robust, contrastsFitFn = contrastsFitFn,
+    treatFn = \(fit, lfc) limma::treat(fit, lfc = lfc, trend = eBayes_trend, robust = eBayes_robust), messageFn = silent)
+  result <- buildProtDaResultTables(model, contrast_strings, messageFn = silent)
+  if (!is.null(identity)) {
+    reference <- saveWorkflowDiaResult(manager$.context$store, list(schema = "prot_da_result_tables_v1",
+      results = result$results, public_result = result), basename(tempfile("dia-ruv-model-result-")), identity)
+    rootDIAProduct(manager, reference, list(manager$.context$da_base_fit_reference))
+  }
+  result
 }
 
 #' @param p_value_column The name of the raw p-value column (tidyverse style).

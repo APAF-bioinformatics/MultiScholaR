@@ -140,8 +140,17 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
         cli::cli_abort("operation {.val {declaration$name}} is missing parameter{?s} {.val {missing}}",
             class = "workflow_operation_parameters")
     }
+    # KIT-129 B1: today's declaration of a step that also has a new-design declaration refuses the new design's
+    # parameters here, before the identity (which reads the declared names only) can return today's saved product.
+    refuse <- workflowLegacyDesignRefusal(declaration)
+    if (!is.null(refuse)) refuse(parameters)
     # KIT-025: the state the wrapper commits after this operation carries the declaration's provenance.
-    setWorkflowStepProvenance(manager, declaration$name, parameters$variant %||% "whole", declaration$parameters, declaration$fixed,
+    # KIT-129 sixth pass item 5: a supplied list whose identity is its digest is kept beside the declared names.
+    recorded <- declaration$parameters
+    if (all(RUV_SUPPLIED_LIST_PARAMETERS %in% recorded) && !is.null(parameters[["ruv_control_ids", exact = TRUE]])) {
+        recorded <- c(recorded, "ruv_control_ids")
+    }
+    setWorkflowStepProvenance(manager, declaration$name, parameters$variant %||% "whole", recorded, declaration$fixed,
         values = parameters)
     spec <- readComponentMetadata(manager, source)$data
     if (!identical(spec$class, declaration$input_class)) {
@@ -160,6 +169,121 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
         basename(tempfile(paste0(declaration$name, "-"))), identity, "scientific_product", factors = declaration$factors)
     rootWorkflowProduct(manager, reference, c(list(source), dependencies, store$created()))
     list(status = "computed", value = value, reference = reference)
+}
+
+#' The refusal today's declaration applies to a new design's parameters (KIT-129 B1). Today's declaration and the
+#' new design's declaration of one step share the operation name, and the identity reads the declared parameter names
+#' only, so a request that mixes the two would otherwise be a hit on today's saved product. Keyed by operation name and
+#' looked up here rather than held on the declaration, so that every declaration's fields stay as they are. A
+#' declaration that declares the new design's parameters is the new design's and gets no refusal.
+#' @param declaration A declaration from `newWorkflowOperation`.
+#' @return The kernel's own refusal, `function(parameters)`, or NULL.
+#' @noRd
+workflowLegacyDesignRefusal <- function(declaration) {
+    guard <- switch(declaration$name,
+        # Classic proteomics normalisation (KIT-126): the new design's parameter is `ruv_design`.
+        "normalization-ruv" = list(names = c("ruv_design", PROT_NORM_RUV_K_PARAMETERS), refuse = assertProtNormLegacyRuvParameters),
+        # DIA with limpa, the RUV covariates (KIT-129 W3): the control rule and the k rule.
+        protein_ruv_covariates = list(names = diaRuvCovariatesRuleParameters, refuse = assertDiaRuvSweepParameters),
+        # Transcriptomics, the RUV grid (KIT-129 W4): the declared design.
+        trx_ruv_grid = list(names = trxRuvDesignParameterNames, refuse = trxRefuseDeclaredRuvParameters),
+        # KIT-129 integration item 1: lipidomics and metabolomics RUV, the new design's parameters.
+        lipid_ruv = , metab_ruv = list(names = omicsRuvDesignOnlyParameterNames, refuse = assertOmicsLegacyRuvParameters),
+        # The DA steps: the method a new-design source is tested by.
+        `DA-contrast-output` = , lipid_da_contrast = , metab_da_contrast = list(names = "ruv_da_method", refuse = assertLegacyDaParameters),
+        NULL)
+    if (is.null(guard) || any(guard$names %in% declaration$parameters)) return(NULL)
+    guard$refuse
+}
+
+#' The declaration a request runs, and its parameters (KIT-129 integration item 1). Every compute half, in process and on
+#' the managed worker, takes its declaration here, so the two paths run the same one. A RUV step's request that names the
+#' new design (its selector: `ruv_design`, or `ruv_control_rule` on DIA with limpa) and carries no parameter of today's
+#' design that the new design does not declare runs the new design's declaration; every other request runs the
+#' registry's (today's) declaration, which refuses the new design's parameters (`workflowLegacyDesignRefusal`). A DA step
+#' on a source that declares a new design (`workflowSourceRuvDaMethod`) runs the DA declaration that names the method,
+#' with `ruv_da_method` added to its parameters (and so to its identity). With neither, the entry's declaration and the
+#' parameters are returned as they came. A classic proteomics or lipid/metab request of the design `supplied_controls`
+#' runs that design's declaration, and its parameters gain the list's identity (`ruvSuppliedListIdentity`; KIT-129
+#' fifth pass item 3).
+#' @param manager The state owner (the session's, or the worker's reopened owner).
+#' @param entry The registry entry (`workflowOperationEntry`).
+#' @param source Saved reference of the step's source state.
+#' @param parameters The request's parameters.
+#' @return `list(declaration, parameters)`.
+#' @noRd
+workflowRequestOperation <- function(manager, entry, source, parameters) {
+    given <- function(name) !is.null(parameters[[name, exact = TRUE]])
+    selected <- function(selector, declared) {
+        if (!given(selector)) return(NULL)
+        legacy_only <- setdiff(entry$declaration$parameters, declared$parameters)
+        if (any(vapply(legacy_only, given, logical(1)))) return(NULL)
+        declared
+    }
+    binding <- if (entry$omic_type %in% names(omicsDeclarationBindings())) omicsDeclarationBindings()[[entry$omic_type]]
+    supplied <- identical(parameters[["ruv_design", exact = TRUE]], "supplied_controls")
+    declared <- switch(entry$name,
+        # KIT-129 fifth pass item 3: the design supplied_controls has its own declaration (the list's identity).
+        `normalization-ruv` = selected("ruv_design", diaNormalizationOperation("declared", supplied = supplied)),
+        protein_ruv_covariates = selected("ruv_control_rule", diaRuvCovariatesOperation("declared")),
+        trx_ruv_grid = selected("ruv_design", trxRuvGridOperation(binding, "declared")),
+        lipid_ruv = , metab_ruv = selected("ruv_design", omicsRuvOperation(binding, "declared", supplied = supplied)),
+        NULL)
+    if (!is.null(declared)) {
+        # the identity of a supplied list (its hash and count), from the list the request carries
+        if (all(RUV_SUPPLIED_LIST_PARAMETERS %in% declared$parameters)) parameters <- ruvSuppliedListIdentity(parameters)
+        return(list(declaration = declared, parameters = parameters))
+    }
+    if (entry$name %in% c("lipid_da_contrast", "metab_da_contrast")) {
+        method <- workflowSourceRuvDaMethod(manager, source)
+        if (!is.null(method)) return(list(declaration = omicsDaContrastOperation(binding, "declared"),
+            parameters = c(parameters, list(ruv_da_method = method))))
+    }
+    list(declaration = entry$declaration, parameters = parameters)
+}
+
+#' The DA method a source's RUV declaration names (KIT-129 integration items 1 and 2), read from its record without
+#' hydrating it: classic proteomics `args$ruvCovariates$ruv_design` (`ruv_factors_exact_se_trend_robust`, or
+#' `ruv_none_trend_robust` for a new-design state without factors, M29, M30), DIA with limpa a declared-rules state
+#' (`args$ruvCovariates$ruv_k_rule`: `dpcde_ruv_factors_exact_se`, or `dpcde_ruv_none` without factors), lipidomics and
+#' metabolomics `args$ruvFactorsDeclaration` (`limma_ruv_factors_exact_se`). NULL for every other state (today's design,
+#' or no RUV step).
+#' @param manager,source The owner and the source's saved reference.
+#' @return One string, or NULL.
+#' @noRd
+workflowSourceRuvDaMethod <- function(manager, source) {
+    workflowRuvDaMethodOfArgs(readWorkflowStateMetadata(manager, source)$data$slots$args)
+}
+
+#' `workflowSourceRuvDaMethod`'s rule on an `args` slot (a state record's or a hydrated object's).
+#' @param args The `args` slot.
+#' @return One string, or NULL.
+#' @noRd
+workflowRuvDaMethodOfArgs <- function(args) {
+    omics <- args[["ruvFactorsDeclaration", exact = TRUE]]
+    if (is.list(omics)) return("limma_ruv_factors_exact_se")
+    declaration <- args[["ruvCovariates", exact = TRUE]]
+    if (!is.list(declaration)) return(NULL)
+    factors <- isTRUE(declaration$k > 0) && identical(declaration$ruv_mode, "covariates")
+    if (!is.null(declaration[["ruv_design", exact = TRUE]])) {
+        return(if (factors) "ruv_factors_exact_se_trend_robust" else "ruv_none_trend_robust")
+    }
+    if (!is.null(declaration[["ruv_k_rule", exact = TRUE]])) return(if (factors) "dpcde_ruv_factors_exact_se" else "dpcde_ruv_none")
+    NULL
+}
+
+#' Today's DA declarations take no method parameter (KIT-129 integration item 1): `ruv_da_method` is the new design's,
+#' added by `workflowRequestOperation` from the source.
+#' @param parameters A request's parameters.
+#' @return `parameters`, invisibly; an error of class `workflow_execution_invalid` otherwise.
+#' @noRd
+assertLegacyDaParameters <- function(parameters) {
+    if (!is.null(parameters[["ruv_da_method", exact = TRUE]])) {
+        cli::cli_abort(c("today's DA declaration was handed ruv_da_method = {.val {parameters$ruv_da_method}}",
+            i = "a source of a new RUV design is tested by the DA declaration that names the method"),
+            class = "workflow_execution_invalid", call = NULL)
+    }
+    invisible(parameters)
 }
 
 #' Whole-matrix placement: one projected object, the kernel, nothing else resident.

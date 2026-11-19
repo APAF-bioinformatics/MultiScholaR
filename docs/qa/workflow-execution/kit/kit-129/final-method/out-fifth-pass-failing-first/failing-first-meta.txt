@@ -1,0 +1,4 @@
+base: 18ea2a301e87dd3711d768a9fdc03083dc8c53b4
+head: 2bbb1f6d29e4f4a1767ebb461c08858883370680
+files: test-kit129-run-path.R, test-omic-norm-ruv-design.R
+R version 4.6.1 (2026-06-24)

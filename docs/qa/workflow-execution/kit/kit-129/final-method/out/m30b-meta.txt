@@ -1,0 +1,7 @@
+stage: m30b
+tree: 021693a7a05d69417037ad54418f083c58dc2953
+uncommitted changes under R/: FALSE
+R version 4.6.1 (2026-06-24)
+BLAS: /usr/lib/libblas.so.3.12.0
+versions: limma 3.68.4; sva 3.60.0; limpa 1.4.2; fastlimpadpc 0.1.0; ruv 0.9.7.1; qvalue 2.44.0
+finished: 2026-11-18 22:30:26 AEDT

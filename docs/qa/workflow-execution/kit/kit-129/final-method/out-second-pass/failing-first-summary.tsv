@@ -1,0 +1,51 @@
+file	test	base_passed	base_failed	head_passed	head_failed	head_skipped	verdict	base_first_message
+test-prot-ruv-factors-in-model.R	the factors-in-the-model path reproduces the simulator's arm 7 on a fixture with missing values	39	0	39	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	the corrected state carries the corrected table, the factors and the normalised matrix	8	0	8	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	W comes from the proteins observed in every sample, with the groups as replicate sets	7	0	7	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	k by the shared resolver: the estimated count, the separation rule where defined, a user's k refused above the limit	18	0	18	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	an object without the declaration is tested exactly as today	7	0	7	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	a declared design whose stored normalised matrix is absent is refused, never tested the legacy way (audit F-01)	4	0	4	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	the DA entry points that test the object's own table refuse a factors-in-the-model object (audit F-02)	8	0	8	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	an inconsistent factors-in-the-model object is refused, not tested	14	0	14	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	the normalisation declaration is today's by default and declares the design only when it is chosen	7	0	7	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	through the operations: the RUV state carries the factors and the DA reads the normalised matrix	33	0	33	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	through the operations the DA table is arm 7 on every protein of the normalised matrix (audit F-03, F-07; M14)	40	0	40	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	the DA refuses a model with no residual degree of freedom at test time (audit F-04)	6	0	6	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	the kernel's input validation refuses with a classed condition (audit F-08)	20	0	20	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	through the operations: automatic and skip under the new design, a refused k, today's declaration handed the design	26	1	26	1	0	fails on both	Expected `value$final` to be identical to `value$normalized`. Differences: `actual$identity$parameters`:   "owner:ruv-none-science"   `expected$identity$parameters`: "owner:normalized-science" `actual$payload$relative_path`:   "entities/dia-state-4ccc4dd1bc13/payload.rds" `expected$payload$relative_path`: "entities/dia-state-4ccc4c9d4fdb/payload.rds"   `actual$payload$bytes`: 16021.0 `expected$pay
+test-prot-ruv-factors-in-model.R	the shared runner refuses today's declaration a request that names the new design, on a saved product too (KIT-129 B1)	11	0	11	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	with technical replicates, a non-finite block correlation is refused with a class (KIT-129 B1)	4	0	4	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	with technical replicates the biological units limit k, in the kernel and at the test (M28)	11	0	11	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	each comparison's standard error is exact per protein under the factors-in-the-model design (M29)	5	0	5	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	the factors-in-the-model test applies its trend and robust settings at the TREAT step (M30)	3	0	3	0	0	passes on both	
+test-prot-ruv-factors-in-model.R	the legacy design's DA is unchanged by the exact standard errors and the test settings (M29, M30)	0	1	0	1	0	fails on both	Expected `ruvModelLegacyDigests()` to be identical to `c(...)`. Differences:     actual                             | expected                               [1] "317861043e1405fcca14f5b7e44778bd" - "5f301cd329832bf4169a188156ea5a3f" [1] [2] "2d95c88b2e67e553d683ac8d640ff57d" - "597ebf0d6c82e95f05a3238fa3b7df78" [2] [3] "094330ffcab38237a5400a5613f724a8" - "0ba8a9420b0234237f70623e8ffd2565" [3] 
+test-prot-ruv-factors-in-model.R	the technical-replicate design: the biological units as replicate sets, k limited by the units and the groups across them (KIT-129 integration)	0	1	11	0	0	fails on base, passes on head	<prot_ruv_factors_unavailable/rlang_error/error/condition> Error in `refuse(if (control_count < 2L) "fewer than 2 control proteins are observed in every sample" else "the samples leave no residual degree of freedom for a factor beside the groups")`: the RUV factors for the model cannot be computed: the samples leave no residual degree of freedom for a factor beside the groups i 49 control proteins
+test-prot-ruv-factors-in-model.R	first-pass null controls: the proteins outside the 25% most significant of a first test, W in the model (M7; S1 arms 5, 23, 24)	0	1	17	0	0	fails on base, passes on head	Error in `computeProtRuvModelFactors(object, ruv_k = 2L, ruv_k_rule = "user", ruv_design = "first_pass_nulls")`: unused argument (ruv_design = "first_pass_nulls")
+test-kit127-omics-ruv-factors.R	arm 7 (all features as controls, W in the model) is the simulator's computation, in lipidomics	27	0	27	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	arm 8 (the standards as controls, W in the model, the standards not tested) is the simulator's computation	24	0	24	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	metabolomics gives the factors and the tables lipidomics gives	14	0	14	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	the corrected matrix of the new path keeps each feature's level; today's correction still shifts it	26	0	26	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	without ruv_factors the DA entry points are today's: the unchanged kernel on the object's own matrix	22	0	22	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	k has no default, 0 is no RUV, and an assay whose factors cannot be computed gets no RUV with a warning	7	2	37	0	0	fails on base, passes on head	Expected `typed` to be an S3 object. Actual OO type: none.
+test-kit127-omics-ruv-factors.R	wrong arguments stop	13	0	13	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	today's estimate of k is available and bounded by the sample-size limit	9	0	9	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F2: a model with no residual degree of freedom once W is added stops the DA, and never returns an empty table	6	0	6	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F3: the corrected object is stamped, and a stamped object is refused together with factors	15	0	15	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F5: a feature unobserved in one whole group is tested between the groups where it is observed, as a two-group fit	12	0	12	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F6: the features not tested are returned by assay and announced by a classed warning	8	0	8	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F9: an incomplete supplied control is left out of W and of the correction alike, with a classed warning	8	0	8	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F10: a non-finite k, a missing group and the factors of another assay are refused	5	0	5	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F1: the bounded sweep's k is refused with all features as controls	1	0	1	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F11: the test with W in the model is limma's own, computed here without the package's DA kernel	10	0	10	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F11: metabolomics with supplied standards is the simulator's arm 8	18	0	18	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F11: runMetabolitesDA refuses factors that are not the kernel's per-assay records	4	0	4	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F11: a correction that returns an assay unchanged stops the run	1	0	1	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	F11: the factors record survives a save and a restore	2	0	2	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	with RUV factors, a block correlation that cannot be estimated is named with k in the failure (KIT-129 B1)	5	0	5	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	with technical replicates the biological units limit k, in the kernel and at the test (M28)	0	2	18	0	0	fails on base, passes on head	Expected `refused` to be an S3 object. Actual OO type: none.
+test-kit127-omics-ruv-factors.R	the legacy DA without RUV factors is unchanged by the exact standard errors (M29)	0	1	0	1	0	fails on both	Expected `kit127LegacyDigests()` to be identical to `c(lipid = "2d923db5e9fc4ff2d193b200014e73d9", metab = "c6fa5d5cc4881d65a71296422749962c")`. Differences:     actual                             | expected                               [1] "cc24a58cf45375653248a873d82f1065" - "2d923db5e9fc4ff2d193b200014e73d9" [1] [2] "1914fa5056c1071ed3b0c39a94c3e669" - "c6fa5d5cc4881d65a71296422749962c" [2] 
+test-kit127-omics-ruv-factors.R	(KIT-129 item 3) the estimated count is the kernel's own k, per assay; with technical replicates it removes the units	32	0	32	0	0	passes on both	
+test-kit127-omics-ruv-factors.R	the technical-replicate design: the biological units as replicate sets, k limited by the units and the groups across them (KIT-129 integration)	12	16	28	0	0	fails on base, passes on head	Expected `vapply(run$factors, `[[`, "", "status")` to be identical to `c(pos = "ok", neg = "ok")`. Differences: `actual`:   "refused" "refused" `expected`: "ok"      "ok"      lipid
+test-kit127-omics-ruv-factors.R	first-pass null controls: the features outside the 25% most significant of the no-RUV test, W in the model (M7; S4 arms 5 and 23)	0	1	52	0	0	fails on base, passes on head	<omics_ruv_factors_invalid/rlang_error/error/condition> Error: ruv_design must be one of: groups_all_features, supplied_controls
+test-kit127-omics-ruv-factors.R	k must be below the number of controls observed in every sample (M32)	0	2	6	0	0	fails on base, passes on head	Expected `typed` to be an S3 object. Actual OO type: none.
+test-kit127-omics-ruv-factors.R	a feature with no value in any sample is not tested and is reported, the assay is analysed (KIT-127 found and left)	2	16	18	0	0	fails on base, passes on head	Expected `da$failed_assays` to be NULL. Differences: `actual` is a list `expected` is NULL 

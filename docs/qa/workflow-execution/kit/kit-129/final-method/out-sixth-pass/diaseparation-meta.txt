@@ -1,0 +1,7 @@
+stage: diaseparation
+tree: 85cb7151ff3a1511fa426e87e817cbe94dfb968d
+uncommitted changes under R/: FALSE
+R version 4.6.1 (2026-06-24)
+BLAS: /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0
+versions: limma 3.68.4; sva 3.60.0; limpa 1.4.2; fastlimpadpc 0.1.0; ruv 0.9.7.1; qvalue 2.44.0
+finished: 2026-11-19 00:36:20 UTC

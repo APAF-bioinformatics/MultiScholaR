@@ -1,0 +1,4 @@
+base: a9d6b24086e572b2bb2b76e503d6299a0eb1cc88
+head: 85cb7151ff3a1511fa426e87e817cbe94dfb968d
+files: test-kit129-run-path.R, test-omic-norm-ruv-design.R, test-dia-limpa-ruv-rules.R
+R version 4.6.1 (2026-06-24)

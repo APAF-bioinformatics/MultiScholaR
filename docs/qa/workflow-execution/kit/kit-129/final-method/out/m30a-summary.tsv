@@ -1,0 +1,7 @@
+entry	leaves	max_rel	verdict	note
+S1/C0/arm31/k	1	NA	pass	arm 31's E (groups, B = 200) against estimateRuvFactorCount's default
+S1/C0/arm32/k	1	NA	pass	arm 32's E (B = 200; the units removed on C6) against estimateRuvFactorCount's default (units on C6)
+S1/C6/arm31/k	1	NA	pass	arm 31's E (groups, B = 200) against estimateRuvFactorCount's default
+S1/C6/arm32/k	1	NA	pass	arm 32's E (B = 200; the units removed on C6) against estimateRuvFactorCount's default (units on C6)
+S2/C0/arm31/k	1	NA	pass	arm 31's E (C0) or arm 32's E (C6, the units removed), B = 200, against the declared kernel's own count
+S2/C6/arm32/k	1	NA	pass	arm 31's E (C0) or arm 32's E (C6, the units removed), B = 200, against the declared kernel's own count

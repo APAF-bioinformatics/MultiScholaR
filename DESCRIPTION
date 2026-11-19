@@ -113,6 +113,7 @@ Collate:
     'func_general_parameter_helpers.R'
     'func_prot_accession_helpers.R'
     'func_omics_qc_shared.R'
+    'func_omics_ruv_factors.R'
     'func_general_plotting_pca_rle_helpers.R'
     'func_general_plotting_qc_support_helpers.R'
     'func_general_plotting_heatmap_support_helpers.R'
@@ -205,6 +206,7 @@ Collate:
     'func_prot_limpa_da_helpers.R'
     'func_prot_limpa_qc_helpers.R'
     'func_prot_norm_optimization_helpers.R'
+    'func_general_ruv_factor_count.R'
     'func_prot_qc_filtering_helpers.R'
     'func_prot_qc_correlation_helpers.R'
     'func_prot_qc_support_helpers.R'
@@ -423,6 +425,7 @@ Suggests:
     RSpectra,
     RUVSeq,
     statmod,
+    sva,
     SummarizedExperiment,
     tidytext,
     tm,

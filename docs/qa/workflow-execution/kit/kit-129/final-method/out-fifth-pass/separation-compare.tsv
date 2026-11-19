@@ -1,0 +1,13 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S3/C0/arm22/k	integer	1			0	agree	
+S3/C0/arm22/controls	character	50			0	agree	
+S3/C0/arm22/runpath$key	character	4631			0	agree	
+S3/C0/arm22/runpath$estimate	double	4631	2.20698226903801e-07	8.6617832351088e-10	0	agree	
+S3/C0/arm22/runpath$p	double	4631	5.35581803758286e-09	1.27060506560639e-09	0	agree	
+S3/C0/arm22/runpath$q	double	4631	5.35581805480004e-09	1.55450852190597e-09	0	agree	
+S3/C0/arm24/k	integer	1			0	agree	
+S3/C0/arm24/controls	character	3473			0	agree	
+S3/C0/arm24/runpath$key	character	4631			0	agree	
+S3/C0/arm24/runpath$estimate	double	4631	5.37096949525019e-08	9.19153642087167e-11	0	agree	
+S3/C0/arm24/runpath$p	double	4631	2.13281514783535e-09	1.54163459775702e-10	0	agree	
+S3/C0/arm24/runpath$q	double	4631	2.12539208993123e-09	1.48692835821862e-10	0	agree	

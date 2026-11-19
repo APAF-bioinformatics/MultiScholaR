@@ -239,7 +239,46 @@ omicGuiConfigSchema <- function() {
         # library's `omicNormRuvSingleResult`) in place of the per-assay `ruv_qc_ui`.
         norm_optional = c(reset = "ref", assay_names = "chr", image_stem = "chr1", stage_prefixes = "named_chr",
             output_assay_slots = "int1", server = "chr1", qc_dir = "chr1", assay_labels = "lgl1", image_stemless = "lgl1",
-            correlation_slot = "chr1", ruv_single_result = "lgl1"),
+            correlation_slot = "chr1", ruv_single_result = "lgl1",
+            # KIT-129 W2: the RUV design presets (`validateOmicGuiRuvDesign`), checked when the group has them.
+            ruv_design = "named_list"),
+        # KIT-129 W2 (ticket sections 1 and 2): the RUV design presets. `enabled` is the gate of the panel
+        # section; `tiers` the tier labels; `k_rules` the rules for k with the texts shown beside the choice;
+        # `tables` one preset table per route family, the first the one rendered, `route_tables` the workflow
+        # types that take another; `conditions` the conditions the omic's simulations cover, shown once.
+        norm_ruv_design = c(enabled = "lgl1", testid = "chr1", tiers = "named_chr", k_rules = "named_list",
+            tables = "named_list"),
+        norm_ruv_design_optional = c(route_tables = "named_chr", conditions = "chr1"),
+        norm_ruv_tiers = c("recommended", "valid_with_conditions", "legacy", "none"),
+        norm_ruv_k_rules = c("num_sv_be", "sweep_bounded", "user"),
+        norm_ruv_k_rule = c(label = "chr1", reads = "chr1", pros = "chr1", cons = "chr1", diagnostic = "chr1"),
+        # A table: the design selected when the tab opens, the recommended one, its options; the design selected
+        # when the design matrix declares technical replicates, by type.
+        norm_ruv_table = c(selected = "chr1", recommended = "chr1", options = "list"),
+        # KIT-129 fourth pass item 2: the table's features in words, its texts (reasons, labels and refusals of the
+        # run; one wording table, `omicGuiRuvTexts`) and the k rules the run path does not take on this route, with
+        # the reason.
+        norm_ruv_table_optional = c(selected_with_technical_replicates = "chr1", features = "chr1", texts = "named_chr",
+            k_rules_not_offered = "named_chr"),
+        # Every table offers each of these once (the user's rule: every design in every omic); a route may add
+        # the optional ones.
+        norm_ruv_designs = c("groups_all_features", "technical_replicates", "supplied_controls", "first_pass_nulls",
+            "legacy", "none"),
+        norm_ruv_designs_optional = "legacy_correction",
+        # An option: `status` says whether its figure is measured, pending (a simulation still running) or
+        # unavailable (with the reason). A measured option carries `norm_ruv_figure`; no other carries a number.
+        norm_ruv_option = c(id = "chr1", tier = "chr1", label = "chr1", description = "chr1", tooltip = "chr1",
+            note = "chr1", status = "chr1", source = "chr1", test_form = "chr1", k_rules = "chr0"),
+        norm_ruv_option_optional = c(replicate_structure = "chr1", control_rule = "chr1", fdp = "num1",
+            fdp_where = "chr1", power = "num1", single_scenario = "lgl1", k_rule = "chr1", k_rules_pending = "chr",
+            k_rule_figures = "named_list",
+            unavailable = "chr1",
+            # KIT-129 fourth pass item 2: a precondition on the design (`technical_replicates` or
+            # `no_technical_replicates`; the reason is the table's text of that name), and a reason the run path does
+            # not take the option on this route (the option keeps its figure).
+            needs = "chr1", not_offered = "chr1"),
+        norm_ruv_status = c("measured", "pending", "unavailable"),
+        norm_ruv_figure = c("fdp", "fdp_where", "power"),
         norm_stage_prefixes = c("pre_norm", "post_norm", "ruv_corrected"),
         # `run` and `correlation`: the managed function and its in-process twin (the core's; D6).
         norm_action = c(managed = "ref", in_process = "ref"),
@@ -577,6 +616,7 @@ validateOmicGuiNorm <- function(norm, schema) {
     for (tab in intersect(names(schema$norm_by_tab), tabs)) checkOmicGuiFields(norm, schema$norm_by_tab[[tab]], "norm")
     if ("post_norm_qc" %in% tabs) checkOmicGuiFields(norm$post_norm_qc, schema$norm_post_norm_qc, "norm$post_norm_qc")
     checkOmicGuiFields(norm, schema$norm_optional, "norm", required = FALSE)
+    if (!is.null(norm$ruv_design)) validateOmicGuiRuvDesign(norm$ruv_design, schema)
     # KIT-120 W1: an omic with its own server registers its actions itself; the frame's action fields are then unused.
     framed <- is.null(norm$server)
     # (audit F4) The frame looks nothing up for an omic with its own server, so the group names the stage grid's
@@ -618,6 +658,141 @@ validateOmicGuiNorm <- function(norm, schema) {
     checkOmicGuiFields(norm$testids, schema$norm_testids[setdiff(names(schema$norm_testids), needed)], "norm$testids",
         required = FALSE)
     invisible(norm)
+}
+
+#' The RUV design presets (KIT-129 W2; ticket sections 1 and 2): the gate, the four tiers' labels, the three k
+#' rules with their texts, and each table.
+#' @param design The norm group's `ruv_design`.
+#' @param schema `omicGuiConfigSchema()`.
+#' @return `design`, invisibly. Otherwise an `omic_gui_config_invalid` error naming the field.
+#' @noRd
+validateOmicGuiRuvDesign <- function(design, schema) {
+    path <- "norm$ruv_design"
+    checkOmicGuiFields(design, schema$norm_ruv_design, path)
+    checkOmicGuiFields(design, schema$norm_ruv_design_optional, path, required = FALSE)
+    if (!setequal(names(design$tiers), schema$norm_ruv_tiers)) {
+        omicGuiConfigAbort(paste0(path, "$tiers"), sprintf("must name exactly the tiers %s",
+            paste(schema$norm_ruv_tiers, collapse = ", ")))
+    }
+    if (!identical(names(design$k_rules), schema$norm_ruv_k_rules)) {
+        omicGuiConfigAbort(paste0(path, "$k_rules"), sprintf("must name the k rules %s, in this order",
+            paste(schema$norm_ruv_k_rules, collapse = ", ")))
+    }
+    for (rule in names(design$k_rules)) {
+        checkOmicGuiFields(design$k_rules[[rule]], schema$norm_ruv_k_rule, paste0(path, "$k_rules$", rule))
+    }
+    if (length(design$tables) == 0L) omicGuiConfigAbort(paste0(path, "$tables"), "must hold at least one table")
+    if (!all(design$route_tables %in% names(design$tables))) {
+        omicGuiConfigAbort(paste0(path, "$route_tables"), sprintf("must name tables of the group (%s)",
+            paste(names(design$tables), collapse = ", ")))
+    }
+    for (name in names(design$tables)) {
+        validateOmicGuiRuvTable(design$tables[[name]], paste0(path, "$tables$", name), schema)
+    }
+    invisible(design)
+}
+
+#' One preset table: every design offered once, the selected ones among the available options, and the one
+#' option of the recommended tier named as the recommended design.
+#' @param table The table.
+#' @param path Its path in the configuration, for the refusal.
+#' @param schema `omicGuiConfigSchema()`.
+#' @return `table`, invisibly.
+#' @noRd
+validateOmicGuiRuvTable <- function(table, path, schema) {
+    checkOmicGuiFields(table, schema$norm_ruv_table, path)
+    checkOmicGuiFields(table, schema$norm_ruv_table_optional, path, required = FALSE)
+    for (i in seq_along(table$options)) {
+        validateOmicGuiRuvOption(table$options[[i]], sprintf("%s$options[[%d]]", path, i), schema)
+    }
+    ids <- vapply(table$options, `[[`, character(1), "id")
+    allowed <- c(schema$norm_ruv_designs, schema$norm_ruv_designs_optional)
+    if (anyDuplicated(ids) || !all(schema$norm_ruv_designs %in% ids) || !all(ids %in% allowed)) {
+        omicGuiConfigAbort(paste0(path, "$options"), sprintf("must offer each design once (%s; optionally %s)",
+            paste(schema$norm_ruv_designs, collapse = ", "), paste(schema$norm_ruv_designs_optional, collapse = ", ")))
+    }
+    statuses <- vapply(table$options, `[[`, character(1), "status")
+    selectable <- ids[statuses != "unavailable"]
+    # KIT-129 fourth pass item 2: a precondition's reason is one of the table's texts (the reason when it is not met,
+    # `omicNormRuvUnavailableReason`); a rule left out is a k rule.
+    reasons <- c(technical_replicates = "no_technical_replicates", no_technical_replicates = "technical_replicates_declared")
+    for (i in seq_along(table$options)) {
+        needs <- table$options[[i]]$needs
+        if (!is.null(needs) && !reasons[[needs]] %in% names(table$texts)) {
+            omicGuiConfigAbort(sprintf("%s$options[[%d]]$needs", path, i), "must name one of the table's texts")
+        }
+    }
+    if (!all(names(table$k_rules_not_offered) %in% schema$norm_ruv_k_rules)) {
+        omicGuiConfigAbort(paste0(path, "$k_rules_not_offered"), "must name k rules")
+    }
+    for (field in intersect(c("selected", "recommended", "selected_with_technical_replicates"), names(table))) {
+        checkOmicGuiChoice(table[[field]], paste0(path, "$", field), selectable)
+    }
+    tiers <- vapply(table$options, `[[`, character(1), "tier")
+    if (!identical(ids[tiers == "recommended"], table$recommended)) {
+        omicGuiConfigAbort(paste0(path, "$recommended"), "must be the one option of the recommended tier")
+    }
+    invisible(table)
+}
+
+#' One preset: its fields; the figure with a measured status and with no other; the reason with an unavailable
+#' one; the k rules it offers, the one selected, the ones without a measured figure and the figures measured with
+#' another rule than the selected one; never the separation
+#' rule with all features as controls (the two canonical-correlation curves coincide).
+#' @param option The option.
+#' @param path Its path in the configuration, for the refusal.
+#' @param schema `omicGuiConfigSchema()`.
+#' @return `option`, invisibly.
+#' @noRd
+validateOmicGuiRuvOption <- function(option, path, schema) {
+    at <- \(field) paste0(path, "$", field)
+    checkOmicGuiFields(option, schema$norm_ruv_option, path)
+    checkOmicGuiFields(option, schema$norm_ruv_option_optional, path, required = FALSE)
+    checkOmicGuiChoice(option$tier, at("tier"), schema$norm_ruv_tiers)
+    checkOmicGuiChoice(option$status, at("status"), schema$norm_ruv_status)
+    measured <- identical(option$status, "measured")
+    for (field in schema$norm_ruv_figure) {
+        if (measured && !field %in% names(option)) omicGuiConfigAbort(at(field), "is missing for a measured option")
+        if (!measured && field %in% names(option)) {
+            omicGuiConfigAbort(at(field), "must be absent unless the option's status is measured")
+        }
+    }
+    for (field in intersect(c("fdp", "power"), names(option))) {
+        if (option[[field]] < 0 || option[[field]] > 1) omicGuiConfigAbort(at(field), "must be a proportion (0 to 1)")
+    }
+    if (identical(option$status, "unavailable") != ("unavailable" %in% names(option))) {
+        omicGuiConfigAbort(at("unavailable"), "must give the reason of an unavailable option, and of no other")
+    }
+    if (!is.null(option$needs)) checkOmicGuiChoice(option$needs, at("needs"), c("technical_replicates", "no_technical_replicates"))
+    rules <- option$k_rules
+    if (!all(rules %in% schema$norm_ruv_k_rules) || anyDuplicated(rules)) {
+        omicGuiConfigAbort(at("k_rules"), sprintf("must name k rules once each (%s)",
+            paste(schema$norm_ruv_k_rules, collapse = ", ")))
+    }
+    if (identical(option$control_rule, "all_features") && "sweep_bounded" %in% rules) {
+        omicGuiConfigAbort(at("k_rules"), "must not offer the separation rule with all features as controls")
+    }
+    if ((length(rules) > 0L) != ("k_rule" %in% names(option)) || !all(option[["k_rule"]] %in% rules)) {
+        omicGuiConfigAbort(at("k_rule"), "must be one of the option's k rules, and absent when it offers none")
+    }
+    if (!all(option$k_rules_pending %in% setdiff(rules, option[["k_rule"]]))) {
+        omicGuiConfigAbort(at("k_rules_pending"), "must name k rules the option offers, other than the selected one")
+    }
+    # The figure measured with another rule than the selected one: a rule the option offers, not a pending one.
+    others <- setdiff(rules, c(option[["k_rule"]], option$k_rules_pending, "user"))
+    if (!all(names(option$k_rule_figures) %in% others)) {
+        omicGuiConfigAbort(at("k_rule_figures"),
+            "must be named by k rules the option offers, other than the selected, a pending one and the user's number")
+    }
+    for (rule in names(option$k_rule_figures)) {
+        figure <- option$k_rule_figures[[rule]]
+        checkOmicGuiFields(figure, c(fdp = "num1", fdp_where = "chr1", power = "num1", source = "chr1"),
+            paste0(at("k_rule_figures"), "$", rule))
+        if (any(c(figure$fdp, figure$power) < 0 | c(figure$fdp, figure$power) > 1)) {
+            omicGuiConfigAbort(paste0(at("k_rule_figures"), "$", rule), "must hold proportions (0 to 1)")
+        }
+    }
+    invisible(option)
 }
 
 #' The da group (KIT-106 D1, D8): its fields; the model, editable or shown; the threshold and fold-change
@@ -1119,7 +1294,582 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
         testids = c(method = paste0(prefix, "-norm-method"), ruv_mode = paste0(prefix, "-norm-ruv-mode"),
             run = paste0(prefix, "-norm-run"), export = paste0(prefix, "-norm-export-session")),
         skip_correlation_flags = skip_correlation_flags, final_pca = final_pca,
-        managed_correlation_notify = managed_correlation_notify)
+        managed_correlation_notify = managed_correlation_notify,
+        ruv_design = omicGuiRuvDesign(prefix, list(features = omicGuiRuvTableFeature(tolower(noun)))))
+}
+
+# ------------------------------------------------------------------------------------------------
+# KIT-129 W2: the RUV design presets (ticket sections 1 and 2; the user's gate of 2026-11-18). One
+# catalogue of designs (tier, label, description, tooltip, what the design does, its k rules) and one table of
+# measured figures and notes per route family. The panel section (mod_omic_norm_panels.R) reads them;
+# the study parameters, the record and the report templates are to read the same fields.
+#
+# The figures are KIT-124's: the mean false discovery proportion at a nominal 0.05 in the worst core
+# cell with true effects (`fdp`, with the cell in words in `fdp_where`), and the power in the centre
+# cell (`power`; 6 per group, 20% changed, one factor); `single_scenario` marks a figure measured in one cell. Each row's
+# `source` gives the simulator, arm and cells; it is not shown. To update a figure when a simulation
+# finishes, change the row's numbers and `source`, set `status = "measured"`, and drop the rule from
+# `k_rules_pending` when a k rule's own figure arrives. The row's figure is the one measured with the pre-selected
+# k rule (`k_rule`: the estimated number wherever it is defined, the user's decision M15 of 2026-11-18); a figure
+# measured with the other rule is in `k_rule_figures`, by rule, with its own `source`. Nothing is computed from
+# these numbers.
+# ------------------------------------------------------------------------------------------------
+
+#' Whether the RUV design section is shown (the gate of KIT-129 W2). Off until the switch commit: the
+#' normalisation tab is then today's, byte for byte. `options(MultiScholaR.ruv_design_panel = TRUE)` shows it.
+#' @return One logical.
+#' @noRd
+omicGuiRuvDesignEnabled <- function() {
+    isTRUE(getOption("MultiScholaR.ruv_design_panel", FALSE))
+}
+
+#' An omic's RUV design group: the gate, the tier labels, the k rules and its tables.
+#' @param prefix The omic's test-id prefix.
+#' @param tables The preset tables, named; the first is the one the tab opens with.
+#' @param route_tables The workflow types that take another table, named by type; NULL for none.
+#' @param conditions The conditions the omic's simulations cover, shown under the options; NULL for none.
+#' @return The norm group's `ruv_design`.
+#' @noRd
+omicGuiRuvDesign <- function(prefix, tables, route_tables = NULL, conditions = NULL) {
+    design <- list(enabled = omicGuiRuvDesignEnabled(), testid = paste0(prefix, "-norm-ruv-design"),
+        tiers = c(recommended = "Recommended", valid_with_conditions = "Valid with conditions",
+            legacy = "Legacy", none = "None"),
+        k_rules = omicGuiRuvKRules(), tables = tables)
+    design$route_tables <- route_tables
+    design$conditions <- conditions
+    design
+}
+
+#' The three rules for the number of factors (k), with the texts shown behind the choice's explanation (ticket
+#' section 2; kit-124/design-review-20261118.md section 5: what each reads, for and against, the measured counts).
+#' The ids are the record's `ruv_k_rule` values. Wording: docs/qa/workflow-execution/kit/kit-129/panel-ui/
+#' wording-review.md (plain words first, the method's name second).
+#' @return A named list of `label`, `reads`, `pros`, `cons` and `diagnostic`.
+#' @noRd
+omicGuiRuvKRules <- function() {
+    list(
+        num_sv_be = list(label = "Estimated number",
+            reads = paste("The software estimates how many unwanted factors the data contain. It first sets the",
+                "differences between the groups aside, then counts the patterns (principal components) in what is",
+                "left that explain more of the variation than they do in 20 random shuffles (permutations) of the",
+                "data. Method: sva::num.sv, method \"be\"."),
+            pros = paste("It counts the factors directly, needs no control features and gives the same answer every",
+                "time (fixed random seed). It is the pre-selected rule of every approach that estimates k, and the",
+                "rule their main figures were measured with. In simulation it returned on average 1.00 where there was truly 1 factor, 1.94 where there",
+                "were 2 and 3.00 where there were 3."),
+            cons = paste("It comes from surrogate variable analysis (the sva package), not from the RUV publications.",
+                "Because the group differences are set aside first, a factor that is tied to the groups can be",
+                "under-counted. It is a rough estimate with only 3 samples per group. It needs the optional R",
+                "package sva."),
+            diagnostic = paste("For each pattern, the share of the remaining variation it explains in your data",
+                "beside the shuffled data, with the estimated number marked (RUV QC tab).")),
+        sweep_bounded = list(label = "Separation rule",
+            reads = paste("Uses the canonical-correlation plot, which shows for each k how strongly the first k",
+                "patterns in the data are related to the groups: one curve for all features, one for the control",
+                "features only. The rule takes the k at which the two curves are furthest apart, with an upper",
+                "limit on k in small experiments."),
+            pros = paste("It is this package's established diagnostic, links k to the controls you chose and needs",
+                "no extra package. It is the rule the figures of the approach of earlier versions were measured",
+                "with."),
+            cons = paste("In simulation it returned on average 2.9 where there was truly 1 factor, and 1.55 where",
+                "there were 3. It shows how free the controls are of group differences, not how many factors",
+                "there are. It cannot be used when all features are the controls."),
+            diagnostic = "The canonical-correlation plot and its table (RUV QC tab)."),
+        user = list(label = "Your own number",
+            reads = "You enter the number of factors.",
+            pros = paste("The RUV publications ask for judgement guided by diagnostic plots rather than one",
+                "automatic rule. Every approach accepts a number."),
+            cons = paste("The figures shown for each approach were measured with the estimated number or the",
+                "separation rule, not with your number."),
+            diagnostic = paste("The estimated number's plot and the canonical-correlation plot. When all features",
+                "are the controls, the canonical-correlation plot is drawn with controls chosen from the data, and",
+                "says so.")))
+}
+
+#' The designs' common part (ticket section 1's table): tier, label (what is done, in plain words), description
+#' (the visible second line: how, with the method's name), tooltip (the exact statement, extra detail only),
+#' replicate structure, control rule, test form (the record's values) and k rules (section 2: the estimated number
+#' for every design with a k, and pre-selected there (decision M15); the separation rule where a separate control
+#' set exists; `k_rules_pending` are the combinations without a measured figure of their own: none since the new
+#' arms were scored). The two legacy designs' descriptions end with what their test reads (`omicGuiRuvTable`).
+#' @param features The omic's features in words (`proteins`, `genes`, `lipids`, `metabolites`).
+#' @param method The RUV method's name by kind of design: `replicates` and `controls`.
+#' @return A named list of options without their figures.
+#' @noRd
+omicGuiRuvDesignCatalogue <- function(features, method) {
+    in_model <- paste("The estimated factors are included as covariates in the differential model, which is fitted",
+        "to the uncorrected values; the corrected values are used for plots and export only.")
+    earlier <- sprintf(paste("The %s that differ least between the groups in a first test serve as controls; an",
+        "automatic search chooses how many of them, and the number of factors."), features)
+    list(
+        groups_all_features = list(id = "groups_all_features", tier = "recommended",
+            label = sprintf("Estimate from all %s, within your groups", features),
+            description = sprintf(paste("Samples of the same group are treated as replicates of each other, and all",
+                "%s are used to estimate the unwanted variation (%s)."), features, method[["replicates"]]),
+            tooltip = sprintf("%s with the experimental groups as replicate sets and all %s as negative controls. %s",
+                method[["replicates"]], features, in_model),
+            replicate_structure = "group", control_rule = "all_features", test_form = "factors_in_model",
+            k_rules = c("num_sv_be", "user"), k_rule = "num_sv_be"),
+        technical_replicates = list(id = "technical_replicates", tier = "valid_with_conditions",
+            label = sprintf("Estimate from all %s, within your technical replicates", features),
+            description = sprintf(paste("The technical replicates declared in the experimental design are compared",
+                "with each other, and all %s are used to estimate the unwanted variation (%s)."), features,
+                method[["replicates"]]),
+            tooltip = sprintf(paste("%s with the technical replicates declared in the design as replicate sets and all",
+                "%s as negative controls. %s"), method[["replicates"]], features, in_model),
+            replicate_structure = "technical_replicates", control_rule = "all_features",
+            test_form = "factors_in_model", k_rules = c("num_sv_be", "user"), k_rule = "num_sv_be"),
+        supplied_controls = list(id = "supplied_controls", tier = "valid_with_conditions",
+            label = sprintf("Estimate from your own list of control %s", features),
+            description = sprintf(paste("You supply %s that you know do not differ between the groups (negative",
+                "controls); the unwanted variation is estimated from them (%s)."), features, method[["controls"]]),
+            tooltip = sprintf(paste("%s with a list of %s you know not to change between the groups as negative",
+                "controls. %s"), method[["controls"]], features, in_model),
+            replicate_structure = "group", control_rule = "supplied_list", test_form = "factors_in_model",
+            k_rules = c("num_sv_be", "sweep_bounded", "user"), k_rule = "num_sv_be"),
+        first_pass_nulls = list(id = "first_pass_nulls", tier = "valid_with_conditions",
+            label = sprintf("Estimate from control %s chosen from the data", features),
+            description = sprintf(paste("A first test of the groups is run; the 25%% most significant %s are set",
+                "aside and all the others serve as controls (%s)."), features, method[["controls"]]),
+            tooltip = sprintf(paste("%s with negative controls chosen from the data: a first test of the groups is",
+                "run and the 25%% most significant %s are left out. %s"), method[["controls"]], features, in_model),
+            replicate_structure = "group", control_rule = "first_pass_drop_top_25", test_form = "factors_in_model",
+            k_rules = c("num_sv_be", "sweep_bounded", "user"), k_rule = "num_sv_be"),
+        legacy = list(id = "legacy", tier = "legacy", label = "Approach of earlier versions", description = earlier,
+            tooltip = sprintf(paste("The approach of earlier versions: the least significant %s of a first test are",
+                "the negative controls, and a search over the share of controls (a sweep) chooses how many and k."),
+                features),
+            replicate_structure = "group", control_rule = "sweep_least_significant", k_rules = character()),
+        legacy_correction = list(id = "legacy_correction", tier = "legacy",
+            label = "Approach of earlier versions, values corrected before the test", description = earlier,
+            tooltip = sprintf(paste("The approach of earlier versions in its correction mode: the least significant",
+                "%s of a first test are the negative controls, the quantified matrix is corrected and the model",
+                "carries no factors."), features),
+            replicate_structure = "group", control_rule = "sweep_least_significant",
+            test_form = "corrected_then_tested", k_rules = character()),
+        none = list(id = "none", tier = "none", label = "No removal of unwanted variation",
+            description = "The differential test is run on the normalised values as they are.",
+            tooltip = "No RUV: the differential test reads the normalised values.",
+            test_form = "none", k_rules = character()))
+}
+
+#' One preset table: the catalogue's designs in the rows' order, each with its measured figure and note. A legacy
+#' design's description ends with what its test reads in this table (its `test_form`).
+#' @param features,method `omicGuiRuvDesignCatalogue()`'s arguments.
+#' @param rows The omic's rows, named by design: `status`, the figure, `note`, `source`, and any field of the
+#'   catalogue the omic words differently.
+#' @param selected_with_technical_replicates The design selected when the design declares technical replicates;
+#'   NULL where the omic has none.
+#' @param k_rules_not_offered The k rules the run path does not take on this route, named, with the reason; NULL for
+#'   none.
+#' @return The table. The selected design is the recommended one (decision M2; KIT-129 fourth pass item 2): the
+#'   section is shown only with its gate on, so today's tab is unchanged.
+#' @noRd
+omicGuiRuvTable <- function(features, method, rows, selected_with_technical_replicates = "technical_replicates",
+    k_rules_not_offered = NULL) {
+    catalogue <- omicGuiRuvDesignCatalogue(features, method)
+    reads <- c(corrected_then_tested = "The values are corrected first, and the differential test is run on the corrected values.",
+        factors_in_model = paste("The estimated factors are included as covariates in the differential test, which",
+            "is run on the uncorrected values."))
+    table <- list(selected = "groups_all_features", recommended = "groups_all_features",
+        options = unname(lapply(names(rows), \(id) {
+            option <- utils::modifyList(catalogue[[id]], rows[[id]])
+            if (identical(option$tier, "legacy")) {
+                option$description <- paste(option$description, reads[[option$test_form]],
+                    "Its settings appear below when it is selected.")
+            }
+            option
+        })))
+    table$selected_with_technical_replicates <- selected_with_technical_replicates
+    table$features <- features
+    table$texts <- omicGuiRuvTexts(features)
+    table$k_rules_not_offered <- k_rules_not_offered
+    table
+}
+
+#' The RUV design section's texts beside the preset tables (KIT-129 fourth pass): the reasons an option or a k rule is
+#' not available, the labels of the inputs the run reads, and the run's refusals of the panel's choices. One wording
+#' table, under the user's review with the presets (docs/qa/workflow-execution/kit/kit-129/panel-ui/wording-review.md).
+#' @param features The omic's features in words (`proteins`, `genes`, `lipids`, `metabolites`).
+#' @return A named character vector.
+#' @noRd
+omicGuiRuvTexts <- function(features) {
+    feature <- sub("s$", "", features)
+    c(no_technical_replicates = "the experimental design declares no technical replicates.",
+        technical_replicates_declared = paste("the experimental design declares technical replicates, so the approach",
+            "within your technical replicates is used instead."),
+        not_available = "This approach is not available:",
+        k_rule_not_available = "This rule for the number of factors is not available here:",
+        control_list = sprintf("Your control %s: one identifier per line, or separated by commas or spaces", features),
+        seed = "Random seed for the estimated number:",
+        k_missing = "Enter the number of factors (k) as a whole number of 1 or more.",
+        seed_invalid = "Enter the random seed for the estimated number as a whole number.",
+        list_missing = sprintf("Enter at least one control %s identifier.", feature),
+        # KIT-129 fourth pass item 3: what the run did, under the options.
+        result_heading = "What the last run did",
+        result_design = "Approach used:",
+        result_k = "Number of factors (k):",
+        result_rule_num_sv_be = "estimated number",
+        result_rule_sweep_bounded = "separation rule",
+        result_rule_user = "your own number",
+        result_k_estimate = "estimated number for comparison:",
+        result_k_estimate_none = "the estimated number could not be computed:",
+        result_sets_group = "Replicate sets: your groups.",
+        result_sets_technical_replicates = "Replicate sets: your technical replicates (the measurements of each biological sample).",
+        result_not_applied = "Unwanted variation was not removed:",
+        result_seed = "Random seed for the estimated number:",
+        result_assay = "Assay",
+        # KIT-129 fifth pass item 3: a supplied list. %d: the identifiers listed, then those found in the data.
+        result_list = "Your list: %d identifiers, of which %d were found in your data.",
+        result_controls = "Controls used (measured in every sample):",
+        separation_plot_heading = "Number of factors (k): the separation rule",
+        # KIT-129 sixth pass (decisions M35, M36; drafts, the user sets the final wording): the check that an estimated
+        # unwanted factor is associated with the groups, as a detection limit with the approach's measured consequences.
+        # detectable: the largest association (0 to 1), the detection limit, then the approach's false discovery
+        # proportion in simulation with no association, at 0.3 and at 0.6, and without correction at 0.6.
+        association_detectable = paste("An estimated unwanted factor is associated with your groups (%s; values above %s",
+            "are detectable for this approach). In simulation, this approach's false discovery proportion at a 5%% target",
+            "was %s with no association, %s at 0.3 and %s at 0.6. Without correction it was %s at 0.6."),
+        # not detectable: the largest association, then the detection limit.
+        association_not_detectable = paste("No association between the estimated unwanted factors and your groups was",
+            "detectable (largest %s; detection limit %s)."),
+        # no limit: the largest association.
+        association_no_limit = paste("Largest association of an estimated unwanted factor with your groups: %s. No detection",
+            "limit has been established for this approach with this rule for the number of factors."),
+        # M35: a typed k equal to the estimated number is checked against the estimated number's limit.
+        association_typed_k_equals = paste("Your number of factors equals the estimated number, so the detection limit of the",
+            "estimated number applies."),
+        association_not_measured = "not measured",
+        # DIA with limpa: the largest association.
+        association_dia_limpa = paste("Largest association of an estimated unwanted factor with your groups: %s. In DIA with",
+            "limpa no detection limit has been established: in simulation a candidate limit was exceeded in 86%% of data",
+            "sets at an association of 0.6 and in only 37%% at 0.3, so only strong associations would be detectable."),
+        association_legacy = paste("No detection limit exists for the approach of earlier versions: the association of its",
+            "factors with your groups does not show this condition, so it is not checked."),
+        # KIT-129 fifth pass item 5: the RUV QC tab's column heading of the check.
+        association_column = "Unwanted factors and your groups")
+}
+
+#' The new design's fields in words, for the saved study parameters, the report's methods paragraph and the record's
+#' workbook (KIT-129 sixth pass items 4 and 6; drafts, the user sets the final wording; listed in
+#' docs/qa/workflow-execution/kit/kit-129/panel-ui/wording-review.md). No value holds "=", which the reports' parser of
+#' `study_parameters.txt` reads as a separator.
+#' @return A named character vector.
+#' @noRd
+omicGuiRuvRecordTexts <- function() {
+    c(section = "Unwanted variation (RUV)",
+        approach = "Approach",
+        design_groups_all_features = "all features as controls, the experimental groups as replicates (recommended)",
+        design_technical_replicates = "all features as controls, the declared technical replicates as replicates",
+        design_supplied_controls = "a supplied list of control features, the experimental groups as replicates",
+        design_first_pass_nulls = "controls chosen from the data: the features outside the 25% most significant of a first test",
+        design_none = "no correction for unwanted variation",
+        replicates = "Replicates",
+        # %s: the design's column
+        replicates_group = "the experimental groups (column %s)",
+        replicates_technical_replicates = "the declared technical replicates (column %s)",
+        k_rule = "Rule for the number of factors (k)",
+        rule_num_sv_be = "estimated number (sva num.sv, method be)",
+        rule_sweep_bounded = "separation rule (canonical correlations of the controls against all features)",
+        rule_user = "chosen by the analyst",
+        k_typed = "Number of factors typed",
+        k = "Number of factors applied",
+        k_estimate = "Estimated number of factors",
+        # %s: the estimated number, its random seed and its permutations
+        k_estimate_value = "%s (random seed %s, %s permutations)",
+        controls = "Controls used (measured in every sample)",
+        list = "Supplied control list",
+        # %s: identifiers listed, found in the data, the list's sha256
+        list_value = "%s identifiers, %s found in the data (sha256 %s)",
+        first_pass = "First test for the controls",
+        first_limma_f_test_groups = "limma F test of the groups",
+        first_dpcde_f_test_groups = "limpa dpcDE F test of the groups",
+        first_limma_smallest_pairwise_p = "limma, the smallest p-value over the pairwise comparisons of the groups",
+        first_edger_qlf_f_test_groups = "edgeR quasi-likelihood F test of the groups",
+        se = "Standard errors of the comparisons",
+        se_exact_per_comparison = "exact for each comparison (the comparison refitted as a model coefficient, limma contrastAsCoef)",
+        se_contrasts_fit = "limma contrasts.fit (exact when no factor is in the model)",
+        se_edger_contrast = "edgeR, each comparison tested as a contrast of one fit",
+        test = "Test",
+        test_limma_treat_trend_robust = "limma treat with the eBayes trend and robust settings",
+        test_limpa_dpcde = "limpa dpcDE with limma eBayes",
+        test_limma_da_settings = "limma with the differential analysis tab's eBayes settings",
+        test_edger_qlf = "edgeR quasi-likelihood F test",
+        association = "Association of the factors with the groups",
+        # %s: the largest association, then the outcome's words
+        association_value = "largest %s; %s",
+        outcome_detectable = "detectable (above the detection limit of %s for this approach)",
+        outcome_not_detectable = "not detectable (detection limit %s)",
+        outcome_no_limit = "no detection limit established for this approach with this rule for the number of factors",
+        not_applied = "Not applied",
+        # %s: the assay's name
+        assay = "assay %s",
+        methods = "Methods text",
+        # %s: the method, the replicate sets, the controls, k, the k rule, the standard errors, the test
+        methods_applied = paste("Unwanted variation was estimated with %s, using %s as replicate sets and %s as negative",
+            "controls. %s factor(s) were used (%s) and included as covariates in the differential model fitted to the",
+            "uncorrected values; the corrected matrix was used for figures and export only. Standard errors: %s. Test: %s."),
+        # RUVg uses no replicate sets. %s: the method, the controls, k, the k rule, the standard errors, the test
+        methods_applied_ruvg = paste("Unwanted variation was estimated with %s, using %s as negative controls. %s factor(s)",
+            "were used (%s) and included as covariates in the differential model fitted to the uncorrected values; the",
+            "corrected matrix was used for figures and export only. Standard errors: %s. Test: %s."),
+        methods_none = "No correction for unwanted variation was applied.",
+        # %s: the method, the reason
+        methods_not_applied = "%s could not be applied (%s); no correction was made.",
+        # %s: the largest association, the detection limit
+        methods_association = paste("At least one estimated factor was associated with the experimental groups (largest",
+            "association %s, above the detection limit of %s for this approach)."),
+        method_ruviii = "RUV-III (Molania et al., 2019)",
+        method_ruvs = "RUVs (Risso et al., 2014)",
+        method_ruvg = "RUVg (Risso et al., 2014)",
+        sets_group = "the experimental groups",
+        sets_technical_replicates = "the declared technical replicates",
+        # %s: the features in words (proteins, genes, lipids, metabolites)
+        controls_all = "all %s",
+        # %s: the number of listed controls found, the features
+        controls_supplied = "a supplied list of %s %s",
+        controls_first_pass = "the %s outside the 25%% most significant of a first test")
+}
+
+#' The scenarios of KIT-124's simulations in words, for `fdp_where`: the condition only (the column heading says
+#' it is the worst scenario tested; a figure measured in one scenario carries `single_scenario`).
+#' @return A named character vector by scenario.
+#' @noRd
+omicGuiRuvCells <- function() {
+    c(c1 = "12 samples per group", c2 = "10% of features truly different", c3 = "no unwanted variation present",
+        c5 = "unwanted variation tied to the groups (correlation 0.3)",
+        c6 = "4 samples per group, each measured twice (technical duplicates)", c7 = "three groups")
+}
+
+#' The note of a supplied control list, with the false discovery proportion measured when one control in five
+#' truly changes (KIT-124's arm 9).
+#' @param features The omic's features in words.
+#' @param contaminated That proportion.
+#' @return One string.
+#' @noRd
+omicGuiRuvSuppliedNote <- function(features, contaminated) {
+    sprintf(paste("Use when you have %s known not to differ between the groups. Only as good as the list: when one",
+        "listed feature in five truly differed, false discoveries rose to %.1f%%."), features, 100 * contaminated)
+}
+
+#' The caution that leads the note of controls chosen from the data (ruling R3, the user, 2026-11-19), with the omic's
+#' own false discovery proportion under association with the groups (`ruvGroupAssociationConsequences()`). Its last
+#' sentence follows `ruvGroupAssociationThresholds()`: it points at the check's verdict only where the check has a
+#' detection limit for this approach in this omic.
+#' @param omic The check's omic key (`proteomics` for classic, `dia_limpa`, `transcriptomics`, `lipidomics`,
+#'   `metabolomics`).
+#' @param more How far above the target (`far more`, `more`).
+#' @param measured The omic's measured figure and where it was measured.
+#' @return One string.
+#' @noRd
+omicGuiRuvFirstPassCaution <- function(omic, more, measured) {
+    thresholds <- ruvGroupAssociationThresholds()
+    has_limit <- any(thresholds$omic == omic & thresholds$ruv_design == "first_pass_nulls")
+    check <- if (has_limit) {
+        "If the check below reports a detectable association, choose the recommended approach."
+    } else {
+        paste("The check below shows how strongly the estimated unwanted factors are associated with your groups, but",
+            "gives no verdict for this approach. Unless you know the unwanted variation does not differ between your",
+            "groups, choose the recommended approach.")
+    }
+    paste(sprintf(paste("Use this approach only when the unwanted variation is unlikely to differ between your groups.",
+        "When it did in simulation, this approach reported %s false discoveries than the 5%% target (%s)."), more, measured),
+        check)
+}
+
+#' Classic proteomics (DIA with IQ, LFQ, TMT): ticket section 1a, simulator S1.
+#' @return The table.
+#' @noRd
+omicGuiRuvTableClassic <- function() {
+    cell <- omicGuiRuvCells()
+    omicGuiRuvTable("proteins", c(replicates = "RUV-III", controls = "RUV-III"), list(
+        groups_all_features = list(status = "measured", fdp = 0.066, fdp_where = cell[["c1"]], power = 0.91,
+            note = paste("The general-purpose choice. With 12 samples per group it reported slightly too many false",
+                "discoveries: 11.5% of simulated data sets had more than 10% false discoveries (acceptance limit",
+                "5.7%). 5.4% false discoveries in the reference scenario."),
+            source = "KIT-129 1a; KIT-124 S1 arm 7: worst cell C1 0.066, C0 0.054, power C0 0.91"),
+        technical_replicates = list(status = "measured", fdp = 0.054, fdp_where = cell[["c6"]], power = 0.90,
+            single_scenario = TRUE, needs = "technical_replicates",
+            note = "Use when the experimental design declares technical replicates. Measured in one scenario only.",
+            source = "KIT-129 1a; KIT-124 S1 arm 16: C6 0.054, power C6 0.90"),
+        supplied_controls = list(status = "measured", fdp = 0.053, fdp_where = cell[["c5"]], power = 0.91,
+            note = omicGuiRuvSuppliedNote("proteins", 0.119),
+            k_rule_figures = list(sweep_bounded = list(fdp = 0.060, fdp_where = cell[["c6"]], power = 0.90,
+                source = "KIT-124 S1 arm 22 (scored/newarms-gha): worst cell C6 0.060, power C0 0.90")),
+            source = "KIT-129 1a; KIT-124 S1 arm 8: worst cell C5 0.053, power C0 0.91; arm 9: C1 0.119"),
+        first_pass_nulls = list(status = "measured", fdp = 0.077, fdp_where = cell[["c5"]], power = 0.91,
+            note = paste(omicGuiRuvFirstPassCaution("proteomics", "far more", paste("27.3% under strong association, a correlation of",
+                "0.6, with the separation rule for the number of factors")),
+                "Not when the unwanted variation is tied to the groups: it fails there with either rule",
+                "for the number of factors (7.7% false discoveries, as shown). At most 5.2% in the other scenarios",
+                "tested."),
+            k_rule_figures = list(sweep_bounded = list(fdp = 0.078, fdp_where = cell[["c5"]], power = 0.91,
+                source = "KIT-124 S1 arm 5: worst cell C5 0.078, at most 0.056 elsewhere, power C0 0.91")),
+            source = "KIT-129 1a; KIT-124 S1 arm 23 (scored/newarms-gha): worst cell C5 0.077, at most 0.052 elsewhere, power C0 0.91"),
+        legacy = list(status = "measured", fdp = 0.385, fdp_where = cell[["c5"]], power = 0.92,
+            test_form = "corrected_then_tested",
+            note = paste("For reproducing analyses made with earlier versions. False discoveries ranged from 3% to",
+                "39% across the scenarios tested, against a target of 5%; 9.8% in the reference scenario."),
+            source = "KIT-129 1a; KIT-124 S1 arm 3: worst cell C5 0.385, C0 0.098, power C0 0.92"),
+        none = list(status = "measured", fdp = 0.052, fdp_where = cell[["c3"]], power = 0.49,
+            note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
+                "target, but about half the power is lost when unwanted variation is present."),
+            source = "KIT-129 1a; KIT-124 S1 arm 1: worst cell C3 0.052, power C0 0.49")))
+}
+
+#' DIA with limpa: ticket section 1b, simulator S2 (run on the `fastlimpadpc` engine).
+#' @return The table.
+#' @noRd
+omicGuiRuvTableDiaLimpa <- function() {
+    cell <- omicGuiRuvCells()
+    omicGuiRuvTable("proteins", c(replicates = "RUV-III", controls = "RUV-III"), list(
+        groups_all_features = list(status = "measured", fdp = 0.055, fdp_where = cell[["c6"]], power = 0.91,
+            # The user's answer U2: on a design with technical replicates the groups are selectable in classic
+            # proteomics only.
+            needs = "no_technical_replicates",
+            note = paste("The general-purpose choice. In every scenario tested it did as well as an analysis that",
+                "was given the true unwanted factor (5.3% false discoveries with unwanted variation tied to the",
+                "groups, correlation 0.3). Measured with the fastlimpadpc engine; expected to hold for the limpa",
+                "engine, not measured there."),
+            source = "KIT-129 1b; KIT-124 S2 arm 7: worst cell C6 0.055, C5 0.053, power C0 0.91"),
+        technical_replicates = list(status = "measured", fdp = 0.055, fdp_where = cell[["c6"]], power = 0.77,
+            single_scenario = TRUE, needs = "technical_replicates",
+            note = paste("Use when the experimental design declares technical replicates. Measured in one scenario",
+                "only. In DIA with limpa, when technical replicates are declared, this and the recommended approach",
+                "are the same calculation."),
+            source = "KIT-129 1b; KIT-124 S2 arm 16 (= arm 7 in C6): C6 0.055, power C6 0.77"),
+        supplied_controls = list(status = "measured", fdp = 0.056, fdp_where = cell[["c6"]], power = 0.91,
+            note = omicGuiRuvSuppliedNote("proteins", 0.089),
+            k_rule_figures = list(sweep_bounded = list(fdp = 0.056, fdp_where = cell[["c5"]], power = 0.90,
+                source = "KIT-124 S2 arm 22 (scored/newarms-gha): worst cell C5 0.056, power C0 0.90")),
+            source = "KIT-129 1b; KIT-124 S2 arm 8: worst cell C6 0.056, power C0 0.91; arm 9: C1 0.089"),
+        first_pass_nulls = list(status = "measured", fdp = 0.146, fdp_where = cell[["c5"]], power = 0.92,
+            note = paste(omicGuiRuvFirstPassCaution("dia_limpa", "far more", paste("30.1% under strong association, a correlation of",
+                "0.6, with the separation rule for the number of factors")),
+                "Fails in DIA with limpa, with either rule for the number of factors: too many false",
+                "discoveries in every scenario tested that had unwanted variation (7.1% to 14.6%; 9.0% in the",
+                "reference scenario). Offered for completeness."),
+            k_rule_figures = list(sweep_bounded = list(fdp = 0.149, fdp_where = cell[["c5"]], power = 0.92,
+                source = "KIT-124 S2 arm 5: worst cell C5 0.149, C0 0.094, power C0 0.92")),
+            source = "KIT-129 1b; KIT-124 S2 arm 23 (scored/newarms-gha): worst cell C5 0.146, C1 0.071, C0 0.090, power C0 0.92"),
+        legacy = list(status = "measured", fdp = 0.435, fdp_where = cell[["c5"]], power = 0.90,
+            label = "Approach of earlier versions, factors in the test", test_form = "factors_in_model",
+            note = paste("For reproducing analyses made with earlier versions. It chooses its controls as the limpa",
+                "workflow script does. False discoveries ranged from 5% to 44% across the scenarios tested; 29.0%",
+                "in the reference scenario."),
+            source = "KIT-129 1b; KIT-124 S2 arm 4: worst cell C5 0.435, C0 0.290, power C0 0.90"),
+        legacy_correction = list(status = "measured", fdp = 0.466, fdp_where = cell[["c5"]], power = 0.91,
+            note = paste("For reproducing analyses made with earlier versions. False discoveries ranged from 8% to",
+                "47% across the scenarios tested."),
+            source = "KIT-129 1b; KIT-124 S2 arm 3: worst cell C5 0.466, power C0 0.91"),
+        none = list(status = "measured", fdp = 0.191, fdp_where = cell[["c5"]], power = 0.56,
+            note = paste("In DIA with limpa, false discoveries do not stay at the 5% target when unwanted variation",
+                "is present: 15% of simulated data sets had more than 10% false discoveries; 6.5% false discoveries",
+                "in the reference scenario."),
+            source = "KIT-129 1b; KIT-124 S2 arm 1: worst cell C5 0.191, C0 0.065, power C0 0.56")))
+}
+
+#' Transcriptomics: ticket section 1c, simulator S3. Technical replicates are summed into samples at the design
+#' step, so that design is shown disabled with the reason (the user's answer U3).
+#' @return The table.
+#' @noRd
+omicGuiRuvTableTrx <- function() {
+    cell <- omicGuiRuvCells()
+    omicGuiRuvTable("genes", c(replicates = "RUVSeq's RUVs", controls = "RUVSeq's RUVg"), list(
+        groups_all_features = list(status = "measured", fdp = 0.055, fdp_where = cell[["c2"]], power = 0.77,
+            note = paste("The general-purpose choice. In every scenario tested it did as well as an analysis that",
+                "was given the true unwanted factor (5.2% false discoveries with unwanted variation tied to the",
+                "groups at a correlation of 0.6)."),
+            source = "KIT-129 1c; KIT-124 S3 arm 7: worst cell C2 0.055, stress S3 0.052, power C0 0.77"),
+        technical_replicates = list(status = "unavailable",
+            unavailable = paste("the technical replicates of a biological sample are added together into one set",
+                "of counts before the analysis (edgeR User's Guide, section 4.9.1), so none are left for RUV to",
+                "compare."),
+            note = "Not offered in transcriptomics.",
+            source = "KIT-129 1c, answer U3; KIT-128 (the sum at the design step)"),
+        supplied_controls = list(status = "measured", fdp = 0.056, fdp_where = cell[["c2"]], power = 0.76,
+            note = paste(omicGuiRuvSuppliedNote("genes", 0.076),
+                "The separation rule keeps false discoveries on target but costs power (61% against 76%)."),
+            k_rule_figures = list(sweep_bounded = list(fdp = 0.053, fdp_where = cell[["c2"]], power = 0.61,
+                source = "KIT-124 S3 arm 22 (scored/newarms-gha; C6 void, not used): worst cell C2 0.053, power C0 0.61")),
+            source = "KIT-129 1c; KIT-124 S3 arm 8: worst cell C2 0.056, power C0 0.76; arm 9: C1 0.076"),
+        first_pass_nulls = list(status = "measured", fdp = 0.071, fdp_where = cell[["c5"]], power = 0.77,
+            note = paste(omicGuiRuvFirstPassCaution("transcriptomics", "more", paste("6.4% at a correlation of 0.3, with the separation",
+                "rule for the number of factors; a stronger association was not measured")),
+                "Not when the unwanted variation is tied to the groups: it fails there (7.1% false",
+                "discoveries, as shown, and 7.1% of unchanged genes with p below 0.05, more than the acceptance",
+                "criterion allows). At most 5.5% in the other scenarios tested, with as much power as an analysis",
+                "that was given the true unwanted factor. With the separation rule it finds few of the real",
+                "differences when the unwanted variation is tied to the groups (power 25%) or with three groups",
+                "(5%)."),
+            k_rule_figures = list(sweep_bounded = list(fdp = 0.064, fdp_where = cell[["c5"]], power = 0.60,
+                source = "KIT-124 S3 arm 24 (scored/newarms-gha): worst cell C5 0.064, power C0 0.60, C5 0.25, C7 0.05")),
+            source = paste("KIT-129 1c; KIT-124 S3 arm 23 (scored/newarms-gha; C6 void, not used): worst cell C5 0.071",
+                "(type I 0.071, rule 1 fail), at most 0.055 elsewhere, power C0 0.77 (arm 2: 0.77)")),
+        legacy = list(status = "measured", fdp = 0.299, fdp_where = cell[["c5"]], power = 0.73,
+            test_form = "factors_in_model",
+            note = paste("For reproducing analyses made with earlier versions. It fails when the unwanted variation",
+                "is tied to the groups: 30% false discoveries at a correlation of 0.3, 72% at 0.6. At most 5.4% in",
+                "the other scenarios tested."),
+            source = "KIT-129 1c; KIT-124 S3 arm 3: worst cell C5 0.299, stress S3 0.724, at most 0.054 elsewhere, power C0 0.73"),
+        none = list(status = "measured", fdp = 0.044, fdp_where = cell[["c3"]], power = 0.005,
+            note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
+                "target, but almost no real differences are found when unwanted variation is strong."),
+            source = "KIT-129 1c; KIT-124 S3 arm 1: worst cell C3 0.044, power C0 0.005")),
+        selected_with_technical_replicates = NULL)
+}
+
+#' Lipidomics and metabolomics: ticket section 1d, simulator S4 (one table for both, scored over two assays).
+#' The technical-replicate design's figure is the re-measurement on the KIT-128 tree (run r0a).
+#' @param features `lipids` or `metabolites`.
+#' @return The table.
+#' @noRd
+omicGuiRuvTableFeature <- function(features) {
+    cell <- omicGuiRuvCells()
+    omicGuiRuvTable(features, c(replicates = "RUV-III", controls = "RUV-III"), list(
+        groups_all_features = list(status = "measured", fdp = 0.072, fdp_where = cell[["c5"]], power = 0.43,
+            needs = "no_technical_replicates",
+            note = sprintf(paste("The general-purpose choice, with limits: no approach met every acceptance",
+                "criterion for %s. Too many false discoveries when the unwanted variation is strongly tied to the",
+                "groups (13%% at a correlation of 0.6) and with 3 samples per group (10%%); 5.7%% in the reference",
+                "scenario. If you know the batches, put batch in the statistical model: 14%% false discoveries when",
+                "an unbalanced batch was left for RUV to find."), features),
+            source = "KIT-129 1d; KIT-124 S4 arm 7: worst cell C5 0.072, C0 0.057, stress S3 0.130, S1 0.101, S8 0.14, power C0 0.43"),
+        technical_replicates = list(status = "measured", fdp = 0.058, fdp_where = cell[["c6"]], power = 0.36,
+            single_scenario = TRUE, needs = "technical_replicates",
+            note = "Use when the experimental design declares technical replicates. Measured in one scenario only.",
+            source = paste("KIT-129 1d; KIT-124 S4 arm 16, run r0a on the KIT-128 tree (scored/r0a-gha; hosted runner,",
+                "no equivalence comparison; the cell is reported, not core): C6 0.058, power C6 0.36")),
+        supplied_controls = list(status = "measured", fdp = 0.068, fdp_where = cell[["c5"]], power = 0.37,
+            label = sprintf("Your own list of control %s, for example internal standards that were not used for normalisation",
+                features),
+            note = paste("Check that the standards do not differ between the groups: when 2 of 10 did, false",
+                "discoveries rose to 37%. The separation rule gives more false discoveries and less power here (as",
+                "shown)."),
+            k_rule_figures = list(sweep_bounded = list(fdp = 0.118, fdp_where = cell[["c2"]], power = 0.26,
+                source = "KIT-124 S4 arm 22 (scored/newarms-gha; C4, C6 void, not used): worst cell C2 0.118, C0 0.077, power C0 0.26")),
+            source = "KIT-129 1d; KIT-124 S4 arm 8 (standards): worst cell C5 0.068, power C0 0.37; arm 9: C1 0.371"),
+        first_pass_nulls = list(status = "measured", fdp = 0.174, fdp_where = cell[["c5"]], power = 0.44,
+            note = paste(omicGuiRuvFirstPassCaution(c(lipids = "lipidomics", metabolites = "metabolomics")[[features]],
+                "far more", paste("53.7% under strong association, a correlation of 0.6, with the separation rule for",
+                    "the number of factors")),
+                "Not when the unwanted variation is tied to the groups: it fails there (17.4% false",
+                "discoveries, as shown). With three groups it missed one acceptance criterion (7.2% false",
+                "discoveries). 4.1% to 6.2% in the other scenarios tested. With the separation rule it reports too",
+                "many false discoveries in most scenarios tested (9.7% in the reference scenario)."),
+            k_rule_figures = list(sweep_bounded = list(fdp = 0.239, fdp_where = cell[["c5"]], power = 0.50,
+                source = "KIT-124 S4 arm 5: worst cell C5 0.239, C0 0.097, power C0 0.50")),
+            source = paste("KIT-129 1d; KIT-124 S4 arm 23 (scored/newarms-gha; C4, C6 void, not used): worst cell C5 0.174,",
+                "C7 0.072 (rule 3 fail), C0 0.052, C1 0.041, C2 0.062, C3 0.059, power C0 0.44")),
+        legacy = list(status = "measured", fdp = 0.556, fdp_where = cell[["c2"]], power = 0.42,
+            test_form = "corrected_then_tested",
+            note = paste("More than 90% of simulated data sets had more than 10% false discoveries; 47.0% false",
+                "discoveries in the reference scenario."),
+            source = "KIT-129 1d; KIT-124 S4 arm 3: worst cell C2 0.556, C0 0.470, power C0 0.42"),
+        none = list(status = "measured", fdp = 0.059, fdp_where = cell[["c7"]], power = 0.003,
+            note = paste("Only when little unwanted variation is expected. False discoveries stay near the 5%",
+                "target, but almost no real differences are found when the signal drifts during the run."),
+            source = "KIT-129 1d; KIT-124 S4 arm 1: worst cell C7 0.059, power C0 0.003")))
 }
 
 #' The DA tab of lipid and metab at the KIT-106 start commit (b75561de; the DA files unchanged since
@@ -1261,7 +2011,12 @@ omicGuiProteomicsNorm <- function() {
         server = "protNormFrameServer",
         assay_names = "proteins", image_stemless = TRUE, qc_dir = "protein_qc_dir", assay_labels = FALSE,
         testids = c(method = "prot-norm-method", ruv_mode = "prot-norm-ruv-mode", run = "prot-norm-run",
-            export = "prot-norm-export-session"))
+            export = "prot-norm-export-session"),
+        # KIT-129 W2: the classic routes' table, and DIA with limpa's once the workflow type is known.
+        ruv_design = omicGuiRuvDesign("prot", list(classic = omicGuiRuvTableClassic(), dia_limpa = omicGuiRuvTableDiaLimpa()),
+            route_tables = c(DIA_LIMPA = "dia_limpa"),
+            # KIT-129 1 ("Conditions of use still open"): until the stress cells of these two simulators are scored.
+            conditions = "The simulations covered up to 25% missing values and 6 or more samples per group."))
 }
 
 #' The proteomics Summary & Export tab at 5be34ee5 (mod_prot_summary_*.R; KIT-108 D1): the module id and test ids (the
@@ -2184,7 +2939,8 @@ omicGuiTrxNorm <- function() {
         pre_qc_on_entry = FALSE,
         assay_names = "counts", image_stem = "trx", stage_prefixes = c(pre_norm = "raw", post_norm = "tmm", ruv_corrected = "ruvs"),
         output_assay_slots = 2L,
-        testids = c(ruv_mode = "trx-norm-ruv-mode", run = "trx-norm-run", reset = "trx-norm-reset"))
+        testids = c(ruv_mode = "trx-norm-ruv-mode", run = "trx-norm-run", reset = "trx-norm-reset"),
+        ruv_design = omicGuiRuvDesign("trx", list(genes = omicGuiRuvTableTrx())))
 }
 
 #' The trx QC tab: at b423b764 the lipid QC orchestrator and finalise under the transcriptomics profile's QC

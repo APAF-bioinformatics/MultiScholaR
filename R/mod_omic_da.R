@@ -63,6 +63,40 @@ omicDaTabState <- function() {
         current_heatmap_plot = NULL)
 }
 
+#' The DA tab's lines of the factor-tied-to-groups warning (KIT-129 fifth pass item 5): from the analysis record of the
+#' head, the last RUV step's recorded check (classic proteomics `normalization-ruv`, transcriptomics `trx_ruvs`; per
+#' assay in lipid/metab), one line per flagged check in the panel's words (`omicNormRuvAssociationText`). Nothing with
+#' the gate off, without a session owner, or when the record cannot be built.
+#' @param manager The bus's state manager.
+#' @return A character vector.
+#' @noRd
+omicDaRuvAssociationLines <- function(manager) {
+    if (!omicGuiRuvDesignEnabled() || !inherits(manager, "DIAStateAdapter")) return(character())
+    record <- tryCatch(buildWorkflowAnalysisRecord(manager), error = function(error) NULL)
+    steps <- Filter(function(step) isTRUE(step$operation %in% c("normalization-ruv", "lipid_ruv", "metab_ruv", "trx_ruvs")), record$steps)
+    if (!length(steps)) return(character())
+    outcomes <- steps[[length(steps)]]$outcomes
+    texts <- omicGuiRuvTexts("features")
+    flagged <- function(check) if (identical(check$ruv_group_association_outcome, "detectable")) omicNormRuvAssociationText(check, texts)
+    single <- flagged(outcomes[ruvGroupAssociationRecordFields])
+    if (!is.null(single)) return(single)
+    per_assay <- outcomes$ruv_group_association_outcome_per_assay
+    lines <- lapply(names(per_assay), function(assay) {
+        check <- lapply(stats::setNames(paste0(ruvGroupAssociationRecordFields, "_per_assay"), ruvGroupAssociationRecordFields),
+            function(field) outcomes[[field]][[assay]])
+        words <- flagged(check)
+        if (!is.null(words)) paste(texts[["result_assay"]], assay, "-", words)
+    })
+    unlist(lines, use.names = FALSE) %||% character()
+}
+
+#' The DA tab's warning block, or NULL without a line.
+#' @noRd
+omicDaRuvAssociationTags <- function(lines) {
+    if (!length(lines)) return(NULL)
+    shiny::tags$div(class = "ruv-design-warning", role = "alert", lapply(lines, function(line) shiny::tags$p(shiny::tags$strong(line))))
+}
+
 #' The server's body: the observers and outputs in lipid's order (mod_lipid_da_server.R:9-126 at 2269a45f), each made
 #' when the omic's group uses it: the model's output when the model is shown, the session load with its test id, the
 #' save note, heatmap, cluster summary and Save Heatmap with the heatmap tab.
@@ -75,6 +109,14 @@ runOmicDaServer <- function(input, output, session, workflowData, experimentPath
         shiny::observeEvent(input$load_filtered_session, loadOmicDaSession(session, workflowData, tab, experimentPaths, da, binding))
     }
     shiny::observeEvent(input$run_da_analysis, runOmicDaAnalysis(input, session, workflowData, tab, experimentPaths, da, binding))
+    # KIT-129 fifth pass item 5 (ticket section 3 (3)): above the run button, the warning of the run that feeds the test
+    # when its check flagged a factor, read from the recorded outcome; nothing with the gate off.
+    if (omicGuiRuvDesignEnabled()) {
+        output$ruv_association_warning <- shiny::renderUI({
+            workflowData$state_update_trigger
+            omicDaRuvAssociationTags(omicDaRuvAssociationLines(workflowData$state_manager))
+        })
+    }
     if (isTRUE(da$views$heatmap$save_note)) {
         output$heatmap_manual_save_warning <- shiny::renderUI(omicDaHeatmapSaveNote(tab$analysis_complete))
     }
@@ -235,6 +277,17 @@ omicDaReadSource <- function(workflowData, source) {
         })
 }
 
+#' Whether the tab may fall back to the owner's head when no session was loaded (KIT-129 item 5, the KIT-145
+#' observation). Lipidomics and metabolomics accept any head of the omic's class, so before this the DA ran on
+#' un-normalised (even raw) data and reported complete; their fallback now needs the normalisation tab complete, and
+#' the tab otherwise refuses with the group's `no_data` text. Transcriptomics has its own refusal (its reader reads
+#' only a normalised RUVs state) and every other omic is as before.
+#' @noRd
+omicDaHeadFallbackAllowed <- function(workflowData, binding) {
+    if (!isTRUE(binding$omic_type %in% c("lipidomics", "metabolomics"))) return(TRUE)
+    identical(as.character(workflowData$tab_status$normalization %||% ""), "complete")
+}
+
 # ------------------------------------------------------------------------------------------------
 # The run.
 # ------------------------------------------------------------------------------------------------
@@ -247,7 +300,8 @@ runOmicDaAnalysis <- function(input, session, workflowData, tab, experimentPaths
     settings <- list(formula_string = if (isTRUE(da$model$editable)) input$formula_string,
         da_q_val_thresh = input$da_q_val_thresh, treat_lfc_cutoff = input$treat_lfc_cutoff)
     logger::log_info("=== RUN DA ANALYSIS BUTTON CLICKED ===")
-    current <- omicDaLoadedMetadata(tab, workflowData, binding) %||% omicDaReadSource(workflowData, da$source)
+    current <- omicDaLoadedMetadata(tab, workflowData, binding) %||%
+        (if (omicDaHeadFallbackAllowed(workflowData, binding)) omicDaReadSource(workflowData, da$source))
     if (!is.list(current) || !identical(current$class, da$source$class)) {
         shiny::showNotification(da$source$no_data, type = "error", duration = 5)
         return(invisible(NULL))

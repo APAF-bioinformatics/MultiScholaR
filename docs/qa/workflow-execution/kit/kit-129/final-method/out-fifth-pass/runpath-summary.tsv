@@ -1,0 +1,15 @@
+entry	leaves	max_rel	verdict	note
+S1/C0/arm32/runpath_k	1	NA	pass	arm 32's E against the run path's own count
+S1/C0/arm32/runpath	4	5.95259579359307e-13	pass	keys: 786 common, 0 simulator only, 0 package only
+S1/C0/arm23/runpath_controls	1	NA	pass	the first pass's controls observed in every sample (590 of 786 proteins are controls); replicate sets group
+S1/C0/arm23/runpath	4	3.10613711668428e-13	pass	keys: 786 common, 0 simulator only, 0 package only
+S1/C6/arm32/runpath_k	1	NA	pass	arm 32's E against the run path's own count
+S1/C6/arm32/runpath	4	4.56867724442591e-12	pass	keys: 783 common, 0 simulator only, 0 package only
+S1/C6/arm33/runpath_k	1	NA	pass	arm 33's E (the units removed, B = 200) against the run path's own count; replicate sets tech_rep_group
+S1/C6/arm33/runpath	4	4.45376555880528e-11	pass	keys: 783 common, 0 simulator only, 0 package only
+S1/C6/arm23/runpath_controls	1	NA	pass	the first pass's controls observed in every sample (588 of 783 proteins are controls); replicate sets tech_rep_group
+S1/C6/arm23/runpath	4	3.10512488498589e-11	pass	keys: 783 common, 0 simulator only, 0 package only
+S2/C0/arm32/runpath_k	1	NA	pass	arm 32's E against the run path's own count
+S2/C0/arm32/runpath	4	1.85509099254985e-12	pass	keys: 1000 common, 0 simulator only, 0 package only
+S2/C6/arm32/runpath_k	1	NA	pass	arm 32's E against the run path's own count
+S2/C6/arm32/runpath	4	3.71480825446728e-13	pass	keys: 1000 common, 0 simulator only, 0 package only

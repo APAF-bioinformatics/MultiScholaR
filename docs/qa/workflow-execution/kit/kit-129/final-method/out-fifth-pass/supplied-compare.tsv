@@ -1,0 +1,47 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S1/C0/arm8/runpath_k	integer	1			0	agree	
+S1/C0/arm8/runpath_controls	integer	1			0	agree	
+S1/C0/arm8/runpath$key	character	786			0	agree	
+S1/C0/arm8/runpath$estimate	double	786	0	0	0	agree	
+S1/C0/arm8/runpath$p	double	786	1.73259513511198e-13	7.54951656745106e-15	0	agree	
+S1/C0/arm8/runpath$q	double	786	9.54278531099409e-14	1.37390099297363e-14	0	agree	
+S4/C0/arm35/lipid/pos/runpath_k	integer	1			0	agree	
+S4/C0/arm35/lipid/pos/runpath_controls	character	5			0	agree	
+S4/C0/arm35/lipid/pos/runpath$key	character	78			0	agree	
+S4/C0/arm35/lipid/pos/runpath$estimate	double	78	0	0	0	agree	
+S4/C0/arm35/lipid/pos/runpath$p	double	78	0	0	0	agree	
+S4/C0/arm35/lipid/pos/runpath$q	double	78	0	0	0	agree	
+S4/C0/arm35/lipid/neg/runpath_k	integer	1			0	agree	
+S4/C0/arm35/lipid/neg/runpath_controls	character	5			0	agree	
+S4/C0/arm35/lipid/neg/runpath$key	character	68			0	agree	
+S4/C0/arm35/lipid/neg/runpath$estimate	double	68	0	0	0	agree	
+S4/C0/arm35/lipid/neg/runpath$p	double	68	0	0	0	agree	
+S4/C0/arm35/lipid/neg/runpath$q	double	68	0	0	0	agree	
+S4/C0/arm8/lipid/pos$key	character	78			0	agree	
+S4/C0/arm8/lipid/pos$estimate	double	78	0	0	0	agree	
+S4/C0/arm8/lipid/pos$p	double	78	1.02450457716816e-13	4.19109191795997e-15	0	agree	
+S4/C0/arm8/lipid/pos$q	double	78	1.02483993054858e-13	1.11022302462516e-14	0	agree	
+S4/C0/arm8/lipid/neg$key	character	68			0	agree	
+S4/C0/arm8/lipid/neg$estimate	double	68	0	0	0	agree	
+S4/C0/arm8/lipid/neg$p	double	68	2.82313778795951e-13	7.2997163869104e-15	0	agree	
+S4/C0/arm8/lipid/neg$q	double	68	2.82093797090045e-13	1.48769885299771e-14	0	agree	
+S4/C0/arm35/metab/pos/runpath_k	integer	1			0	agree	
+S4/C0/arm35/metab/pos/runpath_controls	character	5			0	agree	
+S4/C0/arm35/metab/pos/runpath$key	character	78			0	agree	
+S4/C0/arm35/metab/pos/runpath$estimate	double	78	0	0	0	agree	
+S4/C0/arm35/metab/pos/runpath$p	double	78	0	0	0	agree	
+S4/C0/arm35/metab/pos/runpath$q	double	78	0	0	0	agree	
+S4/C0/arm35/metab/neg/runpath_k	integer	1			0	agree	
+S4/C0/arm35/metab/neg/runpath_controls	character	5			0	agree	
+S4/C0/arm35/metab/neg/runpath$key	character	68			0	agree	
+S4/C0/arm35/metab/neg/runpath$estimate	double	68	0	0	0	agree	
+S4/C0/arm35/metab/neg/runpath$p	double	68	0	0	0	agree	
+S4/C0/arm35/metab/neg/runpath$q	double	68	0	0	0	agree	
+S4/C0/arm8/metab/pos$key	character	78			0	agree	
+S4/C0/arm8/metab/pos$estimate	double	78	0	0	0	agree	
+S4/C0/arm8/metab/pos$p	double	78	1.02450457716816e-13	4.19109191795997e-15	0	agree	
+S4/C0/arm8/metab/pos$q	double	78	1.02483993054858e-13	1.11022302462516e-14	0	agree	
+S4/C0/arm8/metab/neg$key	character	68			0	agree	
+S4/C0/arm8/metab/neg$estimate	double	68	0	0	0	agree	
+S4/C0/arm8/metab/neg$p	double	68	2.82313778795951e-13	7.2997163869104e-15	0	agree	
+S4/C0/arm8/metab/neg$q	double	68	2.82093797090045e-13	1.48769885299771e-14	0	agree	

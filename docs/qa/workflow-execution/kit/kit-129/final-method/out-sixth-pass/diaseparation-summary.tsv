@@ -1,0 +1,4 @@
+entry	leaves	max_rel	verdict	note
+S2/C0/arm22/runpath_k	1	NA	pass	arm 22's k (the separation rule on the oracle list) against the run path's; the run path's k record: separation_on_supplied_list
+S2/C0/arm22/runpath_controls	1	NA	pass	the oracle's 50 controls
+S2/C0/arm22/runpath	4	1.38626922144711e-12	pass	keys: 1000 common, 0 simulator only, 0 package only

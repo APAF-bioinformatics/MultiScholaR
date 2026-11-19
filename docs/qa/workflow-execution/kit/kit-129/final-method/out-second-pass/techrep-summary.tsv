@@ -1,0 +1,41 @@
+entry	leaves	max_rel	verdict	note
+S1/C6/arm29_B200/kernel_k	1	NA	pass	arm 29's E (the units removed) with M30's 200 permutations (= arm 33's E) against the kernel's own count; arm 29 itself (B = 20): 1; the kernel's limit k_max = 5, replicate structure technical_replicates
+S1/C6/arm16/W_k1	1	0	pass	arm 16's W against the kernel's W
+S1/C6/arm33/classic	4	4.45376555880528e-11	pass	keys: 783 common, 0 simulator only, 0 package only
+S1/C6/arm15_at_k1/corrected	1	0	pass	arm 15's corrected matrix against the new design's
+S1/C6/arm15_at_k1/classic	4	0	pass	keys: 783 common, 0 simulator only, 0 package only
+S1/C8/arm29_B200/kernel_k	1	NA	pass	arm 29's E (the units removed) with M30's 200 permutations (= arm 33's E) against the kernel's own count; arm 29 itself (B = 20): 0; the kernel's limit k_max = 5, replicate structure technical_replicates
+S1/C8/arm16/W_k1	1	0	pass	arm 16's W against the kernel's W
+S1/C8/arm33_at_k1/classic	4	2.17260148528529e-11	pass	keys: 786 common, 0 simulator only, 0 package only
+S1/C8/arm15_at_k1/corrected	1	0	pass	arm 15's corrected matrix against the new design's
+S1/C8/arm15_at_k1/classic	4	0	pass	keys: 786 common, 0 simulator only, 0 package only
+S4/C6/arm29_B200/lipid/pos/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 2; status ok
+S4/C6/arm29_B200/lipid/neg/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 2; status ok
+S4/C6/arm33/lipid/pos	4	2.97639623491045e-13	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm33/lipid/neg	4	2.13282996950142e-13	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C6/arm15_at_arm33_k/lipid/pos	4	0.670276115484199	fail	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm15_at_arm33_k/lipid/neg	4	0.666426683437082	fail	keys: 65 common, 0 simulator only, 0 package only
+S4/C6/arm29_B200/metab/pos/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 2; status ok
+S4/C6/arm29_B200/metab/neg/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 2; status ok
+S4/C6/arm33/metab/pos	4	2.97639623491045e-13	pass	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm33/metab/neg	4	2.13282996950142e-13	pass	keys: 65 common, 0 simulator only, 0 package only
+S4/C6/arm15_at_arm33_k/metab/pos	4	0.670276115484199	fail	keys: 75 common, 0 simulator only, 0 package only
+S4/C6/arm15_at_arm33_k/metab/neg	4	0.666426683437082	fail	keys: 65 common, 0 simulator only, 0 package only
+S4/C8/arm29_B200/lipid/pos/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 0; status none
+S4/C8/arm29_B200/lipid/neg/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 0; status none
+S4/C8/arm33_at_k1_where_0/lipid/pos	4	3.35129477014112e-12	pass	keys: 107 common, 0 simulator only, 0 package only
+S4/C8/arm33_at_k1_where_0/lipid/neg	4	1.22149299350188e-12	pass	keys: 108 common, 0 simulator only, 0 package only
+S4/C8/arm15_at_arm33_k/lipid/pos	4	0.246831608495242	fail	keys: 107 common, 0 simulator only, 0 package only
+S4/C8/arm15_at_arm33_k/lipid/neg	4	0.00217050013417854	fail	keys: 108 common, 0 simulator only, 0 package only
+S4/C8/arm29_B200/metab/pos/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 0; status none
+S4/C8/arm29_B200/metab/neg/kernel_k	1	NA	pass	arm 29's E (the extracts removed) with M30's 200 permutations (= arm 33's E) against runOmicsRuvFactors' own count; arm 29 itself (B = 20): 0; status none
+S4/C8/arm33_at_k1_where_0/metab/pos	4	3.35129477014112e-12	pass	keys: 107 common, 0 simulator only, 0 package only
+S4/C8/arm33_at_k1_where_0/metab/neg	4	1.22149299350188e-12	pass	keys: 108 common, 0 simulator only, 0 package only
+S4/C8/arm15_at_arm33_k/metab/pos	4	0.246831608495242	fail	keys: 107 common, 0 simulator only, 0 package only
+S4/C8/arm15_at_arm33_k/metab/neg	4	0.00217050013417854	fail	keys: 108 common, 0 simulator only, 0 package only
+S1/C6/arm15/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20, groups removed): 1; compared at k = 1
+S1/C8/arm15/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20, groups removed): 6; compared at k = 1
+S4/C6/arm15/lipid/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20): 2/2; compared at k = 2/2
+S4/C6/arm15/metab/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20): 2/2; compared at k = 2/2
+S4/C8/arm15/lipid/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20): 6/6; compared at k = 1/1
+S4/C8/arm15/metab/W_package_vs_simulator	NA	NA	info	arm 15's own k (E, B = 20): 6/6; compared at k = 1/1

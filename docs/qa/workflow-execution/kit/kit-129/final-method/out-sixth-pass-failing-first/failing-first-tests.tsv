@@ -1,0 +1,169 @@
+side	file	test	passed	failed	errors	skipped	first_message
+base	test-kit129-run-path.R	(item 1) a request runs the new design's declaration only when it names the design, and today's otherwise	13	0	0	0	
+base	test-kit129-run-path.R	(item 1) today's declarations refuse the new design's parameters, the RUV step's and the DA method	14	0	0	0	
+base	test-kit129-run-path.R	(item 1) with the gate off the tab's requests are today's; with it on they carry the design the tab names	8	0	0	0	
+base	test-kit129-run-path.R	(item 1) classic proteomics: the compute half runs the new design and its DA names the method in the identity	8	0	0	0	
+base	test-kit129-run-path.R	(item 1) lipidomics and metabolomics: the new design and its DA in process and on the worker	28	0	0	0	
+base	test-kit129-run-path.R	(item 2) classic proteomics: the option set's None declares itself and is tested with the trend and robust settings (M30)	10	0	0	0	
+base	test-kit129-run-path.R	(item 2) classic proteomics: a count of 0 declares the design without factors and is tested as None	4	0	0	0	
+base	test-kit129-run-path.R	(item 2) classic proteomics: the factors-in-the-model test is saved under identities that name it	3	0	0	0	
+base	test-kit129-run-path.R	(item 2) DIA with limpa: the DA declaration of a declared state refuses a source whose declaration names another method	3	0	0	0	
+base	test-kit129-run-path.R	(item 2) lipidomics: the option set's None is tested as today's test, under its own identity	4	0	0	0	
+base	test-kit129-run-path.R	(item 3) transcriptomics: a k given under the estimated count is refused on the run path; the user's k records the count beside it	9	0	0	0	
+base	test-kit129-run-path.R	(item 3) classic proteomics: the step's record names the design, the rule, the estimate and the seed	4	0	0	0	
+base	test-kit129-run-path.R	(item 3) lipidomics: the step's record names the design, the rule, the estimate per assay and the seed	8	0	0	0	
+base	test-kit129-run-path.R	(item 5) classic proteomics: in process, by the worker's handlers and by the kernel, one result	3	0	0	1	
+base	test-kit129-run-path.R	(item 5) DIA with limpa: in process, by the worker's handlers and by the kernel, one result	6	0	0	0	
+base	test-kit129-run-path.R	(item 5) transcriptomics: the declared design in process, on the worker and by the kernel, one result	10	0	0	0	
+base	test-kit129-run-path.R	(item 5) lipidomics and metabolomics: in process, on the worker and by the kernel, one result	8	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) classic proteomics: the technical-replicate design on the run path equals the kernel; refused without technical replicates	10	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) classic proteomics: first-pass nulls on the run path equal the kernel, with the user's k and the separation rule	8	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) lipidomics and metabolomics: the technical-replicate design on the run path equals the kernel and records its structure	23	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) lipidomics and metabolomics: first-pass nulls on the run path equal the kernel	8	0	0	0	
+base	test-kit129-run-path.R	(third pass item 3) DIA with limpa and transcriptomics: first-pass nulls reach the run path's declared step	9	0	0	0	
+base	test-kit129-run-path.R	(fourth pass item 1) lipidomics and metabolomics: the declared RUV step's identity states the replicate structure by design	6	0	0	0	
+base	test-kit129-run-path.R	(fourth pass item 2) the panel's choice runs in process and on the worker as one product; the head's technical replicates are read	10	0	0	0	
+base	test-kit129-run-path.R	(fourth pass item 4) the thresholds table is the calibration's: validated designs only, with their sources	13	0	0	0	
+base	test-kit129-run-path.R	(fourth pass item 4) the statistic is the calibration's; the check gives a verdict where validated and none elsewhere	6	7	0	0	Expected `...[]` to be identical to `list(...)`. Differences: `actual$ruv_group_association_outcome`:   "flagged"    `expected$ruv_group_association_outcome`: "detectable" 
+base	test-kit129-run-path.R	(sixth pass M35) with a typed k the check gives a verdict only when the typed k equals the estimated number	0	0	1	0	Error in `ruvGroupAssociationCheck(W, group, "proteomics", "groups_all_features", "num_sv_be", 1L, 1L)`: unused arguments (1, 1)
+base	test-kit129-run-path.R	(sixth pass M36) each limit's measured consequences are its approach's own arm, read from the scored tables	0	0	1	0	Error in `ruvGroupAssociationConsequences()`: could not find function "ruvGroupAssociationConsequences"
+base	test-kit129-run-path.R	(fourth pass item 4) each omic's step writes the check on its W into the record; the panel shows it	11	4	0	0	Expected `record$ruv_group_association$ruv_group_association_outcome %in% c("detectable", "not_detectable")` to be TRUE. Differences: `actual`:   FALSE `expected`: TRUE  pos
+base	test-kit129-run-path.R	(fourth pass item 4) transcriptomics: the RUVs step's outcomes carry the check of its W	6	2	0	0	Expected `outcomes$ruv_group_association_outcome` to be identical to "no_limit". Differences: `actual`:   "not_calibrated" `expected`: "no_limit"       
+base	test-kit129-run-path.R	(fourth pass item 5) transcriptomics: a declared design's run publishes what exists for it and shows no grid	14	0	0	0	
+base	test-kit129-run-path.R	(fourth pass item 5) the RUV QC tab shows the legacy grid's frame only for a legacy run	3	0	0	0	
+base	test-kit129-run-path.R	(fifth pass item 3) classic proteomics: a supplied list on the run path equals the kernel, named by its hash and count	17	0	0	0	
+base	test-kit129-run-path.R	(fifth pass item 3) lipidomics and metabolomics: one supplied list on the run path, per assay, equals the kernel	19	0	0	0	
+base	test-kit129-run-path.R	(fifth pass item 4) transcriptomics: the separation rule on the declared run path reads the design's own controls	16	0	0	0	
+base	test-kit129-run-path.R	(fifth pass item 4) classic proteomics: with a supplied list the separation rule reads the list (arm 22)	6	0	0	0	
+base	test-kit129-run-path.R	(fifth pass item 4) lipidomics and metabolomics: the separation rule on the run path, per assay, with its plots	20	0	0	0	
+base	test-kit129-run-path.R	(sixth pass item 4) the record fields are one set; the methods follow from the DA method	0	0	1	0	Error in `ruvDesignRecordFields(ruv_design = "groups_all_features", ruv_k = 2L, ruv_da_method = "ruv_factors_exact_se_trend_robust", ruv_k_typed = NULL, ruv_control_list_count = integer())`: could not find function "ruvDesignRecordFields"
+base	test-kit129-run-path.R	(sixth pass items 4 to 6) classic proteomics: the record and the study parameters carry the design; save, reopen and replay give the same states	2	4	1	0	Expected `...[]` to be identical to `list(...)`. Differences:      names(actual) | names(expected)                 [1] "ruv_design"  | "ruv_design"              [1]   [2] NA            - "ruv_replicate_structure" [2]   [3] NA            - "ruv_grouping_variable"   [3]   [4] "ruv_k_rule"  | "ruv_k_rule"              [4]   [5] NA            - "ruv_control_rule"        [5]   [6] NA            - "ruv_
+base	test-kit129-run-path.R	(sixth pass items 4 and 5) lipidomics and metabolomics: the record carries the design per assay; save, reopen and replay give the same states	0	2	1	0	Expected `...[]` to be identical to `list(...)`. Differences:     names(actual) | names(expected)               [1] "ruv_design"  | "ruv_design"              [1] [2] "ruv_k_rule"  | "ruv_k_rule"              [2] [3] NA            - "ruv_control_rule"        [3] [4] NA            - "ruv_control_list_sha256" [4] [5] NA            - "ruv_da_method"           [5] [6] NA            - "ruv_se_method"   
+base	test-kit129-run-path.R	(sixth pass items 4 and 5) transcriptomics: the record carries the design; save, reopen and replay give the same states	5	2	1	0	Expected `...[]` to be identical to `list(...)`. Differences:     names(actual)             | names(expected)               [2] "ruv_k_rule"              | "ruv_k_rule"              [2] [3] "ruv_control_rule"        | "ruv_control_rule"        [3] [4] "ruv_control_list_sha256" | "ruv_control_list_sha256" [4] [5] NA                        - "ruv_da_method"           [5] [6] NA                      
+base	test-kit129-run-path.R	(sixth pass items 4 and 5) DIA with limpa: the record carries the declared rules; save, reopen and replay give the same states	2	4	0	0	Expected `...[]` to be identical to `list(...)`. Differences:     names(actual) | names(expected)               [1] NA            - "ruv_design"              [1] [2] NA            - "ruv_k_rule"              [2] [3] NA            - "ruv_control_rule"        [3] [4] NA            - "ruv_control_list_sha256" [4] [5] NA            - "ruv_da_method"           [5] [6] NA            - "ruv_test_method" 
+base	test-omic-norm-ruv-design.R	every omic carries the preset table: every design once, in four tiers, one recommended	182	0	0	0	
+base	test-omic-norm-ruv-design.R	each measured figure is the ticket's; the cells still running are pending, not numbers	106	0	0	0	
+base	test-omic-norm-ruv-design.R	each design offers the k rules defined for it, with the rule its figure was measured with selected	97	0	0	0	
+base	test-omic-norm-ruv-design.R	the texts shown name no internal arm, cell, ticket or question	4	0	0	0	
+base	test-omic-norm-ruv-design.R	the schema refuses an incomplete or inconsistent preset table by class, naming the field	40	0	0	0	
+base	test-omic-norm-ruv-design.R	the gate is off by default: no omic's tab shows the section, and its HTML is today's	17	0	0	0	
+base	test-omic-norm-ruv-design.R	with the gate off the server registers nothing for the section	1	0	0	0	
+base	test-omic-norm-ruv-design.R	with the gate on each omic's tab shows every design with its figure and note, today's controls under today's design	284	0	0	0	
+base	test-omic-norm-ruv-design.R	with the gate on the section is a block above the options column, its designs a comparison list	148	0	0	0	
+base	test-omic-norm-ruv-design.R	the figure text is the table's numbers in words; a pending or unavailable cell shows no number	9	0	0	0	
+base	test-omic-norm-ruv-design.R	the k rule's choices follow the selected design, and the route's table replaces the options	24	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) only the options a route's run path takes can be chosen; the others say why; the defaults are M2 and M6	44	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) the panel's choice reads the design, the k rule, the typed k, the seed and the list, and refuses in words	17	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) each omic's tab builds the run path's request from the choice; legacy builds today's; the gate off changes nothing	44	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) on a design with technical replicates the panel selects that design and refuses a closed one	7	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 2) a refused choice is the tab's error notice and the run does not start	4	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 3) each omic's product gives one result: the design, k and its rule, the count beside a typed k, the sets	12	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 3) the summary says what was done in the table's words	15	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 3) the tab renders the last run's summary and the estimated number's plot; the gate off sets nothing	3	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 3) refusals reach the tab's error notice with the kernel's message; DIA's None is shown as done	6	0	0	0	
+base	test-omic-norm-ruv-design.R	(fourth pass item 4; sixth pass M36) the panel shows the check: detectable, not detectable, no limit, not available	0	0	1	0	<subscriptOutOfBoundsError/error/condition> Error in `texts[["association_detectable"]]`: subscript out of bounds
+base	test-omic-norm-ruv-design.R	(fifth pass item 5) the RUV QC tab's column holds the panel's words for the recorded check	1	1	1	0	Expected `rows[[1L]]` to be identical to "pos". Differences: `actual`:         `expected`: "pos" 
+base	test-omic-norm-ruv-design.R	(fifth pass item 5) the DA tab shows the warning above the run button when the run that feeds it was flagged	1	0	1	0	<subscriptOutOfBoundsError/error/condition> Error in `texts[["association_detectable"]]`: subscript out of bounds
+base	test-dia-limpa-ruv-rules.R	the defaults are today's declaration and today's parameters; the rules are declared only when chosen	22	0	0	0	
+base	test-dia-limpa-ruv-rules.R	all proteins as controls with the estimated count reproduces the simulator's arm 7 on each DPC engine	114	0	0	0	
+base	test-dia-limpa-ruv-rules.R	declared technical replicates stay RUV-III's replicate sets on this route (arm 16; the count as arm 29, M28)	14	0	0	0	
+base	test-dia-limpa-ruv-rules.R	an estimated count of 0 is a run without RUV, with a notice and the reason on the state	15	0	0	0	
+base	test-dia-limpa-ruv-rules.R	a supplied control list with the estimated count is the simulator's arm 8 computation	15	3	0	0	Expected `separation$sweep` to be NULL. Differences: `actual` is a list `expected` is NULL 
+base	test-dia-limpa-ruv-rules.R	first-pass nulls with the sweep's k is the simulator's arm 5	17	0	0	0	
+base	test-dia-limpa-ruv-rules.R	a user's k is used as given; what the data or the installation cannot give is refused or leaves the run without RUV	16	0	0	0	
+base	test-dia-limpa-ruv-rules.R	the declared rules run through the saved operation; today's declaration on the same source is another product	26	0	0	0	
+base	test-dia-limpa-ruv-rules.R	a run without RUV is recorded as one: product, state, commit, run description and integration input (audit F2)	26	0	0	0	
+base	test-dia-limpa-ruv-rules.R	a refused automatic k is a run without RUV in the product and the commit, as an estimate of 0 is (audit F2)	8	0	0	0	
+base	test-dia-limpa-ruv-rules.R	today's declaration refuses the rule parameters, on a computed run and on a saved product (audit F3)	14	0	0	0	
+base	test-dia-limpa-ruv-rules.R	the DA refuses, naming k, a model that leaves no residual degree of freedom (audit F4)	9	0	0	0	
+base	test-dia-limpa-ruv-rules.R	a supplied list matched in part runs with a warning that gives the matched and listed counts (audit F6)	7	0	0	0	
+base	test-dia-limpa-ruv-rules.R	with three groups the first pass is the F test of the group differences, not one contrast (audit F8, F10)	5	0	0	0	
+base	test-dia-limpa-ruv-rules.R	an error of the estimate does not stop a run whose k the user gave (audit F11)	2	0	0	0	
+base	test-dia-limpa-ruv-rules.R	the count's record says what it removed: the biological units with technical replicates, else the groups (audit F1; M28)	3	0	0	0	
+base	test-dia-limpa-ruv-rules.R	the shared runner refuses today's declaration the rule parameters before a saved product is returned (KIT-129 B1)	14	0	0	0	
+base	test-dia-limpa-ruv-rules.R	with technical replicates a declared state needs a residual degree of freedom between the units at the DA (M28)	3	0	0	0	
+base	test-dia-limpa-ruv-rules.R	the legacy DA (no RUV, today's covariates) is unchanged by the exact standard errors (M29)	0	1	0	0	Expected `limpaRuvLegacyDigests()` to be identical to `c(no_ruv = "b1316e237d8b23073dba131c0daba919", todays_covariates = "a610463e3967a448bafeb71dfbf2e068")`. Differences:     actual                             | expected                               [1] "556011c50ad50b5054fb7aa83570c093" - "b1316e237d8b23073dba131c0daba919" [1] [2] "5cfbd8064c4c87d8615df94bc85faa39" - "a610463e3967a448bafeb71df
+head	test-kit129-run-path.R	(item 1) a request runs the new design's declaration only when it names the design, and today's otherwise	13	0	0	0	
+head	test-kit129-run-path.R	(item 1) today's declarations refuse the new design's parameters, the RUV step's and the DA method	14	0	0	0	
+head	test-kit129-run-path.R	(item 1) with the gate off the tab's requests are today's; with it on they carry the design the tab names	8	0	0	0	
+head	test-kit129-run-path.R	(item 1) classic proteomics: the compute half runs the new design and its DA names the method in the identity	8	0	0	0	
+head	test-kit129-run-path.R	(item 1) lipidomics and metabolomics: the new design and its DA in process and on the worker	28	0	0	0	
+head	test-kit129-run-path.R	(item 2) classic proteomics: the option set's None declares itself and is tested with the trend and robust settings (M30)	10	0	0	0	
+head	test-kit129-run-path.R	(item 2) classic proteomics: a count of 0 declares the design without factors and is tested as None	4	0	0	0	
+head	test-kit129-run-path.R	(item 2) classic proteomics: the factors-in-the-model test is saved under identities that name it	3	0	0	0	
+head	test-kit129-run-path.R	(item 2) DIA with limpa: the DA declaration of a declared state refuses a source whose declaration names another method	3	0	0	0	
+head	test-kit129-run-path.R	(item 2) lipidomics: the option set's None is tested as today's test, under its own identity	4	0	0	0	
+head	test-kit129-run-path.R	(item 3) transcriptomics: a k given under the estimated count is refused on the run path; the user's k records the count beside it	9	0	0	0	
+head	test-kit129-run-path.R	(item 3) classic proteomics: the step's record names the design, the rule, the estimate and the seed	4	0	0	0	
+head	test-kit129-run-path.R	(item 3) lipidomics: the step's record names the design, the rule, the estimate per assay and the seed	8	0	0	0	
+head	test-kit129-run-path.R	(item 5) classic proteomics: in process, by the worker's handlers and by the kernel, one result	3	0	0	1	
+head	test-kit129-run-path.R	(item 5) DIA with limpa: in process, by the worker's handlers and by the kernel, one result	6	0	0	0	
+head	test-kit129-run-path.R	(item 5) transcriptomics: the declared design in process, on the worker and by the kernel, one result	10	0	0	0	
+head	test-kit129-run-path.R	(item 5) lipidomics and metabolomics: in process, on the worker and by the kernel, one result	8	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) classic proteomics: the technical-replicate design on the run path equals the kernel; refused without technical replicates	10	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) classic proteomics: first-pass nulls on the run path equal the kernel, with the user's k and the separation rule	8	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) lipidomics and metabolomics: the technical-replicate design on the run path equals the kernel and records its structure	23	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) lipidomics and metabolomics: first-pass nulls on the run path equal the kernel	8	0	0	0	
+head	test-kit129-run-path.R	(third pass item 3) DIA with limpa and transcriptomics: first-pass nulls reach the run path's declared step	9	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 1) lipidomics and metabolomics: the declared RUV step's identity states the replicate structure by design	6	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 2) the panel's choice runs in process and on the worker as one product; the head's technical replicates are read	10	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 4) the thresholds table is the calibration's: validated designs only, with their sources	13	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 4) the statistic is the calibration's; the check gives a verdict where validated and none elsewhere	13	0	0	0	
+head	test-kit129-run-path.R	(sixth pass M35) with a typed k the check gives a verdict only when the typed k equals the estimated number	7	0	0	0	
+head	test-kit129-run-path.R	(sixth pass M36) each limit's measured consequences are its approach's own arm, read from the scored tables	36	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 4) each omic's step writes the check on its W into the record; the panel shows it	15	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 4) transcriptomics: the RUVs step's outcomes carry the check of its W	8	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 5) transcriptomics: a declared design's run publishes what exists for it and shows no grid	14	0	0	0	
+head	test-kit129-run-path.R	(fourth pass item 5) the RUV QC tab shows the legacy grid's frame only for a legacy run	3	0	0	0	
+head	test-kit129-run-path.R	(fifth pass item 3) classic proteomics: a supplied list on the run path equals the kernel, named by its hash and count	17	0	0	0	
+head	test-kit129-run-path.R	(fifth pass item 3) lipidomics and metabolomics: one supplied list on the run path, per assay, equals the kernel	19	0	0	0	
+head	test-kit129-run-path.R	(fifth pass item 4) transcriptomics: the separation rule on the declared run path reads the design's own controls	16	0	0	0	
+head	test-kit129-run-path.R	(fifth pass item 4) classic proteomics: with a supplied list the separation rule reads the list (arm 22)	6	0	0	0	
+head	test-kit129-run-path.R	(fifth pass item 4) lipidomics and metabolomics: the separation rule on the run path, per assay, with its plots	20	0	0	0	
+head	test-kit129-run-path.R	(sixth pass item 4) the record fields are one set; the methods follow from the DA method	13	0	0	0	
+head	test-kit129-run-path.R	(sixth pass items 4 to 6) classic proteomics: the record and the study parameters carry the design; save, reopen and replay give the same states	23	0	0	0	
+head	test-kit129-run-path.R	(sixth pass items 4 and 5) lipidomics and metabolomics: the record carries the design per assay; save, reopen and replay give the same states	16	2	0	0	Expected `as.character(saved$replay$mismatches)` to be identical to `character()`. Differences: `actual`:   "lipid_ruv_corrected/summary" `expected`:                               lipidomics
+head	test-kit129-run-path.R	(sixth pass items 4 and 5) transcriptomics: the record carries the design; save, reopen and replay give the same states	10	0	0	0	
+head	test-kit129-run-path.R	(sixth pass items 4 and 5) DIA with limpa: the record carries the declared rules; save, reopen and replay give the same states	5	1	0	0	Expected `kit129StepParameter(step, "ruv_control_ids")` to be identical to `rev(listed)`. Differences:      actual       | expected           [1] "Protein002" - "Protein119" [1]   [2] "Protein005" - "Protein116" [2]   [3] "Protein008" - "Protein113" [3]   [4] "Protein011" - "Protein110" [4]   [5] "Protein014" - "Protein107" [5]   [6] "Protein017" - "Protein104" [6]   [7] "Protein020" - "Protein101
+head	test-omic-norm-ruv-design.R	every omic carries the preset table: every design once, in four tiers, one recommended	182	0	0	0	NA
+head	test-omic-norm-ruv-design.R	each measured figure is the ticket's; the cells still running are pending, not numbers	106	0	0	0	NA
+head	test-omic-norm-ruv-design.R	each design offers the k rules defined for it, with the rule its figure was measured with selected	97	0	0	0	NA
+head	test-omic-norm-ruv-design.R	the texts shown name no internal arm, cell, ticket or question	4	0	0	0	NA
+head	test-omic-norm-ruv-design.R	the schema refuses an incomplete or inconsistent preset table by class, naming the field	40	0	0	0	NA
+head	test-omic-norm-ruv-design.R	the gate is off by default: no omic's tab shows the section, and its HTML is today's	17	0	0	0	NA
+head	test-omic-norm-ruv-design.R	with the gate off the server registers nothing for the section	1	0	0	0	NA
+head	test-omic-norm-ruv-design.R	with the gate on each omic's tab shows every design with its figure and note, today's controls under today's design	284	0	0	0	NA
+head	test-omic-norm-ruv-design.R	with the gate on the section is a block above the options column, its designs a comparison list	148	0	0	0	NA
+head	test-omic-norm-ruv-design.R	the figure text is the table's numbers in words; a pending or unavailable cell shows no number	9	0	0	0	NA
+head	test-omic-norm-ruv-design.R	the k rule's choices follow the selected design, and the route's table replaces the options	24	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) only the options a route's run path takes can be chosen; the others say why; the defaults are M2 and M6	44	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) the panel's choice reads the design, the k rule, the typed k, the seed and the list, and refuses in words	17	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) each omic's tab builds the run path's request from the choice; legacy builds today's; the gate off changes nothing	44	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) on a design with technical replicates the panel selects that design and refuses a closed one	7	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 2) a refused choice is the tab's error notice and the run does not start	4	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 3) each omic's product gives one result: the design, k and its rule, the count beside a typed k, the sets	12	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 3) the summary says what was done in the table's words	15	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 3) the tab renders the last run's summary and the estimated number's plot; the gate off sets nothing	3	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 3) refusals reach the tab's error notice with the kernel's message; DIA's None is shown as done	6	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fourth pass item 4; sixth pass M36) the panel shows the check: detectable, not detectable, no limit, not available	18	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fifth pass item 5) the RUV QC tab's column holds the panel's words for the recorded check	10	0	0	0	NA
+head	test-omic-norm-ruv-design.R	(fifth pass item 5) the DA tab shows the warning above the run button when the run that feeds it was flagged	14	0	0	0	NA
+head	test-dia-limpa-ruv-rules.R	the defaults are today's declaration and today's parameters; the rules are declared only when chosen	22	0	0	0	
+head	test-dia-limpa-ruv-rules.R	all proteins as controls with the estimated count reproduces the simulator's arm 7 on each DPC engine	114	0	0	0	
+head	test-dia-limpa-ruv-rules.R	declared technical replicates stay RUV-III's replicate sets on this route (arm 16; the count as arm 29, M28)	14	0	0	0	
+head	test-dia-limpa-ruv-rules.R	an estimated count of 0 is a run without RUV, with a notice and the reason on the state	15	0	0	0	
+head	test-dia-limpa-ruv-rules.R	a supplied control list with the estimated count is the simulator's arm 8 computation	18	0	0	0	
+head	test-dia-limpa-ruv-rules.R	first-pass nulls with the sweep's k is the simulator's arm 5	17	0	0	0	
+head	test-dia-limpa-ruv-rules.R	a user's k is used as given; what the data or the installation cannot give is refused or leaves the run without RUV	16	0	0	0	
+head	test-dia-limpa-ruv-rules.R	the declared rules run through the saved operation; today's declaration on the same source is another product	26	0	0	0	
+head	test-dia-limpa-ruv-rules.R	a run without RUV is recorded as one: product, state, commit, run description and integration input (audit F2)	26	0	0	0	
+head	test-dia-limpa-ruv-rules.R	a refused automatic k is a run without RUV in the product and the commit, as an estimate of 0 is (audit F2)	8	0	0	0	
+head	test-dia-limpa-ruv-rules.R	today's declaration refuses the rule parameters, on a computed run and on a saved product (audit F3)	14	0	0	0	
+head	test-dia-limpa-ruv-rules.R	the DA refuses, naming k, a model that leaves no residual degree of freedom (audit F4)	9	0	0	0	
+head	test-dia-limpa-ruv-rules.R	a supplied list matched in part runs with a warning that gives the matched and listed counts (audit F6)	7	0	0	0	
+head	test-dia-limpa-ruv-rules.R	with three groups the first pass is the F test of the group differences, not one contrast (audit F8, F10)	5	0	0	0	
+head	test-dia-limpa-ruv-rules.R	an error of the estimate does not stop a run whose k the user gave (audit F11)	2	0	0	0	
+head	test-dia-limpa-ruv-rules.R	the count's record says what it removed: the biological units with technical replicates, else the groups (audit F1; M28)	3	0	0	0	
+head	test-dia-limpa-ruv-rules.R	the shared runner refuses today's declaration the rule parameters before a saved product is returned (KIT-129 B1)	14	0	0	0	
+head	test-dia-limpa-ruv-rules.R	with technical replicates a declared state needs a residual degree of freedom between the units at the DA (M28)	3	0	0	0	
+head	test-dia-limpa-ruv-rules.R	the legacy DA (no RUV, today's covariates) is unchanged by the exact standard errors (M29)	0	1	0	0	Expected `limpaRuvLegacyDigests()` to be identical to `c(no_ruv = "b1316e237d8b23073dba131c0daba919", todays_covariates = "a610463e3967a448bafeb71dfbf2e068")`. Differences:     actual                             | expected                               [1] "556011c50ad50b5054fb7aa83570c093" - "b1316e237d8b23073dba131c0daba919" [1] [2] "5cfbd8064c4c87d8615df94bc85faa39" - "a610463e3967a448bafeb71df
