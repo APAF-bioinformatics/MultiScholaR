@@ -1,0 +1,20 @@
+source	cpu	arm	iterations	abs_r	this_run_jobs_same_cpu	this_run_iterations	this_run_F1
+first run k151-main-7	Intel(R) Xeon(R) 6973P-C	cap1000	76	0.996281578887217	0		
+first run k151-main-7	Intel(R) Xeon(R) 6973P-C	cap10000	26	0.872284132353165	0		
+first run k151-main-7	Intel(R) Xeon(R) 6973P-C	cap2000	51	0.965036148201924	0		
+first run k151-main-7	Intel(R) Xeon(R) 6973P-C	cap5000	31	0.899937500530587	0		
+first run k151-main-7	Intel(R) Xeon(R) 6973P-C	none	26	0.846351199536112	0		
+first run k151-main-7	Intel(R) Xeon(R) 6973P-C	scale_views	26	0.84768629785176	0		
+first run k151-main-7	Intel(R) Xeon(R) 6973P-C	weight_views	166	0.853768469739006	0		
+first run k151-main-7	Intel(R) Xeon(R) 6973P-C	zscore	21	0.840816801542053	0		
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	cap1000	76	0.996325652465684	6	76	0.996326
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	cap2000	46	0.961824596391847	6	46	0.961825
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	cap250	101	0.996552958454826	0		
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	cap500	111	0.996197475811187	0		
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	cap5000	36	0.903202427492919	6	36	0.903202
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	noisy_cap1000	86	0.990184544880189	0		
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	noisy_cap2000	66	0.988122042982142	0		
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	none	26	0.847671151700246	6	26	0.847671
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	scale_views	26	0.848923841725919	6	26	0.848924
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	weight_views	106	0.925145453063646	6	106	0.925145
+follow-up k151f-n20weak-7	AMD EPYC 7763 64-Core Processor	zscore	21	0.838939225206843	6	21	0.838939

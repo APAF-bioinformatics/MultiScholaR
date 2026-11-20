@@ -1,0 +1,9 @@
+job	cpu_model	status	failed_cells	RUVIIIC	ruv	seconds
+ruv	INTEL(R) XEON(R) PLATINUM 8573C	0	0	1.0.19	0.9.7.1	52.36
+ruv	AMD EPYC 9V74 80-Core Processor	0	0	1.0.19	0.9.7.1	64.54
+ruv	AMD EPYC 7763 64-Core Processor	0	0	1.0.19	0.9.7.1	71.84
+ruv	AMD EPYC 9V74 80-Core Processor	0	0	1.0.19	0.9.7.1	59.22
+ruv	AMD EPYC 9V74 80-Core Processor	0	0	1.0.19	0.9.7.1	125.84
+ruv	AMD EPYC 9V74 80-Core Processor	0	0	1.0.19	0.9.7.1	136.94
+ruv	AMD EPYC 7763 64-Core Processor	0	0	1.0.19	0.9.7.1	169.4
+ruv	AMD EPYC 9V74 80-Core Processor	0	0	1.0.19	0.9.7.1	128.39

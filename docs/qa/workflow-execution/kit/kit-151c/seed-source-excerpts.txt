@@ -1,0 +1,557 @@
+mofapy2 installed at /home/runner/work/_temp/bundle/python/lib/python3.12/site-packages/mofapy2; scikit-learn at /home/runner/work/_temp/bundle/python/lib/python3.12/site-packages/sklearn
+---- mofapy2/build_model/build_model.py:47
+mofapy2/build_model/build_model.py:45:     def main(self):
+mofapy2/build_model/build_model.py:46:         # create an instance of initModel
+mofapy2/build_model/build_model.py:47:         self.init_model = initModel(
+mofapy2/build_model/build_model.py:48:             dim=self.dim,
+mofapy2/build_model/build_model.py:49:             data=self.data,
+mofapy2/build_model/build_model.py:50:             lik=self.model_opts["likelihoods"],
+mofapy2/build_model/build_model.py:51:             groups=self.data_opts["samples_groups"],
+mofapy2/build_model/build_model.py:52:             seed=self.train_opts["seed"],
+mofapy2/build_model/build_model.py:53:         )
+---- mofapy2/build_model/build_model.py:52
+mofapy2/build_model/build_model.py:50:             lik=self.model_opts["likelihoods"],
+mofapy2/build_model/build_model.py:51:             groups=self.data_opts["samples_groups"],
+mofapy2/build_model/build_model.py:52:             seed=self.train_opts["seed"],
+mofapy2/build_model/build_model.py:53:         )
+mofapy2/build_model/build_model.py:54: 
+mofapy2/build_model/build_model.py:55:         # Build all nodes
+mofapy2/build_model/build_model.py:56:         self.build_nodes()
+mofapy2/build_model/build_model.py:57: 
+mofapy2/build_model/build_model.py:58:         # Define markov blankets
+---- mofapy2/build_model/build_model.py:88
+mofapy2/build_model/build_model.py:86:     def build_Y(self):
+mofapy2/build_model/build_model.py:87:         """Build node Y for the observations"""
+mofapy2/build_model/build_model.py:88:         self.init_model.initY()
+mofapy2/build_model/build_model.py:89: 
+mofapy2/build_model/build_model.py:90:     def build_Z(self):
+mofapy2/build_model/build_model.py:91:         """Build node Z for the factors or latent variables"""
+mofapy2/build_model/build_model.py:92:         if self.model_opts["spikeslab_factors"]:
+mofapy2/build_model/build_model.py:93:             # self.init_model.initSZ(qmean_T1=0)
+mofapy2/build_model/build_model.py:94:             # self.init_model.initSZ(qmean_T1="random")
+---- mofapy2/build_model/build_model.py:93
+mofapy2/build_model/build_model.py:91:         """Build node Z for the factors or latent variables"""
+mofapy2/build_model/build_model.py:92:         if self.model_opts["spikeslab_factors"]:
+mofapy2/build_model/build_model.py:93:             # self.init_model.initSZ(qmean_T1=0)
+mofapy2/build_model/build_model.py:94:             # self.init_model.initSZ(qmean_T1="random")
+mofapy2/build_model/build_model.py:95:             self.init_model.initSZ(
+mofapy2/build_model/build_model.py:96:                 qmean_T1="pca",
+mofapy2/build_model/build_model.py:97:                 Y=self.data,
+mofapy2/build_model/build_model.py:98:                 impute=True,
+mofapy2/build_model/build_model.py:99:                 weight_views=self.train_opts["weight_views"],
+---- mofapy2/build_model/build_model.py:94
+mofapy2/build_model/build_model.py:92:         if self.model_opts["spikeslab_factors"]:
+mofapy2/build_model/build_model.py:93:             # self.init_model.initSZ(qmean_T1=0)
+mofapy2/build_model/build_model.py:94:             # self.init_model.initSZ(qmean_T1="random")
+mofapy2/build_model/build_model.py:95:             self.init_model.initSZ(
+mofapy2/build_model/build_model.py:96:                 qmean_T1="pca",
+mofapy2/build_model/build_model.py:97:                 Y=self.data,
+mofapy2/build_model/build_model.py:98:                 impute=True,
+mofapy2/build_model/build_model.py:99:                 weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:100:             )
+---- mofapy2/build_model/build_model.py:95
+mofapy2/build_model/build_model.py:93:             # self.init_model.initSZ(qmean_T1=0)
+mofapy2/build_model/build_model.py:94:             # self.init_model.initSZ(qmean_T1="random")
+mofapy2/build_model/build_model.py:95:             self.init_model.initSZ(
+mofapy2/build_model/build_model.py:96:                 qmean_T1="pca",
+mofapy2/build_model/build_model.py:97:                 Y=self.data,
+mofapy2/build_model/build_model.py:98:                 impute=True,
+mofapy2/build_model/build_model.py:99:                 weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:100:             )
+mofapy2/build_model/build_model.py:101:         else:
+---- mofapy2/build_model/build_model.py:102
+mofapy2/build_model/build_model.py:100:             )
+mofapy2/build_model/build_model.py:101:         else:
+mofapy2/build_model/build_model.py:102:             # self.init_model.initZ(qmean=0)
+mofapy2/build_model/build_model.py:103:             # self.init_model.initZ(qmean="random")
+mofapy2/build_model/build_model.py:104:             self.init_model.initZ(
+mofapy2/build_model/build_model.py:105:                 qmean="pca",
+mofapy2/build_model/build_model.py:106:                 Y=self.data,
+mofapy2/build_model/build_model.py:107:                 impute=True,
+mofapy2/build_model/build_model.py:108:                 weight_views=self.train_opts["weight_views"],
+---- mofapy2/build_model/build_model.py:103
+mofapy2/build_model/build_model.py:101:         else:
+mofapy2/build_model/build_model.py:102:             # self.init_model.initZ(qmean=0)
+mofapy2/build_model/build_model.py:103:             # self.init_model.initZ(qmean="random")
+mofapy2/build_model/build_model.py:104:             self.init_model.initZ(
+mofapy2/build_model/build_model.py:105:                 qmean="pca",
+mofapy2/build_model/build_model.py:106:                 Y=self.data,
+mofapy2/build_model/build_model.py:107:                 impute=True,
+mofapy2/build_model/build_model.py:108:                 weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:109:             )
+---- mofapy2/build_model/build_model.py:104
+mofapy2/build_model/build_model.py:102:             # self.init_model.initZ(qmean=0)
+mofapy2/build_model/build_model.py:103:             # self.init_model.initZ(qmean="random")
+mofapy2/build_model/build_model.py:104:             self.init_model.initZ(
+mofapy2/build_model/build_model.py:105:                 qmean="pca",
+mofapy2/build_model/build_model.py:106:                 Y=self.data,
+mofapy2/build_model/build_model.py:107:                 impute=True,
+mofapy2/build_model/build_model.py:108:                 weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:109:             )
+mofapy2/build_model/build_model.py:110: 
+---- mofapy2/build_model/build_model.py:114
+mofapy2/build_model/build_model.py:112:         """Build node W for the weights"""
+mofapy2/build_model/build_model.py:113:         if self.model_opts["spikeslab_weights"]:
+mofapy2/build_model/build_model.py:114:             self.init_model.initSW(qmean_S1=0)
+mofapy2/build_model/build_model.py:115:             # self.init_model.initSW(qmean_S1="random", Y=self.data)
+mofapy2/build_model/build_model.py:116:             # self.init_model.initSW(qmean_S1="pca", Y=self.data)
+mofapy2/build_model/build_model.py:117:         else:
+mofapy2/build_model/build_model.py:118:             self.init_model.initW(qmean=0)
+mofapy2/build_model/build_model.py:119:             # self.init_model.initW(qmean="random", Y=self.data)
+mofapy2/build_model/build_model.py:120:             # self.init_model.initW(qmean="pca", Y=self.data)
+---- mofapy2/build_model/build_model.py:115
+mofapy2/build_model/build_model.py:113:         if self.model_opts["spikeslab_weights"]:
+mofapy2/build_model/build_model.py:114:             self.init_model.initSW(qmean_S1=0)
+mofapy2/build_model/build_model.py:115:             # self.init_model.initSW(qmean_S1="random", Y=self.data)
+mofapy2/build_model/build_model.py:116:             # self.init_model.initSW(qmean_S1="pca", Y=self.data)
+mofapy2/build_model/build_model.py:117:         else:
+mofapy2/build_model/build_model.py:118:             self.init_model.initW(qmean=0)
+mofapy2/build_model/build_model.py:119:             # self.init_model.initW(qmean="random", Y=self.data)
+mofapy2/build_model/build_model.py:120:             # self.init_model.initW(qmean="pca", Y=self.data)
+mofapy2/build_model/build_model.py:121: 
+---- mofapy2/build_model/build_model.py:116
+mofapy2/build_model/build_model.py:114:             self.init_model.initSW(qmean_S1=0)
+mofapy2/build_model/build_model.py:115:             # self.init_model.initSW(qmean_S1="random", Y=self.data)
+mofapy2/build_model/build_model.py:116:             # self.init_model.initSW(qmean_S1="pca", Y=self.data)
+mofapy2/build_model/build_model.py:117:         else:
+mofapy2/build_model/build_model.py:118:             self.init_model.initW(qmean=0)
+mofapy2/build_model/build_model.py:119:             # self.init_model.initW(qmean="random", Y=self.data)
+mofapy2/build_model/build_model.py:120:             # self.init_model.initW(qmean="pca", Y=self.data)
+mofapy2/build_model/build_model.py:121: 
+mofapy2/build_model/build_model.py:122:     def build_Tau(self):
+---- mofapy2/build_model/build_model.py:118
+mofapy2/build_model/build_model.py:116:             # self.init_model.initSW(qmean_S1="pca", Y=self.data)
+mofapy2/build_model/build_model.py:117:         else:
+mofapy2/build_model/build_model.py:118:             self.init_model.initW(qmean=0)
+mofapy2/build_model/build_model.py:119:             # self.init_model.initW(qmean="random", Y=self.data)
+mofapy2/build_model/build_model.py:120:             # self.init_model.initW(qmean="pca", Y=self.data)
+mofapy2/build_model/build_model.py:121: 
+mofapy2/build_model/build_model.py:122:     def build_Tau(self):
+mofapy2/build_model/build_model.py:123:         # TODO sort out how to choose where to use Tau
+mofapy2/build_model/build_model.py:124:         # initTau_qE = 100.
+---- mofapy2/build_model/build_model.py:119
+mofapy2/build_model/build_model.py:117:         else:
+mofapy2/build_model/build_model.py:118:             self.init_model.initW(qmean=0)
+mofapy2/build_model/build_model.py:119:             # self.init_model.initW(qmean="random", Y=self.data)
+mofapy2/build_model/build_model.py:120:             # self.init_model.initW(qmean="pca", Y=self.data)
+mofapy2/build_model/build_model.py:121: 
+mofapy2/build_model/build_model.py:122:     def build_Tau(self):
+mofapy2/build_model/build_model.py:123:         # TODO sort out how to choose where to use Tau
+mofapy2/build_model/build_model.py:124:         # initTau_qE = 100.
+mofapy2/build_model/build_model.py:125:         initTau_qE = None
+---- mofapy2/build_model/build_model.py:120
+mofapy2/build_model/build_model.py:118:             self.init_model.initW(qmean=0)
+mofapy2/build_model/build_model.py:119:             # self.init_model.initW(qmean="random", Y=self.data)
+mofapy2/build_model/build_model.py:120:             # self.init_model.initW(qmean="pca", Y=self.data)
+mofapy2/build_model/build_model.py:121: 
+mofapy2/build_model/build_model.py:122:     def build_Tau(self):
+mofapy2/build_model/build_model.py:123:         # TODO sort out how to choose where to use Tau
+mofapy2/build_model/build_model.py:124:         # initTau_qE = 100.
+mofapy2/build_model/build_model.py:125:         initTau_qE = None
+mofapy2/build_model/build_model.py:126: 
+---- mofapy2/build_model/build_model.py:127
+mofapy2/build_model/build_model.py:125:         initTau_qE = None
+mofapy2/build_model/build_model.py:126: 
+mofapy2/build_model/build_model.py:127:         self.init_model.initTau(qE=initTau_qE)
+mofapy2/build_model/build_model.py:128: 
+mofapy2/build_model/build_model.py:129:     def build_AlphaZ(self):
+mofapy2/build_model/build_model.py:130:         """Build node AlphaZ for the ARD prior on the factors"""
+mofapy2/build_model/build_model.py:131: 
+mofapy2/build_model/build_model.py:132:         # ARD prior per sample group
+mofapy2/build_model/build_model.py:133:         self.init_model.initAlphaZ()
+---- mofapy2/build_model/build_model.py:133
+mofapy2/build_model/build_model.py:131: 
+mofapy2/build_model/build_model.py:132:         # ARD prior per sample group
+mofapy2/build_model/build_model.py:133:         self.init_model.initAlphaZ()
+mofapy2/build_model/build_model.py:134: 
+mofapy2/build_model/build_model.py:135:     def build_AlphaW(self):
+mofapy2/build_model/build_model.py:136:         """Build node AlphaW for the ARD prior on the weights"""
+mofapy2/build_model/build_model.py:137: 
+mofapy2/build_model/build_model.py:138:         # ARD prior per factor and feature_group (view)
+mofapy2/build_model/build_model.py:139:         self.init_model.initAlphaW()
+---- mofapy2/build_model/build_model.py:139
+mofapy2/build_model/build_model.py:137: 
+mofapy2/build_model/build_model.py:138:         # ARD prior per factor and feature_group (view)
+mofapy2/build_model/build_model.py:139:         self.init_model.initAlphaW()
+mofapy2/build_model/build_model.py:140: 
+mofapy2/build_model/build_model.py:141:     def build_ThetaZ(self):
+mofapy2/build_model/build_model.py:142:         # TODO use mixed theta node instead when fixed in update and init -> should be ok then for intercept
+mofapy2/build_model/build_model.py:143:         """Build node ThetaZ for the Spike and Slab prior on the factors"""
+mofapy2/build_model/build_model.py:144: 
+mofapy2/build_model/build_model.py:145:         # Initialise hyperparameters for the ThetaZ prior
+---- mofapy2/build_model/build_model.py:151
+mofapy2/build_model/build_model.py:149:         # initTheta_qE = 1.
+mofapy2/build_model/build_model.py:150: 
+mofapy2/build_model/build_model.py:151:         self.init_model.initThetaZ(
+mofapy2/build_model/build_model.py:152:             qa=initTheta_a,
+mofapy2/build_model/build_model.py:153:             qb=initTheta_b,
+mofapy2/build_model/build_model.py:154:             qE=initTheta_qE,
+mofapy2/build_model/build_model.py:155:         )
+mofapy2/build_model/build_model.py:156: 
+mofapy2/build_model/build_model.py:157:     def build_ThetaW(self):
+---- mofapy2/build_model/build_model.py:166
+mofapy2/build_model/build_model.py:164:         # initTheta_qE = 1.
+mofapy2/build_model/build_model.py:165: 
+mofapy2/build_model/build_model.py:166:         self.init_model.initThetaW(qa=initTheta_a, qb=initTheta_b, qE=initTheta_qE)
+mofapy2/build_model/build_model.py:167: 
+mofapy2/build_model/build_model.py:168:     def createMarkovBlankets(self):
+mofapy2/build_model/build_model.py:169:         """Define the markov blankets"""
+mofapy2/build_model/build_model.py:170: 
+mofapy2/build_model/build_model.py:171:         # Fetch all nodes
+mofapy2/build_model/build_model.py:172:         nodes = self.get_nodes()
+---- mofapy2/build_model/build_model.py:220
+mofapy2/build_model/build_model.py:218:     def main(self):
+mofapy2/build_model/build_model.py:219:         # create an instance of initModel
+mofapy2/build_model/build_model.py:220:         self.init_model = initModel(
+mofapy2/build_model/build_model.py:221:             dim=self.dim,
+mofapy2/build_model/build_model.py:222:             data=self.data,
+mofapy2/build_model/build_model.py:223:             lik=self.model_opts["likelihoods"],
+mofapy2/build_model/build_model.py:224:             groups=self.data_opts["samples_groups"],
+mofapy2/build_model/build_model.py:225:             seed=self.train_opts["seed"],
+mofapy2/build_model/build_model.py:226:         )
+---- mofapy2/build_model/build_model.py:225
+mofapy2/build_model/build_model.py:223:             lik=self.model_opts["likelihoods"],
+mofapy2/build_model/build_model.py:224:             groups=self.data_opts["samples_groups"],
+mofapy2/build_model/build_model.py:225:             seed=self.train_opts["seed"],
+mofapy2/build_model/build_model.py:226:         )
+mofapy2/build_model/build_model.py:227: 
+mofapy2/build_model/build_model.py:228:         # Build all nodes
+mofapy2/build_model/build_model.py:229:         self.build_nodes()
+mofapy2/build_model/build_model.py:230: 
+mofapy2/build_model/build_model.py:231:         # Define markov blankets
+---- mofapy2/build_model/build_model.py:236
+mofapy2/build_model/build_model.py:234:     def build_Z(self):
+mofapy2/build_model/build_model.py:235:         """Build node Z for the factors"""
+mofapy2/build_model/build_model.py:236:         self.init_model.initZ_smooth(
+mofapy2/build_model/build_model.py:237:             qmean="pca",
+mofapy2/build_model/build_model.py:238:             Y=self.data,
+mofapy2/build_model/build_model.py:239:             impute=True,
+mofapy2/build_model/build_model.py:240:             weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:241:         )
+mofapy2/build_model/build_model.py:242: 
+---- mofapy2/build_model/build_model.py:246
+mofapy2/build_model/build_model.py:244:         """Build node for Z given U for the factors or latent variables conditioned on inducing points"""
+mofapy2/build_model/build_model.py:245: 
+mofapy2/build_model/build_model.py:246:         self.init_model.initZgU(
+mofapy2/build_model/build_model.py:247:             qmean="pca",
+mofapy2/build_model/build_model.py:248:             Y=self.data,
+mofapy2/build_model/build_model.py:249:             impute=True,
+mofapy2/build_model/build_model.py:250:             idx_inducing=self.smooth_opts["idx_inducing"],
+mofapy2/build_model/build_model.py:251:             weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:252:         )
+---- mofapy2/build_model/build_model.py:258
+mofapy2/build_model/build_model.py:256: 
+mofapy2/build_model/build_model.py:257:         # initialise U by PCA (no use of GP prior)
+mofapy2/build_model/build_model.py:258:         self.init_model.initU(
+mofapy2/build_model/build_model.py:259:             idx_inducing=self.smooth_opts["idx_inducing"],
+mofapy2/build_model/build_model.py:260:             weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:261:         )
+mofapy2/build_model/build_model.py:262: 
+mofapy2/build_model/build_model.py:263:     def build_Sigma(self):
+mofapy2/build_model/build_model.py:264:         """Build node Sigma for the GP prior on the factors"""
+---- mofapy2/build_model/build_model.py:276
+mofapy2/build_model/build_model.py:274:             # Non-Warping
+mofapy2/build_model/build_model.py:275:             else:
+mofapy2/build_model/build_model.py:276:                 self.init_model.initSigma_sparse(
+mofapy2/build_model/build_model.py:277:                     self.sample_cov,
+mofapy2/build_model/build_model.py:278:                     start_opt=self.smooth_opts["start_opt"],
+mofapy2/build_model/build_model.py:279:                     n_grid=self.smooth_opts["n_grid"],
+mofapy2/build_model/build_model.py:280:                     idx_inducing=self.smooth_opts["idx_inducing"],
+mofapy2/build_model/build_model.py:281:                     opt_freq=self.smooth_opts["opt_freq"],
+mofapy2/build_model/build_model.py:282:                     model_groups=self.smooth_opts["model_groups"],
+---- mofapy2/build_model/build_model.py:289
+mofapy2/build_model/build_model.py:287:             # Warping
+mofapy2/build_model/build_model.py:288:             if self.smooth_opts["warping"] is True:
+mofapy2/build_model/build_model.py:289:                 self.init_model.initSigma_warping(
+mofapy2/build_model/build_model.py:290:                     sample_cov=self.sample_cov,
+mofapy2/build_model/build_model.py:291:                     start_opt=self.smooth_opts["start_opt"],
+mofapy2/build_model/build_model.py:292:                     n_grid=self.smooth_opts["n_grid"],
+mofapy2/build_model/build_model.py:293:                     warping_freq=self.smooth_opts["warping_freq"],
+mofapy2/build_model/build_model.py:294:                     warping_ref=self.smooth_opts["warping_ref"],
+mofapy2/build_model/build_model.py:295:                     warping_open_begin=self.smooth_opts["warping_open_begin"],
+---- mofapy2/build_model/build_model.py:304
+mofapy2/build_model/build_model.py:302:             # Non-warping
+mofapy2/build_model/build_model.py:303:             else:
+mofapy2/build_model/build_model.py:304:                 self.init_model.initSigma(
+mofapy2/build_model/build_model.py:305:                     self.sample_cov,
+mofapy2/build_model/build_model.py:306:                     start_opt=self.smooth_opts["start_opt"],
+mofapy2/build_model/build_model.py:307:                     n_grid=self.smooth_opts["n_grid"],
+mofapy2/build_model/build_model.py:308:                     # idx_inducing = self.smooth_opts['idx_inducing'],
+mofapy2/build_model/build_model.py:309:                     # warping = self.smooth_opts['warping'],
+mofapy2/build_model/build_model.py:310:                     # warping_freq = self.smooth_opts['warping_freq'],
+---- mofapy2/build_model/init_model.py:30
+mofapy2/build_model/init_model.py:28: 
+mofapy2/build_model/init_model.py:29:         # Set seed
+mofapy2/build_model/init_model.py:30:         np.random.seed(seed)
+mofapy2/build_model/init_model.py:31: 
+mofapy2/build_model/init_model.py:32:         # Set groups
+mofapy2/build_model/init_model.py:33:         assert (
+mofapy2/build_model/init_model.py:34:             len(groups) == dim["N"]
+mofapy2/build_model/init_model.py:35:         ), "sample groups labels do not match number of samples"
+mofapy2/build_model/init_model.py:36:         self.groups = groups
+mofapy2/build_model/init_model.py:37:         self.groups_ix = np.unique(groups, return_inverse=True)[
+mofapy2/build_model/init_model.py:38:             1
+mofapy2/build_model/init_model.py:39:         ]  # convert groups into integers from 0 to n_groups
+mofapy2/build_model/init_model.py:40: 
+mofapy2/build_model/init_model.py:41:         # Set data
+mofapy2/build_model/init_model.py:42:         self.data = data
+mofapy2/build_model/init_model.py:43: 
+mofapy2/build_model/init_model.py:44:         # Set likelihoods
+mofapy2/build_model/init_model.py:45:         self.lik = lik
+mofapy2/build_model/init_model.py:46: 
+---- mofapy2/build_model/init_model.py:57
+mofapy2/build_model/init_model.py:55:         self.nodes = {}
+mofapy2/build_model/init_model.py:56: 
+mofapy2/build_model/init_model.py:57:     def initZ(
+mofapy2/build_model/init_model.py:58:         self,
+mofapy2/build_model/init_model.py:59:         pmean=0.0,
+mofapy2/build_model/init_model.py:60:         pvar=1.0,
+mofapy2/build_model/init_model.py:61:         qmean="random",
+mofapy2/build_model/init_model.py:62:         qvar=1.0,
+mofapy2/build_model/init_model.py:63:         qE=None,
+mofapy2/build_model/init_model.py:64:         qE2=None,
+mofapy2/build_model/init_model.py:65:         Y=None,
+mofapy2/build_model/init_model.py:66:         impute=False,
+mofapy2/build_model/init_model.py:67:         weight_views=False,
+mofapy2/build_model/init_model.py:68:     ):
+mofapy2/build_model/init_model.py:69:         """Method to initialise the latent variables
+mofapy2/build_model/init_model.py:70: 
+mofapy2/build_model/init_model.py:71:         PARAMETERS
+mofapy2/build_model/init_model.py:72:         ----------
+mofapy2/build_model/init_model.py:73:         pmean: mean of the prior distribution
+---- mofapy2/build_model/init_model.py:112
+mofapy2/build_model/init_model.py:110: 
+mofapy2/build_model/init_model.py:111:                 # PCA initialisation
+mofapy2/build_model/init_model.py:112:                 elif qmean == "pca":
+mofapy2/build_model/init_model.py:113:                     pca = sklearn.decomposition.PCA(n_components=self.K, whiten=True)
+mofapy2/build_model/init_model.py:114:                     Ytmp = np.concatenate(Y, axis=1)
+mofapy2/build_model/init_model.py:115: 
+mofapy2/build_model/init_model.py:116:                     if impute == True:
+mofapy2/build_model/init_model.py:117:                         if np.any(np.isnan(Ytmp)):
+mofapy2/build_model/init_model.py:118:                             imp = SimpleImputer(missing_values=np.nan, strategy="mean")
+mofapy2/build_model/init_model.py:119:                             imp.fit(Ytmp)
+mofapy2/build_model/init_model.py:120:                             Ytmp = imp.transform(Ytmp)
+mofapy2/build_model/init_model.py:121: 
+mofapy2/build_model/init_model.py:122:                     pca.fit(Ytmp)
+mofapy2/build_model/init_model.py:123:                     qmean = pca.transform(Ytmp)
+mofapy2/build_model/init_model.py:124: 
+mofapy2/build_model/init_model.py:125:                 # scale factor values from -1 to 1 (per factor)
+mofapy2/build_model/init_model.py:126:                 qmean = (
+mofapy2/build_model/init_model.py:127:                     2.0 * (qmean - np.min(qmean, axis=0)) / np.ptp(qmean, axis=0) - 1
+mofapy2/build_model/init_model.py:128:                 )
+---- mofapy2/build_model/init_model.py:212
+mofapy2/build_model/init_model.py:210: 
+mofapy2/build_model/init_model.py:211:                 # PCA initialisation
+mofapy2/build_model/init_model.py:212:                 elif qmean == "pca":
+mofapy2/build_model/init_model.py:213:                     pca = sklearn.decomposition.PCA(n_components=self.K, whiten=True)
+mofapy2/build_model/init_model.py:214:                     Ytmp = np.concatenate(Y, axis=1)
+mofapy2/build_model/init_model.py:215: 
+mofapy2/build_model/init_model.py:216:                     if impute == True:
+mofapy2/build_model/init_model.py:217:                         if np.any(np.isnan(Ytmp)):
+mofapy2/build_model/init_model.py:218:                             imp = SimpleImputer(missing_values=np.nan, strategy="mean")
+mofapy2/build_model/init_model.py:219:                             imp.fit(Ytmp)
+mofapy2/build_model/init_model.py:220:                             Ytmp = imp.transform(Ytmp)
+mofapy2/build_model/init_model.py:221: 
+mofapy2/build_model/init_model.py:222:                     pca.fit(Ytmp)
+mofapy2/build_model/init_model.py:223:                     qmean = pca.transform(Ytmp)
+mofapy2/build_model/init_model.py:224: 
+mofapy2/build_model/init_model.py:225:                 # scale factor values from -1 to 1 (per factor)
+mofapy2/build_model/init_model.py:226:                 qmean = (
+mofapy2/build_model/init_model.py:227:                     2.0 * (qmean - np.min(qmean, axis=0)) / np.ptp(qmean, axis=0) - 1
+mofapy2/build_model/init_model.py:228:                 )
+---- mofapy2/build_model/init_model.py:362
+mofapy2/build_model/init_model.py:360: 
+mofapy2/build_model/init_model.py:361:                 # PCA initialisation
+mofapy2/build_model/init_model.py:362:                 elif qmean == "pca":
+mofapy2/build_model/init_model.py:363:                     # whiten=True scales the principal components to match the prior N(0,1)
+mofapy2/build_model/init_model.py:364:                     pca = sklearn.decomposition.PCA(n_components=self.K, whiten=True)
+mofapy2/build_model/init_model.py:365:                     Ytmp = np.concatenate(Y, axis=1)
+mofapy2/build_model/init_model.py:366: 
+mofapy2/build_model/init_model.py:367:                     if impute == True:
+mofapy2/build_model/init_model.py:368:                         if np.any(np.isnan(Ytmp)):
+mofapy2/build_model/init_model.py:369:                             imp = SimpleImputer(missing_values=np.nan, strategy="mean")
+mofapy2/build_model/init_model.py:370:                             imp.fit(Ytmp)
+mofapy2/build_model/init_model.py:371:                             Ytmp = imp.transform(Ytmp)
+mofapy2/build_model/init_model.py:372: 
+mofapy2/build_model/init_model.py:373:                     pca.fit(Ytmp)
+mofapy2/build_model/init_model.py:374:                     qmean = pca.transform(Ytmp)
+mofapy2/build_model/init_model.py:375: 
+mofapy2/build_model/init_model.py:376:                 # scale factor values from -1 to 1 (per factor)
+mofapy2/build_model/init_model.py:377:                 qmean = (
+mofapy2/build_model/init_model.py:378:                     2.0 * (qmean - np.min(qmean, axis=0)) / np.ptp(qmean, axis=0) - 1
+---- mofapy2/build_model/init_model.py:557
+mofapy2/build_model/init_model.py:555:         )
+mofapy2/build_model/init_model.py:556: 
+mofapy2/build_model/init_model.py:557:     def initW(
+mofapy2/build_model/init_model.py:558:         self, pmean=0.0, pvar=1.0, qmean="random", qvar=1.0, qE=None, qE2=None, Y=None
+mofapy2/build_model/init_model.py:559:     ):
+mofapy2/build_model/init_model.py:560:         """Method to initialise the weights
+mofapy2/build_model/init_model.py:561: 
+mofapy2/build_model/init_model.py:562:         PARAMETERS
+mofapy2/build_model/init_model.py:563:         ----------
+mofapy2/build_model/init_model.py:564:         pmean: mean of the prior distribution
+mofapy2/build_model/init_model.py:565:         pvar: variance of the prior distribution
+mofapy2/build_model/init_model.py:566:         qmean: initial value of the mean of the variational distribution
+mofapy2/build_model/init_model.py:567:         qvar: initial value of the variance of the variational distribution
+mofapy2/build_model/init_model.py:568:         qE: initial value of the expectation of the variational distribution
+mofapy2/build_model/init_model.py:569:         qE2: initial value of the second moment of the variational distribution
+mofapy2/build_model/init_model.py:570:         """
+mofapy2/build_model/init_model.py:571: 
+mofapy2/build_model/init_model.py:572:         W_list = [None] * self.M
+mofapy2/build_model/init_model.py:573: 
+---- mofapy2/build_model/init_model.py:632
+mofapy2/build_model/init_model.py:630:         self.nodes["W"] = Multiview_Variational_Node(self.M, *W_list)
+mofapy2/build_model/init_model.py:631: 
+mofapy2/build_model/init_model.py:632:     def initSW(
+mofapy2/build_model/init_model.py:633:         self,
+mofapy2/build_model/init_model.py:634:         pmean_S0=0.0,
+mofapy2/build_model/init_model.py:635:         pmean_S1=0.0,
+mofapy2/build_model/init_model.py:636:         pvar_S0=1.0,
+mofapy2/build_model/init_model.py:637:         pvar_S1=1.0,
+mofapy2/build_model/init_model.py:638:         ptheta=1.0,
+mofapy2/build_model/init_model.py:639:         qmean_S0=0.0,
+mofapy2/build_model/init_model.py:640:         qmean_S1="random",
+mofapy2/build_model/init_model.py:641:         qvar_S0=1.0,
+mofapy2/build_model/init_model.py:642:         qvar_S1=1.0,
+mofapy2/build_model/init_model.py:643:         qtheta=1.0,
+mofapy2/build_model/init_model.py:644:         qEW_S0=None,
+mofapy2/build_model/init_model.py:645:         qEW_S1=None,
+mofapy2/build_model/init_model.py:646:         qES=None,
+mofapy2/build_model/init_model.py:647:         Y=None,
+mofapy2/build_model/init_model.py:648:     ):
+---- mofapy2/run/entry_point.py:872
+mofapy2/run/entry_point.py:871:         quiet=False,
+mofapy2/run/entry_point.py:872:         seed=None,
+mofapy2/run/entry_point.py:873:         schedule=None,
+mofapy2/run/entry_point.py:874:         gpu_mode=False,
+---- mofapy2/run/entry_point.py:1016
+mofapy2/run/entry_point.py:1015:         # Seed
+mofapy2/run/entry_point.py:1016:         if seed is None:  # Seed for the random number generator
+mofapy2/run/entry_point.py:1017:             seed = int(round(time() * 1000) % 1e6)
+mofapy2/run/entry_point.py:1018:         self.train_opts["seed"] = int(seed)
+---- mofapy2/run/entry_point.py:1017
+mofapy2/run/entry_point.py:1016:         if seed is None:  # Seed for the random number generator
+mofapy2/run/entry_point.py:1017:             seed = int(round(time() * 1000) % 1e6)
+mofapy2/run/entry_point.py:1018:         self.train_opts["seed"] = int(seed)
+mofapy2/run/entry_point.py:1019:         # np.random.seed(self.train_opts['seed'])
+---- mofapy2/run/entry_point.py:1018
+mofapy2/run/entry_point.py:1017:             seed = int(round(time() * 1000) % 1e6)
+mofapy2/run/entry_point.py:1018:         self.train_opts["seed"] = int(seed)
+mofapy2/run/entry_point.py:1019:         # np.random.seed(self.train_opts['seed'])
+mofapy2/run/entry_point.py:1020: 
+---- mofapy2/run/entry_point.py:1019
+mofapy2/run/entry_point.py:1018:         self.train_opts["seed"] = int(seed)
+mofapy2/run/entry_point.py:1019:         # np.random.seed(self.train_opts['seed'])
+mofapy2/run/entry_point.py:1020: 
+mofapy2/run/entry_point.py:1021:         # Weight the views to avoid imbalance problems?
+---- mofapy2/run/entry_point.py:1213
+mofapy2/run/entry_point.py:1212:                 random=False,
+mofapy2/run/entry_point.py:1213:                 seed_inducing=0,
+mofapy2/run/entry_point.py:1214:             )
+mofapy2/run/entry_point.py:1215: 
+---- mofapy2/run/entry_point.py:1793
+mofapy2/run/entry_point.py:1792:     save_metadata: bool = True,
+mofapy2/run/entry_point.py:1793:     seed: int = 1,
+mofapy2/run/entry_point.py:1794:     outfile: Optional[str] = None,
+mofapy2/run/entry_point.py:1795:     expectations: Optional[List[str]] = None,
+---- mofapy2/run/entry_point.py:1828
+mofapy2/run/entry_point.py:1827:     save_metadata (optional): if to load metadata from the AnnData object (.obs and .var tables) and save it, False by default
+mofapy2/run/entry_point.py:1828:     seed (optional): random seed
+mofapy2/run/entry_point.py:1829:     outfile (optional): path to HDF5 file to store the model
+mofapy2/run/entry_point.py:1830:     expectations (optional): which nodes should be used to save expectations for (will save only W and Z by default);
+---- mofapy2/run/entry_point.py:1867
+mofapy2/run/entry_point.py:1866:         gpu_device=gpu_device,
+mofapy2/run/entry_point.py:1867:         seed=seed,
+mofapy2/run/entry_point.py:1868:         verbose=verbose,
+mofapy2/run/entry_point.py:1869:         quiet=quiet,
+---- mofapy2/core/BayesNet.py:197
+mofapy2/core/BayesNet.py:196:             if len(drop_dic["min_r2"]) > 0:
+mofapy2/core/BayesNet.py:197:                 drop_dic["min_r2"] = [np.random.choice(drop_dic["min_r2"])]
+mofapy2/core/BayesNet.py:198: 
+---- mofapy2/core/BayesNet.py:423
+mofapy2/core/BayesNet.py:422:         Z = self.nodes["Z"].getExpectation()
+mofapy2/core/BayesNet.py:423:         Z += np.random.normal(np.zeros(Z.shape), 1e-10)
+mofapy2/core/BayesNet.py:424:         r = np.absolute(corr(Z.T, Z.T))
+---- mofapy2/core/BayesNet.py:554
+mofapy2/core/BayesNet.py:553:         S = int(self.options["batch_size"] * self.dim["N"])
+mofapy2/core/BayesNet.py:554:         ix = np.random.choice(range(self.dim["N"]), size=S, replace=False)
+mofapy2/core/BayesNet.py:555:         self.define_mini_batch(ix)
+---- mofapy2/core/BayesNet.py:573
+mofapy2/core/BayesNet.py:572:             )
+mofapy2/core/BayesNet.py:573:             self.shuffled_ix = np.random.choice(
+mofapy2/core/BayesNet.py:574:                 range(self.dim["N"]), size=self.dim["N"], replace=False
+---- mofapy2/core/BayesNet.py:585
+mofapy2/core/BayesNet.py:584:         # Define mini batch
+mofapy2/core/BayesNet.py:585:         ix = self.shuffled_ix[min:max]
+mofapy2/core/BayesNet.py:586:         self.define_mini_batch(ix)
+---- sklearn/decomposition/_pca.py:501
+sklearn/decomposition/_pca.py:498:             n_components = self.n_components
+sklearn/decomposition/_pca.py:499: 
+sklearn/decomposition/_pca.py:500:         # Handle svd_solver
+sklearn/decomposition/_pca.py:501:         self._fit_svd_solver = self.svd_solver
+sklearn/decomposition/_pca.py:502:         if self._fit_svd_solver == "auto":
+sklearn/decomposition/_pca.py:503:             # Small problem or n_components == 'mle', just call full PCA
+sklearn/decomposition/_pca.py:504:             if max(X.shape) <= 500 or n_components == "mle":
+---- sklearn/decomposition/_pca.py:505
+sklearn/decomposition/_pca.py:502:         if self._fit_svd_solver == "auto":
+sklearn/decomposition/_pca.py:503:             # Small problem or n_components == 'mle', just call full PCA
+sklearn/decomposition/_pca.py:504:             if max(X.shape) <= 500 or n_components == "mle":
+sklearn/decomposition/_pca.py:505:                 self._fit_svd_solver = "full"
+sklearn/decomposition/_pca.py:506:             elif 1 <= n_components < 0.8 * min(X.shape):
+sklearn/decomposition/_pca.py:507:                 self._fit_svd_solver = "randomized"
+sklearn/decomposition/_pca.py:508:             # This is also the case of n_components in (0,1)
+---- sklearn/decomposition/_pca.py:507
+sklearn/decomposition/_pca.py:504:             if max(X.shape) <= 500 or n_components == "mle":
+sklearn/decomposition/_pca.py:505:                 self._fit_svd_solver = "full"
+sklearn/decomposition/_pca.py:506:             elif 1 <= n_components < 0.8 * min(X.shape):
+sklearn/decomposition/_pca.py:507:                 self._fit_svd_solver = "randomized"
+sklearn/decomposition/_pca.py:508:             # This is also the case of n_components in (0,1)
+sklearn/decomposition/_pca.py:509:             else:
+sklearn/decomposition/_pca.py:510:                 self._fit_svd_solver = "full"
+---- sklearn/decomposition/_pca.py:510
+sklearn/decomposition/_pca.py:507:                 self._fit_svd_solver = "randomized"
+sklearn/decomposition/_pca.py:508:             # This is also the case of n_components in (0,1)
+sklearn/decomposition/_pca.py:509:             else:
+sklearn/decomposition/_pca.py:510:                 self._fit_svd_solver = "full"
+sklearn/decomposition/_pca.py:511: 
+sklearn/decomposition/_pca.py:512:         # Call different fits for either full or truncated SVD
+sklearn/decomposition/_pca.py:513:         if self._fit_svd_solver == "full":
+---- sklearn/decomposition/_pca.py:605
+sklearn/decomposition/_pca.py:604: 
+sklearn/decomposition/_pca.py:605:     def _fit_truncated(self, X, n_components, svd_solver):
+sklearn/decomposition/_pca.py:606:         """Fit the model by computing truncated SVD (by ARPACK or randomized)
+sklearn/decomposition/_pca.py:607:         on X.
+sklearn/decomposition/_pca.py:608:         """
+sklearn/decomposition/_pca.py:609:         xp, _ = get_namespace(X)
+sklearn/decomposition/_pca.py:610: 
+sklearn/decomposition/_pca.py:611:         n_samples, n_features = X.shape
+sklearn/decomposition/_pca.py:612: 
+sklearn/decomposition/_pca.py:613:         if isinstance(n_components, str):
+sklearn/decomposition/_pca.py:614:             raise ValueError(
+sklearn/decomposition/_pca.py:615:                 "n_components=%r cannot be a string with svd_solver='%s'"
+---- sklearn/decomposition/_pca.py:633
+sklearn/decomposition/_pca.py:632: 
+sklearn/decomposition/_pca.py:633:         random_state = check_random_state(self.random_state)
+sklearn/decomposition/_pca.py:634: 
+sklearn/decomposition/_pca.py:635:         # Center data
+sklearn/decomposition/_pca.py:636:         total_var = None
+sklearn/decomposition/_pca.py:637:         if issparse(X):
+sklearn/decomposition/_pca.py:638:             self.mean_, var = mean_variance_axis(X, axis=0)
+sklearn/decomposition/_pca.py:639:             total_var = var.sum() * n_samples / (n_samples - 1)  # ddof=1
+sklearn/decomposition/_pca.py:640:             X = _implicit_column_offset(X, self.mean_)
+sklearn/decomposition/_pca.py:641:         else:
+sklearn/decomposition/_pca.py:642:             self.mean_ = xp.mean(X, axis=0)
+sklearn/decomposition/_pca.py:643:             X -= self.mean_
+---- sklearn/decomposition/_pca.py:656
+sklearn/decomposition/_pca.py:655:             # sign flipping is done inside
+sklearn/decomposition/_pca.py:656:             U, S, Vt = randomized_svd(
+sklearn/decomposition/_pca.py:657:                 X,
+sklearn/decomposition/_pca.py:658:                 n_components=n_components,
+sklearn/decomposition/_pca.py:659:                 n_oversamples=self.n_oversamples,
+sklearn/decomposition/_pca.py:660:                 n_iter=self.iterated_power,
+sklearn/decomposition/_pca.py:661:                 power_iteration_normalizer=self.power_iteration_normalizer,
+sklearn/decomposition/_pca.py:662:                 flip_sign=True,
+sklearn/decomposition/_pca.py:663:                 random_state=random_state,
+sklearn/decomposition/_pca.py:664:             )
+sklearn/decomposition/_pca.py:665: 
+sklearn/decomposition/_pca.py:666:         self.n_samples_ = n_samples
