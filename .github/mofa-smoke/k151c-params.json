@@ -1,5 +1,5 @@
 {
-  "run": "lifecycle",
-  "task": "lifecycle",
-  "note": "lifecycle: tiny seed, pin (two jobs) and ruv jobs, each with a deliberately failing cell; scorer exercised on all three"
+  "run": "counted",
+  "task": "seed",
+  "note": "counted run, task 1 (SCI-06), as declared in docs/qa/workflow-execution/kit/kit-151c/seed-declaration.md"
 }
