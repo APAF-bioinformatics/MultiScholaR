@@ -1,0 +1,8 @@
+{
+  "run": "lifecycle",
+  "seeds": [91, 92],
+  "cells": "all",
+  "maxiter": 10000,
+  "probe": 1,
+  "note": "lifecycle run on two seeds outside the counted set (151091, 151092), every cell plus a deliberately failing cell; not counted, results not read beyond instrumentation and timing"
+}
