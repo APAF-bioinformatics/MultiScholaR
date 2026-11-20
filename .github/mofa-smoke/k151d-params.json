@@ -1,0 +1,5 @@
+{
+  "run": "lifecycle",
+  "task": "lifecycle",
+  "note": "lifecycle run: tiny ruv, z and pin jobs, each with a deliberately failing cell; seeds outside the counted sets (ruv 91-100, z 91-92); pin job 99 runs fully only on an Intel processor"
+}
