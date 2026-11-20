@@ -567,8 +567,10 @@ test_that("KIT-148: a 3,000-run sample match is kept in the store; the worker's 
     tampered$sample_match <- strrep("0", 64L)
     expect_error(withWorkflowStateScope(manager, function() computeWorkflowIntegrationModelAction(manager,
         list(input_references = list(state = pre$source), parameters = tampered), "whole")), class = "integration_parameters_invalid")
-    # The same match in process is the same model: its identity carries the match's sha256.
-    again <- suppressWarnings(runIntegrationModel(manager, list(sample_match_table = template), trainer = intModelFakeTrainer))
+    # The same match in process is the same model: its identity carries the match's sha256. KIT-151 (ENG-24): in process
+    # the model is trained as on the worker (the same trainer, no stand-in argument), so both derive the software lookup
+    # factors by the same rule in the same Python state; a stand-in passed as `trainer` would key on no software at all.
+    again <- suppressWarnings(runIntegrationModel(manager, list(sample_match_table = template)))
     expect_identical(again$status, "hit")
     expect_identical(again$reference$entity_id, result$reference$entity_id)
     expect_identical(manager$.context$snapshot$exports$integration_mofa_model$parameters$sample_match_table, checked$table)
