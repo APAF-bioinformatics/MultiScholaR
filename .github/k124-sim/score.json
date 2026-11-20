@@ -1,9 +1,9 @@
 {
-  "label": "ruv06-lc-score",
+  "label": "confirm06-gha",
   "runs": [
     {
-      "run": 44791180548,
-      "label": "ruv06-lc"
+      "run": 44799202191,
+      "label": "ruv06"
     }
   ],
   "aggregate": {
