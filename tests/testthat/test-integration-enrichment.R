@@ -502,3 +502,427 @@ test_that("the Reactome kernel resolves the organism and returns its mapping tab
     expect_error(integrationReactomeEnrichment(no_overlap, mapping, "Homo sapiens", "Reactome 94", 3L),
         class = "integration_enrichment_no_overlap")
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-141 part 2: enrichment of a trained model's factor (INT-18, INT-19; audits ENG-07, ENG-09, ENG-15, SCI-08,
+# SCI-09). The model is the stored double-precision reference (tests/testdata/integration/mofa_reference) returned by a
+# stand-in trainer on the tier-1 corpus imported into a store, as test-integration-outputs.R. STRING is the double above
+# (no network, the sentinel key); KEGG and Reactome tables are small fixtures. Declared before the run:
+#   - every measured feature of the data set is ranked (not only the model's), each by its correlation with the factor,
+#     equal (1e-12) to an independent computation on the whole matrix; read in pages of any size, the same ranking;
+#   - the factor is oriented so that its largest absolute weight over all data sets is positive;
+#   - the key appears in no returned value, the head, any file of the project (its store decoded), R's temporary folder
+#     or the record bundle; the scan finds a planted copy; the key given as a setting is refused before anything runs;
+#   - the record, its sheets, the study parameters, the methods paragraph and the report describe the enrichment; the
+#     project reopens and a replay repeats it offline from the recorded answer, and "query again" reports differences;
+#   - a result is not reused after the settings or the model change;
+#   - KEGG/Reactome: identifiers from the chosen column, several features on one compound collapsed to the largest
+#     absolute correlation, pathways sized by measured mapped compounds, refused when none is testable; downloads labelled
+#     with the release read before and after, a release changed in between refused.
+# ------------------------------------------------------------------------------------------------
+
+intEnrData <- function() normalizePath(testthat::test_path("..", "testdata", "integration"), mustWork = FALSE)
+intEnrStored <- function(name) utils::read.delim(file.path(intEnrData(), "mofa_reference", paste0(name, ".tsv")),
+    check.names = FALSE, stringsAsFactors = FALSE)
+
+intEnrTrainer <- function() {
+    function(views, options) {
+        factors <- intEnrStored("factors")
+        f <- as.matrix(factors[-1L])
+        rownames(f) <- factors$biological_sample
+        f <- f[colnames(views[[1L]]), , drop = FALSE]
+        w <- intEnrStored("weights")
+        weights <- lapply(stats::setNames(names(views), names(views)), function(view) {
+            rows <- w[w$view == view, , drop = FALSE]
+            m <- as.matrix(rows[-(1:2)])
+            rownames(m) <- paste(view, rows$feature_id, sep = ":")
+            m[rownames(views[[view]]), , drop = FALSE]
+        })
+        v <- intEnrStored("variance_explained")
+        r2 <- matrix(v$r2_percent, nrow = length(unique(v$factor)), dimnames = list(unique(v$factor), unique(v$view)))
+        r2 <- r2[, names(views), drop = FALSE]
+        list(factors = f, weights = weights, r2_per_factor = r2, r2_total = colSums(r2), elbo = c(-2, -1), iterations = 186L,
+            options = options, versions = list(MOFA2 = "stored reference"), messages = character(),
+            model_file = list(bytes = as.raw(1:3), sha256 = strrep("d", 64L), size = 3))
+    }
+}
+
+intEnrProject <- function(.local_envir = parent.frame()) {
+    testthat::skip_if_not(dir.exists(file.path(intEnrData(), "corpus")), "the tier-1 corpus is not present")
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    testthat::skip_if_not_installed("httr2")
+    root <- withr::local_tempdir(.local_envir = .local_envir)
+    results_dir <- file.path(root, "results", "integration")
+    paths <- list(base_dir = root, integration_dir = file.path(root, "integration"),
+        source_dir = file.path(root, "scripts", "integration"), results_dir = results_dir,
+        mofa_tables_dir = file.path(results_dir, "mofa", "tables"), mofa_plots_dir = file.path(results_dir, "mofa", "plots"))
+    dir.create(paths$source_dir, recursive = TRUE)
+    for (omic in c("lipidomics", "metabolomics", "proteomics", "transcriptomics")) {
+        dir <- file.path(paths$integration_dir, omic)
+        dir.create(dir, recursive = TRUE)
+        stopifnot(all(file.copy(list.files(file.path(intEnrData(), "corpus", omic), full.names = TRUE), dir)))
+    }
+    paths
+}
+
+intEnrModel <- function(paths, close = TRUE, .local_envir = parent.frame()) {
+    manager <- newIntegrationStateOwner(file.path(paths$source_dir, paste0("store-", basename(tempfile()))))
+    if (close) withr::defer(closeWorkflowStateOwner(manager), envir = .local_envir)
+    scan <- integrationScanProject(paths$integration_dir)
+    integrationCommitImport(manager, integrationImportRequest(scan, scan$views$view))
+    run <- runIntegrationModel(manager, trainer = intEnrTrainer())
+    list(manager = manager, run = run)
+}
+
+intEnrTerms <- paste0("category\tterm\tdescription\tenrichment_score\tfalse_discovery_rate\n",
+    "KEGG\thsa00010\tGlycolysis\t1.5\t0.001\n", "Process\tGO:0008150\tbiological_process\t-1.2\t0.01\n")
+
+# The STRING double active in the caller's scope: every request answered, nothing can reach the network.
+intEnrLocalString <- function(results_tsv = intEnrTerms, env = parent.frame()) {
+    mock <- newStringMock(results_tsv = results_tsv)
+    localNetworkFailure(env = env)
+    httr2::local_mocked_responses(mock$handler, env = env)
+    mock
+}
+
+intEnrFast <- integrationStringOptions(poll_interval_seconds = 0)
+intEnrQuery <- function(ranked, api_key, species, options) {
+    options$poll_interval_seconds <- 0
+    integrationStringRankedEnrichment(ranked, api_key, species, options)
+}
+
+# Every file under the folders that holds the sentinel: as bytes, and decoded (qs2, Parquet, RDS) so that a compressed
+# copy in the store is found too.
+intEnrFilesHoldingKey <- function(dirs) {
+    files <- unique(unlist(lapply(dirs[dir.exists(dirs)], list.files, recursive = TRUE, full.names = TRUE, all.files = TRUE)))
+    files <- files[file.exists(files) & !dir.exists(files)]
+    hit <- vapply(files, function(path) {
+        size <- file.info(path)$size
+        if (is.na(size) || size > 256 * 1024^2) return(FALSE)
+        if (length(grepRaw(SENTINEL_KEY, readBin(path, "raw", size), fixed = TRUE))) return(TRUE)
+        decoded <- tryCatch(if (grepl("\\.qs2$", path)) qs2::qs_read(path) else if (grepl("\\.parquet$", path))
+            as.data.frame(arrow::read_parquet(path)) else if (grepl("\\.rds$", path)) readRDS(path) else NULL,
+            error = function(error) NULL)
+        !is.null(decoded) && containsSentinel(decoded)
+    }, logical(1))
+    files[hit]
+}
+
+# The ranking computed independently on the whole matrix: runs averaged per biological sample, the oriented factor,
+# the correlation over the samples where both are observed, at least `min_samples` of them.
+intEnrIndependentRanking <- function(manager, value, factor, view, min_samples = 5L, method = "pearson") {
+    object <- integrationImportedObject(manager)
+    table <- object@views[[view]]
+    m <- as.matrix(table[-1L])
+    design <- object@design_matrix
+    design <- design[design$omic == integrationViewOmics(object)[[view]], , drop = FALSE]
+    key <- design$biological_sample[match(colnames(m), design$run)]
+    weights <- integrationModelWeights(manager, value)
+    i <- which.max(abs(weights[[factor]]))
+    sign <- if (weights[[factor]][[i]] < 0) -1 else 1
+    samples <- value$factors$biological_sample
+    f <- sign * value$factors[[factor]]
+    x <- vapply(samples, function(s) {
+        cols <- which(key == s)
+        if (!length(cols)) return(rep(NA_real_, nrow(m)))
+        out <- rowMeans(m[, cols, drop = FALSE], na.rm = TRUE)
+        out[is.nan(out)] <- NA_real_
+        out
+    }, numeric(nrow(m)))
+    r <- vapply(seq_len(nrow(m)), function(j) {
+        ok <- !is.na(x[j, ]) & !is.na(f)
+        if (sum(ok) < min_samples || stats::var(x[j, ok]) == 0) return(NA_real_)
+        stats::cor(x[j, ok], f[ok], method = method)
+    }, numeric(1))
+    list(feature_id = as.character(table$feature_id), correlation = r, sign = as.integer(sign),
+        anchor = list(view = weights$view[[i]], feature_id = weights$feature_id[[i]]))
+}
+
+test_that("KIT-141: every measured feature is ranked by its correlation with the oriented factor, read in pages", {
+    paths <- intEnrProject()
+    fixture <- intEnrModel(paths)
+    manager <- fixture$manager
+    intEnrLocalString()
+    out <- runIntegrationEnrichment(manager, list(factor = "Factor1", view = "proteomics", database = "string"),
+        api_key = SENTINEL_KEY, query = intEnrQuery)
+    ranking <- out$ranking$value
+    independent <- intEnrIndependentRanking(manager, fixture$run$value, "Factor1", "proteomics")
+    object <- integrationImportedObject(manager)
+    expect_identical(nrow(ranking$ranking), nrow(object@views$proteomics))
+    expect_gt(nrow(ranking$ranking), fixture$run$value$view_summary$features_model[fixture$run$value$view_summary$view == "proteomics"] - 1L)
+    expect_identical(ranking$ranking$feature_id, independent$feature_id)
+    expect_equal(ranking$ranking$correlation, independent$correlation, tolerance = 1e-12)
+    expect_identical(ranking$ranking$status == "ranked", !is.na(independent$correlation))
+    expect_identical(ranking$direction$sign, independent$sign)
+    expect_identical(ranking$direction[c("view", "feature_id")], independent$anchor)
+    expect_identical(ranking$direction$rule, "largest_absolute_weight_positive")
+    expect_identical(ranking$counts$features, nrow(ranking$ranking))
+    # Pages of 37 rows give the same ranking.
+    pages <- function(view, columns, kernel) {
+        table <- object@views[[view]][columns]
+        for (start in seq.int(1L, nrow(table), by = 37L)) kernel(table[start:min(nrow(table), start + 36L), , drop = FALSE], start - 1L)
+    }
+    export <- manager$.context$snapshot$exports$integration_mofa_model
+    paged <- integrationEnrichmentRank(integrationImportedObject(manager, fields = c("features", "design_matrix", "inputs")),
+        manager, export$source, fixture$run$value, export$parameters, "Factor1", "proteomics", "pearson", 5L, pages = pages)
+    expect_identical(paged$ranking, ranking$ranking)
+    # Spearman, and a higher minimum, are declared settings of their own (another ranking).
+    spearman <- runIntegrationEnrichment(manager, list(factor = "Factor1", view = "proteomics", database = "string",
+        correlation_method = "spearman", min_samples = 15L), api_key = SENTINEL_KEY, query = intEnrQuery)
+    expect_false(identical(spearman$ranking$reference$entity_id, out$ranking$reference$entity_id))
+    independent <- intEnrIndependentRanking(manager, fixture$run$value, "Factor1", "proteomics", 15L, "spearman")
+    expect_equal(spearman$ranking$value$ranking$correlation, independent$correlation, tolerance = 1e-12)
+    expect_identical(spearman$ranking$value$counts$too_few_samples, sum(spearman$ranking$value$ranking$status == "too_few_samples"))
+})
+
+test_that("KIT-141: the STRING key reaches no returned value, head, project file, temporary file or record; given as a setting it is refused", {
+    paths <- intEnrProject()
+    fixture <- intEnrModel(paths, close = FALSE)
+    manager <- fixture$manager
+    mock <- intEnrLocalString()
+    texts <- integrationRecordTexts()
+    messages <- character()
+    out <- withCallingHandlers(runIntegrationEnrichment(manager, list(factor = "Factor2", view = "transcriptomics",
+        database = "string"), api_key = SENTINEL_KEY, query = intEnrQuery),
+        message = function(m) { messages <<- c(messages, conditionMessage(m)); invokeRestart("muffleMessage") },
+        warning = function(w) { messages <<- c(messages, conditionMessage(w)); invokeRestart("muffleWarning") })
+    # The key was sent (the double saw it) and kept nowhere.
+    expect_true(any(vapply(mock$log$requests, \(request) identical(stringFields(request)$api_key, SENTINEL_KEY), TRUE)))
+    expect_false(containsSentinel(out))
+    expect_false(containsSentinel(messages))
+    expect_false(containsSentinel(manager$.context$snapshot))
+    expect_false(containsSentinel(manager$.context$pending_provenance))
+    expect_null(httr2::last_request())
+    # The STRING release and the answer are kept: the answer as a table of the store, its reference on the head.
+    entry <- manager$.context$snapshot$exports$integration_mofa_model$enrichment[["Factor2|transcriptomics|string"]]
+    expect_true(isWorkflowTableReference(entry$stored$reference))
+    expect_no_error(collectWorkflowNativeReferences(entry))
+    expect_identical(out$run$value$service$version$string_version, "12.5")
+    expect_identical(out$run$value$terms$term, c("hsa00010", "GO:0008150"))
+    # The record bundle (report renderer stood in) and the whole project folder, its store decoded, and R's temporary
+    # folder hold no copy.
+    bundle <- integrationWriteRecordBundle(manager, file.path(paths$base_dir, "report"), format = "html",
+        renderFn = function(record_path, output_dir, format) writeLines("report", file.path(output_dir, "integration_report.html")))
+    expect_true(file.exists(bundle$files[[1L]]))
+    expect_identical(intEnrFilesHoldingKey(c(paths$base_dir, tempdir())), character())
+    # The scan finds a planted copy, stored in a table of a store or in a qs2 file.
+    planted <- newIntegrationStateOwner(file.path(paths$base_dir, "planted"))
+    withWorkflowStateScope(planted, function() saveWorkflowOwnedTable(planted$.context, data.frame(x = SENTINEL_KEY)))
+    closeWorkflowStateOwner(planted)
+    qs2::qs_save(list(key = SENTINEL_KEY), file.path(paths$base_dir, "planted", "planted.qs2"), compress_level = 3L)
+    expect_gte(length(intEnrFilesHoldingKey(file.path(paths$base_dir, "planted"))), 2L)
+    unlink(file.path(paths$base_dir, "planted"), recursive = TRUE)
+    # The key given as a setting: refused before anything is computed or kept.
+    entries <- length(list.files(manager$.context$store$directory, recursive = TRUE))
+    expect_error(runIntegrationEnrichment(manager, list(factor = "Factor2", view = "transcriptomics", database = "string",
+        api_key = SENTINEL_KEY), query = intEnrQuery), class = "integration_enrichment_parameters_invalid")
+    expect_identical(length(list.files(manager$.context$store$directory, recursive = TRUE)), entries)
+    expect_identical(intEnrFilesHoldingKey(c(paths$base_dir, tempdir())), character())
+    closeWorkflowStateOwner(manager)
+})
+
+test_that("KIT-141: the record, its sheets, study parameters, methods paragraph and report describe the enrichment; a reopened project replays it offline", {
+    paths <- intEnrProject()
+    fixture <- intEnrModel(paths, close = FALSE)
+    manager <- fixture$manager
+    texts <- integrationRecordTexts()
+    local({
+        intEnrLocalString()
+        runIntegrationEnrichment(manager, list(factor = "Factor1", view = "proteomics", database = "string"),
+            api_key = SENTINEL_KEY, query = intEnrQuery)
+    })
+    record <- buildWorkflowAnalysisRecord(manager)
+    block <- record$analyses$integration_mofa_model$integration
+    expect_length(block$enrichment, 1L)
+    json <- file.path(paths$base_dir, "record.json")
+    jsonlite::write_json(record, json, auto_unbox = TRUE, digits = I(17), null = "null", na = "null")
+    read <- jsonlite::read_json(json, simplifyVector = FALSE)
+    tables <- integrationRecordTables(read)
+    expect_true(all(c("integration_enrichment", "integration_enrichment_terms") %in% names(tables)))
+    summary <- tables$integration_enrichment
+    expect_identical(nrow(summary), 1L)
+    expect_identical(summary[[texts[["col_enrich_database"]]]], "STRING")
+    expect_match(summary[[texts[["col_enrich_release"]]]], "STRING 12.5 (https://version-12-5.string-db.org)", fixed = TRUE)
+    expect_identical(tables$integration_enrichment_terms[[texts[["col_enrich_term"]]]], c("hsa00010", "GO:0008150"))
+    methods <- integrationMethodsText(read)
+    expect_identical(integrationMethodsText(record), methods)
+    for (fragment in c("every measured feature of a data set", "values/ranks", "STRING 12.5", "Benjamini-Hochberg")) {
+        expect_true(grepl(fragment, methods, fixed = TRUE), info = fragment)
+    }
+    lines <- integrationStudyParameterLines(read)
+    expect_true(all(texts[c("section_enrichment", "section_enrichment_terms")] %in% lines))
+    if (rmarkdown::pandoc_available()) {
+        report <- renderIntegrationReport(json, paths$base_dir, "html")
+        html <- paste(readLines(report, warn = FALSE), collapse = "\n")
+        expect_match(html, texts[["section_enrichment"]], fixed = TRUE)
+        expect_match(html, "GO:0008150", fixed = TRUE)
+    }
+    # Reopened and replayed: offline from the recorded answer (the STRING client must not be called).
+    root <- dirname(manager$.context$store$directory)
+    closeWorkflowStateOwner(manager)
+    no_query <- function(...) stop("STRING was queried during an offline replay")
+    localNetworkFailure()
+    replay <- suppressWarnings(replayIntegrationProject(root, file.path(paths$base_dir, "replay"), trainer = intEnrTrainer(),
+        enrichment_query = no_query))
+    comparison <- replay$enrichment_comparison
+    expect_identical(comparison$enrichment, "Factor1|proteomics|string")
+    expect_identical(comparison$mode, "recorded")
+    expect_true(comparison$ranking_equal)
+    expect_true(comparison$terms_identical)
+    expect_identical(network$sent + network$transfers, 0L)
+    # Query again: STRING asked anew (the double answers with another table); the differences are reported.
+    local({
+        intEnrLocalString(results_tsv = paste0("category\tterm\tdescription\tenrichment_score\tfalse_discovery_rate\n",
+            "KEGG\thsa00010\tGlycolysis\t1.5\t0.001\n", "KEGG\thsa00020\tTCA cycle\t1.1\t0.02\n"))
+        again <- suppressWarnings(replayIntegrationProject(root, file.path(paths$base_dir, "replay-again"),
+            trainer = intEnrTrainer(), enrichment_mode = "query_again", enrichment_api_key = SENTINEL_KEY,
+            enrichment_query = intEnrQuery))
+        cmp <- again$enrichment_comparison
+        expect_identical(cmp$mode, "query_again")
+        expect_false(cmp$terms_identical)
+        expect_identical(cmp$terms_only_recorded, 1L)
+        expect_identical(cmp$terms_only_repeated, 1L)
+        expect_false(containsSentinel(again))
+    })
+})
+
+test_that("KIT-141: no enrichment result is reused after its settings or the model change", {
+    paths <- intEnrProject()
+    fixture <- intEnrModel(paths)
+    manager <- fixture$manager
+    intEnrLocalString()
+    first <- runIntegrationEnrichment(manager, list(factor = "Factor1", view = "proteomics", database = "string"),
+        api_key = SENTINEL_KEY, query = intEnrQuery)
+    again <- runIntegrationEnrichment(manager, list(factor = "Factor1", view = "proteomics", database = "string"),
+        api_key = SENTINEL_KEY, query = intEnrQuery)
+    expect_identical(again$ranking$status, "hit")
+    other <- runIntegrationEnrichment(manager, list(factor = "Factor1", view = "proteomics", database = "string",
+        string_fdr = 0.01), api_key = SENTINEL_KEY, query = intEnrQuery)
+    expect_false(identical(other$run$reference$entity_id, first$run$reference$entity_id))
+    # A saved answer for another list of features is refused.
+    response <- integrationServiceResponseFromTable(withWorkflowStateScope(manager, function()
+        materializeWorkflowTable(manager$.context, first$entry$stored$reference)))
+    expect_error(runIntegrationEnrichment(manager, list(factor = "Factor2", view = "proteomics", database = "string"),
+        response = response), class = "integration_enrichment_response_mismatch")
+    # A new model starts without the earlier model's enrichments.
+    runIntegrationModel(manager, list(seed = 7L), trainer = intEnrTrainer())
+    expect_null(manager$.context$snapshot$exports$integration_mofa_model$enrichment)
+})
+
+test_that("KIT-141: the tab's request carries no key; the tab and its texts are behind the gate", {
+    request <- integrationEnrichmentRequest(list(factor = "Factor1", view = "metabolomics_GCMS", database = "kegg",
+        id_column = "kegg", string_key = SENTINEL_KEY, min_samples = 5L))
+    expect_false(containsSentinel(request))
+    expect_identical(request$id_column, "kegg")
+    withr::local_options(MultiScholaR.integration_gui = TRUE)
+    html <- as.character(htmltools::renderTags(mod_integration_enrichment_ui("integration_enrichment"))$html)
+    for (id in c("integration-enrichment-run", "integration-enrichment-download", "integration-enrichment-terms")) {
+        expect_match(html, sprintf('data-testid="%s"', id), fixed = TRUE)
+    }
+    expect_match(html, 'type="password"', fixed = TRUE)
+    expect_match(html, "free for academic use only", fixed = TRUE)
+})
+
+# KEGG and Reactome on a small data set of compounds (no model needed): the kernel on a ranking product.
+intEnrPathwayFixture <- function() {
+    ids <- sprintf("m%02d", 1:40)
+    features <- data.frame(feature_id = ids, display_name = ids,
+        kegg = c("C00001", "C00001", sprintf("C%05d", 3:40)), chebi = c("15377", "CHEBI:15377", sprintf("%d", 1003:1040)),
+        stringsAsFactors = FALSE)
+    object <- methods::new("IntegrationViewsData", views = list(metabolomics_LC = data.frame(feature_id = character())),
+        features = list(metabolomics_LC = features), design_matrix = data.frame(),
+        inputs = list(metabolomics = list(omic = "metabolomics", views = "metabolomics_LC")))
+    correlation <- seq(0.9, -0.9, length.out = 40)
+    correlation[[2L]] <- -0.95
+    ranking <- list(direction = list(rule = "largest_absolute_weight_positive", sign = 1L), counts = list(features = 40L),
+        ranking = data.frame(feature_id = ids, n_samples = 20L, correlation = correlation, status = "ranked",
+            stringsAsFactors = FALSE))
+    compounds <- sprintf("C%05d", c(1, 3:40))
+    sets <- list(`00010` = compounds[1:8], `00020` = compounds[30:39], `00030` = compounds[c(2, 12, 22, 32, 36)], `00040` = compounds[1:3])
+    kegg <- data.frame(pathway = paste0("path:hsa", rep(names(sets), lengths(sets))), compound = paste0("cpd:", unlist(sets)),
+        name = paste("pathway", rep(names(sets), lengths(sets))), stringsAsFactors = FALSE)
+    list(object = object, ranking = ranking, kegg = kegg)
+}
+
+test_that("KIT-141: KEGG pathways: identifiers from the chosen column, collapse to the largest absolute correlation, set sizes declared", {
+    skip_if_not_installed("clusterProfiler")
+    fixture <- intEnrPathwayFixture()
+    p <- list(factor = "Factor1", view = "metabolomics_LC", omic = "metabolomics", database = "kegg", id_type = "kegg",
+        id_column = "kegg", correlation_method = "pearson", min_samples = 5L, kegg_organism = "hsa", min_set_size = 5L,
+        max_set_size = 500L, seed = 20261121L)
+    meta <- list(database = "KEGG", release = "KEGG Release 116.0", sha256 = strrep("a", 64L), url = "fixture",
+        downloaded_at = "2026-11-21")
+    value <- integrationEnrichmentKernel(fixture$object, list(p = p, ranking_value = fixture$ranking,
+        mapping_table = fixture$kegg, mapping_meta = meta))
+    # m01 and m02 share C00001: m02 (|-0.95|) is kept.
+    mapping <- value$mapping
+    expect_identical(mapping$status[1:2], c("duplicated", "mapped"))
+    expect_identical(value$mapping_counts$mapped, 39L)
+    expect_identical(value$mapping_counts$duplicated, 1L)
+    # Pathways with 5 to 500 measured mapped compounds: 00010 (8), 00020 (10), 00030 (5); 00040 (3) is not tested.
+    expect_identical(value$service$pathways_testable, 3L)
+    expect_setequal(value$terms$ID, c("path:hsa00010", "path:hsa00020", "path:hsa00030"))
+    expect_equal(value$terms$p.adjust, stats::p.adjust(value$terms$pvalue, "BH"))
+    expect_identical(value$service$release, "KEGG Release 116.0")
+    expect_identical(value, integrationEnrichmentKernel(fixture$object, list(p = p, ranking_value = fixture$ranking,
+        mapping_table = fixture$kegg, mapping_meta = meta)))
+    # A minimum no pathway reaches: refused in words.
+    p$min_set_size <- 11L
+    expect_error(integrationEnrichmentKernel(fixture$object, list(p = p, ranking_value = fixture$ranking,
+        mapping_table = fixture$kegg, mapping_meta = meta)), class = "integration_enrichment_no_testable_set")
+})
+
+test_that("KIT-141: Reactome pathways from ChEBI identifiers of the chosen column", {
+    skip_if_not_installed("clusterProfiler")
+    fixture <- intEnrPathwayFixture()
+    chebi <- c(15377, 1003:1040)
+    sets <- list(`R-HSA-1` = chebi[1:8], `R-HSA-2` = chebi[30:39], `R-MMU-1` = chebi[1:10])
+    table <- data.frame(chebi_id = as.character(unlist(sets)), reactome_id = rep(names(sets), lengths(sets)),
+        reactome_term = rep(names(sets), lengths(sets)), organism = rep(c("Homo sapiens", "Homo sapiens", "Mus musculus"),
+            lengths(sets)), stringsAsFactors = FALSE)
+    p <- list(factor = "Factor1", view = "metabolomics_LC", omic = "metabolomics", database = "reactome", id_type = "chebi",
+        id_column = "chebi", correlation_method = "pearson", min_samples = 5L, reactome_organism = "homo sapiens",
+        min_set_size = 5L, max_set_size = 500L, seed = 1L)
+    meta <- list(database = "Reactome", release = "Reactome 94", sha256 = strrep("b", 64L), url = "fixture", downloaded_at = "x")
+    value <- integrationEnrichmentKernel(fixture$object, list(p = p, ranking_value = fixture$ranking, mapping_table = table,
+        mapping_meta = meta))
+    expect_identical(value$mapping$identifier[1:2], c("CHEBI:15377", "CHEBI:15377"))
+    expect_setequal(value$terms$ID, c("R-HSA-1", "R-HSA-2"))
+    expect_identical(value$service$organism, "Homo sapiens")
+})
+
+test_that("KIT-141: the pathway tables are downloaded with their release read before and after; a change in between is refused", {
+    calls <- character()
+    replies <- list(
+        "https://reactome.org/ContentService/data/database/version" = c("94", "94"),
+        "https://reactome.org/download/current/ChEBI2Reactome_All_Levels.txt" =
+            "15377\tR-HSA-1\thttps://reactome.org/x\tGlycolysis\tIEA\tHomo sapiens\n17234\tR-HSA-1\thttps://reactome.org/x\tGlycolysis\tTAS\tHomo sapiens\n",
+        "https://rest.kegg.jp/info/kegg" = c("kegg   Kyoto Encyclopedia\n                 Release 116.0+/11-21, Nov 25\n",
+            "kegg   Kyoto Encyclopedia\n                 Release 116.0+/11-21, Nov 25\n"),
+        "https://rest.kegg.jp/link/compound/pathway" = "path:map00010\tcpd:C00031\npath:map00010\tcpd:C00022\npath:map99999\tcpd:C00001\n",
+        "https://rest.kegg.jp/list/pathway/hsa" = "hsa00010\tGlycolysis / Gluconeogenesis - Homo sapiens (human)\n")
+    seen <- list()
+    download <- function(url, timeout_seconds = 300) {
+        calls <<- c(calls, url)
+        n <- (seen[[url]] %||% 0L) + 1L
+        seen[[url]] <<- n
+        charToRaw(replies[[url]][[min(n, length(replies[[url]]))]])
+    }
+    reactome <- integrationDownloadReactomeMapping(download)
+    expect_identical(reactome$release, "Reactome 94")
+    expect_identical(calls[c(1L, 3L)], rep("https://reactome.org/ContentService/data/database/version", 2L))
+    expect_identical(reactome$table$organism, rep("Homo sapiens", 2L))
+    expect_identical(reactome$sha256, digest::digest(charToRaw(replies[[2L]]), algo = "sha256", serialize = FALSE))
+    kegg <- integrationDownloadKeggMapping("hsa", download)
+    expect_identical(kegg$release, "KEGG Release 116.0+/11-21")
+    expect_identical(kegg$table$pathway, c("path:hsa00010", "path:hsa00010"))
+    expect_identical(kegg$table$compound, c("cpd:C00031", "cpd:C00022"))
+    expect_identical(kegg$table$name, rep("Glycolysis / Gluconeogenesis - Homo sapiens (human)", 2L))
+    # A release that changes during the download is refused.
+    seen <- list()
+    replies[["https://reactome.org/ContentService/data/database/version"]] <- c("94", "95")
+    expect_error(integrationDownloadReactomeMapping(download), class = "integration_enrichment_release_changed")
+    # A failed download is refused in words.
+    expect_error(integrationDownloadKeggMapping("hsa", function(url, ...) integrationEnrichmentRefuse(
+        "integration_enrichment_download_failed", url)), class = "integration_enrichment_download_failed")
+})

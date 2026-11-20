@@ -389,6 +389,7 @@ Collate:
     'utils_integration_record.R'
     'mod_integration_record.R'
     'utils_integration_enrichment.R'
+    'mod_integration_enrichment.R'
     'zzz.R'
 Suggests:
     RhpcBLASctl,

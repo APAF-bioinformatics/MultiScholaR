@@ -148,9 +148,9 @@ test_that("KIT-138: with the gate on the Integration tile is live and the shell 
     expect_match(page, "if (true) { // KIT-138: the Integration tile stays enabled", fixed = TRUE)
     expect_error(integrationHomeScript("a script without the lines"), class = "integration_gui_invalid")
     config <- integrationGuiConfig()
-    # KIT-140 adds the Model tab, KIT-063 the Results tab, KIT-142 the Record tab.
+    # KIT-140 adds the Model tab, KIT-063 the Results tab, KIT-141 the Enrichment tab, KIT-142 the Record tab.
     expect_identical(vapply(config$shell$tabs, `[[`, "", "status_key"), c("integration_import", "integration_alignment",
-        "integration_model", "integration_results", "integration_record"))
+        "integration_model", "integration_results", "integration_enrichment", "integration_record"))
     ui <- intGuiHtml(mod_integration_ui("integration_workflow"))
     for (id in c("integration-workflow-tabs", "integration-tab-import", "integration-tab-alignment",
         "integration-import-commit", "integration-alignment-confirm", "integration-tab-model", "integration-model-run",

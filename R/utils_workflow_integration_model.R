@@ -1370,6 +1370,10 @@ acceptIntegrationModel <- function(manager, source, run, parameters, confirmatio
     if (identical(previous$reference$entity_id, run$reference$entity_id) && !is.null(previous$results)) {
         export$results <- previous$results
     }
+    # KIT-141: the enrichments of the same model are kept; a new model starts without any.
+    if (identical(previous$reference$entity_id, run$reference$entity_id) && !is.null(previous$enrichment)) {
+        export$enrichment <- previous$enrichment
+    }
     snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- export
     publishWorkflowStateHead(context, snapshot)
     invisible(run)
