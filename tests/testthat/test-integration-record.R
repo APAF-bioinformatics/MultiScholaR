@@ -56,7 +56,7 @@ intRecTrainer <- function(versions = intRecVersions, messages = intRecOverallLev
 
 # Rewrite one omic's input with the contract's writer: its samples renamed, or its matrix marked as corrected.
 intRecRewrite <- function(dir, rename = FALSE, correction = NULL) {
-    input <- readIntegrationInput(dir)
+    input <- readIntegrationInputWithMatrices(dir)
     read <- input$manifest
     manifest <- list(omic_type = read$omic_type, workflow = read$workflow,
         matrix_role = if (is.null(correction)) read$matrix_role else "corrected", scale = read$scale, correction = correction,

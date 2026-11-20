@@ -40,7 +40,7 @@ intE2eProject <- function(.local_envir = parent.frame()) {
         stopifnot(all(file.copy(list.files(file.path(intE2eData(), "corpus", omic), full.names = TRUE), dir)))
     }
     dir <- file.path(paths$integration_dir, "transcriptomics")
-    input <- readIntegrationInput(dir)
+    input <- readIntegrationInputWithMatrices(dir)
     read <- input$manifest
     manifest <- list(omic_type = read$omic_type, workflow = read$workflow, matrix_role = read$matrix_role, scale = read$scale,
         correction = NULL, source_state = list(name = "kit063-renamed"), sample_id_column = read$sample_id_column,

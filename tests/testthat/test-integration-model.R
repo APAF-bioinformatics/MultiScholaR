@@ -262,3 +262,86 @@ test_that("KIT-062: the replay checks the integration inputs by sha256 and takes
     expect_error(suppressWarnings(replayWorkflowAnalysisRecord(record, prepared, manifests, list(), withr::local_tempdir())),
         class = "integration_mofa_unavailable")
 })
+
+# KIT-147: the streamed import (contract v2). Each data set is streamed row group by row group from its Parquet file
+# into the store; the state is checkpointed from zero-row prototypes and its `views` components swapped for the saved
+# tables before the commit.
+
+test_that("KIT-147: the streamed import gives the inputs state the in-memory reader builds, value for value", {
+    inputs <- intModelInputs()
+    dirs <- c(inputs$proteomics, inputs$lipidomics)
+    memory <- integrationViewsFromInputs(dirs)$object
+    manager <- newIntegrationStateOwner(file.path(inputs$root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, dirs)
+    source <- getWorkflowStateReference(manager, "integration_inputs")
+    stored <- withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, source, fields = TRUE))
+    for (slot in c("views", "features")) {
+        expect_identical(lapply(methods::slot(stored, slot), as.list), lapply(methods::slot(memory, slot), as.list), info = slot)
+    }
+    expect_identical(as.list(stored@design_matrix), as.list(memory@design_matrix))
+    expect_identical(stored@inputs, memory@inputs)
+    # The checkpoint took the swapped references: each view is a saved table of its file's rows and columns.
+    spec <- withWorkflowStateScope(manager, function() readWorkflowStateMetadata(manager, source)$data)
+    expect_true(all(vapply(spec$components$views, isWorkflowTableReference, logical(1))))
+    expect_identical(lapply(spec$components$views, function(table) as.integer(table$metadata$shape)),
+        list(lipidomics_LCMS_Pos = c(3L, 9L), proteomics = c(4L, 6L)))
+    expect_identical(spec$dimensions$rows, 7L)
+    # The same files imported again reuse the saved tables.
+    importIntegrationInputs(manager, dirs)
+    again <- withWorkflowStateScope(manager, function() readWorkflowStateMetadata(manager,
+        getWorkflowStateReference(manager, "integration_inputs"))$data)
+    expect_identical(lapply(again$components$views, `[[`, "entity_id"), lapply(spec$components$views, `[[`, "entity_id"))
+    # The alignment on the stored state is the alignment on the in-memory one.
+    parameters <- integrationResolveMofaParameters(memory)
+    expect_identical(suppressWarnings(integrationAlignViews(stored, parameters)),
+        suppressWarnings(integrationAlignViews(memory, parameters)))
+})
+
+test_that("KIT-147: a data set of more than 64 runs and 10,000 features imports with no text reader and no whole matrix", {
+    root <- withr::local_tempdir()
+    runs <- sprintf("big_%03d", seq_len(70L))
+    biological <- sprintf("%s_%d", rep(c("A", "B"), each = 35L), rep(seq_len(35L), 2L))
+    n <- 10050L
+    values <- matrix(withr::with_seed(1147L, stats::rnorm(n * length(runs), 20, 2)), n, length(runs),
+        dimnames = list(sprintf("BIG%05d", seq_len(n)), runs))
+    values[cbind(1:50, 1:50)] <- NA
+    big <- intModelInput(root, "proteomics", list(proteomics = values), intModelSamples(runs, biological))
+    lipid <- intModelLipidomics(root)
+    # A whole-file text reader or a whole-matrix read fails the import; each row group read is traced.
+    pages <- integer()
+    original <- readIntegrationInputRowGroup
+    testthat::local_mocked_bindings(read_tsv = function(...) stop("a whole-file text reader was called"), .package = "readr")
+    testthat::local_mocked_bindings(vroom = function(...) stop("a whole-file text reader was called"), .package = "vroom")
+    testthat::local_mocked_bindings(
+        readIntegrationInputRowGroup = function(...) {
+            page <- original(...)
+            pages <<- c(pages, nrow(page))
+            page
+        },
+        readIntegrationInputMatrix = function(...) stop("a whole matrix was read"))
+    project <- file.path(root, "project")
+    manager <- newIntegrationStateOwner(project)
+    importIntegrationInputs(manager, c(big, lipid))
+    # The largest object read is one row group of at most 10,000 rows; every row was read once.
+    expect_identical(pages, c(3L, 10000L, 50L))
+    source <- getWorkflowStateReference(manager, "integration_inputs")
+    spec <- withWorkflowStateScope(manager, function() readWorkflowStateMetadata(manager, source)$data)
+    expect_identical(as.integer(spec$components$views$proteomics$metadata$shape), c(n, 71L))
+    expected <- as.list(data.frame(feature_id = rownames(values), values, check.names = FALSE, stringsAsFactors = FALSE))
+    stored <- withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, source,
+        fields = "views/proteomics"))
+    expect_identical(as.list(stored@views$proteomics), expected)
+    # The model's path runs on the streamed state (a stand-in trainer).
+    run <- suppressWarnings(runIntegrationModel(manager, trainer = intModelFakeTrainer))
+    expect_identical(run$status, "computed")
+    expect_identical(run$value$view_summary$features_input, c(3L, n))
+    closeWorkflowStateOwner(manager)
+    # The swapped references survive the store's reopening.
+    identity <- readSavedStoreIdentity(file.path(project, ".workflow-entities", "store.json"))
+    reopened <- newWorkflowStateOwner(newWorkflowEntityStore(project, identity$project_id, identity$workflow_id), reopen = TRUE)
+    withr::defer(closeWorkflowStateOwner(reopened))
+    again <- withWorkflowStateScope(reopened, function() readWorkflowExecutionComponents(reopened,
+        getWorkflowStateReference(reopened, "integration_inputs"), fields = "views/proteomics"))
+    expect_identical(as.list(again@views$proteomics), expected)
+})

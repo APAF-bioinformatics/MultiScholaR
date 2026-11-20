@@ -1,5 +1,5 @@
 {
-  "schema": "multischolar.integration_input.v1",
+  "schema": "multischolar.integration_input.v2",
   "omic_type": "transcriptomics",
   "workflow": "TRANSCRIPTOMICS",
   "matrix_role": "normalised",
@@ -19,17 +19,29 @@
   "views": [
     {
       "name": "transcriptomics",
-      "matrix_file": "matrix_transcriptomics.tsv",
-      "features_file": "features_transcriptomics.tsv",
+      "matrix_file": "matrix_transcriptomics.parquet",
+      "features_file": "features_transcriptomics.parquet",
       "rows": 400,
-      "columns": 40
+      "columns": 40,
+      "row_groups": 1
     }
   ],
-  "samples_file": "samples.tsv",
+  "samples_file": "samples.parquet",
+  "parquet": {
+    "format_version": "2.6",
+    "compression": "snappy",
+    "row_group_rows": 10000,
+    "column_types": {
+      "feature_id": "string",
+      "runs": "double",
+      "samples": "string",
+      "features": "string"
+    }
+  },
   "files": {
-    "samples.tsv": "ae7c77271d5c5c747ed56f21bce101d7d28b1c99650651f3db8e260212c6a215",
-    "matrix_transcriptomics.tsv": "db30904a41c3d630f4468e114218478e02fef6cb1630c906e5ca748f6aa82833",
-    "features_transcriptomics.tsv": "c0b4181bd9cfdfe39d85e9c96c43a6a8af84755646c21b93d085a7d600d8dab8"
+    "samples.parquet": "b2a9565c6ea0310c1815ae3403766a08a0ee4c28fca2816ce70512083a89c906",
+    "matrix_transcriptomics.parquet": "358d02ad7c8e6d9db99b94d3fc98fbfd0c8d1e188d9e867e437fd3bce0befa14",
+    "features_transcriptomics.parquet": "5a3bcf2ce498e4086ed7305f58d43eb46c5650abd3acbe5748bdd124167d657d"
   },
   "software": {
     "package": "MultiScholaR",

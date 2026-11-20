@@ -30,22 +30,25 @@
 # (log2((count + 0.5) / (library + 1) * 1e6)). The biological sample of recipe$dropped is removed
 # from that omic's files after generation (decision D4: it stays missing, not dropped elsewhere).
 #
-# Layout: each <omic>/ folder is one omic's integration input in the form of KIT-061's contract
-# (R/utils_workflow_integration_input.R; readIntegrationInput() accepts it), the tables under the
-# contract's fixed names:
-#   <omic>/matrix_<view>.tsv    features in rows; feature_id, then one column per run (the omic's
-#                               own run names, in a seeded order); log2 values, 4 decimals; NA kept
-#   <omic>/features_<view>.tsv  feature_id, display_name
-#   <omic>/samples.tsv          Run, group, replicates, tech_rep_group, batch; one row per matrix
-#                               column, in column order. tech_rep_group is the cross-omic key in the
-#                               omics' own format, <group>_<replicate> unpadded (KO_5), and the
+# Layout: each <omic>/ folder is one omic's integration input in the form of the contract
+# (R/utils_workflow_integration_input.R; KIT-147: contract v2, Parquet; readIntegrationInput()
+# accepts it), the tables under the contract's fixed names, written by the package's own Parquet
+# writer (writeIntegrationInputParquet: format 2.6, snappy, row groups of 10,000 rows), so the
+# package must be installed or loaded:
+#   <omic>/matrix_<view>.parquet    features in rows; feature_id, then one double column per run
+#                               (the omic's own run names, in a seeded order); log2 values, 4
+#                               decimals; NA kept
+#   <omic>/features_<view>.parquet  feature_id, display_name (text)
+#   <omic>/samples.parquet      Run, group, replicates, tech_rep_group, batch (text); one row per
+#                               matrix column, in column order. tech_rep_group is the cross-omic key
+#                               in the omics' own format, <group>_<replicate> unpadded (KO_5), and the
 #                               manifest names it as the biological-sample column, as the omics'
 #                               writers do (KIT-062)
 #   <omic>/integration_input.json  the contract's manifest: matrix_role "normalised", no
-#                               correction, every table's sha256. Written here, not through
-#                               writeIntegrationInput(), so that the tables stay as above and the
-#                               file holds nothing that varies by machine, package version or
-#                               time: no version, and written_at fixed to the corpus's date
+#                               correction, the Parquet layout, every table's sha256. Written here,
+#                               not through writeIntegrationInput(), so that the file holds nothing
+#                               that varies by machine, package version or time: no version, and
+#                               written_at fixed to the corpus's date
 #   truth_scores.tsv            biological_sample (the tech_rep_group values), group, Z1, Z2, Z3
 #                               (6 decimals)
 #   truth_loadings.tsv          omic, view, feature_id, Z1, Z2, Z3 loadings and batch_B1..B3
@@ -60,7 +63,8 @@
 #
 # Tier 2 (the same design run through the omics journeys from vendor files) is not built here.
 #
-# Usage, from the repository root:
+# Usage, from the repository root, with MultiScholaR installed (its contract writes the Parquet
+# files; the committed copy is written on a runner, never on the laptop):
 #   Rscript tests/testdata/integration/compose_integration_corpus.R [directory]
 # (default directory tests/testdata/integration/corpus, the committed copy).
 
@@ -276,31 +280,44 @@ integrationWriteTable <- function(table, path) {
     path
 }
 
+# KIT-147: the package's contract (constants and Parquet writer), from its namespace (installed or
+# loaded with pkgload).
+integrationContract <- function(name) get(name, envir = asNamespace("MultiScholaR"))
+
+integrationWriteParquet <- function(table, path) {
+    integrationContract("writeIntegrationInputParquet")(table, path)
+    path
+}
+
 integrationWriteOmic <- function(directory, omic, built, digits) {
     out <- file.path(directory, omic)
     dir.create(out, recursive = TRUE, showWarnings = FALSE)
     columns <- c("Run", "group", "replicates", "tech_rep_group", "batch")
-    paths <- integrationWriteTable(built$samples[, columns], file.path(out, "samples.tsv"))
+    text <- integrationContract("integrationInputTextTable")
+    paths <- integrationWriteParquet(text(built$samples[, columns]), file.path(out, "samples.parquet"))
     for (view in names(built$views)) {
         values <- built$views[[view]]
         matrix_table <- cbind(data.frame(feature_id = rownames(values), stringsAsFactors = FALSE),
             as.data.frame(round(values, digits)))
+        matrix_table <- integrationContract("integrationInputMatrixTable")(matrix_table, colnames(values))
         feature_table <- data.frame(feature_id = rownames(values),
             display_name = built$display[[view]], stringsAsFactors = FALSE)
         paths <- c(paths,
-            integrationWriteTable(matrix_table, file.path(out, sprintf("matrix_%s.tsv", view))),
-            integrationWriteTable(feature_table, file.path(out, sprintf("features_%s.tsv", view))))
+            integrationWriteParquet(matrix_table, file.path(out, sprintf("matrix_%s.parquet", view))),
+            integrationWriteParquet(text(feature_table), file.path(out, sprintf("features_%s.parquet", view))))
     }
     c(paths, integrationWriteInputManifest(out, omic, built, paths))
 }
 
-# The omic's KIT-061 manifest (fields of KIT-060 audit 4.2) over the tables just written.
+# The omic's contract v2 manifest (fields of KIT-060 audit 4.2) over the tables just written.
 integrationWriteInputManifest <- function(out, omic, built, paths) {
+    layout <- integrationContract("INTEGRATION_INPUT_PARQUET")
     views <- lapply(names(built$views), \(view) list(name = view,
-        matrix_file = sprintf("matrix_%s.tsv", view), features_file = sprintf("features_%s.tsv", view),
-        rows = nrow(built$views[[view]]), columns = ncol(built$views[[view]])))
+        matrix_file = sprintf("matrix_%s.parquet", view), features_file = sprintf("features_%s.parquet", view),
+        rows = nrow(built$views[[view]]), columns = ncol(built$views[[view]]),
+        row_groups = as.integer(ceiling(nrow(built$views[[view]]) / layout$row_group_rows))))
     manifest <- list(
-        schema = "multischolar.integration_input.v1",
+        schema = integrationContract("INTEGRATION_INPUT_SCHEMA"),
         omic_type = omic,
         workflow = INTEGRATION_CORPUS_WORKFLOWS[[omic]],
         matrix_role = "normalised",
@@ -315,7 +332,8 @@ integrationWriteInputManifest <- function(out, omic, built, paths) {
         feature_id_column = "feature_id",
         display_name_column = "display_name",
         views = views,
-        samples_file = "samples.tsv",
+        samples_file = "samples.parquet",
+        parquet = layout,
         files = stats::setNames(lapply(paths, \(path) digest::digest(file = path, algo = "sha256")),
             basename(paths)),
         software = list(package = "MultiScholaR",
@@ -444,10 +462,10 @@ checkIntegrationCorpusTruth <- function(directory, p_threshold = 0.001) {
     adjusted <- list()
     association <- list()
     for (omic in names(truth$views)) {
-        samples <- utils::read.delim(file.path(directory, omic, "samples.tsv"), stringsAsFactors = FALSE)
+        samples <- as.data.frame(arrow::read_parquet(file.path(directory, omic, "samples.parquet")))
         for (view in truth$views[[omic]]) {
-            table <- utils::read.delim(file.path(directory, omic, sprintf("matrix_%s.tsv", view)),
-                check.names = FALSE, stringsAsFactors = FALSE)
+            table <- as.data.frame(arrow::read_parquet(file.path(directory, omic,
+                sprintf("matrix_%s.parquet", view))))
             m <- as.matrix(table[-1L])
             rownames(m) <- table$feature_id
             y <- integrationAverageReplicates(m, samples$tech_rep_group[match(colnames(m), samples$Run)])

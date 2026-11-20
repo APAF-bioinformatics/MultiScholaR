@@ -568,9 +568,10 @@ integrationScanProject <- function(integration_dir, imported = NULL, texts = int
             length(unique(samples[[biological]])) else NA_integer_
         group_count <- length(unique(samples[[manifest$group_column]]))
         for (view in names(input$views)) {
-            matrix <- input$views[[view]]$matrix
-            views[[view]] <- data.frame(view = view, omic = omic, features = nrow(matrix), runs = ncol(matrix) - 1L,
-                biological_samples = biological_count, groups = group_count, stringsAsFactors = FALSE)
+            # KIT-147: the reader gives each data set's size; no matrix is read here.
+            views[[view]] <- data.frame(view = view, omic = omic, features = input$views[[view]]$rows,
+                runs = input$views[[view]]$columns, biological_samples = biological_count, groups = group_count,
+                stringsAsFactors = FALSE)
         }
     }
     omic_table <- if (length(omics)) do.call(rbind, lapply(omics, as.data.frame, stringsAsFactors = FALSE)) else

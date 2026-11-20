@@ -68,7 +68,8 @@ test_that("the corpus has the declared design", {
     expect_gte(nrow(scores), 16L)
     expect_identical(as.numeric(scores$Z1), as.numeric(scores$group == "KO"))
 
-    samples <- lapply(omics, \(o) utils::read.delim(file.path(dir, o, "samples.tsv"), stringsAsFactors = FALSE))
+    # KIT-147: the omics' inputs are contract v2 Parquet files, read here with Arrow alone.
+    samples <- lapply(omics, \(o) as.data.frame(arrow::read_parquet(file.path(dir, o, "samples.parquet"))))
     names(samples) <- omics
     runs <- unlist(lapply(samples, `[[`, "Run"))
     expect_false(anyDuplicated(runs) > 0L)
@@ -81,8 +82,8 @@ test_that("the corpus has the declared design", {
 
     for (omic in omics) {
         for (view in truth$views[[omic]]) {
-            m <- utils::read.delim(file.path(dir, omic, sprintf("matrix_%s.tsv", view)), check.names = FALSE)
-            f <- utils::read.delim(file.path(dir, omic, sprintf("features_%s.tsv", view)), stringsAsFactors = FALSE)
+            m <- as.data.frame(arrow::read_parquet(file.path(dir, omic, sprintf("matrix_%s.parquet", view))))
+            f <- as.data.frame(arrow::read_parquet(file.path(dir, omic, sprintf("features_%s.parquet", view))))
             expect_identical(names(m), c("feature_id", samples[[omic]]$Run))
             expect_identical(m$feature_id, f$feature_id)
             expect_identical(m$feature_id, loadings$feature_id[loadings$omic == omic & loadings$view == view])
@@ -104,6 +105,8 @@ test_that("each omic's folder is a KIT-061 integration input the contract's read
     for (omic in names(workflows)) {
         input <- readIntegrationInput(file.path(dir, omic))
         manifest <- input$manifest
+        # KIT-147: contract v2.
+        expect_identical(manifest$schema, INTEGRATION_INPUT_SCHEMA)
         expect_identical(manifest$omic_type, omic)
         expect_identical(manifest$workflow, workflows[[omic]])
         expect_identical(manifest$matrix_role, "normalised")

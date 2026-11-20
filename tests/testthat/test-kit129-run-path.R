@@ -1670,7 +1670,8 @@ test_that("(seventh pass item 2) classic proteomics: a new design whose count ga
     expect_identical(manifest$source_state$name, "ruv_corrected")
     expected <- out$normalised@protein_quant_table
     names(expected)[[1L]] <- "feature_id"
-    expect_equal(out$input$views$proteomics$matrix, as.data.frame(expected), tolerance = 0, ignore_attr = TRUE)
+    expect_equal(integrationInputMatrix(dirname(out$path), "proteomics", out$input), as.data.frame(expected), tolerance = 0,
+        ignore_attr = TRUE)
 })
 
 test_that("(seventh pass item 3) classic proteomics: the integration input names the new design, the k applied and the replicate structure; a legacy run's manifest is as before", {

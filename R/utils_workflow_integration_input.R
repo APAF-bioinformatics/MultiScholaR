@@ -15,28 +15,39 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # KIT-061: the per-omic integration input (KIT-060 audit section 4; the user's decisions D1, D2). Each omic's Summary
-# tab writes one folder, `<project>/integration/<omic>/`, of plain tables under fixed names with a JSON manifest; the
+# tab writes one folder, `<project>/integration/<omic>/`, of tables under fixed names with a JSON manifest; the
 # integration reads it through `readIntegrationInput()` and never an omic's store or S4 class.
 #
-#   integration_input.json      the manifest (INTEGRATION_INPUT_SCHEMA)
-#   matrix_<view>.tsv           features x samples; first column `feature_id`, then one column per sample id
-#   features_<view>.tsv         one row per feature, in the matrix's order: `feature_id`, `display_name`, annotation
-#   samples.tsv                 the design of the matrix's samples, in the matrix's column order
+# KIT-147 (plan item A, contract v2): the tables are Parquet files.
 #
-# The manifest carries the omic and its route, the matrix's role (`corrected` or `normalised`), the RUV design that
-# produced a corrected matrix, the source state's entity id and hash, every file's sha256, the package version and the
-# time of writing.
+#   integration_input.json      the manifest (INTEGRATION_INPUT_SCHEMA)
+#   matrix_<view>.parquet       features x samples, wide: `feature_id` (text), then one double column per sample id in
+#                               the samples table's order; row groups of 10,000 rows
+#   features_<view>.parquet     one row per feature, in the matrix's order: `feature_id`, `display_name`, annotation
+#   samples.parquet             the design of the matrix's samples, in the matrix's column order
+#
+# Every Parquet file is written with format version 2.6, snappy compression and row groups of at most 10,000 rows; the
+# samples and features tables hold text columns (as the v1 reader returned them), the matrix text ids and doubles. The
+# manifest carries the omic and its route, the matrix's role (`corrected` or `normalised`), the RUV design that produced
+# a corrected matrix, the source state's entity id and hash, every file's sha256, the Parquet layout (`parquet`) and
+# each view's row-group count, the package version and the time of writing. A v1 folder (TSV tables, schema v1) was
+# only ever written by development builds and is refused (`integration_input_outdated`).
 
-INTEGRATION_INPUT_SCHEMA <- "multischolar.integration_input.v1"
+INTEGRATION_INPUT_SCHEMA <- "multischolar.integration_input.v2"
+INTEGRATION_INPUT_SCHEMA_V1 <- "multischolar.integration_input.v1"
 INTEGRATION_INPUT_MANIFEST <- "integration_input.json"
-INTEGRATION_INPUT_SAMPLES <- "samples.tsv"
+INTEGRATION_INPUT_SAMPLES <- "samples.parquet"
 INTEGRATION_INPUT_ROLES <- c("corrected", "normalised")
+# The Parquet layout every v2 file follows, recorded in the manifest as `parquet` and required as written.
+INTEGRATION_INPUT_PARQUET <- list(format_version = "2.6", compression = "snappy", row_group_rows = 10000L,
+    column_types = list(feature_id = "string", runs = "double", samples = "string", features = "string"))
 
 #' Refuse an integration input with the contract's classed error.
 #' @param message What failed, lower case.
+#' @param class A more specific class before `integration_input_invalid`, or NULL.
 #' @noRd
-abortIntegrationInput <- function(message) {
-    cli::cli_abort(message, class = "integration_input_invalid", call = NULL)
+abortIntegrationInput <- function(message, class = NULL) {
+    cli::cli_abort(message, class = c(class, "integration_input_invalid"), call = NULL)
 }
 
 #' A view's two file names (fixed by the view name).
@@ -44,7 +55,7 @@ abortIntegrationInput <- function(message) {
 #' @return `list(matrix, features)`.
 #' @noRd
 integrationInputViewFiles <- function(view) {
-    list(matrix = sprintf("matrix_%s.tsv", view), features = sprintf("features_%s.tsv", view))
+    list(matrix = sprintf("matrix_%s.parquet", view), features = sprintf("features_%s.parquet", view))
 }
 
 #' A view's name for an omic with several assays (INT-4, user 2026-11-19): `<omic>_<assay>` (for example
@@ -124,8 +135,199 @@ validateIntegrationInputTables <- function(manifest, samples, matrices, features
     invisible(TRUE)
 }
 
-#' Write one omic's integration input (KIT-061): the tables under their fixed names, then the manifest with every
-#' file's sha256, in a staging folder that replaces `dir` once complete.
+# ---------------------------------------------------------------------------------------------------------------
+# KIT-147: the Parquet files of contract v2.
+# ---------------------------------------------------------------------------------------------------------------
+
+#' A table as the contract's samples and features files hold it: a plain data frame of text columns (each value as
+#' `as.character` gives it, missing values kept), as the v1 reader returned these tables.
+#' @param table A data frame.
+#' @noRd
+integrationInputTextTable <- function(table) {
+    table <- as.data.frame(table, stringsAsFactors = FALSE, optional = TRUE)
+    table[] <- lapply(table, function(column) if (is.character(column) && is.null(attributes(column))) column else
+        as.character(column))
+    rownames(table) <- NULL
+    table
+}
+
+#' A matrix as the contract's matrix file holds it: `feature_id` as text, then one double column per sample id in the
+#' given order.
+#' @param matrix A features x samples table whose first column is `feature_id`.
+#' @param sample_ids The samples table's ids, in its order.
+#' @noRd
+integrationInputMatrixTable <- function(matrix, sample_ids) {
+    table <- as.data.frame(matrix, stringsAsFactors = FALSE, optional = TRUE)[c("feature_id", sample_ids)]
+    table$feature_id <- as.character(table$feature_id)
+    table[sample_ids] <- lapply(table[sample_ids], as.double)
+    rownames(table) <- NULL
+    table
+}
+
+#' The zero-row matrix of a data set: `feature_id` as text, then one double column per run.
+#' @param columns `feature_id`, then the run ids.
+#' @noRd
+integrationInputMatrixPrototype <- function(columns) {
+    structure(stats::setNames(c(list(character()), rep(list(double()), length(columns) - 1L)), columns),
+        class = "data.frame", row.names = integer())
+}
+
+#' Write one table as a contract Parquet file: format version 2.6, snappy, row groups of 10,000 rows, no R metadata
+#' (the same table gives the same bytes on every computer with the same Arrow).
+#' @param table A plain data frame of text or double columns.
+#' @param path The file to write.
+#' @noRd
+writeIntegrationInputParquet <- function(table, path) {
+    layout <- INTEGRATION_INPUT_PARQUET
+    arrow_table <- arrow::Table$create(table)
+    arrow_table <- arrow_table$ReplaceSchemaMetadata(list(multischolar_integration_input = INTEGRATION_INPUT_SCHEMA))
+    sink <- arrow::FileOutputStream$create(path)
+    on.exit(try(sink$close(), silent = TRUE), add = TRUE)
+    writer <- arrow::ParquetFileWriter$create(arrow_table$schema, sink,
+        properties = arrow::ParquetWriterProperties$create(names(table), version = layout$format_version,
+            compression = layout$compression))
+    writer$WriteTable(arrow_table, chunk_size = layout$row_group_rows)
+    writer$Close()
+    sink$close()
+    invisible(path)
+}
+
+#' Open a contract Parquet file, run `read` on its reader and close it (a plain stream, closed on exit: KIT-131).
+#' @param path The file.
+#' @param name The file's name in messages.
+#' @param read `function(reader)`.
+#' @return `read`'s value.
+#' @noRd
+withIntegrationInputParquet <- function(path, name, read) {
+    unreadable <- function(error) abortIntegrationInput(sprintf("the file %s cannot be read as Parquet: %s", name,
+        conditionMessage(error)))
+    stream <- tryCatch(arrow::ReadableFile$create(path), error = unreadable)
+    on.exit(try(stream$close(), silent = TRUE), add = TRUE)
+    reader <- tryCatch(arrow::ParquetFileReader$create(stream), error = unreadable)
+    on.exit(try(reader$.unsafe_delete(), silent = TRUE), add = TRUE, after = FALSE)
+    read(reader)
+}
+
+#' An Arrow table as a plain data frame.
+#' @noRd
+integrationInputFrame <- function(table) {
+    frame <- as.data.frame(table)
+    class(frame) <- "data.frame"
+    frame
+}
+
+#' A Parquet file's column names and Arrow types.
+#' @noRd
+integrationInputSchema <- function(reader) {
+    schema <- reader$GetSchema()
+    list(names = schema$names, types = vapply(schema$fields, function(field) field$type$ToString(), character(1)))
+}
+
+#' Read a small contract table whole (the samples or a features file): every column text.
+#' @param path The file.
+#' @param name The file's name in messages.
+#' @return A plain data frame.
+#' @noRd
+readIntegrationInputTextTable <- function(path, name) {
+    withIntegrationInputParquet(path, name, function(reader) {
+        schema <- integrationInputSchema(reader)
+        if (!length(schema$names) || anyDuplicated(schema$names) || !all(schema$types == "string")) {
+            abortIntegrationInput(sprintf("the file %s must hold uniquely named text columns", name))
+        }
+        integrationInputFrame(reader$ReadTable())
+    })
+}
+
+#' Read one row group of a data set's matrix file (KIT-147): the rows of that group, every column.
+#' @param path The matrix file.
+#' @param name The file's name in messages.
+#' @param index The row group, from 1.
+#' @param columns The columns the file must have, in order (`feature_id`, then the runs).
+#' @return A plain data frame of at most 10,000 rows.
+#' @noRd
+readIntegrationInputRowGroup <- function(path, name, index, columns) {
+    withIntegrationInputParquet(path, name, function(reader) {
+        if (!identical(integrationInputSchema(reader)$names, columns)) {
+            abortIntegrationInput(sprintf("the file %s no longer has the columns it was validated with", name))
+        }
+        if (!(index >= 1L && index <= reader$num_row_groups)) {
+            abortIntegrationInput(sprintf("the file %s has no row group %d", name, index))
+        }
+        page <- integrationInputFrame(reader$ReadRowGroup(as.integer(index) - 1L))
+        if (nrow(page) > INTEGRATION_INPUT_PARQUET$row_group_rows) {
+            abortIntegrationInput(sprintf("the file %s has a row group of more than %d rows", name,
+                INTEGRATION_INPUT_PARQUET$row_group_rows))
+        }
+        page
+    })
+}
+
+#' Read a data set's whole matrix (KIT-147): for small inputs and tests; the import streams row groups instead.
+#' @inheritParams readIntegrationInputRowGroup
+#' @noRd
+readIntegrationInputMatrix <- function(path, name, columns) {
+    withIntegrationInputParquet(path, name, function(reader) {
+        if (!identical(integrationInputSchema(reader)$names, columns)) {
+            abortIntegrationInput(sprintf("the file %s no longer has the columns it was validated with", name))
+        }
+        integrationInputFrame(reader$ReadTable())
+    })
+}
+
+#' Check a data set's matrix file against the manifest without reading its values (KIT-147): the schema (`feature_id`
+#' as text first, then the samples table's ids once each in its order as doubles), the shape and row-group count the
+#' manifest states, each row group at most 10,000 rows, and the feature ids (read from the id column alone) present,
+#' non-empty and unique.
+#' @param dir The omic's folder.
+#' @param view The manifest's view entry.
+#' @param feature_column The manifest's feature id column.
+#' @param sample_ids The samples table's ids, in its order.
+#' @return The feature ids, in file order.
+#' @noRd
+checkIntegrationInputMatrix <- function(dir, view, feature_column, sample_ids) {
+    name <- view$matrix_file
+    withIntegrationInputParquet(file.path(dir, name), name, function(reader) {
+        schema <- integrationInputSchema(reader)
+        rows <- as.integer(reader$num_rows)
+        if (!identical(rows, as.integer(view$rows)) || !identical(length(schema$names) - 1L, as.integer(view$columns))) {
+            abortIntegrationInput(sprintf("the matrix of view %s is not %s x %s", view$name, view$rows, view$columns))
+        }
+        if (!identical(schema$names[[1L]], feature_column) || !identical(schema$types[[1L]], "string")) {
+            abortIntegrationInput(sprintf("the matrix of view %s must start with the text column %s", view$name, feature_column))
+        }
+        if (!identical(schema$names[-1L], sample_ids)) {
+            abortIntegrationInput(sprintf("the samples of view %s must be the samples table's, once each, in its order",
+                view$name))
+        }
+        if (!all(schema$types[-1L] == INTEGRATION_INPUT_PARQUET$column_types$runs)) {
+            abortIntegrationInput(sprintf("the sample columns of view %s must be numeric (double)", view$name))
+        }
+        groups <- as.integer(reader$num_row_groups)
+        if (!identical(groups, as.integer(view$row_groups))) {
+            abortIntegrationInput(sprintf("the matrix of view %s does not have the %s row groups its manifest states",
+                view$name, view$row_groups))
+        }
+        ids <- character(rows)
+        at <- 0L
+        for (group in seq_len(groups)) {
+            part <- integrationInputFrame(reader$ReadRowGroup(group - 1L, 0L))[[1L]]
+            if (length(part) > INTEGRATION_INPUT_PARQUET$row_group_rows) {
+                abortIntegrationInput(sprintf("the matrix of view %s has a row group of more than %d rows", view$name,
+                    INTEGRATION_INPUT_PARQUET$row_group_rows))
+            }
+            ids[at + seq_along(part)] <- part
+            at <- at + length(part)
+        }
+        if (anyNA(ids) || any(!nzchar(ids)) || anyDuplicated(ids)) {
+            abortIntegrationInput(sprintf("the feature ids of view %s must be present, non-empty and unique", view$name))
+        }
+        ids
+    })
+}
+
+#' Write one omic's integration input (KIT-061; KIT-147: Parquet, contract v2): the tables under their fixed names,
+#' then the manifest with every file's sha256 and the Parquet layout, in a staging folder that replaces `dir` once
+#' complete.
 #' @param dir The omic's folder, `<project>/integration/<omic>/`.
 #' @param manifest The omic's fields: `omic_type`, `workflow`, `matrix_role`, `scale`, `correction` (NULL when
 #'   `normalised`), `source_state`, `annotation`, `sample_id_column`, `group_column`, `technical_replicate_column`.
@@ -160,17 +362,20 @@ writeIntegrationInput <- function(dir, manifest, samples, matrices, features, no
     if (!dir.create(staging)) abortIntegrationInput(sprintf("the staging folder %s could not be created", staging))
     on.exit(unlink(staging, recursive = TRUE), add = TRUE)
     write <- function(table, name) {
-        vroom::vroom_write(table, file.path(staging, name), delim = "\t", na = "NA", progress = FALSE)
+        writeIntegrationInputParquet(table, file.path(staging, name))
         name
     }
-    written <- write(samples, INTEGRATION_INPUT_SAMPLES)
-    for (view in views) {
-        files <- integrationInputViewFiles(view)
+    written <- write(integrationInputTextTable(samples), INTEGRATION_INPUT_SAMPLES)
+    for (i in seq_along(views)) {
+        files <- integrationInputViewFiles(views[[i]])
         # The matrix's columns in the samples table's order.
-        written <- c(written, write(matrices[[view]][c("feature_id", sample_ids)], files$matrix),
-            write(features[[view]], files$features))
+        written <- c(written, write(integrationInputMatrixTable(matrices[[views[[i]]]], sample_ids), files$matrix),
+            write(integrationInputTextTable(features[[views[[i]]]]), files$features))
+        manifest$views[[i]]$row_groups <- withIntegrationInputParquet(file.path(staging, files$matrix), files$matrix,
+            function(reader) as.integer(reader$num_row_groups))
     }
     manifest$samples_file <- INTEGRATION_INPUT_SAMPLES
+    manifest$parquet <- INTEGRATION_INPUT_PARQUET
     manifest$files <- stats::setNames(lapply(written, function(name) {
         digest::digest(file = file.path(staging, name), algo = "sha256")
     }), written)
@@ -211,11 +416,15 @@ removeIntegrationInput <- function(dir) {
     invisible(TRUE)
 }
 
-#' Read and validate one omic's integration input (KIT-061): the manifest, then every file it lists against its
-#' sha256, then the tables' shapes and ids against the manifest and each other.
+#' Read and validate one omic's integration input (KIT-061; KIT-147: contract v2, no matrix loaded): the manifest,
+#' then every file it lists against its sha256, then the samples table, then per view the matrix file's schema, shape
+#' and row groups with its feature ids (the id column alone) and the features file against those ids. A v1 folder is
+#' refused (`integration_input_outdated`): it was written by a development build and its omic's Summary must be saved
+#' again.
 #' @param dir The omic's folder, `<project>/integration/<omic>/`.
-#' @return `list(manifest, samples, views)`; `views` is named by view, each `list(matrix, features)`. An input that
-#'   fails any check is refused with an `integration_input_invalid` error.
+#' @return `list(manifest, samples, views)`; `views` is named by view, each `list(features, rows, columns,
+#'   row_groups)` (the matrix is read through `openIntegrationInputView()`). An input that fails any check is refused
+#'   with an `integration_input_invalid` error.
 #' @noRd
 readIntegrationInput <- function(dir) {
     path <- file.path(dir, INTEGRATION_INPUT_MANIFEST)
@@ -223,11 +432,16 @@ readIntegrationInput <- function(dir) {
     manifest <- tryCatch(jsonlite::read_json(path, simplifyVector = FALSE), error = function(error) {
         abortIntegrationInput(sprintf("the integration input manifest cannot be read: %s", conditionMessage(error)))
     })
+    if (identical(manifest$schema, INTEGRATION_INPUT_SCHEMA_V1)) {
+        abortIntegrationInput(sprintf(paste("the integration input in %s was saved by an earlier development version of",
+            "MultiScholaR and cannot be read; save the %s Summary again"), dir, basename(dir)),
+            class = "integration_input_outdated")
+    }
     if (!identical(manifest$schema, INTEGRATION_INPUT_SCHEMA)) {
         abortIntegrationInput(sprintf("the manifest's schema must be %s", INTEGRATION_INPUT_SCHEMA))
     }
     required <- c("omic_type", "workflow", "matrix_role", "source_state", "sample_id_column", "group_column",
-        "feature_id_column", "display_name_column", "views", "samples_file", "files", "software", "written_at")
+        "feature_id_column", "display_name_column", "views", "samples_file", "parquet", "files", "software", "written_at")
     missing <- setdiff(required, names(manifest))
     if (length(missing)) abortIntegrationInput(sprintf("the manifest lacks %s", paste(missing, collapse = ", ")))
     # K061-6: the omic is its folder's; the views are named once each, as the writer names them, and their files are
@@ -247,6 +461,13 @@ readIntegrationInput <- function(dir) {
         if (!identical(view$matrix_file, fixed$matrix) || !identical(view$features_file, fixed$features)) {
             abortIntegrationInput(sprintf("the files of view %s must be %s and %s", view$name, fixed$matrix, fixed$features))
         }
+    }
+    if (!identical(manifest$samples_file, INTEGRATION_INPUT_SAMPLES)) {
+        abortIntegrationInput(sprintf("the samples file must be %s", INTEGRATION_INPUT_SAMPLES))
+    }
+    if (!identical(manifest$parquet, INTEGRATION_INPUT_PARQUET)) {
+        abortIntegrationInput(paste("the manifest's Parquet layout must be the contract's: format 2.6, snappy, row groups",
+            "of 10,000 rows, text ids and annotation, double values"))
     }
     if (!isTRUE(manifest$matrix_role %in% INTEGRATION_INPUT_ROLES)) {
         abortIntegrationInput("the matrix role must be corrected or normalised")
@@ -268,35 +489,52 @@ readIntegrationInput <- function(dir) {
     }
     listed <- c(manifest$samples_file, unlist(lapply(manifest$views, function(view) c(view$matrix_file, view$features_file))))
     if (!all(listed %in% names(files))) abortIntegrationInput("every table must be listed with its sha256")
-    read <- function(name, types) {
-        table <- suppressWarnings(readr::read_tsv(file.path(dir, name), col_types = types, na = "NA",
-            name_repair = "minimal", progress = FALSE, show_col_types = FALSE))
-        if (nrow(readr::problems(table))) abortIntegrationInput(sprintf("the file %s cannot be parsed", name))
-        as.data.frame(table, stringsAsFactors = FALSE, optional = TRUE)
+    sample_column <- manifest$sample_id_column
+    samples <- readIntegrationInputTextTable(file.path(dir, manifest$samples_file), manifest$samples_file)
+    if (!all(c(sample_column, manifest$group_column) %in% names(samples))) {
+        abortIntegrationInput(sprintf("the samples table needs the columns %s and %s", sample_column, manifest$group_column))
     }
-    text <- readr::cols(.default = readr::col_character())
-    samples <- read(manifest$samples_file, text)
-    matrices <- list()
-    features <- list()
+    sample_ids <- samples[[sample_column]]
+    if (!length(sample_ids) || anyNA(sample_ids) || any(!nzchar(sample_ids)) || anyDuplicated(sample_ids)) {
+        abortIntegrationInput("the sample ids must be present, non-empty and unique")
+    }
+    feature_column <- manifest$feature_id_column
+    display_column <- manifest$display_name_column
+    views <- list()
     for (view in manifest$views) {
-        matrix <- read(view$matrix_file, text)
-        if (!identical(nrow(matrix), as.integer(view$rows)) || !identical(ncol(matrix) - 1L, as.integer(view$columns))) {
-            abortIntegrationInput(sprintf("the matrix of view %s is not %s x %s", view$name, view$rows, view$columns))
+        ids <- checkIntegrationInputMatrix(dir, view, feature_column, sample_ids)
+        annotation <- readIntegrationInputTextTable(file.path(dir, view$features_file), view$features_file)
+        if (!all(c(feature_column, display_column) %in% names(annotation)) ||
+            !identical(annotation[[feature_column]], ids)) {
+            abortIntegrationInput(sprintf("the features of view %s must list the matrix's ids in order with %s",
+                view$name, display_column))
         }
-        # Numbers are parsed by R's own conversion (readr's parser can differ in the last bit). The written digits read
-        # back exactly in the omics range; values below about 1e-148 may differ in the last bit through as.numeric.
-        for (column in seq_along(matrix)[-1L]) {
-            values <- suppressWarnings(as.numeric(matrix[[column]]))
-            if (any(is.na(values) & !is.nan(values) & !is.na(matrix[[column]]))) {
-                abortIntegrationInput(sprintf("the matrix of view %s has a value that is not a number", view$name))
-            }
-            matrix[[column]] <- values
-        }
-        matrices[[view$name]] <- matrix
-        features[[view$name]] <- read(view$features_file, text)
+        views[[view$name]] <- list(features = annotation, rows = length(ids), columns = length(sample_ids),
+            row_groups = as.integer(view$row_groups))
     }
-    validateIntegrationInputTables(manifest, samples, matrices, features)
-    list(manifest = manifest, samples = samples, views = stats::setNames(lapply(names(matrices), function(view) {
-        list(matrix = matrices[[view]], features = features[[view]])
-    }), names(matrices)))
+    list(manifest = manifest, samples = samples, views = views)
+}
+
+#' A reader over one data set of a validated integration input (KIT-147): its size, its zero-row prototype and its
+#' matrix by row group (each read opens and closes the file; no row group is kept).
+#' @param dir The omic's folder.
+#' @param view The data set's name.
+#' @param input `readIntegrationInput(dir)`'s value, or NULL to read and validate the folder here.
+#' @return `list(view, path, sha256, rows, columns, row_groups, prototype, read_row_group(index), read())`: `columns`
+#'   is `feature_id` then the run ids in the samples table's order; `read_row_group` gives the rows of one row group
+#'   (from 1), `read` the whole matrix (small inputs and tests).
+#' @noRd
+openIntegrationInputView <- function(dir, view, input = NULL) {
+    if (is.null(input)) input <- readIntegrationInput(dir)
+    entry <- Filter(function(item) identical(item$name, view), input$manifest$views)
+    if (length(entry) != 1L) abortIntegrationInput(sprintf("the integration input in %s has no data set %s", dir, view))
+    entry <- entry[[1L]]
+    path <- file.path(dir, entry$matrix_file)
+    name <- entry$matrix_file
+    columns <- c(input$manifest$feature_id_column, input$samples[[input$manifest$sample_id_column]])
+    list(view = view, path = path, sha256 = input$manifest$files[[name]], rows = as.integer(entry$rows),
+        columns = columns, row_groups = as.integer(entry$row_groups),
+        prototype = integrationInputMatrixPrototype(columns),
+        read_row_group = function(index) readIntegrationInputRowGroup(path, name, index, columns),
+        read = function() readIntegrationInputMatrix(path, name, columns))
 }

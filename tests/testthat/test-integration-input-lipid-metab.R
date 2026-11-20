@@ -73,7 +73,7 @@ for (omic in c("lipidomics", "metabolomics")) local({
         expect_identical(run$saved$integrationFile, sprintf("%s_kit135_final_s4.RDS", omic))
         expect_s4_class(readRDS(run$rds), omicsDeclarationBindings()[[omic]]$class)
         expect_setequal(list.files(run$integration_dir), c(omic, basename(run$rds)))
-        input <- readIntegrationInput(run$dir)
+        input <- readIntegrationInputWithMatrices(run$dir)
         manifest <- input$manifest
         assays <- names(methods::slot(fixture$object, omicsDeclarationBindings()[[omic]]$data_slot))
         views <- paste(omic, assays, sep = "_")
@@ -132,7 +132,7 @@ test_that("KIT-135: a new RUV design writes the RUV state's corrected table and 
     ruv <- integrationOmicsQuiet(runWorkflowOmicsReferenceRuv(lipidomicsDeclarationBinding, owner, parameters, list()))
     expect_identical(owner$current_state, "lipid_ruv_corrected")
     run <- integrationOmicsSummarySave("lipidomics", fixture, root)
-    input <- readIntegrationInput(run$dir)
+    input <- readIntegrationInputWithMatrices(run$dir)
     manifest <- input$manifest
     expect_identical(manifest$matrix_role, "corrected")
     expect_identical(manifest$source_state$name, "lipid_ruv_corrected")
@@ -201,7 +201,7 @@ test_that("KIT-135: the worker's integration export writes the same input beside
     fixture <- integrationOmicsOwner("metabolomics", file.path(root, "owner"))
     integrationOmicsQuiet(metabDeclarationsJourney(fixture))
     owner <- fixture$owner
-    in_process <- readIntegrationInput(integrationOmicsSummarySave("metabolomics", fixture, file.path(root, "in-process"))$dir)
+    in_process <- readIntegrationInputWithMatrices(integrationOmicsSummarySave("metabolomics", fixture, file.path(root, "in-process"))$dir)
     integration <- file.path(root, "worker", "integration")
     dir.create(integration, recursive = TRUE)
     path <- file.path(integration, "metabolomics_kit135_final_s4.RDS")
@@ -209,7 +209,7 @@ test_that("KIT-135: the worker's integration export writes the same input beside
         list(path = path, state_name = owner$current_state)))
     expect_identical(done$acceptance, "complete")
     expect_s4_class(readRDS(path), "MetaboliteAssayData")
-    worker <- readIntegrationInput(file.path(integration, "metabolomics"))
+    worker <- readIntegrationInputWithMatrices(file.path(integration, "metabolomics"))
     expect_identical(names(worker$views), c("metabolomics_LCMS_Pos", "metabolomics_GCMS"))
     drop <- c("written_at", "software")
     expect_identical(worker$manifest[setdiff(names(worker$manifest), drop)], in_process$manifest[setdiff(names(in_process$manifest), drop)])
