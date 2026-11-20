@@ -1,0 +1,51 @@
+{
+  "requested_by": "KIT-152 correction pass: per-map caution wording, stale factors-shown fallback; base d0f67cc2 (previous head) versus head; failing-first and gate-off scripts",
+  "label": "KIT-152 correction, head c0ebda91 against base d0f67cc2",
+  "package_commit": "c0ebda9198895538058295e3b4473f8f1a2f8915",
+  "base_commit": "d0f67cc222d5f39a1fa66e11bef3ddacb7bf87ef",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-outputs.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-results.R",
+    "test-integration-record.R",
+    "test-integration-gui.R",
+    "test-integration-model.R",
+    "test-e2e-test-mode-integration.R",
+    "test-workflow-analysis-record.R"
+  ],
+  "shards": 4,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "d0f67cc222d5f39a1fa66e11bef3ddacb7bf87ef",
+        "kit152c-failing-first",
+        "test-integration-outputs.R"
+      ],
+      "out": "kit152c-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "58ddd20b8044dcb21c8f239624daf05e19376d88",
+        "kit152c-gate-off"
+      ],
+      "out": "kit152c-gate-off",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
