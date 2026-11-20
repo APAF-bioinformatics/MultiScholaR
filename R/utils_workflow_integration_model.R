@@ -547,10 +547,12 @@ integrationAverageRuns <- function(values, key) {
 #' two groups, a view left without features.
 #' @param object An `IntegrationViewsData`, hydrated.
 #' @param parameters Resolved parameters (`integrationResolveMofaParameters`).
+#' @param prefix_rows KIT-148: name each view's rows `<view>:<feature_id>` when the view is read (the model's hand-off
+#'   names, unique across views), so that the hand-off makes no renamed copy; FALSE names them `<feature_id>`.
 #' @return `list(views, samples, view_summary, shared_samples, notes)`: the views as features x samples matrices in
 #'   the selected order with one column set, the aligned sample table, a summary row per view.
 #' @noRd
-integrationAlignViews <- function(object, parameters) {
+integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
     # KIT-063 item A: the user's sample match, when one is given (NULL: the design as saved).
     design <- integrationApplySampleMatch(object@design_matrix, parameters$sample_match_table)
     view_omic <- unlist(unname(lapply(object@inputs, function(entry) stats::setNames(rep(entry$omic, length(entry$views)),
@@ -564,7 +566,7 @@ integrationAlignViews <- function(object, parameters) {
         table <- object@views[[view]]
         values <- as.matrix(table[-1L])
         storage.mode(values) <- "double"
-        rownames(values) <- as.character(table[[1L]])
+        rownames(values) <- if (isTRUE(prefix_rows)) paste(view, table[[1L]], sep = ":") else as.character(table[[1L]])
         dropped <- 0L
         if (identical(parameters$internal_standards, "drop")) {
             standard <- integrationInternalStandards(object@features[[view]])
@@ -691,10 +693,40 @@ integrationMofaVersions <- function() {
         h5py = python_package("h5py"))
 }
 
+#' MOFA2's check that a trained factor follows each sample's overall level (MOFA2 1.22.0, `.quality_control` of a
+#' loaded model), on the data the model was trained with (KIT-148). MOFA2 runs the check only when the model file holds
+#' the training data; the model file no longer does (`save_data = FALSE`), so the same rule is applied here: per data
+#' set, the features centred on their mean when MOFA2 centred them (`center_groups`), the mean of each sample over the
+#' observed features, and its absolute correlation with each factor over the samples (pairwise complete); a factor
+#' above 0.75 in any data set is named. Scaling a data set by one number (`scale_views`) does not change a correlation.
+#' One data set is held at a time.
+#' @param views Named list of features x samples matrices as handed to MOFA2.
+#' @param factors Samples x factors (the trained model's, named by sample).
+#' @param center Whether MOFA2 centred the features (`center_groups`).
+#' @return MOFA2's warning text, or NULL when no factor follows the overall level.
+#' @noRd
+integrationMofaOverallLevelWarning <- function(views, factors, center) {
+    r <- vapply(views, function(m) {
+        if (isTRUE(center)) m <- m - rowMeans(m, na.rm = TRUE)
+        means <- colMeans(m, na.rm = TRUE)
+        abs(suppressWarnings(stats::cor(means, factors[colnames(m), , drop = FALSE], use = "pairwise.complete.obs")))[1L, ]
+    }, numeric(ncol(factors)))
+    r <- matrix(r, nrow = ncol(factors))
+    flagged <- which(rowSums(r > 0.75) > 0)
+    if (!length(flagged)) return(NULL)
+    # MOFA2 1.22.0's wording (QC.R), so that the Results tab reads it as it read MOFA2's own warning.
+    sprintf(paste("Factor(s) %s are strongly correlated with the average expression of features for at least one of",
+        "your omics. Such factors appear when there are differences in the total 'levels' between your samples,",
+        "*sometimes* because of poor normalisation in the preprocessing steps."), paste(flagged, collapse = ", "))
+}
+
 #' Train MOFA2 as the proven lane does (KIT-060 status 2026-11-19, run 44423980807): `create_mofa` on the views,
 #' the default data, model and training options with the declared ones set, `prepare_mofa`, `run_mofa(use_basilisk =
-#' FALSE)` (a fall-back to basilisk is refused: the bundle's Python must be the one used), then the trained model
-#' loaded from its file.
+#' FALSE)` (a fall-back to basilisk is refused: the bundle's Python must be the one used). KIT-148: the model file is
+#' written without the training data (`save_data = FALSE`; the aligned values are kept in the project's store instead),
+#' the model `run_mofa` loads is the one used (one load, not two), the R copy MOFA2 made for the hand-off is released
+#' after training, and MOFA2's overall-level check, which needs the training data, is applied to the views here
+#' (`integrationMofaOverallLevelWarning`), its warning kept where MOFA2 would have given it.
 #' @param views Named list of features x samples matrices (feature names unique across views).
 #' @param options `integrationMofaOptions()`.
 #' @return `list(factors, weights, r2_per_factor (factors x views), r2_total, elbo, iterations, options, versions,
@@ -716,12 +748,14 @@ integrationTrainMofa <- function(views, options) {
     training_options$verbose <- FALSE
     object <- MOFA2::prepare_mofa(object, data_options = data_options, model_options = model_options,
         training_options = training_options)
+    reclaimWorkflowMemory()
     outfile <- tempfile("integration-mofa-", fileext = ".hdf5")
     on.exit(unlink(outfile), add = TRUE)
-    # Kept, not dropped: MOFA2's messages and warnings are returned with the model.
+    # Kept, not dropped: MOFA2's messages and warnings are returned with the model. KIT-063: they include the checks
+    # MOFA2 makes when `run_mofa` loads the trained model, for the Results tab.
     messages <- character()
-    withCallingHandlers(
-        MOFA2::run_mofa(object, outfile = outfile, save_data = TRUE, use_basilisk = FALSE),
+    model <- withCallingHandlers(
+        MOFA2::run_mofa(object, outfile = outfile, save_data = FALSE, use_basilisk = FALSE),
         message = function(m) {
             messages <<- c(messages, trimws(conditionMessage(m)))
             invokeRestart("muffleMessage")
@@ -730,18 +764,20 @@ integrationTrainMofa <- function(views, options) {
             messages <<- c(messages, paste("WARNING:", trimws(conditionMessage(w))))
             invokeRestart("muffleWarning")
         })
+    object <- NULL
+    reclaimWorkflowMemory()
     if (any(grepl("Setting use_basilisk = TRUE", messages, fixed = TRUE))) {
         integrationRefuse("MOFA2 could not use the configured Python with mofapy2 and fell back to basilisk; the model is not trained",
             "integration_mofa_unavailable")
     }
-    # KIT-063: MOFA2 checks the trained model when it loads it (for example a factor that follows each sample's overall
-    # level); those warnings are kept with the model, for the Results tab, rather than left to the console. A warning
-    # already kept from run_mofa is not kept twice. Nothing else of the loading changes.
-    model <- withCallingHandlers(MOFA2::load_model(outfile), warning = function(w) {
-        text <- paste("WARNING:", trimws(conditionMessage(w)))
-        if (!text %in% messages) messages <<- c(messages, text)
-        invokeRestart("muffleWarning")
-    })
+    # KIT-148: MOFA2's overall-level check, placed where its loading gave it (before the correlated-factors check, the
+    # last of its checks).
+    overall <- integrationMofaOverallLevelWarning(views, MOFA2::get_factors(model)[[1L]], options$center_groups)
+    if (!is.null(overall) && !paste("WARNING:", overall) %in% messages) {
+        at <- grep("WARNING: The model contains highly correlated factors", messages, fixed = TRUE)
+        messages <- if (length(at)) append(messages, paste("WARNING:", overall), after = at[[1L]] - 1L) else
+            c(messages, paste("WARNING:", overall))
+    }
     variance <- MOFA2::get_variance_explained(model)
     r2 <- variance$r2_per_factor[[1L]]
     if (all(rownames(r2) %in% names(views))) r2 <- t(r2)
@@ -799,15 +835,13 @@ integrationMofaOperation <- function(match = FALSE) {
         product_type = "integration.mofa_model",
         kernel = function(object, parameters, store) {
             resolved <- integrationResolveMofaParameters(object, parameters)
-            aligned <- integrationAlignViews(object, resolved)
+            # KIT-148: the rows carry the hand-off names (`<view>:<feature_id>`) from the read, so the aligned views are
+            # handed to the trainer as they are, with no renamed copy.
+            aligned <- integrationAlignViews(object, resolved, prefix_rows = TRUE)
             trainer <- parameters[["trainer", exact = TRUE]] %||% integrationTrainMofa
-            prefixed <- lapply(names(aligned$views), function(view) {
-                m <- aligned$views[[view]]
-                rownames(m) <- paste(view, rownames(m), sep = ":")
-                m
-            })
-            names(prefixed) <- names(aligned$views)
-            integrationModelProduct(aligned, trainer(prefixed, integrationMofaOptions(resolved)))
+            fit <- trainer(aligned$views, integrationMofaOptions(resolved))
+            reclaimWorkflowMemory()
+            integrationModelProduct(aligned, fit)
         })
 }
 

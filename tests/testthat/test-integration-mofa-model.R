@@ -150,3 +150,71 @@ test_that("KIT-062: the record replays on a copy of the inputs state to the same
     expect_identical(replayed$elbo$trace, original$elbo$trace)
     expect_identical(replayed$versions, original$versions)
 })
+
+# KIT-148 item 1: the trainer as KIT-147 left it (save_data = TRUE, the model loaded a second time, its warnings kept),
+# verbatim but for the hand-off names, which the kernel now sets at the read. The new trainer must give the same model
+# (identical factors, weights, variance explained and trace) and the same warnings in the same order, its overall-level
+# warning computed by MultiScholaR from the views.
+intMofaKit147Trainer <- function(views, options) {
+    object <- MOFA2::create_mofa(views)
+    data_options <- MOFA2::get_default_data_options(object)
+    data_options$scale_views <- options$scale_views
+    data_options$center_groups <- options$center_groups
+    data_options$use_float32 <- identical(options$precision, "single")
+    model_options <- MOFA2::get_default_model_options(object)
+    model_options$num_factors <- options$num_factors
+    training_options <- MOFA2::get_default_training_options(object)
+    training_options$seed <- options$seed
+    training_options$maxiter <- options$maxiter
+    training_options$convergence_mode <- options$convergence_mode
+    training_options$verbose <- FALSE
+    object <- MOFA2::prepare_mofa(object, data_options = data_options, model_options = model_options,
+        training_options = training_options)
+    outfile <- tempfile("integration-mofa-", fileext = ".hdf5")
+    on.exit(unlink(outfile), add = TRUE)
+    messages <- character()
+    withCallingHandlers(MOFA2::run_mofa(object, outfile = outfile, save_data = TRUE, use_basilisk = FALSE),
+        message = function(m) {
+            messages <<- c(messages, trimws(conditionMessage(m)))
+            invokeRestart("muffleMessage")
+        },
+        warning = function(w) {
+            messages <<- c(messages, paste("WARNING:", trimws(conditionMessage(w))))
+            invokeRestart("muffleWarning")
+        })
+    model <- withCallingHandlers(MOFA2::load_model(outfile), warning = function(w) {
+        text <- paste("WARNING:", trimws(conditionMessage(w)))
+        if (!text %in% messages) messages <<- c(messages, text)
+        invokeRestart("muffleWarning")
+    })
+    variance <- MOFA2::get_variance_explained(model)
+    r2 <- variance$r2_per_factor[[1L]]
+    if (all(rownames(r2) %in% names(views))) r2 <- t(r2)
+    stats_slot <- methods::slot(model, "training_stats")
+    list(factors = MOFA2::get_factors(model)[[1L]], weights = MOFA2::get_weights(model), r2_per_factor = r2,
+        r2_total = variance$r2_total[[1L]], elbo = as.numeric(stats_slot$elbo), iterations = length(stats_slot$time),
+        messages = messages, model_bytes = file.size(outfile))
+}
+
+test_that("KIT-148: the trainer without the data in the model file gives KIT-147's model and warnings", {
+    intMofaSkip()
+    base <- tempfile("kit148-trainer-")
+    manager <- newIntegrationStateOwner(file.path(base, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, file.path(intMofaCorpus(), intMofaOmics))
+    object <- integrationImportedObject(manager)
+    resolved <- integrationResolveMofaParameters(object)
+    aligned <- integrationAlignViews(object, resolved, prefix_rows = TRUE)
+    options <- integrationMofaOptions(resolved)
+    before <- intMofaKit147Trainer(aligned$views, options)
+    after <- integrationTrainMofa(aligned$views, options)
+    for (name in c("factors", "weights", "r2_per_factor", "r2_total", "elbo", "iterations")) {
+        expect_identical(after[[name]], before[[name]], info = name)
+    }
+    message(sprintf("KIT-148 trainer: model file %d bytes without the data, %d bytes with it", as.integer(after$model_file$size),
+        as.integer(before$model_bytes)))
+    message(paste(c("KIT-148 warnings, KIT-147 trainer:", before$messages[startsWith(before$messages, "WARNING:")],
+        "KIT-148 warnings, this trainer:", after$messages[startsWith(after$messages, "WARNING:")]), collapse = "\n"))
+    expect_identical(after$messages[startsWith(after$messages, "WARNING:")], before$messages[startsWith(before$messages, "WARNING:")])
+    expect_lt(after$model_file$size, before$model_bytes)
+})

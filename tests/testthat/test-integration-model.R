@@ -345,3 +345,80 @@ test_that("KIT-147: a data set of more than 64 runs and 10,000 features imports 
         getWorkflowStateReference(reopened, "integration_inputs"), fields = "views/proteomics"))
     expect_identical(as.list(again@views$proteomics), expected)
 })
+
+# KIT-148 item 1: fewer copies on the hand-off to MOFA2. The aligned views carry the hand-off row names from the read
+# and reach the trainer as they are (no renamed copy); MOFA2's overall-level check, which MOFA2 makes only when the
+# model file holds the training data (it no longer does, save_data = FALSE), is applied to the views by
+# `integrationMofaOverallLevelWarning` with MOFA2's rule.
+
+test_that("KIT-148: the aligned views reach the trainer with their hand-off names and are not copied on the way", {
+    inputs <- intModelInputs()
+    manager <- newIntegrationStateOwner(file.path(inputs$root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(inputs$proteomics, inputs$lipidomics))
+    profiled <- isTRUE(capabilities("profmem"))
+    original <- integrationAlignViews
+    traced <- list()
+    testthat::local_mocked_bindings(integrationAlignViews = function(...) {
+        aligned <- original(...)
+        # Every view is traced from the alignment to the trainer: a duplicate on the way is printed by tracemem.
+        if (profiled) for (view in names(aligned$views)) traced[[view]] <<- tracemem(aligned$views[[view]])
+        aligned
+    })
+    seen <- NULL
+    trainer <- function(views, options) {
+        seen <<- lapply(views, function(v) list(rows = rownames(v), bytes = as.numeric(object.size(v))))
+        if (profiled) for (v in views) untracemem(v)
+        intModelFakeTrainer(views, options)
+    }
+    printed <- utils::capture.output(run <- suppressWarnings(runIntegrationModel(manager, trainer = trainer)))
+    expect_identical(run$status, "computed")
+    # The hand-off names, unique across the data sets, set when each data set is read.
+    expect_identical(seen$lipidomics_LCMS_Pos$rows, c("lipidomics_LCMS_Pos:L1", "lipidomics_LCMS_Pos:L2"))
+    expect_identical(seen$proteomics$rows, c("proteomics:P1", "proteomics:P2", "proteomics:P3"))
+    # The product keeps the feature identifiers without the prefix.
+    expect_setequal(run$value$weights$feature_id, c("L1", "L2", "P1", "P2", "P3"))
+    if (profiled) expect_identical(grep("^tracemem\\[", printed, value = TRUE), character())
+    # The preview's alignment (no prefix) is the model's but for the row names.
+    object <- integrationImportedObject(manager)
+    parameters <- integrationResolveMofaParameters(object)
+    plain <- suppressWarnings(original(object, parameters))
+    named <- suppressWarnings(original(object, parameters, prefix_rows = TRUE))
+    for (view in names(plain$views)) {
+        expect_identical(rownames(named$views[[view]]), paste(view, rownames(plain$views[[view]]), sep = ":"))
+        expect_identical(unname(named$views[[view]]), unname(plain$views[[view]]))
+    }
+    expect_identical(named[c("samples", "view_summary", "shared_samples", "notes")],
+        plain[c("samples", "view_summary", "shared_samples", "notes")])
+})
+
+test_that("KIT-148: MOFA2's overall-level check is applied to the views with MOFA2's rule and wording", {
+    samples <- sprintf("S%02d", 1:12)
+    # Factor2 is each sample's overall level in data set a; Factor1 alternates; data set b's sample means follow a
+    # pattern orthogonal to both (|r| about 0.1 to 0.2), so b names no factor.
+    level <- as.numeric(1:12)
+    alternating <- rep(c(1, -1), 6L)
+    pattern <- rep(c(1, -1, -1, 1), 3L)
+    a <- outer(seq_len(30) / 2, level, `+`)
+    a[cbind(1:5, 1:5)] <- NA
+    b <- outer(as.numeric(1:20), pattern, `+`)
+    b[, 12] <- NA
+    views <- lapply(list(a = a, b = b), function(m) { dimnames(m) <- list(sprintf("f%02d", seq_len(nrow(m))), samples); m })
+    factors <- cbind(Factor1 = alternating, Factor2 = level)
+    rownames(factors) <- samples
+    warning <- integrationMofaOverallLevelWarning(views, factors, center = TRUE)
+    # MOFA2 1.22.0 (QC.R) on the data as mofapy2 saves them: features centred, the samples' means, |r| > 0.75.
+    mofa2 <- vapply(views, function(m) abs(stats::cor(colMeans(m - rowMeans(m, na.rm = TRUE), na.rm = TRUE), factors,
+        use = "pairwise.complete.obs"))[1L, ], numeric(2))
+    expect_identical(unname(which(rowSums(mofa2 > 0.75) > 0)), 2L)
+    expect_true(all(mofa2[, "b"] < 0.5))
+    expect_match(warning, "^Factor\\(s\\) 2 are strongly correlated with the average expression of features")
+    advisory <- integrationModelAdvisories(list(messages = paste("WARNING:", warning)))
+    expect_identical(advisory[[1L]]$kind, "overall_level")
+    expect_identical(advisory[[1L]]$sentence, sprintf(integrationGuiTexts()[["advisory_overall_level"]], "Factor2"))
+    # The samples are matched by the factors' names, not their positions; without centring the data are as given.
+    expect_identical(integrationMofaOverallLevelWarning(views, factors[rev(samples), ], center = TRUE), warning)
+    expect_identical(integrationMofaOverallLevelWarning(views, factors, center = FALSE), warning)
+    # No factor above 0.75: no warning.
+    expect_null(integrationMofaOverallLevelWarning(views["b"], factors, center = TRUE))
+})
