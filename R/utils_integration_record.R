@@ -824,6 +824,9 @@ integrationStudyParameterLines <- function(record, texts = integrationRecordText
         vapply(seq_len(nrow(table)), \(i) paste0("* ", paste(sprintf("%s: %s", names(table), unlist(table[i, ], use.names = FALSE)),
             collapse = "; ")), character(1))
     pairs <- function(table) sprintf("* %s: %s", table[[1L]], table[[2L]])
+    # KIT-141: an enrichment sheet without an enrichment holds one row saying so.
+    enriched <- function(table) if (identical(as.character(table[[1L]]), unname(texts[["none_recorded"]])))
+        sprintf("* %s", texts[["none_recorded"]]) else rows(table)
     c(section(texts[["report_title"]], texts[["report_intro"]]),
         section(texts[["section_inputs"]], rows(tables$integration_inputs)),
         section(texts[["section_matching"]], pairs(tables$integration_matching)),
@@ -834,8 +837,8 @@ integrationStudyParameterLines <- function(record, texts = integrationRecordText
         # KIT-152: the further figures.
         section(texts[["section_outputs"]], rows(tables$integration_outputs)),
         # KIT-141: the enrichments and their terms.
-        section(texts[["section_enrichment"]], rows(tables$integration_enrichment)),
-        section(texts[["section_enrichment_terms"]], rows(tables$integration_enrichment_terms)),
+        section(texts[["section_enrichment"]], enriched(tables$integration_enrichment)),
+        section(texts[["section_enrichment_terms"]], enriched(tables$integration_enrichment_terms)),
         section(texts[["section_notes"]], if (nrow(tables$integration_notes)) sprintf("* %s", tables$integration_notes[[1L]]) else
             sprintf("* %s", texts[["none_recorded"]])),
         section(texts[["section_methods"]], c(texts[["methods_draft_note"]], "", integrationMethodsText(record, texts))))

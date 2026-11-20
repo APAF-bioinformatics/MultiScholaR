@@ -1372,11 +1372,12 @@ integrationRecordEnrichmentTables <- function(block, texts = integrationRecordTe
                 as.integer(s(entry$direction$sign))),
             features = sprintf(texts[["enrich_counts_value"]], as.integer(s(entry$ranking_counts$features)),
                 as.integer(s(entry$ranking_counts$ranked)), as.integer(s(entry$mapping_counts$mapped))),
-            tests = as.integer(s(entry$tests)), family = text(entry$family), checksum = text(entry$stored_sha256),
+            tests = as.character(as.integer(s(entry$tests))), family = text(entry$family), checksum = text(entry$stored_sha256),
             stringsAsFactors = FALSE)
     })
-    summary <- if (length(summary)) do.call(rbind, summary) else data.frame(character(), character(), character(), character(),
-        character(), character(), character(), integer(), character(), character(), stringsAsFactors = FALSE)
+    # Without an enrichment, one row saying so (a sheet of headers only broke the record's workbook, run-tests 44789367190).
+    none <- function(n) as.data.frame(as.list(c(texts[["none_recorded"]], rep("", n - 1L))), stringsAsFactors = FALSE)
+    summary <- if (length(summary)) do.call(rbind, summary) else none(10L)
     names(summary) <- unname(texts[c("col_factor", "col_view", "col_enrich_database", "col_enrich_release", "col_enrich_ranking",
         "col_enrich_direction", "col_enrich_features", "col_enrich_tests", "col_enrich_family", "col_checksum")])
     terms <- lapply(entries, function(entry) {
@@ -1390,8 +1391,7 @@ integrationRecordEnrichmentTables <- function(block, texts = integrationRecordTe
             fdr = if (string) pick("false_discovery_rate") else pick("p.adjust"), stringsAsFactors = FALSE)
     })
     terms <- do.call(rbind, Filter(Negate(is.null), terms))
-    if (is.null(terms)) terms <- data.frame(character(), character(), character(), character(), character(), character(),
-        character(), character(), stringsAsFactors = FALSE)
+    if (is.null(terms)) terms <- none(8L)
     names(terms) <- unname(texts[c("col_factor", "col_view", "col_enrich_database", "col_enrich_term", "col_enrich_description",
         "col_enrich_category", "col_enrich_score", "col_enrich_fdr")])
     rownames(summary) <- NULL

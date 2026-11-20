@@ -75,7 +75,7 @@ mod_integration_enrichment_ui <- function(id) {
             "integration-enrichment-run"),
         testid(shiny::uiOutput(ns("result")), "integration-enrichment-result"),
         shiny::h4(texts[["enrich_terms_heading"]]),
-        testid(DT::DTOutput(ns("terms")), "integration-enrichment-terms")))
+        shiny::div(`data-testid` = "integration-enrichment-terms", DT::DTOutput(ns("terms")))))
 }
 
 #' The Enrichment tab's settings as the request `runIntegrationEnrichment` takes (KIT-141): the chosen factor, data set

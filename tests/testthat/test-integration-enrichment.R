@@ -585,7 +585,6 @@ intEnrLocalString <- function(results_tsv = intEnrTerms, env = parent.frame()) {
     mock
 }
 
-intEnrFast <- integrationStringOptions(poll_interval_seconds = 0)
 intEnrQuery <- function(ranked, api_key, species, options) {
     options$poll_interval_seconds <- 0
     integrationStringRankedEnrichment(ranked, api_key, species, options)

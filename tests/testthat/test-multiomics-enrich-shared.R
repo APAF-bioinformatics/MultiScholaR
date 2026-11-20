@@ -780,6 +780,8 @@ test_that("rank-based STRING enrichment helpers preserve scoring, file output, a
 })
 
 test_that("STRING contrast aggregation and plotting helpers preserve cache and filtered plot structure", {
+  # KIT-141 (INT-21): the exported default key is read from STRING_API_KEY; an invented value for the mocked calls.
+  withr::local_envvar(STRING_API_KEY = "kit141-test-value-not-a-key")
   package_ns <- asNamespace("MultiScholaR")
   call_log <- new.env(parent = emptyenv())
   call_log$labels <- character()
