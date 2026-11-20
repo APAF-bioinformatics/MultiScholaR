@@ -1,0 +1,47 @@
+{
+  "requested_by": "KIT-141 part 1: integration enrichment kernels (STRING client, mapping, KEGG/Reactome) and legacy wrappers; base 2bc0c5f5 versus head; failing-first and legacy-identity scripts",
+  "label": "KIT-141 part 1 enrichment kernels, head 0c9fdb2d against base 2bc0c5f5",
+  "package_commit": "0c9fdb2d45e3e9bdeac96091028dc73aa7702790",
+  "base_commit": "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment.R",
+    "test-multiomics-enrich-shared.R",
+    "test-general-enrichment-shared.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+        "kit141-failing-first",
+        "test-integration-enrichment.R",
+        "test-multiomics-enrich-shared.R"
+      ],
+      "out": "kit141-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-141/legacy-identity.R",
+      "args": [
+        "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+        "kit141-legacy-identity"
+      ],
+      "out": "kit141-legacy-identity",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
