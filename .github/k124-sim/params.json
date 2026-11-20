@@ -1,20 +1,13 @@
 {
-  "label": "confirm-p2t",
+  "label": "ruv06-inert",
   "package": "installed",
-  "package_commit": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
-  "tools_ref": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
-  "runs_core": 1000,
-  "runs_stress": 0,
+  "package_commit": "BINDING-COMMIT-SENT-BY-THE-MAIN-SESSION",
+  "tools_ref": "BINDING-COMMIT-SENT-BY-THE-MAIN-SESSION",
+  "runs_core": 0,
+  "runs_stress": 2,
   "cores": 4,
   "timeout_minutes": 300,
-  "chunk": {
-    "s3": 250
-  },
-  "arms": {
-    "s3": "1,2,3,35,36,39,40,41"
-  },
-  "cells": {
-    "s3": "C1,C7"
-  },
+  "arms": {},
+  "cells": { "s4": "S3" },
   "share": "count,sweep"
 }
