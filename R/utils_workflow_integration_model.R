@@ -269,8 +269,12 @@ integrationMofaParameterSpec <- function() {
         scale_views = list(default = FALSE, choices = NULL, settled_by = workbook),
         center_groups = list(default = TRUE, choices = NULL, settled_by = workbook),
         num_factors = list(default = 5L, choices = NULL, settled_by = workbook),
-        convergence_mode = list(default = "fast", choices = c("fast", "medium", "slow"), settled_by = workbook),
-        maxiter = list(default = 1000L, choices = NULL, settled_by = workbook),
+        # INT-15 (user, 2026-11-21): decided. Training stops by its convergence rule well within 10,000 rounds (none of
+        # the 1,020 slow fits of KIT-151 run b passed 3,486); whether it stopped by the rule or at the limit is kept.
+        convergence_mode = list(default = "slow", choices = c("fast", "medium", "slow"),
+            settled_by = "INT-15 (decided 2026-11-21: slow)"),
+        maxiter = list(default = 10000L, choices = NULL,
+            settled_by = "INT-15 (decided 2026-11-21: a limit training stops well within)"),
         seed = list(default = 20261119L, choices = NULL, settled_by = workbook),
         # INT-6 (user, 2026-11-19): decided, not provisional. Double precision gives the same model on every computer
         # (KIT-062 diagnosis run 44462198417: MOFA2's float32 default followed one of two training paths depending on
@@ -1218,8 +1222,10 @@ INTEGRATION_MODEL_SCHEMA <- "multischolar.integration_mofa_model.v2"
 #' @param aligned `integrationAlignViews()`'s value, its rows named `<view>:<feature_id>`.
 #' @param fit The trainer's value (`integrationTrainMofa()`'s form), on those views.
 #' @param store The operation's store handle (`store$table`, `store$product`).
+#' @param maxiter The round limit training ran under (KIT-151: `elbo$maxiter` and `elbo$stopped_by`,
+#'   `integrationStoppedBy`); NA when not known.
 #' @noRd
-integrationModelProduct <- function(aligned, fit, store) {
+integrationModelProduct <- function(aligned, fit, store, maxiter = NA_integer_) {
     factors <- fit$factors
     factor_table <- data.frame(biological_sample = rownames(factors), factors, check.names = FALSE,
         stringsAsFactors = FALSE, row.names = NULL)
@@ -1244,7 +1250,8 @@ integrationModelProduct <- function(aligned, fit, store) {
             stringsAsFactors = FALSE),
         elbo = list(iterations = as.integer(fit$iterations), evaluations = length(elbo),
             first = if (length(elbo)) elbo[[1L]] else NA_real_, last = if (length(elbo)) elbo[[length(elbo)]] else NA_real_,
-            trace = elbo),
+            trace = elbo, maxiter = as.integer(maxiter),
+            stopped_by = if (is.na(maxiter)) NA_character_ else integrationStoppedBy(fit$iterations, maxiter)),
         samples = aligned$samples, view_summary = aligned$view_summary, shared_samples = aligned$shared_samples,
         notes = aligned$notes, options = fit$options, versions = fit$versions, messages = fit$messages,
         model_file = list(reference = file_reference, sha256 = file$sha256 %||% NA_character_, size = file$size %||% NA_real_,
@@ -1403,7 +1410,16 @@ integrationModelFromAligned <- function(aligned, resolved, parameters, store) {
     trainer <- parameters[["trainer", exact = TRUE]] %||% integrationTrainMofa
     fit <- trainer(aligned$views, integrationMofaOptions(resolved))
     reclaimWorkflowMemory()
-    integrationModelProduct(aligned, fit, store)
+    integrationModelProduct(aligned, fit, store, maxiter = resolved$maxiter)
+}
+
+#' How training stopped (KIT-151; INT-15): `convergence_rule` when it took fewer rounds than the limit (MOFA2's rule
+#' stopped it), `round_limit` when it reached the limit.
+#' @param iterations The rounds trained.
+#' @param maxiter The limit.
+#' @noRd
+integrationStoppedBy <- function(iterations, maxiter) {
+    if (isTRUE(as.integer(iterations) < as.integer(maxiter))) "convergence_rule" else "round_limit"
 }
 
 #' The declaration a model run takes (KIT-063 item A): the registry's, or with a sample match its declaration with

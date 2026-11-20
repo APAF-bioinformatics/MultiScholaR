@@ -247,6 +247,8 @@ integrationGuiTexts <- function() {
         choice_convergence_mode_medium = "medium",
         choice_convergence_mode_slow = "slow (the closest)",
         param_maxiter = "Maximum number of training rounds",
+        help_maxiter = paste("Training stops by its convergence rule or at this limit, whichever comes first; the result",
+            "says which."),
         param_seed = "Random seed",
         help_seed = "The same data, settings and seed give the same model.",
         param_precision = "Numeric precision",
@@ -267,10 +269,11 @@ integrationGuiTexts <- function() {
         # %d: models trained since the import.
         run_count = "Models trained since the import: %d. Each one is kept in the project; the latest is shown.",
         result_heading = "The trained model",
-        # %d: rounds, then the maximum.
-        result_converged = "Training settled after %d rounds (of at most %d).",
-        result_not_converged = paste("Training stopped at the maximum of %d rounds without settling. Allow more rounds or",
-            "a less close setting, then train again."),
+        # %d: rounds, then the limit. KIT-151 (INT-15): said only when training stopped by its convergence rule.
+        result_converged = "Training settled after %d rounds: it stopped by its convergence rule (the limit was %d rounds).",
+        # %d: the limit.
+        result_not_converged = paste("Training did not settle: it stopped at the limit of %d rounds before its",
+            "convergence rule was met. Allow more rounds, then train again."),
         # %d: factors kept, factors asked for.
         result_factors = "Factors in the model: %d (asked for: %d).",
         # %d: biological samples, those measured in every data set.
@@ -1221,7 +1224,9 @@ integrationModelPrecheck <- function(manager, parameters, probe = integrationMof
 integrationModelSummary <- function(value, parameters, texts = integrationGuiTexts()) {
     iterations <- as.integer(value$elbo$iterations)
     maxiter <- as.integer(parameters$maxiter)
-    converged <- isTRUE(iterations < maxiter)
+    # KIT-151 (INT-15): how training stopped, as the product keeps it (a product without it: fewer rounds than the limit).
+    stopped_by <- value$elbo$stopped_by %||% NA_character_
+    converged <- if (!is.na(stopped_by)) identical(stopped_by, "convergence_rule") else isTRUE(iterations < maxiter)
     total <- value$variance_total
     features <- value$view_summary$features_model[match(total$view, value$view_summary$view)]
     variance <- data.frame(total$view, as.integer(features), sprintf("%.2f", total$r2_percent), stringsAsFactors = FALSE)

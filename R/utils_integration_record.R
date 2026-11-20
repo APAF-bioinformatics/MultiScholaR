@@ -104,7 +104,7 @@ integrationRecordTexts <- function() {
         model_reticulate = "reticulate",
         model_precision = "Numeric precision",
         model_iterations = "Training rounds",
-        model_settled = "Training settled",
+        model_settled = "Training settled (stopped by its convergence rule, not at the limit)",
         model_factors = "Factors (kept, asked for)",
         model_checksum = "Checksum of the model file (SHA-256)",
         model_bytes = "Size of the model file (bytes)",
@@ -153,11 +153,12 @@ integrationRecordTexts <- function() {
         methods_model = paste("The model was asked for %d factors (convergence mode %s, at most %d training rounds, seed",
             "%d; each data set scaled to the same total variance: %s; features centred: %s)."),
         # %d: rounds, factors kept, samples, samples in every data set.
-        methods_trained_settled = paste("Training settled after %d rounds and kept %d factors; %d biological samples entered",
-            "the model, %d of them measured in every data set."),
-        # %d: maximum rounds, factors kept, samples, samples in every data set.
-        methods_trained_not_settled = paste("Training stopped at the maximum of %d rounds without settling and kept %d",
+        methods_trained_settled = paste("Training settled after %d rounds, stopped by its convergence rule, and kept %d",
             "factors; %d biological samples entered the model, %d of them measured in every data set."),
+        # %d: maximum rounds, factors kept, samples, samples in every data set.
+        methods_trained_not_settled = paste("Training did not settle: it stopped at the limit of %d rounds before its",
+            "convergence rule was met, and kept %d factors; %d biological samples entered the model, %d of them measured in",
+            "every data set."),
         # %s: the adjustment's name.
         methods_association = paste("Each factor was related to the experimental groups after training: a one-way analysis",
             "of variance of the factor's values on the group, with the share of the factor's variance that lies between",
@@ -490,6 +491,8 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
     })
     match <- parameters$sample_match_table
     iterations <- as.integer(value$elbo$iterations)
+    stopped_by <- value$elbo$stopped_by %||% NA_character_
+    if (is.na(stopped_by)) stopped_by <- integrationStoppedBy(iterations, parameters$maxiter)
     results <- export$results
     if (!is.null(results)) {
         # KIT-152: the further figures' tables stay in the store; the record keeps what they show and their settings.
@@ -521,7 +524,8 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
             identity_sha256 = digest::digest(export$reference$identity, algo = "sha256"),
             model_file_sha256 = value$model_file$sha256 %||% NA_character_, model_file_bytes = value$model_file$size %||% NA_real_,
             precision = parameters$precision, iterations = iterations, maxiter = as.integer(parameters$maxiter),
-            converged = isTRUE(iterations < as.integer(parameters$maxiter)),
+            # KIT-151 (INT-15): stopped by the convergence rule or at the limit, as the product keeps it.
+            stopped_by = stopped_by, converged = identical(stopped_by, "convergence_rule"),
             factors_requested = as.integer(parameters$num_factors), factors_kept = ncol(value$factors) - 1L,
             elbo_last = value$elbo$last, variance_total = value$variance_total, versions = value$versions,
             # MOFA2's data, model and training options as trained (every one, the defaults included), encoded exactly.

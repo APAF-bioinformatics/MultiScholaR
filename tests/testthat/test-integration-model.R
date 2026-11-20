@@ -153,12 +153,14 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
     table <- integrationMofaParameterTable()
     expect_identical(table$parameter, setdiff(integrationMofaParameterNames(), c("input_manifests", "views")))
     expect_true(all(nzchar(table$settled_by)))
-    # Every method choice is the workbook's to settle, except those the user decided: the precision (INT-6) and the
-    # feature selection (INT-12; KIT-151).
-    decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "precision")
+    # Every method choice is the workbook's to settle, except those the user decided: the precision (INT-6), the
+    # feature selection (INT-12) and the convergence (INT-15; KIT-151).
+    decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "precision", "convergence_mode", "maxiter")
     expect_true(all(grepl("workbook", table$settled_by[!table$parameter %in% decided])))
     expect_true(all(grepl("^INT-12 \\(decided", table$settled_by[table$parameter %in% decided[1:3]])))
     expect_identical(table$default[table$parameter %in% decided[1:3]], c("variance_above_trend", "1000", "0.5"))
+    expect_true(all(grepl("^INT-15 \\(decided", table$settled_by[table$parameter %in% decided[5:6]])))
+    expect_identical(table$default[table$parameter %in% decided[5:6]], c("slow", "10000"))
     expect_identical(table$default[table$parameter == "precision"], "double")
     expect_match(table$settled_by[table$parameter == "precision"], "INT-6")
     expect_identical(integrationResolveMofaParameters(object)$precision, "double")
@@ -636,4 +638,32 @@ test_that("KIT-148: a model product of the earlier form is refused in plain word
     expect_error(integrationModelFileBytes(manager, v1), class = "integration_model_outdated")
     expect_error(integrationModelTablePage(manager, v1, "weights", "proteomics"), class = "integration_model_outdated")
     expect_error(integrationModelWeights(manager, v1), class = "integration_model_outdated")
+})
+
+# KIT-151 (INT-15): convergence mode slow with a limit of 10,000 rounds by default; the model keeps whether training
+# stopped by its convergence rule or at the limit, and "settled" is said only for the former.
+test_that("KIT-151 (INT-15): the model says whether training stopped by its convergence rule or at the round limit", {
+    inputs <- intModelInputs()
+    manager <- newIntegrationStateOwner(file.path(inputs$root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(inputs$proteomics, inputs$lipidomics))
+    texts <- integrationGuiTexts()
+    object <- integrationImportedObject(manager)
+    expect_identical(integrationResolveMofaParameters(object)[c("convergence_mode", "maxiter")],
+        list(convergence_mode = "slow", maxiter = 10000L))
+    at_limit <- function(views, options) {
+        fit <- intModelFakeTrainer(views, options)
+        fit$iterations <- options$maxiter
+        fit
+    }
+    run <- suppressWarnings(runIntegrationModel(manager, list(maxiter = 50L), trainer = at_limit))
+    expect_identical(run$value$elbo[c("maxiter", "stopped_by")], list(maxiter = 50L, stopped_by = "round_limit"))
+    summary <- integrationModelSummary(run$value, integrationResolveMofaParameters(object, list(maxiter = 50L)))
+    expect_false(summary$converged)
+    expect_identical(summary$convergence, sprintf(texts[["result_not_converged"]], 50L))
+    run <- suppressWarnings(runIntegrationModel(manager, trainer = intModelFakeTrainer))
+    expect_identical(run$value$elbo[c("maxiter", "stopped_by")], list(maxiter = 10000L, stopped_by = "convergence_rule"))
+    summary <- integrationModelSummary(run$value, integrationResolveMofaParameters(object))
+    expect_true(summary$converged)
+    expect_identical(summary$convergence, sprintf(texts[["result_converged"]], 2L, 10000L))
 })
