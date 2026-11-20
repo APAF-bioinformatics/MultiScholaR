@@ -114,8 +114,11 @@ outnumber the cap, a factor that lives only in the large data set can disappear 
 
 The fast-mode weak cells repeat the first run on the same data. 281 of 420 |r| values are identical, 21 differ by
 more than 1e-6. 19 of those 21 (all differences above 1e-3) come from one job, N = 20 seed 151007, which ran on an
-Intel Xeon 6973P-C (the first run's job ran on an AMD EPYC 7763); there iteration counts differ too (weight_views 166
-vs 106) and two cells cross 0.9 (weight_views F1 0.854 -> 0.925, cap5000 F1 0.900 -> 0.903). The remaining
+AMD EPYC 7763 64-Core Processor (`followup-jobs.tsv`, k151f-n20weak-7; the first run's job k151-main-7 ran on an
+Intel Xeon 6973P-C, `jobs.tsv`); there iteration counts differ too (weight_views 166 in the first run, 106 here) and
+two cells cross 0.9 (weight_views F1 0.854 in the first run -> 0.925 here, cap5000 F1 0.900 -> 0.903).
+(Corrected 2026-11-20 on branch run-mofa-evidence-k151b: the earlier text had the two CPU models reversed; audit
+SCI-05.) The remaining
 differences are rounding-level on other CPU pairs. So double precision did not give bit-identical models across CPU
 models here; this bears on INT-6 ("double: the same model on every computer") and is passed to the user, not acted on.
 
