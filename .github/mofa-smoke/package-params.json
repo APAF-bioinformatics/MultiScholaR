@@ -1,6 +1,6 @@
 {
-  "label": "k151-verify-3731079c",
-  "package_commit": "3731079c646d13816aef05364e26d1a3a8746356",
+  "label": "k151-verify2-c46493d8",
+  "package_commit": "c46493d886dd4fc23e42f0c5c250a1b2090a1f26",
   "tests": [
     "test-integration-partitioned-mofa.R",
     "test-integration-mofa-model.R",
