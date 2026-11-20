@@ -561,3 +561,64 @@ test_that("KIT-148 item 2: the direct hand-off is off unless asked for, and only
     expect_false(integrationMofaDirectHandoff(NULL))
     if (!requireNamespace("MOFA2", quietly = TRUE)) expect_false(integrationMofaDirectHandoff("direct"))
 })
+
+# KIT-148 (audit ENG-13): the store reads at most 10,000 rows and 64 columns at a time; the product's readers follow
+# that rule, so a study larger than the corpus (here 70 biological samples and 10,050 features) reads as a small one.
+test_that("KIT-148: 70 samples and 10,050 features are read in column blocks of 64 and row pages of 10,000", {
+    root <- withr::local_tempdir()
+    runs <- sprintf("big_%03d", seq_len(70L))
+    biological <- sprintf("%s_%d", rep(c("A", "B"), each = 35L), rep(seq_len(35L), 2L))
+    n <- 10050L
+    values <- matrix(withr::with_seed(2148L, stats::rnorm(n * length(runs), 20, 2)), n, length(runs),
+        dimnames = list(sprintf("BIG%05d", seq_len(n)), runs))
+    big <- intModelInput(root, "proteomics", list(proteomics = values), intModelSamples(runs, biological))
+    lipid <- intModelLipidomics(root)
+    manager <- newIntegrationStateOwner(file.path(root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(big, lipid))
+    run <- suppressWarnings(runIntegrationModel(manager, trainer = intModelFakeTrainer))
+    value <- run$value
+    expect_identical(nrow(value$samples), 70L)
+    for (kind in c("weights", "aligned_values")) {
+        whole <- integrationModelViewTable(manager, value, kind, "proteomics")
+        expect_identical(nrow(whole), n, info = kind)
+        first <- integrationModelTablePage(manager, value, kind, "proteomics", offset = 0L, limit = 10000L)
+        second <- integrationModelTablePage(manager, value, kind, "proteomics", offset = 10000L, limit = 10000L)
+        expect_identical(c(nrow(first), nrow(second)), c(10000L, 50L), info = kind)
+        expect_identical(names(first), names(whole), info = kind)
+        expect_identical(as.list(rbind(first, second)), as.list(whole), info = kind)
+    }
+    aligned <- integrationModelViewTable(manager, value, "aligned_values", "proteomics")
+    expect_identical(names(aligned), c("feature_id", value$factors$biological_sample))
+    expect_identical(ncol(aligned), 71L)
+    expect_identical(aligned$feature_id, rownames(values))
+    # One run per biological sample: each aligned column is that run's values.
+    expect_identical(unname(as.matrix(aligned[-1L])), unname(values[, runs[match(value$factors$biological_sample, biological)]]))
+    expect_error(integrationModelTablePage(manager, value, "weights", "proteomics", limit = 10001L), class = "saved_entity_limit")
+    # The Results read every weight, one data set at a time.
+    results <- integrationResults(value, integrationImportedObject(manager), manager = manager)
+    expect_identical(nrow(results$weights), (n + 2L) * 5L)
+})
+
+# KIT-148 (audit ENG-14): a model saved in the earlier form (v1, development builds) is refused in words wherever it is
+# read; the same parameters train a v2 model (the product's form is among its lookup factors).
+test_that("KIT-148: a model product of the earlier form is refused in plain words, with a classed condition", {
+    inputs <- intModelInputs()
+    manager <- newIntegrationStateOwner(file.path(inputs$root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(inputs$proteomics, inputs$lipidomics))
+    v1 <- list(schema = "multischolar.integration_mofa_model.v1",
+        factors = data.frame(biological_sample = "A_1", Factor1 = 1, stringsAsFactors = FALSE),
+        weights = data.frame(view = "proteomics", feature_id = "P1", Factor1 = 0.5, stringsAsFactors = FALSE),
+        variance_explained = data.frame(factor = "Factor1", view = "proteomics", r2_percent = 1, stringsAsFactors = FALSE),
+        model_file = list(bytes = as.raw(1:3), sha256 = strrep("a", 64L), size = 3))
+    object <- integrationImportedObject(manager)
+    refused <- tryCatch(integrationResults(v1, object, manager = manager), error = function(error) error)
+    expect_s3_class(refused, "integration_model_outdated")
+    expect_s3_class(refused, "integration_refused")
+    expect_match(conditionMessage(refused), "earlier form by a development build; train it again", fixed = TRUE)
+    expect_error(integrationModelComparable(manager, v1), class = "integration_model_outdated")
+    expect_error(integrationModelFileBytes(manager, v1), class = "integration_model_outdated")
+    expect_error(integrationModelTablePage(manager, v1, "weights", "proteomics"), class = "integration_model_outdated")
+    expect_error(integrationModelWeights(manager, v1), class = "integration_model_outdated")
+})

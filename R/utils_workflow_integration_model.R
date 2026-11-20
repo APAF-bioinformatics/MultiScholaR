@@ -984,10 +984,13 @@ integrationModelViewTable <- function(manager, value, kind, view) {
 }
 
 #' One page of rows of a data set's weights or aligned values (KIT-148): rows `offset + 1` to `offset + limit` in the
-#' model's feature order, every column.
+#' model's feature order, every column. The tables' layout: one row per model feature of the data set, `feature_id`
+#' first, then one double column per factor (weights) or per biological sample (aligned values; a study may have
+#' hundreds). The store's read rule is at most 10,000 rows and 64 columns per read (`readSavedWorkflowTable`), so a page
+#' is at most 10,000 rows and is read in blocks of at most 64 columns, bound in column order.
 #' @param manager,value,kind,view As `integrationModelViewTable()`.
 #' @param offset Rows skipped (zero-based position of the page's first row).
-#' @param limit Rows read (at most 10,000; a page of at most 256 MiB).
+#' @param limit Rows read (at most 10,000).
 #' @return The page, a data frame (automatic row names).
 #' @noRd
 integrationModelTablePage <- function(manager, value, kind, view, offset = 0L, limit = 10000L) {
@@ -997,8 +1000,14 @@ integrationModelTablePage <- function(manager, value, kind, view, offset = 0L, l
         scope <- newWorkflowTableReadScope(store, reference)
         on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
         columns <- scope$metadata$columns
-        readSavedWorkflowTable(store, reference, columns, offset = offset, limit = limit, max_rows = 10000L,
-            max_columns = length(columns), max_bytes = 268435456, scope = scope)$data
+        blocks <- split(columns, ceiling(seq_along(columns) / 64L))
+        parts <- lapply(blocks, function(block) {
+            part <- readSavedWorkflowTable(store, reference, block, offset = offset, limit = limit, scope = scope)$data
+            as.list(part)
+        })
+        page <- as.data.frame(stats::setNames(do.call(c, unname(parts)), columns), stringsAsFactors = FALSE,
+            check.names = FALSE, optional = TRUE)
+        page
     })
 }
 
