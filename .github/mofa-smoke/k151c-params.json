@@ -1,5 +1,5 @@
 {
   "run": "counted",
-  "task": "pin",
-  "note": "counted run, task 2 (SCI-05), as declared in docs/qa/workflow-execution/kit/kit-151c/pin-declaration.md"
+  "task": "ruv",
+  "note": "counted run, task 3 (SCI-04, INT-004), as declared in docs/qa/workflow-execution/kit/kit-151c/ruv-declaration.md"
 }
