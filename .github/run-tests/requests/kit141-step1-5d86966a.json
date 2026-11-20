@@ -1,0 +1,55 @@
+{
+  "requested_by": "KIT-141 step 1 (security): network failure simulated through httr2's own failure path; full sentinel scan and the failure cases; legacy KEGG/Reactome identity; gate off",
+  "label": "KIT-141 step 1, head 5d86966a against performance-v2 e8a2ac67",
+  "package_commit": "5d86966a3703c1a6b9d1562975b569c17bf3fb09",
+  "base_commit": "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment.R",
+    "test-multiomics-enrich-shared.R",
+    "test-general-enrichment-shared.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+        "kit141-failing-first",
+        "test-integration-enrichment.R"
+      ],
+      "out": "kit141-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-141/legacy-identity.R",
+      "args": [
+        "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+        "kit141-legacy-identity"
+      ],
+      "out": "kit141-legacy-identity",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+        "kit141-gate-off"
+      ],
+      "out": "kit141-gate-off",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
