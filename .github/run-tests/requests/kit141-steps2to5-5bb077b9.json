@@ -1,0 +1,75 @@
+{
+  "requested_by": "KIT-141 steps 2-5 counted request 2 of 2 (correction pass after run 44789367190); integration files, shared enrichment files, base versus head",
+  "label": "KIT-141 steps 2-5 correction, head 5bb077b9 against performance-v2 e8a2ac67",
+  "package_commit": "5bb077b98d94b3055713e15955ff15a1d373ae59",
+  "base_commit": "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment.R",
+    "test-e2e-test-mode-integration.R",
+    "test-integration-corpus.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-gui.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-model.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-mofa-model.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-outputs.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-partitioned-mofa.R",
+    "test-integration-record-mofa.R",
+    "test-integration-record.R",
+    "test-integration-results-mofa.R",
+    "test-integration-results.R",
+    "test-integration-sample-match.R",
+    "test-workflow-integration-input.R",
+    "test-multiomics-enrich-shared.R",
+    "test-general-enrichment-shared.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+        "kit141-failing-first",
+        "test-integration-enrichment.R",
+        "test-integration-gui.R"
+      ],
+      "out": "kit141-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-141/legacy-identity.R",
+      "args": [
+        "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+        "kit141-legacy-identity"
+      ],
+      "out": "kit141-legacy-identity",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+        "kit141-gate-off"
+      ],
+      "out": "kit141-gate-off",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
