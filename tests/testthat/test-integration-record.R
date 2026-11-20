@@ -179,7 +179,9 @@ test_that("KIT-142: the record holds every input, the confirmed match, each sett
     expect_false("unknown" %in% provenance)
     expect_identical(unname(status[c("input_manifests", "views")]), c("input", "input"))
     expect_identical(status[["precision"]], "decided")
-    expect_identical(unname(status[c("num_factors", "seed", "technical_replicates", "scaling")]), rep("provisional_default", 4L))
+    expect_identical(unname(status[c("num_factors", "seed", "technical_replicates")]), rep("provisional_default", 3L))
+    # KIT-151: decided by the user (INT-12, INT-15, INT-24).
+    expect_identical(unname(status[c("feature_selection", "convergence_mode", "scaling", "scale_views")]), rep("decided", 4L))
     # The model: versions, checksum, training.
     model <- block$model
     expect_identical(model$versions, intRecVersions)
@@ -230,7 +232,7 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
         t[["methods_replicates_average"]], t[["methods_missing_keep_missing"]],
         # KIT-151 (INT-12): the default selection, its observed share and its rule.
         sprintf(t[["methods_sparse_selected"]], 10L, 20L, "0.5"),
-        paste0(sprintf(t[["methods_selection_variance_above_trend"]], 1000L, 1000L), ", without per-feature scaling."),
+        paste0(sprintf(t[["methods_selection_variance_above_trend"]], 1000L, 1000L), ", ", t[["methods_scaling_feature_zscore"]]),
         # KIT-151 (INT-15): slow, a limit of 10,000 rounds, and how training stopped.
         "asked for 5 factors (convergence mode slow, at most 10000 training rounds, seed 20261119",
         "Training settled after 186 rounds, stopped by its convergence rule, and kept 5 factors; 20 biological samples",

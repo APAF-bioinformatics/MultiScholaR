@@ -265,8 +265,13 @@ integrationMofaParameterSpec <- function() {
             settled_by = "INT-12 (decided 2026-11-21: about 1,000 per data set; a smaller data set keeps all)"),
         min_observed_fraction = list(default = 0.5, choices = NULL, type = "number",
             settled_by = "INT-12 (decided 2026-11-21: observed in at least half the biological samples)"),
-        scaling = list(default = "none", choices = c("none", "feature_zscore"), settled_by = workbook),
-        scale_views = list(default = FALSE, choices = NULL, settled_by = workbook),
+        # INT-24 (user, 2026-11-21): decided. Each selected feature scaled to mean 0 and standard deviation 1 (after the
+        # selection, which is computed on the unscaled values), and each data set divided by its overall standard
+        # deviation; the z-score stays selectable off.
+        scaling = list(default = "feature_zscore", choices = c("none", "feature_zscore"),
+            settled_by = "INT-24 (decided 2026-11-21: each selected feature scaled to mean 0 and standard deviation 1)"),
+        scale_views = list(default = TRUE, choices = NULL,
+            settled_by = "INT-24 (decided 2026-11-21: each data set divided by its overall standard deviation)"),
         center_groups = list(default = TRUE, choices = NULL, settled_by = workbook),
         num_factors = list(default = 5L, choices = NULL, settled_by = workbook),
         # INT-15 (user, 2026-11-21): decided. Training stops by its convergence rule well within 10,000 rounds (none of
@@ -607,7 +612,7 @@ integrationAverageRuns <- function(values, key) {
 #' features observed in fewer than two samples dropped, or, when features are selected, in fewer than
 #' `min_observed_fraction` of the kept samples (INT-12; `integrationMinObserved`), and, under per-feature scaling,
 #' features without variance; then, in a view with more than `features_per_view` features, the `features_per_view`
-#' with the largest selection score (`feature_selection`: `variance_above_trend` or `top_variance`;
+#' with the largest selection score (computed on the values before any per-feature scaling; KIT-151, INT-24) (`feature_selection`: `variance_above_trend` or `top_variance`;
 #' `integrationFeatureSelectionScore`), then the per-feature Z-score (`scaling = feature_zscore`). Refused: no
 #' biological sample shared by every view, a biological sample with two groups, a view left without features.
 #' @param object An `IntegrationViewsData`, hydrated.

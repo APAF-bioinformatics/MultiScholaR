@@ -239,6 +239,10 @@ integrationGuiTexts <- function() {
         param_scaling = "Scaling of each feature",
         choice_scaling_none = "none: the values as saved",
         choice_scaling_feature_zscore = "each feature scaled to mean 0 and standard deviation 1",
+        # KIT-151 (INT-24).
+        help_scaling = paste("Each selected feature is scaled to mean 0 and standard deviation 1, after the features are",
+            "chosen (the choice uses the values as saved). In simulations with few samples and missing values this found",
+            "weak factors of the smaller data sets more often; otherwise it made no practical difference."),
         # KIT-151 (audit SCI-12): what scale_views does.
         param_scale_views = "Divide each data set by its overall standard deviation",
         help_scale_views = paste("Each data set is divided by one number, the standard deviation of all its values, so that",

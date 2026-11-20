@@ -570,7 +570,8 @@ test_that("KIT-140: the Model tab's settings are built from the parameter table,
     expect_match(ui, texts[["choice_precision_single"]], fixed = TRUE)
     expect_match(ui, texts[["help_precision"]], fixed = TRUE)
     marks <- regmatches(ui, gregexpr(sprintf("\\((%s|%s)\\)", texts[["mark_provisional"]], texts[["mark_decided"]]), ui))[[1L]]
-    decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "convergence_mode", "maxiter", "precision")
+    decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "scaling", "scale_views", "convergence_mode",
+        "maxiter", "precision")
     expect_identical(marks, sprintf("(%s)", ifelse(method %in% decided, texts[["mark_decided"]], texts[["mark_provisional"]])))
     # A default the workbook changes, and a parameter it adds, change the screen with no edit to the tab.
     changed <- spec

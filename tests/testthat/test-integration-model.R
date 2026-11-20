@@ -71,7 +71,8 @@ test_that("KIT-062: the inputs state aligns the views on the biological sample, 
         unname(vapply(read$manifests, function(path) digest::digest(file = path, algo = "sha256"), character(1))))
     expect_identical(names(object@design_matrix), c("omic", "run", "group", "biological_sample"))
     expect_identical(object@inputs$lipidomics$biological_sample_column, "tech_rep_group")
-    parameters <- integrationResolveMofaParameters(object)
+    # The values as saved (KIT-151: the z-score is the default since INT-24; it is checked below).
+    parameters <- integrationResolveMofaParameters(object, list(scaling = "none"))
     expect_identical(names(parameters), integrationMofaParameterNames())
     expect_identical(parameters$views, c("lipidomics_LCMS_Pos", "proteomics"))
     expect_warning(aligned <- integrationAlignViews(object, parameters), class = "integration_few_samples")
@@ -99,7 +100,8 @@ test_that("KIT-062: the inputs state aligns the views on the biological sample, 
     expect_identical(samples$lipidomics_LCMS_Pos_runs, c("l1;l2", "l3;l4", "", "l5;l6", "l7;l8"))
     expect_identical(samples$proteomics_runs, c("p1", "p2", "p3", "p4", "p5"))
     # The choices: standards kept; only the samples every view has; the most variable feature; per-feature Z-score.
-    kept <- suppressWarnings(integrationAlignViews(object, integrationResolveMofaParameters(object, list(internal_standards = "keep"))))
+    kept <- suppressWarnings(integrationAlignViews(object, integrationResolveMofaParameters(object, list(internal_standards = "keep",
+        scaling = "none"))))
     expect_identical(rownames(kept$views$lipidomics_LCMS_Pos), c("L1", "L2", "ITSD1"))
     complete <- suppressWarnings(integrationAlignViews(object, integrationResolveMofaParameters(object,
         list(missing_samples = "drop_incomplete"))))
@@ -155,7 +157,8 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
     expect_true(all(nzchar(table$settled_by)))
     # Every method choice is the workbook's to settle, except those the user decided: the precision (INT-6), the
     # feature selection (INT-12) and the convergence (INT-15; KIT-151).
-    decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "precision", "convergence_mode", "maxiter")
+    decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "precision", "convergence_mode", "maxiter",
+        "scaling", "scale_views")
     expect_true(all(grepl("workbook", table$settled_by[!table$parameter %in% c(decided, "training_seeds")])))
     # INT-14: several seeds decided; their number is provisional.
     expect_match(table$settled_by[table$parameter == "training_seeds"], "^INT-14 .*provisional")
@@ -585,7 +588,9 @@ test_that("KIT-148: 70 samples and 10,050 features are read in column blocks of 
     manager <- newIntegrationStateOwner(file.path(root, "project"))
     withr::defer(closeWorkflowStateOwner(manager))
     importIntegrationInputs(manager, c(big, lipid))
-    run <- suppressWarnings(runIntegrationModel(manager, trainer = intModelFakeTrainer))
+    # Every feature, as saved (KIT-151: the defaults select 1,000 features and z-score them).
+    run <- suppressWarnings(runIntegrationModel(manager, list(feature_selection = "none", scaling = "none"),
+        trainer = intModelFakeTrainer))
     value <- run$value
     expect_identical(nrow(value$samples), 70L)
     for (kind in c("weights", "aligned_values")) {
@@ -769,8 +774,8 @@ test_that("KIT-151 (INT-17): the reproducibility wording is corrected and the ma
 })
 
 # KIT-151 (audit SCI-12): variance explained is said to be of the selected features; scale_views is said to divide each
-# data set by its overall standard deviation, not to give data sets the same total variance; its default and the
-# per-feature scaling's are unchanged (INT-13 decides them).
+# data set by its overall standard deviation, not to give data sets the same total variance. INT-24: both scaling
+# defaults on (the z-score after the selection).
 test_that("KIT-151 (SCI-12): variance explained and scale_views are described as they are", {
     gui <- integrationGuiTexts()
     record <- integrationRecordTexts()
@@ -783,8 +788,10 @@ test_that("KIT-151 (SCI-12): variance explained and scale_views are described as
     expect_match(gui[["param_scale_views"]], "overall standard deviation", fixed = TRUE)
     expect_match(record[["methods_model"]], "divided by its overall standard deviation", fixed = TRUE)
     spec <- integrationMofaParameterSpec()
-    expect_identical(spec$scale_views$default, FALSE)
-    expect_identical(spec$scaling$default, "none")
+    expect_identical(spec$scale_views$default, TRUE)
+    expect_identical(spec$scaling$default, "feature_zscore")
+    expect_match(spec$scaling$settled_by, "^INT-24 \\(decided")
+    expect_match(spec$scale_views$settled_by, "^INT-24 \\(decided")
     expect_identical(spec$center_groups$default, TRUE)
 })
 
@@ -792,7 +799,8 @@ test_that("KIT-151 (SCI-12): variance explained and scale_views are described as
 test_that("KIT-151: center_groups is FALSE only with the per-feature z-score", {
     inputs <- intModelInputs()
     object <- integrationViewsFromInputs(c(inputs$proteomics, inputs$lipidomics))$object
-    expect_error(integrationResolveMofaParameters(object, list(center_groups = FALSE)), class = "integration_parameters_invalid")
+    expect_error(integrationResolveMofaParameters(object, list(center_groups = FALSE, scaling = "none")),
+        class = "integration_parameters_invalid")
     resolved <- integrationResolveMofaParameters(object, list(center_groups = FALSE, scaling = "feature_zscore"))
     expect_false(resolved$center_groups)
 })

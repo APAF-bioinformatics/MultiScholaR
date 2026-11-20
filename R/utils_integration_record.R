@@ -152,7 +152,10 @@ integrationRecordTexts <- function() {
             "feature's variance on its mean, span 0.3) were used, a feature selection that also makes the data sets more",
             "equal in size (a smaller data set kept all its features)"),
         methods_scaling_none = "without per-feature scaling.",
-        methods_scaling_feature_zscore = "each scaled to mean 0 and standard deviation 1.",
+        # KIT-151 (INT-24).
+        methods_scaling_feature_zscore = paste("each scaled to mean 0 and standard deviation 1 after the selection (which",
+            "used the unscaled values); in simulation, with few samples and missing values this scaling improved the",
+            "recovery of weak factors, and otherwise made no practical difference."),
         # %d: factors asked for; %s: convergence mode; %d: maximum rounds, seed; %s: views scaled, features centred.
         methods_model = paste("The model was asked for %d factors (convergence mode %s, at most %d training rounds, seed",
             "%d; each data set divided by its overall standard deviation: %s; features centred: %s). Variance explained",
