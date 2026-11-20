@@ -290,7 +290,8 @@ test_that("KIT-063: the Results tab shows the latest model's results, saves them
         expect_true(all(file.size(c(tables, figures)) > 0))
         expect_true(all(c("variance_explained.tsv", "factor_group_association.tsv", "top_weights.tsv", "weights.tsv",
             "factor_values.tsv", "factor_correlation.tsv", "model_warnings.tsv") %in% saved$tables))
-        expect_identical(length(saved$figures), 4L + 5L * length(results$views))
+        # KIT-152: with the pair plot and, per factor and data set, the top features' scatter and heatmap (no map chosen).
+        expect_identical(length(saved$figures), 4L + 5L * length(results$views) + 1L + 2L * 5L * length(results$views))
         written <- utils::read.delim(file.path(paths$mofa_tables_dir, "top_weights.tsv"), stringsAsFactors = FALSE)
         expect_identical(written$feature_id, results$top_weights$feature_id)
         expect_match(output$save_status$html, sprintf("%d tables to %s", length(saved$tables), paths$mofa_tables_dir), fixed = TRUE)
