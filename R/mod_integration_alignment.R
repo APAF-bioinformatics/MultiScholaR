@@ -72,7 +72,9 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
             summary <- workflow_data$integration_import
             manager <- workflow_data$state_manager
             if (is.null(summary) || is.null(manager)) return(NULL)
-            tryCatch(integrationAlignmentPreview(integrationImportedObject(manager), summary$views, match_table()),
+            # KIT-149 (audit ENG-05): the data sets are read in row pages from the store, never whole.
+            tryCatch(integrationAlignmentPreview(integrationImportedObject(manager, INTEGRATION_PREVIEW_FIELDS), summary$views,
+                match_table(), manager = manager),
                 integration_refused = function(error) {
                     structure(list(refusal = integrationAlignmentRefusal(error, summary$views, texts),
                         detail = conditionMessage(error)), class = "integration_alignment_refused")
@@ -125,7 +127,7 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
             shiny::req(manager)
             value <- shiny::isolate(preview())
             current <- if (usable(value)) value$parameters$sample_match_table
-            utils::write.table(integrationSampleMatchTemplate(integrationImportedObject(manager), current), file, sep = "\t",
+            utils::write.table(integrationSampleMatchTemplate(integrationImportedObject(manager, "inputs"), current), file, sep = "\t",
                 quote = FALSE, row.names = FALSE, na = "")
         })
         shiny::observeEvent(input$match_upload, {
@@ -138,7 +140,7 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
             }
             table <- tryCatch({
                 table <- integrationReadSampleMatch(upload$datapath[[1L]])
-                integrationResolveSampleMatch(integrationImportedObject(manager), table)
+                integrationResolveSampleMatch(integrationImportedObject(manager, "inputs"), table)
                 table
             }, integration_refused = function(error) {
                 match_error(integrationRefusalText(error, texts))
@@ -182,7 +184,8 @@ mod_integration_alignment_server <- function(id, workflow_data, paths, texts = i
                 return()
             }
             # Matched again at the confirmation, so that a data set changed on disk since the tab drew is refused.
-            value <- tryCatch(integrationAlignmentPreview(integrationImportedObject(manager), summary$views, match_table()),
+            value <- tryCatch(integrationAlignmentPreview(integrationImportedObject(manager, INTEGRATION_PREVIEW_FIELDS),
+                summary$views, match_table(), manager = manager),
                 integration_refused = function(error) list(text = integrationAlignmentRefusal(error, summary$views, texts),
                     detail = conditionMessage(error)))
             if (!is.null(value[["text", exact = TRUE]])) {

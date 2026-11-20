@@ -578,8 +578,7 @@ integrationAverageRuns <- function(values, key) {
 integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
     # KIT-063 item A: the user's sample match, when one is given (NULL: the design as saved).
     design <- integrationApplySampleMatch(object@design_matrix, parameters$sample_match_table)
-    view_omic <- unlist(unname(lapply(object@inputs, function(entry) stats::setNames(rep(entry$omic, length(entry$views)),
-        entry$views))))
+    view_omic <- integrationViewOmics(object)
     views <- parameters$views
     averaged <- list()
     runs <- list()
@@ -608,13 +607,59 @@ integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
         }, character(1))
     }
     present <- lapply(averaged, colnames)
+    plan <- integrationAlignSamples(design, view_omic, views, present, parameters$missing_samples)
+    zscore <- identical(parameters$scaling, "feature_zscore")
+    summary <- list()
+    final <- list()
+    for (view in views) {
+        block <- integrationAlignedRows(averaged[[view]], plan$kept, zscore)
+        m <- block$values
+        if (identical(parameters$feature_selection, "top_variance") && nrow(m) > parameters$features_per_view) {
+            m <- m[integrationSelectTopFeatures(integrationFeatureSelectionStatistic(m), parameters$features_per_view), ,
+                drop = FALSE]
+        }
+        if (zscore) m <- integrationZscoreRows(m)
+        if (!nrow(m)) integrationRefuseEmptyView(view)
+        final[[view]] <- m
+        summary[[view]] <- integrationViewSummaryRow(view, view_omic[[view]], nrow(averaged[[view]]) + standards[[view]],
+            standards[[view]], block$sparse, block$constant, nrow(m), block$present)
+    }
+    integrationAlignedValue(final, plan, present, runs, views, summary)
+}
+
+# ---------------------------------------------------------------------------------------------------------------
+# KIT-149: the alignment's rules, shared by the whole-matrix alignment (`integrationAlignViews`) and the partitioned
+# one (`integrationAlignViewsPartitioned`), so that the two apply one definition. Every rule on values is row by row
+# (each feature's average, its count of observed samples, its spread, its selection statistic and Z-score depend on
+# that feature's values alone); only the most-variable selection compares features, and it is taken once over the
+# whole data set from one statistic per feature.
+# ---------------------------------------------------------------------------------------------------------------
+
+#' The omic of each data set of the inputs state, named by data set (the inputs' order).
+#' @param object An `IntegrationViewsData` with its `inputs` hydrated.
+#' @noRd
+integrationViewOmics <- function(object) {
+    unlist(unname(lapply(object@inputs, function(entry) stats::setNames(rep(entry$omic, length(entry$views)), entry$views))))
+}
+
+#' The biological samples the alignment keeps (KIT-062): those every data set measures (`drop_incomplete`) or those any
+#' data set measures (`keep_missing`), each with its group. Refused: no biological sample shared by every data set, a
+#' biological sample with two groups. Fewer shared samples than `INTEGRATION_FEW_SAMPLES` is warned
+#' (`integration_few_samples`) and kept as a note.
+#' @param design The design with the sample match applied.
+#' @param view_omic `integrationViewOmics()`.
+#' @param views The selected data sets.
+#' @param present Named list by data set: the biological samples it measures, in C-locale order.
+#' @param missing_samples The parameter's value.
+#' @return `list(shared, kept, groups, notes)`.
+#' @noRd
+integrationAlignSamples <- function(design, view_omic, views, present, missing_samples) {
     shared <- sort(Reduce(intersect, present), method = "radix")
     if (!length(shared)) {
         integrationRefuse(sprintf("the views %s share no biological sample; check the biological-sample column of each omic",
             paste(views, collapse = ", ")), "integration_no_shared_samples")
     }
-    kept <- if (identical(parameters$missing_samples, "drop_incomplete")) shared else
-        sort(unique(unlist(present)), method = "radix")
+    kept <- if (identical(missing_samples, "drop_incomplete")) shared else sort(unique(unlist(present)), method = "radix")
     selected <- design[design$omic %in% unique(view_omic[views]) & design$biological_sample %in% kept, , drop = FALSE]
     groups <- tapply(selected$group, selected$biological_sample, function(group) unique(group[!is.na(group)]),
         simplify = FALSE)
@@ -629,41 +674,85 @@ integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
             length(shared), INTEGRATION_FEW_SAMPLES)
         cli::cli_warn(notes, class = "integration_few_samples")
     }
-    summary <- list()
-    final <- list()
-    for (view in views) {
-        m <- matrix(NA_real_, nrow(averaged[[view]]), length(kept), dimnames = list(rownames(averaged[[view]]), kept))
-        here <- intersect(kept, colnames(averaged[[view]]))
-        m[, here] <- averaged[[view]][, here, drop = FALSE]
-        features_input <- nrow(m) + standards[[view]]
-        sparse <- rowSums(!is.na(m)) < 2L
-        m <- m[!sparse, , drop = FALSE]
-        constant <- 0L
-        if (identical(parameters$scaling, "feature_zscore")) {
-            spread <- apply(m, 1L, stats::sd, na.rm = TRUE)
-            flat <- !(spread > 0)
-            constant <- sum(flat)
-            m <- m[!flat, , drop = FALSE]
-        }
-        if (identical(parameters$feature_selection, "top_variance") && nrow(m) > parameters$features_per_view) {
-            variance <- apply(m, 1L, stats::var, na.rm = TRUE)
-            keep <- sort(order(-variance, seq_along(variance))[seq_len(parameters$features_per_view)])
-            m <- m[keep, , drop = FALSE]
-        }
-        if (identical(parameters$scaling, "feature_zscore")) {
-            centre <- rowMeans(m, na.rm = TRUE)
-            spread <- apply(m, 1L, stats::sd, na.rm = TRUE)
-            m <- (m - centre) / spread
-        }
-        if (!nrow(m)) {
-            integrationRefuse(sprintf("view %s has no feature left for the model (none is observed in two or more samples)", view),
-                "integration_view_empty")
-        }
-        final[[view]] <- m
-        summary[[view]] <- data.frame(view = view, omic = view_omic[[view]], features_input = features_input,
-            internal_standards_dropped = standards[[view]], sparse_dropped = sum(sparse), constant_dropped = constant,
-            features_model = nrow(m), samples_present = length(here), stringsAsFactors = FALSE)
+    list(shared = shared, kept = kept, groups = groups, notes = notes)
+}
+
+#' Rows of a data set on the kept biological samples (KIT-062's rules): placed on the kept samples (missing where the
+#' data set lacks one), the features observed in fewer than two samples dropped and, under per-feature scaling, those
+#' without variance. Row by row: a block of rows gives the rows the whole data set gives.
+#' @param averaged Features x biological samples (`integrationAverageRuns`).
+#' @param kept The kept biological samples.
+#' @param zscore Whether features without variance are dropped (per-feature scaling).
+#' @return `list(values, sparse, constant, present)`: the rows left, the counts dropped as sparse and as constant, and
+#'   how many kept samples the data set measures.
+#' @noRd
+integrationAlignedRows <- function(averaged, kept, zscore) {
+    m <- matrix(NA_real_, nrow(averaged), length(kept), dimnames = list(rownames(averaged), kept))
+    here <- intersect(kept, colnames(averaged))
+    m[, here] <- averaged[, here, drop = FALSE]
+    sparse <- rowSums(!is.na(m)) < 2L
+    m <- m[!sparse, , drop = FALSE]
+    constant <- 0L
+    if (isTRUE(zscore)) {
+        spread <- apply(m, 1L, stats::sd, na.rm = TRUE)
+        flat <- !(spread > 0)
+        constant <- sum(flat)
+        m <- m[!flat, , drop = FALSE]
     }
+    list(values = m, sparse = sum(sparse), constant = constant, present = length(here))
+}
+
+#' The statistic the most-variable selection ranks features by (`feature_selection = top_variance`): each feature's
+#' variance over the samples it is observed in. The one definition both alignments use; the selection rule is under
+#' scientific review (KIT-151), and a change made here changes both alike.
+#' @param m Features x samples.
+#' @return One number per feature, in row order.
+#' @noRd
+integrationFeatureSelectionStatistic <- function(m) apply(m, 1L, stats::var, na.rm = TRUE)
+
+#' The features the most-variable selection keeps: the `n` largest statistics, a tie broken by position (the earlier
+#' feature first), returned in position order.
+#' @param statistic `integrationFeatureSelectionStatistic()` of every feature of a data set, in its row order.
+#' @param n The number kept (`features_per_view`).
+#' @return Positions in `statistic`, increasing.
+#' @noRd
+integrationSelectTopFeatures <- function(statistic, n) sort(order(-statistic, seq_along(statistic))[seq_len(n)])
+
+#' The per-feature Z-score (`scaling = feature_zscore`): each feature centred on its mean and divided by its standard
+#' deviation over the samples it is observed in.
+#' @param m Features x samples.
+#' @noRd
+integrationZscoreRows <- function(m) {
+    centre <- rowMeans(m, na.rm = TRUE)
+    spread <- apply(m, 1L, stats::sd, na.rm = TRUE)
+    (m - centre) / spread
+}
+
+#' Refuse a data set left without features.
+#' @noRd
+integrationRefuseEmptyView <- function(view) {
+    integrationRefuse(sprintf("view %s has no feature left for the model (none is observed in two or more samples)", view),
+        "integration_view_empty")
+}
+
+#' One row of the alignment's data set summary.
+#' @noRd
+integrationViewSummaryRow <- function(view, omic, features_input, standards, sparse, constant, features_model, present) {
+    data.frame(view = view, omic = omic, features_input = features_input, internal_standards_dropped = standards,
+        sparse_dropped = sparse, constant_dropped = constant, features_model = features_model, samples_present = present,
+        stringsAsFactors = FALSE)
+}
+
+#' The alignment's value from its parts (`integrationAlignViews`' form).
+#' @param final The aligned data sets (NULL when not built).
+#' @param plan `integrationAlignSamples()`.
+#' @param present,runs Named lists by data set: the biological samples it measures, and per sample its runs.
+#' @param views The selected data sets.
+#' @param summary List of `integrationViewSummaryRow()` by data set.
+#' @noRd
+integrationAlignedValue <- function(final, plan, present, runs, views, summary) {
+    kept <- plan$kept
+    groups <- plan$groups
     samples <- data.frame(biological_sample = kept,
         group = unname(vapply(kept, function(name) if (length(groups[[name]])) groups[[name]][[1L]] else NA_character_,
             character(1))),
@@ -674,7 +763,152 @@ integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
         runs[[view]][kept], ""))
     summary <- do.call(rbind, summary)
     rownames(summary) <- NULL
-    list(views = final, samples = samples, view_summary = summary, shared_samples = length(shared), notes = notes)
+    list(views = final, samples = samples, view_summary = summary, shared_samples = length(plan$shared), notes = plan$notes)
+}
+
+#' Align the selected data sets as `integrationAlignViews` does, reading each data set in row pages (KIT-149): no data
+#' set is held whole. The biological samples, runs and internal standards come from the design, the feature tables
+#' and the data sets' column names, without values. Then per data set, pass 1 reads its pages and keeps, per feature
+#' left after the sparse and constant filters, its selection statistic (one number per feature); the most-variable
+#' selection is taken once over the whole data set from those numbers (`integrationSelectTopFeatures`, ties by
+#' position); pass 2 reads the pages again and keeps the selected rows, Z-scored under per-feature scaling, in a matrix
+#' of the selected features only. Every rule is the whole-matrix path's (`integrationAlignedRows` and the functions
+#' beside it), applied row by row, so the value is `identical()` to `integrationAlignViews()`'s.
+#' @param object An `IntegrationViewsData` with `features`, `design_matrix` and `inputs` hydrated; its `views` may be
+#'   zero-row prototypes (their column names are read).
+#' @param parameters Resolved parameters (`integrationResolveMofaParameters`).
+#' @param pages `function(view, columns, kernel)` calling `kernel(page, offset)` on each page of the data set's
+#'   `columns` in row order (`offset`: the page's first row's zero-based position): `integrationStateViewPages()` or
+#'   `integrationObjectViewPages()`.
+#' @param prefix_rows As `integrationAlignViews()`.
+#' @param values FALSE: pass 2 is skipped and `views` is NULL (the counts and the sample table only).
+#' @return `integrationAlignViews()`'s value.
+#' @noRd
+integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_rows = FALSE, values = TRUE) {
+    design <- integrationApplySampleMatch(object@design_matrix, parameters$sample_match_table)
+    view_omic <- integrationViewOmics(object)
+    views <- parameters$views
+    drop_standards <- identical(parameters$internal_standards, "drop")
+    columns <- list()
+    keys <- list()
+    present <- list()
+    runs <- list()
+    standards <- list()
+    for (view in views) {
+        columns[[view]] <- names(object@views[[view]])
+        run_names <- columns[[view]][-1L]
+        standards[view] <- list(if (drop_standards) integrationInternalStandards(object@features[[view]]))
+        rows <- design[design$omic == view_omic[[view]], , drop = FALSE]
+        key <- rows$biological_sample[match(run_names, rows$run)]
+        if (anyNA(key)) {
+            integrationRefuse(sprintf("view %s has a run that its omic's design does not list", view), "integration_input_invalid")
+        }
+        keys[[view]] <- key
+        present[[view]] <- sort(unique(key), method = "radix")
+        runs[[view]] <- vapply(present[[view]], function(level) {
+            paste(sort(run_names[key == level], method = "radix"), collapse = ";")
+        }, character(1))
+    }
+    plan <- integrationAlignSamples(design, view_omic, views, present, parameters$missing_samples)
+    zscore <- identical(parameters$scaling, "feature_zscore")
+    cap <- if (identical(parameters$feature_selection, "top_variance")) parameters$features_per_view else NA_integer_
+    summary <- list()
+    final <- if (isTRUE(values)) list()
+    for (view in views) {
+        # One page of the data set on the kept samples: the whole path's read, standards and averaging, row by row.
+        block_of <- function(page, offset) {
+            m <- as.matrix(page[-1L])
+            storage.mode(m) <- "double"
+            rownames(m) <- if (isTRUE(prefix_rows)) paste(view, page[[1L]], sep = ":") else as.character(page[[1L]])
+            if (drop_standards) m <- m[!standards[[view]][offset + seq_len(nrow(m))], , drop = FALSE]
+            integrationAlignedRows(integrationAverageRuns(m, keys[[view]]), plan$kept, zscore)
+        }
+        # Pass 1: the counts, and the selection statistic of every feature left.
+        rows_read <- 0L
+        sparse <- 0L
+        constant <- 0L
+        left <- 0L
+        statistic <- list()
+        pages(view, columns[[view]], function(page, offset) {
+            if (!nrow(page)) return(invisible(NULL))
+            block <- block_of(page, offset)
+            rows_read <<- rows_read + nrow(page)
+            sparse <<- sparse + block$sparse
+            constant <<- constant + block$constant
+            left <<- left + nrow(block$values)
+            if (!is.na(cap)) statistic[[length(statistic) + 1L]] <<- unname(integrationFeatureSelectionStatistic(block$values))
+            invisible(NULL)
+        })
+        # The global statistic: the cap's selection over the whole data set (NULL: every feature left is kept).
+        take <- NULL
+        if (!is.na(cap) && left > cap) {
+            take <- logical(left)
+            take[integrationSelectTopFeatures(unlist(statistic), cap)] <- TRUE
+        }
+        statistic <- NULL
+        features_model <- if (is.null(take)) left else sum(take)
+        if (!features_model) integrationRefuseEmptyView(view)
+        # Pass 2: the selected rows, Z-scored under per-feature scaling, into a matrix of the selected features only.
+        if (isTRUE(values)) {
+            out <- matrix(NA_real_, features_model, length(plan$kept))
+            ids <- character(features_model)
+            seen <- 0L
+            filled <- 0L
+            pages(view, columns[[view]], function(page, offset) {
+                if (!nrow(page)) return(invisible(NULL))
+                m <- block_of(page, offset)$values
+                rows <- nrow(m)
+                if (!is.null(take)) m <- m[take[seen + seq_len(rows)], , drop = FALSE]
+                seen <<- seen + rows
+                if (nrow(m)) {
+                    if (zscore) m <- integrationZscoreRows(m)
+                    at <- filled + seq_len(nrow(m))
+                    out[at, ] <<- m
+                    ids[at] <<- rownames(m)
+                    filled <<- filled + nrow(m)
+                }
+                invisible(NULL)
+            })
+            dimnames(out) <- list(ids, plan$kept)
+            final[[view]] <- out
+            out <- NULL
+        }
+        dropped <- if (drop_standards) sum(standards[[view]]) else 0L
+        summary[[view]] <- integrationViewSummaryRow(view, view_omic[[view]], rows_read, dropped, sparse, constant,
+            features_model, length(intersect(plan$kept, present[[view]])))
+    }
+    integrationAlignedValue(final, plan, present, runs, views, summary)
+}
+
+#' Pages of the inputs state's data sets from the integration store (KIT-149; `integrationAlignViewsPartitioned`'s
+#' `pages`): each data set's table read by `partitionByRows`, at most 10,000 rows per page, a table of more than 64
+#' columns read in blocks of 64 columns bound in column order.
+#' @param manager The integration owner.
+#' @param source The inputs state's reference.
+#' @param worker_cap The admitted worker memory (NULL: 12 GiB, the omics' partitioned steps' default).
+#' @noRd
+integrationStateViewPages <- function(manager, source, worker_cap = NULL) {
+    function(view, columns, kernel) withWorkflowStateScope(manager, function() {
+        context <- manager$.context
+        table <- readWorkflowStateMetadata(manager, source)$data$components$views[[view]]
+        scope <- newWorkflowTableReadScope(context$store, table, reader = if (length(columns) > 64L) "duckdb" else "arrow")
+        on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+        partitionByRows(scope, columns, kernel = function(page, index, offset) kernel(page, offset),
+            consume = function(value, index) invisible(NULL), worker_cap = worker_cap %||% (12 * 1024^3),
+            working_bytes_per_row = omicsPartitionedWorkingBytesPerColumn * length(columns),
+            overhead_bytes = 2 * 67108864 + 2 * 8388608, policy = "integration-row-pages-v1")
+        invisible(NULL)
+    })
+}
+
+#' Pages of a hydrated inputs state's data sets (KIT-149): each data set as one page.
+#' @param object An `IntegrationViewsData` with its `views` hydrated.
+#' @noRd
+integrationObjectViewPages <- function(object) {
+    function(view, columns, kernel) {
+        kernel(object@views[[view]][columns], 0L)
+        invisible(NULL)
+    }
 }
 
 #' The MOFA2 options the declared parameters set (every other MOFA2 option stays at its default).
@@ -1053,10 +1287,15 @@ integrationModelComparable <- function(manager, value) {
 #' @param match FALSE: the registry's declaration. TRUE (KIT-063 item A): the same declaration with the user's sample
 #'   match as one more parameter (`sample_match`, the match's sha256), the match itself passed beside it
 #'   (`sample_match_table`). A model without a match keeps the registry's declaration, so its identity is unchanged.
+#' KIT-149: the declaration's `partitioned` variant aligns the selected data sets from the store in row pages
+#' (`integrationAlignViewsPartitioned`), never hydrating a data set whole, and gives the product of the whole-matrix
+#' kernel (the alignment is `identical()`); the variant is not part of the identity.
 #' @noRd
 integrationMofaOperation <- function(match = FALSE) {
-    newWorkflowOperation(INTEGRATION_MODEL_OPERATION, "IntegrationViewsData",
-        fields = c("views", "features", "design_matrix", "inputs"), unit = "whole_matrix", output_class = NULL,
+    declaration <- newWorkflowOperation(INTEGRATION_MODEL_OPERATION, "IntegrationViewsData",
+        # KIT-149 (audit ENG-05): the data sets are not among the fields read before the kernel; the kernel reads the
+        # selected ones only.
+        fields = c("features", "design_matrix", "inputs"), unit = "whole_matrix", output_class = NULL,
         parameters = c(integrationMofaParameterNames(), if (isTRUE(match)) "sample_match"),
         product_type = "integration.mofa_model",
         # KIT-148: the product's form is part of what a saved model is looked up by, so a model saved in the earlier
@@ -1064,14 +1303,35 @@ integrationMofaOperation <- function(match = FALSE) {
         factors = list(product_schema = INTEGRATION_MODEL_SCHEMA),
         kernel = function(object, parameters, store) {
             resolved <- integrationResolveMofaParameters(object, parameters)
+            # KIT-149 (audit ENG-05): only the selected data sets are read whole; the others stay zero-row prototypes.
+            object@views[resolved$views] <- readWorkflowExecutionComponents(store$manager, store$source,
+                fields = paste0("views/", resolved$views))@views[resolved$views]
             # KIT-148: the rows carry the hand-off names (`<view>:<feature_id>`) from the read, so the aligned views are
             # handed to the trainer as they are, with no renamed copy.
-            aligned <- integrationAlignViews(object, resolved, prefix_rows = TRUE)
-            trainer <- parameters[["trainer", exact = TRUE]] %||% integrationTrainMofa
-            fit <- trainer(aligned$views, integrationMofaOptions(resolved))
-            reclaimWorkflowMemory()
-            integrationModelProduct(aligned, fit, store)
+            integrationModelFromAligned(integrationAlignViews(object, resolved, prefix_rows = TRUE), resolved, parameters, store)
         })
+    declaration$partitioned <- function(parameters, store) {
+        object <- readWorkflowExecutionComponents(store$manager, store$source, fields = c("features", "design_matrix", "inputs"))
+        resolved <- integrationResolveMofaParameters(object, parameters)
+        aligned <- integrationAlignViewsPartitioned(object, resolved,
+            integrationStateViewPages(store$manager, store$source, store$worker_cap), prefix_rows = TRUE)
+        object <- NULL
+        integrationModelFromAligned(aligned, resolved, parameters, store)
+    }
+    declaration
+}
+
+#' Train on the aligned data sets and save the product (both variants of the model declaration).
+#' @param aligned The alignment, its rows named `<view>:<feature_id>`.
+#' @param resolved The resolved parameters.
+#' @param parameters The run's parameters (a stand-in `trainer` may be among them).
+#' @param store The operation's store handle.
+#' @noRd
+integrationModelFromAligned <- function(aligned, resolved, parameters, store) {
+    trainer <- parameters[["trainer", exact = TRUE]] %||% integrationTrainMofa
+    fit <- trainer(aligned$views, integrationMofaOptions(resolved))
+    reclaimWorkflowMemory()
+    integrationModelProduct(aligned, fit, store)
 }
 
 #' The declaration a model run takes (KIT-063 item A): the registry's, or with a sample match its declaration with
@@ -1120,7 +1380,9 @@ acceptIntegrationModel <- function(manager, source, run, parameters, confirmatio
 #' that do not fit the state, MOFA2 or its Python not available (`integration_mofa_unavailable`, with the probe's
 #' reason).
 #' @param manager The integration owner.
-#' @param parameters The declared parameters to set (absent ones take the provisional defaults).
+#' @param parameters The declared parameters to set (absent ones take the provisional defaults). KIT-149: `variant`
+#'   (`whole` or `partitioned`; absent, the registry's default variant) chooses how the data sets are aligned; it is
+#'   not a parameter of the model and not part of its identity.
 #' @param check_inputs Check each input's manifest on disk (the replay checks its inputs itself and passes FALSE).
 #' @param probe The capability probe (`integrationMofaCapability`).
 #' @param trainer NULL for MOFA2, or a stand-in with `integrationTrainMofa`'s form (tests; then nothing is probed).
@@ -1140,6 +1402,12 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
         object <- readWorkflowExecutionComponents(manager, source, fields = "inputs")
         if (isTRUE(check_inputs)) integrationAssertInputsCurrent(object)
         resolved <- integrationResolveMofaParameters(object, parameters)
+        entry <- workflowOperationEntry(INTEGRATION_MODEL_OPERATION)
+        variant <- parameters[["variant", exact = TRUE]] %||% entry$default_variant
+        if (!(is.character(variant) && length(variant) == 1L && isTRUE(variant %in% entry$variants))) {
+            integrationRefuse(sprintf("variant must be one of %s", paste(entry$variants, collapse = ", ")),
+                "integration_parameters_invalid")
+        }
         if (is.null(trainer)) {
             capability <- probe()
             if (!isTRUE(capability$available)) {
@@ -1151,7 +1419,8 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
         # KIT-148: a sample match is kept as a table of the store, and the model depends on it.
         match <- if (!is.null(resolved$sample_match_table)) list(integrationStoreSampleMatch(manager, resolved$sample_match_table))
         # A refused or failed training leaves no pending provenance for a later commit to take.
-        run <- withCallingHandlers(runSavedOperation(manager, declaration, source, c(resolved, list(trainer = trainer)),
+        run <- withCallingHandlers(runSavedOperation(manager, declaration, source,
+            c(resolved, list(trainer = trainer, variant = variant)),
             dependencies = match %||% list()), error = function(error) clearWorkflowStepProvenance(manager))
         acceptIntegrationModel(manager, source, run, resolved, confirmation)
         run
@@ -1165,7 +1434,8 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
 #' @param manager The worker's reopened integration store, inside its state scope.
 #' @param request The worker request (`input_references$state`, `parameters`; a sample match as its table's reference,
 #'   `integrationModelPrecheck()$request`).
-#' @param variant Unused (one variant, `whole`).
+#' @param variant KIT-149: the variant the request runs (`whole` or `partitioned`; the registry's default when the
+#'   request names none), as in process.
 #' @return The completion value: the source's checkpoint, the product's reference and the run's status (computed or hit).
 #' @noRd
 computeWorkflowIntegrationModelAction <- function(manager, request, variant) {
@@ -1182,7 +1452,7 @@ computeWorkflowIntegrationModelAction <- function(manager, request, variant) {
         integrationRefuse(sprintf("the integration model cannot be trained here: %s", capability$reason),
             "integration_mofa_unavailable")
     }
-    run <- runSavedOperation(manager, integrationMofaDeclaration(resolved), source, resolved,
+    run <- runSavedOperation(manager, integrationMofaDeclaration(resolved), source, c(resolved, list(variant = variant)),
         dependencies = if (isSavedWorkflowReference(match)) list(match) else list())
     # A product an earlier worker computed, whose action never completed, has no root yet (the omics handler's rule).
     if (identical(run$status, "hit")) rootWorkflowProduct(manager, run$reference, list(source))
