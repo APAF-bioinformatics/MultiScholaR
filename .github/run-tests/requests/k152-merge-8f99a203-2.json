@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-152 before merge: full suite, the merge of kit-152 into performance-v2 (8f99a203) against performance-v2 bc023bc3 (re-issue of k152-merge-8f99a203, which was pushed as invalid JSON)",
+  "label": "KIT-152 merge candidate 8f99a203 versus base bc023bc3, full suite and check",
+  "package_commit": "8f99a2030197afb31b7addf561d33bc28bcb3c73",
+  "base_commit": "bc023bc3ed6d61eb2063c65434cfb609f525fc7c",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
