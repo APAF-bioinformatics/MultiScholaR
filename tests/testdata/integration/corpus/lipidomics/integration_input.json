@@ -1,5 +1,5 @@
 {
-  "schema": "multischolar.integration_input.v1",
+  "schema": "multischolar.integration_input.v2",
   "omic_type": "lipidomics",
   "workflow": "LIPIDOMICS",
   "matrix_role": "normalised",
@@ -19,26 +19,39 @@
   "views": [
     {
       "name": "lipidomics_LCMS_Pos",
-      "matrix_file": "matrix_lipidomics_LCMS_Pos.tsv",
-      "features_file": "features_lipidomics_LCMS_Pos.tsv",
+      "matrix_file": "matrix_lipidomics_LCMS_Pos.parquet",
+      "features_file": "features_lipidomics_LCMS_Pos.parquet",
       "rows": 150,
-      "columns": 40
+      "columns": 40,
+      "row_groups": 1
     },
     {
       "name": "lipidomics_LCMS_Neg",
-      "matrix_file": "matrix_lipidomics_LCMS_Neg.tsv",
-      "features_file": "features_lipidomics_LCMS_Neg.tsv",
+      "matrix_file": "matrix_lipidomics_LCMS_Neg.parquet",
+      "features_file": "features_lipidomics_LCMS_Neg.parquet",
       "rows": 150,
-      "columns": 40
+      "columns": 40,
+      "row_groups": 1
     }
   ],
-  "samples_file": "samples.tsv",
+  "samples_file": "samples.parquet",
+  "parquet": {
+    "format_version": "2.6",
+    "compression": "snappy",
+    "row_group_rows": 10000,
+    "column_types": {
+      "feature_id": "string",
+      "runs": "double",
+      "samples": "string",
+      "features": "string"
+    }
+  },
   "files": {
-    "samples.tsv": "472f9f6dd3d566563ce8afcd7db29ae606708bdef45a1b005f84bef24c414016",
-    "matrix_lipidomics_LCMS_Pos.tsv": "e24a3b2570789db483b8bcdf01d597e499c3213c18d9d841bcf73c46f1a40634",
-    "features_lipidomics_LCMS_Pos.tsv": "76c1c7e0c966e6052a24e080009ca37d3e45fba33eb33e48a316e5ab12769dbb",
-    "matrix_lipidomics_LCMS_Neg.tsv": "13e9c9f1240dc15477b0b2f6e8f93b6d86a43722b3000682cf596152459c77a4",
-    "features_lipidomics_LCMS_Neg.tsv": "da2165b0a58d009174538282f804ae275f3a79a42890180d3241cb6801a9365c"
+    "samples.parquet": "9d39510c05516befb567016f75a36509bdd83e1e97a1e1ffeb7e02592b65ca4c",
+    "matrix_lipidomics_LCMS_Pos.parquet": "6f1c86cf73714e07ed2a24434f851f3c2958788a16f2e9b143baaccf51de0f4e",
+    "features_lipidomics_LCMS_Pos.parquet": "b25ab8d9897acde11199b800ca4de367776d85f49baedca953859ab25f85f3a2",
+    "matrix_lipidomics_LCMS_Neg.parquet": "49375e0c26131fc4db4570802f7096b2f98132e556f734a910d00213994b38eb",
+    "features_lipidomics_LCMS_Neg.parquet": "c12ce62ad891f9a15e9fe3848c243c48db9eb667e8301eb99958e80bf9571b53"
   },
   "software": {
     "package": "MultiScholaR",

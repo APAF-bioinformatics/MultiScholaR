@@ -1,5 +1,5 @@
 {
-  "schema": "multischolar.integration_input.v1",
+  "schema": "multischolar.integration_input.v2",
   "omic_type": "metabolomics",
   "workflow": "METABOLOMICS",
   "matrix_role": "normalised",
@@ -19,26 +19,39 @@
   "views": [
     {
       "name": "metabolomics_LCMS_Pos",
-      "matrix_file": "matrix_metabolomics_LCMS_Pos.tsv",
-      "features_file": "features_metabolomics_LCMS_Pos.tsv",
+      "matrix_file": "matrix_metabolomics_LCMS_Pos.parquet",
+      "features_file": "features_metabolomics_LCMS_Pos.parquet",
       "rows": 150,
-      "columns": 38
+      "columns": 38,
+      "row_groups": 1
     },
     {
       "name": "metabolomics_GCMS",
-      "matrix_file": "matrix_metabolomics_GCMS.tsv",
-      "features_file": "features_metabolomics_GCMS.tsv",
+      "matrix_file": "matrix_metabolomics_GCMS.parquet",
+      "features_file": "features_metabolomics_GCMS.parquet",
       "rows": 150,
-      "columns": 38
+      "columns": 38,
+      "row_groups": 1
     }
   ],
-  "samples_file": "samples.tsv",
+  "samples_file": "samples.parquet",
+  "parquet": {
+    "format_version": "2.6",
+    "compression": "snappy",
+    "row_group_rows": 10000,
+    "column_types": {
+      "feature_id": "string",
+      "runs": "double",
+      "samples": "string",
+      "features": "string"
+    }
+  },
   "files": {
-    "samples.tsv": "fd0b7c177755728b83a9520cbd753fe9698a8ef9e57a1293c4130aba776884f9",
-    "matrix_metabolomics_LCMS_Pos.tsv": "d9a32eb10b87a69443b7fb89949cc8671371a7ee58b8e726217791d18004a2e5",
-    "features_metabolomics_LCMS_Pos.tsv": "13c0a9c22f257b42b789df8dddfc7e97603d255796b4848c76b84920c2647fa2",
-    "matrix_metabolomics_GCMS.tsv": "a41d9f353a4777f28e537b342d9aab643162a88e6fd863395aba1d776d483bf1",
-    "features_metabolomics_GCMS.tsv": "9b89107e60d8a0d96b4684c646eeb6a1cfc5812f1dc6e5a3c07bc5b2584ca205"
+    "samples.parquet": "566f29106b8df0acec495e73f157d6d19faefdbcc74849ba27a6ee8342062ebb",
+    "matrix_metabolomics_LCMS_Pos.parquet": "91439d6745c750460caebd7292e345819953c7e4ed306e10d89b48f8fdc6e038",
+    "features_metabolomics_LCMS_Pos.parquet": "d6d0ce8c3f7f1f53168f66ff6d96ff4af677f765abeebe35c09c7d63b68d4bfa",
+    "matrix_metabolomics_GCMS.parquet": "aea6984ecf1af7ea6c1b4b4fe444c25f231e053bf6d0833b498e5576311b80bc",
+    "features_metabolomics_GCMS.parquet": "4abec626ccf6c2912a99241ab8bee44d1664a22a56d98d769a8f415d9039cec1"
   },
   "software": {
     "package": "MultiScholaR",
