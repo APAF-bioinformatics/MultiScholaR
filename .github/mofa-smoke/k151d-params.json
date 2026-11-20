@@ -1,6 +1,6 @@
 {
   "run": "counted",
-  "task": "pin",
-  "batch": 1,
-  "note": "Q3 counted run, batch 1 (jobs 1 to 20), as declared in docs/qa/workflow-execution/kit/kit-151d/pin-declaration.md"
+  "task": "ruv",
+  "strength": "C1",
+  "note": "Q1 counted run, as declared in docs/qa/workflow-execution/kit/kit-151d/ruv-declaration.md"
 }
