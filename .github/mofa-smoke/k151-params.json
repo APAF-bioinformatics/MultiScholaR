@@ -1,7 +1,7 @@
 {
-  "run": "lifecycle",
-  "scenarios": ["main"],
-  "seeds": 1,
-  "arms": "scale_views,probe_fail",
-  "note": "lifecycle: one seed, two arms (probe_fail fails on purpose); proves the job runs through and a failed arm is reported as failed"
+  "run": "counted",
+  "scenarios": ["main", "n60", "missing"],
+  "seeds": 10,
+  "arms": "all",
+  "note": "counted run as declared in docs/qa/workflow-execution/kit/kit-151/cap-evidence-declaration.md (commit 6953941f)"
 }
