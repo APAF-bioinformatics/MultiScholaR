@@ -1,9 +1,9 @@
 {
-  "run": "lifecycle",
-  "scenarios": ["n60strong"],
-  "seeds": 1,
-  "cells": "none@slow,noisy_cap1000@fast,probe_fail@fast",
+  "run": "counted",
+  "scenarios": ["n20weak", "n20strong", "n60weak", "n60strong"],
+  "seeds": 10,
+  "cells": "all",
   "modes_n20": ["fast", "medium", "slow"],
   "modes_n60": ["fast", "slow"],
-  "note": "follow-up lifecycle: the heaviest cell (uncapped, slow, N = 60), the noisy variant with its composition, and a cell that fails on purpose; also times the heaviest cell to size the counted cross"
+  "note": "counted follow-up run as declared in docs/qa/workflow-execution/kit/kit-151/cap-followup-declaration.md"
 }
