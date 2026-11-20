@@ -55,6 +55,10 @@ on:
         description: "Stage suite: comma-separated test files (tests/testthat names, or paths under the checkout)"
         type: string
         default: ""
+      diagnose:
+        description: "Stage suite: also run the Parquet diagnostic (packaging/verify/parquet-diag.R, parquet-meta.py)"
+        type: boolean
+        default: false
   push:
     branches: [kit-134]
     paths:
@@ -308,6 +312,21 @@ jobs:
             "$OUT/suite" "${{ matrix.shard }}" "${{ needs.plan.outputs.linux_shards }}" "$deadline" 45 2>&1 | tee "$OUT/suite.log"
           { echo "### Suite on the bundle, Linux shard ${{ matrix.shard }}"; echo '```'; grep -a '^SUITE \(SETUP\|TOTAL\)' "$OUT/suite.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           grep -q '^SUITE TOTAL' "$OUT/suite.log"
+
+      # run-win-k147: the Parquet diagnostic (finding 1(a), 1(b)); the bundle at $RUNNER_TEMP/sb after the suite step;
+      # pyarrow from PyPI into a scratch folder for the runner's own Python (footer metadata only; nothing uploaded).
+      - name: "Parquet diagnostic (run-win-k147)"
+        if: ${{ !cancelled() && inputs.diagnose && matrix.part == 'suite' && steps.suite.outcome != 'skipped' }}
+        timeout-minutes: 30
+        run: |
+          echo "DIAG git config core.autocrlf: '$(git config --show-origin core.autocrlf || true)'"
+          "$RUNNER_TEMP/sb/bin/Rscript" --vanilla packaging/verify/parquet-diag.R "$GITHUB_WORKSPACE" "$RUNNER_TEMP/pdiag" 2>&1
+          python3 -m pip install --no-cache-dir --quiet --target "$RUNNER_TEMP/pya" pyarrow
+          files=""
+          for f in samples.parquet features_proteomics.parquet matrix_proteomics.parquet; do
+            files="$files tests/testdata/integration/corpus/proteomics/$f $RUNNER_TEMP/pdiag/fresh/proteomics/$f"
+          done
+          python3 -s packaging/verify/parquet-meta.py "$RUNNER_TEMP/pya" $files
 
       # ------------------------------------------------ stage full: the shell, the archive, the install
       - uses: actions/setup-node@v4
@@ -775,6 +794,19 @@ jobs:
           $lines += '```'
           $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
           if (-not (Select-String -Path "$env:OUT\suite.log" -Pattern '^SUITE TOTAL' -Quiet)) { throw "the shard did not finish" }
+
+      # run-win-k147: the Parquet diagnostic (finding 1(a), 1(b)), as on Linux.
+      - name: "Parquet diagnostic (run-win-k147)"
+        if: ${{ !cancelled() && inputs.diagnose && matrix.part == 'suite' && steps.suite.outcome != 'skipped' }}
+        timeout-minutes: 30
+        run: |
+          "DIAG git config core.autocrlf: '$(git config --show-origin core.autocrlf)'"
+          & packaging\verify\windows-clean-run.ps1 -Bundle "$env:RUNNER_TEMP\sb" -Script packaging\verify\parquet-diag.R -NoBundleArgument -Arguments $env:GITHUB_WORKSPACE, "$env:RUNNER_TEMP\pdiag" *>&1
+          if ($LASTEXITCODE -ne 0) { "DIAG the R diagnostic exited $LASTEXITCODE" }
+          python -m pip install --no-cache-dir --quiet --target "$env:RUNNER_TEMP\pya" pyarrow
+          $files = foreach ($f in 'samples.parquet', 'features_proteomics.parquet', 'matrix_proteomics.parquet') {
+            "tests\testdata\integration\corpus\proteomics\$f"; "$env:RUNNER_TEMP\pdiag\fresh\proteomics\$f" }
+          python -s packaging\verify\parquet-meta.py "$env:RUNNER_TEMP\pya" @files
 
       # ------------------------------------------------ stage full: the shell, the installer, the install
       - uses: actions/setup-node@v4
