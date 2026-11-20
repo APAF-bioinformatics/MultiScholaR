@@ -214,9 +214,13 @@ intPartCorpusProject <- function(.local_envir = parent.frame()) {
 intPartTraceReads <- function(.local_envir = parent.frame()) {
     reads <- new.env()
     reads$ids <- character()
-    trace <- function(original) function(context, reference, ...) {
-        reads$ids <- c(reads$ids, reference$entity_id)
-        original(context, reference, ...)
+    trace <- function(original) {
+        # Forced here: a promise would be read after the mock is in place and call the mock itself.
+        force(original)
+        function(context, reference, ...) {
+            reads$ids <- c(reads$ids, reference$entity_id)
+            original(context, reference, ...)
+        }
     }
     testthat::local_mocked_bindings(materializeWorkflowTable = trace(materializeWorkflowTable),
         materializeDIATable = trace(materializeDIATable), .env = .local_envir)
@@ -233,9 +237,10 @@ test_that("KIT-149 (ENG-05): the GUI's import, the Sample Matching preview, the 
     bus <- do.call(shiny::reactiveValues, omicWorkflowInitialBus(integrationGuiConfig()$shell))
     withr::defer(if (!is.null(shiny::isolate(bus$state_manager))) closeWorkflowStateOwner(shiny::isolate(bus$state_manager)))
     reads <- intPartTraceReads()
-    scan <- integrationScanProject(project$paths$integration_dir)
+    # Not named `scan`: the import module's own `scan` would shadow it inside testServer.
+    all_views <- integrationScanProject(project$paths$integration_dir)$views$view
     shiny::testServer(mod_integration_import_server, args = list(workflow_data = bus, paths = project$paths), {
-        session$setInputs(views = scan$views$view, import = 1)
+        session$setInputs(views = all_views, import = 1)
     })
     manager <- shiny::isolate(bus$state_manager)
     expect_identical(manager$getHistory(), c("initial", "integration_inputs"))
