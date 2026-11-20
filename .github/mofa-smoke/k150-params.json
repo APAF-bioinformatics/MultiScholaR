@@ -1,0 +1,7 @@
+{
+  "label": "k150-lifecycle",
+  "attempt": "lifecycle",
+  "jobs": [
+    {"name": "lifecycle", "plan": "lifecycle", "size": "S", "timeout": 60}
+  ]
+}
