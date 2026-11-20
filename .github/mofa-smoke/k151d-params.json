@@ -1,5 +1,6 @@
 {
-  "run": "lifecycle",
-  "task": "lifecycle",
-  "note": "lifecycle run: tiny ruv, z and pin jobs, each with a deliberately failing cell; seeds outside the counted sets (ruv 91-100, z 91-92); pin job 99 runs fully only on an Intel processor"
+  "run": "counted",
+  "task": "pin",
+  "batch": 1,
+  "note": "Q3 counted run, batch 1 (jobs 1 to 20), as declared in docs/qa/workflow-execution/kit/kit-151d/pin-declaration.md"
 }
