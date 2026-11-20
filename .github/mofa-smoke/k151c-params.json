@@ -1,0 +1,5 @@
+{
+  "run": "lifecycle",
+  "task": "lifecycle",
+  "note": "lifecycle: tiny seed, pin (two jobs) and ruv jobs, each with a deliberately failing cell; scorer exercised on all three"
+}

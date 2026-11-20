@@ -1,0 +1,195 @@
+name: MOFA2 evidence k151c (seeds, pinning, group-corrected inputs)
+
+# Run-only lane (branch run-mofa-evidence-k151c). Declarations: docs/qa/workflow-execution/kit/kit-151c/. Tasks:
+#   seed (SCI-06), pin (SCI-05), ruv (SCI-04 / INT-004); "lifecycle" runs a tiny version of all three with a
+#   deliberately failing cell. The job list of each task is fixed here (declared), not taken from the parameters.
+# R, MOFA2's closure and the bundle's Python are installed as the smoke lane installs them; task ruv also installs
+# RUVIIIC (bundle source) and ruv at the bundle's versions. No MultiScholaR, no internal packages, no token.
+#
+# Start: change .github/mofa-smoke/k151c-params.json in a commit and push it to run-mofa-evidence-k151c.
+
+on:
+  push:
+    branches:
+      - "run-mofa-evidence-k151c"
+    paths:
+      - .github/mofa-smoke/k151c-params.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: k151c-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  R_LIBS_USER: /nonexistent-user-library
+  R_LIBS_SITE: /nonexistent-site-library
+
+jobs:
+  plan:
+    name: Parameters
+    runs-on: ubuntu-latest
+    outputs:
+      jobs: ${{ steps.plan.outputs.jobs }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/mofa-smoke
+          persist-credentials: false
+      - id: plan
+        run: |
+          p=.github/mofa-smoke/k151c-params.json
+          jq -e '(.run | IN("lifecycle", "counted")) and (.task | IN("lifecycle", "seed", "pin", "ruv")) and
+            ((.run == "lifecycle") == (.task == "lifecycle"))' "$p" > /dev/null \
+            || { echo "::error::k151c-params.json is not valid"; exit 1; }
+          task="$(jq -r .task "$p")"
+          pin_arms="none,scale_views,cap1000,cap2000,cap5000,cap10000,weight_views,zscore"
+          ruv_arms="raw,oracle,ruv_k1,ruv_k2,ruv_k3"
+          case "$task" in
+            lifecycle)
+              jobs='[{"id":"life-seed","task":"seed","x1":"n20weak@7","x2":"cap1000,probe_fail","x3":"fast","x4":"1,2"},
+                {"id":"life-pin-1","task":"pin","x1":"","x2":"cap1000,probe_fail","x3":"","x4":""},
+                {"id":"life-pin-2","task":"pin","x1":"","x2":"cap1000","x3":"","x4":""},
+                {"id":"life-ruv","task":"ruv","x1":"20","x2":"1","x3":"raw,ruv_k2,probe_fail","x4":""}]' ;;
+            seed)
+              jobs='[{"id":"seed","task":"seed","x1":"n20weak@7,n60strong@1","x2":"scale_views,cap1000","x3":"fast,slow","x4":"1,2,3,4,5,6,7,8,9,10"}]' ;;
+            pin)
+              jobs="$(jq -cn --arg arms "$pin_arms" '[range(1; 13) | {id: ("pin-" + (if . < 10 then "0" else "" end) + tostring), task: "pin", x1: "", x2: $arms, x3: "", x4: ""}]')" ;;
+            ruv)
+              jobs="$(jq -cn --arg arms "$ruv_arms" '[(20, 60) as $n | (0, 1, 2, 3) as $b |
+                {id: ("ruv-n\($n)-\($b + 1)"), task: "ruv", x1: ($n | tostring), x2: ([range($b * 5 + 1; $b * 5 + 6) | tostring] | join(",")), x3: $arms, x4: ""}]')" ;;
+          esac
+          echo "jobs=$(echo "$jobs" | jq -c .)" | tee -a "$GITHUB_OUTPUT"
+
+  evidence:
+    name: "${{ matrix.id }}"
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.jobs) }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Versions from the distributable workflow; paths
+        run: |
+          for key in R_VERSION PBS_RELEASE PBS_PYTHON; do
+            value="$(sed -n "s/^  $key: \"\(.*\)\"$/\1/p" .github/workflows/distributable.yml)"
+            test -n "$value" || { echo "::error::$key not found in distributable.yml"; exit 1; }
+            echo "$key=$value" | tee -a "$GITHUB_ENV"
+          done
+          {
+            echo "BUNDLE=$RUNNER_TEMP/bundle"
+            echo "TOOLS_LIB=$RUNNER_TEMP/tools-lib"
+            echo "OUT=$RUNNER_TEMP/evidence"
+            echo "RES=$RUNNER_TEMP/result"
+          } >> "$GITHUB_ENV"
+
+      - name: R, MOFA2's closure, the bundle's Python (as the smoke lane)
+        run: |
+          set -o pipefail
+          bash packaging/linux/build.sh r
+          R_LIBS="$TOOLS_LIB" "/opt/R/$R_VERSION/bin/Rscript" --vanilla .github/mofa-smoke/install-mofa-library.R plan . "$OUT"
+          bash packaging/linux/build.sh sysreqs
+          R_LIBS="$TOOLS_LIB" "/opt/R/$R_VERSION/bin/Rscript" --vanilla .github/mofa-smoke/install-mofa-library.R install . "$OUT" \
+            > "$OUT/install-mofa-library.log" 2>&1 || { tail -n 60 "$OUT/install-mofa-library.log"; exit 1; }
+          tail -n 3 "$OUT/install-mofa-library.log"
+          bash packaging/linux/build.sh python
+          mkdir -p "$BUNDLE/bin"
+          install -m 0755 packaging/linux/Rscript "$BUNDLE/bin/Rscript"
+          ln -s "/opt/R/$R_VERSION/lib/R" "$BUNDLE/R"
+
+      - name: RUV-III functions at the bundle's versions (task ruv)
+        if: ${{ matrix.task == 'ruv' }}
+        run: |
+          R_LIBS="$TOOLS_LIB" "/opt/R/$R_VERSION/bin/Rscript" --vanilla .github/mofa-smoke/install-ruv-library.R . "$OUT" \
+            > "$OUT/install-ruv-library.log" 2>&1 || { tail -n 60 "$OUT/install-ruv-library.log"; exit 1; }
+          tail -n 25 "$OUT/install-ruv-library.log"
+
+      - name: Run (${{ matrix.id }})
+        env:
+          TASK: ${{ matrix.task }}
+          X1: ${{ matrix.x1 }}
+          X2: ${{ matrix.x2 }}
+          X3: ${{ matrix.x3 }}
+          X4: ${{ matrix.x4 }}
+        run: |
+          set -o pipefail
+          mkdir -p "$RES"
+          cp "$OUT/mofa-library-versions.tsv" "$RES/" || true
+          cp "$OUT/ruv-library-versions.tsv" "$RES/" 2>/dev/null || true
+          sha256sum .github/mofa-smoke/k151c.R .github/mofa-smoke/k151c-score.R .github/mofa-smoke/install-ruv-library.R \
+            .github/workflows/k151c-evidence.yml | tee "$RES/script-sha256.txt"
+          run_r() { "$BUNDLE/bin/Rscript" --vanilla .github/mofa-smoke/k151c.R "$@" 2>&1 | grep -vE '^Iteration [0-9]+:'; }
+          case "$TASK" in
+            seed) run_r "$RES" seed "$X1" "$X2" "$X3" "$X4" ;;
+            ruv) run_r "$RES" ruv "$X1" "$X2" "$X3" ;;
+            pin)
+              # numpy's dispatched AVX-512 targets that this CPU has (PN turns them off; empty where the CPU has none)
+              npy_off="$(env -i PATH=/usr/bin:/bin "$BUNDLE/python/bin/python3" -I -c 'from numpy.core._multiarray_umath import __cpu_features__ as f, __cpu_dispatch__ as d; print(" ".join(x for x in d if x.startswith("AVX512") and f.get(x)))')"
+              echo "numpy AVX-512 dispatch targets on this CPU: [$npy_off]" | tee "$RES/numpy-avx512.txt"
+              status=0
+              ( run_r "$RES/U" pin U "$X2" ) || status=1
+              ( export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_CORETYPE=Haswell
+                run_r "$RES/P" pin P "$X2" ) || status=1
+              ( export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_CORETYPE=Haswell
+                export NPY_DISABLE_CPU_FEATURES="$npy_off"
+                run_r "$RES/PN" pin PN "$X2" ) || status=1
+              exit "$status" ;;
+          esac
+
+      - name: Nothing token-like in the upload
+        if: ${{ !cancelled() }}
+        run: |
+          if grep -rlE 'ghp_|github_pat_|gho_|Bearer ' "$RES"; then echo "::error::token-like text in the result"; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: k151c-${{ matrix.id }}
+          path: ${{ runner.temp }}/result
+          retention-days: 30
+
+  score:
+    name: Assemble and score
+    needs: [plan, evidence]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: R (as the evidence jobs)
+        run: |
+          R_VERSION="$(sed -n 's/^  R_VERSION: "\(.*\)"$/\1/p' .github/workflows/distributable.yml)"
+          echo "R_VERSION=$R_VERSION" >> "$GITHUB_ENV"
+          R_VERSION="$R_VERSION" TOOLS_LIB="$RUNNER_TEMP/tools-lib" OUT="$RUNNER_TEMP/evidence" bash packaging/linux/build.sh r
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: k151c-*
+          path: ${{ runner.temp }}/jobs
+      - name: Score once per task present
+        run: |
+          sha256sum .github/mofa-smoke/k151c-score.R
+          status=0
+          for t in seed pin ruv; do
+            mkdir -p "$RUNNER_TEMP/by/$t"
+            for d in "$RUNNER_TEMP"/jobs/k151c-*"$t"*; do [ -d "$d" ] && mv "$d" "$RUNNER_TEMP/by/$t/"; done
+            if [ -n "$(ls -A "$RUNNER_TEMP/by/$t")" ]; then
+              "/opt/R/$R_VERSION/bin/Rscript" --vanilla .github/mofa-smoke/k151c-score.R "$t" "$RUNNER_TEMP/by/$t" \
+                docs/qa/workflow-execution/kit/kit-151 "$RUNNER_TEMP/score" || status=1
+              cat "$RUNNER_TEMP/score/$t-score.md" >> "$GITHUB_STEP_SUMMARY" || true
+            fi
+          done
+          exit "$status"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: score
+          path: ${{ runner.temp }}/score
+          retention-days: 30
