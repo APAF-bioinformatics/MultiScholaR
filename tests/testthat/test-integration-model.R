@@ -571,16 +571,6 @@ test_that("KIT-148: a 3,000-run sample match is kept in the store; the worker's 
     expect_identical(manager$.context$snapshot$exports$integration_mofa_model$parameters$sample_match_table, checked$table)
 })
 
-# KIT-148 item 2: the data handed to mofapy2 one data set at a time (`integrationRunMofapy2`), an internal switch that
-# is off by default; its model is shown equal to MOFA2's own hand-off on the MOFA2 lane (test-integration-mofa-model.R).
-test_that("KIT-148 item 2: the direct hand-off is off unless asked for, and only for MOFA2 1.22.0 with mofapy2 0.7.3", {
-    expect_identical(formals(integrationTrainMofa)$handoff, quote(getOption("MultiScholaR.integration_mofa_handoff", "run_mofa")))
-    expect_null(getOption("MultiScholaR.integration_mofa_handoff"))
-    expect_false(integrationMofaDirectHandoff("run_mofa"))
-    expect_false(integrationMofaDirectHandoff(NULL))
-    if (!requireNamespace("MOFA2", quietly = TRUE)) expect_false(integrationMofaDirectHandoff("direct"))
-})
-
 # KIT-148 (audit ENG-13): the store reads at most 10,000 rows and 64 columns at a time; the product's readers follow
 # that rule, so a study larger than the corpus (here 70 biological samples and 10,050 features) reads as a small one.
 test_that("KIT-148: 70 samples and 10,050 features are read in column blocks of 64 and row pages of 10,000", {
