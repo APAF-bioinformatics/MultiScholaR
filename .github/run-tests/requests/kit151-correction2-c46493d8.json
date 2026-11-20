@@ -1,0 +1,55 @@
+{
+  "requested_by": "KIT-151 second correction (granted, one defect: KIT-148 sample-match test): all integration files, base e8a2ac67 versus head; gate-off",
+  "label": "KIT-151 correction 2, head c46493d8 against base e8a2ac67",
+  "package_commit": "c46493d886dd4fc23e42f0c5c250a1b2090a1f26",
+  "base_commit": "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-corpus.R",
+    "test-integration-feature-selection.R",
+    "test-integration-gui.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-model.R",
+    "test-integration-mofa-model.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-outputs.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-partitioned-mofa.R",
+    "test-integration-record-mofa.R",
+    "test-integration-record.R",
+    "test-integration-results-mofa.R",
+    "test-integration-results.R",
+    "test-integration-sample-match.R",
+    "test-workflow-integration-input.R",
+    "test-e2e-test-mode-integration.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-operations.R",
+    "test-workflow-analysis-record.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+        "kit151-gate-off"
+      ],
+      "out": "kit151-gate-off",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
