@@ -1,14 +1,14 @@
 {
-  "label": "ruv06-lc",
+  "label": "ruv06",
   "package": "installed",
   "package_commit": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
   "tools_ref": "44b5f2195e355bb6e6efe1dae21905e30b81c26c",
-  "runs_core": 2,
-  "runs_stress": 2,
+  "runs_core": 0,
+  "runs_stress": 500,
   "cores": 4,
   "timeout_minutes": 300,
   "chunk": {
-    "s2": 1
+    "s2": 250
   },
   "arms": {
     "s1": "1,2,34,35,37,40",
@@ -17,10 +17,10 @@
     "s4": "1,2,35,40"
   },
   "cells": {
-    "s1": "C0,S3",
-    "s2": "C0,S3",
-    "s3": "C0,S3",
-    "s4": "C0,S3"
+    "s1": "S3",
+    "s2": "S3",
+    "s3": "S3",
+    "s4": "S3"
   },
   "share": "count,sweep"
 }

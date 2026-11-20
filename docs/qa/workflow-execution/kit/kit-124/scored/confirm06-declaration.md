@@ -129,3 +129,21 @@ No threshold, rule, workload, run count or seed is changed after any result is r
 - **Earlier artifacts expire** about 2026-12-18/19 (30 days): the lifecycle's C0 comparison with `confirm-p2c` and any
   S2 row comparison with run 44201244793 need them before then.
 - **Runners:** public repository, 4-core hosted runners, 20 concurrent jobs, 6 h per job; the counted run uses 5.
+
+## 10. Lifecycle record (2026-11-21, before the counted run)
+
+- Inert push 7e357f86: both workflows started (runs 44790983069, 44790983023) and stopped at their first step on the
+  placeholders, as intended; nothing computed.
+- Lifecycle `ruv06-lc`, run **44791180548** (commit e6508377): 10 simulator jobs, all success; every row `ok` (no
+  refusal, no crash); artifacts uploaded after the output scan. One job (S4 S3) spent 30 minutes in a library
+  installation step of the runner before the simulator ran (27 s); an infrastructure delay, not a failure.
+- Gate status 0: C0 arms 1 and 2 agree with the committed reference in every column of S1 to S4; S4's S3 agrees with
+  the laptop rows; the S3 cell of S1, S2 and S3 is "no reference" (as declared).
+- C0 rows (runs 1, 2) against `confirm-p2c` (run 44443281402), same seeds and arms: every rule-bearing value (status to
+  power) identical in S1 (arms 1, 2, 35, 37, 40; 20 rows), S2 (1, 2, 35, 40; 8), S3 (8) and S4 (16). Bias and rmse
+  identical in S3 and S4, and differ at relative 4e-13 (S1) and 1e-14 (S2): the cross-machine rounding of section 7 of
+  the confirmation round, inside M19's rule (relative 1e-6). The declaration's wording expected this in S2 only; S1
+  shows it too (not rule-bearing). The smaller arm set does not shift the streams.
+- Scoring of the lifecycle, run **44799035290** (`ruv06-lc-score`, aggregate.R 089d852c): success; `k124-cells.tsv`
+  holds the C0 and S3 rows of every arm in all four simulators (S2 from its ranges).
+- **Lifecycle passed.** The counted run `ruv06` follows with `params-ruv06.json` unchanged.
