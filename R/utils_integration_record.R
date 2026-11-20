@@ -187,9 +187,13 @@ integrationRecordTexts <- function() {
             "theta 0, %d iterations, started from the first two principal components scaled to standard deviation 0.0001,",
             "one thread, seed %d)."),
         # %d: biological samples.
-        methods_maps_caution = paste("These maps are pictures of the factors at %d biological samples: they depend on the",
-            "settings and the seed, the distances and cluster sizes on them are not interpretable, and they are not",
-            "evidence of groups; they are reproduced exactly only on the same computer."),
+        methods_maps_caution = paste("These maps are pictures of the factors at %d biological samples and are unstable at",
+            "this number: the distances and cluster sizes on them are not interpretable, they are not evidence of groups,",
+            "and they are reproduced exactly only on the same computer."),
+        # KIT-152 correction: what each map drawn depends on.
+        methods_maps_umap = "The UMAP map changes with the random seed and the number of neighbours.",
+        methods_maps_tsne = paste("The t-SNE map, started from the principal components, does not depend on the random seed",
+            "but changes with the perplexity."),
         # %s: the data sets.
         methods_maps_group_corrected = paste("In %s, unwanted variation had been removed with the groups as replicate sets,",
             "so groups separate on these maps by construction."),
@@ -638,7 +642,7 @@ integrationRecordOutputsTable <- function(block, texts = integrationRecordTexts(
         if (length(maps)) {
             samples <- as.integer(s(maps[[1L]]$samples))
             corrected <- as.character(unlist(block$claim_limit$group_corrected))
-            caution <- integrationMapCaution(list(claim = list(group_corrected = corrected)), samples)
+            caution <- integrationMapCaution(list(claim = list(group_corrected = corrected)), samples, names(maps))
             rows[[length(rows) + 1L]] <- c(texts[["out_caution"]], paste(caution, collapse = " "), "")
         }
     }
@@ -750,7 +754,8 @@ integrationMethodsOutputs <- function(outputs, claim, texts = integrationRecordT
                 as.integer(s(m$max_iter)), as.integer(s(m$seed))))
     }
     if (length(maps)) {
-        sentences <- c(sentences, sprintf(texts[["methods_maps_caution"]], as.integer(s(maps[[1L]]$samples))))
+        sentences <- c(sentences, sprintf(texts[["methods_maps_caution"]], as.integer(s(maps[[1L]]$samples))),
+            unname(texts[paste0("methods_maps_", intersect(c("umap", "tsne"), names(maps)))]))
         corrected <- as.character(unlist(claim$group_corrected))
         if (isTRUE(as.logical(s(claim$applies))) && length(corrected)) {
             sentences <- c(sentences, sprintf(texts[["methods_maps_group_corrected"]], paste(corrected, collapse = ", ")))

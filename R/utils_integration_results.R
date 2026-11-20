@@ -648,14 +648,18 @@ integrationPlotTopFeatureHeatmap <- function(results, factor, view, texts = inte
 }
 
 #' KIT-152 (SCI-15): the caution beside the maps, in words: always that they are a picture with the number of samples
-#' on them; where a data set was corrected with the groups as replicate sets, that groups separate by construction.
+#' on them; per map shown, what it depends on (UMAP: the seed and the neighbours; t-SNE, started from the principal
+#' components: the perplexity, not the seed); where a data set was corrected with the groups as replicate sets, that
+#' groups separate by construction.
 #' @param results `integrationResults()`'s value.
 #' @param samples The biological samples on the map.
+#' @param methods The maps shown (`umap`, `tsne`).
 #' @return A character vector of sentences.
 #' @noRd
-integrationMapCaution <- function(results, samples, texts = integrationGuiTexts()) {
+integrationMapCaution <- function(results, samples, methods, texts = integrationGuiTexts()) {
     corrected <- results$claim$group_corrected
     c(sprintf(texts[["maps_caution"]], as.integer(samples)),
+        unname(texts[paste0("maps_caution_", intersect(c("umap", "tsne"), methods))]),
         if (length(corrected)) sprintf(texts[["maps_caution_group_corrected"]], paste(corrected, collapse = ", ")))
 }
 
@@ -669,7 +673,7 @@ integrationPlotFactorMap <- function(results, method, texts = integrationGuiText
     s <- map$settings
     details <- if (method == "umap") sprintf(texts[["map_settings_umap"]], as.integer(s$n_neighbors), as.integer(s$seed)) else
         sprintf(texts[["map_settings_tsne"]], format(s$perplexity), as.integer(s$seed))
-    caution <- paste(strwrap(paste(integrationMapCaution(results, s$samples, texts), collapse = " "), 110L), collapse = "\n")
+    caution <- paste(strwrap(paste(integrationMapCaution(results, s$samples, method, texts), collapse = " "), 110L), collapse = "\n")
     ggplot2::ggplot(map$coordinates, ggplot2::aes(x = .data$map_1, y = .data$map_2, colour = .data$group)) +
         ggplot2::geom_point(size = 2.5) +
         ggplot2::labs(x = sprintf(texts[["plot_map_axis"]], name, 1L), y = sprintf(texts[["plot_map_axis"]], name, 2L),

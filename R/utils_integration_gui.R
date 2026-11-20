@@ -383,6 +383,9 @@ integrationGuiTexts <- function() {
         save_done = "Saved at %s: %d tables to %s and %d figures to %s.",
         # %s: the reason.
         save_refused = "The results were not saved. %s",
+        # KIT-152 correction. %d: the factors in the model.
+        factors_shown_reset = paste("Some factors picked under \"Factors shown\" are not in this model, which has %d factors,",
+            "so all factors are shown."),
         # KIT-152: the Results tab's settings (`integrationResultsParameterSpec()`), by the parameter's name as above.
         results_settings_heading = "Settings of the results",
         param_factors_shown = "Factors shown",
@@ -423,7 +426,8 @@ integrationGuiTexts <- function() {
         help_tsne_perplexity = paste("Three times the perplexity must be less than the number of biological samples minus 1",
             "(below 6.33 with 20 samples)."),
         param_map_seed = "Random seed for the maps",
-        help_map_seed = "On the same computer, the same factors, settings and seed give the same map.",
+        help_map_seed = paste("Used by the UMAP map: on the same computer, the same factors, settings and seed give the",
+            "same map. The t-SNE map starts from the factors' first two principal components and does not depend on the seed."),
         # KIT-152: the factor pair plot.
         pairs_heading = "Factors against each other",
         pairs_intro = paste("Each panel shows two factors; each point is one biological sample, coloured by its group. A",
@@ -468,8 +472,12 @@ integrationGuiTexts <- function() {
             "in the settings above to draw one."),
         # %d: the biological samples on the map.
         maps_caution = paste("These maps are a picture of the factors, not evidence of groups. With %d biological samples",
-            "they change with the settings and the seed, and the distances between points and the sizes of clusters on",
-            "them have no meaning. On another computer the same map can come out slightly different."),
+            "they are unstable, and the distances between points and the sizes of clusters on them have no meaning. On",
+            "another computer the same map can come out slightly different."),
+        # KIT-152 correction: what each map depends on, shown with that map only.
+        maps_caution_umap = "The UMAP map changes with the random seed and with the number of neighbours.",
+        maps_caution_tsne = paste("The t-SNE map starts from the factors' first two principal components, so it does not",
+            "depend on the random seed; it changes with the perplexity."),
         # %s: the data sets.
         maps_caution_group_corrected = paste("In %s, unwanted variation was removed with the groups as replicate sets, so",
             "the groups separate on these maps by construction."),

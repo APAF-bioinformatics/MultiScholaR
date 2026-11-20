@@ -108,8 +108,15 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
                 chosen_parameters <- integrationModelSettings(values, spec, texts, exclude = character())
                 value <- withWorkflowStateScope(manager, function()
                     hydrateSavedWorkflowEntity(manager$.context$store, model$reference)$value)
-                integrationResults(value, integrationImportedObject(manager), chosen_parameters, texts, manager = manager,
+                # KIT-152 correction: factors picked for an earlier model that this model lacks: all factors, said in words.
+                factors <- setdiff(names(value$factors), "biological_sample")
+                shown <- chosen_parameters$factors_shown
+                reset <- !identical(shown, "all") && !all(shown %in% factors)
+                if (reset) chosen_parameters$factors_shown <- "all"
+                out <- integrationResults(value, integrationImportedObject(manager), chosen_parameters, texts, manager = manager,
                     model_parameters = model$parameters)
+                if (reset) out$settings_note <- sprintf(texts[["factors_shown_reset"]], length(factors))
+                out
             }, error = function(error) structure(list(refusal = integrationRefusalText(error, texts)),
                 class = "integration_results_refused"))
         })
@@ -132,7 +139,7 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
                 known_factors(value$factors)
                 shiny::updateSelectInput(session, "param_factors_shown", choices = stats::setNames(c("all", value$factors),
                     c(texts[["choice_factors_shown_all"]], value$factors)),
-                    selected = shiny::isolate(input$param_factors_shown) %||% "all")
+                    selected = if (is.null(value$settings_note)) shiny::isolate(input$param_factors_shown) %||% "all" else "all")
             }
         })
         # The factor and data set the weights show: the chosen ones while they are the model's, else the first.
@@ -151,7 +158,8 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
                     texts = texts))
             }
             model <- workflow_data$integration_model
-            shiny::p(sprintf(texts[["results_model"]], format(model$trained_at, "%Y-%m-%d %H:%M")))
+            shiny::tagList(shiny::p(sprintf(texts[["results_model"]], format(model$trained_at, "%Y-%m-%d %H:%M"))),
+                if (!is.null(value$settings_note)) shiny::div(class = "alert alert-info", value$settings_note))
         })
         output$advisories <- shiny::renderUI({
             value <- results()
@@ -273,7 +281,7 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
             refusals <- lapply(Filter(function(map) !is.null(map$refusal), value$maps), function(map)
                 integrationRefusalUi(map$refusal, texts = texts))
             caution <- if (length(drawn)) shiny::div(class = "alert alert-warning",
-                lapply(integrationMapCaution(value, drawn[[1L]]$settings$samples, texts), shiny::p))
+                lapply(integrationMapCaution(value, drawn[[1L]]$settings$samples, names(drawn), texts), shiny::p))
             shiny::tagList(unname(refusals), caution)
         })
         map_plot <- function(method) {

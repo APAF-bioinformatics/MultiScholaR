@@ -295,6 +295,14 @@ test_that("KIT-152: a map is refused in plain words at settings invalid for the 
     expect_identical(conditionMessage(e), sprintf(texts[["map_refused_perplexity"]], "6.4", 20L, "6.33"))
     expect_identical(conditionMessage(refused(integrationFactorMap(values[1:10, ], factors, "tsne", p(tsne_perplexity = 5)))),
         sprintf(texts[["map_refused_perplexity"]], "5", 10L, "3"))
+    # The caution says, per map shown, what it depends on (KIT-152 correction): UMAP the seed, t-SNE not.
+    none <- list(claim = list(group_corrected = character()))
+    expect_identical(integrationMapCaution(none, 20L, "tsne"), unname(c(sprintf(texts[["maps_caution"]], 20L),
+        texts[["maps_caution_tsne"]])))
+    expect_identical(integrationMapCaution(none, 20L, c("umap", "tsne")), unname(c(sprintf(texts[["maps_caution"]], 20L),
+        texts[["maps_caution_umap"]], texts[["maps_caution_tsne"]])))
+    expect_identical(integrationMapCaution(list(claim = list(group_corrected = "proteomics")), 20L, "umap")[[3L]],
+        sprintf(texts[["maps_caution_group_corrected"]], "proteomics"))
     # One factor: no map.
     expect_identical(conditionMessage(refused(integrationFactorMap(values, "Factor1", "umap", p()))),
         sprintf(texts[["map_refused_factors"]], 1L))
@@ -423,5 +431,42 @@ test_that("KIT-152: the Results tab's settings change the results; the outputs a
         session$setInputs(param_umap = FALSE, param_tsne_perplexity = NA)
         expect_match(output$results_status$html, sprintf(texts[["setting_not_number"]], texts[["param_tsne_perplexity"]]),
             fixed = TRUE)
+    })
+})
+
+test_that("KIT-152: factors picked for an earlier model that a newer model lacks fall back to all factors, said in one line", {
+    paths <- intOutProject()
+    fixture <- intOutModel(paths)
+    texts <- integrationGuiTexts()
+    bus <- do.call(shiny::reactiveValues, omicWorkflowInitialBus(integrationGuiConfig()$shell))
+    shiny::isolate({
+        bus$state_manager <- fixture$manager
+        bus$integration_model <- fixture$model
+    })
+    shiny::testServer(mod_integration_results_server, args = list(workflow_data = bus, paths = paths), {
+        session$flushReact()
+        session$setInputs(param_factors_shown = "Factor5")
+        expect_identical(session$returned()$shown, "Factor5")
+        expect_false(grepl(sprintf(texts[["factors_shown_reset"]], 5L), output$results_status$html, fixed = TRUE))
+        # A newer model with four factors: Factor5 is not in it.
+        other <- runIntegrationModel(fixture$manager, list(num_factors = 4L), trainer = function(views, options) {
+            fit <- intOutTrainer()(views, options)
+            fit$factors <- fit$factors[, 1:4, drop = FALSE]
+            fit$weights <- lapply(fit$weights, function(w) w[, 1:4, drop = FALSE])
+            fit$r2_per_factor <- fit$r2_per_factor[1:4, , drop = FALSE]
+            fit
+        })
+        bus$integration_model <- list(reference = other$reference, parameters = list(), status = "computed", trained_at = Sys.time())
+        session$flushReact()
+        results <- session$returned()
+        expect_false(inherits(results, "integration_results_refused"))
+        expect_identical(results$shown, paste0("Factor", 1:4))
+        expect_identical(results$parameters$factors_shown, paste0("Factor", 1:4))
+        status <- gsub("&quot;", "\"", gsub("&#39;", "'", output$results_status$html, fixed = TRUE), fixed = TRUE)
+        expect_match(status, sprintf(texts[["factors_shown_reset"]], 4L), fixed = TRUE)
+        # Factors this model has stay as picked, with no note.
+        session$setInputs(param_factors_shown = c("Factor2", "Factor4"))
+        expect_identical(session$returned()$shown, c("Factor2", "Factor4"))
+        expect_null(session$returned()$settings_note)
     })
 })

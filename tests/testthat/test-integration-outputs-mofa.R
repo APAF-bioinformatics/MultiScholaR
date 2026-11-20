@@ -105,7 +105,8 @@ test_that("KIT-152: with MOFA2, the outputs and both maps on the corpus model, r
             changed <- !identical(other$coordinates, results$maps[[method]]$coordinates)
             message(sprintf("KIT-152 %s map with seed 7 instead of %d: %s", method, p$map_seed,
                 if (changed) "different" else "identical"))
-            if (method == "umap") expect_true(changed)
+            # UMAP changes with the seed; t-SNE, started from the principal components, does not (as the caution says).
+            expect_identical(changed, method == "umap", info = method)
         }
         # Refused in words at settings invalid for 20 samples.
         expect_identical(conditionMessage(tryCatch(integrationFactorMap(results$factor_values, results$factors, "tsne",
@@ -120,7 +121,10 @@ test_that("KIT-152: with MOFA2, the outputs and both maps on the corpus model, r
             integrationPlotTopFeatureHeatmap(results, "Factor1", "proteomics"))) {
             expect_s3_class(ggplot2::ggplot_build(plot), "ggplot_built")
         }
-        expect_match(output$maps_status$html, sprintf(texts[["maps_caution"]], 20L), fixed = TRUE)
+        caution <- gsub("&#39;", "'", output$maps_status$html, fixed = TRUE)
+        for (sentence in c(sprintf(texts[["maps_caution"]], 20L), texts[["maps_caution_umap"]], texts[["maps_caution_tsne"]])) {
+            expect_match(caution, sentence, fixed = TRUE)
+        }
         # Saved: the maps' tables and figures with the others.
         session$setInputs(save = 1)
         saved <- bus$integration_results
@@ -143,7 +147,8 @@ test_that("KIT-152: with MOFA2, the outputs and both maps on the corpus model, r
     message("KIT-152 methods paragraph:\n", methods)
     for (fragment in c(sprintf("drawn with uwot %s (15 neighbours", as.character(utils::packageVersion("uwot"))),
         sprintf("drawn with Rtsne %s (perplexity 5, exact computation", as.character(utils::packageVersion("Rtsne"))),
-        "not evidence of groups", sprintf(record_texts[["methods_top_features"]], 10L))) {
+        "not evidence of groups", sprintf(record_texts[["methods_top_features"]], 10L), record_texts[["methods_maps_umap"]],
+        record_texts[["methods_maps_tsne"]])) {
         expect_true(grepl(fragment, methods, fixed = TRUE), info = fragment)
     }
     # The Word report: the section, the maps' rows, the caution.
