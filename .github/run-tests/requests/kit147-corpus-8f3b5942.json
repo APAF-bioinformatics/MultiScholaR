@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-147: regenerate the tier-1 integration corpus as contract v2 (Parquet) on a runner, to be committed from the artifact",
+  "label": "KIT-147 corpus regeneration on kit-147-integration-parquet 8f3b5942",
+  "package_commit": "8f3b59427955faebabe1c8fa1bf255717ea5ced6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "tests/testdata/integration/compose_integration_corpus.R",
+      "args": [
+        "kit147-corpus"
+      ],
+      "out": "kit147-corpus",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
