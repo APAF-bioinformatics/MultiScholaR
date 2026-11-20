@@ -1590,12 +1590,36 @@ integrationStoppedBy <- function(iterations, maxiter) {
 }
 
 #' The declaration a model run takes (KIT-063 item A): the registry's, or with a sample match its declaration with
-#' `sample_match`. In process and on the worker alike.
+#' `sample_match`. In process and on the worker alike. KIT-151 (audit ENG-24): with MOFA2 training, the MOFA2, mofapy2
+#' and numpy versions are among the factors a saved model is looked up by, so a model saved before an upgrade of those
+#' is not reused.
 #' @param parameters The resolved parameters.
+#' @param software NULL (a stand-in trainer), or `integrationMofaSoftware()`.
 #' @noRd
-integrationMofaDeclaration <- function(parameters) {
-    if (is.null(parameters[["sample_match", exact = TRUE]])) return(workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$declaration)
-    integrationMofaOperation(match = TRUE)
+integrationMofaDeclaration <- function(parameters, software = NULL) {
+    declaration <- if (is.null(parameters[["sample_match", exact = TRUE]])) {
+        workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$declaration
+    } else {
+        integrationMofaOperation(match = TRUE)
+    }
+    if (!is.null(software)) declaration$factors <- c(declaration$factors, software)
+    declaration
+}
+
+#' The software a MOFA2 model depends on beyond the package build (KIT-151; audit ENG-24): the versions of MOFA2,
+#' mofapy2 and numpy, as lookup factors (`mofa2`, `mofapy2`, `numpy`; `unknown` when one cannot be read). Python is
+#' asked only when it is running (the capability probe has started it before a model is trained); nothing here starts it.
+#' @noRd
+integrationMofaSoftware <- function() {
+    running <- requireNamespace("reticulate", quietly = TRUE) &&
+        isTRUE(tryCatch(reticulate::py_available(initialize = FALSE), error = function(error) FALSE))
+    metadata <- if (running) tryCatch(reticulate::import("importlib.metadata"), error = function(error) NULL)
+    python_package <- function(name) {
+        if (is.null(metadata)) return("unknown")
+        tryCatch(as.character(metadata$version(name)), error = function(error) "unknown")
+    }
+    list(mofa2 = tryCatch(as.character(utils::packageVersion("MOFA2")), error = function(error) "unknown"),
+        mofapy2 = python_package("mofapy2"), numpy = python_package("numpy"))
 }
 
 #' The parameters an accepted model records: the declared ones, and the sample match with its table when one was given.
@@ -1670,7 +1694,7 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
                     "integration_mofa_unavailable")
             }
         }
-        declaration <- integrationMofaDeclaration(resolved)
+        declaration <- integrationMofaDeclaration(resolved, software = if (is.null(trainer)) integrationMofaSoftware())
         # KIT-148: a sample match is kept as a table of the store, and the model depends on it.
         match <- if (!is.null(resolved$sample_match_table)) list(integrationStoreSampleMatch(manager, resolved$sample_match_table))
         # A refused or failed training leaves no pending provenance for a later commit to take.
@@ -1707,7 +1731,8 @@ computeWorkflowIntegrationModelAction <- function(manager, request, variant) {
         integrationRefuse(sprintf("the integration model cannot be trained here: %s", capability$reason),
             "integration_mofa_unavailable")
     }
-    run <- runSavedOperation(manager, integrationMofaDeclaration(resolved), source, c(resolved, list(variant = variant)),
+    run <- runSavedOperation(manager, integrationMofaDeclaration(resolved, software = integrationMofaSoftware()), source,
+        c(resolved, list(variant = variant)),
         dependencies = if (isSavedWorkflowReference(match)) list(match) else list())
     # A product an earlier worker computed, whose action never completed, has no root yet (the omics handler's rule).
     if (identical(run$status, "hit")) rootWorkflowProduct(manager, run$reference, list(source))

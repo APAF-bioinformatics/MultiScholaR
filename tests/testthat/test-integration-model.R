@@ -806,3 +806,27 @@ test_that("KIT-151: center_groups is FALSE only with the per-feature z-score", {
     resolved <- integrationResolveMofaParameters(object, list(center_groups = FALSE, scaling = "feature_zscore"))
     expect_false(resolved$center_groups)
 })
+
+# KIT-151 (audit ENG-24): the MOFA2, mofapy2 and numpy versions are among what a saved model is looked up by, so a model
+# saved before an upgrade of one of them is trained again, not reused.
+test_that("KIT-151 (ENG-24): a saved model is not reused after an upgrade of MOFA2, mofapy2 or numpy", {
+    inputs <- intModelInputs()
+    manager <- newIntegrationStateOwner(file.path(inputs$root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(inputs$proteomics, inputs$lipidomics))
+    software <- list(mofa2 = "1.22.0", mofapy2 = "0.7.3", numpy = "1.26.4")
+    testthat::local_mocked_bindings(integrationTrainMofa = intModelFakeTrainer,
+        integrationMofaCapability = function() list(available = TRUE, reason = NA_character_),
+        integrationMofaSoftware = function() software, .package = "MultiScholaR")
+    first <- suppressWarnings(runIntegrationModel(manager))
+    expect_identical(first$status, "computed")
+    expect_identical(suppressWarnings(runIntegrationModel(manager))$status, "hit")
+    software$numpy <- "2.0.0"
+    upgraded <- suppressWarnings(runIntegrationModel(manager))
+    expect_identical(upgraded$status, "computed")
+    expect_false(identical(upgraded$reference$entity_id, first$reference$entity_id))
+    declaration <- integrationMofaDeclaration(list(), software)
+    expect_identical(declaration$factors[c("mofa2", "mofapy2", "numpy")], software)
+    # A stand-in trainer's model carries no software factor (nothing to upgrade).
+    expect_identical(integrationMofaDeclaration(list())$factors, list(product_schema = INTEGRATION_MODEL_SCHEMA))
+})
