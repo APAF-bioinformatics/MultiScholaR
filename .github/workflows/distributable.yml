@@ -801,12 +801,15 @@ jobs:
         timeout-minutes: 30
         run: |
           "DIAG git config core.autocrlf: '$(git config --show-origin core.autocrlf)'"
+          # windows-clean-run.ps1 runs in this session and empties PATH: the runner's Python is found first.
+          $python = (Get-Command python).Source
+          "DIAG runner python: $python"
           & packaging\verify\windows-clean-run.ps1 -Bundle "$env:RUNNER_TEMP\sb" -Script packaging\verify\parquet-diag.R -NoBundleArgument -Arguments $env:GITHUB_WORKSPACE, "$env:RUNNER_TEMP\pdiag" *>&1
           if ($LASTEXITCODE -ne 0) { "DIAG the R diagnostic exited $LASTEXITCODE" }
-          python -m pip install --no-cache-dir --quiet --target "$env:RUNNER_TEMP\pya" pyarrow
+          & $python -m pip install --no-cache-dir --quiet --target "$env:RUNNER_TEMP\pya" pyarrow
           $files = foreach ($f in 'samples.parquet', 'features_proteomics.parquet', 'matrix_proteomics.parquet') {
             "tests\testdata\integration\corpus\proteomics\$f"; "$env:RUNNER_TEMP\pdiag\fresh\proteomics\$f" }
-          python -s packaging\verify\parquet-meta.py "$env:RUNNER_TEMP\pya" @files
+          & $python -s packaging\verify\parquet-meta.py "$env:RUNNER_TEMP\pya" @files
 
       # ------------------------------------------------ stage full: the shell, the installer, the install
       - uses: actions/setup-node@v4
