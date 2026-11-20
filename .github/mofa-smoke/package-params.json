@@ -1,6 +1,6 @@
 {
-  "label": "k148-items23-1",
-  "package_commit": "d22fb3c1dd678d862574d20e64dda14ede9340ee",
+  "label": "k148-final-58ddd20b",
+  "package_commit": "58ddd20b8044dcb21c8f239624daf05e19376d88",
   "tests": [
     "test-integration-mofa-model.R",
     "test-integration-model-tab-mofa.R",
