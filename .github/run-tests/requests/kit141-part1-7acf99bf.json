@@ -1,0 +1,45 @@
+{
+  "requested_by": "KIT-141 part 1 correction pass: STRING test double argument renamed; base 2bc0c5f5 versus head 7acf99bf; failing-first on the new test file and legacy identity again",
+  "label": "KIT-141 part 1 correction, head 7acf99bf against base 2bc0c5f5",
+  "package_commit": "7acf99bf17db66529b6eb352c4f8d90d391ef8fa",
+  "base_commit": "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment.R",
+    "test-multiomics-enrich-shared.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+        "kit141-failing-first",
+        "test-integration-enrichment.R"
+      ],
+      "out": "kit141-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-141/legacy-identity.R",
+      "args": [
+        "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+        "kit141-legacy-identity"
+      ],
+      "out": "kit141-legacy-identity",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
