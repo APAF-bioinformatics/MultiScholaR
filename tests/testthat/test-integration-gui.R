@@ -531,8 +531,20 @@ intGuiDirectStore <- function(paths, views, .local_envir = parent.frame()) {
     manager
 }
 
-intGuiModelFields <- c("factors", "weights", "variance_explained", "variance_total", "elbo", "samples", "view_summary",
-    "shared_samples", "notes", "options", "model_file")
+intGuiModelFields <- c("factors", "variance_explained", "variance_total", "elbo", "samples", "view_summary",
+    "shared_samples", "notes", "options")
+
+# KIT-148: two model products of the same model in two stores: the inline tables identical, each data set's weights and
+# aligned values read from its own store identical, the model file's checksum identical.
+intGuiExpectSameModel <- function(manager, value, direct_manager, direct) {
+    for (name in intGuiModelFields) expect_identical(value[[name]], direct[[name]], info = name)
+    expect_identical(names(value$weights), names(direct$weights))
+    for (kind in c("weights", "aligned_values")) for (view in names(value$weights)) {
+        expect_identical(integrationModelViewTable(manager, value, kind, view),
+            integrationModelViewTable(direct_manager, direct, kind, view), info = paste(kind, view))
+    }
+    expect_identical(value$model_file[c("sha256", "size", "media_type")], direct$model_file[c("sha256", "size", "media_type")])
+}
 
 test_that("KIT-140: the Model tab's settings are built from the parameter table, provisional ones marked", {
     texts <- integrationGuiTexts()
@@ -619,9 +631,9 @@ test_that("KIT-140: the Model tab trains on the confirmed table, states the resu
         expect_identical(manager$.context$snapshot$exports$integration_mofa_model$reference, first$reference)
         value <- session$returned()$value
         # The same model as the model step called directly on the same import.
-        direct <- runIntegrationModel(intGuiDirectStore(project$paths, bus$integration_import$views),
-            bus$integration_alignment$parameters, trainer = intGuiTrainer())
-        for (name in intGuiModelFields) expect_identical(value[[name]], direct$value[[name]], info = name)
+        direct_manager <- intGuiDirectStore(project$paths, bus$integration_import$views)
+        direct <- runIntegrationModel(direct_manager, bus$integration_alignment$parameters, trainer = intGuiTrainer())
+        intGuiExpectSameModel(manager, value, direct_manager, direct$value)
         # What the tab states: training settled, the factors, the samples, the variance per data set, the checksum.
         everyone <- unique(unlist(counts$samples))
         shared <- Reduce(intersect, counts$samples)
@@ -814,9 +826,9 @@ test_that("KIT-140: on the managed worker the Model tab trains the same model as
         expect_identical(manager$.context$snapshot$exports$integration_mofa_model$parameters, managed$parameters)
         expect_identical(bus$tab_status$integration_model, "complete")
         value <- session$returned()$value
-        direct <- runIntegrationModel(intGuiDirectStore(project$paths, bus$integration_import$views),
-            bus$integration_alignment$parameters, trainer = intGuiTrainer())
-        for (name in intGuiModelFields) expect_identical(value[[name]], direct$value[[name]], info = name)
+        direct_manager <- intGuiDirectStore(project$paths, bus$integration_import$views)
+        direct <- runIntegrationModel(direct_manager, bus$integration_alignment$parameters, trainer = intGuiTrainer())
+        intGuiExpectSameModel(manager, value, direct_manager, direct$value)
         # The record lists the model accepted from the worker as it lists one trained in process.
         record <- buildWorkflowAnalysisRecord(manager)
         expect_true(validateWorkflowAnalysisRecord(record)$valid)

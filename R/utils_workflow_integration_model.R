@@ -492,6 +492,29 @@ integrationApplySampleMatch <- function(design, match) {
     design
 }
 
+#' Keep the user's sample match as a table of the integration store (KIT-148): its runs given another biological sample
+#' (`omic`, `run`, `biological_sample`), the canonical match whose sha256 is the model's parameter `sample_match`. A
+#' request to the managed worker carries this table's reference, not the table (a match of thousands of runs is beyond
+#' the request's 64 KiB); the model's product depends on it. The same match is the same table.
+#' @param manager The integration owner.
+#' @param match The canonical match (`integrationResolveSampleMatch()$table`).
+#' @return The table's reference.
+#' @noRd
+integrationStoreSampleMatch <- function(manager, match) {
+    withWorkflowStateScope(manager, function() saveWorkflowOwnedTable(manager$.context, data.frame(omic = as.character(match$omic),
+        run = as.character(match$run), biological_sample = as.character(match$biological_sample), stringsAsFactors = FALSE)))
+}
+
+#' The canonical sample match kept in the store (KIT-148; `integrationStoreSampleMatch`).
+#' @param manager The owner of the store.
+#' @param reference The table's reference.
+#' @return `list(omic, run, biological_sample)`; its sha256 is checked against `sample_match` when the parameters resolve.
+#' @noRd
+integrationStoredSampleMatch <- function(manager, reference) {
+    table <- withWorkflowStateScope(manager, function() materializeWorkflowTable(manager$.context, reference))
+    list(omic = as.character(table$omic), run = as.character(table$run), biological_sample = as.character(table$biological_sample))
+}
+
 #' Refuse the model when an imported input has changed on disk since the import (KIT-062): each recorded manifest
 #' must still be at its path with the recorded sha256.
 #' @param object An `IntegrationViewsData` with its `inputs` hydrated.
@@ -547,10 +570,12 @@ integrationAverageRuns <- function(values, key) {
 #' two groups, a view left without features.
 #' @param object An `IntegrationViewsData`, hydrated.
 #' @param parameters Resolved parameters (`integrationResolveMofaParameters`).
+#' @param prefix_rows KIT-148: name each view's rows `<view>:<feature_id>` when the view is read (the model's hand-off
+#'   names, unique across views), so that the hand-off makes no renamed copy; FALSE names them `<feature_id>`.
 #' @return `list(views, samples, view_summary, shared_samples, notes)`: the views as features x samples matrices in
 #'   the selected order with one column set, the aligned sample table, a summary row per view.
 #' @noRd
-integrationAlignViews <- function(object, parameters) {
+integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
     # KIT-063 item A: the user's sample match, when one is given (NULL: the design as saved).
     design <- integrationApplySampleMatch(object@design_matrix, parameters$sample_match_table)
     view_omic <- unlist(unname(lapply(object@inputs, function(entry) stats::setNames(rep(entry$omic, length(entry$views)),
@@ -564,7 +589,7 @@ integrationAlignViews <- function(object, parameters) {
         table <- object@views[[view]]
         values <- as.matrix(table[-1L])
         storage.mode(values) <- "double"
-        rownames(values) <- as.character(table[[1L]])
+        rownames(values) <- if (isTRUE(prefix_rows)) paste(view, table[[1L]], sep = ":") else as.character(table[[1L]])
         dropped <- 0L
         if (identical(parameters$internal_standards, "drop")) {
             standard <- integrationInternalStandards(object@features[[view]])
@@ -691,16 +716,119 @@ integrationMofaVersions <- function() {
         h5py = python_package("h5py"))
 }
 
+#' MOFA2's check that a trained factor follows each sample's overall level (MOFA2 1.22.0, `.quality_control` of a
+#' loaded model), on the data the model was trained with (KIT-148). MOFA2 runs the check only when the model file holds
+#' the training data; the model file no longer does (`save_data = FALSE`), so the same rule is applied here: per data
+#' set, the features centred on their mean when MOFA2 centred them (`center_groups`), the mean of each sample over the
+#' observed features, and its absolute correlation with each factor over the samples (pairwise complete); a factor
+#' above 0.75 in any data set is named. Scaling a data set by one number (`scale_views`) does not change a correlation.
+#' One data set is held at a time.
+#' @param views Named list of features x samples matrices as handed to MOFA2.
+#' @param factors Samples x factors (the trained model's, named by sample).
+#' @param center Whether MOFA2 centred the features (`center_groups`).
+#' @return MOFA2's warning text, or NULL when no factor follows the overall level.
+#' @noRd
+integrationMofaOverallLevelWarning <- function(views, factors, center) {
+    r <- vapply(views, function(m) {
+        if (isTRUE(center)) m <- m - rowMeans(m, na.rm = TRUE)
+        means <- colMeans(m, na.rm = TRUE)
+        abs(suppressWarnings(stats::cor(means, factors[colnames(m), , drop = FALSE], use = "pairwise.complete.obs")))[1L, ]
+    }, numeric(ncol(factors)))
+    r <- matrix(r, nrow = ncol(factors))
+    flagged <- which(rowSums(r > 0.75) > 0)
+    if (!length(flagged)) return(NULL)
+    # MOFA2 1.22.0's wording (QC.R), so that the Results tab reads it as it read MOFA2's own warning.
+    sprintf(paste("Factor(s) %s are strongly correlated with the average expression of features for at least one of",
+        "your omics. Such factors appear when there are differences in the total 'levels' between your samples,",
+        "*sometimes* because of poor normalisation in the preprocessing steps."), paste(flagged, collapse = ", "))
+}
+
+#' Whether the direct hand-off is used (KIT-148 item 2): asked for (`handoff = "direct"`, the internal option
+#' `MultiScholaR.integration_mofa_handoff`; the default is `run_mofa`), and the versions it is written for are the ones
+#' installed (MOFA2 1.22.0, mofapy2 0.7.3); otherwise MOFA2's own `run_mofa` hands the data over.
+#' @param handoff `run_mofa` or `direct`.
+#' @noRd
+integrationMofaDirectHandoff <- function(handoff) {
+    if (!identical(handoff, "direct") || !requireNamespace("MOFA2", quietly = TRUE) ||
+        !identical(as.character(utils::packageVersion("MOFA2")), "1.22.0")) return(FALSE)
+    mofapy2 <- tryCatch(as.character(reticulate::import("mofapy2")$version$`__version__`), error = function(error) NA_character_)
+    identical(mofapy2, "0.7.3")
+}
+
+#' Hand a prepared MOFA2 object to mofapy2 one data set at a time and train it (KIT-148 item 2; internal, off by
+#' default). MOFA2 1.22.0's `run_mofa` (its `.run_mofa_reticulate`) converts every data set to Python before it hands
+#' the list over, while its R copy of every data set is still held; here each data set is converted and its R copy
+#' released before the next, through the same mofapy2 0.7.3 entry point with the same arguments in the same order, so
+#' the model is the same. Written for those two versions only (`integrationMofaDirectHandoff`); no covariates (MEFISTO).
+#' @param holder An environment holding the prepared object as `object`; the object is released from it.
+#' @param outfile The model file; written without the training data.
+#' @return `outfile`, invisibly.
+#' @noRd
+integrationRunMofapy2 <- function(holder, outfile) {
+    if (!is.null(holder$object@covariates)) cli::cli_abort("the direct hand-off takes no covariates", class = "integration_refused")
+    mofa <- reticulate::import("mofapy2")
+    entry <- mofa$run$entry_point$entry_point()
+    data_options <- holder$object@data_options
+    entry$set_data_options(scale_views = data_options$scale_views, scale_groups = data_options$scale_groups,
+        center_groups = data_options$center_groups, use_float32 = data_options$use_float32)
+    samples <- holder$object@samples_metadata
+    entry$data_opts$samples_metadata <- reticulate::r_to_py(lapply(data_options$groups, function(g) samples[samples$group == g, ]))
+    features <- holder$object@features_metadata
+    entry$data_opts$features_metadata <- reticulate::r_to_py(unname(lapply(data_options$views,
+        function(m) features[features$view == m, ])))
+    one <- function(xs) if (length(xs) > 1) xs else list(xs)
+    samples_names <- reticulate::r_to_py(lapply(unname(lapply(holder$object@data[[1L]], colnames)), one))
+    features_names <- reticulate::r_to_py(lapply(unname(lapply(holder$object@data, function(x) rownames(x[[1L]]))), one))
+    data <- reticulate::r_to_py(list())
+    for (m in seq_along(holder$object@data)) {
+        groups <- reticulate::r_to_py(list())
+        for (g in seq_along(holder$object@data[[m]])) groups$append(reticulate::r_to_py(t(holder$object@data[[m]][[g]])))
+        data$append(groups)
+        # This data set is now mofapy2's; its R copy is released before the next one is converted.
+        holder$object@data[m] <- list(NULL)
+    }
+    entry$set_data_matrix(data = data, likelihoods = unname(holder$object@model_options$likelihoods),
+        views_names = reticulate::r_to_py(as.list(data_options$views)), groups_names = reticulate::r_to_py(as.list(data_options$groups)),
+        samples_names = samples_names, features_names = features_names)
+    model_options <- holder$object@model_options
+    entry$set_model_options(factors = model_options$num_factors, spikeslab_factors = model_options$spikeslab_factors,
+        spikeslab_weights = model_options$spikeslab_weights, ard_factors = model_options$ard_factors,
+        ard_weights = model_options$ard_weights)
+    training <- holder$object@training_options
+    entry$set_train_options(iter = training$maxiter, convergence_mode = training$convergence_mode,
+        dropR2 = training$drop_factor_threshold, startELBO = training$startELBO, freqELBO = training$freqELBO,
+        seed = training$seed, gpu_mode = training$gpu_mode, gpu_device = training$gpu_device, verbose = training$verbose,
+        outfile = training$outfile, weight_views = training$weight_views, save_interrupted = training$save_interrupted)
+    if (isTRUE(training$stochastic)) {
+        stochastic <- holder$object@stochastic_options
+        entry$set_stochastic_options(learning_rate = stochastic$learning_rate, forgetting_rate = stochastic$forgetting_rate,
+            batch_size = stochastic$batch_size, start_stochastic = stochastic$start_stochastic)
+    }
+    holder$object <- NULL
+    data <- NULL
+    reclaimWorkflowMemory()
+    entry$build()
+    entry$run()
+    entry$save(outfile, save_data = FALSE)
+    invisible(outfile)
+}
+
 #' Train MOFA2 as the proven lane does (KIT-060 status 2026-11-19, run 44423980807): `create_mofa` on the views,
 #' the default data, model and training options with the declared ones set, `prepare_mofa`, `run_mofa(use_basilisk =
-#' FALSE)` (a fall-back to basilisk is refused: the bundle's Python must be the one used), then the trained model
-#' loaded from its file.
+#' FALSE)` (a fall-back to basilisk is refused: the bundle's Python must be the one used). KIT-148: the model file is
+#' written without the training data (`save_data = FALSE`; the aligned values are kept in the project's store instead),
+#' the model `run_mofa` loads is the one used (one load, not two), the R copy MOFA2 made for the hand-off is released
+#' after training, and MOFA2's overall-level check, which needs the training data, is applied to the views here
+#' (`integrationMofaOverallLevelWarning`), its warning kept where MOFA2 would have given it.
 #' @param views Named list of features x samples matrices (feature names unique across views).
 #' @param options `integrationMofaOptions()`.
+#' @param handoff KIT-148 item 2 (internal): `run_mofa` (the default) hands the data over through MOFA2's `run_mofa`;
+#'   `direct` one data set at a time through mofapy2's entry point (`integrationRunMofapy2`; MOFA2 1.22.0 and mofapy2
+#'   0.7.3 only, `run_mofa` otherwise), the same model; then the model is loaded from its file as `run_mofa` loads it.
 #' @return `list(factors, weights, r2_per_factor (factors x views), r2_total, elbo, iterations, options, versions,
 #'   messages, model_file)`.
 #' @noRd
-integrationTrainMofa <- function(views, options) {
+integrationTrainMofa <- function(views, options, handoff = getOption("MultiScholaR.integration_mofa_handoff", "run_mofa")) {
     object <- MOFA2::create_mofa(views)
     data_options <- MOFA2::get_default_data_options(object)
     data_options$scale_views <- options$scale_views
@@ -716,12 +844,23 @@ integrationTrainMofa <- function(views, options) {
     training_options$verbose <- FALSE
     object <- MOFA2::prepare_mofa(object, data_options = data_options, model_options = model_options,
         training_options = training_options)
+    reclaimWorkflowMemory()
     outfile <- tempfile("integration-mofa-", fileext = ".hdf5")
     on.exit(unlink(outfile), add = TRUE)
-    # Kept, not dropped: MOFA2's messages and warnings are returned with the model.
+    # Kept, not dropped: MOFA2's messages and warnings are returned with the model. KIT-063: they include the checks
+    # MOFA2 makes when `run_mofa` loads the trained model, for the Results tab.
     messages <- character()
-    withCallingHandlers(
-        MOFA2::run_mofa(object, outfile = outfile, save_data = TRUE, use_basilisk = FALSE),
+    direct <- integrationMofaDirectHandoff(handoff)
+    model <- withCallingHandlers(
+        if (direct) {
+            holder <- new.env(parent = emptyenv())
+            holder$object <- object
+            object <- NULL
+            integrationRunMofapy2(holder, outfile)
+            MOFA2::load_model(outfile)
+        } else {
+            MOFA2::run_mofa(object, outfile = outfile, save_data = FALSE, use_basilisk = FALSE)
+        },
         message = function(m) {
             messages <<- c(messages, trimws(conditionMessage(m)))
             invokeRestart("muffleMessage")
@@ -730,18 +869,20 @@ integrationTrainMofa <- function(views, options) {
             messages <<- c(messages, paste("WARNING:", trimws(conditionMessage(w))))
             invokeRestart("muffleWarning")
         })
+    object <- NULL
+    reclaimWorkflowMemory()
     if (any(grepl("Setting use_basilisk = TRUE", messages, fixed = TRUE))) {
         integrationRefuse("MOFA2 could not use the configured Python with mofapy2 and fell back to basilisk; the model is not trained",
             "integration_mofa_unavailable")
     }
-    # KIT-063: MOFA2 checks the trained model when it loads it (for example a factor that follows each sample's overall
-    # level); those warnings are kept with the model, for the Results tab, rather than left to the console. A warning
-    # already kept from run_mofa is not kept twice. Nothing else of the loading changes.
-    model <- withCallingHandlers(MOFA2::load_model(outfile), warning = function(w) {
-        text <- paste("WARNING:", trimws(conditionMessage(w)))
-        if (!text %in% messages) messages <<- c(messages, text)
-        invokeRestart("muffleWarning")
-    })
+    # KIT-148: MOFA2's overall-level check, placed where its loading gave it (before the correlated-factors check, the
+    # last of its checks).
+    overall <- integrationMofaOverallLevelWarning(views, MOFA2::get_factors(model)[[1L]], options$center_groups)
+    if (!is.null(overall) && !paste("WARNING:", overall) %in% messages) {
+        at <- grep("WARNING: The model contains highly correlated factors", messages, fixed = TRUE)
+        messages <- if (length(at)) append(messages, paste("WARNING:", overall), after = at[[1L]] - 1L) else
+            c(messages, paste("WARNING:", overall))
+    }
     variance <- MOFA2::get_variance_explained(model)
     r2 <- variance$r2_per_factor[[1L]]
     if (all(rownames(r2) %in% names(views))) r2 <- t(r2)
@@ -755,25 +896,43 @@ integrationTrainMofa <- function(views, options) {
             sha256 = digest::digest(file = outfile, algo = "sha256"), size = file.size(outfile)))
 }
 
-#' The model's saved product: the factors, the weights, the variance explained per view and factor, the ELBO trace
-#' summary, the versions and options, the aligned sample table and the view summary (KIT-062).
-#' @param aligned `integrationAlignViews()`'s value.
-#' @param fit The trainer's value (`integrationTrainMofa()`'s form), on views whose features are `<view>:<feature_id>`.
+# KIT-148: the model product v2. The small tables are kept in the product itself; each data set's weights and the values
+# handed to MOFA2 are tables of the integration store (one per data set, read by page); the model file is an entity of
+# its own. A reopened store refuses data frames among the head's roots, so the head keeps only the product's reference.
+INTEGRATION_MODEL_SCHEMA <- "multischolar.integration_mofa_model.v2"
+
+#' The model's saved product (KIT-062; KIT-148 v2): `schema`; inline the factors (`biological_sample`, then one column
+#' per factor), the variance explained per factor and data set and in all per data set, the ELBO trace summary, the
+#' aligned sample table and data set summary, the shared samples, notes, MOFA2's options, versions and messages; per data
+#' set (named by data set, in the model's order) a table reference in `weights` (`feature_id`, then one column per
+#' factor) and in `aligned_values` (`feature_id`, then one double column per biological sample in the factors' order:
+#' the values handed to MOFA2, before MOFA2 centres and scales them), both with the data set's model features in one
+#' order; and `model_file` (`reference` to the model file's own entity, `sha256`, `size`, `media_type`). Each data set's
+#' tables are written one data set at a time.
+#' @param aligned `integrationAlignViews()`'s value, its rows named `<view>:<feature_id>`.
+#' @param fit The trainer's value (`integrationTrainMofa()`'s form), on those views.
+#' @param store The operation's store handle (`store$table`, `store$product`).
 #' @noRd
-integrationModelProduct <- function(aligned, fit) {
+integrationModelProduct <- function(aligned, fit, store) {
     factors <- fit$factors
     factor_table <- data.frame(biological_sample = rownames(factors), factors, check.names = FALSE,
         stringsAsFactors = FALSE, row.names = NULL)
-    weights <- do.call(rbind, lapply(names(aligned$views), function(view) {
-        w <- fit$weights[[view]]
-        data.frame(view = view, feature_id = substring(rownames(w), nchar(view) + 2L), w, check.names = FALSE,
-            stringsAsFactors = FALSE, row.names = NULL)
-    }))
+    table <- function(m, view) data.frame(feature_id = substring(rownames(m), nchar(view) + 2L), m, check.names = FALSE,
+        stringsAsFactors = FALSE, row.names = NULL)
+    weights <- list()
+    values <- list()
+    for (view in names(aligned$views)) {
+        weights[[view]] <- store$table(table(fit$weights[[view]], view))
+        values[[view]] <- store$table(table(aligned$views[[view]], view))
+    }
     r2 <- fit$r2_per_factor
     variance <- data.frame(factor = rep(rownames(r2), times = ncol(r2)), view = rep(colnames(r2), each = nrow(r2)),
         r2_percent = as.vector(r2), stringsAsFactors = FALSE)
     elbo <- fit$elbo[is.finite(fit$elbo)]
-    list(schema = "multischolar.integration_mofa_model.v1", factors = factor_table, weights = weights,
+    file <- fit$model_file
+    file_reference <- store$product(list(bytes = file$bytes %||% raw(0), sha256 = file$sha256 %||% NA_character_,
+        size = file$size %||% NA_real_), "model_file", "integration.mofa_model_file")
+    list(schema = INTEGRATION_MODEL_SCHEMA, factors = factor_table, weights = weights, aligned_values = values,
         variance_explained = variance,
         variance_total = data.frame(view = names(fit$r2_total), r2_percent = unname(as.numeric(fit$r2_total)),
             stringsAsFactors = FALSE),
@@ -782,7 +941,110 @@ integrationModelProduct <- function(aligned, fit) {
             trace = elbo),
         samples = aligned$samples, view_summary = aligned$view_summary, shared_samples = aligned$shared_samples,
         notes = aligned$notes, options = fit$options, versions = fit$versions, messages = fit$messages,
-        model_file = fit$model_file)
+        model_file = list(reference = file_reference, sha256 = file$sha256 %||% NA_character_, size = file$size %||% NA_real_,
+            media_type = "application/x-hdf5"))
+}
+
+#' Check that a value is a model product v2 (KIT-148), refused in words otherwise (`integration_model_outdated`).
+#' @noRd
+integrationAssertModelProduct <- function(value) {
+    if (!is.list(value) || !identical(value$schema, INTEGRATION_MODEL_SCHEMA)) {
+        integrationRefuse("the integration model was saved in an earlier form by a development build; train it again",
+            "integration_model_outdated")
+    }
+    invisible(value)
+}
+
+#' The table reference of one data set's weights or aligned values in a model product (KIT-148).
+#' @param value The model product (v2).
+#' @param kind `weights` or `aligned_values`.
+#' @param view The data set.
+#' @noRd
+integrationModelTableReference <- function(value, kind = c("weights", "aligned_values"), view) {
+    kind <- match.arg(kind)
+    integrationAssertModelProduct(value)
+    reference <- value[[kind]][[view, exact = TRUE]]
+    if (!isWorkflowTableReference(reference)) {
+        integrationRefuse(sprintf("the integration model has no %s table for the data set %s", kind, view),
+            "integration_model_outdated")
+    }
+    reference
+}
+
+#' One data set's weights or aligned values of a model product, whole (KIT-148): one data set is read.
+#' @param manager The owner of the store that holds the model.
+#' @param value The model product (v2).
+#' @param kind `weights` or `aligned_values`.
+#' @param view The data set.
+#' @return `data.frame(feature_id, ...)`: one column per factor (weights) or per biological sample (aligned values).
+#' @noRd
+integrationModelViewTable <- function(manager, value, kind, view) {
+    reference <- integrationModelTableReference(value, kind, view)
+    withWorkflowStateScope(manager, function() materializeWorkflowTable(manager$.context, reference))
+}
+
+#' One page of rows of a data set's weights or aligned values (KIT-148): rows `offset + 1` to `offset + limit` in the
+#' model's feature order, every column. The tables' layout: one row per model feature of the data set, `feature_id`
+#' first, then one double column per factor (weights) or per biological sample (aligned values; a study may have
+#' hundreds). The store's read rule is at most 10,000 rows and 64 columns per read (`readSavedWorkflowTable`), so a page
+#' is at most 10,000 rows and is read in blocks of at most 64 columns, bound in column order.
+#' @param manager,value,kind,view As `integrationModelViewTable()`.
+#' @param offset Rows skipped (zero-based position of the page's first row).
+#' @param limit Rows read (at most 10,000).
+#' @return The page, a data frame (automatic row names).
+#' @noRd
+integrationModelTablePage <- function(manager, value, kind, view, offset = 0L, limit = 10000L) {
+    reference <- integrationModelTableReference(value, kind, view)
+    withWorkflowStateScope(manager, function() {
+        store <- manager$.context$store
+        scope <- newWorkflowTableReadScope(store, reference)
+        on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
+        columns <- scope$metadata$columns
+        blocks <- split(columns, ceiling(seq_along(columns) / 64L))
+        parts <- lapply(blocks, function(block) {
+            part <- readSavedWorkflowTable(store, reference, block, offset = offset, limit = limit, scope = scope)$data
+            as.list(part)
+        })
+        page <- as.data.frame(stats::setNames(do.call(c, unname(parts)), columns), stringsAsFactors = FALSE,
+            check.names = FALSE, optional = TRUE)
+        page
+    })
+}
+
+#' Every data set's weights of a model product as one table (KIT-148): `view`, `feature_id`, one column per factor,
+#' the data sets in the model's order, read one at a time (the form of the product v1's `weights`).
+#' @noRd
+integrationModelWeights <- function(manager, value) {
+    integrationAssertModelProduct(value)
+    tables <- lapply(names(value$weights), function(view) {
+        w <- integrationModelViewTable(manager, value, "weights", view)
+        data.frame(view = rep(view, nrow(w)), w, check.names = FALSE, stringsAsFactors = FALSE, row.names = NULL)
+    })
+    out <- do.call(rbind, tables)
+    rownames(out) <- NULL
+    out
+}
+
+#' The model file's bytes (KIT-148): the HDF5 MOFA2 wrote, without the training data, from its own entity.
+#' @noRd
+integrationModelFileBytes <- function(manager, value) {
+    integrationAssertModelProduct(value)
+    reference <- value$model_file$reference
+    if (!isSavedWorkflowReference(reference)) {
+        integrationRefuse("the integration model has no saved model file", "integration_model_outdated")
+    }
+    withWorkflowStateScope(manager, function() hydrateSavedWorkflowEntity(manager$.context$store, reference)$value$bytes)
+}
+
+#' A model product as the comparison and the replay hold it outside its store (KIT-148): the inline tables as they
+#' are, `weights` as one table (`integrationModelWeights()`), `model_file` without its reference; no table reference is
+#' left in it, so it stays readable once the store is closed.
+#' @noRd
+integrationModelComparable <- function(manager, value) {
+    value$weights <- integrationModelWeights(manager, value)
+    value$aligned_values <- NULL
+    value$model_file$reference <- NULL
+    value
 }
 
 #' The MOFA2 model declaration (KIT-062): whole matrix, on the inputs state, product only. Its identity is the state's
@@ -797,17 +1059,18 @@ integrationMofaOperation <- function(match = FALSE) {
         fields = c("views", "features", "design_matrix", "inputs"), unit = "whole_matrix", output_class = NULL,
         parameters = c(integrationMofaParameterNames(), if (isTRUE(match)) "sample_match"),
         product_type = "integration.mofa_model",
+        # KIT-148: the product's form is part of what a saved model is looked up by, so a model saved in the earlier
+        # form (v1) is not reused.
+        factors = list(product_schema = INTEGRATION_MODEL_SCHEMA),
         kernel = function(object, parameters, store) {
             resolved <- integrationResolveMofaParameters(object, parameters)
-            aligned <- integrationAlignViews(object, resolved)
+            # KIT-148: the rows carry the hand-off names (`<view>:<feature_id>`) from the read, so the aligned views are
+            # handed to the trainer as they are, with no renamed copy.
+            aligned <- integrationAlignViews(object, resolved, prefix_rows = TRUE)
             trainer <- parameters[["trainer", exact = TRUE]] %||% integrationTrainMofa
-            prefixed <- lapply(names(aligned$views), function(view) {
-                m <- aligned$views[[view]]
-                rownames(m) <- paste(view, rownames(m), sep = ":")
-                m
-            })
-            names(prefixed) <- names(aligned$views)
-            integrationModelProduct(aligned, trainer(prefixed, integrationMofaOptions(resolved)))
+            fit <- trainer(aligned$views, integrationMofaOptions(resolved))
+            reclaimWorkflowMemory()
+            integrationModelProduct(aligned, fit, store)
         })
 }
 
@@ -885,9 +1148,11 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
             }
         }
         declaration <- integrationMofaDeclaration(resolved)
+        # KIT-148: a sample match is kept as a table of the store, and the model depends on it.
+        match <- if (!is.null(resolved$sample_match_table)) list(integrationStoreSampleMatch(manager, resolved$sample_match_table))
         # A refused or failed training leaves no pending provenance for a later commit to take.
-        run <- withCallingHandlers(runSavedOperation(manager, declaration, source, c(resolved, list(trainer = trainer))),
-            error = function(error) clearWorkflowStepProvenance(manager))
+        run <- withCallingHandlers(runSavedOperation(manager, declaration, source, c(resolved, list(trainer = trainer)),
+            dependencies = match %||% list()), error = function(error) clearWorkflowStepProvenance(manager))
         acceptIntegrationModel(manager, source, run, resolved, confirmation)
         run
     })
@@ -898,20 +1163,27 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
 #' the worker's own process (the worker may not reach the Python the app reaches). The product commits no state; the
 #' app accepts it on the head (`acceptIntegrationModel`) when the action is delivered, as in process.
 #' @param manager The worker's reopened integration store, inside its state scope.
-#' @param request The worker request (`input_references$state`, `parameters`).
+#' @param request The worker request (`input_references$state`, `parameters`; a sample match as its table's reference,
+#'   `integrationModelPrecheck()$request`).
 #' @param variant Unused (one variant, `whole`).
 #' @return The completion value: the source's checkpoint, the product's reference and the run's status (computed or hit).
 #' @noRd
 computeWorkflowIntegrationModelAction <- function(manager, request, variant) {
     source <- request$input_references$state
     object <- readWorkflowExecutionComponents(manager, source, fields = "inputs")
-    resolved <- integrationResolveMofaParameters(object, request$parameters)
+    # KIT-148: the request carries the sample match as the reference of its table in the store; it is read here and
+    # checked against its sha256 (`sample_match`) as any match is.
+    parameters <- request$parameters
+    match <- parameters[["sample_match_table", exact = TRUE]]
+    if (isSavedWorkflowReference(match)) parameters$sample_match_table <- integrationStoredSampleMatch(manager, match)
+    resolved <- integrationResolveMofaParameters(object, parameters)
     capability <- integrationMofaCapability()
     if (!isTRUE(capability$available)) {
         integrationRefuse(sprintf("the integration model cannot be trained here: %s", capability$reason),
             "integration_mofa_unavailable")
     }
-    run <- runSavedOperation(manager, integrationMofaDeclaration(resolved), source, resolved)
+    run <- runSavedOperation(manager, integrationMofaDeclaration(resolved), source, resolved,
+        dependencies = if (isSavedWorkflowReference(match)) list(match) else list())
     # A product an earlier worker computed, whose action never completed, has no root yet (the omics handler's rule).
     if (identical(run$status, "hit")) rootWorkflowProduct(manager, run$reference, list(source))
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = run$reference,

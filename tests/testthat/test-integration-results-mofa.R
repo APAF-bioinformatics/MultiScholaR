@@ -94,7 +94,7 @@ test_that("KIT-063: an uploaded match, a MOFA2 model and its results on the corp
     message(sprintf("KIT-063 training with the uploaded match: %d iterations, %.1f s; model sha256 %s", value$elbo$iterations,
         as.numeric(difftime(Sys.time(), started, units = "secs")), value$model_file$sha256))
     # The match restores the corpus: the stored double-precision result within 1e-5 relative.
-    tables <- list(factors = value$factors, weights = value$weights, variance_explained = value$variance_explained)
+    tables <- list(factors = value$factors, weights = integrationModelWeights(manager, value), variance_explained = value$variance_explained)
     for (name in names(tables)) {
         stored <- intE2eStored(name)
         numeric <- names(stored)[vapply(stored, is.numeric, logical(1))]

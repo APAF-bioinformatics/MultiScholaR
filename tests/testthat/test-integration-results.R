@@ -154,7 +154,7 @@ test_that("KIT-063: the results are the stored model's, with display names, an i
     paths <- intResProject()
     fixture <- intResModel(paths)
     value <- fixture$run$value
-    results <- integrationResults(value, fixture$object)
+    results <- integrationResults(value, fixture$object, manager = fixture$manager)
     factors <- paste0("Factor", 1:5)
     expect_identical(results$factors, factors)
     expect_identical(results$views, unique(intResStored("variance_explained")$view))
@@ -206,7 +206,7 @@ test_that("KIT-063: MOFA2's warnings are shown in plain words; D10 withholds the
     paths <- intResProject()
     fixture <- intResModel(paths, messages = c("Checking data options...", intResOverallLevel, "WARNING: something else"))
     texts <- integrationGuiTexts()
-    results <- integrationResults(fixture$run$value, fixture$object)
+    results <- integrationResults(fixture$run$value, fixture$object, manager = fixture$manager)
     kinds <- vapply(results$advisories, `[[`, "", "kind")
     expect_identical(kinds, c("overall_level", "other"))
     expect_identical(results$advisories[[1L]]$sentence, sprintf(texts[["advisory_overall_level"]], "Factor2"))
@@ -228,7 +228,7 @@ test_that("KIT-063: MOFA2's warnings are shown in plain words; D10 withholds the
     inputs$proteomics$manifest$matrix_role <- "corrected"
     inputs$proteomics$manifest$correction <- list(method = "RUVIII_C_Varying", replicate_structure = "group", ruv_k = 2L)
     object@inputs <- inputs
-    corrected <- integrationResults(fixture$run$value, object)
+    corrected <- integrationResults(fixture$run$value, object, manager = fixture$manager)
     expect_identical(corrected$claim$group_corrected, "proteomics")
     expect_true(all(corrected$association$status == "not_tested"))
     expect_true(all(is.na(corrected$association$p_value)) && all(is.na(corrected$association$p_adjusted)))
@@ -329,7 +329,7 @@ test_that("KIT-063: a figure the device did not write stops the save by name, in
     paths <- intResProject()
     fixture <- intResModel(paths)
     texts <- integrationGuiTexts()
-    results <- integrationResults(fixture$run$value, fixture$object)
+    results <- integrationResults(fixture$run$value, fixture$object, manager = fixture$manager)
     staged <- list(mofa_tables_dir = withr::local_tempdir(), mofa_plots_dir = withr::local_tempdir())
     testthat::local_mocked_bindings(ggsave = function(filename, ...) invisible(filename), .package = "ggplot2")
     expect_error(integrationWriteResults(results, staged), class = "workflow_figure_unwritten", regexp = "were not written")
