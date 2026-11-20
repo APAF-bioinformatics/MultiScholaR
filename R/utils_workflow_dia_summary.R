@@ -61,7 +61,8 @@ protSummaryIntegrationWrite <- function(workflowData, path, object = NULL, sourc
       if (is.null(source)) return(FALSE)
       writeIntegrationInput(dirname(path), source$manifest, source$samples,
         matrices = list(proteomics = source$matrix),
-        features = list(proteomics = protIntegrationInputFeatures(source$matrix$feature_id, annotation)))
+        features = list(proteomics = protIntegrationInputFeatures(source$matrix$feature_id, annotation)),
+        corrected = if (!is.null(source$corrected)) list(proteomics = source$corrected) else list())
       TRUE
     })
   }
@@ -98,10 +99,13 @@ protIntegrationInputLineage <- function(manager, until) {
 #' `ruv_corrected` on DIA_LIMPA), never a name kept in the history from an earlier run. Its matrix is the state's
 #' protein table, except on `ruv_covariates`, whose table is uncorrected: there the RUV-adjusted product. The role is
 #' `corrected` when the lineage's normalisation or RUV state is an RUV state with RUV applied, else `normalised`; on
-#' DIA_LIMPA a `correlation_filtered` final is always `normalised` (its input is the pre-RUV matrix).
+#' DIA_LIMPA a `correlation_filtered` final is always `normalised` (its input is the pre-RUV matrix). KIT-153 (INT-23):
+#' where RUV was applied, that matrix is the `corrected` one, and `matrix` is the normalised matrix the RUV step read
+#' (`protIntegrationInputRuvInput`) on its proteins and samples; the manifest's role is always `normalised`.
 #' @param manager The session's owner, inside its state scope.
-#' @return `list(manifest, samples, matrix)` (the matrix's first column `feature_id`, its samples in the design's
-#'   order), or NULL when the lineage has no final state or it is stored as a whole legacy object.
+#' @return `list(manifest, samples, matrix, corrected)` (each matrix's first column `feature_id`, its samples in the
+#'   design's order; `corrected` NULL without RUV), or NULL when the lineage has no final state or it is stored as a
+#'   whole legacy object.
 #' @noRd
 protIntegrationInputSource <- function(manager) {
   ruvStates <- c("ruv_corrected", "ruv_covariates")
@@ -143,8 +147,24 @@ protIntegrationInputSource <- function(manager) {
   rownames(design) <- NULL
   matrix <- data.frame(feature_id = as.character(matrix[[slots$protein_id_column]]), matrix[samples],
     check.names = FALSE, stringsAsFactors = FALSE)
+  # KIT-153 (INT-23): after RUV the matrix above is the corrected one; the matrix written as the data set's own is the
+  # normalised matrix the RUV step read (`protIntegrationInputRuvInput`), on the corrected matrix's proteins and samples.
+  corrected <- NULL
+  normalised <- list(name = final, entity_id = reference$entity_id, sha256 = reference$payload$sha256)
+  if (length(ruvState)) {
+    input <- protIntegrationInputRuvInput(manager, lineage[[ruvState]])
+    uncorrected <- readDIAExecutionComponents(manager, input$reference,
+      fields = c("protein_quant_table", "design_matrix"))@protein_quant_table
+    uncorrected <- data.frame(feature_id = as.character(uncorrected[[slots$protein_id_column]]),
+      uncorrected[setdiff(names(uncorrected), slots$protein_id_column)], check.names = FALSE, stringsAsFactors = FALSE)
+    corrected <- matrix
+    matrix <- integrationInputUncorrectedOn(uncorrected, corrected, "proteomics")
+    uncorrected <- NULL
+    normalised <- list(name = input$name, entity_id = input$reference$entity_id, sha256 = input$reference$payload$sha256)
+  }
   manifest <- list(omic_type = "proteomics", workflow = workflow,
-    matrix_role = if (length(ruvState)) "corrected" else "normalised", scale = "log2",
+    matrix_role = "normalised", scale = "log2",
+    normalisation = list(method = protIntegrationInputNormMethod(manager), source = normalised),
     correction = if (length(ruvState)) protIntegrationInputCorrection(manager, ruvState, design) else NULL,
     source_state = list(name = final, entity_id = reference$entity_id, sha256 = reference$payload$sha256,
       protein_id_column = slots$protein_id_column,
@@ -154,7 +174,41 @@ protIntegrationInputSource <- function(manager) {
     # KIT-062: the biological sample's column, by the rule the other omics' writers use (INT-2).
     biological_sample_column = integrationInputBiologicalSampleColumn(design,
       slots$technical_replicate_id %||% NA_character_, slots$sample_id))
-  list(manifest = manifest, samples = design, matrix = matrix)
+  list(manifest = manifest, samples = design, matrix = matrix, corrected = corrected)
+}
+
+#' The normalised matrix a proteomics RUV step read (KIT-153, INT-23), from the RUV state's own product: the classic
+#' route's normalisation and RUV-III-C (`normalization_science`, its `normalized` checkpoint: the between-sample
+#' normalisation the RUV kernel corrected), or DIA_LIMPA's RUV-III fit (`ruv_covariates_science`, its `covariates`
+#' checkpoint: the step's input table, with W1..Wk in the design only). Refused in words when the product does not
+#' record it.
+#' @param manager The session's owner, inside its state scope.
+#' @param record The RUV state's record (the lineage's).
+#' @return `list(name, reference)`.
+#' @noRd
+protIntegrationInputRuvInput <- function(manager, record) {
+  products <- record$data$products
+  covariates <- !is.null(products$ruv_covariates_science)
+  product <- if (covariates) products$ruv_covariates_science else products$normalization_science
+  value <- if (!is.null(product)) hydrateSavedWorkflowEntity(manager$.context$store, product)$value
+  input <- if (is.list(value)) (if (covariates) value$covariates else value$normalized)
+  if (!isSavedWorkflowReference(input)) {
+    abortIntegrationInput(paste("the normalised matrix that entered RUV is not recorded with the RUV step; run the",
+      "normalisation again, then save"))
+  }
+  list(name = if (covariates) "ruv_step_input" else "normalized", reference = input)
+}
+
+#' The between-sample normalisation of a proteomics input (KIT-153): the `norm_method` of the state nearest the head
+#' in its lineage that records one, else NA.
+#' @param manager The session's owner, inside its state scope.
+#' @noRd
+protIntegrationInputNormMethod <- function(manager) {
+  for (record in protIntegrationInputLineage(manager, until = character())) {
+    method <- record$config$norm_method
+    if (is.character(method) && length(method) == 1L && !is.na(method)) return(method)
+  }
+  NA_character_
 }
 
 #' The RUV design that produced a corrected proteomics matrix: the classic route's RUV-III-C (KIT-060 audit row C1:

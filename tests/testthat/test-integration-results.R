@@ -217,18 +217,27 @@ test_that("KIT-063: MOFA2's warnings are shown in plain words; D10 withholds the
     expect_identical(earlier[[1L]]$kind, "overall_level")
     expect_identical(earlier[[1L]]$sentence, sprintf(texts[["advisory_overall_level"]], "Factor2, Factor4"))
     expect_identical(results$advisories[[2L]]$sentence, texts[["advisory_other"]])
-    # The corpus is normalised, not corrected: the factors are descriptive, the p-values given.
+    # The corpus is normalised, not corrected: the factors are descriptive, the p-values given. KIT-153: the model took
+    # the uncorrected matrices (the default), and the caution says that unwanted variation was not removed.
     expect_identical(results$claim$group_corrected, character())
+    expect_true(results$claim$uncorrected)
     lines <- integrationClaimLimitText(results)
     expect_identical(lines[[1L]], texts[["claim_descriptive"]])
-    expect_identical(length(lines), 1L + length(intResOmics))
+    expect_identical(lines[[2L]], texts[["claim_uncorrected"]])
+    expect_identical(length(lines), 2L + length(intResOmics))
     # Proteomics corrected with the groups as replicate sets: no p-value, the reason stated.
     object <- fixture$object
     inputs <- object@inputs
     inputs$proteomics$manifest$matrix_role <- "corrected"
     inputs$proteomics$manifest$correction <- list(method = "RUVIII_C_Varying", replicate_structure = "group", ruv_k = 2L)
     object@inputs <- inputs
-    corrected <- integrationResults(fixture$run$value, object, manager = fixture$manager)
+    # KIT-153: the claim limit follows the matrix the model used, here the corrected one.
+    used <- utils::modifyList(fixture$manager$.context$snapshot$exports$integration_mofa_model$parameters,
+        list(input_matrix = "ruv_corrected"))
+    corrected <- integrationResults(fixture$run$value, object, manager = fixture$manager, model_parameters = used)
+    expect_false(corrected$claim$uncorrected)
+    # The same input under the uncorrected matrix: no group-corrected data set, the p-values given.
+    expect_identical(integrationGroupCorrectedViews(object, results$views, "uncorrected")[["proteomics"]], FALSE)
     expect_identical(corrected$claim$group_corrected, "proteomics")
     expect_true(all(corrected$association$status == "not_tested"))
     expect_true(all(is.na(corrected$association$p_value)) && all(is.na(corrected$association$p_adjusted)))

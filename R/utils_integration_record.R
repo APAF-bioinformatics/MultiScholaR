@@ -84,6 +84,8 @@ integrationRecordTexts <- function() {
         not_recorded = "not recorded",
         values_corrected = "corrected for unwanted variation",
         values_normalised = "normalised, not corrected",
+        # KIT-153: the omic saved corrected values too; the model used the normalised ones.
+        values_uncorrected_available = "normalised, not corrected (the omic's corrected values were not used)",
         # The sample-matching facts.
         match_rule = "How samples were matched",
         match_rule_saved = "by the biological-sample column each omic saved",
@@ -122,6 +124,9 @@ integrationRecordTexts <- function() {
         # %s: the approach in words.
         methods_input_corrected = "corrected for unwanted variation, %s",
         methods_input_normalised = "normalised, not corrected for unwanted variation",
+        # KIT-153. %s: the omic's correction in words (not used).
+        methods_input_uncorrected_available = paste("normalised, before correction for unwanted variation; the omic's",
+            "corrected values (%s) were not used"),
         # %s: MOFA2, mofapy2, Python, R versions, the precision.
         methods_software = paste("Shared factors were learned with multi-omics factor analysis, MOFA2 %s (mofapy2 %s,",
             "Python %s, R %s), in %s precision."),
@@ -160,6 +165,10 @@ integrationRecordTexts <- function() {
             "groups are therefore not reported, and the factors are described, not tested."),
         methods_claim_none = paste("The factors were learned without the groups; their association with the groups",
             "describes the model."),
+        # KIT-153: the model used the normalised values before correction for unwanted variation.
+        methods_claim_uncorrected = paste("The data sets entered the model as their normalised values before correction for",
+            "unwanted variation (RUV), so unwanted variation that is correlated with the groups was not removed and can",
+            "contribute to a factor's association with the groups."),
         # %s: the settings.
         methods_provisional = "Settings that were provisional defaults at the time of the analysis: %s.",
         # %s: the settings.
@@ -391,7 +400,8 @@ integrationRecordResultsPublication <- function(manager, model_reference, result
             parameters = results$parameters, factors = results$factors,
             saved_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), tables = listed(files$tables), figures = listed(files$figures),
             association = as.list(results$association),
-            claim = list(group_corrected = results$claim$group_corrected, corrections = as.list(results$claim$corrections)),
+            claim = list(group_corrected = results$claim$group_corrected, corrections = as.list(results$claim$corrections),
+                uncorrected = isTRUE(results$claim$uncorrected)),
             outputs = integrationOutputsRecord(results), output_tables = integrationStoreOutputTables(context, results))
         snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- export
         publishWorkflowStateHead(context, snapshot)
@@ -468,13 +478,18 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
         return(analysis)
     }
     views <- as.character(parameters$views)
-    corrected <- integrationGroupCorrectedViews(object, views)
+    # KIT-153: the matrix the model used (`input_matrix`) decides the claim limit and each input's values.
+    input_matrix <- parameters$input_matrix
+    corrected <- integrationGroupCorrectedViews(object, views, input_matrix)
+    available <- integrationCorrectedViewNames(object)
     gui <- integrationGuiTexts()
     inputs <- lapply(unname(object@inputs), function(entry) {
         manifest <- entry$manifest
         list(omic = entry$omic, views = as.character(entry$views), views_in_model = intersect(as.character(entry$views), views),
             manifest_path = entry$path, manifest_sha256 = entry$manifest_sha256,
             workflow = integrationGuiScalar(manifest$workflow), matrix_role = integrationGuiScalar(manifest$matrix_role),
+            matrix_used = if (is.null(input_matrix)) NA_character_ else input_matrix,
+            corrected_available = any(as.character(entry$views) %in% available),
             scale = integrationGuiScalar(manifest$scale), source_state = integrationGuiScalar(manifest$source_state$name),
             biological_sample_column = entry$biological_sample_column, correction = manifest$correction,
             correction_text = integrationCorrectionText(manifest, gui),
@@ -500,7 +515,8 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
         sentence = sprintf(integrationRecordTexts()[["note_few_samples"]], as.integer(value$shared_samples),
             INTEGRATION_FEW_SAMPLES), detail = paste(value$notes, collapse = " "))))
     claim_facts <- list(group_corrected = names(corrected)[corrected],
-        corrections = vapply(object@inputs, function(entry) integrationCorrectionText(entry$manifest, gui), character(1)))
+        corrections = vapply(object@inputs, function(entry) integrationCorrectionText(entry$manifest, gui), character(1)),
+        uncorrected = identical(input_matrix, "uncorrected"))
     analysis$integration <- list(schema = "multischolar.integration_record.v1", complete = TRUE,
         inputs = inputs,
         matching = list(rule = if (is.null(match)) "saved_names" else "user_table",
@@ -521,7 +537,7 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
         results = results,
         advisories = advisories,
         claim_limit = list(applies = any(corrected), group_corrected = claim_facts$group_corrected,
-            text = integrationClaimLimitText(list(claim = claim_facts), gui)))
+            uncorrected = claim_facts$uncorrected, text = integrationClaimLimitText(list(claim = claim_facts), gui)))
     analysis
 }
 
@@ -544,7 +560,7 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
     framed <- function(names, rows) stats::setNames(as.data.frame(rows, stringsAsFactors = FALSE), names)
     inputs <- lapply(block$inputs, function(input) data.frame(omic = s(input$omic),
         views = paste(unlist(input$views_in_model), collapse = ", "),
-        values = if (identical(s(input$matrix_role), "corrected")) texts[["values_corrected"]] else texts[["values_normalised"]],
+        values = texts[[integrationRecordValuesKey(input)]],
         correction = text(input$correction_text), group_corrected = word(input$group_corrected),
         checksum = text(input$manifest_sha256), stringsAsFactors = FALSE))
     inputs <- do.call(rbind, inputs)
@@ -601,6 +617,19 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
         integration_results = files, integration_outputs = integrationRecordOutputsTable(block, texts),
         integration_notes = notes)
     out[INTEGRATION_RECORD_SHEETS]
+}
+
+#' Which values an input gave the model, as the key of its words (KIT-153): `values_corrected` (the RUV-corrected
+#' matrix), `values_uncorrected_available` (the normalised matrix, the omic's corrected one not used) or
+#' `values_normalised`. A record made before KIT-153 (no `matrix_used`) is read by the manifest's role, as before.
+#' @param input One input of the record's integration block.
+#' @noRd
+integrationRecordValuesKey <- function(input) {
+    s <- integrationRecordScalar
+    used <- s(input$matrix_used)
+    if (is.na(used)) used <- if (identical(s(input$matrix_role), "corrected")) "ruv_corrected" else "uncorrected"
+    if (identical(used, "ruv_corrected")) return("values_corrected")
+    if (isTRUE(as.logical(s(input$corrected_available)))) "values_uncorrected_available" else "values_normalised"
 }
 
 #' The scales of the values given to the model, in words, from the record (KIT-152): "data set: scale" per data set.
@@ -667,10 +696,13 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     s <- integrationRecordScalar
     p <- function(name) integrationRecordParameter(analysis$parameters, name)
     used <- Filter(\(input) length(unlist(input$views_in_model)) > 0L, block$inputs)
+    # KIT-153: the values each input gave the model (`integrationRecordValuesKey`).
     items <- vapply(used, function(input) sprintf(texts[["methods_input_item"]], s(input$omic),
         paste(unlist(input$views_in_model), collapse = ", "),
-        if (identical(s(input$matrix_role), "corrected")) sprintf(texts[["methods_input_corrected"]], s(input$correction_text)) else
-            texts[["methods_input_normalised"]]), character(1))
+        switch(integrationRecordValuesKey(input),
+            values_corrected = sprintf(texts[["methods_input_corrected"]], s(input$correction_text)),
+            values_uncorrected_available = sprintf(texts[["methods_input_uncorrected_available"]], s(input$correction_text)),
+            texts[["methods_input_normalised"]])), character(1))
     views <- unlist(lapply(used, \(input) unlist(input$views_in_model)))
     model <- block$model
     versions <- model$versions
@@ -710,6 +742,8 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     claim <- block$claim_limit
     sentences <- c(sentences, if (isTRUE(as.logical(s(claim$applies))))
         sprintf(texts[["methods_claim_limit"]], paste(unlist(claim$group_corrected), collapse = ", ")) else texts[["methods_claim_none"]])
+    # KIT-153: the uncorrected matrices' caution.
+    if (isTRUE(as.logical(s(claim$uncorrected)))) sentences <- c(sentences, texts[["methods_claim_uncorrected"]])
     # The settings in the Model tab's words: its label, and the chosen value's words where the tab has them.
     gui <- integrationGuiTexts()
     by_status <- function(status) {

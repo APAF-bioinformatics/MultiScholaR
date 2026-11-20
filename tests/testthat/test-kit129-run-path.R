@@ -1679,7 +1679,16 @@ test_that("(seventh pass item 3) classic proteomics: the integration input names
     declared <- c(kit129ProtParameters(), list(ruv_design = "groups_all_features", ruv_k_rule = "user", ruv_k_seed = 11L))
     out <- kit129IntegrationInput(declared)
     manifest <- out$input$manifest
-    expect_identical(manifest$matrix_role, "corrected")
+    # KIT-153: the role of the data set's matrix file (the normalised one); the corrected matrix beside it.
+    expect_identical(manifest$matrix_role, "normalised")
+    expect_true(out$input$views$proteomics$corrected)
+    # KIT-153: the data set's matrix is the normalised matrix the new design's RUV read (the DA tests it with the factors).
+    written <- integrationInputMatrix(dirname(out$path), "proteomics", out$input)
+    normalised <- as.data.frame(out$normalised@protein_quant_table)
+    names(normalised)[[1L]] <- "feature_id"
+    at <- match(written$feature_id, as.character(normalised$feature_id))
+    expect_false(anyNA(at))
+    expect_equal(unname(as.matrix(written[-1L])), unname(as.matrix(normalised[at, names(written)[-1L]])), tolerance = 0)
     correction <- manifest$correction
     # every field of the step record, by its name, read back by the contract's reader
     expect_true(all(RUV_DESIGN_RECORD_FIELDS %in% names(correction)))
@@ -1694,7 +1703,8 @@ test_that("(seventh pass item 3) classic proteomics: the integration input names
         "replicate_structure", "grouping_variable"))
     # today's design: the correction's fields are today's, and the manifest's bytes are those written without the new fields
     legacy <- kit129IntegrationInput(kit129ProtParameters())
-    expect_identical(legacy$input$manifest$matrix_role, "corrected")
+    expect_identical(legacy$input$manifest$matrix_role, "normalised")
+    expect_true(legacy$input$views$proteomics$corrected)
     expect_identical(names(legacy$input$manifest$correction), c("state", "id", "method", "ruv_mode", "k", "percentage_as_neg_ctrl",
         "control_count", "replicate_structure", "grouping_variable", "grouping_levels"))
     manager <- kit129ProtStore()

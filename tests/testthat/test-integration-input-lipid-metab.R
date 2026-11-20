@@ -63,7 +63,8 @@ for (omic in c("lipidomics", "metabolomics")) local({
     test_that(sprintf("KIT-135: %s with today's RUV writes the corrected matrix per assay as omic_assay views, beside the RDS", omic), {
         root <- withr::local_tempdir()
         fixture <- integrationOmicsOwner(omic, file.path(root, "owner"))
-        integrationOmicsQuiet(if (identical(omic, "lipidomics")) lipidDeclarationsJourney(fixture) else metabDeclarationsJourney(fixture))
+        journey <- integrationOmicsQuiet(if (identical(omic, "lipidomics")) lipidDeclarationsJourney(fixture) else
+            metabDeclarationsJourney(fixture))
         owner <- fixture$owner
         final <- paste0(prefix, "_correlation_filtered")
         expect_identical(owner$current_state, final)
@@ -80,8 +81,11 @@ for (omic in c("lipidomics", "metabolomics")) local({
         expect_identical(names(input$views), views)
         expect_identical(unlist(lapply(manifest$source_state$assays, `[[`, "assay")), stats::setNames(assays, views))
         expect_identical(manifest$omic_type, omic)
-        expect_identical(manifest$matrix_role, "corrected")
+        # KIT-153: the role of each data set's matrix file (the normalised one); the corrected matrix beside it.
+        expect_identical(manifest$matrix_role, "normalised")
         expect_identical(manifest$scale, "log2")
+        expect_identical(manifest$normalisation$source$name, paste0(prefix, "_normalized"))
+        expect_identical(manifest$normalisation$source$entity_id, getWorkflowStateReference(owner, paste0(prefix, "_normalized"))$entity_id)
         expect_identical(manifest$source_state$name, final)
         expect_identical(manifest$source_state$entity_id, getWorkflowStateReference(owner, final)$entity_id)
         correction <- manifest$correction
@@ -102,8 +106,30 @@ for (omic in c("lipidomics", "metabolomics")) local({
         expect_identical(manifest$technical_replicate_column, "tech_rep_group")
         expect_identical(manifest$biological_sample_column, "tech_rep_group")
         expected <- integrationOmicsExpected(omic, owner, final, input$samples$Run)
+        # KIT-153: the data set's own matrix is the between-sample normalisation the RUV step read, on the corrected
+        # matrix's features and runs; and RUV-III-C with the step's k and controls, run again on that normalised state,
+        # gives the corrected matrix.
+        binding <- omicsDeclarationBindings()[[omic]]
+        normalised_state <- getWorkflowStateReference(owner, paste0(prefix, "_normalized"))
+        normalised <- integrationOmicsExpected(omic, owner, normalised_state, input$samples$Run)
+        again <- integrationOmicsQuiet(ruvIII_C_Varying(theObject = readWorkflowOmicsState(binding, owner, normalised_state),
+            ruv_grouping_variable = "group", ruv_number_k = binding$extract_best_k(journey$ruv$optimisation),
+            ctrl = binding$extract_controls(journey$ruv$optimisation)))
+        id_column <- methods::slot(again, binding$id_slot)
         for (i in seq_along(views)) {
-            expect_equal(input$views[[views[[i]]]]$matrix, expected[[assays[[i]]]], tolerance = 1e-12, ignore_attr = TRUE, info = views[[i]])
+            view <- input$views[[views[[i]]]]
+            expect_true(view$corrected, info = views[[i]])
+            expect_equal(view$corrected_matrix, expected[[assays[[i]]]], tolerance = 1e-12, ignore_attr = TRUE, info = views[[i]])
+            at <- match(view$matrix$feature_id, normalised[[assays[[i]]]]$feature_id)
+            expect_false(anyNA(at), info = views[[i]])
+            expect_identical(view$matrix$feature_id, view$corrected_matrix$feature_id, info = views[[i]])
+            expect_equal(unname(as.matrix(view$matrix[-1L])), unname(as.matrix(normalised[[assays[[i]]]][at, -1L])), tolerance = 0,
+                info = views[[i]])
+            recomputed <- as.data.frame(methods::slot(again, binding$data_slot)[[assays[[i]]]], check.names = FALSE)
+            at <- match(view$corrected_matrix$feature_id, as.character(recomputed[[id_column]]))
+            expect_false(anyNA(at), info = views[[i]])
+            expect_equal(unname(as.matrix(view$corrected_matrix[-1L])), unname(as.matrix(recomputed[at, input$samples$Run])),
+                tolerance = 1e-10, info = views[[i]])
             features <- input$views[[views[[i]]]]$features
             expect_identical(features$assay, rep(assays[[i]], nrow(features)), info = views[[i]])
             # Internal standards are kept and marked (INT-3), here by the object's regex `^IS_` on the id.
@@ -134,7 +160,7 @@ test_that("KIT-135: a new RUV design writes the RUV state's corrected table and 
     run <- integrationOmicsSummarySave("lipidomics", fixture, root)
     input <- readIntegrationInputWithMatrices(run$dir)
     manifest <- input$manifest
-    expect_identical(manifest$matrix_role, "corrected")
+    expect_identical(manifest$matrix_role, "normalised")
     expect_identical(manifest$source_state$name, "lipid_ruv_corrected")
     correction <- manifest$correction
     expect_identical(correction[c("id", "method", "matrix", "da_tests", "ruv_design", "ruv_replicate_structure", "ruv_k_rule",
@@ -143,14 +169,26 @@ test_that("KIT-135: a new RUV design writes the RUV state's corrected table and 
         ruv_k_rule = "user", ruv_da_method = "limma_ruv_factors_exact_se"))
     expect_true(all(RUV_DESIGN_RECORD_FIELDS %in% names(correction)))
     expect_true(all(vapply(correction$views, `[[`, logical(1), "applied")))
-    # The matrix is the state's own (corrected) table, not the uncorrected assays the DA tests.
+    # The corrected matrix is the state's own (corrected) table, not the uncorrected assays the DA tests.
     state <- withWorkflowStateScope(owner, function() readWorkflowExecutionComponents(owner, ruv$reference,
         fields = lipidomicsDeclarationBinding$fields))
     expected <- integrationOmicsExpected("lipidomics", owner, "lipid_ruv_corrected", input$samples$Run)
-    expect_equal(input$views$lipidomics_LCMS_Pos$matrix, expected$LCMS_Pos, tolerance = 1e-12, ignore_attr = TRUE)
+    expect_equal(input$views$lipidomics_LCMS_Pos$corrected_matrix, expected$LCMS_Pos, tolerance = 1e-12, ignore_attr = TRUE)
     uncorrected <- as.data.frame(state@args$ruv_uncorrected_assays$LCMS_Pos, check.names = FALSE)
-    expect_false(isTRUE(all.equal(unname(as.matrix(input$views$lipidomics_LCMS_Pos$matrix[input$samples$Run])),
+    expect_false(isTRUE(all.equal(unname(as.matrix(input$views$lipidomics_LCMS_Pos$corrected_matrix[input$samples$Run])),
         unname(as.matrix(uncorrected[input$samples$Run])))))
+    # KIT-153: the data set's own matrix is the matrix that entered RUV: the uncorrected assays the RUV kernel kept for the
+    # DA (its input), and the normalised state it ran on, in every assay.
+    for (assay in c("LCMS_Pos", "LCMS_Neg")) {
+        written <- input$views[[paste0("lipidomics_", assay)]]$matrix
+        kept <- as.data.frame(state@args$ruv_uncorrected_assays[[assay]], check.names = FALSE)
+        at <- match(written$feature_id, as.character(kept[[state@lipid_id_column]]))
+        expect_false(anyNA(at), info = assay)
+        expect_equal(unname(as.matrix(written[-1L])), unname(as.matrix(kept[at, input$samples$Run])), tolerance = 0, info = assay)
+        normalised <- integrationOmicsExpected("lipidomics", owner, "lipid_normalized", input$samples$Run)[[assay]]
+        expect_equal(unname(as.matrix(written[-1L])), unname(as.matrix(normalised[match(written$feature_id, normalised$feature_id), -1L])),
+            tolerance = 0, info = assay)
+    }
     # The internal-standard step removes the standards it used (`remove_itsd_after_norm`), so the hand-selected one is
     # gone; the selection is recorded, and the regex's standards it did not use stay, marked.
     features <- input$views$lipidomics_LCMS_Pos$features

@@ -1,7 +1,8 @@
 # KIT-142: the integration analysis record, its replay and its report, without MOFA2. The project is the KIT-137 tier-1
 # corpus copied into `<project>/integration/<omic>/`, with two changes written by the contract's writer: the
 # transcriptomics samples renamed (`S-<name>`, so an uploaded match table is needed, KIT-063 item A) and the proteomics
-# input marked as corrected with the groups as replicate sets (so the claim limit of KIT-060 D10 applies). The model is
+# input given a corrected matrix with the groups as replicate sets (KIT-153: the model takes the uncorrected matrices by
+# default, so the claim limit of KIT-060 D10 does not apply and the uncorrected matrices' caution does). The model is
 # the stored double-precision reference (tests/testdata/integration/mofa_reference) returned by a stand-in trainer that
 # reports its own software versions, so that the record and the methods paragraph can be seen to read them. The
 # journey runs through the tabs' server logic: import, an uploaded match confirmed, training, results saved, record
@@ -59,12 +60,15 @@ intRecRewrite <- function(dir, rename = FALSE, correction = NULL) {
     input <- readIntegrationInputWithMatrices(dir)
     read <- input$manifest
     manifest <- list(omic_type = read$omic_type, workflow = read$workflow,
-        matrix_role = if (is.null(correction)) read$matrix_role else "corrected", scale = read$scale, correction = correction,
+        matrix_role = read$matrix_role, scale = read$scale, correction = correction,
         source_state = list(name = "kit142"), sample_id_column = read$sample_id_column, group_column = read$group_column,
         technical_replicate_column = read$technical_replicate_column, biological_sample_column = read$biological_sample_column)
     samples <- input$samples
     if (rename) samples[[manifest$biological_sample_column]] <- paste0("S-", samples[[manifest$biological_sample_column]])
-    writeIntegrationInput(dir, manifest, samples, lapply(input$views, `[[`, "matrix"), lapply(input$views, `[[`, "features"))
+    # KIT-153: a correction comes with its corrected matrix (here the same values), beside the normalised one.
+    matrices <- lapply(input$views, `[[`, "matrix")
+    writeIntegrationInput(dir, manifest, samples, matrices, lapply(input$views, `[[`, "features"),
+        corrected = if (is.null(correction)) list() else matrices)
 }
 
 intRecProject <- function(.local_envir = parent.frame()) {
@@ -156,10 +160,14 @@ test_that("KIT-142: the record holds every input, the confirmed match, each sett
         expect_identical(input$views_in_model, input$views, info = input$omic)
     }
     proteomics <- inputs[[3L]]
-    expect_identical(proteomics$matrix_role, "corrected")
+    # KIT-153: the proteomics input holds a corrected matrix; the model took the uncorrected one (the default).
+    expect_identical(proteomics$matrix_role, "normalised")
+    expect_identical(proteomics$matrix_used, "uncorrected")
+    expect_true(proteomics$corrected_available)
     expect_identical(proteomics$correction$method, "RUVIII_C_Varying")
-    expect_true(proteomics$group_corrected)
+    expect_false(proteomics$group_corrected)
     expect_false(inputs[[4L]]$group_corrected)
+    expect_false(inputs[[4L]]$corrected_available)
     expect_identical(inputs[[4L]]$matrix_role, "normalised")
     # The confirmed match: the uploaded table, the saved sample table and its checksum.
     matching <- block$matching
@@ -179,6 +187,7 @@ test_that("KIT-142: the record holds every input, the confirmed match, each sett
     expect_false("unknown" %in% provenance)
     expect_identical(unname(status[c("input_manifests", "views")]), c("input", "input"))
     expect_identical(status[["precision"]], "decided")
+    expect_identical(status[["input_matrix"]], "decided")
     expect_identical(unname(status[c("num_factors", "seed", "technical_replicates", "scaling")]), rep("provisional_default", 4L))
     # The model: versions, checksum, training.
     model <- block$model
@@ -197,11 +206,13 @@ test_that("KIT-142: the record holds every input, the confirmed match, each sett
     expect_identical(results$tables$file, saved$tables)
     expect_identical(results$tables$sha256, unname(vapply(file.path(saved$tables_dir, saved$tables), intRecSha, "")))
     expect_identical(results$figures$sha256, unname(vapply(file.path(saved$plots_dir, saved$figures), intRecSha, "")))
-    expect_true(all(results$association$status == "not_tested"))
-    # MOFA2's warning in words; the claim limit for the group-corrected data set.
+    expect_true(all(results$association$status == "tested"))
+    # MOFA2's warning in words; KIT-153: no claim limit on the uncorrected matrices, and their caution.
     expect_true("overall_level" %in% vapply(block$advisories, `[[`, "", "kind"))
-    expect_true(block$claim_limit$applies)
-    expect_identical(block$claim_limit$group_corrected, "proteomics")
+    expect_false(block$claim_limit$applies)
+    expect_length(block$claim_limit$group_corrected, 0L)
+    expect_true(block$claim_limit$uncorrected)
+    expect_true(integrationGuiTexts()[["claim_uncorrected"]] %in% block$claim_limit$text)
     # The omics' record fields are unchanged: the analysis keeps its registry fields.
     expect_identical(analysis$operation, "integration_mofa_model")
     expect_identical(analysis$outcomes$model_sha256, strrep("d", 64L))
@@ -222,7 +233,7 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
     match_sha <- record$analyses$integration_mofa_model$integration$matching$sample_match_sha256
     for (fragment in c(
         "6 data sets from 4 omics were combined",
-        "proteomics (proteomics; corrected for unwanted variation, applied: the approach of earlier versions (RUV-III-C; replicate sets: ",
+        "proteomics (proteomics; normalised, before correction for unwanted variation; the omic's corrected values (applied: the approach of earlier versions (RUV-III-C; replicate sets: ",
         "transcriptomics (transcriptomics; normalised, not corrected for unwanted variation)",
         "MOFA2 9.8.7 (mofapy2 6.5.4, Python 3.12.16, R 4.6.1), in double precision",
         sprintf(t[["methods_matching_user"]], journey$runs_moved, match_sha),
@@ -231,7 +242,7 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
         "asked for 5 factors (convergence mode fast, at most 1000 training rounds, seed 20261119",
         "Training settled after 186 rounds and kept 5 factors; 20 biological samples entered the model, 19 of them",
         sprintf(t[["methods_association"]], "Benjamini-Hochberg"),
-        sprintf(t[["methods_claim_limit"]], "proteomics"),
+        t[["methods_claim_none"]], t[["methods_claim_uncorrected"]],
         "Settings that were provisional defaults at the time of the analysis: ", "Number of factors (5)")) {
         expect_true(grepl(fragment, methods, fixed = TRUE), info = fragment)
     }

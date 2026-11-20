@@ -131,17 +131,23 @@ integrationResolveResultsParameters <- function(parameters = list(), factors) {
 #' Which data sets were corrected for unwanted variation with the groups as replicate sets (KIT-060 D10): a corrected
 #' matrix whose correction names no technical-replicate structure (`replicate_structure` or
 #' `ruv_replicate_structure`), except data sets the correction lists as not corrected. An unrecorded structure on a
-#' corrected matrix counts as the groups (the cautious reading).
+#' corrected matrix counts as the groups (the cautious reading). KIT-153: the matrix the model used decides; with
+#' `input_matrix = uncorrected` no data set was corrected, with `ruv_corrected` each data set the omic corrected was; a
+#' model recorded before KIT-153 (no `input_matrix`) is read by its manifest's role, as before.
 #' @param object The imported inputs state (`inputs` hydrated).
 #' @param views The model's data sets.
+#' @param input_matrix The model's `input_matrix`, or NULL for a model recorded before KIT-153.
 #' @return Named logical by data set.
 #' @noRd
-integrationGroupCorrectedViews <- function(object, views) {
+integrationGroupCorrectedViews <- function(object, views, input_matrix = NULL) {
     out <- stats::setNames(rep(FALSE, length(views)), views)
+    if (identical(input_matrix, "uncorrected")) return(out)
     for (entry in object@inputs) {
         manifest <- entry$manifest
         mine <- intersect(entry$views, views)
-        if (!length(mine) || !identical(manifest$matrix_role, "corrected") || !is.list(manifest$correction)) next
+        used_corrected <- if (is.null(input_matrix)) identical(manifest$matrix_role, "corrected") else
+            identical(input_matrix, "ruv_corrected")
+        if (!length(mine) || !used_corrected || !is.list(manifest$correction)) next
         correction <- manifest$correction
         structure <- c(integrationGuiScalar(correction$replicate_structure), integrationGuiScalar(correction$ruv_replicate_structure))
         if (any(structure %in% "technical_replicates")) next
@@ -262,7 +268,10 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
     factor_values <- data.frame(biological_sample = value$factors$biological_sample,
         group = as.character(samples[[p$design_covariate]][match(value$factors$biological_sample, samples$biological_sample)]),
         value$factors[factors], check.names = FALSE, stringsAsFactors = FALSE)
-    corrected <- integrationGroupCorrectedViews(object, views)
+    # KIT-153: the claim limit follows the matrix the model used (its `input_matrix`).
+    if (!length(model_parameters)) model_parameters <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$parameters
+    input_matrix <- model_parameters$input_matrix
+    corrected <- integrationGroupCorrectedViews(object, views, input_matrix)
     association <- integrationFactorAssociation(factor_values, shown, tested = !any(corrected), adjust = p$p_adjust_method)
     # (3) Weights with display names, scaled and ranked per factor and data set. KIT-152: each data set's feature order
     # (the weights' rows, which are the aligned values' rows) is kept to find the top features' rows.
@@ -293,7 +302,6 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
     # The claim limit's facts: each omic's correction in words, and the data sets corrected with the groups.
     corrections <- vapply(object@inputs, function(entry) integrationCorrectionText(entry$manifest, texts), character(1))
     # (6) KIT-152: the top features' values, and the scale each data set's values are on.
-    if (!length(model_parameters)) model_parameters <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$parameters
     feature_values <- integrationTopFeatureValues(manager, value, top, feature_rows, factor_values, factors)
     # (7) KIT-152: the maps, when chosen.
     maps <- list()
@@ -305,7 +313,8 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
         factor_values = factor_values, association = association, weights = weights, top_weights = top,
         correlation = correlation, advisories = integrationModelAdvisories(value, texts), notes = value$notes,
         shared_samples = value$shared_samples,
-        claim = list(group_corrected = names(corrected)[corrected], corrections = corrections),
+        claim = list(group_corrected = names(corrected)[corrected], corrections = corrections,
+            uncorrected = identical(input_matrix, "uncorrected")),
         feature_values = feature_values, value_scales = integrationFeatureValueScales(object, views, model_parameters$scaling),
         maps = maps)
 }
@@ -735,7 +744,8 @@ integrationResultsCorrelationTable <- function(results, texts = integrationGuiTe
 
 #' The claim limit beside the factor-against-group figure (KIT-060 D10), in words: always that the factors are
 #' descriptive; where a data set was corrected with the groups as replicate sets, that no p-value is given and why;
-#' each omic's correction.
+#' KIT-153: where the model used the uncorrected matrices, that unwanted variation correlated with the groups was not
+#' removed; each omic's correction.
 #' @return A character vector: the sentences, then one line per omic.
 #' @noRd
 integrationClaimLimitText <- function(results, texts = integrationGuiTexts()) {
@@ -744,6 +754,7 @@ integrationClaimLimitText <- function(results, texts = integrationGuiTexts()) {
     if (length(claim$group_corrected)) {
         sentences <- c(sentences, sprintf(texts[["claim_group_corrected"]], paste(claim$group_corrected, collapse = ", ")))
     }
+    if (isTRUE(as.logical(integrationGuiScalar(claim$uncorrected)))) sentences <- c(sentences, texts[["claim_uncorrected"]])
     c(sentences, sprintf(texts[["claim_correction"]], tools::toTitleCase(names(claim$corrections)), unname(claim$corrections)))
 }
 

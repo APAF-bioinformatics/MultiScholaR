@@ -970,7 +970,8 @@ trxWriteIntegrationInput <- function(binding, manager, dir) {
         return(invisible(FALSE))
     }
     writeIntegrationInput(dir, source$manifest, source$samples, list(transcriptomics = source$matrix),
-        list(transcriptomics = source$features))
+        list(transcriptomics = source$features),
+        corrected = if (!is.null(source$corrected)) list(transcriptomics = source$corrected) else list())
     invisible(TRUE)
 }
 
@@ -1015,6 +1016,18 @@ trxIntegrationInputSource <- function(manager) {
     matrix <- data.frame(feature_id = ids, values[, runs, drop = FALSE], check.names = FALSE, stringsAsFactors = FALSE,
         row.names = NULL)
     values <- NULL
+    # KIT-153 (INT-23): with RUV applied the matrix above is the RUVIII export (corrected); the data set's own matrix is
+    # the TMM logCPM the export's RUV-III read (`trx_ruviii_export`'s `logcpm`, the RUVs state's), on its genes and runs.
+    corrected <- NULL
+    if (state$applied) {
+        log_cpm <- trxSavedMatrix(manager, trxProductValue(manager, state$ruvs$logcpm)$log_cpm)
+        uncorrected <- data.frame(feature_id = rownames(log_cpm), log_cpm, check.names = FALSE, stringsAsFactors = FALSE,
+            row.names = NULL)
+        log_cpm <- NULL
+        corrected <- matrix
+        matrix <- integrationInputUncorrectedOn(uncorrected, corrected, "transcriptomics")
+        uncorrected <- NULL
+    }
     gene_column <- slots$gene_id_column
     name_column <- slots$annotation_id_column
     genes <- materializeWorkflowTable(manager$.context, spec$components$count_data[[1L]], selected_columns = c(gene_column, name_column))
@@ -1026,13 +1039,15 @@ trxIntegrationInputSource <- function(manager) {
     if (!is.character(technical) || length(technical) != 1L || !isTRUE(technical %in% names(samples))) technical <- NA_character_
     manifest <- list(omic_type = "transcriptomics",
         workflow = manager$workflow_type %||% manager$.context$snapshot$workflow_type %||% NA_character_,
-        matrix_role = if (state$applied) "corrected" else "normalised", scale = "log2_cpm",
+        matrix_role = "normalised", scale = "log2_cpm",
+        normalisation = list(method = "TMM, log2 counts per million", source = list(name = "trx_tmm_logcpm",
+            entity_id = state$ruvs$logcpm$entity_id, sha256 = state$ruvs$logcpm$payload$sha256)),
         correction = if (state$applied) trxIntegrationInputCorrection(manager, state, export, samples, technical) else NULL,
         source_state = list(name = "trx_ruvs", entity_id = reference$entity_id, sha256 = reference$payload$sha256,
             gene_id_column = gene_column, annotation_id_column = name_column, product = product),
         sample_id_column = slots$sample_id, group_column = slots$group_id, technical_replicate_column = technical,
         biological_sample_column = integrationInputBiologicalSampleColumn(samples, technical, slots$sample_id))
-    list(manifest = manifest, samples = samples, matrix = matrix, features = features)
+    list(manifest = manifest, samples = samples, matrix = matrix, features = features, corrected = corrected)
 }
 
 #' The correction behind a corrected transcriptomics input (KIT-136; audit row C3b): the RUVIII export's replicate
