@@ -1,6 +1,5 @@
 {
   "run": "counted",
-  "task": "ruv",
-  "strength": "C1",
-  "note": "Q1 counted run, as declared in docs/qa/workflow-execution/kit/kit-151d/ruv-declaration.md"
+  "task": "z",
+  "note": "Q2 counted run, as declared in docs/qa/workflow-execution/kit/kit-151d/z-declaration.md"
 }
