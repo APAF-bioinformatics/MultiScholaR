@@ -10,7 +10,8 @@
 #     are dropped and counted as the whole path counts them;
 #   - the model trained through either variant gets the same views and gives the same product; the variant is not part
 #     of the identity (a second variant on the same inputs is a hit).
-# The default variant is switched to `partitioned` only once this file has passed on a runner (plan item C).
+# The default variant was switched to `partitioned` once this file had passed on a runner (plan item C; run-tests
+# 44668558288).
 
 intPartWriteInput <- function(root, omic, view, values, samples, standards = NULL) {
     matrix <- data.frame(feature_id = rownames(values), values, check.names = FALSE, stringsAsFactors = FALSE)
@@ -186,6 +187,8 @@ test_that("KIT-149: the model trained through either variant gets the same data 
         class = "integration_parameters_invalid")
     entry <- workflowOperationEntry(INTEGRATION_MODEL_OPERATION)
     expect_identical(entry$variants, c("whole", "partitioned"))
+    # The default, once the identity was shown on a runner (run-tests 44668558288).
+    expect_identical(entry$default_variant, "partitioned")
 })
 
 # KIT-149, audit ENG-05: no data set is read whole where nothing needs its values. Every whole-table read of the store

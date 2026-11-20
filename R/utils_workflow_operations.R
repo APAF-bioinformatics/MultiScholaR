@@ -905,12 +905,12 @@ registerBuiltinWorkflowOperations <- function() {
     # KIT-062: the integration model (MOFA2) on the integration owner's inputs state: whole matrix, product only
     # (accepted on the head as the transcriptomics RUVIII export is). KIT-140: on the managed worker's `omics` role (its
     # own handler; no `@args` section, `section = NULL`); `runIntegrationModel` runs the same declaration in process.
-    # KIT-149: `partitioned` aligns the data sets in row pages, identical to `whole`.
+    # KIT-149: `partitioned` aligns the data sets in row pages, identical to `whole` (run-tests 44668558288); the default.
     model <- integrationMofaOperation()
     registerWorkflowOperation(list(name = model$name, input = "checkpoint", input_class = model$input_class,
         compute = "omics", handler = "computeWorkflowIntegrationModelAction", validate = "validateWorkflowOmicsParameters",
         resolve = NULL, parameter_limit = 65536, parameters = model$parameters, completion = "omics", publication = "omics",
-        step_label = NULL, omic_type = "integration", variants = c("whole", "partitioned"), default_variant = "whole",
+        step_label = NULL, omic_type = "integration", variants = c("whole", "partitioned"), default_variant = "partitioned",
         diagnostic_only = FALSE, inclusion_absence = FALSE, declaration = model, section = NULL))
     invisible(workflowOperationNames())
 }
