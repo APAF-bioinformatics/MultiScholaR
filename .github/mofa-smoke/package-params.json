@@ -1,6 +1,6 @@
 {
-  "label": "k147-parquet-1",
-  "package_commit": "0f49c7502659526a7ee97f03c9fbc66aa9af6802",
+  "label": "k148-item1-1",
+  "package_commit": "953e0996eeae3a0e4118d8539ed761f6e413b6ae",
   "tests": [
     "test-integration-mofa-model.R",
     "test-integration-model-tab-mofa.R",
