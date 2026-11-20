@@ -190,7 +190,10 @@ protIntegrationInputRuvInput <- function(manager, record) {
   products <- record$data$products
   covariates <- !is.null(products$ruv_covariates_science)
   product <- if (covariates) products$ruv_covariates_science else products$normalization_science
-  value <- if (!is.null(product)) hydrateSavedWorkflowEntity(manager$.context$store, product)$value
+  # As `protIntegrationInputCorrection` reads it: a product hydrates as an entity whose `value` is the kernel's result; a
+  # plain saved value is the list itself.
+  hydrated <- if (!is.null(product)) hydrateSavedWorkflowEntity(manager$.context$store, product)
+  value <- if (is.list(hydrated$value)) hydrated$value else hydrated
   input <- if (is.list(value)) (if (covariates) value$covariates else value$normalized)
   if (!isSavedWorkflowReference(input)) {
     abortIntegrationInput(paste("the normalised matrix that entered RUV is not recorded with the RUV step; run the",

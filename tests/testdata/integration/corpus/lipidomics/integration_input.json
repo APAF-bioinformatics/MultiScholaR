@@ -23,6 +23,7 @@
       "features_file": "features_lipidomics_LCMS_Pos.parquet",
       "rows": 150,
       "columns": 40,
+      "matrix_stage": "normalised",
       "row_groups": 1
     },
     {
@@ -31,6 +32,7 @@
       "features_file": "features_lipidomics_LCMS_Neg.parquet",
       "rows": 150,
       "columns": 40,
+      "matrix_stage": "normalised",
       "row_groups": 1
     }
   ],
