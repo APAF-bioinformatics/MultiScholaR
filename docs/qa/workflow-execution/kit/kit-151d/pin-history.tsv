@@ -1,0 +1,153 @@
+source	condition	case	job	cpu	matches	of
+k151c pin	U	fast:none	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:scale_views	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap1000	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap2000	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap5000	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap10000	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:weight_views	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:zscore	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:none	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:scale_views	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap1000	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap2000	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap5000	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap10000	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:weight_views	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:zscore	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:none	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	2	2
+k151c pin	U	fast:scale_views	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	2	2
+k151c pin	U	fast:cap1000	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	2	2
+k151c pin	U	fast:cap2000	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	2	2
+k151c pin	U	fast:cap5000	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	2	2
+k151c pin	U	fast:cap10000	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	2	2
+k151c pin	U	fast:weight_views	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	2	2
+k151c pin	U	fast:zscore	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	2	2
+k151c pin	U	fast:none	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:scale_views	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap1000	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap2000	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap5000	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:cap10000	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:weight_views	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	U	fast:zscore	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	4	4
+k151c pin	P	fast:none	k151d-pin--01/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:scale_views	k151d-pin--01/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap1000	k151d-pin--01/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap2000	k151d-pin--01/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap5000	k151d-pin--01/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap10000	k151d-pin--01/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:weight_views	k151d-pin--01/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:zscore	k151d-pin--01/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:none	k151d-pin--02/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:scale_views	k151d-pin--02/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap1000	k151d-pin--02/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap2000	k151d-pin--02/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap5000	k151d-pin--02/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap10000	k151d-pin--02/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:weight_views	k151d-pin--02/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:zscore	k151d-pin--02/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:none	k151d-pin--03/P	AMD EPYC 9V45 96-Core Processor	12	12
+k151c pin	P	fast:scale_views	k151d-pin--03/P	AMD EPYC 9V45 96-Core Processor	12	12
+k151c pin	P	fast:cap1000	k151d-pin--03/P	AMD EPYC 9V45 96-Core Processor	12	12
+k151c pin	P	fast:cap2000	k151d-pin--03/P	AMD EPYC 9V45 96-Core Processor	12	12
+k151c pin	P	fast:cap5000	k151d-pin--03/P	AMD EPYC 9V45 96-Core Processor	12	12
+k151c pin	P	fast:cap10000	k151d-pin--03/P	AMD EPYC 9V45 96-Core Processor	12	12
+k151c pin	P	fast:weight_views	k151d-pin--03/P	AMD EPYC 9V45 96-Core Processor	12	12
+k151c pin	P	fast:zscore	k151d-pin--03/P	AMD EPYC 9V45 96-Core Processor	12	12
+k151c pin	P	fast:none	k151d-pin--04/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:scale_views	k151d-pin--04/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap1000	k151d-pin--04/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap2000	k151d-pin--04/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap5000	k151d-pin--04/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:cap10000	k151d-pin--04/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:weight_views	k151d-pin--04/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:zscore	k151d-pin--04/P	AMD EPYC 9V74 80-Core Processor	12	12
+k151c pin	P	fast:none	k151d-pin--05/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:scale_views	k151d-pin--05/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap1000	k151d-pin--05/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap2000	k151d-pin--05/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap5000	k151d-pin--05/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap10000	k151d-pin--05/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:weight_views	k151d-pin--05/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:zscore	k151d-pin--05/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:none	k151d-pin--06/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:scale_views	k151d-pin--06/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap1000	k151d-pin--06/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap2000	k151d-pin--06/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap5000	k151d-pin--06/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap10000	k151d-pin--06/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:weight_views	k151d-pin--06/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:zscore	k151d-pin--06/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:none	k151d-pin--09/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:scale_views	k151d-pin--09/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap1000	k151d-pin--09/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap2000	k151d-pin--09/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap5000	k151d-pin--09/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap10000	k151d-pin--09/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:weight_views	k151d-pin--09/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:zscore	k151d-pin--09/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:none	k151d-pin--14/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:scale_views	k151d-pin--14/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap1000	k151d-pin--14/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap2000	k151d-pin--14/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap5000	k151d-pin--14/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap10000	k151d-pin--14/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:weight_views	k151d-pin--14/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:zscore	k151d-pin--14/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:none	k151d-pin--15/P	Intel(R) Xeon(R) 6973P-C	12	12
+k151c pin	P	fast:scale_views	k151d-pin--15/P	Intel(R) Xeon(R) 6973P-C	12	12
+k151c pin	P	fast:cap1000	k151d-pin--15/P	Intel(R) Xeon(R) 6973P-C	12	12
+k151c pin	P	fast:cap2000	k151d-pin--15/P	Intel(R) Xeon(R) 6973P-C	12	12
+k151c pin	P	fast:cap5000	k151d-pin--15/P	Intel(R) Xeon(R) 6973P-C	12	12
+k151c pin	P	fast:cap10000	k151d-pin--15/P	Intel(R) Xeon(R) 6973P-C	12	12
+k151c pin	P	fast:weight_views	k151d-pin--15/P	Intel(R) Xeon(R) 6973P-C	12	12
+k151c pin	P	fast:zscore	k151d-pin--15/P	Intel(R) Xeon(R) 6973P-C	12	12
+k151c pin	P	fast:none	k151d-pin--16/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:scale_views	k151d-pin--16/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap1000	k151d-pin--16/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap2000	k151d-pin--16/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap5000	k151d-pin--16/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap10000	k151d-pin--16/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:weight_views	k151d-pin--16/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:zscore	k151d-pin--16/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:none	k151d-pin--18/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:scale_views	k151d-pin--18/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap1000	k151d-pin--18/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap2000	k151d-pin--18/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap5000	k151d-pin--18/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap10000	k151d-pin--18/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:weight_views	k151d-pin--18/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:zscore	k151d-pin--18/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:none	k151d-pin--19/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:scale_views	k151d-pin--19/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap1000	k151d-pin--19/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap2000	k151d-pin--19/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap5000	k151d-pin--19/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:cap10000	k151d-pin--19/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:weight_views	k151d-pin--19/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151c pin	P	fast:zscore	k151d-pin--19/P	INTEL(R) XEON(R) PLATINUM 8573C	12	12
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--05/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--06/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--09/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--14/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--15/U	Intel(R) Xeon(R) 6973P-C	0	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--16/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--18/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 10 (AMD EPYC 7763 64-Core Processor)	U	hard_prev10_none	k151d-pin--19/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--01/U	AMD EPYC 9V74 80-Core Processor	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--02/U	AMD EPYC 9V74 80-Core Processor	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--03/U	AMD EPYC 9V45 96-Core Processor	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--04/U	AMD EPYC 9V74 80-Core Processor	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--05/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--06/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--09/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--14/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--15/U	Intel(R) Xeon(R) 6973P-C	0	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--16/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--18/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1
+k151b seed 23 (INTEL(R) XEON(R) PLATINUM 8573C)	U	hard_full23_default	k151d-pin--19/U	INTEL(R) XEON(R) PLATINUM 8573C	1	1

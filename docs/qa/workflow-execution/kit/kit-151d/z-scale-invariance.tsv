@@ -1,0 +1,10 @@
+N	missing	versus	seeds	max_abs_diff	share_within_1e6
+20	m1	m1_orig_znone_sv1	30	0	1
+20	m1	m1_lup_znone_sv1	30	0	1
+20	m1	m1_ldown_znone_sv1	30	0	1
+20	m0	m0_orig_znone_sv1	30	0	1
+20	m0	m0_lup_znone_sv1	30	0	1
+20	m0	m0_ldown_znone_sv1	30	0	1
+60	m1	m1_orig_znone_sv1	30	0	1
+60	m1	m1_lup_znone_sv1	30	0	1
+60	m1	m1_ldown_znone_sv1	30	0	1

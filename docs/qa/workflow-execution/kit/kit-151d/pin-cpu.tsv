@@ -1,0 +1,21 @@
+job	vendor	model	full	intel
+k151d-pin--01	AuthenticAMD	AMD EPYC 9V74 80-Core Processor	TRUE	FALSE
+k151d-pin--02	AuthenticAMD	AMD EPYC 9V74 80-Core Processor	TRUE	FALSE
+k151d-pin--03	AuthenticAMD	AMD EPYC 9V45 96-Core Processor	TRUE	FALSE
+k151d-pin--04	AuthenticAMD	AMD EPYC 9V74 80-Core Processor	TRUE	FALSE
+k151d-pin--05	GenuineIntel	INTEL(R) XEON(R) PLATINUM 8573C	TRUE	TRUE
+k151d-pin--06	GenuineIntel	INTEL(R) XEON(R) PLATINUM 8573C	TRUE	TRUE
+k151d-pin--07	AuthenticAMD	AMD EPYC 9V45 96-Core Processor	FALSE	FALSE
+k151d-pin--08	AuthenticAMD	AMD EPYC 9V45 96-Core Processor	FALSE	FALSE
+k151d-pin--09	GenuineIntel	INTEL(R) XEON(R) PLATINUM 8573C	TRUE	TRUE
+k151d-pin--10	AuthenticAMD	AMD EPYC 9V74 80-Core Processor	FALSE	FALSE
+k151d-pin--11	AuthenticAMD	AMD EPYC 9V74 80-Core Processor	FALSE	FALSE
+k151d-pin--12	AuthenticAMD	AMD EPYC 9V74 80-Core Processor	FALSE	FALSE
+k151d-pin--13	AuthenticAMD	AMD EPYC 9V45 96-Core Processor	FALSE	FALSE
+k151d-pin--14	GenuineIntel	INTEL(R) XEON(R) PLATINUM 8573C	TRUE	TRUE
+k151d-pin--15	GenuineIntel	Intel(R) Xeon(R) 6973P-C	TRUE	TRUE
+k151d-pin--16	GenuineIntel	INTEL(R) XEON(R) PLATINUM 8573C	TRUE	TRUE
+k151d-pin--17	AuthenticAMD	AMD EPYC 9V45 96-Core Processor	FALSE	FALSE
+k151d-pin--18	GenuineIntel	INTEL(R) XEON(R) PLATINUM 8573C	TRUE	TRUE
+k151d-pin--19	GenuineIntel	INTEL(R) XEON(R) PLATINUM 8573C	TRUE	TRUE
+k151d-pin--20	AuthenticAMD	AMD EPYC 7763 64-Core Processor	FALSE	FALSE
