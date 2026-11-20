@@ -42,6 +42,10 @@ mod_integration_results_ui <- function(id) {
         testid(shiny::tableOutput(ns("variance_table")), "integration-results-variance-table"),
         shiny::h5(texts[["variance_total_heading"]]),
         testid(shiny::plotOutput(ns("variance_total_plot"), height = "320px"), "integration-results-variance-total-plot"),
+        # KIT-151 (INT-14): each factor's agreement across the training seeds.
+        shiny::h4(texts[["stability_heading"]]),
+        testid(shiny::uiOutput(ns("stability_intro")), "integration-results-stability-intro"),
+        testid(shiny::tableOutput(ns("stability_table")), "integration-results-stability-table"),
         shiny::h4(texts[["association_heading"]]),
         testid(shiny::uiOutput(ns("association_intro")), "integration-results-association-intro"),
         testid(shiny::uiOutput(ns("claim")), "integration-results-claim"),
@@ -185,6 +189,18 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
             shiny::req(usable(value))
             integrationPlotVarianceTotal(value, texts)
         })
+        output$stability_intro <- shiny::renderUI({
+            value <- results()
+            shiny::req(usable(value))
+            seeds <- value$seeds
+            if (length(seeds) < 2L) return(shiny::p(texts[["stability_single"]]))
+            shiny::p(sprintf(texts[["stability_intro"]], length(seeds), paste(seeds, collapse = ", "), seeds[[1L]]))
+        })
+        output$stability_table <- shiny::renderTable({
+            value <- results()
+            shiny::req(usable(value))
+            integrationResultsStabilityTable(value, texts)
+        }, rownames = FALSE)
         output$association_intro <- shiny::renderUI({
             value <- results()
             shiny::req(usable(value))

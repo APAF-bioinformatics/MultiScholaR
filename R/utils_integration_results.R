@@ -290,6 +290,12 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
     rownames(top) <- NULL
     # (4) The factors' correlation over the biological samples.
     correlation <- stats::cor(as.matrix(value$factors[factors]), use = "pairwise.complete.obs")
+    # KIT-151 (INT-14): each factor's agreement across the training seeds (NULL for a model trained before KIT-151).
+    stability <- value$seeds$stability
+    if (!is.null(stability)) {
+        stability <- stability[stability$factor %in% shown, , drop = FALSE]
+        rownames(stability) <- NULL
+    }
     # The claim limit's facts: each omic's correction in words, and the data sets corrected with the groups.
     corrections <- vapply(object@inputs, function(entry) integrationCorrectionText(entry$manifest, texts), character(1))
     # (6) KIT-152: the top features' values, and the scale each data set's values are on.
@@ -307,7 +313,7 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
         shared_samples = value$shared_samples,
         claim = list(group_corrected = names(corrected)[corrected], corrections = corrections),
         feature_values = feature_values, value_scales = integrationFeatureValueScales(object, views, model_parameters$scaling),
-        maps = maps)
+        maps = maps, seeds = value$seeds$seeds, stability = stability)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -699,6 +705,17 @@ integrationResultsVarianceTable <- function(results, texts = integrationGuiTexts
     table
 }
 
+#' Each factor's agreement across the training seeds (KIT-151; INT-14), to three decimals; NULL when not measured.
+#' @noRd
+integrationResultsStabilityTable <- function(results, texts = integrationGuiTexts()) {
+    stability <- results$stability
+    if (is.null(stability) || !nrow(stability) || all(is.na(stability$agreement_lowest))) return(NULL)
+    table <- data.frame(stability$factor, sprintf("%.3f", stability$agreement_lowest), sprintf("%.3f", stability$agreement_median),
+        stringsAsFactors = FALSE)
+    names(table) <- unname(texts[c("col_factor", "col_agreement_lowest", "col_agreement_median")])
+    table
+}
+
 #' The relation of the factors to the groups, in words: a p-value not given under the claim limit, or not computable.
 #' @noRd
 integrationResultsAssociationTable <- function(results, texts = integrationGuiTexts()) {
@@ -775,7 +792,9 @@ integrationWriteResults <- function(results, staged, texts = integrationGuiTexts
         write(results$weights, "weights.tsv"), write(results$top_weights, "top_weights.tsv"),
         write(correlation, "factor_correlation.tsv"), write(advisories, "model_warnings.tsv"),
         # KIT-152: the top features' values (the scatter's and, before display centring, the heatmap's).
-        write(results$feature_values, "top_feature_values.tsv"))
+        write(results$feature_values, "top_feature_values.tsv"),
+        # KIT-151 (INT-14): each factor's agreement across the training seeds.
+        if (!is.null(results$stability)) write(results$stability, "factor_stability.tsv"))
     maps <- Filter(function(map) is.null(map$refusal), results$maps)
     for (method in names(maps)) tables <- c(tables, write(maps[[method]]$coordinates, sprintf("map_%s.tsv", method)))
     if (length(maps)) {

@@ -156,7 +156,9 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
     # Every method choice is the workbook's to settle, except those the user decided: the precision (INT-6), the
     # feature selection (INT-12) and the convergence (INT-15; KIT-151).
     decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "precision", "convergence_mode", "maxiter")
-    expect_true(all(grepl("workbook", table$settled_by[!table$parameter %in% decided])))
+    expect_true(all(grepl("workbook", table$settled_by[!table$parameter %in% c(decided, "training_seeds")])))
+    # INT-14: several seeds decided; their number is provisional.
+    expect_match(table$settled_by[table$parameter == "training_seeds"], "^INT-14 .*provisional")
     expect_true(all(grepl("^INT-12 \\(decided", table$settled_by[table$parameter %in% decided[1:3]])))
     expect_identical(table$default[table$parameter %in% decided[1:3]], c("variance_above_trend", "1000", "0.5"))
     expect_true(all(grepl("^INT-15 \\(decided", table$settled_by[table$parameter %in% decided[5:6]])))
@@ -666,4 +668,71 @@ test_that("KIT-151 (INT-15): the model says whether training stopped by its conv
     summary <- integrationModelSummary(run$value, integrationResolveMofaParameters(object))
     expect_true(summary$converged)
     expect_identical(summary$convergence, sprintf(texts[["result_converged"]], 2L, 10000L))
+})
+
+# KIT-151 (INT-14, audit SCI-06, SCI-20): the model is trained from several seeds (by default 5: the declared seed and
+# the next four whole numbers), one model at a time, the further ones keeping only their factors; each factor's
+# agreement across seeds (its absolute correlation with the factor of each other model it is paired with, one to one,
+# the most similar pair first) is kept with the model, shown with the results and in the methods paragraph.
+test_that("KIT-151 (INT-14): the model is trained from several seeds and each factor's agreement across them is kept", {
+    inputs <- intModelInputs()
+    manager <- newIntegrationStateOwner(file.path(inputs$root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(inputs$proteomics, inputs$lipidomics))
+    object <- integrationImportedObject(manager)
+    defaults <- integrationResolveMofaParameters(object)
+    expect_identical(defaults$training_seeds, 5L)
+    expect_identical(integrationTrainingSeeds(defaults), 20261119L + 0:4)
+    expect_error(integrationResolveMofaParameters(object, list(training_seeds = 0L)), class = "integration_parameters_invalid")
+    expect_error(integrationResolveMofaParameters(object, list(seed = .Machine$integer.max, training_seeds = 2L)),
+        class = "integration_parameters_invalid")
+    # Each seed's model: the second factor of the seed 20261120 model is the first's, sign flipped; its third factor
+    # is new (half the samples' order reversed); the seed 20261123 model keeps one factor fewer.
+    calls <- list()
+    trainer <- function(views, options) {
+        calls[[length(calls) + 1L]] <<- list(seed = options$seed, factors_only = isTRUE(options$factors_only))
+        fit <- intModelFakeTrainer(views, options)
+        f <- matrix(c(1, 4, 2, 5, 3, 0, 1, 0, 1, 1, 9, 7, 8, 6, 5), 5L, 3L,
+            dimnames = list(rownames(fit$factors), paste0("Factor", 1:3)))
+        if (options$seed == 20261120L) f <- cbind(Factor1 = f[, 2L], Factor2 = -f[, 1L], Factor3 = c(1, 2, 3, 5, 4))
+        if (options$seed == 20261123L) f <- f[, 1:2]
+        fit$factors <- f
+        if (isTRUE(options$factors_only)) return(list(factors = f, iterations = 7L))
+        fit$weights <- lapply(fit$weights, function(w) w[, 1:3, drop = FALSE])
+        fit$r2_per_factor <- fit$r2_per_factor[1:3, , drop = FALSE]
+        fit
+    }
+    run <- suppressWarnings(runIntegrationModel(manager, list(num_factors = 3L), trainer = trainer))
+    # One model per seed, the declared seed's first and in full; the others factors only.
+    expect_identical(vapply(calls, `[[`, integer(1), "seed"), 20261119L + 0:4)
+    expect_identical(vapply(calls, `[[`, logical(1), "factors_only"), c(FALSE, TRUE, TRUE, TRUE, TRUE))
+    seeds <- run$value$seeds
+    expect_identical(seeds$seeds, 20261119L + 0:4)
+    expect_identical(seeds$models$iterations, c(2L, 7L, 7L, 7L, 7L))
+    expect_identical(seeds$models$factors, c(3L, 3L, 3L, 3L, 2L))
+    second <- seeds$agreement[seeds$agreement$seed == 20261120L, ]
+    expect_identical(second$matched_factor[1:2], c("Factor2", "Factor1"))
+    expect_equal(second$abs_r[1:2], c(1, 1))
+    expect_lt(second$abs_r[[3L]], 1)
+    last <- seeds$agreement[seeds$agreement$seed == 20261123L, ]
+    expect_identical(last$matched_factor, c("Factor1", "Factor2", NA))
+    expect_identical(last$abs_r[[3L]], 0)
+    stability <- seeds$stability
+    expect_identical(stability$factor, paste0("Factor", 1:3))
+    expect_identical(stability$other_models, rep(4L, 3L))
+    expect_equal(stability$agreement_lowest[1:2], c(1, 1))
+    expect_identical(stability$agreement_lowest[[3L]], 0)
+    expect_equal(stability$agreement_median[[3L]], stats::median(c(second$abs_r[[3L]], 1, 1, 0)))
+    # Shown with the results, for the factors shown.
+    results <- integrationResults(run$value, object, list(factors_shown = c("Factor1", "Factor3")), manager = manager)
+    expect_identical(results$seeds, 20261119L + 0:4)
+    expect_identical(results$stability$factor, c("Factor1", "Factor3"))
+    expect_identical(names(integrationResultsStabilityTable(results)), unname(integrationGuiTexts()[c("col_factor",
+        "col_agreement_lowest", "col_agreement_median")]))
+    # One seed: one model, nothing to compare.
+    calls <- list()
+    single <- suppressWarnings(runIntegrationModel(manager, list(training_seeds = 1L), trainer = trainer))
+    expect_length(calls, 1L)
+    expect_identical(nrow(single$value$seeds$agreement), 0L)
+    expect_true(all(is.na(single$value$seeds$stability$agreement_lowest)))
 })

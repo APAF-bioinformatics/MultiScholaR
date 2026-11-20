@@ -234,6 +234,9 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
         # KIT-151 (INT-15): slow, a limit of 10,000 rounds, and how training stopped.
         "asked for 5 factors (convergence mode slow, at most 10000 training rounds, seed 20261119",
         "Training settled after 186 rounds, stopped by its convergence rule, and kept 5 factors; 20 biological samples",
+        # KIT-151 (INT-14): five models, one per seed; the stand-in trains the same factors from every seed.
+        sprintf(t[["methods_seeds"]], 5L, 20261119L, 20261123L, 20261119L,
+            paste(sprintf("Factor%d 1.000", 1:5), collapse = ", ")),
         sprintf(t[["methods_association"]], "Benjamini-Hochberg"),
         sprintf(t[["methods_claim_limit"]], "proteomics"),
         "Settings that were provisional defaults at the time of the analysis: ", "Number of factors (5)")) {

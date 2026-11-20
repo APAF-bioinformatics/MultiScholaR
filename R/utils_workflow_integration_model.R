@@ -276,6 +276,10 @@ integrationMofaParameterSpec <- function() {
         maxiter = list(default = 10000L, choices = NULL,
             settled_by = "INT-15 (decided 2026-11-21: a limit training stops well within)"),
         seed = list(default = 20261119L, choices = NULL, settled_by = workbook),
+        # INT-14 (user, 2026-11-21): the model is trained from several seeds and each factor's agreement across them
+        # reported (`integrationSeedStability`); the reported model is the declared seed's. The number is provisional.
+        training_seeds = list(default = 5L, choices = NULL,
+            settled_by = "INT-14 (several seeds decided 2026-11-21); the number is provisional, awaiting the user"),
         # INT-6 (user, 2026-11-19): decided, not provisional. Double precision gives the same model on every computer
         # (KIT-062 diagnosis run 44462198417: MOFA2's float32 default followed one of two training paths depending on
         # the CPU model and thread count); single precision uses less memory for very large studies, and its results
@@ -350,6 +354,11 @@ integrationResolveMofaParameters <- function(object, parameters = list()) {
     out$num_factors <- whole("num_factors", 1L)
     out$maxiter <- whole("maxiter", 1L)
     out$seed <- whole("seed", 0L)
+    out$training_seeds <- whole("training_seeds", 1L)
+    # The other seeds are the next whole numbers after the declared one (`integrationTrainingSeeds`).
+    if (out$seed > .Machine$integer.max - (out$training_seeds - 1L)) {
+        invalid(sprintf("seed plus training_seeds - 1 must be at most %d", .Machine$integer.max))
+    }
     # INT-12: the number kept and the observed share apply only when features are selected; with no selection a value
     # the caller gives is refused and an absent one is NA (so the identity does not carry an unused default).
     if (!identical(out$feature_selection, "none")) {
@@ -1185,6 +1194,11 @@ integrationTrainMofa <- function(views, options, handoff = getOption("MultiSchol
         integrationRefuse("MOFA2 could not use the configured Python with mofapy2 and fell back to basilisk; the model is not trained",
             "integration_mofa_unavailable")
     }
+    stats_slot <- methods::slot(model, "training_stats")
+    # KIT-151 (INT-14): a further seed's model keeps only its factors and its training length.
+    if (isTRUE(options$factors_only)) {
+        return(list(factors = MOFA2::get_factors(model)[[1L]], iterations = length(stats_slot$time)))
+    }
     # KIT-148: MOFA2's overall-level check, placed where its loading gave it (before the correlated-factors check, the
     # last of its checks).
     overall <- integrationMofaOverallLevelWarning(views, MOFA2::get_factors(model)[[1L]], options$center_groups)
@@ -1196,7 +1210,6 @@ integrationTrainMofa <- function(views, options, handoff = getOption("MultiSchol
     variance <- MOFA2::get_variance_explained(model)
     r2 <- variance$r2_per_factor[[1L]]
     if (all(rownames(r2) %in% names(views))) r2 <- t(r2)
-    stats_slot <- methods::slot(model, "training_stats")
     elbo <- as.numeric(stats_slot$elbo)
     list(factors = MOFA2::get_factors(model)[[1L]], weights = MOFA2::get_weights(model), r2_per_factor = r2,
         r2_total = variance$r2_total[[1L]], elbo = elbo, iterations = length(stats_slot$time),
@@ -1224,8 +1237,9 @@ INTEGRATION_MODEL_SCHEMA <- "multischolar.integration_mofa_model.v2"
 #' @param store The operation's store handle (`store$table`, `store$product`).
 #' @param maxiter The round limit training ran under (KIT-151: `elbo$maxiter` and `elbo$stopped_by`,
 #'   `integrationStoppedBy`); NA when not known.
+#' @param seeds KIT-151 (INT-14): `integrationSeedStability()`'s value, kept as `seeds`; NULL when not trained so.
 #' @noRd
-integrationModelProduct <- function(aligned, fit, store, maxiter = NA_integer_) {
+integrationModelProduct <- function(aligned, fit, store, maxiter = NA_integer_, seeds = NULL) {
     factors <- fit$factors
     factor_table <- data.frame(biological_sample = rownames(factors), factors, check.names = FALSE,
         stringsAsFactors = FALSE, row.names = NULL)
@@ -1253,7 +1267,7 @@ integrationModelProduct <- function(aligned, fit, store, maxiter = NA_integer_) 
             trace = elbo, maxiter = as.integer(maxiter),
             stopped_by = if (is.na(maxiter)) NA_character_ else integrationStoppedBy(fit$iterations, maxiter)),
         samples = aligned$samples, view_summary = aligned$view_summary, shared_samples = aligned$shared_samples,
-        notes = aligned$notes, options = fit$options, versions = fit$versions, messages = fit$messages,
+        notes = aligned$notes, options = fit$options, versions = fit$versions, messages = fit$messages, seeds = seeds,
         model_file = list(reference = file_reference, sha256 = file$sha256 %||% NA_character_, size = file$size %||% NA_real_,
             media_type = "application/x-hdf5"))
 }
@@ -1408,9 +1422,89 @@ integrationMofaOperation <- function(match = FALSE) {
 #' @noRd
 integrationModelFromAligned <- function(aligned, resolved, parameters, store) {
     trainer <- parameters[["trainer", exact = TRUE]] %||% integrationTrainMofa
-    fit <- trainer(aligned$views, integrationMofaOptions(resolved))
+    options <- integrationMofaOptions(resolved)
+    fit <- trainer(aligned$views, options)
     reclaimWorkflowMemory()
-    integrationModelProduct(aligned, fit, store, maxiter = resolved$maxiter)
+    # KIT-151 (INT-14): the other seeds, one model at a time; of each only its factors and its training length are kept.
+    others <- list()
+    for (seed in integrationTrainingSeeds(resolved)[-1L]) {
+        other <- trainer(aligned$views, utils::modifyList(options, list(seed = seed, factors_only = TRUE)))
+        others[[length(others) + 1L]] <- list(seed = seed, factors = other$factors, iterations = as.integer(other$iterations))
+        other <- NULL
+        reclaimWorkflowMemory()
+    }
+    seeds <- integrationSeedStability(fit, others, resolved)
+    integrationModelProduct(aligned, fit, store, maxiter = resolved$maxiter, seeds = seeds)
+}
+
+#' The seeds a model is trained from (KIT-151; INT-14): the declared seed, then the next `training_seeds - 1` whole
+#' numbers (seed 20261119 with 5 seeds: 20261119 to 20261123). The first is the reported model's.
+#' @param parameters Resolved parameters.
+#' @noRd
+integrationTrainingSeeds <- function(parameters) as.integer(parameters$seed) + seq_len(as.integer(parameters$training_seeds)) - 1L
+
+#' Pair the factors of two models one to one (KIT-151; INT-14): every pair's absolute correlation of the factor values
+#' over the biological samples both have (pairwise complete; a factor without spread correlates 0); the pair with the
+#' largest correlation first, then the next largest among the factors left, and so on (equal values in the order of the
+#' reported model's factors, then the other's). A factor left without a partner (the other model kept fewer factors)
+#' agrees 0.
+#' @param reported,other Samples x factors matrices, named by sample and factor.
+#' @return `data.frame(factor, matched_factor, abs_r)`, one row per factor of `reported`, in its order.
+#' @noRd
+integrationMatchFactors <- function(reported, other) {
+    samples <- intersect(rownames(reported), rownames(other))
+    r <- suppressWarnings(abs(stats::cor(reported[samples, , drop = FALSE], other[samples, , drop = FALSE],
+        use = "pairwise.complete.obs")))
+    r[is.na(r)] <- 0
+    pairs <- expand.grid(i = seq_len(nrow(r)), j = seq_len(ncol(r)))
+    pairs$abs_r <- r[cbind(pairs$i, pairs$j)]
+    pairs <- pairs[order(-pairs$abs_r, pairs$i, pairs$j), , drop = FALSE]
+    out <- data.frame(factor = colnames(reported), matched_factor = NA_character_, abs_r = 0, stringsAsFactors = FALSE)
+    used <- integer()
+    for (k in seq_len(nrow(pairs))) {
+        i <- pairs$i[[k]]
+        j <- pairs$j[[k]]
+        if (!is.na(out$matched_factor[[i]]) || j %in% used) next
+        out$matched_factor[[i]] <- colnames(other)[[j]]
+        out$abs_r[[i]] <- pairs$abs_r[[k]]
+        used <- c(used, j)
+    }
+    out
+}
+
+#' Each factor's agreement across the training seeds (KIT-151; INT-14, audit SCI-06, SCI-20): the reported model's
+#' factors paired with each other seed's (`integrationMatchFactors`), and per factor the median and the lowest absolute
+#' correlation over the other seeds.
+#' @param fit The reported model (`integrationTrainMofa()`'s form).
+#' @param others Per other seed `list(seed, factors, iterations)`.
+#' @param parameters Resolved parameters.
+#' @return `list(rule, seeds, models (seed, iterations, stopped_by, factors), agreement (factor, seed, matched_factor,
+#'   abs_r), stability (factor, other_models, agreement_median, agreement_lowest))`.
+#' @noRd
+integrationSeedStability <- function(fit, others, parameters) {
+    reported <- fit$factors
+    seeds <- integrationTrainingSeeds(parameters)
+    models <- data.frame(seed = seeds,
+        iterations = as.integer(c(fit$iterations, vapply(others, function(o) o$iterations, integer(1)))),
+        factors = as.integer(c(ncol(reported), vapply(others, function(o) ncol(o$factors), integer(1)))),
+        stringsAsFactors = FALSE)
+    models$stopped_by <- vapply(models$iterations, integrationStoppedBy, character(1), maxiter = parameters$maxiter)
+    agreement <- do.call(rbind, c(list(data.frame(factor = character(), seed = integer(), matched_factor = character(),
+        abs_r = numeric(), stringsAsFactors = FALSE)), lapply(others, function(o) {
+        m <- integrationMatchFactors(reported, o$factors)
+        data.frame(factor = m$factor, seed = rep(as.integer(o$seed), nrow(m)), matched_factor = m$matched_factor,
+            abs_r = m$abs_r, stringsAsFactors = FALSE)
+    })))
+    rownames(agreement) <- NULL
+    factors <- colnames(reported)
+    stability <- data.frame(factor = factors, other_models = length(others),
+        agreement_median = vapply(factors, function(f) if (length(others)) stats::median(agreement$abs_r[agreement$factor == f])
+            else NA_real_, numeric(1), USE.NAMES = FALSE),
+        agreement_lowest = vapply(factors, function(f) if (length(others)) min(agreement$abs_r[agreement$factor == f])
+            else NA_real_, numeric(1), USE.NAMES = FALSE),
+        stringsAsFactors = FALSE)
+    list(rule = "the declared seed, then the next whole numbers", seeds = seeds, models = models, agreement = agreement,
+        stability = stability)
 }
 
 #' How training stopped (KIT-151; INT-15): `convergence_rule` when it took fewer rounds than the limit (MOFA2's rule

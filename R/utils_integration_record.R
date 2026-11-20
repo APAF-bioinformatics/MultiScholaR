@@ -110,6 +110,10 @@ integrationRecordTexts <- function() {
         model_bytes = "Size of the model file (bytes)",
         model_entity = "Model's identifier in the project",
         model_identity = "Checksum of the model's identity (data and settings)",
+        # KIT-151 (INT-14).
+        model_seeds = "Models trained (one per seed)",
+        # %d: models; %s: the seeds.
+        model_seeds_value = "%d (seeds %s)",
         # %d: kept, asked for.
         model_factors_value = "%d of %d",
         # The few-samples note (D7). %d: samples in every data set, the threshold.
@@ -159,6 +163,13 @@ integrationRecordTexts <- function() {
         methods_trained_not_settled = paste("Training did not settle: it stopped at the limit of %d rounds before its",
             "convergence rule was met, and kept %d factors; %d biological samples entered the model, %d of them measured in",
             "every data set."),
+        # KIT-151 (INT-14). %d: models, first seed, last seed, the reported model's seed; %s: each factor's lowest agreement.
+        methods_seeds = paste("The model was trained %d times, from seeds %d to %d (the declared seed and the next whole",
+            "numbers), and the model reported is that of seed %d. Each factor's agreement across seeds is the absolute",
+            "correlation of its values with the most similar factor of each other model (factors paired one to one, the",
+            "most similar pair first); the lowest agreement per factor was %s."),
+        # %d: the seed.
+        methods_seeds_single = "The model was trained once, from seed %d; the factors' agreement across seeds was not measured.",
         # %s: the adjustment's name.
         methods_association = paste("Each factor was related to the experimental groups after training: a one-way analysis",
             "of variance of the factor's values on the group, with the share of the factor's variance that lies between",
@@ -526,6 +537,8 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
             precision = parameters$precision, iterations = iterations, maxiter = as.integer(parameters$maxiter),
             # KIT-151 (INT-15): stopped by the convergence rule or at the limit, as the product keeps it.
             stopped_by = stopped_by, converged = identical(stopped_by, "convergence_rule"),
+            # KIT-151 (INT-14): the models trained, one per seed, and each factor's agreement across them.
+            seeds = value$seeds$seeds, seed_models = value$seeds$models, stability = value$seeds$stability,
             factors_requested = as.integer(parameters$num_factors), factors_kept = ncol(value$factors) - 1L,
             elbo_last = value$elbo$last, variance_total = value$variance_total, versions = value$versions,
             # MOFA2's data, model and training options as trained (every one, the defaults included), encoded exactly.
@@ -592,11 +605,13 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
     versions <- model$versions
     model_table <- framed(unname(texts[c("col_field", "col_value")]), list(
         unname(texts[c("model_mofa2", "model_mofapy2", "model_python", "model_r", "model_reticulate", "model_precision",
-            "model_iterations", "model_settled", "model_factors", "model_checksum", "model_bytes", "model_entity",
-            "model_identity")]),
+            "model_iterations", "model_settled", "model_factors", "model_seeds", "model_checksum", "model_bytes",
+            "model_entity", "model_identity")]),
         c(text(versions$MOFA2), text(versions$mofapy2), text(versions$python), text(versions$R), text(versions$reticulate),
             text(model$precision), sprintf("%s (%s)", text(model$iterations), text(model$maxiter)), word(model$converged),
             sprintf(texts[["model_factors_value"]], as.integer(s(model$factors_kept)), as.integer(s(model$factors_requested))),
+            if (length(unlist(model$seeds))) sprintf(texts[["model_seeds_value"]], length(unlist(model$seeds)),
+                paste(unlist(model$seeds), collapse = ", ")) else texts[["not_recorded"]],
             text(model$model_file_sha256), text(model$model_file_bytes), text(model$entity_id), text(model$identity_sha256))))
     variance <- integrationRecordFrame(model$variance_total)
     variance <- if (nrow(variance)) data.frame(variance$view, sprintf("%.2f", as.numeric(variance$r2_percent)),
@@ -720,6 +735,15 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
             as.integer(s(model$factors_kept)), nrow(integrationRecordFrame(m$samples)), as.integer(s(m$shared_samples))) else
             sprintf(texts[["methods_trained_not_settled"]], as.integer(s(model$maxiter)), as.integer(s(model$factors_kept)),
                 nrow(integrationRecordFrame(m$samples)), as.integer(s(m$shared_samples))))
+    # KIT-151 (INT-14, audit SCI-20): how many models were trained, from which seeds, and each factor's agreement.
+    seeds <- as.integer(unlist(model$seeds))
+    stability <- integrationRecordFrame(model$stability)
+    if (length(seeds) > 1L && nrow(stability)) {
+        sentences <- c(sentences, sprintf(texts[["methods_seeds"]], length(seeds), seeds[[1L]], seeds[[length(seeds)]],
+            seeds[[1L]], paste(sprintf("%s %.3f", stability$factor, as.numeric(stability$agreement_lowest)), collapse = ", ")))
+    } else if (length(seeds) == 1L) {
+        sentences <- c(sentences, sprintf(texts[["methods_seeds_single"]], seeds[[1L]]))
+    }
     results <- block$results
     if (!is.null(results)) {
         adjust <- integrationRecordParameter(results$parameters, "p_adjust_method")
