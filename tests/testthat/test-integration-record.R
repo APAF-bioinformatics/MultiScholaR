@@ -264,7 +264,8 @@ test_that("KIT-142: the record, workbook, study parameters and report are saved 
     expect_identical(shiny::isolate(bus$tab_status$integration_record), "complete")
     expect_identical(basename(saved$files), c("analysis_record.json", "analysis_record.xlsx", "study_parameters.txt",
         "integration_report.docx", "model.hdf5", "sample_match.tsv"))
-    expect_identical(dirname(saved$files[[1L]]), journey$paths$study_report_dir)
+    expect_identical(normalizePath(dirname(saved$files[[1L]]), winslash = "/"),
+        normalizePath(journey$paths$study_report_dir, winslash = "/"))
     expect_true(all(file.size(saved$files) > 0))
     read <- jsonlite::read_json(saved$files[[1L]], simplifyVector = FALSE)
     # KIT-148: the model file (the stand-in trainer's three bytes) with the record's checksum, and the uploaded match.

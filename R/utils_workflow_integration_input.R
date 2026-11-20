@@ -173,7 +173,8 @@ integrationInputMatrixPrototype <- function(columns) {
 }
 
 #' Write one table as a contract Parquet file: format version 2.6, snappy, row groups of 10,000 rows, no R metadata
-#' (the same table gives the same bytes on every computer with the same Arrow).
+#' (the same table gives the same bytes on the same platform's Arrow build and the same content on every platform;
+#' a file's sha256 identifies it on the machine that wrote it and travels with the project).
 #' @param table A plain data frame of text or double columns.
 #' @param path The file to write.
 #' @noRd
