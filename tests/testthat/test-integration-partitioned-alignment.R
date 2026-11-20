@@ -187,3 +187,105 @@ test_that("KIT-149: the model trained through either variant gets the same data 
     entry <- workflowOperationEntry(INTEGRATION_MODEL_OPERATION)
     expect_identical(entry$variants, c("whole", "partitioned"))
 })
+
+# KIT-149, audit ENG-05: no data set is read whole where nothing needs its values. Every whole-table read of the store
+# (`materializeWorkflowTable`, and its alias `materializeDIATable` the checkpoint reader calls) is traced; the data sets'
+# tables are named by the inputs state. The tier-1 corpus (four omics, six data sets) is copied into a project.
+intPartCorpusProject <- function(.local_envir = parent.frame()) {
+    corpus <- normalizePath(testthat::test_path("..", "testdata", "integration", "corpus"), mustWork = FALSE)
+    testthat::skip_if_not(dir.exists(corpus), "the tier-1 corpus is not present")
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    root <- withr::local_tempdir(.local_envir = .local_envir)
+    paths <- list(base_dir = root, integration_dir = file.path(root, "integration"),
+        source_dir = file.path(root, "scripts", "integration"), results_dir = file.path(root, "results", "integration"),
+        multiomic_inputs_dir = file.path(root, "results", "integration", "multiomic_inputs"))
+    dir.create(paths$source_dir, recursive = TRUE)
+    for (omic in c("lipidomics", "metabolomics", "proteomics", "transcriptomics")) {
+        dir <- file.path(paths$integration_dir, omic)
+        dir.create(dir, recursive = TRUE)
+        stopifnot(all(file.copy(list.files(file.path(corpus, omic), full.names = TRUE), dir)))
+    }
+    list(root = root, paths = paths)
+}
+
+intPartTraceReads <- function(.local_envir = parent.frame()) {
+    reads <- new.env()
+    reads$ids <- character()
+    trace <- function(original) function(context, reference, ...) {
+        reads$ids <- c(reads$ids, reference$entity_id)
+        original(context, reference, ...)
+    }
+    testthat::local_mocked_bindings(materializeWorkflowTable = trace(materializeWorkflowTable),
+        materializeDIATable = trace(materializeDIATable), .env = .local_envir)
+    reads
+}
+
+intPartViewTables <- function(manager) withWorkflowStateScope(manager, function() {
+    source <- getWorkflowStateReference(manager, "integration_inputs")
+    vapply(readWorkflowStateMetadata(manager, source)$data$components$views, function(table) table$entity_id, character(1))
+})
+
+test_that("KIT-149 (ENG-05): the GUI's import, the Sample Matching preview, the match file and the confirmation read no data set whole", {
+    project <- intPartCorpusProject()
+    bus <- do.call(shiny::reactiveValues, omicWorkflowInitialBus(integrationGuiConfig()$shell))
+    withr::defer(if (!is.null(shiny::isolate(bus$state_manager))) closeWorkflowStateOwner(shiny::isolate(bus$state_manager)))
+    reads <- intPartTraceReads()
+    scan <- integrationScanProject(project$paths$integration_dir)
+    shiny::testServer(mod_integration_import_server, args = list(workflow_data = bus, paths = project$paths), {
+        session$setInputs(views = scan$views$view, import = 1)
+    })
+    manager <- shiny::isolate(bus$state_manager)
+    expect_identical(manager$getHistory(), c("initial", "integration_inputs"))
+    tables <- intPartViewTables(manager)
+    expect_length(tables, 6L)
+    # The import action reads the names, the design and the manifests, not a data set.
+    expect_identical(intersect(reads$ids, tables), character())
+    texts <- integrationGuiTexts()
+    shiny::testServer(mod_integration_alignment_server, args = list(workflow_data = bus, paths = project$paths), {
+        preview <- session$returned()
+        expect_false(inherits(preview, "integration_alignment_refused"))
+        expect_null(preview$aligned$views)
+        # The match file as offered, taken back unchanged, then the confirmation.
+        downloaded <- output$match_download
+        expect_true(file.exists(downloaded))
+        session$setInputs(match_upload = data.frame(name = "match.tsv", size = file.size(downloaded),
+            type = "text/tab-separated-values", datapath = downloaded, stringsAsFactors = FALSE))
+        expect_match(output$match_status$html, texts[["match_unchanged"]], fixed = TRUE)
+        session$setInputs(confirm = 1)
+        expect_identical(bus$tab_status$integration_alignment, "complete")
+        expect_identical(intersect(reads$ids, tables), character())
+        # The numbers the tab shows are the whole-matrix alignment's.
+        shown <- session$returned()
+        object <- integrationImportedObject(manager)
+        whole <- suppressWarnings(integrationAlignViews(object, shown$parameters))
+        fields <- c("samples", "view_summary", "shared_samples", "notes")
+        expect_identical(shown$aligned[fields], whole[fields])
+        expect_identical(bus$integration_alignment$view_summary, whole$view_summary)
+        expect_identical(integrationAlignmentFacts(shown), integrationAlignmentFacts(c(list(aligned = whole),
+            shown[setdiff(names(shown), "aligned")])))
+    })
+})
+
+test_that("KIT-149 (ENG-05): the model reads only the selected data sets whole (whole variant), and none whole (partitioned)", {
+    project <- intPartCorpusProject()
+    manager <- newIntegrationStateOwner(file.path(project$paths$source_dir, "store"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, file.path(project$paths$integration_dir,
+        c("lipidomics", "metabolomics", "proteomics", "transcriptomics")))
+    tables <- intPartViewTables(manager)
+    selected <- c("proteomics", "transcriptomics")
+    reads <- intPartTraceReads()
+    whole <- runIntegrationModel(manager, list(views = selected, variant = "whole"), trainer = intPartTrainer())
+    expect_identical(whole$status, "computed")
+    expect_setequal(intersect(reads$ids, tables), unname(tables[selected]))
+    reads$ids <- character()
+    other <- newIntegrationStateOwner(file.path(project$paths$source_dir, "store-partitioned"))
+    withr::defer(closeWorkflowStateOwner(other))
+    importIntegrationInputs(other, file.path(project$paths$integration_dir,
+        c("lipidomics", "metabolomics", "proteomics", "transcriptomics")))
+    reads$ids <- character()
+    partitioned <- runIntegrationModel(other, list(views = selected, variant = "partitioned"), trainer = intPartTrainer())
+    expect_identical(partitioned$status, "computed")
+    expect_identical(intersect(reads$ids, intPartViewTables(other)), character())
+    expect_identical(partitioned$value$view_summary, whole$value$view_summary)
+})

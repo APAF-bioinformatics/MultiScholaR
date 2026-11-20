@@ -1293,7 +1293,9 @@ integrationModelComparable <- function(manager, value) {
 #' @noRd
 integrationMofaOperation <- function(match = FALSE) {
     declaration <- newWorkflowOperation(INTEGRATION_MODEL_OPERATION, "IntegrationViewsData",
-        fields = c("views", "features", "design_matrix", "inputs"), unit = "whole_matrix", output_class = NULL,
+        # KIT-149 (audit ENG-05): the data sets are not among the fields read before the kernel; the kernel reads the
+        # selected ones only.
+        fields = c("features", "design_matrix", "inputs"), unit = "whole_matrix", output_class = NULL,
         parameters = c(integrationMofaParameterNames(), if (isTRUE(match)) "sample_match"),
         product_type = "integration.mofa_model",
         # KIT-148: the product's form is part of what a saved model is looked up by, so a model saved in the earlier
@@ -1301,6 +1303,9 @@ integrationMofaOperation <- function(match = FALSE) {
         factors = list(product_schema = INTEGRATION_MODEL_SCHEMA),
         kernel = function(object, parameters, store) {
             resolved <- integrationResolveMofaParameters(object, parameters)
+            # KIT-149 (audit ENG-05): only the selected data sets are read whole; the others stay zero-row prototypes.
+            object@views[resolved$views] <- readWorkflowExecutionComponents(store$manager, store$source,
+                fields = paste0("views/", resolved$views))@views[resolved$views]
             # KIT-148: the rows carry the hand-off names (`<view>:<feature_id>`) from the read, so the aligned views are
             # handed to the trainer as they are, with no renamed copy.
             integrationModelFromAligned(integrationAlignViews(object, resolved, prefix_rows = TRUE), resolved, parameters, store)

@@ -635,7 +635,8 @@ integrationImportRequest <- function(scan, selected, texts = integrationGuiTexts
 #' @noRd
 integrationCommitImport <- function(manager, request) {
     reference <- importIntegrationInputs(manager, request$dirs)
-    object <- integrationImportedObject(manager)
+    # KIT-149 (audit ENG-05): the names, the design and the manifests only; no data set is read.
+    object <- integrationImportedObject(manager, fields = c("design_matrix", "inputs"))
     views <- names(object@views)[names(object@views) %in% request$views]
     design <- object@design_matrix
     view_omics <- unlist(unname(lapply(object@inputs, function(entry) stats::setNames(rep(entry$omic, length(entry$views)),
@@ -645,14 +646,21 @@ integrationCommitImport <- function(manager, request) {
         runs = sum(used), biological_samples = length(unique(design$biological_sample[used])), committed_at = Sys.time())
 }
 
-#' The imported inputs state, every field hydrated.
+#' The imported inputs state, every field hydrated, or (KIT-149, audit ENG-05) only the named fields: the data sets
+#' left unread are zero-row prototypes that keep their names and columns.
+#' @param manager The integration store.
+#' @param fields TRUE (every field), or the fields to read (`readWorkflowExecutionComponents`).
 #' @noRd
-integrationImportedObject <- function(manager) {
+integrationImportedObject <- function(manager, fields = TRUE) {
     withWorkflowStateScope(manager, function() {
         source <- getWorkflowStateReference(manager, INTEGRATION_INPUTS_STATE)
-        readWorkflowExecutionComponents(manager, source, fields = TRUE)
+        readWorkflowExecutionComponents(manager, source, fields = fields)
     })
 }
+
+# The fields the Sample Matching tab's preview reads (KIT-149, audit ENG-05): every field but the data sets, whose
+# values the preview reads in row pages (`integrationAlignmentPreview(manager = )`).
+INTEGRATION_PREVIEW_FIELDS <- c("features", "design_matrix", "inputs")
 
 # ------------------------------------------------------------------------------------------------
 # The Sample Matching tab (KIT-139).
@@ -667,16 +675,25 @@ integrationImportedObject <- function(manager) {
 #' @param views The selected data sets.
 #' @param match NULL, or the user's sample match table as uploaded (KIT-063 item A): checked and applied as the model
 #'   applies it; a table that gives no run another biological sample changes nothing.
+#' @param manager KIT-149 (audit ENG-05): the integration store, whose data sets are then read in row pages
+#'   (`integrationStateViewPages`; `object` needs only `INTEGRATION_PREVIEW_FIELDS`); NULL reads them from `object`,
+#'   hydrated. Either way the alignment is the model's without its values (`integrationAlignViewsPartitioned(values =
+#'   FALSE)`): the counts and the sample table of `integrationAlignViews`, `aligned$views` NULL.
 #' @return `list(parameters, aligned, few_samples, keys, views, replicates, all_samples, match)`; `match` is the
 #'   match's check (`integrationResolveSampleMatch`) or NULL.
 #' @noRd
-integrationAlignmentPreview <- function(object, views, match = NULL) {
+integrationAlignmentPreview <- function(object, views, match = NULL, manager = NULL) {
     integrationAssertInputsCurrent(object)
     parameters <- integrationResolveMofaParameters(object, if (is.null(match)) list(views = views) else
         list(views = views, sample_match_table = match))
     checked <- if (!is.null(match)) integrationResolveSampleMatch(object, match)
     few <- FALSE
-    aligned <- withCallingHandlers(integrationAlignViews(object, parameters), integration_few_samples = function(warning) {
+    pages <- if (is.null(manager)) integrationObjectViewPages(object) else
+        integrationStateViewPages(manager, withWorkflowStateScope(manager, function() {
+            getWorkflowStateReference(manager, INTEGRATION_INPUTS_STATE)
+        }))
+    aligned <- withCallingHandlers(integrationAlignViewsPartitioned(object, parameters, pages, values = FALSE),
+        integration_few_samples = function(warning) {
         few <<- TRUE
         invokeRestart("muffleWarning")
     })
