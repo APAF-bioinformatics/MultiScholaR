@@ -1,15 +1,15 @@
 {
-  "label": "k152-merge-8f99a203",
-  "package_commit": "8f99a2030197afb31b7addf561d33bc28bcb3c73",
+  "label": "k151-record-7baabdee",
+  "package_commit": "7baabdee920a157c2d173b07b03e66c007d38722",
   "tests": [
+    "test-integration-partitioned-mofa.R",
+    "test-integration-mofa-model.R",
     "test-integration-outputs-mofa.R",
     "test-integration-outputs.R",
-    "test-integration-mofa-model.R",
     "test-integration-model-tab-mofa.R",
     "test-integration-results-mofa.R",
-    "test-integration-record-mofa.R",
-    "test-integration-partitioned-mofa.R"
+    "test-integration-record-mofa.R"
   ],
-  "record": false,
+  "record": true,
   "runs": 1
 }
