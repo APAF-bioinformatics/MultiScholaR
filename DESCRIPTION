@@ -362,6 +362,7 @@ Collate:
     'utils_workflow_dia_sessions.R'
     'utils_workflow_summary.R'
     'utils_workflow_integration_input.R'
+    'utils_workflow_integration_model.R'
     'utils_workflow_dia_summary.R'
     'utils_omic_gui_config.R'
     'mod_omic_workflow.R'
@@ -378,6 +379,15 @@ Collate:
     'mod_omic_enrich_panels.R'
     'mod_omic_enrich.R'
     'mod_omic_summary.R'
+    'utils_integration_gui.R'
+    'mod_integration.R'
+    'mod_integration_import.R'
+    'mod_integration_alignment.R'
+    'mod_integration_model.R'
+    'utils_integration_results.R'
+    'mod_integration_results.R'
+    'utils_integration_record.R'
+    'mod_integration_record.R'
     'zzz.R'
 Suggests:
     RhpcBLASctl,

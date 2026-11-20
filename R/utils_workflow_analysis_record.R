@@ -354,7 +354,9 @@ workflowRecordExportAnalysis <- function(context, snapshot, export, shipped) {
         parameters = lapply(names(export$parameters), function(name) list(name = name, source = "export",
             value = encodeWorkflowRecordValue(export$parameters[[name]]),
             provenance = workflowParameterProvenance(entry$defaults[[name]], export$parameters[[name]], shipped))),
-        outcomes = if (is.null(binding)) list() else binding$record_outcomes(binding, context, export$operation,
+        # KIT-062: the integration model's outcomes are its own (it has no omics binding).
+        outcomes = if (identical(export$operation, INTEGRATION_MODEL_OPERATION)) integrationModelRecordOutcomes(context, export) else
+            if (is.null(binding)) list() else binding$record_outcomes(binding, context, export$operation,
             list(data = list(products = product)), list()))
 }
 
@@ -527,6 +529,12 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     # KIT-095: a product-only export accepted on the head after the DA (the transcriptomics RUVIII matrix) is listed as an
     # analysis with its parameters and the outcomes its binding records.
     for (name in names(snapshot$exports)) analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
+    # KIT-142: an integration store's model analysis carries what the integration adds (inputs, the confirmed match, each
+    # setting's status, the model's identity, the saved results, the claim limit); an omic's record is as before.
+    if (identical(context$omic_type, "integration") && !is.null(analyses[[INTEGRATION_MODEL_OPERATION]])) {
+        analyses[[INTEGRATION_MODEL_OPERATION]] <- integrationRecordAnalysis(manager, analyses[[INTEGRATION_MODEL_OPERATION]],
+            snapshot$exports[[INTEGRATION_MODEL_OPERATION]])
+    }
     inputs <- list()
     for (name in names(snapshot$file_dependencies)) {
         dependency <- snapshot$file_dependencies[[name]]
@@ -676,9 +684,10 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     omics_roles <- sub("_$", "", vapply(omicsDeclarationBindings(), function(binding) binding$design_input_prefix, character(1)))
     omics_role_pattern <- paste0("^(", paste(omics_roles, collapse = "|"), ")(_|$)")
     for (input in record$inputs) {
+        # KIT-062: the integration's inputs are the omics' manifests, one role `integration_input_<omic>` each.
         if (is.null(input$sha256) || is.na(input$sha256) || !(input$role %in% c("diann_report", "maxquant_report",
             "fragpipe_report", "pd_tmt_report", "spectronaut_report", "fasta", "design_file", omics_roles) ||
-            grepl(omics_role_pattern, input$role))) next
+            grepl(omics_role_pattern, input$role) || startsWith(input$role, INTEGRATION_INPUT_ROLE_PREFIX))) next
         path <- if (input$role %in% names(inputs)) inputs[[input$role]] else NULL
         if (is.null(path) || !file.exists(path) || !identical(digest::digest(file = path, algo = "sha256"), input$sha256)) {
             cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")
@@ -692,7 +701,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     manager$.context$experiment_paths <- paths
     steps <- record$steps
     operations <- vapply(steps, function(step) step$operation, character(1))
-    preconditions <- seq_len(sum(cumprod(operations %in% c("import", "design_builder"))))
+    # KIT-062: the integration import is a precondition too (its state holds the inputs, checked above by sha256).
+    preconditions <- seq_len(sum(cumprod(operations %in% c("import", "design_builder", INTEGRATION_IMPORT_OPERATION))))
     history <- unlist(manager$.context$snapshot$state_history)
     expected <- vapply(steps[preconditions], function(step) step$state, character(1))
     if (!length(preconditions) || !identical(history, expected) || !all(vapply(steps[preconditions], function(step)
@@ -860,6 +870,12 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     }
     # KIT-095: the exports after the DA, through their binding's replay entry with the recorded parameters.
     for (analysis in record$analyses[setdiff(names(record$analyses %||% list()), "differential_abundance")]) {
+        # KIT-062: the integration model, on the replayed inputs state with the recorded parameters.
+        if (identical(analysis$operation, INTEGRATION_MODEL_OPERATION)) {
+            replayIntegrationModel(manager, analysis)
+            if (is.function(on_step)) on_step(list(state = manager$current_state, operation = analysis$operation), manager)
+            next
+        }
         binding <- Find(function(b) isTRUE(startsWith(analysis$operation, paste0(b$prefix, "_"))), omicsDeclarationBindings())
         entry <- tryCatch(workflowOperationEntry(analysis$operation), error = function(e) NULL)
         if (is.null(binding) || is.null(entry)) cli::cli_abort("analysis {.val {analysis$operation}} cannot be replayed", class = "workflow_replay_unsupported")
@@ -939,6 +955,8 @@ workflowAnalysisRecordTables <- function(record) {
     # KIT-129 sixth pass item 6: a new RUV design in words, as the study parameters state it (none for today's design).
     ruv <- workflowRuvDesignSummary(record)
     if (!is.null(ruv)) out$ruv_design <- ruv$rows
+    # KIT-142: an integration record's own sheets (none for an omic's record).
+    if (identical(record$omic_type, "integration")) out <- c(out, integrationRecordTables(record))
     out
 }
 
@@ -948,7 +966,7 @@ workflowAnalysisRecordTables <- function(record) {
 writeWorkflowAnalysisRecordWorkbook <- function(record, path) {
     tables <- workflowAnalysisRecordTables(record)
     openxlsx::write.xlsx(tables[intersect(c("software", "inputs", "design", "parameters", "external_resources", "steps", "analyses",
-        "packages", "ruv_design"), names(tables))], path, overwrite = TRUE)
+        "packages", "ruv_design", INTEGRATION_RECORD_SHEETS), names(tables))], path, overwrite = TRUE)
     invisible(path)
 }
 

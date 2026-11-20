@@ -513,7 +513,14 @@ workflowOperationDefaults <- local({
         trx_ruvs = list(logcpm = "input", grid = "input"),
         trx_da_contrast = list(formula = "input", qvalue = "no_shipped_default", lfc = "no_shipped_default", contrast = "input",
             friendly_name = "input"),
-        trx_ruviii_export = list(logcpm = "input", grid = "input", ruviii_m_source = "no_shipped_default"))
+        trx_ruviii_export = list(logcpm = "input", grid = "input", ruviii_m_source = "no_shipped_default"),
+        # KIT-062: the integration model. The inputs come from the import; every method parameter's provisional default
+        # is the model's own (`integrationMofaParameterSpec`, settled by the user's workbook), not config.ini's.
+        integration_mofa_model = list(input_manifests = "input", views = "input", technical_replicates = "no_shipped_default",
+            internal_standards = "no_shipped_default", missing_samples = "no_shipped_default", feature_selection = "no_shipped_default",
+            features_per_view = "no_shipped_default", scaling = "no_shipped_default", scale_views = "no_shipped_default",
+            center_groups = "no_shipped_default", num_factors = "no_shipped_default", convergence_mode = "no_shipped_default",
+            maxiter = "no_shipped_default", seed = "no_shipped_default", precision = "no_shipped_default"))
 })
 
 #' A reader's label for every declared parameter (KIT-039, IM-07): one line per parameter, keyed by operation.
@@ -625,7 +632,17 @@ workflowParameterLabels <- local({
         trx_da_contrast = list(formula = "Model formula (realised from the RUVs design)", qvalue = "FDR (BH) threshold",
             lfc = "Log fold-change display threshold (no treat)", contrast = "Contrast (input)", friendly_name = "Contrast name (input)"),
         trx_ruviii_export = list(logcpm = "TMM logCPM (input)", grid = "RUV grid result (input)",
-            ruviii_m_source = "RUVIII replicate matrix M (group or technical_replicate)"))
+            ruviii_m_source = "RUVIII replicate matrix M (group or technical_replicate)"),
+        # KIT-062: the integration model (MOFA2).
+        integration_mofa_model = list(input_manifests = "Integration inputs, the sha256 of each omic's manifest (input)",
+            views = "Views in the model (input)", technical_replicates = "Technical replicates (averaged per biological sample)",
+            internal_standards = "Internal standards (drop or keep)", missing_samples = "Samples missing in a view (keep as missing, or drop incomplete samples)",
+            feature_selection = "Feature selection per view (none, or the most variable)", features_per_view = "Features kept per view (most variable)",
+            scaling = "Per-feature scaling (none, or Z-score within its view)", scale_views = "Scale each view to unit variance (MOFA2 scale_views)",
+            center_groups = "Centre the features (MOFA2 center_groups)", num_factors = "Number of factors",
+            convergence_mode = "Convergence mode (fast, medium or slow)", maxiter = "Maximum iterations", seed = "Training seed",
+            precision = paste("Numeric precision: double gives the same model on every computer; single uses less memory",
+                "for very large studies, and its results can differ slightly between computers")))
 })
 
 #' Register one operation.
@@ -885,6 +902,15 @@ registerBuiltinWorkflowOperations <- function() {
                 diagnostic_only = FALSE, inclusion_absence = FALSE, section = NULL))
         }
     }
+    # KIT-062: the integration model (MOFA2) on the integration owner's inputs state: whole matrix, product only
+    # (accepted on the head as the transcriptomics RUVIII export is). KIT-140: on the managed worker's `omics` role (its
+    # own handler; no `@args` section, `section = NULL`); `runIntegrationModel` runs the same declaration in process.
+    model <- integrationMofaOperation()
+    registerWorkflowOperation(list(name = model$name, input = "checkpoint", input_class = model$input_class,
+        compute = "omics", handler = "computeWorkflowIntegrationModelAction", validate = "validateWorkflowOmicsParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = model$parameters, completion = "omics", publication = "omics",
+        step_label = NULL, omic_type = "integration", variants = "whole", default_variant = "whole",
+        diagnostic_only = FALSE, inclusion_absence = FALSE, declaration = model, section = NULL))
     invisible(workflowOperationNames())
 }
 

@@ -47,6 +47,32 @@ integrationInputViewFiles <- function(view) {
     list(matrix = sprintf("matrix_%s.tsv", view), features = sprintf("features_%s.tsv", view))
 }
 
+#' A view's name for an omic with several assays (INT-4, user 2026-11-19): `<omic>_<assay>` (for example
+#' `lipidomics_LCMS_Pos`), since lipidomics and metabolomics both have an assay `LCMS_Pos`; a character the contract's
+#' view names do not take becomes an underscore.
+#' @param omic The omic (`lipidomics`, `metabolomics`).
+#' @param assay The assay's name.
+#' @return The view name.
+#' @noRd
+integrationInputViewName <- function(omic, assay) {
+    paste(omic, gsub("[^A-Za-z0-9_-]", "_", assay), sep = "_")
+}
+
+#' The design column that names each run's biological sample (INT-2, user 2026-11-19: technical replicates are averaged
+#' per biological sample before the model, which is the model's step; the writer names the column): the design's
+#' declared technical-replicate column, else `tech_rep_group` (the group and replicate number, the biological unit since
+#' KIT-128), else the run's own id (each run its own biological sample).
+#' @param design The input's samples table.
+#' @param technical The design's technical-replicate column, or NA.
+#' @param sample The run id column.
+#' @return A column name of `design`.
+#' @noRd
+integrationInputBiologicalSampleColumn <- function(design, technical, sample) {
+    if (is.character(technical) && length(technical) == 1L && isTRUE(technical %in% names(design))) return(technical)
+    if ("tech_rep_group" %in% names(design)) return("tech_rep_group")
+    sample
+}
+
 #' Validate the contract's tables against the manifest's column names and views: the matrix's first column is
 #' `feature_id` with unique, non-missing ids and numeric sample columns; the features file lists the same ids in the
 #' same order with a display name; the samples file lists exactly the matrix's samples, once each, with a group.

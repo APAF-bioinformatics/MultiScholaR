@@ -1,0 +1,798 @@
+# MultiScholaR: Interactive Multi-Omics Analysis
+# Copyright (C) 2024-2026 Ignatius Pang, William Klare, and APAF-bioinformatics
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# KIT-142: the integration analysis record, its replay and its report. The record is the omics' analysis record
+# (`buildWorkflowAnalysisRecord`, derived from the integration store's head); for an integration store its model
+# analysis carries one more block, `integration`, with what the integration adds: every input (omic, data sets,
+# manifest checksum, matrix role, correction), the confirmed sample match (with an uploaded match table), every model
+# setting with its status (decided, provisional default, set by the user, from the data), the software versions, the
+# model's identity and checksum, the saved results' settings and files, MOFA2's warnings and the claim limit (KIT-060
+# D10). Replay re-imports the recorded inputs (each checked by its checksum) into a new store, trains the model with
+# the recorded settings and compares it with the recorded model numerically (INT-6). The study parameters, the methods
+# paragraph and the report read every value from the record; nothing here is hard-coded. One wording table,
+# `integrationRecordTexts()`.
+
+#' Every string of the integration record, its study parameters, methods paragraph, report and Record tab (KIT-142):
+#' one table, drafts the user sets the final wording of (docs/qa/workflow-execution/kit/kit-138/wording.md, section
+#' KIT-142). `%s`/`%d` are filled in the order the comment beside each entry gives.
+#' @return A named character vector.
+#' @noRd
+integrationRecordTexts <- function() {
+    c(
+        # Status of a setting in the record (and its legend).
+        status_decided = "decided",
+        status_provisional_default = "provisional default",
+        status_user_set = "set by the user",
+        status_input = "from the data",
+        # The study parameters' and report's sections.
+        report_title = "Multi-omics integration report",
+        report_intro = paste("This report was written by MultiScholaR from the integration's analysis record. Every value",
+            "below is read from the record."),
+        section_methods = "Methods (draft)",
+        methods_draft_note = paste("A draft for the methods section, written from the record: check the wording before",
+            "using it."),
+        section_inputs = "Data sets combined",
+        section_matching = "Sample matching",
+        section_samples = "Biological samples in the model",
+        section_settings = "Settings",
+        section_model = "The trained model",
+        section_variance = "Variance explained per data set (all factors together)",
+        section_results = "Saved results",
+        section_notes = "Notes from the model",
+        section_legend = "What the status of a setting means",
+        none_recorded = "None recorded.",
+        # Table headers.
+        col_omic = "Omic",
+        col_datasets_in_model = "Data sets in the model",
+        col_values = "Values",
+        col_correction = "Correction for unwanted variation (RUV)",
+        col_group_corrected = "Corrected with the groups as replicate sets",
+        col_checksum = "Checksum of the saved data (SHA-256)",
+        col_field = "Item",
+        col_value = "Value",
+        col_setting = "Setting",
+        col_name = "Internal name",
+        col_status = "Status",
+        col_settled_by = "Settled by",
+        col_applies_to = "Applies to",
+        col_file = "File",
+        col_view = "Data set",
+        col_variance = "Variance explained (%)",
+        col_note = "Note",
+        col_status_meaning = "Meaning",
+        legend_decided = "a decision recorded in the methods ledger; not expected to change",
+        legend_provisional_default = "the current default; the integration methods may still change it",
+        legend_user_set = "changed by the user from the default",
+        legend_input = "taken from the imported data",
+        applies_model = "model",
+        applies_results = "results",
+        yes = "yes",
+        no = "no",
+        not_recorded = "not recorded",
+        values_corrected = "corrected for unwanted variation",
+        values_normalised = "normalised, not corrected",
+        # The sample-matching facts.
+        match_rule = "How samples were matched",
+        match_rule_saved = "by the biological-sample column each omic saved",
+        # %d: runs.
+        match_rule_user = "by the biological-sample column each omic saved, corrected by an uploaded table (%d runs moved)",
+        match_table_checksum = "Checksum of the uploaded match (SHA-256)",
+        match_samples = "Biological samples in the model",
+        match_shared = "Measured in every data set",
+        match_confirmed_at = "Sample table confirmed at",
+        match_design_file = "Sample table saved as",
+        match_design_checksum = "Checksum of the saved sample table (SHA-256)",
+        match_file = "Uploaded match saved as",
+        # The model facts.
+        model_mofa2 = "MOFA2",
+        model_mofapy2 = "mofapy2",
+        model_python = "Python",
+        model_r = "R",
+        model_reticulate = "reticulate",
+        model_precision = "Numeric precision",
+        model_iterations = "Training rounds",
+        model_settled = "Training settled",
+        model_factors = "Factors (kept, asked for)",
+        model_checksum = "Checksum of the model file (SHA-256)",
+        model_bytes = "Size of the model file (bytes)",
+        model_entity = "Model's identifier in the project",
+        model_identity = "Checksum of the model's identity (data and settings)",
+        # %d: kept, asked for.
+        model_factors_value = "%d of %d",
+        # The few-samples note (D7). %d: samples in every data set, the threshold.
+        note_few_samples = "Only %d biological samples are measured in every data set (fewer than %d).",
+        # The methods paragraph (KIT-142), each sentence from the record's values.
+        # %d: data sets, omics; %s: the list of data sets.
+        methods_inputs = "%d data sets from %d omics were combined: %s.",
+        # %s: the omic, its data sets, its values in words.
+        methods_input_item = "%s (%s; %s)",
+        # %s: the approach in words.
+        methods_input_corrected = "corrected for unwanted variation, %s",
+        methods_input_normalised = "normalised, not corrected for unwanted variation",
+        # %s: MOFA2, mofapy2, Python, R versions, the precision.
+        methods_software = paste("Shared factors were learned with multi-omics factor analysis, MOFA2 %s (mofapy2 %s,",
+            "Python %s, R %s), in %s precision."),
+        methods_matching_saved = "Samples were matched across omics by the biological-sample column each omic saved.",
+        # %d: runs; %s: the checksum.
+        methods_matching_user = paste("Samples were matched across omics by the biological-sample column each omic saved,",
+            "corrected by a user-supplied match table that assigned %d runs to another biological sample (SHA-256 %s)."),
+        methods_replicates_average = "Runs of the same biological sample were averaged (the mean of the observed values).",
+        # %d: internal standards removed.
+        methods_standards_drop = "Internal standards were removed (%d features).",
+        methods_standards_keep = "Internal standards were kept.",
+        methods_missing_keep_missing = "Biological samples missing from a data set were kept, with that data set's values missing.",
+        methods_missing_drop_incomplete = "Only the biological samples measured in every data set were kept.",
+        methods_sparse = "Features measured in fewer than two biological samples were left out.",
+        methods_selection_none = "All remaining features were used",
+        # %d: features per data set.
+        methods_selection_top_variance = "The %d most variable features of each data set were used",
+        methods_scaling_none = "without per-feature scaling.",
+        methods_scaling_feature_zscore = "each scaled to mean 0 and standard deviation 1.",
+        # %d: factors asked for; %s: convergence mode; %d: maximum rounds, seed; %s: views scaled, features centred.
+        methods_model = paste("The model was asked for %d factors (convergence mode %s, at most %d training rounds, seed",
+            "%d; each data set scaled to the same total variance: %s; features centred: %s)."),
+        # %d: rounds, factors kept, samples, samples in every data set.
+        methods_trained_settled = paste("Training settled after %d rounds and kept %d factors; %d biological samples entered",
+            "the model, %d of them measured in every data set."),
+        # %d: maximum rounds, factors kept, samples, samples in every data set.
+        methods_trained_not_settled = paste("Training stopped at the maximum of %d rounds without settling and kept %d",
+            "factors; %d biological samples entered the model, %d of them measured in every data set."),
+        # %s: the adjustment's name.
+        methods_association = paste("Each factor was related to the experimental groups after training: a one-way analysis",
+            "of variance of the factor's values on the group, with the share of the factor's variance that lies between",
+            "the groups (R-squared) as the effect size, and p-values adjusted across the factors tested (%s)."),
+        # %s: the data sets.
+        methods_claim_limit = paste("In %s, unwanted variation had been removed with the groups as replicate sets, which",
+            "keeps the differences between groups by construction; p-values for the association of the factors with the",
+            "groups are therefore not reported, and the factors are described, not tested."),
+        methods_claim_none = paste("The factors were learned without the groups; their association with the groups",
+            "describes the model."),
+        # %s: the settings.
+        methods_provisional = "Settings that were provisional defaults at the time of the analysis: %s.",
+        # %s: the settings.
+        methods_user_set = "Settings changed from their defaults: %s.",
+        # The Record tab (its title and step are `integrationGuiTexts()`'s `tab_record`, `step_record`).
+        record_heading = "Record and report",
+        record_intro = paste("Save the integration's analysis record (what was combined, how samples were matched, every",
+            "setting, the software versions and the model's checksum), its study parameters and a report with a draft",
+            "methods paragraph."),
+        record_not_ready = "Train a model at the Model tab and save its results at the Results tab first.",
+        record_button = "Save the record and the report",
+        record_working = "Writing the record and the report.",
+        # %s: the time; %d: files; %s: the folder.
+        record_done = "Saved at %s: %d files in %s.",
+        # %s: the reason.
+        record_refused = "The record was not saved. %s",
+        record_methods_heading = "Methods paragraph (draft, from the record)",
+        record_no_model = "There is no trained model to record. Train a model at the Model tab first.",
+        # Replay refusals and warnings, in plain words.
+        replay_no_model = "This record holds no integration model, so there is nothing to repeat.",
+        # %s: the omic, then the file.
+        replay_input_missing = paste("The saved data of %s is no longer at %s, so the analysis cannot be repeated. Give",
+            "its new location, or save it again at that omic's Summary tab."),
+        # %s: the omic.
+        replay_input_changed = paste("The saved data of %s has changed since this analysis was recorded (its checksum",
+            "differs), so the analysis cannot be repeated on it."),
+        replay_mofa_unavailable = paste("The analysis cannot be repeated on this computer: the MOFA2 software, or the",
+            "Python it uses, is not installed."),
+        # %s: the differences.
+        replay_versions_differ = paste("The analysis was recorded with other software versions (%s); it is repeated and",
+            "compared with the recorded model numerically."),
+        # %s: the software, recorded, here.
+        replay_version_item = "%s %s, here %s"
+    )
+}
+
+#' The record's sheets for an integration record (KIT-142), in the order the workbook writes them.
+#' @noRd
+INTEGRATION_RECORD_SHEETS <- c("integration_inputs", "integration_matching", "integration_samples",
+    "integration_settings", "integration_model", "integration_variance", "integration_results", "integration_notes")
+
+# ------------------------------------------------------------------------------------------------
+# Small readers that take the record as built (lists, data frames) or as read back from JSON
+# (`jsonlite::read_json(simplifyVector = FALSE)`: lists of rows, scalars as length-one vectors).
+# ------------------------------------------------------------------------------------------------
+
+#' One value of the record: NA when absent, null or empty; the first element otherwise.
+#' @noRd
+integrationRecordScalar <- function(value) {
+    value <- unlist(value, use.names = FALSE)
+    if (!length(value)) NA else value[[1L]]
+}
+
+#' A table of the record as a data frame: a data frame as it is; a list of rows (JSON) bound by the union of their
+#' names, an absent or null field read as NA.
+#' @noRd
+integrationRecordFrame <- function(x) {
+    if (is.data.frame(x)) return(x)
+    if (!is.list(x) || !length(x)) return(data.frame())
+    columns <- unique(unlist(lapply(x, names)))
+    out <- lapply(stats::setNames(columns, columns), \(column) unlist(lapply(x, \(row) {
+        value <- row[[column]]
+        if (is.null(value) || !length(value)) NA else unlist(value)[[1L]]
+    })))
+    as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+}
+
+#' A recorded file's name (its folder left out), or the words for "not recorded".
+#' @noRd
+integrationRecordBasename <- function(path, texts = integrationRecordTexts()) {
+    path <- integrationRecordScalar(path)
+    if (is.na(path) || !nzchar(as.character(path))) texts[["not_recorded"]] else basename(as.character(path))
+}
+
+#' One entry of a wording table, or `fallback` when the table has no such entry.
+#' @noRd
+integrationTextOr <- function(texts, key, fallback) if (length(key) == 1L && key %in% names(texts)) texts[[key]] else fallback
+
+#' The integration model's analysis of a record, or NULL.
+#' @noRd
+integrationRecordAnalysisOf <- function(record) record$analyses[[INTEGRATION_MODEL_OPERATION]]
+
+#' One recorded model parameter's value (decoded), or NULL.
+#' @param parameters The recorded parameters (a list of `list(name, value, ...)`).
+#' @noRd
+integrationRecordParameter <- function(parameters, name) {
+    hit <- Filter(\(parameter) identical(integrationRecordScalar(parameter$name), name), parameters %||% list())
+    if (!length(hit)) return(NULL)
+    decodeWorkflowRecordValue(hit[[1L]]$value)
+}
+
+# ------------------------------------------------------------------------------------------------
+# What the record holds (KIT-142 item 1).
+# ------------------------------------------------------------------------------------------------
+
+#' The status of one setting in the record (KIT-142): `input` for what the data give (the inputs' checksums, the data
+#' sets), `user_set` for the uploaded sample match and for any value that differs from its default, else `decided` or
+#' `provisional_default` as the parameter table marks its default (`integrationParameterProvisional`, as the Model tab
+#' shows it).
+#' @param name The parameter.
+#' @param value Its recorded value.
+#' @param spec `integrationMofaParameterSpec()` or `integrationResultsParameterSpec()`.
+#' @param factors For the results' `factors_shown`: the model's factors (every factor shown is the default `all`).
+#' @return One of `input`, `user_set`, `decided`, `provisional_default`.
+#' @noRd
+integrationParameterStatus <- function(name, value, spec, factors = NULL) {
+    if (name %in% c("input_manifests", "views")) return("input")
+    if (name %in% c("sample_match", "sample_match_table")) return("user_set")
+    entry <- spec[[name]]
+    if (is.null(entry)) return("user_set")
+    default <- entry$default
+    if (identical(name, "factors_shown") && identical(default, "all") && !is.null(factors) &&
+        identical(as.character(value), as.character(factors))) value <- "all"
+    same <- length(value) == length(default) && identical(is.na(value), is.na(default)) &&
+        identical(as.character(value[!is.na(value)]), as.character(default[!is.na(default)]))
+    if (!same) return("user_set")
+    if (integrationParameterProvisional(entry)) "provisional_default" else "decided"
+}
+
+#' The confirmation of the sample table, as the record keeps it (KIT-142): when, the saved sample table and the saved
+#' match, each with its checksum.
+#' @param confirmed The Sample Matching tab's confirmation (`workflow_data$integration_alignment`), or NULL.
+#' @return NULL, or `list(confirmed_at, design_file, design_sha256, sample_match_file, sample_match_sha256, samples)`.
+#' @noRd
+integrationConfirmationRecord <- function(confirmed) {
+    if (is.null(confirmed)) return(NULL)
+    checksum <- function(path) if (is.character(path) && length(path) == 1L && file.exists(path))
+        digest::digest(file = path, algo = "sha256") else NA_character_
+    time <- confirmed$confirmed_at
+    list(confirmed_at = if (inherits(time, "POSIXt")) format(time, "%Y-%m-%dT%H:%M:%S%z") else NA_character_,
+        design_file = confirmed$file %||% NA_character_, design_sha256 = checksum(confirmed$file),
+        sample_match_file = confirmed$sample_match_file %||% NA_character_,
+        sample_match_sha256 = checksum(confirmed$sample_match_file),
+        samples = if (is.data.frame(confirmed$samples)) nrow(confirmed$samples) else NA_integer_)
+}
+
+#' Keep a saved Results publication with the model it was made from (KIT-142): the publication's label and identity,
+#' the Results settings, the time, every table and figure with its checksum, the factors' relation to the groups and
+#' the claim limit's facts, under the model's entry of `snapshot$exports` (the record reads them there). A publication
+#' made from a model that is no longer the latest is not kept.
+#' @param manager The integration owner.
+#' @param model_reference The model product's reference.
+#' @param results `integrationResults()`'s value.
+#' @param files The saved files by kind (`tables`, `figures`: their paths).
+#' @param identity The publication's identity.
+#' @return TRUE when kept, invisibly.
+#' @noRd
+integrationRecordResultsPublication <- function(manager, model_reference, results, files, identity) {
+    withWorkflowStateScope(manager, function() {
+        context <- manager$.context
+        snapshot <- context$snapshot
+        export <- snapshot$exports[[INTEGRATION_MODEL_OPERATION]]
+        if (is.null(export) || !identical(export$reference$entity_id, model_reference$entity_id)) return(invisible(FALSE))
+        # Plain lists and vectors only: a reopened store refuses any object (a data frame) among the head's roots.
+        listed <- function(paths) list(file = basename(paths),
+            sha256 = vapply(paths, \(path) digest::digest(file = path, algo = "sha256"), character(1), USE.NAMES = FALSE))
+        export$results <- list(label = INTEGRATION_RESULTS_LABEL, identity = identity, model_entity_id = model_reference$entity_id,
+            parameters = results$parameters, factors = results$factors,
+            saved_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), tables = listed(files$tables), figures = listed(files$figures),
+            association = as.list(results$association),
+            claim = list(group_corrected = results$claim$group_corrected, corrections = as.list(results$claim$corrections)))
+        snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- export
+        publishWorkflowStateHead(context, snapshot)
+        invisible(TRUE)
+    })
+}
+
+#' The integration block of the model's analysis in the record (KIT-142), and each model setting's status: called by
+#' `buildWorkflowAnalysisRecord` for an integration store only, so the omics' records are as before.
+#' @param manager The integration owner.
+#' @param analysis The model's analysis as `workflowRecordExportAnalysis` lists it.
+#' @param export The accepted model (`snapshot$exports$integration_mofa_model`).
+#' @return The analysis with `status` and `settled_by` on each parameter (the uploaded match's provenance `user_set`)
+#'   and the block `integration`.
+#' @noRd
+integrationRecordAnalysis <- function(manager, analysis, export) {
+    spec <- integrationMofaParameterSpec()
+    parameters <- export$parameters
+    analysis$parameters <- lapply(analysis$parameters, function(parameter) {
+        name <- parameter$name
+        # KIT-063 item A's match is the user's own table; it has no default to compare with (it was "unknown").
+        if (name %in% c("sample_match", "sample_match_table")) parameter$provenance <- "user_set"
+        c(parameter, list(status = integrationParameterStatus(name, parameters[[name]], spec),
+            settled_by = spec[[name]]$settled_by %||% NA_character_))
+    })
+    context <- manager$.context
+    value <- tryCatch(hydrateSavedWorkflowEntity(context$store, export$reference)$value, error = function(error) NULL)
+    object <- tryCatch(withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, export$source,
+        fields = "inputs")), error = function(error) NULL)
+    if (!is.list(value) || is.null(object)) {
+        analysis$integration <- list(schema = "multischolar.integration_record.v1", complete = FALSE)
+        return(analysis)
+    }
+    views <- as.character(parameters$views)
+    corrected <- integrationGroupCorrectedViews(object, views)
+    gui <- integrationGuiTexts()
+    inputs <- lapply(unname(object@inputs), function(entry) {
+        manifest <- entry$manifest
+        list(omic = entry$omic, views = as.character(entry$views), views_in_model = intersect(as.character(entry$views), views),
+            manifest_path = entry$path, manifest_sha256 = entry$manifest_sha256,
+            workflow = integrationGuiScalar(manifest$workflow), matrix_role = integrationGuiScalar(manifest$matrix_role),
+            scale = integrationGuiScalar(manifest$scale), source_state = integrationGuiScalar(manifest$source_state$name),
+            biological_sample_column = entry$biological_sample_column, correction = manifest$correction,
+            correction_text = integrationCorrectionText(manifest, gui),
+            group_corrected = any(corrected[intersect(as.character(entry$views), views)]))
+    })
+    match <- parameters$sample_match_table
+    iterations <- as.integer(value$elbo$iterations)
+    results <- export$results
+    if (!is.null(results)) {
+        for (name in c("tables", "figures", "association")) {
+            results[[name]] <- as.data.frame(results[[name]], stringsAsFactors = FALSE)
+        }
+        results_spec <- integrationResultsParameterSpec()
+        results$parameters <- lapply(names(results$parameters), function(name) list(name = name,
+            value = encodeWorkflowRecordValue(results$parameters[[name]]),
+            status = integrationParameterStatus(name, results$parameters[[name]], results_spec, results$factors),
+            settled_by = results_spec[[name]]$settled_by %||% NA_character_))
+    }
+    advisories <- lapply(integrationModelAdvisories(value, gui), function(advisory) advisory[c("kind", "sentence", "detail")])
+    if (length(value$notes)) advisories <- c(advisories, list(list(kind = "few_samples",
+        sentence = sprintf(integrationRecordTexts()[["note_few_samples"]], as.integer(value$shared_samples),
+            INTEGRATION_FEW_SAMPLES), detail = paste(value$notes, collapse = " "))))
+    claim_facts <- list(group_corrected = names(corrected)[corrected],
+        corrections = vapply(object@inputs, function(entry) integrationCorrectionText(entry$manifest, gui), character(1)))
+    analysis$integration <- list(schema = "multischolar.integration_record.v1", complete = TRUE,
+        inputs = inputs,
+        matching = list(rule = if (is.null(match)) "saved_names" else "user_table",
+            sample_match_sha256 = parameters$sample_match %||% NA_character_,
+            runs_changed = if (is.null(match)) 0L else length(match$run), table = match,
+            technical_replicates = parameters$technical_replicates, internal_standards = parameters$internal_standards,
+            missing_samples = parameters$missing_samples, samples = value$samples, view_summary = value$view_summary,
+            shared_samples = as.integer(value$shared_samples), confirmation = export$confirmation),
+        model = list(entity_id = export$reference$entity_id,
+            identity_sha256 = digest::digest(export$reference$identity, algo = "sha256"),
+            model_file_sha256 = value$model_file$sha256 %||% NA_character_, model_file_bytes = value$model_file$size %||% NA_real_,
+            precision = parameters$precision, iterations = iterations, maxiter = as.integer(parameters$maxiter),
+            converged = isTRUE(iterations < as.integer(parameters$maxiter)),
+            factors_requested = as.integer(parameters$num_factors), factors_kept = ncol(value$factors) - 1L,
+            elbo_last = value$elbo$last, variance_total = value$variance_total, versions = value$versions,
+            # MOFA2's data, model and training options as trained (every one, the defaults included), encoded exactly.
+            mofa2_options = encodeWorkflowRecordValue(value$options)),
+        results = results,
+        advisories = advisories,
+        claim_limit = list(applies = any(corrected), group_corrected = claim_facts$group_corrected,
+            text = integrationClaimLimitText(list(claim = claim_facts), gui)))
+    analysis
+}
+
+# ------------------------------------------------------------------------------------------------
+# The record in words (KIT-142 item 3): the tables, the study parameters, the methods paragraph.
+# ------------------------------------------------------------------------------------------------
+
+#' The integration record as the tables people read (KIT-142): one source for the workbook's integration sheets and the
+#' report. Every header is from `integrationRecordTexts()`.
+#' @param record An analysis record of an integration store (built or read from JSON).
+#' @return Named list of data frames (`INTEGRATION_RECORD_SHEETS`); empty list without an integration model.
+#' @noRd
+integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
+    analysis <- integrationRecordAnalysisOf(record)
+    block <- analysis$integration
+    if (is.null(block) || !isTRUE(integrationRecordScalar(block$complete))) return(list())
+    s <- integrationRecordScalar
+    word <- function(value) if (isTRUE(as.logical(s(value)))) texts[["yes"]] else texts[["no"]]
+    text <- function(value) { value <- s(value); if (is.na(value)) texts[["not_recorded"]] else as.character(value) }
+    framed <- function(names, rows) stats::setNames(as.data.frame(rows, stringsAsFactors = FALSE), names)
+    inputs <- lapply(block$inputs, function(input) data.frame(omic = s(input$omic),
+        views = paste(unlist(input$views_in_model), collapse = ", "),
+        values = if (identical(s(input$matrix_role), "corrected")) texts[["values_corrected"]] else texts[["values_normalised"]],
+        correction = text(input$correction_text), group_corrected = word(input$group_corrected),
+        checksum = text(input$manifest_sha256), stringsAsFactors = FALSE))
+    inputs <- do.call(rbind, inputs)
+    names(inputs) <- unname(texts[c("col_omic", "col_datasets_in_model", "col_values", "col_correction",
+        "col_group_corrected", "col_checksum")])
+    m <- block$matching
+    confirmation <- m$confirmation
+    matching <- framed(unname(texts[c("col_field", "col_value")]), list(
+        c(texts[["match_rule"]], texts[["match_table_checksum"]], texts[["match_samples"]], texts[["match_shared"]],
+            texts[["match_confirmed_at"]], texts[["match_design_file"]], texts[["match_design_checksum"]], texts[["match_file"]]),
+        c(if (identical(s(m$rule), "user_table")) sprintf(texts[["match_rule_user"]], as.integer(s(m$runs_changed))) else
+            texts[["match_rule_saved"]], text(m$sample_match_sha256), as.character(nrow(integrationRecordFrame(m$samples))),
+            text(m$shared_samples), text(confirmation$confirmed_at), integrationRecordBasename(confirmation$design_file, texts),
+            text(confirmation$design_sha256), integrationRecordBasename(confirmation$sample_match_file, texts))))
+    samples <- integrationRecordFrame(m$samples)
+    status_word <- function(status) integrationTextOr(texts, paste0("status_", s(status)), text(status))
+    model_labels <- workflowParameterLabels[[INTEGRATION_MODEL_OPERATION]]
+    setting <- function(applies, parameter, label) data.frame(applies = applies, setting = label,
+        name = as.character(s(parameter$name)), value = workflowRecordValueText(parameter$value),
+        status = status_word(parameter$status), settled_by = text(parameter$settled_by), stringsAsFactors = FALSE)
+    settings <- lapply(analysis$parameters, function(parameter) {
+        name <- as.character(s(parameter$name))
+        if (identical(name, "sample_match_table")) return(NULL)
+        setting(texts[["applies_model"]], parameter, model_labels[[name]] %||% name)
+    })
+    results <- block$results
+    for (parameter in results$parameters %||% list()) {
+        settings[[length(settings) + 1L]] <- setting(texts[["applies_results"]], parameter, as.character(s(parameter$name)))
+    }
+    settings <- do.call(rbind, Filter(Negate(is.null), settings))
+    names(settings) <- unname(texts[c("col_applies_to", "col_setting", "col_name", "col_value", "col_status", "col_settled_by")])
+    model <- block$model
+    versions <- model$versions
+    model_table <- framed(unname(texts[c("col_field", "col_value")]), list(
+        unname(texts[c("model_mofa2", "model_mofapy2", "model_python", "model_r", "model_reticulate", "model_precision",
+            "model_iterations", "model_settled", "model_factors", "model_checksum", "model_bytes", "model_entity",
+            "model_identity")]),
+        c(text(versions$MOFA2), text(versions$mofapy2), text(versions$python), text(versions$R), text(versions$reticulate),
+            text(model$precision), sprintf("%s (%s)", text(model$iterations), text(model$maxiter)), word(model$converged),
+            sprintf(texts[["model_factors_value"]], as.integer(s(model$factors_kept)), as.integer(s(model$factors_requested))),
+            text(model$model_file_sha256), text(model$model_file_bytes), text(model$entity_id), text(model$identity_sha256))))
+    variance <- integrationRecordFrame(model$variance_total)
+    variance <- if (nrow(variance)) data.frame(variance$view, sprintf("%.2f", as.numeric(variance$r2_percent)),
+        stringsAsFactors = FALSE) else data.frame(character(), character())
+    names(variance) <- unname(texts[c("col_view", "col_variance")])
+    listed <- function(x) { x <- integrationRecordFrame(x); if (nrow(x)) data.frame(x$file, x$sha256, stringsAsFactors = FALSE) else NULL }
+    files <- rbind(listed(results$tables), listed(results$figures)) %||% data.frame(character(), character())
+    names(files) <- unname(texts[c("col_file", "col_checksum")])
+    notes <- c(vapply(block$advisories %||% list(), \(advisory) as.character(s(advisory$sentence)), character(1)),
+        as.character(unlist(block$claim_limit$text)))
+    notes <- framed(texts[["col_note"]], list(notes))
+    out <- list(integration_inputs = inputs, integration_matching = matching, integration_samples = samples,
+        integration_settings = settings, integration_model = model_table, integration_variance = variance,
+        integration_results = files, integration_notes = notes)
+    out[INTEGRATION_RECORD_SHEETS]
+}
+
+#' The methods paragraph of an integration record (KIT-142): a draft for the user, stating the facts the record holds
+#' (the data sets and their corrections, the software and its precision, how samples were matched, what happens before
+#' the model, the model's settings and training, the factor-group statistic, the claim limit, and which settings were
+#' provisional defaults or changed). Every value is read from the record.
+#' @param record An analysis record of an integration store (built or read from JSON).
+#' @return One string; NA without an integration model.
+#' @noRd
+integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
+    analysis <- integrationRecordAnalysisOf(record)
+    block <- analysis$integration
+    if (is.null(block) || !isTRUE(integrationRecordScalar(block$complete))) return(NA_character_)
+    s <- integrationRecordScalar
+    p <- function(name) integrationRecordParameter(analysis$parameters, name)
+    used <- Filter(\(input) length(unlist(input$views_in_model)) > 0L, block$inputs)
+    items <- vapply(used, function(input) sprintf(texts[["methods_input_item"]], s(input$omic),
+        paste(unlist(input$views_in_model), collapse = ", "),
+        if (identical(s(input$matrix_role), "corrected")) sprintf(texts[["methods_input_corrected"]], s(input$correction_text)) else
+            texts[["methods_input_normalised"]]), character(1))
+    views <- unlist(lapply(used, \(input) unlist(input$views_in_model)))
+    model <- block$model
+    versions <- model$versions
+    version <- function(x) { x <- s(x); if (is.na(x)) texts[["not_recorded"]] else sub(" .*$", "", as.character(x)) }
+    m <- block$matching
+    sentences <- c(
+        sprintf(texts[["methods_inputs"]], length(views), length(used), paste(items, collapse = "; ")),
+        sprintf(texts[["methods_software"]], version(versions$MOFA2), version(versions$mofapy2), version(versions$python),
+            version(versions$R), as.character(s(model$precision))),
+        if (identical(s(m$rule), "user_table")) sprintf(texts[["methods_matching_user"]], as.integer(s(m$runs_changed)),
+            s(m$sample_match_sha256)) else texts[["methods_matching_saved"]])
+    if (identical(p("technical_replicates"), "average")) sentences <- c(sentences, texts[["methods_replicates_average"]])
+    summary <- integrationRecordFrame(m$view_summary)
+    standards <- if (nrow(summary)) sum(as.integer(summary$internal_standards_dropped), na.rm = TRUE) else 0L
+    sentences <- c(sentences,
+        if (identical(p("internal_standards"), "drop")) sprintf(texts[["methods_standards_drop"]], standards) else
+            texts[["methods_standards_keep"]],
+        integrationTextOr(texts, paste0("methods_missing_", p("missing_samples")), NULL),
+        texts[["methods_sparse"]],
+        paste(if (identical(p("feature_selection"), "top_variance"))
+            sprintf(texts[["methods_selection_top_variance"]], as.integer(p("features_per_view"))) else texts[["methods_selection_none"]],
+            integrationTextOr(texts, paste0("methods_scaling_", p("scaling")), as.character(p("scaling"))), sep = ", "),
+        sprintf(texts[["methods_model"]], as.integer(p("num_factors")), as.character(p("convergence_mode")),
+            as.integer(p("maxiter")), as.integer(p("seed")), if (isTRUE(p("scale_views"))) texts[["yes"]] else texts[["no"]],
+            if (isTRUE(p("center_groups"))) texts[["yes"]] else texts[["no"]]),
+        if (isTRUE(as.logical(s(model$converged)))) sprintf(texts[["methods_trained_settled"]], as.integer(s(model$iterations)),
+            as.integer(s(model$factors_kept)), nrow(integrationRecordFrame(m$samples)), as.integer(s(m$shared_samples))) else
+            sprintf(texts[["methods_trained_not_settled"]], as.integer(s(model$maxiter)), as.integer(s(model$factors_kept)),
+                nrow(integrationRecordFrame(m$samples)), as.integer(s(m$shared_samples))))
+    results <- block$results
+    if (!is.null(results)) {
+        adjust <- integrationRecordParameter(results$parameters, "p_adjust_method")
+        sentences <- c(sentences, sprintf(texts[["methods_association"]],
+            integrationTextOr(integrationGuiTexts(), paste0("padjust_", adjust), as.character(adjust))))
+    }
+    claim <- block$claim_limit
+    sentences <- c(sentences, if (isTRUE(as.logical(s(claim$applies))))
+        sprintf(texts[["methods_claim_limit"]], paste(unlist(claim$group_corrected), collapse = ", ")) else texts[["methods_claim_none"]])
+    # The settings in the Model tab's words: its label, and the chosen value's words where the tab has them.
+    gui <- integrationGuiTexts()
+    by_status <- function(status) {
+        hits <- Filter(\(parameter) identical(s(parameter$status), status), analysis$parameters)
+        names <- vapply(hits, \(parameter) as.character(s(parameter$name)), character(1))
+        names <- names[!names %in% c("sample_match", "sample_match_table") & !vapply(names, \(name) all(is.na(p(name))), logical(1))]
+        vapply(names, function(name) {
+            value <- p(name)
+            words <- if (is.character(value) && length(value) == 1L) integrationParameterText(gui, "choice", name, value) else
+                if (is.logical(value)) (if (isTRUE(value)) texts[["yes"]] else texts[["no"]]) else paste(format(value), collapse = ", ")
+            sprintf("%s (%s)", integrationParameterText(gui, "param", name), words)
+        }, character(1), USE.NAMES = FALSE)
+    }
+    provisional <- by_status("provisional_default")
+    if (length(provisional)) sentences <- c(sentences, sprintf(texts[["methods_provisional"]], paste(provisional, collapse = "; ")))
+    changed <- by_status("user_set")
+    if (length(changed)) sentences <- c(sentences, sprintf(texts[["methods_user_set"]], paste(changed, collapse = "; ")))
+    paste(sentences[nzchar(sentences)], collapse = " ")
+}
+
+#' The integration's study parameters (KIT-142), in the form of the omics' `study_parameters.txt`: one section per
+#' table of `integrationRecordTables()` with "* item: value" lines, then the methods paragraph.
+#' @param record An analysis record of an integration store.
+#' @return A character vector (the file's lines).
+#' @noRd
+integrationStudyParameterLines <- function(record, texts = integrationRecordTexts()) {
+    tables <- integrationRecordTables(record, texts)
+    if (!length(tables)) return(character())
+    section <- function(heading, lines) c(heading, strrep("-", nchar(heading)), lines, "")
+    rows <- function(table) if (!nrow(table)) sprintf("* %s", texts[["none_recorded"]]) else
+        vapply(seq_len(nrow(table)), \(i) paste0("* ", paste(sprintf("%s: %s", names(table), unlist(table[i, ], use.names = FALSE)),
+            collapse = "; ")), character(1))
+    pairs <- function(table) sprintf("* %s: %s", table[[1L]], table[[2L]])
+    c(section(texts[["report_title"]], texts[["report_intro"]]),
+        section(texts[["section_inputs"]], rows(tables$integration_inputs)),
+        section(texts[["section_matching"]], pairs(tables$integration_matching)),
+        section(texts[["section_settings"]], rows(tables$integration_settings)),
+        section(texts[["section_model"]], pairs(tables$integration_model)),
+        section(texts[["section_variance"]], pairs(tables$integration_variance)),
+        section(texts[["section_results"]], rows(tables$integration_results)),
+        section(texts[["section_notes"]], if (nrow(tables$integration_notes)) sprintf("* %s", tables$integration_notes[[1L]]) else
+            sprintf("* %s", texts[["none_recorded"]])),
+        section(texts[["section_methods"]], c(texts[["methods_draft_note"]], "", integrationMethodsText(record, texts))))
+}
+
+#' Render the integration report (KIT-142) from a record file with the package's template
+#' (`inst/reports/integration/integration_report.rmd`), in a temporary folder of its own.
+#' @param record_path The record (`analysis_record.json`).
+#' @param output_dir Where the report is written.
+#' @param format `docx` (the omics' reports) or `html`.
+#' @return The report's path.
+#' @noRd
+renderIntegrationReport <- function(record_path, output_dir, format = c("docx", "html")) {
+    format <- match.arg(format)
+    record_path <- normalizePath(record_path, winslash = "/", mustWork = TRUE)
+    output_dir <- normalizePath(output_dir, winslash = "/", mustWork = TRUE)
+    template <- system.file("reports", "integration", "integration_report.rmd", package = "MultiScholaR")
+    if (!nzchar(template)) cli::cli_abort("the integration report template is not installed", class = "integration_report_missing")
+    work <- tempfile("ir-")
+    dir.create(work)
+    on.exit(unlink(work, recursive = TRUE), add = TRUE)
+    file.copy(template, work)
+    rmarkdown::render(file.path(work, basename(template)), output_format = if (format == "docx") "word_document" else "html_document",
+        output_file = paste0("integration_report.", format), output_dir = output_dir, intermediates_dir = work,
+        params = list(record_path = record_path), envir = new.env(parent = globalenv()), quiet = TRUE)
+}
+
+#' Save the integration's record and report into a folder (KIT-142): `analysis_record.json`, the record's workbook
+#' (`analysis_record.xlsx`, with the integration sheets), `study_parameters.txt` and the rendered report. Everything is
+#' written in a short temporary folder and copied into `directory` with every file checked
+#' (`withWorkflowShortFigureFolder`, KIT-052): a path too long for Windows, or a file the renderer did not write, stops
+#' the save by name instead of losing the file silently.
+#' @param manager The integration owner with an accepted model.
+#' @param directory The folder (the project's study report folder).
+#' @param format The report's format (`docx` or `html`).
+#' @param renderFn `function(record_path, output_dir, format)` writing the report (`renderIntegrationReport`).
+#' @param now The record's time.
+#' @return `list(directory, files, methods)`: the folder, the files written there, the methods paragraph.
+#' @noRd
+integrationWriteRecordBundle <- function(manager, directory, format = "docx", renderFn = renderIntegrationReport, now = Sys.time()) {
+    texts <- integrationRecordTexts()
+    record <- buildWorkflowAnalysisRecord(manager, now)
+    if (is.null(integrationRecordAnalysisOf(record))) {
+        integrationGuiRefuse(texts[["record_no_model"]], "integration_record_no_model")
+    }
+    dir.create(directory, recursive = TRUE, showWarnings = FALSE)
+    out <- withWorkflowShortFigureFolder(directory, function(scratch) {
+        json <- file.path(scratch, "analysis_record.json")
+        jsonlite::write_json(record, json, auto_unbox = TRUE, digits = I(17), null = "null", na = "null", pretty = TRUE)
+        read <- jsonlite::read_json(json, simplifyVector = FALSE)
+        writeWorkflowAnalysisRecordWorkbook(read, file.path(scratch, "analysis_record.xlsx"))
+        writeLines(integrationStudyParameterLines(read, texts), file.path(scratch, "study_parameters.txt"), useBytes = TRUE)
+        renderFn(json, scratch, format)
+        expected <- c("analysis_record.json", "analysis_record.xlsx", "study_parameters.txt", paste0("integration_report.", format))
+        checkWorkflowFigureFiles(file.path(scratch, expected), "the integration record or report was not written")
+        list(files = expected, methods = integrationMethodsText(read, texts))
+    }, message = "the integration record and report could not be copied into the project")
+    list(directory = directory, files = file.path(directory, out$files), methods = out$methods)
+}
+
+# ------------------------------------------------------------------------------------------------
+# Replay (KIT-142 item 2): the record alone, with its inputs checked by checksum, gives the model again.
+# ------------------------------------------------------------------------------------------------
+
+#' Refuse a replay in plain words, classed `integration_replay_refused` and `integration_refused` with its own class.
+#' @noRd
+integrationReplayRefuse <- function(sentence, class) {
+    integrationGuiRefuse(sentence, c(class, "integration_replay_refused"))
+}
+
+#' Compare the recorded software versions with this computer's (KIT-142): MOFA2, mofapy2, Python and R.
+#' @param recorded The record's versions.
+#' @param current This computer's (`integrationMofaVersions()`).
+#' @return `data.frame(software, recorded, current, same)`.
+#' @noRd
+integrationReplayVersions <- function(recorded, current) {
+    names <- c("MOFA2", "mofapy2", "python", "R")
+    one <- function(x) { x <- integrationRecordScalar(x); if (is.na(x)) NA_character_ else sub(" .*$", "", as.character(x)) }
+    out <- data.frame(software = names, recorded = vapply(names, \(n) one(recorded[[n]]), character(1)),
+        current = vapply(names, \(n) one(current[[n]]), character(1)), stringsAsFactors = FALSE, row.names = NULL)
+    out$same <- !is.na(out$recorded) & !is.na(out$current) & out$recorded == out$current
+    out
+}
+
+#' Compare a replayed model with the recorded one numerically (KIT-142; INT-6: the same inputs, settings and seed give
+#' the same model on any computer to about 1e-14, so equality is judged at `tolerance` relative, and is exact on one
+#' computer). Per table (factors, weights, variance explained per factor and in all, the sample table, the data set
+#' summary): the largest absolute difference and the largest relative difference (largest absolute over the largest
+#' absolute value of the recorded table). Tables of another shape, other labels or missing values in other places
+#' differ outright (Inf).
+#' @param recorded,replayed The model products (`integrationModelProduct()`).
+#' @param tolerance The relative tolerance.
+#' @return `list(tables, largest_relative, equal, identical)`.
+#' @noRd
+integrationCompareModels <- function(recorded, replayed, tolerance = 1e-5) {
+    compare <- function(name, a, b) {
+        a <- as.data.frame(a)
+        b <- as.data.frame(b)
+        same_shape <- identical(dim(a), dim(b)) && identical(names(a), names(b))
+        numeric <- if (same_shape) names(a)[vapply(a, is.numeric, logical(1))] else character()
+        labels_same <- same_shape && identical(a[setdiff(names(a), numeric)], b[setdiff(names(b), numeric)])
+        x <- as.matrix(a[numeric])
+        y <- as.matrix(b[numeric])
+        na_same <- labels_same && identical(is.na(x), is.na(y))
+        absolute <- if (na_same && length(x)) max(c(0, abs(x - y)), na.rm = TRUE) else if (na_same) 0 else Inf
+        scale <- if (na_same && length(x)) max(c(0, abs(x)), na.rm = TRUE) else 0
+        relative <- if (!is.finite(absolute)) Inf else if (absolute == 0) 0 else absolute / max(scale, .Machine$double.xmin)
+        data.frame(table = name, rows = nrow(b), largest_absolute = absolute, largest_relative = relative,
+            within_tolerance = relative <= tolerance, identical = identical(a, b), stringsAsFactors = FALSE)
+    }
+    tables <- do.call(rbind, lapply(c("factors", "weights", "variance_explained", "variance_total", "samples", "view_summary"),
+        \(name) compare(name, recorded[[name]], replayed[[name]])))
+    list(tables = tables, largest_relative = max(tables$largest_relative), equal = all(tables$within_tolerance),
+        identical = all(tables$identical))
+}
+
+#' Repeat an integration analysis from its record (KIT-142). Before anything is trained, in plain words: every
+#' recorded input must be found (at its recorded place, or where `manifests` says) with its recorded checksum
+#' (`integration_replay_input_missing`, `integration_replay_input_changed`); MOFA2 and its Python must be available
+#' (`integration_mofa_unavailable`). Software versions other than the recorded ones are a warning
+#' (`integration_replay_versions_differ`), and the comparison is recorded. The inputs are imported into a new store under
+#' `scratch`, the model trained with the recorded settings (the uploaded sample match included), the saved Results
+#' settings applied, and the model compared with `recorded` when given.
+#' @param record The analysis record (built, or read from JSON).
+#' @param scratch A folder for the replay's store.
+#' @param recorded The recorded model product, or NULL (no comparison).
+#' @param manifests Named by omic: the input manifests' current paths (absent ones at their recorded place).
+#' @param probe The MOFA2 capability probe.
+#' @param trainer NULL for MOFA2, or a stand-in (tests).
+#' @param current_versions This computer's versions; NULL takes `integrationMofaVersions()` when MOFA2 trains.
+#' @param tolerance The relative tolerance of the comparison.
+#' @return `list(replayed, results, comparison, versions, parameters)`.
+#' @noRd
+replayIntegrationRecord <- function(record, scratch, recorded = NULL, manifests = NULL, probe = integrationMofaCapability,
+    trainer = NULL, current_versions = NULL, tolerance = 1e-5) {
+    texts <- integrationRecordTexts()
+    analysis <- integrationRecordAnalysisOf(record)
+    block <- analysis$integration
+    if (is.null(analysis) || is.null(block) || !isTRUE(integrationRecordScalar(block$complete))) {
+        integrationReplayRefuse(texts[["replay_no_model"]], "integration_replay_no_model")
+    }
+    s <- integrationRecordScalar
+    paths <- character()
+    for (input in block$inputs) {
+        omic <- as.character(s(input$omic))
+        path <- if (!is.null(manifests) && omic %in% names(manifests)) manifests[[omic]] else as.character(s(input$manifest_path))
+        if (is.na(path) || !file.exists(path)) {
+            integrationReplayRefuse(sprintf(texts[["replay_input_missing"]], omic, path), "integration_replay_input_missing")
+        }
+        if (!identical(digest::digest(file = path, algo = "sha256"), as.character(s(input$manifest_sha256)))) {
+            integrationReplayRefuse(sprintf(texts[["replay_input_changed"]], omic), "integration_replay_input_changed")
+        }
+        paths[[omic]] <- path
+    }
+    if (is.null(trainer)) {
+        capability <- probe()
+        if (!isTRUE(capability$available)) {
+            stop(structure(class = c("integration_mofa_unavailable", "integration_replay_refused", "integration_gui_refusal",
+                "integration_refused", "error", "condition"), list(message = texts[["replay_mofa_unavailable"]], call = NULL,
+                reason = capability$reason)))
+        }
+        current_versions <- current_versions %||% integrationMofaVersions()
+    }
+    versions <- NULL
+    if (!is.null(current_versions)) {
+        versions <- integrationReplayVersions(block$model$versions, current_versions)
+        if (!all(versions$same)) {
+            differ <- versions[!versions$same, , drop = FALSE]
+            cli::cli_warn(sprintf(texts[["replay_versions_differ"]], paste(sprintf(texts[["replay_version_item"]], differ$software,
+                ifelse(is.na(differ$recorded), texts[["not_recorded"]], differ$recorded),
+                ifelse(is.na(differ$current), texts[["not_recorded"]], differ$current)), collapse = "; ")),
+                class = "integration_replay_versions_differ")
+        }
+    }
+    dir.create(scratch, recursive = TRUE, showWarnings = FALSE)
+    manager <- newIntegrationStateOwner(tempfile("replay-", tmpdir = scratch))
+    on.exit(closeWorkflowStateOwner(manager), add = TRUE)
+    importIntegrationInputs(manager, dirname(unname(paths)), description = "Integration inputs imported (replay)")
+    entry <- workflowOperationEntry(INTEGRATION_MODEL_OPERATION)
+    parameters <- workflowReplayParameters(analysis$parameters, c(entry$parameters, "sample_match", "sample_match_table"))
+    run <- runIntegrationModel(manager, parameters, probe = probe, trainer = trainer)
+    replayed <- run$value
+    results <- NULL
+    if (!is.null(block$results)) {
+        settings <- list()
+        for (parameter in block$results$parameters) settings[[as.character(s(parameter$name))]] <- decodeWorkflowRecordValue(parameter$value)
+        results <- integrationResults(replayed, integrationImportedObject(manager), settings)
+    }
+    list(replayed = replayed, results = results,
+        comparison = if (!is.null(recorded)) integrationCompareModels(recorded, replayed, tolerance),
+        versions = versions, parameters = manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$parameters)
+}
+
+#' Reopen a saved integration project and repeat its analysis from its record (KIT-142): the project's store is
+#' reopened, its record built and its latest model read, then `replayIntegrationRecord()` compares the repeated model
+#' with it.
+#' @param project_root The integration store's folder (the one holding `.workflow-entities`).
+#' @param scratch A folder for the replay's store.
+#' @param ... Passed to `replayIntegrationRecord()`.
+#' @return `replayIntegrationRecord()`'s value with the record (`record`).
+#' @noRd
+replayIntegrationProject <- function(project_root, scratch, ...) {
+    identity <- readSavedStoreIdentity(file.path(project_root, ".workflow-entities", "store.json"))
+    manager <- newWorkflowStateOwner(newWorkflowEntityStore(project_root, identity$project_id, identity$workflow_id), reopen = TRUE)
+    opened <- TRUE
+    on.exit(if (opened) closeWorkflowStateOwner(manager), add = TRUE)
+    record <- buildWorkflowAnalysisRecord(manager)
+    export <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]
+    recorded <- if (!is.null(export)) withWorkflowStateScope(manager, function()
+        hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value)
+    closeWorkflowStateOwner(manager)
+    opened <- FALSE
+    c(replayIntegrationRecord(record, scratch, recorded = recorded, ...), list(record = record))
+}

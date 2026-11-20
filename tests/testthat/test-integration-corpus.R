@@ -72,7 +72,10 @@ test_that("the corpus has the declared design", {
     names(samples) <- omics
     runs <- unlist(lapply(samples, `[[`, "Run"))
     expect_false(anyDuplicated(runs) > 0L)
-    absent <- lapply(samples, \(s) setdiff(scores$biological_sample, s$biological_sample))
+    # KIT-062: the cross-omic key is tech_rep_group in the omics' format (KO_5).
+    absent <- lapply(samples, \(s) setdiff(scores$biological_sample, s$tech_rep_group))
+    expect_false(any(vapply(samples, \(s) "biological_sample" %in% names(s), logical(1))))
+    expect_true(all(grepl("^(WT|KO)_[1-9][0-9]*$", scores$biological_sample)))
     expect_identical(lengths(absent)[lengths(absent) > 0L], c(metabolomics = 1L))
     expect_identical(absent$metabolomics, truth$dropped$biological_sample)
 
@@ -105,7 +108,14 @@ test_that("each omic's folder is a KIT-061 integration input the contract's read
         expect_identical(manifest$workflow, workflows[[omic]])
         expect_identical(manifest$matrix_role, "normalised")
         expect_null(manifest$correction)
-        expect_identical(manifest$biological_sample_column, "biological_sample")
+        expect_identical(manifest$biological_sample_column, "tech_rep_group")
+        # INT-4: views as the writers name them.
+        expected_views <- if (omic %in% c("lipidomics", "metabolomics")) {
+            startsWith(names(input$views), paste0(omic, "_"))
+        } else {
+            names(input$views) == omic
+        }
+        expect_true(all(expected_views))
         expect_identical(names(input$views), truth$views[[omic]])
         expect_identical(nrow(input$samples), as.integer(truth$runs[[omic]]))
         # Nothing in the manifest varies by machine, package version or time of writing.

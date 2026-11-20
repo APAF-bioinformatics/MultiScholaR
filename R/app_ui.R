@@ -730,8 +730,9 @@ app_ui <- function(request) {
             ),
             column(
               4,
-              # Placeholder selector — no backing workflow module exists yet (finding m-2)
-              testid(
+              # KIT-138: with the gate `MultiScholaR.integration_gui` on, the tile is live (mod_integration_*).
+              # Off (the default): the placeholder selector as before (finding m-2).
+              if (integrationGuiEnabled()) integrationHomeTile() else testid(
                 shiny::div(
                   id = "integration_box",
                   class = "omic-selection-box disabled",
@@ -783,7 +784,8 @@ app_ui <- function(request) {
       test_mode_digest_ui(NULL),
 
       # JavaScript for handling omics selection - use shiny:: prefix
-      shiny::tags$script(shiny::HTML("
+      # KIT-138: the selection script as it is; with the integration gate on, Integration is selectable.
+      shiny::tags$script(shiny::HTML(integrationHomeScript("
       // ========== DARK MODE TOGGLE ==========
       function toggleDarkMode() {
         document.body.classList.toggle('dark-mode');
@@ -845,7 +847,7 @@ app_ui <- function(request) {
 
         Shiny.setInputValue('selected_omics', selectedOmics);
       }
-    "))
+    ")))
     )
   )
 }

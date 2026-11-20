@@ -36,21 +36,27 @@
 #   <omic>/matrix_<view>.tsv    features in rows; feature_id, then one column per run (the omic's
 #                               own run names, in a seeded order); log2 values, 4 decimals; NA kept
 #   <omic>/features_<view>.tsv  feature_id, display_name
-#   <omic>/samples.tsv          Run, group, replicates, tech_rep_group, batch, biological_sample
-#                               (the cross-omic key); one row per matrix column, in column order
+#   <omic>/samples.tsv          Run, group, replicates, tech_rep_group, batch; one row per matrix
+#                               column, in column order. tech_rep_group is the cross-omic key in the
+#                               omics' own format, <group>_<replicate> unpadded (KO_5), and the
+#                               manifest names it as the biological-sample column, as the omics'
+#                               writers do (KIT-062)
 #   <omic>/integration_input.json  the contract's manifest: matrix_role "normalised", no
 #                               correction, every table's sha256. Written here, not through
 #                               writeIntegrationInput(), so that the tables stay as above and the
 #                               file holds nothing that varies by machine, package version or
 #                               time: no version, and written_at fixed to the corpus's date
-#   truth_scores.tsv            biological_sample, group, Z1, Z2, Z3 (6 decimals)
+#   truth_scores.tsv            biological_sample (the tech_rep_group values), group, Z1, Z2, Z3
+#                               (6 decimals)
 #   truth_loadings.tsv          omic, view, feature_id, Z1, Z2, Z3 loadings and batch_B1..B3
 #                               effects (NA where the omic has no such batch)
 #   truth.json                  views, active omics per factor, batch per omic and sample, the
 #                               dropped sample, run, feature and missing-cell counts, every recipe
 #   manifest.json               bytes and sha256 of every other file
-# Views per omic: proteomics/proteomics, transcriptomics/transcriptomics, lipidomics/LCMS_Pos,
-# lipidomics/LCMS_Neg, metabolomics/LCMS_Pos, metabolomics/GCMS.
+# Views per omic, named as the omics' writers name them (INT-4: <omic>_<assay> for an omic with
+# assays, the omic's name for a single-view omic): proteomics/proteomics,
+# transcriptomics/transcriptomics, lipidomics/lipidomics_LCMS_Pos, lipidomics/lipidomics_LCMS_Neg,
+# metabolomics/metabolomics_LCMS_Pos, metabolomics/metabolomics_GCMS.
 #
 # Tier 2 (the same design run through the omics journeys from vendor files) is not built here.
 #
@@ -94,7 +100,7 @@ integrationCorpusRecipe <- function(seed = INTEGRATION_CORPUS_SEED) {
                 abs_loading = c(0.5, 1.0))
         ),
         batch = list(share = 0.3, sd = 0.5),
-        dropped = list(omic = "metabolomics", biological_sample = "KO_07"),
+        dropped = list(omic = "metabolomics", biological_sample = "KO_7"),
         digits = 4L
     )
 }
@@ -109,8 +115,14 @@ integrationGenerators <- function(repo) {
     gen
 }
 
+# The biological-sample key in the omics' format (`paste(group, replicates, sep = "_")`,
+# R/func_omics_design_shared.R); kept internally as `biological_sample`, written as tech_rep_group.
+integrationBiologicalKey <- function(group, replicate) {
+    paste(group, as.integer(replicate), sep = "_")
+}
+
 integrationSamples <- function(runs, group, replicate) {
-    key <- sprintf("%s_%02d", group, as.integer(replicate))
+    key <- integrationBiologicalKey(group, replicate)
     data.frame(Run = runs, group = group, replicates = as.integer(replicate),
         tech_rep_group = key, biological_sample = key, stringsAsFactors = FALSE)
 }
@@ -132,7 +144,7 @@ integrationBaseProteomics <- function(gen, recipe, spec) {
         samples = integrationSamples(colnames(values), m$group, replicate))
 }
 
-integrationBaseMs <- function(gen, recipe, spec) {
+integrationBaseMs <- function(gen, recipe, spec, omic) {
     r <- gen$kitOmicsRecipe(spec$generator, recipe$biological_per_group, spec$features,
         standards = 0L, missing_features = spec$missing_features)
     r$seed <- recipe$seed + spec$seed_offset
@@ -148,7 +160,8 @@ integrationBaseMs <- function(gen, recipe, spec) {
             runs)
         values
     })
-    names(views) <- r$assays
+    # INT-4: the writers' view name, <omic>_<assay> (integrationInputViewName in the package).
+    names(views) <- paste(omic, gsub("[^A-Za-z0-9_-]", "_", r$assays), sep = "_")
     list(generator = r, scale = "log2", views = views, display = lapply(views, rownames),
         samples = integrationSamples(runs, design$group, design$replicate))
 }
@@ -182,7 +195,7 @@ integrationOrthogonal <- function(x, basis) {
 integrationFactorScores <- function(recipe) {
     per <- recipe$biological_per_group
     group <- rep(recipe$groups, each = per)
-    bio <- sprintf("%s_%02d", group, rep(seq_len(per), times = length(recipe$groups)))
+    bio <- integrationBiologicalKey(group, rep(seq_len(per), times = length(recipe$groups)))
     z1 <- as.numeric(group == recipe$effect_group)
     draws <- withr::with_seed(recipe$seed, matrix(stats::rnorm(2L * length(bio)), ncol = 2L))
     z2 <- integrationOrthogonal(draws[, 1L], cbind(1, z1))
@@ -238,7 +251,7 @@ integrationBuildOmic <- function(gen, recipe, omic, index, scores) {
     base <- switch(spec$generator,
         lfq = integrationBaseProteomics(gen, recipe, spec),
         trx_screen = integrationBaseTrx(gen, recipe, spec),
-        integrationBaseMs(gen, recipe, spec))
+        integrationBaseMs(gen, recipe, spec, omic))
     batch_of <- integrationBatches(scores, spec$batches, recipe$seed + 100L + index)
     samples <- base$samples
     samples$batch <- unname(batch_of[samples$biological_sample])
@@ -266,7 +279,7 @@ integrationWriteTable <- function(table, path) {
 integrationWriteOmic <- function(directory, omic, built, digits) {
     out <- file.path(directory, omic)
     dir.create(out, recursive = TRUE, showWarnings = FALSE)
-    columns <- c("Run", "group", "replicates", "tech_rep_group", "batch", "biological_sample")
+    columns <- c("Run", "group", "replicates", "tech_rep_group", "batch")
     paths <- integrationWriteTable(built$samples[, columns], file.path(out, "samples.tsv"))
     for (view in names(built$views)) {
         values <- built$views[[view]]
@@ -298,7 +311,7 @@ integrationWriteInputManifest <- function(out, omic, built, paths) {
         sample_id_column = "Run",
         group_column = "group",
         technical_replicate_column = "tech_rep_group",
-        biological_sample_column = "biological_sample",
+        biological_sample_column = "tech_rep_group",
         feature_id_column = "feature_id",
         display_name_column = "display_name",
         views = views,
@@ -437,9 +450,9 @@ checkIntegrationCorpusTruth <- function(directory, p_threshold = 0.001) {
                 check.names = FALSE, stringsAsFactors = FALSE)
             m <- as.matrix(table[-1L])
             rownames(m) <- table$feature_id
-            y <- integrationAverageReplicates(m, samples$biological_sample[match(colnames(m), samples$Run)])
+            y <- integrationAverageReplicates(m, samples$tech_rep_group[match(colnames(m), samples$Run)])
             s <- scores[match(colnames(y), scores$biological_sample), ]
-            batch <- samples$batch[match(colnames(y), samples$biological_sample)]
+            batch <- samples$batch[match(colnames(y), samples$tech_rep_group)]
             batch_x <- stats::model.matrix(~batch, data.frame(batch = batch))
             key <- paste(omic, view, sep = "/")
             association[[key]] <- do.call(rbind, lapply(factors, \(k) {

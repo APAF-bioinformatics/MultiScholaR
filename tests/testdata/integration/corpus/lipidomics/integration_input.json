@@ -13,32 +13,32 @@
   "sample_id_column": "Run",
   "group_column": "group",
   "technical_replicate_column": "tech_rep_group",
-  "biological_sample_column": "biological_sample",
+  "biological_sample_column": "tech_rep_group",
   "feature_id_column": "feature_id",
   "display_name_column": "display_name",
   "views": [
     {
-      "name": "LCMS_Pos",
-      "matrix_file": "matrix_LCMS_Pos.tsv",
-      "features_file": "features_LCMS_Pos.tsv",
+      "name": "lipidomics_LCMS_Pos",
+      "matrix_file": "matrix_lipidomics_LCMS_Pos.tsv",
+      "features_file": "features_lipidomics_LCMS_Pos.tsv",
       "rows": 150,
       "columns": 40
     },
     {
-      "name": "LCMS_Neg",
-      "matrix_file": "matrix_LCMS_Neg.tsv",
-      "features_file": "features_LCMS_Neg.tsv",
+      "name": "lipidomics_LCMS_Neg",
+      "matrix_file": "matrix_lipidomics_LCMS_Neg.tsv",
+      "features_file": "features_lipidomics_LCMS_Neg.tsv",
       "rows": 150,
       "columns": 40
     }
   ],
   "samples_file": "samples.tsv",
   "files": {
-    "samples.tsv": "da7829dd8060170bc8a05dfd69df2d89b534c74261de6b755b39fd6ca153725b",
-    "matrix_LCMS_Pos.tsv": "e24a3b2570789db483b8bcdf01d597e499c3213c18d9d841bcf73c46f1a40634",
-    "features_LCMS_Pos.tsv": "76c1c7e0c966e6052a24e080009ca37d3e45fba33eb33e48a316e5ab12769dbb",
-    "matrix_LCMS_Neg.tsv": "13e9c9f1240dc15477b0b2f6e8f93b6d86a43722b3000682cf596152459c77a4",
-    "features_LCMS_Neg.tsv": "da2165b0a58d009174538282f804ae275f3a79a42890180d3241cb6801a9365c"
+    "samples.tsv": "472f9f6dd3d566563ce8afcd7db29ae606708bdef45a1b005f84bef24c414016",
+    "matrix_lipidomics_LCMS_Pos.tsv": "e24a3b2570789db483b8bcdf01d597e499c3213c18d9d841bcf73c46f1a40634",
+    "features_lipidomics_LCMS_Pos.tsv": "76c1c7e0c966e6052a24e080009ca37d3e45fba33eb33e48a316e5ab12769dbb",
+    "matrix_lipidomics_LCMS_Neg.tsv": "13e9c9f1240dc15477b0b2f6e8f93b6d86a43722b3000682cf596152459c77a4",
+    "features_lipidomics_LCMS_Neg.tsv": "da2165b0a58d009174538282f804ae275f3a79a42890180d3241cb6801a9365c"
   },
   "software": {
     "package": "MultiScholaR",

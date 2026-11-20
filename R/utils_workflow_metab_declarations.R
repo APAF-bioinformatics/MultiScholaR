@@ -43,6 +43,8 @@ metabolomicsDeclarationBinding <- list(
     dependency_parameters = "pairs",
     replay = omicsRouteReplay,
     record_outcomes = omicsRouteRecordOutcomes,
+    # KIT-135: the declared integration input, written beside the integration object (`writeOmicsIntegrationInput`).
+    integration_input = writeOmicsIntegrationInput,
     # The module calls the kernel by its own name, so the adaptor does too (the `@args` key `metaboliteIntensityFiltering`).
     filter_intensity = function(object, parameters) {
         metaboliteIntensityFiltering(object,

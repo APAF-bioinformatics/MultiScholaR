@@ -1699,6 +1699,8 @@ newWorkflowStateOwner <- function(store, native = NULL, reopen = FALSE) {
         # KIT-077: the store's identity names an omics owner's omic, so a bare reopen (a worker's) knows it as a session's does.
         # KIT-094: the omics workflow types are the bindings'.
         if (store$identity$workflow_id %in% toupper(omicsWorkflowTypes())) context$omic_type <- tolower(store$identity$workflow_id)
+        # KIT-062: the integration owner's store (`INTEGRATION_WORKFLOW_ID`) reopens as the integration's.
+        if (identical(store$identity$workflow_id, "INTEGRATION")) context$omic_type <- "integration"
         # Rebuild only the bounded index from accepted roots, never from orphan stages.
         for (reference in collectDIANativeReferences(list(context$head, snapshot))) {
             registerSavedWorkflowMetadata(store, reference)

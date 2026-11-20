@@ -158,6 +158,8 @@ startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType
     failed, saveRDSFn = saveRDS, sourceDir = NULL) {
     integration <- config$integration
     requires <- integration$requires
+    # KIT-136: a requirement that depends on the session (transcriptomics: the RUVIII export only when RUV was applied).
+    if (is.function(requires)) requires <- requires(workflowData)
     if (!is.null(requires) && is.null(workflowData$state_manager$.context$snapshot$exports[[requires]])) {
         notify(integration$missing_message, "warning", 10)
         return(done(FALSE))
@@ -498,11 +500,25 @@ trxSummaryStateObject <- function(workflowData) {
     tryCatch(readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, workflowData$state_manager), error = function(error) NULL)
 }
 
-#' The integration export in process: KIT-095's writer of the accepted RUVIII matrix.
+#' The integration export in process: KIT-095's writer of the accepted RUVIII matrix (KIT-136: the TMM logCPM when RUV
+#' was not applied), then the declared integration input (KIT-136) beside it, at `integration/transcriptomics/`.
 #' @noRd
 trxSummaryIntegrationWrite <- function(workflowData, path) {
     manager <- workflowData$state_manager
     withWorkflowStateScope(manager, function() trxWriteIntegrationExport(manager, list(), path))
+    trxWriteIntegrationInput(transcriptomicsDeclarationBinding, manager, file.path(dirname(path), "transcriptomics"))
+}
+
+#' The export the transcriptomics integration needs (the Summary's `integration$requires`, KIT-136): the accepted RUVIII
+#' export (INT-1: the corrected matrix), unless the head's RUV step applied no RUV (design `none`, or k of 0), whose
+#' input is the TMM logCPM and needs none.
+#' @return `"trx_ruviii_export"` or NULL.
+#' @noRd
+trxSummaryIntegrationRequires <- function(workflowData) {
+    manager <- workflowData$state_manager
+    if (!inherits(manager, "DIAStateAdapter")) return("trx_ruviii_export")
+    state <- withWorkflowStateScope(manager, function() trxIntegrationRuvState(manager))
+    if (!is.null(state) && !state$applied) NULL else "trx_ruviii_export"
 }
 
 #' The RUVIII export's parameters (D4; `runTrxRuviiiExport`'s at 5be34ee5, mod_trx_summary.R:76-78): the head's RUVs
