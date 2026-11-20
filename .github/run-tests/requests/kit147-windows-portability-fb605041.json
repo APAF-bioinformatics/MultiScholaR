@@ -1,0 +1,40 @@
+{
+  "requested_by": "KIT-147 Windows portability repairs (gitattributes, corpus content comparison, path comparison): the integration test files on Linux, base performance-v2 against head",
+  "label": "KIT-147 Windows portability on kit-147-windows-portability fb605041",
+  "package_commit": "fb605041c942cb3b189e4eff5ccd4b4ca4e225de",
+  "base_commit": "8f99a2030197afb31b7addf561d33bc28bcb3c73",
+  "tools_ref": "",
+  "tests": [
+    "test-workflow-integration-input.R",
+    "test-integration-corpus.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-model.R",
+    "test-integration-sample-match.R",
+    "test-integration-gui.R",
+    "test-integration-record.R",
+    "test-integration-results.R",
+    "test-integration-mofa-model.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-record-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-integration-outputs.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-partitioned-mofa.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
