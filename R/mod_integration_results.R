@@ -31,6 +31,10 @@ mod_integration_results_ui <- function(id) {
         shiny::h3(texts[["results_heading"]]),
         shiny::p(texts[["results_intro"]]),
         testid(shiny::uiOutput(ns("results_status")), "integration-results-status"),
+        # KIT-152: the Results settings, built from their parameter table.
+        shiny::h4(texts[["results_settings_heading"]]),
+        testid(shiny::div(integrationModelSettingsUi(ns, integrationResultsParameterSpec(), texts, exclude = character(),
+            testid = "integration-results-param-", note = texts[["results_provisional"]])), "integration-results-settings"),
         testid(shiny::uiOutput(ns("advisories")), "integration-results-advisories"),
         shiny::h4(texts[["variance_heading"]]),
         shiny::p(texts[["variance_intro"]]),
@@ -45,6 +49,10 @@ mod_integration_results_ui <- function(id) {
         testid(shiny::tableOutput(ns("association_table")), "integration-results-association-table"),
         shiny::h5(texts[["factor_values_heading"]]),
         testid(DT::DTOutput(ns("factor_values")), "integration-results-factor-values"),
+        # KIT-152: the factor pair plot.
+        shiny::h4(texts[["pairs_heading"]]),
+        shiny::p(texts[["pairs_intro"]]),
+        testid(shiny::plotOutput(ns("pairs_plot"), height = "620px"), "integration-results-pairs-plot"),
         shiny::h4(texts[["weights_heading"]]),
         testid(shiny::uiOutput(ns("weights_intro")), "integration-results-weights-intro"),
         shiny::fluidRow(
@@ -52,10 +60,22 @@ mod_integration_results_ui <- function(id) {
             shiny::column(6, shiny::selectInput(ns("weights_view"), texts[["weights_view"]], choices = character()))),
         testid(shiny::plotOutput(ns("weights_plot"), height = "420px"), "integration-results-weights-plot"),
         testid(shiny::tableOutput(ns("weights_table")), "integration-results-weights-table"),
+        # KIT-152: the top features' values against the factor, and their heatmap (same factor and data set).
+        shiny::h5(texts[["scatter_heading"]]),
+        testid(shiny::uiOutput(ns("scatter_intro")), "integration-results-scatter-intro"),
+        testid(shiny::plotOutput(ns("scatter_plot"), height = "620px"), "integration-results-scatter-plot"),
+        shiny::h5(texts[["heatmap_heading"]]),
+        testid(shiny::uiOutput(ns("heatmap_intro")), "integration-results-heatmap-intro"),
+        testid(shiny::plotOutput(ns("heatmap_plot"), height = "520px"), "integration-results-heatmap-plot"),
         shiny::h4(texts[["correlation_heading"]]),
         shiny::p(texts[["correlation_intro"]]),
         testid(shiny::plotOutput(ns("correlation_plot"), height = "380px"), "integration-results-correlation-plot"),
         testid(shiny::tableOutput(ns("correlation_table")), "integration-results-correlation-table"),
+        # KIT-152: the UMAP and t-SNE maps, when chosen, with their caution.
+        shiny::h4(texts[["maps_heading"]]),
+        testid(shiny::uiOutput(ns("maps_status")), "integration-results-maps-status"),
+        testid(shiny::plotOutput(ns("umap_plot"), height = "480px"), "integration-results-umap-plot"),
+        testid(shiny::plotOutput(ns("tsne_plot"), height = "480px"), "integration-results-tsne-plot"),
         shiny::h4(texts[["save_heading"]]),
         shiny::p(shiny::em(texts[["results_provisional"]])),
         testid(shiny::actionButton(ns("save"), texts[["save_button"]], class = "btn-primary", icon = shiny::icon("save")),
@@ -68,23 +88,39 @@ mod_integration_results_ui <- function(id) {
 #' @param workflow_data The integration bus (`state_manager`, `integration_model`, `integration_results`, `tab_status`).
 #' @param paths `project_dirs$integration` (`mofa_tables_dir`, `mofa_plots_dir`, `source_dir`).
 #' @param texts `integrationGuiTexts()`.
-#' @param parameters The Results parameters (absent ones take `integrationResultsParameterSpec()`'s defaults).
+#' @param parameters The Results parameters (absent ones take `integrationResultsParameterSpec()`'s defaults); KIT-152:
+#'   the tab's settings inputs, once drawn, take their place.
 #' @return The results shown (`integrationResults`'s value, NULL, or a refusal), as a reactive.
 #' @noRd
 mod_integration_results_server <- function(id, workflow_data, paths, texts = integrationGuiTexts(), parameters = list()) {
     shiny::moduleServer(id, function(input, output, session) {
         saved <- shiny::reactiveValues(display = NULL, error = NULL)
+        spec <- integrationResultsParameterSpec()
+        # KIT-152: the settings as the inputs give them (an input not yet drawn: the caller's value, else the default).
+        settings <- shiny::reactive(lapply(stats::setNames(names(spec), names(spec)),
+            function(name) input[[paste0("param_", name)]] %||% parameters[[name, exact = TRUE]]))
         results <- shiny::reactive({
             model <- workflow_data$integration_model
             manager <- workflow_data$state_manager
             if (is.null(model) || is.null(manager)) return(NULL)
+            values <- settings()
             tryCatch({
+                chosen_parameters <- integrationModelSettings(values, spec, texts, exclude = character())
                 value <- withWorkflowStateScope(manager, function()
                     hydrateSavedWorkflowEntity(manager$.context$store, model$reference)$value)
-                integrationResults(value, integrationImportedObject(manager), parameters, texts, manager = manager)
+                # KIT-152 correction: factors picked for an earlier model that this model lacks: all factors, said in words.
+                factors <- setdiff(names(value$factors), "biological_sample")
+                shown <- chosen_parameters$factors_shown
+                reset <- !identical(shown, "all") && !all(shown %in% factors)
+                if (reset) chosen_parameters$factors_shown <- "all"
+                out <- integrationResults(value, integrationImportedObject(manager), chosen_parameters, texts, manager = manager,
+                    model_parameters = model$parameters)
+                if (reset) out$settings_note <- sprintf(texts[["factors_shown_reset"]], length(factors))
+                out
             }, error = function(error) structure(list(refusal = integrationRefusalText(error, texts)),
                 class = "integration_results_refused"))
         })
+        known_factors <- shiny::reactiveVal(NULL)
         usable <- function(value) !is.null(value) && !inherits(value, "integration_results_refused")
         # A new model (or none, after a new import): its results are not saved yet.
         shiny::observeEvent(workflow_data$integration_model, {
@@ -98,6 +134,13 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
             pick <- shiny::isolate(chosen(value))
             shiny::updateSelectInput(session, "weights_factor", choices = value$shown, selected = pick$factor)
             shiny::updateSelectInput(session, "weights_view", choices = value$views, selected = pick$view)
+            # KIT-152: the factors the settings offer are the model's (filled once per model).
+            if (!identical(shiny::isolate(known_factors()), value$factors)) {
+                known_factors(value$factors)
+                shiny::updateSelectInput(session, "param_factors_shown", choices = stats::setNames(c("all", value$factors),
+                    c(texts[["choice_factors_shown_all"]], value$factors)),
+                    selected = if (is.null(value$settings_note)) shiny::isolate(input$param_factors_shown) %||% "all" else "all")
+            }
         })
         # The factor and data set the weights show: the chosen ones while they are the model's, else the first.
         chosen <- function(value) {
@@ -115,7 +158,8 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
                     texts = texts))
             }
             model <- workflow_data$integration_model
-            shiny::p(sprintf(texts[["results_model"]], format(model$trained_at, "%Y-%m-%d %H:%M")))
+            shiny::tagList(shiny::p(sprintf(texts[["results_model"]], format(model$trained_at, "%Y-%m-%d %H:%M"))),
+                if (!is.null(value$settings_note)) shiny::div(class = "alert alert-info", value$settings_note))
         })
         output$advisories <- shiny::renderUI({
             value <- results()
@@ -199,6 +243,57 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
             shiny::req(usable(value))
             integrationResultsCorrelationTable(value, texts)
         }, rownames = FALSE)
+        # KIT-152: the pair plot, the top features' scatter and heatmap, the maps.
+        output$pairs_plot <- shiny::renderPlot({
+            value <- results()
+            shiny::req(usable(value))
+            integrationPlotFactorPairs(value, texts)
+        })
+        output$scatter_intro <- shiny::renderUI({
+            value <- results()
+            shiny::req(usable(value))
+            scale <- value$value_scales$scale[match(chosen(value)$view, value$value_scales$view)]
+            shiny::tagList(shiny::p(sprintf(texts[["scatter_intro"]], value$parameters$top_features)),
+                shiny::p(sprintf(texts[["scatter_values"]], texts[[paste0("values_", scale)]])))
+        })
+        output$scatter_plot <- shiny::renderPlot({
+            value <- results()
+            shiny::req(usable(value))
+            pick <- chosen(value)
+            integrationPlotTopFeatureScatter(value, pick$factor, pick$view, texts)
+        })
+        output$heatmap_intro <- shiny::renderUI({
+            value <- results()
+            shiny::req(usable(value))
+            shiny::p(texts[[paste0("heatmap_intro_", value$parameters$heatmap_scaling)]])
+        })
+        output$heatmap_plot <- shiny::renderPlot({
+            value <- results()
+            shiny::req(usable(value))
+            pick <- chosen(value)
+            integrationPlotTopFeatureHeatmap(value, pick$factor, pick$view, texts)
+        })
+        output$maps_status <- shiny::renderUI({
+            value <- results()
+            shiny::req(usable(value))
+            if (!length(value$maps)) return(shiny::div(class = "alert alert-info", texts[["maps_off"]]))
+            drawn <- Filter(function(map) is.null(map$refusal), value$maps)
+            refusals <- lapply(Filter(function(map) !is.null(map$refusal), value$maps), function(map)
+                integrationRefusalUi(map$refusal, texts = texts))
+            caution <- if (length(drawn)) shiny::div(class = "alert alert-warning",
+                lapply(integrationMapCaution(value, drawn[[1L]]$settings$samples, names(drawn), texts), shiny::p))
+            shiny::tagList(unname(refusals), caution)
+        })
+        map_plot <- function(method) {
+            force(method)
+            shiny::renderPlot({
+                value <- results()
+                shiny::req(usable(value), !is.null(value$maps[[method]]$coordinates))
+                integrationPlotFactorMap(value, method, texts)
+            })
+        }
+        output$umap_plot <- map_plot("umap")
+        output$tsne_plot <- map_plot("tsne")
 
         shiny::observeEvent(input$save, {
             saved$error <- NULL

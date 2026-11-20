@@ -164,6 +164,73 @@ integrationRecordTexts <- function() {
         methods_provisional = "Settings that were provisional defaults at the time of the analysis: %s.",
         # %s: the settings.
         methods_user_set = "Settings changed from their defaults: %s.",
+        # KIT-152: the further figures, in the methods paragraph (audits SCI-15 to SCI-17). %d: the features listed.
+        methods_top_features = paste("Within each factor and data set, features were ranked by the absolute value of their",
+            "weight and the %d highest were listed; since the sign of a factor is arbitrary, a feature's direction has",
+            "meaning only against the other features of the same factor. These lists are exploratory: their order was not",
+            "tested for stability."),
+        # %s: the scale of each data set's values.
+        methods_feature_values = paste("Scatter plots show these features' values as given to the model (the runs of a",
+            "biological sample averaged, after feature selection and any per-feature scaling, before MOFA2 centres and",
+            "scales each data set; %s) against the factor's values, with missing values left out; the features were chosen",
+            "from the same model."),
+        methods_heatmap_centre = paste("Heatmaps show the same values with each feature centred on its mean, for display",
+            "only, the samples in order of the factor's values."),
+        methods_heatmap_centre_scale = paste("Heatmaps show the same values with each feature centred on its mean and scaled",
+            "to standard deviation 1, for display only, the samples in order of the factor's values."),
+        # %d: factors; %s: uwot's version; %d: neighbours; %s: minimum distance; %d: training rounds; %s: the start;
+        # %d: seed.
+        methods_umap = paste("A UMAP map of the %d factors was drawn with uwot %s (%d neighbours, minimum distance %s, %d",
+            "training rounds, %s start, one thread, seed %d)."),
+        # %d: factors; %s: Rtsne's version, the perplexity; %d: iterations, seed.
+        methods_tsne = paste("A t-SNE map of the %d factors was drawn with Rtsne %s (perplexity %s, exact computation with",
+            "theta 0, %d iterations, started from the first two principal components scaled to standard deviation 0.0001,",
+            "one thread, seed %d)."),
+        # %d: biological samples.
+        methods_maps_caution = paste("These maps are pictures of the factors at %d biological samples and are unstable at",
+            "this number: the distances and cluster sizes on them are not interpretable, they are not evidence of groups,",
+            "and they are reproduced exactly only on the same computer."),
+        # KIT-152 correction: what each map drawn depends on.
+        methods_maps_umap = "The UMAP map changes with the random seed and the number of neighbours.",
+        methods_maps_tsne = paste("The t-SNE map, started from the principal components, does not depend on the random seed",
+            "but changes with the perplexity."),
+        # %s: the data sets.
+        methods_maps_group_corrected = paste("In %s, unwanted variation had been removed with the groups as replicate sets,",
+            "so groups separate on these maps by construction."),
+        # KIT-152: the further figures in the record's tables, study parameters and report.
+        section_outputs = "Further figures",
+        col_output = "Figure",
+        col_shows = "What it shows",
+        col_settings = "Settings",
+        out_pairs = "Factors against each other",
+        out_pairs_shows = "the factor values of each biological sample, two factors per panel, coloured by group",
+        out_top = "Features with the largest weights",
+        # %d: the features listed.
+        out_top_shows = paste("the %d features per factor and data set with the largest weight in absolute value; a",
+            "factor's sign is arbitrary; exploratory, not tested for stability"),
+        out_scatter = "Top features against the factor",
+        # %s: the scale of each data set's values.
+        out_scatter_shows = "the values given to the model (%s) against the factor's values; missing values left out",
+        out_heatmap = "Heatmap of the top features",
+        out_heatmap_shows_centre = "the same values, each feature centred on its mean, for display only; samples in order of the factor",
+        out_heatmap_shows_centre_scale = paste("the same values, each feature centred on its mean and scaled to standard",
+            "deviation 1, for display only; samples in order of the factor"),
+        out_map_umap = "UMAP map of the factors",
+        out_map_tsne = "t-SNE map of the factors",
+        # %d: factors, biological samples.
+        out_map_shows = "the %d factors of %d biological samples in two dimensions; a picture, not evidence of groups",
+        # %s: version; %d: neighbours; %s: minimum distance; %d: training rounds; %s: the start; %d: seed.
+        out_umap_settings = "uwot %s; %d neighbours; minimum distance %s; %d training rounds; %s start; one thread; seed %d",
+        # %s: version, perplexity; %d: iterations, seed.
+        out_tsne_settings = paste("Rtsne %s; perplexity %s; exact (theta 0); %d iterations; started from the first two",
+            "principal components; one thread; seed %d"),
+        out_caution = "Caution about the maps",
+        # %s: the data set, then its scale in words.
+        scale_item = "%s: %s",
+        scale_log2 = "log2",
+        scale_log2_cpm = "log2 counts per million",
+        scale_feature_zscore = "scaled per feature",
+        scale_unknown = "the scale the omic saved",
         # The Record tab (its title and step are `integrationGuiTexts()`'s `tab_record`, `step_record`).
         record_heading = "Record and report",
         record_intro = paste("Save the integration's analysis record (what was combined, how samples were matched, every",
@@ -199,7 +266,8 @@ integrationRecordTexts <- function() {
 #' The record's sheets for an integration record (KIT-142), in the order the workbook writes them.
 #' @noRd
 INTEGRATION_RECORD_SHEETS <- c("integration_inputs", "integration_matching", "integration_samples",
-    "integration_settings", "integration_model", "integration_variance", "integration_results", "integration_notes")
+    "integration_settings", "integration_model", "integration_variance", "integration_results", "integration_outputs",
+    "integration_notes")
 
 # ------------------------------------------------------------------------------------------------
 # Small readers that take the record as built (lists, data frames) or as read back from JSON
@@ -299,7 +367,10 @@ integrationConfirmationRecord <- function(confirmed) {
 #' Keep a saved Results publication with the model it was made from (KIT-142): the publication's label and identity,
 #' the Results settings, the time, every table and figure with its checksum, the factors' relation to the groups and
 #' the claim limit's facts, under the model's entry of `snapshot$exports` (the record reads them there). A publication
-#' made from a model that is no longer the latest is not kept.
+#' made from a model that is no longer the latest is not kept. KIT-152 (audit ENG-15): with them what the further
+#' figures show and every map's settings, as plain lists (`outputs`), and the top features' values and each map's
+#' coordinates as tables of the integration store, only their references on the head (`output_tables`), for the replay's
+#' comparison.
 #' @param manager The integration owner.
 #' @param model_reference The model product's reference.
 #' @param results `integrationResults()`'s value.
@@ -320,11 +391,54 @@ integrationRecordResultsPublication <- function(manager, model_reference, result
             parameters = results$parameters, factors = results$factors,
             saved_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), tables = listed(files$tables), figures = listed(files$figures),
             association = as.list(results$association),
-            claim = list(group_corrected = results$claim$group_corrected, corrections = as.list(results$claim$corrections)))
+            claim = list(group_corrected = results$claim$group_corrected, corrections = as.list(results$claim$corrections)),
+            outputs = integrationOutputsRecord(results), output_tables = integrationStoreOutputTables(context, results))
         snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- export
         publishWorkflowStateHead(context, snapshot)
         invisible(TRUE)
     })
+}
+
+#' What the further figures of a saved publication show (KIT-152; audits ENG-15, SCI-15 to SCI-17), as the head keeps it:
+#' plain lists of plain values only.
+#' @param results `integrationResults()`'s value.
+#' @return `list(feature_values, top_features, value_scales = list(view, scale), heatmap_scaling, maps)`: `maps` per map
+#'   drawn its settings and the software's warnings (`notes`).
+#' @noRd
+integrationOutputsRecord <- function(results) {
+    p <- results$parameters
+    maps <- lapply(Filter(function(map) is.null(map$refusal), results$maps), function(map)
+        c(map$settings, list(notes = as.character(map$notes))))
+    list(feature_values = p$feature_values, top_features = p$top_features,
+        value_scales = list(view = as.character(results$value_scales$view), scale = as.character(results$value_scales$scale)),
+        heatmap_scaling = p$heatmap_scaling, maps = maps)
+}
+
+#' Keep the further figures' tables in the integration store (KIT-152; ENG-15): the top features' values and each
+#' map's coordinates, each a table of the store (`saveWorkflowOwnedTable`; the same table is the same entity).
+#' @param context The owner's context (in its state scope).
+#' @param results `integrationResults()`'s value.
+#' @return Named list of table references (`feature_values`, `map_umap`, `map_tsne`).
+#' @noRd
+integrationStoreOutputTables <- function(context, results) {
+    out <- list(feature_values = saveWorkflowOwnedTable(context, results$feature_values))
+    for (method in names(results$maps)) {
+        map <- results$maps[[method]]
+        if (is.null(map$refusal)) out[[paste0("map_", method)]] <- saveWorkflowOwnedTable(context, map$coordinates)
+    }
+    out
+}
+
+#' The further figures' tables of the latest saved publication, read from the store (KIT-152; for the replay's
+#' comparison, before the store is closed).
+#' @param manager The integration owner.
+#' @return Named list of data frames (`feature_values`, `map_umap`, `map_tsne`), or NULL when none were kept.
+#' @noRd
+integrationRecordedOutputs <- function(manager) {
+    tables <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$results$output_tables
+    if (!length(tables)) return(NULL)
+    withWorkflowStateScope(manager, function() lapply(tables, function(reference) materializeWorkflowTable(manager$.context,
+        reference)))
 }
 
 #' The integration block of the model's analysis in the record (KIT-142), and each model setting's status: called by
@@ -370,6 +484,8 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
     iterations <- as.integer(value$elbo$iterations)
     results <- export$results
     if (!is.null(results)) {
+        # KIT-152: the further figures' tables stay in the store; the record keeps what they show and their settings.
+        results$output_tables <- NULL
         for (name in c("tables", "figures", "association")) {
             results[[name]] <- as.data.frame(results[[name]], stringsAsFactors = FALSE)
         }
@@ -482,8 +598,59 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
     notes <- framed(texts[["col_note"]], list(notes))
     out <- list(integration_inputs = inputs, integration_matching = matching, integration_samples = samples,
         integration_settings = settings, integration_model = model_table, integration_variance = variance,
-        integration_results = files, integration_notes = notes)
+        integration_results = files, integration_outputs = integrationRecordOutputsTable(block, texts),
+        integration_notes = notes)
     out[INTEGRATION_RECORD_SHEETS]
+}
+
+#' The scales of the values given to the model, in words, from the record (KIT-152): "data set: scale" per data set.
+#' @param outputs The record's `results$outputs`.
+#' @noRd
+integrationRecordScaleText <- function(outputs, texts = integrationRecordTexts()) {
+    views <- as.character(unlist(outputs$value_scales$view))
+    scales <- as.character(unlist(outputs$value_scales$scale))
+    words <- vapply(scales, function(scale) integrationTextOr(texts, paste0("scale_", scale), scale), character(1))
+    paste(sprintf(texts[["scale_item"]], views, words), collapse = "; ")
+}
+
+#' The further figures of the saved results as the record's table (KIT-152; ENG-15): one row per figure, what it
+#' shows and its settings; the maps only when drawn, then the caution about them. No row without saved results, or for
+#' results saved before KIT-152.
+#' @param block The record's integration block.
+#' @return `data.frame` with the headers `col_output`, `col_shows`, `col_settings`.
+#' @noRd
+integrationRecordOutputsTable <- function(block, texts = integrationRecordTexts()) {
+    s <- integrationRecordScalar
+    outputs <- block$results$outputs
+    rows <- list()
+    if (!is.null(outputs)) {
+        heatmap <- as.character(s(outputs$heatmap_scaling))
+        rows <- list(c(texts[["out_pairs"]], texts[["out_pairs_shows"]], ""),
+            c(texts[["out_top"]], sprintf(texts[["out_top_shows"]], as.integer(s(outputs$top_features))), ""),
+            c(texts[["out_scatter"]], sprintf(texts[["out_scatter_shows"]], integrationRecordScaleText(outputs, texts)), ""),
+            c(texts[["out_heatmap"]], integrationTextOr(texts, paste0("out_heatmap_shows_", heatmap), heatmap), ""))
+        maps <- outputs$maps %||% list()
+        for (method in intersect(c("umap", "tsne"), names(maps))) {
+            m <- maps[[method]]
+            settings <- if (method == "umap") sprintf(texts[["out_umap_settings"]], s(m$version), as.integer(s(m$n_neighbors)),
+                format(s(m$min_dist)), as.integer(s(m$n_epochs)), s(m$init), as.integer(s(m$seed))) else
+                sprintf(texts[["out_tsne_settings"]], s(m$version), format(s(m$perplexity)), as.integer(s(m$max_iter)),
+                    as.integer(s(m$seed)))
+            rows[[length(rows) + 1L]] <- c(texts[[paste0("out_map_", method)]],
+                sprintf(texts[["out_map_shows"]], as.integer(s(m$factors)), as.integer(s(m$samples))), settings)
+        }
+        if (length(maps)) {
+            samples <- as.integer(s(maps[[1L]]$samples))
+            corrected <- as.character(unlist(block$claim_limit$group_corrected))
+            caution <- integrationMapCaution(list(claim = list(group_corrected = corrected)), samples, names(maps))
+            rows[[length(rows) + 1L]] <- c(texts[["out_caution"]], paste(caution, collapse = " "), "")
+        }
+    }
+    table <- if (length(rows)) as.data.frame(do.call(rbind, rows), stringsAsFactors = FALSE) else
+        data.frame(character(), character(), character(), stringsAsFactors = FALSE)
+    names(table) <- unname(texts[c("col_output", "col_shows", "col_settings")])
+    rownames(table) <- NULL
+    table
 }
 
 #' The methods paragraph of an integration record (KIT-142): a draft for the user, stating the facts the record holds
@@ -538,6 +705,7 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
         adjust <- integrationRecordParameter(results$parameters, "p_adjust_method")
         sentences <- c(sentences, sprintf(texts[["methods_association"]],
             integrationTextOr(integrationGuiTexts(), paste0("padjust_", adjust), as.character(adjust))))
+        sentences <- c(sentences, integrationMethodsOutputs(results$outputs, block$claim_limit, texts))
     }
     claim <- block$claim_limit
     sentences <- c(sentences, if (isTRUE(as.logical(s(claim$applies))))
@@ -562,6 +730,40 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     paste(sentences[nzchar(sentences)], collapse = " ")
 }
 
+#' The methods paragraph's sentences on the further figures (KIT-152; audits SCI-15 to SCI-17), from the record: how the
+#' top features are ranked and what their lists claim; which values the scatter and heatmap show; each map drawn with
+#' its software and settings, then the caution (and the group-correction sentence where the claim limit applies). A map
+#' not drawn is not mentioned; results saved before KIT-152 give none.
+#' @param outputs The record's `results$outputs`.
+#' @param claim The record's `claim_limit`.
+#' @return A character vector.
+#' @noRd
+integrationMethodsOutputs <- function(outputs, claim, texts = integrationRecordTexts()) {
+    if (is.null(outputs)) return(character())
+    s <- integrationRecordScalar
+    heatmap <- as.character(s(outputs$heatmap_scaling))
+    sentences <- c(sprintf(texts[["methods_top_features"]], as.integer(s(outputs$top_features))),
+        sprintf(texts[["methods_feature_values"]], integrationRecordScaleText(outputs, texts)),
+        integrationTextOr(texts, paste0("methods_heatmap_", heatmap), ""))
+    maps <- outputs$maps %||% list()
+    for (method in intersect(c("umap", "tsne"), names(maps))) {
+        m <- maps[[method]]
+        sentences <- c(sentences, if (method == "umap") sprintf(texts[["methods_umap"]], as.integer(s(m$factors)), s(m$version),
+            as.integer(s(m$n_neighbors)), format(s(m$min_dist)), as.integer(s(m$n_epochs)), s(m$init), as.integer(s(m$seed))) else
+            sprintf(texts[["methods_tsne"]], as.integer(s(m$factors)), s(m$version), format(s(m$perplexity)),
+                as.integer(s(m$max_iter)), as.integer(s(m$seed))))
+    }
+    if (length(maps)) {
+        sentences <- c(sentences, sprintf(texts[["methods_maps_caution"]], as.integer(s(maps[[1L]]$samples))),
+            unname(texts[paste0("methods_maps_", intersect(c("umap", "tsne"), names(maps)))]))
+        corrected <- as.character(unlist(claim$group_corrected))
+        if (isTRUE(as.logical(s(claim$applies))) && length(corrected)) {
+            sentences <- c(sentences, sprintf(texts[["methods_maps_group_corrected"]], paste(corrected, collapse = ", ")))
+        }
+    }
+    sentences
+}
+
 #' The integration's study parameters (KIT-142), in the form of the omics' `study_parameters.txt`: one section per
 #' table of `integrationRecordTables()` with "* item: value" lines, then the methods paragraph.
 #' @param record An analysis record of an integration store.
@@ -582,6 +784,8 @@ integrationStudyParameterLines <- function(record, texts = integrationRecordText
         section(texts[["section_model"]], pairs(tables$integration_model)),
         section(texts[["section_variance"]], pairs(tables$integration_variance)),
         section(texts[["section_results"]], rows(tables$integration_results)),
+        # KIT-152: the further figures.
+        section(texts[["section_outputs"]], rows(tables$integration_outputs)),
         section(texts[["section_notes"]], if (nrow(tables$integration_notes)) sprintf("* %s", tables$integration_notes[[1L]]) else
             sprintf("* %s", texts[["none_recorded"]])),
         section(texts[["section_methods"]], c(texts[["methods_draft_note"]], "", integrationMethodsText(record, texts))))
@@ -689,25 +893,57 @@ integrationReplayVersions <- function(recorded, current) {
 #' @return `list(tables, largest_relative, equal, identical)`.
 #' @noRd
 integrationCompareModels <- function(recorded, replayed, tolerance = 1e-5) {
-    compare <- function(name, a, b) {
-        a <- as.data.frame(a)
-        b <- as.data.frame(b)
-        same_shape <- identical(dim(a), dim(b)) && identical(names(a), names(b))
-        numeric <- if (same_shape) names(a)[vapply(a, is.numeric, logical(1))] else character()
-        labels_same <- same_shape && identical(a[setdiff(names(a), numeric)], b[setdiff(names(b), numeric)])
-        x <- as.matrix(a[numeric])
-        y <- as.matrix(b[numeric])
-        na_same <- labels_same && identical(is.na(x), is.na(y))
-        absolute <- if (na_same && length(x)) max(c(0, abs(x - y)), na.rm = TRUE) else if (na_same) 0 else Inf
-        scale <- if (na_same && length(x)) max(c(0, abs(x)), na.rm = TRUE) else 0
-        relative <- if (!is.finite(absolute)) Inf else if (absolute == 0) 0 else absolute / max(scale, .Machine$double.xmin)
-        data.frame(table = name, rows = nrow(b), largest_absolute = absolute, largest_relative = relative,
-            within_tolerance = relative <= tolerance, identical = identical(a, b), stringsAsFactors = FALSE)
-    }
     tables <- do.call(rbind, lapply(c("factors", "weights", "variance_explained", "variance_total", "samples", "view_summary"),
-        \(name) compare(name, recorded[[name]], replayed[[name]])))
+        \(name) integrationCompareTable(name, recorded[[name]], replayed[[name]], tolerance)))
     list(tables = tables, largest_relative = max(tables$largest_relative), equal = all(tables$within_tolerance),
         identical = all(tables$identical))
+}
+
+#' Compare one recorded table with its repeat (KIT-142's rule, KIT-152 shared with the further figures): the largest
+#' absolute and relative difference of the numeric columns; another shape, other labels or missing values in other
+#' places differ outright (Inf).
+#' @param name The table's name.
+#' @param a,b The recorded and the repeated table.
+#' @param tolerance The relative tolerance.
+#' @return One row: `table, rows, largest_absolute, largest_relative, within_tolerance, identical`.
+#' @noRd
+integrationCompareTable <- function(name, a, b, tolerance = 1e-5) {
+    a <- as.data.frame(a)
+    b <- as.data.frame(b)
+    same_shape <- identical(dim(a), dim(b)) && identical(names(a), names(b))
+    numeric <- if (same_shape) names(a)[vapply(a, is.numeric, logical(1))] else character()
+    labels_same <- same_shape && identical(a[setdiff(names(a), numeric)], b[setdiff(names(b), numeric)])
+    x <- as.matrix(a[numeric])
+    y <- as.matrix(b[numeric])
+    na_same <- labels_same && identical(is.na(x), is.na(y))
+    absolute <- if (na_same && length(x)) max(c(0, abs(x - y)), na.rm = TRUE) else if (na_same) 0 else Inf
+    scale <- if (na_same && length(x)) max(c(0, abs(x)), na.rm = TRUE) else 0
+    relative <- if (!is.finite(absolute)) Inf else if (absolute == 0) 0 else absolute / max(scale, .Machine$double.xmin)
+    data.frame(table = name, rows = nrow(b), largest_absolute = absolute, largest_relative = relative,
+        within_tolerance = relative <= tolerance, identical = identical(a, b), stringsAsFactors = FALSE)
+}
+
+#' Compare the further figures' recorded tables with those of the repeated analysis (KIT-152; ENG-15, ENG-22): the top
+#' features' values (`top_feature_values`; the values given to the model, read from the store, so equal wherever the
+#' model is) and each map's coordinates (`map_umap`, `map_tsne`). The maps' starts depend on the computer's numerical
+#' libraries, so their coordinates are expected identical only on the same computer (`same_computer_only`).
+#' @param recorded `integrationRecordedOutputs()`'s value.
+#' @param results The repeated analysis's `integrationResults()`.
+#' @param tolerance The relative tolerance.
+#' @return `list(tables, equal, identical)`; `tables` with `same_computer_only`.
+#' @noRd
+integrationCompareOutputs <- function(recorded, results, tolerance = 1e-5) {
+    names <- names(recorded)
+    replayed <- lapply(stats::setNames(names, names), function(name) {
+        if (identical(name, "feature_values")) return(results$feature_values)
+        results$maps[[sub("^map_", "", name)]]$coordinates
+    })
+    # The columns compared as they are; a table read back from the store may carry other attributes.
+    plain <- function(x) if (is.null(x)) data.frame() else data.frame(as.list(x), check.names = FALSE, stringsAsFactors = FALSE)
+    tables <- do.call(rbind, lapply(names, function(name) integrationCompareTable(if (name == "feature_values")
+        "top_feature_values" else name, plain(recorded[[name]]), plain(replayed[[name]]), tolerance)))
+    tables$same_computer_only <- startsWith(names, "map_")
+    list(tables = tables, equal = all(tables$within_tolerance), identical = all(tables$identical))
 }
 
 #' Repeat an integration analysis from its record (KIT-142). Before anything is trained, in plain words: every
@@ -726,11 +962,14 @@ integrationCompareModels <- function(recorded, replayed, tolerance = 1e-5) {
 #' @param trainer NULL for MOFA2, or a stand-in (tests).
 #' @param current_versions This computer's versions; NULL takes `integrationMofaVersions()` when MOFA2 trains.
 #' @param tolerance The relative tolerance of the comparison.
-#' @return `list(replayed, results, comparison, versions, parameters)`; `replayed` is the repeated model as held outside
-#'   its store (`integrationModelComparable()`), since the replay's store is closed on return.
+#' @param recorded_outputs The further figures' recorded tables (`integrationRecordedOutputs()`), or NULL (KIT-152).
+#' @return `list(replayed, results, comparison, versions, parameters, outputs_comparison)`; `replayed` is the repeated
+#'   model as held outside its store (`integrationModelComparable()`), since the replay's store is closed on return;
+#'   `outputs_comparison` is `integrationCompareOutputs()`'s value when recorded outputs and saved Results settings are
+#'   given.
 #' @noRd
 replayIntegrationRecord <- function(record, scratch, recorded = NULL, manifests = NULL, probe = integrationMofaCapability,
-    trainer = NULL, current_versions = NULL, tolerance = 1e-5) {
+    trainer = NULL, current_versions = NULL, tolerance = 1e-5, recorded_outputs = NULL) {
     texts <- integrationRecordTexts()
     analysis <- integrationRecordAnalysisOf(record)
     block <- analysis$integration
@@ -787,7 +1026,9 @@ replayIntegrationRecord <- function(record, scratch, recorded = NULL, manifests 
     replayed <- integrationModelComparable(manager, run$value)
     list(replayed = replayed, results = results,
         comparison = if (!is.null(recorded)) integrationCompareModels(recorded, replayed, tolerance),
-        versions = versions, parameters = manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$parameters)
+        versions = versions, parameters = manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$parameters,
+        outputs_comparison = if (!is.null(recorded_outputs) && !is.null(results))
+            integrationCompareOutputs(recorded_outputs, results, tolerance))
 }
 
 #' Reopen a saved integration project and repeat its analysis from its record (KIT-142): the project's store is
@@ -808,7 +1049,10 @@ replayIntegrationProject <- function(project_root, scratch, ...) {
     # KIT-148: the recorded model read from its store before the store is closed.
     recorded <- if (!is.null(export)) integrationModelComparable(manager, withWorkflowStateScope(manager, function()
         hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value))
+    # KIT-152: the further figures' recorded tables, read before the store is closed.
+    recorded_outputs <- integrationRecordedOutputs(manager)
     closeWorkflowStateOwner(manager)
     opened <- FALSE
-    c(replayIntegrationRecord(record, scratch, recorded = recorded, ...), list(record = record))
+    c(replayIntegrationRecord(record, scratch, recorded = recorded, recorded_outputs = recorded_outputs, ...),
+        list(record = record))
 }

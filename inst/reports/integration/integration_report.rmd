@@ -60,6 +60,12 @@ heading("section_results")
 show(tables$integration_results)
 ```
 
+```{r outputs, results = "asis"}
+# KIT-152: the further figures (pair plot, top features' scatter and heatmap, the maps chosen) and the maps' caution.
+heading("section_outputs")
+show(tables$integration_outputs)
+```
+
 ```{r samples, results = "asis"}
 heading("section_samples")
 show(tables$integration_samples)

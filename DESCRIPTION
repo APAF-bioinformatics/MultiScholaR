@@ -428,6 +428,8 @@ Suggests:
     fastlimpadpc,
     mixOmics,
     MOFA2,
+    Rtsne,
+    uwot,
     progress,
     qs2 (>= 0.2.2),
     Rcpp,
