@@ -1,0 +1,60 @@
+{
+  "requested_by": "KIT-148 items 2 and 3 (direct hand-off switch, model product v2, sample match in the store): base 0f49c750 (KIT-147) versus head 58ddd20b; failing-first and gate-off scripts; build check",
+  "label": "KIT-148 items 2 and 3, head 58ddd20b against base 0f49c750",
+  "package_commit": "58ddd20b8044dcb21c8f239624daf05e19376d88",
+  "base_commit": "0f49c7502659526a7ee97f03c9fbc66aa9af6802",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-model.R",
+    "test-integration-corpus.R",
+    "test-integration-gui.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-mofa-model.R",
+    "test-integration-record-mofa.R",
+    "test-integration-record.R",
+    "test-integration-results-mofa.R",
+    "test-integration-results.R",
+    "test-integration-sample-match.R",
+    "test-workflow-integration-input.R",
+    "test-workflow-analysis-record.R",
+    "test-workflow-class-declarations.R",
+    "test-kit129-run-path.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "0f49c7502659526a7ee97f03c9fbc66aa9af6802",
+        "kit148-items23-failing-first",
+        "test-integration-model.R",
+        "test-integration-record.R"
+      ],
+      "out": "kit148-items23-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "0f49c7502659526a7ee97f03c9fbc66aa9af6802",
+        "kit148-items23-gate-off"
+      ],
+      "out": "kit148-items23-gate-off",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
