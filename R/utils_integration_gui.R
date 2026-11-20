@@ -223,10 +223,19 @@ integrationGuiTexts <- function() {
         choice_missing_samples_keep_missing = "kept, with that data set's values missing",
         choice_missing_samples_drop_incomplete = "left out",
         param_feature_selection = "Features used from each data set",
+        choice_feature_selection_variance_above_trend = paste("the features that vary most for their abundance (variance",
+            "above the trend of variance with mean abundance)"),
+        choice_feature_selection_top_variance = "the most variable features (variance alone)",
         choice_feature_selection_none = "all features",
-        choice_feature_selection_top_variance = "only the most variable features",
-        param_features_per_view = "Number of most variable features kept per data set",
-        help_features_per_view = "Used only when only the most variable features are used.",
+        help_feature_selection = paste("Selecting the same number of features from each data set keeps a large data set",
+            "from outweighing the small ones. Less abundant features are often noisier; ranking by variance above the",
+            "trend keeps that noise from filling the selection."),
+        param_features_per_view = "Number of features kept per data set",
+        help_features_per_view = paste("A data set with more features keeps this many; a smaller data set keeps all of",
+            "its features. Not used when all features are used."),
+        param_min_observed_fraction = "Share of biological samples a feature must be measured in",
+        help_min_observed_fraction = paste("Features measured in fewer biological samples are left out before the",
+            "selection (0.5: at least half of them, and never fewer than two). Not used when all features are used."),
         param_scaling = "Scaling of each feature",
         choice_scaling_none = "none: the values as saved",
         choice_scaling_feature_zscore = "each feature scaled to mean 0 and standard deviation 1",
@@ -1144,15 +1153,18 @@ integrationModelSettings <- function(values, spec = integrationMofaParameterSpec
             as.integer(value)
         })
     }
-    if (all(c("feature_selection", "features_per_view") %in% names(out)) &&
-        !identical(out$feature_selection, "top_variance")) out$features_per_view <- NA_integer_
-    for (name in names(out)) {
+    # KIT-151 (INT-12): the number kept and the observed share are set only when features are selected.
+    unused <- character()
+    if ("feature_selection" %in% names(out) && identical(out$feature_selection, "none")) {
+        unused <- intersect(c("features_per_view", "min_observed_fraction"), names(out))
+        out[unused] <- list(features_per_view = NA_integer_, min_observed_fraction = NA_real_)[unused]
+    }
+    for (name in setdiff(names(out), unused)) {
         if (is.double(out[[name]]) && length(out[[name]]) == 1L && is.na(out[[name]])) {
             integrationGuiRefuse(sprintf(texts[["setting_not_number"]], integrationParameterText(texts, "param", name)),
                 "integration_parameters_invalid")
         }
-        if (is.integer(out[[name]]) && is.na(out[[name]]) && !identical(name, "features_per_view")) refuse(name)
-        if (identical(name, "features_per_view") && identical(out$feature_selection, "top_variance") && is.na(out[[name]])) refuse(name)
+        if (is.integer(out[[name]]) && length(out[[name]]) == 1L && is.na(out[[name]])) refuse(name)
     }
     out
 }

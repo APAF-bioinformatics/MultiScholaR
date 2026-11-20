@@ -126,9 +126,20 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
         class = "integration_parameters_invalid")
     expect_error(integrationResolveMofaParameters(object, list(scaling = "vst")), class = "integration_parameters_invalid")
     expect_error(integrationResolveMofaParameters(object, list(num_factors = 2.5)), class = "integration_parameters_invalid")
-    expect_error(integrationResolveMofaParameters(object, list(features_per_view = 10L)), class = "integration_parameters_invalid")
-    expect_error(integrationResolveMofaParameters(object, list(feature_selection = "top_variance")),
+    # KIT-151 (INT-12): the number kept and the observed share are set only with a feature selection.
+    expect_error(integrationResolveMofaParameters(object, list(feature_selection = "none", features_per_view = 10L)),
         class = "integration_parameters_invalid")
+    expect_error(integrationResolveMofaParameters(object, list(feature_selection = "none", min_observed_fraction = 0.5)),
+        class = "integration_parameters_invalid")
+    expect_error(integrationResolveMofaParameters(object, list(feature_selection = "top_variance", features_per_view = NA)),
+        class = "integration_parameters_invalid")
+    for (fraction in list(0, 1.5, NA_real_, "half")) {
+        expect_error(integrationResolveMofaParameters(object, list(min_observed_fraction = fraction)),
+            class = "integration_parameters_invalid")
+    }
+    none <- integrationResolveMofaParameters(object, list(feature_selection = "none"))
+    expect_identical(none[c("features_per_view", "min_observed_fraction")],
+        list(features_per_view = NA_integer_, min_observed_fraction = NA_real_))
     expect_error(integrationResolveMofaParameters(object, list(input_manifests = c(lipidomics = "a", proteomics = "b"))),
         class = "integration_input_stale")
     # Every refusal is also integration_refused.
@@ -142,8 +153,12 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
     table <- integrationMofaParameterTable()
     expect_identical(table$parameter, setdiff(integrationMofaParameterNames(), c("input_manifests", "views")))
     expect_true(all(nzchar(table$settled_by)))
-    # Every method choice is the workbook's to settle, except the precision, decided by the user (INT-6).
-    expect_true(all(grepl("workbook", table$settled_by[table$parameter != "precision"])))
+    # Every method choice is the workbook's to settle, except those the user decided: the precision (INT-6) and the
+    # feature selection (INT-12; KIT-151).
+    decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "precision")
+    expect_true(all(grepl("workbook", table$settled_by[!table$parameter %in% decided])))
+    expect_true(all(grepl("^INT-12 \\(decided", table$settled_by[table$parameter %in% decided[1:3]])))
+    expect_identical(table$default[table$parameter %in% decided[1:3]], c("variance_above_trend", "1000", "0.5"))
     expect_identical(table$default[table$parameter == "precision"], "double")
     expect_match(table$settled_by[table$parameter == "precision"], "INT-6")
     expect_identical(integrationResolveMofaParameters(object)$precision, "double")

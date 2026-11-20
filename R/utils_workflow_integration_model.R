@@ -256,8 +256,15 @@ integrationMofaParameterSpec <- function() {
             settled_by = "INT-3 (dropped); the workbook may override"),
         missing_samples = list(default = "keep_missing", choices = c("keep_missing", "drop_incomplete"),
             settled_by = "KIT-060 D4 (kept as missing in that view); the workbook may override"),
-        feature_selection = list(default = "none", choices = c("none", "top_variance"), settled_by = workbook),
-        features_per_view = list(default = NA_integer_, choices = NULL, settled_by = workbook),
+        # INT-12 (user, 2026-11-21): decided. The features whose variance lies furthest above the data set's fitted
+        # mean-variance trend (`integrationFeatureSelectionScore`), 1,000 per data set (a smaller data set keeps all),
+        # among the features observed in at least half the biological samples; raw variance and none stay selectable.
+        feature_selection = list(default = "variance_above_trend", choices = c("variance_above_trend", "top_variance", "none"),
+            settled_by = "INT-12 (decided 2026-11-21: variance above the fitted mean-variance trend)"),
+        features_per_view = list(default = 1000L, choices = NULL,
+            settled_by = "INT-12 (decided 2026-11-21: about 1,000 per data set; a smaller data set keeps all)"),
+        min_observed_fraction = list(default = 0.5, choices = NULL, type = "number",
+            settled_by = "INT-12 (decided 2026-11-21: observed in at least half the biological samples)"),
         scaling = list(default = "none", choices = c("none", "feature_zscore"), settled_by = workbook),
         scale_views = list(default = FALSE, choices = NULL, settled_by = workbook),
         center_groups = list(default = TRUE, choices = NULL, settled_by = workbook),
@@ -339,12 +346,24 @@ integrationResolveMofaParameters <- function(object, parameters = list()) {
     out$num_factors <- whole("num_factors", 1L)
     out$maxiter <- whole("maxiter", 1L)
     out$seed <- whole("seed", 0L)
-    if (identical(out$feature_selection, "top_variance")) {
+    # INT-12: the number kept and the observed share apply only when features are selected; with no selection a value
+    # the caller gives is refused and an absent one is NA (so the identity does not carry an unused default).
+    if (!identical(out$feature_selection, "none")) {
         out$features_per_view <- whole("features_per_view", 1L)
-    } else if (!(length(out$features_per_view) == 1L && is.na(out$features_per_view))) {
-        invalid("features_per_view is set only with feature_selection = top_variance")
+        fraction <- out$min_observed_fraction
+        if (!(is.numeric(fraction) && length(fraction) == 1L && !is.na(fraction) && fraction > 0 && fraction <= 1)) {
+            invalid("min_observed_fraction must be a number above 0 and at most 1")
+        }
+        out$min_observed_fraction <- as.numeric(fraction)
     } else {
+        for (name in c("features_per_view", "min_observed_fraction")) {
+            value <- given(name)
+            if (!is.null(value) && !(length(value) == 1L && is.na(value))) {
+                invalid(sprintf("%s is set only with a feature selection (feature_selection other than none)", name))
+            }
+        }
         out$features_per_view <- NA_integer_
+        out$min_observed_fraction <- NA_real_
     }
     manifests <- out$input_manifests
     recorded <- integrationStateManifests(object)
@@ -564,10 +583,12 @@ integrationAverageRuns <- function(values, key) {
 #' Align the selected views on their biological samples (KIT-062): per view, internal standards dropped or kept
 #' (`internal_standards`), runs averaged per biological sample (`technical_replicates`, INT-2), the samples of every
 #' view kept with missing values where a view lacks them, or only the samples every view has (`missing_samples`);
-#' features observed in fewer than two samples dropped (and, under per-feature scaling, features without variance);
-#' then the `features_per_view` most variable features (`feature_selection = top_variance`), then the per-feature
-#' Z-score (`scaling = feature_zscore`). Refused: no biological sample shared by every view, a biological sample with
-#' two groups, a view left without features.
+#' features observed in fewer than two samples dropped, or, when features are selected, in fewer than
+#' `min_observed_fraction` of the kept samples (INT-12; `integrationMinObserved`), and, under per-feature scaling,
+#' features without variance; then, in a view with more than `features_per_view` features, the `features_per_view`
+#' with the largest selection score (`feature_selection`: `variance_above_trend` or `top_variance`;
+#' `integrationFeatureSelectionScore`), then the per-feature Z-score (`scaling = feature_zscore`). Refused: no
+#' biological sample shared by every view, a biological sample with two groups, a view left without features.
 #' @param object An `IntegrationViewsData`, hydrated.
 #' @param parameters Resolved parameters (`integrationResolveMofaParameters`).
 #' @param prefix_rows KIT-148: name each view's rows `<view>:<feature_id>` when the view is read (the model's hand-off
@@ -609,14 +630,16 @@ integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
     present <- lapply(averaged, colnames)
     plan <- integrationAlignSamples(design, view_omic, views, present, parameters$missing_samples)
     zscore <- identical(parameters$scaling, "feature_zscore")
+    min_observed <- integrationMinObserved(parameters, length(plan$kept))
+    selection <- parameters$feature_selection
     summary <- list()
     final <- list()
     for (view in views) {
-        block <- integrationAlignedRows(averaged[[view]], plan$kept, zscore)
+        block <- integrationAlignedRows(averaged[[view]], plan$kept, zscore, min_observed)
         m <- block$values
-        if (identical(parameters$feature_selection, "top_variance") && nrow(m) > parameters$features_per_view) {
-            m <- m[integrationSelectTopFeatures(integrationFeatureSelectionStatistic(m), parameters$features_per_view), ,
-                drop = FALSE]
+        if (!identical(selection, "none") && nrow(m) > parameters$features_per_view) {
+            score <- integrationFeatureSelectionScore(integrationFeatureSelectionStatistic(m), selection)
+            m <- m[integrationSelectTopFeatures(score, parameters$features_per_view), , drop = FALSE]
         }
         if (zscore) m <- integrationZscoreRows(m)
         if (!nrow(m)) integrationRefuseEmptyView(view)
@@ -630,9 +653,9 @@ integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
 # ---------------------------------------------------------------------------------------------------------------
 # KIT-149: the alignment's rules, shared by the whole-matrix alignment (`integrationAlignViews`) and the partitioned
 # one (`integrationAlignViewsPartitioned`), so that the two apply one definition. Every rule on values is row by row
-# (each feature's average, its count of observed samples, its spread, its selection statistic and Z-score depend on
-# that feature's values alone); only the most-variable selection compares features, and it is taken once over the
-# whole data set from one statistic per feature.
+# (each feature's average, its count of observed samples, its spread, its mean and variance and Z-score depend on
+# that feature's values alone); only the feature selection compares features (KIT-151: the mean-variance trend is
+# fitted over them), and it is taken once over the whole data set from the per-feature mean and variance.
 # ---------------------------------------------------------------------------------------------------------------
 
 #' The omic of each data set of the inputs state, named by data set (the inputs' order).
@@ -677,20 +700,32 @@ integrationAlignSamples <- function(design, view_omic, views, present, missing_s
     list(shared = shared, kept = kept, groups = groups, notes = notes)
 }
 
+#' The number of kept biological samples a feature must be observed in (KIT-062; INT-12): two without a feature
+#' selection; with one, `min_observed_fraction` of the kept samples rounded up (the product first rounded to 8 decimals,
+#' so that 0.3 x 10 is 3, not 4), and never fewer than two. Half of 20 samples is 10, half of 35 is 18.
+#' @param parameters Resolved parameters.
+#' @param samples The number of kept biological samples.
+#' @noRd
+integrationMinObserved <- function(parameters, samples) {
+    if (identical(parameters$feature_selection, "none")) return(2L)
+    max(2L, as.integer(ceiling(round(parameters$min_observed_fraction * samples, 8L))))
+}
+
 #' Rows of a data set on the kept biological samples (KIT-062's rules): placed on the kept samples (missing where the
-#' data set lacks one), the features observed in fewer than two samples dropped and, under per-feature scaling, those
-#' without variance. Row by row: a block of rows gives the rows the whole data set gives.
+#' data set lacks one), the features observed in fewer than `min_observed` samples dropped and, under per-feature
+#' scaling, those without variance. Row by row: a block of rows gives the rows the whole data set gives.
 #' @param averaged Features x biological samples (`integrationAverageRuns`).
 #' @param kept The kept biological samples.
 #' @param zscore Whether features without variance are dropped (per-feature scaling).
+#' @param min_observed The fewest kept samples a feature is observed in (`integrationMinObserved`).
 #' @return `list(values, sparse, constant, present)`: the rows left, the counts dropped as sparse and as constant, and
 #'   how many kept samples the data set measures.
 #' @noRd
-integrationAlignedRows <- function(averaged, kept, zscore) {
+integrationAlignedRows <- function(averaged, kept, zscore, min_observed = 2L) {
     m <- matrix(NA_real_, nrow(averaged), length(kept), dimnames = list(rownames(averaged), kept))
     here <- intersect(kept, colnames(averaged))
     m[, here] <- averaged[, here, drop = FALSE]
-    sparse <- rowSums(!is.na(m)) < 2L
+    sparse <- rowSums(!is.na(m)) < min_observed
     m <- m[!sparse, , drop = FALSE]
     constant <- 0L
     if (isTRUE(zscore)) {
@@ -702,17 +737,49 @@ integrationAlignedRows <- function(averaged, kept, zscore) {
     list(values = m, sparse = sum(sparse), constant = constant, present = length(here))
 }
 
-#' The statistic the most-variable selection ranks features by (`feature_selection = top_variance`): each feature's
-#' variance over the samples it is observed in. The one definition both alignments use; the selection rule is under
-#' scientific review (KIT-151), and a change made here changes both alike.
+#' The per-feature statistics the feature selection is computed from (KIT-149; INT-12): each feature's mean and
+#' variance over the samples it is observed in. Row by row, so the partitioned alignment gathers them page by page in
+#' its first pass and needs no further pass over the values; the one definition both alignments use.
 #' @param m Features x samples.
+#' @return `list(mean, variance)`: one number per feature each, in row order.
+#' @noRd
+integrationFeatureSelectionStatistic <- function(m) {
+    list(mean = as.numeric(rowMeans(m, na.rm = TRUE)), variance = as.numeric(apply(m, 1L, stats::var, na.rm = TRUE)))
+}
+
+#' The span of the mean-variance trend's fit (INT-12): the evidence run's (KIT-151 run b, `k151b.R`, TREND_SPAN).
+#' @noRd
+INTEGRATION_TREND_SPAN <- 0.3
+
+#' The fitted mean-variance trend (INT-12), as in the evidence run (KIT-151 run b, `.github/mofa-smoke/k151b.R`,
+#' `fitted_trend`): a lowess fit of `y` on the features' mean (`stats::lowess`, span 0.3, its default three robustness
+#' iterations and `delta`), read at each feature's mean by linear interpolation (`stats::approx`, equal means averaged,
+#' the ends held constant). With fewer than two distinct means there is no trend: 0 for every feature.
+#' @param abundance Each feature's mean.
+#' @param y Each feature's variance.
+#' @return The fitted value per feature.
+#' @noRd
+integrationFittedTrend <- function(abundance, y) {
+    if (length(unique(abundance)) < 2L) return(rep(0, length(y)))
+    fit <- stats::lowess(abundance, y, f = INTEGRATION_TREND_SPAN)
+    stats::approx(fit$x, fit$y, xout = abundance, ties = base::mean, rule = 2)$y
+}
+
+#' The score the feature selection ranks a data set's features by (INT-12): `variance_above_trend`, each feature's
+#' variance minus the fitted mean-variance trend at its mean (`integrationFittedTrend`; the "difference" form of the
+#' evidence run); `top_variance`, its variance.
+#' @param statistic `integrationFeatureSelectionStatistic()` of every feature of the data set, in its row order.
+#' @param selection The `feature_selection` parameter.
 #' @return One number per feature, in row order.
 #' @noRd
-integrationFeatureSelectionStatistic <- function(m) apply(m, 1L, stats::var, na.rm = TRUE)
+integrationFeatureSelectionScore <- function(statistic, selection) {
+    if (identical(selection, "top_variance")) return(statistic$variance)
+    statistic$variance - integrationFittedTrend(statistic$mean, statistic$variance)
+}
 
-#' The features the most-variable selection keeps: the `n` largest statistics, a tie broken by position (the earlier
-#' feature first), returned in position order.
-#' @param statistic `integrationFeatureSelectionStatistic()` of every feature of a data set, in its row order.
+#' The features the selection keeps: the `n` largest scores, a tie broken by position (the earlier feature first),
+#' returned in position order.
+#' @param statistic `integrationFeatureSelectionScore()` of every feature of a data set, in its row order.
 #' @param n The number kept (`features_per_view`).
 #' @return Positions in `statistic`, increasing.
 #' @noRd
@@ -731,7 +798,7 @@ integrationZscoreRows <- function(m) {
 #' Refuse a data set left without features.
 #' @noRd
 integrationRefuseEmptyView <- function(view) {
-    integrationRefuse(sprintf("view %s has no feature left for the model (none is observed in two or more samples)", view),
+    integrationRefuse(sprintf("view %s has no feature left for the model (none is observed in enough biological samples)", view),
         "integration_view_empty")
 }
 
@@ -769,9 +836,9 @@ integrationAlignedValue <- function(final, plan, present, runs, views, summary) 
 #' Align the selected data sets as `integrationAlignViews` does, reading each data set in row pages (KIT-149): no data
 #' set is held whole. The biological samples, runs and internal standards come from the design, the feature tables
 #' and the data sets' column names, without values. Then per data set, pass 1 reads its pages and keeps, per feature
-#' left after the sparse and constant filters, its selection statistic (one number per feature); the most-variable
-#' selection is taken once over the whole data set from those numbers (`integrationSelectTopFeatures`, ties by
-#' position); pass 2 reads the pages again and keeps the selected rows, Z-scored under per-feature scaling, in a matrix
+#' left after the sparse and constant filters, its selection statistics (its mean and variance; KIT-151); the selection
+#' is taken once over the whole data set from those numbers (`integrationFeatureSelectionScore`, the trend fitted once,
+#' then `integrationSelectTopFeatures`, ties by position); pass 2 reads the pages again and keeps the selected rows, Z-scored under per-feature scaling, in a matrix
 #' of the selected features only. Every rule is the whole-matrix path's (`integrationAlignedRows` and the functions
 #' beside it), applied row by row, so the value is `identical()` to `integrationAlignViews()`'s.
 #' @param object An `IntegrationViewsData` with `features`, `design_matrix` and `inputs` hydrated; its `views` may be
@@ -811,7 +878,9 @@ integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_r
     }
     plan <- integrationAlignSamples(design, view_omic, views, present, parameters$missing_samples)
     zscore <- identical(parameters$scaling, "feature_zscore")
-    cap <- if (identical(parameters$feature_selection, "top_variance")) parameters$features_per_view else NA_integer_
+    selection <- parameters$feature_selection
+    cap <- if (!identical(selection, "none")) parameters$features_per_view else NA_integer_
+    min_observed <- integrationMinObserved(parameters, length(plan$kept))
     summary <- list()
     final <- if (isTRUE(values)) list()
     for (view in views) {
@@ -821,9 +890,9 @@ integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_r
             storage.mode(m) <- "double"
             rownames(m) <- if (isTRUE(prefix_rows)) paste(view, page[[1L]], sep = ":") else as.character(page[[1L]])
             if (drop_standards) m <- m[!standards[[view]][offset + seq_len(nrow(m))], , drop = FALSE]
-            integrationAlignedRows(integrationAverageRuns(m, keys[[view]]), plan$kept, zscore)
+            integrationAlignedRows(integrationAverageRuns(m, keys[[view]]), plan$kept, zscore, min_observed)
         }
-        # Pass 1: the counts, and the selection statistic of every feature left.
+        # Pass 1: the counts, and the selection statistics (mean, variance) of every feature left.
         rows_read <- 0L
         sparse <- 0L
         constant <- 0L
@@ -836,14 +905,17 @@ integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_r
             sparse <<- sparse + block$sparse
             constant <<- constant + block$constant
             left <<- left + nrow(block$values)
-            if (!is.na(cap)) statistic[[length(statistic) + 1L]] <<- unname(integrationFeatureSelectionStatistic(block$values))
+            if (!is.na(cap)) statistic[[length(statistic) + 1L]] <<- integrationFeatureSelectionStatistic(block$values)
             invisible(NULL)
         })
-        # The global statistic: the cap's selection over the whole data set (NULL: every feature left is kept).
+        # The global statistic: the selection over the whole data set from the per-feature statistics in row order
+        # (the trend is fitted once, on every feature left; NULL: every feature left is kept).
         take <- NULL
         if (!is.na(cap) && left > cap) {
+            gathered <- list(mean = unlist(lapply(statistic, `[[`, "mean")),
+                variance = unlist(lapply(statistic, `[[`, "variance")))
             take <- logical(left)
-            take[integrationSelectTopFeatures(unlist(statistic), cap)] <- TRUE
+            take[integrationSelectTopFeatures(integrationFeatureSelectionScore(gathered, selection), cap)] <- TRUE
         }
         statistic <- NULL
         features_model <- if (is.null(take)) left else sum(take)

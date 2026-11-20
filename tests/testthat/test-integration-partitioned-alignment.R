@@ -5,7 +5,8 @@
 #     missing-sample rules, with the store's pages of 10,000 rows and blocks of 64 columns exercised;
 #   - the fixture plants sixty features of equal variance across the page boundary (rows 9,971 to 10,030) and a cap
 #     (545) that cuts inside them: 500 features are more variable, so exactly the first 45 tied features in row order
-#     are kept, 30 from the first page and 15 from the second;
+#     are kept, 30 from the first page and 15 from the second; KIT-151: the same under the selection by variance above
+#     the mean-variance trend (the default), whose trend is fitted once over the statistics of both pages;
 #   - internal standards on both pages are dropped by their row position; sparse and constant features on both pages
 #     are dropped and counted as the whole path counts them;
 #   - the model trained through either variant gets the same views and gives the same product; the variant is not part
@@ -115,10 +116,13 @@ test_that("KIT-149 (ENG-06): over 10,000 features and 64 runs, ties across the p
         pages[[length(pages) + 1L]] <<- c(rows = nrow(page), columns = ncol(page), offset = offset)
         kernel(page, offset)
     })
-    for (scaling in c("none", "feature_zscore")) {
+    # KIT-151: under both selection rules, raw variance and the default variance above the mean-variance trend (whose
+    # trend is fitted once over the per-feature means and variances gathered from both pages); the tied features share
+    # their mean and variance, so they stay tied under either rule.
+    for (selection in c("top_variance", "variance_above_trend")) for (scaling in c("none", "feature_zscore")) {
         for (missing_samples in c("keep_missing", "drop_incomplete")) {
-            info <- paste(scaling, missing_samples)
-            parameters <- integrationResolveMofaParameters(whole_object, list(feature_selection = "top_variance",
+            info <- paste(selection, scaling, missing_samples)
+            parameters <- integrationResolveMofaParameters(whole_object, list(feature_selection = selection,
                 features_per_view = fixture$cap, scaling = scaling, missing_samples = missing_samples))
             whole <- integrationAlignViews(whole_object, parameters, prefix_rows = TRUE)
             pages <- list()
@@ -145,7 +149,8 @@ test_that("KIT-149 (ENG-06): over 10,000 features and 64 runs, ties across the p
         }
     }
     # Without a cap every feature left is aligned, in row order, from both pages.
-    parameters <- integrationResolveMofaParameters(whole_object, list(views = c("proteomics", "lipidomics_LCMS_Pos")))
+    parameters <- integrationResolveMofaParameters(whole_object, list(views = c("proteomics", "lipidomics_LCMS_Pos"),
+        feature_selection = "none"))
     expect_identical(integrationAlignViewsPartitioned(paged_object, parameters, store_pages),
         integrationAlignViews(whole_object, parameters))
     # The counts alone (values = FALSE): the same sample table and summary, no values.

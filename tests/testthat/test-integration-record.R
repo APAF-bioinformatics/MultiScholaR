@@ -226,8 +226,10 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
         "transcriptomics (transcriptomics; normalised, not corrected for unwanted variation)",
         "MOFA2 9.8.7 (mofapy2 6.5.4, Python 3.12.16, R 4.6.1), in double precision",
         sprintf(t[["methods_matching_user"]], journey$runs_moved, match_sha),
-        t[["methods_replicates_average"]], t[["methods_missing_keep_missing"]], t[["methods_sparse"]],
-        "All remaining features were used, without per-feature scaling.",
+        t[["methods_replicates_average"]], t[["methods_missing_keep_missing"]],
+        # KIT-151 (INT-12): the default selection, its observed share and its rule.
+        sprintf(t[["methods_sparse_selected"]], 10L, 20L, "0.5"),
+        paste0(sprintf(t[["methods_selection_variance_above_trend"]], 1000L, 1000L), ", without per-feature scaling."),
         "asked for 5 factors (convergence mode fast, at most 1000 training rounds, seed 20261119",
         "Training settled after 186 rounds and kept 5 factors; 20 biological samples entered the model, 19 of them",
         sprintf(t[["methods_association"]], "Benjamini-Hochberg"),

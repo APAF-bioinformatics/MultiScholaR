@@ -136,9 +136,17 @@ integrationRecordTexts <- function() {
         methods_missing_keep_missing = "Biological samples missing from a data set were kept, with that data set's values missing.",
         methods_missing_drop_incomplete = "Only the biological samples measured in every data set were kept.",
         methods_sparse = "Features measured in fewer than two biological samples were left out.",
+        # KIT-151 (INT-12). %d: the fewest samples, the samples; %s: the share.
+        methods_sparse_selected = "Features measured in fewer than %d of the %d biological samples (a share of %s) were left out.",
         methods_selection_none = "All remaining features were used",
-        # %d: features per data set.
-        methods_selection_top_variance = "The %d most variable features of each data set were used",
+        # %d: features per data set, twice.
+        methods_selection_top_variance = paste("In each data set with more than %d features, the %d with the largest",
+            "variance were used (a smaller data set kept all its features)"),
+        # KIT-151 (INT-12). %d: features per data set, twice.
+        methods_selection_variance_above_trend = paste("In each data set with more than %d features, the %d whose",
+            "variance lies furthest above the data set's trend of variance with mean abundance (a lowess fit of each",
+            "feature's variance on its mean, span 0.3) were used, a feature selection that also makes the data sets more",
+            "equal in size (a smaller data set kept all its features)"),
         methods_scaling_none = "without per-feature scaling.",
         methods_scaling_feature_zscore = "each scaled to mean 0 and standard deviation 1.",
         # %d: factors asked for; %s: convergence mode; %d: maximum rounds, seed; %s: views scaled, features centred.
@@ -685,13 +693,21 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     if (identical(p("technical_replicates"), "average")) sentences <- c(sentences, texts[["methods_replicates_average"]])
     summary <- integrationRecordFrame(m$view_summary)
     standards <- if (nrow(summary)) sum(as.integer(summary$internal_standards_dropped), na.rm = TRUE) else 0L
+    # KIT-151 (INT-12): with a feature selection, the observed share and the selection rule.
+    selection <- as.character(p("feature_selection"))
+    selected <- selection %in% c("top_variance", "variance_above_trend")
+    samples_n <- nrow(integrationRecordFrame(m$samples))
+    fraction <- as.numeric(p("min_observed_fraction"))
+    sparse <- if (selected && !is.na(fraction)) sprintf(texts[["methods_sparse_selected"]],
+        integrationMinObserved(list(feature_selection = selection, min_observed_fraction = fraction), samples_n), samples_n,
+        format(fraction)) else texts[["methods_sparse"]]
     sentences <- c(sentences,
         if (identical(p("internal_standards"), "drop")) sprintf(texts[["methods_standards_drop"]], standards) else
             texts[["methods_standards_keep"]],
         integrationTextOr(texts, paste0("methods_missing_", p("missing_samples")), NULL),
-        texts[["methods_sparse"]],
-        paste(if (identical(p("feature_selection"), "top_variance"))
-            sprintf(texts[["methods_selection_top_variance"]], as.integer(p("features_per_view"))) else texts[["methods_selection_none"]],
+        sparse,
+        paste(if (selected) sprintf(texts[[paste0("methods_selection_", selection)]], as.integer(p("features_per_view")),
+            as.integer(p("features_per_view"))) else texts[["methods_selection_none"]],
             integrationTextOr(texts, paste0("methods_scaling_", p("scaling")), as.character(p("scaling"))), sep = ", "),
         sprintf(texts[["methods_model"]], as.integer(p("num_factors")), as.character(p("convergence_mode")),
             as.integer(p("maxiter")), as.integer(p("seed")), if (isTRUE(p("scale_views"))) texts[["yes"]] else texts[["no"]],
