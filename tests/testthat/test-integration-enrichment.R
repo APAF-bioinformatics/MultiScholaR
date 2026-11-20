@@ -1,5 +1,6 @@
-# KIT-141, part 1: the integration enrichment kernels (R/utils_integration_enrichment.R). STRING is mocked with
-# httr2's mocked responses: no network and no real key. The key used here is an invented sentinel string.
+# KIT-141: the integration enrichment kernels (R/utils_integration_enrichment.R). STRING is mocked with httr2's
+# mocked responses, and httr2's transfer function is replaced by one that fails as a refused connection: no network
+# and no real key. The key used here is an invented sentinel string.
 
 SENTINEL_KEY <- "kit141-sentinel-not-a-real-key-Zq7w"
 STRING_HOST <- "https://version-12-0.string-db.org"
@@ -52,17 +53,43 @@ newStringMock <- function(states = c("running", "success"), download_url = paste
     list(handler = handler, log = log)
 }
 
+# A network failure one level below httr2's mocked responses. The STRING double declines the request (returns NULL),
+# so httr2 performs it itself, and httr2's own transfer function (`curl_fetch`, the call into curl) fails as a refused
+# connection does. httr2 then raises its genuine failure (class `httr2_failure`, the curl error as parent, the request
+# attached, and with it the key in the body) and keeps the request as its last request. The transfer function is
+# replaced in every STRING test, so no request can leave the machine.
+curlConnectFailure <- function(handle, url, path) {
+    stop(structure(class = c("curl_error_couldnt_connect", "curl_error", "error", "condition"), list(
+        message = sprintf("Failed to connect to %s port 443 after 0 ms: Could not connect to server",
+            httr2::url_parse(url)$hostname), call = NULL)))
+}
+localNetworkFailure <- function(env = parent.frame()) {
+    testthat::local_mocked_bindings(curl_fetch = curlConnectFailure, .package = "httr2", .env = env)
+}
+networkFailure <- function(req) NULL
+
 runString <- function(mock, ranked = stringRanked(), key = SENTINEL_KEY, options = integrationStringOptions(
     poll_interval_seconds = 0)) {
+    localNetworkFailure()
     httr2::local_mocked_responses(mock$handler)
     integrationStringRankedEnrichment(ranked, key, 9606, options)
 }
 
-# A network failure as httr2 reports it: the request returns an error condition, which httr2 signals with the request
-# attached (and with it the key), as a real failed connection does.
-networkFailure <- function(text) simpleError(text)
-
 containsSentinel <- function(x) length(grepRaw(SENTINEL_KEY, serialize(x, NULL), fixed = TRUE)) > 0L
+
+test_that("the network-failure double raises httr2's own failure, carrying the request and its key", {
+    skip_if_not_installed("httr2")
+    withr::defer(integrationForgetHttpRequest())
+    localNetworkFailure()
+    request <- httr2::request(paste0(STRING_HOST, "/api/json/valuesranks_enrichment_submit")) |>
+        httr2::req_body_form(api_key = SENTINEL_KEY)
+    condition <- tryCatch(httr2::req_perform(request), error = \(e) e)
+    expect_s3_class(condition, "httr2_failure")
+    expect_s3_class(condition$parent, "curl_error_couldnt_connect")
+    expect_true(containsSentinel(condition$request))
+    expect_true(containsSentinel(condition))
+    expect_true(containsSentinel(httr2::last_request()))
+})
 
 test_that("the STRING client sends the documented requests and returns the release, a request summary and the response", {
     skip_if_not_installed("httr2")
@@ -163,12 +190,15 @@ test_that("a planted sentinel key appears in no returned value, message, warning
     expect_false(containsSentinel(condition))
     expect_false(grepl(SENTINEL_KEY, conditionMessage(condition), fixed = TRUE))
     expect_null(condition$parent)
-    unreachable <- newStringMock(overrides = list(valuesranks_enrichment_submit = function(request) {
-        networkFailure(paste("could not connect while sending", stringFields(request)$api_key))
-    }))
+    # A network failure at the submission, which carries the key: httr2's own failure holds the request.
+    unreachable <- newStringMock(overrides = list(valuesranks_enrichment_submit = networkFailure))
     condition <- capture(tryCatch(runString(unreachable), integration_enrichment_service_unreachable = \(e) e))
     expect_s3_class(condition, "integration_enrichment_service_unreachable")
+    expect_identical(vapply(unreachable$log$requests, stringEndpoint, ""), c("version",
+        "valuesranks_enrichment_submit"))
     expect_false(containsSentinel(condition))
+    expect_null(condition$parent)
+    expect_false(grepl(SENTINEL_KEY, conditionMessage(condition), fixed = TRUE))
 
     expect_false(containsSentinel(scanned_text))
     expect_false(containsSentinel(scanned_conditions))
@@ -196,7 +226,7 @@ test_that("STRING failures are classed refusals with no partial result", {
     mock <- expect_refusal(newStringMock(overrides = list(version = status(500L))),
         "integration_enrichment_service_failed")
     expect_length(mock$log$requests, 1L)
-    mock <- expect_refusal(newStringMock(overrides = list(version = function(request) networkFailure("no route to host"))),
+    mock <- expect_refusal(newStringMock(overrides = list(version = networkFailure)),
         "integration_enrichment_service_unreachable")
     expect_length(mock$log$requests, 1L)
     expect_refusal(newStringMock(overrides = list(version = function(request) {
@@ -213,6 +243,7 @@ test_that("STRING failures are classed refusals with no partial result", {
     mock <- expect_refusal(newStringMock(), "integration_enrichment_key_missing", key = "")
     expect_length(mock$log$requests, 0L)
     mock <- newStringMock()
+    localNetworkFailure()
     httr2::local_mocked_responses(mock$handler)
     expect_error(integrationStringRankedEnrichment(stringRanked(), SENTINEL_KEY, "human",
         integrationStringOptions(poll_interval_seconds = 0)), class = "integration_enrichment_parameters_invalid")
