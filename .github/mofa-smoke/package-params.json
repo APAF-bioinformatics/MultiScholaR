@@ -1,6 +1,6 @@
 {
-  "label": "k151-record-7baabdee",
-  "package_commit": "7baabdee920a157c2d173b07b03e66c007d38722",
+  "label": "k151-verify-3731079c",
+  "package_commit": "3731079c646d13816aef05364e26d1a3a8746356",
   "tests": [
     "test-integration-partitioned-mofa.R",
     "test-integration-mofa-model.R",
@@ -10,6 +10,6 @@
     "test-integration-results-mofa.R",
     "test-integration-record-mofa.R"
   ],
-  "record": true,
+  "record": false,
   "runs": 1
 }
