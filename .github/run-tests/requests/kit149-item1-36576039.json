@@ -1,0 +1,67 @@
+{
+  "requested_by": "KIT-149 item 1 and ENG-06: partitioned integration alignment identical to the whole path; base 58ddd20b versus head; failing-first, broken-partition and gate-off scripts",
+  "label": "KIT-149 partitioned alignment, head 36576039 against base 58ddd20b",
+  "package_commit": "3657603984daabef7b94a226efebcd55b86be531",
+  "base_commit": "58ddd20b8044dcb21c8f239624daf05e19376d88",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-partitioned-alignment.R",
+    "test-integration-model.R",
+    "test-integration-sample-match.R",
+    "test-integration-gui.R",
+    "test-integration-results.R",
+    "test-integration-record.R",
+    "test-integration-corpus.R",
+    "test-workflow-integration-input.R",
+    "test-integration-mofa-model.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-integration-record-mofa.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-operations.R",
+    "test-workflow-analysis-record.R",
+    "test-workflow-class-declarations.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "58ddd20b8044dcb21c8f239624daf05e19376d88",
+        "kit149-failing-first",
+        "test-integration-partitioned-alignment.R"
+      ],
+      "out": "kit149-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-149/broken-partition.R",
+      "args": [
+        "kit149-broken-partition"
+      ],
+      "out": "kit149-broken-partition",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "58ddd20b8044dcb21c8f239624daf05e19376d88",
+        "kit149-gate-off"
+      ],
+      "out": "kit149-gate-off",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
