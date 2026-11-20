@@ -736,3 +736,44 @@ test_that("KIT-151 (INT-14): the model is trained from several seeds and each fa
     expect_identical(nrow(single$value$seeds$agreement), 0L)
     expect_true(all(is.na(single$value$seeds$stability$agreement_lowest)))
 })
+
+# KIT-151 (INT-17, audit SCI-05): no text says the integration model is the same on every computer; the maths library of
+# the training's Python is pinned (one thread, one code path) before Python loads numpy, the variables restored after,
+# and a process whose numpy was loaded earlier trains unpinned and says so.
+test_that("KIT-151 (INT-17): the reproducibility wording is corrected and the maths library is pinned before Python loads it", {
+    texts <- c(unlist(integrationGuiTexts()), unlist(integrationRecordTexts()),
+        unlist(workflowParameterLabels[[INTEGRATION_MODEL_OPERATION]]), integrationMofaParameterTable()$settled_by)
+    expect_false(any(grepl("every computer|any computer|on every machine", texts)))
+    expect_identical(INTEGRATION_MATHS_PIN, c(OPENBLAS_NUM_THREADS = "1", OMP_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
+        OPENBLAS_CORETYPE = "Haswell"))
+    testthat::skip_if_not_installed("reticulate")
+    holder <- environment(integrationPinMathsLibrary)
+    saved <- holder$state
+    withr::defer(assign("state", saved, envir = holder))
+    withr::local_envvar(c(OPENBLAS_NUM_THREADS = NA, OMP_NUM_THREADS = "8", MKL_NUM_THREADS = NA, OPENBLAS_CORETYPE = NA))
+    # Python not started: the variables are set while mofapy2's entry point is loaded, then restored.
+    seen <- NULL
+    testthat::local_mocked_bindings(py_available = function(initialize = FALSE) FALSE,
+        import = function(module, ...) {
+            seen <<- c(module = module, Sys.getenv(names(INTEGRATION_MATHS_PIN)))
+            invisible(NULL)
+        }, .package = "reticulate")
+    holder$state <- NULL
+    pin <- integrationPinMathsLibrary()
+    expect_true(pin$applied)
+    expect_identical(seen, c(module = "mofapy2.run.entry_point", INTEGRATION_MATHS_PIN))
+    expect_identical(Sys.getenv(c("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "OPENBLAS_CORETYPE"), unset = NA, names = FALSE),
+        c(NA, "8", NA))
+    # Asked again in the same process: the same answer, nothing loaded again.
+    seen <- NULL
+    expect_identical(integrationPinMathsLibrary(), pin)
+    expect_null(seen)
+    # numpy already loaded by earlier code: not pinned, and the reason is kept.
+    testthat::local_mocked_bindings(py_available = function(initialize = FALSE) TRUE, py_eval = function(code, ...) TRUE,
+        .package = "reticulate")
+    holder$state <- NULL
+    unpinned <- integrationPinMathsLibrary()
+    expect_false(unpinned$applied)
+    expect_match(unpinned$reason, "numpy was already loaded", fixed = TRUE)
+    expect_null(seen)
+})

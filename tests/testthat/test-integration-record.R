@@ -253,9 +253,14 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
     expect_identical(lines[[length(lines) - 1L]], methods)
     # Other settings give other words: a model with 3 factors and seed 7 (its results not saved yet).
     confirmed <- shiny::isolate(journey$bus$integration_alignment)
+    # KIT-151 (INT-17): a model trained with the maths library pinned says so.
+    pin <- list(applied = TRUE, variables = as.list(INTEGRATION_MATHS_PIN), reason = NA_character_)
     runIntegrationModel(manager, utils::modifyList(confirmed$parameters, list(num_factors = 3L, seed = 7L)), trainer = intRecTrainer(
-        versions = utils::modifyList(intRecVersions, list(MOFA2 = "1.0.0"))))
+        versions = utils::modifyList(intRecVersions, list(MOFA2 = "1.0.0", maths_pin = pin))))
     other <- integrationMethodsText(buildWorkflowAnalysisRecord(manager))
+    expect_true(grepl(sprintf(t[["methods_pin_applied"]],
+        "OPENBLAS_NUM_THREADS=1, OMP_NUM_THREADS=1, MKL_NUM_THREADS=1, OPENBLAS_CORETYPE=Haswell"), other, fixed = TRUE))
+    expect_false(grepl(sprintf(t[["methods_pin_applied"]], ""), methods, fixed = TRUE))
     expect_true(grepl("asked for 3 factors", other, fixed = TRUE))
     expect_true(grepl("seed 7;", other, fixed = TRUE))
     expect_true(grepl("MOFA2 1.0.0 (", other, fixed = TRUE))

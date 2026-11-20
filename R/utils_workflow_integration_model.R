@@ -280,12 +280,16 @@ integrationMofaParameterSpec <- function() {
         # reported (`integrationSeedStability`); the reported model is the declared seed's. The number is provisional.
         training_seeds = list(default = 5L, choices = NULL,
             settled_by = "INT-14 (several seeds decided 2026-11-21); the number is provisional, awaiting the user"),
-        # INT-6 (user, 2026-11-19): decided, not provisional. Double precision gives the same model on every computer
-        # (KIT-062 diagnosis run 44462198417: MOFA2's float32 default followed one of two training paths depending on
-        # the CPU model and thread count); single precision uses less memory for very large studies, and its results
-        # can differ slightly between computers.
+        # INT-6 (user, 2026-11-19): decided, not provisional. Double precision (KIT-062 diagnosis run 44462198417:
+        # MOFA2's float32 default followed one of two training paths depending on the CPU model and thread count);
+        # single precision uses less memory for very large studies, and its results differ more between computers.
+        # INT-17 (2026-11-21) corrects INT-6: double precision gives the identical model on the same computer and
+        # software, not on every computer; with the maths library pinned (`integrationPinMathsLibrary`) models were
+        # bit-identical across the AMD processors tested; without it they agree to about 1e-12 and a factor near the
+        # detection limit can differ between processor models.
         precision = list(default = "double", choices = c("double", "single"),
-            settled_by = "INT-6 (decided 2026-11-19: double, the same model on every computer)"))
+            settled_by = paste("INT-6 (decided 2026-11-19: double), corrected by INT-17 (2026-11-21: identical on the same",
+                "computer and software, not guaranteed across processors)")))
 }
 
 #' The provisional-parameter table (one row per method parameter), for the ticket, the ledger and the GUI.
@@ -1014,6 +1018,8 @@ integrationMofaCapability <- function() {
     if (!requireNamespace("reticulate", quietly = TRUE)) {
         return(list(available = FALSE, reason = "the R package reticulate is not installed"))
     }
+    # KIT-151 (INT-17): the maths library is pinned before anything starts Python in this process.
+    integrationPinMathsLibrary()
     found <- tryCatch(reticulate::py_module_available("mofapy2"), error = function(error) FALSE)
     if (!isTRUE(found)) {
         python <- Sys.getenv("RETICULATE_PYTHON", unset = "")
@@ -1023,7 +1029,68 @@ integrationMofaCapability <- function() {
     list(available = TRUE, reason = NA_character_)
 }
 
-#' The versions a model was trained with: R, MOFA2, reticulate, Python and its packages.
+#' The maths-library pin for training (KIT-151; INT-17, audit SCI-05): the variables the KIT-151 c run set before
+#' Python started, under which every model was bit-identical across the processors seen (run 44678183859: AMD EPYC
+#' 7763, 9V74, 9V45; an Intel processor not yet tested): the OpenBLAS copies of numpy and scipy on one thread and one
+#' code path (Haswell: AVX2 and FMA, which every hosted-runner processor seen supports), OpenMP and MKL (if loaded) on
+#' one thread. In the evidence run R's own OpenBLAS was pinned too (set before R started); in the app R has loaded its
+#' maths library before any of this runs, so only Python's libraries are pinned, where MOFA2 trains.
+#' @noRd
+INTEGRATION_MATHS_PIN <- c(OPENBLAS_NUM_THREADS = "1", OMP_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
+    OPENBLAS_CORETYPE = "Haswell")
+
+#' Pin the maths library of the training's Python (KIT-151; INT-17), once per process, in the app's process and on the
+#' worker alike: when Python has not loaded numpy yet, `INTEGRATION_MATHS_PIN` is set, Python started and mofapy2's
+#' entry point (numpy, scipy, scikit-learn) loaded, then the variables are restored, so that only those libraries,
+#' which read them when they load, run pinned and the rest of the R session is unchanged. When numpy was already loaded
+#' in this process (Python started earlier by other code), its libraries keep the settings they loaded with: the pin
+#' cannot be applied, training goes ahead unpinned, and the model's record says so (`applied = FALSE` with the reason);
+#' such a model is still identical on the same computer and software, agrees to about 1e-12 across processors, and a
+#' factor near the detection limit can differ between processor models.
+#' @return `list(applied, variables, reason)`.
+#' @noRd
+integrationPinMathsLibrary <- local({
+    state <- NULL
+    function() {
+        if (!is.null(state)) return(state)
+        variables <- as.list(INTEGRATION_MATHS_PIN)
+        if (isTRUE(reticulate::py_available(initialize = FALSE))) {
+            loaded <- tryCatch(isTRUE(reticulate::py_eval("'numpy' in __import__('sys').modules")), error = function(error) TRUE)
+            if (loaded) {
+                state <<- list(applied = FALSE, variables = variables, reason = paste("numpy was already loaded in this",
+                    "process before the integration model was first trained, so its maths library could not be pinned"))
+                return(state)
+            }
+        }
+        previous <- Sys.getenv(names(INTEGRATION_MATHS_PIN), unset = NA_character_, names = TRUE)
+        on.exit({
+            for (name in names(previous)) {
+                if (is.na(previous[[name]])) Sys.unsetenv(name) else do.call(Sys.setenv, stats::setNames(list(previous[[name]]), name))
+            }
+        }, add = TRUE)
+        do.call(Sys.setenv, variables)
+        loaded <- tryCatch({
+            reticulate::import("mofapy2.run.entry_point")
+            TRUE
+        }, error = function(error) conditionMessage(error))
+        state <<- list(applied = isTRUE(loaded), variables = variables,
+            reason = if (isTRUE(loaded)) NA_character_ else paste("mofapy2 could not be loaded:", loaded))
+        state
+    }
+})
+
+#' The maths libraries Python has loaded, as threadpoolctl reports them (KIT-151; INT-17): per library its interface,
+#' version, threads and code path; an empty list when threadpoolctl cannot be asked.
+#' @noRd
+integrationMathsLibraries <- function() {
+    info <- tryCatch(reticulate::import("threadpoolctl")$threadpool_info(), error = function(error) list())
+    lapply(info, function(entry) list(api = as.character(entry$internal_api %||% NA_character_),
+        version = as.character(entry$version %||% NA_character_), threads = as.integer(entry$num_threads %||% NA_integer_),
+        architecture = as.character(entry$architecture %||% NA_character_)))
+}
+
+#' The versions a model was trained with: R, MOFA2, reticulate, Python and its packages; KIT-151 (INT-17): the maths
+#' library's pin and the maths libraries loaded.
 #' @noRd
 integrationMofaVersions <- function() {
     metadata <- tryCatch(reticulate::import("importlib.metadata"), error = function(error) NULL)
@@ -1032,7 +1099,7 @@ integrationMofaVersions <- function() {
         reticulate = as.character(utils::packageVersion("reticulate")),
         python = tryCatch(as.character(reticulate::py_config()$version_string), error = function(error) NA_character_),
         mofapy2 = python_package("mofapy2"), numpy = python_package("numpy"), scipy = python_package("scipy"),
-        h5py = python_package("h5py"))
+        h5py = python_package("h5py"), maths_pin = integrationPinMathsLibrary(), maths_libraries = integrationMathsLibraries())
 }
 
 #' MOFA2's check that a trained factor follows each sample's overall level (MOFA2 1.22.0, `.quality_control` of a
@@ -1148,6 +1215,8 @@ integrationRunMofapy2 <- function(holder, outfile) {
 #'   messages, model_file)`.
 #' @noRd
 integrationTrainMofa <- function(views, options, handoff = getOption("MultiScholaR.integration_mofa_handoff", "run_mofa")) {
+    # KIT-151 (INT-17): pinned before MOFA2 starts Python, when nothing has started it yet.
+    integrationPinMathsLibrary()
     object <- MOFA2::create_mofa(views)
     data_options <- MOFA2::get_default_data_options(object)
     data_options$scale_views <- options$scale_views

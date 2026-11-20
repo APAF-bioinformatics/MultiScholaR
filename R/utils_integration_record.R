@@ -170,6 +170,14 @@ integrationRecordTexts <- function() {
             "most similar pair first); the lowest agreement per factor was %s."),
         # %d: the seed.
         methods_seeds_single = "The model was trained once, from seed %d; the factors' agreement across seeds was not measured.",
+        # KIT-151 (INT-17). %s: the variables set.
+        methods_pin_applied = paste("Training ran with the maths library on one thread and one fixed code path (%s), under",
+            "which models were bit-identical across the processor models tested (three AMD models; an Intel processor not",
+            "yet tested); the same data, settings and seed give the identical model on the same software."),
+        # %s: the reason.
+        methods_pin_not_applied = paste("The maths library could not be fixed to one thread and one code path for this",
+            "training (%s); the model is identical on the same computer and software, agrees to about 1e-12 on other",
+            "processors, and a factor near the detection limit can differ between processor models."),
         # %s: the adjustment's name.
         methods_association = paste("Each factor was related to the experimental groups after training: a one-way analysis",
             "of variance of the factor's values on the group, with the share of the factor's variance that lies between",
@@ -735,6 +743,13 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
             as.integer(s(model$factors_kept)), nrow(integrationRecordFrame(m$samples)), as.integer(s(m$shared_samples))) else
             sprintf(texts[["methods_trained_not_settled"]], as.integer(s(model$maxiter)), as.integer(s(model$factors_kept)),
                 nrow(integrationRecordFrame(m$samples)), as.integer(s(m$shared_samples))))
+    # KIT-151 (INT-17): whether training ran with the maths library pinned (nothing said for a model without the fact).
+    pin <- versions$maths_pin
+    if (!is.null(pin) && !is.na(s(pin$applied))) {
+        sentences <- c(sentences, if (isTRUE(as.logical(s(pin$applied)))) sprintf(texts[["methods_pin_applied"]],
+            paste(sprintf("%s=%s", names(pin$variables), vapply(pin$variables, \(x) as.character(s(x)), character(1))),
+                collapse = ", ")) else sprintf(texts[["methods_pin_not_applied"]], as.character(s(pin$reason))))
+    }
     # KIT-151 (INT-14, audit SCI-20): how many models were trained, from which seeds, and each factor's agreement.
     seeds <- as.integer(unlist(model$seeds))
     stability <- integrationRecordFrame(model$stability)
@@ -925,9 +940,10 @@ integrationReplayVersions <- function(recorded, current) {
     out
 }
 
-#' Compare a replayed model with the recorded one numerically (KIT-142; INT-6: the same inputs, settings and seed give
-#' the same model on any computer to about 1e-14, so equality is judged at `tolerance` relative, and is exact on one
-#' computer). Per table (factors, weights, variance explained per factor and in all, the sample table, the data set
+#' Compare a replayed model with the recorded one numerically (KIT-142; INT-6 as corrected by INT-17, KIT-151: the
+#' same inputs, settings and seed give the identical model on the same computer and software; on another processor
+#' they usually agree to about 1e-12, the maths library pinned or not, but a factor near the detection limit can
+#' differ, so a difference beyond `tolerance` on another computer is not by itself an error). Per table (factors, weights, variance explained per factor and in all, the sample table, the data set
 #' summary): the largest absolute difference and the largest relative difference (largest absolute over the largest
 #' absolute value of the recorded table). Tables of another shape, other labels or missing values in other places
 #' differ outright (Inf).

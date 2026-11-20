@@ -646,8 +646,9 @@ workflowParameterLabels <- local({
             center_groups = "Centre the features (MOFA2 center_groups)", num_factors = "Number of factors",
             convergence_mode = "Convergence mode (fast, medium or slow)", maxiter = "Maximum iterations", seed = "Training seed",
             training_seeds = "Models trained, one per seed (the training seed and the next whole numbers)",
-            precision = paste("Numeric precision: double gives the same model on every computer; single uses less memory",
-                "for very large studies, and its results can differ slightly between computers")))
+            precision = paste("Numeric precision: double (identical on the same computer and software, close but not",
+                "guaranteed identical across processors); single uses less memory for very large studies, and its results",
+                "differ more between computers")))
 })
 
 #' Register one operation.
