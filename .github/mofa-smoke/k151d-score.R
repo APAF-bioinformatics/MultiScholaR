@@ -546,8 +546,9 @@ if (task == "pin") {
                 write_tsv(hist, "pin-history.tsv")
                 say("")
                 say("History (instrumentation, not a gate): %s", paste(vapply(split(hist, list(hist$source, hist$condition), drop = TRUE),
-                    function(x) sprintf("%s %s: %d of %d rows match a committed row (same CPU model where unpinned)", x$source[[1L]],
+                    function(x) sprintf("%s %s: %d of %d rows match a committed row", x$source[[1L]],
                         x$condition[[1L]], sum(x$matches > 0), nrow(x)), character(1)), collapse = "; "))
+                say("(k151c unpinned rows are compared on the same CPU model only, pinned rows on any; k151b rows on any CPU model, with the CPU of the k151b job named; per job in pin-history.tsv.)")
             }
         }
     }
