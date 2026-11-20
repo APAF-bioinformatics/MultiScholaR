@@ -1,10 +1,11 @@
 {
-  "label": "k142-record-2",
-  "package_commit": "b20d4fd7b105107b44195dc5fb1df792a936e649",
+  "label": "k147-parquet-1",
+  "package_commit": "0f49c7502659526a7ee97f03c9fbc66aa9af6802",
   "tests": [
-    "test-integration-record-mofa.R",
+    "test-integration-mofa-model.R",
+    "test-integration-model-tab-mofa.R",
     "test-integration-results-mofa.R",
-    "test-integration-mofa-model.R"
+    "test-integration-record-mofa.R"
   ],
   "record": false,
   "runs": 1
