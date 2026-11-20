@@ -1,0 +1,463 @@
+mofapy2 installed at /home/runner/work/_temp/bundle/python/lib/python3.12/site-packages/mofapy2
+---- mofapy2/build_model/save_model.py:659
+mofapy2/build_model/save_model.py:655:         # Remove strings from training options
+mofapy2/build_model/save_model.py:656:         # self.train_opts['schedule'] = '_'.join(self.train_opts['schedule'])
+mofapy2/build_model/save_model.py:657:         # if 'schedule' in opts.keys():
+mofapy2/build_model/save_model.py:658:         #     del opts['schedule']
+mofapy2/build_model/save_model.py:659:         # if 'convergence_mode' in opts.keys():
+mofapy2/build_model/save_model.py:660:         #     del opts['convergence_mode']
+mofapy2/build_model/save_model.py:661: 
+mofapy2/build_model/save_model.py:662:         # Remove some training options
+mofapy2/build_model/save_model.py:663:         # del opts['quiet']; del opts['start_drop']; del opts['freq_drop']; del opts['forceiter']; del opts['start_sparsity']
+mofapy2/build_model/save_model.py:664: 
+mofapy2/build_model/save_model.py:665:         # Create data set: only numeric options
+mofapy2/build_model/save_model.py:666:         self.hdf5.create_dataset(
+mofapy2/build_model/save_model.py:667:             "training_opts", data=np.array(list(opts.values()), dtype=float)
+---- mofapy2/build_model/save_model.py:660
+mofapy2/build_model/save_model.py:656:         # self.train_opts['schedule'] = '_'.join(self.train_opts['schedule'])
+mofapy2/build_model/save_model.py:657:         # if 'schedule' in opts.keys():
+mofapy2/build_model/save_model.py:658:         #     del opts['schedule']
+mofapy2/build_model/save_model.py:659:         # if 'convergence_mode' in opts.keys():
+mofapy2/build_model/save_model.py:660:         #     del opts['convergence_mode']
+mofapy2/build_model/save_model.py:661: 
+mofapy2/build_model/save_model.py:662:         # Remove some training options
+mofapy2/build_model/save_model.py:663:         # del opts['quiet']; del opts['start_drop']; del opts['freq_drop']; del opts['forceiter']; del opts['start_sparsity']
+mofapy2/build_model/save_model.py:664: 
+mofapy2/build_model/save_model.py:665:         # Create data set: only numeric options
+mofapy2/build_model/save_model.py:666:         self.hdf5.create_dataset(
+mofapy2/build_model/save_model.py:667:             "training_opts", data=np.array(list(opts.values()), dtype=float)
+mofapy2/build_model/save_model.py:668:         )
+---- mofapy2/core/BayesNet.py:69
+mofapy2/core/BayesNet.py:65:         ), "'verbose' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:66:         assert (
+mofapy2/core/BayesNet.py:67:             "quiet" in train_opts
+mofapy2/core/BayesNet.py:68:         ), "'quiet' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:69:         # assert "tolerance" in train_opts, "'tolerance' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:70:         assert (
+mofapy2/core/BayesNet.py:71:             "convergence_mode" in train_opts
+mofapy2/core/BayesNet.py:72:         ), "'convergence_mode' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:73:         assert (
+mofapy2/core/BayesNet.py:74:             "forceiter" in train_opts
+mofapy2/core/BayesNet.py:75:         ), "'forceiter' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:76:         assert (
+mofapy2/core/BayesNet.py:77:             "schedule" in train_opts
+---- mofapy2/core/BayesNet.py:71
+mofapy2/core/BayesNet.py:67:             "quiet" in train_opts
+mofapy2/core/BayesNet.py:68:         ), "'quiet' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:69:         # assert "tolerance" in train_opts, "'tolerance' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:70:         assert (
+mofapy2/core/BayesNet.py:71:             "convergence_mode" in train_opts
+mofapy2/core/BayesNet.py:72:         ), "'convergence_mode' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:73:         assert (
+mofapy2/core/BayesNet.py:74:             "forceiter" in train_opts
+mofapy2/core/BayesNet.py:75:         ), "'forceiter' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:76:         assert (
+mofapy2/core/BayesNet.py:77:             "schedule" in train_opts
+mofapy2/core/BayesNet.py:78:         ), "'schedule' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:79:         assert (
+---- mofapy2/core/BayesNet.py:72
+mofapy2/core/BayesNet.py:68:         ), "'quiet' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:69:         # assert "tolerance" in train_opts, "'tolerance' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:70:         assert (
+mofapy2/core/BayesNet.py:71:             "convergence_mode" in train_opts
+mofapy2/core/BayesNet.py:72:         ), "'convergence_mode' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:73:         assert (
+mofapy2/core/BayesNet.py:74:             "forceiter" in train_opts
+mofapy2/core/BayesNet.py:75:         ), "'forceiter' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:76:         assert (
+mofapy2/core/BayesNet.py:77:             "schedule" in train_opts
+mofapy2/core/BayesNet.py:78:         ), "'schedule' not found in the training options dictionary"
+mofapy2/core/BayesNet.py:79:         assert (
+mofapy2/core/BayesNet.py:80:             "start_sparsity" in train_opts
+---- mofapy2/core/BayesNet.py:263
+mofapy2/core/BayesNet.py:259:         #     self.lscales = pd.DataFrame(data = nans((self.options['maxiter'], self.dim['K'])), columns = range(self.dim['K']))
+mofapy2/core/BayesNet.py:260:         #     self.scales = pd.DataFrame(data = nans((self.options['maxiter'], self.dim['K'])), columns = range(self.dim['K']))
+mofapy2/core/BayesNet.py:261: 
+mofapy2/core/BayesNet.py:262:         # Precompute
+mofapy2/core/BayesNet.py:263:         converged = False
+mofapy2/core/BayesNet.py:264:         convergence_token = 1
+mofapy2/core/BayesNet.py:265:         elbo.iloc[0] = self.precompute()
+mofapy2/core/BayesNet.py:266:         number_factors[0] = self.dim["K"]
+mofapy2/core/BayesNet.py:267:         iter_time[0] = 0.0
+mofapy2/core/BayesNet.py:268: 
+mofapy2/core/BayesNet.py:269:         try:
+mofapy2/core/BayesNet.py:270:             for i in range(1, self.options["maxiter"]):
+mofapy2/core/BayesNet.py:271:                 t = time()
+---- mofapy2/core/BayesNet.py:346
+mofapy2/core/BayesNet.py:342:                         i > self.options["start_elbo"]
+mofapy2/core/BayesNet.py:343:                         and i > self.options["min_iter"]
+mofapy2/core/BayesNet.py:344:                         and not self.options["forceiter"]
+mofapy2/core/BayesNet.py:345:                     ):
+mofapy2/core/BayesNet.py:346:                         convergence_token, converged = self.assess_convergence(
+mofapy2/core/BayesNet.py:347:                             delta_elbo, elbo.iloc[0]["total"], convergence_token
+mofapy2/core/BayesNet.py:348:                         )
+mofapy2/core/BayesNet.py:349:                         if converged:
+mofapy2/core/BayesNet.py:350:                             number_factors = number_factors[:i]
+mofapy2/core/BayesNet.py:351:                             elbo = elbo[:i]
+mofapy2/core/BayesNet.py:352:                             iter_time = iter_time[:i]
+mofapy2/core/BayesNet.py:353:                             print("\nConverged!\n")
+mofapy2/core/BayesNet.py:354:                             break
+---- mofapy2/core/BayesNet.py:349
+mofapy2/core/BayesNet.py:345:                     ):
+mofapy2/core/BayesNet.py:346:                         convergence_token, converged = self.assess_convergence(
+mofapy2/core/BayesNet.py:347:                             delta_elbo, elbo.iloc[0]["total"], convergence_token
+mofapy2/core/BayesNet.py:348:                         )
+mofapy2/core/BayesNet.py:349:                         if converged:
+mofapy2/core/BayesNet.py:350:                             number_factors = number_factors[:i]
+mofapy2/core/BayesNet.py:351:                             elbo = elbo[:i]
+mofapy2/core/BayesNet.py:352:                             iter_time = iter_time[:i]
+mofapy2/core/BayesNet.py:353:                             print("\nConverged!\n")
+mofapy2/core/BayesNet.py:354:                             break
+mofapy2/core/BayesNet.py:355: 
+mofapy2/core/BayesNet.py:356:                 # Do not calculate lower bound
+mofapy2/core/BayesNet.py:357:                 else:
+---- mofapy2/core/BayesNet.py:353
+mofapy2/core/BayesNet.py:349:                         if converged:
+mofapy2/core/BayesNet.py:350:                             number_factors = number_factors[:i]
+mofapy2/core/BayesNet.py:351:                             elbo = elbo[:i]
+mofapy2/core/BayesNet.py:352:                             iter_time = iter_time[:i]
+mofapy2/core/BayesNet.py:353:                             print("\nConverged!\n")
+mofapy2/core/BayesNet.py:354:                             break
+mofapy2/core/BayesNet.py:355: 
+mofapy2/core/BayesNet.py:356:                 # Do not calculate lower bound
+mofapy2/core/BayesNet.py:357:                 else:
+mofapy2/core/BayesNet.py:358:                     if not self.options["quiet"]:
+mofapy2/core/BayesNet.py:359:                         print(
+mofapy2/core/BayesNet.py:360:                             "Iteration %d: time=%.2f, Factors=%d"
+mofapy2/core/BayesNet.py:361:                             % (i, time() - t, self.dim["K"])
+---- mofapy2/core/BayesNet.py:460
+mofapy2/core/BayesNet.py:456: 
+mofapy2/core/BayesNet.py:457:         print("\n")
+mofapy2/core/BayesNet.py:458: 
+mofapy2/core/BayesNet.py:459:     def assess_convergence(self, delta_elbo, first_elbo, convergence_token):
+mofapy2/core/BayesNet.py:460:         converged = False
+mofapy2/core/BayesNet.py:461: 
+mofapy2/core/BayesNet.py:462:         # Option 1: deltaELBO
+mofapy2/core/BayesNet.py:463:         # if abs(delta_elbo) < self.options['tolerance']:
+mofapy2/core/BayesNet.py:464:         #     converged = True
+mofapy2/core/BayesNet.py:465: 
+mofapy2/core/BayesNet.py:466:         # Assess convergence based on the fraction of deltaELBO change
+mofapy2/core/BayesNet.py:467:         if self.options["convergence_mode"] == "fast":
+mofapy2/core/BayesNet.py:468:             convergence_threshold = 0.0005
+---- mofapy2/core/BayesNet.py:463
+mofapy2/core/BayesNet.py:459:     def assess_convergence(self, delta_elbo, first_elbo, convergence_token):
+mofapy2/core/BayesNet.py:460:         converged = False
+mofapy2/core/BayesNet.py:461: 
+mofapy2/core/BayesNet.py:462:         # Option 1: deltaELBO
+mofapy2/core/BayesNet.py:463:         # if abs(delta_elbo) < self.options['tolerance']:
+mofapy2/core/BayesNet.py:464:         #     converged = True
+mofapy2/core/BayesNet.py:465: 
+mofapy2/core/BayesNet.py:466:         # Assess convergence based on the fraction of deltaELBO change
+mofapy2/core/BayesNet.py:467:         if self.options["convergence_mode"] == "fast":
+mofapy2/core/BayesNet.py:468:             convergence_threshold = 0.0005
+mofapy2/core/BayesNet.py:469:         elif self.options["convergence_mode"] == "medium":
+mofapy2/core/BayesNet.py:470:             convergence_threshold = 0.00005
+mofapy2/core/BayesNet.py:471:         elif self.options["convergence_mode"] == "slow":
+---- mofapy2/core/BayesNet.py:464
+mofapy2/core/BayesNet.py:460:         converged = False
+mofapy2/core/BayesNet.py:461: 
+mofapy2/core/BayesNet.py:462:         # Option 1: deltaELBO
+mofapy2/core/BayesNet.py:463:         # if abs(delta_elbo) < self.options['tolerance']:
+mofapy2/core/BayesNet.py:464:         #     converged = True
+mofapy2/core/BayesNet.py:465: 
+mofapy2/core/BayesNet.py:466:         # Assess convergence based on the fraction of deltaELBO change
+mofapy2/core/BayesNet.py:467:         if self.options["convergence_mode"] == "fast":
+mofapy2/core/BayesNet.py:468:             convergence_threshold = 0.0005
+mofapy2/core/BayesNet.py:469:         elif self.options["convergence_mode"] == "medium":
+mofapy2/core/BayesNet.py:470:             convergence_threshold = 0.00005
+mofapy2/core/BayesNet.py:471:         elif self.options["convergence_mode"] == "slow":
+mofapy2/core/BayesNet.py:472:             convergence_threshold = 0.000005
+---- mofapy2/core/BayesNet.py:467
+mofapy2/core/BayesNet.py:463:         # if abs(delta_elbo) < self.options['tolerance']:
+mofapy2/core/BayesNet.py:464:         #     converged = True
+mofapy2/core/BayesNet.py:465: 
+mofapy2/core/BayesNet.py:466:         # Assess convergence based on the fraction of deltaELBO change
+mofapy2/core/BayesNet.py:467:         if self.options["convergence_mode"] == "fast":
+mofapy2/core/BayesNet.py:468:             convergence_threshold = 0.0005
+mofapy2/core/BayesNet.py:469:         elif self.options["convergence_mode"] == "medium":
+mofapy2/core/BayesNet.py:470:             convergence_threshold = 0.00005
+mofapy2/core/BayesNet.py:471:         elif self.options["convergence_mode"] == "slow":
+mofapy2/core/BayesNet.py:472:             convergence_threshold = 0.000005
+mofapy2/core/BayesNet.py:473:         else:
+mofapy2/core/BayesNet.py:474:             print("Convergence mode not recognised")
+mofapy2/core/BayesNet.py:475:             exit()
+---- mofapy2/core/BayesNet.py:469
+mofapy2/core/BayesNet.py:465: 
+mofapy2/core/BayesNet.py:466:         # Assess convergence based on the fraction of deltaELBO change
+mofapy2/core/BayesNet.py:467:         if self.options["convergence_mode"] == "fast":
+mofapy2/core/BayesNet.py:468:             convergence_threshold = 0.0005
+mofapy2/core/BayesNet.py:469:         elif self.options["convergence_mode"] == "medium":
+mofapy2/core/BayesNet.py:470:             convergence_threshold = 0.00005
+mofapy2/core/BayesNet.py:471:         elif self.options["convergence_mode"] == "slow":
+mofapy2/core/BayesNet.py:472:             convergence_threshold = 0.000005
+mofapy2/core/BayesNet.py:473:         else:
+mofapy2/core/BayesNet.py:474:             print("Convergence mode not recognised")
+mofapy2/core/BayesNet.py:475:             exit()
+mofapy2/core/BayesNet.py:476: 
+mofapy2/core/BayesNet.py:477:         if 100 * abs(delta_elbo / first_elbo) < convergence_threshold:
+---- mofapy2/core/BayesNet.py:471
+mofapy2/core/BayesNet.py:467:         if self.options["convergence_mode"] == "fast":
+mofapy2/core/BayesNet.py:468:             convergence_threshold = 0.0005
+mofapy2/core/BayesNet.py:469:         elif self.options["convergence_mode"] == "medium":
+mofapy2/core/BayesNet.py:470:             convergence_threshold = 0.00005
+mofapy2/core/BayesNet.py:471:         elif self.options["convergence_mode"] == "slow":
+mofapy2/core/BayesNet.py:472:             convergence_threshold = 0.000005
+mofapy2/core/BayesNet.py:473:         else:
+mofapy2/core/BayesNet.py:474:             print("Convergence mode not recognised")
+mofapy2/core/BayesNet.py:475:             exit()
+mofapy2/core/BayesNet.py:476: 
+mofapy2/core/BayesNet.py:477:         if 100 * abs(delta_elbo / first_elbo) < convergence_threshold:
+mofapy2/core/BayesNet.py:478:             convergence_token += 1
+mofapy2/core/BayesNet.py:479:             if convergence_token == 3:
+---- mofapy2/core/BayesNet.py:480
+mofapy2/core/BayesNet.py:476: 
+mofapy2/core/BayesNet.py:477:         if 100 * abs(delta_elbo / first_elbo) < convergence_threshold:
+mofapy2/core/BayesNet.py:478:             convergence_token += 1
+mofapy2/core/BayesNet.py:479:             if convergence_token == 3:
+mofapy2/core/BayesNet.py:480:                 converged = True
+mofapy2/core/BayesNet.py:481:         else:
+mofapy2/core/BayesNet.py:482:             convergence_token = 1
+mofapy2/core/BayesNet.py:483: 
+mofapy2/core/BayesNet.py:484:         return convergence_token, converged
+mofapy2/core/BayesNet.py:485: 
+mofapy2/core/BayesNet.py:486:     def getVariationalNodes(self):
+mofapy2/core/BayesNet.py:487:         """Method to return all variational nodes"""
+mofapy2/core/BayesNet.py:488:         # TODO problem with dictionnary comprehension here
+---- mofapy2/core/BayesNet.py:484
+mofapy2/core/BayesNet.py:480:                 converged = True
+mofapy2/core/BayesNet.py:481:         else:
+mofapy2/core/BayesNet.py:482:             convergence_token = 1
+mofapy2/core/BayesNet.py:483: 
+mofapy2/core/BayesNet.py:484:         return convergence_token, converged
+mofapy2/core/BayesNet.py:485: 
+mofapy2/core/BayesNet.py:486:     def getVariationalNodes(self):
+mofapy2/core/BayesNet.py:487:         """Method to return all variational nodes"""
+mofapy2/core/BayesNet.py:488:         # TODO problem with dictionnary comprehension here
+mofapy2/core/BayesNet.py:489:         to_ret = {}
+mofapy2/core/BayesNet.py:490:         for node in self.nodes.keys():
+mofapy2/core/BayesNet.py:491:             if isinstance(self.nodes[node], Variational_Node):
+mofapy2/core/BayesNet.py:492:                 to_ret[node] = self.nodes[node]
+---- mofapy2/core/BayesNet.py:618
+mofapy2/core/BayesNet.py:614:         #     self.lscales = pd.DataFrame(data = nans((self.options['maxiter'], self.dim['K'])), columns = range(self.dim['K']))
+mofapy2/core/BayesNet.py:615:         #     self.scales = pd.DataFrame(data = nans((self.options['maxiter'], self.dim['K'])), columns = range(self.dim['K']))
+mofapy2/core/BayesNet.py:616: 
+mofapy2/core/BayesNet.py:617:         # Precompute
+mofapy2/core/BayesNet.py:618:         converged = False
+mofapy2/core/BayesNet.py:619:         convergence_token = 1
+mofapy2/core/BayesNet.py:620:         elbo.iloc[0] = self.precompute()
+mofapy2/core/BayesNet.py:621:         number_factors[0] = self.dim["K"]
+mofapy2/core/BayesNet.py:622:         iter_time[0] = 0.0
+mofapy2/core/BayesNet.py:623:         iter_count = 0
+mofapy2/core/BayesNet.py:624: 
+mofapy2/core/BayesNet.py:625:         # Print stochastic settings before training
+mofapy2/core/BayesNet.py:626:         print("Using stochastic variational inference with the following parameters:")
+---- mofapy2/core/BayesNet.py:730
+mofapy2/core/BayesNet.py:726:                     )
+mofapy2/core/BayesNet.py:727: 
+mofapy2/core/BayesNet.py:728:                 # Assess convergence
+mofapy2/core/BayesNet.py:729:                 if i > self.options["start_elbo"] and not self.options["forceiter"]:
+mofapy2/core/BayesNet.py:730:                     convergence_token, converged = self.assess_convergence(
+mofapy2/core/BayesNet.py:731:                         delta_elbo, elbo.iloc[0]["total"], convergence_token
+mofapy2/core/BayesNet.py:732:                     )
+mofapy2/core/BayesNet.py:733:                     if converged:
+mofapy2/core/BayesNet.py:734:                         number_factors = number_factors[:i]
+mofapy2/core/BayesNet.py:735:                         elbo = elbo[:i]
+mofapy2/core/BayesNet.py:736:                         iter_time = iter_time[:i]
+mofapy2/core/BayesNet.py:737:                         print("\nConverged!\n")
+mofapy2/core/BayesNet.py:738:                         break
+---- mofapy2/core/BayesNet.py:733
+mofapy2/core/BayesNet.py:729:                 if i > self.options["start_elbo"] and not self.options["forceiter"]:
+mofapy2/core/BayesNet.py:730:                     convergence_token, converged = self.assess_convergence(
+mofapy2/core/BayesNet.py:731:                         delta_elbo, elbo.iloc[0]["total"], convergence_token
+mofapy2/core/BayesNet.py:732:                     )
+mofapy2/core/BayesNet.py:733:                     if converged:
+mofapy2/core/BayesNet.py:734:                         number_factors = number_factors[:i]
+mofapy2/core/BayesNet.py:735:                         elbo = elbo[:i]
+mofapy2/core/BayesNet.py:736:                         iter_time = iter_time[:i]
+mofapy2/core/BayesNet.py:737:                         print("\nConverged!\n")
+mofapy2/core/BayesNet.py:738:                         break
+mofapy2/core/BayesNet.py:739: 
+mofapy2/core/BayesNet.py:740:             # Do not calculate lower bound
+mofapy2/core/BayesNet.py:741:             else:
+---- mofapy2/core/BayesNet.py:737
+mofapy2/core/BayesNet.py:733:                     if converged:
+mofapy2/core/BayesNet.py:734:                         number_factors = number_factors[:i]
+mofapy2/core/BayesNet.py:735:                         elbo = elbo[:i]
+mofapy2/core/BayesNet.py:736:                         iter_time = iter_time[:i]
+mofapy2/core/BayesNet.py:737:                         print("\nConverged!\n")
+mofapy2/core/BayesNet.py:738:                         break
+mofapy2/core/BayesNet.py:739: 
+mofapy2/core/BayesNet.py:740:             # Do not calculate lower bound
+mofapy2/core/BayesNet.py:741:             else:
+mofapy2/core/BayesNet.py:742:                 print(
+mofapy2/core/BayesNet.py:743:                     "Iteration %d: time=%.2f, Factors=%d"
+mofapy2/core/BayesNet.py:744:                     % (i, time() - t, self.dim["K"])
+mofapy2/core/BayesNet.py:745:                 )
+---- mofapy2/core/distributions/multi_task_GP.py:310
+mofapy2/core/distributions/multi_task_GP.py:306: #             tasks_shape = joint_shape[1:]  # For multitask learning
+mofapy2/core/distributions/multi_task_GP.py:307: #             test_shape = torch.Size([joint_shape[0] - self.prediction_strategy.train_shape[0], *tasks_shape])
+mofapy2/core/distributions/multi_task_GP.py:308: #
+mofapy2/core/distributions/multi_task_GP.py:309: #             # Make the prediction
+mofapy2/core/distributions/multi_task_GP.py:310: #             with settings._use_eval_tolerance():
+mofapy2/core/distributions/multi_task_GP.py:311: #                 predictive_mean, predictive_covar = self.prediction_strategy.exact_prediction(full_mean, full_covar)
+mofapy2/core/distributions/multi_task_GP.py:312: #
+mofapy2/core/distributions/multi_task_GP.py:313: #             # Reshape predictive mean to match the appropriate event shape
+mofapy2/core/distributions/multi_task_GP.py:314: #             predictive_mean = predictive_mean.view(*batch_shape, *test_shape).contiguous()
+mofapy2/core/distributions/multi_task_GP.py:315: #             return full_output.__class__(predictive_mean, predictive_covar)
+mofapy2/core/distributions/multi_task_GP.py:316: #
+mofapy2/core/distributions/multi_task_GP.py:317: # # default multtask model (with margina likelihood, not scaled task_cov and no coupling
+mofapy2/core/distributions/multi_task_GP.py:318: # class MultitaskGPModel(ExactGP):
+---- mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:61
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:57:     dropR2=None,
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:58:     startELBO=1,
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:59:     verbose=False,
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:60:     seed=42,
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:61:     convergence_mode="fast",
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:62:     gpu_mode=args.gpu,
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:63: )
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:64: 
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:65: # Build the model
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:66: ent.build()
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:67: 
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:68: # Train the model
+mofapy2/notebooks/run_mofa_cpu_vs_gpu.py:69: ent.run()
+---- mofapy2/run/entry_point.py:864
+mofapy2/run/entry_point.py:860:         iter=1000,
+mofapy2/run/entry_point.py:861:         startELBO=1,
+mofapy2/run/entry_point.py:862:         freqELBO=1,
+mofapy2/run/entry_point.py:863:         startSparsity=50,
+mofapy2/run/entry_point.py:864:         tolerance=None,
+mofapy2/run/entry_point.py:865:         convergence_mode="fast",
+mofapy2/run/entry_point.py:866:         startDrop=1,
+mofapy2/run/entry_point.py:867:         freqDrop=1,
+mofapy2/run/entry_point.py:868:         dropR2=None,
+mofapy2/run/entry_point.py:869:         nostop=False,
+mofapy2/run/entry_point.py:870:         verbose=False,
+mofapy2/run/entry_point.py:871:         quiet=False,
+mofapy2/run/entry_point.py:872:         seed=None,
+---- mofapy2/run/entry_point.py:865
+mofapy2/run/entry_point.py:861:         startELBO=1,
+mofapy2/run/entry_point.py:862:         freqELBO=1,
+mofapy2/run/entry_point.py:863:         startSparsity=50,
+mofapy2/run/entry_point.py:864:         tolerance=None,
+mofapy2/run/entry_point.py:865:         convergence_mode="fast",
+mofapy2/run/entry_point.py:866:         startDrop=1,
+mofapy2/run/entry_point.py:867:         freqDrop=1,
+mofapy2/run/entry_point.py:868:         dropR2=None,
+mofapy2/run/entry_point.py:869:         nostop=False,
+mofapy2/run/entry_point.py:870:         verbose=False,
+mofapy2/run/entry_point.py:871:         quiet=False,
+mofapy2/run/entry_point.py:872:         seed=None,
+mofapy2/run/entry_point.py:873:         schedule=None,
+---- mofapy2/run/entry_point.py:958
+mofapy2/run/entry_point.py:954:                 "Consider training the model with set drop_factor_threshold = -1 and prune them a posteriori"
+mofapy2/run/entry_point.py:955:             )
+mofapy2/run/entry_point.py:956: 
+mofapy2/run/entry_point.py:957:         # Tolerance level for convergence
+mofapy2/run/entry_point.py:958:         if tolerance is not None:
+mofapy2/run/entry_point.py:959:             print(
+mofapy2/run/entry_point.py:960:                 "Warning: tolerance argument is depreciated, use the 'convergence_mode' argument instead"
+mofapy2/run/entry_point.py:961:             )
+mofapy2/run/entry_point.py:962:             self.train_opts["tolerance"] = float(tolerance)
+mofapy2/run/entry_point.py:963: 
+mofapy2/run/entry_point.py:964:         # Convergence mode
+mofapy2/run/entry_point.py:965:         self.train_opts["convergence_mode"] = str(convergence_mode)
+mofapy2/run/entry_point.py:966:         if verbose:
+---- mofapy2/run/entry_point.py:960
+mofapy2/run/entry_point.py:956: 
+mofapy2/run/entry_point.py:957:         # Tolerance level for convergence
+mofapy2/run/entry_point.py:958:         if tolerance is not None:
+mofapy2/run/entry_point.py:959:             print(
+mofapy2/run/entry_point.py:960:                 "Warning: tolerance argument is depreciated, use the 'convergence_mode' argument instead"
+mofapy2/run/entry_point.py:961:             )
+mofapy2/run/entry_point.py:962:             self.train_opts["tolerance"] = float(tolerance)
+mofapy2/run/entry_point.py:963: 
+mofapy2/run/entry_point.py:964:         # Convergence mode
+mofapy2/run/entry_point.py:965:         self.train_opts["convergence_mode"] = str(convergence_mode)
+mofapy2/run/entry_point.py:966:         if verbose:
+mofapy2/run/entry_point.py:967:             print("Convergence mode: %s\n" % convergence_mode)
+mofapy2/run/entry_point.py:968: 
+---- mofapy2/run/entry_point.py:962
+mofapy2/run/entry_point.py:958:         if tolerance is not None:
+mofapy2/run/entry_point.py:959:             print(
+mofapy2/run/entry_point.py:960:                 "Warning: tolerance argument is depreciated, use the 'convergence_mode' argument instead"
+mofapy2/run/entry_point.py:961:             )
+mofapy2/run/entry_point.py:962:             self.train_opts["tolerance"] = float(tolerance)
+mofapy2/run/entry_point.py:963: 
+mofapy2/run/entry_point.py:964:         # Convergence mode
+mofapy2/run/entry_point.py:965:         self.train_opts["convergence_mode"] = str(convergence_mode)
+mofapy2/run/entry_point.py:966:         if verbose:
+mofapy2/run/entry_point.py:967:             print("Convergence mode: %s\n" % convergence_mode)
+mofapy2/run/entry_point.py:968: 
+mofapy2/run/entry_point.py:969:         # Do no stop even when convergence criteria is met
+mofapy2/run/entry_point.py:970:         self.train_opts["forceiter"] = nostop
+---- mofapy2/run/entry_point.py:965
+mofapy2/run/entry_point.py:961:             )
+mofapy2/run/entry_point.py:962:             self.train_opts["tolerance"] = float(tolerance)
+mofapy2/run/entry_point.py:963: 
+mofapy2/run/entry_point.py:964:         # Convergence mode
+mofapy2/run/entry_point.py:965:         self.train_opts["convergence_mode"] = str(convergence_mode)
+mofapy2/run/entry_point.py:966:         if verbose:
+mofapy2/run/entry_point.py:967:             print("Convergence mode: %s\n" % convergence_mode)
+mofapy2/run/entry_point.py:968: 
+mofapy2/run/entry_point.py:969:         # Do no stop even when convergence criteria is met
+mofapy2/run/entry_point.py:970:         self.train_opts["forceiter"] = nostop
+mofapy2/run/entry_point.py:971: 
+mofapy2/run/entry_point.py:972:         # Iteration to activate spike and slab sparsity
+mofapy2/run/entry_point.py:973:         self.train_opts["start_sparsity"] = int(startSparsity)
+---- mofapy2/run/entry_point.py:967
+mofapy2/run/entry_point.py:963: 
+mofapy2/run/entry_point.py:964:         # Convergence mode
+mofapy2/run/entry_point.py:965:         self.train_opts["convergence_mode"] = str(convergence_mode)
+mofapy2/run/entry_point.py:966:         if verbose:
+mofapy2/run/entry_point.py:967:             print("Convergence mode: %s\n" % convergence_mode)
+mofapy2/run/entry_point.py:968: 
+mofapy2/run/entry_point.py:969:         # Do no stop even when convergence criteria is met
+mofapy2/run/entry_point.py:970:         self.train_opts["forceiter"] = nostop
+mofapy2/run/entry_point.py:971: 
+mofapy2/run/entry_point.py:972:         # Iteration to activate spike and slab sparsity
+mofapy2/run/entry_point.py:973:         self.train_opts["start_sparsity"] = int(startSparsity)
+mofapy2/run/entry_point.py:974: 
+mofapy2/run/entry_point.py:975:         # By default, stochastic training is not activated
+---- mofapy2/run/entry_point.py:1786
+mofapy2/run/entry_point.py:1782:     ard_factors: bool = True,
+mofapy2/run/entry_point.py:1783:     spikeslab_weights: bool = True,
+mofapy2/run/entry_point.py:1784:     spikeslab_factors: bool = False,
+mofapy2/run/entry_point.py:1785:     n_iterations: int = 1000,
+mofapy2/run/entry_point.py:1786:     convergence_mode: str = "fast",
+mofapy2/run/entry_point.py:1787:     gpu_mode: bool = False,
+mofapy2/run/entry_point.py:1788:     gpu_device: Optional[bool] = None,
+mofapy2/run/entry_point.py:1789:     use_float32: bool = False,
+mofapy2/run/entry_point.py:1790:     save_parameters: bool = False,
+mofapy2/run/entry_point.py:1791:     save_data: bool = True,
+mofapy2/run/entry_point.py:1792:     save_metadata: bool = True,
+mofapy2/run/entry_point.py:1793:     seed: int = 1,
+mofapy2/run/entry_point.py:1794:     outfile: Optional[str] = None,
+---- mofapy2/run/entry_point.py:1821
+mofapy2/run/entry_point.py:1817:     ard_factors (optional): use group-wise sparsity
+mofapy2/run/entry_point.py:1818:     spikeslab_weights (optional): use feature-wise sparsity (e.g. gene-wise)
+mofapy2/run/entry_point.py:1819:     spikeslab_factors (optional): use sample-wise sparsity (e.g. cell-wise)
+mofapy2/run/entry_point.py:1820:     n_iterations (optional): upper limit on the number of iterations
+mofapy2/run/entry_point.py:1821:     convergence_mode (optional): fast, medium, or slow convergence mode
+mofapy2/run/entry_point.py:1822:     gpu_mode (optional): if to use GPU mode
+mofapy2/run/entry_point.py:1823:     gpu_mode (optional): which GPU to use
+mofapy2/run/entry_point.py:1824:     use_float32 (optional): if to use float32 precision
+mofapy2/run/entry_point.py:1825:     save_parameters (optional): if to save training parameters
+mofapy2/run/entry_point.py:1826:     save_data (optional): if to save training data
+mofapy2/run/entry_point.py:1827:     save_metadata (optional): if to load metadata from the AnnData object (.obs and .var tables) and save it, False by default
+mofapy2/run/entry_point.py:1828:     seed (optional): random seed
+mofapy2/run/entry_point.py:1829:     outfile (optional): path to HDF5 file to store the model
+---- mofapy2/run/entry_point.py:1864
+mofapy2/run/entry_point.py:1860:         factors=n_factors,
+mofapy2/run/entry_point.py:1861:     )
+mofapy2/run/entry_point.py:1862:     ent.set_train_options(
+mofapy2/run/entry_point.py:1863:         iter=n_iterations,
+mofapy2/run/entry_point.py:1864:         convergence_mode=convergence_mode,
+mofapy2/run/entry_point.py:1865:         gpu_mode=gpu_mode,
+mofapy2/run/entry_point.py:1866:         gpu_device=gpu_device,
+mofapy2/run/entry_point.py:1867:         seed=seed,
+mofapy2/run/entry_point.py:1868:         verbose=verbose,
+mofapy2/run/entry_point.py:1869:         quiet=quiet,
+mofapy2/run/entry_point.py:1870:         outfile=outfile,
+mofapy2/run/entry_point.py:1871:         save_interrupted=save_interrupted,
+mofapy2/run/entry_point.py:1872:     )

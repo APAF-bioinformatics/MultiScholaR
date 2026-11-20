@@ -1,0 +1,10 @@
+scenario	strength	N	seed_index	data_seed	arm	mode	planted	status	error	matched_factor	abs_r	r2_D1	r2_D2	r2_D3	r2_D4	kept_D1	kept_D2	kept_D3	kept_D4	iterations	stopped_by	elbo_final	learned_factors	factors_dropped	mofa_warnings	seconds
+n60strong	strong	60	1	151001	none	slow	F1	ok	NA	Factor1	0.999003741990445	5.29488514043768	5.44122728829856	4.74970562611506	5.49861046701265	20000	2000	200	100	531	convergence	-2618617.29185284	5	0	0	58.1
+n60strong	strong	60	1	151001	none	slow	F2	ok	NA	Factor3	0.0646995971837366	0.263943388731869	0.433715892996578	1.22357008540183	0.06641746806898	20000	2000	200	100	531	convergence	-2618617.29185284	5	0	0	58.1
+n60strong	strong	60	1	151001	none	slow	F3	ok	NA	Factor2	0.997922873137879	5.26974786728339	0.0939300996584569	0.112331235949403	0.113335440012141	20000	2000	200	100	531	convergence	-2618617.29185284	5	0	0	58.1
+n60strong	strong	60	1	151001	noisy_cap1000	fast	F1	ok	NA	Factor2	0.993113518771898	0.355847710269153	8.45738468642868	4.77082093306652	5.59776312780177	1000	1000	200	100	66	convergence	-212029.287747218	5	0	0	1.4
+n60strong	strong	60	1	151001	noisy_cap1000	fast	F2	ok	NA	Factor1	0.968034074654571	0.362865191339601	0.289044805238303	9.45744569031707	10.9255041921637	1000	1000	200	100	66	convergence	-212029.287747218	5	0	0	1.4
+n60strong	strong	60	1	151001	noisy_cap1000	fast	F3	ok	NA	Factor4	0.104052904242197	0.457748513472656	1.03412292899577	1.44245143369028	0.601633712428762	1000	1000	200	100	66	convergence	-212029.287747218	5	0	0	1.4
+n60strong	strong	60	1	151001	probe_fail	fast	F1	failed	probe: deliberate failure of the lifecycle arm	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	0.02
+n60strong	strong	60	1	151001	probe_fail	fast	F2	failed	probe: deliberate failure of the lifecycle arm	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	0.02
+n60strong	strong	60	1	151001	probe_fail	fast	F3	failed	probe: deliberate failure of the lifecycle arm	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	0.02

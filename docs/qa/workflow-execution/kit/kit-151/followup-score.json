@@ -1,0 +1,240 @@
+{
+  "params": {
+    "run": "counted",
+    "scenarios": [
+      "n20weak",
+      "n20strong",
+      "n60weak",
+      "n60strong"
+    ],
+    "seeds": 10,
+    "cells": "all",
+    "modes_n20": [
+      "fast",
+      "medium",
+      "slow"
+    ],
+    "modes_n60": [
+      "fast",
+      "slow"
+    ],
+    "note": "counted follow-up run as declared in docs/qa/workflow-execution/kit/kit-151/cap-followup-declaration.md"
+  },
+  "expected_rows": 3060,
+  "rows": 3060,
+  "failed_rows": 0,
+  "jobs": 40,
+  "readings": {
+    "a_early_stopping": {
+      "per_arm": {
+        "none": {
+          "F1": 7,
+          "F3": 6,
+          "reaches": false
+        },
+        "scale_views": {
+          "F1": 8,
+          "F3": 6,
+          "reaches": false
+        }
+      },
+      "verdict": false
+    },
+    "b_convergence": {
+      "per_mode": {
+        "fast": {
+          "comparisons": 60,
+          "passes": false,
+          "failures": [
+            "n20weak cap2000 F3: 6 vs slow 9",
+            "n20weak cap5000 F1: 6 vs slow 8",
+            "n20weak cap5000 F3: 3 vs slow 8",
+            "n20strong cap1000 F2: 6 vs slow 9",
+            "n20strong cap2000 F3: 6 vs slow 9",
+            "n20strong cap5000 F1: 6 vs slow 8",
+            "n20strong cap5000 F2: 3 vs slow 6",
+            "n20strong cap5000 F3: 3 vs slow 8",
+            "n60weak cap2000 F2: 8 vs slow 10",
+            "n60weak cap5000 F2: 7 vs slow 9"
+          ]
+        },
+        "medium": {
+          "comparisons": 30,
+          "passes": false,
+          "failures": [
+            "n20strong cap1000 F2: 7 vs slow 9"
+          ]
+        }
+      },
+      "recommended_mode": "slow"
+    },
+    "c_cap": {
+      "per_scenario": {
+        "n20weak": {
+          "mode_used": "slow",
+          "meeting_caps": [],
+          "largest_meeting": null,
+          "per_cap": {
+            "250": {
+              "F2": 1,
+              "F3": 10
+            },
+            "500": {
+              "F2": 1,
+              "F3": 10
+            },
+            "1000": {
+              "F2": 1,
+              "F3": 10
+            },
+            "2000": {
+              "F2": 0,
+              "F3": 9
+            },
+            "5000": {
+              "F2": 0,
+              "F3": 8
+            }
+          }
+        },
+        "n20strong": {
+          "mode_used": "slow",
+          "meeting_caps": [
+            250,
+            1000
+          ],
+          "largest_meeting": 1000,
+          "per_cap": {
+            "250": {
+              "F2": 10,
+              "F3": 10
+            },
+            "500": {
+              "F2": 7,
+              "F3": 10
+            },
+            "1000": {
+              "F2": 9,
+              "F3": 10
+            },
+            "2000": {
+              "F2": 7,
+              "F3": 9
+            },
+            "5000": {
+              "F2": 6,
+              "F3": 8
+            }
+          }
+        },
+        "n60weak": {
+          "mode_used": "slow",
+          "meeting_caps": [
+            250,
+            500,
+            1000,
+            2000,
+            5000
+          ],
+          "largest_meeting": 5000,
+          "per_cap": {
+            "250": {
+              "F2": 10,
+              "F3": 10
+            },
+            "500": {
+              "F2": 10,
+              "F3": 10
+            },
+            "1000": {
+              "F2": 10,
+              "F3": 10
+            },
+            "2000": {
+              "F2": 10,
+              "F3": 10
+            },
+            "5000": {
+              "F2": 9,
+              "F3": 10
+            }
+          }
+        },
+        "n60strong": {
+          "mode_used": "slow",
+          "meeting_caps": [
+            250,
+            500,
+            1000,
+            2000,
+            5000
+          ],
+          "largest_meeting": 5000,
+          "per_cap": {
+            "250": {
+              "F2": 10,
+              "F3": 10
+            },
+            "500": {
+              "F2": 10,
+              "F3": 10
+            },
+            "1000": {
+              "F2": 10,
+              "F3": 10
+            },
+            "2000": {
+              "F2": 10,
+              "F3": 10
+            },
+            "5000": {
+              "F2": 10,
+              "F3": 10
+            }
+          }
+        }
+      },
+      "discriminating_scenarios": [
+        "n20strong",
+        "n60weak",
+        "n60strong"
+      ],
+      "recommended_cap": 1000,
+      "detectability_limit_at_n20_weak": true
+    },
+    "d_weight_views": {
+      "per_scenario": {
+        "n20weak": {
+          "mode_used": "slow",
+          "F2": 0,
+          "F3": 0,
+          "meets": false
+        },
+        "n20strong": {
+          "mode_used": "slow",
+          "F2": 6,
+          "F3": 0,
+          "meets": false
+        },
+        "n60weak": {
+          "mode_used": "slow",
+          "F2": 9,
+          "F3": 8,
+          "meets": false
+        },
+        "n60strong": {
+          "mode_used": "slow",
+          "F2": 10,
+          "F3": 8,
+          "meets": false
+        }
+      },
+      "meets_in_every_discriminating_scenario": false
+    },
+    "reproduction_of_first_run": {
+      "compared": 420,
+      "max_abs_difference_abs_r": 0.28825794260732795,
+      "identical": 281
+    }
+  }
+}
