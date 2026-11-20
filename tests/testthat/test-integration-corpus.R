@@ -32,6 +32,20 @@ intCorpusHashes <- function(manifest) {
     vapply(manifest$files, \(f) f$sha256, "")
 }
 
+# What a corpus file holds: a Parquet file's table, a JSON file's values (an omic manifest without its file
+# hashes, which identify the bytes on the machine that wrote them), a TSV file's table.
+intCorpusContent <- function(path) {
+    if (grepl("\\.parquet$", path)) {
+        return(as.data.frame(arrow::read_parquet(path)))
+    }
+    if (grepl("\\.json$", path)) {
+        content <- jsonlite::read_json(path, simplifyVector = FALSE)
+        if (identical(basename(path), "integration_input.json")) content$files <- names(content$files)
+        return(content)
+    }
+    utils::read.delim(path, colClasses = "character", stringsAsFactors = FALSE)
+}
+
 test_that("the composer is deterministic and the committed corpus is its output", {
     skipWithoutIntegrationComposer()
     h <- intCorpusComposer()
@@ -43,8 +57,22 @@ test_that("the composer is deterministic and the committed corpus is its output"
     )
     expect_identical(on_disk, intCorpusHashes(committed))
 
-    fresh <- h$composeIntegrationCorpus(withr::local_tempdir(), repo = intCorpusRoot())
-    expect_identical(intCorpusHashes(fresh), intCorpusHashes(committed))
+    # The same bytes on one machine: composed twice, the same hashes.
+    fresh_dir <- withr::local_tempdir()
+    fresh <- h$composeIntegrationCorpus(fresh_dir, repo = intCorpusRoot())
+    again <- h$composeIntegrationCorpus(withr::local_tempdir(), repo = intCorpusRoot())
+    expect_identical(intCorpusHashes(again), intCorpusHashes(fresh))
+
+    # The same content as the committed corpus on every platform: another platform's Arrow build may compress the
+    # same pages into other bytes, so the fresh files are compared with the committed ones by what they hold.
+    expect_identical(names(fresh$files), names(committed$files))
+    for (path in names(committed$files)) {
+        expect_identical(
+            intCorpusContent(file.path(fresh_dir, path)),
+            intCorpusContent(file.path(intCorpusDir(), path)),
+            info = path
+        )
+    }
 
     other <- h$composeIntegrationCorpus(
         withr::local_tempdir(),
@@ -52,7 +80,7 @@ test_that("the composer is deterministic and the committed corpus is its output"
         repo = intCorpusRoot()
     )
     matrices <- grep("matrix_", names(committed$files), value = TRUE)
-    expect_false(any(intCorpusHashes(other)[matrices] == intCorpusHashes(committed)[matrices]))
+    expect_false(any(intCorpusHashes(other)[matrices] == intCorpusHashes(fresh)[matrices]))
 })
 
 test_that("the corpus has the declared design", {
