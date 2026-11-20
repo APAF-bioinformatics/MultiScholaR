@@ -551,3 +551,13 @@ test_that("KIT-148: a 3,000-run sample match is kept in the store; the worker's 
     expect_identical(again$reference$entity_id, result$reference$entity_id)
     expect_identical(manager$.context$snapshot$exports$integration_mofa_model$parameters$sample_match_table, checked$table)
 })
+
+# KIT-148 item 2: the data handed to mofapy2 one data set at a time (`integrationRunMofapy2`), an internal switch that
+# is off by default; its model is shown equal to MOFA2's own hand-off on the MOFA2 lane (test-integration-mofa-model.R).
+test_that("KIT-148 item 2: the direct hand-off is off unless asked for, and only for MOFA2 1.22.0 with mofapy2 0.7.3", {
+    expect_identical(formals(integrationTrainMofa)$handoff, quote(getOption("MultiScholaR.integration_mofa_handoff", "run_mofa")))
+    expect_null(getOption("MultiScholaR.integration_mofa_handoff"))
+    expect_false(integrationMofaDirectHandoff("run_mofa"))
+    expect_false(integrationMofaDirectHandoff(NULL))
+    if (!requireNamespace("MOFA2", quietly = TRUE)) expect_false(integrationMofaDirectHandoff("direct"))
+})

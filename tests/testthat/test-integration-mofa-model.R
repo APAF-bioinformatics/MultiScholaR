@@ -199,25 +199,67 @@ intMofaKit147Trainer <- function(views, options) {
         messages = messages, model_bytes = file.size(outfile))
 }
 
+# The corpus aligned once, trained by the KIT-147 trainer, by this one (MOFA2's run_mofa hand-off, the default) and by
+# the direct hand-off (item 2); kept for the file.
+intMofaHandoffRun <- local({
+    cache <- NULL
+    function() {
+        if (!is.null(cache)) return(cache)
+        manager <- newIntegrationStateOwner(file.path(tempfile("kit148-trainer-"), "project"))
+        on.exit(closeWorkflowStateOwner(manager), add = TRUE)
+        importIntegrationInputs(manager, file.path(intMofaCorpus(), intMofaOmics))
+        object <- integrationImportedObject(manager)
+        resolved <- integrationResolveMofaParameters(object)
+        aligned <- integrationAlignViews(object, resolved, prefix_rows = TRUE)
+        options <- integrationMofaOptions(resolved)
+        cache <<- list(before = intMofaKit147Trainer(aligned$views, options), after = integrationTrainMofa(aligned$views, options),
+            direct = integrationTrainMofa(aligned$views, options, handoff = "direct"),
+            direct_used = integrationMofaDirectHandoff("direct"))
+        cache
+    }
+})
+
+intMofaWarnings <- function(messages) messages[startsWith(messages, "WARNING:")]
+
 test_that("KIT-148: the trainer without the data in the model file gives KIT-147's model and warnings", {
     intMofaSkip()
-    base <- tempfile("kit148-trainer-")
-    manager <- newIntegrationStateOwner(file.path(base, "project"))
-    withr::defer(closeWorkflowStateOwner(manager))
-    importIntegrationInputs(manager, file.path(intMofaCorpus(), intMofaOmics))
-    object <- integrationImportedObject(manager)
-    resolved <- integrationResolveMofaParameters(object)
-    aligned <- integrationAlignViews(object, resolved, prefix_rows = TRUE)
-    options <- integrationMofaOptions(resolved)
-    before <- intMofaKit147Trainer(aligned$views, options)
-    after <- integrationTrainMofa(aligned$views, options)
+    out <- intMofaHandoffRun()
+    before <- out$before
+    after <- out$after
     for (name in c("factors", "weights", "r2_per_factor", "r2_total", "elbo", "iterations")) {
         expect_identical(after[[name]], before[[name]], info = name)
     }
     message(sprintf("KIT-148 trainer: model file %d bytes without the data, %d bytes with it", as.integer(after$model_file$size),
         as.integer(before$model_bytes)))
-    message(paste(c("KIT-148 warnings, KIT-147 trainer:", before$messages[startsWith(before$messages, "WARNING:")],
-        "KIT-148 warnings, this trainer:", after$messages[startsWith(after$messages, "WARNING:")]), collapse = "\n"))
-    expect_identical(after$messages[startsWith(after$messages, "WARNING:")], before$messages[startsWith(before$messages, "WARNING:")])
+    message(paste(c("KIT-148 warnings, KIT-147 trainer:", intMofaWarnings(before$messages), "KIT-148 warnings, this trainer:",
+        intMofaWarnings(after$messages)), collapse = "\n"))
+    expect_identical(intMofaWarnings(after$messages), intMofaWarnings(before$messages))
     expect_lt(after$model_file$size, before$model_bytes)
+})
+
+test_that("KIT-148 item 2: the data handed to mofapy2 one data set at a time give the same model to 1e-12", {
+    intMofaSkip()
+    out <- intMofaHandoffRun()
+    expect_true(out$direct_used)
+    after <- out$after
+    direct <- out$direct
+    relative <- function(x, y) {
+        x <- as.numeric(unlist(x))
+        y <- as.numeric(unlist(y))
+        keep <- is.finite(x) & is.finite(y)
+        if (!length(x) || !identical(is.finite(x), is.finite(y))) return(Inf)
+        largest <- max(abs(x[keep] - y[keep]))
+        if (largest == 0) 0 else largest / max(abs(x[keep]))
+    }
+    differences <- vapply(c("factors", "weights", "r2_per_factor", "r2_total", "elbo"), function(name)
+        relative(after[[name]], direct[[name]]), numeric(1))
+    message(sprintf("KIT-148 direct hand-off against run_mofa: largest relative difference %s; identical %s",
+        paste(sprintf("%s %.3g", names(differences), differences), collapse = ", "),
+        paste(vapply(c("factors", "weights", "r2_per_factor", "r2_total", "elbo"), function(name)
+            identical(after[[name]], direct[[name]]), logical(1)), collapse = ", ")))
+    message(paste(c("KIT-148 warnings, direct hand-off:", intMofaWarnings(direct$messages)), collapse = "\n"))
+    expect_true(all(differences <= 1e-12), info = paste(names(differences), differences, collapse = ", "))
+    expect_identical(direct$iterations, after$iterations)
+    expect_identical(lapply(direct$weights, dimnames), lapply(after$weights, dimnames))
+    expect_identical(dimnames(direct$factors), dimnames(after$factors))
 })

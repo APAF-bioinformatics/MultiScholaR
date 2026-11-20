@@ -743,6 +743,76 @@ integrationMofaOverallLevelWarning <- function(views, factors, center) {
         "*sometimes* because of poor normalisation in the preprocessing steps."), paste(flagged, collapse = ", "))
 }
 
+#' Whether the direct hand-off is used (KIT-148 item 2): asked for (`handoff = "direct"`, the internal option
+#' `MultiScholaR.integration_mofa_handoff`; the default is `run_mofa`), and the versions it is written for are the ones
+#' installed (MOFA2 1.22.0, mofapy2 0.7.3); otherwise MOFA2's own `run_mofa` hands the data over.
+#' @param handoff `run_mofa` or `direct`.
+#' @noRd
+integrationMofaDirectHandoff <- function(handoff) {
+    if (!identical(handoff, "direct") || !requireNamespace("MOFA2", quietly = TRUE) ||
+        !identical(as.character(utils::packageVersion("MOFA2")), "1.22.0")) return(FALSE)
+    mofapy2 <- tryCatch(as.character(reticulate::import("mofapy2")$version$`__version__`), error = function(error) NA_character_)
+    identical(mofapy2, "0.7.3")
+}
+
+#' Hand a prepared MOFA2 object to mofapy2 one data set at a time and train it (KIT-148 item 2; internal, off by
+#' default). MOFA2 1.22.0's `run_mofa` (its `.run_mofa_reticulate`) converts every data set to Python before it hands
+#' the list over, while its R copy of every data set is still held; here each data set is converted and its R copy
+#' released before the next, through the same mofapy2 0.7.3 entry point with the same arguments in the same order, so
+#' the model is the same. Written for those two versions only (`integrationMofaDirectHandoff`); no covariates (MEFISTO).
+#' @param holder An environment holding the prepared object as `object`; the object is released from it.
+#' @param outfile The model file; written without the training data.
+#' @return `outfile`, invisibly.
+#' @noRd
+integrationRunMofapy2 <- function(holder, outfile) {
+    if (!is.null(holder$object@covariates)) cli::cli_abort("the direct hand-off takes no covariates", class = "integration_refused")
+    mofa <- reticulate::import("mofapy2")
+    entry <- mofa$run$entry_point$entry_point()
+    data_options <- holder$object@data_options
+    entry$set_data_options(scale_views = data_options$scale_views, scale_groups = data_options$scale_groups,
+        center_groups = data_options$center_groups, use_float32 = data_options$use_float32)
+    samples <- holder$object@samples_metadata
+    entry$data_opts$samples_metadata <- reticulate::r_to_py(lapply(data_options$groups, function(g) samples[samples$group == g, ]))
+    features <- holder$object@features_metadata
+    entry$data_opts$features_metadata <- reticulate::r_to_py(unname(lapply(data_options$views,
+        function(m) features[features$view == m, ])))
+    one <- function(xs) if (length(xs) > 1) xs else list(xs)
+    samples_names <- reticulate::r_to_py(lapply(unname(lapply(holder$object@data[[1L]], colnames)), one))
+    features_names <- reticulate::r_to_py(lapply(unname(lapply(holder$object@data, function(x) rownames(x[[1L]]))), one))
+    data <- reticulate::r_to_py(list())
+    for (m in seq_along(holder$object@data)) {
+        groups <- reticulate::r_to_py(list())
+        for (g in seq_along(holder$object@data[[m]])) groups$append(reticulate::r_to_py(t(holder$object@data[[m]][[g]])))
+        data$append(groups)
+        # This data set is now mofapy2's; its R copy is released before the next one is converted.
+        holder$object@data[m] <- list(NULL)
+    }
+    entry$set_data_matrix(data = data, likelihoods = unname(holder$object@model_options$likelihoods),
+        views_names = reticulate::r_to_py(as.list(data_options$views)), groups_names = reticulate::r_to_py(as.list(data_options$groups)),
+        samples_names = samples_names, features_names = features_names)
+    model_options <- holder$object@model_options
+    entry$set_model_options(factors = model_options$num_factors, spikeslab_factors = model_options$spikeslab_factors,
+        spikeslab_weights = model_options$spikeslab_weights, ard_factors = model_options$ard_factors,
+        ard_weights = model_options$ard_weights)
+    training <- holder$object@training_options
+    entry$set_train_options(iter = training$maxiter, convergence_mode = training$convergence_mode,
+        dropR2 = training$drop_factor_threshold, startELBO = training$startELBO, freqELBO = training$freqELBO,
+        seed = training$seed, gpu_mode = training$gpu_mode, gpu_device = training$gpu_device, verbose = training$verbose,
+        outfile = training$outfile, weight_views = training$weight_views, save_interrupted = training$save_interrupted)
+    if (isTRUE(training$stochastic)) {
+        stochastic <- holder$object@stochastic_options
+        entry$set_stochastic_options(learning_rate = stochastic$learning_rate, forgetting_rate = stochastic$forgetting_rate,
+            batch_size = stochastic$batch_size, start_stochastic = stochastic$start_stochastic)
+    }
+    holder$object <- NULL
+    data <- NULL
+    reclaimWorkflowMemory()
+    entry$build()
+    entry$run()
+    entry$save(outfile, save_data = FALSE)
+    invisible(outfile)
+}
+
 #' Train MOFA2 as the proven lane does (KIT-060 status 2026-11-19, run 44423980807): `create_mofa` on the views,
 #' the default data, model and training options with the declared ones set, `prepare_mofa`, `run_mofa(use_basilisk =
 #' FALSE)` (a fall-back to basilisk is refused: the bundle's Python must be the one used). KIT-148: the model file is
@@ -752,10 +822,13 @@ integrationMofaOverallLevelWarning <- function(views, factors, center) {
 #' (`integrationMofaOverallLevelWarning`), its warning kept where MOFA2 would have given it.
 #' @param views Named list of features x samples matrices (feature names unique across views).
 #' @param options `integrationMofaOptions()`.
+#' @param handoff KIT-148 item 2 (internal): `run_mofa` (the default) hands the data over through MOFA2's `run_mofa`;
+#'   `direct` one data set at a time through mofapy2's entry point (`integrationRunMofapy2`; MOFA2 1.22.0 and mofapy2
+#'   0.7.3 only, `run_mofa` otherwise), the same model; then the model is loaded from its file as `run_mofa` loads it.
 #' @return `list(factors, weights, r2_per_factor (factors x views), r2_total, elbo, iterations, options, versions,
 #'   messages, model_file)`.
 #' @noRd
-integrationTrainMofa <- function(views, options) {
+integrationTrainMofa <- function(views, options, handoff = getOption("MultiScholaR.integration_mofa_handoff", "run_mofa")) {
     object <- MOFA2::create_mofa(views)
     data_options <- MOFA2::get_default_data_options(object)
     data_options$scale_views <- options$scale_views
@@ -777,8 +850,17 @@ integrationTrainMofa <- function(views, options) {
     # Kept, not dropped: MOFA2's messages and warnings are returned with the model. KIT-063: they include the checks
     # MOFA2 makes when `run_mofa` loads the trained model, for the Results tab.
     messages <- character()
+    direct <- integrationMofaDirectHandoff(handoff)
     model <- withCallingHandlers(
-        MOFA2::run_mofa(object, outfile = outfile, save_data = FALSE, use_basilisk = FALSE),
+        if (direct) {
+            holder <- new.env(parent = emptyenv())
+            holder$object <- object
+            object <- NULL
+            integrationRunMofapy2(holder, outfile)
+            MOFA2::load_model(outfile)
+        } else {
+            MOFA2::run_mofa(object, outfile = outfile, save_data = FALSE, use_basilisk = FALSE)
+        },
         message = function(m) {
             messages <<- c(messages, trimws(conditionMessage(m)))
             invokeRestart("muffleMessage")
