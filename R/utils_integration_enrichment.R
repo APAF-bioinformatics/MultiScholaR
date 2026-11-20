@@ -340,6 +340,10 @@ integrationStringRequest <- function(url, fields, options, key) {
 #' Parse a STRING JSON reply to its first record (STRING answers with an array of one object).
 #' @noRd
 integrationStringRecord <- function(body, key, what) {
+    # The reply is read before the parse's error handler is set: `body` is the request itself, passed unevaluated, and a
+    # refusal raised by the request (the service unreachable) must not be taken for an unreadable reply (run-tests
+    # 44783719082 and 44786840568: a refused connection was reported as "the reply could not be read").
+    force(body)
     parsed <- tryCatch(jsonlite::fromJSON(body, simplifyVector = FALSE), error = \(e) NULL)
     if (is.list(parsed) && is.null(names(parsed)) && length(parsed) >= 1L) parsed <- parsed[[1L]]
     if (!is.list(parsed) || is.null(names(parsed))) {
