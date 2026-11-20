@@ -133,12 +133,21 @@ test_that("KIT-149 (ENG-06): over 10,000 features and 64 runs, ties across the p
             big <- Filter(function(page) page[["columns"]] == fixture$runs + 1L, pages)
             expect_identical(unname(vapply(big, function(page) page[["rows"]], numeric(1))), c(10000, 2000, 10000, 2000), info = info)
             expect_identical(unname(vapply(big, function(page) page[["offset"]], numeric(1))), c(0, 10000, 0, 10000), info = info)
-            # The cap cuts inside the tie: the 500 more variable features, then the first 45 tied ones in row order
-            # (30 before the page boundary, 15 after it); the internal standards are not among them.
             kept <- sub("^lipidomics_LCMS_Pos:", "", rownames(partitioned$views$lipidomics_LCMS_Pos))
             expect_identical(length(kept), fixture$cap, info = info)
-            expect_identical(kept[kept %in% fixture$tie], fixture$tie[1:45], info = info)
-            expect_identical(sort(kept[!kept %in% fixture$tie]), sort(fixture$top), info = info)
+            expect_false(any(kept %in% fixture$standards), info = info)
+            if (selection == "top_variance") {
+                # The cap cuts inside the tie: the 500 more variable features, then the first 45 tied ones in row order
+                # (30 before the page boundary, 15 after it); the internal standards are not among them.
+                expect_identical(kept[kept %in% fixture$tie], fixture$tie[1:45], info = info)
+                expect_identical(sort(kept[!kept %in% fixture$tie]), sort(fixture$top), info = info)
+            } else {
+                # KIT-151: above the trend the tied features (one mean, one variance, near the bulk) rank above some of
+                # the 500 (whose fitted trend is higher at their means); whatever number is kept, it is the first ones in
+                # row order (run-tests 44787320293: all 60 here).
+                tied <- kept[kept %in% fixture$tie]
+                expect_identical(tied, fixture$tie[seq_along(tied)], info = info)
+            }
             summary <- partitioned$view_summary
             expect_identical(summary$features_input, c(fixture$n, 40L), info = info)
             expect_identical(summary$internal_standards_dropped, c(4L, 0L), info = info)

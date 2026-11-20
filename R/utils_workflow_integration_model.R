@@ -1525,7 +1525,8 @@ integrationMofaDeclaration <- function(parameters, software = NULL) {
     } else {
         integrationMofaOperation(match = TRUE)
     }
-    if (!is.null(software)) declaration$factors <- c(declaration$factors, software)
+    # Nothing known (MOFA2 not installed, Python not running): nothing to key on.
+    if (!is.null(software) && !all(unlist(software) == "unknown")) declaration$factors <- c(declaration$factors, software)
     declaration
 }
 

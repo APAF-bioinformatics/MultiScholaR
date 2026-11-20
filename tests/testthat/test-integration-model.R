@@ -354,8 +354,8 @@ test_that("KIT-147: a data set of more than 64 runs and 10,000 features imports 
     stored <- withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, source,
         fields = "views/proteomics"))
     expect_identical(as.list(stored@views$proteomics), expected)
-    # The model's path runs on the streamed state (a stand-in trainer).
-    run <- suppressWarnings(runIntegrationModel(manager, trainer = intModelFakeTrainer))
+    # The model's path runs on the streamed state (a stand-in trainer; every feature, as KIT-147 had it).
+    run <- suppressWarnings(runIntegrationModel(manager, list(feature_selection = "none"), trainer = intModelFakeTrainer))
     expect_identical(run$status, "computed")
     expect_identical(run$value$view_summary$features_input, c(3L, n))
     closeWorkflowStateOwner(manager)
@@ -825,6 +825,8 @@ test_that("KIT-151 (ENG-24): a saved model is not reused after an upgrade of MOF
     expect_false(identical(upgraded$reference$entity_id, first$reference$entity_id))
     declaration <- integrationMofaDeclaration(list(), software)
     expect_identical(declaration$factors[c("mofa2", "mofapy2", "numpy")], software)
-    # A stand-in trainer's model carries no software factor (nothing to upgrade).
+    # A stand-in trainer's model, or software not known, carries no software factor (nothing to upgrade).
     expect_identical(integrationMofaDeclaration(list())$factors, list(product_schema = INTEGRATION_MODEL_SCHEMA))
+    expect_identical(integrationMofaDeclaration(list(), list(mofa2 = "unknown", mofapy2 = "unknown", numpy = "unknown"))$factors,
+        list(product_schema = INTEGRATION_MODEL_SCHEMA))
 })
