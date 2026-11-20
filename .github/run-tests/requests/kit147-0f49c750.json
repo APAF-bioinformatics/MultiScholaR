@@ -1,0 +1,71 @@
+{
+  "requested_by": "KIT-147: integration input contract v2 (Parquet) and streamed import; base 2bc0c5f5 versus head; failing-first and gate-off scripts",
+  "label": "KIT-147 contract v2 and streamed import, head 0f49c750 against base 2bc0c5f5",
+  "package_commit": "0f49c7502659526a7ee97f03c9fbc66aa9af6802",
+  "base_commit": "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+  "tools_ref": "",
+  "tests": [
+    "test-workflow-integration-input.R",
+    "test-integration-corpus.R",
+    "test-integration-gui.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-model.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-mofa-model.R",
+    "test-integration-record-mofa.R",
+    "test-integration-record.R",
+    "test-integration-results-mofa.R",
+    "test-integration-results.R",
+    "test-integration-sample-match.R",
+    "test-kit129-run-path.R",
+    "test-omic-summary-module.R",
+    "test-omics-summary-core.R",
+    "test-workflow-analysis-record.R",
+    "test-workflow-class-declarations.R",
+    "test-gui-entry-proteomics.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-gui-entry-transcriptomics.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+        "kit147-failing-first",
+        "test-workflow-integration-input.R",
+        "test-integration-model.R"
+      ],
+      "out": "kit147-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+        "kit147-gate-off"
+      ],
+      "out": "kit147-gate-off",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
