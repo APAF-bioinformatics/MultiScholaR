@@ -1,5 +1,6 @@
 # KIT-061: the per-omic integration input (the contract, utils_workflow_integration_input.R) and the proteomics writer
-# at the Summary hook (utils_workflow_dia_summary.R).
+# at the Summary hook (utils_workflow_dia_summary.R). KIT-147: contract v2, Parquet tables; the matrix is read through
+# `openIntegrationInputView()` (helper-integration-input.R).
 
 integrationInputFixture <- function() {
     samples <- data.frame(Run = c("s1", "s2", "s3", "s4"), group = c("A", "A", "B", "B"),
@@ -26,13 +27,13 @@ test_that("KIT-061: the contract round trip writes the fixed files and reads the
     fixture <- integrationInputFixture()
     path <- writeIntegrationInputFixture(dir, fixture)
     expect_identical(path, file.path(dir, "integration_input.json"))
-    expect_setequal(list.files(dir), c("integration_input.json", "matrix_proteomics.tsv", "features_proteomics.tsv",
-        "samples.tsv"))
+    expect_setequal(list.files(dir), c("integration_input.json", "matrix_proteomics.parquet", "features_proteomics.parquet",
+        "samples.parquet"))
     # Nothing is left beside the folder (the staging folder is renamed into place).
     expect_identical(list.files(file.path(root, "integration"), all.files = TRUE, no.. = TRUE), "proteomics")
     input <- readIntegrationInput(dir)
     manifest <- input$manifest
-    expect_identical(manifest$schema, "multischolar.integration_input.v1")
+    expect_identical(manifest$schema, "multischolar.integration_input.v2")
     expect_identical(manifest$omic_type, "proteomics")
     expect_identical(manifest$workflow, "DIA")
     expect_identical(manifest$matrix_role, "normalised")
@@ -41,15 +42,18 @@ test_that("KIT-061: the contract round trip writes the fixed files and reads the
     expect_identical(manifest$software$package, "MultiScholaR")
     expect_identical(manifest$software$version, as.character(utils::packageVersion("MultiScholaR")))
     expect_identical(manifest$written_at, "2026-11-17T10:00:00Z")
-    expect_identical(manifest$views[[1]][c("name", "matrix_file", "features_file", "rows", "columns")],
-        list(name = "proteomics", matrix_file = "matrix_proteomics.tsv", features_file = "features_proteomics.tsv",
-            rows = 3L, columns = 4L))
+    expect_identical(manifest$views[[1]][c("name", "matrix_file", "features_file", "rows", "columns", "row_groups")],
+        list(name = "proteomics", matrix_file = "matrix_proteomics.parquet", features_file = "features_proteomics.parquet",
+            rows = 3L, columns = 4L, row_groups = 1L))
+    expect_identical(manifest$parquet, list(format_version = "2.6", compression = "snappy", row_group_rows = 10000L,
+        column_types = list(feature_id = "string", runs = "double", samples = "string", features = "string")))
     for (name in names(manifest$files)) {
         expect_identical(manifest$files[[name]], digest::digest(file = file.path(dir, name), algo = "sha256"))
     }
-    expect_setequal(names(manifest$files), c("matrix_proteomics.tsv", "features_proteomics.tsv", "samples.tsv"))
+    expect_setequal(names(manifest$files), c("matrix_proteomics.parquet", "features_proteomics.parquet", "samples.parquet"))
     # The values, missing values included, come back exactly.
-    expect_identical(input$views$proteomics$matrix, fixture$matrix)
+    expect_identical(integrationInputMatrix(dir, "proteomics", input), fixture$matrix)
+    expect_identical(input$views$proteomics[c("rows", "columns", "row_groups")], list(rows = 3L, columns = 4L, row_groups = 1L))
     expect_identical(input$views$proteomics$features, fixture$features)
     expect_identical(input$samples, fixture$samples)
     # A second write replaces the folder whole.
@@ -100,17 +104,17 @@ test_that("KIT-061 (K061-6): the reader ties the files to the fixed names, the o
     }
     # The matrix file renamed in the manifest (with its own sha256): refused, not read.
     rewrite(function(manifest) {
-        file.copy(file.path(dir, "matrix_proteomics.tsv"), file.path(dir, "other.tsv"))
-        manifest$files$other.tsv <- manifest$files$matrix_proteomics.tsv
-        manifest$views[[1]]$matrix_file <- "other.tsv"
+        file.copy(file.path(dir, "matrix_proteomics.parquet"), file.path(dir, "other.parquet"))
+        manifest$files$other.parquet <- manifest$files$matrix_proteomics.parquet
+        manifest$views[[1]]$matrix_file <- "other.parquet"
         manifest
     })
-    expect_error(readIntegrationInput(dir), class = "integration_input_invalid", regexp = "matrix_proteomics.tsv")
+    expect_error(readIntegrationInput(dir), class = "integration_input_invalid", regexp = "matrix_proteomics.parquet")
     rewrite(function(manifest) {
-        manifest$views[[1]]$features_file <- "samples.tsv"
+        manifest$views[[1]]$features_file <- "samples.parquet"
         manifest
     })
-    expect_error(readIntegrationInput(dir), class = "integration_input_invalid", regexp = "features_proteomics.tsv")
+    expect_error(readIntegrationInput(dir), class = "integration_input_invalid", regexp = "features_proteomics.parquet")
     # The omic is the folder's.
     rewrite(function(manifest) {
         manifest$omic_type <- "lipidomics"
@@ -152,17 +156,18 @@ test_that("KIT-061 (K061-4): the accession is the first member's, without its is
 test_that("KIT-061: a tampered file, a wrong shape, a missing manifest and inconsistent ids are refused", {
     dir <- file.path(withr::local_tempdir(), "proteomics")
     writeIntegrationInputFixture(dir)
-    matrix_file <- file.path(dir, "matrix_proteomics.tsv")
-    original <- readLines(matrix_file)
-    # One value changed: the file no longer matches its sha256.
-    writeLines(sub("21.5", "21.6", original, fixed = TRUE), matrix_file)
+    matrix_file <- file.path(dir, "matrix_proteomics.parquet")
+    original <- integrationInputMatrix(dir, "proteomics")
+    # One byte changed: the file no longer matches its sha256.
+    bytes <- readBin(matrix_file, "raw", file.size(matrix_file))
+    bytes[[64L]] <- xor(bytes[[64L]], as.raw(1L))
+    writeBin(bytes, matrix_file)
     expect_error(readIntegrationInput(dir), class = "integration_input_invalid", regexp = "sha256")
     # One sample column dropped and the hash updated: the shape no longer matches the manifest.
-    dropped <- vapply(strsplit(original, "\t", fixed = TRUE), function(cells) paste(cells[-5L], collapse = "\t"), "")
-    writeLines(dropped, matrix_file)
+    writeIntegrationInputParquet(original[-5L], matrix_file)
     manifest_file <- file.path(dir, "integration_input.json")
     manifest <- jsonlite::read_json(manifest_file, simplifyVector = FALSE)
-    manifest$files$matrix_proteomics.tsv <- digest::digest(file = matrix_file, algo = "sha256")
+    manifest$files$matrix_proteomics.parquet <- digest::digest(file = matrix_file, algo = "sha256")
     jsonlite::write_json(manifest, manifest_file, auto_unbox = TRUE, null = "null", na = "null", digits = NA)
     expect_error(readIntegrationInput(dir), class = "integration_input_invalid", regexp = "is not 3 x 4")
     # A corrected matrix without its correction.
@@ -183,6 +188,75 @@ test_that("KIT-061: a tampered file, a wrong shape, a missing manifest and incon
     fixture <- integrationInputFixture()
     fixture$matrix$feature_id[[2]] <- "P1"
     expect_error(writeIntegrationInputFixture(dir, fixture), class = "integration_input_invalid", regexp = "unique")
+})
+
+test_that("KIT-147: the v2 round trip is bit-identical: doubles exact, missing values kept, columns in the samples' order, row groups of 10,000", {
+    dir <- file.path(withr::local_tempdir(), "proteomics")
+    n <- 25001L
+    runs <- c("r3", "r1", "r2")
+    samples <- data.frame(Run = runs, group = c("A", "B", "A"), tech_rep_group = c("A_2", "B_1", "A_1"),
+        replicates = c(2L, 1L, 1L), stringsAsFactors = FALSE)
+    values <- withr::with_seed(147L, stats::rnorm(3L * n, 20, 3))
+    # Values the v1 text round trip could not keep: below 1e-148, subnormal, -0, NaN beside NA, the extremes.
+    special <- c(NA, NaN, -0, 1 / 3, 1e-300, .Machine$double.xmin / 3, .Machine$double.xmax, -Inf, Inf, 2^-1074)
+    values[seq_along(special)] <- special
+    # The matrix's columns given in another order than the samples table's.
+    matrix <- data.frame(feature_id = sprintf("F%06d", seq_len(n)), r1 = values[seq_len(n)], r2 = values[n + seq_len(n)],
+        r3 = values[2L * n + seq_len(n)], stringsAsFactors = FALSE)
+    features <- data.frame(feature_id = matrix$feature_id, display_name = c(NA, "", matrix$feature_id[-(1:2)]),
+        stringsAsFactors = FALSE)
+    manifest <- integrationInputFixture()$manifest
+    writeIntegrationInput(dir, manifest, samples, list(proteomics = matrix), list(proteomics = features))
+    input <- readIntegrationInput(dir)
+    expected <- matrix[c("feature_id", runs)]
+    view <- openIntegrationInputView(dir, "proteomics", input)
+    expect_identical(view$columns, c("feature_id", runs))
+    expect_identical(c(view$rows, view$row_groups), c(n, 3L))
+    expect_identical(input$manifest$views[[1]]$row_groups, 3L)
+    whole <- view$read()
+    expect_identical(names(whole), c("feature_id", runs))
+    # Bit for bit (num.eq = FALSE tells -0 from 0; NA and NaN stay apart).
+    expect_true(identical(whole, expected, num.eq = FALSE))
+    expect_identical(whole$r1[seq_along(special)], special)
+    expect_true(identical(whole$r1[[3L]], -0, num.eq = FALSE))
+    expect_true(is.na(whole$r1[[1L]]) && !is.nan(whole$r1[[1L]]))
+    expect_true(is.nan(whole$r1[[2L]]))
+    # Row group by row group, the same rows.
+    pages <- lapply(seq_len(view$row_groups), view$read_row_group)
+    expect_identical(vapply(pages, nrow, integer(1)), c(10000L, 10000L, 5001L))
+    expect_true(identical(do.call(rbind, pages)$r3, expected$r3, num.eq = FALSE))
+    # The samples and features as written, as text; a missing and an empty text kept apart.
+    expect_identical(input$samples, data.frame(Run = runs, group = c("A", "B", "A"), tech_rep_group = c("A_2", "B_1", "A_1"),
+        replicates = c("2", "1", "1"), stringsAsFactors = FALSE))
+    expect_identical(input$views$proteomics$features, features)
+    # Written twice, the same bytes.
+    again <- file.path(withr::local_tempdir(), "proteomics")
+    writeIntegrationInput(again, manifest, samples, list(proteomics = matrix), list(proteomics = features),
+        now = as.POSIXct(input$manifest$written_at, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"))
+    for (file in names(input$manifest$files)) {
+        expect_identical(digest::digest(file = file.path(again, file), algo = "sha256"), input$manifest$files[[file]], info = file)
+    }
+})
+
+test_that("KIT-147: a v1 folder (TSV tables) is refused in plain words: it was saved by an earlier development build", {
+    root <- withr::local_tempdir()
+    dir <- file.path(root, "integration", "proteomics")
+    dir.create(dir, recursive = TRUE)
+    fixture <- integrationInputFixture()
+    utils::write.table(fixture$matrix, file.path(dir, "matrix_proteomics.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+    manifest <- c(fixture$manifest, list(schema = "multischolar.integration_input.v1", views = list(list(name = "proteomics",
+        matrix_file = "matrix_proteomics.tsv", features_file = "features_proteomics.tsv", rows = 3L, columns = 4L)),
+        samples_file = "samples.tsv", files = list(matrix_proteomics.tsv = digest::digest(file = file.path(dir,
+        "matrix_proteomics.tsv"), algo = "sha256"))))
+    jsonlite::write_json(manifest, file.path(dir, "integration_input.json"), auto_unbox = TRUE, null = "null", digits = NA)
+    expect_error(readIntegrationInput(dir), class = "integration_input_outdated", regexp = "earlier development version")
+    expect_error(readIntegrationInput(dir), class = "integration_input_outdated", regexp = "proteomics Summary again")
+    expect_error(readIntegrationInput(dir), class = "integration_input_invalid")
+    expect_error(openIntegrationInputView(dir, "proteomics"), class = "integration_input_outdated")
+    # The Import tab's scan lists it as refused, with that sentence.
+    scan <- integrationScanProject(file.path(root, "integration"))
+    expect_identical(scan$omics$status, "refused")
+    expect_match(scan$omics$reason, "earlier development version", fixed = TRUE)
 })
 
 # The proteomics writer, through the Summary hook (`saveWorkflowSummaryParameters` under proteomics' group).
@@ -250,7 +324,7 @@ test_that("KIT-061: a classic route with RUV writes the corrected matrix after t
     expect_identical(unlist(manifest$correction$grouping_levels), c("control", "treated"))
     expected <- filtered@protein_quant_table
     names(expected)[[1]] <- "feature_id"
-    expect_identical(input$views$proteomics$matrix, expected)
+    expect_identical(integrationInputMatrix(run$dir, "proteomics", input), expected)
     expect_identical(input$samples$Run, setdiff(protein@design_matrix$Run, "run_0005"))
     expect_identical(input$samples$group, as.character(filtered@design_matrix$group))
     # No UniProt table: each display name is the feature id.
@@ -302,12 +376,13 @@ test_that("KIT-061 (K061-1): after a classic re-run with RUV skipped the head's 
     expect_null(manifest$correction)
     # Then the correlation filter on it: its own lineage has no RUV state.
     manager$saveState("correlation_filtered", skipped, list(min_pearson_correlation_threshold = 0.5), "correlation")
-    input <- readIntegrationInput(integrationSummarySave(manager, root)$dir)
+    dir <- integrationSummarySave(manager, root)$dir
+    input <- readIntegrationInput(dir)
     expect_identical(input$manifest$source_state$name, "correlation_filtered")
     expect_identical(input$manifest$source_state$entity_id, getDIAStateReference(manager, "correlation_filtered")$entity_id)
     expect_identical(input$manifest$matrix_role, "normalised")
     expect_null(input$manifest$correction)
-    expect_identical(input$views$proteomics$matrix[[2]], skipped@protein_quant_table[[2]])
+    expect_identical(integrationInputMatrix(dir, "proteomics", input)[[2]], skipped@protein_quant_table[[2]])
     # A completed enrichment on the head (a result-class state, as the enrichment module commits it): the walk reads
     # through it to the correlation filter.
     results <- methods::new("EnrichmentResults", contrasts = tibble::tibble(contrasts = "treated-control"),
@@ -402,7 +477,7 @@ test_that("KIT-061 (D14): DIA_LIMPA in covariates mode writes the RUV-adjusted p
     manager <- fixture$manager
     withr::defer(closeDIAStateAdapter(manager))
     expect_identical(manager$current_state, "ruv_covariates")
-    input <- readIntegrationInput(integrationSummarySave(manager, root)$dir)
+    input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
     manifest <- input$manifest
     expect_identical(manifest$workflow, "DIA_LIMPA")
     expect_identical(manifest$matrix_role, "corrected")
@@ -428,7 +503,7 @@ test_that("KIT-061: DIA_LIMPA in correction mode writes the corrected state's ta
     manager <- fixture$manager
     withr::defer(closeDIAStateAdapter(manager))
     expect_identical(manager$current_state, "ruv_corrected")
-    input <- readIntegrationInput(integrationSummarySave(manager, root)$dir)
+    input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
     manifest <- input$manifest
     expect_identical(manifest$matrix_role, "corrected")
     expect_identical(manifest$source_state$name, "ruv_corrected")
@@ -452,7 +527,7 @@ test_that("KIT-061 (K061-1): DIA_LIMPA switched covariates -> correction -> cova
     withr::defer(closeDIAStateAdapter(manager))
     expect_identical(manager$current_state, "ruv_covariates")
     expect_true("ruv_corrected" %in% diaStateHistory(manager))
-    input <- readIntegrationInput(integrationSummarySave(manager, root)$dir)
+    input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
     manifest <- input$manifest
     expect_identical(manifest$source_state$name, "ruv_covariates")
     expect_identical(manifest$source_state$entity_id, getDIAStateReference(manager)$entity_id)
@@ -470,7 +545,7 @@ test_that("KIT-061 (K061-7): DIA_LIMPA correlation -> covariates writes the corr
     fixture <- integrationLimpaRuv(root, "covariates")
     manager <- fixture$manager
     withr::defer(closeDIAStateAdapter(manager))
-    corrected <- readIntegrationInput(integrationSummarySave(manager, root)$dir)
+    corrected <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
     expect_identical(corrected$manifest$source_state$name, "ruv_covariates")
     expect_identical(corrected$manifest$matrix_role, "corrected")
     expect_identical(corrected$manifest$correction$id, "C2")
@@ -483,7 +558,7 @@ test_that("KIT-061 (K061-7): DIA_LIMPA correlation -> covariates writes the corr
     })
     expect_identical(manager$current_state, "correlation_filtered")
     expect_identical(readDIAStateMetadata(manager)$previous_state, "ruv_covariates")
-    input <- readIntegrationInput(integrationSummarySave(manager, root)$dir)
+    input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
     manifest <- input$manifest
     expect_identical(manifest$source_state$name, "correlation_filtered")
     expect_identical(manifest$matrix_role, "normalised")

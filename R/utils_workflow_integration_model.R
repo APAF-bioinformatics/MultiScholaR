@@ -75,14 +75,16 @@ newIntegrationStateOwner <- function(root, project_id = "integration") {
     manager
 }
 
-#' Read the omics' integration inputs into one `IntegrationViewsData` (KIT-062). Each folder is read and validated by
-#' `readIntegrationInput()`; the omics are ordered by name, their views in manifest order. Refused in plain words: fewer
-#' than two omics (D7), two inputs of one omic, a view name used by two omics (INT-4 names views `<omic>_<assay>`), a
-#' biological-sample column the samples table lacks or leaves empty.
+#' Read and check the omics' integration inputs (KIT-062; KIT-147: no matrix is loaded). Each folder is read and
+#' validated by `readIntegrationInput()`; the omics are ordered by name, their views in manifest order. Refused in plain
+#' words: fewer than two omics (D7), two inputs of one omic, a view name used by two omics (INT-4 names views
+#' `<omic>_<assay>`), a biological-sample column the samples table lacks or leaves empty.
 #' @param dirs The omics' folders, `<project>/integration/<omic>/`.
-#' @return `list(object, manifests)`: the object, and the manifests' paths named by omic.
+#' @return `list(inputs, views, features, design, record, manifests)`: the readers' values by omic, per view its
+#'   folder and omic, the feature tables by view, one design row per run, the `inputs` slot's entries by omic, and the
+#'   manifests' paths by omic.
 #' @noRd
-integrationViewsFromInputs <- function(dirs) {
+integrationReadInputs <- function(dirs) {
     dirs <- unique(as.character(dirs))
     if (length(dirs) < 2L) {
         integrationRefuse(sprintf("integration needs the inputs of two or more omics; %d given", length(dirs)),
@@ -126,7 +128,7 @@ integrationViewsFromInputs <- function(dirs) {
                 integrationRefuse(sprintf("the view name %s is used by two omics; views are named <omic>_<assay>", view),
                     "integration_input_duplicate")
             }
-            views[[view]] <- input$views[[view]]$matrix
+            views[[view]] <- list(dir = dirs[[i]], omic = omic)
             features[[view]] <- input$views[[view]]$features
         }
         design[[i]] <- data.frame(omic = omic, run = as.character(samples[[sample_column]]),
@@ -138,9 +140,33 @@ integrationViewsFromInputs <- function(dirs) {
     }
     design <- do.call(rbind, design)
     rownames(design) <- NULL
-    object <- methods::new("IntegrationViewsData", views = views, features = features, design_matrix = design,
-        inputs = record)
-    list(object = object, manifests = stats::setNames(vapply(record, function(entry) entry$path, character(1)), omics))
+    list(inputs = stats::setNames(inputs, omics), views = views, features = features, design = design, record = record,
+        manifests = stats::setNames(vapply(record, function(entry) entry$path, character(1)), omics))
+}
+
+#' The reader of each view of the read inputs (`openIntegrationInputView`), in the inputs' view order.
+#' @param read `integrationReadInputs()`'s value.
+#' @noRd
+integrationInputViewReaders <- function(read) {
+    readers <- lapply(names(read$views), function(view) {
+        entry <- read$views[[view]]
+        openIntegrationInputView(entry$dir, view, read$inputs[[entry$omic]])
+    })
+    stats::setNames(readers, names(read$views))
+}
+
+#' Read the omics' integration inputs into one `IntegrationViewsData` in memory (KIT-062): `integrationReadInputs()`
+#' with every view's matrix read whole. For small inputs and tests; the import streams the matrices into the store
+#' instead (`importIntegrationInputs`).
+#' @param dirs The omics' folders, `<project>/integration/<omic>/`.
+#' @return `list(object, manifests)`: the object, and the manifests' paths named by omic.
+#' @noRd
+integrationViewsFromInputs <- function(dirs) {
+    read <- integrationReadInputs(dirs)
+    matrices <- lapply(integrationInputViewReaders(read), function(reader) reader$read())
+    object <- methods::new("IntegrationViewsData", views = matrices, features = read$features, design_matrix = read$design,
+        inputs = read$record)
+    list(object = object, manifests = read$manifests)
 }
 
 #' Import the omics' integration inputs into the integration owner (KIT-062): the inputs state committed with the

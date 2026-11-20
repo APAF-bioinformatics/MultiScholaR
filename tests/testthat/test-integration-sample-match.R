@@ -43,7 +43,7 @@ intMatchProject <- function(rename = FALSE, .local_envir = parent.frame()) {
     }
     if (rename) {
         dir <- file.path(paths$integration_dir, "transcriptomics")
-        input <- readIntegrationInput(dir)
+        input <- readIntegrationInputWithMatrices(dir)
         read <- input$manifest
         manifest <- list(omic_type = read$omic_type, workflow = read$workflow, matrix_role = read$matrix_role, scale = read$scale,
             correction = NULL, source_state = list(name = "kit063-renamed"), sample_id_column = read$sample_id_column,

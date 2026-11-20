@@ -58,7 +58,7 @@ test_that("KIT-136: with RUV applied the input is the accepted RUVIII export (IN
     expect_identical(run$saved$integrationFile, "transcriptomics_normalized_data.tsv")
     expect_true(file.exists(run$tsv))
     expect_setequal(list.files(run$integration_dir), c("transcriptomics", basename(run$tsv)))
-    input <- readIntegrationInput(run$dir)
+    input <- readIntegrationInputWithMatrices(run$dir)
     manifest <- input$manifest
     expect_identical(names(input$views), "transcriptomics")
     expect_identical(manifest$matrix_role, "corrected")
@@ -97,7 +97,7 @@ test_that("KIT-136: a new design names its RUV record fields; an export from an 
     integrationTrxQuiet(runTrxReferenceRuvs(owner, NULL, list(), design_parameters = trxRuvDesignParameters("groups_all_features", 2L, "user")))
     expect_error(integrationTrxSave(fixture, root), class = "integration_input_invalid", regexp = "earlier RUV step")
     export <- integrationTrxQuiet(runTrxReferenceRuviiiExport(owner, "group"))
-    input <- readIntegrationInput(integrationTrxSave(fixture, root)$dir)
+    input <- readIntegrationInputWithMatrices(integrationTrxSave(fixture, root)$dir)
     correction <- input$manifest$correction
     expect_identical(input$manifest$matrix_role, "corrected")
     expect_true(all(RUV_DESIGN_RECORD_FIELDS %in% names(correction)))
@@ -121,7 +121,7 @@ test_that("KIT-136: with RUV off (design none) the TMM logCPM is written, normal
     tsv <- utils::read.delim(run$tsv, check.names = FALSE)
     expect_identical(tsv$Run, colnames(log_cpm))
     expect_equal(unname(as.matrix(tsv[-1L])), unname(t(log_cpm)), tolerance = 1e-6)
-    input <- readIntegrationInput(run$dir)
+    input <- readIntegrationInputWithMatrices(run$dir)
     manifest <- input$manifest
     expect_identical(manifest$matrix_role, "normalised")
     expect_null(manifest$correction)
@@ -140,7 +140,7 @@ test_that("KIT-136: with RUV off (design none) the TMM logCPM is written, normal
     done <- integrationTrxQuiet(omicsWorkerAction(fixture, omicsWorkerController(fixture), "trx_integration_export",
         list(path = path, state_name = owner$current_state)))
     expect_identical(done$acceptance, "complete")
-    worker <- readIntegrationInput(file.path(integration, "transcriptomics"))
+    worker <- readIntegrationInputWithMatrices(file.path(integration, "transcriptomics"))
     drop <- c("written_at", "software")
     expect_identical(worker$manifest[setdiff(names(worker$manifest), drop)], manifest[setdiff(names(manifest), drop)])
     expect_identical(worker$views, input$views)

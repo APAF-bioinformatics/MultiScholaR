@@ -36,10 +36,10 @@ intGuiCorpusCounts <- function() {
     samples <- list()
     for (omic in intGuiOmics) {
         manifest <- jsonlite::read_json(file.path(intGuiCorpus(), omic, "integration_input.json"))
-        design <- utils::read.delim(file.path(intGuiCorpus(), omic, "samples.tsv"), stringsAsFactors = FALSE)
+        design <- as.data.frame(arrow::read_parquet(file.path(intGuiCorpus(), omic, "samples.parquet")))
         samples[[omic]] <- design[[manifest$biological_sample_column]]
         for (view in manifest$views) {
-            matrix <- utils::read.delim(file.path(intGuiCorpus(), omic, view$matrix_file), check.names = FALSE)
+            matrix <- as.data.frame(arrow::read_parquet(file.path(intGuiCorpus(), omic, view$matrix_file)))
             views[[view$name]] <- data.frame(view = view$name, omic = omic, features = nrow(matrix),
                 runs = ncol(matrix) - 1L, stringsAsFactors = FALSE)
         }
@@ -234,7 +234,7 @@ test_that("KIT-138: an omic not saved, an input that fails the contract and one 
     project <- intGuiProject(c("lipidomics", "metabolomics", "transcriptomics"))
     texts <- integrationGuiTexts()
     dir.create(file.path(project$paths$integration_dir, "proteomics"))
-    matrix <- file.path(project$paths$integration_dir, "lipidomics", "matrix_lipidomics_LCMS_Pos.tsv")
+    matrix <- file.path(project$paths$integration_dir, "lipidomics", "matrix_lipidomics_LCMS_Pos.parquet")
     cat("\n", file = matrix, append = TRUE)
     metabolomics <- file.path(project$paths$integration_dir, "metabolomics", "integration_input.json")
     scan <- integrationScanProject(project$paths$integration_dir,
@@ -282,7 +282,7 @@ test_that("KIT-138: the correction for unwanted variation each input names is st
             "; LCMS_Pos: 2 factor(s); LCMS_Neg: not applied"))
     # Read back from a saved input: the scan shows what the file says.
     project <- intGuiProject(c("lipidomics"))
-    input <- readIntegrationInput(file.path(intGuiCorpus(), "proteomics"))
+    input <- readIntegrationInputWithMatrices(file.path(intGuiCorpus(), "proteomics"))
     manifest <- input$manifest[c("omic_type", "workflow", "scale", "source_state", "sample_id_column", "group_column",
         "technical_replicate_column", "biological_sample_column")]
     manifest$matrix_role <- "corrected"
@@ -751,7 +751,7 @@ test_that("KIT-140: the Import tab states a refused input in plain words, the re
     testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
     project <- intGuiProject(c("lipidomics", "transcriptomics"))
     texts <- integrationGuiTexts()
-    cat("\n", file = file.path(project$paths$integration_dir, "lipidomics", "matrix_lipidomics_LCMS_Pos.tsv"), append = TRUE)
+    cat("\n", file = file.path(project$paths$integration_dir, "lipidomics", "matrix_lipidomics_LCMS_Pos.parquet"), append = TRUE)
     bus <- intGuiBus()
     shiny::testServer(mod_integration_import_server, args = list(workflow_data = bus, paths = project$paths), {
         session$flushReact()
