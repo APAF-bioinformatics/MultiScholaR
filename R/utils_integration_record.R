@@ -181,7 +181,7 @@ integrationRecordTexts <- function() {
         # %s: the adjustment's name.
         methods_association = paste("Each factor was related to the experimental groups after training: a one-way analysis",
             "of variance of the factor's values on the group, with the share of the factor's variance that lies between",
-            "the groups (R-squared) as the effect size, and p-values adjusted across the factors tested (%s)."),
+            "the groups (R-squared) as the effect size, and p-values adjusted across all the factors of the model (%s)."),
         # %s: the data sets.
         methods_claim_limit = paste("In %s, unwanted variation had been removed with the groups as replicate sets, which",
             "keeps the differences between groups by construction; p-values for the association of the factors with the",

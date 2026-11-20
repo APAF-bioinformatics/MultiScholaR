@@ -161,17 +161,19 @@ integrationGroupCorrectedViews <- function(object, views) {
 #' The relation of each factor to the design's groups (KIT-063; ledger row "integration: factors against the design"):
 #' per factor, over the biological samples with a group, a one-way analysis of variance of the factor's values on the
 #' group; the share of the factor's variance between the groups (R^2 = between-group over total sum of squares, in
-#' percent) is the effect size, the F test's p-value is reported raw and adjusted across the factors tested. Without a
+#' percent) is the effect size, the F test's p-value is reported raw and adjusted across every factor of the model
+#' (KIT-151, INT-20: the family is the model's factors, whichever are shown; `adjusted_over` says how many). Without a
 #' test (`tested = FALSE`, D10) the p-values are NA; with fewer than two groups or no residual degree of freedom
 #' nothing is computed.
 #' @param values `data.frame(biological_sample, group, <factor columns>)`.
-#' @param factors The factors to relate.
+#' @param factors Every factor of the model: all are tested and the p-values adjusted over them.
 #' @param tested Whether p-values are given (FALSE under D10's claim limit).
 #' @param adjust The `p.adjust` method.
+#' @param shown The factors whose rows are returned (default every factor), in the order of `factors`.
 #' @return `data.frame(factor, samples, groups, r2_percent, f_statistic, df_group, df_residual, p_value, p_adjusted,
-#'   status)`; `status` is `tested`, `not_tested` (D10) or `cannot_test`.
+#'   adjusted_over, status)`; `status` is `tested`, `not_tested` (D10) or `cannot_test`.
 #' @noRd
-integrationFactorAssociation <- function(values, factors, tested = TRUE, adjust = "BH") {
+integrationFactorAssociation <- function(values, factors, tested = TRUE, adjust = "BH", shown = factors) {
     rows <- lapply(factors, function(name) {
         y <- values[[name]]
         group <- as.character(values$group)
@@ -198,9 +200,12 @@ integrationFactorAssociation <- function(values, factors, tested = TRUE, adjust 
     out$p_adjusted <- NA_real_
     done <- out$status == "tested" & !is.na(out$p_value)
     if (any(done)) out$p_adjusted[done] <- stats::p.adjust(out$p_value[done], method = adjust)
+    out$adjusted_over <- sum(done)
+    # KIT-151 (INT-20): adjusted over every factor, then the factors shown.
+    out <- out[out$factor %in% shown, , drop = FALSE]
     rownames(out) <- NULL
     out[c("factor", "samples", "groups", "r2_percent", "f_statistic", "df_group", "df_residual", "p_value", "p_adjusted",
-        "status")]
+        "adjusted_over", "status")]
 }
 
 #' MOFA2's own warnings, kept with the model (`integrationTrainMofa`'s `messages`, prefix "WARNING:"), in plain words
@@ -263,7 +268,9 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
         group = as.character(samples[[p$design_covariate]][match(value$factors$biological_sample, samples$biological_sample)]),
         value$factors[factors], check.names = FALSE, stringsAsFactors = FALSE)
     corrected <- integrationGroupCorrectedViews(object, views)
-    association <- integrationFactorAssociation(factor_values, shown, tested = !any(corrected), adjust = p$p_adjust_method)
+    # KIT-151 (INT-20): every factor tested and adjusted together; the factors shown kept.
+    association <- integrationFactorAssociation(factor_values, factors, tested = !any(corrected), adjust = p$p_adjust_method,
+        shown = shown)
     # (3) Weights with display names, scaled and ranked per factor and data set. KIT-152: each data set's feature order
     # (the weights' rows, which are the aligned values' rows) is kept to find the top features' rows.
     feature_rows <- list()

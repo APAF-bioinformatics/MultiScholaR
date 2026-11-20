@@ -348,3 +348,27 @@ test_that("KIT-063: a figure the device did not write stops the save by name, in
         expect_false(file.exists(file.path(paths$mofa_tables_dir, "variance_explained.tsv")))
     })
 })
+
+# KIT-151 (INT-20, audit SCI-10): the factor-against-group p-values are adjusted over every factor of the model, so the
+# factors chosen for display do not change them; the family's size is kept with each row.
+test_that("KIT-151 (INT-20): the adjusted p-values do not change with the factors shown", {
+    values <- data.frame(biological_sample = sprintf("S%02d", 1:12), group = rep(c("A", "B"), each = 6L),
+        Factor1 = c(1, 2, 1.5, 2.5, 1.2, 1.8, 3, 3.5, 2.8, 3.9, 3.1, 2.9), Factor2 = c(5, 4, 6, 5, 4, 6, 5, 6, 4, 5, 6, 4),
+        Factor3 = c(0.1, 0.3, 0.2, 0.4, 0.3, 0.2, 0.5, 0.4, 0.6, 0.5, 0.4, 0.7), stringsAsFactors = FALSE)
+    factors <- paste0("Factor", 1:3)
+    all <- integrationFactorAssociation(values, factors)
+    one <- integrationFactorAssociation(values, factors, shown = "Factor1")
+    expect_identical(one$factor, "Factor1")
+    expect_identical(one$p_adjusted, all$p_adjusted[[1L]])
+    expect_equal(all$p_adjusted, stats::p.adjust(all$p_value, "BH"))
+    expect_identical(one$adjusted_over, 3L)
+    expect_true(one$p_adjusted > one$p_value)
+    # Through the results: Factor1 alone shown, its adjusted p-value as with every factor shown.
+    paths <- intResProject()
+    fixture <- intResModel(paths)
+    every <- integrationResults(fixture$run$value, fixture$object, manager = fixture$manager)
+    single <- integrationResults(fixture$run$value, fixture$object, list(factors_shown = "Factor1"), manager = fixture$manager)
+    expect_identical(single$association$factor, "Factor1")
+    expect_identical(single$association$p_adjusted, every$association$p_adjusted[every$association$factor == "Factor1"])
+    expect_identical(single$association$adjusted_over, 5L)
+})

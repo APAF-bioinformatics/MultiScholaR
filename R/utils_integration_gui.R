@@ -355,7 +355,7 @@ integrationGuiTexts <- function() {
         # %s: the adjustment's name.
         association_intro = paste("For each factor: the share of its variation that lies between the groups (one-way",
             "analysis of variance of the factor's values on the group), the test's p-value, and the p-value adjusted for",
-            "the number of factors tested (%s)."),
+            "all the factors of the model, whichever are shown (%s)."),
         padjust_BH = "Benjamini-Hochberg",
         padjust_holm = "Holm",
         padjust_bonferroni = "Bonferroni",
