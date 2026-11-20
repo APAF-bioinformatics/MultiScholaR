@@ -169,9 +169,41 @@ integrationViewsFromInputs <- function(dirs) {
     list(object = object, manifests = read$manifests)
 }
 
+#' Save one data set's matrix in the integration store, streamed row group by row group from its Parquet file (KIT-147):
+#' the saved table of the same file (by its sha256) is reused; otherwise each row group is appended in slices of at
+#' most 32 MiB of values (the table writer's batch bound), so no more than one row group is held at a time.
+#' @param context The integration owner's context.
+#' @param reader `openIntegrationInputView()`'s value.
+#' @return The saved table's reference.
+#' @noRd
+integrationImportViewTable <- function(context, reader) {
+    identity <- newSavedWorkflowScientificIdentity(reader$sha256, "integration-input-view",
+        digest::digest(list(view = reader$view, columns = reader$columns), algo = "sha256"), INTEGRATION_INPUT_SCHEMA,
+        context$software)
+    hit <- resolveSavedWorkflowEntity(context$store, "result_table", identity, hydrate = FALSE)
+    if (identical(hit$status, "hit")) return(hit$reference)
+    slice <- max(1L, as.integer(floor(33554432 / (8 * length(reader$columns)))))
+    saveWorkflowPartitionedTable(context, reader$prototype, identity, function(append) {
+        for (index in seq_len(reader$row_groups)) {
+            page <- reader$read_row_group(index)
+            rows <- nrow(page)
+            if (rows <= slice) {
+                append(page)
+            } else {
+                for (start in seq.int(1L, rows, by = slice)) append(page[seq.int(start, min(rows, start + slice - 1L)), , drop = FALSE])
+            }
+            page <- NULL
+        }
+        invisible(NULL)
+    })
+}
+
 #' Import the omics' integration inputs into the integration owner (KIT-062): the inputs state committed with the
 #' provenance `integration_import` (a replay precondition), and each manifest recorded as the input role
-#' `integration_input_<omic>` with its sha256.
+#' `integration_input_<omic>` with its sha256. KIT-147: each data set is streamed from its Parquet file into the store
+#' as a table (`integrationImportViewTable`); the state is checkpointed from zero-row prototypes of the data sets, the
+#' feature tables and the design (`omicsRunPartitioned`'s pattern), its `views` components replaced by the saved tables,
+#' and committed. No matrix is held whole.
 #' @param manager The integration owner (`newIntegrationStateOwner`).
 #' @param dirs The omics' folders, `<project>/integration/<omic>/`.
 #' @param description The state's description.
@@ -181,14 +213,20 @@ importIntegrationInputs <- function(manager, dirs, description = "Integration in
     if (!usesWorkflowReferenceStates(manager)) {
         cli::cli_abort("the integration import needs the integration owner", class = "saved_entity_scope")
     }
-    read <- integrationViewsFromInputs(dirs)
-    object <- read$object
-    config <- list(outcomes = list(omics = names(object@inputs), views = names(object@views),
-        runs = nrow(object@design_matrix),
-        biological_samples = length(unique(object@design_matrix$biological_sample))))
+    read <- integrationReadInputs(dirs)
+    config <- list(outcomes = list(omics = names(read$record), views = names(read$views), runs = nrow(read$design),
+        biological_samples = length(unique(read$design$biological_sample))))
     withWorkflowStateScope(manager, function() {
+        context <- manager$.context
+        readers <- integrationInputViewReaders(read)
+        tables <- lapply(readers, function(reader) integrationImportViewTable(context, reader))
+        object <- methods::new("IntegrationViewsData", views = lapply(readers, function(reader) reader$prototype),
+            features = read$features, design_matrix = read$design, inputs = read$record)
         setWorkflowStepProvenance(manager, INTEGRATION_IMPORT_OPERATION)
-        manager$saveState(INTEGRATION_INPUTS_STATE, object, config, description)
+        checkpoint <- checkpointWorkflowExecutionResult(manager, object)
+        checkpoint$components$views <- tables
+        checkpoint$dimensions$rows <- sum(vapply(tables, function(table) as.integer(table$metadata$shape[[1L]]), integer(1)))
+        commitWorkflowReferenceState(manager, INTEGRATION_INPUTS_STATE, checkpoint, config, description)
         recordWorkflowInputs(manager, paths = stats::setNames(read$manifests,
             paste0(INTEGRATION_INPUT_ROLE_PREFIX, names(read$manifests))))
     })
