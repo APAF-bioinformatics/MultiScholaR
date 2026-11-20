@@ -1,7 +1,8 @@
 {
-  "label": "k149-final-2853cae7",
-  "package_commit": "2853cae718aa32be8e65212e6cc4749016c1a78e",
+  "label": "k149-correction-324e14b4",
+  "package_commit": "324e14b44626d25bc247fd88c2cee9084f114c4c",
   "tests": [
+    "test-integration-partitioned-mofa.R",
     "test-integration-mofa-model.R",
     "test-integration-model-tab-mofa.R",
     "test-integration-results-mofa.R",
