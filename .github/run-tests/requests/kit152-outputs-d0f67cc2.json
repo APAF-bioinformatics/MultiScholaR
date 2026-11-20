@@ -1,0 +1,71 @@
+{
+  "requested_by": "KIT-152: integration extra outputs (pair plot, top-feature scatter and heatmap, UMAP/t-SNE); base 58ddd20b versus head; failing-first and gate-off scripts",
+  "label": "KIT-152 extra outputs, head d0f67cc2 against base 58ddd20b",
+  "package_commit": "d0f67cc222d5f39a1fa66e11bef3ddacb7bf87ef",
+  "base_commit": "58ddd20b8044dcb21c8f239624daf05e19376d88",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-outputs.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-results.R",
+    "test-integration-record.R",
+    "test-integration-gui.R",
+    "test-integration-model.R",
+    "test-integration-sample-match.R",
+    "test-integration-corpus.R",
+    "test-workflow-integration-input.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-mofa-model.R",
+    "test-integration-record-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-e2e-test-mode-integration.R",
+    "test-optional-packages.R",
+    "test-workflow-analysis-record.R",
+    "test-gui-entry-proteomics.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-gui-entry-transcriptomics.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "58ddd20b8044dcb21c8f239624daf05e19376d88",
+        "kit152-failing-first",
+        "test-integration-outputs.R",
+        "test-integration-results.R"
+      ],
+      "out": "kit152-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "58ddd20b8044dcb21c8f239624daf05e19376d88",
+        "kit152-gate-off"
+      ],
+      "out": "kit152-gate-off",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
