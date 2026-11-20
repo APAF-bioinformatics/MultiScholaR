@@ -1,14 +1,11 @@
 {
-  "label": "k152-merge-8f99a203",
-  "package_commit": "8f99a2030197afb31b7addf561d33bc28bcb3c73",
+  "label": "k141-enrichment-97c51163",
+  "package_commit": "97c51163a85d9e213560940ba79b817d5b2f39b4",
   "tests": [
-    "test-integration-outputs-mofa.R",
-    "test-integration-outputs.R",
-    "test-integration-mofa-model.R",
-    "test-integration-model-tab-mofa.R",
-    "test-integration-results-mofa.R",
+    "test-integration-enrichment-mofa.R",
     "test-integration-record-mofa.R",
-    "test-integration-partitioned-mofa.R"
+    "test-integration-outputs-mofa.R",
+    "test-integration-results-mofa.R"
   ],
   "record": false,
   "runs": 1
