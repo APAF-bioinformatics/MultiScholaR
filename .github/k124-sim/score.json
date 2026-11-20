@@ -1,6 +1,11 @@
 {
-  "label": "INERT placeholder: no run to score",
-  "runs": [],
+  "label": "ruv06-lc-score",
+  "runs": [
+    {
+      "run": 44791180548,
+      "label": "ruv06-lc"
+    }
+  ],
   "aggregate": {
     "commit": "2ba5cf87fd2bb370fe8d9bb8a5afdd2c2c8336ec",
     "path": "docs/qa/workflow-execution/kit/kit-124/aggregate.R",
