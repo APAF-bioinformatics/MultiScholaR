@@ -278,7 +278,7 @@ searchStringDbSpecies <- function(species_name, api_key = NULL, show_top_n = 10)
 #'   an element named `paste0(omic_type, "_", experiment_label)` with a `results_dir` component.
 #' @param omic_type Character string: The omics type (e.g., "proteomics", "transcriptomics").
 #' @param experiment_label Character string: The experiment label for directory construction.
-#' @param api_key Character string: Your personal STRING API key. Default is "bjcR4Px5rByQ".
+#' @param api_key Character string: Your personal STRING API key. Default is Sys.getenv("STRING_API_KEY").
 #' @param species Character or numeric: NCBI/STRING species identifier. Default is "9606" (Homo sapiens).
 #'   This parameter can be set to the taxon_id variable defined in your environment.
 #' @param ge_fdr Numeric: FDR threshold for gene expression enrichment. Default is 0.05.
@@ -341,7 +341,7 @@ runStringDbEnrichmentAllContrasts <- function(da_analysis_results_list = NULL,
                                              project_dirs,
                                              omic_type,
                                              experiment_label,
-                                             api_key = "bjcR4Px5rByQ",
+                                             api_key = Sys.getenv("STRING_API_KEY"),
                                              species = "9606",
                                              ge_fdr = 0.05,
                                              ge_enrichment_rank_direction = -1,

@@ -10,7 +10,7 @@ runStringDbEnrichmentAllContrasts(
   project_dirs,
   omic_type,
   experiment_label,
-  api_key = "bjcR4Px5rByQ",
+  api_key = Sys.getenv("STRING_API_KEY"),
   species = "9606",
   ge_fdr = 0.05,
   ge_enrichment_rank_direction = -1,
@@ -33,7 +33,7 @@ an element named \code{paste0(omic_type, "_", experiment_label)} with a \code{re
 
 \item{experiment_label}{Character string: The experiment label for directory construction.}
 
-\item{api_key}{Character string: Your personal STRING API key. Default is "bjcR4Px5rByQ".}
+\item{api_key}{Character string: Your personal STRING API key. Default is Sys.getenv("STRING_API_KEY").}
 
 \item{species}{Character or numeric: NCBI/STRING species identifier. Default is "9606" (Homo sapiens).
 This parameter can be set to the taxon_id variable defined in your environment.}
