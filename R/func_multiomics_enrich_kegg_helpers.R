@@ -326,58 +326,11 @@ runKeggEnrichment <- function(ranked_list,
         message(sprintf("   runKeggEnrichment VERIFICATION: term2gene has %d rows, term2name has %d rows", 
                        nrow(term2gene), nrow(term2name)))
         
-        gsea_result <- tryCatch({
-          # FIXED: Use fgsea and remove nPerm parameter
-          clusterProfiler::GSEA(
-            geneList = kegg_ranked_list,
-            TERM2GENE = term2gene,
-            TERM2NAME = term2name,
-            minGSSize = 3,
-            maxGSSize = 500,
-            pvalueCutoff = 0.05,  # MODIFIED: Increased from 0.1 to 0.05 for more lenient filtering
-            pAdjustMethod = "fdr",
-            verbose = TRUE,
-            seed = TRUE,      # Set seed for reproducibility
-            by = "fgsea",     # FIXED: Use "fgsea" (valid option) instead of "fgseaMultilevel"
-            BPPARAM = BiocParallel::SerialParam()  # Disable parallel processing
-          )
-        }, error = function(e) {
-          message(paste("GSEA error:", e$message))
-          
-          # Try the enricher method instead
-          message("Trying enricher instead...")
-          
-          # Select the top ranked genes (positive values)
-          positive_genes <- names(kegg_ranked_list)[kegg_ranked_list > 0]
-          message(sprintf("   runKeggEnrichment: Found %d positively ranked genes", length(positive_genes)))
-          
-          if (length(positive_genes) > 0) {
-            tryCatch({
-              enricher_result <- clusterProfiler::enricher(
-                gene = positive_genes,
-                universe = names(kegg_ranked_list),
-                TERM2GENE = term2gene,
-                TERM2NAME = term2name,
-                pvalueCutoff = 0.05,  # Using higher threshold (0.1) for more lenient filtering
-                pAdjustMethod = "fdr",
-                minGSSize = 3,
-                maxGSSize = 500
-              )
-              
-              if (!is.null(enricher_result) && nrow(enricher_result@result) > 0) {
-                message(sprintf("   runKeggEnrichment: Enricher analysis successful with %d results", nrow(enricher_result@result)))
-                return(enricher_result)
-              } else {
-                message("   runKeggEnrichment: Enricher analysis returned no significant results")
-              }
-            }, error = function(e2) {
-              message(paste("Enricher error:", e2$message))
-              return(NULL)
-            })
-          }
-          
-          return(NULL)
-        })
+        # KIT-141: the test is the integration kernel's (`integrationEnrichmentGsea`, with this function's seed and
+        # tie-breaking noise); this function keeps its own fallback to an over-representation test on an error.
+        gsea_result <- integrationLegacyGseaStep(
+          stats::setNames(original_kegg_ranked_list, paste0("cpd:", names(original_kegg_ranked_list))),
+          kegg_ranked_list, term2gene, term2name, "runKeggEnrichment")
         
         # Format results for visualization
         if (!is.null(gsea_result)) {
@@ -404,12 +357,12 @@ runKeggEnrichment <- function(ranked_list,
                 enrichmentScore = -log10(enrichmentScore),  # Convert to -log10 scale
                 comparison = assay_name
               )
-          } else if (class(gsea_result)[1] == "gseaResult" && nrow(gsea_result@result) > 0) {
-            # Result from GSEA
+          } else if (is.data.frame(gsea_result) && nrow(gsea_result) > 0) {
+            # Result from GSEA (the kernel's table)
             message("   runKeggEnrichment: Processing results from GSEA")
-            message(sprintf("   runKeggEnrichment: Found %d enriched terms", nrow(gsea_result@result)))
+            message(sprintf("   runKeggEnrichment: Found %d enriched terms", nrow(gsea_result)))
             
-            kegg_results <- gsea_result@result |>
+            kegg_results <- gsea_result |>
               as_tibble() |>
               dplyr::select(
                 termDescription = Description,
@@ -595,58 +548,10 @@ runKeggEnrichment <- function(ranked_list,
     dplyr::filter(!is.na(name))  # Make sure we have names
   
   # Try running GSEA with tryCatch to handle errors
-  gsea_result <- tryCatch({
-    # FIXED: Use fgsea and remove nPerm parameter
-    clusterProfiler::GSEA(
-      geneList = kegg_ranked_list,
-      TERM2GENE = term2gene,
-      TERM2NAME = term2name,
-      minGSSize = 3,
-      maxGSSize = 500,
-      pvalueCutoff = 0.05,  # MODIFIED: Increased from 0.1 to 0.05 for more lenient filtering
-      pAdjustMethod = "fdr",
-      verbose = TRUE,
-      seed = TRUE,      # Set seed for reproducibility
-      by = "fgsea",     # FIXED: Use "fgsea" (valid option) instead of "fgseaMultilevel"
-      BPPARAM = BiocParallel::SerialParam()  # Disable parallel processing
-    )
-  }, error = function(e) {
-    message(paste("GSEA error:", e$message))
-    
-    # Try the enricher method instead
-    message("Trying enricher instead...")
-    
-    # Select the top ranked genes (positive values)
-    positive_genes <- names(kegg_ranked_list)[kegg_ranked_list > 0]
-    message(sprintf("   runKeggEnrichment: Found %d positively ranked genes", length(positive_genes)))
-    
-    if (length(positive_genes) > 0) {
-      tryCatch({
-        enricher_result <- clusterProfiler::enricher(
-          gene = positive_genes,
-          universe = names(kegg_ranked_list),
-          TERM2GENE = term2gene,
-          TERM2NAME = term2name,
-          pvalueCutoff = 0.05,  # Using higher threshold (0.1) for more lenient filtering
-          pAdjustMethod = "fdr",
-          minGSSize = 3,
-          maxGSSize = 500
-        )
-        
-        if (!is.null(enricher_result) && nrow(enricher_result@result) > 0) {
-          message(sprintf("   runKeggEnrichment: Enricher analysis successful with %d results", nrow(enricher_result@result)))
-          return(enricher_result)
-        } else {
-          message("   runKeggEnrichment: Enricher analysis returned no significant results")
-        }
-      }, error = function(e2) {
-        message(paste("Enricher error:", e2$message))
-        return(NULL)
-      })
-    }
-    
-    return(NULL)
-  })
+  # KIT-141: the test is the integration kernel's (`integrationEnrichmentGsea`, with this function's seed and
+  # tie-breaking noise); this function keeps its own fallback to an over-representation test on an error.
+  gsea_result <- integrationLegacyGseaStep(original_kegg_ranked_list, kegg_ranked_list, term2gene, term2name,
+    "runKeggEnrichment")
   
   # Format results for visualization
   if (!is.null(gsea_result)) {
@@ -673,12 +578,12 @@ runKeggEnrichment <- function(ranked_list,
           enrichmentScore = -log10(enrichmentScore),  # Convert to -log10 scale
           comparison = assay_name
         )
-    } else if (class(gsea_result)[1] == "gseaResult" && nrow(gsea_result@result) > 0) {
-      # Result from GSEA
+    } else if (is.data.frame(gsea_result) && nrow(gsea_result) > 0) {
+      # Result from GSEA (the kernel's table)
       message("   runKeggEnrichment: Processing results from GSEA")
-      message(sprintf("   runKeggEnrichment: Found %d enriched terms", nrow(gsea_result@result)))
+      message(sprintf("   runKeggEnrichment: Found %d enriched terms", nrow(gsea_result)))
       
-      kegg_results <- gsea_result@result |>
+      kegg_results <- gsea_result |>
         as_tibble() |>
         dplyr::select(
           termDescription = Description,
