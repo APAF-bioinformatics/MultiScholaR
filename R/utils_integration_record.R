@@ -183,6 +183,11 @@ integrationRecordTexts <- function() {
         methods_association = paste("Each factor was related to the experimental groups after training: a one-way analysis",
             "of variance of the factor's values on the group, with the share of the factor's variance that lies between",
             "the groups (R-squared) as the effect size, and p-values adjusted across all the factors of the model (%s)."),
+        # KIT-151 (plan item E). %s: the adjustment's name.
+        methods_association_kruskal_wallis = paste("Each factor was related to the experimental groups after training: a",
+            "Kruskal-Wallis rank test of the factor's values across the groups, with epsilon-squared (H divided by the",
+            "number of samples minus one) as the effect size, and p-values adjusted across all the factors of the model",
+            "(%s)."),
         # %s: the data sets.
         methods_claim_limit = paste("In %s, unwanted variation had been removed with the groups as replicate sets, which",
             "keeps the differences between groups by construction; p-values for the association of the factors with the",
@@ -763,7 +768,9 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     results <- block$results
     if (!is.null(results)) {
         adjust <- integrationRecordParameter(results$parameters, "p_adjust_method")
-        sentences <- c(sentences, sprintf(texts[["methods_association"]],
+        test <- integrationRecordParameter(results$parameters, "association_test")
+        sentences <- c(sentences, sprintf(texts[[if (identical(test, "kruskal_wallis")) "methods_association_kruskal_wallis" else
+            "methods_association"]],
             integrationTextOr(integrationGuiTexts(), paste0("padjust_", adjust), as.character(adjust))))
         sentences <- c(sentences, integrationMethodsOutputs(results$outputs, block$claim_limit, texts))
     }

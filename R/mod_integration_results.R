@@ -204,7 +204,9 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
         output$association_intro <- shiny::renderUI({
             value <- results()
             shiny::req(usable(value))
-            shiny::p(sprintf(texts[["association_intro"]], texts[[paste0("padjust_", value$parameters$p_adjust_method)]]))
+            intro <- if (identical(value$parameters$association_test, "kruskal_wallis")) "association_intro_kruskal_wallis" else
+                "association_intro"
+            shiny::p(sprintf(texts[[intro]], texts[[paste0("padjust_", value$parameters$p_adjust_method)]]))
         })
         output$claim <- shiny::renderUI({
             value <- results()

@@ -386,6 +386,14 @@ integrationGuiTexts <- function() {
         col_df = "Degrees of freedom",
         col_p = "p-value",
         col_p_adjusted = "Adjusted p-value",
+        # KIT-151 (plan item E): the Kruskal-Wallis columns.
+        col_epsilon2 = "Effect size, epsilon-squared (%)",
+        col_h = "Kruskal-Wallis H",
+        # %s: the adjustment's name.
+        association_intro_kruskal_wallis = paste("For each factor: the effect size epsilon-squared (the Kruskal-Wallis",
+            "statistic H divided by the number of samples minus one, as a percentage: how much of the ordering of the",
+            "factor's values lies between the groups), the Kruskal-Wallis test's p-value, and the p-value adjusted for all",
+            "the factors of the model, whichever are shown (%s)."),
         cell_not_tested = "not given (see How to read this)",
         cell_cannot_test = "cannot be computed (fewer than two groups or too few samples)",
         factor_values_heading = "Factor values per biological sample",
@@ -439,6 +447,11 @@ integrationGuiTexts <- function() {
         choice_design_covariate_group = "the group of each biological sample",
         param_association_test = "Test of each factor against the groups",
         choice_association_test_anova = "one-way analysis of variance",
+        # KIT-151 (plan item E).
+        choice_association_test_kruskal_wallis = paste("Kruskal-Wallis rank test (does not assume the factor's values are",
+            "normally distributed)"),
+        help_association_test = paste("Choose the test before looking at the results. Analysis of variance is the default;",
+            "the Kruskal-Wallis test compares the ranks of the factor's values instead."),
         param_p_adjust_method = "Adjustment of the p-values",
         choice_p_adjust_method_BH = "Benjamini-Hochberg",
         choice_p_adjust_method_holm = "Holm",
