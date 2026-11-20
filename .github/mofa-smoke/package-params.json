@@ -1,6 +1,6 @@
 {
-  "label": "k152-outputs-d0f67cc2",
-  "package_commit": "d0f67cc222d5f39a1fa66e11bef3ddacb7bf87ef",
+  "label": "k152-correction-c0ebda91",
+  "package_commit": "c0ebda9198895538058295e3b4473f8f1a2f8915",
   "tests": [
     "test-integration-outputs-mofa.R",
     "test-integration-outputs.R",
