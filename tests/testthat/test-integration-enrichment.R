@@ -29,11 +29,12 @@ newStringMock <- function(states = c("running", "success"), download_url = paste
         httr2::response(status_code = status, headers = list(`Content-Type` = "application/json"),
             body = charToRaw(as.character(jsonlite::toJSON(x, auto_unbox = TRUE))))
     }
-    handler <- function(request) {
-        log$requests[[length(log$requests) + 1L]] <- request
-        assign("last_request", request, envir = get("the", envir = asNamespace("httr2")))
-        endpoint <- stringEndpoint(request)
-        if (is.function(overrides[[endpoint]])) return(overrides[[endpoint]](request))
+    # httr2 requires the mock's argument to be named `req`.
+    handler <- function(req) {
+        log$requests[[length(log$requests) + 1L]] <- req
+        assign("last_request", req, envir = get("the", envir = asNamespace("httr2")))
+        endpoint <- stringEndpoint(req)
+        if (is.function(overrides[[endpoint]])) return(overrides[[endpoint]](req))
         switch(endpoint,
             version = json(list(list(string_version = "12.0", string_stable_address = STRING_HOST))),
             valuesranks_enrichment_submit = json(list(list(job_id = "job42", status = "submitted"))),
