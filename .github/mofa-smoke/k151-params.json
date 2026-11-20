@@ -1,0 +1,7 @@
+{
+  "run": "lifecycle",
+  "scenarios": ["main"],
+  "seeds": 1,
+  "arms": "scale_views,probe_fail",
+  "note": "lifecycle: one seed, two arms (probe_fail fails on purpose); proves the job runs through and a failed arm is reported as failed"
+}
