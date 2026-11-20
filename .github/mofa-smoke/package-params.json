@@ -1,7 +1,9 @@
 {
-  "label": "k148-final-58ddd20b",
-  "package_commit": "58ddd20b8044dcb21c8f239624daf05e19376d88",
+  "label": "k152-outputs-d0f67cc2",
+  "package_commit": "d0f67cc222d5f39a1fa66e11bef3ddacb7bf87ef",
   "tests": [
+    "test-integration-outputs-mofa.R",
+    "test-integration-outputs.R",
     "test-integration-mofa-model.R",
     "test-integration-model-tab-mofa.R",
     "test-integration-results-mofa.R",
