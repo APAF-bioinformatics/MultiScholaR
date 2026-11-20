@@ -1,0 +1,44 @@
+{
+  "requested_by": "KIT-141 part 1: second correction run granted by the coordinating session for a test-double fault; base 2bc0c5f5 versus head 934b5229; failing-first and legacy identity",
+  "label": "KIT-141 part 1 second correction, head 934b5229 against base 2bc0c5f5",
+  "package_commit": "934b52297b5231d47c32da559a40f5d9dd938656",
+  "base_commit": "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+        "kit141-failing-first",
+        "test-integration-enrichment.R"
+      ],
+      "out": "kit141-failing-first",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-141/legacy-identity.R",
+      "args": [
+        "2bc0c5f5adb5ecc56d2a4a07411c54d429a2fdb4",
+        "kit141-legacy-identity"
+      ],
+      "out": "kit141-legacy-identity",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
