@@ -1,0 +1,63 @@
+{
+  "requested_by": "KIT-151 final head (items 1-10, INT-24 defaults, correction pass, reference re-recorded): base e8a2ac67 versus head; failing-first and gate-off",
+  "label": "KIT-151 final head 3731079c against base e8a2ac67",
+  "package_commit": "3731079c646d13816aef05364e26d1a3a8746356",
+  "base_commit": "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-feature-selection.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-model.R",
+    "test-integration-sample-match.R",
+    "test-integration-gui.R",
+    "test-integration-results.R",
+    "test-integration-record.R",
+    "test-integration-outputs.R",
+    "test-integration-corpus.R",
+    "test-workflow-integration-input.R",
+    "test-e2e-test-mode-integration.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-operations.R",
+    "test-workflow-analysis-record.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+        "kit151-failing-first",
+        "test-integration-feature-selection.R",
+        "test-integration-model.R",
+        "test-integration-results.R",
+        "test-integration-partitioned-alignment.R",
+        "test-integration-record.R",
+        "test-integration-gui.R",
+        "test-integration-outputs.R"
+      ],
+      "out": "kit151-failing-first",
+      "timeout_minutes": 120
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "e8a2ac67e6615e3c030fb116f784cf364658ec53",
+        "kit151-gate-off"
+      ],
+      "out": "kit151-gate-off",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
