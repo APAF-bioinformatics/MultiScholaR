@@ -1,8 +1,8 @@
 {
-  "run": "lifecycle",
-  "seeds": [91, 92],
+  "run": "counted",
+  "seeds": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
   "cells": "all",
   "maxiter": 10000,
-  "probe": 1,
-  "note": "lifecycle run on two seeds outside the counted set (151091, 151092), every cell plus a deliberately failing cell; not counted, results not read beyond instrumentation and timing"
+  "probe": 0,
+  "note": "counted run as declared in docs/qa/workflow-execution/kit/kit-151/selection-b-declaration.md (b0d4e9bf)"
 }
