@@ -1,0 +1,866 @@
+# from job k151-main-1; sha256 00afd17000cdeec0d880c84d1cbfe86b8e35c9669284458be0c1c0fdd14bc479
+##### mofapy2 (installed .py files)
+mofapy2 installed at /home/runner/work/_temp/bundle/python/lib/python3.12/site-packages/mofapy2
+---- mofapy2/build_model/build_model.py:99
+mofapy2/build_model/build_model.py:95:             self.init_model.initSZ(
+mofapy2/build_model/build_model.py:96:                 qmean_T1="pca",
+mofapy2/build_model/build_model.py:97:                 Y=self.data,
+mofapy2/build_model/build_model.py:98:                 impute=True,
+mofapy2/build_model/build_model.py:99:                 weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:100:             )
+mofapy2/build_model/build_model.py:101:         else:
+mofapy2/build_model/build_model.py:102:             # self.init_model.initZ(qmean=0)
+mofapy2/build_model/build_model.py:103:             # self.init_model.initZ(qmean="random")
+mofapy2/build_model/build_model.py:104:             self.init_model.initZ(
+mofapy2/build_model/build_model.py:105:                 qmean="pca",
+mofapy2/build_model/build_model.py:106:                 Y=self.data,
+mofapy2/build_model/build_model.py:107:                 impute=True,
+---- mofapy2/build_model/build_model.py:108
+mofapy2/build_model/build_model.py:104:             self.init_model.initZ(
+mofapy2/build_model/build_model.py:105:                 qmean="pca",
+mofapy2/build_model/build_model.py:106:                 Y=self.data,
+mofapy2/build_model/build_model.py:107:                 impute=True,
+mofapy2/build_model/build_model.py:108:                 weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:109:             )
+mofapy2/build_model/build_model.py:110: 
+mofapy2/build_model/build_model.py:111:     def build_W(self):
+mofapy2/build_model/build_model.py:112:         """Build node W for the weights"""
+mofapy2/build_model/build_model.py:113:         if self.model_opts["spikeslab_weights"]:
+mofapy2/build_model/build_model.py:114:             self.init_model.initSW(qmean_S1=0)
+mofapy2/build_model/build_model.py:115:             # self.init_model.initSW(qmean_S1="random", Y=self.data)
+mofapy2/build_model/build_model.py:116:             # self.init_model.initSW(qmean_S1="pca", Y=self.data)
+---- mofapy2/build_model/build_model.py:240
+mofapy2/build_model/build_model.py:236:         self.init_model.initZ_smooth(
+mofapy2/build_model/build_model.py:237:             qmean="pca",
+mofapy2/build_model/build_model.py:238:             Y=self.data,
+mofapy2/build_model/build_model.py:239:             impute=True,
+mofapy2/build_model/build_model.py:240:             weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:241:         )
+mofapy2/build_model/build_model.py:242: 
+mofapy2/build_model/build_model.py:243:     def build_ZgU(self):
+mofapy2/build_model/build_model.py:244:         """Build node for Z given U for the factors or latent variables conditioned on inducing points"""
+mofapy2/build_model/build_model.py:245: 
+mofapy2/build_model/build_model.py:246:         self.init_model.initZgU(
+mofapy2/build_model/build_model.py:247:             qmean="pca",
+mofapy2/build_model/build_model.py:248:             Y=self.data,
+---- mofapy2/build_model/build_model.py:251
+mofapy2/build_model/build_model.py:247:             qmean="pca",
+mofapy2/build_model/build_model.py:248:             Y=self.data,
+mofapy2/build_model/build_model.py:249:             impute=True,
+mofapy2/build_model/build_model.py:250:             idx_inducing=self.smooth_opts["idx_inducing"],
+mofapy2/build_model/build_model.py:251:             weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:252:         )
+mofapy2/build_model/build_model.py:253: 
+mofapy2/build_model/build_model.py:254:     def build_U(self):
+mofapy2/build_model/build_model.py:255:         """Build node U for the inducing points of latent variable GP"""
+mofapy2/build_model/build_model.py:256: 
+mofapy2/build_model/build_model.py:257:         # initialise U by PCA (no use of GP prior)
+mofapy2/build_model/build_model.py:258:         self.init_model.initU(
+mofapy2/build_model/build_model.py:259:             idx_inducing=self.smooth_opts["idx_inducing"],
+---- mofapy2/build_model/build_model.py:260
+mofapy2/build_model/build_model.py:256: 
+mofapy2/build_model/build_model.py:257:         # initialise U by PCA (no use of GP prior)
+mofapy2/build_model/build_model.py:258:         self.init_model.initU(
+mofapy2/build_model/build_model.py:259:             idx_inducing=self.smooth_opts["idx_inducing"],
+mofapy2/build_model/build_model.py:260:             weight_views=self.train_opts["weight_views"],
+mofapy2/build_model/build_model.py:261:         )
+mofapy2/build_model/build_model.py:262: 
+mofapy2/build_model/build_model.py:263:     def build_Sigma(self):
+mofapy2/build_model/build_model.py:264:         """Build node Sigma for the GP prior on the factors"""
+mofapy2/build_model/build_model.py:265: 
+mofapy2/build_model/build_model.py:266:         # TO-DO: assert on build that G >1 if warping
+mofapy2/build_model/build_model.py:267:         # TO-DO: exclude idx_inducing when using warping
+mofapy2/build_model/build_model.py:268: 
+---- mofapy2/build_model/init_model.py:67
+mofapy2/build_model/init_model.py:63:         qE=None,
+mofapy2/build_model/init_model.py:64:         qE2=None,
+mofapy2/build_model/init_model.py:65:         Y=None,
+mofapy2/build_model/init_model.py:66:         impute=False,
+mofapy2/build_model/init_model.py:67:         weight_views=False,
+mofapy2/build_model/init_model.py:68:     ):
+mofapy2/build_model/init_model.py:69:         """Method to initialise the latent variables
+mofapy2/build_model/init_model.py:70: 
+mofapy2/build_model/init_model.py:71:         PARAMETERS
+mofapy2/build_model/init_model.py:72:         ----------
+mofapy2/build_model/init_model.py:73:         pmean: mean of the prior distribution
+mofapy2/build_model/init_model.py:74:         pvar: (co)variance of the prior distribution
+mofapy2/build_model/init_model.py:75:         qmean: initialisation of the mean of the variational distribution
+---- mofapy2/build_model/init_model.py:85
+mofapy2/build_model/init_model.py:81:         qE2: initial value of the second moment of the variational distribution
+mofapy2/build_model/init_model.py:82:         Y: matrix to run PCA on (when qmean="pca")
+mofapy2/build_model/init_model.py:83:         impute: logical value if to perform imputation before running PCA,
+mofapy2/build_model/init_model.py:84:             this is only applicable when qmean="pca" and missing values (np.NaN) are present in the data
+mofapy2/build_model/init_model.py:85:         weight_views: logical whether to weight the ELBO
+mofapy2/build_model/init_model.py:86:         """
+mofapy2/build_model/init_model.py:87: 
+mofapy2/build_model/init_model.py:88:         ## Initialise prior distribution (P)
+mofapy2/build_model/init_model.py:89: 
+mofapy2/build_model/init_model.py:90:         # mean
+mofapy2/build_model/init_model.py:91:         pmean = np.ones((self.N, self.K)) * pmean
+mofapy2/build_model/init_model.py:92: 
+mofapy2/build_model/init_model.py:93:         ## Initialise variational distribution (Q)
+---- mofapy2/build_model/init_model.py:152
+mofapy2/build_model/init_model.py:148:             qmean=qmean,
+mofapy2/build_model/init_model.py:149:             qvar=qvar,
+mofapy2/build_model/init_model.py:150:             qE=qE,
+mofapy2/build_model/init_model.py:151:             qE2=qE2,
+mofapy2/build_model/init_model.py:152:             weight_views=weight_views,
+mofapy2/build_model/init_model.py:153:         )
+mofapy2/build_model/init_model.py:154: 
+mofapy2/build_model/init_model.py:155:     def initZ_smooth(
+mofapy2/build_model/init_model.py:156:         self,
+mofapy2/build_model/init_model.py:157:         pmean=0.0,
+mofapy2/build_model/init_model.py:158:         pvar=1.0,
+mofapy2/build_model/init_model.py:159:         qmean="random",
+mofapy2/build_model/init_model.py:160:         qvar=1.0,
+---- mofapy2/build_model/init_model.py:165
+mofapy2/build_model/init_model.py:161:         qE=None,
+mofapy2/build_model/init_model.py:162:         qE2=None,
+mofapy2/build_model/init_model.py:163:         Y=None,
+mofapy2/build_model/init_model.py:164:         impute=False,
+mofapy2/build_model/init_model.py:165:         weight_views=False,
+mofapy2/build_model/init_model.py:166:     ):
+mofapy2/build_model/init_model.py:167:         """Method to initialise the latent variables
+mofapy2/build_model/init_model.py:168: 
+mofapy2/build_model/init_model.py:169:         PARAMETERS
+mofapy2/build_model/init_model.py:170:         ----------
+mofapy2/build_model/init_model.py:171:         pmean: mean of the prior distribution
+mofapy2/build_model/init_model.py:172:         pvar: (co)variance of the prior distribution
+mofapy2/build_model/init_model.py:173:         qmean: initialisation of the mean of the variational distribution
+---- mofapy2/build_model/init_model.py:183
+mofapy2/build_model/init_model.py:179:         qE2: initial value of the second moment of the variational distribution
+mofapy2/build_model/init_model.py:180:         Y: matrix to run PCA on (when qmean="pca")
+mofapy2/build_model/init_model.py:181:         impute: logical value if to perform imputation before running PCA,
+mofapy2/build_model/init_model.py:182:             this is only applicable when qmean="pca" and missing values (np.NaN) are present in the data
+mofapy2/build_model/init_model.py:183:         weight_views: logical whether to weight the ELBO
+mofapy2/build_model/init_model.py:184:         """
+mofapy2/build_model/init_model.py:185: 
+mofapy2/build_model/init_model.py:186:         ## Initialise prior distribution (P)
+mofapy2/build_model/init_model.py:187: 
+mofapy2/build_model/init_model.py:188:         # mean
+mofapy2/build_model/init_model.py:189:         pmean = np.ones((self.N, self.K)) * pmean
+mofapy2/build_model/init_model.py:190:         if isinstance(pvar, (int, float)):
+mofapy2/build_model/init_model.py:191:             pvar = np.array([np.eye(self.N) * pvar for k in range(self.K)])
+---- mofapy2/build_model/init_model.py:251
+mofapy2/build_model/init_model.py:247:             pcov=pvar,
+mofapy2/build_model/init_model.py:248:             qmean=qmean,
+mofapy2/build_model/init_model.py:249:             qcov=qvar,
+mofapy2/build_model/init_model.py:250:             qE=qE,
+mofapy2/build_model/init_model.py:251:             weight_views=weight_views,
+mofapy2/build_model/init_model.py:252:         )
+mofapy2/build_model/init_model.py:253:         # self.nodes["Z"] = Z_GP_Node(
+mofapy2/build_model/init_model.py:254:         #     dim=(self.N, self.K),
+mofapy2/build_model/init_model.py:255:         #     pmean=pmean, pcov=pvar,
+mofapy2/build_model/init_model.py:256:         #     qmean=qmean, qvar=qvar,
+mofapy2/build_model/init_model.py:257:         #     qE=qE,
+mofapy2/build_model/init_model.py:258:         #     weight_views = weight_views
+mofapy2/build_model/init_model.py:259:         # )
+---- mofapy2/build_model/init_model.py:258
+mofapy2/build_model/init_model.py:254:         #     dim=(self.N, self.K),
+mofapy2/build_model/init_model.py:255:         #     pmean=pmean, pcov=pvar,
+mofapy2/build_model/init_model.py:256:         #     qmean=qmean, qvar=qvar,
+mofapy2/build_model/init_model.py:257:         #     qE=qE,
+mofapy2/build_model/init_model.py:258:         #     weight_views = weight_views
+mofapy2/build_model/init_model.py:259:         # )
+mofapy2/build_model/init_model.py:260: 
+mofapy2/build_model/init_model.py:261:     def initU(
+mofapy2/build_model/init_model.py:262:         self,
+mofapy2/build_model/init_model.py:263:         pmean=0.0,
+mofapy2/build_model/init_model.py:264:         pvar=1.0,
+mofapy2/build_model/init_model.py:265:         qmean=0,
+mofapy2/build_model/init_model.py:266:         qvar=1.0,
+---- mofapy2/build_model/init_model.py:272
+mofapy2/build_model/init_model.py:268:         qE2=None,
+mofapy2/build_model/init_model.py:269:         Y=None,
+mofapy2/build_model/init_model.py:270:         impute=True,
+mofapy2/build_model/init_model.py:271:         idx_inducing=None,
+mofapy2/build_model/init_model.py:272:         weight_views=False,
+mofapy2/build_model/init_model.py:273:     ):  # prior hanp.diagonal covariance here, ls optimiation in Sigma node
+mofapy2/build_model/init_model.py:274:         """Method to initialise the inducing points
+mofapy2/build_model/init_model.py:275: 
+mofapy2/build_model/init_model.py:276:          PARAMETERS
+mofapy2/build_model/init_model.py:277:          ----------
+mofapy2/build_model/init_model.py:278:         pmean: mean of the prior distribution
+mofapy2/build_model/init_model.py:279:         pvar: (co)variance of the prior distribution
+mofapy2/build_model/init_model.py:280:          qmean: initialisation of the mean of the variational distribution
+---- mofapy2/build_model/init_model.py:318
+mofapy2/build_model/init_model.py:314:             qmean=qmean,
+mofapy2/build_model/init_model.py:315:             qcov=qvar,
+mofapy2/build_model/init_model.py:316:             qE=qE,
+mofapy2/build_model/init_model.py:317:             idx_inducing=idx_inducing,
+mofapy2/build_model/init_model.py:318:             weight_views=weight_views,
+mofapy2/build_model/init_model.py:319:         )
+mofapy2/build_model/init_model.py:320: 
+mofapy2/build_model/init_model.py:321:     def initZgU(
+mofapy2/build_model/init_model.py:322:         self,
+mofapy2/build_model/init_model.py:323:         pmean=0,
+mofapy2/build_model/init_model.py:324:         pvar=1.0,
+mofapy2/build_model/init_model.py:325:         qmean="random",
+mofapy2/build_model/init_model.py:326:         qvar=1.0,
+---- mofapy2/build_model/init_model.py:332
+mofapy2/build_model/init_model.py:328:         qE2=None,
+mofapy2/build_model/init_model.py:329:         Y=None,
+mofapy2/build_model/init_model.py:330:         impute=True,
+mofapy2/build_model/init_model.py:331:         idx_inducing=None,
+mofapy2/build_model/init_model.py:332:         weight_views=False,
+mofapy2/build_model/init_model.py:333:     ):
+mofapy2/build_model/init_model.py:334:         assert (
+mofapy2/build_model/init_model.py:335:             idx_inducing is not None
+mofapy2/build_model/init_model.py:336:         ), "Stop: ZgU nodes is used without inducing points"
+mofapy2/build_model/init_model.py:337: 
+mofapy2/build_model/init_model.py:338:         ## Initialise prior distribution (P)
+mofapy2/build_model/init_model.py:339: 
+mofapy2/build_model/init_model.py:340:         # mean
+---- mofapy2/build_model/init_model.py:403
+mofapy2/build_model/init_model.py:399:             qvar=qvar,
+mofapy2/build_model/init_model.py:400:             qE=qE,
+mofapy2/build_model/init_model.py:401:             qE2=qE2,
+mofapy2/build_model/init_model.py:402:             idx_inducing=idx_inducing,
+mofapy2/build_model/init_model.py:403:             weight_views=weight_views,
+mofapy2/build_model/init_model.py:404:         )
+mofapy2/build_model/init_model.py:405: 
+mofapy2/build_model/init_model.py:406:     def initSigma(
+mofapy2/build_model/init_model.py:407:         self,
+mofapy2/build_model/init_model.py:408:         sample_cov,
+mofapy2/build_model/init_model.py:409:         start_opt=20,
+mofapy2/build_model/init_model.py:410:         n_grid=10,
+mofapy2/build_model/init_model.py:411:         opt_freq=10,
+---- mofapy2/build_model/init_model.py:495
+mofapy2/build_model/init_model.py:491:         qEZ_T1=None,
+mofapy2/build_model/init_model.py:492:         qET=None,
+mofapy2/build_model/init_model.py:493:         Y=None,
+mofapy2/build_model/init_model.py:494:         impute=False,
+mofapy2/build_model/init_model.py:495:         weight_views=False,
+mofapy2/build_model/init_model.py:496:     ):
+mofapy2/build_model/init_model.py:497:         """Method to initialise sparse factors with a spike and slab prior
+mofapy2/build_model/init_model.py:498: 
+mofapy2/build_model/init_model.py:499:         PARAMETERS
+mofapy2/build_model/init_model.py:500:         ----------
+mofapy2/build_model/init_model.py:501:         (...)
+mofapy2/build_model/init_model.py:502:         """
+mofapy2/build_model/init_model.py:503: 
+---- mofapy2/build_model/init_model.py:554
+mofapy2/build_model/init_model.py:550:             qvar_T1=qvar_T1,
+mofapy2/build_model/init_model.py:551:             qET=qET,
+mofapy2/build_model/init_model.py:552:             qEZ_T0=qEZ_T0,
+mofapy2/build_model/init_model.py:553:             qEZ_T1=qEZ_T1,
+mofapy2/build_model/init_model.py:554:             weight_views=weight_views,
+mofapy2/build_model/init_model.py:555:         )
+mofapy2/build_model/init_model.py:556: 
+mofapy2/build_model/init_model.py:557:     def initW(
+mofapy2/build_model/init_model.py:558:         self, pmean=0.0, pvar=1.0, qmean="random", qvar=1.0, qE=None, qE2=None, Y=None
+mofapy2/build_model/init_model.py:559:     ):
+mofapy2/build_model/init_model.py:560:         """Method to initialise the weights
+mofapy2/build_model/init_model.py:561: 
+mofapy2/build_model/init_model.py:562:         PARAMETERS
+---- mofapy2/build_model/utils.py:81
+mofapy2/build_model/utils.py:77: 
+mofapy2/build_model/utils.py:78:         # Centering and scaling is only appropriate for gaussian data
+mofapy2/build_model/utils.py:79:         if likelihoods[m] in ["gaussian"]:
+mofapy2/build_model/utils.py:80:             # Center features per group
+mofapy2/build_model/utils.py:81:             if data_opts["center_groups"]:
+mofapy2/build_model/utils.py:82:                 for g in data_opts["groups_names"]:
+mofapy2/build_model/utils.py:83:                     filt = [gp == g for gp in samples_groups]
+mofapy2/build_model/utils.py:84:                     data[m][filt, :] -= np.nanmean(data[m][filt, :], axis=0)
+mofapy2/build_model/utils.py:85: 
+mofapy2/build_model/utils.py:86:             # Scale views to unit variance
+mofapy2/build_model/utils.py:87:             if data_opts["scale_views"]:
+mofapy2/build_model/utils.py:88:                 data[m] /= np.nanstd(data[m])
+mofapy2/build_model/utils.py:89: 
+---- mofapy2/build_model/utils.py:87
+mofapy2/build_model/utils.py:83:                     filt = [gp == g for gp in samples_groups]
+mofapy2/build_model/utils.py:84:                     data[m][filt, :] -= np.nanmean(data[m][filt, :], axis=0)
+mofapy2/build_model/utils.py:85: 
+mofapy2/build_model/utils.py:86:             # Scale views to unit variance
+mofapy2/build_model/utils.py:87:             if data_opts["scale_views"]:
+mofapy2/build_model/utils.py:88:                 data[m] /= np.nanstd(data[m])
+mofapy2/build_model/utils.py:89: 
+mofapy2/build_model/utils.py:90:             # Scale groups to unit variance
+mofapy2/build_model/utils.py:91:             if data_opts["scale_groups"]:
+mofapy2/build_model/utils.py:92:                 for g in data_opts["groups_names"]:
+mofapy2/build_model/utils.py:93:                     filt = [gp == g for gp in samples_groups]
+mofapy2/build_model/utils.py:94:                     data[m][filt, :] /= np.nanstd(data[m][filt, :])
+mofapy2/build_model/utils.py:95: 
+---- mofapy2/build_model/utils.py:91
+mofapy2/build_model/utils.py:87:             if data_opts["scale_views"]:
+mofapy2/build_model/utils.py:88:                 data[m] /= np.nanstd(data[m])
+mofapy2/build_model/utils.py:89: 
+mofapy2/build_model/utils.py:90:             # Scale groups to unit variance
+mofapy2/build_model/utils.py:91:             if data_opts["scale_groups"]:
+mofapy2/build_model/utils.py:92:                 for g in data_opts["groups_names"]:
+mofapy2/build_model/utils.py:93:                     filt = [gp == g for gp in samples_groups]
+mofapy2/build_model/utils.py:94:                     data[m][filt, :] /= np.nanstd(data[m][filt, :])
+mofapy2/build_model/utils.py:95: 
+mofapy2/build_model/utils.py:96:     return data
+mofapy2/build_model/utils.py:97: 
+mofapy2/build_model/utils.py:98: 
+mofapy2/build_model/utils.py:99: def guess_likelihoods(data):
+---- mofapy2/core/BayesNet.py:514
+mofapy2/core/BayesNet.py:510:     def calculateELBO(self, *nodes):
+mofapy2/core/BayesNet.py:511:         """Method to calculate the Evidence Lower Bound of the model"""
+mofapy2/core/BayesNet.py:512: 
+mofapy2/core/BayesNet.py:513:         weights = [1] * self.dim["M"]
+mofapy2/core/BayesNet.py:514:         if self.options["weight_views"] and self.dim["M"] > 1:
+mofapy2/core/BayesNet.py:515:             total_w = np.asarray(self.dim["D"]).sum()
+mofapy2/core/BayesNet.py:516:             weights = np.asarray(
+mofapy2/core/BayesNet.py:517:                 [
+mofapy2/core/BayesNet.py:518:                     total_w / (self.dim["M"] * self.dim["D"][m])
+mofapy2/core/BayesNet.py:519:                     for m in range(self.dim["M"])
+mofapy2/core/BayesNet.py:520:                 ]
+mofapy2/core/BayesNet.py:521:             )
+mofapy2/core/BayesNet.py:522:             weights = weights / weights.sum() * self.dim["M"]
+---- mofapy2/core/nodes/U_nodes.py:29
+mofapy2/core/nodes/U_nodes.py:25:         qmean,
+mofapy2/core/nodes/U_nodes.py:26:         qcov,
+mofapy2/core/nodes/U_nodes.py:27:         qE=None,
+mofapy2/core/nodes/U_nodes.py:28:         idx_inducing=None,
+mofapy2/core/nodes/U_nodes.py:29:         weight_views=False,
+mofapy2/core/nodes/U_nodes.py:30:     ):
+mofapy2/core/nodes/U_nodes.py:31:         super().__init__(dim=dim, pmean=pmean, pcov=pcov, qmean=qmean, qcov=qcov, qE=qE)
+mofapy2/core/nodes/U_nodes.py:32: 
+mofapy2/core/nodes/U_nodes.py:33:         self.mini_batch = None
+mofapy2/core/nodes/U_nodes.py:34:         self.factors_axis = 1
+mofapy2/core/nodes/U_nodes.py:35:         self.Nu = self.dim[0]
+mofapy2/core/nodes/U_nodes.py:36:         self.K = self.dim[1]
+mofapy2/core/nodes/U_nodes.py:37:         self.idx_inducing = idx_inducing
+---- mofapy2/core/nodes/U_nodes.py:38
+mofapy2/core/nodes/U_nodes.py:34:         self.factors_axis = 1
+mofapy2/core/nodes/U_nodes.py:35:         self.Nu = self.dim[0]
+mofapy2/core/nodes/U_nodes.py:36:         self.K = self.dim[1]
+mofapy2/core/nodes/U_nodes.py:37:         self.idx_inducing = idx_inducing
+mofapy2/core/nodes/U_nodes.py:38:         self.weight_views = weight_views
+mofapy2/core/nodes/U_nodes.py:39: 
+mofapy2/core/nodes/U_nodes.py:40:         assert (
+mofapy2/core/nodes/U_nodes.py:41:             len(self.idx_inducing) == self.Nu
+mofapy2/core/nodes/U_nodes.py:42:         ), "Dimension of U and number of inducing points does not match"
+mofapy2/core/nodes/U_nodes.py:43: 
+mofapy2/core/nodes/U_nodes.py:44:         # Precompute terms (inverse covariance ant its determinant for each factor) to speed up computation
+mofapy2/core/nodes/U_nodes.py:45:         # self.p_cov = self.P.params['cov']
+mofapy2/core/nodes/U_nodes.py:46:         # self.p_cov_inv = np.array([s.linalg.inv(cov) for cov in tmp])
+---- mofapy2/core/nodes/U_nodes.py:110
+mofapy2/core/nodes/U_nodes.py:106:         for m in range(M):
+mofapy2/core/nodes/U_nodes.py:107:             tau[m][mask[m]] = 0.0
+mofapy2/core/nodes/U_nodes.py:108: 
+mofapy2/core/nodes/U_nodes.py:109:         weights = [1] * M
+mofapy2/core/nodes/U_nodes.py:110:         if self.weight_views and M > 1:
+mofapy2/core/nodes/U_nodes.py:111:             total_w = np.asarray([Y[m].shape[1] for m in range(M)]).sum()
+mofapy2/core/nodes/U_nodes.py:112:             weights = np.asarray([total_w / (M * Y[m].shape[1]) for m in range(M)])
+mofapy2/core/nodes/U_nodes.py:113:             weights = weights / weights.sum() * M
+mofapy2/core/nodes/U_nodes.py:114: 
+mofapy2/core/nodes/U_nodes.py:115:         # Precompute terms to speed up GPU computation
+mofapy2/core/nodes/U_nodes.py:116:         foo = gpu_utils.array(np.zeros((N, K)))
+mofapy2/core/nodes/U_nodes.py:117:         precomputed_bar = gpu_utils.array(np.zeros((N, K)))
+mofapy2/core/nodes/U_nodes.py:118:         for m in range(M):
+---- mofapy2/core/nodes/Z_nodes.py:18
+mofapy2/core/nodes/Z_nodes.py:14: 
+mofapy2/core/nodes/Z_nodes.py:15: 
+mofapy2/core/nodes/Z_nodes.py:16: class Z_Node(UnivariateGaussian_Unobserved_Variational_Node):
+mofapy2/core/nodes/Z_nodes.py:17:     def __init__(
+mofapy2/core/nodes/Z_nodes.py:18:         self, dim, pmean, pvar, qmean, qvar, qE=None, qE2=None, weight_views=False
+mofapy2/core/nodes/Z_nodes.py:19:     ):
+mofapy2/core/nodes/Z_nodes.py:20:         super().__init__(
+mofapy2/core/nodes/Z_nodes.py:21:             dim=dim, pmean=pmean, pvar=pvar, qmean=qmean, qvar=qvar, qE=qE, qE2=qE2
+mofapy2/core/nodes/Z_nodes.py:22:         )
+mofapy2/core/nodes/Z_nodes.py:23: 
+mofapy2/core/nodes/Z_nodes.py:24:         self.mini_batch = None
+mofapy2/core/nodes/Z_nodes.py:25:         self.factors_axis = 1
+mofapy2/core/nodes/Z_nodes.py:26:         self.weight_views = weight_views
+---- mofapy2/core/nodes/Z_nodes.py:26
+mofapy2/core/nodes/Z_nodes.py:22:         )
+mofapy2/core/nodes/Z_nodes.py:23: 
+mofapy2/core/nodes/Z_nodes.py:24:         self.mini_batch = None
+mofapy2/core/nodes/Z_nodes.py:25:         self.factors_axis = 1
+mofapy2/core/nodes/Z_nodes.py:26:         self.weight_views = weight_views
+mofapy2/core/nodes/Z_nodes.py:27: 
+mofapy2/core/nodes/Z_nodes.py:28:     def precompute(self, options):
+mofapy2/core/nodes/Z_nodes.py:29:         """Method to precompute terms to speed up computation"""
+mofapy2/core/nodes/Z_nodes.py:30:         gpu_utils.gpu_mode = options["gpu_mode"]
+mofapy2/core/nodes/Z_nodes.py:31: 
+mofapy2/core/nodes/Z_nodes.py:32:     def removeFactors(self, idx, axis=1):
+mofapy2/core/nodes/Z_nodes.py:33:         """Method to remove inactive factors"""
+mofapy2/core/nodes/Z_nodes.py:34:         super(Z_Node, self).removeFactors(idx, axis)
+---- mofapy2/core/nodes/Z_nodes.py:115
+mofapy2/core/nodes/Z_nodes.py:111:         for m in range(M):
+mofapy2/core/nodes/Z_nodes.py:112:             tau[m][mask[m]] = 0.0
+mofapy2/core/nodes/Z_nodes.py:113: 
+mofapy2/core/nodes/Z_nodes.py:114:         weights = [1] * M
+mofapy2/core/nodes/Z_nodes.py:115:         if self.weight_views and M > 1:
+mofapy2/core/nodes/Z_nodes.py:116:             total_w = np.asarray([Y[m].shape[1] for m in range(M)]).sum()
+mofapy2/core/nodes/Z_nodes.py:117:             weights = np.asarray([total_w / (M * Y[m].shape[1]) for m in range(M)])
+mofapy2/core/nodes/Z_nodes.py:118:             weights = weights / weights.sum() * M
+mofapy2/core/nodes/Z_nodes.py:119:             # weights = [(total_w-Y[m].shape[1])/total_w * M / (M-1) for m in range(M)]
+mofapy2/core/nodes/Z_nodes.py:120: 
+mofapy2/core/nodes/Z_nodes.py:121:         # Precompute terms to speed up GPU computation
+mofapy2/core/nodes/Z_nodes.py:122:         foo = gpu_utils.array(np.zeros((N, K)))
+mofapy2/core/nodes/Z_nodes.py:123:         precomputed_bar = gpu_utils.array(np.zeros((N, K)))
+---- mofapy2/core/nodes/Z_nodes.py:205
+mofapy2/core/nodes/Z_nodes.py:201:         qtheta,
+mofapy2/core/nodes/Z_nodes.py:202:         qEZ_T0=None,
+mofapy2/core/nodes/Z_nodes.py:203:         qEZ_T1=None,
+mofapy2/core/nodes/Z_nodes.py:204:         qET=None,
+mofapy2/core/nodes/Z_nodes.py:205:         weight_views=False,
+mofapy2/core/nodes/Z_nodes.py:206:     ):
+mofapy2/core/nodes/Z_nodes.py:207:         super().__init__(
+mofapy2/core/nodes/Z_nodes.py:208:             dim,
+mofapy2/core/nodes/Z_nodes.py:209:             pmean_T0,
+mofapy2/core/nodes/Z_nodes.py:210:             pmean_T1,
+mofapy2/core/nodes/Z_nodes.py:211:             pvar_T0,
+mofapy2/core/nodes/Z_nodes.py:212:             pvar_T1,
+mofapy2/core/nodes/Z_nodes.py:213:             ptheta,
+---- mofapy2/core/nodes/Z_nodes.py:226
+mofapy2/core/nodes/Z_nodes.py:222:         )
+mofapy2/core/nodes/Z_nodes.py:223: 
+mofapy2/core/nodes/Z_nodes.py:224:         self.mini_batch = None
+mofapy2/core/nodes/Z_nodes.py:225:         self.factors_axis = 1
+mofapy2/core/nodes/Z_nodes.py:226:         self.weight_views = weight_views
+mofapy2/core/nodes/Z_nodes.py:227: 
+mofapy2/core/nodes/Z_nodes.py:228:     def precompute(self, options):
+mofapy2/core/nodes/Z_nodes.py:229:         """Method to precompute some terms to speed up the calculations"""
+mofapy2/core/nodes/Z_nodes.py:230: 
+mofapy2/core/nodes/Z_nodes.py:231:         # GPU mode
+mofapy2/core/nodes/Z_nodes.py:232:         gpu_utils.gpu_mode = options["gpu_mode"]
+mofapy2/core/nodes/Z_nodes.py:233: 
+mofapy2/core/nodes/Z_nodes.py:234:     def removeFactors(self, idx, axis=1):
+---- mofapy2/core/nodes/Z_nodes.py:357
+mofapy2/core/nodes/Z_nodes.py:353:         M = len(Y)
+mofapy2/core/nodes/Z_nodes.py:354:         K = self.dim[1]
+mofapy2/core/nodes/Z_nodes.py:355: 
+mofapy2/core/nodes/Z_nodes.py:356:         weights = [1] * M
+mofapy2/core/nodes/Z_nodes.py:357:         if self.weight_views and M > 1:
+mofapy2/core/nodes/Z_nodes.py:358:             total_w = np.asarray([Y[m].shape[1] for m in range(M)]).sum()
+mofapy2/core/nodes/Z_nodes.py:359:             # weights = [(total_w-Y[m].shape[1])/total_w * M / (M-1) for m in range(M)]
+mofapy2/core/nodes/Z_nodes.py:360:             weights = np.asarray([total_w / (M * Y[m].shape[1]) for m in range(M)])
+mofapy2/core/nodes/Z_nodes.py:361:             weights = weights / weights.sum() * M
+mofapy2/core/nodes/Z_nodes.py:362: 
+mofapy2/core/nodes/Z_nodes.py:363:         # term4_tmp1 = [ gpu_utils.array(Alpha[:,k]) for k in range(self.dim[1]) ]
+mofapy2/core/nodes/Z_nodes.py:364:         # term4_tmp2 = [ gpu_utils.array(Alpha[:,k]) for k in range(self.dim[1]) ]
+mofapy2/core/nodes/Z_nodes.py:365:         # term4_tmp3 = [ gpu_utils.array(Alpha[:,k]) for k in range(self.dim[1]) ]
+---- mofapy2/core/nodes/Z_nodes_GP.py:22
+mofapy2/core/nodes/Z_nodes_GP.py:18:     Z node with a Multivariate Gaussian prior and univariate Gaussian variational
+mofapy2/core/nodes/Z_nodes_GP.py:19:     """
+mofapy2/core/nodes/Z_nodes_GP.py:20: 
+mofapy2/core/nodes/Z_nodes_GP.py:21:     def __init__(
+mofapy2/core/nodes/Z_nodes_GP.py:22:         self, dim, pmean, pcov, qmean, qvar, qE=None, qE2=None, weight_views=False
+mofapy2/core/nodes/Z_nodes_GP.py:23:     ):
+mofapy2/core/nodes/Z_nodes_GP.py:24:         super().__init__(
+mofapy2/core/nodes/Z_nodes_GP.py:25:             dim=dim, pmean=pmean, pcov=pcov, qmean=qmean, qvar=qvar, qE=qE, qE2=qE2
+mofapy2/core/nodes/Z_nodes_GP.py:26:         )
+mofapy2/core/nodes/Z_nodes_GP.py:27: 
+mofapy2/core/nodes/Z_nodes_GP.py:28:         self.mini_batch = None
+mofapy2/core/nodes/Z_nodes_GP.py:29:         self.factors_axis = 1
+mofapy2/core/nodes/Z_nodes_GP.py:30:         self.struct = None
+---- mofapy2/core/nodes/Z_nodes_GP.py:34
+mofapy2/core/nodes/Z_nodes_GP.py:30:         self.struct = None
+mofapy2/core/nodes/Z_nodes_GP.py:31:         self.length_scales = None
+mofapy2/core/nodes/Z_nodes_GP.py:32:         self.N = self.dim[0]
+mofapy2/core/nodes/Z_nodes_GP.py:33:         self.K = self.dim[1]
+mofapy2/core/nodes/Z_nodes_GP.py:34:         self.weight_views = weight_views
+mofapy2/core/nodes/Z_nodes_GP.py:35: 
+mofapy2/core/nodes/Z_nodes_GP.py:36:         # Precompute terms (inverse covariance ant its determinant for each factor) to speed up computation
+mofapy2/core/nodes/Z_nodes_GP.py:37:         tmp = self.P.params["cov"]
+mofapy2/core/nodes/Z_nodes_GP.py:38:         self.p_cov_inv = np.array([s.linalg.inv(cov) for cov in tmp])  # TODO speed-ups
+mofapy2/core/nodes/Z_nodes_GP.py:39:         self.p_cov_inv_diag = np.array(
+mofapy2/core/nodes/Z_nodes_GP.py:40:             [np.diag(c) for c in self.p_cov_inv]
+mofapy2/core/nodes/Z_nodes_GP.py:41:         )  # TODO speed-ups
+mofapy2/core/nodes/Z_nodes_GP.py:42: 
+---- mofapy2/core/nodes/Z_nodes_GP.py:138
+mofapy2/core/nodes/Z_nodes_GP.py:134:         for m in range(M):
+mofapy2/core/nodes/Z_nodes_GP.py:135:             tau[m][mask[m]] = 0.0
+mofapy2/core/nodes/Z_nodes_GP.py:136: 
+mofapy2/core/nodes/Z_nodes_GP.py:137:         weights = [1] * M
+mofapy2/core/nodes/Z_nodes_GP.py:138:         if self.weight_views and M > 1:
+mofapy2/core/nodes/Z_nodes_GP.py:139:             total_w = np.asarray([Y[m].shape[1] for m in range(M)]).sum()
+mofapy2/core/nodes/Z_nodes_GP.py:140:             weights = np.asarray([total_w / (M * Y[m].shape[1]) for m in range(M)])
+mofapy2/core/nodes/Z_nodes_GP.py:141:             weights = weights / weights.sum() * M
+mofapy2/core/nodes/Z_nodes_GP.py:142: 
+mofapy2/core/nodes/Z_nodes_GP.py:143:         # Precompute terms to speed up GPU computation
+mofapy2/core/nodes/Z_nodes_GP.py:144:         foo = gpu_utils.array(np.zeros((N, K)))
+mofapy2/core/nodes/Z_nodes_GP.py:145:         precomputed_bar = gpu_utils.array(np.zeros((N, K)))
+mofapy2/core/nodes/Z_nodes_GP.py:146:         for m in range(M):
+---- mofapy2/core/nodes/Z_nodes_GP_mv.py:17
+mofapy2/core/nodes/Z_nodes_GP_mv.py:13:     """
+mofapy2/core/nodes/Z_nodes_GP_mv.py:14:     Z node with a Multivariate Gaussian prior and variational distribution
+mofapy2/core/nodes/Z_nodes_GP_mv.py:15:     """
+mofapy2/core/nodes/Z_nodes_GP_mv.py:16: 
+mofapy2/core/nodes/Z_nodes_GP_mv.py:17:     def __init__(self, dim, pmean, pcov, qmean, qcov, qE=None, weight_views=False):
+mofapy2/core/nodes/Z_nodes_GP_mv.py:18:         super().__init__(dim=dim, pmean=pmean, pcov=pcov, qmean=qmean, qcov=qcov, qE=qE)
+mofapy2/core/nodes/Z_nodes_GP_mv.py:19: 
+mofapy2/core/nodes/Z_nodes_GP_mv.py:20:         self.mini_batch = None
+mofapy2/core/nodes/Z_nodes_GP_mv.py:21:         self.factors_axis = 1
+mofapy2/core/nodes/Z_nodes_GP_mv.py:22:         self.N = self.dim[0]
+mofapy2/core/nodes/Z_nodes_GP_mv.py:23:         self.K = self.dim[1]
+mofapy2/core/nodes/Z_nodes_GP_mv.py:24:         self.weight_views = weight_views
+mofapy2/core/nodes/Z_nodes_GP_mv.py:25: 
+---- mofapy2/core/nodes/Z_nodes_GP_mv.py:24
+mofapy2/core/nodes/Z_nodes_GP_mv.py:20:         self.mini_batch = None
+mofapy2/core/nodes/Z_nodes_GP_mv.py:21:         self.factors_axis = 1
+mofapy2/core/nodes/Z_nodes_GP_mv.py:22:         self.N = self.dim[0]
+mofapy2/core/nodes/Z_nodes_GP_mv.py:23:         self.K = self.dim[1]
+mofapy2/core/nodes/Z_nodes_GP_mv.py:24:         self.weight_views = weight_views
+mofapy2/core/nodes/Z_nodes_GP_mv.py:25: 
+mofapy2/core/nodes/Z_nodes_GP_mv.py:26:         # Precompute terms (inverse covariance ant its determinant for each factor) to speed up computation
+mofapy2/core/nodes/Z_nodes_GP_mv.py:27:         tmp = self.P.params["cov"]
+mofapy2/core/nodes/Z_nodes_GP_mv.py:28:         self.p_cov_inv = np.array([s.linalg.inv(cov) for cov in tmp])
+mofapy2/core/nodes/Z_nodes_GP_mv.py:29:         self.p_cov_inv_diag = np.array([np.diag(c) for c in self.p_cov_inv])
+mofapy2/core/nodes/Z_nodes_GP_mv.py:30: 
+mofapy2/core/nodes/Z_nodes_GP_mv.py:31:     def precompute(self, options):
+mofapy2/core/nodes/Z_nodes_GP_mv.py:32:         """Method to precompute terms to speed up computation"""
+---- mofapy2/core/nodes/Z_nodes_GP_mv.py:91
+mofapy2/core/nodes/Z_nodes_GP_mv.py:87:         for m in range(M):
+mofapy2/core/nodes/Z_nodes_GP_mv.py:88:             tau[m][mask[m]] = 0.0
+mofapy2/core/nodes/Z_nodes_GP_mv.py:89: 
+mofapy2/core/nodes/Z_nodes_GP_mv.py:90:         weights = [1] * M
+mofapy2/core/nodes/Z_nodes_GP_mv.py:91:         if self.weight_views and M > 1:
+mofapy2/core/nodes/Z_nodes_GP_mv.py:92:             total_w = np.asarray([Y[m].shape[1] for m in range(M)]).sum()
+mofapy2/core/nodes/Z_nodes_GP_mv.py:93:             weights = np.asarray([total_w / (M * Y[m].shape[1]) for m in range(M)])
+mofapy2/core/nodes/Z_nodes_GP_mv.py:94:             weights = weights / weights.sum() * M
+mofapy2/core/nodes/Z_nodes_GP_mv.py:95: 
+mofapy2/core/nodes/Z_nodes_GP_mv.py:96:         # Precompute terms to speed up GPU computation
+mofapy2/core/nodes/Z_nodes_GP_mv.py:97:         foo = gpu_utils.array(np.zeros((N, K)))
+mofapy2/core/nodes/Z_nodes_GP_mv.py:98:         precomputed_bar = gpu_utils.array(np.zeros((N, K)))
+mofapy2/core/nodes/Z_nodes_GP_mv.py:99:         for m in range(M):
+---- mofapy2/core/nodes/ZgU_node.py:33
+mofapy2/core/nodes/ZgU_node.py:29:         qvar,
+mofapy2/core/nodes/ZgU_node.py:30:         idx_inducing,
+mofapy2/core/nodes/ZgU_node.py:31:         qE=None,
+mofapy2/core/nodes/ZgU_node.py:32:         qE2=None,
+mofapy2/core/nodes/ZgU_node.py:33:         weight_views=False,
+mofapy2/core/nodes/ZgU_node.py:34:     ):
+mofapy2/core/nodes/ZgU_node.py:35:         super().__init__(
+mofapy2/core/nodes/ZgU_node.py:36:             dim=dim, pmean=pmean, pvar=pvar, qmean=qmean, qvar=qvar, qE=qE, qE2=qE2
+mofapy2/core/nodes/ZgU_node.py:37:         )
+mofapy2/core/nodes/ZgU_node.py:38: 
+mofapy2/core/nodes/ZgU_node.py:39:         self.mini_batch = None
+mofapy2/core/nodes/ZgU_node.py:40:         self.factors_axis = 1
+mofapy2/core/nodes/ZgU_node.py:41:         self.idx_inducing = idx_inducing
+---- mofapy2/core/nodes/ZgU_node.py:45
+mofapy2/core/nodes/ZgU_node.py:41:         self.idx_inducing = idx_inducing
+mofapy2/core/nodes/ZgU_node.py:42:         self.Nu = len(self.idx_inducing)
+mofapy2/core/nodes/ZgU_node.py:43:         self.N = self.dim[0]
+mofapy2/core/nodes/ZgU_node.py:44:         self.K = self.dim[1]
+mofapy2/core/nodes/ZgU_node.py:45:         self.weight_views = weight_views
+mofapy2/core/nodes/ZgU_node.py:46: 
+mofapy2/core/nodes/ZgU_node.py:47:     def precompute(self, options):
+mofapy2/core/nodes/ZgU_node.py:48:         """Method to precompute terms to speed up computation"""
+mofapy2/core/nodes/ZgU_node.py:49:         gpu_utils.gpu_mode = options["gpu_mode"]
+mofapy2/core/nodes/ZgU_node.py:50: 
+mofapy2/core/nodes/ZgU_node.py:51:     def removeFactors(self, idx, axis=0):
+mofapy2/core/nodes/ZgU_node.py:52:         super().removeFactors(idx, axis)
+mofapy2/core/nodes/ZgU_node.py:53:         self.K = self.dim[1]
+---- mofapy2/core/nodes/ZgU_node.py:112
+mofapy2/core/nodes/ZgU_node.py:108:         for m in range(M):
+mofapy2/core/nodes/ZgU_node.py:109:             tau[m][mask[m]] = 0.0
+mofapy2/core/nodes/ZgU_node.py:110: 
+mofapy2/core/nodes/ZgU_node.py:111:         weights = [1] * M
+mofapy2/core/nodes/ZgU_node.py:112:         if self.weight_views and M > 1:
+mofapy2/core/nodes/ZgU_node.py:113:             total_w = np.asarray([Y[m].shape[1] for m in range(M)]).sum()
+mofapy2/core/nodes/ZgU_node.py:114:             weights = np.asarray([total_w / (M * Y[m].shape[1]) for m in range(M)])
+mofapy2/core/nodes/ZgU_node.py:115:             weights = weights / weights.sum() * M
+mofapy2/core/nodes/ZgU_node.py:116: 
+mofapy2/core/nodes/ZgU_node.py:117:         # for non-structured factors take the standard updates for Z, ignoring U
+mofapy2/core/nodes/ZgU_node.py:118: 
+mofapy2/core/nodes/ZgU_node.py:119:         # Precompute terms to speed up GPU computation (only required for non-structured updates)
+mofapy2/core/nodes/ZgU_node.py:120:         foo = gpu_utils.array(np.zeros((N, K)))
+---- mofapy2/run/entry_point.py:876
+mofapy2/run/entry_point.py:872:         seed=None,
+mofapy2/run/entry_point.py:873:         schedule=None,
+mofapy2/run/entry_point.py:874:         gpu_mode=False,
+mofapy2/run/entry_point.py:875:         gpu_device: Optional[int] = None,
+mofapy2/run/entry_point.py:876:         weight_views=False,
+mofapy2/run/entry_point.py:877:         outfile=None,
+mofapy2/run/entry_point.py:878:         save_interrupted=False,
+mofapy2/run/entry_point.py:879:     ):
+mofapy2/run/entry_point.py:880:         """Set training options"""
+mofapy2/run/entry_point.py:881: 
+mofapy2/run/entry_point.py:882:         # Sanity checks
+mofapy2/run/entry_point.py:883:         assert hasattr(
+mofapy2/run/entry_point.py:884:             self, "model_opts"
+---- mofapy2/run/entry_point.py:1022
+mofapy2/run/entry_point.py:1018:         self.train_opts["seed"] = int(seed)
+mofapy2/run/entry_point.py:1019:         # np.random.seed(self.train_opts['seed'])
+mofapy2/run/entry_point.py:1020: 
+mofapy2/run/entry_point.py:1021:         # Weight the views to avoid imbalance problems?
+mofapy2/run/entry_point.py:1022:         self.train_opts["weight_views"] = weight_views
+mofapy2/run/entry_point.py:1023:         if weight_views:
+mofapy2/run/entry_point.py:1024:             print(
+mofapy2/run/entry_point.py:1025:                 "\nweight_views set to True. Weighting the ELBO (the objective function) based on the number of features per view\n"
+mofapy2/run/entry_point.py:1026:             )
+mofapy2/run/entry_point.py:1027: 
+mofapy2/run/entry_point.py:1028:         # Output file name
+mofapy2/run/entry_point.py:1029:         self.train_opts["outfile"] = outfile
+mofapy2/run/entry_point.py:1030: 
+---- mofapy2/run/entry_point.py:1023
+mofapy2/run/entry_point.py:1019:         # np.random.seed(self.train_opts['seed'])
+mofapy2/run/entry_point.py:1020: 
+mofapy2/run/entry_point.py:1021:         # Weight the views to avoid imbalance problems?
+mofapy2/run/entry_point.py:1022:         self.train_opts["weight_views"] = weight_views
+mofapy2/run/entry_point.py:1023:         if weight_views:
+mofapy2/run/entry_point.py:1024:             print(
+mofapy2/run/entry_point.py:1025:                 "\nweight_views set to True. Weighting the ELBO (the objective function) based on the number of features per view\n"
+mofapy2/run/entry_point.py:1026:             )
+mofapy2/run/entry_point.py:1027: 
+mofapy2/run/entry_point.py:1028:         # Output file name
+mofapy2/run/entry_point.py:1029:         self.train_opts["outfile"] = outfile
+mofapy2/run/entry_point.py:1030: 
+mofapy2/run/entry_point.py:1031:         # If to save the partially trained model when the training is interrupted
+---- mofapy2/run/entry_point.py:1025
+mofapy2/run/entry_point.py:1021:         # Weight the views to avoid imbalance problems?
+mofapy2/run/entry_point.py:1022:         self.train_opts["weight_views"] = weight_views
+mofapy2/run/entry_point.py:1023:         if weight_views:
+mofapy2/run/entry_point.py:1024:             print(
+mofapy2/run/entry_point.py:1025:                 "\nweight_views set to True. Weighting the ELBO (the objective function) based on the number of features per view\n"
+mofapy2/run/entry_point.py:1026:             )
+mofapy2/run/entry_point.py:1027: 
+mofapy2/run/entry_point.py:1028:         # Output file name
+mofapy2/run/entry_point.py:1029:         self.train_opts["outfile"] = outfile
+mofapy2/run/entry_point.py:1030: 
+mofapy2/run/entry_point.py:1031:         # If to save the partially trained model when the training is interrupted
+mofapy2/run/entry_point.py:1032:         self.train_opts["save_interrupted"] = save_interrupted
+mofapy2/run/entry_point.py:1033: 
+---- mofapy2/run/entry_point.py:1299
+mofapy2/run/entry_point.py:1295:         print("\n")
+mofapy2/run/entry_point.py:1296: 
+mofapy2/run/entry_point.py:1297:     def set_data_options(
+mofapy2/run/entry_point.py:1298:         self,
+mofapy2/run/entry_point.py:1299:         scale_views=False,
+mofapy2/run/entry_point.py:1300:         scale_groups=False,
+mofapy2/run/entry_point.py:1301:         center_groups=True,
+mofapy2/run/entry_point.py:1302:         use_float32=False,
+mofapy2/run/entry_point.py:1303:     ):
+mofapy2/run/entry_point.py:1304:         """Set data processing options"""
+mofapy2/run/entry_point.py:1305: 
+mofapy2/run/entry_point.py:1306:         if not hasattr(self, "data_opts"):
+mofapy2/run/entry_point.py:1307:             self.data_opts = {}
+---- mofapy2/run/entry_point.py:1300
+mofapy2/run/entry_point.py:1296: 
+mofapy2/run/entry_point.py:1297:     def set_data_options(
+mofapy2/run/entry_point.py:1298:         self,
+mofapy2/run/entry_point.py:1299:         scale_views=False,
+mofapy2/run/entry_point.py:1300:         scale_groups=False,
+mofapy2/run/entry_point.py:1301:         center_groups=True,
+mofapy2/run/entry_point.py:1302:         use_float32=False,
+mofapy2/run/entry_point.py:1303:     ):
+mofapy2/run/entry_point.py:1304:         """Set data processing options"""
+mofapy2/run/entry_point.py:1305: 
+mofapy2/run/entry_point.py:1306:         if not hasattr(self, "data_opts"):
+mofapy2/run/entry_point.py:1307:             self.data_opts = {}
+mofapy2/run/entry_point.py:1308:         self.data_opts["center_groups"] = center_groups
+---- mofapy2/run/entry_point.py:1301
+mofapy2/run/entry_point.py:1297:     def set_data_options(
+mofapy2/run/entry_point.py:1298:         self,
+mofapy2/run/entry_point.py:1299:         scale_views=False,
+mofapy2/run/entry_point.py:1300:         scale_groups=False,
+mofapy2/run/entry_point.py:1301:         center_groups=True,
+mofapy2/run/entry_point.py:1302:         use_float32=False,
+mofapy2/run/entry_point.py:1303:     ):
+mofapy2/run/entry_point.py:1304:         """Set data processing options"""
+mofapy2/run/entry_point.py:1305: 
+mofapy2/run/entry_point.py:1306:         if not hasattr(self, "data_opts"):
+mofapy2/run/entry_point.py:1307:             self.data_opts = {}
+mofapy2/run/entry_point.py:1308:         self.data_opts["center_groups"] = center_groups
+mofapy2/run/entry_point.py:1309: 
+---- mofapy2/run/entry_point.py:1308
+mofapy2/run/entry_point.py:1304:         """Set data processing options"""
+mofapy2/run/entry_point.py:1305: 
+mofapy2/run/entry_point.py:1306:         if not hasattr(self, "data_opts"):
+mofapy2/run/entry_point.py:1307:             self.data_opts = {}
+mofapy2/run/entry_point.py:1308:         self.data_opts["center_groups"] = center_groups
+mofapy2/run/entry_point.py:1309: 
+mofapy2/run/entry_point.py:1310:         # change from float64 to float32 (to decrease memory usage and improve speed)
+mofapy2/run/entry_point.py:1311:         config.use_float32 = use_float32
+mofapy2/run/entry_point.py:1312:         if use_float32:
+mofapy2/run/entry_point.py:1313:             print(
+mofapy2/run/entry_point.py:1314:                 "use_float32 set to True: replacing float64 arrays by float32 arrays to speed up computations...\n"
+mofapy2/run/entry_point.py:1315:             )
+mofapy2/run/entry_point.py:1316: 
+---- mofapy2/run/entry_point.py:1318
+mofapy2/run/entry_point.py:1314:                 "use_float32 set to True: replacing float64 arrays by float32 arrays to speed up computations...\n"
+mofapy2/run/entry_point.py:1315:             )
+mofapy2/run/entry_point.py:1316: 
+mofapy2/run/entry_point.py:1317:         # Scale views to unit variance
+mofapy2/run/entry_point.py:1318:         self.data_opts["scale_views"] = scale_views
+mofapy2/run/entry_point.py:1319:         if scale_views:
+mofapy2/run/entry_point.py:1320:             print("Scaling views to unit variance...\n")
+mofapy2/run/entry_point.py:1321: 
+mofapy2/run/entry_point.py:1322:         # Scale groups to unit variance
+mofapy2/run/entry_point.py:1323:         self.data_opts["scale_groups"] = scale_groups
+mofapy2/run/entry_point.py:1324:         if scale_groups:
+mofapy2/run/entry_point.py:1325:             print("Scaling groups to unit variance...\n")
+mofapy2/run/entry_point.py:1326: 
+---- mofapy2/run/entry_point.py:1319
+mofapy2/run/entry_point.py:1315:             )
+mofapy2/run/entry_point.py:1316: 
+mofapy2/run/entry_point.py:1317:         # Scale views to unit variance
+mofapy2/run/entry_point.py:1318:         self.data_opts["scale_views"] = scale_views
+mofapy2/run/entry_point.py:1319:         if scale_views:
+mofapy2/run/entry_point.py:1320:             print("Scaling views to unit variance...\n")
+mofapy2/run/entry_point.py:1321: 
+mofapy2/run/entry_point.py:1322:         # Scale groups to unit variance
+mofapy2/run/entry_point.py:1323:         self.data_opts["scale_groups"] = scale_groups
+mofapy2/run/entry_point.py:1324:         if scale_groups:
+mofapy2/run/entry_point.py:1325:             print("Scaling groups to unit variance...\n")
+mofapy2/run/entry_point.py:1326: 
+mofapy2/run/entry_point.py:1327:     def build(self):
+---- mofapy2/run/entry_point.py:1323
+mofapy2/run/entry_point.py:1319:         if scale_views:
+mofapy2/run/entry_point.py:1320:             print("Scaling views to unit variance...\n")
+mofapy2/run/entry_point.py:1321: 
+mofapy2/run/entry_point.py:1322:         # Scale groups to unit variance
+mofapy2/run/entry_point.py:1323:         self.data_opts["scale_groups"] = scale_groups
+mofapy2/run/entry_point.py:1324:         if scale_groups:
+mofapy2/run/entry_point.py:1325:             print("Scaling groups to unit variance...\n")
+mofapy2/run/entry_point.py:1326: 
+mofapy2/run/entry_point.py:1327:     def build(self):
+mofapy2/run/entry_point.py:1328:         """Build the model"""
+mofapy2/run/entry_point.py:1329: 
+mofapy2/run/entry_point.py:1330:         # Sanity checks
+mofapy2/run/entry_point.py:1331:         assert hasattr(self, "train_opts"), "Training options not defined"
+---- mofapy2/run/entry_point.py:1324
+mofapy2/run/entry_point.py:1320:             print("Scaling views to unit variance...\n")
+mofapy2/run/entry_point.py:1321: 
+mofapy2/run/entry_point.py:1322:         # Scale groups to unit variance
+mofapy2/run/entry_point.py:1323:         self.data_opts["scale_groups"] = scale_groups
+mofapy2/run/entry_point.py:1324:         if scale_groups:
+mofapy2/run/entry_point.py:1325:             print("Scaling groups to unit variance...\n")
+mofapy2/run/entry_point.py:1326: 
+mofapy2/run/entry_point.py:1327:     def build(self):
+mofapy2/run/entry_point.py:1328:         """Build the model"""
+mofapy2/run/entry_point.py:1329: 
+mofapy2/run/entry_point.py:1330:         # Sanity checks
+mofapy2/run/entry_point.py:1331:         assert hasattr(self, "train_opts"), "Training options not defined"
+mofapy2/run/entry_point.py:1332:         assert hasattr(self, "model_opts"), "Model options not defined"
+---- mofapy2/run/entry_point.py:1779
+mofapy2/run/entry_point.py:1775:     use_layer: bool = None,
+mofapy2/run/entry_point.py:1776:     features_subset: Optional[str] = None,
+mofapy2/run/entry_point.py:1777:     likelihood: Optional[Union[str, List[str]]] = None,
+mofapy2/run/entry_point.py:1778:     n_factors: int = 10,
+mofapy2/run/entry_point.py:1779:     scale_views: bool = False,
+mofapy2/run/entry_point.py:1780:     scale_groups: bool = False,
+mofapy2/run/entry_point.py:1781:     ard_weights: bool = True,
+mofapy2/run/entry_point.py:1782:     ard_factors: bool = True,
+mofapy2/run/entry_point.py:1783:     spikeslab_weights: bool = True,
+mofapy2/run/entry_point.py:1784:     spikeslab_factors: bool = False,
+mofapy2/run/entry_point.py:1785:     n_iterations: int = 1000,
+mofapy2/run/entry_point.py:1786:     convergence_mode: str = "fast",
+mofapy2/run/entry_point.py:1787:     gpu_mode: bool = False,
+---- mofapy2/run/entry_point.py:1780
+mofapy2/run/entry_point.py:1776:     features_subset: Optional[str] = None,
+mofapy2/run/entry_point.py:1777:     likelihood: Optional[Union[str, List[str]]] = None,
+mofapy2/run/entry_point.py:1778:     n_factors: int = 10,
+mofapy2/run/entry_point.py:1779:     scale_views: bool = False,
+mofapy2/run/entry_point.py:1780:     scale_groups: bool = False,
+mofapy2/run/entry_point.py:1781:     ard_weights: bool = True,
+mofapy2/run/entry_point.py:1782:     ard_factors: bool = True,
+mofapy2/run/entry_point.py:1783:     spikeslab_weights: bool = True,
+mofapy2/run/entry_point.py:1784:     spikeslab_factors: bool = False,
+mofapy2/run/entry_point.py:1785:     n_iterations: int = 1000,
+mofapy2/run/entry_point.py:1786:     convergence_mode: str = "fast",
+mofapy2/run/entry_point.py:1787:     gpu_mode: bool = False,
+mofapy2/run/entry_point.py:1788:     gpu_device: Optional[bool] = None,
+---- mofapy2/run/entry_point.py:1814
+mofapy2/run/entry_point.py:1810:     use_layer (optional): use a specific layer of AnnData as input values (supersedes use_raw option)
+mofapy2/run/entry_point.py:1811:     features_subset (optional): .var column with a boolean value to select genes (e.g. "highly_variable"), None by default
+mofapy2/run/entry_point.py:1812:     likelihood (optional): likelihood to use, default is guessed from the data
+mofapy2/run/entry_point.py:1813:     n_factors (optional): number of factors to train the model with
+mofapy2/run/entry_point.py:1814:     scale_views (optional): scale views to unit variance
+mofapy2/run/entry_point.py:1815:     scale_groups (optional): scale groups to unit variance
+mofapy2/run/entry_point.py:1816:     ard_weights (optional): use view-wise sparsity
+mofapy2/run/entry_point.py:1817:     ard_factors (optional): use group-wise sparsity
+mofapy2/run/entry_point.py:1818:     spikeslab_weights (optional): use feature-wise sparsity (e.g. gene-wise)
+mofapy2/run/entry_point.py:1819:     spikeslab_factors (optional): use sample-wise sparsity (e.g. cell-wise)
+mofapy2/run/entry_point.py:1820:     n_iterations (optional): upper limit on the number of iterations
+mofapy2/run/entry_point.py:1821:     convergence_mode (optional): fast, medium, or slow convergence mode
+mofapy2/run/entry_point.py:1822:     gpu_mode (optional): if to use GPU mode
+---- mofapy2/run/entry_point.py:1815
+mofapy2/run/entry_point.py:1811:     features_subset (optional): .var column with a boolean value to select genes (e.g. "highly_variable"), None by default
+mofapy2/run/entry_point.py:1812:     likelihood (optional): likelihood to use, default is guessed from the data
+mofapy2/run/entry_point.py:1813:     n_factors (optional): number of factors to train the model with
+mofapy2/run/entry_point.py:1814:     scale_views (optional): scale views to unit variance
+mofapy2/run/entry_point.py:1815:     scale_groups (optional): scale groups to unit variance
+mofapy2/run/entry_point.py:1816:     ard_weights (optional): use view-wise sparsity
+mofapy2/run/entry_point.py:1817:     ard_factors (optional): use group-wise sparsity
+mofapy2/run/entry_point.py:1818:     spikeslab_weights (optional): use feature-wise sparsity (e.g. gene-wise)
+mofapy2/run/entry_point.py:1819:     spikeslab_factors (optional): use sample-wise sparsity (e.g. cell-wise)
+mofapy2/run/entry_point.py:1820:     n_iterations (optional): upper limit on the number of iterations
+mofapy2/run/entry_point.py:1821:     convergence_mode (optional): fast, medium, or slow convergence mode
+mofapy2/run/entry_point.py:1822:     gpu_mode (optional): if to use GPU mode
+mofapy2/run/entry_point.py:1823:     gpu_mode (optional): which GPU to use
+---- mofapy2/run/entry_point.py:1844
+mofapy2/run/entry_point.py:1840: 
+mofapy2/run/entry_point.py:1841:     lik = [likelihood] if likelihood is not None else None
+mofapy2/run/entry_point.py:1842: 
+mofapy2/run/entry_point.py:1843:     ent.set_data_options(
+mofapy2/run/entry_point.py:1844:         scale_views=scale_views, scale_groups=scale_groups, use_float32=use_float32
+mofapy2/run/entry_point.py:1845:     )
+mofapy2/run/entry_point.py:1846:     ent.set_data_from_anndata(
+mofapy2/run/entry_point.py:1847:         adata,
+mofapy2/run/entry_point.py:1848:         groups_label=groups_label,
+mofapy2/run/entry_point.py:1849:         use_raw=use_raw,
+mofapy2/run/entry_point.py:1850:         use_layer=use_layer,
+mofapy2/run/entry_point.py:1851:         likelihoods=lik,
+mofapy2/run/entry_point.py:1852:         features_subset=features_subset,
+
+##### MOFA2 R (installed namespace)
+MOFA2 1.22.0 installed at /opt/R/4.6.1/lib/R/library/MOFA2 (functions deparsed from the installed namespace; line numbers are within each deparsed function)
+==== MOFA2::.detect_outliers
+MOFA2::.detect_outliers:20:     object@cache[["variance_explained"]] <- calculate_variance_explained(object)
+==== MOFA2::.run_mofa_reticulate
+MOFA2::.run_mofa_reticulate:1: function (object, outfile, save_data) 
+MOFA2::.run_mofa_reticulate:10:     mofa_entrypoint$set_data_options(scale_views = object@data_options$scale_views, scale_groups = object@data_options$scale_groups, center_groups = object@data_options$center_groups, use_float32 = object@data_options$use_float32)
+MOFA2::.run_mofa_reticulate:33:         weight_views = object@training_options$weight_views, save_interrupted = object@training_options$save_interrupted)
+MOFA2::.run_mofa_reticulate:53:     mofa_entrypoint$save(outfile, save_data = save_data)
+==== MOFA2::calculate_contribution_scores
+MOFA2::calculate_contribution_scores:14:     r2.per.sample <- calculate_variance_explained_per_sample(object, factors = factors, views = views, groups = groups)
+MOFA2::calculate_contribution_scores:16:         r2.per.view <- get_variance_explained(object, factors = factors, views = views, groups = groups)[["r2_total"]]
+==== MOFA2::get_default_data_options
+MOFA2::get_default_data_options:3:     data_options <- list(scale_views = FALSE, scale_groups = FALSE, center_groups = TRUE, use_float32 = TRUE)
+==== MOFA2::get_default_training_options
+MOFA2::get_default_training_options:3:     training_options <- list(maxiter = 1000, convergence_mode = "fast", drop_factor_threshold = -1, verbose = FALSE, startELBO = 1, freqELBO = 5, stochastic = FALSE, gpu_mode = FALSE, gpu_device = NULL, seed = 42, outfile = NULL, weight_views = FALSE, save_interrupted = FALSE)
+==== MOFA2::get_variance_explained
+MOFA2::get_variance_explained:8:     if (.hasSlot(object, "cache") && ("variance_explained" %in% names(object@cache))) {
+MOFA2::get_variance_explained:9:         r2_list <- object@cache$variance_explained
+MOFA2::get_variance_explained:12:         r2_list <- calculate_variance_explained(object, factors = factors, views = views, groups = groups)
+==== MOFA2::load_model
+MOFA2::load_model:23:         h5ls.out <- h5ls.out[grep("variance_explained", h5ls.out$name, invert = TRUE), ]
+MOFA2::load_model:191:     if ("variance_explained" %in% h5ls.out$name) {
+MOFA2::load_model:192:         r2_list <- list(r2_total = h5read(file, "variance_explained/r2_total")[group_names], r2_per_factor = h5read(file, "variance_explained/r2_per_factor")[group_names])
+MOFA2::load_model:193:         object@cache[["variance_explained"]] <- r2_list
+MOFA2::load_model:195:     if (max(sapply(object@cache$variance_explained$r2_total, max, na.rm = TRUE), na.rm = TRUE) < 1) {
+MOFA2::load_model:198:                 object@cache$variance_explained$r2_total[[g]][[m]] <- 100 * object@cache$variance_explained$r2_total[[g]][[m]]
+MOFA2::load_model:199:                 object@cache$variance_explained$r2_per_factor[[g]][, m] <- 100 * object@cache$variance_explained$r2_per_factor[[g]][, m]
+MOFA2::load_model:250:     if (is.null(object@cache[["variance_explained"]])) {
+MOFA2::load_model:251:         object@cache[["variance_explained"]] <- calculate_variance_explained(object)
+MOFA2::load_model:254:         r2 <- rowSums(do.call("cbind", lapply(object@cache[["variance_explained"]]$r2_per_factor, rowSums, na.rm = TRUE)))
+MOFA2::load_model:260:             object <- subset_factors(object, which(r2 >= var.threshold), recalculate_variance_explained = FALSE)
+MOFA2::load_model:267:         r2 <- rowSums(sapply(object@cache[["variance_explained"]]$r2_per_factor, function(e) rowSums(e, na.rm = TRUE)))
+==== MOFA2::plot_variance_explained
+MOFA2::plot_variance_explained:8:     if ((use_cache) & .hasSlot(object, "cache") && ("variance_explained" %in% names(object@cache))) {
+MOFA2::plot_variance_explained:9:         r2_list <- object@cache$variance_explained
+MOFA2::plot_variance_explained:12:         r2_list <- calculate_variance_explained(object, factors = factors, ...)
+==== MOFA2::plot_variance_explained_by_covariates
+MOFA2::plot_variance_explained_by_covariates:63:     r2_Z <- calculate_variance_explained(object)
+MOFA2::plot_variance_explained_by_covariates:83:         list(p1 + ggtitle("smooth part"), plot_variance_explained(object, min_r2 = min_r2, max_r2 = max_r2, x = x, y = y, split_by = split_by, factors = factors) + ggtitle("total"))
+==== MOFA2::run_mofa
+MOFA2::run_mofa:1: function (object, outfile = NULL, save_data = TRUE, use_basilisk = FALSE) 
+MOFA2::run_mofa:44:             .run_mofa_reticulate(object, outfile, save_data)
+MOFA2::run_mofa:54:         tmp <- basiliskRun(proc, function(object, outfile, save_data) {
+MOFA2::run_mofa:55:             .run_mofa_reticulate(object, outfile, save_data)
+MOFA2::run_mofa:56:         }, object = object, outfile = outfile, save_data = save_data)
+==== MOFA2::subset_factors
+MOFA2::subset_factors:1: function (object, factors, recalculate_variance_explained = TRUE) 
+MOFA2::subset_factors:51:         object@cache[["variance_explained"]]$r2_total <- lapply(object@cache[["variance_explained"]]$r2_per_factor, colSums)
+MOFA2::subset_factors:52:         if (recalculate_variance_explained) {
+MOFA2::subset_factors:54:             object@cache[["variance_explained"]]$r2_total <- calculate_variance_explained(object)[["r2_total"]]
+MOFA2::subset_factors:57:     if ((methods::.hasSlot(object, "cache")) && ("variance_explained" %in% names(object@cache))) {
+MOFA2::subset_factors:58:         object@cache[["variance_explained"]]$r2_per_factor <- lapply(object@cache[["variance_explained"]]$r2_per_factor, function(x) x[factors, , drop = FALSE])
+==== MOFA2::subset_features
+MOFA2::subset_features:32:     object@cache[["variance_explained"]] <- NULL
+==== MOFA2::subset_groups
+MOFA2::subset_groups:33:     object@cache[["variance_explained"]]$r2_per_factor <- object@cache[["variance_explained"]]$r2_per_factor[groups]
+MOFA2::subset_groups:34:     object@cache[["variance_explained"]]$r2_total <- object@cache[["variance_explained"]]$r2_total[groups]
+==== MOFA2::subset_samples
+MOFA2::subset_samples:53:     object@cache[["variance_explained"]] <- NULL
+==== MOFA2::subset_views
+MOFA2::subset_views:27:     if ((methods::.hasSlot(object, "cache")) && ("variance_explained" %in% names(object@cache))) {
+MOFA2::subset_views:28:         object@cache[["variance_explained"]]$r2_per_factor <- lapply(object@cache[["variance_explained"]]$r2_per_factor, function(x) x[, views, drop = FALSE])
+MOFA2::subset_views:29:         object@cache[["variance_explained"]]$r2_total <- lapply(object@cache[["variance_explained"]]$r2_total, function(x) x[views])

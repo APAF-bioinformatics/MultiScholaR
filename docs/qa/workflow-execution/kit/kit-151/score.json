@@ -1,0 +1,224 @@
+{
+  "params": {
+    "run": "counted",
+    "scenarios": [
+      "main",
+      "n60",
+      "missing"
+    ],
+    "seeds": 10,
+    "arms": "all",
+    "note": "counted run as declared in docs/qa/workflow-execution/kit/kit-151/cap-evidence-declaration.md (commit 6953941f)"
+  },
+  "expected_rows": 720,
+  "rows": 720,
+  "failed_rows": 0,
+  "jobs": 30,
+  "distinct_source_excerpts": 1,
+  "verdicts": {
+    "main": {
+      "none": {
+        "F2_seeds": 0,
+        "F3_seeds": 1,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "scale_views": {
+        "F2_seeds": 0,
+        "F3_seeds": 1,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "cap1000": {
+        "F2_seeds": 2,
+        "F3_seeds": 9,
+        "recovers_F2": false,
+        "keeps_F3": true,
+        "meets_rule": false
+      },
+      "cap2000": {
+        "F2_seeds": 0,
+        "F3_seeds": 6,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "cap5000": {
+        "F2_seeds": 0,
+        "F3_seeds": 3,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "cap10000": {
+        "F2_seeds": 0,
+        "F3_seeds": 2,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "weight_views": {
+        "F2_seeds": 0,
+        "F3_seeds": 0,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "zscore": {
+        "F2_seeds": 0,
+        "F3_seeds": 2,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      }
+    },
+    "n60": {
+      "none": {
+        "F2_seeds": 0,
+        "F3_seeds": 4,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "scale_views": {
+        "F2_seeds": 0,
+        "F3_seeds": 5,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "cap1000": {
+        "F2_seeds": 10,
+        "F3_seeds": 10,
+        "recovers_F2": true,
+        "keeps_F3": true,
+        "meets_rule": true
+      },
+      "cap2000": {
+        "F2_seeds": 8,
+        "F3_seeds": 10,
+        "recovers_F2": false,
+        "keeps_F3": true,
+        "meets_rule": false
+      },
+      "cap5000": {
+        "F2_seeds": 7,
+        "F3_seeds": 10,
+        "recovers_F2": false,
+        "keeps_F3": true,
+        "meets_rule": false
+      },
+      "cap10000": {
+        "F2_seeds": 5,
+        "F3_seeds": 9,
+        "recovers_F2": false,
+        "keeps_F3": true,
+        "meets_rule": false
+      },
+      "weight_views": {
+        "F2_seeds": 8,
+        "F3_seeds": 8,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "zscore": {
+        "F2_seeds": 0,
+        "F3_seeds": 4,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      }
+    },
+    "missing": {
+      "none": {
+        "F2_seeds": 0,
+        "F3_seeds": 2,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "scale_views": {
+        "F2_seeds": 0,
+        "F3_seeds": 2,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "cap1000": {
+        "F2_seeds": 0,
+        "F3_seeds": 9,
+        "recovers_F2": false,
+        "keeps_F3": true,
+        "meets_rule": false
+      },
+      "cap2000": {
+        "F2_seeds": 0,
+        "F3_seeds": 5,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "cap5000": {
+        "F2_seeds": 0,
+        "F3_seeds": 2,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "cap10000": {
+        "F2_seeds": 0,
+        "F3_seeds": 2,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "weight_views": {
+        "F2_seeds": 0,
+        "F3_seeds": 0,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      },
+      "zscore": {
+        "F2_seeds": 0,
+        "F3_seeds": 2,
+        "recovers_F2": false,
+        "keeps_F3": false,
+        "meets_rule": false
+      }
+    }
+  },
+  "decision": {
+    "main": {
+      "recommendation": "no cap meets the rule",
+      "closest_cap": 1000,
+      "closest": {
+        "F2_seeds": 2,
+        "F3_seeds": 9,
+        "recovers_F2": false,
+        "keeps_F3": true,
+        "meets_rule": false
+      }
+    },
+    "n60": {
+      "recommendation": 1000,
+      "meeting_caps": [
+        1000
+      ]
+    },
+    "missing": {
+      "recommendation": "no cap meets the rule",
+      "closest_cap": 1000,
+      "closest": {
+        "F2_seeds": 0,
+        "F3_seeds": 9,
+        "recovers_F2": false,
+        "keeps_F3": true,
+        "meets_rule": false
+      }
+    }
+  }
+}

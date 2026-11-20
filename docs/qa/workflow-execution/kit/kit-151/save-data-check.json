@@ -1,0 +1,85 @@
+{
+  "from_job": "k151-main-1",
+  "check": {
+    "save_data_true": {
+      "trained": true,
+      "h5_top_level": [
+        "data",
+        "expectations",
+        "features",
+        "features_metadata",
+        "groups",
+        "intercepts",
+        "model_options",
+        "samples",
+        "samples_metadata",
+        "training_opts",
+        "training_stats",
+        "variance_explained",
+        "views"
+      ],
+      "variance_explained_ok": true,
+      "variance_explained_error": null,
+      "r2_per_factor": [
+        49.3949193578451,
+        0.112453420252601,
+        4.2453329883402,
+        0.61890115452824,
+        46.8840053265849,
+        6.12873469647757,
+        0.0349015008454967,
+        3.28485705344197
+      ],
+      "r2_total": [
+        54.3716069209661,
+        56.33249857735
+      ],
+      "cache_has_variance_explained": true,
+      "messages": [
+        "Connecting to the mofapy2 python package using reticulate (use_basilisk = FALSE)... \n    Please make sure to manually specify the right python binary when loading R with reticulate::use_python(..., force=TRUE) or the right conda environment with reticulate::use_condaenv(..., force=TRUE)\n    If you prefer to let us automatically install a conda environment with 'mofapy2' installed using the 'basilisk' package, please use the argument 'use_basilisk = TRUE'",
+        "1 factors were found to explain no variance and they were removed for downstream analysis. You can disable this option by setting load_model(..., remove_inactive_factors = FALSE)"
+      ]
+    },
+    "save_data_false": {
+      "trained": true,
+      "h5_top_level": [
+        "expectations",
+        "features",
+        "features_metadata",
+        "groups",
+        "model_options",
+        "samples",
+        "samples_metadata",
+        "training_opts",
+        "training_stats",
+        "variance_explained",
+        "views"
+      ],
+      "variance_explained_ok": true,
+      "variance_explained_error": null,
+      "r2_per_factor": [
+        49.3949193578451,
+        0.112453420252601,
+        4.2453329883402,
+        0.61890115452824,
+        46.8840053265849,
+        6.12873469647757,
+        0.0349015008454967,
+        3.28485705344197
+      ],
+      "r2_total": [
+        54.3716069209661,
+        56.33249857735
+      ],
+      "cache_has_variance_explained": true,
+      "messages": [
+        "Connecting to the mofapy2 python package using reticulate (use_basilisk = FALSE)... \n    Please make sure to manually specify the right python binary when loading R with reticulate::use_python(..., force=TRUE) or the right conda environment with reticulate::use_condaenv(..., force=TRUE)\n    If you prefer to let us automatically install a conda environment with 'mofapy2' installed using the 'basilisk' package, please use the argument 'use_basilisk = TRUE'",
+        "1 factors were found to explain no variance and they were removed for downstream analysis. You can disable this option by setting load_model(..., remove_inactive_factors = FALSE)"
+      ]
+    },
+    "max_abs_difference_r2_per_factor": 0
+  },
+  "jobs_agreeing_on_ok": [
+    true
+  ]
+}

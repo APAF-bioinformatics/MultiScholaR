@@ -1,0 +1,7 @@
+scenario	seed_index	data_seed	N	arm	planted	status	error	matched_factor	abs_r	r2_D1	r2_D2	r2_D3	r2_D4	kept_D1	kept_D2	kept_D3	kept_D4	iterations	learned_factors	factors_dropped	weight_views_option_list	mofa_warnings	seconds
+main	1	151001	20	scale_views	F1	ok	NA	Factor1	0.852318200128148	8.04046974543283	3.88544570580994	5.21413009536318	7.64512418662847	20000	2000	200	100	26	5	0	training	0	2.67
+main	1	151001	20	scale_views	F2	ok	NA	Factor3	0.350612596685336	1.28433868916404	1.38534563732116	2.0369514173441	1.99574584931101	20000	2000	200	100	26	5	0	training	0	2.67
+main	1	151001	20	scale_views	F3	ok	NA	Factor2	0.589063445911859	4.36789979933989	2.59602198684806	2.72893745071283	1.54363389157467	20000	2000	200	100	26	5	0	training	0	2.67
+main	1	151001	20	probe_fail	F1	failed	probe: deliberate failure of the lifecycle arm	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	0.01
+main	1	151001	20	probe_fail	F2	failed	probe: deliberate failure of the lifecycle arm	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	0.01
+main	1	151001	20	probe_fail	F3	failed	probe: deliberate failure of the lifecycle arm	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	0.01
