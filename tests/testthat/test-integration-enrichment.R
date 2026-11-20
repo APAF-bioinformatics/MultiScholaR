@@ -3,7 +3,7 @@
 # and no real key. The key used here is an invented sentinel string.
 
 SENTINEL_KEY <- "kit141-sentinel-not-a-real-key-Zq7w"
-STRING_HOST <- "https://version-12-0.string-db.org"
+STRING_HOST <- "https://version-12-5.string-db.org"
 
 stringRanked <- function(n = 12L) {
     data.frame(identifier = sprintf("P%05d", seq_len(n)), value = seq(2, -2, length.out = n),
@@ -37,7 +37,7 @@ newStringMock <- function(states = c("running", "success"), download_url = paste
         endpoint <- stringEndpoint(req)
         if (is.function(overrides[[endpoint]])) return(overrides[[endpoint]](req))
         switch(endpoint,
-            version = json(list(list(string_version = "12.0", string_stable_address = STRING_HOST))),
+            version = json(list(list(string_version = "12.5", string_stable_address = STRING_HOST))),
             valuesranks_enrichment_submit = json(list(list(job_id = "job42", status = "submitted"))),
             valuesranks_enrichment_status = {
                 log$polls <- log$polls + 1L
@@ -53,24 +53,59 @@ newStringMock <- function(states = c("running", "success"), download_url = paste
     list(handler = handler, log = log)
 }
 
-# A network failure one level below httr2's mocked responses. The STRING double declines the request (returns NULL),
-# so httr2 performs it itself, and httr2's own transfer function (`curl_fetch`, the call into curl) fails as a refused
-# connection does. httr2 then raises its genuine failure (class `httr2_failure`, the curl error as parent, the request
-# attached, and with it the key in the body) and keeps the request as its last request. The transfer function is
-# replaced in every STRING test, so no request can leave the machine.
-curlConnectFailure <- function(handle, url, path) {
-    stop(structure(class = c("curl_error_couldnt_connect", "curl_error", "error", "condition"), list(
+# A network failure one level below httr2's mocked responses (run-tests 44783719082: a double that only declined the
+# request reached no failure inside the client). Two layers, both in place in every STRING test, so no request can leave
+# the machine:
+#   - httr2's send function `req_perform` is replaced: for the endpoints named failing it does what httr2 does on a
+#     refused connection (it keeps the request as its last request, builds its own failure, class `httr2_failure`,
+#     with the curl error as parent, attaches the request, and with it the key in the body, and signals it); for any
+#     other endpoint it calls httr2's own `req_perform`, which answers from the STRING double;
+#   - httr2's transfer function `curl_fetch` (the call into curl) fails as a refused connection does, should a request
+#     ever get past the double.
+# `network$sent` counts the failures the send function raised, `network$transfers` the requests that reached the
+# transfer function (none expected).
+network <- new.env()
+network$failing <- character()
+network$sent <- 0L
+network$transfers <- 0L
+curlConnectError <- function(url) {
+    structure(class = c("curl_error_couldnt_connect", "curl_error", "error", "condition"), list(
         message = sprintf("Failed to connect to %s port 443 after 0 ms: Could not connect to server",
-            httr2::url_parse(url)$hostname), call = NULL)))
+            httr2::url_parse(url)$hostname), call = NULL))
 }
-localNetworkFailure <- function(env = parent.frame()) {
-    testthat::local_mocked_bindings(curl_fetch = curlConnectFailure, .package = "httr2", .env = env)
+curlConnectFailure <- function(handle, url, path) {
+    network$transfers <- network$transfers + 1L
+    stop(curlConnectError(url))
+}
+httr2Perform <- httr2::req_perform
+failingPerform <- function(req, path = NULL, verbosity = NULL, mock = getOption("httr2_mock", NULL),
+    error_call = rlang::current_env()) {
+    if (!stringEndpoint(req) %in% network$failing) {
+        return(httr2Perform(req, path = path, verbosity = verbosity, mock = mock, error_call = error_call))
+    }
+    network$sent <- network$sent + 1L
+    the <- get("the", envir = asNamespace("httr2"))
+    assign("last_request", req, envir = the)
+    assign("last_response", NULL, envir = the)
+    condition <- get("curl_cnd", envir = asNamespace("httr2"))(curlConnectError(httr2::req_get_url(req)))
+    condition$request <- req
+    rlang::cnd_signal(condition)
+}
+localNetworkFailure <- function(failing = character(), env = parent.frame()) {
+    network$failing <- failing
+    network$sent <- 0L
+    network$transfers <- 0L
+    # A third guard: a proxy that refuses every connection, so curl cannot reach the network either.
+    withr::local_envvar(c(https_proxy = "http://127.0.0.1:9", HTTPS_PROXY = "http://127.0.0.1:9",
+        http_proxy = "http://127.0.0.1:9", ALL_PROXY = "http://127.0.0.1:9", no_proxy = "", NO_PROXY = ""), .local_envir = env)
+    testthat::local_mocked_bindings(curl_fetch = curlConnectFailure, req_perform = failingPerform, .package = "httr2",
+        .env = env)
 }
 networkFailure <- function(req) NULL
 
 runString <- function(mock, ranked = stringRanked(), key = SENTINEL_KEY, options = integrationStringOptions(
-    poll_interval_seconds = 0)) {
-    localNetworkFailure()
+    poll_interval_seconds = 0), failing = character()) {
+    localNetworkFailure(failing)
     httr2::local_mocked_responses(mock$handler)
     integrationStringRankedEnrichment(ranked, key, 9606, options)
 }
@@ -80,15 +115,26 @@ containsSentinel <- function(x) length(grepRaw(SENTINEL_KEY, serialize(x, NULL),
 test_that("the network-failure double raises httr2's own failure, carrying the request and its key", {
     skip_if_not_installed("httr2")
     withr::defer(integrationForgetHttpRequest())
-    localNetworkFailure()
     request <- httr2::request(paste0(STRING_HOST, "/api/json/valuesranks_enrichment_submit")) |>
         httr2::req_body_form(api_key = SENTINEL_KEY)
-    condition <- tryCatch(httr2::req_perform(request), error = \(e) e)
-    expect_s3_class(condition, "httr2_failure")
-    expect_s3_class(condition$parent, "curl_error_couldnt_connect")
-    expect_true(containsSentinel(condition$request))
-    expect_true(containsSentinel(condition))
-    expect_true(containsSentinel(httr2::last_request()))
+    # The send function's failure, and httr2's own failure from a refused transfer, carry the request and its key.
+    local({
+        localNetworkFailure("valuesranks_enrichment_submit")
+        condition <- tryCatch(httr2::req_perform(request), error = \(e) e)
+        expect_identical(network$sent, 1L)
+        expect_s3_class(condition, "httr2_failure")
+        expect_s3_class(condition$parent, "curl_error_couldnt_connect")
+        expect_true(containsSentinel(condition$request))
+        expect_true(containsSentinel(httr2::last_request()))
+    })
+    local({
+        localNetworkFailure()
+        condition <- tryCatch(httr2::req_perform(request), error = \(e) e)
+        expect_identical(network$transfers, 1L)
+        expect_s3_class(condition, "httr2_failure")
+        expect_s3_class(condition$parent, "curl_error_couldnt_connect")
+        expect_true(containsSentinel(condition))
+    })
 })
 
 test_that("the STRING client sends the documented requests and returns the release, a request summary and the response", {
@@ -115,7 +161,7 @@ test_that("the STRING client sends the documented requests and returns the relea
     expect_identical(stringFields(requests[[3L]])$job_id, "job42")
 
     expect_identical(result$service, "STRING")
-    expect_identical(result$version, list(string_version = "12.0", string_stable_address = STRING_HOST))
+    expect_identical(result$version, list(string_version = "12.5", string_stable_address = STRING_HOST))
     expect_identical(result$request$species, "9606")
     expect_identical(result$request$identifiers, 12L)
     expect_identical(result$request$polls, 2L)
@@ -192,10 +238,14 @@ test_that("a planted sentinel key appears in no returned value, message, warning
     expect_null(condition$parent)
     # A network failure at the submission, which carries the key: httr2's own failure holds the request.
     unreachable <- newStringMock(overrides = list(valuesranks_enrichment_submit = networkFailure))
-    condition <- capture(tryCatch(runString(unreachable), integration_enrichment_service_unreachable = \(e) e))
+    condition <- capture(tryCatch(runString(unreachable, failing = "valuesranks_enrichment_submit"),
+        integration_enrichment_service_unreachable = \(e) e))
     expect_s3_class(condition, "integration_enrichment_service_unreachable")
-    expect_identical(vapply(unreachable$log$requests, stringEndpoint, ""), c("version",
-        "valuesranks_enrichment_submit"))
+    # The failure came from the send function, after the key was in the request, and nothing reached the transfer.
+    expect_gte(network$sent, 1L)
+    expect_identical(network$transfers, 0L)
+    # The double answered the version; the submission never reached it (the send function failed first).
+    expect_identical(vapply(unreachable$log$requests, stringEndpoint, ""), "version")
     expect_false(containsSentinel(condition))
     expect_null(condition$parent)
     expect_false(grepl(SENTINEL_KEY, conditionMessage(condition), fixed = TRUE))
@@ -217,8 +267,8 @@ test_that("STRING failures are classed refusals with no partial result", {
     skip_if_not_installed("httr2")
     status <- function(code) function(request) httr2::response(status_code = code)
     expect_refusal <- function(mock, class, options = integrationStringOptions(poll_interval_seconds = 0),
-        key = SENTINEL_KEY) {
-        condition <- expect_error(runString(mock, key = key, options = options), class = class)
+        key = SENTINEL_KEY, failing = character()) {
+        condition <- expect_error(runString(mock, key = key, options = options, failing = failing), class = class)
         expect_s3_class(condition, "integration_refused")
         expect_s3_class(condition, "integration_enrichment_refused")
         mock
@@ -227,8 +277,10 @@ test_that("STRING failures are classed refusals with no partial result", {
         "integration_enrichment_service_failed")
     expect_length(mock$log$requests, 1L)
     mock <- expect_refusal(newStringMock(overrides = list(version = networkFailure)),
-        "integration_enrichment_service_unreachable")
-    expect_length(mock$log$requests, 1L)
+        "integration_enrichment_service_unreachable", failing = "version")
+    expect_length(mock$log$requests, 0L)
+    expect_identical(network$sent, 1L)
+    expect_identical(network$transfers, 0L)
     expect_refusal(newStringMock(overrides = list(version = function(request) {
         httr2::response(status_code = 200L, body = charToRaw("not json"))
     })), "integration_enrichment_service_failed")
@@ -238,7 +290,7 @@ test_that("STRING failures are classed refusals with no partial result", {
         options = integrationStringOptions(poll_interval_seconds = 0, max_polls = 2L))
     expect_identical(sum(vapply(mock$log$requests, stringEndpoint, "") == "valuesranks_enrichment_status"), 2L)
     expect_refusal(newStringMock(overrides = list(download = status(404L))), "integration_enrichment_service_failed")
-    expect_refusal(newStringMock(download_url = "http://version-12-0.string-db.org/api/tsv/download?x=1"),
+    expect_refusal(newStringMock(download_url = "http://version-12-5.string-db.org/api/tsv/download?x=1"),
         "integration_enrichment_service_failed")
     mock <- expect_refusal(newStringMock(), "integration_enrichment_key_missing", key = "")
     expect_length(mock$log$requests, 0L)

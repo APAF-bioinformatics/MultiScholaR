@@ -30,10 +30,11 @@
 #' @noRd
 INTEGRATION_ENRICHMENT_MIN_MAPPED <- 10L
 
-#' The STRING release queried by default: the stable address of version 12.0, the release the package's other
-#' STRING client queries (`submitStringDBEnrichment`).
+#' The STRING release queried by default (INT-18): the stable address of version 12.5, the current release named by
+#' STRING's API help (https://string-db.org/help/api/, read 2026-11-21); the version STRING reports is recorded with
+#' every result.
 #' @noRd
-INTEGRATION_STRING_DEFAULT_HOST <- "https://version-12-0.string-db.org"
+INTEGRATION_STRING_DEFAULT_HOST <- "https://version-12-5.string-db.org"
 
 #' The refusals' sentences, by condition class. Plain words for people who are not data-science specialists; the
 #' final wording is the user's (KIT-141 report). A refusal's message is its sentence, then a short detail in brackets.
@@ -62,6 +63,23 @@ INTEGRATION_ENRICHMENT_REFUSALS <- c(
     ),
     integration_enrichment_method_failed = paste(
         "The pathway test could not be run on these data; no other test was run in its place."
+    ),
+    # KIT-141 part 2.
+    integration_enrichment_no_model = "Train a model at the Model tab before running an enrichment.",
+    integration_enrichment_no_testable_set = paste(
+        "No pathway has enough measured features for the test: a pathway is tested only when it holds between the",
+        "smallest and the largest number of measured features set below."
+    ),
+    integration_enrichment_download_failed = paste(
+        "The pathway tables could not be downloaded. Check the internet connection and try again; nothing was kept."
+    ),
+    integration_enrichment_release_changed = paste(
+        "The database published a new release while its tables were being downloaded, so the tables could not be",
+        "labelled with one release. Download them again."
+    ),
+    integration_enrichment_response_mismatch = paste(
+        "The saved answer of the service was for another list of features or other settings, so it was not used.",
+        "Run the enrichment again."
     )
 )
 
@@ -351,8 +369,7 @@ integrationStringDownload <- function(download_url, api_key, options) {
     parsed$query$api_key <- NULL
     fields <- if (key_in_url) list(api_key = api_key) else NULL
     reply <- integrationStringRequest(httr2::url_build(parsed), fields, options, api_key)
-    terms <- tryCatch(utils::read.delim(text = reply$body, sep = "\t", quote = "", check.names = FALSE,
-        stringsAsFactors = FALSE, comment.char = ""), error = \(e) NULL)
+    terms <- integrationStringTermsTable(reply$body)
     if (!is.data.frame(terms)) {
         integrationEnrichmentRefuse("integration_enrichment_service_failed", "the results table could not be read",
             key = api_key)
@@ -396,7 +413,7 @@ integrationStringRankedEnrichment <- function(ranked, api_key, species, options 
     }
 
     # --- Submission ---
-    identifiers <- paste(ranked$identifier, as.character(ranked$value), sep = "\t", collapse = "\n")
+    identifiers <- integrationStringIdentifiersText(ranked)
     submission <- integrationStringRecord(integrationStringRequest(paste0(api, "valuesranks_enrichment_submit"),
         list(species = species, caller_identity = options$caller_identity, identifiers = identifiers,
             api_key = api_key, ge_fdr = options$ge_fdr,
@@ -439,6 +456,21 @@ integrationStringRankedEnrichment <- function(ranked, api_key, species, options 
     integrationRedactKey(list(service = "STRING", method = "valuesranks_enrichment", version = version,
         request = request, response = list(submission = submission, status = status, results_tsv = results$text),
         terms = results$terms), api_key)
+}
+
+#' The identifiers and values as STRING receives them: one `identifier<TAB>value` line per feature, the values written
+#' with R's `as.character()` (15 significant digits). Its SHA-256 is the request's identity.
+#' @param ranked Data frame with `identifier` and `value`.
+#' @noRd
+integrationStringIdentifiersText <- function(ranked) {
+    paste(ranked$identifier, as.character(ranked$value), sep = "\t", collapse = "\n")
+}
+
+#' STRING's results table from its text (tab-separated, with a header), or NULL when it cannot be read.
+#' @noRd
+integrationStringTermsTable <- function(text) {
+    tryCatch(utils::read.delim(text = text, sep = "\t", quote = "", check.names = FALSE, stringsAsFactors = FALSE,
+        comment.char = ""), error = \(e) NULL)
 }
 
 #' STRING's own message of a record (at most 200 characters), or `fallback` when it gives none.
@@ -691,3 +723,4 @@ integrationLegacyGseaStep <- function(ranked_sorted, ranked_jittered, term2gene,
         NULL
     })
 }
+
