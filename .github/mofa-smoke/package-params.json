@@ -1,7 +1,8 @@
 {
-  "label": "k152-merge-8f99a203",
-  "package_commit": "8f99a2030197afb31b7addf561d33bc28bcb3c73",
+  "label": "k153-5245a2e2",
+  "package_commit": "5245a2e210a1f3899ef852f56251c24ce9dc1605",
   "tests": [
+    "test-integration-input-matrix.R",
     "test-integration-outputs-mofa.R",
     "test-integration-outputs.R",
     "test-integration-mofa-model.R",
