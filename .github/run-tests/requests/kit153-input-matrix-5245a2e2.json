@@ -1,0 +1,85 @@
+{
+  "requested_by": "KIT-153 (INT-23): run 2 of 2 after the correction pass (plain saved product read; corpus regenerated on runner 44795077802); base versus head",
+  "label": "KIT-153 input matrix on kit-153-integration-input-matrix 5245a2e2 (run 2 of 2)",
+  "package_commit": "5245a2e210a1f3899ef852f56251c24ce9dc1605",
+  "base_commit": "3f680f7f06031a669c661bea9abdb95f97c178ba",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-input-matrix.R",
+    "test-workflow-integration-input.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-kit129-run-path.R",
+    "test-dia-limpa-ruv-rules.R",
+    "test-integration-model.R",
+    "test-integration-gui.R",
+    "test-integration-results.R",
+    "test-integration-record.R",
+    "test-integration-outputs.R",
+    "test-integration-corpus.R",
+    "test-integration-sample-match.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-mofa-model.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-integration-record-mofa.R",
+    "test-integration-partitioned-mofa.R",
+    "test-e2e-test-mode-integration.R",
+    "test-omic-summary-module.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-prot-declarations.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-trx-declarations.R",
+    "test-workflow-analysis-record.R",
+    "test-gui-entry-proteomics.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-gui-entry-transcriptomics.R",
+    "test-module-ci-prot-summary.R",
+    "test-module-ci-lipid-summary.R",
+    "test-module-ci-metab-summary.R",
+    "test-module-ci-trx-summary.R"
+  ],
+  "shards": 12,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-kit129-run-path.R": 90
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "3f680f7f06031a669c661bea9abdb95f97c178ba",
+        "kit153-gate-off"
+      ],
+      "out": "kit153-gate-off",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "3f680f7f06031a669c661bea9abdb95f97c178ba",
+        "kit153-failing-first",
+        "test-workflow-integration-input.R"
+      ],
+      "out": "kit153-failing-first",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
