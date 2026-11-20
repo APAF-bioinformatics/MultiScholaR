@@ -1,13 +1,14 @@
 {
-  "label": "k152-correction-c0ebda91",
-  "package_commit": "c0ebda9198895538058295e3b4473f8f1a2f8915",
+  "label": "k152-merge-8f99a203",
+  "package_commit": "8f99a2030197afb31b7addf561d33bc28bcb3c73",
   "tests": [
     "test-integration-outputs-mofa.R",
     "test-integration-outputs.R",
     "test-integration-mofa-model.R",
     "test-integration-model-tab-mofa.R",
     "test-integration-results-mofa.R",
-    "test-integration-record-mofa.R"
+    "test-integration-record-mofa.R",
+    "test-integration-partitioned-mofa.R"
   ],
   "record": false,
   "runs": 1
