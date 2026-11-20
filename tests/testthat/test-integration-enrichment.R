@@ -58,6 +58,10 @@ runString <- function(mock, ranked = stringRanked(), key = SENTINEL_KEY, options
     integrationStringRankedEnrichment(ranked, key, 9606, options)
 }
 
+# A network failure as httr2 reports it: the request returns an error condition, which httr2 signals with the request
+# attached (and with it the key), as a real failed connection does.
+networkFailure <- function(text) simpleError(text)
+
 containsSentinel <- function(x) length(grepRaw(SENTINEL_KEY, serialize(x, NULL), fixed = TRUE)) > 0L
 
 test_that("the STRING client sends the documented requests and returns the release, a request summary and the response", {
@@ -160,7 +164,7 @@ test_that("a planted sentinel key appears in no returned value, message, warning
     expect_false(grepl(SENTINEL_KEY, conditionMessage(condition), fixed = TRUE))
     expect_null(condition$parent)
     unreachable <- newStringMock(overrides = list(valuesranks_enrichment_submit = function(request) {
-        stop("could not connect while sending ", stringFields(request)$api_key)
+        networkFailure(paste("could not connect while sending", stringFields(request)$api_key))
     }))
     condition <- capture(tryCatch(runString(unreachable), integration_enrichment_service_unreachable = \(e) e))
     expect_s3_class(condition, "integration_enrichment_service_unreachable")
@@ -192,7 +196,7 @@ test_that("STRING failures are classed refusals with no partial result", {
     mock <- expect_refusal(newStringMock(overrides = list(version = status(500L))),
         "integration_enrichment_service_failed")
     expect_length(mock$log$requests, 1L)
-    mock <- expect_refusal(newStringMock(overrides = list(version = function(request) stop("no route to host"))),
+    mock <- expect_refusal(newStringMock(overrides = list(version = function(request) networkFailure("no route to host"))),
         "integration_enrichment_service_unreachable")
     expect_length(mock$log$requests, 1L)
     expect_refusal(newStringMock(overrides = list(version = function(request) {
