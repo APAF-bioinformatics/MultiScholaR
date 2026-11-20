@@ -245,6 +245,8 @@ integrationGuiTexts <- function() {
             "data sets measured on different scales become comparable. It does not balance data sets with different",
             "numbers of features; the feature selection does that."),
         param_center_groups = "Centre each feature on its mean",
+        help_center_groups = paste("Required unless each feature is scaled to mean 0 and standard deviation 1, which",
+            "centres it already."),
         param_num_factors = "Number of factors",
         param_convergence_mode = "How closely training must settle before it stops",
         choice_convergence_mode_fast = "fast",

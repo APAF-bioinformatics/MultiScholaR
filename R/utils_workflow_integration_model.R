@@ -348,6 +348,10 @@ integrationResolveMofaParameters <- function(object, parameters = list()) {
             invalid(sprintf("%s must be TRUE or FALSE", name))
         }
     }
+    # KIT-151 (plan item E): centring is required unless every feature is already centred by its z-score.
+    if (!isTRUE(out$center_groups) && !identical(out$scaling, "feature_zscore")) {
+        invalid("center_groups can be FALSE only with scaling = feature_zscore (the features are otherwise not centred)")
+    }
     whole <- function(name, minimum) {
         value <- out[[name]]
         if (!(is.numeric(value) && length(value) == 1L && !is.na(value) && value == round(value) && value >= minimum)) {

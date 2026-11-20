@@ -797,3 +797,12 @@ test_that("KIT-151 (SCI-12): variance explained and scale_views are described as
     expect_identical(spec$scaling$default, "none")
     expect_identical(spec$center_groups$default, TRUE)
 })
+
+# KIT-151 (plan item E): centring stays on; it may be turned off only when every feature is z-scored (already centred).
+test_that("KIT-151: center_groups is FALSE only with the per-feature z-score", {
+    inputs <- intModelInputs()
+    object <- integrationViewsFromInputs(c(inputs$proteomics, inputs$lipidomics))$object
+    expect_error(integrationResolveMofaParameters(object, list(center_groups = FALSE)), class = "integration_parameters_invalid")
+    resolved <- integrationResolveMofaParameters(object, list(center_groups = FALSE, scaling = "feature_zscore"))
+    expect_false(resolved$center_groups)
+})
