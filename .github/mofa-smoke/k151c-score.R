@@ -101,8 +101,11 @@ if (task == "seed") {
             cmp <- compare_fits(cf[[i]], cf[[j]])
             init_d <- if (!is.null(cf[[i]]$init_Z) && !is.null(cf[[j]]$init_Z)) max(abs(cf[[i]]$init_Z - cf[[j]]$init_Z))
                 else NA_real_
-            init_r <- if (!is.null(cf[[i]]$init_Z) && !is.null(cf[[j]]$init_Z))
-                min(greedy_match(stats::cor(cf[[i]]$init_Z, cf[[j]]$init_Z))$abs_r) else NA_real_
+            init_r <- if (!is.null(cf[[i]]$init_Z) && !is.null(cf[[j]]$init_Z)) {
+                r_init <- stats::cor(cf[[i]]$init_Z, cf[[j]]$init_Z)
+                dimnames(r_init) <- list(paste0("a", seq_len(nrow(r_init))), paste0("b", seq_len(ncol(r_init))))
+                min(greedy_match(r_init)$abs_r)
+            } else NA_real_
             pairs[[length(pairs) + 1L]] <- data.frame(dataset = cells[ci, 1], arm = cells[ci, 2], mode = cells[ci, 3],
                 seed_a = seeds[[i]], seed_b = seeds[[j]], identical = cmp$identical, k_a = cmp$k_a, k_b = cmp$k_b,
                 min_abs_r_Z = cmp$min_r_Z, min_abs_r_W = cmp$min_r_W, max_abs_dZ = cmp$max_dZ, max_abs_dW = cmp$max_dW,
@@ -188,7 +191,10 @@ if (task == "pin") {
                 collapse = " "),
             other_blas = paste(vapply(Filter(function(x) !identical(x$internal_api, "openblas"), blas),
                 function(x) as.character(x$internal_api), character(1)), collapse = " "),
-            numpy_avx512_on = paste(grep("^AVX512", j$job$python$numpy_cpu_features_on, value = TRUE), collapse = " "),
+            # numpy's AVX-512 dispatch targets (AVX512F, AVX512CD, AVX512_<name>); sub-features such as AVX512BW are
+            # not targets and cannot be switched off
+            numpy_avx512_on = paste(grep("^AVX512(F|CD|_[A-Z]+)$", j$job$python$numpy_cpu_features_on, value = TRUE),
+                collapse = " "),
             env = paste(names(unlist(j$job$python$environment)), unlist(j$job$python$environment), sep = "=", collapse = " "),
             stringsAsFactors = FALSE)
     }))
