@@ -169,9 +169,10 @@ k150_measuring_trainer <- function(views, options) {
     k150_mark("handoff_start")
     k150_tracemalloc$start()
     fit <- integrationTrainMofa(views, options)
-    traced <- k150_tracemalloc$get_traced_memory()
+    # Divided inside Python: a peak above 2^31 bytes came back as a wrapped 32-bit integer (probe run 44789449089).
+    peak <- reticulate::py_eval("__import__('tracemalloc').get_traced_memory()[1] / 1048576.0")
     k150_tracemalloc$stop()
-    k150_rec$python_peak_mib <- round(as.numeric(traced[[2L]]) / 2^20, 1)
+    k150_rec$python_peak_mib <- round(as.numeric(peak), 1)
     k150_mark("training_end")
     fit
 }

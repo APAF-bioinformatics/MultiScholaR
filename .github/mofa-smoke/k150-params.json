@@ -1,7 +1,8 @@
 {
-  "label": "k150-probe-L",
-  "attempt": "probe",
+  "label": "k150-counted",
+  "attempt": "counted",
   "jobs": [
-    {"name": "probe-L", "plan": "probe", "size": "L", "timeout": 300}
+    {"name": "counted-small", "plan": "counted-small", "size": "M", "timeout": 240},
+    {"name": "counted-large", "plan": "counted-large", "size": "L", "timeout": 330}
   ]
 }

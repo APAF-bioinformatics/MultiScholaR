@@ -104,8 +104,8 @@ def validity(row, record, baseline, driver):
         missing = [k for k in needed if num(row[k]) is None]
         if row["stage"] in ("train", "floor", "align") and not row["selected"]:
             missing.append("selected")
-        if row["stage"] in ("train", "floor") and num(row["python_peak_mib"]) is None:
-            missing.append("python_peak_mib")
+        if row["stage"] in ("train", "floor") and (num(row["python_peak_mib"]) is None or num(row["python_peak_mib"]) < 0):
+            missing.append("python_peak_mib (absent or negative)")
         if missing:
             return "no (missing " + ",".join(missing) + ")"
         if num(row["hwm_reset_mib"]) is None or num(row["hwm_reset_mib"]) > num(row["baseline_vmrss_mib"]) + 16:
@@ -125,7 +125,8 @@ def write_tsv(path, rows, fields):
         writer = csv.DictWriter(handle, fieldnames=fields, delimiter="\t", extrasaction="ignore")
         writer.writeheader()
         for row in rows:
-            writer.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in fields})
+            writer.writerow({k: ("" if row.get(k) is None else " ".join(row.get(k).split()) if isinstance(row.get(k), str)
+                                 else row.get(k)) for k in fields})
 
 
 def lifecycle_check(rows):

@@ -166,3 +166,18 @@ minutes, leaving 60 for a correction pass.
 - The KC datasets or any real data.
 - The final default model: the cap is fixed at 1,000 and the selection statistic is the current one (variance).
 - Training time of the floor rows (10 fixed rounds).
+
+## 14. Record before the counted run (2026-11-21; terms, thresholds and sizes unchanged)
+
+- Lifecycle run 44786058470: PASS (31 stages of the five builds at S completed with valid figures; the memory-limit,
+  time-limit and error failures each recorded after the baseline with its stop reason). 20.5 runner-minutes.
+- Feasibility probe run 44789449089: base completes L (capped pipeline and floor row; largest process peak 10,947 MiB
+  in the floor row; capped training 633 s, 4,361 rounds). L is the largest before/after size; L' is not used.
+  38 runner-minutes.
+- The one correction pass, spent here: the probe's floor-row Python peak read -200.1 MiB (tracemalloc's peak above
+  2^31 bytes came back from reticulate as a wrapped 32-bit integer). The peak is now divided into MiB inside Python,
+  and a negative Python peak marks the row instrumentation invalid. The probe's Python figure is invalid; its
+  completion and process peaks stand. The summariser also folds whitespace inside TSV fields (formatting only). No
+  further correction is available: an instrumentation failure in the counted run is reported, not repaired.
+- Counted run: `counted-small` (240 min) and `counted-large` at L (330 min), as section 12; projected from the probe
+  and lifecycle times at about 110 and 215 minutes, so no third job.
