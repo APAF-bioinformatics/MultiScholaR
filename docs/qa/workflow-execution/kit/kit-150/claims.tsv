@@ -1,0 +1,7 @@
+claim	size	verdict	detail
+1	M	fail	heap peak 540.6 MiB vs bound 259.0 MiB; heap peak 540.6 MiB vs bound 259.0 MiB; heap peak 540.6 MiB vs bound 259.0 MiB
+1	L	fail	heap peak 847.1 MiB vs bound 263.6 MiB; heap peak 847.1 MiB vs bound 263.6 MiB; heap peak 847.1 MiB vs bound 263.6 MiB
+2	S	pass	pipeline process peak base 1080.5 MiB (n=3), C 984.7 MiB (n=3), tolerance 64.0 MiB (noise 6.8 )
+2	M	pass	pipeline process peak base 1997.1 MiB (n=3), C 1208.0 MiB (n=3), tolerance 99.9 MiB (noise 1.8 )
+2	L	pass	pipeline process peak base 5197.2 MiB (n=3), C 2388.1 MiB (n=3), tolerance 259.9 MiB (noise 29.8 )
+3	P1/P2/P3	fail	P1: median 428.2 MiB, bound 130.0 MiB; P2: median 472.7 MiB, bound 134.6 MiB; P3: median 342.4 MiB, bound 99.2 MiB; features doubled: +44.5 MiB (tolerance 64.0); runs doubled: +85.8 MiB (allowed 406.4); bound NOT met, features met, runs met

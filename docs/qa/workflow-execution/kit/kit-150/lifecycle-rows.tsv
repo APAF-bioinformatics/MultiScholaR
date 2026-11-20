@@ -1,0 +1,36 @@
+job	id	size	build	rep	stage	case	outcome	valid	heap_peak_mib	vmhwm_mib	baseline_heap_mib	baseline_vmrss_mib	hwm_reset_mib	wall_s	load_s	python_peak_mib	cgroup_peak_mib	largest_selected_mib	dense_floor_mib	selected	iterations	factors_sha256	tables_mib	row_group_mib	inputs_mib	marks	exit_status	oom_kill	time_limit_s	memory_limit_mib	error
+lifecycle	S_A_r1_align	S	A	1	align	capped	completed	yes	240.1	858.4	443.8	634.2	634.2	0.61	5.96		777.9	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20						handoff_reached@0.611s/859MiB	0	0	2131	14848	
+lifecycle	S_A_r1_import	S	A	1	import	capped	completed	yes	355.9	980	443.8	634	634	2.2	6.1		914.1						3.1	1.5			0	0	2140	14848	
+lifecycle	S_A_r1_results	S	A	1	results	capped	completed	yes	231.9	830.7	443.8	634.4	634.4	0.45	5.9		749.5									product_read@0.149s/634.5MiB	0	0	1800	14848	
+lifecycle	S_A_r1_train	S	A	1	train	capped	completed	yes	319.6	1081.9	443.8	634.1	634.1	18.91	5.98	61.7	954.9	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20	2056	7a50408dcda90b5a				handoff_start@0.592s/859.7MiB training_end@18.843s/1081.9MiB product_written@18.908s/1081.9MiB	0	0	2124	14848	
+lifecycle	S_A_r1_write	S	A	1	write	capped	completed	yes	100.4	702.4	450.3	639.9	639.9	0.18	5.91		629.6								4		0	0	1800	14848	
+lifecycle	S_B1_r1_align	S	B1	1	align	capped	completed	yes	240.5	860.5	443.8	634.1	634.1	0.66	6.04		779.6	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20						handoff_reached@0.658s/861MiB	0	0	2075	14848	
+lifecycle	S_B1_r1_import	S	B1	1	import	capped	completed	yes	355.9	983	443.8	634.3	634.3	2.07	6.02		910.4						3.1	1.5			0	0	2084	14848	
+lifecycle	S_B1_r1_results	S	B1	1	results	capped	completed	yes	231.9	830.6	443.8	634.3	634.3	0.53	6.3		749.4									product_read@0.159s/634.4MiB	0	0	1800	14848	
+lifecycle	S_B1_r1_train	S	B1	1	train	capped	completed	yes	249.5	965.3	443.8	634.3	634.3	21.06	5.97	61.7	837	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20	2056	7a50408dcda90b5a				handoff_start@0.604s/859.6MiB training_end@20.434s/965.3MiB product_written@21.054s/965.3MiB	0	0	2067	14848	
+lifecycle	S_B1_r1_write	S	B1	1	write	capped	completed	yes	100.4	702.5	450.3	640.1	640.1	0.19	5.92		629.9								4		0	0	1800	14848	
+lifecycle	S_B3_r1_align	S	B3	1	align	capped	completed	yes	240.6	859.9	443.8	634.1	634.1	0.59	5.68		779.3	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20						handoff_reached@0.593s/860.3MiB	0	0	2015	14848	
+lifecycle	S_B3_r1_import	S	B3	1	import	capped	completed	yes	355.9	982	443.8	634.3	634.3	2.4	6.55		908.5						3.1	1.5			0	0	2025	14848	
+lifecycle	S_B3_r1_results	S	B3	1	results	capped	completed	yes	256.2	854.3	443.8	634.4	634.4	0.53	6.24		773.1									product_read@0.152s/634.5MiB	0	0	1800	14848	
+lifecycle	S_B3_r1_train	S	B3	1	train	capped	completed	yes	249.6	965	443.8	634.4	634.4	22.95	5.76	61.7	838.6	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20	2056	7a50408dcda90b5a				handoff_start@0.598s/861.3MiB training_end@19.978s/965MiB product_written@22.954s/965MiB	0	0	2008	14848	
+lifecycle	S_B3_r1_write	S	B3	1	write	capped	completed	yes	100.4	702.4	450.3	639.9	639.9	0.2	6.33		629.8								4		0	0	1800	14848	
+lifecycle	S_C_r1_align	S	C	1	align	capped	completed	yes	262.2	877.8	443.9	634.4	634.4	0.73	5.95		797.2	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20						handoff_reached@0.728s/877.8MiB	0	0	1954	14848	
+lifecycle	S_C_r1_app_import	S	C	1	app_import	capped	completed	yes	356.3	986.8	443.9	634.1	634.1	1.96	6.08		913.2										0	0	1895	14848	
+lifecycle	S_C_r1_app_preview	S	C	1	app_preview	capped	completed	yes	222.8	821.3	443.9	634.1	634.1	0.49	5.96		740.4										0	0	1886	14848	
+lifecycle	S_C_r1_fail_error	S	C	1	fail_error	capped	error	yes	55.8	637.4	443.9	634.1	634.1	0.19	5.78		582.7										3	0	600	14848	"no integration input manifest at
+/home/runner/work/_temp/k150-work/runs/S_C_r1_failures/store/absent-a/integration_input.json"
+lifecycle	S_C_r1_fail_memory	S	C	1	fail_memory	capped	killed: memory limit	yes			443.9	634.1	634.1		6		4096										137	1	600	4096	
+lifecycle	S_C_r1_fail_time	S	C	1	fail_time	capped	stopped: time limit	yes			443.9	634.4	634.4		5.86		581										124	0	240	14848	
+lifecycle	S_C_r1_floor	S	C	1	floor	floor	completed	yes	246.5	992.4	443.9	634.4	634.4	7.36	5.91	78.5	879.5	0.8	3.1	lipidomics_LCMS_Pos=5000x20;metabolomics_LCMS_Pos=5000x20;proteomics=5000x20;transcriptomics=5000x20	11	8a0fa7c58f608273				handoff_start@0.642s/866.8MiB training_end@4.503s/987.4MiB product_written@7.36s/992.3MiB	0	0	1909	14848	
+lifecycle	S_C_r1_import	S	C	1	import	capped	completed	yes	355.9	982.7	443.9	634.2	634.2	2.24	5.95		910.3						3.1	1.5			0	0	1964	14848	
+lifecycle	S_C_r1_results	S	C	1	results	capped	completed	yes	256.1	854.1	443.9	634.3	634.3	0.51	5.89		772.9									product_read@0.148s/634.4MiB	0	0	1800	14848	
+lifecycle	S_C_r1_train	S	C	1	train	capped	completed	yes	262.2	960.3	443.9	634.4	634.4	23.46	6.07	61.7	838.1	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20	2056	7a50408dcda90b5a				handoff_start@0.762s/878.1MiB training_end@20.52s/960.3MiB product_written@23.465s/960.3MiB	0	0	1947	14848	
+lifecycle	S_C_r1_write	S	C	1	write	capped	completed	yes	100.4	702.5	450.3	640	640	0.19	6.02		630.4								4		0	0	1800	14848	
+lifecycle	S_base_r1_align	S	base	1	align	capped	completed	yes	239.9	860.9	443.8	634.1	634.1	0.6	5.92		779.8	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20						handoff_reached@0.595s/861.1MiB	0	0	2214	14848	
+lifecycle	S_base_r1_app_import	S	base	1	app_import	capped	completed	yes	256.4	908.5	443.8	634.2	634.2	2.2	5.84		835.3										0	0	2163	14848	
+lifecycle	S_base_r1_app_preview	S	base	1	app_preview	capped	completed	yes	217.5	824.6	443.8	634.3	634.3	0.44	5.84		743.2										0	0	2154	14848	
+lifecycle	S_base_r1_floor	S	base	1	floor	floor	completed	yes	247.7	1047.9	443.8	634.1	634.1	3.45	5.94	78.5	925	0.8	3.1	lipidomics_LCMS_Pos=5000x20;metabolomics_LCMS_Pos=5000x20;proteomics=5000x20;transcriptomics=5000x20	11	8a0fa7c58f608273				handoff_start@0.511s/860.7MiB training_end@3.334s/1047.9MiB product_written@3.449s/1047.9MiB	0	0	2173	14848	
+lifecycle	S_base_r1_import	S	base	1	import	capped	completed	yes	204.8	805.5	443.8	634.3	634.3	1.89	5.82		735.2										0	0	2223	14848	
+lifecycle	S_base_r1_results	S	base	1	results	capped	completed	yes	231.8	830.3	443.8	634.1	634.1	0.48	5.94		749.4									product_read@0.157s/634.3MiB	0	0	1800	14848	
+lifecycle	S_base_r1_train	S	base	1	train	capped	completed	yes	319.6	1083	443.8	634.3	634.3	19.91	5.92	62.2	957.4	0.2	0.6	lipidomics_LCMS_Pos=1000x20;metabolomics_LCMS_Pos=1000x20;proteomics=1000x20;transcriptomics=1000x20	2056	7a50408dcda90b5a				handoff_start@0.602s/859.6MiB training_end@19.833s/1083MiB product_written@19.906s/1083MiB	0	0	2207	14848	
+lifecycle	S_base_r1_write	S	base	1	write	capped	completed	yes	9.8	641.4	450.3	640.4	640.4	0.14	5.92		601.6								7.9		0	0	1800	14848	

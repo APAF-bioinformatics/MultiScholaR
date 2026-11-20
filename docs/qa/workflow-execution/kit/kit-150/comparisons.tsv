@@ -1,0 +1,109 @@
+size	mechanism	stage	metric	before_build	after_build	before	after	change	noise	noise_note	tolerance	n_before	n_after	verdict
+S	A: Parquet inputs, streamed import	write	R heap peak (MiB)	base	A	9.8	100.4	90.6	0.0		64.0	3	1	increased
+S	A: Parquet inputs, streamed import	write	process peak (MiB)	base	A	640.6	702.0	61.4	0.5		64.0	3	1	no measurable change
+S	A: Parquet inputs, streamed import	write	wall (s)	base	A	0.3	0.3	-0.0	0.0		1.0	3	1	no measurable change
+S	A: Parquet inputs, streamed import	import	R heap peak (MiB)	base	A	204.8	355.9	151.1	0.0		64.0	3	1	increased
+S	A: Parquet inputs, streamed import	import	process peak (MiB)	base	A	804.6	986.2	181.6	6.8		64.0	3	1	increased
+S	A: Parquet inputs, streamed import	import	wall (s)	base	A	4.9	4.8	-0.1	0.5		1.0	3	1	no measurable change
+S	B1: save_data FALSE, one model load, fewer copies	train	R heap peak (MiB)	A	B1	319.6	249.5	-70.1	0.0		64.0	1	1	reduced
+S	B1: save_data FALSE, one model load, fewer copies	train	process peak (MiB)	A	B1	1080.1	963.3	-116.8	1.1		64.0	1	1	reduced
+S	B1: save_data FALSE, one model load, fewer copies	train	wall (s)	A	B1	43.9	44.7	0.8	1.3		2.6	1	1	no measurable change
+S	B3: product v2 (training write, Results read)	train	R heap peak (MiB)	B1	B3	249.5	249.6	0.1	0.0		64.0	1	1	no measurable change
+S	B3: product v2 (training write, Results read)	train	process peak (MiB)	B1	B3	963.3	963.1	-0.2	1.1		64.0	1	1	no measurable change
+S	B3: product v2 (training write, Results read)	train	wall (s)	B1	B3	44.7	49.2	4.5	1.3		2.6	1	1	increased
+S	B3: product v2 (training write, Results read)	results	R heap peak (MiB)	B1	B3	231.9	256.2	24.3	0.0		64.0	1	1	no measurable change
+S	B3: product v2 (training write, Results read)	results	process peak (MiB)	B1	B3	830.0	853.5	23.5	0.4		64.0	1	1	no measurable change
+S	B3: product v2 (training write, Results read)	results	wall (s)	B1	B3	0.8	0.9	0.1	0.0		1.0	1	1	no measurable change
+S	C: partitioned alignment	align	R heap peak (MiB)	B3	C	240.6	262.2	21.6	0.0		64.0	1	3	no measurable change
+S	C: partitioned alignment	align	process peak (MiB)	B3	C	859.1	877.1	18.0	0.4		64.0	1	3	no measurable change
+S	C: partitioned alignment	align	wall (s)	B3	C	1.1	1.4	0.3	0.1		1.0	1	3	no measurable change
+S	C: partitioned alignment	train	R heap peak (MiB)	B3	C	249.6	262.2	12.6	0.0		64.0	1	3	no measurable change
+S	C: partitioned alignment	train	process peak (MiB)	B3	C	963.1	958.6	-4.5	1.1		64.0	1	3	no measurable change
+S	C: partitioned alignment	train	wall (s)	B3	C	49.2	50.8	1.6	1.3		2.6	1	3	no measurable change
+S	Final (C) against base	write	R heap peak (MiB)	base	C	9.8	100.4	90.6	0.0		64.0	3	3	increased
+S	Final (C) against base	write	process peak (MiB)	base	C	640.6	702.0	61.4	0.5		64.0	3	3	no measurable change
+S	Final (C) against base	write	wall (s)	base	C	0.3	0.3	-0.0	0.0		1.0	3	3	no measurable change
+S	Final (C) against base	import	R heap peak (MiB)	base	C	204.8	355.9	151.1	0.0		64.0	3	3	increased
+S	Final (C) against base	import	process peak (MiB)	base	C	804.6	984.7	180.1	6.8		64.0	3	3	increased
+S	Final (C) against base	import	wall (s)	base	C	4.9	4.8	-0.1	0.5		1.0	3	3	no measurable change
+S	Final (C) against base	align	R heap peak (MiB)	base	C	239.9	262.2	22.3	0.0		64.0	3	3	no measurable change
+S	Final (C) against base	align	process peak (MiB)	base	C	859.6	877.1	17.5	0.4		64.0	3	3	no measurable change
+S	Final (C) against base	align	wall (s)	base	C	1.1	1.4	0.3	0.1		1.0	3	3	no measurable change
+S	Final (C) against base	train	R heap peak (MiB)	base	C	319.6	262.2	-57.4	0.0		64.0	3	3	no measurable change
+S	Final (C) against base	train	process peak (MiB)	base	C	1080.5	958.6	-121.9	1.1		64.0	3	3	reduced
+S	Final (C) against base	train	wall (s)	base	C	43.7	50.8	7.0	1.3		2.6	3	3	increased
+S	Final (C) against base	results	R heap peak (MiB)	base	C	231.8	256.1	24.3	0.0		64.0	3	3	no measurable change
+S	Final (C) against base	results	process peak (MiB)	base	C	829.8	853.7	23.9	0.4		64.0	3	3	no measurable change
+S	Final (C) against base	results	wall (s)	base	C	0.9	1.0	0.1	0.0		1.0	3	3	no measurable change
+M	A: Parquet inputs, streamed import	write	R heap peak (MiB)	base	A	14.4	110.3	95.9	0.0		64.0	3	1	increased
+M	A: Parquet inputs, streamed import	write	process peak (MiB)	base	A	846.5	935.6	89.1	8.7		64.0	3	1	increased
+M	A: Parquet inputs, streamed import	write	wall (s)	base	A	4.5	4.0	-0.6	0.1		1.0	3	1	no measurable change
+M	A: Parquet inputs, streamed import	import	R heap peak (MiB)	base	A	962.0	471.9	-490.1	0.1		64.0	3	1	reduced
+M	A: Parquet inputs, streamed import	import	process peak (MiB)	base	A	1997.1	1158.6	-838.5	4.0		99.9	3	1	reduced
+M	A: Parquet inputs, streamed import	import	wall (s)	base	A	95.1	43.9	-51.2	2.2		4.8	3	1	reduced
+M	B1: save_data FALSE, one model load, fewer copies	train	R heap peak (MiB)	A	B1	1123.4	1047.9	-75.5	0.0		64.0	1	1	reduced
+M	B1: save_data FALSE, one model load, fewer copies	train	process peak (MiB)	A	B1	1962.8	1841.4	-121.4	10.6		98.1	1	1	reduced
+M	B1: save_data FALSE, one model load, fewer copies	train	wall (s)	A	B1	272.1	275.7	3.6	10.2		20.4	1	1	no measurable change
+M	B3: product v2 (training write, Results read)	train	R heap peak (MiB)	B1	B3	1047.9	1123.4	75.5	0.0		64.0	1	1	increased
+M	B3: product v2 (training write, Results read)	train	process peak (MiB)	B1	B3	1841.4	1844.6	3.2	10.6		92.1	1	1	no measurable change
+M	B3: product v2 (training write, Results read)	train	wall (s)	B1	B3	275.7	320.4	44.7	10.2		20.4	1	1	increased
+M	B3: product v2 (training write, Results read)	results	R heap peak (MiB)	B1	B3	367.8	383.0	15.2	0.0		64.0	1	1	no measurable change
+M	B3: product v2 (training write, Results read)	results	process peak (MiB)	B1	B3	1084.0	1085.7	1.7	14.4		64.0	1	1	no measurable change
+M	B3: product v2 (training write, Results read)	results	wall (s)	B1	B3	5.4	5.6	0.2	0.5		1.1	1	1	no measurable change
+M	C: partitioned alignment	align	R heap peak (MiB)	B3	C	1047.9	411.8	-636.1	0.0		64.0	1	3	reduced
+M	C: partitioned alignment	align	process peak (MiB)	B3	C	1840.3	1167.2	-673.1	7.7		92.0	1	3	reduced
+M	C: partitioned alignment	align	wall (s)	B3	C	12.1	17.8	5.8	0.9		1.8	1	3	increased
+M	C: partitioned alignment	train	R heap peak (MiB)	B3	C	1123.4	540.6	-582.8	0.0		64.0	1	3	reduced
+M	C: partitioned alignment	train	process peak (MiB)	B3	C	1844.6	1208.0	-636.6	10.6		92.2	1	3	reduced
+M	C: partitioned alignment	train	wall (s)	B3	C	320.4	322.1	1.7	10.2		20.4	1	3	no measurable change
+M	Final (C) against base	write	R heap peak (MiB)	base	C	14.4	110.3	95.9	0.0		64.0	3	3	increased
+M	Final (C) against base	write	process peak (MiB)	base	C	846.5	929.3	82.8	8.7		64.0	3	3	increased
+M	Final (C) against base	write	wall (s)	base	C	4.5	3.9	-0.6	0.1		1.0	3	3	no measurable change
+M	Final (C) against base	import	R heap peak (MiB)	base	C	962.0	471.8	-490.2	0.1		64.0	3	3	reduced
+M	Final (C) against base	import	process peak (MiB)	base	C	1997.1	1157.6	-839.5	4.0		99.9	3	3	reduced
+M	Final (C) against base	import	wall (s)	base	C	95.1	45.0	-50.0	2.2		4.8	3	3	reduced
+M	Final (C) against base	align	R heap peak (MiB)	base	C	1044.0	411.8	-632.2	0.0		64.0	3	3	reduced
+M	Final (C) against base	align	process peak (MiB)	base	C	1833.1	1167.2	-665.9	7.7		91.7	3	3	reduced
+M	Final (C) against base	align	wall (s)	base	C	12.1	17.8	5.7	0.9		1.8	3	3	increased
+M	Final (C) against base	train	R heap peak (MiB)	base	C	1077.9	540.6	-537.3	0.0		64.0	3	3	reduced
+M	Final (C) against base	train	process peak (MiB)	base	C	1832.7	1208.0	-624.7	10.6		91.6	3	3	reduced
+M	Final (C) against base	train	wall (s)	base	C	277.6	322.1	44.5	10.2		20.4	3	3	increased
+M	Final (C) against base	results	R heap peak (MiB)	base	C	368.7	382.9	14.2	0.0		64.0	3	3	no measurable change
+M	Final (C) against base	results	process peak (MiB)	base	C	1090.3	1093.2	2.9	14.4		64.0	3	3	no measurable change
+M	Final (C) against base	results	wall (s)	base	C	5.6	5.6	-0.0	0.5		1.1	3	3	no measurable change
+L	A: Parquet inputs, streamed import	write	R heap peak (MiB)	base	A	21.3	126.2	104.9	0.0		64.0	3	1	increased
+L	A: Parquet inputs, streamed import	write	process peak (MiB)	base	A	1704.5	1768.7	64.2	3.1		85.2	3	1	no measurable change
+L	A: Parquet inputs, streamed import	write	wall (s)	base	A	17.3	14.8	-2.5	0.0		1.0	3	1	reduced
+L	A: Parquet inputs, streamed import	import	R heap peak (MiB)	base	A	3883.0	589.0	-3294.0	0.0		194.2	3	1	reduced
+L	A: Parquet inputs, streamed import	import	process peak (MiB)	base	A	5183.7	1568.5	-3615.2	73.2		259.2	3	1	reduced
+L	A: Parquet inputs, streamed import	import	wall (s)	base	A	508.5	133.6	-374.8	29.7		59.3	3	1	reduced
+L	B1: save_data FALSE, one model load, fewer copies	train	R heap peak (MiB)	A	B1	4037.0	4022.6	-14.4	0.0		201.9	1	1	no measurable change
+L	B1: save_data FALSE, one model load, fewer copies	train	process peak (MiB)	A	B1	5041.3	5028.5	-12.8	20.6		252.1	1	1	no measurable change
+L	B1: save_data FALSE, one model load, fewer copies	train	wall (s)	A	B1	492.1	493.5	1.4	262.2		524.5	1	1	no measurable change
+L	B3: product v2 (training write, Results read)	train	R heap peak (MiB)	B1	B3	4022.6	4022.6	0.0	0.0		201.1	1	1	no measurable change
+L	B3: product v2 (training write, Results read)	train	process peak (MiB)	B1	B3	5028.5	5004.7	-23.8	20.6		251.4	1	1	no measurable change
+L	B3: product v2 (training write, Results read)	train	wall (s)	B1	B3	493.5	654.8	161.3	262.2		524.5	1	1	no measurable change
+L	B3: product v2 (training write, Results read)	results	R heap peak (MiB)	B1	B3	1463.6	1511.6	48.0	0.0		73.2	1	1	no measurable change
+L	B3: product v2 (training write, Results read)	results	process peak (MiB)	B1	B3	2339.2	2383.7	44.5	37.9		117.0	1	1	no measurable change
+L	B3: product v2 (training write, Results read)	results	wall (s)	B1	B3	17.2	17.5	0.2	1.4		2.8	1	1	no measurable change
+L	C: partitioned alignment	align	R heap peak (MiB)	B3	C	4022.6	744.9	-3277.7	0.0		201.1	1	3	reduced
+L	C: partitioned alignment	align	process peak (MiB)	B3	C	5016.2	1554.6	-3461.6	27.2		250.8	1	3	reduced
+L	C: partitioned alignment	align	wall (s)	B3	C	32.9	58.3	25.4	0.9		1.8	1	3	increased
+L	C: partitioned alignment	train	R heap peak (MiB)	B3	C	4022.6	847.1	-3175.5	0.0		201.1	1	3	reduced
+L	C: partitioned alignment	train	process peak (MiB)	B3	C	5004.7	1534.5	-3470.2	20.6		250.2	1	3	reduced
+L	C: partitioned alignment	train	wall (s)	B3	C	654.8	627.4	-27.4	262.2		524.5	1	3	no measurable change
+L	Final (C) against base	write	R heap peak (MiB)	base	C	21.3	126.3	105.0	0.0		64.0	3	3	increased
+L	Final (C) against base	write	process peak (MiB)	base	C	1704.5	1768.1	63.6	3.1		85.2	3	3	no measurable change
+L	Final (C) against base	write	wall (s)	base	C	17.3	14.9	-2.5	0.0		1.0	3	3	reduced
+L	Final (C) against base	import	R heap peak (MiB)	base	C	3883.0	589.0	-3294.0	0.0		194.2	3	3	reduced
+L	Final (C) against base	import	process peak (MiB)	base	C	5183.7	1562.7	-3621.0	73.2		259.2	3	3	reduced
+L	Final (C) against base	import	wall (s)	base	C	508.5	135.9	-372.6	29.7		59.3	3	3	reduced
+L	Final (C) against base	align	R heap peak (MiB)	base	C	4278.1	744.9	-3533.2	0.0		213.9	3	3	reduced
+L	Final (C) against base	align	process peak (MiB)	base	C	5195.0	1554.6	-3640.4	27.2		259.8	3	3	reduced
+L	Final (C) against base	align	wall (s)	base	C	33.5	58.3	24.8	0.9		1.8	3	3	increased
+L	Final (C) against base	train	R heap peak (MiB)	base	C	4278.1	847.1	-3431.0	0.0		213.9	3	3	reduced
+L	Final (C) against base	train	process peak (MiB)	base	C	5197.2	1534.5	-3662.7	20.6		259.9	3	3	reduced
+L	Final (C) against base	train	wall (s)	base	C	518.4	627.4	109.0	262.2		524.5	3	3	no measurable change
+L	Final (C) against base	results	R heap peak (MiB)	base	C	1381.2	1511.5	130.3	0.0		69.1	3	3	increased
+L	Final (C) against base	results	process peak (MiB)	base	C	2244.7	2388.1	143.4	37.9		112.2	3	3	increased
+L	Final (C) against base	results	wall (s)	base	C	16.3	17.4	1.1	1.4		2.8	3	3	no measurable change
