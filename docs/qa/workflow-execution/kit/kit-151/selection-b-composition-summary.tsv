@@ -1,0 +1,137 @@
+scenario	arm	view	seeds	signal_kept_share	kept_signal_share	f3_kept_share	kept_noise_sd_median	kept_observed_fraction_median
+prev	none	D1	30	1.0	0.1904	1.0	1.5	1.0
+prev	none	D2	30	1.0	0.1		1.5	1.0
+prev	none	D3	30	1.0	0.19		1.5	1.0
+prev	none	D4	30	1.0	0.19		1.5	1.0
+prev	scale_views	D1	30	1.0	0.1904	1.0	1.5	1.0
+prev	scale_views	D2	30	1.0	0.1		1.5	1.0
+prev	scale_views	D3	30	1.0	0.19		1.5	1.0
+prev	scale_views	D4	30	1.0	0.19		1.5	1.0
+prev	raw250	D1	30	0.0599	0.912	0.0685	1.5	1.0
+prev	raw250	D2	30	0.4525	0.362		1.5	1.0
+prev	raw250	D3	30	1.0	0.19		1.5	1.0
+prev	raw250	D4	30	1.0	0.19		1.5	1.0
+prev	raw1000	D1	30	0.2011	0.7665	0.217	1.5	1.0
+prev	raw1000	D2	30	0.84	0.168		1.5	1.0
+prev	raw1000	D3	30	1.0	0.19		1.5	1.0
+prev	raw1000	D4	30	1.0	0.19		1.5	1.0
+prev	raw2000	D1	30	0.3388	0.6432	0.3558	1.5	1.0
+prev	raw2000	D2	30	1.0	0.1		1.5	1.0
+prev	raw2000	D3	30	1.0	0.19		1.5	1.0
+prev	raw2000	D4	30	1.0	0.19		1.5	1.0
+prev	random1000	D1	30	0.0505	0.1925	0.05	1.5	1.0
+prev	random1000	D2	30	0.51	0.102		1.5	1.0
+prev	random1000	D3	30	1.0	0.19		1.5	1.0
+prev	random1000	D4	30	1.0	0.19		1.5	1.0
+prev	trend1000	D1	30	0.2012	0.7665	0.2167	1.5	1.0
+prev	trend1000	D2	30	0.835	0.167		1.5	1.0
+prev	trend1000	D3	30	1.0	0.19		1.5	1.0
+prev	trend1000	D4	30	1.0	0.19		1.5	1.0
+prev	trendratio1000	D1	30	0.2007	0.766	0.2162	1.5	1.0
+prev	trendratio1000	D2	30	0.8375	0.1675		1.5	1.0
+prev	trendratio1000	D3	30	1.0	0.19		1.5	1.0
+prev	trendratio1000	D4	30	1.0	0.19		1.5	1.0
+prev	raw1000_z	D1	30	0.2011	0.7665	0.217	1.5	1.0
+prev	raw1000_z	D2	30	0.84	0.168		1.5	1.0
+prev	raw1000_z	D3	30	1.0	0.19		1.5	1.0
+prev	raw1000_z	D4	30	1.0	0.19		1.5	1.0
+trend	none	D1	30	1.0	0.1904	1.0	1.5009	1.0
+trend	none	D2	30	1.0	0.1		1.5048	1.0
+trend	none	D3	30	1.0	0.19		1.4934	1.0
+trend	none	D4	30	1.0	0.19		1.4724	1.0
+trend	scale_views	D1	30	1.0	0.1904	1.0	1.5009	1.0
+trend	scale_views	D2	30	1.0	0.1		1.5048	1.0
+trend	scale_views	D3	30	1.0	0.19		1.4934	1.0
+trend	scale_views	D4	30	1.0	0.19		1.4724	1.0
+trend	raw250	D1	30	0.0169	0.258	0.0178	3.366	1.0
+trend	raw250	D2	30	0.1875	0.15		2.4764	1.0
+trend	raw250	D3	30	1.0	0.19		1.4934	1.0
+trend	raw250	D4	30	1.0	0.19		1.4724	1.0
+trend	raw1000	D1	30	0.0721	0.274	0.0747	2.8289	1.0
+trend	raw1000	D2	30	0.7225	0.1445		1.8852	1.0
+trend	raw1000	D3	30	1.0	0.19		1.4934	1.0
+trend	raw1000	D4	30	1.0	0.19		1.4724	1.0
+trend	raw2000	D1	30	0.1477	0.281	0.151	2.5576	1.0
+trend	raw2000	D2	30	1.0	0.1		1.5048	1.0
+trend	raw2000	D3	30	1.0	0.19		1.4934	1.0
+trend	raw2000	D4	30	1.0	0.19		1.4724	1.0
+trend	random1000	D1	30	0.0505	0.1925	0.05	1.507	1.0
+trend	random1000	D2	30	0.51	0.102		1.5023	1.0
+trend	random1000	D3	30	1.0	0.19		1.4934	1.0
+trend	random1000	D4	30	1.0	0.19		1.4724	1.0
+trend	trend1000	D1	30	0.1109	0.4215	0.1192	2.3496	1.0
+trend	trend1000	D2	30	0.835	0.167		1.5425	1.0
+trend	trend1000	D3	30	1.0	0.19		1.4934	1.0
+trend	trend1000	D4	30	1.0	0.19		1.4724	1.0
+trend	trendratio1000	D1	30	0.2095	0.7975	0.2193	1.232	1.0
+trend	trendratio1000	D2	30	0.835	0.167		1.5255	1.0
+trend	trendratio1000	D3	30	1.0	0.19		1.4934	1.0
+trend	trendratio1000	D4	30	1.0	0.19		1.4724	1.0
+trend	raw1000_z	D1	30	0.0721	0.274	0.0747	2.8289	1.0
+trend	raw1000_z	D2	30	0.7225	0.1445		1.8852	1.0
+trend	raw1000_z	D3	30	1.0	0.19		1.4934	1.0
+trend	raw1000_z	D4	30	1.0	0.19		1.4724	1.0
+full	none	D1	30	0.9995	0.1903	0.9995	1.5005	0.9
+full	none	D2	30	1.0	0.1001		1.5031	0.9
+full	none	D3	30	1.0	0.19		1.4934	0.9
+full	none	D4	30	1.0	0.19		1.4724	0.9
+full	scale_views	D1	30	0.9995	0.1903	0.9995	1.5005	0.9
+full	scale_views	D2	30	1.0	0.1001		1.5031	0.9
+full	scale_views	D3	30	1.0	0.19		1.4934	0.9
+full	scale_views	D4	30	1.0	0.19		1.4724	0.9
+full	raw250	D1	30	0.0195	0.296	0.0215	2.7117	0.35
+full	raw250	D2	30	0.25	0.2		2.0577	0.6
+full	raw250	D3	30	1.0	0.19		1.4934	0.9
+full	raw250	D4	30	1.0	0.19		1.4724	0.9
+full	raw1000	D1	30	0.0936	0.3565	0.099	2.2751	0.5
+full	raw1000	D2	30	0.775	0.155		1.7056	0.8
+full	raw1000	D3	30	1.0	0.19		1.4934	0.9
+full	raw1000	D4	30	1.0	0.19		1.4724	0.9
+full	raw2000	D1	30	0.1944	0.3698	0.2037	2.0679	0.6
+full	raw2000	D2	30	1.0	0.1001		1.5031	0.9
+full	raw2000	D3	30	1.0	0.19		1.4934	0.9
+full	raw2000	D4	30	1.0	0.19		1.4724	0.9
+full	random1000	D1	30	0.0494	0.188	0.0493	1.4967	0.9
+full	random1000	D2	30	0.505	0.101		1.5049	0.9
+full	random1000	D3	30	1.0	0.19		1.4934	0.9
+full	random1000	D4	30	1.0	0.19		1.4724	0.9
+full	trend1000	D1	30	0.103	0.3925	0.1105	2.2726	0.5
+full	trend1000	D2	30	0.795	0.159		1.5947	0.85
+full	trend1000	D3	30	1.0	0.19		1.4934	0.9
+full	trend1000	D4	30	1.0	0.19		1.4724	0.9
+full	trendratio1000	D1	30	0.1501	0.571	0.157	2.0059	0.65
+full	trendratio1000	D2	30	0.785	0.157		1.5598	0.9
+full	trendratio1000	D3	30	1.0	0.19		1.4934	0.9
+full	trendratio1000	D4	30	1.0	0.19		1.4724	0.9
+full	raw1000_z	D1	30	0.0936	0.3565	0.099	2.2751	0.5
+full	raw1000_z	D2	30	0.775	0.155		1.7056	0.8
+full	raw1000_z	D3	30	1.0	0.19		1.4934	0.9
+full	raw1000_z	D4	30	1.0	0.19		1.4724	0.9
+full	raw250_obs50	D1	30	0.031	0.472	0.033	2.0244	0.6125
+full	raw250_obs50	D2	30	0.295	0.236		1.7977	0.75
+full	raw250_obs50	D3	30	0.8947	0.19		1.4312	0.95
+full	raw250_obs50	D4	30	0.8918	0.1882		1.4164	0.9
+full	raw1000_obs50	D1	30	0.1199	0.4565	0.126	1.8668	0.7
+full	raw1000_obs50	D2	30	0.765	0.153		1.599	0.85
+full	raw1000_obs50	D3	30	0.8947	0.19		1.4312	0.95
+full	raw1000_obs50	D4	30	0.8918	0.1882		1.4164	0.9
+full	raw2000_obs50	D1	30	0.2239	0.4257	0.2345	1.7832	0.75
+full	raw2000_obs50	D2	30	0.895	0.1001		1.4363	0.9
+full	raw2000_obs50	D3	30	0.8947	0.19		1.4312	0.95
+full	raw2000_obs50	D4	30	0.8918	0.1882		1.4164	0.9
+full	random1000_obs50	D1	30	0.051	0.1945	0.0493	1.434	0.9
+full	random1000_obs50	D2	30	0.4975	0.0995		1.4435	0.9
+full	random1000_obs50	D3	30	0.8947	0.19		1.4312	0.95
+full	random1000_obs50	D4	30	0.8918	0.1882		1.4164	0.9
+full	trend1000_obs50	D1	30	0.1392	0.5295	0.1487	1.7996	0.75
+full	trend1000_obs50	D2	30	0.765	0.153		1.4734	0.9
+full	trend1000_obs50	D3	30	0.8947	0.19		1.4312	0.95
+full	trend1000_obs50	D4	30	0.8918	0.1882		1.4164	0.9
+full	trendratio1000_obs50	D1	30	0.1864	0.7095	0.1943	1.318	0.9
+full	trendratio1000_obs50	D2	30	0.76	0.152		1.4653	0.9
+full	trendratio1000_obs50	D3	30	0.8947	0.19		1.4312	0.95
+full	trendratio1000_obs50	D4	30	0.8918	0.1882		1.4164	0.9
+full	raw1000_z_obs50	D1	30	0.1199	0.4565	0.126	1.8668	0.7
+full	raw1000_z_obs50	D2	30	0.765	0.153		1.599	0.85
+full	raw1000_z_obs50	D3	30	0.8947	0.19		1.4312	0.95
+full	raw1000_z_obs50	D4	30	0.8918	0.1882		1.4164	0.9
