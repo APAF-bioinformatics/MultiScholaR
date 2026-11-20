@@ -49,7 +49,7 @@ integrationRecordTexts <- function() {
         section_samples = "Biological samples in the model",
         section_settings = "Settings",
         section_model = "The trained model",
-        section_variance = "Variance explained per data set (all factors together)",
+        section_variance = "Variance explained in each data set's selected features (all factors together)",
         section_results = "Saved results",
         section_notes = "Notes from the model",
         section_legend = "What the status of a setting means",
@@ -70,7 +70,7 @@ integrationRecordTexts <- function() {
         col_applies_to = "Applies to",
         col_file = "File",
         col_view = "Data set",
-        col_variance = "Variance explained (%)",
+        col_variance = "Variance explained in the selected features (%)",
         col_note = "Note",
         col_status_meaning = "Meaning",
         legend_decided = "a decision recorded in the methods ledger; not expected to change",
@@ -155,7 +155,8 @@ integrationRecordTexts <- function() {
         methods_scaling_feature_zscore = "each scaled to mean 0 and standard deviation 1.",
         # %d: factors asked for; %s: convergence mode; %d: maximum rounds, seed; %s: views scaled, features centred.
         methods_model = paste("The model was asked for %d factors (convergence mode %s, at most %d training rounds, seed",
-            "%d; each data set scaled to the same total variance: %s; features centred: %s)."),
+            "%d; each data set divided by its overall standard deviation: %s; features centred: %s). Variance explained",
+            "refers to the selected features of each data set, not to every feature measured."),
         # %d: rounds, factors kept, samples, samples in every data set.
         methods_trained_settled = paste("Training settled after %d rounds, stopped by its convergence rule, and kept %d",
             "factors; %d biological samples entered the model, %d of them measured in every data set."),

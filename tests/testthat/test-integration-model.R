@@ -777,3 +777,23 @@ test_that("KIT-151 (INT-17): the reproducibility wording is corrected and the ma
     expect_match(unpinned$reason, "numpy was already loaded", fixed = TRUE)
     expect_null(seen)
 })
+
+# KIT-151 (audit SCI-12): variance explained is said to be of the selected features; scale_views is said to divide each
+# data set by its overall standard deviation, not to give data sets the same total variance; its default and the
+# per-feature scaling's are unchanged (INT-13 decides them).
+test_that("KIT-151 (SCI-12): variance explained and scale_views are described as they are", {
+    gui <- integrationGuiTexts()
+    record <- integrationRecordTexts()
+    texts <- c(unlist(gui), unlist(record), unlist(workflowParameterLabels[[INTEGRATION_MODEL_OPERATION]]))
+    expect_false(any(grepl("same total variance|unit variance", texts)))
+    for (key in c("variance_intro", "result_variance_heading", "col_variance", "plot_variance")) {
+        expect_match(gui[[key]], "selected features", fixed = TRUE, info = key)
+    }
+    for (key in c("section_variance", "col_variance", "methods_model")) expect_match(record[[key]], "selected features", info = key)
+    expect_match(gui[["param_scale_views"]], "overall standard deviation", fixed = TRUE)
+    expect_match(record[["methods_model"]], "divided by its overall standard deviation", fixed = TRUE)
+    spec <- integrationMofaParameterSpec()
+    expect_identical(spec$scale_views$default, FALSE)
+    expect_identical(spec$scaling$default, "none")
+    expect_identical(spec$center_groups$default, TRUE)
+})

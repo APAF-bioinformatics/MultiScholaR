@@ -642,7 +642,7 @@ workflowParameterLabels <- local({
             feature_selection = "Feature selection per view (variance above the mean-variance trend, raw variance, or none)",
             features_per_view = "Features kept per view (a smaller view keeps all)",
             min_observed_fraction = "Smallest share of the biological samples a selected feature is observed in",
-            scaling = "Per-feature scaling (none, or Z-score within its view)", scale_views = "Scale each view to unit variance (MOFA2 scale_views)",
+            scaling = "Per-feature scaling (none, or Z-score within its view)", scale_views = "Divide each view by its overall standard deviation (MOFA2 scale_views)",
             center_groups = "Centre the features (MOFA2 center_groups)", num_factors = "Number of factors",
             convergence_mode = "Convergence mode (fast, medium or slow)", maxiter = "Maximum iterations", seed = "Training seed",
             training_seeds = "Models trained, one per seed (the training seed and the next whole numbers)",
