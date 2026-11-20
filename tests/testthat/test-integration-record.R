@@ -263,10 +263,17 @@ test_that("KIT-142: the record, workbook, study parameters and report are saved 
     saved <- shiny::isolate(bus$integration_record)
     expect_identical(shiny::isolate(bus$tab_status$integration_record), "complete")
     expect_identical(basename(saved$files), c("analysis_record.json", "analysis_record.xlsx", "study_parameters.txt",
-        "integration_report.docx"))
+        "integration_report.docx", "model.hdf5", "sample_match.tsv"))
     expect_identical(dirname(saved$files[[1L]]), journey$paths$study_report_dir)
     expect_true(all(file.size(saved$files) > 0))
     read <- jsonlite::read_json(saved$files[[1L]], simplifyVector = FALSE)
+    # KIT-148: the model file (the stand-in trainer's three bytes) with the record's checksum, and the uploaded match.
+    expect_identical(readBin(saved$files[[5L]], "raw", 16L), as.raw(1:3))
+    export <- journey$manager$.context$snapshot$exports$integration_mofa_model
+    match <- utils::read.delim(saved$files[[6L]], colClasses = "character", stringsAsFactors = FALSE)
+    expect_identical(as.list(match), export$parameters$sample_match_table)
+    expect_identical(nrow(match), journey$runs_moved)
+    expect_identical(digest::digest(as.list(match), algo = "sha256"), export$parameters$sample_match)
     expect_identical(saved$methods, integrationMethodsText(read))
     expect_identical(readLines(saved$files[[3L]]), integrationStudyParameterLines(read))
     expect_identical(readLines(saved$files[[4L]])[[2L]], saved$methods)
@@ -303,8 +310,9 @@ test_that("KIT-142: reopened and replayed from its record, the same model; refus
     journey <- intRecJourney(project)
     manager <- journey$manager
     root <- dirname(manager$.context$store$directory)
-    recorded <- withWorkflowStateScope(manager, function() hydrateSavedWorkflowEntity(manager$.context$store,
-        manager$.context$snapshot$exports$integration_mofa_model$reference)$value)
+    # KIT-148: the recorded model as held outside its store (the weights read from it before it is closed).
+    recorded <- integrationModelComparable(manager, withWorkflowStateScope(manager, function()
+        hydrateSavedWorkflowEntity(manager$.context$store, manager$.context$snapshot$exports$integration_mofa_model$reference)$value))
     closeWorkflowStateOwner(manager)
     t <- integrationRecordTexts()
     scratch <- file.path(project$root, "replay")
@@ -357,10 +365,12 @@ test_that("KIT-142: reopened and replayed from its record, the same model; refus
 })
 
 test_that("KIT-142: the comparison tells a different model apart", {
-    a <- integrationModelProduct(list(views = list(), samples = data.frame(biological_sample = "x"), view_summary = data.frame(view = "v"),
-        shared_samples = 1L, notes = character()), list(factors = matrix(c(1, 2), 1, 2, dimnames = list("x", c("Factor1", "Factor2"))),
-        weights = list(), r2_per_factor = matrix(1, 2, 1, dimnames = list(c("Factor1", "Factor2"), "v")), r2_total = c(v = 2),
-        elbo = -1, iterations = 1L, options = list(), versions = list(), messages = character(), model_file = list()))
+    # KIT-148: models as the comparison holds them (`integrationModelComparable`: the weights as one table).
+    a <- list(factors = data.frame(biological_sample = "x", Factor1 = 1, Factor2 = 2, stringsAsFactors = FALSE),
+        weights = data.frame(view = "v", feature_id = "f", Factor1 = 0.5, Factor2 = -0.5, stringsAsFactors = FALSE),
+        variance_explained = data.frame(factor = c("Factor1", "Factor2"), view = "v", r2_percent = 1, stringsAsFactors = FALSE),
+        variance_total = data.frame(view = "v", r2_percent = 2, stringsAsFactors = FALSE),
+        samples = data.frame(biological_sample = "x", stringsAsFactors = FALSE), view_summary = data.frame(view = "v"))
     b <- a
     b$factors$Factor1 <- 1 + 1e-9
     near <- integrationCompareModels(a, b)

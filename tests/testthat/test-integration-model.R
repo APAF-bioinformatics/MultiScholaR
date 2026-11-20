@@ -201,9 +201,9 @@ test_that("KIT-062: the owner commits the inputs state, the identity follows the
     expect_identical(export$reference$entity_id, run$reference$entity_id)
     expect_identical(names(export$parameters), integrationMofaParameterNames())
     value <- run$value
-    expect_identical(value$schema, "multischolar.integration_mofa_model.v1")
+    expect_identical(value$schema, "multischolar.integration_mofa_model.v2")
     expect_identical(names(value$factors), c("biological_sample", paste0("Factor", 1:5)))
-    expect_setequal(value$weights$feature_id, c("L1", "L2", "P1", "P2", "P3"))
+    expect_setequal(integrationModelWeights(manager, value)$feature_id, c("L1", "L2", "P1", "P2", "P3"))
     expect_identical(value$elbo[c("iterations", "evaluations", "last")], list(iterations = 2L, evaluations = 2L, last = -10))
     again <- runIntegrationModel(manager, trainer = intModelFakeTrainer)
     expect_identical(again$status, "hit")
@@ -377,7 +377,7 @@ test_that("KIT-148: the aligned views reach the trainer with their hand-off name
     expect_identical(seen$lipidomics_LCMS_Pos$rows, c("lipidomics_LCMS_Pos:L1", "lipidomics_LCMS_Pos:L2"))
     expect_identical(seen$proteomics$rows, c("proteomics:P1", "proteomics:P2", "proteomics:P3"))
     # The product keeps the feature identifiers without the prefix.
-    expect_setequal(run$value$weights$feature_id, c("L1", "L2", "P1", "P2", "P3"))
+    expect_setequal(integrationModelWeights(manager, run$value)$feature_id, c("L1", "L2", "P1", "P2", "P3"))
     if (profiled) expect_identical(grep("^tracemem\\[", printed, value = TRUE), character())
     # The preview's alignment (no prefix) is the model's but for the row names.
     object <- integrationImportedObject(manager)
@@ -421,4 +421,133 @@ test_that("KIT-148: MOFA2's overall-level check is applied to the views with MOF
     expect_identical(integrationMofaOverallLevelWarning(views, factors, center = FALSE), warning)
     # No factor above 0.75: no warning.
     expect_null(integrationMofaOverallLevelWarning(views["b"], factors, center = TRUE))
+})
+
+# KIT-148 item 3: the model product v2. Small tables inline; each data set's weights and aligned values (the values
+# handed to MOFA2) as tables of the integration store, written one data set at a time and read by page; the model file
+# an entity of its own; the sample match a table of the store, named in the worker's request by its reference (a match of
+# thousands of runs is beyond the request's 64 KiB), its sha256 in the model's identity.
+
+test_that("KIT-148: the model product v2 keeps small tables inline and each data set's tables in the store, one at a time", {
+    inputs <- intModelInputs()
+    project <- file.path(inputs$root, "project")
+    manager <- newIntegrationStateOwner(project)
+    importIntegrationInputs(manager, c(inputs$proteomics, inputs$lipidomics))
+    # Every table the model writes is traced: each must hold one data set, never two.
+    original <- saveWorkflowOwnedTable
+    written <- list()
+    testthat::local_mocked_bindings(saveWorkflowOwnedTable = function(context, table, ...) {
+        written[[length(written) + 1L]] <<- list(rows = nrow(table), columns = names(table))
+        original(context, table, ...)
+    })
+    bytes <- as.raw(c(137, 72, 68, 70))
+    trainer <- function(views, options) {
+        fit <- intModelFakeTrainer(views, options)
+        fit$model_file <- list(bytes = bytes, sha256 = digest::digest(bytes, algo = "sha256", serialize = FALSE), size = 4)
+        fit
+    }
+    run <- suppressWarnings(runIntegrationModel(manager, trainer = trainer))
+    value <- run$value
+    expect_identical(value$schema, "multischolar.integration_mofa_model.v2")
+    expect_identical(integrationMofaOperation()$factors, list(product_schema = "multischolar.integration_mofa_model.v2"))
+    views <- c("lipidomics_LCMS_Pos", "proteomics")
+    expect_identical(names(value$weights), views)
+    expect_identical(names(value$aligned_values), views)
+    expect_true(all(vapply(c(value$weights, value$aligned_values), isWorkflowTableReference, logical(1))))
+    for (name in c("factors", "variance_explained", "variance_total", "samples", "view_summary")) {
+        expect_true(is.data.frame(value[[name]]), info = name)
+    }
+    # The model file: its own entity, not bytes in the product.
+    expect_null(value$model_file$bytes)
+    expect_true(isSavedWorkflowReference(value$model_file$reference))
+    expect_identical(value$model_file[c("sha256", "size", "media_type")],
+        list(sha256 = digest::digest(bytes, algo = "sha256", serialize = FALSE), size = 4, media_type = "application/x-hdf5"))
+    expect_identical(integrationModelFileBytes(manager, value), bytes)
+    # Four tables, each one data set's (weights, then aligned values, per data set in the model's order).
+    expect_identical(vapply(written, `[[`, 0L, "rows"), c(2L, 2L, 3L, 3L))
+    samples <- value$factors$biological_sample
+    expect_identical(lapply(written, `[[`, "columns"), list(c("feature_id", paste0("Factor", 1:5)), c("feature_id", samples),
+        c("feature_id", paste0("Factor", 1:5)), c("feature_id", samples)))
+    # Each data set's tables read whole and by page: the aligned values are the views handed to the trainer.
+    object <- integrationImportedObject(manager)
+    aligned <- suppressWarnings(integrationAlignViews(object, integrationResolveMofaParameters(object)))
+    for (view in views) {
+        m <- aligned$views[[view]]
+        whole <- integrationModelViewTable(manager, value, "aligned_values", view)
+        expect_identical(as.list(whole), as.list(data.frame(feature_id = rownames(m), m, check.names = FALSE,
+            stringsAsFactors = FALSE, row.names = NULL)), info = view)
+        weights <- integrationModelViewTable(manager, value, "weights", view)
+        expect_identical(weights$feature_id, rownames(m), info = view)
+        first <- integrationModelTablePage(manager, value, "aligned_values", view, offset = 0L, limit = 1L)
+        rest <- integrationModelTablePage(manager, value, "aligned_values", view, offset = 1L, limit = 10000L)
+        expect_identical(nrow(first), 1L)
+        expect_identical(as.list(rbind(first, rest)), as.list(whole), info = view)
+    }
+    # The comparison's form: no reference left, the weights as one table.
+    comparable <- integrationModelComparable(manager, value)
+    expect_identical(comparable$weights, integrationModelWeights(manager, value))
+    expect_identical(names(comparable$weights), c("view", "feature_id", paste0("Factor", 1:5)))
+    expect_null(comparable$aligned_values)
+    expect_null(comparable$model_file$reference)
+    # A product of the earlier form is refused in words.
+    expect_error(integrationModelViewTable(manager, list(schema = "multischolar.integration_mofa_model.v1"), "weights", "proteomics"),
+        class = "integration_model_outdated")
+    # The references survive the store's closing and reopening; the head holds no table of its own.
+    closeWorkflowStateOwner(manager)
+    identity <- readSavedStoreIdentity(file.path(project, ".workflow-entities", "store.json"))
+    reopened <- newWorkflowStateOwner(newWorkflowEntityStore(project, identity$project_id, identity$workflow_id), reopen = TRUE)
+    withr::defer(closeWorkflowStateOwner(reopened))
+    again <- withWorkflowStateScope(reopened, function() hydrateSavedWorkflowEntity(reopened$.context$store,
+        reopened$.context$snapshot$exports$integration_mofa_model$reference)$value)
+    expect_identical(integrationModelWeights(reopened, again), comparable$weights)
+    expect_identical(integrationModelFileBytes(reopened, again), bytes)
+})
+
+test_that("KIT-148: a 3,000-run sample match is kept in the store; the worker's request stays within 64 KiB and trains on it", {
+    root <- withr::local_tempdir()
+    runs <- sprintf("r%04d", seq_len(3000L))
+    saved <- sprintf("%s_%d", rep(c("A", "B"), each = 1500L), 1000L + seq_len(3000L))
+    values <- matrix(withr::with_seed(1148L, stats::rnorm(3L * 3000L, 20, 2)), 3L, 3000L,
+        dimnames = list(c("P1", "P2", "P3"), runs))
+    big <- intModelInput(root, "proteomics", list(proteomics = values), intModelSamples(runs, saved))
+    lipid <- intModelLipidomics(root)
+    manager <- newIntegrationStateOwner(file.path(root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(big, lipid))
+    object <- integrationImportedObject(manager)
+    # Every proteomics run matched to one of the lipidomics' biological samples of its group: 3,000 runs moved.
+    template <- integrationSampleMatchTemplate(object)
+    rows <- template$omic == "proteomics"
+    template$biological_sample[rows] <- paste0(substr(template$saved_biological_sample[rows], 1L, 1L), "_",
+        rep(c(1L, 2L), length.out = sum(rows)))
+    checked <- integrationResolveSampleMatch(object, template)
+    expect_identical(length(checked$table$run), 3000L)
+    expect_gt(as.numeric(object.size(checked$table)), 65536)
+    available <- function() list(available = TRUE, reason = NA_character_)
+    pre <- integrationModelPrecheck(manager, list(sample_match_table = template), probe = available)
+    request <- pre$request %||% pre$parameters
+    # The request names the match by its table's reference and its sha256; it is accepted by the worker's check.
+    expect_lte(as.numeric(object.size(request)), 65536)
+    expect_null(validateWorkflowActionParameters(INTEGRATION_MODEL_OPERATION, request, NULL))
+    expect_true(isWorkflowTableReference(request$sample_match_table))
+    expect_identical(request$sample_match, checked$sha256)
+    expect_identical(pre$parameters$sample_match_table, checked$table)
+    expect_identical(integrationStoredSampleMatch(manager, request$sample_match_table), checked$table)
+    # The worker reads the match from the store, checks it against its sha256 and trains on it (a stand-in trainer).
+    testthat::local_mocked_bindings(integrationTrainMofa = intModelFakeTrainer, integrationMofaCapability = available)
+    result <- suppressWarnings(withWorkflowStateScope(manager, function() computeWorkflowIntegrationModelAction(manager,
+        list(input_references = list(state = pre$source), parameters = request), "whole")))
+    value <- withWorkflowStateScope(manager, function() hydrateSavedWorkflowEntity(manager$.context$store, result$reference)$value)
+    expect_identical(value$samples$biological_sample, c("A_1", "A_2", "B_1", "B_2"))
+    expect_identical(lengths(strsplit(value$samples$proteomics_runs, ";", fixed = TRUE)), rep(750L, 4L))
+    # A table that is not the one the sha256 names is refused.
+    tampered <- request
+    tampered$sample_match <- strrep("0", 64L)
+    expect_error(withWorkflowStateScope(manager, function() computeWorkflowIntegrationModelAction(manager,
+        list(input_references = list(state = pre$source), parameters = tampered), "whole")), class = "integration_parameters_invalid")
+    # The same match in process is the same model: its identity carries the match's sha256.
+    again <- suppressWarnings(runIntegrationModel(manager, list(sample_match_table = template), trainer = intModelFakeTrainer))
+    expect_identical(again$status, "hit")
+    expect_identical(again$reference$entity_id, result$reference$entity_id)
+    expect_identical(manager$.context$snapshot$exports$integration_mofa_model$parameters$sample_match_table, checked$table)
 })

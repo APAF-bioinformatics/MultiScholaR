@@ -122,7 +122,8 @@ mod_integration_model_server <- function(id, workflow_data, paths, texts = integ
                 }
                 checked <- integrationModelPrecheck(manager, parameters, probe)
                 model$running <- TRUE
-                runner$run(list(omicsManagedProduct(INTEGRATION_MODEL_OPERATION, checked$parameters, function(result) {
+                # KIT-148: the worker is handed the sample match as its table in the store (`checked$request`).
+                runner$run(list(omicsManagedProduct(INTEGRATION_MODEL_OPERATION, checked$request, function(result) {
                     acceptIntegrationModel(manager, checked$source, list(reference = result$reference, value = result$value),
                         checked$parameters, confirmation)
                     deliver(result$value, result$reference, result$display$status %||% "computed", checked$parameters)

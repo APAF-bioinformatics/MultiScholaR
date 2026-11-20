@@ -211,12 +211,15 @@ integrationModelAdvisories <- function(value, texts = integrationGuiTexts()) {
 #' applies; (3) every weight per factor and data set with the feature's display name, its scaled weight and its rank by
 #' absolute weight, and the `top_features` first; (4) the correlation of the factors; (5) MOFA2's warnings in words;
 #' and the claim limit's facts.
-#' @param value The model's product (`integrationModelProduct`).
+#' @param value The model's product (`integrationModelProduct`, v2).
 #' @param object The imported inputs state, hydrated (display names, corrections).
 #' @param parameters The Results parameters (absent ones take the table's defaults).
+#' @param manager The owner of the store that holds the model (KIT-148: each data set's weights are read from it, one
+#'   data set at a time).
 #' @return A list of tables and facts (see the body).
 #' @noRd
-integrationResults <- function(value, object, parameters = list(), texts = integrationGuiTexts()) {
+integrationResults <- function(value, object, parameters = list(), texts = integrationGuiTexts(), manager) {
+    integrationAssertModelProduct(value)
     factors <- setdiff(names(value$factors), "biological_sample")
     p <- integrationResolveResultsParameters(parameters, factors)
     shown <- p$factors_shown
@@ -234,7 +237,7 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
     association <- integrationFactorAssociation(factor_values, shown, tested = !any(corrected), adjust = p$p_adjust_method)
     # (3) Weights with display names, scaled and ranked per factor and data set.
     weights <- do.call(rbind, lapply(views, function(view) {
-        w <- value$weights[value$weights$view == view, , drop = FALSE]
+        w <- integrationModelViewTable(manager, value, "weights", view)
         features <- object@features[[view]]
         display <- if (!is.null(features) && "display_name" %in% names(features))
             as.character(features$display_name[match(w$feature_id, as.character(features$feature_id))]) else rep(NA_character_, nrow(w))

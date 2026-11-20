@@ -1003,7 +1003,10 @@ integrationModelParameters <- function(confirmed, settings) {
 #' @param manager The integration store.
 #' @param parameters The run's parameters.
 #' @param probe The capability probe.
-#' @return `list(source, parameters)`: the inputs state's reference and the resolved parameters.
+#' @return `list(source, parameters, request)`: the inputs state's reference, the resolved parameters (accepted on the
+#'   head with the model), and the worker request's parameters: the resolved ones with a sample match kept in the store
+#'   and named by its table's reference (KIT-148; `integrationStoreSampleMatch`), so that a match of any size stays
+#'   within the request's 64 KiB.
 #' @noRd
 integrationModelPrecheck <- function(manager, parameters, probe = integrationMofaCapability) {
     withWorkflowStateScope(manager, function() {
@@ -1019,7 +1022,11 @@ integrationModelPrecheck <- function(manager, parameters, probe = integrationMof
             integrationRefuse(sprintf("the integration model cannot be trained here: %s", capability$reason),
                 "integration_mofa_unavailable")
         }
-        list(source = source, parameters = resolved)
+        request <- resolved
+        if (!is.null(resolved$sample_match_table)) {
+            request$sample_match_table <- integrationStoreSampleMatch(manager, resolved$sample_match_table)
+        }
+        list(source = source, parameters = resolved, request = request)
     })
 }
 

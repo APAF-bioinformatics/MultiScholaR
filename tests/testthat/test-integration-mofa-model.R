@@ -21,12 +21,13 @@ intMofaSkip <- function() {
     testthat::skip_if_not(isTRUE(capability$available), capability$reason)
 }
 
+# KIT-148: the product as held outside its store (the weights read from it before it is closed).
 intMofaProduct <- function(root, identity) {
     owner <- newWorkflowStateOwner(newWorkflowEntityStore(root, identity$project_id, identity$workflow_id), reopen = TRUE)
     on.exit(closeWorkflowStateOwner(owner), add = TRUE)
-    withWorkflowStateScope(owner, function() {
+    integrationModelComparable(owner, withWorkflowStateScope(owner, function() {
         hydrateSavedWorkflowEntity(owner$.context$store, owner$.context$snapshot$exports$integration_mofa_model$reference)$value
-    })
+    }))
 }
 
 # One training on the corpus, its record, and the record replayed on a copy of the inputs state; kept for the file.
@@ -48,6 +49,8 @@ intMofaRun <- local({
         started <- Sys.time()
         run <- runIntegrationModel(manager)
         seconds <- as.numeric(difftime(Sys.time(), started, units = "secs"))
+        product <- run$value
+        run$value <- integrationModelComparable(manager, product)
         json <- file.path(base, "analysis_record.json")
         writeWorkflowAnalysisRecord(manager, json)
         record <- buildWorkflowAnalysisRecord(manager)
@@ -57,7 +60,7 @@ intMofaRun <- local({
         dir.create(scratch)
         replay <- replayWorkflowAnalysisRecord(jsonlite::read_json(json, simplifyVector = FALSE), prepared, inputs, list(),
             scratch)
-        cache <<- list(run = run, record = record, seconds = seconds, replay = replay,
+        cache <<- list(run = run, product = product, record = record, seconds = seconds, replay = replay,
             replayed = intMofaProduct(prepared, identity))
         cache
     }

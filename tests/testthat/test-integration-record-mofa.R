@@ -85,10 +85,21 @@ test_that("KIT-142: with MOFA2, a saved integration is reopened, repeated from i
     })
     saved <- shiny::isolate(bus$integration_record)
     expect_identical(basename(saved$files), c("analysis_record.json", "analysis_record.xlsx", "study_parameters.txt",
-        "integration_report.docx"))
+        "integration_report.docx", "model.hdf5", "sample_match.tsv"))
     expect_true(all(file.size(saved$files) > 0))
     record <- jsonlite::read_json(saved$files[[1L]], simplifyVector = FALSE)
     block <- record$analyses$integration_mofa_model$integration
+    # KIT-148: the model file MOFA2 wrote, its checksum the record's, without the training data (no `data` group); MOFA2
+    # loads it; the uploaded match as the runs it moved.
+    expect_identical(digest::digest(file = saved$files[[5L]], algo = "sha256"), block$model$model_file_sha256[[1L]])
+    groups <- rhdf5::h5ls(saved$files[[5L]], recursive = FALSE)$name
+    message(sprintf("KIT-148 model.hdf5: %d bytes; top-level groups %s", as.integer(file.size(saved$files[[5L]])),
+        paste(groups, collapse = ", ")))
+    expect_false("data" %in% groups)
+    expect_true(all(c("expectations", "variance_explained") %in% groups))
+    loaded <- suppressWarnings(MOFA2::load_model(saved$files[[5L]]))
+    expect_identical(ncol(MOFA2::get_factors(loaded)[[1L]]), 5L)
+    expect_identical(nrow(utils::read.delim(saved$files[[6L]], colClasses = "character")), sum(rows))
     expect_identical(block$model$versions$MOFA2, "1.22.0")
     expect_identical(block$model$versions$mofapy2, "0.7.3")
     expect_identical(block$model$precision, "double")

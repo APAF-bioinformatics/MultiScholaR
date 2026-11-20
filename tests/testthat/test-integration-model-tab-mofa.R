@@ -14,7 +14,7 @@ intTabRoot <- function() normalizePath(testthat::test_path("..", ".."), mustWork
 intTabCorpus <- function() file.path(intTabRoot(), "tests", "testdata", "integration", "corpus")
 intTabReference <- function() file.path(intTabRoot(), "tests", "testdata", "integration", "mofa_reference")
 intTabOmics <- c("lipidomics", "metabolomics", "proteomics", "transcriptomics")
-intTabFields <- c("factors", "weights", "variance_explained", "variance_total", "elbo", "samples", "view_summary",
+intTabFields <- c("factors", "variance_explained", "variance_total", "elbo", "samples", "view_summary",
     "shared_samples", "notes", "versions")
 
 intTabSkip <- function() {
@@ -86,10 +86,18 @@ test_that("KIT-140: MOFA2 trained through the Model tab equals the model step an
         expect_match(output$result$html, sprintf(texts[["result_factors"]], 5L, 5L), fixed = TRUE)
         expect_match(output$result$html, sprintf(texts[["result_saved"]], value$model_file$sha256), fixed = TRUE)
         # The model step called directly on its own store of the same import.
-        direct <- runIntegrationModel(intTabDirect(paths, bus$integration_import$views), bus$integration_alignment$parameters)
+        direct_manager <- intTabDirect(paths, bus$integration_import$views)
+        direct <- runIntegrationModel(direct_manager, bus$integration_alignment$parameters)
         for (name in intTabFields) expect_identical(value[[name]], direct$value[[name]], info = name)
+        # KIT-148: each data set's weights and aligned values are read from the product's store.
+        weights <- integrationModelWeights(bus$state_manager, value)
+        expect_identical(weights, integrationModelWeights(direct_manager, direct$value))
+        for (view in names(value$aligned_values)) {
+            expect_identical(integrationModelViewTable(bus$state_manager, value, "aligned_values", view),
+                integrationModelViewTable(direct_manager, direct$value, "aligned_values", view), info = view)
+        }
         # The stored double-precision result (KIT-062, re-recorded at 596e25e2) within 1e-5 relative.
-        tables <- list(factors = value$factors, weights = value$weights, variance_explained = value$variance_explained)
+        tables <- list(factors = value$factors, weights = weights, variance_explained = value$variance_explained)
         for (name in names(tables)) {
             stored <- utils::read.delim(file.path(intTabReference(), paste0(name, ".tsv")), check.names = FALSE,
                 stringsAsFactors = FALSE)

@@ -81,7 +81,7 @@ mod_integration_results_server <- function(id, workflow_data, paths, texts = int
             tryCatch({
                 value <- withWorkflowStateScope(manager, function()
                     hydrateSavedWorkflowEntity(manager$.context$store, model$reference)$value)
-                integrationResults(value, integrationImportedObject(manager), parameters, texts)
+                integrationResults(value, integrationImportedObject(manager), parameters, texts, manager = manager)
             }, error = function(error) structure(list(refusal = integrationRefusalText(error, texts)),
                 class = "integration_results_refused"))
         })

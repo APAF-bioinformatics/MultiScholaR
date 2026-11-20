@@ -610,7 +610,10 @@ renderIntegrationReport <- function(record_path, output_dir, format = c("docx", 
 }
 
 #' Save the integration's record and report into a folder (KIT-142): `analysis_record.json`, the record's workbook
-#' (`analysis_record.xlsx`, with the integration sheets), `study_parameters.txt` and the rendered report. Everything is
+#' (`analysis_record.xlsx`, with the integration sheets), `study_parameters.txt` and the rendered report; KIT-148: with
+#' them the model file MOFA2 wrote (`model.hdf5`, the trained model without the training data; its SHA-256 is the
+#' record's) and the uploaded sample match (`sample_match.tsv`: the runs it gives another biological sample, `omic`,
+#' `run`, `biological_sample`; the header alone when none was uploaded). Everything is
 #' written in a short temporary folder and copied into `directory` with every file checked
 #' (`withWorkflowShortFigureFolder`, KIT-052): a path too long for Windows, or a file the renderer did not write, stops
 #' the save by name instead of losing the file silently.
@@ -627,15 +630,23 @@ integrationWriteRecordBundle <- function(manager, directory, format = "docx", re
     if (is.null(integrationRecordAnalysisOf(record))) {
         integrationGuiRefuse(texts[["record_no_model"]], "integration_record_no_model")
     }
+    export <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]
+    value <- withWorkflowStateScope(manager, function() hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value)
+    match <- export$parameters$sample_match_table
+    match <- if (is.null(match)) data.frame(omic = character(), run = character(), biological_sample = character()) else
+        data.frame(omic = match$omic, run = match$run, biological_sample = match$biological_sample, stringsAsFactors = FALSE)
     dir.create(directory, recursive = TRUE, showWarnings = FALSE)
     out <- withWorkflowShortFigureFolder(directory, function(scratch) {
+        writeBin(integrationModelFileBytes(manager, value), file.path(scratch, "model.hdf5"))
+        utils::write.table(match, file.path(scratch, "sample_match.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "")
         json <- file.path(scratch, "analysis_record.json")
         jsonlite::write_json(record, json, auto_unbox = TRUE, digits = I(17), null = "null", na = "null", pretty = TRUE)
         read <- jsonlite::read_json(json, simplifyVector = FALSE)
         writeWorkflowAnalysisRecordWorkbook(read, file.path(scratch, "analysis_record.xlsx"))
         writeLines(integrationStudyParameterLines(read, texts), file.path(scratch, "study_parameters.txt"), useBytes = TRUE)
         renderFn(json, scratch, format)
-        expected <- c("analysis_record.json", "analysis_record.xlsx", "study_parameters.txt", paste0("integration_report.", format))
+        expected <- c("analysis_record.json", "analysis_record.xlsx", "study_parameters.txt", paste0("integration_report.", format),
+            "model.hdf5", "sample_match.tsv")
         checkWorkflowFigureFiles(file.path(scratch, expected), "the integration record or report was not written")
         list(files = expected, methods = integrationMethodsText(read, texts))
     }, message = "the integration record and report could not be copied into the project")
@@ -672,7 +683,8 @@ integrationReplayVersions <- function(recorded, current) {
 #' summary): the largest absolute difference and the largest relative difference (largest absolute over the largest
 #' absolute value of the recorded table). Tables of another shape, other labels or missing values in other places
 #' differ outright (Inf).
-#' @param recorded,replayed The model products (`integrationModelProduct()`).
+#' @param recorded,replayed The model products as held outside their stores (`integrationModelComparable()`: the weights
+#'   as one table; KIT-148).
 #' @param tolerance The relative tolerance.
 #' @return `list(tables, largest_relative, equal, identical)`.
 #' @noRd
@@ -707,13 +719,15 @@ integrationCompareModels <- function(recorded, replayed, tolerance = 1e-5) {
 #' settings applied, and the model compared with `recorded` when given.
 #' @param record The analysis record (built, or read from JSON).
 #' @param scratch A folder for the replay's store.
-#' @param recorded The recorded model product, or NULL (no comparison).
+#' @param recorded The recorded model product as held outside its store (`integrationModelComparable()`), or NULL (no
+#'   comparison).
 #' @param manifests Named by omic: the input manifests' current paths (absent ones at their recorded place).
 #' @param probe The MOFA2 capability probe.
 #' @param trainer NULL for MOFA2, or a stand-in (tests).
 #' @param current_versions This computer's versions; NULL takes `integrationMofaVersions()` when MOFA2 trains.
 #' @param tolerance The relative tolerance of the comparison.
-#' @return `list(replayed, results, comparison, versions, parameters)`.
+#' @return `list(replayed, results, comparison, versions, parameters)`; `replayed` is the repeated model as held outside
+#'   its store (`integrationModelComparable()`), since the replay's store is closed on return.
 #' @noRd
 replayIntegrationRecord <- function(record, scratch, recorded = NULL, manifests = NULL, probe = integrationMofaCapability,
     trainer = NULL, current_versions = NULL, tolerance = 1e-5) {
@@ -763,13 +777,14 @@ replayIntegrationRecord <- function(record, scratch, recorded = NULL, manifests 
     entry <- workflowOperationEntry(INTEGRATION_MODEL_OPERATION)
     parameters <- workflowReplayParameters(analysis$parameters, c(entry$parameters, "sample_match", "sample_match_table"))
     run <- runIntegrationModel(manager, parameters, probe = probe, trainer = trainer)
-    replayed <- run$value
     results <- NULL
     if (!is.null(block$results)) {
         settings <- list()
         for (parameter in block$results$parameters) settings[[as.character(s(parameter$name))]] <- decodeWorkflowRecordValue(parameter$value)
-        results <- integrationResults(replayed, integrationImportedObject(manager), settings)
+        results <- integrationResults(run$value, integrationImportedObject(manager), settings, manager = manager)
     }
+    # KIT-148: read from the replay's store before it is closed.
+    replayed <- integrationModelComparable(manager, run$value)
     list(replayed = replayed, results = results,
         comparison = if (!is.null(recorded)) integrationCompareModels(recorded, replayed, tolerance),
         versions = versions, parameters = manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$parameters)
@@ -790,8 +805,9 @@ replayIntegrationProject <- function(project_root, scratch, ...) {
     on.exit(if (opened) closeWorkflowStateOwner(manager), add = TRUE)
     record <- buildWorkflowAnalysisRecord(manager)
     export <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]
-    recorded <- if (!is.null(export)) withWorkflowStateScope(manager, function()
-        hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value)
+    # KIT-148: the recorded model read from its store before the store is closed.
+    recorded <- if (!is.null(export)) integrationModelComparable(manager, withWorkflowStateScope(manager, function()
+        hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value))
     closeWorkflowStateOwner(manager)
     opened <- FALSE
     c(replayIntegrationRecord(record, scratch, recorded = recorded, ...), list(record = record))
