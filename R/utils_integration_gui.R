@@ -210,6 +210,8 @@ integrationGuiTexts <- function() {
         setting_fixed = "%s: %s",
         # %s: the setting's label.
         setting_not_whole = "%s: enter a whole number.",
+        # KIT-152. %s: the setting's label.
+        setting_not_number = "%s: enter a number.",
         # The settings, by the parameter's name (`param_<name>`, `help_<name>`, `choice_<name>_<value>`). A setting
         # without an entry here shows its name: a parameter the workbook adds appears with no edit to the tab.
         param_technical_replicates = "Runs of the same biological sample",
@@ -351,7 +353,10 @@ integrationGuiTexts <- function() {
         weights_intro = paste("The %d features with the largest weights, in absolute value, on the chosen factor in the",
             "chosen data set. A feature's weight says how strongly it follows the factor; its sign says in which",
             "direction. The scaled weight divides by the largest weight of that factor in that data set, so 1 or -1 marks",
-            "the strongest feature."),
+            "the strongest feature.",
+            # KIT-152 (audit SCI-16): the sign and the list's standing.
+            "A factor's sign is arbitrary, so a direction has meaning only against the other features of the same factor.",
+            "The list is exploratory: its order was not tested for stability."),
         weights_factor = "Factor",
         weights_view = "Data set",
         col_rank = "Rank",
@@ -378,6 +383,116 @@ integrationGuiTexts <- function() {
         save_done = "Saved at %s: %d tables to %s and %d figures to %s.",
         # %s: the reason.
         save_refused = "The results were not saved. %s",
+        # KIT-152: the Results tab's settings (`integrationResultsParameterSpec()`), by the parameter's name as above.
+        results_settings_heading = "Settings of the results",
+        param_factors_shown = "Factors shown",
+        choice_factors_shown_all = "all factors",
+        param_top_features = "Number of features listed per factor and data set",
+        param_weight_scale = "Weights shown",
+        choice_weight_scale_scaled = "divided by the largest weight, so the strongest feature is 1 or -1",
+        choice_weight_scale_raw = "as estimated",
+        param_design_covariate = "Groups the factors are compared with",
+        choice_design_covariate_group = "the group of each biological sample",
+        param_association_test = "Test of each factor against the groups",
+        choice_association_test_anova = "one-way analysis of variance",
+        param_p_adjust_method = "Adjustment of the p-values",
+        choice_p_adjust_method_BH = "Benjamini-Hochberg",
+        choice_p_adjust_method_holm = "Holm",
+        choice_p_adjust_method_bonferroni = "Bonferroni",
+        choice_p_adjust_method_none = "not adjusted",
+        param_figure_format = "File type of the saved figures",
+        choice_figure_format_png = "PNG image",
+        choice_figure_format_pdf = "PDF",
+        param_figure_width = "Width of the saved figures (inches)",
+        param_figure_height = "Height of the saved figures (inches)",
+        param_figure_dpi = "Resolution of the saved figures (dots per inch)",
+        param_feature_values = "Values shown for the top features",
+        choice_feature_values_model_input = "the values given to the model",
+        help_feature_values = paste("The values each data set gave the model: the runs of a biological sample averaged, only",
+            "the features the model used, and each feature scaled if that scaling was chosen; before MOFA2 centres and",
+            "scales the data sets itself."),
+        param_heatmap_scaling = "Heatmap colours",
+        choice_heatmap_scaling_centre = "each feature centred on its mean",
+        choice_heatmap_scaling_centre_scale = "each feature centred on its mean and scaled to standard deviation 1",
+        help_heatmap_scaling = "For display only: the values shown in the scatter plots and saved in the table do not change.",
+        param_umap = "Draw a UMAP map of the factors",
+        param_umap_n_neighbors = "UMAP: number of neighbours",
+        help_umap_n_neighbors = "At least 2, and fewer than the number of biological samples.",
+        param_tsne = "Draw a t-SNE map of the factors",
+        param_tsne_perplexity = "t-SNE: perplexity",
+        help_tsne_perplexity = paste("Three times the perplexity must be less than the number of biological samples minus 1",
+            "(below 6.33 with 20 samples)."),
+        param_map_seed = "Random seed for the maps",
+        help_map_seed = "On the same computer, the same factors, settings and seed give the same map.",
+        # KIT-152: the factor pair plot.
+        pairs_heading = "Factors against each other",
+        pairs_intro = paste("Each panel shows two factors; each point is one biological sample, coloured by its group. A",
+            "factor's sign is arbitrary: a factor and its mirror image describe the same pattern."),
+        plot_pairs_one = "Choose two or more factors in the settings to compare them in pairs.",
+        # KIT-152: the top features' values against the factor (scatter) and as a heatmap.
+        scatter_heading = "Values of the top features against the factor",
+        # %d: the number of features.
+        scatter_intro = paste("For the chosen factor and data set, each panel is one of the %d features with the largest",
+            "weights in absolute value: its value in each biological sample against that sample's factor value. The",
+            "features were chosen from this model, so a pattern is expected; the ranking is exploratory and was not tested",
+            "for stability. A factor's sign is arbitrary: a feature with a negative weight falls as the factor rises."),
+        # %s: the values in words.
+        scatter_values = "Values shown: %s. Missing values are left out.",
+        values_log2 = "the values given to the model, on the log2 scale the omic saved",
+        values_log2_cpm = "the values given to the model, in log2 counts per million as the omic saved them",
+        values_feature_zscore = "the values given to the model, each feature scaled to mean 0 and standard deviation 1",
+        values_unknown = "the values given to the model, on the scale the omic saved",
+        plot_values_log2 = "Value given to the model (log2)",
+        plot_values_log2_cpm = "Value given to the model (log2 counts per million)",
+        plot_values_feature_zscore = "Value given to the model (scaled per feature)",
+        plot_values_unknown = "Value given to the model",
+        # %s: the factor.
+        plot_scatter_x = "%s value",
+        # %s: the factor, then the data set.
+        plot_scatter_title = "%s, %s: features with the largest weights",
+        plot_scatter_caption = "Panels in order of the weight's absolute value; missing values left out.",
+        heatmap_heading = "Heatmap of the top features",
+        heatmap_intro_centre = paste("The same features and values, each feature centred on its mean across the biological",
+            "samples, for display only; samples in order of the factor's value, features in order of rank."),
+        heatmap_intro_centre_scale = paste("The same features and values, each feature centred on its mean and scaled to",
+            "standard deviation 1 across the biological samples, for display only; samples in order of the factor's value,",
+            "features in order of rank."),
+        plot_heatmap_centre = "Value given to the model,\ncentred per feature",
+        plot_heatmap_centre_scale = "Value given to the model,\ncentred and scaled per feature",
+        # %s: the factor.
+        plot_heatmap_x = "Biological samples, in order of %s",
+        plot_heatmap_caption = "For display only; the saved table holds the values given to the model.",
+        # KIT-152: the UMAP and t-SNE maps of the factors.
+        maps_heading = "Maps of the factors (UMAP, t-SNE)",
+        maps_off = paste("No map is drawn. Tick \"Draw a UMAP map of the factors\" or \"Draw a t-SNE map of the factors\"",
+            "in the settings above to draw one."),
+        # %d: the biological samples on the map.
+        maps_caution = paste("These maps are a picture of the factors, not evidence of groups. With %d biological samples",
+            "they change with the settings and the seed, and the distances between points and the sizes of clusters on",
+            "them have no meaning. On another computer the same map can come out slightly different."),
+        # %s: the data sets.
+        maps_caution_group_corrected = paste("In %s, unwanted variation was removed with the groups as replicate sets, so",
+            "the groups separate on these maps by construction."),
+        map_umap = "UMAP",
+        map_tsne = "t-SNE",
+        # %s: the map; %d: 1 or 2.
+        plot_map_axis = "%s %d",
+        # %s: the map; %d: factors, biological samples; %s: the settings.
+        plot_map_title = "%s of %d factors, %d biological samples (%s)",
+        # %d: neighbours, seed.
+        map_settings_umap = "%d neighbours, seed %d",
+        # %s: perplexity; %d: seed.
+        map_settings_tsne = "perplexity %s, seed %d",
+        # %d: the factors in the model.
+        map_refused_factors = "The map was not drawn: a map needs two or more factors, and the model has %d.",
+        # %d: neighbours, biological samples, the largest number allowed.
+        map_refused_neighbors = paste("The UMAP map was not drawn: the number of neighbours is %d, but with %d biological",
+            "samples it must be at least 2 and at most %d."),
+        # %s: perplexity; %d: biological samples; %s: the limit.
+        map_refused_perplexity = paste("The t-SNE map was not drawn: the perplexity is %s, but with %d biological samples it",
+            "must be above 0 and below %s (three times the perplexity must be less than the number of samples minus 1)."),
+        # %s: the map, then the software.
+        map_unavailable = "The %s map cannot be drawn on this computer: the software %s is not installed.",
         # KIT-142: the Record tab (its own words are `integrationRecordTexts()`).
         tab_record = " Record",
         step_record = "Record"
@@ -909,33 +1024,47 @@ integrationParameterText <- function(texts, prefix, name, value = NULL) {
     if (key %in% names(texts)) texts[[key]] else if (is.null(value)) name else as.character(value)
 }
 
-#' The Model tab's settings, built from the parameter spec (KIT-140): one input per method parameter, its default the
-#' spec's, so a default the workbook changes changes the screen with no edit here; a choice parameter as buttons, a
-#' flag as a tick box, a number as a number box. Each label carries "provisional default" or "decided".
+#' A parameter's input type (KIT-152): the spec entry's `type`, else read from the entry as the Model tab always did
+#' (`choice` with choices, `flag` with a logical default, `whole` otherwise). The other types: `number` (any number) and
+#' `factors` (`all` or factor names, KIT-063's `factors_shown`).
+#' @param entry One entry of a parameter spec.
+#' @noRd
+integrationParameterType <- function(entry) {
+    entry$type %||% (if (!is.null(entry$choices)) "choice" else if (is.logical(entry$default)) "flag" else "whole")
+}
+
+#' A tab's settings, built from its parameter spec (KIT-140; KIT-152 for any tab and a type per parameter): one input
+#' per parameter, its default the spec's, so a default the workbook changes changes the screen with no edit here; a
+#' choice as buttons, a flag as a tick box, a whole number or a number as a number box, factors as a list to pick from
+#' (its choices filled by the tab once a model is shown). Each label carries "provisional default" or "decided".
 #' @param ns The module's namespace function.
-#' @param spec `integrationMofaParameterSpec()`.
+#' @param spec `integrationMofaParameterSpec()` or `integrationResultsParameterSpec()`.
+#' @param exclude Parameters not offered (the Model tab: those the confirmed sample table fixed).
+#' @param testid The prefix of each input's test id.
+#' @param note The sentence above the inputs.
 #' @return A tag list.
 #' @noRd
-integrationModelSettingsUi <- function(ns, spec = integrationMofaParameterSpec(), texts = integrationGuiTexts()) {
-    inputs <- lapply(setdiff(names(spec), INTEGRATION_GUI_MATCHING_PARAMETERS), function(name) {
+integrationModelSettingsUi <- function(ns, spec = integrationMofaParameterSpec(), texts = integrationGuiTexts(),
+    exclude = INTEGRATION_GUI_MATCHING_PARAMETERS, testid = "integration-model-param-", note = texts[["settings_provisional"]]) {
+    inputs <- lapply(setdiff(names(spec), exclude), function(name) {
         entry <- spec[[name]]
         id <- ns(paste0("param_", name))
         mark <- texts[[if (integrationParameterProvisional(entry)) "mark_provisional" else "mark_decided"]]
         label <- shiny::tagList(integrationParameterText(texts, "param", name), " ",
             shiny::tags$small(class = "text-muted", sprintf("(%s)", mark)))
-        input <- if (!is.null(entry$choices)) {
-            shiny::radioButtons(id, label, choiceNames = lapply(entry$choices, function(value)
-                integrationParameterText(texts, "choice", name, value)), choiceValues = entry$choices, selected = entry$default)
-        } else if (is.logical(entry$default)) {
-            shiny::checkboxInput(id, label, value = isTRUE(entry$default))
-        } else {
-            shiny::numericInput(id, label, value = entry$default, step = 1)
-        }
+        input <- switch(integrationParameterType(entry),
+            choice = shiny::radioButtons(id, label, choiceNames = lapply(entry$choices, function(value)
+                integrationParameterText(texts, "choice", name, value)), choiceValues = entry$choices, selected = entry$default),
+            flag = shiny::checkboxInput(id, label, value = isTRUE(entry$default)),
+            number = shiny::numericInput(id, label, value = entry$default),
+            factors = shiny::selectInput(id, label, choices = stats::setNames(entry$default,
+                integrationParameterText(texts, "choice", name, entry$default)), selected = entry$default, multiple = TRUE),
+            shiny::numericInput(id, label, value = entry$default, step = 1))
         help <- paste0("help_", name)
-        shiny::div(`data-testid` = paste0("integration-model-param-", name), input,
+        shiny::div(`data-testid` = paste0(testid, name), input,
             if (help %in% names(texts)) shiny::helpText(texts[[help]]))
     })
-    shiny::tagList(shiny::p(shiny::em(texts[["settings_provisional"]])), inputs)
+    shiny::tagList(shiny::p(shiny::em(note)), inputs)
 }
 
 #' The settings the confirmed sample table fixed, in words.
@@ -952,28 +1081,39 @@ integrationModelMatchingSettings <- function(parameters, spec = integrationMofaP
     settings
 }
 
-#' The method settings as the tab's inputs give them (KIT-140), in the spec's forms: a choice as text, a flag as TRUE or
-#' FALSE, a number as a whole number. The number of most variable features is set only when that selection is chosen.
-#' Refused in words (`integration_parameters_invalid`): a number box left empty or not a whole number.
+#' A tab's settings as its inputs give them (KIT-140; KIT-152 for any tab), in the spec's forms: a choice as text, a
+#' flag as TRUE or FALSE, a whole number as an integer, a number as a double, factors as `all` or the names picked (`all`
+#' among them, or none picked, is `all`). The number of most variable features is set only when that selection is
+#' chosen. Refused in words (`integration_parameters_invalid`): a number box left empty, or not a whole number where one
+#' is needed.
 #' @param values The inputs' values, named by parameter.
-#' @return The method parameters, named.
+#' @param spec,exclude As `integrationModelSettingsUi()`.
+#' @return The parameters, named.
 #' @noRd
-integrationModelSettings <- function(values, spec = integrationMofaParameterSpec(), texts = integrationGuiTexts()) {
+integrationModelSettings <- function(values, spec = integrationMofaParameterSpec(), texts = integrationGuiTexts(),
+    exclude = INTEGRATION_GUI_MATCHING_PARAMETERS) {
     refuse <- function(name) integrationGuiRefuse(sprintf(texts[["setting_not_whole"]], integrationParameterText(texts, "param", name)),
         "integration_parameters_invalid")
     out <- list()
-    for (name in setdiff(names(spec), INTEGRATION_GUI_MATCHING_PARAMETERS)) {
+    for (name in setdiff(names(spec), exclude)) {
         entry <- spec[[name]]
         value <- values[[name]]
-        out[name] <- list(if (!is.null(entry$choices)) {
+        type <- integrationParameterType(entry)
+        out[name] <- list(if (type == "choice") {
             if (is.null(value)) entry$default else as.character(value)
-        } else if (is.logical(entry$default)) {
+        } else if (type == "flag") {
             if (is.null(value)) entry$default else isTRUE(value)
+        } else if (type == "factors") {
+            if (!length(value) || "all" %in% value) entry$default else as.character(value)
         } else if (is.null(value)) {
             # An input not yet drawn takes the table's default, as the screen shows it.
             entry$default
         } else if (length(value) != 1L || is.na(value)) {
-            NA_integer_
+            if (type == "number") NA_real_ else NA_integer_
+        } else if (type == "number") {
+            if (!is.numeric(value)) integrationGuiRefuse(sprintf(texts[["setting_not_number"]],
+                integrationParameterText(texts, "param", name)), "integration_parameters_invalid")
+            as.numeric(value)
         } else {
             if (!is.numeric(value) || value != round(value)) refuse(name)
             as.integer(value)
@@ -982,6 +1122,10 @@ integrationModelSettings <- function(values, spec = integrationMofaParameterSpec
     if (all(c("feature_selection", "features_per_view") %in% names(out)) &&
         !identical(out$feature_selection, "top_variance")) out$features_per_view <- NA_integer_
     for (name in names(out)) {
+        if (is.double(out[[name]]) && length(out[[name]]) == 1L && is.na(out[[name]])) {
+            integrationGuiRefuse(sprintf(texts[["setting_not_number"]], integrationParameterText(texts, "param", name)),
+                "integration_parameters_invalid")
+        }
         if (is.integer(out[[name]]) && is.na(out[[name]]) && !identical(name, "features_per_view")) refuse(name)
         if (identical(name, "features_per_view") && identical(out$feature_selection, "top_variance") && is.na(out[[name]])) refuse(name)
     }
