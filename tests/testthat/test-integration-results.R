@@ -357,3 +357,68 @@ test_that("KIT-063: a figure the device did not write stops the save by name, in
         expect_false(file.exists(file.path(paths$mofa_tables_dir, "variance_explained.tsv")))
     })
 })
+
+# KIT-151 (INT-20, audit SCI-10): the factor-against-group p-values are adjusted over every factor of the model, so the
+# factors chosen for display do not change them; the family's size is kept with each row.
+test_that("KIT-151 (INT-20): the adjusted p-values do not change with the factors shown", {
+    values <- data.frame(biological_sample = sprintf("S%02d", 1:12), group = rep(c("A", "B"), each = 6L),
+        Factor1 = c(1, 2, 1.5, 2.5, 1.2, 1.8, 3, 3.5, 2.8, 3.9, 3.1, 2.9), Factor2 = c(5, 4, 6, 5, 4, 6, 5, 6, 4, 5, 6, 4),
+        Factor3 = c(0.1, 0.3, 0.2, 0.4, 0.3, 0.2, 0.5, 0.4, 0.6, 0.5, 0.4, 0.7), stringsAsFactors = FALSE)
+    factors <- paste0("Factor", 1:3)
+    all <- integrationFactorAssociation(values, factors)
+    one <- integrationFactorAssociation(values, factors, shown = "Factor1")
+    expect_identical(one$factor, "Factor1")
+    expect_identical(one$p_adjusted, all$p_adjusted[[1L]])
+    expect_equal(all$p_adjusted, stats::p.adjust(all$p_value, "BH"))
+    expect_identical(one$adjusted_over, 3L)
+    expect_true(one$p_adjusted > one$p_value)
+    # Through the results: Factor1 alone shown, its adjusted p-value as with every factor shown.
+    paths <- intResProject()
+    fixture <- intResModel(paths)
+    every <- integrationResults(fixture$run$value, fixture$object, manager = fixture$manager)
+    single <- integrationResults(fixture$run$value, fixture$object, list(factors_shown = "Factor1"), manager = fixture$manager)
+    expect_identical(single$association$factor, "Factor1")
+    expect_identical(single$association$p_adjusted, every$association$p_adjusted[every$association$factor == "Factor1"])
+    expect_identical(single$association$adjusted_over, 5L)
+})
+
+# KIT-151 (plan item E): the Kruskal-Wallis rank test as a declared alternative to the analysis of variance (still the
+# default), epsilon-squared (H / (n - 1)) as its effect size, adjusted over every factor, and no p-value under the
+# claim limit, as for the analysis of variance.
+test_that("KIT-151: the factors can be related to the groups by the Kruskal-Wallis test, epsilon-squared as the effect", {
+    expect_identical(integrationResultsParameterSpec()$association_test$default, "anova")
+    expect_identical(integrationResultsParameterSpec()$association_test$choices, c("anova", "kruskal_wallis"))
+    values <- data.frame(biological_sample = sprintf("S%02d", 1:12), group = rep(c("A", "B", "C"), each = 4L),
+        Factor1 = c(1, 2, 1.5, 2.5, 3, 3.5, 2.8, 3.9, 5, 6, 5.5, 4.9), Factor2 = c(5, 4, 6, 5, 4, 6, 5, 6, 4, 5, 6, 4),
+        stringsAsFactors = FALSE)
+    factors <- c("Factor1", "Factor2")
+    kw <- integrationFactorAssociation(values, factors, test = "kruskal_wallis")
+    expect_identical(kw$test, c("kruskal_wallis", "kruskal_wallis"))
+    for (f in factors) {
+        independent <- stats::kruskal.test(values[[f]] ~ factor(values$group))
+        row <- kw[kw$factor == f, ]
+        expect_equal(row$h_statistic, unname(independent$statistic), tolerance = 1e-12, info = f)
+        expect_equal(row$p_value, independent$p.value, tolerance = 1e-12, info = f)
+        expect_identical(row$df_group, 2L)
+        expect_equal(row$epsilon_squared_percent, 100 * unname(independent$statistic) / (12 - 1), tolerance = 1e-12, info = f)
+        expect_true(is.na(row$r2_percent) && is.na(row$f_statistic))
+    }
+    expect_equal(kw$p_adjusted, stats::p.adjust(kw$p_value, "BH"))
+    # The claim limit applies alike: no p-value.
+    limited <- integrationFactorAssociation(values, factors, tested = FALSE, test = "kruskal_wallis")
+    expect_true(all(limited$status == "not_tested") && all(is.na(limited$p_value)))
+    expect_equal(limited$epsilon_squared_percent, kw$epsilon_squared_percent)
+    # The analysis of variance's columns are unchanged in meaning.
+    anova <- integrationFactorAssociation(values, factors)
+    expect_identical(anova$test, c("anova", "anova"))
+    expect_true(all(is.na(anova$h_statistic)))
+    # Through the results and the tab's table.
+    paths <- intResProject()
+    fixture <- intResModel(paths)
+    results <- integrationResults(fixture$run$value, fixture$object, list(association_test = "kruskal_wallis"),
+        manager = fixture$manager)
+    expect_identical(unique(results$association$test), "kruskal_wallis")
+    texts <- integrationGuiTexts()
+    expect_identical(names(integrationResultsAssociationTable(results, texts)), unname(texts[c("col_factor", "col_samples_tested",
+        "col_groups_n", "col_epsilon2", "col_h", "col_df", "col_p", "col_p_adjusted")]))
+})

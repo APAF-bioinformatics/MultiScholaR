@@ -567,13 +567,15 @@ test_that("KIT-140: the Model tab's settings are built from the parameter table,
         fixed = TRUE)
     expect_match(ui, sprintf('id="m-param_num_factors"[^>]*value="%d"', spec$num_factors$default))
     expect_match(ui, sprintf('id="m-param_seed"[^>]*value="%d"', spec$seed$default))
-    # Precision: double the decided choice, single selectable, its consequence stated; the others provisional.
+    # Precision: double the decided choice, single selectable, its consequence stated; the others provisional but those
+    # the user decided (INT-12, KIT-151).
     expect_match(ui, texts[["choice_precision_single"]], fixed = TRUE)
     expect_match(ui, texts[["help_precision"]], fixed = TRUE)
     marks <- regmatches(ui, gregexpr(sprintf("\\((%s|%s)\\)", texts[["mark_provisional"]], texts[["mark_decided"]]), ui))[[1L]]
-    # KIT-153: the input matrix is decided (INT-23), as the precision is.
-    expect_identical(marks, sprintf("(%s)", ifelse(method %in% c("precision", "input_matrix"), texts[["mark_decided"]],
-        texts[["mark_provisional"]])))
+    # KIT-153: the input matrix is decided (INT-23) as well.
+    decided <- c("input_matrix", "feature_selection", "features_per_view", "min_observed_fraction", "scaling", "scale_views",
+        "convergence_mode", "maxiter", "precision")
+    expect_identical(marks, sprintf("(%s)", ifelse(method %in% decided, texts[["mark_decided"]], texts[["mark_provisional"]])))
     # A default the workbook changes, and a parameter it adds, change the screen with no edit to the tab.
     changed <- spec
     changed$num_factors$default <- 7L
@@ -595,11 +597,18 @@ test_that("KIT-140: the settings are read back in the model's forms; an empty or
         scale_views = TRUE))
     expect_identical(typed[c("num_factors", "seed", "features_per_view", "scale_views")],
         list(num_factors = 3L, seed = 42L, features_per_view = 100L, scale_views = TRUE))
-    # The number of most variable features applies only to that selection.
-    expect_identical(integrationModelSettings(list(features_per_view = 100))$features_per_view, NA_integer_)
-    refusal <- tryCatch(integrationModelSettings(list(feature_selection = "top_variance")), error = function(error) error)
+    # KIT-151: the number kept and the observed share apply only when features are selected (the default selection is
+    # the variance above the trend); with all features they are not set.
+    expect_identical(integrationModelSettings(list(features_per_view = 100))$features_per_view, 100L)
+    expect_identical(integrationModelSettings(list(feature_selection = "none", features_per_view = 100,
+        min_observed_fraction = NA))[c("features_per_view", "min_observed_fraction")],
+        list(features_per_view = NA_integer_, min_observed_fraction = NA_real_))
+    refusal <- tryCatch(integrationModelSettings(list(feature_selection = "top_variance", features_per_view = NA)),
+        error = function(error) error)
     expect_s3_class(refusal, "integration_parameters_invalid")
     expect_identical(conditionMessage(refusal), sprintf(texts[["setting_not_whole"]], texts[["param_features_per_view"]]))
+    expect_error(integrationModelSettings(list(min_observed_fraction = NA)), class = "integration_parameters_invalid",
+        regexp = texts[["param_min_observed_fraction"]], fixed = TRUE)
     expect_error(integrationModelSettings(list(num_factors = 2.5)), class = "integration_parameters_invalid",
         regexp = texts[["param_num_factors"]], fixed = TRUE)
     expect_error(integrationModelSettings(list(seed = NA)), class = "integration_parameters_invalid")

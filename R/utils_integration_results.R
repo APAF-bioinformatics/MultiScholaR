@@ -44,8 +44,9 @@ integrationResultsParameterSpec <- function() {
         weight_scale = list(default = "scaled", choices = c("scaled", "raw"), settled_by = workbook),
         # The design column the factors are related to (the integration design holds the group only).
         design_covariate = list(default = "group", choices = "group", settled_by = workbook),
-        # The factor-design statistic: one-way analysis of variance of each factor on the group, R^2 as the effect.
-        association_test = list(default = "anova", choices = "anova", settled_by = workbook),
+        # The factor-design statistic: one-way analysis of variance of each factor on the group, R^2 as the effect;
+        # KIT-151 (plan item E): or the Kruskal-Wallis rank test, epsilon-squared as the effect. ANOVA stays the default.
+        association_test = list(default = "anova", choices = c("anova", "kruskal_wallis"), settled_by = workbook),
         # The p-values' adjustment across the factors tested.
         p_adjust_method = list(default = "BH", choices = c("BH", "holm", "bonferroni", "none"), settled_by = workbook),
         figure_format = list(default = "png", choices = c("png", "pdf"), settled_by = workbook),
@@ -167,17 +168,23 @@ integrationGroupCorrectedViews <- function(object, views, input_matrix = NULL) {
 #' The relation of each factor to the design's groups (KIT-063; ledger row "integration: factors against the design"):
 #' per factor, over the biological samples with a group, a one-way analysis of variance of the factor's values on the
 #' group; the share of the factor's variance between the groups (R^2 = between-group over total sum of squares, in
-#' percent) is the effect size, the F test's p-value is reported raw and adjusted across the factors tested. Without a
+#' percent) is the effect size, the F test's p-value is reported raw and adjusted across every factor of the model
+#' (KIT-151, INT-20: the family is the model's factors, whichever are shown; `adjusted_over` says how many). Without a
 #' test (`tested = FALSE`, D10) the p-values are NA; with fewer than two groups or no residual degree of freedom
-#' nothing is computed.
+#' nothing is computed. KIT-151 (plan item E): `test = "kruskal_wallis"` uses the Kruskal-Wallis rank test instead
+#' (`stats::kruskal.test`, its chi-squared approximation with the tie correction), its H and degrees of freedom, and
+#' epsilon-squared, H / (n - 1) (in percent), as the effect size; the claim limit applies alike.
 #' @param values `data.frame(biological_sample, group, <factor columns>)`.
-#' @param factors The factors to relate.
+#' @param factors Every factor of the model: all are tested and the p-values adjusted over them.
 #' @param tested Whether p-values are given (FALSE under D10's claim limit).
 #' @param adjust The `p.adjust` method.
-#' @return `data.frame(factor, samples, groups, r2_percent, f_statistic, df_group, df_residual, p_value, p_adjusted,
-#'   status)`; `status` is `tested`, `not_tested` (D10) or `cannot_test`.
+#' @param shown The factors whose rows are returned (default every factor), in the order of `factors`.
+#' @param test `anova` or `kruskal_wallis`.
+#' @return `data.frame(factor, samples, groups, test, r2_percent, f_statistic, df_group, df_residual,
+#'   epsilon_squared_percent, h_statistic, p_value, p_adjusted, adjusted_over, status)`; the ANOVA's columns are NA under
+#'   Kruskal-Wallis and its columns NA under ANOVA; `status` is `tested`, `not_tested` (D10) or `cannot_test`.
 #' @noRd
-integrationFactorAssociation <- function(values, factors, tested = TRUE, adjust = "BH") {
+integrationFactorAssociation <- function(values, factors, tested = TRUE, adjust = "BH", shown = factors, test = "anova") {
     rows <- lapply(factors, function(name) {
         y <- values[[name]]
         group <- as.character(values$group)
@@ -188,15 +195,23 @@ integrationFactorAssociation <- function(values, factors, tested = TRUE, adjust 
         n <- length(y)
         if (k < 2L || n - k < 1L) {
             return(data.frame(factor = name, samples = n, groups = k, r2_percent = NA_real_, f_statistic = NA_real_,
-                df_group = NA_integer_, df_residual = NA_integer_, p_value = NA_real_, status = "cannot_test",
-                stringsAsFactors = FALSE))
+                df_group = NA_integer_, df_residual = NA_integer_, epsilon_squared_percent = NA_real_, h_statistic = NA_real_,
+                p_value = NA_real_, status = "cannot_test", stringsAsFactors = FALSE))
+        }
+        if (identical(test, "kruskal_wallis")) {
+            kw <- stats::kruskal.test(y, group)
+            h <- unname(kw$statistic)
+            return(data.frame(factor = name, samples = n, groups = k, r2_percent = NA_real_, f_statistic = NA_real_,
+                df_group = as.integer(kw$parameter), df_residual = NA_integer_, epsilon_squared_percent = 100 * h / (n - 1),
+                h_statistic = h, p_value = if (isTRUE(tested)) kw$p.value else NA_real_,
+                status = if (isTRUE(tested)) "tested" else "not_tested", stringsAsFactors = FALSE))
         }
         table <- stats::anova(stats::lm(y ~ group))
         between <- table[["Sum Sq"]][[1L]]
         within <- table[["Sum Sq"]][[2L]]
         data.frame(factor = name, samples = n, groups = k, r2_percent = 100 * between / (between + within),
             f_statistic = table[["F value"]][[1L]], df_group = as.integer(table[["Df"]][[1L]]),
-            df_residual = as.integer(table[["Df"]][[2L]]),
+            df_residual = as.integer(table[["Df"]][[2L]]), epsilon_squared_percent = NA_real_, h_statistic = NA_real_,
             p_value = if (isTRUE(tested)) table[["Pr(>F)"]][[1L]] else NA_real_,
             status = if (isTRUE(tested)) "tested" else "not_tested", stringsAsFactors = FALSE)
     })
@@ -204,9 +219,13 @@ integrationFactorAssociation <- function(values, factors, tested = TRUE, adjust 
     out$p_adjusted <- NA_real_
     done <- out$status == "tested" & !is.na(out$p_value)
     if (any(done)) out$p_adjusted[done] <- stats::p.adjust(out$p_value[done], method = adjust)
+    out$adjusted_over <- sum(done)
+    # KIT-151 (INT-20): adjusted over every factor, then the factors shown.
+    out <- out[out$factor %in% shown, , drop = FALSE]
+    out$test <- rep(test, nrow(out))
     rownames(out) <- NULL
-    out[c("factor", "samples", "groups", "r2_percent", "f_statistic", "df_group", "df_residual", "p_value", "p_adjusted",
-        "status")]
+    out[c("factor", "samples", "groups", "test", "r2_percent", "f_statistic", "df_group", "df_residual",
+        "epsilon_squared_percent", "h_statistic", "p_value", "p_adjusted", "adjusted_over", "status")]
 }
 
 #' MOFA2's own warnings, kept with the model (`integrationTrainMofa`'s `messages`, prefix "WARNING:"), in plain words
@@ -272,7 +291,9 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
     if (!length(model_parameters)) model_parameters <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$parameters
     input_matrix <- model_parameters$input_matrix
     corrected <- integrationGroupCorrectedViews(object, views, input_matrix)
-    association <- integrationFactorAssociation(factor_values, shown, tested = !any(corrected), adjust = p$p_adjust_method)
+    # KIT-151 (INT-20): every factor tested and adjusted together; the factors shown kept.
+    association <- integrationFactorAssociation(factor_values, factors, tested = !any(corrected), adjust = p$p_adjust_method,
+        shown = shown, test = p$association_test)
     # (3) Weights with display names, scaled and ranked per factor and data set. KIT-152: each data set's feature order
     # (the weights' rows, which are the aligned values' rows) is kept to find the top features' rows.
     feature_rows <- list()
@@ -299,6 +320,12 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
     rownames(top) <- NULL
     # (4) The factors' correlation over the biological samples.
     correlation <- stats::cor(as.matrix(value$factors[factors]), use = "pairwise.complete.obs")
+    # KIT-151 (INT-14): each factor's agreement across the training seeds (NULL for a model trained before KIT-151).
+    stability <- value$seeds$stability
+    if (!is.null(stability)) {
+        stability <- stability[stability$factor %in% shown, , drop = FALSE]
+        rownames(stability) <- NULL
+    }
     # The claim limit's facts: each omic's correction in words, and the data sets corrected with the groups.
     corrections <- vapply(object@inputs, function(entry) integrationCorrectionText(entry$manifest, texts), character(1))
     # (6) KIT-152: the top features' values, and the scale each data set's values are on.
@@ -316,7 +343,7 @@ integrationResults <- function(value, object, parameters = list(), texts = integ
         claim = list(group_corrected = names(corrected)[corrected], corrections = corrections,
             uncorrected = identical(input_matrix, "uncorrected")),
         feature_values = feature_values, value_scales = integrationFeatureValueScales(object, views, model_parameters$scaling),
-        maps = maps)
+        maps = maps, seeds = value$seeds$seeds, stability = stability)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -708,6 +735,17 @@ integrationResultsVarianceTable <- function(results, texts = integrationGuiTexts
     table
 }
 
+#' Each factor's agreement across the training seeds (KIT-151; INT-14), to three decimals; NULL when not measured.
+#' @noRd
+integrationResultsStabilityTable <- function(results, texts = integrationGuiTexts()) {
+    stability <- results$stability
+    if (is.null(stability) || !nrow(stability) || all(is.na(stability$agreement_lowest))) return(NULL)
+    table <- data.frame(stability$factor, sprintf("%.3f", stability$agreement_lowest), sprintf("%.3f", stability$agreement_median),
+        stringsAsFactors = FALSE)
+    names(table) <- unname(texts[c("col_factor", "col_agreement_lowest", "col_agreement_median")])
+    table
+}
+
 #' The relation of the factors to the groups, in words: a p-value not given under the claim limit, or not computable.
 #' @noRd
 integrationResultsAssociationTable <- function(results, texts = integrationGuiTexts()) {
@@ -715,6 +753,15 @@ integrationResultsAssociationTable <- function(results, texts = integrationGuiTe
     number <- function(x, format) ifelse(is.na(x), "", sprintf(format, x))
     p <- function(x) ifelse(a$status == "tested", ifelse(is.na(x), "", format.pval(x, digits = 3)),
         ifelse(a$status == "not_tested", texts[["cell_not_tested"]], texts[["cell_cannot_test"]]))
+    # KIT-151 (plan item E): the Kruskal-Wallis test's own effect size, statistic and degrees of freedom.
+    if (identical(results$parameters$association_test, "kruskal_wallis")) {
+        table <- data.frame(a$factor, a$samples, a$groups, number(a$epsilon_squared_percent, "%.1f"),
+            number(a$h_statistic, "%.2f"), ifelse(is.na(a$df_group), "", sprintf("%d", a$df_group)), p(a$p_value),
+            p(a$p_adjusted), stringsAsFactors = FALSE)
+        names(table) <- unname(texts[c("col_factor", "col_samples_tested", "col_groups_n", "col_epsilon2", "col_h", "col_df",
+            "col_p", "col_p_adjusted")])
+        return(table)
+    }
     table <- data.frame(a$factor, a$samples, a$groups, number(a$r2_percent, "%.1f"), number(a$f_statistic, "%.2f"),
         ifelse(is.na(a$df_group), "", sprintf("%d, %d", a$df_group, a$df_residual)), p(a$p_value), p(a$p_adjusted),
         stringsAsFactors = FALSE)
@@ -786,7 +833,9 @@ integrationWriteResults <- function(results, staged, texts = integrationGuiTexts
         write(results$weights, "weights.tsv"), write(results$top_weights, "top_weights.tsv"),
         write(correlation, "factor_correlation.tsv"), write(advisories, "model_warnings.tsv"),
         # KIT-152: the top features' values (the scatter's and, before display centring, the heatmap's).
-        write(results$feature_values, "top_feature_values.tsv"))
+        write(results$feature_values, "top_feature_values.tsv"),
+        # KIT-151 (INT-14): each factor's agreement across the training seeds.
+        if (!is.null(results$stability)) write(results$stability, "factor_stability.tsv"))
     maps <- Filter(function(map) is.null(map$refusal), results$maps)
     for (method in names(maps)) tables <- c(tables, write(maps[[method]]$coordinates, sprintf("map_%s.tsv", method)))
     if (length(maps)) {

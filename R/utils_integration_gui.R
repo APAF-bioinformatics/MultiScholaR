@@ -241,29 +241,57 @@ integrationGuiTexts <- function() {
         choice_missing_samples_keep_missing = "kept, with that data set's values missing",
         choice_missing_samples_drop_incomplete = "left out",
         param_feature_selection = "Features used from each data set",
+        choice_feature_selection_variance_above_trend = paste("the features that vary most for their abundance (variance",
+            "above the trend of variance with mean abundance)"),
+        choice_feature_selection_top_variance = "the most variable features (variance alone)",
         choice_feature_selection_none = "all features",
-        choice_feature_selection_top_variance = "only the most variable features",
-        param_features_per_view = "Number of most variable features kept per data set",
-        help_features_per_view = "Used only when only the most variable features are used.",
+        help_feature_selection = paste("Selecting the same number of features from each data set keeps a large data set",
+            "from outweighing the small ones. Less abundant features are often noisier; ranking by variance above the",
+            "trend keeps that noise from filling the selection."),
+        param_features_per_view = "Number of features kept per data set",
+        help_features_per_view = paste("A data set with more features keeps this many; a smaller data set keeps all of",
+            "its features. Not used when all features are used."),
+        param_min_observed_fraction = "Share of biological samples a feature must be measured in",
+        help_min_observed_fraction = paste("Features measured in fewer biological samples are left out before the",
+            "selection (0.5: at least half of them, and never fewer than two). Not used when all features are used."),
         param_scaling = "Scaling of each feature",
         choice_scaling_none = "none: the values as saved",
         choice_scaling_feature_zscore = "each feature scaled to mean 0 and standard deviation 1",
-        param_scale_views = "Give every data set the same total variance",
+        # KIT-151 (INT-24).
+        help_scaling = paste("Each selected feature is scaled to mean 0 and standard deviation 1, after the features are",
+            "chosen (the choice uses the values as saved). In simulations with few samples and missing values this found",
+            "weak factors of the smaller data sets more often; otherwise it made no practical difference."),
+        # KIT-151 (audit SCI-12): what scale_views does.
+        param_scale_views = "Divide each data set by its overall standard deviation",
+        help_scale_views = paste("Each data set is divided by one number, the standard deviation of all its values, so that",
+            "data sets measured on different scales become comparable. It does not balance data sets with different",
+            "numbers of features; the feature selection does that."),
         param_center_groups = "Centre each feature on its mean",
+        help_center_groups = paste("Required unless each feature is scaled to mean 0 and standard deviation 1, which",
+            "centres it already."),
         param_num_factors = "Number of factors",
         param_convergence_mode = "How closely training must settle before it stops",
         choice_convergence_mode_fast = "fast",
         choice_convergence_mode_medium = "medium",
         choice_convergence_mode_slow = "slow (the closest)",
         param_maxiter = "Maximum number of training rounds",
+        help_maxiter = paste("Training stops by its convergence rule or at this limit, whichever comes first; the result",
+            "says which."),
         param_seed = "Random seed",
-        help_seed = "The same data, settings and seed give the same model.",
+        # KIT-151 (INT-17): what the seed promises, and what it does not.
+        help_seed = paste("On the same computer and software, the same data, settings and seed give the same model. On",
+            "another computer the model usually agrees to about 12 decimal places, but a factor near the limit of what",
+            "the data can show can come out differently."),
+        param_training_seeds = "Number of models trained (one per seed)",
+        help_training_seeds = paste("The models are trained from the seed above and the next whole numbers. The results",
+            "shown are the first model's; how well each factor agrees across the models is shown with the results. More",
+            "models take longer to train."),
         param_precision = "Numeric precision",
-        choice_precision_double = "double: the same model on every computer",
+        choice_precision_double = "double: the most exact (the chosen setting)",
         choice_precision_single = "single: less memory for very large studies",
-        help_precision = paste("Double precision is the chosen setting: it gives the same model on every computer.",
-            "Single precision uses less memory for very large studies, but the model can differ slightly from one",
-            "computer to another."),
+        help_precision = paste("Double precision is the chosen setting: on the same computer and software it gives the",
+            "same model every time, and on another computer it usually agrees to about 12 decimal places. Single",
+            "precision uses less memory for very large studies, but the model differs more from one computer to another."),
         run_button = "Train the model",
         run_working = "Training the model. This can take several minutes.",
         # %s: the reason.
@@ -276,16 +304,18 @@ integrationGuiTexts <- function() {
         # %d: models trained since the import.
         run_count = "Models trained since the import: %d. Each one is kept in the project; the latest is shown.",
         result_heading = "The trained model",
-        # %d: rounds, then the maximum.
-        result_converged = "Training settled after %d rounds (of at most %d).",
-        result_not_converged = paste("Training stopped at the maximum of %d rounds without settling. Allow more rounds or",
-            "a less close setting, then train again."),
+        # %d: rounds, then the limit. KIT-151 (INT-15): said only when training stopped by its convergence rule.
+        result_converged = "Training settled after %d rounds: it stopped by its convergence rule (the limit was %d rounds).",
+        # %d: the limit.
+        result_not_converged = paste("Training did not settle: it stopped at the limit of %d rounds before its",
+            "convergence rule was met. Allow more rounds, then train again."),
         # %d: factors kept, factors asked for.
         result_factors = "Factors in the model: %d (asked for: %d).",
         # %d: biological samples, those measured in every data set.
         result_samples = "Biological samples in the model: %d; measured in every data set: %d.",
-        result_variance_heading = "Variance explained per data set (all factors together)",
-        col_variance = "Variance explained (%)",
+        # KIT-151 (audit SCI-12): variance explained refers to the features given to the model.
+        result_variance_heading = "Variance explained in each data set's selected features (all factors together)",
+        col_variance = "Variance explained in the selected features (%)",
         col_model_features = "Features in the model",
         # %s: the checksum.
         result_saved = "The model file is saved in the project; its SHA-256 checksum is %s.",
@@ -316,7 +346,8 @@ integrationGuiTexts <- function() {
         tab_results = " Results",
         step_results = "Results",
         results_heading = "Results of the factor model",
-        results_intro = paste("What the trained model found: how much of each data set's variation each factor explains,",
+        results_intro = paste("What the trained model found: how much of the variation of each data set's selected",
+            "features each factor explains,",
             "how the factors relate to the groups, which features weigh most on each factor, and how the factors relate to",
             "each other."),
         results_not_trained = "Train a model at the Model tab first.",
@@ -333,16 +364,30 @@ integrationGuiTexts <- function() {
             "rather than biology. Read it with care."),
         advisory_other = "MOFA2 gave a warning while training; its text is under Technical detail.",
         variance_heading = "Variance explained",
-        variance_intro = paste("The percentage of each data set's variation that each factor explains. A factor that",
-            "explains variation in several data sets is shared between them; one that explains variation in only one data",
-            "set is specific to it."),
-        variance_total_heading = "All factors together, per data set",
+        variance_intro = paste("The percentage of the variation of each data set's selected features (the features given",
+            "to the model, not all features measured) that each factor explains. A factor that explains variation in data",
+            "sets of different omics is shared across those omics; one that explains variation in only one data set is",
+            "specific to it. Two data sets of one omic (for example positive and negative mode) measure related",
+            "molecules, so a factor active in both is not by itself shared across omics."),
+        variance_total_heading = "All factors together, per data set (its selected features)",
+        # KIT-151 (INT-14): each factor's agreement across the training seeds.
+        stability_heading = "How stable each factor is across training seeds",
+        # %d: models; %s: the seeds; %d: the seed of the results shown.
+        stability_intro = paste("The model was trained %d times, each from a different random seed (%s); the results",
+            "shown are those of seed %d. For each factor: its agreement with the most similar factor of each other model,",
+            "that is the correlation of the two factors' values across the biological samples (sign ignored), each factor",
+            "paired with one factor only, the most similar pair first. Near 1, the factor is found whatever the seed; well",
+            "below 1, it depends on the seed, so read it with care."),
+        stability_single = paste("The model was trained from one seed only, so how stable the factors are across seeds",
+            "was not measured."),
+        col_agreement_lowest = "Lowest agreement across seeds",
+        col_agreement_median = "Median agreement across seeds",
         col_factor = "Factor",
         association_heading = "Factors and the groups",
         # %s: the adjustment's name.
         association_intro = paste("For each factor: the share of its variation that lies between the groups (one-way",
             "analysis of variance of the factor's values on the group), the test's p-value, and the p-value adjusted for",
-            "the number of factors tested (%s)."),
+            "all the factors of the model, whichever are shown (%s)."),
         padjust_BH = "Benjamini-Hochberg",
         padjust_holm = "Holm",
         padjust_bonferroni = "Bonferroni",
@@ -367,6 +412,14 @@ integrationGuiTexts <- function() {
         col_df = "Degrees of freedom",
         col_p = "p-value",
         col_p_adjusted = "Adjusted p-value",
+        # KIT-151 (plan item E): the Kruskal-Wallis columns.
+        col_epsilon2 = "Effect size, epsilon-squared (%)",
+        col_h = "Kruskal-Wallis H",
+        # %s: the adjustment's name.
+        association_intro_kruskal_wallis = paste("For each factor: the effect size epsilon-squared (the Kruskal-Wallis",
+            "statistic H divided by the number of samples minus one, as a percentage: how much of the ordering of the",
+            "factor's values lies between the groups), the Kruskal-Wallis test's p-value, and the p-value adjusted for all",
+            "the factors of the model, whichever are shown (%s)."),
         cell_not_tested = "not given (see How to read this)",
         cell_cannot_test = "cannot be computed (fewer than two groups or too few samples)",
         factor_values_heading = "Factor values per biological sample",
@@ -391,7 +444,7 @@ integrationGuiTexts <- function() {
             "factor is meant to capture its own pattern; a correlation far from 0 means two factors share part of theirs."),
         plot_dataset = "Data set",
         plot_factor = "Factor",
-        plot_variance = "Variance explained (%)",
+        plot_variance = "Variance explained in the selected features (%)",
         plot_group = "Group",
         plot_factor_value = "Factor value",
         plot_weight = "Weight",
@@ -420,6 +473,11 @@ integrationGuiTexts <- function() {
         choice_design_covariate_group = "the group of each biological sample",
         param_association_test = "Test of each factor against the groups",
         choice_association_test_anova = "one-way analysis of variance",
+        # KIT-151 (plan item E).
+        choice_association_test_kruskal_wallis = paste("Kruskal-Wallis rank test (does not assume the factor's values are",
+            "normally distributed)"),
+        help_association_test = paste("Choose the test before looking at the results. Analysis of variance is the default;",
+            "the Kruskal-Wallis test compares the ranks of the factor's values instead."),
         param_p_adjust_method = "Adjustment of the p-values",
         choice_p_adjust_method_BH = "Benjamini-Hochberg",
         choice_p_adjust_method_holm = "Holm",
@@ -1170,15 +1228,18 @@ integrationModelSettings <- function(values, spec = integrationMofaParameterSpec
             as.integer(value)
         })
     }
-    if (all(c("feature_selection", "features_per_view") %in% names(out)) &&
-        !identical(out$feature_selection, "top_variance")) out$features_per_view <- NA_integer_
-    for (name in names(out)) {
+    # KIT-151 (INT-12): the number kept and the observed share are set only when features are selected.
+    unused <- character()
+    if ("feature_selection" %in% names(out) && identical(out$feature_selection, "none")) {
+        unused <- intersect(c("features_per_view", "min_observed_fraction"), names(out))
+        out[unused] <- list(features_per_view = NA_integer_, min_observed_fraction = NA_real_)[unused]
+    }
+    for (name in setdiff(names(out), unused)) {
         if (is.double(out[[name]]) && length(out[[name]]) == 1L && is.na(out[[name]])) {
             integrationGuiRefuse(sprintf(texts[["setting_not_number"]], integrationParameterText(texts, "param", name)),
                 "integration_parameters_invalid")
         }
-        if (is.integer(out[[name]]) && is.na(out[[name]]) && !identical(name, "features_per_view")) refuse(name)
-        if (identical(name, "features_per_view") && identical(out$feature_selection, "top_variance") && is.na(out[[name]])) refuse(name)
+        if (is.integer(out[[name]]) && length(out[[name]]) == 1L && is.na(out[[name]])) refuse(name)
     }
     out
 }
@@ -1235,7 +1296,9 @@ integrationModelPrecheck <- function(manager, parameters, probe = integrationMof
 integrationModelSummary <- function(value, parameters, texts = integrationGuiTexts()) {
     iterations <- as.integer(value$elbo$iterations)
     maxiter <- as.integer(parameters$maxiter)
-    converged <- isTRUE(iterations < maxiter)
+    # KIT-151 (INT-15): how training stopped, as the product keeps it (a product without it: fewer rounds than the limit).
+    stopped_by <- value$elbo$stopped_by %||% NA_character_
+    converged <- if (!is.na(stopped_by)) identical(stopped_by, "convergence_rule") else isTRUE(iterations < maxiter)
     total <- value$variance_total
     features <- value$view_summary$features_model[match(total$view, value$view_summary$view)]
     variance <- data.frame(total$view, as.integer(features), sprintf("%.2f", total$r2_percent), stringsAsFactors = FALSE)

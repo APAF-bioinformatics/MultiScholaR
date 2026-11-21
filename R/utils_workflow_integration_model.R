@@ -276,21 +276,45 @@ integrationMofaParameterSpec <- function() {
             settled_by = "INT-3 (dropped); the workbook may override"),
         missing_samples = list(default = "keep_missing", choices = c("keep_missing", "drop_incomplete"),
             settled_by = "KIT-060 D4 (kept as missing in that view); the workbook may override"),
-        feature_selection = list(default = "none", choices = c("none", "top_variance"), settled_by = workbook),
-        features_per_view = list(default = NA_integer_, choices = NULL, settled_by = workbook),
-        scaling = list(default = "none", choices = c("none", "feature_zscore"), settled_by = workbook),
-        scale_views = list(default = FALSE, choices = NULL, settled_by = workbook),
+        # INT-12 (user, 2026-11-21): decided. The features whose variance lies furthest above the data set's fitted
+        # mean-variance trend (`integrationFeatureSelectionScore`), 1,000 per data set (a smaller data set keeps all),
+        # among the features observed in at least half the biological samples; raw variance and none stay selectable.
+        feature_selection = list(default = "variance_above_trend", choices = c("variance_above_trend", "top_variance", "none"),
+            settled_by = "INT-12 (decided 2026-11-21: variance above the fitted mean-variance trend)"),
+        features_per_view = list(default = 1000L, choices = NULL,
+            settled_by = "INT-12 (decided 2026-11-21: about 1,000 per data set; a smaller data set keeps all)"),
+        min_observed_fraction = list(default = 0.5, choices = NULL, type = "number",
+            settled_by = "INT-12 (decided 2026-11-21: observed in at least half the biological samples)"),
+        # INT-24 (user, 2026-11-21): decided. Each selected feature scaled to mean 0 and standard deviation 1 (after the
+        # selection, which is computed on the unscaled values), and each data set divided by its overall standard
+        # deviation; the z-score stays selectable off.
+        scaling = list(default = "feature_zscore", choices = c("none", "feature_zscore"),
+            settled_by = "INT-24 (decided 2026-11-21: each selected feature scaled to mean 0 and standard deviation 1)"),
+        scale_views = list(default = TRUE, choices = NULL,
+            settled_by = "INT-24 (decided 2026-11-21: each data set divided by its overall standard deviation)"),
         center_groups = list(default = TRUE, choices = NULL, settled_by = workbook),
         num_factors = list(default = 5L, choices = NULL, settled_by = workbook),
-        convergence_mode = list(default = "fast", choices = c("fast", "medium", "slow"), settled_by = workbook),
-        maxiter = list(default = 1000L, choices = NULL, settled_by = workbook),
+        # INT-15 (user, 2026-11-21): decided. Training stops by its convergence rule well within 10,000 rounds (none of
+        # the 1,020 slow fits of KIT-151 run b passed 3,486); whether it stopped by the rule or at the limit is kept.
+        convergence_mode = list(default = "slow", choices = c("fast", "medium", "slow"),
+            settled_by = "INT-15 (decided 2026-11-21: slow)"),
+        maxiter = list(default = 10000L, choices = NULL,
+            settled_by = "INT-15 (decided 2026-11-21: a limit training stops well within)"),
         seed = list(default = 20261119L, choices = NULL, settled_by = workbook),
-        # INT-6 (user, 2026-11-19): decided, not provisional. Double precision gives the same model on every computer
-        # (KIT-062 diagnosis run 44462198417: MOFA2's float32 default followed one of two training paths depending on
-        # the CPU model and thread count); single precision uses less memory for very large studies, and its results
-        # can differ slightly between computers.
+        # INT-14 (user, 2026-11-21): the model is trained from several seeds and each factor's agreement across them
+        # reported (`integrationSeedStability`); the reported model is the declared seed's. The number is provisional.
+        training_seeds = list(default = 5L, choices = NULL,
+            settled_by = "INT-14 (several seeds decided 2026-11-21); the number is provisional, awaiting the user"),
+        # INT-6 (user, 2026-11-19): decided, not provisional. Double precision (KIT-062 diagnosis run 44462198417:
+        # MOFA2's float32 default followed one of two training paths depending on the CPU model and thread count);
+        # single precision uses less memory for very large studies, and its results differ more between computers.
+        # INT-17 (2026-11-21) corrects INT-6: double precision gives the identical model on the same computer and
+        # software, not on every computer; with the maths library pinned (`integrationPinMathsLibrary`) models were
+        # bit-identical across the AMD processors tested; without it they agree to about 1e-12 and a factor near the
+        # detection limit can differ between processor models.
         precision = list(default = "double", choices = c("double", "single"),
-            settled_by = "INT-6 (decided 2026-11-19: double, the same model on every computer)"))
+            settled_by = paste("INT-6 (decided 2026-11-19: double), corrected by INT-17 (2026-11-21: identical on the same",
+                "computer and software, not guaranteed across processors)")))
 }
 
 #' The provisional-parameter table (one row per method parameter), for the ticket, the ledger and the GUI.
@@ -369,6 +393,10 @@ integrationResolveMofaParameters <- function(object, parameters = list()) {
             invalid(sprintf("%s must be TRUE or FALSE", name))
         }
     }
+    # KIT-151 (plan item E): centring is required unless every feature is already centred by its z-score.
+    if (!isTRUE(out$center_groups) && !identical(out$scaling, "feature_zscore")) {
+        invalid("center_groups can be FALSE only with scaling = feature_zscore (the features are otherwise not centred)")
+    }
     whole <- function(name, minimum) {
         value <- out[[name]]
         if (!(is.numeric(value) && length(value) == 1L && !is.na(value) && value == round(value) && value >= minimum)) {
@@ -379,12 +407,29 @@ integrationResolveMofaParameters <- function(object, parameters = list()) {
     out$num_factors <- whole("num_factors", 1L)
     out$maxiter <- whole("maxiter", 1L)
     out$seed <- whole("seed", 0L)
-    if (identical(out$feature_selection, "top_variance")) {
+    out$training_seeds <- whole("training_seeds", 1L)
+    # The other seeds are the next whole numbers after the declared one (`integrationTrainingSeeds`).
+    if (out$seed > .Machine$integer.max - (out$training_seeds - 1L)) {
+        invalid(sprintf("seed plus training_seeds - 1 must be at most %d", .Machine$integer.max))
+    }
+    # INT-12: the number kept and the observed share apply only when features are selected; with no selection a value
+    # the caller gives is refused and an absent one is NA (so the identity does not carry an unused default).
+    if (!identical(out$feature_selection, "none")) {
         out$features_per_view <- whole("features_per_view", 1L)
-    } else if (!(length(out$features_per_view) == 1L && is.na(out$features_per_view))) {
-        invalid("features_per_view is set only with feature_selection = top_variance")
+        fraction <- out$min_observed_fraction
+        if (!(is.numeric(fraction) && length(fraction) == 1L && !is.na(fraction) && fraction > 0 && fraction <= 1)) {
+            invalid("min_observed_fraction must be a number above 0 and at most 1")
+        }
+        out$min_observed_fraction <- as.numeric(fraction)
     } else {
+        for (name in c("features_per_view", "min_observed_fraction")) {
+            value <- given(name)
+            if (!is.null(value) && !(length(value) == 1L && is.na(value))) {
+                invalid(sprintf("%s is set only with a feature selection (feature_selection other than none)", name))
+            }
+        }
         out$features_per_view <- NA_integer_
+        out$min_observed_fraction <- NA_real_
     }
     manifests <- out$input_manifests
     recorded <- integrationStateManifests(object)
@@ -613,10 +658,12 @@ integrationAverageRuns <- function(values, key) {
 #' Align the selected views on their biological samples (KIT-062): per view, internal standards dropped or kept
 #' (`internal_standards`), runs averaged per biological sample (`technical_replicates`, INT-2), the samples of every
 #' view kept with missing values where a view lacks them, or only the samples every view has (`missing_samples`);
-#' features observed in fewer than two samples dropped (and, under per-feature scaling, features without variance);
-#' then the `features_per_view` most variable features (`feature_selection = top_variance`), then the per-feature
-#' Z-score (`scaling = feature_zscore`). Refused: no biological sample shared by every view, a biological sample with
-#' two groups, a view left without features.
+#' features observed in fewer than two samples dropped, or, when features are selected, in fewer than
+#' `min_observed_fraction` of the kept samples (INT-12; `integrationMinObserved`), and, under per-feature scaling,
+#' features without variance; then, in a view with more than `features_per_view` features, the `features_per_view`
+#' with the largest selection score (computed on the values before any per-feature scaling; KIT-151, INT-24) (`feature_selection`: `variance_above_trend` or `top_variance`;
+#' `integrationFeatureSelectionScore`), then the per-feature Z-score (`scaling = feature_zscore`). Refused: no
+#' biological sample shared by every view, a biological sample with two groups, a view left without features.
 #' @param object An `IntegrationViewsData`, hydrated.
 #' @param parameters Resolved parameters (`integrationResolveMofaParameters`).
 #' @param prefix_rows KIT-148: name each view's rows `<view>:<feature_id>` when the view is read (the model's hand-off
@@ -658,14 +705,16 @@ integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
     present <- lapply(averaged, colnames)
     plan <- integrationAlignSamples(design, view_omic, views, present, parameters$missing_samples)
     zscore <- identical(parameters$scaling, "feature_zscore")
+    min_observed <- integrationMinObserved(parameters, length(plan$kept))
+    selection <- parameters$feature_selection
     summary <- list()
     final <- list()
     for (view in views) {
-        block <- integrationAlignedRows(averaged[[view]], plan$kept, zscore)
+        block <- integrationAlignedRows(averaged[[view]], plan$kept, zscore, min_observed)
         m <- block$values
-        if (identical(parameters$feature_selection, "top_variance") && nrow(m) > parameters$features_per_view) {
-            m <- m[integrationSelectTopFeatures(integrationFeatureSelectionStatistic(m), parameters$features_per_view), ,
-                drop = FALSE]
+        if (!identical(selection, "none") && nrow(m) > parameters$features_per_view) {
+            score <- integrationFeatureSelectionScore(integrationFeatureSelectionStatistic(m), selection)
+            m <- m[integrationSelectTopFeatures(score, parameters$features_per_view), , drop = FALSE]
         }
         if (zscore) m <- integrationZscoreRows(m)
         if (!nrow(m)) integrationRefuseEmptyView(view)
@@ -679,9 +728,9 @@ integrationAlignViews <- function(object, parameters, prefix_rows = FALSE) {
 # ---------------------------------------------------------------------------------------------------------------
 # KIT-149: the alignment's rules, shared by the whole-matrix alignment (`integrationAlignViews`) and the partitioned
 # one (`integrationAlignViewsPartitioned`), so that the two apply one definition. Every rule on values is row by row
-# (each feature's average, its count of observed samples, its spread, its selection statistic and Z-score depend on
-# that feature's values alone); only the most-variable selection compares features, and it is taken once over the
-# whole data set from one statistic per feature.
+# (each feature's average, its count of observed samples, its spread, its mean and variance and Z-score depend on
+# that feature's values alone); only the feature selection compares features (KIT-151: the mean-variance trend is
+# fitted over them), and it is taken once over the whole data set from the per-feature mean and variance.
 # ---------------------------------------------------------------------------------------------------------------
 
 #' The omic of each data set of the inputs state, named by data set (the inputs' order).
@@ -726,20 +775,32 @@ integrationAlignSamples <- function(design, view_omic, views, present, missing_s
     list(shared = shared, kept = kept, groups = groups, notes = notes)
 }
 
+#' The number of kept biological samples a feature must be observed in (KIT-062; INT-12): two without a feature
+#' selection; with one, `min_observed_fraction` of the kept samples rounded up (the product first rounded to 8 decimals,
+#' so that 0.3 x 10 is 3, not 4), and never fewer than two. Half of 20 samples is 10, half of 35 is 18.
+#' @param parameters Resolved parameters.
+#' @param samples The number of kept biological samples.
+#' @noRd
+integrationMinObserved <- function(parameters, samples) {
+    if (identical(parameters$feature_selection, "none")) return(2L)
+    max(2L, as.integer(ceiling(round(parameters$min_observed_fraction * samples, 8L))))
+}
+
 #' Rows of a data set on the kept biological samples (KIT-062's rules): placed on the kept samples (missing where the
-#' data set lacks one), the features observed in fewer than two samples dropped and, under per-feature scaling, those
-#' without variance. Row by row: a block of rows gives the rows the whole data set gives.
+#' data set lacks one), the features observed in fewer than `min_observed` samples dropped and, under per-feature
+#' scaling, those without variance. Row by row: a block of rows gives the rows the whole data set gives.
 #' @param averaged Features x biological samples (`integrationAverageRuns`).
 #' @param kept The kept biological samples.
 #' @param zscore Whether features without variance are dropped (per-feature scaling).
+#' @param min_observed The fewest kept samples a feature is observed in (`integrationMinObserved`).
 #' @return `list(values, sparse, constant, present)`: the rows left, the counts dropped as sparse and as constant, and
 #'   how many kept samples the data set measures.
 #' @noRd
-integrationAlignedRows <- function(averaged, kept, zscore) {
+integrationAlignedRows <- function(averaged, kept, zscore, min_observed = 2L) {
     m <- matrix(NA_real_, nrow(averaged), length(kept), dimnames = list(rownames(averaged), kept))
     here <- intersect(kept, colnames(averaged))
     m[, here] <- averaged[, here, drop = FALSE]
-    sparse <- rowSums(!is.na(m)) < 2L
+    sparse <- rowSums(!is.na(m)) < min_observed
     m <- m[!sparse, , drop = FALSE]
     constant <- 0L
     if (isTRUE(zscore)) {
@@ -751,17 +812,49 @@ integrationAlignedRows <- function(averaged, kept, zscore) {
     list(values = m, sparse = sum(sparse), constant = constant, present = length(here))
 }
 
-#' The statistic the most-variable selection ranks features by (`feature_selection = top_variance`): each feature's
-#' variance over the samples it is observed in. The one definition both alignments use; the selection rule is under
-#' scientific review (KIT-151), and a change made here changes both alike.
+#' The per-feature statistics the feature selection is computed from (KIT-149; INT-12): each feature's mean and
+#' variance over the samples it is observed in. Row by row, so the partitioned alignment gathers them page by page in
+#' its first pass and needs no further pass over the values; the one definition both alignments use.
 #' @param m Features x samples.
+#' @return `list(mean, variance)`: one number per feature each, in row order.
+#' @noRd
+integrationFeatureSelectionStatistic <- function(m) {
+    list(mean = as.numeric(rowMeans(m, na.rm = TRUE)), variance = as.numeric(apply(m, 1L, stats::var, na.rm = TRUE)))
+}
+
+#' The span of the mean-variance trend's fit (INT-12): the evidence run's (KIT-151 run b, `k151b.R`, TREND_SPAN).
+#' @noRd
+INTEGRATION_TREND_SPAN <- 0.3
+
+#' The fitted mean-variance trend (INT-12), as in the evidence run (KIT-151 run b, `.github/mofa-smoke/k151b.R`,
+#' `fitted_trend`): a lowess fit of `y` on the features' mean (`stats::lowess`, span 0.3, its default three robustness
+#' iterations and `delta`), read at each feature's mean by linear interpolation (`stats::approx`, equal means averaged,
+#' the ends held constant). With fewer than two distinct means there is no trend: 0 for every feature.
+#' @param abundance Each feature's mean.
+#' @param y Each feature's variance.
+#' @return The fitted value per feature.
+#' @noRd
+integrationFittedTrend <- function(abundance, y) {
+    if (length(unique(abundance)) < 2L) return(rep(0, length(y)))
+    fit <- stats::lowess(abundance, y, f = INTEGRATION_TREND_SPAN)
+    stats::approx(fit$x, fit$y, xout = abundance, ties = base::mean, rule = 2)$y
+}
+
+#' The score the feature selection ranks a data set's features by (INT-12): `variance_above_trend`, each feature's
+#' variance minus the fitted mean-variance trend at its mean (`integrationFittedTrend`; the "difference" form of the
+#' evidence run); `top_variance`, its variance.
+#' @param statistic `integrationFeatureSelectionStatistic()` of every feature of the data set, in its row order.
+#' @param selection The `feature_selection` parameter.
 #' @return One number per feature, in row order.
 #' @noRd
-integrationFeatureSelectionStatistic <- function(m) apply(m, 1L, stats::var, na.rm = TRUE)
+integrationFeatureSelectionScore <- function(statistic, selection) {
+    if (identical(selection, "top_variance")) return(statistic$variance)
+    statistic$variance - integrationFittedTrend(statistic$mean, statistic$variance)
+}
 
-#' The features the most-variable selection keeps: the `n` largest statistics, a tie broken by position (the earlier
-#' feature first), returned in position order.
-#' @param statistic `integrationFeatureSelectionStatistic()` of every feature of a data set, in its row order.
+#' The features the selection keeps: the `n` largest scores, a tie broken by position (the earlier feature first),
+#' returned in position order.
+#' @param statistic `integrationFeatureSelectionScore()` of every feature of a data set, in its row order.
 #' @param n The number kept (`features_per_view`).
 #' @return Positions in `statistic`, increasing.
 #' @noRd
@@ -780,7 +873,7 @@ integrationZscoreRows <- function(m) {
 #' Refuse a data set left without features.
 #' @noRd
 integrationRefuseEmptyView <- function(view) {
-    integrationRefuse(sprintf("view %s has no feature left for the model (none is observed in two or more samples)", view),
+    integrationRefuse(sprintf("view %s has no feature left for the model (none is observed in enough biological samples)", view),
         "integration_view_empty")
 }
 
@@ -818,9 +911,9 @@ integrationAlignedValue <- function(final, plan, present, runs, views, summary) 
 #' Align the selected data sets as `integrationAlignViews` does, reading each data set in row pages (KIT-149): no data
 #' set is held whole. The biological samples, runs and internal standards come from the design, the feature tables
 #' and the data sets' column names, without values. Then per data set, pass 1 reads its pages and keeps, per feature
-#' left after the sparse and constant filters, its selection statistic (one number per feature); the most-variable
-#' selection is taken once over the whole data set from those numbers (`integrationSelectTopFeatures`, ties by
-#' position); pass 2 reads the pages again and keeps the selected rows, Z-scored under per-feature scaling, in a matrix
+#' left after the sparse and constant filters, its selection statistics (its mean and variance; KIT-151); the selection
+#' is taken once over the whole data set from those numbers (`integrationFeatureSelectionScore`, the trend fitted once,
+#' then `integrationSelectTopFeatures`, ties by position); pass 2 reads the pages again and keeps the selected rows, Z-scored under per-feature scaling, in a matrix
 #' of the selected features only. Every rule is the whole-matrix path's (`integrationAlignedRows` and the functions
 #' beside it), applied row by row, so the value is `identical()` to `integrationAlignViews()`'s.
 #' @param object An `IntegrationViewsData` with `features`, `design_matrix` and `inputs` hydrated; its `views` may be
@@ -860,7 +953,9 @@ integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_r
     }
     plan <- integrationAlignSamples(design, view_omic, views, present, parameters$missing_samples)
     zscore <- identical(parameters$scaling, "feature_zscore")
-    cap <- if (identical(parameters$feature_selection, "top_variance")) parameters$features_per_view else NA_integer_
+    selection <- parameters$feature_selection
+    cap <- if (!identical(selection, "none")) parameters$features_per_view else NA_integer_
+    min_observed <- integrationMinObserved(parameters, length(plan$kept))
     summary <- list()
     final <- if (isTRUE(values)) list()
     for (view in views) {
@@ -870,9 +965,9 @@ integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_r
             storage.mode(m) <- "double"
             rownames(m) <- if (isTRUE(prefix_rows)) paste(view, page[[1L]], sep = ":") else as.character(page[[1L]])
             if (drop_standards) m <- m[!standards[[view]][offset + seq_len(nrow(m))], , drop = FALSE]
-            integrationAlignedRows(integrationAverageRuns(m, keys[[view]]), plan$kept, zscore)
+            integrationAlignedRows(integrationAverageRuns(m, keys[[view]]), plan$kept, zscore, min_observed)
         }
-        # Pass 1: the counts, and the selection statistic of every feature left.
+        # Pass 1: the counts, and the selection statistics (mean, variance) of every feature left.
         rows_read <- 0L
         sparse <- 0L
         constant <- 0L
@@ -885,14 +980,17 @@ integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_r
             sparse <<- sparse + block$sparse
             constant <<- constant + block$constant
             left <<- left + nrow(block$values)
-            if (!is.na(cap)) statistic[[length(statistic) + 1L]] <<- unname(integrationFeatureSelectionStatistic(block$values))
+            if (!is.na(cap)) statistic[[length(statistic) + 1L]] <<- integrationFeatureSelectionStatistic(block$values)
             invisible(NULL)
         })
-        # The global statistic: the cap's selection over the whole data set (NULL: every feature left is kept).
+        # The global statistic: the selection over the whole data set from the per-feature statistics in row order
+        # (the trend is fitted once, on every feature left; NULL: every feature left is kept).
         take <- NULL
         if (!is.na(cap) && left > cap) {
+            gathered <- list(mean = unlist(lapply(statistic, `[[`, "mean")),
+                variance = unlist(lapply(statistic, `[[`, "variance")))
             take <- logical(left)
-            take[integrationSelectTopFeatures(unlist(statistic), cap)] <- TRUE
+            take[integrationSelectTopFeatures(integrationFeatureSelectionScore(gathered, selection), cap)] <- TRUE
         }
         statistic <- NULL
         features_model <- if (is.null(take)) left else sum(take)
@@ -979,6 +1077,8 @@ integrationMofaCapability <- function() {
     if (!requireNamespace("reticulate", quietly = TRUE)) {
         return(list(available = FALSE, reason = "the R package reticulate is not installed"))
     }
+    # KIT-151 (INT-17): the maths library is pinned before anything starts Python in this process.
+    integrationPinMathsLibrary()
     found <- tryCatch(reticulate::py_module_available("mofapy2"), error = function(error) FALSE)
     if (!isTRUE(found)) {
         python <- Sys.getenv("RETICULATE_PYTHON", unset = "")
@@ -988,7 +1088,68 @@ integrationMofaCapability <- function() {
     list(available = TRUE, reason = NA_character_)
 }
 
-#' The versions a model was trained with: R, MOFA2, reticulate, Python and its packages.
+#' The maths-library pin for training (KIT-151; INT-17, audit SCI-05): the variables the KIT-151 c run set before
+#' Python started, under which every model was bit-identical across the processors seen (run 44678183859: AMD EPYC
+#' 7763, 9V74, 9V45; an Intel processor not yet tested): the OpenBLAS copies of numpy and scipy on one thread and one
+#' code path (Haswell: AVX2 and FMA, which every hosted-runner processor seen supports), OpenMP and MKL (if loaded) on
+#' one thread. In the evidence run R's own OpenBLAS was pinned too (set before R started); in the app R has loaded its
+#' maths library before any of this runs, so only Python's libraries are pinned, where MOFA2 trains.
+#' @noRd
+INTEGRATION_MATHS_PIN <- c(OPENBLAS_NUM_THREADS = "1", OMP_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
+    OPENBLAS_CORETYPE = "Haswell")
+
+#' Pin the maths library of the training's Python (KIT-151; INT-17), once per process, in the app's process and on the
+#' worker alike: when Python has not loaded numpy yet, `INTEGRATION_MATHS_PIN` is set, Python started and mofapy2's
+#' entry point (numpy, scipy, scikit-learn) loaded, then the variables are restored, so that only those libraries,
+#' which read them when they load, run pinned and the rest of the R session is unchanged. When numpy was already loaded
+#' in this process (Python started earlier by other code), its libraries keep the settings they loaded with: the pin
+#' cannot be applied, training goes ahead unpinned, and the model's record says so (`applied = FALSE` with the reason);
+#' such a model is still identical on the same computer and software, agrees to about 1e-12 across processors, and a
+#' factor near the detection limit can differ between processor models.
+#' @return `list(applied, variables, reason)`.
+#' @noRd
+integrationPinMathsLibrary <- local({
+    state <- NULL
+    function() {
+        if (!is.null(state)) return(state)
+        variables <- as.list(INTEGRATION_MATHS_PIN)
+        if (isTRUE(reticulate::py_available(initialize = FALSE))) {
+            loaded <- tryCatch(isTRUE(reticulate::py_eval("'numpy' in __import__('sys').modules")), error = function(error) TRUE)
+            if (loaded) {
+                state <<- list(applied = FALSE, variables = variables, reason = paste("numpy was already loaded in this",
+                    "process before the integration model was first trained, so its maths library could not be pinned"))
+                return(state)
+            }
+        }
+        previous <- Sys.getenv(names(INTEGRATION_MATHS_PIN), unset = NA_character_, names = TRUE)
+        on.exit({
+            for (name in names(previous)) {
+                if (is.na(previous[[name]])) Sys.unsetenv(name) else do.call(Sys.setenv, stats::setNames(list(previous[[name]]), name))
+            }
+        }, add = TRUE)
+        do.call(Sys.setenv, variables)
+        loaded <- tryCatch({
+            reticulate::import("mofapy2.run.entry_point")
+            TRUE
+        }, error = function(error) conditionMessage(error))
+        state <<- list(applied = isTRUE(loaded), variables = variables,
+            reason = if (isTRUE(loaded)) NA_character_ else paste("mofapy2 could not be loaded:", loaded))
+        state
+    }
+})
+
+#' The maths libraries Python has loaded, as threadpoolctl reports them (KIT-151; INT-17): per library its interface,
+#' version, threads and code path; an empty list when threadpoolctl cannot be asked.
+#' @noRd
+integrationMathsLibraries <- function() {
+    info <- tryCatch(reticulate::import("threadpoolctl")$threadpool_info(), error = function(error) list())
+    lapply(info, function(entry) list(api = as.character(entry$internal_api %||% NA_character_),
+        version = as.character(entry$version %||% NA_character_), threads = as.integer(entry$num_threads %||% NA_integer_),
+        architecture = as.character(entry$architecture %||% NA_character_)))
+}
+
+#' The versions a model was trained with: R, MOFA2, reticulate, Python and its packages; KIT-151 (INT-17): the maths
+#' library's pin and the maths libraries loaded.
 #' @noRd
 integrationMofaVersions <- function() {
     metadata <- tryCatch(reticulate::import("importlib.metadata"), error = function(error) NULL)
@@ -997,7 +1158,7 @@ integrationMofaVersions <- function() {
         reticulate = as.character(utils::packageVersion("reticulate")),
         python = tryCatch(as.character(reticulate::py_config()$version_string), error = function(error) NA_character_),
         mofapy2 = python_package("mofapy2"), numpy = python_package("numpy"), scipy = python_package("scipy"),
-        h5py = python_package("h5py"))
+        h5py = python_package("h5py"), maths_pin = integrationPinMathsLibrary(), maths_libraries = integrationMathsLibraries())
 }
 
 #' MOFA2's check that a trained factor follows each sample's overall level (MOFA2 1.22.0, `.quality_control` of a
@@ -1027,76 +1188,6 @@ integrationMofaOverallLevelWarning <- function(views, factors, center) {
         "*sometimes* because of poor normalisation in the preprocessing steps."), paste(flagged, collapse = ", "))
 }
 
-#' Whether the direct hand-off is used (KIT-148 item 2): asked for (`handoff = "direct"`, the internal option
-#' `MultiScholaR.integration_mofa_handoff`; the default is `run_mofa`), and the versions it is written for are the ones
-#' installed (MOFA2 1.22.0, mofapy2 0.7.3); otherwise MOFA2's own `run_mofa` hands the data over.
-#' @param handoff `run_mofa` or `direct`.
-#' @noRd
-integrationMofaDirectHandoff <- function(handoff) {
-    if (!identical(handoff, "direct") || !requireNamespace("MOFA2", quietly = TRUE) ||
-        !identical(as.character(utils::packageVersion("MOFA2")), "1.22.0")) return(FALSE)
-    mofapy2 <- tryCatch(as.character(reticulate::import("mofapy2")$version$`__version__`), error = function(error) NA_character_)
-    identical(mofapy2, "0.7.3")
-}
-
-#' Hand a prepared MOFA2 object to mofapy2 one data set at a time and train it (KIT-148 item 2; internal, off by
-#' default). MOFA2 1.22.0's `run_mofa` (its `.run_mofa_reticulate`) converts every data set to Python before it hands
-#' the list over, while its R copy of every data set is still held; here each data set is converted and its R copy
-#' released before the next, through the same mofapy2 0.7.3 entry point with the same arguments in the same order, so
-#' the model is the same. Written for those two versions only (`integrationMofaDirectHandoff`); no covariates (MEFISTO).
-#' @param holder An environment holding the prepared object as `object`; the object is released from it.
-#' @param outfile The model file; written without the training data.
-#' @return `outfile`, invisibly.
-#' @noRd
-integrationRunMofapy2 <- function(holder, outfile) {
-    if (!is.null(holder$object@covariates)) cli::cli_abort("the direct hand-off takes no covariates", class = "integration_refused")
-    mofa <- reticulate::import("mofapy2")
-    entry <- mofa$run$entry_point$entry_point()
-    data_options <- holder$object@data_options
-    entry$set_data_options(scale_views = data_options$scale_views, scale_groups = data_options$scale_groups,
-        center_groups = data_options$center_groups, use_float32 = data_options$use_float32)
-    samples <- holder$object@samples_metadata
-    entry$data_opts$samples_metadata <- reticulate::r_to_py(lapply(data_options$groups, function(g) samples[samples$group == g, ]))
-    features <- holder$object@features_metadata
-    entry$data_opts$features_metadata <- reticulate::r_to_py(unname(lapply(data_options$views,
-        function(m) features[features$view == m, ])))
-    one <- function(xs) if (length(xs) > 1) xs else list(xs)
-    samples_names <- reticulate::r_to_py(lapply(unname(lapply(holder$object@data[[1L]], colnames)), one))
-    features_names <- reticulate::r_to_py(lapply(unname(lapply(holder$object@data, function(x) rownames(x[[1L]]))), one))
-    data <- reticulate::r_to_py(list())
-    for (m in seq_along(holder$object@data)) {
-        groups <- reticulate::r_to_py(list())
-        for (g in seq_along(holder$object@data[[m]])) groups$append(reticulate::r_to_py(t(holder$object@data[[m]][[g]])))
-        data$append(groups)
-        # This data set is now mofapy2's; its R copy is released before the next one is converted.
-        holder$object@data[m] <- list(NULL)
-    }
-    entry$set_data_matrix(data = data, likelihoods = unname(holder$object@model_options$likelihoods),
-        views_names = reticulate::r_to_py(as.list(data_options$views)), groups_names = reticulate::r_to_py(as.list(data_options$groups)),
-        samples_names = samples_names, features_names = features_names)
-    model_options <- holder$object@model_options
-    entry$set_model_options(factors = model_options$num_factors, spikeslab_factors = model_options$spikeslab_factors,
-        spikeslab_weights = model_options$spikeslab_weights, ard_factors = model_options$ard_factors,
-        ard_weights = model_options$ard_weights)
-    training <- holder$object@training_options
-    entry$set_train_options(iter = training$maxiter, convergence_mode = training$convergence_mode,
-        dropR2 = training$drop_factor_threshold, startELBO = training$startELBO, freqELBO = training$freqELBO,
-        seed = training$seed, gpu_mode = training$gpu_mode, gpu_device = training$gpu_device, verbose = training$verbose,
-        outfile = training$outfile, weight_views = training$weight_views, save_interrupted = training$save_interrupted)
-    if (isTRUE(training$stochastic)) {
-        stochastic <- holder$object@stochastic_options
-        entry$set_stochastic_options(learning_rate = stochastic$learning_rate, forgetting_rate = stochastic$forgetting_rate,
-            batch_size = stochastic$batch_size, start_stochastic = stochastic$start_stochastic)
-    }
-    holder$object <- NULL
-    data <- NULL
-    reclaimWorkflowMemory()
-    entry$build()
-    entry$run()
-    entry$save(outfile, save_data = FALSE)
-    invisible(outfile)
-}
-
 #' Train MOFA2 as the proven lane does (KIT-060 status 2026-11-19, run 44423980807): `create_mofa` on the views,
 #' the default data, model and training options with the declared ones set, `prepare_mofa`, `run_mofa(use_basilisk =
 #' FALSE)` (a fall-back to basilisk is refused: the bundle's Python must be the one used). KIT-148: the model file is
@@ -1106,13 +1197,12 @@ integrationRunMofapy2 <- function(holder, outfile) {
 #' (`integrationMofaOverallLevelWarning`), its warning kept where MOFA2 would have given it.
 #' @param views Named list of features x samples matrices (feature names unique across views).
 #' @param options `integrationMofaOptions()`.
-#' @param handoff KIT-148 item 2 (internal): `run_mofa` (the default) hands the data over through MOFA2's `run_mofa`;
-#'   `direct` one data set at a time through mofapy2's entry point (`integrationRunMofapy2`; MOFA2 1.22.0 and mofapy2
-#'   0.7.3 only, `run_mofa` otherwise), the same model; then the model is loaded from its file as `run_mofa` loads it.
 #' @return `list(factors, weights, r2_per_factor (factors x views), r2_total, elbo, iterations, options, versions,
 #'   messages, model_file)`.
 #' @noRd
-integrationTrainMofa <- function(views, options, handoff = getOption("MultiScholaR.integration_mofa_handoff", "run_mofa")) {
+integrationTrainMofa <- function(views, options) {
+    # KIT-151 (INT-17): pinned before MOFA2 starts Python, when nothing has started it yet.
+    integrationPinMathsLibrary()
     object <- MOFA2::create_mofa(views)
     data_options <- MOFA2::get_default_data_options(object)
     data_options$scale_views <- options$scale_views
@@ -1134,17 +1224,8 @@ integrationTrainMofa <- function(views, options, handoff = getOption("MultiSchol
     # Kept, not dropped: MOFA2's messages and warnings are returned with the model. KIT-063: they include the checks
     # MOFA2 makes when `run_mofa` loads the trained model, for the Results tab.
     messages <- character()
-    direct <- integrationMofaDirectHandoff(handoff)
     model <- withCallingHandlers(
-        if (direct) {
-            holder <- new.env(parent = emptyenv())
-            holder$object <- object
-            object <- NULL
-            integrationRunMofapy2(holder, outfile)
-            MOFA2::load_model(outfile)
-        } else {
-            MOFA2::run_mofa(object, outfile = outfile, save_data = FALSE, use_basilisk = FALSE)
-        },
+        MOFA2::run_mofa(object, outfile = outfile, save_data = FALSE, use_basilisk = FALSE),
         message = function(m) {
             messages <<- c(messages, trimws(conditionMessage(m)))
             invokeRestart("muffleMessage")
@@ -1159,6 +1240,11 @@ integrationTrainMofa <- function(views, options, handoff = getOption("MultiSchol
         integrationRefuse("MOFA2 could not use the configured Python with mofapy2 and fell back to basilisk; the model is not trained",
             "integration_mofa_unavailable")
     }
+    stats_slot <- methods::slot(model, "training_stats")
+    # KIT-151 (INT-14): a further seed's model keeps only its factors and its training length.
+    if (isTRUE(options$factors_only)) {
+        return(list(factors = MOFA2::get_factors(model)[[1L]], iterations = length(stats_slot$time)))
+    }
     # KIT-148: MOFA2's overall-level check, placed where its loading gave it (before the correlated-factors check, the
     # last of its checks).
     overall <- integrationMofaOverallLevelWarning(views, MOFA2::get_factors(model)[[1L]], options$center_groups)
@@ -1170,7 +1256,6 @@ integrationTrainMofa <- function(views, options, handoff = getOption("MultiSchol
     variance <- MOFA2::get_variance_explained(model)
     r2 <- variance$r2_per_factor[[1L]]
     if (all(rownames(r2) %in% names(views))) r2 <- t(r2)
-    stats_slot <- methods::slot(model, "training_stats")
     elbo <- as.numeric(stats_slot$elbo)
     list(factors = MOFA2::get_factors(model)[[1L]], weights = MOFA2::get_weights(model), r2_per_factor = r2,
         r2_total = variance$r2_total[[1L]], elbo = elbo, iterations = length(stats_slot$time),
@@ -1196,8 +1281,11 @@ INTEGRATION_MODEL_SCHEMA <- "multischolar.integration_mofa_model.v2"
 #' @param aligned `integrationAlignViews()`'s value, its rows named `<view>:<feature_id>`.
 #' @param fit The trainer's value (`integrationTrainMofa()`'s form), on those views.
 #' @param store The operation's store handle (`store$table`, `store$product`).
+#' @param maxiter The round limit training ran under (KIT-151: `elbo$maxiter` and `elbo$stopped_by`,
+#'   `integrationStoppedBy`); NA when not known.
+#' @param seeds KIT-151 (INT-14): `integrationSeedStability()`'s value, kept as `seeds`; NULL when not trained so.
 #' @noRd
-integrationModelProduct <- function(aligned, fit, store) {
+integrationModelProduct <- function(aligned, fit, store, maxiter = NA_integer_, seeds = NULL) {
     factors <- fit$factors
     factor_table <- data.frame(biological_sample = rownames(factors), factors, check.names = FALSE,
         stringsAsFactors = FALSE, row.names = NULL)
@@ -1222,9 +1310,10 @@ integrationModelProduct <- function(aligned, fit, store) {
             stringsAsFactors = FALSE),
         elbo = list(iterations = as.integer(fit$iterations), evaluations = length(elbo),
             first = if (length(elbo)) elbo[[1L]] else NA_real_, last = if (length(elbo)) elbo[[length(elbo)]] else NA_real_,
-            trace = elbo),
+            trace = elbo, maxiter = as.integer(maxiter),
+            stopped_by = if (is.na(maxiter)) NA_character_ else integrationStoppedBy(fit$iterations, maxiter)),
         samples = aligned$samples, view_summary = aligned$view_summary, shared_samples = aligned$shared_samples,
-        notes = aligned$notes, options = fit$options, versions = fit$versions, messages = fit$messages,
+        notes = aligned$notes, options = fit$options, versions = fit$versions, messages = fit$messages, seeds = seeds,
         model_file = list(reference = file_reference, sha256 = file$sha256 %||% NA_character_, size = file$size %||% NA_real_,
             media_type = "application/x-hdf5"))
 }
@@ -1382,18 +1471,132 @@ integrationMofaOperation <- function(match = FALSE) {
 #' @noRd
 integrationModelFromAligned <- function(aligned, resolved, parameters, store) {
     trainer <- parameters[["trainer", exact = TRUE]] %||% integrationTrainMofa
-    fit <- trainer(aligned$views, integrationMofaOptions(resolved))
+    options <- integrationMofaOptions(resolved)
+    fit <- trainer(aligned$views, options)
     reclaimWorkflowMemory()
-    integrationModelProduct(aligned, fit, store)
+    # KIT-151 (INT-14): the other seeds, one model at a time; of each only its factors and its training length are kept.
+    others <- list()
+    for (seed in integrationTrainingSeeds(resolved)[-1L]) {
+        other <- trainer(aligned$views, utils::modifyList(options, list(seed = seed, factors_only = TRUE)))
+        others[[length(others) + 1L]] <- list(seed = seed, factors = other$factors, iterations = as.integer(other$iterations))
+        other <- NULL
+        reclaimWorkflowMemory()
+    }
+    seeds <- integrationSeedStability(fit, others, resolved)
+    integrationModelProduct(aligned, fit, store, maxiter = resolved$maxiter, seeds = seeds)
+}
+
+#' The seeds a model is trained from (KIT-151; INT-14): the declared seed, then the next `training_seeds - 1` whole
+#' numbers (seed 20261119 with 5 seeds: 20261119 to 20261123). The first is the reported model's.
+#' @param parameters Resolved parameters.
+#' @noRd
+integrationTrainingSeeds <- function(parameters) as.integer(parameters$seed) + seq_len(as.integer(parameters$training_seeds)) - 1L
+
+#' Pair the factors of two models one to one (KIT-151; INT-14): every pair's absolute correlation of the factor values
+#' over the biological samples both have (pairwise complete; a factor without spread correlates 0); the pair with the
+#' largest correlation first, then the next largest among the factors left, and so on (equal values in the order of the
+#' reported model's factors, then the other's). A factor left without a partner (the other model kept fewer factors)
+#' agrees 0.
+#' @param reported,other Samples x factors matrices, named by sample and factor.
+#' @return `data.frame(factor, matched_factor, abs_r)`, one row per factor of `reported`, in its order.
+#' @noRd
+integrationMatchFactors <- function(reported, other) {
+    samples <- intersect(rownames(reported), rownames(other))
+    r <- suppressWarnings(abs(stats::cor(reported[samples, , drop = FALSE], other[samples, , drop = FALSE],
+        use = "pairwise.complete.obs")))
+    r[is.na(r)] <- 0
+    pairs <- expand.grid(i = seq_len(nrow(r)), j = seq_len(ncol(r)))
+    pairs$abs_r <- r[cbind(pairs$i, pairs$j)]
+    pairs <- pairs[order(-pairs$abs_r, pairs$i, pairs$j), , drop = FALSE]
+    out <- data.frame(factor = colnames(reported), matched_factor = NA_character_, abs_r = 0, stringsAsFactors = FALSE)
+    used <- integer()
+    for (k in seq_len(nrow(pairs))) {
+        i <- pairs$i[[k]]
+        j <- pairs$j[[k]]
+        if (!is.na(out$matched_factor[[i]]) || j %in% used) next
+        out$matched_factor[[i]] <- colnames(other)[[j]]
+        out$abs_r[[i]] <- pairs$abs_r[[k]]
+        used <- c(used, j)
+    }
+    out
+}
+
+#' Each factor's agreement across the training seeds (KIT-151; INT-14, audit SCI-06, SCI-20): the reported model's
+#' factors paired with each other seed's (`integrationMatchFactors`), and per factor the median and the lowest absolute
+#' correlation over the other seeds.
+#' @param fit The reported model (`integrationTrainMofa()`'s form).
+#' @param others Per other seed `list(seed, factors, iterations)`.
+#' @param parameters Resolved parameters.
+#' @return `list(rule, seeds, models (seed, iterations, stopped_by, factors), agreement (factor, seed, matched_factor,
+#'   abs_r), stability (factor, other_models, agreement_median, agreement_lowest))`.
+#' @noRd
+integrationSeedStability <- function(fit, others, parameters) {
+    reported <- fit$factors
+    seeds <- integrationTrainingSeeds(parameters)
+    models <- data.frame(seed = seeds,
+        iterations = as.integer(c(fit$iterations, vapply(others, function(o) o$iterations, integer(1)))),
+        factors = as.integer(c(ncol(reported), vapply(others, function(o) ncol(o$factors), integer(1)))),
+        stringsAsFactors = FALSE)
+    models$stopped_by <- vapply(models$iterations, integrationStoppedBy, character(1), maxiter = parameters$maxiter)
+    agreement <- do.call(rbind, c(list(data.frame(factor = character(), seed = integer(), matched_factor = character(),
+        abs_r = numeric(), stringsAsFactors = FALSE)), lapply(others, function(o) {
+        m <- integrationMatchFactors(reported, o$factors)
+        data.frame(factor = m$factor, seed = rep(as.integer(o$seed), nrow(m)), matched_factor = m$matched_factor,
+            abs_r = m$abs_r, stringsAsFactors = FALSE)
+    })))
+    rownames(agreement) <- NULL
+    factors <- colnames(reported)
+    stability <- data.frame(factor = factors, other_models = length(others),
+        agreement_median = vapply(factors, function(f) if (length(others)) stats::median(agreement$abs_r[agreement$factor == f])
+            else NA_real_, numeric(1), USE.NAMES = FALSE),
+        agreement_lowest = vapply(factors, function(f) if (length(others)) min(agreement$abs_r[agreement$factor == f])
+            else NA_real_, numeric(1), USE.NAMES = FALSE),
+        stringsAsFactors = FALSE)
+    list(rule = "the declared seed, then the next whole numbers", seeds = seeds, models = models, agreement = agreement,
+        stability = stability)
+}
+
+#' How training stopped (KIT-151; INT-15): `convergence_rule` when it took fewer rounds than the limit (MOFA2's rule
+#' stopped it), `round_limit` when it reached the limit.
+#' @param iterations The rounds trained.
+#' @param maxiter The limit.
+#' @noRd
+integrationStoppedBy <- function(iterations, maxiter) {
+    if (isTRUE(as.integer(iterations) < as.integer(maxiter))) "convergence_rule" else "round_limit"
 }
 
 #' The declaration a model run takes (KIT-063 item A): the registry's, or with a sample match its declaration with
-#' `sample_match`. In process and on the worker alike.
+#' `sample_match`. In process and on the worker alike. KIT-151 (audit ENG-24): with MOFA2 training, the MOFA2, mofapy2
+#' and numpy versions are among the factors a saved model is looked up by, so a model saved before an upgrade of those
+#' is not reused.
 #' @param parameters The resolved parameters.
+#' @param software NULL (a stand-in trainer), or `integrationMofaSoftware()`.
 #' @noRd
-integrationMofaDeclaration <- function(parameters) {
-    if (is.null(parameters[["sample_match", exact = TRUE]])) return(workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$declaration)
-    integrationMofaOperation(match = TRUE)
+integrationMofaDeclaration <- function(parameters, software = NULL) {
+    declaration <- if (is.null(parameters[["sample_match", exact = TRUE]])) {
+        workflowOperationEntry(INTEGRATION_MODEL_OPERATION)$declaration
+    } else {
+        integrationMofaOperation(match = TRUE)
+    }
+    # Nothing known (MOFA2 not installed, Python not running): nothing to key on.
+    if (!is.null(software) && !all(unlist(software) == "unknown")) declaration$factors <- c(declaration$factors, software)
+    declaration
+}
+
+#' The software a MOFA2 model depends on beyond the package build (KIT-151; audit ENG-24): the versions of MOFA2,
+#' mofapy2 and numpy, as lookup factors (`mofa2`, `mofapy2`, `numpy`; `unknown` when one cannot be read). Python is
+#' asked only when it is running (the capability probe has started it before a model is trained); nothing here starts it.
+#' @noRd
+integrationMofaSoftware <- function() {
+    running <- requireNamespace("reticulate", quietly = TRUE) &&
+        isTRUE(tryCatch(reticulate::py_available(initialize = FALSE), error = function(error) FALSE))
+    metadata <- if (running) tryCatch(reticulate::import("importlib.metadata"), error = function(error) NULL)
+    python_package <- function(name) {
+        if (is.null(metadata)) return("unknown")
+        tryCatch(as.character(metadata$version(name)), error = function(error) "unknown")
+    }
+    list(mofa2 = tryCatch(as.character(utils::packageVersion("MOFA2")), error = function(error) "unknown"),
+        mofapy2 = python_package("mofapy2"), numpy = python_package("numpy"))
 }
 
 #' The parameters an accepted model records: the declared ones, and the sample match with its table when one was given.
@@ -1468,7 +1671,7 @@ runIntegrationModel <- function(manager, parameters = list(), check_inputs = TRU
                     "integration_mofa_unavailable")
             }
         }
-        declaration <- integrationMofaDeclaration(resolved)
+        declaration <- integrationMofaDeclaration(resolved, software = if (is.null(trainer)) integrationMofaSoftware())
         # KIT-148: a sample match is kept as a table of the store, and the model depends on it.
         match <- if (!is.null(resolved$sample_match_table)) list(integrationStoreSampleMatch(manager, resolved$sample_match_table))
         # A refused or failed training leaves no pending provenance for a later commit to take.
@@ -1505,7 +1708,8 @@ computeWorkflowIntegrationModelAction <- function(manager, request, variant) {
         integrationRefuse(sprintf("the integration model cannot be trained here: %s", capability$reason),
             "integration_mofa_unavailable")
     }
-    run <- runSavedOperation(manager, integrationMofaDeclaration(resolved), source, c(resolved, list(variant = variant)),
+    run <- runSavedOperation(manager, integrationMofaDeclaration(resolved, software = integrationMofaSoftware()), source,
+        c(resolved, list(variant = variant)),
         dependencies = if (isSavedWorkflowReference(match)) list(match) else list())
     # A product an earlier worker computed, whose action never completed, has no root yet (the omics handler's rule).
     if (identical(run$status, "hit")) rootWorkflowProduct(manager, run$reference, list(source))

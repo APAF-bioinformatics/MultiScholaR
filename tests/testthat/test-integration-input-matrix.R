@@ -69,9 +69,10 @@ intMatOwner <- function(inputs, name = "project", .local_envir = parent.frame())
     manager
 }
 
-# The values as saved (no per-feature scaling), whatever the scaling default, so that they can be compared.
+# The values as saved (no feature selection, no per-feature scaling), whatever the defaults, so that they can be compared.
 intMatRun <- function(manager, parameters = list()) {
-    suppressWarnings(runIntegrationModel(manager, utils::modifyList(list(scaling = "none"), parameters), trainer = intMatTrainer))
+    suppressWarnings(runIntegrationModel(manager, utils::modifyList(list(feature_selection = "none", scaling = "none"), parameters),
+        trainer = intMatTrainer))
 }
 
 # The values handed to the model for one data set (the product's aligned values), as a features x samples matrix.

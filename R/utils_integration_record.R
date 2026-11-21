@@ -49,7 +49,7 @@ integrationRecordTexts <- function() {
         section_samples = "Biological samples in the model",
         section_settings = "Settings",
         section_model = "The trained model",
-        section_variance = "Variance explained per data set (all factors together)",
+        section_variance = "Variance explained in each data set's selected features (all factors together)",
         section_results = "Saved results",
         section_notes = "Notes from the model",
         section_legend = "What the status of a setting means",
@@ -70,7 +70,7 @@ integrationRecordTexts <- function() {
         col_applies_to = "Applies to",
         col_file = "File",
         col_view = "Data set",
-        col_variance = "Variance explained (%)",
+        col_variance = "Variance explained in the selected features (%)",
         col_note = "Note",
         col_status_meaning = "Meaning",
         legend_decided = "a decision recorded in the methods ledger; not expected to change",
@@ -106,12 +106,16 @@ integrationRecordTexts <- function() {
         model_reticulate = "reticulate",
         model_precision = "Numeric precision",
         model_iterations = "Training rounds",
-        model_settled = "Training settled",
+        model_settled = "Training settled (stopped by its convergence rule, not at the limit)",
         model_factors = "Factors (kept, asked for)",
         model_checksum = "Checksum of the model file (SHA-256)",
         model_bytes = "Size of the model file (bytes)",
         model_entity = "Model's identifier in the project",
         model_identity = "Checksum of the model's identity (data and settings)",
+        # KIT-151 (INT-14).
+        model_seeds = "Models trained (one per seed)",
+        # %d: models; %s: the seeds.
+        model_seeds_value = "%d (seeds %s)",
         # %d: kept, asked for.
         model_factors_value = "%d of %d",
         # The few-samples note (D7). %d: samples in every data set, the threshold.
@@ -141,24 +145,57 @@ integrationRecordTexts <- function() {
         methods_missing_keep_missing = "Biological samples missing from a data set were kept, with that data set's values missing.",
         methods_missing_drop_incomplete = "Only the biological samples measured in every data set were kept.",
         methods_sparse = "Features measured in fewer than two biological samples were left out.",
+        # KIT-151 (INT-12). %d: the fewest samples, the samples; %s: the share.
+        methods_sparse_selected = "Features measured in fewer than %d of the %d biological samples (a share of %s) were left out.",
         methods_selection_none = "All remaining features were used",
-        # %d: features per data set.
-        methods_selection_top_variance = "The %d most variable features of each data set were used",
+        # %d: features per data set, twice.
+        methods_selection_top_variance = paste("In each data set with more than %d features, the %d with the largest",
+            "variance were used (a smaller data set kept all its features)"),
+        # KIT-151 (INT-12). %d: features per data set, twice.
+        methods_selection_variance_above_trend = paste("In each data set with more than %d features, the %d whose",
+            "variance lies furthest above the data set's trend of variance with mean abundance (a lowess fit of each",
+            "feature's variance on its mean, span 0.3) were used, a feature selection that also makes the data sets more",
+            "equal in size (a smaller data set kept all its features)"),
         methods_scaling_none = "without per-feature scaling.",
-        methods_scaling_feature_zscore = "each scaled to mean 0 and standard deviation 1.",
+        # KIT-151 (INT-24).
+        methods_scaling_feature_zscore = paste("each scaled to mean 0 and standard deviation 1 after the selection (which",
+            "used the unscaled values); in simulation, with few samples and missing values this scaling improved the",
+            "recovery of weak factors, and otherwise made no practical difference."),
         # %d: factors asked for; %s: convergence mode; %d: maximum rounds, seed; %s: views scaled, features centred.
         methods_model = paste("The model was asked for %d factors (convergence mode %s, at most %d training rounds, seed",
-            "%d; each data set scaled to the same total variance: %s; features centred: %s)."),
+            "%d; each data set divided by its overall standard deviation: %s; features centred: %s). Variance explained",
+            "refers to the selected features of each data set, not to every feature measured."),
         # %d: rounds, factors kept, samples, samples in every data set.
-        methods_trained_settled = paste("Training settled after %d rounds and kept %d factors; %d biological samples entered",
-            "the model, %d of them measured in every data set."),
-        # %d: maximum rounds, factors kept, samples, samples in every data set.
-        methods_trained_not_settled = paste("Training stopped at the maximum of %d rounds without settling and kept %d",
+        methods_trained_settled = paste("Training settled after %d rounds, stopped by its convergence rule, and kept %d",
             "factors; %d biological samples entered the model, %d of them measured in every data set."),
+        # %d: maximum rounds, factors kept, samples, samples in every data set.
+        methods_trained_not_settled = paste("Training did not settle: it stopped at the limit of %d rounds before its",
+            "convergence rule was met, and kept %d factors; %d biological samples entered the model, %d of them measured in",
+            "every data set."),
+        # KIT-151 (INT-14). %d: models, first seed, last seed, the reported model's seed; %s: each factor's lowest agreement.
+        methods_seeds = paste("The model was trained %d times, from seeds %d to %d (the declared seed and the next whole",
+            "numbers), and the model reported is that of seed %d. Each factor's agreement across seeds is the absolute",
+            "correlation of its values with the most similar factor of each other model (factors paired one to one, the",
+            "most similar pair first); the lowest agreement per factor was %s."),
+        # %d: the seed.
+        methods_seeds_single = "The model was trained once, from seed %d; the factors' agreement across seeds was not measured.",
+        # KIT-151 (INT-17). %s: the variables set.
+        methods_pin_applied = paste("Training ran with the maths library on one thread and one fixed code path (%s), under",
+            "which models were bit-identical across the processor models tested (three AMD models; an Intel processor not",
+            "yet tested); the same data, settings and seed give the identical model on the same software."),
+        # %s: the reason.
+        methods_pin_not_applied = paste("The maths library could not be fixed to one thread and one code path for this",
+            "training (%s); the model is identical on the same computer and software, agrees to about 1e-12 on other",
+            "processors, and a factor near the detection limit can differ between processor models."),
         # %s: the adjustment's name.
         methods_association = paste("Each factor was related to the experimental groups after training: a one-way analysis",
             "of variance of the factor's values on the group, with the share of the factor's variance that lies between",
-            "the groups (R-squared) as the effect size, and p-values adjusted across the factors tested (%s)."),
+            "the groups (R-squared) as the effect size, and p-values adjusted across all the factors of the model (%s)."),
+        # KIT-151 (plan item E). %s: the adjustment's name.
+        methods_association_kruskal_wallis = paste("Each factor was related to the experimental groups after training: a",
+            "Kruskal-Wallis rank test of the factor's values across the groups, with epsilon-squared (H divided by the",
+            "number of samples minus one) as the effect size, and p-values adjusted across all the factors of the model",
+            "(%s)."),
         # %s: the data sets.
         methods_claim_limit = paste("In %s, unwanted variation had been removed with the groups as replicate sets, which",
             "keeps the differences between groups by construction; p-values for the association of the factors with the",
@@ -497,6 +534,8 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
     })
     match <- parameters$sample_match_table
     iterations <- as.integer(value$elbo$iterations)
+    stopped_by <- value$elbo$stopped_by %||% NA_character_
+    if (is.na(stopped_by)) stopped_by <- integrationStoppedBy(iterations, parameters$maxiter)
     results <- export$results
     if (!is.null(results)) {
         # KIT-152: the further figures' tables stay in the store; the record keeps what they show and their settings.
@@ -529,7 +568,10 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
             identity_sha256 = digest::digest(export$reference$identity, algo = "sha256"),
             model_file_sha256 = value$model_file$sha256 %||% NA_character_, model_file_bytes = value$model_file$size %||% NA_real_,
             precision = parameters$precision, iterations = iterations, maxiter = as.integer(parameters$maxiter),
-            converged = isTRUE(iterations < as.integer(parameters$maxiter)),
+            # KIT-151 (INT-15): stopped by the convergence rule or at the limit, as the product keeps it.
+            stopped_by = stopped_by, converged = identical(stopped_by, "convergence_rule"),
+            # KIT-151 (INT-14): the models trained, one per seed, and each factor's agreement across them.
+            seeds = value$seeds$seeds, seed_models = value$seeds$models, stability = value$seeds$stability,
             factors_requested = as.integer(parameters$num_factors), factors_kept = ncol(value$factors) - 1L,
             elbo_last = value$elbo$last, variance_total = value$variance_total, versions = value$versions,
             # MOFA2's data, model and training options as trained (every one, the defaults included), encoded exactly.
@@ -596,11 +638,13 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
     versions <- model$versions
     model_table <- framed(unname(texts[c("col_field", "col_value")]), list(
         unname(texts[c("model_mofa2", "model_mofapy2", "model_python", "model_r", "model_reticulate", "model_precision",
-            "model_iterations", "model_settled", "model_factors", "model_checksum", "model_bytes", "model_entity",
-            "model_identity")]),
+            "model_iterations", "model_settled", "model_factors", "model_seeds", "model_checksum", "model_bytes",
+            "model_entity", "model_identity")]),
         c(text(versions$MOFA2), text(versions$mofapy2), text(versions$python), text(versions$R), text(versions$reticulate),
             text(model$precision), sprintf("%s (%s)", text(model$iterations), text(model$maxiter)), word(model$converged),
             sprintf(texts[["model_factors_value"]], as.integer(s(model$factors_kept)), as.integer(s(model$factors_requested))),
+            if (length(unlist(model$seeds))) sprintf(texts[["model_seeds_value"]], length(unlist(model$seeds)),
+                paste(unlist(model$seeds), collapse = ", ")) else texts[["not_recorded"]],
             text(model$model_file_sha256), text(model$model_file_bytes), text(model$entity_id), text(model$identity_sha256))))
     variance <- integrationRecordFrame(model$variance_total)
     variance <- if (nrow(variance)) data.frame(variance$view, sprintf("%.2f", as.numeric(variance$r2_percent)),
@@ -717,13 +761,21 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     if (identical(p("technical_replicates"), "average")) sentences <- c(sentences, texts[["methods_replicates_average"]])
     summary <- integrationRecordFrame(m$view_summary)
     standards <- if (nrow(summary)) sum(as.integer(summary$internal_standards_dropped), na.rm = TRUE) else 0L
+    # KIT-151 (INT-12): with a feature selection, the observed share and the selection rule.
+    selection <- as.character(p("feature_selection"))
+    selected <- selection %in% c("top_variance", "variance_above_trend")
+    samples_n <- nrow(integrationRecordFrame(m$samples))
+    fraction <- as.numeric(p("min_observed_fraction"))
+    sparse <- if (selected && !is.na(fraction)) sprintf(texts[["methods_sparse_selected"]],
+        integrationMinObserved(list(feature_selection = selection, min_observed_fraction = fraction), samples_n), samples_n,
+        format(fraction)) else texts[["methods_sparse"]]
     sentences <- c(sentences,
         if (identical(p("internal_standards"), "drop")) sprintf(texts[["methods_standards_drop"]], standards) else
             texts[["methods_standards_keep"]],
         integrationTextOr(texts, paste0("methods_missing_", p("missing_samples")), NULL),
-        texts[["methods_sparse"]],
-        paste(if (identical(p("feature_selection"), "top_variance"))
-            sprintf(texts[["methods_selection_top_variance"]], as.integer(p("features_per_view"))) else texts[["methods_selection_none"]],
+        sparse,
+        paste(if (selected) sprintf(texts[[paste0("methods_selection_", selection)]], as.integer(p("features_per_view")),
+            as.integer(p("features_per_view"))) else texts[["methods_selection_none"]],
             integrationTextOr(texts, paste0("methods_scaling_", p("scaling")), as.character(p("scaling"))), sep = ", "),
         sprintf(texts[["methods_model"]], as.integer(p("num_factors")), as.character(p("convergence_mode")),
             as.integer(p("maxiter")), as.integer(p("seed")), if (isTRUE(p("scale_views"))) texts[["yes"]] else texts[["no"]],
@@ -732,10 +784,28 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
             as.integer(s(model$factors_kept)), nrow(integrationRecordFrame(m$samples)), as.integer(s(m$shared_samples))) else
             sprintf(texts[["methods_trained_not_settled"]], as.integer(s(model$maxiter)), as.integer(s(model$factors_kept)),
                 nrow(integrationRecordFrame(m$samples)), as.integer(s(m$shared_samples))))
+    # KIT-151 (INT-17): whether training ran with the maths library pinned (nothing said for a model without the fact).
+    pin <- versions$maths_pin
+    if (!is.null(pin) && !is.na(s(pin$applied))) {
+        sentences <- c(sentences, if (isTRUE(as.logical(s(pin$applied)))) sprintf(texts[["methods_pin_applied"]],
+            paste(sprintf("%s=%s", names(pin$variables), vapply(pin$variables, \(x) as.character(s(x)), character(1))),
+                collapse = ", ")) else sprintf(texts[["methods_pin_not_applied"]], as.character(s(pin$reason))))
+    }
+    # KIT-151 (INT-14, audit SCI-20): how many models were trained, from which seeds, and each factor's agreement.
+    seeds <- as.integer(unlist(model$seeds))
+    stability <- integrationRecordFrame(model$stability)
+    if (length(seeds) > 1L && nrow(stability)) {
+        sentences <- c(sentences, sprintf(texts[["methods_seeds"]], length(seeds), seeds[[1L]], seeds[[length(seeds)]],
+            seeds[[1L]], paste(sprintf("%s %.3f", stability$factor, as.numeric(stability$agreement_lowest)), collapse = ", ")))
+    } else if (length(seeds) == 1L) {
+        sentences <- c(sentences, sprintf(texts[["methods_seeds_single"]], seeds[[1L]]))
+    }
     results <- block$results
     if (!is.null(results)) {
         adjust <- integrationRecordParameter(results$parameters, "p_adjust_method")
-        sentences <- c(sentences, sprintf(texts[["methods_association"]],
+        test <- integrationRecordParameter(results$parameters, "association_test")
+        sentences <- c(sentences, sprintf(texts[[if (identical(test, "kruskal_wallis")) "methods_association_kruskal_wallis" else
+            "methods_association"]],
             integrationTextOr(integrationGuiTexts(), paste0("padjust_", adjust), as.character(adjust))))
         sentences <- c(sentences, integrationMethodsOutputs(results$outputs, block$claim_limit, texts))
     }
@@ -915,9 +985,10 @@ integrationReplayVersions <- function(recorded, current) {
     out
 }
 
-#' Compare a replayed model with the recorded one numerically (KIT-142; INT-6: the same inputs, settings and seed give
-#' the same model on any computer to about 1e-14, so equality is judged at `tolerance` relative, and is exact on one
-#' computer). Per table (factors, weights, variance explained per factor and in all, the sample table, the data set
+#' Compare a replayed model with the recorded one numerically (KIT-142; INT-6 as corrected by INT-17, KIT-151: the
+#' same inputs, settings and seed give the identical model on the same computer and software; on another processor
+#' they usually agree to about 1e-12, the maths library pinned or not, but a factor near the detection limit can
+#' differ, so a difference beyond `tolerance` on another computer is not by itself an error). Per table (factors, weights, variance explained per factor and in all, the sample table, the data set
 #' summary): the largest absolute difference and the largest relative difference (largest absolute over the largest
 #' absolute value of the recorded table). Tables of another shape, other labels or missing values in other places
 #' differ outright (Inf).
