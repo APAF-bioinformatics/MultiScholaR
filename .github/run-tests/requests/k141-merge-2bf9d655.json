@@ -1,0 +1,46 @@
+{
+  "requested_by": "KIT-153 and KIT-141 merge candidate (2bf9d655, input matrix then enrichment) against performance-v2 ea6c2657: full suite, check, gate-off and the enrichment legacy-identity script",
+  "label": "KIT-153+KIT-141 merge candidate 2bf9d655 versus base ea6c2657, full suite",
+  "package_commit": "2bf9d65560d9f1e24824d1938f7bdf88149bb660",
+  "base_commit": "ea6c26572dc1ae036cbc3dedac23c0256f4cab0a",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "ea6c26572dc1ae036cbc3dedac23c0256f4cab0a",
+        "gate-off-out"
+      ],
+      "env": {},
+      "out": "gate-off-out",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-141/legacy-identity.R",
+      "args": [],
+      "env": {},
+      "out": "legacy-out",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
