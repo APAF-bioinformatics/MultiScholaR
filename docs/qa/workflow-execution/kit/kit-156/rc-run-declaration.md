@@ -51,3 +51,14 @@ classified results of run 44598642342 (`run-k134-rc`, `rc-run-declaration.md` th
   Linux bundle stops with "illegal instruction" on CPUs without AVX-512.
 
 Results below this line after the runs.
+
+## Lifecycle run 44952988256 (stage smoke, a10f24fe): met on both platforms
+
+The probe reported each kind (1 pass, 1 failure, 1 error, 1 skip) and its leftover (`SUITETMP`), every smoke file gave a
+`SUITE` line, and `test-test-features.R` saw the variable (41/0 on both). Smoke results (Linux / Windows):
+test-test-features 41/0 / 41/0; test-integration-gui 395/0 / 395/0; test-integration-record-mofa 27/0 / 27/0;
+test-integration-results-mofa 46/0 / 46/0; test-omic-norm-ruv-design 1153/0 / 1153/0; test-trx-ruv-designs 344/6 /
+344/6; test-kit129-run-path 687/6/0 err / 662/6/4 err. The 12 failures on both platforms are one expectation, the
+transcriptomics corpus manifest's sha256 against the stored value (to be set against the run-tests reference of the full
+suite); the 4 Windows errors are `system2("cp", ...)` in the test's replay helper (E: GNU tools absent on Windows). Every
+file's temporary root was empty afterwards. Instrumentation proven; the counted run follows (stage rc).
