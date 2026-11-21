@@ -112,6 +112,21 @@ kit134FigureTraceInstall <- function() {
     }
     quietly("setupDirectories", tracer = quote(.kit134FigureTrace$roots <- unique(c(.kit134FigureTrace$roots,
         gsub("\\\\", "/", .kit134FigureTrace$absolute(base_dir))))), where = namespace)
+    # KIT-052 Summary confirmation (767ad7d6): every notification the Summary tab's save, copy and report give the user
+    # (SUMMARY lines, as shown), and every rmarkdown render with the file it wrote (RENDER lines).
+    if (exists("omicSummaryNotify", envir = namespace, inherits = FALSE)) {
+        quietly("omicSummaryNotify", tracer = quote(cat(sprintf("SUMMARY %s %s: %s\n", .kit134FigureTrace$item, type,
+            substr(gsub("[\r\n\t]+", " ", paste(message, collapse = " ")), 1L, 1200L)))), where = namespace)
+    }
+    if (requireNamespace("rmarkdown", quietly = TRUE)) {
+        quietly("render", exit = quote(try({
+            written <- returnValue(NULL)
+            if (is.character(written) && length(written) == 1L && file.exists(written)) {
+                cat(sprintf("RENDER %s: %s, %.0f bytes, %d characters\n", .kit134FigureTrace$item, basename(written), file.size(written),
+                    nchar(written)))
+            } else cat(sprintf("RENDER %s: returned no file\n", .kit134FigureTrace$item))
+        }, silent = TRUE)), where = asNamespace("rmarkdown"))
+    }
     invisible(TRUE)
 }
 

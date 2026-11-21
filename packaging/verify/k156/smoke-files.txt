@@ -1,0 +1,9 @@
+# KIT-156 smoke (run-k156-rc): run with MULTISCHOLAR_TEST_FEATURES=1 on the bundle. One file per line; a name with a "/"
+# is a path under the checkout, any other a file of tests/testthat.
+packaging/verify/k156/test-test-features.R
+test-integration-record-mofa.R
+test-integration-results-mofa.R
+test-integration-gui.R
+test-omic-norm-ruv-design.R
+test-kit129-run-path.R
+test-trx-ruv-designs.R

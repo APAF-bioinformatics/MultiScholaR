@@ -16,6 +16,7 @@ param(
 )
 
 $status = 0
+New-Item -ItemType Directory -Force $Out | Out-Null
 $runner = Join-Path $Checkout 'packaging\verify\windows-clean-run.ps1'
 $script = Join-Path $Checkout 'packaging\verify\figure-paths.R'
 $env:MSR_PROBE_DIR = Join-Path $env:RUNNER_TEMP 'dp'
@@ -44,7 +45,7 @@ foreach ($case in $Cases) {
     & $runner -Bundle $Runtime -Script $script -NoBundleArgument -Arguments (@($Checkout, $TestTools, (Join-Path $Out "figures-$name"), $name) + $items) *> $log
     $code = $LASTEXITCODE
     "case ${name}: exit $code after $([math]::Round($clock.Elapsed.TotalSeconds)) s"
-    Get-Content $log | Where-Object { $_ -match '^(CASE|TEST|ITEM|FIGSUM|FIGURES|DEVICES|DEVROW|FIGROW|FIGPAIR|FIGPAIRSUM|RAISED|\s+expectation_)' }
+    Get-Content $log | Where-Object { $_ -match '^(CASE|TEST|ITEM|FIGSUM|FIGURES|DEVICES|DEVROW|FIGROW|FIGPAIR|FIGPAIRSUM|RAISED|SUMMARY|RENDER|REPORT|TRACE|CONN|\s+expectation_)' }
     if ($code -ne 0) {
         $status = 1
         "case ${name}: the end of its log:"
