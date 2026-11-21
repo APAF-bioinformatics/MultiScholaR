@@ -8,7 +8,11 @@
 #   - the factors, weights and variance explained equal the stored result (tests/testdata/integration/mofa_reference,
 #     written by the lane's first run) within 1e-5 relative (Linux and Windows agree to 5 to 6 digits, INT-5);
 #   - a record replayed on a copy of the inputs state gives the same product (identical, one platform).
-# MULTISCHOLAR_MOFA_REFERENCE_OUT set: the trained tables are written there (the lane's recording run) and not compared.
+# MULTISCHOLAR_MOFA_REFERENCE_OUT set: the trained tables are written there (the lane's recording run) and not compared;
+# KIT-151: the run also reports the stored (old) reference against the new tables, in the same job.
+# KIT-151: the defaults are the decided ones (selection by variance above the trend, slow, 10,000 rounds, five seeds);
+# training stops by its convergence rule, the five seeds are the declared seed and the next four, and the maths library
+# is pinned.
 
 intMofaRoot <- function() normalizePath(testthat::test_path("..", ".."), mustWork = FALSE)
 intMofaCorpus <- function() file.path(intMofaRoot(), "tests", "testdata", "integration", "corpus")
@@ -95,8 +99,21 @@ test_that("KIT-062: MOFA2 trains on the tier-1 corpus at the bundle's versions a
     trained <- as.matrix(factors[-1L])
     correlation <- abs(stats::cor(planted, trained))
     best <- apply(correlation, 1L, max)
-    message(sprintf("KIT-062 corpus: |r| Z1 %.4f, Z2 %.4f, Z3 %.4f; %d iterations; trained in %.1f s",
-        best[["Z1"]], best[["Z2"]], best[["Z3"]], value$elbo$iterations, out$seconds))
+    message(sprintf("KIT-062 corpus: |r| Z1 %.4f, Z2 %.4f, Z3 %.4f; %d iterations (%s); trained in %.1f s",
+        best[["Z1"]], best[["Z2"]], best[["Z3"]], value$elbo$iterations, value$elbo$stopped_by, out$seconds))
+    # KIT-151: the models trained (one per seed) and each factor's agreement across them; the maths library's pin.
+    seeds <- value$seeds
+    message(sprintf("KIT-151 seeds %s: rounds %s (%s); lowest agreement %s; median %s", paste(seeds$seeds, collapse = ", "),
+        paste(seeds$models$iterations, collapse = ", "), paste(seeds$models$stopped_by, collapse = ", "),
+        paste(sprintf("%s %.4f", seeds$stability$factor, seeds$stability$agreement_lowest), collapse = ", "),
+        paste(sprintf("%.4f", seeds$stability$agreement_median), collapse = ", ")))
+    message(sprintf("KIT-151 maths pin applied %s (%s); libraries %s", value$versions$maths_pin$applied,
+        paste(names(value$versions$maths_pin$variables), unlist(value$versions$maths_pin$variables), sep = "=", collapse = " "),
+        paste(vapply(value$versions$maths_libraries, function(l) sprintf("%s %s threads %s %s", l$api, l$version, l$threads,
+            l$architecture), character(1)), collapse = "; ")))
+    expect_identical(value$elbo$stopped_by, "convergence_rule")
+    expect_identical(seeds$seeds, 20261119L + 0:4)
+    expect_true(isTRUE(value$versions$maths_pin$applied))
     expect_true(all(best > 0.95), info = paste(names(best), round(best, 4), collapse = ", "))
     z3 <- colnames(trained)[[which.max(correlation["Z3", ])]]
     r2 <- value$variance_explained[value$variance_explained$factor == z3, ]
@@ -115,6 +132,32 @@ test_that("KIT-062: the trained factors, weights and variance explained equal th
     if (nzchar(out)) {
         dir.create(out, recursive = TRUE, showWarnings = FALSE)
         for (name in names(tables)) intMofaWriteTable(tables[[name]], file.path(out, paste0(name, ".tsv")))
+        # KIT-151: the recorded reference (old) against the new one, in the same job: shapes, the largest differences
+        # where the shapes agree, and each new factor's best absolute correlation with an old one.
+        for (name in names(tables)) {
+            path <- file.path(intMofaReference(), paste0(name, ".tsv"))
+            if (!file.exists(path)) next
+            old <- intMofaReadTable(path)
+            new <- tables[[name]]
+            numeric <- names(old)[vapply(old, is.numeric, logical(1))]
+            same <- identical(dim(old), dim(new)) && identical(names(old), names(new))
+            message(sprintf("KIT-151 reference old against new, %s: old %s, new %s%s", name, paste(dim(old), collapse = " x "),
+                paste(dim(new), collapse = " x "), if (same) sprintf("; largest absolute difference %.3g, relative %.3g",
+                    max(abs(as.matrix(old[numeric]) - as.matrix(new[numeric]))),
+                    max(abs(as.matrix(old[numeric]) - as.matrix(new[numeric]))) / max(abs(as.matrix(old[numeric])))) else ""))
+            if (identical(name, "factors")) {
+                o <- as.matrix(old[match(new$biological_sample, old$biological_sample), -1L])
+                r <- abs(stats::cor(as.matrix(new[-1L]), o, use = "pairwise.complete.obs"))
+                message(sprintf("KIT-151 reference old against new, factors: best |r| per new factor %s",
+                    paste(sprintf("%s %.4f (%s)", rownames(r), apply(r, 1L, max), colnames(r)[apply(r, 1L, which.max)]),
+                        collapse = ", ")))
+            }
+            if (identical(name, "weights")) {
+                message(sprintf("KIT-151 reference old against new, weights: features per data set old %s; new %s",
+                    paste(names(table(old$view)), table(old$view), collapse = ", "),
+                    paste(names(table(new$view)), table(new$view), collapse = ", ")))
+            }
+        }
         succeed("recording run: the tables are written, not compared")
         return(invisible())
     }
@@ -199,8 +242,8 @@ intMofaKit147Trainer <- function(views, options) {
         messages = messages, model_bytes = file.size(outfile))
 }
 
-# The corpus aligned once, trained by the KIT-147 trainer, by this one (MOFA2's run_mofa hand-off, the default) and by
-# the direct hand-off (item 2); kept for the file.
+# The corpus aligned once, trained by the KIT-147 trainer and by this one (MOFA2's run_mofa hand-off; KIT-151, INT-22:
+# the direct hand-off is removed); kept for the file.
 intMofaHandoffRun <- local({
     cache <- NULL
     function() {
@@ -212,9 +255,7 @@ intMofaHandoffRun <- local({
         resolved <- integrationResolveMofaParameters(object)
         aligned <- integrationAlignViews(object, resolved, prefix_rows = TRUE)
         options <- integrationMofaOptions(resolved)
-        cache <<- list(before = intMofaKit147Trainer(aligned$views, options), after = integrationTrainMofa(aligned$views, options),
-            direct = integrationTrainMofa(aligned$views, options, handoff = "direct"),
-            direct_used = integrationMofaDirectHandoff("direct"))
+        cache <<- list(before = intMofaKit147Trainer(aligned$views, options), after = integrationTrainMofa(aligned$views, options))
         cache
     }
 })
@@ -235,31 +276,4 @@ test_that("KIT-148: the trainer without the data in the model file gives KIT-147
         intMofaWarnings(after$messages)), collapse = "\n"))
     expect_identical(intMofaWarnings(after$messages), intMofaWarnings(before$messages))
     expect_lt(after$model_file$size, before$model_bytes)
-})
-
-test_that("KIT-148 item 2: the data handed to mofapy2 one data set at a time give the same model to 1e-12", {
-    intMofaSkip()
-    out <- intMofaHandoffRun()
-    expect_true(out$direct_used)
-    after <- out$after
-    direct <- out$direct
-    relative <- function(x, y) {
-        x <- as.numeric(unlist(x))
-        y <- as.numeric(unlist(y))
-        keep <- is.finite(x) & is.finite(y)
-        if (!length(x) || !identical(is.finite(x), is.finite(y))) return(Inf)
-        largest <- max(abs(x[keep] - y[keep]))
-        if (largest == 0) 0 else largest / max(abs(x[keep]))
-    }
-    differences <- vapply(c("factors", "weights", "r2_per_factor", "r2_total", "elbo"), function(name)
-        relative(after[[name]], direct[[name]]), numeric(1))
-    message(sprintf("KIT-148 direct hand-off against run_mofa: largest relative difference %s; identical %s",
-        paste(sprintf("%s %.3g", names(differences), differences), collapse = ", "),
-        paste(vapply(c("factors", "weights", "r2_per_factor", "r2_total", "elbo"), function(name)
-            identical(after[[name]], direct[[name]]), logical(1)), collapse = ", ")))
-    message(paste(c("KIT-148 warnings, direct hand-off:", intMofaWarnings(direct$messages)), collapse = "\n"))
-    expect_true(all(differences <= 1e-12), info = paste(names(differences), differences, collapse = ", "))
-    expect_identical(direct$iterations, after$iterations)
-    expect_identical(lapply(direct$weights, dimnames), lapply(after$weights, dimnames))
-    expect_identical(dimnames(direct$factors), dimnames(after$factors))
 })

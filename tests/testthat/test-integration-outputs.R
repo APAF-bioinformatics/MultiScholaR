@@ -69,7 +69,8 @@ intOutModel <- function(paths, close = TRUE, .local_envir = parent.frame()) {
     if (close) withr::defer(closeWorkflowStateOwner(manager), envir = .local_envir)
     scan <- integrationScanProject(paths$integration_dir)
     integrationCommitImport(manager, integrationImportRequest(scan, scan$views$view))
-    run <- runIntegrationModel(manager, trainer = intOutTrainer())
+    # The values as saved, so that their scale is the omics' (KIT-151: the z-score is the default since INT-24).
+    run <- runIntegrationModel(manager, list(scaling = "none"), trainer = intOutTrainer())
     export <- manager$.context$snapshot$exports$integration_mofa_model
     list(manager = manager, run = run, object = integrationImportedObject(manager),
         model = list(reference = run$reference, parameters = export$parameters, status = run$status, trained_at = Sys.time()))
@@ -245,7 +246,9 @@ test_that("KIT-152: 70 samples and 10,050 features: the top features' values are
     manager <- newIntegrationStateOwner(file.path(root, "project"))
     withr::defer(closeWorkflowStateOwner(manager))
     importIntegrationInputs(manager, c(big, lipid))
-    value <- suppressWarnings(runIntegrationModel(manager, trainer = trainer))$value
+    # Every feature, as saved (KIT-151: the defaults select 1,000 features and z-score them).
+    value <- suppressWarnings(runIntegrationModel(manager, list(feature_selection = "none", scaling = "none"),
+        trainer = trainer))$value
     samples <- value$factors$biological_sample
     expect_identical(length(samples), 70L)
     original <- readWorkflowSelectedOrdinals
