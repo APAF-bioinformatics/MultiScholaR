@@ -16,9 +16,25 @@ integrationInputFixture <- function() {
     list(manifest = manifest, samples = samples, matrix = matrix, features = features)
 }
 
-writeIntegrationInputFixture <- function(dir, fixture = integrationInputFixture()) {
+writeIntegrationInputFixture <- function(dir, fixture = integrationInputFixture(), corrected = list()) {
     writeIntegrationInput(dir, fixture$manifest, fixture$samples, list(proteomics = fixture$matrix),
-        list(proteomics = fixture$features), now = as.POSIXct("2026-11-17 10:00:00", tz = "UTC"))
+        list(proteomics = fixture$features), now = as.POSIXct("2026-11-17 10:00:00", tz = "UTC"), corrected = corrected)
+}
+
+# KIT-153: one state's protein table (`feature_id` first), and the written matrix against it on the matrix's rows and
+# columns, value for value.
+integrationLimpaTable <- function(manager, reference) {
+    table <- withDIAStateScope(manager, function() {
+        readDIAExecutionComponents(manager, reference, fields = c("protein_quant_table", "design_matrix"))@protein_quant_table
+    })
+    names(table)[[1]] <- "feature_id"
+    as.data.frame(table, stringsAsFactors = FALSE)
+}
+
+integrationLimpaExpectSameTable <- function(written, table) {
+    at <- match(written$feature_id, as.character(table$feature_id))
+    expect_false(anyNA(at))
+    expect_identical(unname(as.matrix(written[-1L])), unname(as.matrix(table[at, names(written)[-1L], drop = FALSE])))
 }
 
 test_that("KIT-061: the contract round trip writes the fixed files and reads them back validated", {
@@ -56,10 +72,9 @@ test_that("KIT-061: the contract round trip writes the fixed files and reads the
     expect_identical(input$views$proteomics[c("rows", "columns", "row_groups")], list(rows = 3L, columns = 4L, row_groups = 1L))
     expect_identical(input$views$proteomics$features, fixture$features)
     expect_identical(input$samples, fixture$samples)
-    # A second write replaces the folder whole.
-    fixture$manifest$matrix_role <- "corrected"
+    # A second write replaces the folder whole (KIT-153: with a corrected matrix beside the normalised one).
     fixture$manifest$correction <- list(id = "C1", k = 2L)
-    writeIntegrationInputFixture(dir, fixture)
+    writeIntegrationInputFixture(dir, fixture, corrected = list(proteomics = fixture$matrix))
     expect_identical(readIntegrationInput(dir)$manifest$correction$k, 2L)
     expect_identical(list.files(file.path(root, "integration"), all.files = TRUE, no.. = TRUE), "proteomics")
 })
@@ -70,10 +85,9 @@ test_that("KIT-061 (K061-2): a failed publish or move-aside leaves the previous 
     writeIntegrationInputFixture(dir)
     before <- readIntegrationInput(dir)
     fixture <- integrationInputFixture()
-    fixture$manifest$matrix_role <- "corrected"
     fixture$manifest$correction <- list(id = "C1", k = 2L)
     write <- function(rename) writeIntegrationInput(dir, fixture$manifest, fixture$samples, list(proteomics = fixture$matrix),
-        list(proteomics = fixture$features), renameFn = rename)
+        list(proteomics = fixture$features), renameFn = rename, corrected = list(proteomics = fixture$matrix))
     # The staging folder cannot be renamed into place: the previous input is restored.
     calls <- 0L
     failPublish <- function(from, to) {
@@ -170,10 +184,12 @@ test_that("KIT-061: a tampered file, a wrong shape, a missing manifest and incon
     manifest$files$matrix_proteomics.parquet <- digest::digest(file = matrix_file, algo = "sha256")
     jsonlite::write_json(manifest, manifest_file, auto_unbox = TRUE, null = "null", na = "null", digits = NA)
     expect_error(readIntegrationInput(dir), class = "integration_input_invalid", regexp = "is not 3 x 4")
-    # A corrected matrix without its correction.
-    writeIntegrationInputFixture(dir)
+    # A corrected matrix without its correction (KIT-153: the corrected file beside the normalised one).
+    fixture <- integrationInputFixture()
+    fixture$manifest$correction <- list(id = "C1", k = 2L)
+    writeIntegrationInputFixture(dir, fixture, corrected = list(proteomics = fixture$matrix))
     manifest <- jsonlite::read_json(manifest_file, simplifyVector = FALSE)
-    manifest$matrix_role <- "corrected"
+    manifest$correction <- NULL
     jsonlite::write_json(manifest, manifest_file, auto_unbox = TRUE, null = "null", na = "null", digits = NA)
     expect_error(readIntegrationInput(dir), class = "integration_input_invalid", regexp = "correction")
     unlink(manifest_file)
@@ -292,8 +308,15 @@ test_that("KIT-061: a classic route with RUV writes the corrected matrix after t
     withr::defer(closeDIAStateAdapter(manager))
     protein <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
     controls <- seq_len(nrow(protein@protein_quant_table)) <= 7L
+    # KIT-153: the normalisation's product names the normalised matrix its RUV read (here other values than the
+    # corrected state's, so that the two files can be told apart).
+    normalised <- protein
+    samples_all <- setdiff(names(normalised@protein_quant_table), normalised@protein_id_column)
+    normalised@protein_quant_table[samples_all] <- normalised@protein_quant_table[samples_all] - 0.5
+    manager$saveState("protein_replicate_filtered", normalised, list(), "normalised stand-in")
     product <- saveDIAStateValue(manager$.context, list(best_k = 3, controls = controls, percentage = 5,
-        parameters = list(grouping = "group")), "normalization-science", codec = "rds")
+        parameters = list(grouping = "group"), normalized = getDIAStateReference(manager, "protein_replicate_filtered")),
+        "normalization-science", codec = "rds")
     checkpoint <- checkpointDIAExecutionResult(manager, protein)
     checkpoint$products <- list(normalization_science = product)
     commitDIAReferenceState(manager, "ruv_corrected", checkpoint, list(norm_method = "cyclicloess", ruv_mode = "automatic",
@@ -311,7 +334,10 @@ test_that("KIT-061: a classic route with RUV writes the corrected matrix after t
     input <- readIntegrationInput(run$dir)
     manifest <- input$manifest
     expect_identical(manifest$workflow, "DIA")
-    expect_identical(manifest$matrix_role, "corrected")
+    # KIT-153: the role of the data set's matrix file, the normalised one; the corrected matrix beside it.
+    expect_identical(manifest$matrix_role, "normalised")
+    expect_true(input$views$proteomics$corrected)
+    expect_identical(manifest$normalisation$source$entity_id, getDIAStateReference(manager, "protein_replicate_filtered")$entity_id)
     expect_identical(manifest$source_state$name, "correlation_filtered")
     expect_identical(manifest$source_state$entity_id, getDIAStateReference(manager, "correlation_filtered")$entity_id)
     expect_null(manifest$source_state$product)
@@ -324,11 +350,67 @@ test_that("KIT-061: a classic route with RUV writes the corrected matrix after t
     expect_identical(unlist(manifest$correction$grouping_levels), c("control", "treated"))
     expected <- filtered@protein_quant_table
     names(expected)[[1]] <- "feature_id"
-    expect_identical(integrationInputMatrix(run$dir, "proteomics", input), expected)
+    expect_identical(integrationInputMatrix(run$dir, "proteomics", input, "ruv_corrected"), expected)
+    # KIT-153: the data set's own matrix is the normalised one, on the corrected matrix's proteins and samples.
+    uncorrected <- normalised@protein_quant_table[names(filtered@protein_quant_table)]
+    names(uncorrected)[[1]] <- "feature_id"
+    expect_identical(integrationInputMatrix(run$dir, "proteomics", input), uncorrected)
     expect_identical(input$samples$Run, setdiff(protein@design_matrix$Run, "run_0005"))
     expect_identical(input$samples$group, as.character(filtered@design_matrix$group))
     # No UniProt table: each display name is the feature id.
     expect_identical(input$views$proteomics$features$display_name, expected$feature_id)
+})
+
+test_that("KIT-153: classic proteomics: the data set's matrix is the normalised matrix RUV-III-C corrected; the corrected one is beside it", {
+    root <- withr::local_tempdir()
+    manager <- integrationProteinOwner(root, "DIA")
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$saveState("protein_replicate_filtered", makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small")), list(),
+        "source")
+    parameters <- list(norm_method = "quantile", ruv_mode = "manual", auto_percentage_min = NULL, auto_percentage_max = NULL,
+        separation_metric = NULL, k_penalty_weight = NULL, adaptive_k_penalty = NULL, ruv_percentage = 50, ruv_k = 1,
+        grouping = "group")
+    run <- NULL
+    utils::capture.output(run <- suppressWarnings(suppressMessages(withDIAStateScope(manager, function() {
+        run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
+        commit <- diaNormalizationCommit(manager, parameters, run)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        run
+    }))))
+    expect_identical(manager$current_state, "ruv_corrected")
+    input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
+    manifest <- input$manifest
+    expect_identical(manifest$matrix_role, "normalised")
+    expect_true(input$views$proteomics$corrected)
+    expect_identical(manifest$correction[c("id", "method")], list(id = "C1", method = "RUVIII_C_Varying"))
+    expect_equal(manifest$correction$k, run$value$best_k)
+    # The normalisation named: the method and the normalised checkpoint the RUV step read.
+    expect_identical(manifest$normalisation$method, "quantile")
+    expect_identical(manifest$normalisation$source[c("name", "entity_id")],
+        list(name = "normalized", entity_id = run$value$normalized$entity_id))
+    read <- function(reference) {
+        withDIAStateScope(manager, function() readDIAExecutionComponents(manager, reference))
+    }
+    table <- function(object) {
+        out <- as.data.frame(object@protein_quant_table, stringsAsFactors = FALSE)
+        names(out)[[1]] <- "feature_id"
+        out
+    }
+    normalised <- read(run$value$normalized)
+    # The data set's matrix: the normalised one, on the corrected matrix's proteins and runs.
+    integrationLimpaExpectSameTable(input$views$proteomics$matrix, table(normalised))
+    expect_identical(input$views$proteomics$matrix$feature_id, input$views$proteomics$corrected_matrix$feature_id)
+    # The corrected one: the state's table.
+    integrationLimpaExpectSameTable(input$views$proteomics$corrected_matrix, table(read(run$value$final)))
+    # And it is the matrix that entered RUV: RUV-III-C with the step's k and controls, then its missing-value cleanup, run
+    # again on it gives the corrected matrix.
+    again <- suppressWarnings(suppressMessages(removeRowsWithMissingValuesPercent(theObject = ruvIII_C_Varying(normalised,
+        ruv_grouping_variable = "group", ruv_number_k = run$value$best_k, ctrl = run$value$controls))))
+    again <- table(again)
+    at <- match(input$views$proteomics$corrected_matrix$feature_id, again$feature_id)
+    expect_false(anyNA(at))
+    expect_equal(unname(as.matrix(input$views$proteomics$corrected_matrix[-1L])),
+        unname(as.matrix(again[at, names(input$views$proteomics$corrected_matrix)[-1L]])), tolerance = 1e-10)
 })
 
 test_that("KIT-061: a classic route without RUV writes the normalised matrix and names the UniProt gene as display name", {
@@ -480,17 +562,23 @@ test_that("KIT-061 (D14): DIA_LIMPA in covariates mode writes the RUV-adjusted p
     input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
     manifest <- input$manifest
     expect_identical(manifest$workflow, "DIA_LIMPA")
-    expect_identical(manifest$matrix_role, "corrected")
+    expect_identical(manifest$matrix_role, "normalised")
     expect_identical(manifest$source_state$name, "ruv_covariates")
     expect_identical(manifest$source_state$product$type, "ruv-adjusted-science")
     expect_identical(manifest$correction$id, "C2")
     expect_identical(manifest$correction$ruv_mode, "covariates")
     expect_equal(manifest$correction$k, readDIAStateMetadata(manager)$config$ruv_k)
     expect_identical(manifest$correction$grouping_variable, "group")
-    # The matrix is the published adjusted matrix (the step's own file), and differs from the state's table.
-    expect_equal(input$views$proteomics$matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
+    # The corrected matrix is the published adjusted matrix (the step's own file), and differs from the state's table.
+    expect_equal(input$views$proteomics$corrected_matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
     state <- integrationStateTable(manager)
-    expect_false(isTRUE(all.equal(unname(as.matrix(input$views$proteomics$matrix[-1])), unname(as.matrix(state[-1])))))
+    expect_false(isTRUE(all.equal(unname(as.matrix(input$views$proteomics$corrected_matrix[-1])), unname(as.matrix(state[-1])))))
+    # KIT-153: the data set's own matrix is the table the RUV step read: the state's own (uncorrected) table, which is the
+    # correlation filter's (the step's source).
+    expect_identical(manifest$normalisation$source$name, "ruv_step_input")
+    names(state)[[1]] <- "feature_id"
+    integrationLimpaExpectSameTable(input$views$proteomics$matrix, state)
+    integrationLimpaExpectSameTable(input$views$proteomics$matrix, integrationLimpaTable(manager, fixture$correlation))
     # The design is the state's, with its W columns.
     expect_true(all(paste0("W", seq_len(manifest$correction$k)) %in% names(input$samples)))
 })
@@ -505,17 +593,19 @@ test_that("KIT-061: DIA_LIMPA in correction mode writes the corrected state's ta
     expect_identical(manager$current_state, "ruv_corrected")
     input <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
     manifest <- input$manifest
-    expect_identical(manifest$matrix_role, "corrected")
+    expect_identical(manifest$matrix_role, "normalised")
     expect_identical(manifest$source_state$name, "ruv_corrected")
     expect_null(manifest$source_state$product)
     expect_identical(manifest$correction$id, "C2")
     expect_identical(manifest$correction$ruv_mode, "correction")
     state <- integrationStateTable(manager)
     names(state)[[1]] <- "feature_id"
-    expect_identical(input$views$proteomics$matrix, state)
+    expect_identical(input$views$proteomics$corrected_matrix, state)
     # The same fit as the covariates mode's adjusted matrix.
-    expect_equal(input$views$proteomics$matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
+    expect_equal(input$views$proteomics$corrected_matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
     expect_false(any(grepl("^W[0-9]+$", names(input$samples))))
+    # KIT-153: the data set's own matrix is the table the RUV step read, the correlation filter's.
+    integrationLimpaExpectSameTable(input$views$proteomics$matrix, integrationLimpaTable(manager, fixture$correlation))
 })
 
 test_that("KIT-061 (K061-1): DIA_LIMPA switched covariates -> correction -> covariates writes the head's adjusted product", {
@@ -534,7 +624,7 @@ test_that("KIT-061 (K061-1): DIA_LIMPA switched covariates -> correction -> cova
     expect_identical(manifest$source_state$product$type, "ruv-adjusted-science")
     expect_identical(manifest$correction$state, "ruv_covariates")
     expect_identical(manifest$correction$ruv_mode, "covariates")
-    expect_equal(input$views$proteomics$matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
+    expect_equal(input$views$proteomics$corrected_matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
     expect_true(all(paste0("W", seq_len(manifest$correction$k)) %in% names(input$samples)))
 })
 
@@ -547,9 +637,9 @@ test_that("KIT-061 (K061-7): DIA_LIMPA correlation -> covariates writes the corr
     withr::defer(closeDIAStateAdapter(manager))
     corrected <- readIntegrationInputWithMatrices(integrationSummarySave(manager, root)$dir)
     expect_identical(corrected$manifest$source_state$name, "ruv_covariates")
-    expect_identical(corrected$manifest$matrix_role, "corrected")
+    expect_identical(corrected$manifest$matrix_role, "normalised")
     expect_identical(corrected$manifest$correction$id, "C2")
-    expect_equal(corrected$views$proteomics$matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
+    expect_equal(corrected$views$proteomics$corrected_matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
     # The correlation re-applied from its pre-RUV source (`diaCorrelationSource` on DIA_LIMPA), committed on the
     # covariates head as the tab commits it: its record's previous state is ruv_covariates.
     withDIAStateScope(manager, function() {
@@ -567,8 +657,9 @@ test_that("KIT-061 (K061-7): DIA_LIMPA correlation -> covariates writes the corr
     state <- integrationStateTable(manager)
     names(state)[[1]] <- "feature_id"
     expect_identical(input$views$proteomics$matrix, state)
+    expect_false(input$views$proteomics$corrected)
     expect_false(isTRUE(all.equal(unname(as.matrix(input$views$proteomics$matrix[-1])),
-        unname(as.matrix(corrected$views$proteomics$matrix[-1])))))
+        unname(as.matrix(corrected$views$proteomics$corrected_matrix[-1])))))
 })
 
 test_that("KIT-061 (D2): the normalisation tab's S4 compatibility download no longer copies its RDS to integration/", {

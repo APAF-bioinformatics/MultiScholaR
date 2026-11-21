@@ -23,6 +23,7 @@
       "features_file": "features_transcriptomics.parquet",
       "rows": 400,
       "columns": 40,
+      "matrix_stage": "normalised",
       "row_groups": 1
     }
   ],

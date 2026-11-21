@@ -1848,7 +1848,7 @@ writeOmicsIntegrationInput <- function(binding, manager, dir) {
         removeIntegrationInput(dir)
         return(invisible(FALSE))
     }
-    writeIntegrationInput(dir, source$manifest, source$samples, source$matrices, source$features)
+    writeIntegrationInput(dir, source$manifest, source$samples, source$matrices, source$features, corrected = source$corrected)
     invisible(TRUE)
 }
 
@@ -1908,11 +1908,33 @@ omicsIntegrationInputSource <- function(binding, manager) {
     object <- assays <- NULL
     correction <- if (identical(decider, ruvState)) omicsIntegrationInputCorrection(binding, manager, ruvState, lineage[[ruvState]],
         views, samples)
+    # KIT-153 (INT-23): after RUV the final state's assays are the corrected matrices (of the views RUV was applied to);
+    # each data set's own matrix is the normalised one the RUV step read, on the corrected matrix's features and samples.
+    corrected <- list()
+    normalisation_source <- list(name = final, entity_id = reference$entity_id, sha256 = reference$payload$sha256)
+    if (!is.null(correction)) {
+        input <- omicsIntegrationInputRuvInput(binding, manager, lineage, ruvState)
+        input_assays <- methods::slot(input$object, binding$data_slot)
+        input_id <- methods::slot(input$object, binding$id_slot)
+        input$object <- NULL
+        for (view in names(views)) {
+            table <- as.data.frame(input_assays[[views[[view]]]], check.names = FALSE, stringsAsFactors = FALSE)
+            uncorrected <- data.frame(feature_id = as.character(table[[input_id]]), table[intersect(held, names(table))],
+                check.names = FALSE, stringsAsFactors = FALSE)
+            if (isTRUE(correction$views[[view]]$applied)) corrected[[view]] <- matrices[[view]]
+            matrices[[view]] <- integrationInputUncorrectedOn(uncorrected, matrices[[view]], view)
+        }
+        input_assays <- NULL
+        normalisation_source <- list(name = input$name, entity_id = input$reference$entity_id,
+            sha256 = input$reference$payload$sha256)
+    }
     components <- readWorkflowStateMetadata(manager, reference)$data$components[[binding$data_slot]]
     workflow <- manager$workflow_type %||% manager$.context$snapshot$workflow_type %||% NA_character_
     if (!is.character(technical) || length(technical) != 1L || !isTRUE(technical %in% names(samples))) technical <- NA_character_
     manifest <- list(omic_type = binding$omic_type, workflow = workflow,
-        matrix_role = if (!is.null(correction)) "corrected" else "normalised", scale = "log2", correction = correction,
+        matrix_role = "normalised", scale = "log2",
+        normalisation = list(method = omicsIntegrationInputNormMethod(manager, lineage, normalised), source = normalisation_source),
+        correction = correction,
         source_state = list(name = final, entity_id = reference$entity_id, sha256 = reference$payload$sha256,
             feature_id_column = id_column, annotation_id_column = annotation_column,
             assays = lapply(stats::setNames(views, names(views)), \(assay) list(assay = assay,
@@ -1920,7 +1942,38 @@ omicsIntegrationInputSource <- function(binding, manager) {
         sample_id_column = sample_column, group_column = group_column, technical_replicate_column = technical,
         biological_sample_column = integrationInputBiologicalSampleColumn(samples, technical, sample_column),
         internal_standards = standards$rule)
-    list(manifest = manifest, samples = samples, matrices = matrices, features = features)
+    list(manifest = manifest, samples = samples, matrices = matrices, features = features, corrected = corrected)
+}
+
+#' The normalised object a lipidomics or metabolomics RUV step read (KIT-153, INT-23): the between-sample normalisation
+#' state (`<prefix>_normalized`) the RUV state was committed on, in the head's lineage (the RUV step runs on the head the
+#' normalisation leaves, under today's RUV-III-C and a new design alike). Refused in words when the RUV state does not
+#' follow it.
+#' @param lineage The head's lineage (`protIntegrationInputLineage`).
+#' @param ruvState The RUV state's name.
+#' @return `list(name, reference, object)`.
+#' @noRd
+omicsIntegrationInputRuvInput <- function(binding, manager, lineage, ruvState) {
+    normalised <- paste0(binding$prefix, "_normalized")
+    if (!identical(lineage[[ruvState]]$previous_state, normalised) || is.null(lineage[[normalised]])) {
+        abortIntegrationInput(sprintf(paste("the normalised matrix that entered RUV (%s) is not the state before %s in this",
+            "session; run the normalisation again, then save"), normalised, ruvState))
+    }
+    reference <- getWorkflowStateReference(manager, normalised)
+    list(name = normalised, reference = reference, object = readWorkflowOmicsState(binding, manager, reference))
+}
+
+#' The between-sample normalisation of a lipidomics or metabolomics input (KIT-153): the method its normalisation step
+#' recorded (`normalisation_method` or `norm_method` of the `<prefix>_normalized` state's provenance or configuration),
+#' else NA.
+#' @noRd
+omicsIntegrationInputNormMethod <- function(manager, lineage, normalised) {
+    values <- manager$.context$snapshot$step_provenance[[normalised]]$values
+    for (method in list(values$normalisation_method, values$norm_method, lineage[[normalised]]$config$normalisation_method,
+        lineage[[normalised]]$config$norm_method)) {
+        if (is.character(method) && length(method) == 1L && !is.na(method)) return(method)
+    }
+    NA_character_
 }
 
 #' Which features of a lipidomics or metabolomics input are internal standards (KIT-135; INT-3: the writer marks them,
