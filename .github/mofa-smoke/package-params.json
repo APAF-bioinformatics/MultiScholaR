@@ -1,6 +1,6 @@
 {
-  "label": "k141-enrichment-97c51163",
-  "package_commit": "97c51163a85d9e213560940ba79b817d5b2f39b4",
+  "label": "k141-enrichment-524f8029",
+  "package_commit": "524f8029ea9e290bc85e6a6c8d54aab6c21ebc34",
   "tests": [
     "test-integration-enrichment-mofa.R",
     "test-integration-record-mofa.R",
