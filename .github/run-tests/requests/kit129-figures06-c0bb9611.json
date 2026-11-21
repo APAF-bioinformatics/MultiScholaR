@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-129 M42: DIA with limpa recommended note states the 0.6 result (user 2026-11-21); the scope addition after run 44861404633, base versus head",
+  "label": "KIT-129 0.6 figures and DIA note on kit-129-figures-06 c0bb9611",
+  "package_commit": "c0bb9611efdc83b119df20f64104cc177842674a",
+  "base_commit": "3f680f7f06031a669c661bea9abdb95f97c178ba",
+  "tools_ref": "",
+  "tests": ["test-omic-norm-ruv-design.R", "test-omic-gui-config.R", "test-kit129-run-path.R", "test-omic-norm-module.R"],
+  "shards": 4,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
