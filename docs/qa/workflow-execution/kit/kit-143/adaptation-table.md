@@ -101,6 +101,12 @@ rankings and terms from the recorded answers. Evidence: `equivalence.tsv`, `sett
 In the order the workbook first calls them; 51 functions and 3 constants. The workbook also reads one internal field,
 `manager$.context$snapshot$exports$integration_mofa_model$parameters` (the accepted model's parameters), in sections 5 and 6.
 
+KIT-154: the workbook now calls only twelve exported, documented functions (`R/utils_integration_workbook.R`:
+`integrationSettings`, `integrationFindInputs`, `integrationOpenProject`, `integrationMatchSamples`,
+`integrationConfirmMatch`, `integrationTrainModel`, `integrationGetResults`, `integrationExportResults`,
+`integrationEnrichFactor`, `integrationWriteRecord`, `integrationCloseProject`, `integrationReplayProject`), which make
+the calls listed below in the same order; no `:::` and no internal field remain in the workbook.
+
 | Name | Defined in |
 |---|---|
 | `integrationScanProject` | `R/utils_integration_gui.R` |
