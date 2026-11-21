@@ -288,9 +288,9 @@ test_that("KIT-155: at pages of one row (the wide and the narrow read), the part
         expect_true(all(vapply(pages, function(page) page[["rows"]], numeric(1)) == 1), info = info)
         expect_identical(length(pages), 2L * (30L + 6L), info = info)
         expect_identical(unname(vapply(Filter(function(page) page[["columns"]] == 71, pages), function(page)
-            page[["offset"]], numeric(1))), rep(0:29, 2L), info = info)
+            page[["offset"]], numeric(1))), as.numeric(rep(0:29, 2L)), info = info)
         expect_identical(unname(vapply(Filter(function(page) page[["columns"]] == 35, pages), function(page)
-            page[["offset"]], numeric(1))), rep(0:5, 2L), info = info)
+            page[["offset"]], numeric(1))), as.numeric(rep(0:5, 2L)), info = info)
         if (settings$selection[[i]] == "top_variance") {
             kept <- sub("^lipidomics_LCMS_Pos:", "", rownames(partitioned$views$lipidomics_LCMS_Pos))
             expect_identical(kept, sort(c(fixture$top, fixture$tie[1:3])), info = info)
