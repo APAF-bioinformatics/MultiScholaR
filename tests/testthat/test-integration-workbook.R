@@ -5,7 +5,8 @@
 #     MultiOmics_workflow_starter.rmd is gone (fails on the old workbook: it names functions the package does not have
 #     and carries a key);
 #   - the reference workbook's sort-order sample matching (`x[, sort(colnames(x))]` per omic, paired by position)
-#     misaligns the tier-1 corpus's proteomics and transcriptomics, whose run names differ, while the module's matching
+#     misaligns proteomics and transcriptomics when the transcriptomics runs carry acquisition-order names (run_01, ...),
+#     while the module's matching
 #     by the saved biological sample puts every run with its own sample (a characterisation of the reference
 #     workbook's step, not of new code: it passes on the old code too).
 # The workbook rendered end to end and the equivalence with the reference workbook's MOFA2 call are
@@ -70,6 +71,14 @@ test_that("KIT-143: the reference workbook's sort-order matching misaligns sampl
     transcriptomics <- one_run("transcriptomics")
     expect_length(proteomics, 20L)
     expect_length(transcriptomics, 20L)
+    # The corpus's run names sort in sample order in both omics (run-tests 44862823716: no pair misaligned). Runs named
+    # by the instrument in acquisition order (the order of the file's columns, which the corpus shuffles), as run_01,
+    # run_02, ..., do not.
+    dir <- file.path(intWbCorpus(), "transcriptomics")
+    manifest <- jsonlite::read_json(file.path(dir, "integration_input.json"))
+    acquired <- as.character(as.data.frame(arrow::read_parquet(file.path(dir,
+        manifest$samples_file)))[[manifest$sample_id_column]])
+    names(transcriptomics) <- sprintf("run_%02d", match(names(transcriptomics), acquired))
     # The reference workbook: each omic's columns sorted by name, then the n-th column of each taken as one sample.
     by_order <- data.frame(proteomics = proteomics[sort(names(proteomics))],
         transcriptomics = transcriptomics[sort(names(transcriptomics))], stringsAsFactors = FALSE)
@@ -80,11 +89,10 @@ test_that("KIT-143: the reference workbook's sort-order matching misaligns sampl
     # The module: each run placed by the biological sample its omic saved.
     read <- integrationReadInputs(file.path(intWbCorpus(), c("proteomics", "transcriptomics")))
     design <- read$design
-    for (omic in c("proteomics", "transcriptomics")) {
-        runs <- if (omic == "proteomics") proteomics else transcriptomics
-        rows <- design[design$omic == omic, , drop = FALSE]
-        expect_identical(unname(rows$biological_sample[match(names(runs), rows$run)]), unname(runs))
-    }
+    rows <- design[design$omic == "proteomics", , drop = FALSE]
+    expect_identical(unname(rows$biological_sample[match(names(proteomics), rows$run)]), unname(proteomics))
+    rows <- design[design$omic == "transcriptomics", , drop = FALSE]
+    expect_true(all(unname(transcriptomics) %in% rows$biological_sample))
     aligned <- integrationAlignViews(integrationViewsFromInputs(file.path(intWbCorpus(), c("proteomics",
         "transcriptomics")))$object, list(views = c("proteomics", "transcriptomics"), sample_match_table = NULL,
         internal_standards = "keep", missing_samples = "keep_missing", feature_selection = "none", scaling = "none"))

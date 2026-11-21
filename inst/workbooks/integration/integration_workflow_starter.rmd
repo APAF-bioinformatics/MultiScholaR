@@ -13,7 +13,9 @@ params:
   report_format: "docx"
 ---
 
-```{r setup, include = FALSE}
+```{r wb-setup, include = FALSE}
+# Chunk labels start with wb- so that the report this workbook renders in section 9 (itself an R Markdown file
+# with chunks named setup, results and outputs) does not clash with them.
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = TRUE)
 ```
 
@@ -52,7 +54,7 @@ data, which were not available.
 The workbook is copied into `<project>/scripts/integration/` when a project is set up. Leave `project_dir` empty
 to use that project, or give the project's folder.
 
-```{r folders}
+```{r wb-folders}
 library(MultiScholaR)
 
 project_dir <- if (nzchar(params$project_dir)) params$project_dir else file.path(getwd(), "..", "..")
@@ -77,7 +79,7 @@ project_dir
 Each omic's Summary step writes its table to `<project>/integration/<omic>/`. The list below shows what was
 found; an omic that cannot be used says why.
 
-```{r scan}
+```{r wb-scan}
 scan <- MultiScholaR:::integrationScanProject(paths$integration_dir)
 knitr::kable(MultiScholaR:::integrationScanDisplay(scan))
 knitr::kable(scan$views)
@@ -85,7 +87,7 @@ knitr::kable(scan$views)
 
 The data sets of every usable omic are imported into a new store for this analysis.
 
-```{r import}
+```{r wb-import}
 request <- MultiScholaR:::integrationImportRequest(scan, MultiScholaR:::integrationScanReadyViews(scan)$view)
 store_root <- tempfile("integration-store-", tmpdir = paths$source_dir)
 manager <- MultiScholaR:::newIntegrationStateOwner(store_root)
@@ -100,7 +102,7 @@ Samples are matched by the biological sample each omic saved, never by their ord
 biological sample differently, edit the table written below (`integration_sample_match_template.tsv`): fill in
 `biological_sample` and give the edited file's path as `sample_match_file`.
 
-```{r match}
+```{r wb-match}
 object <- MultiScholaR:::integrationImportedObject(manager, MultiScholaR:::INTEGRATION_PREVIEW_FIELDS)
 match_table <- if (nzchar(params$sample_match_file)) {
     MultiScholaR:::integrationReadSampleMatch(params$sample_match_file)
@@ -113,7 +115,7 @@ knitr::kable(MultiScholaR:::integrationAlignmentSampleTable(preview))
 
 Confirming the match saves the design (and the match, if one was given) for the record.
 
-```{r confirm}
+```{r wb-confirm}
 dir.create(paths$multiomic_inputs_dir, recursive = TRUE, showWarnings = FALSE)
 template <- MultiScholaR:::integrationSampleMatchTemplate(object, preview$parameters$sample_match_table)
 utils::write.table(template, file.path(paths$multiomic_inputs_dir, "integration_sample_match_template.tsv"),
@@ -136,7 +138,7 @@ if (!is.null(preview$parameters$sample_match_table)) {
 
 The model's settings and their defaults, with the decision behind each:
 
-```{r model-settings}
+```{r wb-model-settings}
 model_spec <- MultiScholaR:::integrationMofaParameterSpec()
 knitr::kable(MultiScholaR:::integrationMofaParameterTable())
 ```
@@ -144,7 +146,7 @@ knitr::kable(MultiScholaR:::integrationMofaParameterTable())
 To change a setting, name it here, for example `list(num_factors = 8L)`. How samples are matched (technical
 replicates, internal standards, missing samples) is fixed by the confirmed match above, as in the app.
 
-```{r model-train}
+```{r wb-model-train}
 model_overrides <- list()
 stopifnot(all(names(model_overrides) %in% names(model_spec)))
 settings <- lapply(model_spec, `[[`, "default")
@@ -168,12 +170,12 @@ knitr::kable(model_summary$variance)
 
 The results' settings and their defaults:
 
-```{r results-settings}
+```{r wb-results-settings}
 results_spec <- MultiScholaR:::integrationResultsParameterSpec()
 knitr::kable(MultiScholaR:::integrationResultsParameterTable())
 ```
 
-```{r results}
+```{r wb-results}
 results_overrides <- list()
 stopifnot(all(names(results_overrides) %in% names(results_spec)))
 results_parameters <- lapply(results_spec, `[[`, "default")
@@ -186,7 +188,7 @@ writeLines(c(vapply(results$advisories, function(advisory) advisory$sentence, ch
 How much of each data set's variation each factor explains (of the features given to the model), and how stable
 each factor is across the training seeds:
 
-```{r results-variance, fig.width = 8, fig.height = 5}
+```{r wb-results-variance, fig.width = 8, fig.height = 5}
 print(MultiScholaR:::integrationPlotVariance(results))
 print(MultiScholaR:::integrationPlotVarianceTotal(results))
 knitr::kable(MultiScholaR:::integrationResultsVarianceTable(results))
@@ -195,7 +197,7 @@ knitr::kable(MultiScholaR:::integrationResultsStabilityTable(results))
 
 The factors against the groups. Read the statement under the figure before reading the table.
 
-```{r results-groups, fig.width = 8, fig.height = 5}
+```{r wb-results-groups, fig.width = 8, fig.height = 5}
 print(MultiScholaR:::integrationPlotFactorsByGroup(results))
 writeLines(MultiScholaR:::integrationClaimLimitText(results))
 knitr::kable(MultiScholaR:::integrationResultsAssociationTable(results))
@@ -204,7 +206,7 @@ knitr::kable(MultiScholaR:::integrationResultsAssociationTable(results))
 The features with the largest weights, per data set, for the first factor shown (every factor is saved in
 section 8), and how the factors correlate with each other:
 
-```{r results-weights, fig.width = 8, fig.height = 5}
+```{r wb-results-weights, fig.width = 8, fig.height = 5}
 for (view in results$views) {
     print(MultiScholaR:::integrationPlotWeights(results, results$shown[[1L]], view))
 }
@@ -217,7 +219,7 @@ knitr::kable(MultiScholaR:::integrationResultsCorrelationTable(results))
 The factors against each other, and the values of the top-weighted features against the first factor shown.
 UMAP and t-SNE maps are drawn only when chosen in `results_overrides` (`umap = TRUE`, `tsne = TRUE`).
 
-```{r outputs, fig.width = 8, fig.height = 6}
+```{r wb-outputs, fig.width = 8, fig.height = 6}
 print(MultiScholaR:::integrationPlotFactorPairs(results))
 for (view in results$views) {
     print(MultiScholaR:::integrationPlotTopFeatureScatter(results, results$shown[[1L]], view))
@@ -235,7 +237,7 @@ if (length(drawn)) {
 
 Every table and figure is written to `results/integration/mofa/`.
 
-```{r save}
+```{r wb-save}
 saved <- MultiScholaR:::integrationSaveResults(manager, run$reference, results, paths)
 c(saved$tables, saved$figures)
 ```
@@ -245,7 +247,7 @@ c(saved$tables, saved$figures)
 The analysis record, the study parameters, the report, the model file and the sample match are written to the
 project's study report folder. The methods paragraph below is written from the record.
 
-```{r record}
+```{r wb-record}
 bundle <- MultiScholaR:::integrationWriteRecordBundle(manager, paths$study_report_dir, format = params$report_format)
 basename(bundle$files)
 writeLines(bundle$methods)
@@ -256,7 +258,7 @@ writeLines(bundle$methods)
 The store is closed, reopened and the analysis repeated from its record alone; the repeated model is compared
 with the saved one.
 
-```{r replay}
+```{r wb-replay}
 MultiScholaR:::closeWorkflowStateOwner(manager)
 replay <- MultiScholaR:::replayIntegrationProject(store_root, tempfile("integration-replay-", tmpdir = paths$source_dir))
 knitr::kable(replay$comparison$tables)
