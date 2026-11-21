@@ -1,8 +1,9 @@
 {
-  "label": "k143-1c7832ab",
-  "package_commit": "1c7832abe07c7fc3b1b4fcf950ccc3f8ff25efd5",
+  "label": "k143-final-6ee80b82",
+  "package_commit": "6ee80b829e5a1b651024c667177a1a062f8e2476",
   "tests": [
-    "test-integration-workbook-mofa.R"
+    "test-integration-workbook-mofa.R",
+    "test-integration-record.R"
   ],
   "record": false,
   "runs": 1
