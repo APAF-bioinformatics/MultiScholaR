@@ -325,7 +325,8 @@ test_that("KIT-142: the report renders from the record with the package's templa
     project <- intRecProject()
     journey <- intRecJourney(project)
     bundle <- integrationWriteRecordBundle(journey$manager, file.path(project$root, "html"), format = "html")
-    page <- paste(readLines(bundle$files[[4L]], warn = FALSE), collapse = "\n")
+    # pandoc wraps long lines in the HTML it writes, so a sentence can span lines: compare with whitespace collapsed.
+    page <- gsub("\\s+", " ", paste(readLines(bundle$files[[4L]], warn = FALSE), collapse = " "))
     expect_match(page, integrationRecordTexts()[["report_title"]], fixed = TRUE)
     expect_match(page, "MOFA2 9.8.7", fixed = TRUE)
     expect_match(page, "Training settled after 186 rounds", fixed = TRUE)
