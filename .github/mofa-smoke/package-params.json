@@ -1,6 +1,6 @@
 {
-  "label": "k155-pages-f263bc6d",
-  "package_commit": "f263bc6db75a63dd7abf2281b2f711cf98b6c457",
+  "label": "k155-correction-d1fd2597",
+  "package_commit": "d1fd2597795c5f0d5cdde4cdb82661978529329a",
   "tests": [
     "test-integration-partitioned-mofa.R",
     "test-integration-mofa-model.R",
