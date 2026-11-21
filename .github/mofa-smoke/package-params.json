@@ -1,9 +1,10 @@
 {
-  "label": "k143-final-2075c5d0",
-  "package_commit": "2075c5d028afacfc103fc152c8ac21c9d654e660",
+  "label": "k154-api-87bd6482",
+  "package_commit": "87bd6482cc258985a43521e383591b68a45aa5c1",
   "tests": [
     "test-integration-workbook-mofa.R",
-    "test-integration-record.R"
+    "test-integration-workbook.R",
+    "test-integration-workbook-api.R"
   ],
   "record": false,
   "runs": 1
