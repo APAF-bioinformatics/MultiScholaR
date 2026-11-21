@@ -1,6 +1,6 @@
 {
-  "label": "k143-final-6ee80b82",
-  "package_commit": "6ee80b829e5a1b651024c667177a1a062f8e2476",
+  "label": "k143-final-2075c5d0",
+  "package_commit": "2075c5d028afacfc103fc152c8ac21c9d654e660",
   "tests": [
     "test-integration-workbook-mofa.R",
     "test-integration-record.R"
