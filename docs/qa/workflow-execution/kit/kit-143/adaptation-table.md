@@ -3,7 +3,7 @@
 Reference: `APAF-bioinformatics/e_shivani_mofa`, `scripts/mofa_ruvIII.Rmd` and the script it sources,
 `scripts/rank_enrichment_stringdb.R` (read as code only, 2026-11-21; no data file opened). Chunk numbers are the
 reference workbook's chunk labels. The package's workbook is `inst/workbooks/integration/integration_workflow_starter.rmd`
-(sections 1 to 10); the app's Integration tab calls the same functions.
+(sections 1 to 11); the app's Integration tab calls the same functions.
 
 **Claim (audit SCI-14, user 2026-11-21).** The module reproduces the reference workbook's MOFA2 configuration exactly
 on synthetic data (`tests/testthat/test-integration-workbook-mofa.R`). This is implementation conformance: it says
@@ -11,7 +11,7 @@ nothing about the module's defaults, the collaborator's data or the collaborator
 
 **Input matrix (audit SCI-04).** The reference workbook's inputs were RUV-corrected with the groups as replicate sets
 and then compared between the same groups. Settled by INT-23: the module takes each omic's normalised matrix before
-RUV correction by default; the corrected matrix stays selectable (KIT-153, added to the workbook when it lands), and
+RUV correction by default; the corrected matrix stays selectable (KIT-153, `input_matrix`, workbook section 5), and
 a factor-against-group test is withheld when an input was corrected with the groups (the claim limit, KIT-060 D10).
 
 ## Steps
@@ -53,13 +53,13 @@ a factor-against-group test is withheld when an input was corrected with the gro
 | 33 | `create_pca_plot`: a PCA per omic | none | Not adopted: per-data-set PCA is out of scope (plan); each omic's own QC shows it |
 | 34 | Factor 1 against Factor 2 labelled "% variance" from the two factors' variances | none | Not adopted, because the statistic is mislabelled (a share of two factors' variance, not variance explained) |
 | 35 | `patchwork` panel and `pca_results.RDS` | none | Not adopted |
-| 36 | STRING ranked enrichment on Factor 1's raw weights for Seer and SomaScan (`runOneStringDbRankEnrichmentMofa`, species 9606, FDR 0.05), a cached result reused | KIT-141's enrichment (`runIntegrationEnrichment`): every measured feature ranked by its correlation with the factor (INT-18), KEGG and Reactome for metabolites and lipids (INT-19), key read from `STRING_API_KEY` and never recorded (INT-21) | Replaced (section added when KIT-141 lands) |
+| 36 | STRING ranked enrichment on Factor 1's raw weights for Seer and SomaScan (`runOneStringDbRankEnrichmentMofa`, species 9606, FDR 0.05), a cached result reused | KIT-141's enrichment (`runIntegrationEnrichment`): every measured feature ranked by its correlation with the factor (INT-18), KEGG and Reactome for metabolites and lipids (INT-19), key read from `STRING_API_KEY` or asked for, never recorded (INT-21); workbook section 9 | Replaced |
 | 37 | SomaScan isoforms collapsed to the largest absolute weight | KIT-141's declared identifier mapping per omic | Replaced |
-| 38 | `printStringDbFunctionalEnrichmentBarGraph`, top-5 tables, `plot_and_save` | KIT-141's enrichment tables and figures | Replaced (pending KIT-141) |
+| 38 | `printStringDbFunctionalEnrichmentBarGraph`, top-5 tables, `plot_and_save` | `integrationEnrichmentSummary` and the terms table (workbook section 9); the record's enrichment sheets and the report's enrichment section | Replaced |
 | 39 | Two inputs of one omic (Seer and SomaScan, both proteomics) | One input per omic | Not adopted: out of scope (plan); stated as a limitation |
 | 40 | Inputs RUV-corrected with the groups (file names `*_ruv_normalised_*`) | INT-23 (above) | Not adopted as the default (SCI-04) |
 | 41 | Differential-correlation network (`mofa_ruvIII_correlation_network.Rmd`) | none | Not adopted: out of scope (plan) |
-| 42 | none | Analysis record, report and methods paragraph (`integrationWriteRecordBundle`, section 9); repeat from the record (`replayIntegrationProject`, section 10) | Package addition |
+| 42 | none | Analysis record, report and methods paragraph (`integrationWriteRecordBundle`, section 10); repeat from the record, the enrichment from its recorded answer (`replayIntegrationProject`, section 11) | Package addition |
 
 ## Custom functions
 
@@ -71,10 +71,10 @@ a factor-against-group test is withheld when an input was corrected with the gro
 | `plotMofaWeights` (mofa_ruvIII.Rmd) | `integrationPlotWeights`, `integrationResultsWeightsTable` |
 | `processOmicForPlot` (mofa_ruvIII.Rmd) | Not adopted: study-specific search |
 | `create_pca_plot` (mofa_ruvIII.Rmd) | Not adopted: per-data-set PCA out of scope |
-| `plot_and_save` (mofa_ruvIII.Rmd) | KIT-141's enrichment figures (pending) |
+| `plot_and_save` (mofa_ruvIII.Rmd) | The enrichment terms table and the report's enrichment section (KIT-141) |
 | `submitStringDBEnrichment`, `retrieveStringDBEnrichmentResults`, `downloadStringDBResultsFile`, `downloadStringDBGraph` (rank_enrichment_stringdb.R) | KIT-141's STRING client on `httr2`: the key sent by POST only, never in a URL, record or log; a network failure refused with no partial result |
-| `runOneStringDbRankEnrichment`, `runOneStringDbRankEnrichmentMofa` (rank_enrichment_stringdb.R) | `runIntegrationEnrichment` (KIT-141; pending) |
-| `printStringDbFunctionalEnrichmentBarGraph` (rank_enrichment_stringdb.R) | KIT-141's enrichment figure (pending) |
+| `runOneStringDbRankEnrichment`, `runOneStringDbRankEnrichmentMofa` (rank_enrichment_stringdb.R) | `runIntegrationEnrichment` (KIT-141) |
+| `printStringDbFunctionalEnrichmentBarGraph` (rank_enrichment_stringdb.R) | The enrichment terms table (KIT-141) |
 
 ## The equivalence result (MOFA2 lane run 44864211198, package 2a447b19; first run 44862754575 at adfac89c the same)
 
@@ -93,3 +93,65 @@ MOFA2 1.22.0, mofapy2 0.7.3. MOFA2's defaults checked to be seed 42, 1,000 round
 Stated as: the module reproduces the reference workbook's MOFA2 configuration exactly on synthetic data (identical
 factors, weights and variance explained; the inputs agree to the last bit before MOFA2 rounds them to single
 precision). Evidence: `equivalence.tsv`, `settings.json` in the run's artifact (`kit142/kit143/`).
+
+## Functions the workbook calls (all internal, through `MultiScholaR:::`; for an export decision)
+
+In the order the workbook first calls them; 51 functions and 3 constants. The workbook also reads one internal field,
+`manager$.context$snapshot$exports$integration_mofa_model$parameters` (the accepted model's parameters), in sections 5 and 6.
+
+| Name | Defined in |
+|---|---|
+| `integrationScanProject` | `R/utils_integration_gui.R` |
+| `integrationScanDisplay` | `R/utils_integration_gui.R` |
+| `integrationImportRequest` | `R/utils_integration_gui.R` |
+| `integrationScanReadyViews` | `R/utils_integration_gui.R` |
+| `newIntegrationStateOwner` | `R/utils_workflow_integration_model.R` |
+| `importIntegrationInputs` | `R/utils_workflow_integration_model.R` |
+| `integrationImportedObject` | `R/utils_integration_gui.R` |
+| `INTEGRATION_PREVIEW_FIELDS` | `R/utils_integration_gui.R` |
+| `integrationReadSampleMatch` | `R/utils_integration_gui.R` |
+| `integrationAlignmentPreview` | `R/utils_integration_gui.R` |
+| `integrationAlignmentFacts` | `R/utils_integration_gui.R` |
+| `integrationAlignmentViewTable` | `R/utils_integration_gui.R` |
+| `integrationAlignmentSampleTable` | `R/utils_integration_gui.R` |
+| `integrationSampleMatchTemplate` | `R/utils_workflow_integration_model.R` |
+| `integrationStateManifests` | `R/utils_workflow_integration_model.R` |
+| `integrationSaveDesign` | `R/utils_integration_gui.R` |
+| `integrationSaveSampleMatch` | `R/utils_integration_gui.R` |
+| `integrationMofaParameterSpec` | `R/utils_workflow_integration_model.R` |
+| `integrationMofaParameterTable` | `R/utils_workflow_integration_model.R` |
+| `integrationGuiTexts` | `R/utils_integration_gui.R` |
+| `INTEGRATION_GUI_MATCHING_PARAMETERS` | `R/utils_integration_gui.R` |
+| `integrationModelParameters` | `R/utils_integration_gui.R` |
+| `runIntegrationModel` | `R/utils_workflow_integration_model.R` |
+| `integrationConfirmationRecord` | `R/utils_integration_record.R` |
+| `integrationModelSummary` | `R/utils_integration_gui.R` |
+| `integrationResultsParameterSpec` | `R/utils_integration_results.R` |
+| `integrationResultsParameterTable` | `R/utils_integration_results.R` |
+| `integrationResults` | `R/utils_integration_results.R` |
+| `integrationPlotVariance` | `R/utils_integration_results.R` |
+| `integrationPlotVarianceTotal` | `R/utils_integration_results.R` |
+| `integrationResultsVarianceTable` | `R/utils_integration_results.R` |
+| `integrationResultsStabilityTable` | `R/utils_integration_results.R` |
+| `integrationPlotFactorsByGroup` | `R/utils_integration_results.R` |
+| `integrationClaimLimitText` | `R/utils_integration_results.R` |
+| `integrationResultsAssociationTable` | `R/utils_integration_results.R` |
+| `integrationPlotWeights` | `R/utils_integration_results.R` |
+| `integrationPlotFactorCorrelation` | `R/utils_integration_results.R` |
+| `integrationResultsCorrelationTable` | `R/utils_integration_results.R` |
+| `integrationPlotFactorPairs` | `R/utils_integration_results.R` |
+| `integrationPlotTopFeatureScatter` | `R/utils_integration_results.R` |
+| `integrationPlotTopFeatureHeatmap` | `R/utils_integration_results.R` |
+| `integrationMapCaution` | `R/utils_integration_results.R` |
+| `integrationPlotFactorMap` | `R/utils_integration_results.R` |
+| `integrationSaveResults` | `R/utils_integration_results.R` |
+| `integrationEnrichmentParameterSpec` | `R/utils_integration_enrichment.R` |
+| `integrationViewOmics` | `R/utils_workflow_integration_model.R` |
+| `INTEGRATION_ENRICHMENT_DATABASES` | `R/utils_integration_enrichment.R` |
+| `integrationDownloadKeggMapping` | `R/utils_integration_enrichment.R` |
+| `integrationDownloadReactomeMapping` | `R/utils_integration_enrichment.R` |
+| `runIntegrationEnrichment` | `R/utils_integration_enrichment.R` |
+| `integrationEnrichmentSummary` | `R/mod_integration_enrichment.R` |
+| `integrationWriteRecordBundle` | `R/utils_integration_record.R` |
+| `closeWorkflowStateOwner` | `R/utils_workflow_dia_state.R` |
+| `replayIntegrationProject` | `R/utils_integration_record.R` |

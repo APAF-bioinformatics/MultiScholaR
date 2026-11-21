@@ -1,7 +1,8 @@
 # KIT-143: the integration workbook rewritten over the module (plan item H), checked without MOFA2. Declared before the
 # run:
 #   - the shipped workbook is the thin one: its code parses, every function it takes from the package exists there, it
-#     reads the model's and the results' settings from their tables, and it holds no credential; the stub
+#     reads the model's, the results' and the enrichment's settings from their tables, it holds no credential and reads
+#     the STRING key from STRING_API_KEY (never a parameter); the stub
 #     MultiOmics_workflow_starter.rmd is gone (fails on the old workbook: it names functions the package does not have
 #     and carries a key);
 #   - the reference workbook's sort-order sample matching (`x[, sort(colnames(x))]` per omic, paired by position)
@@ -43,13 +44,17 @@ test_that("KIT-143: the shipped integration workbook is the thin one over the mo
     for (entry in c("newIntegrationStateOwner", "importIntegrationInputs", "integrationAlignmentPreview",
         "runIntegrationModel", "integrationResults", "integrationSaveResults", "integrationPlotFactorPairs",
         "integrationPlotTopFeatureScatter", "integrationPlotTopFeatureHeatmap", "integrationWriteRecordBundle",
-        "replayIntegrationProject", "integrationMofaParameterSpec", "integrationResultsParameterSpec")) {
+        "replayIntegrationProject", "integrationMofaParameterSpec", "integrationResultsParameterSpec",
+        "integrationEnrichmentParameterSpec", "runIntegrationEnrichment")) {
         expect_true(entry %in% names, info = entry)
     }
     # No credential: no long literal string of letters and digits (a key), and no key assigned from a literal.
     text <- readLines(intWbPath(), warn = FALSE)
     expect_false(any(grepl("[\"'][A-Za-z0-9]{20,}[\"']", text)))
     expect_false(any(grepl("(api_?key|caller_identity|token)\\s*(=|<-)\\s*[\"']", text, ignore.case = TRUE)))
+    # KIT-141, INT-21: the STRING key is read from STRING_API_KEY (or asked for), never a parameter of the workbook.
+    expect_true(any(grepl("Sys.getenv(\"STRING_API_KEY\"", code, fixed = TRUE)))
+    expect_false(any(grepl("key", sub(":.*$", "", text[seq_len(match("---", text[-1L]) + 1L)]), ignore.case = TRUE)))
 })
 
 test_that("KIT-143: the reference workbook's sort-order matching misaligns samples whose run names differ; the module's does not", {

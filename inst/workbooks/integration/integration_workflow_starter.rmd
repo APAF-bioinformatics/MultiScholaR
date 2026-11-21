@@ -14,7 +14,7 @@ params:
 ---
 
 ```{r wb-setup, include = FALSE}
-# Chunk labels start with wb- so that the report this workbook renders in section 9 (itself an R Markdown file
+# Chunk labels start with wb- so that the report this workbook renders in section 10 (itself an R Markdown file
 # with chunks named setup, results and outputs) does not clash with them.
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = TRUE)
 ```
@@ -24,10 +24,10 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = TRUE)
 This workbook runs the same integration as the Integration tab of the MultiScholaR app, step by step, by calling
 the functions the app calls. It reads the tables each omic's workflow saved at its Summary step, matches the
 samples across omics, trains a MOFA2 model, shows and saves the results, writes the analysis record and report,
-and repeats the analysis from its record to show that it gives the same model.
+enriches a factor, and repeats the analysis from its record to show that it gives the same model.
 
-Every setting comes from the module's settings tables (sections 5 and 6), never from numbers typed here. To change
-a setting, put its name and new value in `model_overrides` or `results_overrides`.
+Every setting comes from the module's settings tables (sections 5, 6 and 9), never from numbers typed here. To change
+a setting, put its name and new value in `model_overrides`, `results_overrides` or `enrichment_overrides`.
 
 **What has been checked against the reference workbook.** The module reproduces the reference workbook's MOFA2
 configuration exactly on synthetic data. This shows that the module calls MOFA2 as that workbook did when given the
@@ -143,13 +143,24 @@ model_spec <- MultiScholaR:::integrationMofaParameterSpec()
 knitr::kable(MultiScholaR:::integrationMofaParameterTable())
 ```
 
-To change a setting, name it here, for example `list(num_factors = 8L)`. How samples are matched (technical
+**Which values each data set enters the model with.** By default each omic's normalised values before correction
+for unwanted variation (RUV); the RUV-corrected values can be chosen when every data set in the model has them.
+
+```{r wb-input-matrix}
+writeLines(MultiScholaR:::integrationGuiTexts()[["help_input_matrix"]])
+input_matrix <- model_spec$input_matrix$default # or "ruv_corrected"
+stopifnot(input_matrix %in% model_spec$input_matrix$choices)
+input_matrix
+```
+
+To change another setting, name it here, for example `list(num_factors = 8L)`. How samples are matched (technical
 replicates, internal standards, missing samples) is fixed by the confirmed match above, as in the app.
 
 ```{r wb-model-train}
 model_overrides <- list()
 stopifnot(all(names(model_overrides) %in% names(model_spec)))
 settings <- lapply(model_spec, `[[`, "default")
+settings$input_matrix <- input_matrix
 settings[names(model_overrides)] <- model_overrides
 settings <- settings[setdiff(names(settings), MultiScholaR:::INTEGRATION_GUI_MATCHING_PARAMETERS)]
 # Without a feature selection there is no number of features to keep and no observed share.
@@ -242,7 +253,80 @@ saved <- MultiScholaR:::integrationSaveResults(manager, run$reference, results, 
 c(saved$tables, saved$figures)
 ```
 
-# 9. Record and report
+# 9. Enrichment of a factor
+
+Each factor's data sets are enriched by ranking every measured feature by its correlation with the factor:
+protein and gene data sets against STRING, metabolite and lipid data sets against KEGG and Reactome. The settings
+and their defaults:
+
+```{r wb-enrichment-settings}
+enrichment_spec <- MultiScholaR:::integrationEnrichmentParameterSpec()
+knitr::kable(data.frame(setting = names(enrichment_spec),
+    default = vapply(enrichment_spec, function(entry) paste(format(entry$default), collapse = ""), character(1)),
+    settled_by = vapply(enrichment_spec, `[[`, character(1), "settled_by"), row.names = NULL))
+```
+
+STRING needs your own key. It is read from the environment variable `STRING_API_KEY`, or asked for when the
+workbook is run by hand; it is used for the query only and is never written to the project, the record or this
+page. Without a key STRING is skipped. KEGG and Reactome need the column of a metabolite or lipid data set's feature
+table that holds KEGG compound or ChEBI identifiers: name it in `enrichment_id_columns`, for example
+`list(metabolomics_LCMS_Pos = "kegg_id")`; the pathway tables are then downloaded with their release recorded.
+
+```{r wb-enrichment}
+enrichment_overrides <- list()
+enrichment_id_columns <- list()
+enrichment_factor <- results$shown[[1L]]
+stopifnot(all(names(enrichment_overrides) %in% names(enrichment_spec)))
+enrichment_settings <- lapply(enrichment_spec, `[[`, "default")
+enrichment_settings[names(enrichment_overrides)] <- enrichment_overrides
+string_key <- Sys.getenv("STRING_API_KEY", unset = "")
+if (!nzchar(string_key) && interactive()) {
+    string_key <- if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+        rstudioapi::askForPassword("Your STRING key (used for this query only, never saved)")
+    } else {
+        readline("Your STRING key (used for this query only, never saved): ")
+    }
+}
+view_omics <- MultiScholaR:::integrationViewOmics(MultiScholaR:::integrationImportedObject(manager, "inputs"))
+enrichments <- list()
+for (view in results$views) {
+    omic <- view_omics[[view]]
+    databases <- MultiScholaR:::INTEGRATION_ENRICHMENT_DATABASES[[omic]]
+    for (database in databases) {
+        if (database == "string" && !nzchar(string_key)) {
+            writeLines(sprintf("%s: STRING skipped (no key).", view))
+            next
+        }
+        if (database != "string" && is.null(enrichment_id_columns[[view]])) {
+            writeLines(sprintf("%s: %s skipped (no identifier column named).", view, toupper(database)))
+            next
+        }
+        request <- c(list(factor = enrichment_factor, view = view, database = database), enrichment_settings)
+        mapping <- NULL
+        if (database != "string") {
+            request$id_column <- enrichment_id_columns[[view]]
+            mapping <- if (database == "kegg") {
+                MultiScholaR:::integrationDownloadKeggMapping(enrichment_settings$kegg_organism)
+            } else {
+                MultiScholaR:::integrationDownloadReactomeMapping()
+            }
+        }
+        enrichment <- tryCatch(MultiScholaR:::runIntegrationEnrichment(manager, request,
+            api_key = if (database == "string") string_key, mapping = mapping),
+            integration_refused = function(condition) {
+                writeLines(sprintf("%s, %s: %s", view, database, conditionMessage(condition)))
+                NULL
+            })
+        if (is.null(enrichment)) next
+        enrichments[[paste(view, database)]] <- enrichment
+        writeLines(MultiScholaR:::integrationEnrichmentSummary(enrichment$run$value))
+        print(knitr::kable(utils::head(as.data.frame(enrichment$run$value$terms), 20L)))
+    }
+}
+rm(string_key)
+```
+
+# 10. Record and report
 
 The analysis record, the study parameters, the report, the model file and the sample match are written to the
 project's study report folder. The methods paragraph below is written from the record.
@@ -253,7 +337,7 @@ basename(bundle$files)
 writeLines(bundle$methods)
 ```
 
-# 10. Repeat the analysis from its record
+# 11. Repeat the analysis from its record
 
 The store is closed, reopened and the analysis repeated from its record alone; the repeated model is compared
 with the saved one.
@@ -263,4 +347,6 @@ MultiScholaR:::closeWorkflowStateOwner(manager)
 replay <- MultiScholaR:::replayIntegrationProject(store_root, tempfile("integration-replay-", tmpdir = paths$source_dir))
 knitr::kable(replay$comparison$tables)
 if (!is.null(replay$outputs_comparison)) knitr::kable(replay$outputs_comparison$tables)
+# The enrichments are repeated from their recorded answers and tables, without querying the services again.
+if (!is.null(replay$enrichment_comparison)) knitr::kable(replay$enrichment_comparison)
 ```

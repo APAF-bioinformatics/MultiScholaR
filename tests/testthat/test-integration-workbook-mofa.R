@@ -29,7 +29,9 @@
 #     (implementation conformance; nothing about the module's defaults, the collaborator's data or results).
 #   - The workbook (inst/workbooks/integration/integration_workflow_starter.rmd) renders end to end on a project holding
 #     the corpus, with its default settings: it writes the results, the record and report, and its repeat from the
-#     record equals the saved model within 1e-5 relative.
+#     record equals the saved model within 1e-5 relative; the enrichment section runs STRING (stood in, no network) for
+#     the protein and gene data sets with the key from STRING_API_KEY, which reaches the query and no file or page, and
+#     the repeat gives the same ranking and terms from the recorded answer.
 # MULTISCHOLAR_INTEGRATION_EVIDENCE_OUT set: the comparison, both sides' settings, the maths libraries and the rendered
 # workbook are written to its kit143 folder.
 
@@ -288,6 +290,26 @@ test_that("KIT-143: the integration workbook renders end to end on the corpus an
     dir.create(scripts, recursive = TRUE)
     workbook <- file.path(scripts, basename(intWbmWorkbook()))
     stopifnot(file.copy(intWbmWorkbook(), workbook))
+    # KIT-141 (INT-21): STRING stood in, in the client's form (no network); the key a sentinel from STRING_API_KEY.
+    key <- "kit143-lane-sentinel-not-a-real-key-Qz7w"
+    withr::local_envvar(STRING_API_KEY = key)
+    seen <- new.env()
+    seen$keys <- character()
+    terms <- paste0("category\tterm\tdescription\tenrichment_score\tfalse_discovery_rate\n",
+        "Process\tGO:0008150\tbiological_process\t1.4\t0.002\n", "KEGG\thsa04110\tCell cycle\t-1.1\t0.03\n")
+    testthat::local_mocked_bindings(integrationStringRankedEnrichment = function(ranked, api_key, species, options) {
+        seen$keys <- c(seen$keys, api_key)
+        text <- integrationStringIdentifiersText(ranked)
+        list(service = "STRING", method = "valuesranks_enrichment",
+            version = list(string_version = "12.5", string_stable_address = options$host),
+            request = list(host = options$host, method = "valuesranks_enrichment", species = as.character(species),
+                ge_fdr = options$ge_fdr, rank_direction = as.integer(options$rank_direction),
+                caller_identity = options$caller_identity, identifiers = nrow(ranked),
+                identifiers_sha256 = digest::digest(text, algo = "sha256", serialize = FALSE), polls = 1L,
+                queried_at = "2026-11-21T00:00:00.000+0000"),
+            response = list(submission = list(job_id = "lane"), status = list(status = "success"), results_tsv = terms),
+            terms = integrationStringTermsTable(terms))
+    }, .package = "MultiScholaR")
     env <- new.env(parent = globalenv())
     html <- rmarkdown::render(workbook, output_dir = scripts, intermediates_dir = withr::local_tempdir(),
         params = list(project_dir = project), envir = env, quiet = TRUE)
@@ -302,6 +324,21 @@ test_that("KIT-143: the integration workbook renders end to end on the corpus an
     message(sprintf("KIT-143 workbook rendered (%d bytes); its repeat from the record: equal %s, identical %s, largest relative %.3g",
         as.integer(file.size(html)), comparison$equal, comparison$identical, comparison$largest_relative))
     expect_true(isTRUE(comparison$equal))
+    # The enrichment: STRING for the protein and gene data sets with the key from the environment, KEGG and Reactome
+    # skipped (no identifier column named); recorded and repeated offline from the recorded answer.
+    expect_setequal(names(env$enrichments), c("proteomics string", "transcriptomics string"))
+    expect_identical(seen$keys, rep(key, 2L))
+    expect_false(exists("string_key", envir = env, inherits = FALSE))
+    replayed <- env$replay$enrichment_comparison
+    message("KIT-143 enrichment repeated from the record:\n", paste(utils::capture.output(print(replayed)), collapse = "\n"))
+    expect_identical(nrow(replayed), 2L)
+    expect_true(all(replayed$ranking_equal) && all(replayed$terms_equal))
+    record <- jsonlite::read_json(env$bundle$files[[1L]], simplifyVector = FALSE)
+    expect_length(record$analyses$integration_mofa_model$integration$enrichment, 2L)
+    files <- c(html, list.files(project, recursive = TRUE, full.names = TRUE, all.files = TRUE))
+    holding <- files[vapply(files, function(path) length(grepRaw(key, readBin(path, "raw", file.info(path)$size),
+        fixed = TRUE)) > 0L, logical(1))]
+    expect_identical(holding, character())
     evidence <- intWbmEvidence()
     if (!is.null(evidence)) file.copy(c(html, env$bundle$files[c(1L, 3L)]), evidence, overwrite = TRUE)
 })
