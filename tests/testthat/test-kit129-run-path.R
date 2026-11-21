@@ -1069,14 +1069,30 @@ test_that("(sixth pass M36) each limit's measured consequences are its approach'
     # found identical (32 in classic and DIA, 31 in transcriptomics) for the recommended design's C0 and C5
     sources <- unlist(consequences[startsWith(names(consequences), "source_")], use.names = FALSE)
     sources <- sources[!is.na(sources)]
+    # (M42) and, at association 0.6, the same binding's measurement of the shipped arms (No RUV in classic: arm 37)
     expect_true(all(startsWith(sources, "confirm-gha/") | grepl("^exact-gha/k124-cells.tsv arm 3[12] C[05]$", sources) |
-        grepl("^final-20261118/s2/k124-cells.tsv arm 1 S3$", sources)))
+        grepl("^final-20261118/s2/k124-cells.tsv arm 1 S3$", sources) |
+        grepl("^confirm06-gha/s[1-4]/k124-cells.tsv arm (34|35|37|40) S3$", sources)))
     # M36's quoted figures for the recommended design, as shipped after the confirmation round
     recommended <- consequences[consequences$ruv_design == "groups_all_features", ]
     expect_identical(sprintf("%.3f", unlist(recommended[recommended$omic == "proteomics", c("fdp_0", "fdp_03", "fdp_06", "uncorrected_06")])),
-        c("0.055", "0.058", "NA", "NA"))
+        c("0.055", "0.058", "0.063", "0.593"))
     expect_identical(sprintf("%.3f", unlist(recommended[recommended$omic == "lipidomics", c("fdp_0", "fdp_03", "fdp_06", "uncorrected_06")])),
         c("0.072", "0.085", "0.148", "0.642"))
+    # (M42) association 0.6 is measured for every approach, as final-figures.tsv rounds it; classic without correction
+    # is the shipped "No RUV" (arm 37)
+    expect_false(anyNA(consequences[c("fdp_06", "uncorrected_06")]))
+    percent <- function(x) sprintf("%.1f%%", 100 * x)
+    expect_identical(stats::setNames(percent(consequences$fdp_06), key(consequences)), c(
+        "proteomics groups_all_features num_sv_be" = "6.3%", "proteomics supplied_controls num_sv_be" = "6.0%",
+        "proteomics first_pass_nulls sweep_bounded" = "28.0%", "dia_limpa groups_all_features num_sv_be" = "6.6%",
+        "dia_limpa supplied_controls num_sv_be" = "7.3%", "dia_limpa first_pass_nulls sweep_bounded" = "30.2%",
+        "transcriptomics groups_all_features num_sv_be" = "5.2%", "transcriptomics supplied_controls num_sv_be" = "4.8%",
+        "transcriptomics first_pass_nulls sweep_bounded" = "9.6%", "lipidomics groups_all_features num_sv_be" = "14.8%",
+        "lipidomics supplied_controls num_sv_be" = "13.6%", "lipidomics first_pass_nulls sweep_bounded" = "56.2%",
+        "metabolomics groups_all_features num_sv_be" = "14.8%", "metabolomics supplied_controls num_sv_be" = "13.6%",
+        "metabolomics first_pass_nulls sweep_bounded" = "56.2%"))
+    expect_identical(unique(percent(consequences$uncorrected_06[consequences$omic == "proteomics"])), "59.3%")
     # a check against a limit records its approach's figures
     group <- rep(c("A", "B"), each = 6L)
     check <- ruvGroupAssociationCheck(cbind(W1 = rep(c(1, -1), 6L)), group, "transcriptomics", "groups_all_features", "num_sv_be")

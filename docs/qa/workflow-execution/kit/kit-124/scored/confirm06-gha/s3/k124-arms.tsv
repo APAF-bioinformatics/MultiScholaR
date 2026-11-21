@@ -1,0 +1,5 @@
+simulator	arm	subset	primary	ruv_design	verdict	verdict_without_rule4_in_C4	judged_core_cells	void_core_cells	core_cells_not_run	failing_core_cells	inconclusive_core_cells	stress_cells_failing	stress_cells_void	reported_cells	mean_fdp10_share_core	power_C0	refused_designed	refused_method	crashed	runs	arm1_rules_1_2_6_7
+S3	1	full	TRUE	FALSE	not judged	not judged			C0,C1,C2,C3,C4,C5,C7			S3(1,2,3,4)			NA	NA	0	0	0	500	not judged
+S3	2	full	TRUE	FALSE	not judged	not judged			C0,C1,C2,C3,C4,C5,C7						NA	NA	0	0	0	500	NA
+S3	35	full	TRUE	FALSE	not judged	not judged			C0,C1,C2,C3,C4,C5,C7						NA	NA	0	0	0	500	NA
+S3	40	full	TRUE	FALSE	not judged	not judged			C0,C1,C2,C3,C4,C5,C7			S3(1,2,3)			NA	NA	0	0	0	500	NA

@@ -1,0 +1,24 @@
+simulator	cell	role	status	runs	void_subsets	arm2_rule12	realised_missing_share	realised_factor_group_cor
+S2	C0	core	not run	0			NA	NA
+S2	C1	core	not run	0			NA	NA
+S2	C2	core	not run	0			NA	NA
+S2	C3	core	not run	0			NA	NA
+S2	C4	core	not run	0			NA	NA
+S2	C5	core	not run	0			NA	NA
+S2	C6	core	not run	0			NA	NA
+S2	C7	core	not run	0			NA	NA
+S2	C8	reported	not run	0			NA	NA
+S2	S1	stress	not run	0			NA	NA
+S2	S2	stress	not run	0			NA	NA
+S2	S3	stress	run	500		full:pass	0.255078	0.613259
+S2	S4	stress	not run	0			NA	NA
+S2	S5	stress	not run	0			NA	NA
+S2	S6	stress	not run	0			NA	NA
+S2	S7	stress	not run	0			NA	NA
+S2	S8	stress	not run	0			NA	NA
+S2	S9	stress	not run	0			NA	NA
+S2	S10	stress	not run	0			NA	NA
+S2	S11	stress	not run	0			NA	NA
+S2	S12	stress	not run	0			NA	NA
+S2	S13	stress	not run	0			NA	NA
+S2	S14	stress	not run	0			NA	NA

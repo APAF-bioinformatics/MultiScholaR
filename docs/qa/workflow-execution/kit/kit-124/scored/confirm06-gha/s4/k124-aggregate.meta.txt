@@ -1,0 +1,25 @@
+KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
+script: /home/runner/work/_temp/aggregate.R
+script sha256: 089d852c1f3b08d70096b1218ef26550f393cffd213e4bdd9980453075fd2a66
+commit: NA
+script differs from commit: TRUE
+command: Rscript /home/runner/work/_temp/aggregate.R /home/runner/work/_temp/out/confirm06-gha/s4 S4=/home/runner/work/_temp/raw/s4
+working directory: /home/runner/work/MultiScholaR/MultiScholaR
+R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
+packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
+library paths: /opt/R/4.6.1/lib/R/library
+run at: 2026-11-20 20:48:13 UTC
+inputs (sha256, bytes, path):
+  7dd3d1498bca8d17c96101c7abf321805d233012d5a4e3917d120b3e0d9d7fa2 426398 /home/runner/work/_temp/raw/s4/cells/S3.tsv
+  dbf3d250d2bbe557cedc46b79a302f9ed300a2b220ee35a9b591e8bc928804f3 14825 /home/runner/work/_temp/raw/s4/cells/S3.timing.tsv
+  5b5931b5d35be0cffde7286084910b47ae57aad644961909a61cc0411adad3cd 1407 /home/runner/work/_temp/raw/s4/s4-runs.meta.txt
+simulator S4 meta (/home/runner/work/_temp/raw/s4):
+  commit: 58160dee46eef7725a6ddd4571588dd3dd66c831
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-gha 0 500 4 S3
+  cells: S3
+  runs: core 0, stress 500, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21 (arms 25 to 33: the stream of the arm each varies); E = seed * 100 + 99; cell index of C8 = 22
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-20 19:17:26 finished: 2026-11-20 19:33:25
