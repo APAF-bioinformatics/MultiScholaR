@@ -1,9 +1,10 @@
 {
-  "label": "k143-final-2075c5d0",
-  "package_commit": "2075c5d028afacfc103fc152c8ac21c9d654e660",
+  "label": "k155-pages-f263bc6d",
+  "package_commit": "f263bc6db75a63dd7abf2281b2f711cf98b6c457",
   "tests": [
-    "test-integration-workbook-mofa.R",
-    "test-integration-record.R"
+    "test-integration-partitioned-mofa.R",
+    "test-integration-mofa-model.R",
+    "test-integration-enrichment-mofa.R"
   ],
   "record": false,
   "runs": 1
