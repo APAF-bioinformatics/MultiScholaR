@@ -965,6 +965,11 @@ integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_r
             storage.mode(m) <- "double"
             rownames(m) <- if (isTRUE(prefix_rows)) paste(view, page[[1L]], sep = ":") else as.character(page[[1L]])
             if (drop_standards) m <- m[!standards[[view]][offset + seq_len(nrow(m))], , drop = FALSE]
+            # KIT-155: a page of internal standards only leaves no row (the averaging needs at least one).
+            if (!nrow(m)) {
+                return(list(values = matrix(NA_real_, 0L, length(plan$kept), dimnames = list(character(), plan$kept)),
+                    sparse = 0L, constant = 0L))
+            }
             integrationAlignedRows(integrationAverageRuns(m, keys[[view]]), plan$kept, zscore, min_observed)
         }
         # Pass 1: the counts, and the selection statistics (mean, variance) of every feature left.

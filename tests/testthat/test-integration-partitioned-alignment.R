@@ -181,7 +181,7 @@ test_that("KIT-155: rows per page from the byte budget, within 1 and 10,000", {
     expect_identical(integrationPageRows(104L), 10000L)
     expect_identical(integrationPageRows(105L), 9986L)
     expect_identical(integrationPageRows(201L), 5216L)
-    expect_identical(integrationPageRows(501L), 2093L)
+    expect_identical(integrationPageRows(501L), 2092L)
     expect_identical(integrationPageRows(71L, 3333 * 8 * 71), 3333L)
     expect_identical(integrationPageRows(71L, 1), 1L)
     expect_identical(integrationPageRows(2L, 1e12), 10000L)
