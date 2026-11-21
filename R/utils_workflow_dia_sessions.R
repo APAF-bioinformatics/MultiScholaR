@@ -43,7 +43,9 @@ runDIANativeTarR <- function(arguments, log_path, output_path = NULL) {
             members <- c(members, member)
         }
         previous <- setwd(staging)
-        on.exit(setwd(previous), add = TRUE)
+        # KIT-156 (D-1): restored before the staging folder is removed (`after = FALSE`); Windows cannot remove the
+        # current directory and left every staged copy in TMP.
+        on.exit(setwd(previous), add = TRUE, after = FALSE)
         status <- utils::tar(output_path, files = members, compression = "none", tar = "internal")
         if (!identical(as.integer(status), 0L) && !is.null(status) && !isTRUE(status == 0)) cli::cli_abort("native archive creation failed", class = "saved_entity_write")
         return(character())
