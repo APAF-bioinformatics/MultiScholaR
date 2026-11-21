@@ -785,6 +785,43 @@ test_that("KIT-141: the record, its sheets, study parameters, methods paragraph 
     })
 })
 
+test_that("KIT-141: the record's workbook reads back, every sheet, without and with an enrichment (run-tests 44799395381)", {
+    paths <- intEnrProject()
+    fixture <- intEnrModel(paths)
+    manager <- fixture$manager
+    texts <- integrationRecordTexts()
+    readBack <- function(name) {
+        record <- buildWorkflowAnalysisRecord(manager)
+        tables <- workflowAnalysisRecordTables(record)
+        path <- file.path(paths$base_dir, paste0(name, ".xlsx"))
+        writeWorkflowAnalysisRecordWorkbook(record, path)
+        sheets <- openxlsx::getSheetNames(path)
+        expect_true(all(INTEGRATION_RECORD_SHEETS %in% sheets))
+        for (sheet in sheets) {
+            expect_no_error(suppressWarnings(openxlsx::read.xlsx(path, sheet = sheet, colNames = FALSE)))
+        }
+        for (sheet in INTEGRATION_RECORD_SHEETS) {
+            expect_false(anyNA(names(tables[[sheet]])), info = sheet)
+            cells <- openxlsx::read.xlsx(path, sheet = sheet, colNames = FALSE, skipEmptyRows = FALSE)
+            expect_identical(unname(unlist(cells[1L, ])), names(tables[[sheet]]), info = sheet)
+        }
+        lapply(c("integration_enrichment", "integration_enrichment_terms"), function(sheet)
+            openxlsx::read.xlsx(path, sheet = sheet, check.names = FALSE))
+    }
+    none <- readBack("without")
+    expect_identical(none[[1L]][[texts[["col_factor"]]]], texts[["none_recorded"]])
+    expect_identical(none[[2L]][[texts[["col_factor"]]]], texts[["none_recorded"]])
+    local({
+        intEnrLocalString()
+        runIntegrationEnrichment(manager, list(factor = "Factor1", view = "proteomics", database = "string"),
+            api_key = SENTINEL_KEY, query = intEnrQuery)
+    })
+    enriched <- readBack("with")
+    expect_identical(enriched[[1L]][[texts[["col_factor"]]]], "Factor1")
+    expect_identical(enriched[[1L]][[texts[["col_enrich_database"]]]], "STRING")
+    expect_identical(enriched[[2L]][[texts[["col_enrich_term"]]]], c("hsa00010", "GO:0008150"))
+})
+
 test_that("KIT-141: no enrichment result is reused after its settings or the model change", {
     paths <- intEnrProject()
     fixture <- intEnrModel(paths)

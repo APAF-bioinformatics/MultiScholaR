@@ -263,6 +263,9 @@ integrationRecordTexts <- function() {
         # KIT-141: the enrichment of the factors, in the record's tables, study parameters, report and methods paragraph.
         section_enrichment = "Enrichment of the factors",
         section_enrichment_terms = "Enriched terms and pathways",
+        # The enrichment sheets' first header. Without it the header was NA, and one NA string empties the workbook's
+        # whole shared-string table as openxlsx writes it (run-tests 44799395381).
+        col_factor = "Factor",
         col_enrich_database = "Database",
         col_enrich_release = "Release",
         col_enrich_ranking = "How features were ranked",

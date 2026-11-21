@@ -1375,7 +1375,7 @@ integrationRecordEnrichmentTables <- function(block, texts = integrationRecordTe
             tests = as.character(as.integer(s(entry$tests))), family = text(entry$family), checksum = text(entry$stored_sha256),
             stringsAsFactors = FALSE)
     })
-    # Without an enrichment, one row saying so (a sheet of headers only broke the record's workbook, run-tests 44789367190).
+    # Without an enrichment, one row saying so.
     none <- function(n) as.data.frame(as.list(c(texts[["none_recorded"]], rep("", n - 1L))), stringsAsFactors = FALSE)
     summary <- if (length(summary)) do.call(rbind, summary) else none(10L)
     names(summary) <- unname(texts[c("col_factor", "col_view", "col_enrich_database", "col_enrich_release", "col_enrich_ranking",
