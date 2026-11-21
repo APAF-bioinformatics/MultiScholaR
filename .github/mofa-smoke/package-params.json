@@ -1,14 +1,8 @@
 {
-  "label": "k151-verify2-c46493d8",
-  "package_commit": "c46493d886dd4fc23e42f0c5c250a1b2090a1f26",
+  "label": "k143-adfac89c",
+  "package_commit": "adfac89cfbeddb33a0f2d66ed9794686bb93ef9c",
   "tests": [
-    "test-integration-partitioned-mofa.R",
-    "test-integration-mofa-model.R",
-    "test-integration-outputs-mofa.R",
-    "test-integration-outputs.R",
-    "test-integration-model-tab-mofa.R",
-    "test-integration-results-mofa.R",
-    "test-integration-record-mofa.R"
+    "test-integration-workbook-mofa.R"
   ],
   "record": false,
   "runs": 1
