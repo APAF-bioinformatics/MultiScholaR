@@ -1,0 +1,46 @@
+{
+  "requested_by": "KIT-143: integration workbook over the module; static workbook checks and the sort-order matching test, base versus head, failing-first, check, gate off",
+  "label": "KIT-143 workbook on kit-143-integration-workbook adfac89c",
+  "package_commit": "adfac89cfbeddb33a0f2d66ed9794686bb93ef9c",
+  "base_commit": "34baf97283863ba509f2dbb3ebed906563812878",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-workbook.R",
+    "test-integration-sample-match.R",
+    "test-integration-gui.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "34baf97283863ba509f2dbb3ebed906563812878",
+        "kit143-gate-off"
+      ],
+      "out": "kit143-gate-off",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "34baf97283863ba509f2dbb3ebed906563812878",
+        "kit143-failing-first",
+        "test-integration-workbook.R"
+      ],
+      "out": "kit143-failing-first",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
