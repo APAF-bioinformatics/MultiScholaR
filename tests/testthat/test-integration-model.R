@@ -71,7 +71,8 @@ test_that("KIT-062: the inputs state aligns the views on the biological sample, 
         unname(vapply(read$manifests, function(path) digest::digest(file = path, algo = "sha256"), character(1))))
     expect_identical(names(object@design_matrix), c("omic", "run", "group", "biological_sample"))
     expect_identical(object@inputs$lipidomics$biological_sample_column, "tech_rep_group")
-    parameters <- integrationResolveMofaParameters(object)
+    # The values as saved (KIT-151: the z-score is the default since INT-24; it is checked below).
+    parameters <- integrationResolveMofaParameters(object, list(scaling = "none"))
     expect_identical(names(parameters), integrationMofaParameterNames())
     expect_identical(parameters$views, c("lipidomics_LCMS_Pos", "proteomics"))
     expect_warning(aligned <- integrationAlignViews(object, parameters), class = "integration_few_samples")
@@ -99,7 +100,8 @@ test_that("KIT-062: the inputs state aligns the views on the biological sample, 
     expect_identical(samples$lipidomics_LCMS_Pos_runs, c("l1;l2", "l3;l4", "", "l5;l6", "l7;l8"))
     expect_identical(samples$proteomics_runs, c("p1", "p2", "p3", "p4", "p5"))
     # The choices: standards kept; only the samples every view has; the most variable feature; per-feature Z-score.
-    kept <- suppressWarnings(integrationAlignViews(object, integrationResolveMofaParameters(object, list(internal_standards = "keep"))))
+    kept <- suppressWarnings(integrationAlignViews(object, integrationResolveMofaParameters(object, list(internal_standards = "keep",
+        scaling = "none"))))
     expect_identical(rownames(kept$views$lipidomics_LCMS_Pos), c("L1", "L2", "ITSD1"))
     complete <- suppressWarnings(integrationAlignViews(object, integrationResolveMofaParameters(object,
         list(missing_samples = "drop_incomplete"))))
@@ -126,9 +128,20 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
         class = "integration_parameters_invalid")
     expect_error(integrationResolveMofaParameters(object, list(scaling = "vst")), class = "integration_parameters_invalid")
     expect_error(integrationResolveMofaParameters(object, list(num_factors = 2.5)), class = "integration_parameters_invalid")
-    expect_error(integrationResolveMofaParameters(object, list(features_per_view = 10L)), class = "integration_parameters_invalid")
-    expect_error(integrationResolveMofaParameters(object, list(feature_selection = "top_variance")),
+    # KIT-151 (INT-12): the number kept and the observed share are set only with a feature selection.
+    expect_error(integrationResolveMofaParameters(object, list(feature_selection = "none", features_per_view = 10L)),
         class = "integration_parameters_invalid")
+    expect_error(integrationResolveMofaParameters(object, list(feature_selection = "none", min_observed_fraction = 0.5)),
+        class = "integration_parameters_invalid")
+    expect_error(integrationResolveMofaParameters(object, list(feature_selection = "top_variance", features_per_view = NA)),
+        class = "integration_parameters_invalid")
+    for (fraction in list(0, 1.5, NA_real_, "half")) {
+        expect_error(integrationResolveMofaParameters(object, list(min_observed_fraction = fraction)),
+            class = "integration_parameters_invalid")
+    }
+    none <- integrationResolveMofaParameters(object, list(feature_selection = "none"))
+    expect_identical(none[c("features_per_view", "min_observed_fraction")],
+        list(features_per_view = NA_integer_, min_observed_fraction = NA_real_))
     expect_error(integrationResolveMofaParameters(object, list(input_manifests = c(lipidomics = "a", proteomics = "b"))),
         class = "integration_input_stale")
     # Every refusal is also integration_refused.
@@ -142,8 +155,17 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
     table <- integrationMofaParameterTable()
     expect_identical(table$parameter, setdiff(integrationMofaParameterNames(), c("input_manifests", "views")))
     expect_true(all(nzchar(table$settled_by)))
-    # Every method choice is the workbook's to settle, except the precision, decided by the user (INT-6).
-    expect_true(all(grepl("workbook", table$settled_by[table$parameter != "precision"])))
+    # Every method choice is the workbook's to settle, except those the user decided: the precision (INT-6), the
+    # feature selection (INT-12) and the convergence (INT-15; KIT-151).
+    decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "precision", "convergence_mode", "maxiter",
+        "scaling", "scale_views")
+    expect_true(all(grepl("workbook", table$settled_by[!table$parameter %in% c(decided, "training_seeds")])))
+    # INT-14: several seeds decided; their number is provisional.
+    expect_match(table$settled_by[table$parameter == "training_seeds"], "^INT-14 .*provisional")
+    expect_true(all(grepl("^INT-12 \\(decided", table$settled_by[table$parameter %in% decided[1:3]])))
+    expect_identical(table$default[table$parameter %in% decided[1:3]], c("variance_above_trend", "1000", "0.5"))
+    expect_true(all(grepl("^INT-15 \\(decided", table$settled_by[table$parameter %in% decided[5:6]])))
+    expect_identical(table$default[table$parameter %in% decided[5:6]], c("slow", "10000"))
     expect_identical(table$default[table$parameter == "precision"], "double")
     expect_match(table$settled_by[table$parameter == "precision"], "INT-6")
     expect_identical(integrationResolveMofaParameters(object)$precision, "double")
@@ -332,8 +354,8 @@ test_that("KIT-147: a data set of more than 64 runs and 10,000 features imports 
     stored <- withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, source,
         fields = "views/proteomics"))
     expect_identical(as.list(stored@views$proteomics), expected)
-    # The model's path runs on the streamed state (a stand-in trainer).
-    run <- suppressWarnings(runIntegrationModel(manager, trainer = intModelFakeTrainer))
+    # The model's path runs on the streamed state (a stand-in trainer; every feature, as KIT-147 had it).
+    run <- suppressWarnings(runIntegrationModel(manager, list(feature_selection = "none"), trainer = intModelFakeTrainer))
     expect_identical(run$status, "computed")
     expect_identical(run$value$view_summary$features_input, c(3L, n))
     closeWorkflowStateOwner(manager)
@@ -545,21 +567,13 @@ test_that("KIT-148: a 3,000-run sample match is kept in the store; the worker's 
     tampered$sample_match <- strrep("0", 64L)
     expect_error(withWorkflowStateScope(manager, function() computeWorkflowIntegrationModelAction(manager,
         list(input_references = list(state = pre$source), parameters = tampered), "whole")), class = "integration_parameters_invalid")
-    # The same match in process is the same model: its identity carries the match's sha256.
-    again <- suppressWarnings(runIntegrationModel(manager, list(sample_match_table = template), trainer = intModelFakeTrainer))
+    # The same match in process is the same model: its identity carries the match's sha256. KIT-151 (ENG-24): in process
+    # the model is trained as on the worker (the same trainer, no stand-in argument), so both derive the software lookup
+    # factors by the same rule in the same Python state; a stand-in passed as `trainer` would key on no software at all.
+    again <- suppressWarnings(runIntegrationModel(manager, list(sample_match_table = template)))
     expect_identical(again$status, "hit")
     expect_identical(again$reference$entity_id, result$reference$entity_id)
     expect_identical(manager$.context$snapshot$exports$integration_mofa_model$parameters$sample_match_table, checked$table)
-})
-
-# KIT-148 item 2: the data handed to mofapy2 one data set at a time (`integrationRunMofapy2`), an internal switch that
-# is off by default; its model is shown equal to MOFA2's own hand-off on the MOFA2 lane (test-integration-mofa-model.R).
-test_that("KIT-148 item 2: the direct hand-off is off unless asked for, and only for MOFA2 1.22.0 with mofapy2 0.7.3", {
-    expect_identical(formals(integrationTrainMofa)$handoff, quote(getOption("MultiScholaR.integration_mofa_handoff", "run_mofa")))
-    expect_null(getOption("MultiScholaR.integration_mofa_handoff"))
-    expect_false(integrationMofaDirectHandoff("run_mofa"))
-    expect_false(integrationMofaDirectHandoff(NULL))
-    if (!requireNamespace("MOFA2", quietly = TRUE)) expect_false(integrationMofaDirectHandoff("direct"))
 })
 
 # KIT-148 (audit ENG-13): the store reads at most 10,000 rows and 64 columns at a time; the product's readers follow
@@ -576,7 +590,9 @@ test_that("KIT-148: 70 samples and 10,050 features are read in column blocks of 
     manager <- newIntegrationStateOwner(file.path(root, "project"))
     withr::defer(closeWorkflowStateOwner(manager))
     importIntegrationInputs(manager, c(big, lipid))
-    run <- suppressWarnings(runIntegrationModel(manager, trainer = intModelFakeTrainer))
+    # Every feature, as saved (KIT-151: the defaults select 1,000 features and z-score them).
+    run <- suppressWarnings(runIntegrationModel(manager, list(feature_selection = "none", scaling = "none"),
+        trainer = intModelFakeTrainer))
     value <- run$value
     expect_identical(nrow(value$samples), 70L)
     for (kind in c("weights", "aligned_values")) {
@@ -621,4 +637,198 @@ test_that("KIT-148: a model product of the earlier form is refused in plain word
     expect_error(integrationModelFileBytes(manager, v1), class = "integration_model_outdated")
     expect_error(integrationModelTablePage(manager, v1, "weights", "proteomics"), class = "integration_model_outdated")
     expect_error(integrationModelWeights(manager, v1), class = "integration_model_outdated")
+})
+
+# KIT-151 (INT-15): convergence mode slow with a limit of 10,000 rounds by default; the model keeps whether training
+# stopped by its convergence rule or at the limit, and "settled" is said only for the former.
+test_that("KIT-151 (INT-15): the model says whether training stopped by its convergence rule or at the round limit", {
+    inputs <- intModelInputs()
+    manager <- newIntegrationStateOwner(file.path(inputs$root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(inputs$proteomics, inputs$lipidomics))
+    texts <- integrationGuiTexts()
+    object <- integrationImportedObject(manager)
+    expect_identical(integrationResolveMofaParameters(object)[c("convergence_mode", "maxiter")],
+        list(convergence_mode = "slow", maxiter = 10000L))
+    at_limit <- function(views, options) {
+        fit <- intModelFakeTrainer(views, options)
+        fit$iterations <- options$maxiter
+        fit
+    }
+    run <- suppressWarnings(runIntegrationModel(manager, list(maxiter = 50L), trainer = at_limit))
+    expect_identical(run$value$elbo[c("maxiter", "stopped_by")], list(maxiter = 50L, stopped_by = "round_limit"))
+    summary <- integrationModelSummary(run$value, integrationResolveMofaParameters(object, list(maxiter = 50L)))
+    expect_false(summary$converged)
+    expect_identical(summary$convergence, sprintf(texts[["result_not_converged"]], 50L))
+    run <- suppressWarnings(runIntegrationModel(manager, trainer = intModelFakeTrainer))
+    expect_identical(run$value$elbo[c("maxiter", "stopped_by")], list(maxiter = 10000L, stopped_by = "convergence_rule"))
+    summary <- integrationModelSummary(run$value, integrationResolveMofaParameters(object))
+    expect_true(summary$converged)
+    expect_identical(summary$convergence, sprintf(texts[["result_converged"]], 2L, 10000L))
+})
+
+# KIT-151 (INT-14, audit SCI-06, SCI-20): the model is trained from several seeds (by default 5: the declared seed and
+# the next four whole numbers), one model at a time, the further ones keeping only their factors; each factor's
+# agreement across seeds (its absolute correlation with the factor of each other model it is paired with, one to one,
+# the most similar pair first) is kept with the model, shown with the results and in the methods paragraph.
+test_that("KIT-151 (INT-14): the model is trained from several seeds and each factor's agreement across them is kept", {
+    inputs <- intModelInputs()
+    manager <- newIntegrationStateOwner(file.path(inputs$root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(inputs$proteomics, inputs$lipidomics))
+    object <- integrationImportedObject(manager)
+    defaults <- integrationResolveMofaParameters(object)
+    expect_identical(defaults$training_seeds, 5L)
+    expect_identical(integrationTrainingSeeds(defaults), 20261119L + 0:4)
+    expect_error(integrationResolveMofaParameters(object, list(training_seeds = 0L)), class = "integration_parameters_invalid")
+    expect_error(integrationResolveMofaParameters(object, list(seed = .Machine$integer.max, training_seeds = 2L)),
+        class = "integration_parameters_invalid")
+    # Each seed's model: the second factor of the seed 20261120 model is the first's, sign flipped; its third factor
+    # is new (half the samples' order reversed); the seed 20261123 model keeps one factor fewer.
+    calls <- list()
+    trainer <- function(views, options) {
+        calls[[length(calls) + 1L]] <<- list(seed = options$seed, factors_only = isTRUE(options$factors_only))
+        fit <- intModelFakeTrainer(views, options)
+        f <- matrix(c(1, 4, 2, 5, 3, 0, 1, 0, 1, 1, 9, 7, 8, 6, 5), 5L, 3L,
+            dimnames = list(rownames(fit$factors), paste0("Factor", 1:3)))
+        if (options$seed == 20261120L) f <- cbind(Factor1 = f[, 2L], Factor2 = -f[, 1L], Factor3 = c(1, 2, 3, 5, 4))
+        if (options$seed == 20261123L) f <- f[, 1:2]
+        fit$factors <- f
+        if (isTRUE(options$factors_only)) return(list(factors = f, iterations = 7L))
+        fit$weights <- lapply(fit$weights, function(w) w[, 1:3, drop = FALSE])
+        fit$r2_per_factor <- fit$r2_per_factor[1:3, , drop = FALSE]
+        fit
+    }
+    run <- suppressWarnings(runIntegrationModel(manager, list(num_factors = 3L), trainer = trainer))
+    # One model per seed, the declared seed's first and in full; the others factors only.
+    expect_identical(vapply(calls, `[[`, integer(1), "seed"), 20261119L + 0:4)
+    expect_identical(vapply(calls, `[[`, logical(1), "factors_only"), c(FALSE, TRUE, TRUE, TRUE, TRUE))
+    seeds <- run$value$seeds
+    expect_identical(seeds$seeds, 20261119L + 0:4)
+    expect_identical(seeds$models$iterations, c(2L, 7L, 7L, 7L, 7L))
+    expect_identical(seeds$models$factors, c(3L, 3L, 3L, 3L, 2L))
+    second <- seeds$agreement[seeds$agreement$seed == 20261120L, ]
+    expect_identical(second$matched_factor[1:2], c("Factor2", "Factor1"))
+    expect_equal(second$abs_r[1:2], c(1, 1))
+    expect_lt(second$abs_r[[3L]], 1)
+    last <- seeds$agreement[seeds$agreement$seed == 20261123L, ]
+    expect_identical(last$matched_factor, c("Factor1", "Factor2", NA))
+    expect_identical(last$abs_r[[3L]], 0)
+    stability <- seeds$stability
+    expect_identical(stability$factor, paste0("Factor", 1:3))
+    expect_identical(stability$other_models, rep(4L, 3L))
+    expect_equal(stability$agreement_lowest[1:2], c(1, 1))
+    expect_identical(stability$agreement_lowest[[3L]], 0)
+    expect_equal(stability$agreement_median[[3L]], stats::median(c(second$abs_r[[3L]], 1, 1, 0)))
+    # Shown with the results, for the factors shown.
+    results <- integrationResults(run$value, object, list(factors_shown = c("Factor1", "Factor3")), manager = manager)
+    expect_identical(results$seeds, 20261119L + 0:4)
+    expect_identical(results$stability$factor, c("Factor1", "Factor3"))
+    expect_identical(names(integrationResultsStabilityTable(results)), unname(integrationGuiTexts()[c("col_factor",
+        "col_agreement_lowest", "col_agreement_median")]))
+    # One seed: one model, nothing to compare.
+    calls <- list()
+    single <- suppressWarnings(runIntegrationModel(manager, list(training_seeds = 1L), trainer = trainer))
+    expect_length(calls, 1L)
+    expect_identical(nrow(single$value$seeds$agreement), 0L)
+    expect_true(all(is.na(single$value$seeds$stability$agreement_lowest)))
+})
+
+# KIT-151 (INT-17, audit SCI-05): no text says the integration model is the same on every computer; the maths library of
+# the training's Python is pinned (one thread, one code path) before Python loads numpy, the variables restored after,
+# and a process whose numpy was loaded earlier trains unpinned and says so.
+test_that("KIT-151 (INT-17): the reproducibility wording is corrected and the maths library is pinned before Python loads it", {
+    texts <- c(unlist(integrationGuiTexts()), unlist(integrationRecordTexts()),
+        unlist(workflowParameterLabels[[INTEGRATION_MODEL_OPERATION]]), integrationMofaParameterTable()$settled_by)
+    expect_false(any(grepl("every computer|any computer|on every machine", texts)))
+    expect_identical(INTEGRATION_MATHS_PIN, c(OPENBLAS_NUM_THREADS = "1", OMP_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
+        OPENBLAS_CORETYPE = "Haswell"))
+    testthat::skip_if_not_installed("reticulate")
+    holder <- environment(integrationPinMathsLibrary)
+    saved <- holder$state
+    withr::defer(assign("state", saved, envir = holder))
+    withr::local_envvar(c(OPENBLAS_NUM_THREADS = NA, OMP_NUM_THREADS = "8", MKL_NUM_THREADS = NA, OPENBLAS_CORETYPE = NA))
+    # Python not started: the variables are set while mofapy2's entry point is loaded, then restored.
+    seen <- NULL
+    testthat::local_mocked_bindings(py_available = function(initialize = FALSE) FALSE,
+        import = function(module, ...) {
+            seen <<- c(module = module, Sys.getenv(names(INTEGRATION_MATHS_PIN)))
+            invisible(NULL)
+        }, .package = "reticulate")
+    holder$state <- NULL
+    pin <- integrationPinMathsLibrary()
+    expect_true(pin$applied)
+    expect_identical(seen, c(module = "mofapy2.run.entry_point", INTEGRATION_MATHS_PIN))
+    expect_identical(Sys.getenv(c("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "OPENBLAS_CORETYPE"), unset = NA, names = FALSE),
+        c(NA, "8", NA))
+    # Asked again in the same process: the same answer, nothing loaded again.
+    seen <- NULL
+    expect_identical(integrationPinMathsLibrary(), pin)
+    expect_null(seen)
+    # numpy already loaded by earlier code: not pinned, and the reason is kept.
+    testthat::local_mocked_bindings(py_available = function(initialize = FALSE) TRUE, py_eval = function(code, ...) TRUE,
+        .package = "reticulate")
+    holder$state <- NULL
+    unpinned <- integrationPinMathsLibrary()
+    expect_false(unpinned$applied)
+    expect_match(unpinned$reason, "numpy was already loaded", fixed = TRUE)
+    expect_null(seen)
+})
+
+# KIT-151 (audit SCI-12): variance explained is said to be of the selected features; scale_views is said to divide each
+# data set by its overall standard deviation, not to give data sets the same total variance. INT-24: both scaling
+# defaults on (the z-score after the selection).
+test_that("KIT-151 (SCI-12): variance explained and scale_views are described as they are", {
+    gui <- integrationGuiTexts()
+    record <- integrationRecordTexts()
+    texts <- c(unlist(gui), unlist(record), unlist(workflowParameterLabels[[INTEGRATION_MODEL_OPERATION]]))
+    expect_false(any(grepl("same total variance|unit variance", texts)))
+    for (key in c("variance_intro", "result_variance_heading", "col_variance", "plot_variance")) {
+        expect_match(gui[[key]], "selected features", fixed = TRUE, info = key)
+    }
+    for (key in c("section_variance", "col_variance", "methods_model")) expect_match(record[[key]], "selected features", info = key)
+    expect_match(gui[["param_scale_views"]], "overall standard deviation", fixed = TRUE)
+    expect_match(record[["methods_model"]], "divided by its overall standard deviation", fixed = TRUE)
+    spec <- integrationMofaParameterSpec()
+    expect_identical(spec$scale_views$default, TRUE)
+    expect_identical(spec$scaling$default, "feature_zscore")
+    expect_match(spec$scaling$settled_by, "^INT-24 \\(decided")
+    expect_match(spec$scale_views$settled_by, "^INT-24 \\(decided")
+    expect_identical(spec$center_groups$default, TRUE)
+})
+
+# KIT-151 (plan item E): centring stays on; it may be turned off only when every feature is z-scored (already centred).
+test_that("KIT-151: center_groups is FALSE only with the per-feature z-score", {
+    inputs <- intModelInputs()
+    object <- integrationViewsFromInputs(c(inputs$proteomics, inputs$lipidomics))$object
+    expect_error(integrationResolveMofaParameters(object, list(center_groups = FALSE, scaling = "none")),
+        class = "integration_parameters_invalid")
+    resolved <- integrationResolveMofaParameters(object, list(center_groups = FALSE, scaling = "feature_zscore"))
+    expect_false(resolved$center_groups)
+})
+
+# KIT-151 (audit ENG-24): the MOFA2, mofapy2 and numpy versions are among what a saved model is looked up by, so a model
+# saved before an upgrade of one of them is trained again, not reused.
+test_that("KIT-151 (ENG-24): a saved model is not reused after an upgrade of MOFA2, mofapy2 or numpy", {
+    inputs <- intModelInputs()
+    manager <- newIntegrationStateOwner(file.path(inputs$root, "project"))
+    withr::defer(closeWorkflowStateOwner(manager))
+    importIntegrationInputs(manager, c(inputs$proteomics, inputs$lipidomics))
+    software <- list(mofa2 = "1.22.0", mofapy2 = "0.7.3", numpy = "1.26.4")
+    testthat::local_mocked_bindings(integrationTrainMofa = intModelFakeTrainer,
+        integrationMofaCapability = function() list(available = TRUE, reason = NA_character_),
+        integrationMofaSoftware = function() software, .package = "MultiScholaR")
+    first <- suppressWarnings(runIntegrationModel(manager))
+    expect_identical(first$status, "computed")
+    expect_identical(suppressWarnings(runIntegrationModel(manager))$status, "hit")
+    software$numpy <- "2.0.0"
+    upgraded <- suppressWarnings(runIntegrationModel(manager))
+    expect_identical(upgraded$status, "computed")
+    expect_false(identical(upgraded$reference$entity_id, first$reference$entity_id))
+    declaration <- integrationMofaDeclaration(list(), software)
+    expect_identical(declaration$factors[c("mofa2", "mofapy2", "numpy")], software)
+    # A stand-in trainer's model, or software not known, carries no software factor (nothing to upgrade).
+    expect_identical(integrationMofaDeclaration(list())$factors, list(product_schema = INTEGRATION_MODEL_SCHEMA))
+    expect_identical(integrationMofaDeclaration(list(), list(mofa2 = "unknown", mofapy2 = "unknown", numpy = "unknown"))$factors,
+        list(product_schema = INTEGRATION_MODEL_SCHEMA))
 })

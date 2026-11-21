@@ -518,9 +518,11 @@ workflowOperationDefaults <- local({
         # is the model's own (`integrationMofaParameterSpec`, settled by the user's workbook), not config.ini's.
         integration_mofa_model = list(input_manifests = "input", views = "input", technical_replicates = "no_shipped_default",
             internal_standards = "no_shipped_default", missing_samples = "no_shipped_default", feature_selection = "no_shipped_default",
-            features_per_view = "no_shipped_default", scaling = "no_shipped_default", scale_views = "no_shipped_default",
+            features_per_view = "no_shipped_default", min_observed_fraction = "no_shipped_default",
+            scaling = "no_shipped_default", scale_views = "no_shipped_default",
             center_groups = "no_shipped_default", num_factors = "no_shipped_default", convergence_mode = "no_shipped_default",
-            maxiter = "no_shipped_default", seed = "no_shipped_default", precision = "no_shipped_default"))
+            maxiter = "no_shipped_default", seed = "no_shipped_default", training_seeds = "no_shipped_default",
+            precision = "no_shipped_default"))
 })
 
 #' A reader's label for every declared parameter (KIT-039, IM-07): one line per parameter, keyed by operation.
@@ -637,12 +639,16 @@ workflowParameterLabels <- local({
         integration_mofa_model = list(input_manifests = "Integration inputs, the sha256 of each omic's manifest (input)",
             views = "Views in the model (input)", technical_replicates = "Technical replicates (averaged per biological sample)",
             internal_standards = "Internal standards (drop or keep)", missing_samples = "Samples missing in a view (keep as missing, or drop incomplete samples)",
-            feature_selection = "Feature selection per view (none, or the most variable)", features_per_view = "Features kept per view (most variable)",
-            scaling = "Per-feature scaling (none, or Z-score within its view)", scale_views = "Scale each view to unit variance (MOFA2 scale_views)",
+            feature_selection = "Feature selection per view (variance above the mean-variance trend, raw variance, or none)",
+            features_per_view = "Features kept per view (a smaller view keeps all)",
+            min_observed_fraction = "Smallest share of the biological samples a selected feature is observed in",
+            scaling = "Per-feature scaling (none, or Z-score within its view)", scale_views = "Divide each view by its overall standard deviation (MOFA2 scale_views)",
             center_groups = "Centre the features (MOFA2 center_groups)", num_factors = "Number of factors",
             convergence_mode = "Convergence mode (fast, medium or slow)", maxiter = "Maximum iterations", seed = "Training seed",
-            precision = paste("Numeric precision: double gives the same model on every computer; single uses less memory",
-                "for very large studies, and its results can differ slightly between computers")))
+            training_seeds = "Models trained, one per seed (the training seed and the next whole numbers)",
+            precision = paste("Numeric precision: double (identical on the same computer and software, close but not",
+                "guaranteed identical across processors); single uses less memory for very large studies, and its results",
+                "differ more between computers")))
 })
 
 #' Register one operation.

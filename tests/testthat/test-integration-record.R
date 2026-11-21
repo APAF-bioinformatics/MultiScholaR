@@ -179,13 +179,16 @@ test_that("KIT-142: the record holds every input, the confirmed match, each sett
     expect_false("unknown" %in% provenance)
     expect_identical(unname(status[c("input_manifests", "views")]), c("input", "input"))
     expect_identical(status[["precision"]], "decided")
-    expect_identical(unname(status[c("num_factors", "seed", "technical_replicates", "scaling")]), rep("provisional_default", 4L))
+    expect_identical(unname(status[c("num_factors", "seed", "technical_replicates")]), rep("provisional_default", 3L))
+    # KIT-151: decided by the user (INT-12, INT-15, INT-24).
+    expect_identical(unname(status[c("feature_selection", "convergence_mode", "scaling", "scale_views")]), rep("decided", 4L))
     # The model: versions, checksum, training.
     model <- block$model
     expect_identical(model$versions, intRecVersions)
     expect_identical(model$model_file_sha256, strrep("d", 64L))
     expect_identical(model$entity_id, export$reference$entity_id)
     expect_true(model$converged)
+    expect_identical(model$stopped_by, "convergence_rule")
     expect_identical(c(model$factors_kept, model$factors_requested), c(5L, 5L))
     expect_identical(model$precision, "double")
     # The saved results: their settings with a status, every file with the file's checksum.
@@ -226,10 +229,16 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
         "transcriptomics (transcriptomics; normalised, not corrected for unwanted variation)",
         "MOFA2 9.8.7 (mofapy2 6.5.4, Python 3.12.16, R 4.6.1), in double precision",
         sprintf(t[["methods_matching_user"]], journey$runs_moved, match_sha),
-        t[["methods_replicates_average"]], t[["methods_missing_keep_missing"]], t[["methods_sparse"]],
-        "All remaining features were used, without per-feature scaling.",
-        "asked for 5 factors (convergence mode fast, at most 1000 training rounds, seed 20261119",
-        "Training settled after 186 rounds and kept 5 factors; 20 biological samples entered the model, 19 of them",
+        t[["methods_replicates_average"]], t[["methods_missing_keep_missing"]],
+        # KIT-151 (INT-12): the default selection, its observed share and its rule.
+        sprintf(t[["methods_sparse_selected"]], 10L, 20L, "0.5"),
+        paste0(sprintf(t[["methods_selection_variance_above_trend"]], 1000L, 1000L), ", ", t[["methods_scaling_feature_zscore"]]),
+        # KIT-151 (INT-15): slow, a limit of 10,000 rounds, and how training stopped.
+        "asked for 5 factors (convergence mode slow, at most 10000 training rounds, seed 20261119",
+        "Training settled after 186 rounds, stopped by its convergence rule, and kept 5 factors; 20 biological samples",
+        # KIT-151 (INT-14): five models, one per seed; the stand-in trains the same factors from every seed.
+        sprintf(t[["methods_seeds"]], 5L, 20261119L, 20261123L, 20261119L,
+            paste(sprintf("Factor%d 1.000", 1:5), collapse = ", ")),
         sprintf(t[["methods_association"]], "Benjamini-Hochberg"),
         sprintf(t[["methods_claim_limit"]], "proteomics"),
         "Settings that were provisional defaults at the time of the analysis: ", "Number of factors (5)")) {
@@ -246,9 +255,14 @@ test_that("KIT-142: the methods paragraph and the study parameters read the reco
     expect_identical(lines[[length(lines) - 1L]], methods)
     # Other settings give other words: a model with 3 factors and seed 7 (its results not saved yet).
     confirmed <- shiny::isolate(journey$bus$integration_alignment)
+    # KIT-151 (INT-17): a model trained with the maths library pinned says so.
+    pin <- list(applied = TRUE, variables = as.list(INTEGRATION_MATHS_PIN), reason = NA_character_)
     runIntegrationModel(manager, utils::modifyList(confirmed$parameters, list(num_factors = 3L, seed = 7L)), trainer = intRecTrainer(
-        versions = utils::modifyList(intRecVersions, list(MOFA2 = "1.0.0"))))
+        versions = utils::modifyList(intRecVersions, list(MOFA2 = "1.0.0", maths_pin = pin))))
     other <- integrationMethodsText(buildWorkflowAnalysisRecord(manager))
+    expect_true(grepl(sprintf(t[["methods_pin_applied"]],
+        "OPENBLAS_NUM_THREADS=1, OMP_NUM_THREADS=1, MKL_NUM_THREADS=1, OPENBLAS_CORETYPE=Haswell"), other, fixed = TRUE))
+    expect_false(grepl(sprintf(t[["methods_pin_applied"]], ""), methods, fixed = TRUE))
     expect_true(grepl("asked for 3 factors", other, fixed = TRUE))
     expect_true(grepl("seed 7;", other, fixed = TRUE))
     expect_true(grepl("MOFA2 1.0.0 (", other, fixed = TRUE))

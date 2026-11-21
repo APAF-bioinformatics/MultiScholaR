@@ -146,5 +146,12 @@ test_that("KIT-140: MOFA2 trained as a managed-worker action through the Model t
         direct <- runIntegrationModel(intTabDirect(paths, bus$integration_import$views), bus$integration_alignment$parameters)
         for (name in intTabFields) expect_identical(value[[name]], direct$value[[name]], info = name)
         expect_identical(manager$.context$snapshot$exports$integration_mofa_model$reference, model$reference)
+        # KIT-151 (ENG-24): the model the worker trained is found in process (the same MOFA2, mofapy2 and numpy versions
+        # among its lookup factors), not trained again.
+        again <- runIntegrationModel(manager, bus$integration_model$parameters)
+        message(sprintf("KIT-151 worker-trained model looked up in process: %s; lookup factors %s", again$status,
+            paste(names(unlist(integrationMofaSoftware())), unlist(integrationMofaSoftware()), sep = " ", collapse = ", ")))
+        expect_identical(again$status, "hit")
+        expect_identical(again$reference$entity_id, model$reference$entity_id)
     })
 })
