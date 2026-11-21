@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-153 merge onto performance-v2 ea6c2657 (after the 0.6 figures merge): the files both sides touched and their dependents",
+  "label": "KIT-153 merge candidate 2eec7d69 versus base ea6c2657: run-path, RUV design and integration input files",
+  "package_commit": "2eec7d69c6d23eacb891384ac42d1bedce0a4611",
+  "base_commit": "ea6c26572dc1ae036cbc3dedac23c0256f4cab0a",
+  "tools_ref": "",
+  "tests": [
+    "test-kit129-run-path.R",
+    "test-omic-norm-ruv-design.R",
+    "test-workflow-integration-input.R",
+    "test-integration-input-matrix.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-model.R",
+    "test-integration-results.R",
+    "test-integration-record.R"
+  ],
+  "shards": 6,
+  "file_timeout_minutes": 45,
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
