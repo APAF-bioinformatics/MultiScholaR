@@ -1,0 +1,12 @@
+lifecycle: PASS (every stage observed through completion; each induced failure observed after its baseline with its stop reason)
+ok  S before write: completed, valid yes
+ok  S before import: completed, valid yes
+ok  S before align: completed, valid yes
+ok  S before train: completed, valid yes
+ok  S after write: completed, valid yes
+ok  S after import: completed, valid yes
+ok  S after align: completed, valid yes
+ok  S after train: completed, valid yes
+ok  induced fail_memory: expected 'killed: memory limit', got 'killed: memory limit' (baseline seen)
+ok  induced fail_time: expected 'stopped: time limit', got 'stopped: time limit' (baseline seen)
+ok  induced fail_error: expected 'error', got 'error' (baseline seen)
