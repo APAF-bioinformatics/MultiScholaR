@@ -806,7 +806,8 @@ test_that("KIT-141: the record's workbook reads back, every sheet, without and w
             expect_identical(unname(unlist(cells[1L, ])), names(tables[[sheet]]), info = sheet)
         }
         lapply(c("integration_enrichment", "integration_enrichment_terms"), function(sheet)
-            openxlsx::read.xlsx(path, sheet = sheet, check.names = FALSE))
+            # sep.names = " ": openxlsx otherwise reads the blanks of a header as dots ("Term.or.pathway").
+            openxlsx::read.xlsx(path, sheet = sheet, check.names = FALSE, sep.names = " "))
     }
     none <- readBack("without")
     expect_identical(none[[1L]][[texts[["col_factor"]]]], texts[["none_recorded"]])
