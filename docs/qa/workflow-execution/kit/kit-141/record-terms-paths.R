@@ -21,7 +21,12 @@ sink(out_file, split = TRUE)
 # The test file's fixtures, evaluated as testthat would (package namespace as parent); its tests are not run.
 ns <- asNamespace("MultiScholaR")
 env <- new.env(parent = ns)
-testthat::source_test_helpers("tests/testthat", env = env)
+# Each helper on its own: one that defines S4 classes cannot be sourced into a child of the locked namespace (run
+# 44863659582); it is skipped and named, and the fixtures used here do not need it.
+for (helper in list.files("tests/testthat", pattern = "^helper.*\\.[rR]$", full.names = TRUE)) {
+    tryCatch(sys.source(helper, envir = env), error = function(error)
+        cat(sprintf("helper skipped: %s (%s)\n", basename(helper), conditionMessage(error))))
+}
 exprs <- parse("tests/testthat/test-integration-enrichment.R", keep.source = FALSE)
 for (e in exprs) {
     if (is.call(e) && identical(e[[1L]], as.name("test_that"))) next
