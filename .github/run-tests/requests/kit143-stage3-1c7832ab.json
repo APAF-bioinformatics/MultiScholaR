@@ -1,0 +1,44 @@
+{
+  "requested_by": "KIT-143 stage 3: workbook input-matrix choice and enrichment section after merging performance-v2; base versus head, failing-first, check, gate off",
+  "label": "KIT-143 stage 3 on kit-143-integration-workbook 1c7832ab",
+  "package_commit": "1c7832abe07c7fc3b1b4fcf950ccc3f8ff25efd5",
+  "base_commit": "2bf9d65560d9f1e24824d1938f7bdf88149bb660",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-workbook.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "2bf9d65560d9f1e24824d1938f7bdf88149bb660",
+        "kit143-gate-off"
+      ],
+      "out": "kit143-gate-off",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "2bf9d65560d9f1e24824d1938f7bdf88149bb660",
+        "kit143-failing-first",
+        "test-integration-workbook.R"
+      ],
+      "out": "kit143-failing-first",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
