@@ -1,7 +1,7 @@
 {
-  "label": "k155-lifecycle",
-  "attempt": "lifecycle",
+  "label": "k155-counted",
+  "attempt": "counted",
   "jobs": [
-    {"name": "lifecycle", "plan": "k155-lifecycle", "size": "S", "timeout": 60}
+    {"name": "counted", "plan": "k155-counted", "size": "L", "timeout": 330}
   ]
 }
