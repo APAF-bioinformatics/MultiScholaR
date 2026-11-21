@@ -66,6 +66,14 @@ heading("section_outputs")
 show(tables$integration_outputs)
 ```
 
+```{r enrichment, results = "asis"}
+# KIT-141: the enrichments of the factors (service or tables with their release, ranking, direction, family) and terms.
+heading("section_enrichment")
+show(tables$integration_enrichment)
+heading("section_enrichment_terms")
+show(tables$integration_enrichment_terms)
+```
+
 ```{r samples, results = "asis"}
 heading("section_samples")
 show(tables$integration_samples)

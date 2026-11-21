@@ -583,7 +583,66 @@ integrationGuiTexts <- function() {
         map_unavailable = "The %s map cannot be drawn on this computer: the software %s is not installed.",
         # KIT-142: the Record tab (its own words are `integrationRecordTexts()`).
         tab_record = " Record",
-        step_record = "Record"
+        step_record = "Record",
+        # KIT-141: the Enrichment tab.
+        tab_enrichment = " Enrichment",
+        step_enrichment = "Enrichment",
+        enrich_heading = "Enrichment of a factor",
+        enrich_intro = paste("Find the biological processes, pathways or compound classes that follow a factor. Every",
+            "measured feature of the chosen data set, not only those given to the model, is ranked by how closely its",
+            "values follow the factor across the biological samples (a correlation from -1 to 1). Proteins and genes are",
+            "tested with STRING; metabolites and lipids with KEGG or Reactome pathways."),
+        enrich_optional = "This step is optional: the Record tab is open without it.",
+        enrich_not_trained = "Train a model at the Model tab first.",
+        enrich_factor = "Factor",
+        enrich_view = "Data set",
+        enrich_database = "Database",
+        enrich_database_string = "STRING (proteins and genes)",
+        enrich_database_kegg = "KEGG pathways (metabolites and lipids)",
+        enrich_database_reactome = "Reactome pathways (metabolites and lipids)",
+        enrich_id_column = "Column of the feature table holding the compound identifiers",
+        enrich_id_column_kegg = "KEGG compound identifiers (such as C00031) are needed.",
+        enrich_id_column_reactome = "ChEBI identifiers (such as CHEBI:17234 or 17234) are needed.",
+        enrich_settings_heading = "Settings",
+        enrich_correlation_method = "Correlation",
+        enrich_correlation_pearson = "Pearson (straight-line relation)",
+        enrich_correlation_spearman = "Spearman (rank order)",
+        enrich_min_samples = "Smallest number of biological samples a feature needs to be ranked",
+        enrich_string_species = "STRING species number (9606 is human, 10090 mouse)",
+        enrich_string_fdr = "STRING: show terms up to this false discovery rate",
+        enrich_kegg_organism = "KEGG organism code (hsa is human, mmu mouse)",
+        enrich_reactome_organism = "Reactome organism (such as Homo sapiens)",
+        enrich_min_set = "Smallest pathway tested (measured compounds in it)",
+        enrich_max_set = "Largest pathway tested (measured compounds in it)",
+        enrich_seed = "Seed of the pathway test",
+        enrich_key = "Your STRING key",
+        enrich_key_note = paste("STRING needs a personal key (free from string-db.org). It is used only for this query",
+            "and is never saved, recorded or written to a file. Enter it each time."),
+        enrich_kegg_terms = paste("KEGG's tables are free for academic use only; other users need a licence from KEGG",
+            "(Pathway Solutions, www.pathway.jp) before downloading them."),
+        enrich_download = "Download the pathway tables",
+        enrich_downloading = "Downloading the pathway tables.",
+        # %s: database, release; %d: rows.
+        enrich_downloaded = "%s tables downloaded: %s, %d rows.",
+        enrich_run = "Run the enrichment",
+        enrich_running = "Running the enrichment.",
+        # %s: the reason.
+        enrich_refused = "The enrichment was not run. %s",
+        # %s: factor, data set, database, release.
+        enrich_done = "%s in %s against %s (%s).",
+        # %d: measured, ranked, too few samples, no spread, internal standards.
+        enrich_counts = paste("Features: %d measured, %d ranked, %d left out for too few samples, %d left out for no",
+            "spread, %d internal standards left out."),
+        # %d: matched, not matched, several on one identifier.
+        enrich_mapping = "Matched to the database: %d; not matched: %d; set aside as a second feature on one identifier: %d.",
+        # %s: the feature, its data set; %d: +1 or -1.
+        enrich_direction = paste("Direction: the factor is oriented so that its largest weight (%s in %s) is positive",
+            "(multiplied by %d). Terms at the top of the list follow the factor; terms at the bottom go against it."),
+        # %d: terms or pathways.
+        enrich_tests = paste("%d terms or pathways in the table. P-values are adjusted within this factor, data set and",
+            "database only, not across factors, data sets or databases."),
+        enrich_none = "No term or pathway passed the threshold.",
+        enrich_terms_heading = "Enriched terms and pathways"
     )
 }
 
@@ -603,13 +662,16 @@ integrationGuiConfig <- function() {
         tab("integration_model", "model", "tab_model", "cubes", "step_model"),
         # KIT-063: the Results tab.
         tab("integration_results", "results", "tab_results", "chart-bar", "step_results"),
+        # KIT-141: the Enrichment tab (optional; it opens the Record tab as the Results tab completes).
+        tab("integration_enrichment", "enrichment", "tab_enrichment", "project-diagram", "step_enrichment"),
         # KIT-142: the Record tab (the analysis record, the study parameters and the report).
         tab("integration_record", "record", "tab_record", "file-alt", "step_record"))
     shell <- list(omic_type = "integration", prefix = "integration", testid = "integration",
         label = texts[["workflow_label"]], label_lower = "integration", header_icon = NULL,
         tabset_id = "integration_tabs", tab_style = "icon_in_title", routes = "integration", tabs = tabs,
         bus = list(state_manager = NULL, tab_status = NULL, integration_scan = NULL, integration_import = NULL,
-            integration_alignment = NULL, integration_model = NULL, integration_results = NULL, integration_record = NULL),
+            integration_alignment = NULL, integration_model = NULL, integration_results = NULL, integration_enrichment = NULL,
+            integration_record = NULL),
         bus_registration = "userData")
     validateOmicGuiShell(shell, omicGuiConfigSchema())
     list(shell = shell, texts = texts)

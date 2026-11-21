@@ -388,6 +388,8 @@ Collate:
     'mod_integration_results.R'
     'utils_integration_record.R'
     'mod_integration_record.R'
+    'utils_integration_enrichment.R'
+    'mod_integration_enrichment.R'
     'zzz.R'
 Suggests:
     RhpcBLASctl,
@@ -449,6 +451,7 @@ Suggests:
     iheatmapr,
     reticulate,
     gprofiler2,
+    httr2,
     webshot2,
     shinytest2
 Config/testthat/edition: 3
