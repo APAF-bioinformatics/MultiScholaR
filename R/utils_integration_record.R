@@ -84,6 +84,8 @@ integrationRecordTexts <- function() {
         not_recorded = "not recorded",
         values_corrected = "corrected for unwanted variation",
         values_normalised = "normalised, not corrected",
+        # KIT-153: the omic saved corrected values too; the model used the normalised ones.
+        values_uncorrected_available = "normalised, not corrected (the omic's corrected values were not used)",
         # The sample-matching facts.
         match_rule = "How samples were matched",
         match_rule_saved = "by the biological-sample column each omic saved",
@@ -126,6 +128,9 @@ integrationRecordTexts <- function() {
         # %s: the approach in words.
         methods_input_corrected = "corrected for unwanted variation, %s",
         methods_input_normalised = "normalised, not corrected for unwanted variation",
+        # KIT-153. %s: the omic's correction in words (not used).
+        methods_input_uncorrected_available = paste("normalised, before correction for unwanted variation; the omic's",
+            "corrected values (%s) were not used"),
         # %s: MOFA2, mofapy2, Python, R versions, the precision.
         methods_software = paste("Shared factors were learned with multi-omics factor analysis, MOFA2 %s (mofapy2 %s,",
             "Python %s, R %s), in %s precision."),
@@ -197,6 +202,10 @@ integrationRecordTexts <- function() {
             "groups are therefore not reported, and the factors are described, not tested."),
         methods_claim_none = paste("The factors were learned without the groups; their association with the groups",
             "describes the model."),
+        # KIT-153: the model used the normalised values before correction for unwanted variation.
+        methods_claim_uncorrected = paste("The data sets entered the model as their normalised values before correction for",
+            "unwanted variation (RUV), so unwanted variation that is correlated with the groups was not removed and can",
+            "contribute to a factor's association with the groups."),
         # %s: the settings.
         methods_provisional = "Settings that were provisional defaults at the time of the analysis: %s.",
         # %s: the settings.
@@ -296,7 +305,51 @@ integrationRecordTexts <- function() {
         replay_versions_differ = paste("The analysis was recorded with other software versions (%s); it is repeated and",
             "compared with the recorded model numerically."),
         # %s: the software, recorded, here.
-        replay_version_item = "%s %s, here %s"
+        replay_version_item = "%s %s, here %s",
+        # KIT-141: the enrichment of the factors, in the record's tables, study parameters, report and methods paragraph.
+        section_enrichment = "Enrichment of the factors",
+        section_enrichment_terms = "Enriched terms and pathways",
+        # The enrichment sheets' first header. Without it the header was NA, and one NA string empties the workbook's
+        # whole shared-string table as openxlsx writes it (run-tests 44799395381).
+        col_factor = "Factor",
+        col_enrich_database = "Database",
+        col_enrich_release = "Release",
+        col_enrich_ranking = "How features were ranked",
+        col_enrich_direction = "Direction of the factor",
+        col_enrich_features = "Features (measured, ranked, matched)",
+        col_enrich_tests = "Terms or pathways in the table",
+        col_enrich_family = "Corrected together for multiple testing",
+        col_enrich_term = "Term or pathway",
+        col_enrich_description = "Description",
+        col_enrich_category = "Category",
+        col_enrich_score = "Enrichment score",
+        col_enrich_fdr = "False discovery rate (adjusted p-value)",
+        # %s: STRING's version, its address.
+        enrich_string_release = "STRING %s (%s)",
+        # %s: the correlation; %d: the smallest number of samples.
+        enrich_ranking_value = "%s correlation with the factor, a feature needing values in at least %d biological samples",
+        # %s: the feature, its data set; %d: +1 or -1.
+        enrich_direction_value = "oriented so that the largest weight (%s in %s) is positive (factor multiplied by %d)",
+        # %d: measured, ranked, matched.
+        enrich_counts_value = "%d measured, %d ranked, %d matched to the database",
+        # %s: the correlation (pearson or spearman); %d: the smallest number of samples.
+        methods_enrich_ranking = paste("For enrichment, every measured feature of a data set (not only those given to the",
+            "model) was ranked by the %s correlation of its values, the runs of each biological sample averaged, with the",
+            "factor's values over the biological samples where both were observed; a feature needed values in at least %d",
+            "biological samples. Since the sign of a factor is arbitrary, each factor was first oriented so that its largest",
+            "weight over all data sets was positive."),
+        # %s: factor, data set; %d: identifiers; %s: STRING's version, the species, the date.
+        methods_enrich_string = paste("%s in %s: the complete ranked list (%d identifiers) was submitted to STRING's",
+            "ranked enrichment (values/ranks), STRING %s, species %s, on %s."),
+        # %s: factor, data set, database; %d: compounds; %s: release, organism; %d: smallest, largest pathway size,
+        # pathways tested, seed.
+        methods_enrich_pathway = paste("%s in %s: %s pathways were tested by ranked gene-set enrichment (clusterProfiler",
+            "GSEA) on %d compounds matched by the chosen identifier column (several features on one compound: the one",
+            "with the largest absolute correlation kept), %s, organism %s, pathways with %d to %d measured compounds",
+            "(%d pathways), every pathway kept, no random tie-breaking, seed %d."),
+        methods_enrich_family = paste("P-values were adjusted with the Benjamini-Hochberg method within one factor, one",
+            "data set and one database (STRING: within each of its term categories); they were not adjusted across",
+            "factors, data sets or databases. The results depend on external databases at the release stated.")
     )
 }
 
@@ -304,7 +357,7 @@ integrationRecordTexts <- function() {
 #' @noRd
 INTEGRATION_RECORD_SHEETS <- c("integration_inputs", "integration_matching", "integration_samples",
     "integration_settings", "integration_model", "integration_variance", "integration_results", "integration_outputs",
-    "integration_notes")
+    "integration_notes", "integration_enrichment", "integration_enrichment_terms")
 
 # ------------------------------------------------------------------------------------------------
 # Small readers that take the record as built (lists, data frames) or as read back from JSON
@@ -428,7 +481,8 @@ integrationRecordResultsPublication <- function(manager, model_reference, result
             parameters = results$parameters, factors = results$factors,
             saved_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), tables = listed(files$tables), figures = listed(files$figures),
             association = as.list(results$association),
-            claim = list(group_corrected = results$claim$group_corrected, corrections = as.list(results$claim$corrections)),
+            claim = list(group_corrected = results$claim$group_corrected, corrections = as.list(results$claim$corrections),
+                uncorrected = isTRUE(results$claim$uncorrected)),
             outputs = integrationOutputsRecord(results), output_tables = integrationStoreOutputTables(context, results))
         snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- export
         publishWorkflowStateHead(context, snapshot)
@@ -505,13 +559,18 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
         return(analysis)
     }
     views <- as.character(parameters$views)
-    corrected <- integrationGroupCorrectedViews(object, views)
+    # KIT-153: the matrix the model used (`input_matrix`) decides the claim limit and each input's values.
+    input_matrix <- parameters$input_matrix
+    corrected <- integrationGroupCorrectedViews(object, views, input_matrix)
+    available <- integrationCorrectedViewNames(object)
     gui <- integrationGuiTexts()
     inputs <- lapply(unname(object@inputs), function(entry) {
         manifest <- entry$manifest
         list(omic = entry$omic, views = as.character(entry$views), views_in_model = intersect(as.character(entry$views), views),
             manifest_path = entry$path, manifest_sha256 = entry$manifest_sha256,
             workflow = integrationGuiScalar(manifest$workflow), matrix_role = integrationGuiScalar(manifest$matrix_role),
+            matrix_used = if (is.null(input_matrix)) NA_character_ else input_matrix,
+            corrected_available = any(as.character(entry$views) %in% available),
             scale = integrationGuiScalar(manifest$scale), source_state = integrationGuiScalar(manifest$source_state$name),
             biological_sample_column = entry$biological_sample_column, correction = manifest$correction,
             correction_text = integrationCorrectionText(manifest, gui),
@@ -539,7 +598,8 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
         sentence = sprintf(integrationRecordTexts()[["note_few_samples"]], as.integer(value$shared_samples),
             INTEGRATION_FEW_SAMPLES), detail = paste(value$notes, collapse = " "))))
     claim_facts <- list(group_corrected = names(corrected)[corrected],
-        corrections = vapply(object@inputs, function(entry) integrationCorrectionText(entry$manifest, gui), character(1)))
+        corrections = vapply(object@inputs, function(entry) integrationCorrectionText(entry$manifest, gui), character(1)),
+        uncorrected = identical(input_matrix, "uncorrected"))
     analysis$integration <- list(schema = "multischolar.integration_record.v1", complete = TRUE,
         inputs = inputs,
         matching = list(rule = if (is.null(match)) "saved_names" else "user_table",
@@ -563,7 +623,9 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
         results = results,
         advisories = advisories,
         claim_limit = list(applies = any(corrected), group_corrected = claim_facts$group_corrected,
-            text = integrationClaimLimitText(list(claim = claim_facts), gui)))
+            uncorrected = claim_facts$uncorrected, text = integrationClaimLimitText(list(claim = claim_facts), gui)),
+        # KIT-141: the enrichments of the factors (references stay in the store; the record keeps their facts and terms).
+        enrichment = integrationRecordEnrichmentBlock(context, export))
     analysis
 }
 
@@ -586,7 +648,7 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
     framed <- function(names, rows) stats::setNames(as.data.frame(rows, stringsAsFactors = FALSE), names)
     inputs <- lapply(block$inputs, function(input) data.frame(omic = s(input$omic),
         views = paste(unlist(input$views_in_model), collapse = ", "),
-        values = if (identical(s(input$matrix_role), "corrected")) texts[["values_corrected"]] else texts[["values_normalised"]],
+        values = texts[[integrationRecordValuesKey(input)]],
         correction = text(input$correction_text), group_corrected = word(input$group_corrected),
         checksum = text(input$manifest_sha256), stringsAsFactors = FALSE))
     inputs <- do.call(rbind, inputs)
@@ -640,11 +702,26 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
     notes <- c(vapply(block$advisories %||% list(), \(advisory) as.character(s(advisory$sentence)), character(1)),
         as.character(unlist(block$claim_limit$text)))
     notes <- framed(texts[["col_note"]], list(notes))
+    enrichment <- integrationRecordEnrichmentTables(block, texts)
     out <- list(integration_inputs = inputs, integration_matching = matching, integration_samples = samples,
         integration_settings = settings, integration_model = model_table, integration_variance = variance,
         integration_results = files, integration_outputs = integrationRecordOutputsTable(block, texts),
-        integration_notes = notes)
+        integration_notes = notes, integration_enrichment = enrichment$summary,
+        integration_enrichment_terms = enrichment$terms)
     out[INTEGRATION_RECORD_SHEETS]
+}
+
+#' Which values an input gave the model, as the key of its words (KIT-153): `values_corrected` (the RUV-corrected
+#' matrix), `values_uncorrected_available` (the normalised matrix, the omic's corrected one not used) or
+#' `values_normalised`. A record made before KIT-153 (no `matrix_used`) is read by the manifest's role, as before.
+#' @param input One input of the record's integration block.
+#' @noRd
+integrationRecordValuesKey <- function(input) {
+    s <- integrationRecordScalar
+    used <- s(input$matrix_used)
+    if (is.na(used)) used <- if (identical(s(input$matrix_role), "corrected")) "ruv_corrected" else "uncorrected"
+    if (identical(used, "ruv_corrected")) return("values_corrected")
+    if (isTRUE(as.logical(s(input$corrected_available)))) "values_uncorrected_available" else "values_normalised"
 }
 
 #' The scales of the values given to the model, in words, from the record (KIT-152): "data set: scale" per data set.
@@ -711,10 +788,13 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
     s <- integrationRecordScalar
     p <- function(name) integrationRecordParameter(analysis$parameters, name)
     used <- Filter(\(input) length(unlist(input$views_in_model)) > 0L, block$inputs)
+    # KIT-153: the values each input gave the model (`integrationRecordValuesKey`).
     items <- vapply(used, function(input) sprintf(texts[["methods_input_item"]], s(input$omic),
         paste(unlist(input$views_in_model), collapse = ", "),
-        if (identical(s(input$matrix_role), "corrected")) sprintf(texts[["methods_input_corrected"]], s(input$correction_text)) else
-            texts[["methods_input_normalised"]]), character(1))
+        switch(integrationRecordValuesKey(input),
+            values_corrected = sprintf(texts[["methods_input_corrected"]], s(input$correction_text)),
+            values_uncorrected_available = sprintf(texts[["methods_input_uncorrected_available"]], s(input$correction_text)),
+            texts[["methods_input_normalised"]])), character(1))
     views <- unlist(lapply(used, \(input) unlist(input$views_in_model)))
     model <- block$model
     versions <- model$versions
@@ -777,9 +857,13 @@ integrationMethodsText <- function(record, texts = integrationRecordTexts()) {
             integrationTextOr(integrationGuiTexts(), paste0("padjust_", adjust), as.character(adjust))))
         sentences <- c(sentences, integrationMethodsOutputs(results$outputs, block$claim_limit, texts))
     }
+    # KIT-141: the enrichment of the factors.
+    sentences <- c(sentences, integrationMethodsEnrichment(block, texts))
     claim <- block$claim_limit
     sentences <- c(sentences, if (isTRUE(as.logical(s(claim$applies))))
         sprintf(texts[["methods_claim_limit"]], paste(unlist(claim$group_corrected), collapse = ", ")) else texts[["methods_claim_none"]])
+    # KIT-153: the uncorrected matrices' caution.
+    if (isTRUE(as.logical(s(claim$uncorrected)))) sentences <- c(sentences, texts[["methods_claim_uncorrected"]])
     # The settings in the Model tab's words: its label, and the chosen value's words where the tab has them.
     gui <- integrationGuiTexts()
     by_status <- function(status) {
@@ -847,6 +931,9 @@ integrationStudyParameterLines <- function(record, texts = integrationRecordText
         vapply(seq_len(nrow(table)), \(i) paste0("* ", paste(sprintf("%s: %s", names(table), unlist(table[i, ], use.names = FALSE)),
             collapse = "; ")), character(1))
     pairs <- function(table) sprintf("* %s: %s", table[[1L]], table[[2L]])
+    # KIT-141: an enrichment sheet without an enrichment holds one row saying so.
+    enriched <- function(table) if (identical(as.character(table[[1L]]), unname(texts[["none_recorded"]])))
+        sprintf("* %s", texts[["none_recorded"]]) else rows(table)
     c(section(texts[["report_title"]], texts[["report_intro"]]),
         section(texts[["section_inputs"]], rows(tables$integration_inputs)),
         section(texts[["section_matching"]], pairs(tables$integration_matching)),
@@ -856,6 +943,9 @@ integrationStudyParameterLines <- function(record, texts = integrationRecordText
         section(texts[["section_results"]], rows(tables$integration_results)),
         # KIT-152: the further figures.
         section(texts[["section_outputs"]], rows(tables$integration_outputs)),
+        # KIT-141: the enrichments and their terms.
+        section(texts[["section_enrichment"]], enriched(tables$integration_enrichment)),
+        section(texts[["section_enrichment_terms"]], enriched(tables$integration_enrichment_terms)),
         section(texts[["section_notes"]], if (nrow(tables$integration_notes)) sprintf("* %s", tables$integration_notes[[1L]]) else
             sprintf("* %s", texts[["none_recorded"]])),
         section(texts[["section_methods"]], c(texts[["methods_draft_note"]], "", integrationMethodsText(record, texts))))
@@ -1034,13 +1124,20 @@ integrationCompareOutputs <- function(recorded, results, tolerance = 1e-5) {
 #' @param current_versions This computer's versions; NULL takes `integrationMofaVersions()` when MOFA2 trains.
 #' @param tolerance The relative tolerance of the comparison.
 #' @param recorded_outputs The further figures' recorded tables (`integrationRecordedOutputs()`), or NULL (KIT-152).
+#' @param recorded_enrichment KIT-141: the recorded enrichments read from the store (`integrationRecordedEnrichment()`),
+#'   or NULL; each is repeated on the replayed model and compared (`integrationReplayEnrichment`).
+#' @param enrichment_mode `recorded` (the recorded STRING answer and KEGG/Reactome tables; no network) or `query_again`.
+#' @param enrichment_api_key The STRING key, for `query_again` only; never kept.
+#' @param enrichment_query,enrichment_download The STRING client and the downloader (tests pass stand-ins).
 #' @return `list(replayed, results, comparison, versions, parameters, outputs_comparison)`; `replayed` is the repeated
 #'   model as held outside its store (`integrationModelComparable()`), since the replay's store is closed on return;
 #'   `outputs_comparison` is `integrationCompareOutputs()`'s value when recorded outputs and saved Results settings are
-#'   given.
+#'   given; KIT-141: `enrichment_comparison` is `integrationReplayEnrichment()`'s value when recorded enrichments are given.
 #' @noRd
 replayIntegrationRecord <- function(record, scratch, recorded = NULL, manifests = NULL, probe = integrationMofaCapability,
-    trainer = NULL, current_versions = NULL, tolerance = 1e-5, recorded_outputs = NULL) {
+    trainer = NULL, current_versions = NULL, tolerance = 1e-5, recorded_outputs = NULL, recorded_enrichment = NULL,
+    enrichment_mode = "recorded", enrichment_api_key = NULL, enrichment_query = integrationStringRankedEnrichment,
+    enrichment_download = integrationEnrichmentDownload) {
     texts <- integrationRecordTexts()
     analysis <- integrationRecordAnalysisOf(record)
     block <- analysis$integration
@@ -1093,9 +1190,13 @@ replayIntegrationRecord <- function(record, scratch, recorded = NULL, manifests 
         for (parameter in block$results$parameters) settings[[as.character(s(parameter$name))]] <- decodeWorkflowRecordValue(parameter$value)
         results <- integrationResults(run$value, integrationImportedObject(manager), settings, manager = manager)
     }
+    # KIT-141: the recorded enrichments, repeated on the replayed model.
+    enrichment_comparison <- if (length(recorded_enrichment)) integrationReplayEnrichment(manager, recorded_enrichment,
+        enrichment_mode, enrichment_api_key, enrichment_query, enrichment_download, tolerance)
+    enrichment_api_key <- NULL
     # KIT-148: read from the replay's store before it is closed.
     replayed <- integrationModelComparable(manager, run$value)
-    list(replayed = replayed, results = results,
+    list(replayed = replayed, results = results, enrichment_comparison = enrichment_comparison,
         comparison = if (!is.null(recorded)) integrationCompareModels(recorded, replayed, tolerance),
         versions = versions, parameters = manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$parameters,
         outputs_comparison = if (!is.null(recorded_outputs) && !is.null(results))
@@ -1122,8 +1223,10 @@ replayIntegrationProject <- function(project_root, scratch, ...) {
         hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value))
     # KIT-152: the further figures' recorded tables, read before the store is closed.
     recorded_outputs <- integrationRecordedOutputs(manager)
+    # KIT-141: the recorded enrichments (products, rankings, STRING answers, KEGG/Reactome tables), read likewise.
+    recorded_enrichment <- integrationRecordedEnrichment(manager)
     closeWorkflowStateOwner(manager)
     opened <- FALSE
-    c(replayIntegrationRecord(record, scratch, recorded = recorded, recorded_outputs = recorded_outputs, ...),
-        list(record = record))
+    c(replayIntegrationRecord(record, scratch, recorded = recorded, recorded_outputs = recorded_outputs,
+        recorded_enrichment = recorded_enrichment, ...), list(record = record))
 }

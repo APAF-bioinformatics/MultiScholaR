@@ -60,9 +60,10 @@ workflowClassDeclarations <- function() {
             tables = "contrasts", lists = "enrichment_data",
             opaque = c("enrichment_plots", "enrichment_plotly", "enrichment_summaries"), roles = character()),
         # KIT-062: the integration owner's inputs state, several omics' views (one table each) with one design row per
-        # run; the inputs' manifests, hashes and samples tables as one value.
+        # run; the inputs' manifests, hashes and samples tables as one value. KIT-153: `corrected_views`, the RUV-corrected
+        # tables of the views whose omic saved one.
         IntegrationViewsData = declare("IntegrationViewsData", "assay", "views", "wide", "design_matrix",
-            tables = "design_matrix", lists = c("views", "features"), opaque = "inputs",
+            tables = "design_matrix", lists = c("views", "features", "corrected_views"), opaque = "inputs",
             roles = c("sample_id", "group_id", "biological_sample_id")))
 }
 

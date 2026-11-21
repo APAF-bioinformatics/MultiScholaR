@@ -266,7 +266,7 @@ runOneStringDbRankEnrichmentMofa <- function( input_table
 #'   filter_significant = FALSE,
 #'   result_label = "T2_vs_MSO_enrichment",
 #'   results_dir = "string_enrichment_output",
-#'   api_key = "your_api_key",
+#'   api_key = Sys.getenv("STRING_API_KEY"),
 #'   species = "9606"
 #' )
 #' }

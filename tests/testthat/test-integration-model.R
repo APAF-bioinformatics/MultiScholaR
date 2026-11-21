@@ -156,16 +156,19 @@ test_that("KIT-062: the inputs and parameters are refused in plain words with cl
     expect_identical(table$parameter, setdiff(integrationMofaParameterNames(), c("input_manifests", "views")))
     expect_true(all(nzchar(table$settled_by)))
     # Every method choice is the workbook's to settle, except those the user decided: the precision (INT-6), the
-    # feature selection (INT-12) and the convergence (INT-15; KIT-151).
+    # feature selection (INT-12), the convergence (INT-15; KIT-151) and the input matrix (INT-23; KIT-153).
     decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "precision", "convergence_mode", "maxiter",
         "scaling", "scale_views")
-    expect_true(all(grepl("workbook", table$settled_by[!table$parameter %in% c(decided, "training_seeds")])))
+    expect_true(all(grepl("workbook", table$settled_by[!table$parameter %in% c(decided, "training_seeds", "input_matrix")])))
     # INT-14: several seeds decided; their number is provisional.
     expect_match(table$settled_by[table$parameter == "training_seeds"], "^INT-14 .*provisional")
     expect_true(all(grepl("^INT-12 \\(decided", table$settled_by[table$parameter %in% decided[1:3]])))
     expect_identical(table$default[table$parameter %in% decided[1:3]], c("variance_above_trend", "1000", "0.5"))
     expect_true(all(grepl("^INT-15 \\(decided", table$settled_by[table$parameter %in% decided[5:6]])))
     expect_identical(table$default[table$parameter %in% decided[5:6]], c("slow", "10000"))
+    # KIT-153: the input matrix is the user's decision INT-23, the uncorrected one by default.
+    expect_identical(table$default[table$parameter == "input_matrix"], "uncorrected")
+    expect_match(table$settled_by[table$parameter == "input_matrix"], "INT-23")
     expect_identical(table$default[table$parameter == "precision"], "double")
     expect_match(table$settled_by[table$parameter == "precision"], "INT-6")
     expect_identical(integrationResolveMofaParameters(object)$precision, "double")

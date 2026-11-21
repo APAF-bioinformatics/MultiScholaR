@@ -516,7 +516,9 @@ workflowOperationDefaults <- local({
         trx_ruviii_export = list(logcpm = "input", grid = "input", ruviii_m_source = "no_shipped_default"),
         # KIT-062: the integration model. The inputs come from the import; every method parameter's provisional default
         # is the model's own (`integrationMofaParameterSpec`, settled by the user's workbook), not config.ini's.
-        integration_mofa_model = list(input_manifests = "input", views = "input", technical_replicates = "no_shipped_default",
+        integration_mofa_model = list(input_manifests = "input", views = "input",
+            # KIT-153 (INT-23): the decided default of `integrationMofaParameterSpec`, not config.ini's.
+            input_matrix = "no_shipped_default", technical_replicates = "no_shipped_default",
             internal_standards = "no_shipped_default", missing_samples = "no_shipped_default", feature_selection = "no_shipped_default",
             features_per_view = "no_shipped_default", min_observed_fraction = "no_shipped_default",
             scaling = "no_shipped_default", scale_views = "no_shipped_default",
@@ -637,7 +639,10 @@ workflowParameterLabels <- local({
             ruviii_m_source = "RUVIII replicate matrix M (group or technical_replicate)"),
         # KIT-062: the integration model (MOFA2).
         integration_mofa_model = list(input_manifests = "Integration inputs, the sha256 of each omic's manifest (input)",
-            views = "Views in the model (input)", technical_replicates = "Technical replicates (averaged per biological sample)",
+            views = "Views in the model (input)",
+            # KIT-153.
+            input_matrix = "Matrix each view enters with (uncorrected: normalised before RUV; ruv_corrected: after RUV)",
+            technical_replicates = "Technical replicates (averaged per biological sample)",
             internal_standards = "Internal standards (drop or keep)", missing_samples = "Samples missing in a view (keep as missing, or drop incomplete samples)",
             feature_selection = "Feature selection per view (variance above the mean-variance trend, raw variance, or none)",
             features_per_view = "Features kept per view (a smaller view keeps all)",

@@ -148,9 +148,9 @@ test_that("KIT-138: with the gate on the Integration tile is live and the shell 
     expect_match(page, "if (true) { // KIT-138: the Integration tile stays enabled", fixed = TRUE)
     expect_error(integrationHomeScript("a script without the lines"), class = "integration_gui_invalid")
     config <- integrationGuiConfig()
-    # KIT-140 adds the Model tab, KIT-063 the Results tab, KIT-142 the Record tab.
+    # KIT-140 adds the Model tab, KIT-063 the Results tab, KIT-141 the Enrichment tab, KIT-142 the Record tab.
     expect_identical(vapply(config$shell$tabs, `[[`, "", "status_key"), c("integration_import", "integration_alignment",
-        "integration_model", "integration_results", "integration_record"))
+        "integration_model", "integration_results", "integration_enrichment", "integration_record"))
     ui <- intGuiHtml(mod_integration_ui("integration_workflow"))
     for (id in c("integration-workflow-tabs", "integration-tab-import", "integration-tab-alignment",
         "integration-import-commit", "integration-alignment-confirm", "integration-tab-model", "integration-model-run",
@@ -167,7 +167,8 @@ test_that("KIT-138: with the gate on the Integration tile is live and the shell 
         session$flushReact()
         bus <- session$returned
         expect_identical(bus$tab_status, list(integration_import = "pending", integration_alignment = "disabled",
-            integration_model = "disabled", integration_results = "disabled", integration_record = "disabled"))
+            integration_model = "disabled", integration_results = "disabled", integration_enrichment = "disabled",
+            integration_record = "disabled"))
         progress <- output$workflow_progress$html
         expect_match(progress, texts[["step_import"]], fixed = TRUE)
         expect_match(progress, texts[["step_alignment"]], fixed = TRUE)
@@ -195,6 +196,8 @@ test_that("KIT-138: with the gate on the Integration tile is live and the shell 
         bus$tab_status <- status
         session$flushReact()
         expect_identical(bus$tab_status$integration_record, "pending")
+        # KIT-141: the optional Enrichment tab opens with it.
+        expect_identical(bus$tab_status$integration_enrichment, "pending")
         # The Import tab scanned the project when the module started.
         expect_identical(bus$integration_scan$omics$omic, intGuiOmics)
     })
@@ -285,14 +288,16 @@ test_that("KIT-138: the correction for unwanted variation each input names is st
     input <- readIntegrationInputWithMatrices(file.path(intGuiCorpus(), "proteomics"))
     manifest <- input$manifest[c("omic_type", "workflow", "scale", "source_state", "sample_id_column", "group_column",
         "technical_replicate_column", "biological_sample_column")]
-    manifest$matrix_role <- "corrected"
+    # KIT-153: the normalised matrix with the corrected one beside it.
+    manifest$matrix_role <- "normalised"
     manifest$correction <- list(state = "ruv_covariates", id = "C2", method = "RUVIII", k = 2L, ruv_design = "groups_all_features",
         ruv_k = 2L, replicate_structure = "group", grouping_variable = "group", ruv_k_estimate = NA)
     writeIntegrationInput(file.path(project$paths$integration_dir, "proteomics"), manifest, input$samples,
-        lapply(input$views, `[[`, "matrix"), lapply(input$views, `[[`, "features"))
+        lapply(input$views, `[[`, "matrix"), lapply(input$views, `[[`, "features"),
+        corrected = lapply(input$views, `[[`, "matrix"))
     scan <- integrationScanProject(project$paths$integration_dir)
     row <- scan$omics[scan$omics$omic == "proteomics", ]
-    expect_identical(row$values, texts[["values_corrected"]])
+    expect_identical(row$values, texts[["values_both"]])
     expect_identical(row$correction, integrationCorrectionText(declared))
 })
 
@@ -570,8 +575,9 @@ test_that("KIT-140: the Model tab's settings are built from the parameter table,
     expect_match(ui, texts[["choice_precision_single"]], fixed = TRUE)
     expect_match(ui, texts[["help_precision"]], fixed = TRUE)
     marks <- regmatches(ui, gregexpr(sprintf("\\((%s|%s)\\)", texts[["mark_provisional"]], texts[["mark_decided"]]), ui))[[1L]]
-    decided <- c("feature_selection", "features_per_view", "min_observed_fraction", "scaling", "scale_views", "convergence_mode",
-        "maxiter", "precision")
+    # KIT-153: the input matrix is decided (INT-23) as well.
+    decided <- c("input_matrix", "feature_selection", "features_per_view", "min_observed_fraction", "scaling", "scale_views",
+        "convergence_mode", "maxiter", "precision")
     expect_identical(marks, sprintf("(%s)", ifelse(method %in% decided, texts[["mark_decided"]], texts[["mark_provisional"]])))
     # A default the workbook changes, and a parameter it adds, change the screen with no edit to the tab.
     changed <- spec

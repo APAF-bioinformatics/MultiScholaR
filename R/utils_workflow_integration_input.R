@@ -32,12 +32,26 @@
 # a corrected matrix, the source state's entity id and hash, every file's sha256, the Parquet layout (`parquet`) and
 # each view's row-group count, the package version and the time of writing. A v1 folder (TSV tables, schema v1) was
 # only ever written by development builds and is refused (`integration_input_outdated`).
+#
+# KIT-153 (INT-23): each data set's `matrix_<view>.parquet` is the normalised matrix before correction for unwanted
+# variation (RUV), stage `normalised` (`matrix_stage` of the view; the manifest's `matrix_role` is `normalised`, the
+# role of that file); where the omic applied RUV to the data set, the RUV-corrected matrix is written beside it as
+#
+#   corrected_<view>.parquet    the same features in the same order and the same samples, after RUV (the manifest's
+#                               `correction` names it; per view `corrected_matrix_file` and `corrected_row_groups`)
+#
+# and the manifest's `normalisation` names the normalisation and the state or product that held the uncorrected
+# matrix. A v2 reader (KIT-147) reads such a folder as what it is: a normalised matrix per data set, the corrected file
+# one more file with its sha256. A v2 folder of the earlier build has no `matrix_stage`: it held one matrix per data set,
+# the RUV-corrected one where the omic applied RUV, so it is refused in plain words (`integration_input_outdated`).
 
 INTEGRATION_INPUT_SCHEMA <- "multischolar.integration_input.v2"
 INTEGRATION_INPUT_SCHEMA_V1 <- "multischolar.integration_input.v1"
 INTEGRATION_INPUT_MANIFEST <- "integration_input.json"
 INTEGRATION_INPUT_SAMPLES <- "samples.parquet"
 INTEGRATION_INPUT_ROLES <- c("corrected", "normalised")
+# KIT-153: the stage of each data set's `matrix_file` (the normalised matrix before RUV).
+INTEGRATION_INPUT_MATRIX_STAGE <- "normalised"
 # The Parquet layout every v2 file follows, recorded in the manifest as `parquet` and required as written.
 INTEGRATION_INPUT_PARQUET <- list(format_version = "2.6", compression = "snappy", row_group_rows = 10000L,
     column_types = list(feature_id = "string", runs = "double", samples = "string", features = "string"))
@@ -50,12 +64,35 @@ abortIntegrationInput <- function(message, class = NULL) {
     cli::cli_abort(message, class = c(class, "integration_input_invalid"), call = NULL)
 }
 
-#' A view's two file names (fixed by the view name).
+#' A view's file names (fixed by the view name). KIT-153: `corrected`, the RUV-corrected matrix where the omic has one.
 #' @param view The view name.
-#' @return `list(matrix, features)`.
+#' @return `list(matrix, features, corrected)`.
 #' @noRd
 integrationInputViewFiles <- function(view) {
-    list(matrix = sprintf("matrix_%s.parquet", view), features = sprintf("features_%s.parquet", view))
+    list(matrix = sprintf("matrix_%s.parquet", view), features = sprintf("features_%s.parquet", view),
+        corrected = sprintf("corrected_%s.parquet", view))
+}
+
+#' The normalised matrix that entered RUV, on the corrected matrix's features and samples (KIT-153): its rows of the
+#' corrected matrix's feature ids in that order, its columns `feature_id` and the corrected matrix's samples. Refused
+#' when it lacks one of them (the matrix that entered RUV is then not the one found).
+#' @param uncorrected The normalised matrix (`feature_id`, then one column per run).
+#' @param corrected The corrected matrix, the same form.
+#' @param view The data set's name (for the message).
+#' @return The uncorrected matrix in the corrected one's shape.
+#' @noRd
+integrationInputUncorrectedOn <- function(uncorrected, corrected, view) {
+    at <- match(as.character(corrected$feature_id), as.character(uncorrected$feature_id))
+    runs <- names(corrected)[-1L]
+    absent <- setdiff(runs, names(uncorrected))
+    if (anyNA(at) || length(absent)) {
+        abortIntegrationInput(sprintf(paste("the normalised matrix that entered RUV in data set %s lacks %d of the corrected",
+            "matrix's features and %d of its runs"), view, sum(is.na(at)), length(absent)))
+    }
+    out <- as.data.frame(uncorrected, stringsAsFactors = FALSE, optional = TRUE)[at, c("feature_id", runs), drop = FALSE]
+    out$feature_id <- as.character(out$feature_id)
+    rownames(out) <- NULL
+    out
 }
 
 #' A view's name for an omic with several assays (INT-4, user 2026-11-19): `<omic>_<assay>` (for example
@@ -91,9 +128,11 @@ integrationInputBiologicalSampleColumn <- function(design, technical, sample) {
 #'   `display_name_column`).
 #' @param samples The samples table.
 #' @param matrices,features Named lists of tables by view.
+#' @param corrected KIT-153: named list by view of the RUV-corrected matrices (a subset of the views); each has its
+#'   view's feature ids in the same order and its samples.
 #' @return TRUE invisibly, or an `integration_input_invalid` error.
 #' @noRd
-validateIntegrationInputTables <- function(manifest, samples, matrices, features) {
+validateIntegrationInputTables <- function(manifest, samples, matrices, features, corrected = list()) {
     sample_column <- manifest$sample_id_column
     group_column <- manifest$group_column
     feature_column <- manifest$feature_id_column
@@ -130,6 +169,24 @@ validateIntegrationInputTables <- function(manifest, samples, matrices, features
             !identical(as.character(annotation[[feature_column]]), ids)) {
             abortIntegrationInput(sprintf("the features of view %s must list the matrix's ids in order with %s",
                 view, display_column))
+        }
+    }
+    if (length(corrected) && (is.null(names(corrected)) || !all(names(corrected) %in% views) || anyDuplicated(names(corrected)))) {
+        abortIntegrationInput("every corrected matrix must be one of a view's")
+    }
+    for (view in names(corrected)) {
+        matrix <- corrected[[view]]
+        if (!is.data.frame(matrix) || !identical(names(matrix)[[1L]], feature_column) ||
+            !identical(as.character(matrix[[feature_column]]), as.character(matrices[[view]][[feature_column]]))) {
+            abortIntegrationInput(sprintf("the corrected matrix of view %s must list the view's feature ids in order", view))
+        }
+        columns <- names(matrix)[-1L]
+        if (anyDuplicated(columns) || !setequal(columns, sample_ids) || length(columns) != length(sample_ids)) {
+            abortIntegrationInput(sprintf("the samples of the corrected matrix of view %s must be the samples table's, once each",
+                view))
+        }
+        if (!all(vapply(matrix[columns], is.numeric, logical(1)))) {
+            abortIntegrationInput(sprintf("the sample columns of the corrected matrix of view %s must be numeric", view))
         }
     }
     invisible(TRUE)
@@ -283,15 +340,18 @@ readIntegrationInputMatrix <- function(path, name, columns) {
 #' @param view The manifest's view entry.
 #' @param feature_column The manifest's feature id column.
 #' @param sample_ids The samples table's ids, in its order.
+#' @param file,row_groups KIT-153: the matrix file and its row-group count (the view's `matrix_file` and `row_groups`, or
+#'   its `corrected_matrix_file` and `corrected_row_groups`).
 #' @return The feature ids, in file order.
 #' @noRd
-checkIntegrationInputMatrix <- function(dir, view, feature_column, sample_ids) {
-    name <- view$matrix_file
+checkIntegrationInputMatrix <- function(dir, view, feature_column, sample_ids, file = view$matrix_file,
+    row_groups = view$row_groups) {
+    name <- file
     withIntegrationInputParquet(file.path(dir, name), name, function(reader) {
         schema <- integrationInputSchema(reader)
         rows <- as.integer(reader$num_rows)
         if (!identical(rows, as.integer(view$rows)) || !identical(length(schema$names) - 1L, as.integer(view$columns))) {
-            abortIntegrationInput(sprintf("the matrix of view %s is not %s x %s", view$name, view$rows, view$columns))
+            abortIntegrationInput(sprintf("the matrix %s of view %s is not %s x %s", name, view$name, view$rows, view$columns))
         }
         if (!identical(schema$names[[1L]], feature_column) || !identical(schema$types[[1L]], "string")) {
             abortIntegrationInput(sprintf("the matrix of view %s must start with the text column %s", view$name, feature_column))
@@ -304,9 +364,9 @@ checkIntegrationInputMatrix <- function(dir, view, feature_column, sample_ids) {
             abortIntegrationInput(sprintf("the sample columns of view %s must be numeric (double)", view$name))
         }
         groups <- as.integer(reader$num_row_groups)
-        if (!identical(groups, as.integer(view$row_groups))) {
-            abortIntegrationInput(sprintf("the matrix of view %s does not have the %s row groups its manifest states",
-                view$name, view$row_groups))
+        if (!identical(groups, as.integer(row_groups))) {
+            abortIntegrationInput(sprintf("the matrix %s of view %s does not have the %s row groups its manifest states",
+                name, view$name, row_groups))
         }
         ids <- character(rows)
         at <- 0L
@@ -330,22 +390,33 @@ checkIntegrationInputMatrix <- function(dir, view, feature_column, sample_ids) {
 #' then the manifest with every file's sha256 and the Parquet layout, in a staging folder that replaces `dir` once
 #' complete.
 #' @param dir The omic's folder, `<project>/integration/<omic>/`.
-#' @param manifest The omic's fields: `omic_type`, `workflow`, `matrix_role`, `scale`, `correction` (NULL when
-#'   `normalised`), `source_state`, `annotation`, `sample_id_column`, `group_column`, `technical_replicate_column`.
+#' @param manifest The omic's fields: `omic_type`, `workflow`, `matrix_role` (KIT-153: `normalised`, the role of each
+#'   data set's matrix file), `scale`, `normalisation` (the normalisation and the state or product that held the
+#'   uncorrected matrix), `correction` (the RUV that produced the corrected matrices; NULL when there are none),
+#'   `source_state`, `annotation`, `sample_id_column`, `group_column`, `technical_replicate_column`.
 #' @param samples The design of the matrix's samples.
-#' @param matrices Named list by view of features x samples tables whose first column is `feature_id`.
+#' @param matrices Named list by view of features x samples tables whose first column is `feature_id`: the normalised
+#'   matrices before RUV (KIT-153).
 #' @param features Named list by view of feature tables (`feature_id`, `display_name`, annotation columns).
 #' @param now The time of writing.
 #' @param renameFn The folder rename (`file.rename`; a test injects a failure).
+#' @param corrected KIT-153: named list by view of the RUV-corrected matrices of the views the omic corrected (the same
+#'   features in the same order and the same samples as the view's matrix); empty when the omic applied no RUV.
 #' @return The manifest's path, invisibly.
 #' @noRd
-writeIntegrationInput <- function(dir, manifest, samples, matrices, features, now = Sys.time(), renameFn = file.rename) {
+writeIntegrationInput <- function(dir, manifest, samples, matrices, features, now = Sys.time(), renameFn = file.rename,
+    corrected = list()) {
     views <- names(matrices)
     if (!length(views) || any(!grepl("^[A-Za-z0-9_-]+$", views))) {
         abortIntegrationInput("view names must be letters, digits, underscores or hyphens")
     }
-    if (!isTRUE(manifest$matrix_role %in% INTEGRATION_INPUT_ROLES)) {
-        abortIntegrationInput("the matrix role must be corrected or normalised")
+    # KIT-153: each data set's matrix file is the normalised matrix before RUV; a corrected matrix is written beside it.
+    if (!identical(manifest$matrix_role, INTEGRATION_INPUT_MATRIX_STAGE)) {
+        abortIntegrationInput(paste("the matrix role must be normalised: each data set's matrix is the normalised matrix",
+            "before RUV, and a corrected matrix is given beside it"))
+    }
+    if (length(corrected) && !is.list(manifest$correction)) {
+        abortIntegrationInput("a corrected matrix needs the correction that produced it")
     }
     manifest$schema <- INTEGRATION_INPUT_SCHEMA
     manifest$feature_id_column <- "feature_id"
@@ -353,10 +424,10 @@ writeIntegrationInput <- function(dir, manifest, samples, matrices, features, no
     manifest$views <- lapply(views, function(view) {
         files <- integrationInputViewFiles(view)
         list(name = view, matrix_file = files$matrix, features_file = files$features,
-            rows = nrow(matrices[[view]]), columns = ncol(matrices[[view]]) - 1L)
+            rows = nrow(matrices[[view]]), columns = ncol(matrices[[view]]) - 1L, matrix_stage = INTEGRATION_INPUT_MATRIX_STAGE)
     })
     sample_ids <- as.character(samples[[manifest$sample_id_column]])
-    validateIntegrationInputTables(manifest, samples, matrices, features)
+    validateIntegrationInputTables(manifest, samples, matrices, features, corrected)
     parent <- dirname(dir)
     dir.create(parent, recursive = TRUE, showWarnings = FALSE)
     staging <- tempfile(paste0(".", basename(dir), "-"), tmpdir = parent)
@@ -374,6 +445,12 @@ writeIntegrationInput <- function(dir, manifest, samples, matrices, features, no
             write(integrationInputTextTable(features[[views[[i]]]]), files$features))
         manifest$views[[i]]$row_groups <- withIntegrationInputParquet(file.path(staging, files$matrix), files$matrix,
             function(reader) as.integer(reader$num_row_groups))
+        if (!is.null(corrected[[views[[i]]]])) {
+            written <- c(written, write(integrationInputMatrixTable(corrected[[views[[i]]]], sample_ids), files$corrected))
+            manifest$views[[i]]$corrected_matrix_file <- files$corrected
+            manifest$views[[i]]$corrected_row_groups <- withIntegrationInputParquet(file.path(staging, files$corrected),
+                files$corrected, function(reader) as.integer(reader$num_row_groups))
+        }
     }
     manifest$samples_file <- INTEGRATION_INPUT_SAMPLES
     manifest$parquet <- INTEGRATION_INPUT_PARQUET
@@ -445,6 +522,20 @@ readIntegrationInput <- function(dir) {
         "feature_id_column", "display_name_column", "views", "samples_file", "parquet", "files", "software", "written_at")
     missing <- setdiff(required, names(manifest))
     if (length(missing)) abortIntegrationInput(sprintf("the manifest lacks %s", paste(missing, collapse = ", ")))
+    # KIT-153: every data set names its matrix's stage. The earlier build named none: it kept one matrix per data set,
+    # RUV-corrected where the omic applied RUV, which cannot be read as the normalised matrix before RUV.
+    stages <- vapply(if (is.list(manifest$views)) manifest$views else list(), function(view) {
+        stage <- if (is.list(view)) view$matrix_stage
+        if (is.character(stage) && length(stage) == 1L) stage else NA_character_
+    }, character(1))
+    if (length(stages) && all(is.na(stages))) {
+        abortIntegrationInput(sprintf(paste("the integration input in %s was saved by an earlier development version of",
+            "MultiScholaR, which kept one matrix per data set (corrected for unwanted variation where the omic applied RUV)",
+            "and did not say which; save the %s Summary again"), dir, basename(dir)), class = "integration_input_outdated")
+    }
+    if (anyNA(stages) || any(stages != INTEGRATION_INPUT_MATRIX_STAGE)) {
+        abortIntegrationInput("every data set's matrix must be the normalised matrix before RUV (matrix_stage normalised)")
+    }
     # K061-6: the omic is its folder's; the views are named once each, as the writer names them, and their files are
     # the view's fixed names.
     if (!identical(manifest$omic_type, basename(dir))) {
@@ -462,7 +553,11 @@ readIntegrationInput <- function(dir) {
         if (!identical(view$matrix_file, fixed$matrix) || !identical(view$features_file, fixed$features)) {
             abortIntegrationInput(sprintf("the files of view %s must be %s and %s", view$name, fixed$matrix, fixed$features))
         }
+        if (!is.null(view$corrected_matrix_file) && !identical(view$corrected_matrix_file, fixed$corrected)) {
+            abortIntegrationInput(sprintf("the corrected matrix of view %s must be %s", view$name, fixed$corrected))
+        }
     }
+    corrected_views <- Filter(function(view) !is.null(view$corrected_matrix_file), manifest$views)
     if (!identical(manifest$samples_file, INTEGRATION_INPUT_SAMPLES)) {
         abortIntegrationInput(sprintf("the samples file must be %s", INTEGRATION_INPUT_SAMPLES))
     }
@@ -470,10 +565,10 @@ readIntegrationInput <- function(dir) {
         abortIntegrationInput(paste("the manifest's Parquet layout must be the contract's: format 2.6, snappy, row groups",
             "of 10,000 rows, text ids and annotation, double values"))
     }
-    if (!isTRUE(manifest$matrix_role %in% INTEGRATION_INPUT_ROLES)) {
-        abortIntegrationInput("the matrix role must be corrected or normalised")
+    if (!identical(manifest$matrix_role, INTEGRATION_INPUT_MATRIX_STAGE)) {
+        abortIntegrationInput("the matrix role must be normalised: the role of each data set's matrix file")
     }
-    if (identical(manifest$matrix_role, "corrected") && !is.list(manifest$correction)) {
+    if (length(corrected_views) && !is.list(manifest$correction)) {
         abortIntegrationInput("a corrected matrix needs the correction that produced it")
     }
     files <- manifest$files
@@ -488,7 +583,8 @@ readIntegrationInput <- function(dir) {
             abortIntegrationInput(sprintf("the file %s does not match its sha256", name))
         }
     }
-    listed <- c(manifest$samples_file, unlist(lapply(manifest$views, function(view) c(view$matrix_file, view$features_file))))
+    listed <- c(manifest$samples_file, unlist(lapply(manifest$views, function(view) c(view$matrix_file, view$features_file,
+        view$corrected_matrix_file))))
     if (!all(listed %in% names(files))) abortIntegrationInput("every table must be listed with its sha256")
     sample_column <- manifest$sample_id_column
     samples <- readIntegrationInputTextTable(file.path(dir, manifest$samples_file), manifest$samples_file)
@@ -510,8 +606,16 @@ readIntegrationInput <- function(dir) {
             abortIntegrationInput(sprintf("the features of view %s must list the matrix's ids in order with %s",
                 view$name, display_column))
         }
+        # KIT-153: the corrected matrix, where there is one, has the same features in the same order and the same samples.
+        corrected <- !is.null(view$corrected_matrix_file)
+        if (corrected && !identical(checkIntegrationInputMatrix(dir, view, feature_column, sample_ids,
+            view$corrected_matrix_file, view$corrected_row_groups), ids)) {
+            abortIntegrationInput(sprintf("the corrected matrix of view %s must list the matrix's feature ids in order",
+                view$name))
+        }
         views[[view$name]] <- list(features = annotation, rows = length(ids), columns = length(sample_ids),
-            row_groups = as.integer(view$row_groups))
+            row_groups = as.integer(view$row_groups), corrected = corrected,
+            corrected_row_groups = if (corrected) as.integer(view$corrected_row_groups) else NA_integer_)
     }
     list(manifest = manifest, samples = samples, views = views)
 }
@@ -521,20 +625,31 @@ readIntegrationInput <- function(dir) {
 #' @param dir The omic's folder.
 #' @param view The data set's name.
 #' @param input `readIntegrationInput(dir)`'s value, or NULL to read and validate the folder here.
+#' @param matrix KIT-153: `uncorrected` (the normalised matrix before RUV, the view's `matrix_file`) or `ruv_corrected`
+#'   (its `corrected_matrix_file`; refused when the data set has none).
 #' @return `list(view, path, sha256, rows, columns, row_groups, prototype, read_row_group(index), read())`: `columns`
 #'   is `feature_id` then the run ids in the samples table's order; `read_row_group` gives the rows of one row group
 #'   (from 1), `read` the whole matrix (small inputs and tests).
 #' @noRd
-openIntegrationInputView <- function(dir, view, input = NULL) {
+openIntegrationInputView <- function(dir, view, input = NULL, matrix = c("uncorrected", "ruv_corrected")) {
+    matrix <- match.arg(matrix)
     if (is.null(input)) input <- readIntegrationInput(dir)
     entry <- Filter(function(item) identical(item$name, view), input$manifest$views)
     if (length(entry) != 1L) abortIntegrationInput(sprintf("the integration input in %s has no data set %s", dir, view))
     entry <- entry[[1L]]
-    path <- file.path(dir, entry$matrix_file)
     name <- entry$matrix_file
+    row_groups <- entry$row_groups
+    if (identical(matrix, "ruv_corrected")) {
+        if (is.null(entry$corrected_matrix_file)) {
+            abortIntegrationInput(sprintf("the integration input in %s has no RUV-corrected matrix for data set %s", dir, view))
+        }
+        name <- entry$corrected_matrix_file
+        row_groups <- entry$corrected_row_groups
+    }
+    path <- file.path(dir, name)
     columns <- c(input$manifest$feature_id_column, input$samples[[input$manifest$sample_id_column]])
     list(view = view, path = path, sha256 = input$manifest$files[[name]], rows = as.integer(entry$rows),
-        columns = columns, row_groups = as.integer(entry$row_groups),
+        columns = columns, row_groups = as.integer(row_groups),
         prototype = integrationInputMatrixPrototype(columns),
         read_row_group = function(index) readIntegrationInputRowGroup(path, name, index, columns),
         read = function() readIntegrationInputMatrix(path, name, columns))

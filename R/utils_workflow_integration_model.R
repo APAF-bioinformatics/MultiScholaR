@@ -37,14 +37,19 @@ INTEGRATION_INPUT_ROLE_PREFIX <- "integration_input_"
 #'   `biological_sample_column`.
 #' @slot sample_id,group_id,biological_sample_id The design's run, group and biological-sample columns.
 #' @slot args Unused; the declared classes' argument slot.
+#' @slot corrected_views KIT-153: named list by view of the RUV-corrected tables of the views whose omic saved one (the
+#'   same form as `views`); `views` holds each view's normalised matrix before RUV.
 #' @noRd
 setClass("IntegrationViewsData",
     slots = c(views = "list", features = "list", design_matrix = "data.frame", inputs = "list",
-        sample_id = "character", group_id = "character", biological_sample_id = "character", args = "list"),
+        sample_id = "character", group_id = "character", biological_sample_id = "character", args = "list",
+        corrected_views = "list"),
     prototype = list(views = list(), features = list(), design_matrix = data.frame(), inputs = list(),
-        sample_id = "run", group_id = "group", biological_sample_id = "biological_sample", args = list()),
+        sample_id = "run", group_id = "group", biological_sample_id = "biological_sample", args = list(),
+        corrected_views = list()),
     validity = function(object) {
         if (!identical(names(object@views), names(object@features))) return("views and features must name the same views")
+        if (!all(names(object@corrected_views) %in% names(object@views))) return("every corrected view must be a view")
         roles <- list(object@sample_id, object@group_id, object@biological_sample_id)
         if (!all(vapply(roles, function(role) is.character(role) && length(role) == 1L && !is.na(role), logical(1)))) {
             return("the run, group and biological-sample columns are one name each")
@@ -128,7 +133,7 @@ integrationReadInputs <- function(dirs) {
                 integrationRefuse(sprintf("the view name %s is used by two omics; views are named <omic>_<assay>", view),
                     "integration_input_duplicate")
             }
-            views[[view]] <- list(dir = dirs[[i]], omic = omic)
+            views[[view]] <- list(dir = dirs[[i]], omic = omic, corrected = isTRUE(input$views[[view]]$corrected))
             features[[view]] <- input$views[[view]]$features
         }
         design[[i]] <- data.frame(omic = omic, run = as.character(samples[[sample_column]]),
@@ -146,13 +151,17 @@ integrationReadInputs <- function(dirs) {
 
 #' The reader of each view of the read inputs (`openIntegrationInputView`), in the inputs' view order.
 #' @param read `integrationReadInputs()`'s value.
+#' @param matrix KIT-153: `uncorrected` (every view's normalised matrix before RUV) or `ruv_corrected` (the corrected
+#'   matrix of each view that has one).
 #' @noRd
-integrationInputViewReaders <- function(read) {
-    readers <- lapply(names(read$views), function(view) {
+integrationInputViewReaders <- function(read, matrix = "uncorrected") {
+    views <- names(read$views)
+    if (identical(matrix, "ruv_corrected")) views <- views[vapply(read$views[views], function(entry) isTRUE(entry$corrected), logical(1))]
+    readers <- lapply(views, function(view) {
         entry <- read$views[[view]]
-        openIntegrationInputView(entry$dir, view, read$inputs[[entry$omic]])
+        openIntegrationInputView(entry$dir, view, read$inputs[[entry$omic]], matrix)
     })
-    stats::setNames(readers, names(read$views))
+    stats::setNames(readers, views)
 }
 
 #' Read the omics' integration inputs into one `IntegrationViewsData` in memory (KIT-062): `integrationReadInputs()`
@@ -164,8 +173,9 @@ integrationInputViewReaders <- function(read) {
 integrationViewsFromInputs <- function(dirs) {
     read <- integrationReadInputs(dirs)
     matrices <- lapply(integrationInputViewReaders(read), function(reader) reader$read())
+    corrected <- lapply(integrationInputViewReaders(read, "ruv_corrected"), function(reader) reader$read())
     object <- methods::new("IntegrationViewsData", views = matrices, features = read$features, design_matrix = read$design,
-        inputs = read$record)
+        inputs = read$record, corrected_views = corrected)
     list(object = object, manifests = read$manifests)
 }
 
@@ -220,11 +230,17 @@ importIntegrationInputs <- function(manager, dirs, description = "Integration in
         context <- manager$.context
         readers <- integrationInputViewReaders(read)
         tables <- lapply(readers, function(reader) integrationImportViewTable(context, reader))
+        # KIT-153: the RUV-corrected matrices are imported too (where an omic saved one), so that the model can take
+        # either without a second import; each is a table of the store as the normalised ones are.
+        corrected_readers <- integrationInputViewReaders(read, "ruv_corrected")
+        corrected_tables <- lapply(corrected_readers, function(reader) integrationImportViewTable(context, reader))
         object <- methods::new("IntegrationViewsData", views = lapply(readers, function(reader) reader$prototype),
-            features = read$features, design_matrix = read$design, inputs = read$record)
+            features = read$features, design_matrix = read$design, inputs = read$record,
+            corrected_views = lapply(corrected_readers, function(reader) reader$prototype))
         setWorkflowStepProvenance(manager, INTEGRATION_IMPORT_OPERATION)
         checkpoint <- checkpointWorkflowExecutionResult(manager, object)
         checkpoint$components$views <- tables
+        checkpoint$components$corrected_views <- corrected_tables
         checkpoint$dimensions$rows <- sum(vapply(tables, function(table) as.integer(table$metadata$shape[[1L]]), integer(1)))
         commitWorkflowReferenceState(manager, INTEGRATION_INPUTS_STATE, checkpoint, config, description)
         recordWorkflowInputs(manager, paths = stats::setNames(read$manifests,
@@ -250,6 +266,10 @@ INTEGRATION_FEW_SAMPLES <- 16L
 integrationMofaParameterSpec <- function() {
     workbook <- "workbook (provisional)"
     list(
+        # KIT-153 (INT-23, user 2026-11-21): each data set's normalised matrix before RUV by default; the RUV-corrected
+        # matrix selectable where every data set in the model has one.
+        input_matrix = list(default = "uncorrected", choices = c("uncorrected", "ruv_corrected"),
+            settled_by = "INT-23 (decided 2026-11-21: the normalised matrix before RUV; the RUV-corrected matrix selectable)"),
         technical_replicates = list(default = "average", choices = "average",
             settled_by = "INT-2 (averaged per biological sample); the workbook may override"),
         internal_standards = list(default = "drop", choices = c("drop", "keep"),
@@ -314,6 +334,26 @@ integrationMofaParameterTable <- function() {
 #' method parameters.
 #' @noRd
 integrationMofaParameterNames <- function() c("input_manifests", "views", names(integrationMofaParameterSpec()))
+
+#' The data sets of the inputs state whose omic saved a RUV-corrected matrix (KIT-153), from the imported manifests.
+#' @param object An `IntegrationViewsData` with its `inputs` hydrated.
+#' @return A character vector of view names.
+#' @noRd
+integrationCorrectedViewNames <- function(object) {
+    unlist(lapply(unname(object@inputs), function(entry) {
+        named <- vapply(entry$manifest$views, function(view) if (!is.null(view$corrected_matrix_file))
+            as.character(view$name) else NA_character_, character(1))
+        named[!is.na(named)]
+    }), use.names = FALSE) %||% character()
+}
+
+#' The slot of the inputs state the model reads its data sets from (KIT-153): `views` (the normalised matrices before
+#' RUV) or, with `input_matrix = ruv_corrected`, `corrected_views`.
+#' @param parameters The resolved parameters.
+#' @noRd
+integrationModelViewsSlot <- function(parameters) {
+    if (identical(parameters$input_matrix, "ruv_corrected")) "corrected_views" else "views"
+}
 
 #' The manifests' sha256 the inputs state holds, named by omic in the state's order.
 #' @param object An `IntegrationViewsData` with its `inputs` hydrated.
@@ -405,6 +445,15 @@ integrationResolveMofaParameters <- function(object, parameters = list()) {
     }
     if (length(views) < 2L) {
         integrationRefuse(sprintf("the model needs two or more views; %d selected", length(views)), "integration_too_few_views")
+    }
+    # KIT-153: the RUV-corrected matrix only where every selected data set has one.
+    if (identical(out$input_matrix, "ruv_corrected")) {
+        lacking <- setdiff(views, integrationCorrectedViewNames(object))
+        if (length(lacking)) {
+            integrationRefuse(sprintf(paste("the RUV-corrected matrix was chosen, but data set(s) %s have none (their omic",
+                "applied no correction for unwanted variation); choose the uncorrected matrix, or leave them out"),
+                paste(lacking, collapse = ", ")), c("integration_input_matrix_unavailable", "integration_parameters_invalid"))
+        }
     }
     out <- out[integrationMofaParameterNames()]
     # KIT-063 item A (KIT-139 follow-up): an optional user-edited sample match. Absent, or giving no run another
@@ -984,11 +1033,12 @@ integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_r
 #' @param manager The integration owner.
 #' @param source The inputs state's reference.
 #' @param worker_cap The admitted worker memory (NULL: 12 GiB, the omics' partitioned steps' default).
+#' @param slot KIT-153: `views` (the normalised matrices) or `corrected_views` (`integrationModelViewsSlot`).
 #' @noRd
-integrationStateViewPages <- function(manager, source, worker_cap = NULL) {
+integrationStateViewPages <- function(manager, source, worker_cap = NULL, slot = "views") {
     function(view, columns, kernel) withWorkflowStateScope(manager, function() {
         context <- manager$.context
-        table <- readWorkflowStateMetadata(manager, source)$data$components$views[[view]]
+        table <- readWorkflowStateMetadata(manager, source)$data$components[[slot]][[view]]
         scope <- newWorkflowTableReadScope(context$store, table, reader = if (length(columns) > 64L) "duckdb" else "arrow")
         on.exit(releaseWorkflowTableReadScope(scope), add = TRUE)
         partitionByRows(scope, columns, kernel = function(page, index, offset) kernel(page, offset),
@@ -1393,8 +1443,10 @@ integrationMofaOperation <- function(match = FALSE) {
         kernel = function(object, parameters, store) {
             resolved <- integrationResolveMofaParameters(object, parameters)
             # KIT-149 (audit ENG-05): only the selected data sets are read whole; the others stay zero-row prototypes.
-            object@views[resolved$views] <- readWorkflowExecutionComponents(store$manager, store$source,
-                fields = paste0("views/", resolved$views))@views[resolved$views]
+            # KIT-153: from the matrices `input_matrix` names (the normalised ones, or the RUV-corrected ones).
+            slot <- integrationModelViewsSlot(resolved)
+            object@views[resolved$views] <- methods::slot(readWorkflowExecutionComponents(store$manager, store$source,
+                fields = paste0(slot, "/", resolved$views)), slot)[resolved$views]
             # KIT-148: the rows carry the hand-off names (`<view>:<feature_id>`) from the read, so the aligned views are
             # handed to the trainer as they are, with no renamed copy.
             integrationModelFromAligned(integrationAlignViews(object, resolved, prefix_rows = TRUE), resolved, parameters, store)
@@ -1403,7 +1455,8 @@ integrationMofaOperation <- function(match = FALSE) {
         object <- readWorkflowExecutionComponents(store$manager, store$source, fields = c("features", "design_matrix", "inputs"))
         resolved <- integrationResolveMofaParameters(object, parameters)
         aligned <- integrationAlignViewsPartitioned(object, resolved,
-            integrationStateViewPages(store$manager, store$source, store$worker_cap), prefix_rows = TRUE)
+            integrationStateViewPages(store$manager, store$source, store$worker_cap, integrationModelViewsSlot(resolved)),
+            prefix_rows = TRUE)
         object <- NULL
         integrationModelFromAligned(aligned, resolved, parameters, store)
     }
@@ -1572,6 +1625,10 @@ acceptIntegrationModel <- function(manager, source, run, parameters, confirmatio
     if (!is.null(confirmation)) export$confirmation <- confirmation
     if (identical(previous$reference$entity_id, run$reference$entity_id) && !is.null(previous$results)) {
         export$results <- previous$results
+    }
+    # KIT-141: the enrichments of the same model are kept; a new model starts without any.
+    if (identical(previous$reference$entity_id, run$reference$entity_id) && !is.null(previous$enrichment)) {
+        export$enrichment <- previous$enrichment
     }
     snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- export
     publishWorkflowStateHead(context, snapshot)

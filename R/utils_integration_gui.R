@@ -67,6 +67,8 @@ integrationGuiTexts <- function() {
         col_status = "Status",
         values_corrected = "corrected for unwanted variation",
         values_normalised = "normalised, not corrected",
+        # KIT-153: an omic that applied RUV saves both.
+        values_both = "normalised, and corrected for unwanted variation (both saved)",
         correction_none = "not applied",
         # %s: the approach.
         correction_design = "applied: %s",
@@ -186,6 +188,10 @@ integrationGuiTexts <- function() {
         refusal_group_conflict = paste("A biological sample is in different groups in different omics. Check the groups",
             "in each omic's design."),
         refusal_view_empty = "A data set has no feature measured in two or more samples, so nothing of it is left for the model.",
+        # KIT-153.
+        refusal_input_matrix_unavailable = paste("The corrected values were chosen, but at least one data set in the model",
+            "has none: its omic did not apply the correction for unwanted variation (RUV). Choose the normalised values, or",
+            "leave that data set out."),
         refusal_parameters_invalid = "A model setting is not valid. Check the values entered.",
         refusal_mofa_unavailable = paste("The model cannot be trained on this computer: the MOFA2 software, or the Python",
             "it uses, is not installed."),
@@ -214,6 +220,18 @@ integrationGuiTexts <- function() {
         setting_not_number = "%s: enter a number.",
         # The settings, by the parameter's name (`param_<name>`, `help_<name>`, `choice_<name>_<value>`). A setting
         # without an entry here shows its name: a parameter the workbook adds appears with no edit to the tab.
+        # KIT-153 (INT-23): which values each data set enters the model with; the numbers are the simulation of
+        # docs/qa/workflow-execution/kit/kit-151d/ruv-results.md (branch run-mofa-evidence-k151d).
+        param_input_matrix = "Values each data set enters the model with",
+        choice_input_matrix_uncorrected = "normalised values, before correction for unwanted variation (RUV)",
+        choice_input_matrix_ruv_corrected = "values corrected for unwanted variation (RUV)",
+        help_input_matrix = paste("The normalised values keep biological differences between samples of the same group,",
+            "which the correction can remove: in a simulation, the default correction removed a biological pattern shared",
+            "by two omics that varied within the groups (found in 0 of 30 data sets after correction, 30 of 30 before).",
+            "The corrected values protect comparisons between groups when unwanted variation is correlated with the",
+            "groups: with 20 samples and unwanted variation correlated 0.6 with the groups, the factor for the groups was",
+            "found in 6 of 30 data sets before correction and 30 of 30 after. The corrected values can be chosen only when",
+            "every data set in the model has them."),
         param_technical_replicates = "Runs of the same biological sample",
         choice_technical_replicates_average = "averaged",
         param_internal_standards = "Internal standards",
@@ -381,6 +399,10 @@ integrationGuiTexts <- function() {
         claim_group_corrected = paste("In %s, unwanted variation was removed with the groups as replicate sets, which keeps",
             "the differences between groups by construction. Factors can then separate the groups more than the data",
             "alone would, so no p-value is given for the groups."),
+        # KIT-153: the model used the normalised values before correction.
+        claim_uncorrected = paste("The data sets entered the model before correction for unwanted variation (RUV). Unwanted",
+            "variation that is correlated with the groups has not been removed, so it can make a factor follow the groups;",
+            "read the p-values with that in mind."),
         # %s: the omic, then its correction in words.
         claim_correction = "%s: correction for unwanted variation %s",
         col_samples_tested = "Samples",
@@ -561,7 +583,66 @@ integrationGuiTexts <- function() {
         map_unavailable = "The %s map cannot be drawn on this computer: the software %s is not installed.",
         # KIT-142: the Record tab (its own words are `integrationRecordTexts()`).
         tab_record = " Record",
-        step_record = "Record"
+        step_record = "Record",
+        # KIT-141: the Enrichment tab.
+        tab_enrichment = " Enrichment",
+        step_enrichment = "Enrichment",
+        enrich_heading = "Enrichment of a factor",
+        enrich_intro = paste("Find the biological processes, pathways or compound classes that follow a factor. Every",
+            "measured feature of the chosen data set, not only those given to the model, is ranked by how closely its",
+            "values follow the factor across the biological samples (a correlation from -1 to 1). Proteins and genes are",
+            "tested with STRING; metabolites and lipids with KEGG or Reactome pathways."),
+        enrich_optional = "This step is optional: the Record tab is open without it.",
+        enrich_not_trained = "Train a model at the Model tab first.",
+        enrich_factor = "Factor",
+        enrich_view = "Data set",
+        enrich_database = "Database",
+        enrich_database_string = "STRING (proteins and genes)",
+        enrich_database_kegg = "KEGG pathways (metabolites and lipids)",
+        enrich_database_reactome = "Reactome pathways (metabolites and lipids)",
+        enrich_id_column = "Column of the feature table holding the compound identifiers",
+        enrich_id_column_kegg = "KEGG compound identifiers (such as C00031) are needed.",
+        enrich_id_column_reactome = "ChEBI identifiers (such as CHEBI:17234 or 17234) are needed.",
+        enrich_settings_heading = "Settings",
+        enrich_correlation_method = "Correlation",
+        enrich_correlation_pearson = "Pearson (straight-line relation)",
+        enrich_correlation_spearman = "Spearman (rank order)",
+        enrich_min_samples = "Smallest number of biological samples a feature needs to be ranked",
+        enrich_string_species = "STRING species number (9606 is human, 10090 mouse)",
+        enrich_string_fdr = "STRING: show terms up to this false discovery rate",
+        enrich_kegg_organism = "KEGG organism code (hsa is human, mmu mouse)",
+        enrich_reactome_organism = "Reactome organism (such as Homo sapiens)",
+        enrich_min_set = "Smallest pathway tested (measured compounds in it)",
+        enrich_max_set = "Largest pathway tested (measured compounds in it)",
+        enrich_seed = "Seed of the pathway test",
+        enrich_key = "Your STRING key",
+        enrich_key_note = paste("STRING needs a personal key (free from string-db.org). It is used only for this query",
+            "and is never saved, recorded or written to a file. Enter it each time."),
+        enrich_kegg_terms = paste("KEGG's tables are free for academic use only; other users need a licence from KEGG",
+            "(Pathway Solutions, www.pathway.jp) before downloading them."),
+        enrich_download = "Download the pathway tables",
+        enrich_downloading = "Downloading the pathway tables.",
+        # %s: database, release; %d: rows.
+        enrich_downloaded = "%s tables downloaded: %s, %d rows.",
+        enrich_run = "Run the enrichment",
+        enrich_running = "Running the enrichment.",
+        # %s: the reason.
+        enrich_refused = "The enrichment was not run. %s",
+        # %s: factor, data set, database, release.
+        enrich_done = "%s in %s against %s (%s).",
+        # %d: measured, ranked, too few samples, no spread, internal standards.
+        enrich_counts = paste("Features: %d measured, %d ranked, %d left out for too few samples, %d left out for no",
+            "spread, %d internal standards left out."),
+        # %d: matched, not matched, several on one identifier.
+        enrich_mapping = "Matched to the database: %d; not matched: %d; set aside as a second feature on one identifier: %d.",
+        # %s: the feature, its data set; %d: +1 or -1.
+        enrich_direction = paste("Direction: the factor is oriented so that its largest weight (%s in %s) is positive",
+            "(multiplied by %d). Terms at the top of the list follow the factor; terms at the bottom go against it."),
+        # %d: terms or pathways.
+        enrich_tests = paste("%d terms or pathways in the table. P-values are adjusted within this factor, data set and",
+            "database only, not across factors, data sets or databases."),
+        enrich_none = "No term or pathway passed the threshold.",
+        enrich_terms_heading = "Enriched terms and pathways"
     )
 }
 
@@ -581,13 +662,16 @@ integrationGuiConfig <- function() {
         tab("integration_model", "model", "tab_model", "cubes", "step_model"),
         # KIT-063: the Results tab.
         tab("integration_results", "results", "tab_results", "chart-bar", "step_results"),
+        # KIT-141: the Enrichment tab (optional; it opens the Record tab as the Results tab completes).
+        tab("integration_enrichment", "enrichment", "tab_enrichment", "project-diagram", "step_enrichment"),
         # KIT-142: the Record tab (the analysis record, the study parameters and the report).
         tab("integration_record", "record", "tab_record", "file-alt", "step_record"))
     shell <- list(omic_type = "integration", prefix = "integration", testid = "integration",
         label = texts[["workflow_label"]], label_lower = "integration", header_icon = NULL,
         tabset_id = "integration_tabs", tab_style = "icon_in_title", routes = "integration", tabs = tabs,
         bus = list(state_manager = NULL, tab_status = NULL, integration_scan = NULL, integration_import = NULL,
-            integration_alignment = NULL, integration_model = NULL, integration_results = NULL, integration_record = NULL),
+            integration_alignment = NULL, integration_model = NULL, integration_results = NULL, integration_enrichment = NULL,
+            integration_record = NULL),
         bus_registration = "userData")
     validateOmicGuiShell(shell, omicGuiConfigSchema())
     list(shell = shell, texts = texts)
@@ -662,7 +746,8 @@ integrationGuiScalar <- function(value) {
 #' @noRd
 integrationCorrectionText <- function(manifest, texts = integrationGuiTexts()) {
     correction <- manifest$correction
-    if (!identical(manifest$matrix_role, "corrected") || !is.list(correction)) return(texts[["correction_none"]])
+    # KIT-153: the correction an input names is the omic's (its corrected matrices), whichever matrix a model uses.
+    if (!is.list(correction)) return(texts[["correction_none"]])
     design <- integrationGuiScalar(correction$ruv_design)
     method <- integrationGuiScalar(correction$method)
     sets <- integrationGuiScalar(correction$replicate_structure)
@@ -736,7 +821,9 @@ integrationScanProject <- function(integration_dir, imported = NULL, texts = int
             row$reason <- texts[["status_changed"]]
         }
         row$data_type <- as.character(integrationGuiScalar(manifest$workflow))
-        row$values <- texts[[if (identical(manifest$matrix_role, "corrected")) "values_corrected" else "values_normalised"]]
+        # KIT-153: every input holds the normalised values; one whose omic applied RUV holds the corrected ones too.
+        row$values <- texts[[if (any(vapply(input$views, function(view) isTRUE(view$corrected), logical(1)))) "values_both" else
+            "values_normalised"]]
         row$correction <- integrationCorrectionText(manifest, texts)
         written <- as.character(integrationGuiScalar(manifest$written_at))
         row$saved <- if (is.na(written)) NA_character_ else
@@ -1029,6 +1116,7 @@ INTEGRATION_GUI_REFUSALS <- c(
     integration_no_shared_samples = "refusal_no_shared",
     integration_group_conflict = "refusal_group_conflict",
     integration_view_empty = "refusal_view_empty",
+    integration_input_matrix_unavailable = "refusal_input_matrix_unavailable",
     integration_parameters_invalid = "refusal_parameters_invalid",
     integration_mofa_unavailable = "refusal_mofa_unavailable",
     integration_sample_match_invalid = "refusal_sample_match_invalid")

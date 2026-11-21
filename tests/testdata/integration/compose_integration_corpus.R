@@ -44,8 +44,9 @@
 #                               in the omics' own format, <group>_<replicate> unpadded (KO_5), and the
 #                               manifest names it as the biological-sample column, as the omics'
 #                               writers do (KIT-062)
-#   <omic>/integration_input.json  the contract's manifest: matrix_role "normalised", no
-#                               correction, the Parquet layout, every table's sha256. Written here,
+#   <omic>/integration_input.json  the contract's manifest: matrix_role "normalised", each data
+#                               set's matrix_stage "normalised" (KIT-153), no correction and no
+#                               corrected matrix, the Parquet layout, every table's sha256. Written here,
 #                               not through writeIntegrationInput(), so that the file holds nothing
 #                               that varies by machine, package version or time: no version, and
 #                               written_at fixed to the corpus's date
@@ -312,9 +313,11 @@ integrationWriteOmic <- function(directory, omic, built, digits) {
 # The omic's contract v2 manifest (fields of KIT-060 audit 4.2) over the tables just written.
 integrationWriteInputManifest <- function(out, omic, built, paths) {
     layout <- integrationContract("INTEGRATION_INPUT_PARQUET")
+    # KIT-153: each data set's matrix is the normalised one (`matrix_stage`); the corpus has no RUV-corrected matrix.
     views <- lapply(names(built$views), \(view) list(name = view,
         matrix_file = sprintf("matrix_%s.parquet", view), features_file = sprintf("features_%s.parquet", view),
         rows = nrow(built$views[[view]]), columns = ncol(built$views[[view]]),
+        matrix_stage = integrationContract("INTEGRATION_INPUT_MATRIX_STAGE"),
         row_groups = as.integer(ceiling(nrow(built$views[[view]]) / layout$row_group_rows))))
     manifest <- list(
         schema = integrationContract("INTEGRATION_INPUT_SCHEMA"),
