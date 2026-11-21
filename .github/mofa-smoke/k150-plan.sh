@@ -210,6 +210,13 @@ case "$plan" in
     k155-counted)
         for size in S M L; do for r in 1 2 3; do for b in before after; do pipeline155 "$size" "$b" "$r"; done; done; done
         ;;
+    k155-correction)
+        # The correction pass (declaration section 5): the L cases the counted run did not run (disk ceiling: the
+        # remover refused the before/after run folders), in the counted order.
+        pipeline155 L after 2
+        pipeline155 L before 3
+        pipeline155 L after 3
+        ;;
     *)
         echo "unknown plan $plan" >&2
         exit 2
