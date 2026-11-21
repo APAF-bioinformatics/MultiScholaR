@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-141 merge candidate 2bf9d655: the legacy KEGG/Reactome identity script, which the full-suite request k141-merge-2bf9d655 called without its two arguments (coordinator's mistake)",
+  "label": "KIT-141 merge candidate 2bf9d655: legacy KEGG/Reactome identity against base ea6c2657",
+  "package_commit": "2bf9d65560d9f1e24824d1938f7bdf88149bb660",
+  "base_commit": "ea6c26572dc1ae036cbc3dedac23c0256f4cab0a",
+  "tools_ref": "",
+  "tests": [
+    "test-multiomics-enrich-shared.R"
+  ],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-141/legacy-identity.R",
+      "args": [
+        "ea6c26572dc1ae036cbc3dedac23c0256f4cab0a",
+        "kit141-legacy-identity"
+      ],
+      "out": "kit141-legacy-identity",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
