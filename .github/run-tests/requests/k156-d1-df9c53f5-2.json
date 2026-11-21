@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-156 D-1: the failing-first test of runDIANativeTarR's staging folder (base = test only 55843892) against the repair (head df9c53f5); replaces the blank k156-d1-df9c53f5 pushed in error",
+  "label": "KIT-156 D-1 test-workflow-figure-paths.R, head df9c53f5 versus base 55843892",
+  "package_commit": "df9c53f57e839c692ba37f9b31bdfb060fdc072d",
+  "base_commit": "55843892c4e142aadf62b7f7c56fa01dc6ae6cea",
+  "tools_ref": "",
+  "tests": ["test-workflow-figure-paths.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
