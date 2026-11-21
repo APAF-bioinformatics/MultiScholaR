@@ -75,3 +75,21 @@ a factor-against-group test is withheld when an input was corrected with the gro
 | `submitStringDBEnrichment`, `retrieveStringDBEnrichmentResults`, `downloadStringDBResultsFile`, `downloadStringDBGraph` (rank_enrichment_stringdb.R) | KIT-141's STRING client on `httr2`: the key sent by POST only, never in a URL, record or log; a network failure refused with no partial result |
 | `runOneStringDbRankEnrichment`, `runOneStringDbRankEnrichmentMofa` (rank_enrichment_stringdb.R) | `runIntegrationEnrichment` (KIT-141; pending) |
 | `printStringDbFunctionalEnrichmentBarGraph` (rank_enrichment_stringdb.R) | KIT-141's enrichment figure (pending) |
+
+## The equivalence result (MOFA2 lane run 44864211198, package 2a447b19; first run 44862754575 at adfac89c the same)
+
+Both sides in one process on `ubuntu-22.04`, the maths library pinned (applied: one thread, Haswell code path),
+MOFA2 1.22.0, mofapy2 0.7.3. MOFA2's defaults checked to be seed 42, 1,000 rounds, `fast`, `use_float32 = TRUE`,
+`scale_views = FALSE`. The options handed to MOFA2 by both sides are equal (`all.equal`).
+
+| Compared | Identical | Largest difference (relative to the table's largest absolute value) |
+|---|---|---|
+| Values handed to MOFA2, six data sets (19 samples; 150 to 400 features) | no | at most 8.9e-16 absolute, 2.9e-16 relative (the two z-score formulas differ in the last bit) |
+| Factors (19 x 5) | yes | 0 |
+| Weights, each of six data sets | yes | 0 |
+| Variance explained per factor and data set, and in all | yes | 0 |
+| Negative control: the module with seed 43 | no | factors 0.91 relative, beyond 1e-5 (the comparison can fail) |
+
+Stated as: the module reproduces the reference workbook's MOFA2 configuration exactly on synthetic data (identical
+factors, weights and variance explained; the inputs agree to the last bit before MOFA2 rounds them to single
+precision). Evidence: `equivalence.tsv`, `settings.json` in the run's artifact (`kit142/kit143/`).
