@@ -76,7 +76,7 @@ a factor-against-group test is withheld when an input was corrected with the gro
 | `runOneStringDbRankEnrichment`, `runOneStringDbRankEnrichmentMofa` (rank_enrichment_stringdb.R) | `runIntegrationEnrichment` (KIT-141) |
 | `printStringDbFunctionalEnrichmentBarGraph` (rank_enrichment_stringdb.R) | The enrichment terms table (KIT-141) |
 
-## The equivalence result (MOFA2 lane run 44864211198, package 2a447b19; first run 44862754575 at adfac89c the same)
+## The equivalence result (MOFA2 lane run 44864211198, package 2a447b19; the same at adfac89c, run 44862754575, and after the merge of performance-v2 2bf9d655 at 1c7832ab, run 44875316282)
 
 Both sides in one process on `ubuntu-22.04`, the maths library pinned (applied: one thread, Haswell code path),
 MOFA2 1.22.0, mofapy2 0.7.3. MOFA2's defaults checked to be seed 42, 1,000 rounds, `fast`, `use_float32 = TRUE`,
@@ -92,7 +92,9 @@ MOFA2 1.22.0, mofapy2 0.7.3. MOFA2's defaults checked to be seed 42, 1,000 round
 
 Stated as: the module reproduces the reference workbook's MOFA2 configuration exactly on synthetic data (identical
 factors, weights and variance explained; the inputs agree to the last bit before MOFA2 rounds them to single
-precision). Evidence: `equivalence.tsv`, `settings.json` in the run's artifact (`kit142/kit143/`).
+precision). In run 44875316282 the workbook also rendered with its enrichment section (STRING stood in, the key a
+sentinel from `STRING_API_KEY` that reached the query and no file), and its repeat from the record gave the same
+rankings and terms from the recorded answers. Evidence: `equivalence.tsv`, `settings.json` in the run's artifact (`kit142/kit143/`).
 
 ## Functions the workbook calls (all internal, through `MultiScholaR:::`; for an export decision)
 
