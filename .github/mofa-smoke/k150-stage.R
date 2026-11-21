@@ -133,6 +133,8 @@ k150_parameters <- function(case) {
         maxiter = if (capped) 10000L else as.integer(k150_args$floor_rounds), seed = 20261119L, precision = "double")
     # KIT-149's variant (build C only; the other builds have one variant and ignore the name).
     if (nzchar(k150_args$variant %||% "")) parameters$variant <- k150_args$variant
+    # KIT-155: builds with KIT-151's training seeds (INT-14, default 5) train one, as KIT-150's builds did.
+    if (exists("integrationTrainingSeeds", envir = k150_ns, inherits = FALSE)) parameters$training_seeds <- 1L
     parameters
 }
 

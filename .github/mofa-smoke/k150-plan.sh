@@ -10,6 +10,9 @@
 #                    app-path rows at M; the import pair (P1, P2, P3) on C three times
 #   counted-large    <size> (L or Lp): the five builds once, floor and app-path rows for base and C; base and C twice
 #                    more only if the job's remaining time holds twice their first pipelines' time
+#   k155-lifecycle   KIT-155, size S: the two builds of $K150_BUILDS (before, after) through write, import, alignment and
+#                    training once, then the three induced failures on build after
+#   k155-counted     KIT-155: S, M and L, the two builds 3 times each (interleaved), write, import, alignment and training
 # Environment: WORK, RES, LANE, BUNDLE, LIBROOT (one library per build: $LIBROOT/<build>), DEADLINE (epoch seconds
 # after which no stage starts; stage time limits are cut to it), K150_CG, K150_LOGS.
 set -u -o pipefail
@@ -40,7 +43,7 @@ while IFS=$'\t' read -r label commit variant; do
     [ "$label" = build ] && continue
     COMMIT[$label]=$commit
     VARIANT[$label]=$variant
-done < "$LANE/.github/mofa-smoke/k150-builds.tsv"
+done < "${K150_BUILDS:-$LANE/.github/mofa-smoke/k150-builds.tsv}"
 
 STOP=""
 declare -A PIPELINE_S
@@ -139,6 +142,27 @@ import_pair() { # <size> <rep>
     remove_run "$dir"
 }
 
+# KIT-155: write, import, alignment, training (capped); no results read, floor or app-path rows.
+pipeline155() { # <size> <build> <rep>
+    local size=$1 build=$2 rep=$3
+    local dir="$WORK/runs/${size}_${build}_r${rep}"
+    mkdir -p "$dir"
+    local imported=0
+    if run_stage write "$build" "$size" "$rep" capped "$dir"; then
+        run_stage import "$build" "$size" "$rep" capped "$dir" && imported=1
+    else
+        skip "${size}_${build}_r${rep}_import" "not run: the input write did not complete"
+    fi
+    if [ $imported = 1 ]; then
+        run_stage align "$build" "$size" "$rep" capped "$dir"
+        run_stage train "$build" "$size" "$rep" capped "$dir"
+    else
+        for s in align train; do skip "${size}_${build}_r${rep}_$s" "not run: the import did not complete"; done
+    fi
+    remove_run "$dir"
+    df -B1 --output=avail "$WORK" | tail -n 1 | awk '{ printf "k155: %.1f GB free after %s\n", $1 / 1e9, "'"${size}_${build}_r${rep}"'" }'
+}
+
 floor_app() { # <build>: base and C carry the floor and app-path rows
     case "$1" in base | C) echo 1 ;; *) echo 0 ;; esac
 }
@@ -173,6 +197,18 @@ case "$plan" in
             echo "k150: repeats at $size_arg not run (need ${need} s plus 600 s, ${left} s left; ${STOP:-no stop})" |
                 tee "$RES/repeats-not-run.txt"
         fi
+        ;;
+    k155-lifecycle)
+        for b in before after; do pipeline155 S "$b" 1; done
+        dir="$WORK/runs/S_after_r1_failures"
+        mkdir -p "$dir"
+        run_stage fail_memory after S 1 capped "$dir" 4294967296 600
+        run_stage fail_time after S 1 capped "$dir" "$MEMORY_LIMIT" 240
+        run_stage fail_error after S 1 capped "$dir"
+        remove_run "$dir"
+        ;;
+    k155-counted)
+        for size in S M L; do for r in 1 2 3; do for b in before after; do pipeline155 "$size" "$b" "$r"; done; done; done
         ;;
     *)
         echo "unknown plan $plan" >&2
