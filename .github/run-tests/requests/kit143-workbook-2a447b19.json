@@ -1,0 +1,44 @@
+{
+  "requested_by": "KIT-143 correction pass: workbook chunk labels and the sort-order test with acquisition-order run names; base versus head, failing-first, check, gate off",
+  "label": "KIT-143 workbook correction on kit-143-integration-workbook 2a447b19",
+  "package_commit": "2a447b19279c5f2d359454b9da11a4574ca45240",
+  "base_commit": "34baf97283863ba509f2dbb3ebed906563812878",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-workbook.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "34baf97283863ba509f2dbb3ebed906563812878",
+        "kit143-gate-off"
+      ],
+      "out": "kit143-gate-off",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "34baf97283863ba509f2dbb3ebed906563812878",
+        "kit143-failing-first",
+        "test-integration-workbook.R"
+      ],
+      "out": "kit143-failing-first",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
