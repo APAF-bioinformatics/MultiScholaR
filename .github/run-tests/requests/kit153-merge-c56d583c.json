@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-153 before merge: full suite, the merge of performance-v2 (KIT-151, ef6df54d) into kit-153 (c56d583c) against performance-v2 ef6df54d",
+  "label": "KIT-153 merge candidate c56d583c versus base ef6df54d, full suite, check and gate-off",
+  "package_commit": "c56d583cc9f21619a94464f99fd736528096bc4c",
+  "base_commit": "ef6df54d6e1f5cde637c698ed5f6262383e2f33c",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "ef6df54d6e1f5cde637c698ed5f6262383e2f33c",
+        "gate-off-out"
+      ],
+      "env": {},
+      "out": "gate-off-out",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
