@@ -1,0 +1,292 @@
+k150 stage S_before_r1_write: completed (exit 0; cgroup peak 661008384 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write before S rep 1: completed; heap peak 100.4 MiB, VmHWM 703.1 MiB, 0.2 s
+k150 stage S_before_r1_import: completed (exit 0; cgroup peak 959774720 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import before S rep 1: completed; heap peak 356.2 MiB, VmHWM 987.2 MiB, 2.3 s
+k150 stage S_before_r1_align: completed (exit 0; cgroup peak 835792896 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align before S rep 1: completed; heap peak 261.8 MiB, VmHWM 877.6 MiB, 1.0 s
+k150 stage S_before_r1_train: completed (exit 0; cgroup peak 882847744 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/S_before_r1/tmp/Rtmp89vtZK/integration-mofa-55f460c83b48.hdf5...
+    [1] TRUE
+    k150 train before S rep 1: completed; heap peak 261.8 MiB, VmHWM 962.7 MiB, 27.6 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/S_before_r1 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 88.4 GB free after S_before_r1
+k150 stage S_after_r1_write: completed (exit 0; cgroup peak 661053440 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write after S rep 1: completed; heap peak 100.5 MiB, VmHWM 702.9 MiB, 0.2 s
+k150 stage S_after_r1_import: completed (exit 0; cgroup peak 965881856 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import after S rep 1: completed; heap peak 356.2 MiB, VmHWM 994.4 MiB, 2.2 s
+k150 stage S_after_r1_align: completed (exit 0; cgroup peak 828964864 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align after S rep 1: completed; heap peak 255.4 MiB, VmHWM 871.3 MiB, 0.9 s
+k150 stage S_after_r1_train: completed (exit 0; cgroup peak 872964096 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/S_after_r1/tmp/RtmpD6TI8X/integration-mofa-5b2f2fc701f7.hdf5...
+    [1] TRUE
+    k150 train after S rep 1: completed; heap peak 255.3 MiB, VmHWM 957.3 MiB, 27.4 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/S_after_r1 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 88.3 GB free after S_after_r1
+k150 stage S_before_r2_write: completed (exit 0; cgroup peak 661200896 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write before S rep 2: completed; heap peak 100.4 MiB, VmHWM 702.8 MiB, 0.2 s
+k150 stage S_before_r2_import: completed (exit 0; cgroup peak 960905216 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import before S rep 2: completed; heap peak 356.2 MiB, VmHWM 986.1 MiB, 2.2 s
+k150 stage S_before_r2_align: completed (exit 0; cgroup peak 835735552 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align before S rep 2: completed; heap peak 261.8 MiB, VmHWM 877.5 MiB, 1.0 s
+k150 stage S_before_r2_train: completed (exit 0; cgroup peak 879927296 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/S_before_r2/tmp/RtmpQvpSvN/integration-mofa-60631cb2b832.hdf5...
+    [1] TRUE
+    k150 train before S rep 2: completed; heap peak 261.8 MiB, VmHWM 962.0 MiB, 26.9 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/S_before_r2 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 88.3 GB free after S_before_r2
+k150 stage S_after_r2_write: completed (exit 0; cgroup peak 661016576 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write after S rep 2: completed; heap peak 100.5 MiB, VmHWM 702.8 MiB, 0.2 s
+k150 stage S_after_r2_import: completed (exit 0; cgroup peak 957714432 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import after S rep 2: completed; heap peak 356.2 MiB, VmHWM 980.3 MiB, 2.2 s
+k150 stage S_after_r2_align: completed (exit 0; cgroup peak 828866560 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align after S rep 2: completed; heap peak 255.4 MiB, VmHWM 871.2 MiB, 0.9 s
+k150 stage S_after_r2_train: completed (exit 0; cgroup peak 872796160 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/S_after_r2/tmp/RtmpToSOQl/integration-mofa-659d76fc941.hdf5...
+    [1] TRUE
+    k150 train after S rep 2: completed; heap peak 255.3 MiB, VmHWM 957.4 MiB, 27.3 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/S_after_r2 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 88.3 GB free after S_after_r2
+k150 stage S_before_r3_write: completed (exit 0; cgroup peak 661037056 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write before S rep 3: completed; heap peak 100.4 MiB, VmHWM 702.9 MiB, 0.2 s
+k150 stage S_before_r3_import: completed (exit 0; cgroup peak 962330624 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import before S rep 3: completed; heap peak 356.2 MiB, VmHWM 989.5 MiB, 2.3 s
+k150 stage S_before_r3_align: completed (exit 0; cgroup peak 835526656 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align before S rep 3: completed; heap peak 261.8 MiB, VmHWM 877.7 MiB, 0.9 s
+k150 stage S_before_r3_train: completed (exit 0; cgroup peak 879009792 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/S_before_r3/tmp/Rtmp45S6YD/integration-mofa-6ad1456aafc8.hdf5...
+    [1] TRUE
+    k150 train before S rep 3: completed; heap peak 261.8 MiB, VmHWM 960.9 MiB, 26.6 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/S_before_r3 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 88.3 GB free after S_before_r3
+k150 stage S_after_r3_write: completed (exit 0; cgroup peak 661016576 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write after S rep 3: completed; heap peak 100.5 MiB, VmHWM 702.8 MiB, 0.2 s
+k150 stage S_after_r3_import: completed (exit 0; cgroup peak 958181376 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import after S rep 3: completed; heap peak 356.2 MiB, VmHWM 984.8 MiB, 2.3 s
+k150 stage S_after_r3_align: completed (exit 0; cgroup peak 828960768 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align after S rep 3: completed; heap peak 255.4 MiB, VmHWM 871.4 MiB, 0.9 s
+k150 stage S_after_r3_train: completed (exit 0; cgroup peak 872546304 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/S_after_r3/tmp/RtmpCWElkj/integration-mofa-700724935985.hdf5...
+    [1] TRUE
+    k150 train after S rep 3: completed; heap peak 255.3 MiB, VmHWM 956.6 MiB, 27.5 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/S_after_r3 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 88.3 GB free after S_after_r3
+k150 stage M_before_r1_write: completed (exit 0; cgroup peak 1141108736 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write before M rep 1: completed; heap peak 110.4 MiB, VmHWM 933.8 MiB, 2.9 s
+k150 stage M_before_r1_import: completed (exit 0; cgroup peak 1166139392 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import before M rep 1: completed; heap peak 471.9 MiB, VmHWM 1160.6 MiB, 22.5 s
+k150 stage M_before_r1_align: completed (exit 0; cgroup peak 1366638592 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align before M rep 1: completed; heap peak 413.0 MiB, VmHWM 1186.6 MiB, 15.8 s
+k150 stage M_before_r1_train: completed (exit 0; cgroup peak 1360973824 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/M_before_r1/tmp/Rtmpmnyu7a/integration-mofa-80ee116a9d78.hdf5...
+    [1] TRUE
+    k150 train before M rep 1: completed; heap peak 541.8 MiB, VmHWM 1212.9 MiB, 217.4 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/M_before_r1 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 87.8 GB free after M_before_r1
+k150 stage M_after_r1_write: completed (exit 0; cgroup peak 1143181312 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write after M rep 1: completed; heap peak 110.4 MiB, VmHWM 935.6 MiB, 2.8 s
+k150 stage M_after_r1_import: completed (exit 0; cgroup peak 1201725440 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import after M rep 1: completed; heap peak 471.9 MiB, VmHWM 1161.6 MiB, 22.6 s
+k150 stage M_after_r1_align: completed (exit 0; cgroup peak 1237708800 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align after M rep 1: completed; heap peak 335.1 MiB, VmHWM 1066.9 MiB, 16.6 s
+k150 stage M_after_r1_train: completed (exit 0; cgroup peak 1355689984 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/M_after_r1/tmp/Rtmpag2cLq/integration-mofa-9d6f34b95821.hdf5...
+    [1] TRUE
+    k150 train after M rep 1: completed; heap peak 463.9 MiB, VmHWM 1210.9 MiB, 218.9 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/M_after_r1 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 87.3 GB free after M_after_r1
+k150 stage M_before_r2_write: completed (exit 0; cgroup peak 1141239808 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write before M rep 2: completed; heap peak 110.4 MiB, VmHWM 933.8 MiB, 2.9 s
+k150 stage M_before_r2_import: completed (exit 0; cgroup peak 1203359744 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import before M rep 2: completed; heap peak 471.9 MiB, VmHWM 1164.6 MiB, 23.9 s
+k150 stage M_before_r2_align: completed (exit 0; cgroup peak 1343676416 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align before M rep 2: completed; heap peak 413.0 MiB, VmHWM 1179.4 MiB, 16.5 s
+k150 stage M_before_r2_train: completed (exit 0; cgroup peak 1368592384 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/M_before_r2/tmp/RtmpiUsKrj/integration-mofa-b9ee6cfffa49.hdf5...
+    [1] TRUE
+    k150 train before M rep 2: completed; heap peak 541.8 MiB, VmHWM 1211.1 MiB, 217.2 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/M_before_r2 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 86.9 GB free after M_before_r2
+k150 stage M_after_r2_write: completed (exit 0; cgroup peak 1140998144 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write after M rep 2: completed; heap peak 110.4 MiB, VmHWM 933.9 MiB, 2.8 s
+k150 stage M_after_r2_import: completed (exit 0; cgroup peak 1202917376 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import after M rep 2: completed; heap peak 471.9 MiB, VmHWM 1161.8 MiB, 23.4 s
+k150 stage M_after_r2_align: completed (exit 0; cgroup peak 1245024256 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align after M rep 2: completed; heap peak 335.1 MiB, VmHWM 1074.6 MiB, 17.2 s
+k150 stage M_after_r2_train: completed (exit 0; cgroup peak 1352986624 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/M_after_r2/tmp/RtmpJ6icmt/integration-mofa-d66c70228f74.hdf5...
+    [1] TRUE
+    k150 train after M rep 2: completed; heap peak 463.9 MiB, VmHWM 1207.6 MiB, 218.1 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/M_after_r2 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 86.4 GB free after M_after_r2
+k150 stage M_before_r3_write: completed (exit 0; cgroup peak 1146462208 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write before M rep 3: completed; heap peak 110.4 MiB, VmHWM 935.1 MiB, 2.8 s
+k150 stage M_before_r3_import: completed (exit 0; cgroup peak 1214443520 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import before M rep 3: completed; heap peak 471.9 MiB, VmHWM 1161.7 MiB, 24.1 s
+k150 stage M_before_r3_align: completed (exit 0; cgroup peak 1359101952 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align before M rep 3: completed; heap peak 413.0 MiB, VmHWM 1182.2 MiB, 16.3 s
+k150 stage M_before_r3_train: completed (exit 0; cgroup peak 1362423808 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/M_before_r3/tmp/Rtmp6xj4PG/integration-mofa-f2e911518307.hdf5...
+    [1] TRUE
+    k150 train before M rep 3: completed; heap peak 541.8 MiB, VmHWM 1217.0 MiB, 222.7 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/M_before_r3 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 85.9 GB free after M_before_r3
+k150 stage M_after_r3_write: completed (exit 0; cgroup peak 1143271424 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write after M rep 3: completed; heap peak 110.4 MiB, VmHWM 935.8 MiB, 2.9 s
+k150 stage M_after_r3_import: completed (exit 0; cgroup peak 1200484352 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import after M rep 3: completed; heap peak 471.9 MiB, VmHWM 1148.5 MiB, 24.4 s
+k150 stage M_after_r3_align: completed (exit 0; cgroup peak 1257201664 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align after M rep 3: completed; heap peak 335.1 MiB, VmHWM 1084.9 MiB, 17.3 s
+k150 stage M_after_r3_train: completed (exit 0; cgroup peak 1358139392 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/M_after_r3/tmp/Rtmp62F7nf/integration-mofa-10f9d33c2b775.hdf5...
+    [1] TRUE
+    k150 train after M rep 3: completed; heap peak 463.9 MiB, VmHWM 1212.9 MiB, 218.4 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/M_after_r3 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 85.4 GB free after M_after_r3
+k150 stage L_before_r1_write: completed (exit 0; cgroup peak 2963959808 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write before L rep 1: completed; heap peak 126.3 MiB, VmHWM 1763.9 MiB, 13.8 s
+k150 stage L_before_r1_import: completed (exit 0; cgroup peak 1631473664 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import before L rep 1: completed; heap peak 589.2 MiB, VmHWM 1567.4 MiB, 76.2 s
+k150 stage L_before_r1_align: completed (exit 0; cgroup peak 2647355392 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align before L rep 1: completed; heap peak 746.1 MiB, VmHWM 1554.0 MiB, 57.8 s
+k150 stage L_before_r1_train: completed (exit 0; cgroup peak 2647711744 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/L_before_r1/tmp/RtmpMUe3Km/integration-mofa-13edc2cf9ffd0.hdf5...
+    [1] TRUE
+    k150 train before L rep 1: completed; heap peak 848.2 MiB, VmHWM 1564.3 MiB, 646.5 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/L_before_r1 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 83.1 GB free after L_before_r1
+k150 stage L_after_r1_write: completed (exit 0; cgroup peak 2965712896 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write after L rep 1: completed; heap peak 126.3 MiB, VmHWM 1766.1 MiB, 13.3 s
+k150 stage L_after_r1_import: completed (exit 0; cgroup peak 1646833664 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import after L rep 1: completed; heap peak 589.2 MiB, VmHWM 1577.2 MiB, 80.0 s
+k150 stage L_after_r1_align: completed (exit 0; cgroup peak 2254864384 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align after L rep 1: completed; heap peak 457.9 MiB, VmHWM 1171.2 MiB, 74.5 s
+k150 stage L_after_r1_train: completed (exit 0; cgroup peak 2317410304 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/L_after_r1/tmp/RtmpFtHEpE/integration-mofa-18120149d6e82.hdf5...
+    [1] TRUE
+    k150 train after L rep 1: completed; heap peak 560.0 MiB, VmHWM 1268.2 MiB, 682.4 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/L_after_r1 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 80.8 GB free after L_after_r1
+k150 stage L_before_r2_write: completed (exit 0; cgroup peak 2965598208 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write before L rep 2: completed; heap peak 126.3 MiB, VmHWM 1766.3 MiB, 13.8 s
+k150 stage L_before_r2_import: completed (exit 0; cgroup peak 1636741120 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 import before L rep 2: completed; heap peak 589.2 MiB, VmHWM 1568.7 MiB, 79.2 s
+k150 stage L_before_r2_align: completed (exit 0; cgroup peak 2652663808 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 align before L rep 2: completed; heap peak 746.1 MiB, VmHWM 1566.1 MiB, 59.2 s
+k150 stage L_before_r2_train: completed (exit 0; cgroup peak 2645331968 B; oom_kill 0)
+    Saving model in /home/runner/work/_temp/k150-work/runs/L_before_r2/tmp/RtmptFKh2E/integration-mofa-1c3b15d78fa8c.hdf5...
+    [1] TRUE
+    k150 train before L rep 2: completed; heap peak 848.2 MiB, VmHWM 1558.9 MiB, 652.9 s
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/L_before_r2 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 78.5 GB free after L_before_r2
+k150 stage L_after_r2_write: completed (exit 0; cgroup peak 2967654400 B; oom_kill 0)
+    [1] TRUE
+    [1] TRUE
+    k150 write after L rep 2: completed; heap peak 126.3 MiB, VmHWM 1768.8 MiB, 13.2 s
+k150 stage L_after_r2_import: not run: the disk ceiling (11053606958 bytes in use)
+k150 stage L_after_r2_align: not run: the import did not complete
+k150 stage L_after_r2_train: not run: the import did not complete
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/L_after_r2 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 77.3 GB free after L_after_r2
+k150 stage L_before_r3_write: not run: the disk ceiling (11053606958 bytes in use)
+k150 stage L_before_r3_import: not run: the input write did not complete
+k150 stage L_before_r3_align: not run: the import did not complete
+k150 stage L_before_r3_train: not run: the import did not complete
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/L_before_r3 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 77.3 GB free after L_before_r3
+k150 stage L_after_r3_write: not run: the disk ceiling (11053606958 bytes in use)
+k150 stage L_after_r3_import: not run: the input write did not complete
+k150 stage L_after_r3_align: not run: the import did not complete
+k150 stage L_after_r3_train: not run: the import did not complete
+k150-remove: refused /home/runner/work/_temp/k150-work/runs/L_after_r3 (not a run folder under /home/runner/work/_temp/k150-work/runs)
+k155: 77.3 GB free after L_after_r3
+k150: plan k155-counted done (stopped: the disk ceiling (11053606958 bytes in use))
