@@ -1,6 +1,6 @@
 {
-  "label": "k153-5245a2e2",
-  "package_commit": "5245a2e210a1f3899ef852f56251c24ce9dc1605",
+  "label": "k153-merge-c56d583c",
+  "package_commit": "c56d583cc9f21619a94464f99fd736528096bc4c",
   "tests": [
     "test-integration-input-matrix.R",
     "test-integration-outputs-mofa.R",
