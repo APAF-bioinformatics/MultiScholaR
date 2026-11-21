@@ -1,0 +1,43 @@
+KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
+script: /home/runner/work/_temp/aggregate.R
+script sha256: 089d852c1f3b08d70096b1218ef26550f393cffd213e4bdd9980453075fd2a66
+commit: NA
+script differs from commit: TRUE
+command: Rscript /home/runner/work/_temp/aggregate.R /home/runner/work/_temp/out/confirm06-gha/s2 S2=/home/runner/work/_temp/raw/s2
+working directory: /home/runner/work/MultiScholaR/MultiScholaR
+R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
+packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
+library paths: /opt/R/4.6.1/lib/R/library
+run at: 2026-11-20 20:48:12 UTC
+inputs (sha256, bytes, path):
+  cc709343115f561901d55e4f602555326dcaef7abc546fea2fc2bf26e9a89390 324964 /home/runner/work/_temp/raw/s2/s2-runs.tsv
+  bff7cec74a1f280db5bb7dcd73ae8087c12a4af73e631eb48ab206baefcfb934 28 /home/runner/work/_temp/raw/s2/s2-errors.tsv
+  9fd15a95a0d2dc7952b23046c35d59ca1499ee8e0f9b943d0b9a5bed5004111c 99283 /home/runner/work/_temp/raw/s2/s2-data.tsv
+  eb583631342f52c26912ef7f4813fd929291c76006f2466069d61cef5271dd72 3066 /home/runner/work/_temp/raw/s2/s2-runs.meta.txt
+simulator S2 meta (/home/runner/work/_temp/raw/s2):
+  commit: 58160dee46eef7725a6ddd4571588dd3dd66c831
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8a05087d66d0a563d8d3a1fc89b4ff01
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 250 250 4 S3
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 250 ; runs per stress cell: 250
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C8 = 0..8, S1..S14 = 11..24);
+  cells completed in this invocation: S3
+  started: 2026-11-20 19:19:56 UTC
+  finished: 2026-11-20 20:29:53 UTC
+  commit: 58160dee46eef7725a6ddd4571588dd3dd66c831
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: 8a05087d66d0a563d8d3a1fc89b4ff01
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-gha 250 250 4 S3
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 250 ; runs per stress cell: 250
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C8 = 0..8, S1..S14 = 11..24);
+  cells completed in this invocation: S3
+  started: 2026-11-20 19:14:02 UTC
+  finished: 2026-11-20 19:48:36 UTC

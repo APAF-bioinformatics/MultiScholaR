@@ -141,12 +141,18 @@ test_that("each measured figure is the ticket's; the cells still running are pen
 test_that("the wording rulings of 2026-11-19 are the shipped notes and labels (R1 to R3)", {
     tables <- ruvDesignTables()
     # R3: the caution leads the note of controls from the data, with the omic's own figure under association.
-    # KIT-129 final figures (2026-11-20): the shipped method's figure at a correlation of 0.3 (its 0.6 cell was not run).
-    caution <- c(proteomics.classic = "reported more false discoveries than the 5% target (7.9% at a correlation of 0.3",
-        proteomics.dia_limpa = "far more false discoveries than the 5% target (14.7% at a correlation of 0.3",
-        lipidomics.features = "far more false discoveries than the 5% target (20.3% at a correlation of 0.3",
-        metabolomics.features = "far more false discoveries than the 5% target (20.3% at a correlation of 0.3",
-        transcriptomics.genes = "more false discoveries than the 5% target (6.4% at a correlation of 0.3")
+    # KIT-129 final figures (2026-11-20): the shipped method's figure at a correlation of 0.3; since decision M42 also
+    # its figure at 0.6, measured with the separation rule (scored/confirm06-gha).
+    at06 <- "at a correlation of 0.6, with the separation rule for the number of factors)."
+    caution <- c(proteomics.classic = paste("reported more false discoveries than the 5% target (7.9% at a correlation of 0.3,",
+            "with the estimated number of factors; 28.0%", at06),
+        proteomics.dia_limpa = paste("far more false discoveries than the 5% target (14.7% at a correlation of 0.3, with the",
+            "estimated number of factors; 30.2%", at06),
+        lipidomics.features = paste("far more false discoveries than the 5% target (20.3% at a correlation of 0.3, with the",
+            "estimated number of factors; 56.2%", at06),
+        metabolomics.features = paste("far more false discoveries than the 5% target (20.3% at a correlation of 0.3, with the",
+            "estimated number of factors; 56.2%", at06),
+        transcriptomics.genes = paste("more false discoveries than the 5% target (6.4% at a correlation of 0.3 and 9.6%", at06))
     # The last sentence points at the check's verdict only where the check has a detection limit for this approach
     # (classic proteomics today); elsewhere it says the check gives none.
     verdict <- "If the check below reports a detectable association, choose the recommended approach."
@@ -953,6 +959,24 @@ test_that("(fourth pass item 4; sixth pass M36) the panel shows the check: detec
     keys <- c("association_detectable", "association_not_detectable", "association_no_limit", "association_dia_limpa")
     expect_identical(lengths(regmatches(texts[keys], gregexpr("%s", texts[keys], fixed = TRUE))),
         c(association_detectable = 6L, association_not_detectable = 2L, association_no_limit = 1L, association_dia_limpa = 1L))
+})
+
+test_that("(M42) every approach with a detection limit shows its measured figures at 0.6, never \"not measured\"", {
+    texts <- omicGuiConfig("proteomics")$norm$ruv_design$tables[[1L]]$texts
+    group <- rep(c("A", "B"), each = 6L)
+    W <- cbind(W1 = (group == "B") + seq(0, 0.11, by = 0.01))
+    thresholds <- ruvGroupAssociationThresholds()
+    for (i in seq_len(nrow(thresholds))) {
+        limit <- thresholds[i, ]
+        check <- ruvGroupAssociationCheck(W, group, limit$omic, limit$ruv_design, limit$ruv_k_rule)
+        expect_identical(check$ruv_group_association_outcome, "detectable", info = paste(limit$omic, limit$ruv_design))
+        words <- omicNormRuvAssociationText(check, texts)
+        expect_false(grepl(texts[["association_not_measured"]], words, fixed = TRUE), info = paste(limit$omic, limit$ruv_design))
+    }
+    # classic proteomics, the recommended design: 6.3% at 0.6, 59.3% without correction (the shipped No RUV)
+    check <- ruvGroupAssociationCheck(W, group, "proteomics", "groups_all_features", "num_sv_be")
+    expect_identical(omicNormRuvAssociationText(check, texts), sprintf(texts[["association_detectable"]],
+        sprintf("%.3f", check$ruv_group_association), "0.058", "5.5%", "5.8%", "6.3%", "59.3%"))
 })
 
 # ------------------------------------------------------------------------------------------------
