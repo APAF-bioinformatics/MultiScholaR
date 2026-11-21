@@ -1731,10 +1731,13 @@ omicGuiRuvTableDiaLimpa <- function() {
             # The user's answer U2: on a design with technical replicates the groups are selectable in classic
             # proteomics only.
             needs = "no_technical_replicates",
-            note = paste("The general-purpose choice. In every scenario tested it did as well as an analysis that",
-                "was given the true unwanted factor (5.3% false discoveries with unwanted variation tied to the",
-                "groups, correlation 0.3). Measured with the fastlimpadpc engine; expected to hold for the limpa",
-                "engine, not measured there."),
+            # Decision M42 (the user, 2026-11-21): the note states the result at a correlation of 0.6.
+            note = paste("The general-purpose choice. In every scenario tested up to a correlation of 0.3 with the groups",
+                "it did as well as an analysis that was given the true unwanted factor (5.3% false discoveries with",
+                "unwanted variation tied to the groups, correlation 0.3). With unwanted variation tied to the groups at",
+                "a correlation of 0.6 it had 6.6% false discoveries, against 4.7% for an analysis given the true",
+                "unwanted factor, and 9.4% of simulated data sets had more than 10% false discoveries, against 0.6%.",
+                "Measured with the fastlimpadpc engine; expected to hold for the limpa engine, not measured there."),
             source = paste("KIT-129 1b; KIT-124 S2 arm 32 (scored/exact-gha; the shipped arm 34 identical, confirmation round",
                 "Part 1): worst cell C6 0.056, C5 0.053, power C0 0.91")),
         technical_replicates = list(status = "measured", fdp = 0.056, fdp_where = cell[["c6"]], power = 0.77,

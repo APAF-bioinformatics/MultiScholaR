@@ -174,6 +174,13 @@ test_that("the wording rulings of 2026-11-19 are the shipped notes and labels (R
         ruv_design = "first_pass_nulls"))
     expect_match(omicGuiRuvFirstPassCaution("lipidomics", "more", "x"), verdict, fixed = TRUE)
     expect_match(omicGuiRuvFirstPassCaution("proteomics", "more", "x"), no_verdict, fixed = TRUE)
+    # M42 (the user, 2026-11-21): DIA with limpa's recommended note states its result at a correlation of 0.6.
+    expect_identical(ruvDesignOptions(tables[["proteomics.dia_limpa"]])$groups_all_features$note, paste("The general-purpose",
+        "choice. In every scenario tested up to a correlation of 0.3 with the groups it did as well as an analysis that was",
+        "given the true unwanted factor (5.3% false discoveries with unwanted variation tied to the groups, correlation 0.3).",
+        "With unwanted variation tied to the groups at a correlation of 0.6 it had 6.6% false discoveries, against 4.7% for",
+        "an analysis given the true unwanted factor, and 9.4% of simulated data sets had more than 10% false discoveries,",
+        "against 0.6%. Measured with the fastlimpadpc engine; expected to hold for the limpa engine, not measured there."))
     # R1: transcriptomics quotes the separation rule that runs (power 25% tied to the groups, 5% with three groups).
     expect_match(ruvDesignOptions(tables[["transcriptomics.genes"]])$first_pass_nulls$note,
         "tied to the groups (power 25%) or with three groups (5%).", fixed = TRUE)
