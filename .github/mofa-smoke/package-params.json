@@ -1,11 +1,15 @@
 {
-  "label": "k141-enrichment-524f8029",
-  "package_commit": "524f8029ea9e290bc85e6a6c8d54aab6c21ebc34",
+  "label": "k141-k153-merge-2bf9d655",
+  "package_commit": "2bf9d65560d9f1e24824d1938f7bdf88149bb660",
   "tests": [
     "test-integration-enrichment-mofa.R",
     "test-integration-record-mofa.R",
     "test-integration-outputs-mofa.R",
-    "test-integration-results-mofa.R"
+    "test-integration-results-mofa.R",
+    "test-integration-mofa-model.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-partitioned-mofa.R",
+    "test-integration-input-matrix.R"
   ],
   "record": false,
   "runs": 1
