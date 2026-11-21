@@ -1,7 +1,7 @@
 {
-  "label": "k155-counted",
-  "attempt": "counted",
+  "label": "k155-correction",
+  "attempt": "correction",
   "jobs": [
-    {"name": "counted", "plan": "k155-counted", "size": "L", "timeout": 330}
+    {"name": "correction", "plan": "k155-correction", "size": "L", "timeout": 120}
   ]
 }
