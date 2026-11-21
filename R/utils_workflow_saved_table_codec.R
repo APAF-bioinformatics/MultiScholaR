@@ -2091,18 +2091,36 @@ writeWorkflowTableChanges <- function(scope, map_path, generated_path, metadata,
 #' @param scope Existing source lease, which may also own a SQL result cursor.
 #' @param columns Ordered scientific output columns.
 #' @param consume Callback receiving one complete bounded row batch.
+#' @param page_rows KIT-155: rows per batch, 1 to 10,000 (the read ceiling). A wide table is read in pages of
+#'   this many rows; a table of at most 64 columns is streamed as before and its batches cut into pages of at most
+#'   this many rows. The default, 10,000, is every other caller's page.
 #' @return Total consumed rows invisibly.
 #' @noRd
-streamWorkflowTableRows <- function(scope, columns, consume) {
-    if (length(columns) <= 64L) return(streamSavedWorkflowTable(scope, columns, consume))
+streamWorkflowTableRows <- function(scope, columns, consume, page_rows = 10000L) {
+    stopifnot(is.numeric(page_rows), length(page_rows) == 1L, page_rows >= 1L, page_rows <= 10000L,
+        page_rows == floor(page_rows))
+    page_rows <- as.integer(page_rows)
+    if (length(columns) <= 64L) {
+        if (page_rows == 10000L) return(streamSavedWorkflowTable(scope, columns, consume))
+        return(streamSavedWorkflowTable(scope, columns, function(data, offset, row_names) {
+            if (!nrow(data)) return(consume(data, offset, row_names))
+            for (start in seq.int(0L, nrow(data) - 1L, by = page_rows)) {
+                at <- seq.int(start + 1L, min(nrow(data), start + page_rows))
+                part <- data[at, , drop = FALSE]
+                rownames(part) <- NULL
+                consume(part, offset + start, if (length(row_names)) row_names[at] else row_names)
+            }
+            invisible(NULL)
+        }))
+    }
     projected <- newWorkflowTableReadScope(scope$store, scope$reference, reader = "fastduckdb")
     on.exit(releaseWorkflowTableReadScope(projected), add = TRUE)
     blocks <- split(columns, ceiling(seq_along(columns) / 64L))
-    for (offset in seq.int(0L, max(0L, scope$metadata$rows - 1L), by = 10000L)) {
+    for (offset in seq.int(0L, max(0L, scope$metadata$rows - 1L), by = page_rows)) {
         values <- list()
         for (block in blocks) {
             page <- readSavedWorkflowTable(scope$store, scope$reference, block,
-                offset = offset, limit = 10000L, scope = projected, reader = "fastduckdb")
+                offset = offset, limit = page_rows, scope = projected, reader = "fastduckdb")
             values[block] <- unclass(page$data)[block]
         }
         attr(values, "row.names") <- .row_names_info(page$data, type = 0L)

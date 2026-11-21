@@ -1027,15 +1027,34 @@ integrationAlignViewsPartitioned <- function(object, parameters, pages, prefix_r
     integrationAlignedValue(final, plan, present, runs, views, summary)
 }
 
+#' The byte budget of one page of a data set read in row pages (KIT-155; INT-29): 8 MiB of values. KIT-150 (INT-27)
+#' measured the training stage's R heap growing by about 13 MiB per MiB of a page (pages of 10,000 rows: 15 MiB at
+#' 200 samples, 38 MiB at 500), the page's copies in the alignment; at 8 MiB a page adds at most about 105 MiB
+#' whatever the number of samples, which keeps the growth above the stage's fixed overhead under claim 1's bound at
+#' KIT-150's sizes. A table of at most 104 columns keeps its pages of 10,000 rows (the read ceiling).
+#' @noRd
+INTEGRATION_PAGE_BYTES <- 8388608
+
+#' Rows per page of a data set read in row pages (KIT-155): the budget over 8 bytes per value of every column read,
+#' at least 1 and at most 10,000 (the store's read ceiling).
+#' @param columns The number of columns read (the feature identifier and the runs).
+#' @param page_bytes The byte budget (`INTEGRATION_PAGE_BYTES`).
+#' @noRd
+integrationPageRows <- function(columns, page_bytes = INTEGRATION_PAGE_BYTES) {
+    as.integer(min(10000, max(1, floor(page_bytes / (8 * columns)))))
+}
+
 #' Pages of the inputs state's data sets from the integration store (KIT-149; `integrationAlignViewsPartitioned`'s
-#' `pages`): each data set's table read by `partitionByRows`, at most 10,000 rows per page, a table of more than 64
-#' columns read in blocks of 64 columns bound in column order.
+#' `pages`): each data set's table read by `partitionByRows` in pages sized by a byte budget (KIT-155;
+#' `integrationPageRows`), a table of more than 64 columns read in blocks of 64 columns bound in column order.
 #' @param manager The integration owner.
 #' @param source The inputs state's reference.
 #' @param worker_cap The admitted worker memory (NULL: 12 GiB, the omics' partitioned steps' default).
 #' @param slot KIT-153: `views` (the normalised matrices) or `corrected_views` (`integrationModelViewsSlot`).
+#' @param page_bytes KIT-155: the byte budget of a page (`INTEGRATION_PAGE_BYTES`; tests pass others).
 #' @noRd
-integrationStateViewPages <- function(manager, source, worker_cap = NULL, slot = "views") {
+integrationStateViewPages <- function(manager, source, worker_cap = NULL, slot = "views",
+    page_bytes = INTEGRATION_PAGE_BYTES) {
     function(view, columns, kernel) withWorkflowStateScope(manager, function() {
         context <- manager$.context
         table <- readWorkflowStateMetadata(manager, source)$data$components[[slot]][[view]]
@@ -1044,7 +1063,8 @@ integrationStateViewPages <- function(manager, source, worker_cap = NULL, slot =
         partitionByRows(scope, columns, kernel = function(page, index, offset) kernel(page, offset),
             consume = function(value, index) invisible(NULL), worker_cap = worker_cap %||% (12 * 1024^3),
             working_bytes_per_row = omicsPartitionedWorkingBytesPerColumn * length(columns),
-            overhead_bytes = 2 * 67108864 + 2 * 8388608, policy = "integration-row-pages-v1")
+            overhead_bytes = 2 * 67108864 + 2 * 8388608, policy = "integration-row-pages-v1",
+            page_rows = integrationPageRows(length(columns), page_bytes))
         invisible(NULL)
     })
 }
