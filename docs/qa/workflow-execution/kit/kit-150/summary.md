@@ -260,3 +260,29 @@ Rows: 167; instrumentation invalid: 0
 - M floor: the same factors (rounded to 1e-8) and iterations in every build
 - L train: the same factors (rounded to 1e-8) and iterations in every build
 - L floor: the same factors (rounded to 1e-8) and iterations in every build
+
+## Restated claims 1 and 3a (section 15 of the declaration). Restatement of claims 1 and 3a, made after the results were seen (user, 2026-11-21, ledger INT-27)
+
+Made after the counted run's results (run 44795728762) were seen. Sections 1 to 14 and the original verdicts stand as
+recorded (claim 1: fail at M and L; claim 3a: fail). No new run; computed from the committed `rows.tsv` by
+`.github/mofa-smoke/k150-restate.py`.
+
+- Fixed overhead per process of a stage: that stage's R heap peak in the same build (C) at size S (where the data are
+  below 1 MiB per data set), median of its 3 repeats. Training: 262.2 MiB (range 0.0). Import: 355.9 MiB (range 0.0,
+  an import of 4 data sets).
+- Restated test: (R heap peak - overhead) <= the original bound + 2 x noise floor (the larger range of the 3 repeats at
+  S and at the size tested; every range here is 0.0 MiB).
+
+| Claim | Size | Growth above overhead | Bound | Restated verdict |
+|---|---|---|---|---|
+| 1 | M | 278.4 MiB (each of 3 repeats) | 259.0 MiB | fail (by 19.4 MiB) |
+| 1 | L | 584.9 MiB (each of 3 repeats) | 263.6 MiB | fail (by 321.3 MiB) |
+| 3a | P1 | 72.3 MiB | 130.0 MiB | pass |
+| 3a | P2 | 116.8 MiB | 134.6 MiB | pass |
+| 3a | P3 | -13.5 MiB | 99.2 MiB | pass |
+
+Reading. Claim 1: the training stage includes the partitioned alignment, whose R heap above the same overhead is
+149.6 MiB at M and 482.7 MiB at L (alignment stage, C), growing with the number of samples (the page width), not with
+the selected data; the restated claim fails. Claim 3a passes, with a caveat: the overhead is taken from an import of
+4 data sets and the import pair has 2, so the overhead is somewhat overstated for the pair (P3's growth is negative);
+the part of the overhead that depends on the number of data sets is not separated by these rows.

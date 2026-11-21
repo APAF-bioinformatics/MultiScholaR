@@ -5,3 +5,6 @@ claim	size	verdict	detail
 2	M	pass	pipeline process peak base 1997.1 MiB (n=3), C 1208.0 MiB (n=3), tolerance 99.9 MiB (noise 1.8 )
 2	L	pass	pipeline process peak base 5197.2 MiB (n=3), C 2388.1 MiB (n=3), tolerance 259.9 MiB (noise 29.8 )
 3	P1/P2/P3	fail	P1: median 428.2 MiB, bound 130.0 MiB; P2: median 472.7 MiB, bound 134.6 MiB; P3: median 342.4 MiB, bound 99.2 MiB; features doubled: +44.5 MiB (tolerance 64.0); runs doubled: +85.8 MiB (allowed 406.4); bound NOT met, features met, runs met
+1 (restated after results, INT-27)	M	fail	growth above the fixed overhead (C train at S, 262.2 MiB) 278.4 MiB vs bound 259.0 MiB; noise 0.0
+1 (restated after results, INT-27)	L	fail	growth above the fixed overhead (C train at S, 262.2 MiB) 584.9 MiB vs bound 263.6 MiB; noise 0.0
+3a (restated after results, INT-27)	P1/P2/P3	pass	growth above the fixed overhead (C import at S, 4 data sets, 355.9 MiB): P1 72.3 vs 130.0, P2 116.8 vs 134.6, P3 -13.5 vs 99.2 MiB; noise 0.0; overhead from 4 data sets, the pair has 2
