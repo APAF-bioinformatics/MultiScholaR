@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-141 granted investigation: the record terms diagnostic script again after its instrumentation failure in run 44863659582 (helper sourcing); script only",
+  "label": "KIT-141 record terms paths script, head f407951e",
+  "package_commit": "f407951eaf4d97917106280d49e691bbf8893412",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-141/record-terms-paths.R",
+      "args": [
+        "kit141-terms-paths"
+      ],
+      "out": "kit141-terms-paths",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
