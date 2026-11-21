@@ -5,6 +5,9 @@
 #     the STRING key from STRING_API_KEY (never a parameter); the stub
 #     MultiOmics_workflow_starter.rmd is gone (fails on the old workbook: it names functions the package does not have
 #     and carries a key);
+#   - KIT-154: the workbook calls only the package's exported integration functions (no `:::`, no internal field),
+#     each of them exported in NAMESPACE, documented in man/ and called (fails on the KIT-143 workbook, which called
+#     51 internal functions through `:::`, and on a tree without the exports);
 #   - the reference workbook's sort-order sample matching (`x[, sort(colnames(x))]` per omic, paired by position)
 #     misaligns proteomics and transcriptomics when the transcriptomics runs carry acquisition-order names (run_01, ...),
 #     while the module's matching
@@ -35,19 +38,7 @@ test_that("KIT-143: the shipped integration workbook is the thin one over the mo
     code <- intWbCode()
     expect_gt(length(code), 0L)
     expect_silent(parse(text = code, keep.source = FALSE))
-    called <- unique(unlist(regmatches(code, gregexpr("MultiScholaR:::[A-Za-z_][A-Za-z0-9_.]*", code))))
-    names <- sub("^MultiScholaR:::", "", called)
-    namespace <- asNamespace("MultiScholaR")
-    missing <- names[!vapply(names, exists, logical(1), envir = namespace, inherits = FALSE)]
-    expect_identical(missing, character(), info = paste(missing, collapse = ", "))
-    # The module's entry points (plan item H), each called.
-    for (entry in c("newIntegrationStateOwner", "importIntegrationInputs", "integrationAlignmentPreview",
-        "runIntegrationModel", "integrationResults", "integrationSaveResults", "integrationPlotFactorPairs",
-        "integrationPlotTopFeatureScatter", "integrationPlotTopFeatureHeatmap", "integrationWriteRecordBundle",
-        "replayIntegrationProject", "integrationMofaParameterSpec", "integrationResultsParameterSpec",
-        "integrationEnrichmentParameterSpec", "runIntegrationEnrichment")) {
-        expect_true(entry %in% names, info = entry)
-    }
+    # KIT-154: the module's entry points are reached through the exported workbook functions (the test below).
     # No credential: no long literal string of letters and digits (a key), and no key assigned from a literal.
     text <- readLines(intWbPath(), warn = FALSE)
     expect_false(any(grepl("[\"'][A-Za-z0-9]{20,}[\"']", text)))
@@ -55,6 +46,29 @@ test_that("KIT-143: the shipped integration workbook is the thin one over the mo
     # KIT-141, INT-21: the STRING key is read from STRING_API_KEY (or asked for), never a parameter of the workbook.
     expect_true(any(grepl("Sys.getenv(\"STRING_API_KEY\"", code, fixed = TRUE)))
     expect_false(any(grepl("key", sub(":.*$", "", text[seq_len(match("---", text[-1L]) + 1L)]), ignore.case = TRUE)))
+})
+
+test_that("KIT-154: the workbook calls only the exported integration functions, each exported, documented and called", {
+    testthat::skip_if_not(file.exists(intWbPath()), "the package source tree is not present")
+    root <- normalizePath(testthat::test_path("..", ".."), mustWork = FALSE)
+    testthat::skip_if_not(file.exists(file.path(root, "NAMESPACE")), "the package source tree is not present")
+    code <- intWbCode()
+    expect_false(any(grepl(":::", code, fixed = TRUE)))
+    expect_false(any(grepl(".context", code, fixed = TRUE)))
+    api <- c("integrationSettings", "integrationFindInputs", "integrationOpenProject", "integrationMatchSamples",
+        "integrationConfirmMatch", "integrationTrainModel", "integrationGetResults", "integrationExportResults",
+        "integrationEnrichFactor", "integrationWriteRecord", "integrationCloseProject", "integrationReplayProject")
+    exports <- sub("^export\\((.*)\\)$", "\\1", grep("^export\\(", readLines(file.path(root, "NAMESPACE")), value = TRUE))
+    # Every function of the package the workbook calls (other packages' calls, `pkg::f(`, set aside).
+    plain <- gsub("[A-Za-z][A-Za-z0-9.]*::[A-Za-z_.][A-Za-z0-9_.]*", "", code)
+    called <- unique(unlist(regmatches(plain, gregexpr("[A-Za-z_.][A-Za-z0-9_.]*(?=\\()", plain, perl = TRUE))))
+    from_package <- intersect(called, ls(asNamespace("MultiScholaR"), all.names = TRUE))
+    expect_setequal(from_package, api)
+    for (name in api) {
+        expect_true(name %in% exports, info = name)
+        expect_true(file.exists(file.path(root, "man", paste0(name, ".Rd"))), info = name)
+        expect_true(exists(name, envir = asNamespace("MultiScholaR"), inherits = FALSE), info = name)
+    }
 })
 
 test_that("KIT-143: the reference workbook's sort-order matching misaligns samples whose run names differ; the module's does not", {
