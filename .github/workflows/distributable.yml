@@ -44,6 +44,14 @@ name: KIT-134 distributable
 # MULTISCHOLAR_TEST_FEATURES=1, on the bundle. Stage smoke = only the two smoke jobs (the instrumentation's lifecycle run).
 # The Linux main jobs also count the vector instructions in the bundled native libraries (portability, item 4).
 # Declaration: docs/qa/workflow-execution/kit/kit-156/rc-run-declaration.md.
+#
+# Branch run-k157-rc (run-only; dispatch only): KIT-157, fastlimpadpc built for x86-64-v3 (pin 0ad8c527). On every Linux
+# main job: the library install step also builds fastlimpadpc at the PREVIOUS pin 87a90b89 (-C target-cpu=native) into
+# RUNNER_TEMP/k157-old (packaging/verify/k157/old-limpa.sh; same token rule: that step only, output under RUNNER_TEMP, not
+# printed, nothing uploaded); after the bundle checks, both builds quantify the same DIA_LIMPA data with the bundle's R
+# (packaging/verify/k157/limpa-run.R), compared under the fixed rule (packaging/verify/compare-results.R), with the times,
+# a perturbed copy that must be read "outside", and the vector instructions of both libraries counted.
+# Declaration: docs/qa/workflow-execution/kit/kit-157/run-declaration.md.
 
 on:
   workflow_dispatch:
@@ -255,7 +263,10 @@ jobs:
         env:
           MSR_INTERNAL: required
           GITHUB_PAT: ${{ secrets.DEPS_READ_TOKEN }}
-        run: $BUILD_EXEC bash packaging/linux/build.sh library
+        run: |
+          $BUILD_EXEC bash packaging/linux/build.sh library
+          # KIT-157: the previous pin of fastlimpadpc, beside the bundle (not in it), for the comparison step below
+          $BUILD_EXEC bash packaging/verify/k157/old-limpa.sh
 
       - name: The version table against the laptop's lockfile
         run: $BUILD_EXEC bash packaging/linux/build.sh versions
@@ -294,6 +305,49 @@ jobs:
           set -o pipefail
           bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-internal.R required \
             2>&1 | tee "$OUT/check-internal.log"
+
+      # KIT-157: the previous pin (RUNNER_TEMP/k157-old, built in the install step on this CPU) against this pin (the
+      # bundle's library), with the bundle's R, on the same data: values under the fixed rule, seconds, vector instructions.
+      - name: "KIT-157: fastlimpadpc, previous pin 87a90b89 against this pin, same job (values, seconds, vector instructions)"
+        id: k157
+        if: ${{ !cancelled() && matrix.part == 'main' && steps.check.outcome == 'success' }}
+        timeout-minutes: 90
+        run: |
+          k="$RUNNER_TEMP/k157"; mkdir -p "$k"
+          set +e
+          R="$MOVED/bin/Rscript"
+          count() {
+            text="$(objdump -d --no-show-raw-insn "$2")"
+            printf 'NATIVE %s %s: %d instructions; zmm (AVX-512) %d; ymm (AVX/AVX2) %d; fma %d\n' "$1" "$(basename "$2")" \
+              "$(printf '%s\n' "$text" | grep -c '^ *[0-9a-f]*:')" "$(printf '%s\n' "$text" | grep -c '%zmm')" \
+              "$(printf '%s\n' "$text" | grep -c '%ymm')" "$(printf '%s\n' "$text" | grep -cE '\svfn?m(add|sub)')"
+          }
+          status=0
+          {
+            echo "### KIT-157: fastlimpadpc, previous pin against this pin (${{ matrix.runner }})"; echo '```'
+            echo "runner CPU: $(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2-); avx512f $(grep -qw avx512f /proc/cpuinfo && echo yes || echo no); avx2 $(grep -qw avx2 /proc/cpuinfo && echo yes || echo no)"
+            for library in $(find "$MOVED" -path '*/library/fastlimpadpc/libs/*.so' -type f); do count "fastlimpadpc this pin (bundle)" "$library"; done
+            for library in $(find "$RUNNER_TEMP/k157-old" -path '*/fastlimpadpc/libs/*.so' -type f 2>/dev/null); do count "fastlimpadpc 87a90b89 (previous)" "$library"; done
+            for side in new old; do
+              lib=-; [ "$side" = old ] && lib="$RUNNER_TEMP/k157-old"
+              if ! "$R" --vanilla packaging/verify/k157/limpa-run.R "$k/$side.rds" "$lib" > "$k/$side.log" 2>&1; then
+                echo "K157RUN $side FAILED; the end of its log:"; tail -n 30 "$k/$side.log"; status=1
+              fi
+              grep -a '^K157RUN' "$k/$side.log" | sed "s/^/$side: /"
+            done
+            if [ "$status" = 0 ]; then
+              "$R" --vanilla packaging/verify/compare-results.R "$k/old.rds" "$k/new.rds" "$k/compare.tsv" > "$k/compare.log" 2>&1 || status=1
+              tail -n 2 "$k/compare.log"
+              "$R" --vanilla packaging/verify/k157/limpa-check.R summary "$k/compare.tsv"
+              "$R" --vanilla packaging/verify/k157/limpa-check.R perturb "$k/new.rds" "$k/perturbed.rds" || status=1
+              "$R" --vanilla packaging/verify/compare-results.R "$k/new.rds" "$k/perturbed.rds" "$k/perturbed.tsv" > /dev/null 2>&1 || status=1
+              echo "perturbed copy against this pin (must be 1 outside):"
+              "$R" --vanilla packaging/verify/k157/limpa-check.R summary "$k/perturbed.tsv" | head -n 1
+            fi
+            echo '```'
+          } > "$k/summary.txt" 2>&1
+          tee -a "$GITHUB_STEP_SUMMARY" < "$k/summary.txt"
+          exit "$status"
 
       # ------------------------------------------------ stage rc: one shard of the test suite on the bundle
       # The assembled bundle (checked above: every package loads from the moved folder) is moved once more, to a path
@@ -605,6 +659,7 @@ jobs:
               "GUI-entry lanes, installed application" "${{ steps.lanes.outcome }}" \
               "browser e2e lanes, installed application" "${{ steps.e2e.outcome }}" \
               "native builds: vector instructions counted" "${{ steps.native.outcome }}" \
+              "KIT-157: previous pin against this pin" "${{ steps.k157.outcome }}" \
               "suite on the bundle, shard ${{ matrix.shard }}" "${{ steps.suite.outcome }}" \
               "uninstall" "${{ steps.uninstall.outcome }}"
             echo '```'
