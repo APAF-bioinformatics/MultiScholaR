@@ -546,5 +546,5 @@ Remotes:
     cran/RUVIIIC,
     APAF-bioinformatics/GlimmaV2,
     fastduckdb=github::APAF-bioinformatics/fast_duckdb/fastduckdb@e724f90bdbdf1073635b7112c80f8dd406f2c79b,
-    fastlimpadpc=github::APAF-bioinformatics/fast_limpa_dpc@87a90b894b2057744fc9c315a4fb7d7db3ce3af7
+    fastlimpadpc=github::APAF-bioinformatics/fast_limpa_dpc@0ad8c5271da97605af3a1c8048d7b10fdfc0745b
 Config/roxygen2/version: 8.0.0
