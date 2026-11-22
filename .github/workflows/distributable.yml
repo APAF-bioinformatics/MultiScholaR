@@ -27,6 +27,12 @@ name: KIT-134 distributable
 #                     lanes without DIA, D4); on Linux the installed R on other distributions
 #   [dist:container]  D5: the Windows library, then loaded in a Server Core container
 # [dist-linux] or [dist-windows] limits the run to one platform.
+#
+# Branch run-k158-install (run-only; dispatch only; the user's decision of 2026-11-23): stage install = stage full on
+# ubuntu-22.04 only, without the hosts, test-tools, lanes and e2e steps (build, archive, install, lifecycle off and on).
+# The Linux archive is encrypted in the job (a random AES-256 passphrase, itself encrypted with RSA-OAEP to
+# .github/k158/install-public.pem, whose private half is only on the laptop) and only the two encrypted files are
+# uploaded, as one artifact kept 1 day, after the lifecycle passed. Nothing unencrypted is uploaded; no cache.
 
 on:
   workflow_dispatch:
@@ -35,7 +41,7 @@ on:
         description: "Stage"
         type: choice
         default: library
-        options: [snapshot, library, full, container]
+        options: [snapshot, library, full, container, install]
       platform:
         description: "Platform"
         type: choice
@@ -76,6 +82,8 @@ jobs:
       full: ${{ steps.plan.outputs.full }}
       container: ${{ steps.plan.outputs.container }}
       linux_runners: ${{ steps.plan.outputs.linux_runners }}
+      tests: ${{ steps.plan.outputs.tests }}
+      encrypt: ${{ steps.plan.outputs.encrypt }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -86,13 +94,16 @@ jobs:
           if grep -nE 'uses: *actions/cache|^ *cache(-dependency-path)?:|uses: *actions/download-artifact' "$file"; then
             echo "::error::the distributable workflow must not use a cache or pass an artifact between jobs"; exit 1
           fi
-          # one upload in the file: the snapshot job's text scores (no token, nothing built)
+          # two uploads in the file: the snapshot job's text scores (no token, nothing built) and, on run-k158-install,
+          # the Linux job's encrypted archive (the folder k158-encrypted only)
           uploads="$(grep -cE 'uses: *actions/upload-artifact' "$file")"
           snapshot_uploads="$(awk '/^  [a-z-]+:$/ { job = $1 } /uses: *actions\/upload-artifact/ && job == "snapshot:" { n++ } END { print n + 0 }' "$file")"
-          if [ "$uploads" != 1 ] || [ "$snapshot_uploads" != 1 ]; then
-            echo "::error::an upload outside the snapshot job ($uploads in the file, $snapshot_uploads in snapshot)"; exit 1
+          linux_uploads="$(awk '/^  [a-z-]+:$/ { job = $1 } /uses: *actions\/upload-artifact/ && job == "linux:" { n++ } END { print n + 0 }' "$file")"
+          if [ "$uploads" != 2 ] || [ "$snapshot_uploads" != 1 ] || [ "$linux_uploads" != 1 ]; then
+            echo "::error::an upload outside the snapshot job and the encrypted archive ($uploads in the file, $snapshot_uploads in snapshot, $linux_uploads in linux)"; exit 1
           fi
-          echo "no cache, no artifact passed between jobs, no upload from a build job"
+          test "$(grep -cE '^ *path: \$\{\{ runner.temp \}\}/k158-encrypted$' "$file")" = 1
+          echo "no cache, no artifact passed between jobs, no upload from a build job but the encrypted archive"
       - id: plan
         env:
           EVENT: ${{ github.event_name }}
@@ -108,11 +119,12 @@ jobs:
             platform=both
             case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
           fi
-          case "$stage" in none|snapshot|library|full|container) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
-          build=false; full=false; container=false; linux_runners='["ubuntu-22.04"]'
+          case "$stage" in none|snapshot|library|full|container|install) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          build=false; full=false; container=false; linux_runners='["ubuntu-22.04"]'; tests=true; encrypt=false
           case "$stage" in
             library) build=true ;;
             full) build=true; full=true; linux_runners='["ubuntu-22.04", "ubuntu-24.04"]' ;;
+            install) build=true; full=true; tests=false; encrypt=true; platform=linux ;;
             container) build=true; container=true; platform=windows ;;
           esac
           linux=false; windows=false
@@ -121,6 +133,7 @@ jobs:
             echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
             echo "build=$build"; echo "full=$full"; echo "container=$container"
             echo "linux_runners=$linux_runners"
+            echo "tests=$tests"; echo "encrypt=$encrypt"
           } | tee -a "$GITHUB_OUTPUT"
           echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
 
@@ -315,6 +328,25 @@ jobs:
           rm -rf "$RUNNER_TEMP/archive" packaging/electron/dist
           echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
 
+      # run-k158-install: encrypted here because the install step deletes the archive; uploaded only after the lifecycle.
+      - name: "K158: the archive's sha256; the archive encrypted to the laptop's public key (AES-256 passphrase under RSA-OAEP)"
+        id: encrypt
+        if: ${{ !cancelled() && needs.plan.outputs.encrypt == 'true' && steps.archive.outcome == 'success' }}
+        run: |
+          set -eu
+          umask 077
+          enc="$RUNNER_TEMP/k158-encrypted"; pass="$RUNNER_TEMP/k158-passphrase"
+          mkdir -p "$enc"
+          echo "K158 SHA256 $(cat "$ARCHIVE.sha256")"
+          openssl rand -hex 32 > "$pass"
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass "file:$pass" -in "$ARCHIVE" -out "$enc/$(basename "$ARCHIVE").enc"
+          openssl pkeyutl -encrypt -pubin -inkey .github/k158/install-public.pem -pkeyopt rsa_padding_mode:oaep \
+            -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 -in "$pass" -out "$enc/passphrase.rsa"
+          shred -u "$pass"
+          test ! -e "$pass"
+          echo "K158 encrypted files (the only files uploaded):"
+          (cd "$enc" && ls -l && sha256sum ./*)
+
       - name: Install from the archive with install.sh into a scratch folder, as the runner's user; the archive is deleted
         id: install
         if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.archive.outcome == 'success' }}
@@ -370,6 +402,16 @@ jobs:
               "$DEST" "$reason" "$value" "$features"
           done
 
+      - name: "K158: upload the encrypted archive only (after install and lifecycle passed; kept 1 day)"
+        if: ${{ !cancelled() && needs.plan.outputs.encrypt == 'true' && steps.encrypt.outcome == 'success' && steps.lifecycle.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: k158-linux-archive-encrypted
+          path: ${{ runner.temp }}/k158-encrypted
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
       # The Linux library path (outcome.md, defect 2): the installed application's R on this runner and
       # in containers of other distributions; bash and sh started from R, a child R, the entry.
       # Decision M25: /usr/bin/which is a host requirement; the launcher stops without it (shown in the Arch Linux and
@@ -378,7 +420,7 @@ jobs:
       # putting R's original file back for the "before" rows, then the build's (the only difference between the two).
       - name: "Hosts: the installed R without and with /usr/bin/which (M25); host programs, child R, the entry, and the libraries R loads before and after etc/ldpaths (M26); this runner, Arch Linux, Fedora, Debian (network off)"
         id: hosts
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && needs.plan.outputs.tests == 'true' && steps.install.outcome == 'success' }}
         timeout-minutes: 60
         run: |
           status=0
@@ -411,7 +453,7 @@ jobs:
 
       - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library (installed application's R)"
         id: testtools
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && needs.plan.outputs.tests == 'true' && steps.install.outcome == 'success' }}
         run: |
           echo "TEST_TOOLS=$RUNNER_TEMP/test-tools" >> "$GITHUB_ENV"
           "$DEST/app/resources/runtime/bin/Rscript" --vanilla packaging/verify/test-tools.R "$RUNNER_TEMP/test-tools" \
