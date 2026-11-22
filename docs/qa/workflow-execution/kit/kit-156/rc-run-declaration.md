@@ -62,3 +62,59 @@ test-integration-results-mofa 46/0 / 46/0; test-omic-norm-ruv-design 1153/0 / 11
 transcriptomics corpus manifest's sha256 against the stored value (to be set against the run-tests reference of the full
 suite); the 4 Windows errors are `system2("cp", ...)` in the test's replay helper (E: GNU tools absent on Windows). Every
 file's temporary root was empty afterwards. Instrumentation proven; the counted run follows (stage rc).
+
+## Results: counted run [44956911834](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44956911834) on 6fd6cfa (2026-11-21/22 UTC)
+
+Read from the job logs (0 artifacts, no cache). Conclusion "failure" comes only from the three main jobs' GUI-entry lane
+steps (below), as in run 44598642342. Every suite and smoke job passed its step. No instrumentation fault; the
+correction pass is not used.
+
+### Main jobs
+
+| | ubuntu-22.04 | ubuntu-24.04 | windows-2025 |
+|---|---|---|---|
+| library, internal packages, shell, archive / installer, install | passed | passed | passed |
+| lifecycle, test setting off (no report; placeholder tile) | passed, process ("kernel 6.8") | passed, process ("D-Bus") | passed, process ("win32") |
+| lifecycle, test setting on (both options TRUE; tile live) | passed | passed | passed |
+| hosts (M25, M26; Arch, Fedora, Debian) | passed | passed | - |
+| browser e2e lanes | 88, 190, 16, 42, 86, 98, 153 = laptop | not run (by design) | 88, 190, 16, 153 = laptop |
+| GUI-entry lanes | every lane differs from its oracle in the steps after the omic writes its integration input (`integration/<omic>/*`, KIT-147..153) and, trx_screen, from the raw state on (KIT-128 technical replicates); metab as before (fixture, defect 4) | the same | the same families plus the earlier Windows-only ones (summary text root, fragpipe DA table, lipid norm_log text, trx_screen testServer error) |
+| KIT-131 worker lane (W-A) | - | - | as run 44598642342 (identical counts) |
+| figure paths W-D | - | - | on 159/0/0 (was 148/1/0: D-1); off 127/0/7 (was 116/1/7: D-1; the 7 errors the known fixtures over 248 characters) |
+| Summary at roots 90, 96, long paths off (W-C) | - | - | `.docx` written at both; lane 33/4 (the 4 = integration-input artifacts + summary text root) |
+
+The GUI-entry differences are performance-v2's own: run-tests 44953187101 (load_all, reference BLAS) fails the same files
+with the same counts on base 12d68ca7 and head (gui-entry lipid 4, metab 30, proteomics 22, transcriptomics 13). They are
+oracles not re-recorded since KIT-147..153 and KIT-128 (rows for the single re-record, REC-049); not bundle differences.
+
+### Native builds (item 4)
+
+| runner CPU | fastlimpadpc.so zmm (AVX-512) / ymm / FMA | fastduckdb.so | MultiScholaR.so |
+|---|---|---|---|
+| AMD EPYC 9V74 (avx512f yes), ubuntu-22.04 | **1522** / 629 / 0 | 26 / 208 / 4 | 0 / 0 / 0 |
+| AMD EPYC 7763 (avx512f no), ubuntu-24.04 | 0 / **2730** / 0 | 26 / 208 / 4 (identical) | 0 / 0 / 0 |
+
+`fastlimpadpc` takes the instruction set of whichever runner built it (`-C target-cpu=native`, src/Makevars.in:39 at
+87a90b89): the 22.04 bundle needs AVX-512 and stops with "illegal instruction" on most desktop CPUs (Intel consumer
+chips, AMD before Zen 4); the 24.04 bundle needs AVX2. `fastduckdb`'s counts are the same on both builds (no CPU-specific
+flag; its AVX-512 paths are DuckDB's own run-time dispatch). Windows (Makevars.win.in) has no such flag.
+
+### Suite on the bundle (installed package), against run 44598642342
+
+Linux 447 files: 405 ok, 42 failed (was 383/30 of 413). Windows 447: 384 ok, 60 failed, 3 timeout (was 357/53/3 of 413).
+
+| Class | Files (L = Linux, W = Windows) |
+|---|---|
+| Fixed | workflow-figure-paths (W: D-1 gone, 159/0), integration-corpus (W: 111/0, was 39/2/1) |
+| Known state of performance-v2 (fail identically in run-tests 44953187101 on base and head) | gui-entry-lipidomics, -proteomics, -transcriptomics; omic-summary-module; omics-summary-core; omic-da-module; workflow-omics-owner; workflow-operation-registry; module-ci-trx-design and -trx-qc (error); dia-limpa-ruv-rules, kit127-omics-ruv-factors, prot-ruv-factors-in-model (new files); both platforms |
+| Numeric, B-01 family (bundle OpenBLAS; stored sha256 of the generated transcriptomics corpus manifest, whose truth.json doubles move in the last bits; passes under reference BLAS) | integration-input-transcriptomics (3), kit129-run-path (6), trx-ruv-designs (6); L and W; as run-win-k153 |
+| E, GNU tools absent (Windows) | kit129-run-path 4 errors (`system2("cp")` in the test's replay helper) |
+| Open, not classified (Windows only; not KIT-156 code) | omic-enrich-module +3 over run 44598642342 (kernel_gprofiler and refusals text digests; a second run's display text differs from the first) |
+
+No class D. No new difference attributable to KIT-156's changes.
+
+### Smoke with the test setting (both platforms, identical to the lifecycle run)
+
+test-test-features 41/0; integration-gui 395/0; integration-record-mofa 27/0 (import, uploaded match, MOFA2 training,
+results, record, report, replay); integration-results-mofa 46/0; omic-norm-ruv-design 1153/0; trx-ruv-designs 344/6 and
+kit129-run-path 687/6 (Windows 662/6/4 errors): the B-01 manifest checks and the `cp` errors above. Temporary roots empty.
