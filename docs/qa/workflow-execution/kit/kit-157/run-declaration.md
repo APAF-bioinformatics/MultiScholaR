@@ -40,3 +40,16 @@ the fixed rule; (3) the bundle builds, installs, passes the lifecycle and the DI
 - Speed: the `K157RUN case` seconds of the two builds in the same job, reported as measured (one run each; rough).
 
 Results below this line after the runs.
+
+## Lifecycle run [44997249408](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44997249408) on cd4189f3 (stage library, linux): comparison proven; one instrumentation fault
+
+ubuntu-22.04, AMD EPYC 9V74 (avx512f yes). `K157OLD fastlimpadpc 87a90b89: installed (19 s)`. Both sides printed five cases
+and loaded different libraries (this pin: bundle library, RemoteSha 0ad8c527, md5 aceabd92...; previous: k157-old,
+RemoteSha 87a90b89, md5 7a5be652...; RAYON_NUM_THREADS 1). Comparison: 321 leaves, 321 agree, 0 outside, 0 differ;
+141 double leaves, 1,264,660 values; largest absolute and relative difference 0 (bit-identical). Perturbed copy: 1 outside,
+as required. Seconds (this pin / previous): item5 0.05/0.06, s2_1 0.12/0.12, s2_2 0.11/0.11, s2_3 0.12/0.12, large 0.55/0.53.
+Previous pin's library: 247,132 instructions, zmm 1,522, ymm 629, fma 0 (as KIT-156).
+
+**Fault (instrumentation):** the count of this pin's library split the bundle path at its space (`msr moved`) and read
+0 instructions. Correction pass (the only one): paths read whole (`find -print0`), and the perturbed summary written to a
+file before its first line is printed (the `head` pipe ended R early, harmless). The counted run follows on that commit.

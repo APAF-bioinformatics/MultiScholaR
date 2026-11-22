@@ -326,8 +326,9 @@ jobs:
           {
             echo "### KIT-157: fastlimpadpc, previous pin against this pin (${{ matrix.runner }})"; echo '```'
             echo "runner CPU: $(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2-); avx512f $(grep -qw avx512f /proc/cpuinfo && echo yes || echo no); avx2 $(grep -qw avx2 /proc/cpuinfo && echo yes || echo no)"
-            for library in $(find "$MOVED" -path '*/library/fastlimpadpc/libs/*.so' -type f); do count "fastlimpadpc this pin (bundle)" "$library"; done
-            for library in $(find "$RUNNER_TEMP/k157-old" -path '*/fastlimpadpc/libs/*.so' -type f 2>/dev/null); do count "fastlimpadpc 87a90b89 (previous)" "$library"; done
+            # paths read whole (the bundle folder's name holds a space)
+            find "$MOVED" -path '*/library/fastlimpadpc/libs/*.so' -type f -print0 | while IFS= read -r -d '' library; do count "fastlimpadpc this pin (bundle)" "$library"; done
+            find "$RUNNER_TEMP/k157-old" -path '*/fastlimpadpc/libs/*.so' -type f -print0 2>/dev/null | while IFS= read -r -d '' library; do count "fastlimpadpc 87a90b89 (previous)" "$library"; done
             for side in new old; do
               lib=-; [ "$side" = old ] && lib="$RUNNER_TEMP/k157-old"
               if ! "$R" --vanilla packaging/verify/k157/limpa-run.R "$k/$side.rds" "$lib" > "$k/$side.log" 2>&1; then
@@ -342,7 +343,8 @@ jobs:
               "$R" --vanilla packaging/verify/k157/limpa-check.R perturb "$k/new.rds" "$k/perturbed.rds" || status=1
               "$R" --vanilla packaging/verify/compare-results.R "$k/new.rds" "$k/perturbed.rds" "$k/perturbed.tsv" > /dev/null 2>&1 || status=1
               echo "perturbed copy against this pin (must be 1 outside):"
-              "$R" --vanilla packaging/verify/k157/limpa-check.R summary "$k/perturbed.tsv" | head -n 1
+              "$R" --vanilla packaging/verify/k157/limpa-check.R summary "$k/perturbed.tsv" > "$k/perturbed.txt" 2>&1
+              sed -n 1p "$k/perturbed.txt"
             fi
             echo '```'
           } > "$k/summary.txt" 2>&1
