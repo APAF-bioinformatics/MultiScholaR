@@ -5,6 +5,7 @@
 //
 // Usage: node lifecycle-test.js <label> <application executable> <application folder>
 //            --expect-launcher <in-process|process|systemd> [--expect-reason <text>] [--network-closed]
+//            [--expect-test-features <on|off>]
 //
 // <application folder> is the installed or unpacked application; every process whose executable
 // lies under it counts as "from the bundle", and those under its resources/runtime as R.
@@ -29,6 +30,9 @@ const option = (name) => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : u
 const [label, executable, folder] = argv;
 const expectLauncher = option('--expect-launcher');
 const expectReason = option('--expect-reason');
+// KIT-156: --expect-test-features on|off: whether the test setting (MULTISCHOLAR_TEST_FEATURES=1) is expected, as R
+// reports it and as the served page shows it (the home page's Integration tile live, or the placeholder).
+const expectTestFeatures = option('--expect-test-features');
 if (!label || !executable || !folder || !expectLauncher) {
   console.error('usage: node lifecycle-test.js <label> <executable> <application folder> --expect-launcher <launcher> [--expect-reason <text>] [--network-closed]');
   process.exit(2);
@@ -150,6 +154,16 @@ async function main() {
   const url = `http://127.0.0.1:${answered.port}/`;
   const page = await fetchPage(url);
   check('the port serves the application', page.status === 200 && /MultiScholaR/.test(page.body || ''), `${url} -> ${page.status}`);
+  if (expectTestFeatures) {
+    const on = expectTestFeatures === 'on';
+    const reported = log1.find('test-features');
+    check(`the test setting is ${expectTestFeatures} as R reports it`, on
+      ? Boolean(reported && reported.ruv_design_panel === true && reported.integration_gui === true) : !reported,
+    JSON.stringify(reported || null));
+    const tile = ((page.body || '').match(/<div[^>]*id="integration_box"[^>]*>/) || [''])[0];
+    check(`the Integration tile on the served page is ${on ? 'live' : 'the placeholder'}`,
+      Boolean(tile) && (on ? !/disabled/.test(tile) : /disabled/.test(tile)), tile || 'no integration_box');
+  }
   const r1 = rProcesses();
   check('R from the bundle is running', r1.length > 0, r1.map((p) => `${p.pid} ${p.exe}`).join('; '));
 

@@ -155,6 +155,9 @@
    those steps. The pinned source is unchanged (DESCRIPTION's Remotes). No function or result changes.
  * The on-disk state owner compares paths with forward slashes on every platform, so its containment checks no longer
    refuse valid project paths on Windows. Nothing changes on Linux or macOS.
+ * Windows: a session archive written without GNU tar (every DIA session export, and the archive refresh of the Summary
+   save) no longer leaves a full copy of its files in the temporary folder. The staging folder was removed while it was
+   still R's working directory, which Windows refuses (KIT-156, D-1). The archive itself is unchanged.
 
 ## Version 0.5.0 (Release Candidate)
 

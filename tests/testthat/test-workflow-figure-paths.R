@@ -793,6 +793,39 @@ test_that("KIT-131: in a worker the session archive stages its members in the sy
     expect_length(list.files(system_temp, pattern = "^archive-stage-"), 0L)
 })
 
+# KIT-156 (D-1, KIT-134 run 44598642342): Windows cannot remove the current directory, so the staging folder must be
+# removed only after the working directory is restored. The order is observed here, where every platform could remove it.
+figurePathStagingUnlinks <- function(env = parent.frame()) {
+    seen <- new.env(parent = emptyenv())
+    seen$at <- character()
+    suppressMessages(trace("unlink", tracer = bquote(if (any(grepl("archive-stage-", x, fixed = TRUE)))
+        assign("at", c(get("at", envir = .(seen)), normalizePath(getwd(), winslash = "/")), envir = .(seen))),
+        where = baseenv(), print = FALSE))
+    withr::defer(suppressMessages(untrace("unlink", where = baseenv())), envir = env)
+    seen
+}
+
+test_that("KIT-156 (D-1): the session archive's staging folder is removed from outside it, after success and after failure", {
+    for (fails in c(FALSE, TRUE)) {
+        request <- figurePathArchiveRequest()
+        system_temp <- normalizePath(withr::local_tempdir(), winslash = "/")
+        before <- getwd()
+        seen <- figurePathStagingUnlinks()
+        output <- file.path(request$root, if (fails) "missing" else ".", "session.msdia.tar")
+        run <- function() suppressWarnings(runDIANativeTarR(c("--create", "--file", "-", "--directory",
+            file.path(request$root, "s"), "--files-from", file.path(request$root, "store-members.nul")),
+            file.path(request$root, "archive-create.log"), output_path = output))
+        withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1", TMP = system_temp, TEMP = NA),
+            if (fails) expect_error(run()) else run())
+        suppressMessages(untrace("unlink", where = baseenv()))
+        expect_length(seen$at, 1L)
+        expect_false(any(grepl("archive-stage-", seen$at, fixed = TRUE)), info = paste("unlink ran in", seen$at))
+        expect_length(list.files(system_temp, pattern = "^archive-stage-"), 0L)
+        expect_identical(getwd(), before)
+        if (!fails) expect_setequal(names(readDIANativeTarEntriesR(output)), request$members)
+    }
+})
+
 test_that("KIT-131: a member the session archive cannot stage stops the archive with the classed error and is named", {
     request <- figurePathArchiveRequest()
     deep <- file.path(withr::local_tempdir(), strrep("w", 120L), strrep("x", 120L))

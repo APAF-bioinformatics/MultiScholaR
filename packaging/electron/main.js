@@ -44,6 +44,8 @@ const MISSING_WHICH = 'MultiScholaR needs the program "which" (/usr/bin/which), 
 let mainWindow = null;
 let origin = null;
 let launcher = { launcher: 'unknown', reason: 'R has not reported its launcher' };
+// KIT-156: set when R reports the test setting (MULTISCHOLAR_TEST_FEATURES=1, packaging/electron/entry.R).
+let testFeatures = null;
 let quitting = false;
 
 function readJson(file) {
@@ -193,6 +195,10 @@ function startR(port, runFolder, probe) {
         try { launcher = JSON.parse(line.slice('MSR-LAUNCHER '.length)); } catch (error) { launcher = { launcher: 'unreadable', reason: line }; }
         record('launcher', launcher);
         applyLauncher();
+      } else if (line.startsWith('MSR-TEST-FEATURES ')) {
+        try { testFeatures = JSON.parse(line.slice('MSR-TEST-FEATURES '.length)); } catch (error) { testFeatures = { unreadable: line }; }
+        record('test-features', testFeatures);
+        if (mainWindow) mainWindow.setTitle(title());
       }
     }
   });
@@ -257,7 +263,8 @@ function waitForApplication(port, timeoutMs = 300000) {
 
 // ------------------------------------------------------------------- window
 function title() {
-  const base = `MultiScholaR ${stamp.release}`;
+  const release = `MultiScholaR ${stamp.release}`;
+  const base = testFeatures ? `${release} (test features on)` : release;
   return launcher.launcher === 'in-process' ? `${base} (steps run inside the application)` : base;
 }
 
