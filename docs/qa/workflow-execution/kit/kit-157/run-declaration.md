@@ -53,3 +53,40 @@ Previous pin's library: 247,132 instructions, zmm 1,522, ymm 629, fma 0 (as KIT-
 **Fault (instrumentation):** the count of this pin's library split the bundle path at its space (`msr moved`) and read
 0 instructions. Correction pass (the only one): paths read whole (`find -print0`), and the perturbed summary written to a
 file before its first line is printed (the `head` pipe ended R early, harmless). The counted run follows on that commit.
+
+## Results: counted run [44998302733](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44998302733) on a65c8efa (stage full, both)
+
+Read from the job logs (no artifact, no cache). Conclusion "failure" comes only from the three main jobs' GUI-entry lane
+steps, as in run 44956911834. Correction pass used once (before this run, for the lifecycle fault); none left.
+
+| | ubuntu-22.04 | ubuntu-24.04 | windows-2025 |
+|---|---|---|---|
+| runner CPU | AMD EPYC 9V45 (avx512f yes) | Intel Xeon Platinum 8573C (avx512f yes) | - |
+| library (fastlimpadpc 0ad8c527), checks, shell, archive/installer, install | passed | passed | passed |
+| lifecycle, installed application | passed | passed | passed |
+| hosts (M25, M26) | passed | passed | - |
+| browser e2e lanes | 88, 190, 16, 42, **86 (proteomics-dia-limpa)**, 98, 153 = laptop | not run (by design) | 88, 190, 16, 153 = laptop (no DIA, D4) |
+| GUI-entry lanes | counts identical to run 44956911834 (prot_dia_limpa 34/4, the known KIT-147..153 families) | the same | identical counts to run 44956911834 (lipid norm_log text digest differs in value only, as between runs) |
+| figure paths W-D on / off | - | - | passed / passed |
+
+### fastlimpadpc, previous pin against this pin in the same job
+
+| | 22.04 (EPYC 9V45) | 24.04 (Xeon 8573C) | lifecycle 22.04 (EPYC 9V74) |
+|---|---|---|---|
+| this pin: instructions / zmm / ymm / fma | 246,612 / **0** / 2,730 / 0 | 246,612 / **0** / 2,730 / 0 | (fault, see above) |
+| previous pin (native): instructions / zmm / ymm / fma | 250,773 / 1,522 / 629 / 0 | 246,588 / 8 / 2,610 / 0 | 247,132 / 1,522 / 629 / 0 |
+| this pin's library md5 | aceabd92... | aceabd92... | aceabd92... |
+| values: leaves agree / outside / differ; largest difference | 321 / 0 / 0; 0 | 321 / 0 / 0; 0 | 321 / 0 / 0; 0 |
+| perturbed copy (must be 1 outside) | 1 | 1 | 1 |
+| seconds, largest case (20,000 precursors x 20 runs), this / previous | 0.39 / 0.38 | 0.53 / 0.52 | 0.55 / 0.53 |
+
+The new build is the same binary on every runner and holds no AVX-512 instruction; the previous pin took the building
+CPU's instructions (1,522 zmm on AMD Zen 4/5, 8 on the Intel runner). Values bit-identical (1,264,660 doubles per side).
+Times equal within noise (S2-size cases 0.11 to 0.13 s on both builds).
+
+### run-tests 44997354180 (request k157-limpa-becf489f; 55 DIA_LIMPA test files; base 1c7b2a61; check)
+
+Every file `same` against the base; check identical (0 errors, 3 warnings, 3 notes on both). Both sides run the tools of
+the head (new pin), so the previous pin's counts come from the full suite run-tests 44967744129 (KIT-155 candidate
+e84b8a12, pin 87a90b89): all 55 files have identical passed/failed/errors/skipped/status. The 11 failing files fail
+identically there (known state of performance-v2).
