@@ -46,7 +46,8 @@ AT_LOCK <- list(
 # The internal packages, named explicitly (a GitHub reference names its repository, not the package
 # inside it) at the commits DESCRIPTION's Remotes pin on performance-v2 since 3ec13e95: fastduckdb 0.2.0
 # at fast_duckdb e724f90b (the package code of 2694b972; Cargo goes offline only with vendored crates)
-# and fastlimpadpc at fast_limpa_dpc 87a90b89 (declares Imports limpa and methods). The checkout's
+# and fastlimpadpc at fast_limpa_dpc 0ad8c527 (branch portable-x86-64-v3: 87a90b89, which declares Imports limpa and
+# methods, built for x86-64-v3 instead of the building CPU, KIT-157). The checkout's
 # Remotes must name the same commits, or the build stops. Installed only when MSR_INTERNAL is
 # "required" (a failure stops the build) or "attempt" (a failure is recorded and the build goes on:
 # Windows, D4), with the read token in GITHUB_PAT. While the repositories are internal their sources,
@@ -56,7 +57,7 @@ INTERNAL_REMOTES <- list(
     fastduckdb = list(user = "APAF-bioinformatics", repo = "fast_duckdb", subdir = "fastduckdb",
         sha = "e724f90bdbdf1073635b7112c80f8dd406f2c79b"),
     fastlimpadpc = list(user = "APAF-bioinformatics", repo = "fast_limpa_dpc", subdir = "",
-        sha = "87a90b894b2057744fc9c315a4fb7d7db3ce3af7")
+        sha = "0ad8c5271da97605af3a1c8048d7b10fdfc0745b")
 )
 internal_mode <- Sys.getenv("MSR_INTERNAL", "")
 if (!internal_mode %in% c("", "required", "attempt")) stop("MSR_INTERNAL must be empty, required or attempt")

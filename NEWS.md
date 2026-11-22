@@ -137,6 +137,10 @@
 
 ### Other changes
 
+ * The fast DIA_LIMPA engine (`fastlimpadpc`) is pinned at fast_limpa_dpc 0ad8c527 (KIT-157), which compiles its
+   Rust core for the x86-64-v3 baseline (AVX2, FMA) instead of the building machine's CPU
+   (`-C target-cpu=native`). A Linux bundle built on an AVX-512 machine no longer stops with "illegal instruction"
+   on CPUs without AVX-512. Windows builds had no CPU flag and are unchanged.
  * The managed worker no longer needs systemd (KIT-131). A managed application (the internal launcher a desktop
    shell starts R through) runs each heavy step as a child process of the application where systemd is absent (Windows, or Linux without `systemctl`), or when the
    option `multischolar.workflow_launcher = "process"` is set. The worker keeps the per-step deadline, stops with the
