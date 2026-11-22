@@ -1,0 +1,19 @@
+size	mechanism	stage	metric	before_build	after_build	before	after	change	noise	noise_note	tolerance	n_before	n_after	verdict
+S	KIT-155: alignment pages by bytes	align	R heap peak (MiB)	before	after	261.8	255.4	-6.4	0.0		64.0	3	3	no measurable change
+S	KIT-155: alignment pages by bytes	align	process peak (MiB)	before	after	877.6	871.3	-6.3	0.2		64.0	3	3	no measurable change
+S	KIT-155: alignment pages by bytes	align	wall (s)	before	after	1.0	0.9	-0.1	0.1		1.0	3	3	no measurable change
+S	KIT-155: alignment pages by bytes	train	R heap peak (MiB)	before	after	261.8	255.3	-6.5	0.0		64.0	3	3	no measurable change
+S	KIT-155: alignment pages by bytes	train	process peak (MiB)	before	after	962.0	957.3	-4.7	1.8		64.0	3	3	no measurable change
+S	KIT-155: alignment pages by bytes	train	wall (s)	before	after	26.9	27.4	0.5	1.0		2.0	3	3	no measurable change
+M	KIT-155: alignment pages by bytes	align	R heap peak (MiB)	before	after	413.0	335.1	-77.9	0.0		64.0	3	3	reduced
+M	KIT-155: alignment pages by bytes	align	process peak (MiB)	before	after	1182.2	1074.6	-107.6	18.0		64.0	3	3	reduced
+M	KIT-155: alignment pages by bytes	align	wall (s)	before	after	16.3	17.2	0.9	0.7		1.4	3	3	no measurable change
+M	KIT-155: alignment pages by bytes	train	R heap peak (MiB)	before	after	541.8	463.9	-77.9	0.0		64.0	3	3	reduced
+M	KIT-155: alignment pages by bytes	train	process peak (MiB)	before	after	1212.9	1210.9	-2.0	5.9		64.0	3	3	no measurable change
+M	KIT-155: alignment pages by bytes	train	wall (s)	before	after	217.4	218.4	1.0	5.5		11.0	3	3	no measurable change
+L	KIT-155: alignment pages by bytes	align	R heap peak (MiB)	before	after	746.1	456.8	-289.3	1.2		64.0	3	3	reduced
+L	KIT-155: alignment pages by bytes	align	process peak (MiB)	before	after	1560.7	1176.9	-383.8	12.1		78.0	3	3	reduced
+L	KIT-155: alignment pages by bytes	align	wall (s)	before	after	59.2	82.1	22.9	9.0		18.0	3	3	increased
+L	KIT-155: alignment pages by bytes	train	R heap peak (MiB)	before	after	848.2	558.9	-289.3	1.2		64.0	3	3	reduced
+L	KIT-155: alignment pages by bytes	train	process peak (MiB)	before	after	1558.9	1265.8	-293.1	15.2		77.9	3	3	reduced
+L	KIT-155: alignment pages by bytes	train	wall (s)	before	after	652.9	833.3	180.4	161.8		323.6	3	3	no measurable change

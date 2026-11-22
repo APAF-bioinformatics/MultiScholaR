@@ -72,3 +72,45 @@ with its reason; instrumentation invalid is kept apart from an unfavourable vali
 - Before does not complete at a size: no comparison at that size.
 - Factors or iterations differ between builds: KIT-155 changed results; reported as a defect, the claim is not stated.
 - Time: the change in alignment and training wall time is reported as measured, whatever its sign.
+
+## 7. Record (2026-11-22; terms, thresholds, sizes and budget unchanged)
+
+- Lifecycle run 44952799013: PASS (both builds' four stages at S valid; memory-limit, time-limit and error failures
+  recorded after the baseline). 19.6 runner-minutes.
+- Counted run 44954546145 (runner Intel Xeon 6973P-C): 72 stage rows, 0 instrumentation invalid; S and M complete
+  (3 repeats each build); at L, before 2 and after 1 repeats. The other L cases were "not run: the disk ceiling": the
+  guarded remover (`k150-remove.py`) refused the `before`/`after` run folders, so no run folder was removed. An
+  instrumentation failure of this lane copy, not a result. 88.3 runner-minutes.
+- The one correction pass, run 44962192602 (runner Intel Xeon Platinum 8573C): the remover's name rule extended to
+  the two build names; only the three L cases not run were run (after r2, before r3, after r3), all completed and valid.
+  65.2 runner-minutes. The L repeats therefore span two runners: R heap figures agree to 1.2 MiB; wall times and the
+  models' iterations differ by runner (below). The combined tables (`summary.md`, `rows.tsv`, `claims.tsv`,
+  `comparisons.tsv`) are `k155-summarise.py final` over both jobs' artifacts; `counted/` and `correction/` keep each
+  job's own. (One duplicate row: L after r2 write completed in both jobs; it enters only the write stage, not compared.)
+- Build after was f263bc6d. Its later commits on the branch (d1fd2597: a page holding only internal standards gives an
+  empty block, reached only at tiny pages with standards; 5ed06132: a test's expected type) do not change any path these
+  synthetic studies take (they have no internal standards); not re-measured.
+- Total 173.1 runner-minutes (about 11.5 core-hours of 34).
+
+Results (R heap peaks have a range of 0.0 to 1.2 MiB over repeats):
+
+| Claim 1 | Build | M | L |
+|---|---|---|---|
+| as declared (<= 2 x largest selected + 256 MiB) | before | fail (541.8 vs 259.0) | fail (848.2 vs 263.6) |
+| as declared | after | fail (463.9 vs 259.0) | fail (558.8 to 560.0 vs 263.6) |
+| restated (growth above the S overhead) | before | fail (280.0 vs 259.0) | fail (586.4 vs 263.6) |
+| restated | after | pass (208.6 vs 259.0) | fail (303.5 to 304.7 vs 263.6 + 2.4) |
+
+Overheads (training R heap at S): before 261.8, after 255.3 MiB. Before against after (median): alignment R heap -77.9
+MiB at M, -289.3 at L; training R heap -77.9 at M, -289.3 at L; process peak, alignment -107.6 at M and -383.8 at L,
+training no measurable change at M and -293.1 at L. Time, compared on one runner (before r1/r2 and after r1 of the
+counted run; before r3 and after r2/r3 of the correction run): at L the alignment stage +16.0 s (58.5 to 74.5) and
++15.4 s (66.8 to 82.2), about +27 %; the training stage (which aligns first) +32.7 s (649.7 to 682.4) and +32.0 s
+(806.8 to 838.8), about +5 %; at M and S no measurable change. Models: on each runner the factors (rounded to 1e-8)
+and iterations are the same in both builds at S, M and L; at L the two runners' processors give different models
+(4,786 and 4,361 iterations) in both builds alike (INT-25: unpinned maths library).
+
+Reading (section 6): the restated claim passes at M and fails at L by about 40 MiB, a valid unfavourable result. Pages
+of 8 MiB removed 289 MiB of the 325 MiB by which L failed; what is left grows with the samples by about 96 MiB between
+M and L (training R heap 463.9 to 558.9 MiB with pages of the same 8 MiB), so it is not the page alone. No other budget
+is tried under this ticket.

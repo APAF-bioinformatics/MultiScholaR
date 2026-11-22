@@ -1,0 +1,13 @@
+image: ubuntu22 20261116.365.1
+6.8.0-1070-azure
+4
+MemTotal:       16371436 kB
+SwapTotal:       3145724 kB
+CPU(s):                                  4
+Model name:                              INTEL(R) XEON(R) PLATINUM 8573C
+Thread(s) per core:                      2
+Core(s) per socket:                      2
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/root       146G   60G   86G  41% /
+/dev/root       146G   60G   86G  41% /
+cgroup: cgroup2fs controllers: cpuset cpu io memory pids

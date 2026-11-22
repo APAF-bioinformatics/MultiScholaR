@@ -1,0 +1,9 @@
+claim	build	size	verdict	detail
+1 as declared	before	M	fail	heap peak 541.8 MiB vs bound 259.0 MiB; heap peak 541.8 MiB vs bound 259.0 MiB; heap peak 541.8 MiB vs bound 259.0 MiB
+1 restated (INT-27)	before	M	fail	overhead 261.8 MiB (before train at S, n=3); growth 280.0, 280.0, 280.0 MiB vs bound 259.0 MiB + 2 x noise 0.0
+1 as declared	before	L	fail	heap peak 848.2 MiB vs bound 263.6 MiB; heap peak 848.2 MiB vs bound 263.6 MiB; heap peak 848.2 MiB vs bound 263.6 MiB
+1 restated (INT-27)	before	L	fail	overhead 261.8 MiB (before train at S, n=3); growth 586.4, 586.4, 586.4 MiB vs bound 263.6 MiB + 2 x noise 0.0
+1 as declared	after	M	fail	heap peak 463.9 MiB vs bound 259.0 MiB; heap peak 463.9 MiB vs bound 259.0 MiB; heap peak 463.9 MiB vs bound 259.0 MiB
+1 restated (INT-27)	after	M	pass	overhead 255.3 MiB (after train at S, n=3); growth 208.6, 208.6, 208.6 MiB vs bound 259.0 MiB + 2 x noise 0.0
+1 as declared	after	L	fail	heap peak 558.9 MiB vs bound 263.6 MiB; heap peak 558.8 MiB vs bound 263.6 MiB; heap peak 560.0 MiB vs bound 263.6 MiB
+1 restated (INT-27)	after	L	fail	overhead 255.3 MiB (after train at S, n=3); growth 303.6, 303.5, 304.7 MiB vs bound 263.6 MiB + 2 x noise 1.2
