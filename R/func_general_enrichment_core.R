@@ -30,8 +30,13 @@
 
 #'@export
 parseNumList <-  function ( input_text ) {
+  if (is.null(input_text) || length(input_text) == 0L || is.na(input_text[[1L]]) || !nzchar(trimws(as.character(input_text[[1L]])))) {
+    return(integer(0))
+  }
   if( str_detect( input_text, "[.,;:]")) {
-    str_split( input_text, "[.,;:]")[[1]] %>% purrr::map_int( as.integer)
+    tokens <- str_split( input_text, "[.,;:]")[[1]]
+    tokens <- tokens[nzchar(trimws(tokens))]
+    return(as.integer(tokens))
   } else {
     return( as.integer( input_text ))
   }
