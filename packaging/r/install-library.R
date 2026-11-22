@@ -44,7 +44,7 @@ AT_LOCK <- list(
         "https://bioconductor.org/packages/3.23/bioc/src/contrib/Archive/limpa/limpa_1.4.2.tar.gz"))
 )
 # The internal packages, named explicitly (a GitHub reference names its repository, not the package
-# inside it) at the commits DESCRIPTION's Remotes pin on performance-v2 since 3ec13e95: fastduckdb 0.2.0
+# inside it) at the commits DESCRIPTION's Remotes pin on v0.9-staging (formerly performance-v2) since 3ec13e95: fastduckdb 0.2.0
 # at fast_duckdb e724f90b (the package code of 2694b972; Cargo goes offline only with vendored crates)
 # and fastlimpadpc at fast_limpa_dpc 87a90b89 (declares Imports limpa and methods). The checkout's
 # Remotes must name the same commits, or the build stops. Installed only when MSR_INTERNAL is

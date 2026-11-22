@@ -1,6 +1,10 @@
 # MultiScholaR NEWS
 
-## Development version
+## MultiScholaR 0.9.0 (staging)
+
+First staging build with every omic in the distributable (Linux and Windows) and the multi-omics integration module (MOFA2) behind its gate; versions 0.9.0.x follow per larger feature, 1.0.0 at acceptance of the JPR paper.
+
+## Development version (before 0.9.0)
 
 ### Scientific changes
 
