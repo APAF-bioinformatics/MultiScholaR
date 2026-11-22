@@ -88,10 +88,11 @@ plotPercentSamplesVsProteinQuantified <- function(
 #' @return A ggplot2 bar plot showing the number of missing values per column.
 #' @export
 plotNumMissingValues <- function(input_table) {
-  plot_num_missing_values <- apply(
-    data.matrix(log2(input_table)), 2,
+  mat <- data.matrix(input_table)
+  plot_num_missing_values <- purrr::map_int(
+    as.data.frame(mat),
     function(x) {
-      length(which(!is.finite(x)))
+      length(which(is.na(x) | !is.finite(x) | x <= 0))
     }
   ) |>
     t() |>
@@ -116,10 +117,11 @@ plotNumMissingValues <- function(input_table) {
 #' @return A ggplot2 bar plot showing the number of missing values per column.
 #' @export
 plotNumOfValues <- function(input_table) {
-  plot_num_missing_values <- apply(
-    data.matrix(log2(input_table)), 2,
+  mat <- data.matrix(input_table)
+  plot_num_missing_values <- purrr::map_int(
+    as.data.frame(mat),
     function(x) {
-      length(which(!is.na(x)))
+      length(which(!is.na(x) & is.finite(x) & x > 0))
     }
   ) |>
     t() |>
