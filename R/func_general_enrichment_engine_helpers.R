@@ -155,6 +155,9 @@ buildEnrichmentGgplot <- function(enrichment_result, contrast, direction) {
 
   # Extract the significance threshold from the result object metadata
   significance_threshold <- enrichment_result$meta$query_metadata$user_threshold
+  if (is.null(significance_threshold) || !is.numeric(significance_threshold) || significance_threshold <= 0) {
+    significance_threshold <- 0.05
+  }
 
   # Prepare data for plotting
   plot_data <- enrichment_result$result %>%
