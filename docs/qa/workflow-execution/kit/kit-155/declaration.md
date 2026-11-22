@@ -111,6 +111,6 @@ and iterations are the same in both builds at S, M and L; at L the two runners' 
 (4,786 and 4,361 iterations) in both builds alike (INT-25: unpinned maths library).
 
 Reading (section 6): the restated claim passes at M and fails at L by about 40 MiB, a valid unfavourable result. Pages
-of 8 MiB removed 289 MiB of the 325 MiB by which L failed; what is left grows with the samples by about 96 MiB between
+of 8 MiB lowered the training R heap at L by 289 MiB (before failed the restated bound by 323 MiB, after by 41 MiB); what is left grows with the samples by about 96 MiB between
 M and L (training R heap 463.9 to 558.9 MiB with pages of the same 8 MiB), so it is not the page alone. No other budget
 is tried under this ticket.
