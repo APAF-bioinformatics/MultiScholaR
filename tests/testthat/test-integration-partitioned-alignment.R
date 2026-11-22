@@ -169,6 +169,142 @@ test_that("KIT-149 (ENG-06): over 10,000 features and 64 runs, ties across the p
         integrationAlignViews(whole_object, parameters)[c("samples", "view_summary", "shared_samples", "notes")])
 })
 
+# KIT-155: pages sized by a byte budget (`INTEGRATION_PAGE_BYTES`, `integrationPageRows`). Declared before the first
+# run: rows per page = floor(budget / (8 x columns read)), at least 1 and at most 10,000; the partitioned alignment is
+# `identical()` to the whole-matrix one at pages of 3,333 and 333 rows of the ENG-06 fixture (each cuts inside the
+# tie: offsets 9,999 and 9,990) and at pages of one row (a small fixture of more than 64 runs, so the wide read, and a
+# data set of at most 64, so the narrow read cut into pages), under both selection rules, both scalings and both
+# missing-sample rules.
+test_that("KIT-155: rows per page from the byte budget, within 1 and 10,000", {
+    expect_identical(INTEGRATION_PAGE_BYTES, 8388608)
+    expect_identical(integrationPageRows(71L), 10000L)
+    expect_identical(integrationPageRows(104L), 10000L)
+    expect_identical(integrationPageRows(105L), 9986L)
+    expect_identical(integrationPageRows(201L), 5216L)
+    expect_identical(integrationPageRows(501L), 2092L)
+    expect_identical(integrationPageRows(71L, 3333 * 8 * 71), 3333L)
+    expect_identical(integrationPageRows(71L, 1), 1L)
+    expect_identical(integrationPageRows(2L, 1e12), 10000L)
+})
+
+intPartAllSettings <- function() {
+    expand.grid(selection = c("top_variance", "variance_above_trend"), scaling = c("none", "feature_zscore"),
+        missing_samples = c("keep_missing", "drop_incomplete"), stringsAsFactors = FALSE)
+}
+
+test_that("KIT-155: at pages of 3,333 and 333 rows, each cutting inside the tie, the partitioned alignment is identical to the whole", {
+    fixture <- intPartFixture()
+    manager <- intPartStore(fixture)
+    source <- getWorkflowStateReference(manager, "integration_inputs")
+    whole_object <- withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, source, fields = TRUE))
+    paged_object <- withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, source,
+        fields = c("features", "design_matrix", "inputs")))
+    settings <- intPartAllSettings()
+    for (rows in c(3333L, 333L)) {
+        store_pages <- integrationStateViewPages(manager, source, page_bytes = rows * 8 * (fixture$runs + 1L))
+        pages <- list()
+        traced <- function(view, columns, kernel) store_pages(view, columns, function(page, offset) {
+            pages[[length(pages) + 1L]] <<- c(rows = nrow(page), columns = ncol(page), offset = offset)
+            kernel(page, offset)
+        })
+        for (i in seq_len(nrow(settings))) {
+            info <- paste(rows, settings$selection[[i]], settings$scaling[[i]], settings$missing_samples[[i]])
+            parameters <- integrationResolveMofaParameters(whole_object, list(feature_selection = settings$selection[[i]],
+                features_per_view = fixture$cap, scaling = settings$scaling[[i]],
+                missing_samples = settings$missing_samples[[i]]))
+            pages <- list()
+            partitioned <- integrationAlignViewsPartitioned(paged_object, parameters, traced, prefix_rows = TRUE)
+            expect_identical(partitioned, integrationAlignViews(whole_object, parameters, prefix_rows = TRUE), info = info)
+            big <- Filter(function(page) page[["columns"]] == fixture$runs + 1L, pages)
+            offsets <- seq(0, fixture$n - 1, by = rows)
+            expect_identical(unname(vapply(big, function(page) page[["offset"]], numeric(1))), rep(offsets, 2L), info = info)
+            expect_identical(unname(vapply(big, function(page) page[["rows"]], numeric(1))),
+                rep(pmin(rows, fixture$n - offsets), 2L), info = info)
+            # A page boundary falls inside the tie.
+            expect_true(any(offsets > 9970 & offsets < 10030), info = info)
+            if (settings$selection[[i]] == "top_variance") {
+                kept <- sub("^lipidomics_LCMS_Pos:", "", rownames(partitioned$views$lipidomics_LCMS_Pos))
+                expect_identical(kept[kept %in% fixture$tie], fixture$tie[1:45], info = info)
+            }
+        }
+    }
+})
+
+# A small fixture for pages of one row: lipidomics, 30 features x 70 runs (35 biological samples, two runs each; the
+# wide read), with ten features of one variance (rows 11 to 20) and a cap (8) that keeps the five more variable
+# features and the first three tied ones; a sparse (row 2), a constant (row 25) and an internal standard (row 28);
+# proteomics, 6 features x 34 runs (the narrow read; B_17 absent).
+intPartSmallFixture <- function(.local_envir = parent.frame()) {
+    testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
+    root <- withr::local_tempdir(.local_envir = .local_envir)
+    biological <- sprintf("%s_%d", rep(c("A", "B"), c(18L, 17L)), c(seq_len(18L), seq_len(17L)))
+    lipid_samples <- rep(biological, each = 2L)
+    runs <- sprintf("l%03d", seq_along(lipid_samples))
+    top <- c(3L, 8L, 22L, 27L, 30L)
+    values <- withr::with_seed(1155L, {
+        noise <- matrix(stats::rnorm(30L * length(runs), 20, 1), 30L, length(runs))
+        effect <- matrix(stats::rnorm(length(top) * length(biological), 0, 10), length(top), length(biological))
+        noise[top, ] <- 20 + effect[, match(lipid_samples, biological)]
+        noise[28L, ] <- 20 + stats::rnorm(length(runs), 0, 30)
+        noise
+    })
+    level <- ifelse(seq_along(biological) %% 2L == 0L, 23, 17)[match(lipid_samples, biological)]
+    values[11:20, ] <- matrix(level, 10L, length(runs), byrow = TRUE)
+    values[2L, ] <- NA
+    values[2L, 1:2] <- 21
+    values[25L, ] <- 20
+    dimnames(values) <- list(sprintf("LIP%02d", 1:30), runs)
+    lipid <- intPartWriteInput(root, "lipidomics", "lipidomics_LCMS_Pos", values, intPartSamples(runs, lipid_samples),
+        seq_len(30L) == 28L)
+    protein_samples <- setdiff(biological, "B_17")
+    protein <- matrix(withr::with_seed(3155L, stats::rnorm(6L * length(protein_samples), 25, 2)), 6L,
+        dimnames = list(sprintf("PRO%d", 1:6), sprintf("p%02d", seq_along(protein_samples))))
+    proteomics <- intPartWriteInput(root, "proteomics", "proteomics", protein, intPartSamples(colnames(protein), protein_samples))
+    list(root = root, dirs = c(lipid, proteomics), tie = sprintf("LIP%02d", 11:20), top = sprintf("LIP%02d", top), cap = 8L)
+}
+
+test_that("KIT-155: at pages of one row (the wide and the narrow read), the partitioned alignment is identical to the whole", {
+    fixture <- intPartSmallFixture()
+    manager <- intPartStore(fixture)
+    source <- getWorkflowStateReference(manager, "integration_inputs")
+    whole_object <- withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, source, fields = TRUE))
+    paged_object <- withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, source,
+        fields = c("features", "design_matrix", "inputs")))
+    store_pages <- integrationStateViewPages(manager, source, page_bytes = 1)
+    pages <- list()
+    traced <- function(view, columns, kernel) store_pages(view, columns, function(page, offset) {
+        pages[[length(pages) + 1L]] <<- c(rows = nrow(page), columns = ncol(page), offset = offset)
+        kernel(page, offset)
+    })
+    settings <- intPartAllSettings()
+    for (i in seq_len(nrow(settings))) {
+        info <- paste(settings$selection[[i]], settings$scaling[[i]], settings$missing_samples[[i]])
+        parameters <- integrationResolveMofaParameters(whole_object, list(feature_selection = settings$selection[[i]],
+            features_per_view = fixture$cap, scaling = settings$scaling[[i]], missing_samples = settings$missing_samples[[i]]))
+        pages <- list()
+        partitioned <- integrationAlignViewsPartitioned(paged_object, parameters, traced, prefix_rows = TRUE)
+        expect_identical(partitioned, integrationAlignViews(whole_object, parameters, prefix_rows = TRUE), info = info)
+        # Every page one row: 30 + 6 rows, each read in both passes.
+        expect_true(all(vapply(pages, function(page) page[["rows"]], numeric(1)) == 1), info = info)
+        expect_identical(length(pages), 2L * (30L + 6L), info = info)
+        expect_identical(unname(vapply(Filter(function(page) page[["columns"]] == 71, pages), function(page)
+            page[["offset"]], numeric(1))), as.numeric(rep(0:29, 2L)), info = info)
+        expect_identical(unname(vapply(Filter(function(page) page[["columns"]] == 35, pages), function(page)
+            page[["offset"]], numeric(1))), as.numeric(rep(0:5, 2L)), info = info)
+        if (settings$selection[[i]] == "top_variance") {
+            kept <- sub("^lipidomics_LCMS_Pos:", "", rownames(partitioned$views$lipidomics_LCMS_Pos))
+            expect_identical(kept, sort(c(fixture$top, fixture$tie[1:3])), info = info)
+        }
+    }
+    # Without a cap, and the counts alone.
+    parameters <- integrationResolveMofaParameters(whole_object, list(feature_selection = "none"))
+    expect_identical(integrationAlignViewsPartitioned(paged_object, parameters, store_pages),
+        integrationAlignViews(whole_object, parameters))
+    counts <- integrationAlignViewsPartitioned(paged_object, parameters, store_pages, values = FALSE)
+    expect_identical(counts[c("samples", "view_summary", "shared_samples", "notes")],
+        integrationAlignViews(whole_object, parameters)[c("samples", "view_summary", "shared_samples", "notes")])
+})
+
 test_that("KIT-149: the model trained through either variant gets the same data sets and gives the same product; the variant is not identity", {
     fixture <- intPartFixture()
     settings <- list(feature_selection = "top_variance", features_per_view = fixture$cap)

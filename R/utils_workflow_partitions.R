@@ -131,7 +131,7 @@ partitionByFeatureGroup <- function(scope, columns, group, kernel, consume, work
 
 #' Run a step over pages of rows of a long or wide table, the kernel once per page (KIT-010).
 #'
-#' Pages come from the row streamer (`streamWorkflowTableRows`: 10,000 rows per page, every requested
+#' Pages come from the row streamer (`streamWorkflowTableRows`: `page_rows` rows per page, every requested
 #' column, a wide table read in 64-column blocks), in source order. The admission estimate is one page's
 #' working set from the declared working bytes per row plus the step's fixed overhead, refused above the
 #' cap and recorded. The kernel runs once per page and `consume` receives each kernel value in page
@@ -146,10 +146,12 @@ partitionByFeatureGroup <- function(scope, columns, group, kernel, consume, work
 #'   intermediates), beside the row itself.
 #' @param overhead_bytes Fixed bytes the step holds whatever the page (transfer buffers, writers).
 #' @param policy Name recorded with the admission.
+#' @param page_rows KIT-155: rows per page, 1 to 10,000 (`streamWorkflowTableRows`); the default, 10,000, is every
+#'   other caller's page.
 #' @return `batches`, `batch_sizes` (rows per page), `rows` and `admission`.
 #' @noRd
 partitionByRows <- function(scope, columns, kernel, consume, worker_cap, working_bytes_per_row,
-    overhead_bytes, policy) {
+    overhead_bytes, policy, page_rows = 10000L) {
     stopifnot(is.function(kernel), is.function(consume), is.numeric(working_bytes_per_row),
         length(working_bytes_per_row) == 1L, is.finite(working_bytes_per_row), working_bytes_per_row >= 0,
         is.numeric(overhead_bytes), length(overhead_bytes) == 1L, is.finite(overhead_bytes), overhead_bytes >= 0)
@@ -157,7 +159,7 @@ partitionByRows <- function(scope, columns, kernel, consume, worker_cap, working
     if (!is.character(columns) || !length(columns) || anyDuplicated(columns) || !all(columns %in% scope$metadata$columns))
         cli::cli_abort("invalid row partition projection", class = "saved_entity_limit")
     row_bytes <- workflowProjectedRowBytes(scope$metadata, columns)
-    page_rows <- min(10000L, max(1L, scope$metadata$rows))
+    page_rows <- min(as.integer(page_rows), max(1L, scope$metadata$rows))
     estimate <- overhead_bytes + page_rows * (row_bytes + working_bytes_per_row)
     if (!is.numeric(worker_cap) || length(worker_cap) != 1L || !is.finite(worker_cap) || worker_cap <= 0 ||
         estimate > worker_cap) cli::cli_abort(
@@ -177,7 +179,7 @@ partitionByRows <- function(scope, columns, kernel, consume, worker_cap, working
         consume(value, index)
         page <- value <- NULL
         invisible(NULL)
-    })
+    }, page_rows = page_rows)
     list(batches = index, batch_sizes = batch_sizes, rows = sum(batch_sizes), admission = admission)
 }
 
