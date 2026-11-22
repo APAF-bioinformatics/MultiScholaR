@@ -1,0 +1,42 @@
+# KIT-157 bundle runs on run-k157-rc (declared 2026-11-22, before any run)
+
+## Purpose
+
+`fastlimpadpc` rebuilt for x86-64-v3 (fast_limpa_dpc `portable-x86-64-v3` 0ad8c527 = 87a90b89 with
+`-C target-cpu=native` replaced by `-C target-cpu=x86-64-v3` on x86_64). Show on GitHub runners that (1) the Linux bundle's
+`fastlimpadpc` holds no AVX-512 instruction whatever runner builds it; (2) its DIA_LIMPA values equal the previous pin's under
+the fixed rule; (3) the bundle builds, installs, passes the lifecycle and the DIA_LIMPA e2e lane as before (run 44956911834);
+(4) a rough time of the previous and the new build on the same CPU.
+
+## Bindings
+
+| | |
+|---|---|
+| Branch | `run-k157-rc` (run-only), cut from `kit-157-portable-limpa` becf489f (= `origin/performance-v2` 1c7b2a61 + the pin commit) |
+| Instrumentation | 41ba192e and 37414840 (run-k156-rc's 141e7b45 and 71669d61 cherry-picked) and this branch's KIT-157 commit: `packaging/verify/k157/` (old-limpa.sh, old-limpa.R, limpa-run.R, limpa-check.R) and the workflow copy. Nothing under R/, tests/, DESCRIPTION, NAMESPACE, src/, inst/ beyond the pin commit |
+| Workflow | `KIT-134 distributable`, `workflow_dispatch` on `run-k157-rc` |
+| Read token | `DEPS_READ_TOKEN` only in the Linux library install step (as the existing workflow; the previous pin is built in that same step, its output under RUNNER_TEMP, not printed); no cache; no artifact |
+| Comparison | each Linux main job: the bundle's R runs `limpa-run.R` once with this pin (bundle library) and once with the previous pin first on the library path; cases: KIT-129 run-path fixture (seed 129, 120 proteins, 5 per group), three S2-size data sets (seeds 1 to 3, 1,000 proteins x 4 precursors, 6 per group), one larger (seed 157, 5,000 proteins, 10 per group); `proteinMissingValueImputationLimpa(engine = "fastlimpadpc")`, one Rayon thread; every slot of the quantified objects compared by `packaging/verify/compare-results.R` (relative 1e-6, absolute floor 1e-9, discrete exact) |
+
+## Runs, ceiling and attempts
+
+1. **Lifecycle run** (instrumentation proof): stage `library`, platform `linux` (one ubuntu-22.04 job: build with the
+   previous pin beside it, bundle checks, the KIT-157 step). Pass: `K157OLD ... installed`; both sides print five
+   `K157RUN case` lines and a `fastlimpadpc from` line naming different libraries (different md5); the comparison prints its
+   `K157CMP` summary; the perturbed copy is read with exactly 1 leaf outside. Ceiling: job 300 min, step 90 min.
+2. **Counted run**: stage `full`, platform `both`: ubuntu-22.04 and ubuntu-24.04 main jobs (build, install, lifecycle off,
+   hosts, GUI-entry lanes, e2e lanes on 22.04 including `prot_dia_limpa`, the KIT-157 step) and the windows-2025 main job
+   (build, installer, install, lifecycle, GUI-entry and e2e lanes without DIA, figure cases). Ceiling: job 300 min.
+3. One correction pass (instrumentation faults only). An unfavourable valid result is a finding, kept and not rerun.
+
+## Judgement (fixed now)
+
+- Portability: `NATIVE fastlimpadpc this pin` zmm count 0 on both Linux jobs, with the runner CPU named.
+- Values: every double leaf `agree` under the rule; the largest absolute and relative differences reported. A double
+  outside the rule stops the work and goes to the user; nothing is re-recorded. A non-double leaf that differs is examined
+  and named.
+- Bundle: each step's outcome against run 44956911834 (the lifecycle and e2e lanes with the laptop's counts; GUI-entry
+  lanes the known performance-v2 families). A new difference is classified (KIT-134 2.0.4).
+- Speed: the `K157RUN case` seconds of the two builds in the same job, reported as measured (one run each; rough).
+
+Results below this line after the runs.
