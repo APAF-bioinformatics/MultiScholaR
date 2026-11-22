@@ -63,7 +63,7 @@ transcriptomics corpus manifest's sha256 against the stored value (to be set aga
 suite); the 4 Windows errors are `system2("cp", ...)` in the test's replay helper (E: GNU tools absent on Windows). Every
 file's temporary root was empty afterwards. Instrumentation proven; the counted run follows (stage rc).
 
-## Results: counted run [44956911834](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44956911834) on 6fd6cfa (2026-11-21/22 UTC)
+## Results: counted run [44956911834](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44956911834) on 8e44f29b (2026-11-21/22 UTC)
 
 Read from the job logs (0 artifacts, no cache). Conclusion "failure" comes only from the three main jobs' GUI-entry lane
 steps (below), as in run 44598642342. Every suite and smoke job passed its step. No instrumentation fault; the
