@@ -1,0 +1,37 @@
+{
+  "requested_by": "KIT-159 T1 (group a): msrval scoring code, tests passing, covr, lintr, f_sim on regime C3 and a T-COV cost probe",
+  "label": "KIT-159 T1a msrval group (a) at 5ab037ae",
+  "package_commit": "5ab037ae8f112fce7ee13d344751cdb9f46fe193",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1a-out",
+        "--covr",
+        "--lint",
+        "--time-regime",
+        "C3",
+        "--nsim",
+        "200"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1a-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
