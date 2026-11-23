@@ -6,17 +6,17 @@
   "phase": "pre",
   "amended": null,
   "blinded": false,
-  "started": "2026-11-23T21:27:31Z",
-  "ended": "2026-11-23T21:27:31Z",
+  "started": "2026-11-23T21:41:38Z",
+  "ended": "2026-11-23T21:41:39Z",
   "status": "completed",
   "refusal": null,
   "run": {
-    "github_run_id": "45268145400",
+    "github_run_id": "45270640790",
     "run_attempt": "1",
     "job": "scripts",
     "workflow": "run-tests",
-    "request_file": ".github/run-tests/requests/k159-r1b-69b693af.json",
-    "request_commit": "37b3b0be5f74890a5662514ab0480263467dd24b",
+    "request_file": ".github/run-tests/requests/k159-r1bi1-c08787c1.json",
+    "request_commit": "8900d3cce8c9fad0f404809575dfaa9f15661056",
     "runner": {
       "image_os": "ubuntu22",
       "image_version": "20261116.365.1",
@@ -27,11 +27,11 @@
     }
   },
   "code": {
-    "package_commit": "69b693af0e3370ce7d9fa42bedb25e967d9851ea",
+    "package_commit": "c08787c1c0af09e343529931a58b9aa5b159464c",
     "release_commit": "none",
     "harness": {
-      "commit": "69b693af0e3370ce7d9fa42bedb25e967d9851ea",
-      "tree": "ebbb296a62132a2c94d8472a9f08543f52179f26"
+      "commit": "c08787c1c0af09e343529931a58b9aa5b159464c",
+      "tree": "3a9d7a426c4acedda2278f32bb704a44fbe29213"
     },
     "declaration": []
   },

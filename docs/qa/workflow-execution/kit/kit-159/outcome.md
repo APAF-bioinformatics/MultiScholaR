@@ -26,7 +26,7 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, R1 stopped on a harness defect; read this first)
+## Resume here (state 2026-11-24, R1 done, S0 not started; read this first)
 
 Ticket r1.13 (VAL-69). Every msrval test has passed (whole suite 45219635014, corrections
 45225211841 and 45265533254; lintr 0). Rank re-run R (45227824000) done; USAGE and H2 updated
@@ -37,17 +37,27 @@ purpose; T0 was exhausted):** tests only 1992d121, run 45264824991 fails first (
 d6d3c1e1 (`valRecordUniprot`, `val-run.R record --uniprot`, `uniprot.tsv` on both allow-lists), run
 45265533254 passes with lintr 0 (0.90).
 
-**R1 stopped (runs 45268141191, 45268145400 at 69b693af; 1.53 of R1's 4):** the open file was
-recorded in both twins, equal to r1.12 (1,086 bytes, SHA-256 566d7b3d...) and to each other; phase
-pre wrote `ref-qc-shape.tsv` (21 rows, 6 columns) with provenance in both. The UniProt record
-stopped before any query result in both: **harness code defect**, `valRecordUniprot` passed the
-taxon as text and the product's `getUniprotAnnotationsFull` formats it with `%d`
-(`R/func_prot_annotation_uniprot_helpers.R:33`). Fixed (`as.integer(taxon)`), committed, unrun.
-R1 is "one run each" with the ticket's single correction pass; whether resending R1 (both
-requests) is that correction or an instrument re-run under VAL-54 is the coordinator's call.
-Evidence in `r1/r1a/`, `r1/r1b/`.
+**R1 done.** First send (45268141191, 45268145400 at 69b693af) stopped on a harness defect
+(taxon passed as text; the product formats it with `%d`); by the coordinator's ruling an
+instrument defect under VAL-54. Instrument run 1 of 3 at c08787c1 (fix `as.integer(taxon)`; no
+expected value or rule changed): 45270635025 (`r1a`) and 45270640790 (`r1b`) completed. In both:
+the open file at 1,086 bytes and SHA-256 566d7b3d... as r1.12; the UniProt record of the 25
+accessions (taxon 9606) 25 rows, release 2026_04 read from `x-uniprot-release`, table SHA-256
+d099e6e7...; library table byte-identical between the twins; phase pre `ref-qc-shape.tsv` (21 rows,
+6 columns); provenance and `outputs.sha256` in every folder. Evidence `r1/r1a/`, `r1/r1b/`. The
+twin comparison by `valCompareRecords` is L1b's step. The live incomplete-answer refusal waits for
+KIT-175 (T-ANN-1 mocked stands).
 
-**Budget:** T0 5.95 of 6; T1 19.09 of 21; T2 26.93 of 54; R1 1.53 of 4.
+**S0 not started: preconditions do not hold.** S0 (10.4) needs the G1(b) alternatives: both QC
+paths on label-free and TMT "the bypass still being present there", export-then-load, DIA_LIMPA
+with and without the covariates button, and `prot_dia` on a two-species input through the organism
+modal, all on generated inputs. On `v0.9-staging` the bypass is gone (KIT-180: no shell sets
+`chain_rules$qc_bypass`), and the harness has no generated-input corpus writer, no alternative
+scripts and no two-species input yet (`action-scripts.md` open points). Building them is new
+harness code with tests first: T0 has 0.05 and T1 1.91 core-hours left. The coordinator decides
+S0's form now that the bypass is removed, and its budget.
+
+**Budget:** T0 5.95 of 6; T1 19.09 of 21; T2 26.93 of 54; R1 2.78 of 4.
 
 **For the harness auditor (noted, nothing changed):** in the rank re-run, C4e g = 14 (rank,
 delete-one-block) has simulated coverage 1.000 at every level (no miss in 2,000 simulations) with a
