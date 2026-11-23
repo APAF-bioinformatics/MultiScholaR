@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-180 R3: script S1 arms B, Q, B-ruv, Q-ruv on the three protein lanes at fix eea8775b (the size of the change; arms B and B-ruv compared with R0) (resent: the first request stopped at plan because the commit had not been pushed; no job ran)",
+  "label": "KIT-180 R3 S1 four arms on eea8775b",
+  "package_commit": "eea8775b51bbf3ef09fd98980e6fbfcecf8eaa55",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-180/qc-effect.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-180/qc-effect",
+        "B,Q,B-ruv,Q-ruv"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-180/qc-effect",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 80
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
