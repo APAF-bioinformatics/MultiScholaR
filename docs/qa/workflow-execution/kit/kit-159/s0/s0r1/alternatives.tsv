@@ -1,0 +1,6 @@
+cell	compare_with	status	digest_a	digest_b	identical	rows_a	rows_b	keys_one_side	max_abs_diff	na_mismatch	called_a	called_b	called_changed
+prot_dia-export_load	prot_dia	not_compared	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+lipid_canonical-export_load	lipid_canonical	compared	ca7e90f99ae34f403c059348a3ecb7536a7a2e1b21a75fc32d0b69f436bfb109	ca7e90f99ae34f403c059348a3ecb7536a7a2e1b21a75fc32d0b69f436bfb109	TRUE	366	366	0	0	0	29	29	0
+metab_lc-export_load	metab_lc	compared	8a5e556627159207d2573ac9fce76033a043ec3f81421320f126e2a7a7bca0a6	8a5e556627159207d2573ac9fce76033a043ec3f81421320f126e2a7a7bca0a6	TRUE	293	293	0	0	0	38	38	0
+prot_dia_limpa-no_covariates	prot_dia_limpa	compared	4b0882b05a3afd242526519c8ab1091d1df7824956b142bdb82f4284692cf76c	1638ba15d8e833090e56b8ce7f9dd5707bbda7d1e1992db23c5c0d996c15a641	FALSE	794	794	0	0.153315169910674	0	36	36	0
+prot_dia_two_species	prot_dia	not_compared	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA

@@ -1426,7 +1426,13 @@ valReadArmTables <- function(manager, paths, route, out_dir, ruv = "off", q_thre
     pre_obj <- state_reader(valPreRuvState(route))
     model_obj <- if (identical(omic, "transcriptomics")) pre_obj else
         state_reader(model_state %||% valPreRuvState(route))
-    pre <- valStateMatrix(pre_obj, omic)
+    # With RUV applied on DIA, LFQ and TMT the product commits no `normalized` state; the matrix
+    # that entered RUV is the RUV state's own record of it (S0 run 45277101451).
+    pre <- if (is.null(pre_obj) && identical(omic, "proteomics") && !is.null(manager)) {
+        valProtRuvInput(manager)
+    } else {
+        valStateMatrix(pre_obj, omic)
+    }
     model <- if (identical(ruv, "factors_in_model") && omic %in% c("lipidomics", "metabolomics")) {
         valStateMatrix(model_obj, omic, "uncorrected")
     } else {
@@ -1502,6 +1508,24 @@ valProductDisplayReader <- function(manager, r) {
         })
     }
     NULL
+}
+
+#' The normalised matrix a classic proteomics route's RUV step read, from the `ruv_corrected`
+#' state's own product (`normalization_science`, its `normalized` checkpoint), as the integration
+#' input reads it (`protIntegrationInputRuvInput`, R/utils_workflow_dia_summary.R:180-205)
+#' @noRd
+valProtRuvInput <- function(manager) {
+    ns <- asNamespace("MultiScholaR")
+    ns$withWorkflowStateScope(manager, function() {
+        lineage <- ns$protIntegrationInputLineage(manager, until = "ruv_corrected")
+        record <- lineage[["ruv_corrected"]]
+        if (is.null(record)) valAbort("the state object is missing", "val_spec_invalid")
+        input <- ns$protIntegrationInputRuvInput(manager, record)
+        tbl <- ns$readDIAExecutionComponents(manager, input$reference,
+                                             fields = c("protein_quant_table",
+                                                        "design_matrix"))@protein_quant_table
+        valFeatureTable(tbl, record$data$slots$protein_id_column, "all")
+    })
 }
 
 #' The RUV-corrected display matrix where the state holds it (lipidomics and metabolomics: the

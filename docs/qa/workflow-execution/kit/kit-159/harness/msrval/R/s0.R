@@ -108,7 +108,7 @@ valS0TestsPassed <- function(path, files) {
 valRunS0 <- function(out_dir, pkg_root, tests, work_dir, cells = NULL) {
     gate <- valS0TestsPassed(tests$path, tests$files)
     if (!isTRUE(gate)) {
-        reason <- attr(gate, "reason")
+        reason <- attr(gate, "reason")  # nolint: object_usage_linter (read by cli's glue)
         valAbort(paste("S0 stops before any route: the new pieces' tests did not pass ({reason});",
                        "an instrument fault (VAL-54)"), "val_spec_invalid")
     }
