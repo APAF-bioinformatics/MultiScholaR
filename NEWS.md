@@ -6,19 +6,25 @@
 
  * Proteomics enrichment for organisms outside the 13 served by g:Profiler: Gene Ontology sets now include each
    term's more specific terms (parent-term propagation over is a, part of, regulates, positively and negatively
-   regulates, as g:Profiler does; is a and part of only is available as an option). Terms that had fewer than 10
-   measured proteins can now be tested, terms with more than 500 drop out, and parent terms of significant terms tend
-   to be significant too. The three top-level terms are not tested. `processEnrichments()` propagates by default
-   (`go_propagation = "is_a_part_of_regulates"`; `"none"` gives the previous sets). Analysis records made before this
-   version replay without propagation; records made with this version need this version or later. GO identifiers that
-   the installed GO release does not contain are counted and reported. Proteins annotated only to the three top-level
-   terms leave the background on such a run; their number is recorded. Measured on the reviewed E. coli K-12 proteome
-   (UniProt 2026_04; 4,024 annotated proteins, the background for every setting; 20 lists per scenario; none, is a and
-   part of, and the five relations): terms tested in range 314, 1,242 and 1,249; median significant terms (q-value
-   below 0.05) for a planted specific, mid-level and broad process 1.5, 20 and 19; 10, 54 and 47; 13, 130 and 129; the
-   planted term significant in 20 of 20 lists with parent terms in every scenario, without them in 0, 20 and 0 of 20;
-   random lists: median 0 significant terms, and 1 of 20 lists with any significant term by q-value under each setting
-   (by Benjamini-Hochberg 0, 1 and 1 of 20). (KIT-173, VAL-65)
+   regulates, as g:Profiler does; is a and part of only is available to scripts as an option). Terms that had fewer
+   than 10 measured proteins can now be tested, terms with more than 500 drop out, and parent terms of significant
+   terms tend to be significant too. The three top-level terms are not tested. `processEnrichments()` propagates by
+   default (`go_propagation = "is_a_part_of_regulates"`; `"none"` gives the previous sets). Analysis records made
+   before this version replay without propagation; records made with this version need this version or later. GO
+   identifiers that the installed GO release does not contain are counted and reported. Proteins annotated only to
+   the three top-level terms leave the background on such a run; their number is recorded. Measured on one proteome,
+   the reviewed E. coli K-12 entries of UniProt 2026_04 (4,024 annotated proteins, the background for every setting),
+   with synthetic lists, 20 per scenario, the same lists for none, is a and part of, and the five relations: 314,
+   1,242 and 1,249 terms in the testable range (10 to 500 annotated proteins); median significant terms (q-value
+   below 0.05) for lists made of half of a specific, a mid-level or a broad process term's proteins plus as many
+   random proteins 1.5, 20 and 19; 10, 53.5 and 46.5; 12.5, 129.5 and 129. With parent terms the planted term was
+   significant in 20 of 20 lists in every scenario; without them the specific and the broad term are not tested at
+   all (too few directly annotated proteins) and the mid-level term was significant in 20 of 20. Random lists: median
+   0 significant terms; under each setting 1 of 20 lists had a term significant by q-value (by Benjamini-Hochberg 0,
+   1 and 1 of 20); without parent terms that list had 120 of its 156 tested terms significant by q-value and none by
+   Benjamini-Hochberg, with parent terms 4 by either. These counts describe this proteome and these lists; they are
+   not estimates of power or of the false-discovery rate (1 of 20 is compatible with any rate from 0.1 % to 25 %).
+   (KIT-173, VAL-65)
  * Proteomics reports: for the 13 organisms served by g:Profiler, the enrichment paragraph now describes g:Profiler.
    It described clusterProfiler with Benjamini-Hochberg correction, because the report did not recognise the recorded
    method. The correction applied is named from the analysis record. On both routes the fold-change bullet now states

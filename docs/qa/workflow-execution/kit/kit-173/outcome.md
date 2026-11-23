@@ -17,10 +17,10 @@ Ticket revision 1.5. Branch `kit-173-go-propagation` from `v0.9-staging` a60c4e9
 - **F1 (R0, R0b)**: every value of section 2.2 reproduced; no stop rule triggered; details and the two departures (no
   real root-only protein, so one is synthetic; GMT committed as ids and genes) in `feasibility.md`.
 - **Failing first (R1, 536080c5)**: `test-go-propagation.R` 67 passed, 163 failed, 12 errors, 1 skipped (T7(b), no
-  capture yet). Every new test except T11(e) (regression, passed) failed on base: by error where the function is
+  capture yet). Every new test except T11(e) (regression) and the fixture-hash test (which must pass on base) failed on base: by error where the function is
   absent (T1, T2, T3(a), T4, T6, T9 replay), at the stated value elsewhere: T5 median C 0.29 < 0.90 and gain 0 < 0.20;
   T3(b) attribute NULL; T7(c) nine names, no `go_propagation`; T8 no term outside the direct annotations; T9 outcomes
-  absent; T10 no warning (then the base kernel errors on the all-NA aspects, see "Unrelated"); T11(a) the overlay has no
+  absent; T10 errored in the unrelated direct-set defect (all-NA aspects) before any of its expectations was evaluated, so its failing-first at the stated value is not shown; it passes on head (12 expectations); T11(a) the overlay has no
   correction source, (a)/(d)/(f) the old text. `r1-...` failures in `r2/` compare files (base side).
 - **Fix (R2 a3d6d84f, correction R2b 93c3b946; base 62a41ba1)**: in R2b `test-go-propagation.R` 317 passed, 0 failed,
   1 skipped (T7(b), store not present in the test job). R CMD check base and head: 0 ERROR, 3 WARNING, 3 NOTE, nothing
@@ -46,17 +46,22 @@ Ticket revision 1.5. Branch `kit-173-go-propagation` from `v0.9-staging` a60c4e9
   Reading (inferred, not tested): enrichit writes `geneID` in the order of the `gene` vector, which `processEnrichments`
   takes from the DA table's row order; the TERM2GENE is identical, so the order of the replayed DA table differs from
   the original's. Whether a base-on-base replay shows the same was not run.
-- **Effect (R2e)**: E. coli, 4,024 annotated proteins, the background N 4,024 for every value and arm (no root-only
-  protein in the real data, `go_root_only_proteins` 0). Pairs 21,882 (none), 127,808 (two relations), 133,420 (five);
-  terms in the 10-to-500 range 314, 1,242, 1,249 (947 enter at 10, 12 leave at 500, five relations). Per arm (median over
-  20 draws; none / two / five): tested terms specific 21 / 124 / 124, mid 129 / 638 / 647, broad 206 / 964 / 963, null
-  145 / 693 / 694; significant terms by q-value specific 1.5 / 20 / 19, mid 10 / 54 / 47, broad 13 / 130 / 129, null 0
-  / 0 / 0. Planted term significant (q) in 20 of 20 draws for every propagated arm and value; under "none" 0 of 20
-  (specific: the term has no direct annotation at that size), 20 of 20 (mid) and 0 of 20 (broad). Null arm: draws with
-  any significant term, by q-value 1 / 1 / 1 of 20 and by BH 0 / 1 / 1 of 20 (none / two / five); no draw with every
-  q-value NA. Most significant terms under propagation are neither the planted term, its ancestors nor its
-  descendants (for example broad, five relations: 537 descendant and 2,027 other significant term-draws).
-  `effect.tsv`, `effect-draws.tsv`, `effect-sets.tsv`; R2e, 1,459 s of script time
+- **Effect (R2e, run 45127866711; D8 accepted, VAL-65)**: one proteome, the reviewed E. coli K-12 entries of UniProt
+  2026_04 (4,024 annotated proteins, the background for every setting; no root-only protein, `go_root_only_proteins`
+  0), synthetic lists, 20 per scenario, the same lists for none / two relations / five relations. Gene-set pairs 21,882
+  / 127,808 / 133,420; terms in the testable range (10 to 500 annotated proteins) 314 / 1,242 / 1,249 (947 enter at
+  10, 12 leave at 500, five relations). Median terms tested per list: specific 21 / 123.5 / 123.5, mid-level 129 / 638
+  / 646.5, broad 206 / 963.5 / 962.5, null 144.5 / 692.5 / 694; median significant (q-value below 0.05): specific 1.5 /
+  20 / 19, mid-level 10 / 53.5 / 46.5, broad 12.5 / 129.5 / 129, null 0 / 0 / 0. With parent terms the planted term is
+  significant in 20 of 20 lists in every scenario; without them the specific and broad terms are not tested at all
+  (fewer than 10 directly annotated proteins) and the mid-level term is significant in 20 of 20. Random lists: 1 of 20
+  with any term significant by q-value under each setting (95 % interval 0.1 % to 24.9 %), by Benjamini-Hochberg 0 / 1
+  / 1 of 20; without parent terms that list (draw 5) had 120 of its 156 tested terms significant by q-value and none by
+  Benjamini-Hochberg, with parent terms (draw 6) 4 by either; per list the two flags differ by up to 120 terms without
+  parent terms and by at most 3 with them. Most significant terms under propagation are neither the planted term nor
+  its biological-process ancestors or descendants; every molecular-function and cellular-component term counts as
+  neither, and each planted list is half random proteins. Descriptive figures for one proteome and these lists, not
+  estimates of power or of the false-discovery rate. `effect.tsv`, `effect-draws.tsv`, `effect-sets.tsv`.
 
 ## Declared control: attribution of T7(b)'s difference (authorised by the coordinator, 2026-11-23)
 
@@ -187,7 +192,10 @@ NEWS; ledger row). Run 45153295682 (base cf4b5fd4, head 19d24b96), observed:
 ## Full suite (R3, run 45219690402, head 4bc1a361 against base 62a41ba1)
 
 449 files. 444 `same` (36 of them fail identically on both sides: stored references recorded on the laptop and
-runner-environment failures, as in KIT-171's R3). `test-go-propagation.R` `fixed` (the new tests: 77 passed and 176
+runner-environment failures, as in KIT-171's R3). Three of the 36 (`test-integration-input-transcriptomics.R`,
+`test-kit129-run-path.R`, `test-trx-ruv-designs.R`) fail on both sides because this request did not set the full-suite
+template's `sva`, `MULTISCHOLAR_TRX_MANIFEST_NOTE=1` and 120-minute timeouts; they pass with them (KIT-180 R5) and call no
+code this ticket changed. `test-go-propagation.R` `fixed` (the new tests: 77 passed and 176
 failing or erroring on base, 319 passed and 0 failing on head, 1 skipped: T7(b), which needs the base store and runs in
 `t7-replay.R`). Two `new-failure`, every failure a capture of a clusterProfiler (taxon 999999) lane:
 `test-omic-enrich-module.R` "(b) in process: clusterprofiler" (1), "(b) in process: kernel_clusterprofiler" (8; one of
@@ -205,8 +213,8 @@ KIT-094 characterisation fails on base and head alike; the passes grow by the tw
 |---|---|---|
 | A0 | met | VAL-28 |
 | A1 | met | `feasibility.md`, `f1/` |
-| A2 | met, except T7(c) on head is shown in R2b and T7(b) below | R1 (base failing), R2b (head passing); `runs.tsv` |
-| A3 | met | `t5-summary.tsv` (three conditions TRUE), the two-relation report, the 40 lowest |
+| A2 | met except T10 (failing-first by an unrelated error) | R1 (base failing), R2b (head passing); `runs.tsv` |
+| A3 | met | `t5-summary.tsv` (three conditions TRUE), the two-relation report, the 40 lowest with causes where identifiable, `results.md` |
 | A4 | **met as restated (VAL-61)**: records made after the fix replay byte-identical across processes (R2f head-on-head 11 of 11); the base record replays with every expectation equal and its `geneID` cells equal as sets (T7(b) 12 of 12). History:  the base record replays on head with the same nine declared names, product parameters, service, contrasts, TERM2GENE and TERM2NAME hashes and plot-data digests; the stored result tables differ in one column, `geneID` (each row lists the same proteins in another order), and so the two `*_enrichment_results.tsv` files' SHA-256 differ. Found by instrument run 1 (VAL-54); stopped and reported, the test not adjusted | `t7i1/t7-failures.tsv`, `r2b/` |
 | A5 | met: shown to the owner, accepted (VAL-65); written into NEWS and the ledger row | `effect.tsv`, NEWS, ledger |
 | A6 | met: full suite base against head, every difference a new test or a clusterProfiler capture (listed); check unchanged | `r3/` |
