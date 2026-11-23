@@ -121,15 +121,35 @@ Full suite, 20 shards per side, one process per file, with R CMD check (the coor
 
 R CMD check: base and head 0 errors, 3 warnings, 3 notes; identical findings, none only on head.
 
+### R2b (run 45264765395, merge 4433f86c against v0.9-staging d12f04ae; `r2b-compare.tsv`, `r2b-compare-failures.txt`, `r2b-check-compare.txt`, `s1-r2b/`)
+
+Section 6.4: `v0.9-staging` gained code after R2 (0.9.5: KIT-172, KIT-180, KIT-173). Merged with a true merge commit
+(4433f86c); the only hand-resolved conflicts were `NEWS.md` (the unreleased section kept above 0.9.5) and the ledger
+(`VAL-<merge>` after VAL-78); no hand-resolved hunk under `R/`, `tests/`, `inst/`, `DESCRIPTION` or `NAMESPACE`. The
+incoming code changes `R/utils_omic_gui_config.R`, a file of 7.3, so S1 was repeated. Same scope, order, shards, check.
+
+| Verdict | Files | Class |
+|---|---|---|
+| `same` | 26 | unchanged |
+| `only-on-head` | `test-trx-da-without-ruv.R` (57 passed, 0 failed) | new tests |
+| `message-changed` | `test-gui-entry-transcriptomics.R` | W1: the blocks differ only by the `da_refusal` notification |
+| `count-changed` | `test-module-ci-trx-summary.R` (71 to 77 passed; the same 2 failures on both sides) | T7 |
+| `new-failure` | `test-omic-da-module.R`: `(a)` and `(W3)` at the trx panel `html` digest only | W2, VAL-74 (`:293`) |
+
+`test-omic-da-module.R` has 51 failures on the new base (22 at ffdfdfb7); the head's are those 51 plus the two admitted
+digest failures, every other one identical. Check: identical findings, none only on head. S1 (script ok, 254 s): all six
+routes k at least 1 on both sides (k 2, 2, 2, 2, 3, 1), 36 of 36 A2 values equal.
+
+Under 6.4, R3 is not repeated (R3b): the only hand-resolved conflicts were NEWS and the ledger, and R2b shows 6.2's
+verdicts.
+
 ## Core-hours
 
-R1 1.3, R1b 0.7, R2 16.8, R3 67.2: 86.0 used, against 85.0 expected and a ceiling of 456.4. R3 included the check jobs
+R1 1.3, R1b 0.7, R2 16.8, R3 67.2: 86.0 for R1 to R3, against 85.0 expected and a ceiling of 456.4; R2b 15.5 (expected 19.5, ceiling 36.0). Total 101.5. R3 included the check jobs
 the ticket's R3 did not (`check: true` at the coordinator's request).
 
 ## Not checked
 
-- R2b: `v0.9-staging` has gained code since R2 (KIT-172 merged, 2308f3f8, touching `R/utils_omic_gui_config.R` and
-  `tests/testthat/test-omic-gui-config.R`); under the merger's rule (6.4) R2b runs on the merge.
 - The report text of a declared design with k = 0 (W3's second sentence): rendered by no test; T3 checks the DA only.
 - The RUVIII export after a k = 0 run (F3), the worker's normalisation log at k = 0 (F1).
 - Windows; real data.
