@@ -55,15 +55,15 @@ after it). Every run: `runs.tsv`. Simulation: `declaration.md` (committed alone 
 | A2 | met (T1, T2) | F |
 | A3 | met (T3, T6, T7) | F |
 | A4 | met (T4) | F |
-| A5 | partly: T5 and T15 met in the one-job run; T8 not met (identity includes the build digest) | R2b, `r2b/` |
+| A5 | met: T5, T8 (restated, VAL-85 (3)), T15 in the one-job guard run on the merge commit | G, `g/` |
 | A6 | met (T10) | F |
 | A7 | met (T11; T12 with its base comparison) | F |
 | A8 | met (T13; the size of the change in NEWS) | F, R1b log |
 | A9 | met (T14) | M |
 | A10 | met: declaration alone before S; O1; classes formed or redefined before S (one cell at 62 % in S, reported); determinism identical; comparators reported; texts filled | `results.md`, S |
 | A11 | met | R1b scripts job |
-| A12 | partly: within 1e-6 on the ubuntu-22.04 and windows-2025 bundles; SHA-256 not observable there; ubuntu-24.04 not run | B, `cross-platform.tsv` |
-| A13 | partly: failing first shown (R1a2); the T5 and T15 mutations caught; T8's mutation not evidence | R1a2, R2b |
+| A12 | met: within 1e-6 on the ubuntu-22.04, ubuntu-24.04 and windows-2025 bundles; magnitudes and SHA-256 not observable there | B, B24, `cross-platform.tsv` |
+| A13 | met: failing first shown (R1a2); the mutations caught: m1 fails T5, m2 fails T8 (a) and (b), m3 fails T15 | R1a2, G |
 | A14 | met: no new failure, check findings unchanged | F |
 | A15 | met: ledger rows 1 and 2 (`VAL-<merge>`) | `docs/methods-decision-ledger.md` |
 
@@ -76,3 +76,13 @@ after it). Every run: `runs.tsv`. Simulation: `declaration.md` (committed alone 
 
 - ubuntu-24.04 (B); the SHA-256 of the bundle platforms' tables (the lane uploads nothing).
 - A cache hit across builds (impossible by design, above).
+
+## After the implementation audit (VAL-85)
+
+- Texts, NEWS, results, ledger and records repaired as AUDIT-KIT-183-impl I01, I02, I04 to I10 give them; NEWS names
+  KIT-191's further options.
+- T8 restated (a), (b), (c); guard run G (45273640961) on the merge commit 912cd36b: all pass at head, each mutation
+  caught. The earlier T8 (R2b) failed because of its premise, kept in `r2b/` with an annotation.
+- ubuntu-24.04 bundle (B24, 45273632957): 178 passed, 0 failed, 2 skipped; the cross-platform test within 1e-6.
+- Merged v0.9-staging 3ff60190 (merge commit 912cd36b; NEWS and ledger mechanical, the rows stay `VAL-<merge>` after
+  VAL-86); the integration test files on the merged tree (G): no failure beyond the stored oracle failing on base too.
