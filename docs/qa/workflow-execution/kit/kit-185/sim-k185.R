@@ -1198,6 +1198,9 @@ runUnit <- function(i) {
         result <- list(rows = rows, timing = NULL)
     }
     rows <- result$rows
+    # written to 7 significant digits (KIT-185 declaration: output precision only)
+    numeric_columns <- vapply(rows, is.numeric, logical(1L))
+    rows[numeric_columns] <- lapply(rows[numeric_columns], signif, 7L)
     hash <- NA_character_
     if (lifecycle) {
         temp <- tempfile(fileext = ".tsv")

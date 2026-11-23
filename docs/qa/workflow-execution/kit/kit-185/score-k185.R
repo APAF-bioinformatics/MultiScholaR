@@ -211,7 +211,9 @@ utils::write.table(do.call(rbind, safe), file.path(out_dir, "safe-rate.tsv"), se
 judged <- decide$classification[decide$classification != "refused by the route"]
 outcome <- if (all(judged == "no material effect")) "O1" else if (any(judged == "serious")) "O3" else
     if (any(judged == "material")) "O2" else "O4"
-writeLines(c(sprintf("outcome %s", outcome), sprintf("deciding classifications %d (family %d)", nrow(decide), FAMILY),
+held <- setdiff(DECIDING, unique(decide$cell))
+writeLines(c(sprintf("outcome %s", outcome), sprintf("deciding cells scored: %s", paste(unique(decide$cell), collapse = ", ")),
+    sprintf("deciding cells held (not in these rows): %s", if (length(held)) paste(held, collapse = ", ") else "none"), sprintf("deciding classifications %d (family %d)", nrow(decide), FAMILY),
     paste(names(table(decide$classification)), table(decide$classification), sep = ": ")), file.path(out_dir, "outcome.txt"))
 
 # ---- reported parts: P0lo, P0hi; run-aligned; part B; sensitivity -------------------------------------------
@@ -275,8 +277,9 @@ if (!is.null(D)) {
 if (!is.null(S)) {
     keys <- c("cell", "rep", "mask", "corr", "stratum")
     for (v in intersect(c("k1", "k4"), unique(S$variant))) {
-        s <- S[S$variant == v & S$corr == "N" & S$stratum %in% c("all", "comp", "inc", "filt"), , drop = FALSE]
-        a <- A[A$variant == "base" & A$corr == "N" & A$stratum %in% c("all", "comp", "inc", "filt") &
+        # the N rows of the test on F_filt (the strata of F_m depend on the variant's own S and C)
+        s <- S[S$variant == v & S$corr == "N" & S$stratum == "filt", , drop = FALSE]
+        a <- A[A$variant == "base" & A$corr == "N" & A$stratum == "filt" &
             paste(A$cell, A$rep, A$mask) %in% paste(s$cell, s$rep, s$mask), , drop = FALSE]
         cols <- setdiff(names(s), c("variant", "k", "seconds", "part"))
         same <- identical(comparable(s[, cols], keys), comparable(a[, cols], keys))
