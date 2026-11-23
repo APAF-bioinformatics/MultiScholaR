@@ -582,13 +582,15 @@ runReplicate <- function(n, r, cell_label, design = DESIGN) {
     # Error-rate rows: per data set, factor, test, class (and rho): sets and sets with p <= 0.05.
     key <- c("view", "kind", "test", "class", "rho")
     long$rho_key <- ifelse(is.na(long$rho), "", as.character(long$rho))
-    err <- stats::aggregate(cbind(sets = 1L, sig = as.integer(long$sig)) ~ view + kind + test + class + rho_key, data = long,
+    err <- stats::aggregate(cbind(sets = 1L, sig = as.integer(sig)) ~ view + kind + test + class + rho_key, data = long,
         FUN = sum)
     # Planted sets: called at BH <= 0.05, and the direction reported.
     planted <- long[long$class %in% c("Pup", "Pdown"), , drop = FALSE]
-    power <- if (nrow(planted)) stats::aggregate(cbind(sets = 1L, called = as.integer(planted$bh),
-        called_up = as.integer(planted$bh & planted$direction %in% "Up"),
-        called_down = as.integer(planted$bh & planted$direction %in% "Down")) ~ view + kind + test + class + nominal,
+    # Column names only inside the formula: the data hold a column `planted` (the planted direction), which would mask
+    # the data frame of that name (L1 runs 45148992728 and 45151737782).
+    power <- if (nrow(planted)) stats::aggregate(cbind(sets = 1L, called = as.integer(bh),
+        called_up = as.integer(bh & direction %in% "Up"),
+        called_down = as.integer(bh & direction %in% "Down")) ~ view + kind + test + class + nominal,
         data = planted, FUN = sum)
     # Family-wise: any BH <= 0.05 among the C0 and C2 sets of the call (BH recomputed over them).
     nulls <- long[long$class %in% c("C0", "C2"), , drop = FALSE]

@@ -1,5 +1,5 @@
 {
   "run": "lifecycle",
-  "package_commit": "51ca10b64789d55d6c06395766df6cf2b25276a1",
-  "note": "KIT-183 L1 correction: run 45148992728 found every replicate stopped (\"$ operator is invalid for atomic vectors\"); the replicate now records its call stack"
+  "package_commit": "874f6c4581e001a55dec3adcf82ef4c71caa4eca",
+  "note": "KIT-183 L1 check after the aggregation fix (VAL-54 instrument rule; the third lifecycle run): replicates complete, pool counts, time split"
 }

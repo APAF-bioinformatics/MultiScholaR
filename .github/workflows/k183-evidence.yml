@@ -11,7 +11,7 @@ name: MOFA2 evidence k183 (integration enrichment, the test of record's simulati
 # The jobs of each run are fixed here (declared), not taken from the parameters:
 #   lifecycle    one job: 5 replicates of each cell (n = 12, 20, 6) in three workers, F3 (1 against 5 training seeds),
 #                the 20,000 x 500 memory and time case, one replicate with a declared invalid argument (n = 7)
-#   counted      8 jobs of 300 replicates (4 single-thread workers each) and the determinism job (replicates 1 to 10
+#   counted      12 jobs of 200 replicates (4 single-thread workers each; re-split after L1, VAL-64) and the determinism job (replicates 1 to 10
 #                of n = 12 again), then the scorer
 #   correction   as counted (S', only after an instrumentation failure of counted)
 # Start: change .github/mofa-smoke/k183-params.json in a commit and push it to run-mofa-evidence-k183.
@@ -59,14 +59,18 @@ jobs:
             jobs='[{"id":"life","timeout":45,"segments":"12:1:5;20:1:5;6:1:5","extra":"seeds memory fail"}]'
           else
             jobs='[
-              {"id":"s1","timeout":75,"segments":"12:1:300","extra":""},
-              {"id":"s2","timeout":75,"segments":"12:301:600","extra":""},
-              {"id":"s3","timeout":75,"segments":"12:601:800;20:1:100","extra":""},
-              {"id":"s4","timeout":75,"segments":"20:101:400","extra":""},
-              {"id":"s5","timeout":75,"segments":"20:401:700","extra":""},
-              {"id":"s6","timeout":75,"segments":"20:701:800;6:1:200","extra":""},
-              {"id":"s7","timeout":75,"segments":"6:201:500","extra":""},
-              {"id":"s8","timeout":75,"segments":"6:501:800","extra":""},
+              {"id":"s01","timeout":75,"segments":"12:1:200","extra":""},
+              {"id":"s02","timeout":75,"segments":"12:201:400","extra":""},
+              {"id":"s03","timeout":75,"segments":"12:401:600","extra":""},
+              {"id":"s04","timeout":75,"segments":"12:601:800","extra":""},
+              {"id":"s05","timeout":75,"segments":"20:1:200","extra":""},
+              {"id":"s06","timeout":75,"segments":"20:201:400","extra":""},
+              {"id":"s07","timeout":75,"segments":"20:401:600","extra":""},
+              {"id":"s08","timeout":75,"segments":"20:601:800","extra":""},
+              {"id":"s09","timeout":75,"segments":"6:1:200","extra":""},
+              {"id":"s10","timeout":75,"segments":"6:201:400","extra":""},
+              {"id":"s11","timeout":75,"segments":"6:401:600","extra":""},
+              {"id":"s12","timeout":75,"segments":"6:601:800","extra":""},
               {"id":"det","timeout":20,"segments":"12:1:10","extra":""}]'
           fi
           {
