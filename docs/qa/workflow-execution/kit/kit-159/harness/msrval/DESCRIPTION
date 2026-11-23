@@ -1,0 +1,16 @@
+Package: msrval
+Title: Validation Harness for MultiScholaR Evidence Runs
+Version: 1.1.0
+Authors@R: person(given = "Ignatius", family = "Pang", role = c("aut", "cre"),
+    email = "ignatius.pang@mq.edu.au")
+Description: Frozen inputs, declarations, the default-user driver, scoring,
+    run-level intervals, classification, the licence guard and provenance
+    shared by the MultiScholaR validation tickets. Evidence tooling only;
+    never a MultiScholaR dependency and never distributed. The git tree hash
+    of the harness folder is the version.
+License: LGPL (>= 3)
+Encoding: UTF-8
+Imports: cli, checkmate, curl, digest, jsonlite, data.table, limma, edgeR,
+    shiny, withr, processx, testthat, htmltools, xml2
+Suggests: covr, pkgload, shinytest2, chromote
+Config/testthat/edition: 3
