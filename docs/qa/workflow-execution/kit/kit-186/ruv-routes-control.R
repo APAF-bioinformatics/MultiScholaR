@@ -20,7 +20,7 @@
 # (white space collapsed to one space, then masked). Written: <out>/ruv-routes-<side>.tsv by each side,
 # <out>/ruv-routes.tsv (both sides) and <out>/ruv-routes-compare.tsv (route, field, base, head, equal, a2) here, and
 # <out>/report-text-<side>.txt (route 1's masked text). Synthetic data only.
-# Exit status non-zero when a side's process fails or a route errors on either side.
+# Exit status non-zero when a side's process fails or a route fails to run on either side.
 
 args <- commandArgs(trailingOnly = TRUE)
 stopifnot(length(args) >= 1L, grepl("^[0-9a-f]{40}$", args[[1L]]))
@@ -117,7 +117,7 @@ writeLines(c(
     "        w_columns = '', table_sha256 = '', formula_used = '', model_text = '', notifications = '', report_sha256 = '',",
     "        stringsAsFactors = FALSE)",
     "    cat('KIT-186 S1', side, 'route', route, if (isTRUE(ok) && !nzchar(row$errors)) 'ok' else 'FAILED', '\\n')",
-    "    if (!isTRUE(ok) || nzchar(row$errors)) failed <- TRUE",
+    "    if (!isTRUE(ok) || identical(row$errors, '<route failed>')) failed <- TRUE",
     "    rows[[route]] <- row",
     "}",
     "utils::write.table(do.call(rbind, rows), file.path(out, paste0('ruv-routes-', side, '.tsv')), sep = '\\t', quote = FALSE,",
@@ -150,6 +150,10 @@ stopifnot(!is.null(base), !is.null(head))
 utils::write.table(rbind(base, head), file.path(out, "ruv-routes.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 
 fields <- c("errors", "head", "k", "w_columns", "table_sha256", "formula_used", "model_text", "notifications", "report_sha256")
+# A2's fields (ticket section 8). `errors`, `head` and `w_columns` are recorded beside them: the base tree's journey helper
+# records the grid summary that a declared design does not define as an error (the R1 instrument defect, fixed in the
+# head tree's helper), so `errors` differs on routes 4 to 6 by that entry alone.
+a2_fields <- c("table_sha256", "formula_used", "k", "model_text", "notifications", "report_sha256")
 compare <- list()
 for (route in base$route) {
     b <- base[base$route == route, , drop = FALSE]
@@ -158,7 +162,7 @@ for (route in base$route) {
     k_zero <- identical(b$k, "0") || identical(h$k, "0")
     for (field in fields) {
         compare[[length(compare) + 1L]] <- data.frame(route = route, field = field, base = b[[field]], head = h[[field]],
-            equal = identical(b[[field]], h[[field]]), a2 = !k_zero, stringsAsFactors = FALSE)
+            equal = identical(b[[field]], h[[field]]), a2 = !k_zero && field %in% a2_fields, stringsAsFactors = FALSE)
     }
 }
 compare <- do.call(rbind, compare)
