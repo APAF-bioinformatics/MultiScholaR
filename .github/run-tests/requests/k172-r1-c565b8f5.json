@@ -1,0 +1,42 @@
+{
+  "requested_by": "KIT-172 R1: failing-first on the tests-only commit (R/ equal to base a60c4e9a); script T9 saves the base projects in a base worktree",
+  "label": "KIT-172 R1 tests-only c565b8f5: new tests expected red; T9 base projects",
+  "package_commit": "c565b8f5a1cd603c447c35c42c8ea1979b681cd8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit172-log2-rule.R",
+    "test-kit172-unit-equivariance.R",
+    "test-kit172-downstream.R",
+    "test-kit172-reopen.R",
+    "test-lipid-09b-s4-log-transform-assays-characterization.R",
+    "test-metab-02r-log-transform-assays-characterization.R",
+    "test-metab-s4-norm-core-shared.R",
+    "test-module-ci-lipid-norm.R",
+    "test-module-ci-metab-norm.R"
+  ],
+  "shards": 4,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-172/t9-base-projects.R",
+      "args": [
+        "a60c4e9a0ec8b7db47edddaa53926a61e2b60299",
+        "k172-t9-out"
+      ],
+      "env": {},
+      "out": "k172-t9-out",
+      "out_pattern": "\\.(txt|sha|tsv)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
