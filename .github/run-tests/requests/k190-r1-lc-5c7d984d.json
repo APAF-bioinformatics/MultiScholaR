@@ -1,0 +1,64 @@
+{
+  "requested_by": "KIT-190 R1 lifecycle: effect.R E (counted falsifiers, oracle check), fault run, E3 at n=520, tests-only tree as both sides",
+  "label": "KIT-190 R1 E lifecycle 5c7d984d",
+  "package_commit": "5c7d984df8d76a93cfcd3faf0806cd00a56a47cc",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "e",
+        "self",
+        "k190-lc/e-lc"
+      ],
+      "env": {
+        "K190_LIFECYCLE": "1"
+      },
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 18
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "e",
+        "self",
+        "k190-lc/e-fault"
+      ],
+      "env": {
+        "K190_LIFECYCLE": "1",
+        "K190_FAULT": "1"
+      },
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 6
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "e3",
+        "self",
+        "k190-lc/e3-lc"
+      ],
+      "env": {
+        "K190_LIFECYCLE": "1"
+      },
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 5
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
