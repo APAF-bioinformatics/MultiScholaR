@@ -1,0 +1,92 @@
+# KIT-173 outcome: Gene Ontology parent terms on the proteomics UniProt route
+
+Ticket revision 1.5. Branch `kit-173-go-propagation` from `v0.9-staging` a60c4e9a. Every run on `run-tests`
+(R 4.6.1, reference BLAS, ubuntu-22.04); run ids, commits, minutes and core-hours in `runs.tsv`.
+
+| Commit | Content |
+|---|---|
+| 36a34cab, 32ffcf04 | F1 script (`f1-feasibility.R`) and its correction (R0b) |
+| 536080c5 | tests only: `test-go-propagation.R` (T1 to T11, fixture hashes), `helper-go-propagation.R`, fixtures, T7(a) capture script, evidence scripts; `R/` equal to base |
+| 62a41ba1 | T7(a) capture from R1 under `tests/testdata/go-propagation/replay-base/` (no store, see A4); `R/` equal to base. Base of R2 and R2b |
+| e910e19f | the fix: `R/func_general_geneset_kernel.R` (new), orchestration, record, operation, workflow, annotation and report changes, workbooks, Rd, `Collate`, NEWS, ledger row |
+| a3d6d84f | D9 script |
+| 93c3b946 | correction pass after R2: three existing test literals, T2(d)'s fixture, `t7-replay.R`, R2 evidence |
+
+## Observed
+
+- **F1 (R0, R0b)**: every value of section 2.2 reproduced; no stop rule triggered; details and the two departures (no
+  real root-only protein, so one is synthetic; GMT committed as ids and genes) in `feasibility.md`.
+- **Failing first (R1, 536080c5)**: `test-go-propagation.R` 67 passed, 163 failed, 12 errors, 1 skipped (T7(b), no
+  capture yet). Every new test except T11(e) (regression, passed) failed on base: by error where the function is
+  absent (T1, T2, T3(a), T4, T6, T9 replay), at the stated value elsewhere: T5 median C 0.29 < 0.90 and gain 0 < 0.20;
+  T3(b) attribute NULL; T7(c) nine names, no `go_propagation`; T8 no term outside the direct annotations; T9 outcomes
+  absent; T10 no warning (then the base kernel errors on the all-NA aspects, see "Unrelated"); T11(a) the overlay has no
+  correction source, (a)/(d)/(f) the old text. `r1-...` failures in `r2/` compare files (base side).
+- **Fix (R2 a3d6d84f, correction R2b 93c3b946; base 62a41ba1)**: in R2b `test-go-propagation.R` 317 passed, 0 failed,
+  1 skipped (T7(b), store not present in the test job). R CMD check base and head: 0 ERROR, 3 WARNING, 3 NOTE, nothing
+  only on head (`check-compare.txt`). Of the other 18 files: 13 `same`; `test-workflow-omics-binding-steps.R` and
+  `test-workflow-operation-registry.R` `count-changed` with the same failures on both sides (laptop-recorded
+  references); `test-omic-enrich-module.R` (6) and `test-omics-enrich-core.R` (3) new failures, all in
+  clusterProfiler (taxon 999999) lanes, listed below.
+- **T5 (R2 script `t5-agreement.R`, the route's chain, TERM2GENE as passed to `enricher`)**: 2,703 terms in scope.
+  Shipped value: median C 0.933 (IQR 0.833 to 1.000), median P 1.000 (0.95 to 1.000); "none": median C 0.073, P 1.000
+  (960 terms empty). All three conditions met. Two-relation option (descriptive): median C 0.893 over all terms; 0.935
+  over the 1,592 terms with no descendant reached only through a regulates edge; 0.810 over the other 1,111; P 1.000.
+  Mapping loss 0 of 6,589 g:Profiler genes; no reference term outside GO.db. `t5-agreement.tsv`, `t5-summary.tsv`,
+  `t5-two-relation.tsv`, `t5-lowest.tsv`.
+- **T7 (R2b script `t7-replay.R`)**: base 62a41ba1 installed into a private library in the job (its namespace has no
+  `propagateGoAnnotations`), `capture-record.R` run on it, then `test-go-propagation.R` on the installed head with the
+  capture: all tests pass except T7(b), 9 of 11 expectations passed, **2 failed**. Which two is not known: the test
+  console stayed in the job by the script's design and only the counts were uploaded (`r2b/t7-tests.tsv`).
+- **Effect (R2e)**: E. coli, 4,024 annotated proteins, the background N 4,024 for every value and arm (no root-only
+  protein in the real data, `go_root_only_proteins` 0). Pairs 21,882 (none), 127,808 (two relations), 133,420 (five);
+  terms in the 10-to-500 range 314, 1,242, 1,249 (947 enter at 10, 12 leave at 500, five relations). Per arm (median over
+  20 draws; none / two / five): tested terms specific 21 / 124 / 124, mid 129 / 638 / 647, broad 206 / 964 / 963, null
+  145 / 693 / 694; significant terms by q-value specific 1.5 / 20 / 19, mid 10 / 54 / 47, broad 13 / 130 / 129, null 0
+  / 0 / 0. Planted term significant (q) in 20 of 20 draws for every propagated arm and value; under "none" 0 of 20
+  (specific: the term has no direct annotation at that size), 20 of 20 (mid) and 0 of 20 (broad). Null arm: draws with
+  any significant term, by q-value 1 / 1 / 1 of 20 and by BH 0 / 1 / 1 of 20 (none / two / five); no draw with every
+  q-value NA. Most significant terms under propagation are neither the planted term, its ancestors nor its
+  descendants (for example broad, five relations: 537 descendant and 2,027 other significant term-draws).
+  `effect.tsv`, `effect-draws.tsv`, `effect-sets.tsv`; R2e, 1,459 s of script time
+
+## Acceptance criteria
+
+| # | Status | Evidence |
+|---|---|---|
+| A0 | met | VAL-28 |
+| A1 | met | `feasibility.md`, `f1/` |
+| A2 | met, except T7(c) on head is shown in R2b and T7(b) below | R1 (base failing), R2b (head passing); `runs.tsv` |
+| A3 | met | `t5-summary.tsv` (three conditions TRUE), the two-relation report, the 40 lowest |
+| A4 | **not met**: the base record replays on head in the job, 9 of 11 expectations pass, 2 fail and are not identified; the correction pass is used, so the work stops here for this criterion | `r2b/t7-base-check.tsv`, `r2b/t7-tests.tsv` |
+| A5 | measured, waiting for the owner (D8); not yet in NEWS or the ledger | `effect.tsv` |
+| A6 | partly: targeted files, dependents and check done (R2, R2b); full suite (R3) not run, it follows D8 | `r2b/`, `check-compare.txt` |
+| A7 | met | diff: NEWS under the unnumbered heading, no version change, Rd by hand, `Collate` |
+| A8 | met | T11(a) to (f) pass on head in R2b; (e) passes on base too |
+
+Captures that moved (all clusterProfiler, taxon 999999; for the plan's section 11 re-record row; none edited):
+`test-omic-enrich-module.R` "(b) in process: clusterprofiler" and "(b) in process: kernel_clusterprofiler" (3) at
+`:3656`, "(KIT-113 W1) each W1 (b) session's committed record ..." (2: the state's `config$outcomes` digest);
+`test-omics-enrich-core.R` "(W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step" (product
+gains `parameters$go_propagation`) and "... kernel_clusterprofiler run step" (2: TERM2GENE hash). Test literals changed
+(not references): `test-omic-enrich-module.R:4261-4262`, `:4295` and `test-workflow-analysis-record.R:1001` compared a
+9606 run's declared names with the whole parameter list, which now ends in `go_propagation`; the expected side drops it
+(the runs' names are unchanged).
+
+## Inferred, not observed
+
+- The g:Profiler route's computation is unchanged: no 9606 capture moved in R2b; the D9 texts differ only in the
+  paragraph.
+
+## Unrelated (recorded, not changed)
+
+- `processEnrichments`' direct-set code (unchanged, now `buildUniprotGoGeneSetsDirect`) fails with "arguments imply
+  differing number of rows: 0, 1" when a GO aspect column has no annotation at all (`cbind` of an empty table).
+
+## Not checked
+
+- Which two T7(b) expectations fail (see A4).
+- The full suite (R3): after D8, by the ticket.
+- The per-source correction statement rests on the gprofiler2 vignette; the 2023 and 2020 papers' full texts could not
+  be fetched (HTTP 500).
+- `R CMD check` at the records commit.

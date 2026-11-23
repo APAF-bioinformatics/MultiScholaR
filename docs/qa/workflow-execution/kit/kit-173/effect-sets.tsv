@@ -1,0 +1,4 @@
+value	background_N	pairs	terms	terms_in_range	in_range_BP	in_range_MF	in_range_CC	entering_at_10	leaving_at_500	root_only_proteins	go_db_version	go_source_date
+none	4024	21882	3908	314	166	113	35	0	0	NA	NA	NA
+is_a_part_of	4024	127808	5508	1242	818	349	75	940	12	0	3.23.1	2026-01-23
+is_a_part_of_regulates	4024	133420	5525	1249	825	349	75	947	12	0	3.23.1	2026-01-23

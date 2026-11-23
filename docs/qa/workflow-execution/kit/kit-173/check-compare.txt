@@ -1,0 +1,9 @@
+base: ERRORs 0, WARNINGs 3, NOTEs 3 (check exit 0)
+head: ERRORs 0, WARNINGs 3, NOTEs 3 (check exit 0)
+findings identical on both: 6; only on head: 0; only on base: 0
+
+== only on head (new)
+none
+
+== only on base (gone)
+none

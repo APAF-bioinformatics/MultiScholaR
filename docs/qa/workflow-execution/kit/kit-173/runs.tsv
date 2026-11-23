@@ -1,0 +1,7 @@
+step	run_name	run_id	package_commit	base_commit	purpose	result	job_minutes	core_hours	ceiling_core_hours
+R0	k173-r0-f1-36a34cab	45119655641	36a34cab1c5286b5074ce3baaa6c5972a061d686	none	F1 feasibility	script stopped at the T7 root-only pick (none exists); GMT withheld by the upload scan; 2.2 values reproduced, no stop rule	12.75	0.85	4 (R0 + R0b)
+R0b	k173-r0b-f1-32ffcf04	45121463951	32ffcf0454e71cd1fba3c9cd7e9bba060e189ec2	none	F1 correction pass	ok; fixtures, pilot, selections; two paper full texts HTTP 500 twice (F2 reading, not fixtures)	13.47	0.90	
+R1	k173-r1-536080c5	45123112435	536080c5744efa16f54b8c4c30ea254da3307e45	none	tests-only failing first; T7(a) capture	163 failed, 12 errors, 67 passed, 1 skipped as stated; capture ok, project.tar withheld by the upload scan	20.83	1.39	4
+R2	k173-r2-a3d6d84f	45124771080	a3d6d84fa2afc27e31691eedcb32b75d4f9dacc7	62a41ba1ed35cecc8562c2ad9bd603b8bf9151fb	fix: 19 files, check, T5, D9	T5 met; 2 new-test errors (T2(d) fixture, T7(b) store); 4 test literals; clusterProfiler captures moved; check identical	137.15	9.14	38
+R2b	k173-r2b-93c3b946	45127862851	93c3b946975cd0c6b3ceea7aa5f36ac95795a9d1	62a41ba1ed35cecc8562c2ad9bd603b8bf9151fb	correction pass: same files, check, T7 in one job	new tests 317 passed; only clusterProfiler captures differ; check identical; T7(b) 9 of 11 pass, 2 fail	149.32	9.95	38 (correction)
+R2e	k173-r2e-93c3b946	45127866711	93c3b946975cd0c6b3ceea7aa5f36ac95795a9d1	none	effect measurement 9.1	ok	35.55	2.37	12
