@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-171 R1b: the filter commit alone (typing change not applied); the reader's test file",
+  "label": "KIT-171 R1b filter commit 770155ba: T4 green, T1 to T3 observed",
+  "package_commit": "770155ba6b593ca2e911f59eaf8d093adb14c2e8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-import-maxquant-direct-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
