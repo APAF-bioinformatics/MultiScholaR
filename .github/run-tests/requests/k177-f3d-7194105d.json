@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-177 F3 diagnostic run (VAL-79): replayed states read after the replayed DA, DA table by name; staging 55710a87 + script; ceiling 1 core-hour",
+  "label": "KIT-177 F3 diagnostic on 7194105d",
+  "package_commit": "7194105d649f37f82d27f178fd0e7c377153b991",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-177/replay-check.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-177/replay"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-177/replay",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
