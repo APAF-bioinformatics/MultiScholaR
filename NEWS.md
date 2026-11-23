@@ -1,5 +1,40 @@
 # MultiScholaR NEWS
 
+## MultiScholaR (unreleased; numbered at merge)
+
+### Scientific changes
+
+ * Lipidomics and metabolomics normalisation: the log2 step is now plain log2(x) by default; before, it was
+   log2(x + 1), with the offset described as protecting zeros. Since KIT-118 the import already reads every zero as
+   not detected (missing, not imputed) and refuses negative values, so the offset protected nothing; its only effect
+   was on positive values, and it depended on the unit of the table: a value v moved by log2(1 + 1/v) (1.44e-4 at
+   v = 10,000, 0.0014 at v = 1,000, 0.58 at v = 1), and a true two-fold change between 0.1 and 0.2 was reported as
+   0.126 instead of 1. After this change the log step is unit-equivariant (multiplying a table by a constant shifts
+   every log2 value by the same amount). Intensity tables (values of 10,000 and above) change by at most 1.44e-4 log2;
+   concentration tables with values near or below 1 change materially, and their earlier fold changes were compressed
+   toward 0. The "Offset for zeros" field is removed from the normalisation tab. A project whose record used an offset
+   replays with that offset unchanged, and the tab says so. Called directly, `logTransformAssays()` now defaults to
+   offset 0: a value of 0 or below, or a value that is not finite, becomes missing and is counted in one warning
+   (class `omics_log2_nonpositive`); an offset above 0 runs the earlier transformation unchanged; an offset below 0 is
+   refused (class `omics_log2_offset_invalid`); an error of the transformation now stops (class `omics_log2_failed`)
+   instead of returning untransformed values labelled as log2.
+ * Statistical position, stated: zeros in these tables are often values below a detection limit. They are read as
+   not detected and not imputed, so a feature is tested only where it was measured (limma on the available values),
+   and a fold change can be underestimated when values fall below the detection limit in one group; a feature with
+   no value in one of the compared groups is not tested, and the differential analysis summary now counts these
+   ("Not tested (no value in a compared group)"). No variance-stabilising transform (generalised log) is offered; the
+   test models variance against mean level (limma-trend with robust hyperparameters). Unchanged: a table that is
+   already on the log scale is logged again, and tables with negative values are refused at import.
+ * The `scale` between-sample option is limma's two-colour M-value scaling (`limma::normalizeMedianAbsValues`): it
+   divides each sample's log2 values so that their median absolute value is the same in every sample, so its result
+   depends on the unit of the table, and on log2 values below 0 the absolute value treats -2 like +2. It stays
+   selectable; when it runs on log2 values below 0, the normalisation log and a notification now say so. Cyclic
+   Loess and Quantile do not depend on the unit.
+ * Lipidomics and metabolomics QC counts: a value is counted as detected when it is not missing (before: when it was
+   above 0, which dropped measured values below 1 once logged); the missingness of a step counts missing cells only.
+ * The interactive volcano draws a sample's missing value at 0 (it cannot draw missing values); it now says so when
+   the assay holds missing values.
+
 ## MultiScholaR 0.9.1 (staging)
 
 ### Scientific changes

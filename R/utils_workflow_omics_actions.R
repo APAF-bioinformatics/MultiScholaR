@@ -280,6 +280,44 @@ omicsManualItsdFeatureIds <- function(selections, candidates, addLog = function(
     if (length(selected)) selected
 }
 
+#' The log step's start line (KIT-172): the text of earlier releases above offset 0 ("Applying log2 transformation
+#' (offset: 1 )"), the offset left out at plain log2.
+#' @noRd
+omicsLog2StartText <- function(offset) {
+    if (isTRUE(offset == 0)) "Applying log2 transformation" else paste("Applying log2 transformation (offset:", offset, ")")
+}
+
+#' Counts per assay in words: "10 (LCMS_Pos) and 2 (LCMS_Neg)".
+#' @noRd
+omicsLog2CountWords <- function(counts) {
+    parts <- sprintf("%d (%s)", as.integer(unlist(counts)), names(counts))
+    if (length(parts) <= 1L) return(paste(parts, collapse = ""))
+    paste(paste(parts[-length(parts)], collapse = ", "), "and", parts[[length(parts)]])
+}
+
+#' What the log step reports after it ran (KIT-172), in process and on the worker: at offset 0 (the result value holds
+#' `nonpositive`) one log line with the counts per assay of values set to missing; when the between-sample method is
+#' `scale` and log2 values below 0 were written, the `scale` warning as a log line and a notification of type
+#' "warning". Above offset 0 nothing (the result value is that of earlier releases).
+#' @param value The log2 operation's result value.
+#' @param normMethod The between-sample method of the run.
+#' @param addLog The tab's log.
+#' @param warn `function(text)`, the notification.
+#' @noRd
+omicsLog2ReportResult <- function(value, normMethod, addLog, warn) {
+    if (is.null(value$nonpositive)) return(invisible(FALSE))
+    texts <- omicGuiLog2Texts()
+    per_assay <- vapply(names(value$nonpositive), function(assay) sprintf("%s %d non-positive, %d non-finite", assay,
+        as.integer(value$nonpositive[[assay]][["nonpositive"]]), as.integer(value$nonpositive[[assay]][["nonfinite"]])), "")
+    addLog(sprintf(texts[["nonpositive_log"]], paste(per_assay, collapse = "; ")))
+    if (identical(normMethod, "scale") && sum(unlist(value$negative_log)) > 0) {
+        text <- sprintf(texts[["scale_warning"]], omicsLog2CountWords(value$negative_log))
+        addLog(paste("Warning:", text))
+        warn(text)
+    }
+    invisible(TRUE)
+}
+
 #' The normalisation tab's pipeline on the worker (`runWorkflowOmicsInProcessNormalisation` runs it in process): the QC figures, ITSD, log2, between-sample normalisation, the figures, RUV-III and its figures, the
 #' composite, one managed action each under one progress display. `normData` holds each step's state reference as in process.
 #' @param binding The omic's binding.
@@ -320,13 +358,16 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
         omicsManagedCommit(omicsLog2Step(binding, settings$log_offset), config, function(result) {
             normData$post_log2_obj <- result$stateReference
             addLog("Log2 transformation complete")
+            # KIT-172: the counts of the log step, and the `scale` warning (the managed function has no `notify`).
+            omicsLog2ReportResult(result$value, settings$norm_method, addLog,
+                function(text) shiny::showNotification(text, type = "warning"))
         }, function() {
             if (!isTRUE(settings$apply_itsd)) {
                 advance("Applying ITSD normalization...")
                 addLog("ITSD normalization skipped")
             }
             advance("Applying log2 transformation...")
-            addLog(paste("Applying log2 transformation (offset:", settings$log_offset, ")"))
+            addLog(omicsLog2StartText(settings$log_offset))
         }),
         omicsManagedCommit(omicsBetweenSampleNormalisationStep(binding, settings$norm_method), config, function(result) {
             normData$post_norm_obj <- result$stateReference
@@ -436,9 +477,13 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
         }
         current <- NULL
         advance("Applying log2 transformation...")
-        addLog(paste("Applying log2 transformation (offset:", settings$log_offset, ")"))
-        normData$post_log2_obj <- runWorkflowOmicsReferenceLog2(binding, manager, settings$log_offset, config)$reference
+        addLog(omicsLog2StartText(settings$log_offset))
+        logged <- runWorkflowOmicsReferenceLog2(binding, manager, settings$log_offset, config)
+        normData$post_log2_obj <- logged$reference
         addLog("Log2 transformation complete")
+        # KIT-172: the counts of the log step, and the `scale` warning through the tab's notification.
+        omicsLog2ReportResult(logged$value, settings$norm_method, addLog, function(text) notify(text, type = "warning"))
+        logged <- NULL
         advance("Applying between-sample normalization...")
         if (settings$norm_method != "none") addLog(paste("Applying between-sample normalization (method:", settings$norm_method, ")"))
         normData$post_norm_obj <- runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, manager, settings$norm_method, config)$reference

@@ -328,9 +328,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             )
 
             if (isTRUE(log_trans$applied)) {
+                # KIT-172: plain log2 (offset 0) is stated as such; a recorded offset above 0 as before.
                 log_lines <- c(
                     log_lines,
-                    paste("* Offset:", log_trans$offset %||% "N/A")
+                    if (isTRUE(log_trans$offset == 0)) "* Transform: log2" else paste("* Offset:", log_trans$offset %||% "N/A")
                 )
             }
 
@@ -524,9 +525,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             )
 
             if (isTRUE(log_trans$applied)) {
+                # KIT-172: plain log2 (offset 0) is stated as such; a recorded offset above 0 as before.
                 log_lines <- c(
                     log_lines,
-                    paste("* Offset:", log_trans$offset %||% "N/A")
+                    if (isTRUE(log_trans$offset == 0)) "* Transform: log2" else paste("* Offset:", log_trans$offset %||% "N/A")
                 )
             }
 
