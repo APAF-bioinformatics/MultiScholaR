@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-173 R2e: effect measurement 9.1 (E. coli, 80 lists x 3 values through processEnrichments), descriptive, for the owner (D8); ceiling 12 core-h, 3 h wall",
+  "label": "KIT-173 R2e effect 93c3b946",
+  "package_commit": "93c3b946975cd0c6b3ceea7aa5f36ac95795a9d1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/effect-measurement.R",
+      "args": [
+        "k173-effect-out"
+      ],
+      "env": {},
+      "out": "k173-effect-out",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 180
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
