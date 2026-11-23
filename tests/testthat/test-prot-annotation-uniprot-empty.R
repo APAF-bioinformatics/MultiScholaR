@@ -1003,11 +1003,13 @@ test_that("KIT-175 T7: replaying an enrichment with no annotation is refused; on
     log <- k175Mock(k175Answer())
     root <- withr::local_tempdir()
     full <- k175ProjectAnnotations(withr::local_tempdir())
-    origin <- goPropRunProject(root, full)
-    without <- k175Replay(root, origin$record, withr::local_tempdir(), drop_annotation = TRUE)
+    origin <- NULL
+    utils::capture.output(origin <- suppressMessages(suppressWarnings(goPropRunProject(root, full))))
+    record <- jsonlite::read_json(origin$record, simplifyVector = FALSE)
+    without <- k175Replay(root, record, withr::local_tempdir(), drop_annotation = TRUE)
     expect_true(inherits(without$error, "workflow_enrichment_annotation"))
     expect_identical(log$calls, 0L)
-    with <- k175Replay(root, origin$record, withr::local_tempdir())
+    with <- k175Replay(root, record, withr::local_tempdir())
     expect_null(with$error)
 })
 
