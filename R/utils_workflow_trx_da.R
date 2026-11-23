@@ -19,22 +19,39 @@
 # volcano and the export's report. The DA tab's configuration names them (`da$model$text`, `da$source$read_metadata`,
 # `da$contrast_entries`, `da$contrast_entry`, `da$views$static_volcano$plot`, `da$run$export_report`).
 
-#' The realised formula and model text of the head (metadata only).
+#' The realised formula and model text of the head (metadata only). KIT-186: a head without W columns shows its formula
+#' when its record carries the RUVs step's product (design none, or a k of 0); only then is that product read.
 #' @noRd
 trxDaModelText <- function(workflowData) {
     manager <- workflowData$state_manager
-    formula <- tryCatch(withWorkflowStateScope(manager, function() trxRealisedFormula(manager, getWorkflowStateReference(manager))),
-        error = function(error) NULL)
-    if (is.null(formula) || !grepl("W_", formula, fixed = TRUE)) return("Run the normalisation (RUVs) first; the formula is realised from its design.")
+    formula <- tryCatch(withWorkflowStateScope(manager, function() {
+        realised <- trxRealisedFormula(manager, getWorkflowStateReference(manager))
+        if (grepl("W_", realised, fixed = TRUE) || trxDaStateHasRuvsStep(manager, getWorkflowStateReference(manager))) realised
+    }), error = function(error) NULL)
+    if (is.null(formula)) return("Run the normalisation (RUVs) first; the formula is realised from its design.")
     paste(c(paste("Formula:", formula), "Fit: glmQLFit(robust = TRUE)", "Test: QL F-test (glmQLFTest)", "Adjustment: BH (FDR)"), collapse = "\n")
 }
 
-#' The head's metadata when it is a RUVs state (its design has W columns), the state the DA runs on; NULL otherwise.
+#' Whether a state's record carries the RUVs step's product (`trx_ruvs_science`), which only the normalisation's commit
+#' attaches, whatever k (KIT-186). Read from the record's metadata; no matrix is hydrated.
+#' @param manager The session's state owner.
+#' @param reference The state's saved reference.
+#' @return TRUE or FALSE.
+#' @noRd
+trxDaStateHasRuvsStep <- function(manager, reference) {
+    withWorkflowStateScope(manager, function() {
+        isSavedWorkflowReference(readWorkflowStateMetadata(manager, reference)$data$products$trx_ruvs_science)
+    })
+}
+
+#' The head's metadata when it is a normalised state: its design has W columns, or its record carries the RUVs step's
+#' product (design none, or a k of 0); NULL otherwise.
 #' @noRd
 trxDaReadMetadata <- function(workflowData) {
     meta <- tryCatch(readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, workflowData$state_manager), error = function(error) NULL)
-    if (is.null(meta) || !any(startsWith(names(meta$design_matrix), "W_"))) return(NULL)
-    meta
+    if (is.null(meta)) return(NULL)
+    if (any(startsWith(names(meta$design_matrix), "W_"))) return(meta)
+    if (trxDaStateHasRuvsStep(workflowData$state_manager, meta$reference)) meta else NULL
 }
 
 #' The contrasts the binding reads: the builder's `name=expression` entries (its `full_format`).
