@@ -118,6 +118,15 @@ test_that("the shell keys, runners and panels are today's per omic", {
     expect_identical(vapply(metab$shell$tabs, `[[`, "", "testid")[[1L]], "metab-tab-import")
 })
 
+test_that("no omic's shell bypasses QC", {
+    # KIT-180 (VAL-26): label-free and TMT go through the protein-level QC; no shell marks the QC tab complete.
+    for (omic in c("proteomics", "lipidomics", "metabolomics", "transcriptomics")) {
+        expect_null(omicGuiConfig(omic)$shell$chain_rules$qc_bypass, label = omic)
+    }
+    expect_identical(omicGuiConfig("proteomics")$qc$complete_state[c("TMT", "LFQ")],
+        c(TMT = "protein_replicate_filtered", LFQ = "protein_replicate_filtered"))
+})
+
 test_that("removing a required field, or giving it the wrong type, is refused by class", {
     for (omic in c("proteomics", "lipidomics")) {
         config <- omicGuiConfig(omic)

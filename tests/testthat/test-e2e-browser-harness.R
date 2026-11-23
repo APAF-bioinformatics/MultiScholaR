@@ -481,6 +481,57 @@ test_that("proteomics DIA scenario helpers dispatch design, QC, normalization, a
   expect_true(file.exists(report_download))
 })
 
+test_that("KIT-180: the protein routes' QC helper and the DIA QC helper press the same four protein QC steps", {
+  protein_qc_selectors <- function(actions) {
+    vapply(actions, function(action) e2e_input_selector(e2e_input_id("proteomics", "qc", action)), character(1), USE.NAMES = FALSE)
+  }
+  four <- c(
+    "protein_qc-cleanup-apply_accession_cleanup",
+    "protein_qc-intensity_filter-apply_protein_intensity_filter",
+    "protein_qc-duplicate_removal-apply_duplicate_removal",
+    "protein_qc-replicate_filter-apply_protein_replicate_filter"
+  )
+  digest_for <- function(route, history) {
+    jsonlite::toJSON(
+      list(
+        selected_omics = "proteomics",
+        initialized_omics = "proteomics",
+        project_dir_keys = c("proteomics", "scripts"),
+        workflow_type_per_omic = list(proteomics = route),
+        step_status_per_omic = list(proteomics = list(setup_import = "complete", quality_control = "complete")),
+        r6_current_state_per_omic = list(proteomics = history[[length(history)]]),
+        r6_state_history_per_omic = list(proteomics = history),
+        active_tab_per_omic = list(proteomics = "quality_control"),
+        export_paths = list(proteomics = list()),
+        report_fingerprints = list()
+      ),
+      auto_unbox = TRUE
+    )
+  }
+  clicks <- function(driver) {
+    calls <- Filter(function(call) identical(call$method, "click"), driver$.state$calls)
+    vapply(calls, function(call) call$args$selector, character(1))
+  }
+  protein_history <- c("initial", "protein_s4_initial", "protein_accession_cleaned", "protein_intensity_filtered",
+    "duplicates_removed", "protein_replicate_filtered")
+
+  # TMT and LFQ: the "Protein QC" group of qc_tabs_tmt, then the four steps in order.
+  driver <- new_fake_e2e_driver(digest = digest_for("TMT", protein_history))
+  e2e_run_prot_protein_qc(driver)
+  expect_identical(clicks(driver), protein_qc_selectors(four))
+  set_calls <- Filter(function(call) identical(call$method, "set_inputs"), driver$.state$calls)
+  tabset_values <- unlist(lapply(set_calls, function(call) call$args[[e2e_input_id("proteomics", "qc", "qc_tabs_tmt")]]))
+  expect_identical(tabset_values, "Protein QC")
+
+  # DIA: after the peptide QC, the IQ rollup, then the same four.
+  dia_history <- c("initial", "qvalue_filtered", "precursor_rollup", "intensity_filtered", "protein_peptide_filtered",
+    "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", protein_history[-(1:2)])
+  dia_driver <- new_fake_e2e_driver(digest = digest_for("DIA", dia_history))
+  e2e_run_prot_dia_qc(dia_driver)
+  dia_clicks <- clicks(dia_driver)
+  expect_identical(utils::tail(dia_clicks, 5L), protein_qc_selectors(c("protein_qc-rollup-apply_iq_rollup", four)))
+})
+
 test_that("lipidomics scenario helpers dispatch multi-assay design, QC, normalization, DA, and summary actions", {
   lane <- read_e2e_manifest()[["lipid_canonical"]]
   expected_assays <- unlist(lane$assays)
