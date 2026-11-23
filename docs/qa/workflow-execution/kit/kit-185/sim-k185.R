@@ -396,7 +396,7 @@ fitCompiledRaw <- function(sim, arm, k, sets, assay_ids = arm$ids) {
 }
 fitReference <- function(sim, arm, k, sets, directions, controls = NULL, raw = FALSE) {
     omic <- sim$p$omic
-    groups <- if (identical(omic, "prot")) list(all = arm$ids) else split(arm$ids, factor(sim$assay[arm$ids], levels = unique(sim$assay)))
+    groups <- if (identical(omic, "prot")) list(all = arm$ids) else split(arm$ids, factor(sim$assay[arm$ids], levels = unique(sim$assay[arm$ids])))
     pieces <- lapply(groups, function(assay_ids) {
         Y <- t(arm$Y[assay_ids, sim$runs, drop = FALSE])
         potential <- if (is.null(controls)) assay_ids else intersect(controls, assay_ids)
@@ -817,12 +817,18 @@ LEGACY_OMIC <- list(ruv_mode = "automatic", ruv_grouping_variable = "group", per
     separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, manual_k = 2, manual_percentage = 5)
 DECLARED_OMIC <- list(ruv_design = "groups_all_features", ruv_grouping_variable = "group", ruv_k = NA, ruv_k_rule = "num_sv_be")
 omicBinding <- function(omic) if (identical(omic, "lipid")) lipidomicsDeclarationBinding else metabolomicsDeclarationBinding
-controlIds <- function(index, ids) {
+# the controls a route chose, resolved as the route's RUV method resolves them: proteomics by name
+# (`names(ctrl[which(ctrl)])`, R/func_prot_s4_norm_methods.R); lipidomics and metabolomics by position when the
+# logical vector has one entry per feature of the assay ("Assume correct order", R/func_lipid_s4_ruv_methods.R), else
+# by name
+controlIds <- function(index, ids, by_name = FALSE) {
     if (is.null(index)) return(character())
     if (is.character(index)) return(intersect(index, ids))
+    names_of <- names(index)
     index <- as.logical(index)
     index[is.na(index)] <- FALSE
-    if (!is.null(names(index))) return(intersect(names(index)[index], ids))
+    if (!by_name && length(index) == length(ids)) return(ids[index])
+    if (!is.null(names_of)) return(intersect(names_of[index], ids))
     ids[index]
 }
 # run one route of part B on one arm: the shipped state, its matrix, k and controls, and the comparator beside it
@@ -838,7 +844,7 @@ routeB <- function(sim, arm, route, sets) {
         k <- as.integer(value$best_k)
         if (is.na(k) || k == 0L) return(list(status = "none", class = "k0", seconds = run$seconds, state = state, k = 0L,
             matrix = protMatrix(state)[, sim$runs, drop = FALSE]))
-        controls <- controlIds(value$controls, arm$ids)
+        controls <- controlIds(value$controls, arm$ids, by_name = TRUE)
         percentage <- value$percentage %||% NA
     } else {
         binding <- omicBinding(omic)
@@ -1018,7 +1024,8 @@ lifecycleChecks <- function(sim, arms, rows, k, sets, variant, da_errors) {
     r <- sim$r
     # G1: on none, S recovers the planted directions (rho_min >= 0.9) and leaves at most 0.10 (B on F^comp)
     g1 <- rows[rows$mask == "none" & rows$corr == "S" & rows$stratum == "comp", , drop = FALSE]
-    if (nrow(g1)) addCheck("G1", cellname, r, "none", g1$rho_min[[1L]], 0.9, isTRUE(g1$rho_min[[1L]] >= 0.9 && g1$B[[1L]] <= 0.10),
+    # G1 is the gate of the part-A cells at the planted k (not of the sensitivity variants)
+    if (nrow(g1) && !identical(part, "S")) addCheck("G1", cellname, r, "none", g1$rho_min[[1L]], 0.9, isTRUE(g1$rho_min[[1L]] >= 0.9 && g1$B[[1L]] <= 0.10),
         sprintf("B(S, none) on F^comp %.4f; variant %s", g1$B[[1L]], variant))
     # G2: the shipped DA of lipidomics and metabolomics on the masked arms (failed assays, any correction)
     failed <- sum(as.numeric(rows$da_failed[rows$stratum == "filt"]), na.rm = TRUE)
@@ -1078,8 +1085,8 @@ lifecycleChecks <- function(sim, arms, rows, k, sets, variant, da_errors) {
             store <- memStore()
             if (identical(sim$p$omic, "prot")) {
                 filtered <- filterArm(sim, { m <- sim$y; m[maskMatrix(sim, "vd10")] <- NA_real_; m }, FALSE)$object
-                parameters <- c(LEGACY_PROT, list(ruv_mode = "manual", ruv_percentage = 5, ruv_k = 2, ruv_design = "groups_all_features",
-                    ruv_k_rule = "user"))
+                parameters <- utils::modifyList(LEGACY_PROT, list(ruv_mode = "manual", ruv_percentage = 5, ruv_k = 2,
+                    ruv_design = "groups_all_features", ruv_k_rule = "user"))
                 value <- quiet(diaNormalizationOperation("declared")$kernel(filtered, parameters, store))
                 state <- get(value$final, envir = store$saved)
                 kernel <- protMatrix(state)
