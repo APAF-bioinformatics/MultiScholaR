@@ -132,3 +132,36 @@ rule (base: no change); T8 and T9 stop on the absent text function (no notificat
 passes (regression). Two test-mechanics defects (VAL-54, instrument): T3b stopped because its fixture-session helper
 was defined after the test; T7 failed only on matrix row names (the kept and design matrices are indexed differently).
 Both corrected (tests only) and re-run as R1b on base.
+
+## R2 declared (fix: targeted, dependents, R CMD check; T1b)
+
+Binding: head c8fc140e (branch, fix and tests, staging 0.9.5 merged in) against base 55710a87 (staging), 4 shards per
+side, `check` true; files: the three KIT-177 files and the ticket's regression scope with the dependents found by a
+search for `buildProtDesignStateCheckpoint`, `protein_s4_initial`, `design_builder` and the changed functions
+(26 files). Scripts job on the head: `t1b.R` (`timeout_minutes` 210; with `sva`). Ceilings: targeted 24 core-hours,
+T1b 14. Decides: every new test passes on head; every other difference is a contract rewrite, a GUI-entry capture of
+the three re-frozen lanes (until R4), or a stored reference listed for the re-record; check findings equal to base;
+T1b's rule applied as fixed in the ticket.
+
+**R1b, run 45274581502** (`r1b/`): T3b now fails at its stated value (the Spectronaut and stored-table zeros stay 0;
+no count in the record); T7 passes on base, as a regression; every other result as in R1. Failing-first complete.
+
+**R2, run 45274649782** (head c8fc140e against base 55710a87; `r2/compare.tsv`, `r2/check-compare.txt`, `t6.tsv`,
+`r2/t1b.tsv`, `r2/t1b-seeds.tsv`). Tests: every new test passes on head (`test-prot-design-log2.R` 226 passed, 0
+failed; T5 in `test-workflow-analysis-record.R` 351/0, count-changed by its 44 expectations); 22 files `same` (base
+failures in `test-prot-norm-core.R` 272 and `test-workflow-kit-harness.R` 1 identical on both); the contract rewrites
+pass (`test-workflow-native-session.R` same, 734/0); `test-gui-entry-proteomics.R` 10 -> 64 failing: the 10 of base
+(`prot_dia` 4, `prot_dia_limpa` 6) unchanged, and the three lanes `prot_tmt`, `prot_lfq`, `prot_lfq_fragpipe` differ
+at every step from `design` on (18 steps each), none before it: the change the re-freeze (R4) absorbs. T1a: no
+`KIT177-T1A-TP` line, so t and p held their tolerances in every configuration and factor. T6 (`t6.tsv`): on each
+fixture the largest change equals its bound log2(1 + 1/min v); no call changes; largest fold-change change 8.5e-5 to
+3.7e-4. R CMD check: 0 ERROR, 3 WARNING, 3 NOTE on both; none only on head.
+
+**T1b** (scripts job, 96.5 minutes): `scale`: 14 of 20 seeds change a call (largest change in t 6.15) -> its own
+ticket under the rule (D6); legacy RUV `automatic` 20 of 20 (t 10.5) and `manual` 20 of 20 (t 8.9) -> their own
+ticket under KIT-172 D8's rule (compare VAL-81, KIT-188 widened to proteomics legacy RUV Automatic). TMT and LFQ shapes
+give the same table. The new designs' rows did not run: every one stopped at s = 1 with "operation normalization-ruv is
+missing parameter ruv_k_seed", a script mechanics defect (the tab sends the seed). Instrument run 1 of 3 (VAL-54): the
+two new-design configurations only, with `ruv_k_seed` set to the package default (`RUV_FACTOR_COUNT_SEED`); no rule
+or comparison changes; declared here before sending (binding the same head, ceiling the T1b row's remainder, 7.6
+core-hours).

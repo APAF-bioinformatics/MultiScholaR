@@ -18,6 +18,7 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 out_dir <- if (length(args) >= 1L) args[[1L]] else "docs/qa/workflow-execution/kit/kit-177/t1b"
+only <- if (length(args) >= 2L) strsplit(args[[2L]], ",", fixed = TRUE)[[1L]] else NULL
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 out_dir <- normalizePath(out_dir)
 route_file <- normalizePath("docs/qa/workflow-execution/kit/kit-177/route.R")
@@ -31,6 +32,7 @@ configs <- list(
     legacy_manual = list(norm = "cyclicloess", ruv = "manual", percentage = 5, k = 2),
     groups_all_features = list(norm = "cyclicloess", ruv = "automatic", design = "groups_all_features"),
     first_pass_nulls = list(norm = "cyclicloess", ruv = "automatic", design = "first_pass_nulls"))
+if (!is.null(only)) configs <- configs[only]
 
 setupWorker <- function(route_file) {
     suppressPackageStartupMessages(loadNamespace("MultiScholaR"))
@@ -49,7 +51,8 @@ runTask <- function(task) {
     config <- task$config
     norm <- kenv$k177NormParameters(norm_method = config$norm, ruv_mode = config$ruv, ruv_percentage = config$percentage %||% 5,
         ruv_k = config$k)
-    if (!is.null(config$design)) norm <- c(norm, list(ruv_design = config$design, ruv_k_rule = "num_sv_be"))
+    if (!is.null(config$design)) norm <- c(norm, list(ruv_design = config$design, ruv_k_rule = "num_sv_be",
+        ruv_k_seed = get("RUV_FACTOR_COUNT_SEED", envir = ns)))
     runAt <- function(s, intensity = TRUE, keep = NULL) {
         wide <- kenv$k177F177Wide(sim, s)
         if (!is.null(keep)) wide <- wide[wide$Protein.Ids %in% keep, , drop = FALSE]
