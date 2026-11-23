@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-175 R1 (tests-only commit, R/ equal to base): failing-first of T1-T8 and the D6 sentence; R0 script F1 (consumers without annotation, mocked network, test mode off)",
+  "label": "KIT-175 R1 failing-first and F1 at def420a1",
+  "package_commit": "def420a1a6ab11a4aa091289f5bcb61e3e72c62b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-prot-annotation-uniprot-empty.R", "test-prot-design-core.R", "test-prot-annotation-uniprot-direct-shared.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [{"path": "docs/qa/workflow-execution/kit/kit-175/f1-consumers.R", "args": ["k175-f1-out"], "env": {}, "out": "k175-f1-out", "out_pattern": "\\.(tsv|txt)$", "timeout_minutes": 60}],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
