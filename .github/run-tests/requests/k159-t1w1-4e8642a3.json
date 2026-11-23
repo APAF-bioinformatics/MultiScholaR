@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-159 T1 (VAL-54): whole msrval suite at the branch head; unrun fixes of groups (a), (b), group (c), the sweep and the driver core's first run",
+  "label": "KIT-159 T1 whole suite at 4e8642a3",
+  "package_commit": "4e8642a3d778bd2d2cdac83664e1b4b9ad5f1556",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1w1-out"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1w1-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
