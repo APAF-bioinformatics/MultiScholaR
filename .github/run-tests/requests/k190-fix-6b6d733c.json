@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-190: fix commit, the new test file and the R1-scope files on head (tests pass after the fix); before KIT-187 merges",
+  "label": "KIT-190 fix check 6b6d733c",
+  "package_commit": "6b6d733ca30f8a5786cb4cb0224ae993794ec864",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-ruv-control-anova-grouping.R",
+    "test-lipid-12c-ruv-s4-characterization.R",
+    "test-metab-02y-get-neg-ctrl-metab-anova-characterization.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-omics-ruv-complete-controls.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
