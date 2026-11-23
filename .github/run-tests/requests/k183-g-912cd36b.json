@@ -1,0 +1,54 @@
+{
+  "requested_by": "KIT-183 (VAL-85): post-merge run of the integration test files on the merge commit 912cd36b; the guard run of T8 restated (a, b, c) with T5, T15 and the mutations in one base-store job",
+  "label": "KIT-183 912cd36b post-merge integration files; T8 restated guard run",
+  "package_commit": "912cd36b337de62371e3f29ad99570f0e5ab96c0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-corpus.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-enrichment.R",
+    "test-integration-feature-selection.R",
+    "test-integration-gui.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-matrix.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-model.R",
+    "test-integration-mofa-model.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-outputs.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-partitioned-mofa.R",
+    "test-integration-record-mofa.R",
+    "test-integration-record.R",
+    "test-integration-results-mofa.R",
+    "test-integration-results.R",
+    "test-integration-sample-match.R",
+    "test-integration-workbook-api.R",
+    "test-integration-workbook-mofa.R",
+    "test-integration-workbook.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-183/base-store-job.R",
+      "args": [
+        "1e627f704580a42e66e45b9263c8fcd9684567ba",
+        "k183-out/guards"
+      ],
+      "out": "k183-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
