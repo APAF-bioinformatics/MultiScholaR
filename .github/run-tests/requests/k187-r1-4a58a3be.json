@@ -1,0 +1,42 @@
+{
+  "requested_by": "KIT-187 R1: tests-only commit 4a58a3be, each new test failing at its stated value (A1, A2); S2 lifecycle mechanics and fault runs (A5). Ceilings 45 min tests, 30 min scripts",
+  "label": "KIT-187 R1 tests-only 4a58a3be: six files, S2 lifecycle",
+  "package_commit": "4a58a3be8635322c86593a8df8782436bae8474a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-missing-value-counts.R",
+    "test-prot-qc-peptide-intensity-legacy-counts.R",
+    "test-prot-02-qc-filtering.R",
+    "test-prot-s4-qc-direct-shared.R",
+    "test-general-filemgmt-update-missing-value-shared.R",
+    "test-prot-summary-report-templates.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-187/filter-effect.R",
+      "args": ["self", "docs/qa/workflow-execution/kit/kit-187/s2-lc"],
+      "env": {"K187_LIFECYCLE": "1"},
+      "out": "docs/qa/workflow-execution/kit/kit-187/s2-lc",
+      "out_pattern": "\\.(tsv|json|txt)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-187/filter-effect.R",
+      "args": ["self", "docs/qa/workflow-execution/kit/kit-187/s2-lc/fault"],
+      "env": {"K187_LIFECYCLE": "1", "K187_FAULT": "1", "K187_CELLS": "K"},
+      "out": "docs/qa/workflow-execution/kit/kit-187/s2-lc/fault",
+      "out_pattern": "\\.(tsv|json|txt)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
