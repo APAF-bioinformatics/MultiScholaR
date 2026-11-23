@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-186 R1: failing-first run of the tests-only commit (new file, T7, updated refusal/help expectations); ceiling 45 min",
+  "label": "KIT-186 R1 tests-only 5d67e3dc",
+  "package_commit": "5d67e3dcb416d128ce86717f9da0d1e513a399fe",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-trx-da-without-ruv.R", "test-omic-gui-config.R", "test-omic-da-module.R", "test-module-ci-trx-summary.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
