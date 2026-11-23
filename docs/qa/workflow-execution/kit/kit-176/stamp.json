@@ -1,0 +1,85 @@
+{
+  "source": "VERSION.json as printed by the stamp step's log (packaging/electron/stamp/VERSION.json, the copy the application reads as resources/VERSION.json)",
+  "R2_head_45112365197": {
+    "ubuntu-22.04": {
+      "release": "0.9.0",
+      "lockfile_sha256": "483c964b44a13f81e7c68030d2a9a58df2981ee96e8ae99db1da3fec38a1f1d7",
+      "commit": "e3717079733019bea51193dc6f17b594ca1f75b1",
+      "package_commit": "b052b82441ef2f11c6067420dbeff8e95f8c8505",
+      "package_on_release_line": true,
+      "snapshot": "2026-07-30",
+      "build_date": "2026-11-23T04:41:14Z",
+      "runner_image": "ubuntu22 20261116.365.1",
+      "platform": "linux-x86_64",
+      "r": "4.6.1",
+      "electron": "45.3.3",
+      "internal_packages": "fastduckdb 0.2.0; fastlimpadpc 0.1.0"
+    },
+    "ubuntu-24.04": {
+      "release": "0.9.0",
+      "lockfile_sha256": "483c964b44a13f81e7c68030d2a9a58df2981ee96e8ae99db1da3fec38a1f1d7",
+      "commit": "e3717079733019bea51193dc6f17b594ca1f75b1",
+      "package_commit": "b052b82441ef2f11c6067420dbeff8e95f8c8505",
+      "package_on_release_line": true,
+      "snapshot": "2026-07-30",
+      "build_date": "2026-11-23T04:41:20Z",
+      "runner_image": "ubuntu24 20261116.376.1",
+      "platform": "linux-x86_64",
+      "r": "4.6.1",
+      "electron": "45.3.3",
+      "internal_packages": "fastduckdb 0.2.0; fastlimpadpc 0.1.0"
+    },
+    "windows-2025": {
+      "release": "0.9.0",
+      "lockfile_sha256": "b911b381f5fd2c1dd6faa57aa933e54d724fa6b610f25af109d27206e6de27fa",
+      "commit": "e3717079733019bea51193dc6f17b594ca1f75b1",
+      "package_commit": "b052b82441ef2f11c6067420dbeff8e95f8c8505",
+      "package_on_release_line": true,
+      "snapshot": "2026-07-30",
+      "build_date": "2026-11-23T04:47:38Z",
+      "runner_image": "win25-vs2026 20261116.315.1",
+      "platform": "windows-x86_64",
+      "r": "4.6.1",
+      "electron": "45.3.3",
+      "internal_packages": "fastduckdb 0.2.0; fastlimpadpc 0.1.0"
+    }
+  },
+  "R1_base_45112185913": {
+    "ubuntu-22.04": {
+      "release": "0.9.0",
+      "lockfile_sha256": "483c964b44a13f81e7c68030d2a9a58df2981ee96e8ae99db1da3fec38a1f1d7",
+      "commit": "001e8e4dc61cb9ba4ff94301ce380560dac651d6",
+      "snapshot": "2026-07-30",
+      "build_date": "2026-11-23T04:41:04Z",
+      "runner_image": "ubuntu22 20261116.365.1",
+      "platform": "linux-x86_64",
+      "r": "4.6.1",
+      "electron": "45.3.3",
+      "internal_packages": "fastduckdb 0.2.0; fastlimpadpc 0.1.0"
+    },
+    "ubuntu-24.04": {
+      "release": "0.9.0",
+      "lockfile_sha256": "483c964b44a13f81e7c68030d2a9a58df2981ee96e8ae99db1da3fec38a1f1d7",
+      "commit": "001e8e4dc61cb9ba4ff94301ce380560dac651d6",
+      "snapshot": "2026-07-30",
+      "build_date": "2026-11-23T04:43:21Z",
+      "runner_image": "ubuntu24 20261116.376.1",
+      "platform": "linux-x86_64",
+      "r": "4.6.1",
+      "electron": "45.3.3",
+      "internal_packages": "fastduckdb 0.2.0; fastlimpadpc 0.1.0"
+    },
+    "windows-2025": {
+      "release": "0.9.0",
+      "lockfile_sha256": "b911b381f5fd2c1dd6faa57aa933e54d724fa6b610f25af109d27206e6de27fa",
+      "commit": "001e8e4dc61cb9ba4ff94301ce380560dac651d6",
+      "snapshot": "2026-07-30",
+      "build_date": "2026-11-23T04:40:54Z",
+      "runner_image": "win25-vs2026 20261116.315.1",
+      "platform": "windows-x86_64",
+      "r": "4.6.1",
+      "electron": "45.3.3",
+      "internal_packages": "fastduckdb 0.2.0; fastlimpadpc 0.1.0"
+    }
+  }
+}
