@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-173 R0b (F1 correction pass): R0's script stopped at the T7 root-only pick (no such entry exists) and the GMT was withheld by the upload scan; same purpose, ceiling 4 core-h for R0+R0b",
+  "label": "KIT-173 R0b F1 feasibility on kit-173-go-propagation 32ffcf04",
+  "package_commit": "32ffcf0454e71cd1fba3c9cd7e9bba060e189ec2",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/f1-feasibility.R",
+      "args": [
+        "k173-f1-out"
+      ],
+      "env": {},
+      "out": "k173-f1-out",
+      "out_pattern": "\\.(tsv|txt|json|gz)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
