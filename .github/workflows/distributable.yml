@@ -27,6 +27,31 @@ name: KIT-134 distributable
 #                     lanes without DIA, D4); on Linux the installed R on other distributions
 #   [dist:container]  D5: the Windows library, then loaded in a Server Core container
 # [dist-linux] or [dist-windows] limits the run to one platform.
+#
+# Branch run-k134-rc (run-only; dispatch only): stage rc = stage full plus (a) the package's test suite ON THE BUNDLE
+# (the bundle's R, library and installed MultiScholaR; packaging/verify/run-suite.R) in shard jobs, each of which builds
+# its own bundle under the same rule (nothing leaves a job); (b) MOFA2 trained in double precision inside the installed
+# bundle on every main job; (c) on Windows the KIT-131 worker lane with the scratch folders watched, and the KIT-052
+# Summary and figure-path cases still open. Declaration: docs/qa/workflow-execution/kit/kit-134/rc-run-declaration.md.
+#
+# Branch run-win-k147 (run-only; dispatch only): stage suite = only the suite shard jobs of stage rc (one Linux, one
+# Windows; no main job), limited to the comma-separated test files of input `files` (MSR_SUITE_FILES), each file with a
+# fresh temporary root whose leftovers are listed (MSR_SUITE_TMP). Same build, token and no-upload rules.
+#
+# Branch run-k156-rc (run-only; dispatch only): KIT-156, the test build. Stage rc as above (its MOFA2 step removed: the
+# integration module now trains MOFA2 itself, in the smoke) plus one smoke job per platform (part smoke): the test-setting
+# file and the RUV design and integration files (packaging/verify/k156/smoke-files.txt; input `files` overrides) with
+# MULTISCHOLAR_TEST_FEATURES=1, on the bundle. Stage smoke = only the two smoke jobs (the instrumentation's lifecycle run).
+# The Linux main jobs also count the vector instructions in the bundled native libraries (portability, item 4).
+# Declaration: docs/qa/workflow-execution/kit/kit-156/rc-run-declaration.md.
+#
+# Branch run-k157-rc (run-only; dispatch only): KIT-157, fastlimpadpc built for x86-64-v3 (pin 0ad8c527). On every Linux
+# main job: the library install step also builds fastlimpadpc at the PREVIOUS pin 87a90b89 (-C target-cpu=native) into
+# RUNNER_TEMP/k157-old (packaging/verify/k157/old-limpa.sh; same token rule: that step only, output under RUNNER_TEMP, not
+# printed, nothing uploaded); after the bundle checks, both builds quantify the same DIA_LIMPA data with the bundle's R
+# (packaging/verify/k157/limpa-run.R), compared under the fixed rule (packaging/verify/compare-results.R), with the times,
+# a perturbed copy that must be read "outside", and the vector instructions of both libraries counted.
+# Declaration: docs/qa/workflow-execution/kit/kit-157/run-declaration.md.
 
 on:
   workflow_dispatch:
@@ -35,12 +60,16 @@ on:
         description: "Stage"
         type: choice
         default: library
-        options: [snapshot, library, full, container]
+        options: [snapshot, library, full, container, rc, suite, smoke]
       platform:
         description: "Platform"
         type: choice
         default: both
         options: [both, linux, windows]
+      files:
+        description: "Stage suite: comma-separated test files (tests/testthat names, or paths under the checkout)"
+        type: string
+        default: ""
   push:
     branches: [kit-134]
     paths:
@@ -78,6 +107,10 @@ jobs:
       full: ${{ steps.plan.outputs.full }}
       container: ${{ steps.plan.outputs.container }}
       linux_runners: ${{ steps.plan.outputs.linux_runners }}
+      linux_matrix: ${{ steps.plan.outputs.linux_matrix }}
+      windows_matrix: ${{ steps.plan.outputs.windows_matrix }}
+      linux_shards: ${{ steps.plan.outputs.linux_shards }}
+      windows_shards: ${{ steps.plan.outputs.windows_shards }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -110,19 +143,32 @@ jobs:
             platform=both
             case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
           fi
-          case "$stage" in none|snapshot|library|full|container) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          case "$stage" in none|snapshot|library|full|container|rc|suite|smoke) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
           build=false; full=false; container=false; linux_runners='["ubuntu-22.04"]'
+          linux_shards=0; windows_shards=0; main=true; smoke=0
           case "$stage" in
             library) build=true ;;
             full) build=true; full=true; linux_runners='["ubuntu-22.04", "ubuntu-24.04"]' ;;
+            rc) build=true; full=true; linux_runners='["ubuntu-22.04", "ubuntu-24.04"]'; linux_shards=5; windows_shards=8; smoke=1 ;;
+            smoke) build=true; linux_runners='[]'; main=false; smoke=1 ;;
+            suite) build=true; linux_runners='[]'; linux_shards=1; windows_shards=1; main=false ;;
             container) build=true; container=true; platform=windows ;;
           esac
+          # main = the existing job of the stage; suite = one shard of the test suite on the bundle (stages rc, suite)
+          linux_matrix="$(jq -cn --argjson runners "$linux_runners" --argjson n "$linux_shards" --argjson smoke "$smoke" \
+            '[$runners[] | {runner: ., part: "main", shard: 0}] + [range(1; $n + 1) | {runner: "ubuntu-22.04", part: "suite", shard: .}]
+             + (if $smoke == 1 then [{runner: "ubuntu-22.04", part: "smoke", shard: 1}] else [] end)')"
+          windows_matrix="$(jq -cn --argjson n "$windows_shards" --argjson main "$main" --argjson smoke "$smoke" \
+            '(if $main then [{part: "main", shard: 0}] else [] end) + [range(1; $n + 1) | {part: "suite", shard: .}]
+             + (if $smoke == 1 then [{part: "smoke", shard: 1}] else [] end)')"
           linux=false; windows=false
           case "$platform" in both) linux=true; windows=true ;; linux) linux=true ;; windows) windows=true ;; esac
           {
             echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
             echo "build=$build"; echo "full=$full"; echo "container=$container"
             echo "linux_runners=$linux_runners"
+            echo "linux_matrix=$linux_matrix"; echo "windows_matrix=$windows_matrix"
+            echo "linux_shards=$linux_shards"; echo "windows_shards=$windows_shards"
           } | tee -a "$GITHUB_OUTPUT"
           echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
 
@@ -159,14 +205,15 @@ jobs:
 
   # ------------------------------------------------------------------------- Linux
   linux:
-    name: "Linux on ${{ matrix.runner }}: build, install, test, discard (one job; nothing uploaded)"
+    name: "Linux on ${{ matrix.runner }} (${{ matrix.part }} ${{ matrix.shard }}): build, install, test, discard (one job; nothing uploaded)"
     needs: plan
     if: needs.plan.outputs.build == 'true' && needs.plan.outputs.linux == 'true'
     strategy:
       fail-fast: false
       matrix:
-        # ubuntu-24.04 only in stage full, for the lifecycle (Electron's sandbox restriction, F10)
-        runner: ${{ fromJSON(needs.plan.outputs.linux_runners) }}
+        # ubuntu-24.04 only in stages full and rc, for the lifecycle (Electron's sandbox restriction, F10); suite shards
+        # only in stage rc
+        include: ${{ fromJSON(needs.plan.outputs.linux_matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 300
     env:
@@ -235,7 +282,10 @@ jobs:
         env:
           MSR_INTERNAL: required
           GITHUB_PAT: ${{ secrets.DEPS_READ_TOKEN }}
-        run: $BUILD_EXEC bash packaging/linux/build.sh library
+        run: |
+          $BUILD_EXEC bash packaging/linux/build.sh library
+          # KIT-157: the previous pin of fastlimpadpc, beside the bundle (not in it), for the comparison step below
+          $BUILD_EXEC bash packaging/verify/k157/old-limpa.sh
 
       - name: The version table against the laptop's lockfile
         run: $BUILD_EXEC bash packaging/linux/build.sh versions
@@ -275,15 +325,92 @@ jobs:
           bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-internal.R required \
             2>&1 | tee "$OUT/check-internal.log"
 
+      # KIT-157: the previous pin (RUNNER_TEMP/k157-old, built in the install step on this CPU) against this pin (the
+      # bundle's library), with the bundle's R, on the same data: values under the fixed rule, seconds, vector instructions.
+      - name: "KIT-157: fastlimpadpc, previous pin 87a90b89 against this pin, same job (values, seconds, vector instructions)"
+        id: k157
+        if: ${{ !cancelled() && matrix.part == 'main' && steps.check.outcome == 'success' }}
+        timeout-minutes: 90
+        run: |
+          k="$RUNNER_TEMP/k157"; mkdir -p "$k"
+          set +e
+          R="$MOVED/bin/Rscript"
+          count() {
+            text="$(objdump -d --no-show-raw-insn "$2")"
+            printf 'NATIVE %s %s: %d instructions; zmm (AVX-512) %d; ymm (AVX/AVX2) %d; fma %d\n' "$1" "$(basename "$2")" \
+              "$(printf '%s\n' "$text" | grep -c '^ *[0-9a-f]*:')" "$(printf '%s\n' "$text" | grep -c '%zmm')" \
+              "$(printf '%s\n' "$text" | grep -c '%ymm')" "$(printf '%s\n' "$text" | grep -cE '\svfn?m(add|sub)')"
+          }
+          status=0
+          {
+            echo "### KIT-157: fastlimpadpc, previous pin against this pin (${{ matrix.runner }})"; echo '```'
+            echo "runner CPU: $(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2-); avx512f $(grep -qw avx512f /proc/cpuinfo && echo yes || echo no); avx2 $(grep -qw avx2 /proc/cpuinfo && echo yes || echo no)"
+            # paths read whole (the bundle folder's name holds a space)
+            find "$MOVED" -path '*/library/fastlimpadpc/libs/*.so' -type f -print0 | while IFS= read -r -d '' library; do count "fastlimpadpc this pin (bundle)" "$library"; done
+            find "$RUNNER_TEMP/k157-old" -path '*/fastlimpadpc/libs/*.so' -type f -print0 2>/dev/null | while IFS= read -r -d '' library; do count "fastlimpadpc 87a90b89 (previous)" "$library"; done
+            for side in new old; do
+              lib=-; [ "$side" = old ] && lib="$RUNNER_TEMP/k157-old"
+              if ! "$R" --vanilla packaging/verify/k157/limpa-run.R "$k/$side.rds" "$lib" > "$k/$side.log" 2>&1; then
+                echo "K157RUN $side FAILED; the end of its log:"; tail -n 30 "$k/$side.log"; status=1
+              fi
+              grep -a '^K157RUN' "$k/$side.log" | sed "s/^/$side: /"
+            done
+            if [ "$status" = 0 ]; then
+              "$R" --vanilla packaging/verify/compare-results.R "$k/old.rds" "$k/new.rds" "$k/compare.tsv" > "$k/compare.log" 2>&1 || status=1
+              tail -n 2 "$k/compare.log"
+              "$R" --vanilla packaging/verify/k157/limpa-check.R summary "$k/compare.tsv"
+              "$R" --vanilla packaging/verify/k157/limpa-check.R perturb "$k/new.rds" "$k/perturbed.rds" || status=1
+              "$R" --vanilla packaging/verify/compare-results.R "$k/new.rds" "$k/perturbed.rds" "$k/perturbed.tsv" > /dev/null 2>&1 || status=1
+              echo "perturbed copy against this pin (must be 1 outside):"
+              "$R" --vanilla packaging/verify/k157/limpa-check.R summary "$k/perturbed.tsv" > "$k/perturbed.txt" 2>&1
+              sed -n 1p "$k/perturbed.txt"
+            fi
+            echo '```'
+          } > "$k/summary.txt" 2>&1
+          tee -a "$GITHUB_STEP_SUMMARY" < "$k/summary.txt"
+          exit "$status"
+
+      # ------------------------------------------------ stage rc: one shard of the test suite on the bundle
+      # The assembled bundle (checked above: every package loads from the moved folder) is moved once more, to a path
+      # without spaces, so that a test that builds a shell command from R's home does not differ from the runner
+      # reference for that reason alone. The test tools are those of the run-tests library (testthat, sessioninfo),
+      # not shinytest2 (the reference skips the browser lanes for its absence; they run in the main job).
+      # KIT-156 (part smoke): one job running the smoke files (packaging/verify/k156/smoke-files.txt, or input `files`)
+      # with the test setting MULTISCHOLAR_TEST_FEATURES=1, as one shard of one.
+      - name: "Suite on the bundle (${{ matrix.part }}): shard ${{ matrix.shard }} of ${{ matrix.part == 'smoke' && '1' || needs.plan.outputs.linux_shards }} (the bundle's R, library and installed MultiScholaR; not load_all)"
+        id: suite
+        if: ${{ !cancelled() && (matrix.part == 'suite' || matrix.part == 'smoke') && steps.check.outcome == 'success' }}
+        timeout-minutes: 220
+        env:
+          MSR_SUITE_FILES: ${{ inputs.files }}
+          MSR_SUITE_TMP: ${{ runner.temp }}/st
+          MULTISCHOLAR_TEST_FEATURES: ${{ matrix.part == 'smoke' && '1' || '' }}
+          SHARDS: ${{ matrix.part == 'smoke' && '1' || needs.plan.outputs.linux_shards }}
+        run: |
+          if [ "${{ matrix.part }}" = smoke ] && [ -z "$MSR_SUITE_FILES" ]; then
+            MSR_SUITE_FILES="$(grep -v '^#' packaging/verify/k156/smoke-files.txt | paste -sd, -)"; export MSR_SUITE_FILES
+          fi
+          echo "files: ${MSR_SUITE_FILES:-all}; MULTISCHOLAR_TEST_FEATURES='$MULTISCHOLAR_TEST_FEATURES'"
+          mv "$MOVED" "$RUNNER_TEMP/sb"
+          "$RUNNER_TEMP/sb/bin/Rscript" --vanilla packaging/verify/test-tools.R "$RUNNER_TEMP/suite-tools" \
+            "$(jq -r .Snapshot.Date packaging/multischolar.lock.json)" sessioninfo > "$OUT/suite-tools.log" 2>&1 \
+            || { tail -n 30 "$OUT/suite-tools.log"; exit 1; }
+          tail -n 3 "$OUT/suite-tools.log"
+          deadline=$(( $(date +%s) + 200 * 60 ))
+          "$RUNNER_TEMP/sb/bin/Rscript" --vanilla packaging/verify/run-suite.R "$GITHUB_WORKSPACE" "$RUNNER_TEMP/suite-tools" \
+            "$OUT/suite" "${{ matrix.shard }}" "$SHARDS" "$deadline" 45 2>&1 | tee "$OUT/suite.log"
+          { echo "### Suite on the bundle (${{ matrix.part }}), Linux shard ${{ matrix.shard }}"; echo '```'; grep -a '^SUITE \(SETUP\|TOTAL\)' "$OUT/suite.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          grep -q '^SUITE TOTAL' "$OUT/suite.log"
+
       # ------------------------------------------------ stage full: the shell, the archive, the install
       - uses: actions/setup-node@v4
-        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && matrix.part == 'main' && steps.check.outcome == 'success' }}
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Version stamp and third-party notices
         id: stamp
-        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && matrix.part == 'main' && steps.check.outcome == 'success' }}
         run: |
           set -o pipefail
           version="$(sed -n 's/^Version: *//p' DESCRIPTION)"
@@ -528,6 +655,29 @@ jobs:
           } | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$status"
 
+      # KIT-156 item 4 (portability of the native builds): fast_limpa_dpc builds its Rust core with -C target-cpu=native
+      # (src/Makevars.in at the pin 87a90b89), so the bundle carries the instructions of the CPU that built it. Counted here
+      # in the installed bundle's compiled libraries: AVX-512 (zmm registers), AVX/AVX2 (ymm), FMA (vfmadd*), against
+      # fastduckdb (no such flag) and MultiScholaR's own library; the runner's CPU named. Counts only.
+      - name: "Native builds: vector instructions in the installed bundle's compiled libraries (KIT-156 item 4)"
+        id: native
+        if: ${{ !cancelled() && needs.plan.outputs.stage == 'rc' && steps.install.outcome == 'success' }}
+        timeout-minutes: 15
+        run: |
+          {
+            echo "### Native builds: vector instructions (${{ matrix.runner }})"; echo '```'
+            echo "runner CPU: $(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2-); avx512f $(grep -qw avx512f /proc/cpuinfo && echo yes || echo no); avx2 $(grep -qw avx2 /proc/cpuinfo && echo yes || echo no)"
+            for package in fastlimpadpc fastduckdb MultiScholaR; do
+              for library in $(find "$DEST" -path "*/library/$package/libs/*.so" -type f); do
+                text="$(objdump -d --no-show-raw-insn "$library")"
+                printf 'NATIVE %s %s: %d instructions; zmm (AVX-512) %d; ymm (AVX/AVX2) %d; fma %d\n' "$package" "$(basename "$library")" \
+                  "$(printf '%s\n' "$text" | grep -c '^ *[0-9a-f]*:')" "$(printf '%s\n' "$text" | grep -c '%zmm')" \
+                  "$(printf '%s\n' "$text" | grep -c '%ymm')" "$(printf '%s\n' "$text" | grep -cE '\svfn?m(add|sub)')"
+              done
+            done
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Uninstall; nothing of the build is left
         id: uninstall
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -552,15 +702,22 @@ jobs:
               "hosts: M25 without which; this runner, Arch Linux, Fedora, Debian before and after M26" "${{ steps.hosts.outcome }}" \
               "GUI-entry lanes, installed application" "${{ steps.lanes.outcome }}" \
               "browser e2e lanes, installed application" "${{ steps.e2e.outcome }}" \
+              "native builds: vector instructions counted" "${{ steps.native.outcome }}" \
+              "KIT-157: previous pin against this pin" "${{ steps.k157.outcome }}" \
+              "suite on the bundle, shard ${{ matrix.shard }}" "${{ steps.suite.outcome }}" \
               "uninstall" "${{ steps.uninstall.outcome }}"
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
 
   # ------------------------------------------------------------------------ Windows
   windows:
-    name: "Windows on windows-2025: build, install, test, discard (one job; nothing uploaded); D5 container"
+    name: "Windows on windows-2025 (${{ matrix.part }} ${{ matrix.shard }}): build, install, test, discard (one job; nothing uploaded); D5 container"
     needs: plan
     if: needs.plan.outputs.build == 'true' && needs.plan.outputs.windows == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.windows_matrix) }}
     runs-on: windows-2025
     timeout-minutes: 300
     defaults:
@@ -655,7 +812,7 @@ jobs:
       # The test tools are fetched before the check step cuts the network for the bundle's programs.
       - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library"
         id: testtools
-        if: needs.plan.outputs.full == 'true'
+        if: needs.plan.outputs.full == 'true' && matrix.part == 'main'
         run: |
           "TEST_TOOLS=$env:RUNNER_TEMP\test-tools" >> $env:GITHUB_ENV
           $date = (Get-Content packaging\multischolar.lock.json -Raw | ConvertFrom-Json).Snapshot.Date
@@ -741,15 +898,48 @@ jobs:
           "library check: exit $libraryStatus; application: exit $serveStatus"
           if ($libraryStatus -ne 0 -or $serveStatus -ne 0) { throw "the Server Core container check failed" }
 
+      # ------------------------------------------------ stage rc: one shard of the test suite on the bundle
+      # As on Linux: the checked bundle moved to a short path without spaces (the firewall rules of the check step name
+      # the old paths, so the suite runs with the network as the runner reference had it); the test tools of the
+      # run-tests library (testthat, sessioninfo); the shell's environment for R (windows-clean-run.ps1). There is no
+      # Windows runner reference (run-tests refuses Windows): Windows results are set against the Linux reference.
+      - name: "Suite on the bundle (${{ matrix.part }}): shard ${{ matrix.shard }} of ${{ matrix.part == 'smoke' && '1' || needs.plan.outputs.windows_shards }} (the bundle's R, library and installed MultiScholaR; not load_all)"
+        id: suite
+        if: ${{ !cancelled() && (matrix.part == 'suite' || matrix.part == 'smoke') && steps.check.outcome == 'success' }}
+        timeout-minutes: 220
+        env:
+          MSR_SUITE_FILES: ${{ inputs.files }}
+          MULTISCHOLAR_TEST_FEATURES: ${{ matrix.part == 'smoke' && '1' || '' }}
+          SHARDS: ${{ matrix.part == 'smoke' && '1' || needs.plan.outputs.windows_shards }}
+        run: |
+          if ('${{ matrix.part }}' -eq 'smoke' -and -not $env:MSR_SUITE_FILES) {
+            $env:MSR_SUITE_FILES = (Get-Content packaging\verify\k156\smoke-files.txt | Where-Object { $_ -and $_ -notmatch '^#' }) -join ','
+          }
+          "files: $(if ($env:MSR_SUITE_FILES) { $env:MSR_SUITE_FILES } else { 'all' }); MULTISCHOLAR_TEST_FEATURES='$env:MULTISCHOLAR_TEST_FEATURES'"
+          $env:MSR_SUITE_TMP = "$env:RUNNER_TEMP\st"
+          $sb = "$env:RUNNER_TEMP\sb"
+          Move-Item -LiteralPath $env:MOVED -Destination $sb
+          $date = (Get-Content packaging\multischolar.lock.json -Raw | ConvertFrom-Json).Snapshot.Date
+          & packaging\verify\windows-clean-run.ps1 -Bundle $sb -Script packaging\verify\test-tools.R -NoBundleArgument -Arguments "$env:RUNNER_TEMP\suite-tools", $date, sessioninfo *> "$env:OUT\suite-tools.log"
+          if ($LASTEXITCODE -ne 0) { Get-Content "$env:OUT\suite-tools.log" -Tail 30; throw "the suite's test tools were not installed" }
+          Get-Content "$env:OUT\suite-tools.log" -Tail 3
+          $deadline = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 200 * 60
+          & packaging\verify\windows-clean-run.ps1 -Bundle $sb -Script packaging\verify\run-suite.R -NoBundleArgument -Arguments $env:GITHUB_WORKSPACE, "$env:RUNNER_TEMP\suite-tools", "$env:OUT\suite", '${{ matrix.shard }}', $env:SHARDS, "$deadline", '45' *>&1 | Tee-Object -FilePath "$env:OUT\suite.log"
+          $lines = @("### Suite on the bundle (${{ matrix.part }}), Windows shard ${{ matrix.shard }}", '```')
+          $lines += Get-Content "$env:OUT\suite.log" | Where-Object { $_ -match '^SUITE (SETUP|TOTAL)' }
+          $lines += '```'
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          if (-not (Select-String -Path "$env:OUT\suite.log" -Pattern '^SUITE TOTAL' -Quiet)) { throw "the shard did not finish" }
+
       # ------------------------------------------------ stage full: the shell, the installer, the install
       - uses: actions/setup-node@v4
-        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && matrix.part == 'main' && steps.check.outcome == 'success' }}
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Version stamp and third-party notices
         id: stamp
-        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.check.outcome == 'success' }}
+        if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && matrix.part == 'main' && steps.check.outcome == 'success' }}
         run: |
           $version = (Select-String -Path DESCRIPTION -Pattern '^Version:\s*(.+)$').Matches[0].Groups[1].Value.Trim()
           $packageVersion = node -p "require('./packaging/electron/package.json').version"
@@ -914,6 +1104,37 @@ jobs:
           $lines
           if ($status -ne 0) { throw "the e2e lanes did not pass (exit $status)" }
 
+      # KIT-131 step 7 on Windows after the merge of kit-131-win-worker (d5c4e8d1, in performance-v2 8b4ff691): the
+      # lipidomics entry lane with every managed step on a plain worker (packaging/verify/lane-worker.R of run-win-k131),
+      # compared with the in-process record of the lanes step above and with the oracle. New here: TMP and TEMP point at
+      # a fresh folder that packaging/verify/watch-scratch.ps1 watches, so where the workers stage the session archive
+      # (archive-stage-*) and draw their figures (wfx-*) is observed: made directly in TMP (a worker's
+      # workflowShortScratchRoot) or inside an R session's own temporary folder (RtmpXXXX).
+      - name: "KIT-131 step 7: lipid_canonical on plain workers, TMP watched (installed application's R, reduced environment, network cut)"
+        id: worker
+        if: ${{ !cancelled() && needs.plan.outputs.stage == 'rc' && steps.testtools.outcome == 'success' && steps.install.outcome == 'success' }}
+        timeout-minutes: 60
+        run: |
+          New-Item -ItemType Directory -Force "$env:OUT\worker" | Out-Null
+          $scratch = "$env:RUNNER_TEMP\wt"; New-Item -ItemType Directory -Force $scratch | Out-Null
+          $stop = "$env:RUNNER_TEMP\watch.stop"
+          $watcher = Start-Process pwsh -ArgumentList '-NoProfile', '-File', "$env:GITHUB_WORKSPACE\packaging\verify\watch-scratch.ps1", '-Folder', $scratch, '-Log', "$env:OUT\watch.log", '-StopFile', $stop -PassThru -NoNewWindow
+          Start-Sleep -Seconds 2
+          $env:TMP = $scratch; $env:TEMP = $scratch
+          "TMP and TEMP for the lane: $scratch ($($scratch.Length) characters); TMPDIR: '$env:TMPDIR'"
+          & packaging\verify\windows-clean-run.ps1 -Bundle "$env:APP_FOLDER\resources\runtime" -Script packaging\verify\lane-worker.R -NoBundleArgument -Arguments $env:GITHUB_WORKSPACE, $env:TEST_TOOLS, "$env:OUT\worker", lipid_canonical, "$env:OUT\lanes\records\lipid_canonical.json" *> "$env:OUT\worker.log"
+          $status = $LASTEXITCODE
+          New-Item -ItemType File -Force $stop | Out-Null
+          $watcher.WaitForExit(30000) | Out-Null
+          $lines = @('### KIT-131 step 7: lipid_canonical on plain workers, TMP watched (windows-2025)', '```')
+          $lines += Get-Content "$env:OUT\worker.log" | Where-Object { $_ -match '^KIT-131 ' } | ForEach-Object { $_.Substring(0, [math]::Min(1500, $_.Length)) }
+          $lines += '', 'scratch folders seen under TMP (depth 0 = made in TMP itself, 1 = inside an R session temporary folder):'
+          $lines += Get-Content "$env:OUT\watch.log"
+          $lines += '```'
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          $lines
+          if ($status -ne 0) { "the end of the log:"; Get-Content "$env:OUT\worker.log" -Tail 40; throw "the worker lane did not run to its end (exit $status)" }
+
       # KIT-052 / KIT-134 Windows figure paths, third confirmation (kit-052-win-paths 4b6770fd merged as e7cabee5: the
       # in-process DA, normalisation, RUV covariates and protein QC publications drawn in a short folder and copied with a
       # check; the worker's request folder `p/<role letter>`), with the installed application's R and the test tools:
@@ -935,9 +1156,10 @@ jobs:
           New-Item -ItemType Directory -Force "$env:OUT\figures" | Out-Null
           & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
             -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" `
-            -Cases 'on-root102=59:figure_tests,trx_worker_da,omic_worker_da,dia_products_old_layout', `
-            'on-root124=81:trx_worker_da,omic_worker_da', 'on-root130=87:trx_worker_da,omic_worker_da', `
-            'on-tmt125=66:prot_tmt_lane', 'on-tmt127=68:prot_tmt_lane', 'on-tmt130=71:prot_tmt_lane'
+            -Cases $(if ('${{ needs.plan.outputs.stage }}' -eq 'rc') { @('on-root102=59:figure_tests') } else { @(
+            'on-root102=59:figure_tests,trx_worker_da,omic_worker_da,dia_products_old_layout',
+            'on-root124=81:trx_worker_da,omic_worker_da', 'on-root130=87:trx_worker_da,omic_worker_da',
+            'on-tmt125=66:prot_tmt_lane', 'on-tmt127=68:prot_tmt_lane', 'on-tmt130=71:prot_tmt_lane') })
           if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
 
       # The same with Windows' default: LongPathsEnabled set to 0 for the rest of this job (the runner is
@@ -955,10 +1177,12 @@ jobs:
           "LongPathsEnabled in the registry now: $((Get-ItemProperty $key).LongPathsEnabled)"
           & packaging\verify\windows-figure-cases.ps1 -Runtime "$env:APP_FOLDER\resources\runtime" -Checkout $env:GITHUB_WORKSPACE `
             -TestTools $env:TEST_TOOLS -Out "$env:OUT\figures" `
-            -Cases 'off-root63=20:figure_tests,trx_worker_da,omic_worker_da,dia_products_old_layout', `
-            'off-root70=27:trx_worker_da,omic_worker_da', 'off-root77=34:trx_worker_da,omic_worker_da', `
-            'off-root85=42:trx_worker_da,omic_worker_da', 'off-root95=52:trx_worker_da,omic_worker_da', `
-            'off-tmt90=31:prot_tmt_lane', 'off-tmt118=59:prot_tmt_lane'
+            -Cases $(if ('${{ needs.plan.outputs.stage }}' -eq 'rc') { @('off-root63=20:figure_tests', 'off-tmt90=31:prot_tmt_lane',
+            'off-tmt96=36:prot_tmt_lane') } else { @(
+            'off-root63=20:figure_tests,trx_worker_da,omic_worker_da,dia_products_old_layout',
+            'off-root70=27:trx_worker_da,omic_worker_da', 'off-root77=34:trx_worker_da,omic_worker_da',
+            'off-root85=42:trx_worker_da,omic_worker_da', 'off-root95=52:trx_worker_da,omic_worker_da',
+            'off-tmt90=31:prot_tmt_lane', 'off-tmt118=59:prot_tmt_lane') })
           if ($LASTEXITCODE -ne 0) { throw "a figure-path case did not run to its end" }
 
       - name: Results
@@ -973,6 +1197,8 @@ jobs:
             "lifecycle, installed application, network cut" = '${{ steps.lifecycle.outcome }}'
             "GUI-entry lanes without DIA, installed application" = '${{ steps.lanes.outcome }}'
             "browser e2e lanes without DIA, installed application" = '${{ steps.e2e.outcome }}'
+            "KIT-131 step 7, lipid_canonical on plain workers, TMP watched" = '${{ steps.worker.outcome }}'
+            "suite on the bundle, shard ${{ matrix.shard }}" = '${{ steps.suite.outcome }}'
             "figure paths, long paths as the runner has them" = '${{ steps.figures.outcome }}'
             "figure paths, long paths off" = '${{ steps.figuresoff.outcome }}'
           }
