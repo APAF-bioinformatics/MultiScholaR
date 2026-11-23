@@ -86,7 +86,29 @@ run or changed). The capture and the replay each record, through wrappers that c
 id column of every DA table `processEnrichments` receives and every `gene` vector handed to `clusterProfiler::enricher`;
 only the comparison (same order yes or no, rows at another position) leaves the job.
 
-Result: __CONTROL__
+Result (run C2, run 45145792186, see `runs.tsv`; C1 was an instrument defect, fixed under VAL-54, instrument runs 2 and 3
+of 3 with T7i1 the first). Observed, `control/`:
+
+| Pair | Eleven expectations | DA table read by the kernel, capture against replay | Gene vectors handed to enricher |
+|---|---|---|---|
+| base on base (base in a private library; no `propagateGoAnnotations`) | 11 of 11 pass | 70 rows, same order, 0 at another position | calls 1 (25) and 2 (10): same sequence |
+| head on head (installed head) | 11 of 11 pass | 70 rows, same order, 0 at another position | calls 1 (25) and 2 (10): same sequence |
+
+The script exited 1 after writing every output, on its last line (a print indexing a two-column table with `[, 1:4]`);
+no output is affected and no further run was made (the instrument runs are used up).
+
+Branch of the declared decision: base-on-base and head-on-head are both identical, and base-on-head differed (T7i1),
+which is the branch "the change is KIT-173's". It is not established, because the two designs differ in a way the
+control did not hold fixed: in each control pair capture and replay ran in one R process outside testthat, while in
+T7i1 the base capture ran in its own Rscript process and the head replay in a second process under
+`testthat::test_file` (which sets its own test context, for example the collation locale). Reading of the code
+(inferred, not tested): on a record without `go_propagation` the head path differs from the base only by passing
+`go_propagation = "none"` to the kernel (`buildProtEnrichProcessEnrichmentsArgs`, `runDIAReferenceEnrichment`'s extra,
+the operation kernel), `checkGoPropagation`, and `buildUniprotGoGeneSetsDirect` (the base code verbatim, TERM2GENE hash
+identical in T7i1); none of these reads or reorders the DA table or the gene list. `geneID` is written by enrichit's
+compiled `ora_cpp`, from the gene list and the sets. No KIT-173 code path that reorders was found; the cross-process
+difference is not explained. Which of KIT-173's change or the process arrangement causes it is the owner's question;
+the test and the product code are unchanged.
 
 ## Acceptance criteria
 
