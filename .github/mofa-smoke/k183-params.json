@@ -1,5 +1,5 @@
 {
-  "run": "lifecycle",
-  "package_commit": "874f6c4581e001a55dec3adcf82ef4c71caa4eca",
-  "note": "KIT-183 L1 check after the aggregation fix (VAL-54 instrument rule; the third lifecycle run): replicates complete, pool counts, time split"
+  "run": "counted",
+  "package_commit": "fae77e5f56d49e8522a929b277565a825b14b024",
+  "note": "KIT-183 S: the counted simulation as declared in docs/qa/workflow-execution/kit/kit-183/declaration.md (fae77e5f)"
 }

@@ -34,13 +34,19 @@ K <- list(
     views = list(
         transcriptomics = list(omic = "transcriptomics", view = "transcriptomics", features = 4000L, mu = c(5, 2.5),
             a = 0.25, b = 1.0, m = 0, s = 2, z2 = TRUE, censor = NA_real_, blocks_per = 3L, sizes = c(10L, 30L, 100L),
-            block_sizes = c(10L, 30L, 100L), c2_sizes = c(10L, 30L), id_type = "gene", database = "string"),
+            block_sizes = c(10L, 30L, 100L), c2_sizes = c(10L, 30L), c4_sizes = c(10L, 30L, 100L),
+            p_sizes = c(10L, 30L, 100L), id_type = "gene", database = "string"),
         proteomics = list(omic = "proteomics", view = "proteomics", features = 1800L, mu = c(20, 2),
             a = 0.15, b = 0.6, m = 14, s = 2, z2 = TRUE, censor = 17, blocks_per = 2L, sizes = c(10L, 30L, 100L),
-            block_sizes = c(10L, 30L, 100L), c2_sizes = c(10L, 30L), id_type = "uniprot", database = "string"),
+            block_sizes = c(10L, 30L, 100L), c2_sizes = c(10L, 15L), c4_sizes = c(10L, 30L), p_sizes = c(10L, 30L),
+            id_type = "uniprot", database = "string"),
         metabolomics = list(omic = "metabolomics", view = "metabolomics_LCMS", features = 250L, mu = c(16, 2),
             a = 0.15, b = 0.6, m = 14, s = 2, z2 = FALSE, censor = 13, blocks_per = 1L, sizes = c(5L, 10L, 20L),
-            block_sizes = c(5L, 10L), c2_sizes = c(5L, 10L), id_type = "kegg", database = "kegg")),
+            block_sizes = c(5L, 10L), c2_sizes = c(5L, 10L), c4_sizes = c(5L, 10L, 20L), p_sizes = 5L, id_type = "kegg",
+            database = "kegg")),
+    # Declaration, dated section 2026-11-24 (after L1 run 45219821547, before S): proteomics C2 sizes 10, 15 (was 10,
+    # 30), C4 and P sizes 10, 30 (was 10, 30, 100); metabolomics P size 5 (was 5, 10, 20): those formed fewer than 90 %
+    # of their sets in L1.
     rhos = c(0.1, 0.3, 0.6), z1_share = 0.10, z2_share = 0.05, z1_loading = c(0.5, 1.5), z2_loading = c(0.3, 1.0),
     multi_identifiers = 31L, metab_identifiers = 204L, adduct_correlation = 0.9, censor_slope = 1.5,
     c0_per_size = 10L, c2_per_size = 5L, c3_per_size = 5L, c3_sizes = c(5L, 10L), c4_per_size = 5L, p_per_size = 5L,
@@ -332,7 +338,7 @@ CLASSES <- list(
     # C4: zero-loading complete features in no block that the model selected.
     C4 = function(ctx) {
         pool <- ctx$v$free[ctx$v$feature_id[ctx$v$free] %in% ctx$selected]
-        drawPerSize(ctx, "C4", ctx$v$spec$sizes, K$c4_per_size, pool, function(size) ctx$id[sample(pool, size)])
+        drawPerSize(ctx, "C4", ctx$v$spec$c4_sizes, K$c4_per_size, pool, function(size) ctx$id[sample(pool, size)])
     },
     # P-up, P-down: half planted (positive or negative Z1 loading, complete, single-feature identifiers), half from
     # complete zero-loading features in no block. Power on F_main only; drawn on every factor for one code path.
@@ -342,7 +348,7 @@ CLASSES <- list(
         negative <- which(v$complete & v$l1 < 0 & v$kind == "single" & ctx$in_u)
         for (direction in c("up", "down")) {
             planted <- if (direction == "up") positive else negative
-            for (size in v$spec$sizes) {
+            for (size in v$spec$p_sizes) {
                 made <- 0L
                 half <- size %/% 2L
                 for (k in seq_len(K$p_per_size)) if (length(planted) >= half && length(v$free) >= size - half) {
