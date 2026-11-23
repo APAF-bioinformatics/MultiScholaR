@@ -663,7 +663,8 @@ diaEnrichmentOperation <- function() {
         output_class = "EnrichmentResults", product_type = "dia-enrichment-results",
         factors = list(cacheable = FALSE, service = "enrichment"),
         parameters = c("taxon_id", "up_cutoff", "down_cutoff", "q_cutoff", "exclude_iea", "correction_method",
-            "protein_id_column", "contrast_names", "results", "organism_filter_enabled", "organism_filter_taxon"),
+            "protein_id_column", "contrast_names", "results", "organism_filter_enabled", "organism_filter_taxon",
+            "go_propagation"),
         global_statistics = c(per_contrast_da_table =
             "the background universe and the significant set are the complete DA table of each contrast"),
         kernel = function(object, parameters, store) {
@@ -673,6 +674,8 @@ diaEnrichmentOperation <- function() {
                 pathway_dir = parameters$pathway_dir, go_annotations = parameters$go_annotations,
                 exclude_iea = parameters$exclude_iea, protein_id_column = parameters$protein_id_column,
                 contrast_names = parameters$contrast_names, correction_method = parameters$correction_method)
+            # KIT-173: the GO parent-term rule, passed only when the run carries one (the clusterProfiler route).
+            if (!is.null(parameters$go_propagation)) arguments$go_propagation <- parameters$go_propagation
             failures <- character()
             results <- withCallingHandlers(do.call(process, arguments),
                 multischolar_enrichment_service_failure = function(condition)
@@ -690,13 +693,18 @@ diaEnrichmentOperation <- function() {
 #' The declared parameter names one enrichment run uses (GUI audit R3, P-28): the organism filter's two only when the
 #' run's arguments switch the filter on. Before P-28 no completed run had the filter applied (it failed on the undefined
 #' `clean_acc`, P-07, or ran unfiltered for want of a mapping), so a run without the two names is an unfiltered run.
+#' KIT-173: `go_propagation` only when the run's arguments carry a propagating value (the clusterProfiler route), so a
+#' g:Profiler run and a run without parent terms declare what they did before.
 #' @param declared The declaration's parameter names.
-#' @param arguments The run's arguments (`organism_filter_enabled`).
+#' @param arguments The run's arguments (`organism_filter_enabled`, `go_propagation`).
 #' @return The names, in the declaration's order.
 #' @noRd
 diaEnrichmentDeclaredNames <- function(declared, arguments) {
     filter <- c("organism_filter_enabled", "organism_filter_taxon")
-    if (isTRUE(arguments$organism_filter_enabled)) declared else setdiff(declared, filter)
+    if (!isTRUE(arguments$organism_filter_enabled)) declared <- setdiff(declared, filter)
+    if (is.null(arguments$go_propagation) || identical(arguments$go_propagation, "none"))
+        declared <- setdiff(declared, "go_propagation")
+    declared
 }
 
 #' Run the enrichment declaration on a DA manifest's source state and record its product (KIT-016).
@@ -707,7 +715,9 @@ diaEnrichmentDeclaredNames <- function(declared, arguments) {
 #'   `correction_method`), and `organism_filter_enabled = TRUE` with `organism_filter_taxon` when the organism filter
 #'   is on (P-28; the kernel takes neither). `correction_method_effective`, when given, is the correction the backend
 #'   applies (A107-03): it is the declared `correction_method` of the identity, the product and the returned values,
-#'   while the kernel is called with the selected one, as before.
+#'   while the kernel is called with the selected one, as before. `go_propagation` (KIT-173, clusterProfiler route
+#'   only) is declared when it is not `"none"`; otherwise the kernel receives it as an undeclared extra, so a record
+#'   made before KIT-173 replays with the sets it was made with and the same identity.
 #' @param process_fn The selected kernel: `processEnrichments`, or the deterministic double in test mode.
 #' @return `list(results, service, reference)`: the `EnrichmentResults`, the reported service identity and
 #'   the saved product reference (identity: source state, the contrast result tables, the declared
@@ -723,6 +733,9 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
     parameters <- c(arguments[setdiff(declared, "results")], list(results = results,
         da_results = arguments$da_results, pathway_dir = arguments$pathway_dir,
         go_annotations = arguments$go_annotations, process_fn = process_fn))
+    # KIT-173: an undeclared `go_propagation` ("none") still reaches the kernel, whose own default propagates.
+    if (!is.null(arguments$go_propagation) && !"go_propagation" %in% declared)
+        parameters$go_propagation <- arguments$go_propagation
     value <- runProjected(manager, declaration, manifest$source, parameters)
     declared_values <- parameters[declared]
     if (!is.null(arguments$correction_method_effective))

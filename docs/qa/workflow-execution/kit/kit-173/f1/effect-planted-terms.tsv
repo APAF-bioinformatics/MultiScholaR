@@ -1,0 +1,4 @@
+band	candidates	term	size	name
+specific	481	GO:0032790	11	ribosome disassembly
+mid	175	GO:0006396	127	RNA processing
+broad	26	GO:0044282	307	small molecule catabolic process

@@ -1,0 +1,13 @@
+arm	value	draws	list_size	background_N	tested_median	tested_BP	tested_MF	tested_CC	size_median	significant_q_median	significant_q_iqr	significant_bh_median	draws_qvalue_all_na	draws_any_significant_q	draws_any_significant_bh	sig_q_planted	sig_q_ancestor	sig_q_descendant	sig_q_other	planted_tested	planted_recovered_q	planted_recovered_bh	seconds_median
+specific	none	20	10	4024	21	6	12	2	35	1.5	3.5	1.5	0	14	14	0	0	0	50	0	0	0	11.55
+specific	is_a_part_of	20	10	4024	123.5	75	42.5	6	102	20	5.25	19	0	20	20	20	100	0	284	20	20	20	3.1
+specific	is_a_part_of_regulates	20	10	4024	123.5	76.5	42.5	6	96.25	19	4.5	18	0	20	20	20	80	0	278	20	20	20	3.15
+mid	none	20	126	4024	129	60.5	53.5	14.5	26	10	2.25	9.5	0	20	20	20	0	78	102	20	20	19	11.45
+mid	is_a_part_of	20	126	4024	638	407	191.5	39.5	48.5	53.5	6.75	53.5	0	20	20	20	100	180	762	20	20	20	3.1
+mid	is_a_part_of_regulates	20	126	4024	646.5	410	191.5	39.5	48	46.5	7.5	46.5	0	20	20	20	0	180	743	20	20	20	3.25
+broad	none	20	306	4024	206	103	79.5	24	21	12.5	3.25	12.5	0	20	20	0	0	108	137	0	0	0	11.6
+broad	is_a_part_of	20	306	4024	963.5	633	266.5	56.5	33	129.5	20.5	129.5	0	20	20	20	0	537	2039	20	20	20	3.1
+broad	is_a_part_of_regulates	20	306	4024	962.5	641	266.5	56.5	33	129	19.5	129	0	20	20	20	0	537	2027	20	20	20	3.3
+null	none	20	126	4024	144.5	72.5	55.5	17.5	25	0	0	0	0	1	0	0	0	0	120	0	0	0	11.45
+null	is_a_part_of	20	126	4024	692.5	450.5	200.5	44.5	46	0	0	0	0	1	1	0	0	0	4	0	0	0	3.1
+null	is_a_part_of_regulates	20	126	4024	694	450	200.5	44.5	46	0	0	0	0	1	1	0	0	0	4	0	0	0	3.2

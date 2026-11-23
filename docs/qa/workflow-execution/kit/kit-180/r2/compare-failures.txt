@@ -1,0 +1,1023 @@
+== test-gui-entry-proteomics.R | message-changed | KIT-101 entry lane prot_tmt: Proteome Discoverer TMT, the protein route
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60')
+  
+  prot_tmt at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60')
+  
+  prot_tmt at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60')
+  
+  prot_tmt at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60')
+  
+  prot_tmt at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+-- head:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_tmt at step 'design' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_tmt at step 'qc_protein_cleanup' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_tmt at step 'qc_protein_duplicate_removal' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_tmt at step 'qc_protein_intensity_filter_refusal' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_tmt at step 'qc_protein_intensity_filter' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60')
+  
+  prot_tmt at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60')
+  
+  prot_tmt at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60')
+  
+  prot_tmt at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60')
+  
+  prot_tmt at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+
+== test-gui-entry-proteomics.R | message-changed | KIT-101 entry lane prot_lfq: MaxQuant LFQ, the protein route
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('4b0e04fc0a5328dbd8607c40ecfbb3177e4f889c13cbed5e1563d3bcfbb90cf9')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('4b0e04fc0a5328dbd8607c40ecfbb3177e4f889c13cbed5e1563d3bcfbb90cf9')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('4b0e04fc0a5328dbd8607c40ecfbb3177e4f889c13cbed5e1563d3bcfbb90cf9')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('4b0e04fc0a5328dbd8607c40ecfbb3177e4f889c13cbed5e1563d3bcfbb90cf9')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+-- head:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq at step 'design' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq at step 'qc_protein_cleanup' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq at step 'qc_protein_duplicate_removal' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq at step 'qc_protein_intensity_filter_refusal' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq at step 'qc_protein_intensity_filter' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('4b0e04fc0a5328dbd8607c40ecfbb3177e4f889c13cbed5e1563d3bcfbb90cf9')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('4b0e04fc0a5328dbd8607c40ecfbb3177e4f889c13cbed5e1563d3bcfbb90cf9')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('4b0e04fc0a5328dbd8607c40ecfbb3177e4f889c13cbed5e1563d3bcfbb90cf9')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('4b0e04fc0a5328dbd8607c40ecfbb3177e4f889c13cbed5e1563d3bcfbb90cf9')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+
+== test-gui-entry-proteomics.R | message-changed | KIT-101 entry lane prot_lfq_fragpipe: FragPipe LFQ, the protein route
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq_fragpipe at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq_fragpipe at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq_fragpipe at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq_fragpipe at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+-- head:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq_fragpipe at step 'design' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq_fragpipe at step 'qc_protein_cleanup' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq_fragpipe at step 'qc_protein_duplicate_removal' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq_fragpipe at step 'qc_protein_intensity_filter_refusal' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$tab_status$quality_control`:   "pending" 
+  `expected$tab_status$quality_control`: "complete"
+  
+  `actual$tab_status$normalization`:   "disabled"
+  `expected$tab_status$normalization`: "pending" 
+  
+  actual$outputs$proteomics_workflow-workflow_progress vs expected$outputs$proteomics_workflow-workflow_progress
+  - "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+  + "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+  
+  prot_lfq_fragpipe at step 'qc_protein_intensity_filter' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq_fragpipe at step 'summary_copy' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq_fragpipe at step 'summary_export' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq_fragpipe at step 'summary_report' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:8]
+    "<store entries>"
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "results/proteomics/cache/aa_seq_tbl.RDS"
+    "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS"
+    "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/features_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/matrix_proteomics.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/proteomics/samples.parquet` is absent
+  
+  `actual$artifacts$integration/proteomics/features_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/features_proteomics.tsv` is a character vector ('d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4')
+  
+  `actual$artifacts$integration/proteomics/matrix_proteomics.tsv` is absent
+  `expected$artifacts$integration/proteomics/matrix_proteomics.tsv` is a character vector ('6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a')
+  
+  `actual$artifacts$integration/proteomics/samples.tsv` is absent
+  `expected$artifacts$integration/proteomics/samples.tsv` is a character vector ('2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d')
+  
+  prot_lfq_fragpipe at step 'summary_save' (oracle 5d38127250d0122ebbe09d52b0477295c870112c)
+

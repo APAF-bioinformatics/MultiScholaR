@@ -1674,7 +1674,8 @@ enrichment_results <- processEnrichments(
   , go_annotations = uniprot_dat_cln # Annotation data
   , exclude_iea = FALSE,
   protein_id_column = ruv_normalised_for_da_analysis_obj@protein_id_column,
-  contrast_names = (names(da_analysis_results_list))
+  contrast_names = (names(da_analysis_results_list)),
+  go_propagation = "is_a_part_of_regulates"
 )
 ```
 
