@@ -1,0 +1,35 @@
+{
+  "requested_by": "KIT-180 R2: fix eea8775b (R/ as fix c6bbd40d) against base a60c4e9a: the regression scope of section 10, R CMD check base and head",
+  "label": "KIT-180 R2 fix eea8775b vs base a60c4e9a: regression scope, check",
+  "package_commit": "eea8775b51bbf3ef09fd98980e6fbfcecf8eaa55",
+  "base_commit": "a60c4e9a0ec8b7db47edddaa53926a61e2b60299",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R",
+    "test-workflow-server-shared.R",
+    "test-omic-gui-config.R",
+    "test-omic-qc-module.R",
+    "test-app-shell-shared.R",
+    "test-prot-qc-coordinator-direct-shared.R",
+    "test-prot-05b-norm-module-contracts.R",
+    "test-prot-02c-qc-protein-module-contracts.R",
+    "test-workflow-ui-shared.R",
+    "test-e2e-proteomics-tmt-lfq.R",
+    "test-e2e-proteomics-dia.R",
+    "test-e2e-proteomics-enrichment.R",
+    "test-e2e-browser-harness.R",
+    "test-workflow-analysis-record.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-180 R0b: gate F2's one correction pass (the R0 script found no single store under the lane root; instrumentation), on run-k180-base c9ca1ed5 = tests-only commit 09f242bb with the corrected script, R/ equal to base a60c4e9a",
+  "label": "KIT-180 R0b F2 replay check on c9ca1ed5",
+  "package_commit": "c9ca1ed54130093b48d082b866741be8dc1ac905",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-180/replay-check.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-180/replay"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-180/replay",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
