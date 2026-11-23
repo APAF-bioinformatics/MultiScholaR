@@ -63,6 +63,8 @@ env:
   PBS_PYTHON: "3.12.16"
   PANDOC_VERSION: "3.11"
   NODE_VERSION: "22"
+  # run-k176-base declaration (KIT-176 R1): the declared staging commit the head is cut from, the value T2 and T4 expect.
+  MSR_PACKAGE_COMMIT: "b052b82441ef2f11c6067420dbeff8e95f8c8505"
 
 jobs:
   plan:
