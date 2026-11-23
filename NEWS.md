@@ -1,6 +1,6 @@
 # MultiScholaR NEWS
 
-## MultiScholaR (unreleased; numbered at merge)
+## MultiScholaR 0.9.2 (staging)
 
 ### Distribution
 
