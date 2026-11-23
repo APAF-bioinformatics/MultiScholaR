@@ -26,56 +26,84 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state at 034af2a0, written for a fresh agent)
+## Resume here (state at dcc27fb5, written for a fresh agent)
 
 **Read first:** the brief `tickets/kit/audits/IMPLEMENTER-BRIEF.md`; the ticket `tickets/kit/KIT-159.md`
-(revision 1.10, main checkout); "Rulings of 2026-11-23" above. Nothing runs on T1 and T2 stays held until
-the owner answers the development-run rule; tests-only runs go under T0 (2.84 of 6 core-hours used).
+(revision 1.10, main checkout); "Rulings of 2026-11-23" below. Nothing runs on T1 and T2 stays held until
+the owner answers the development-run rule; tests-only runs go under T0 (**3.60 of 6 core-hours used**,
+after T0d).
 
 **Built and verified on a runner:** group (a) scoring (T1a correction, run 45125695623).
 **Built, verified except one code defect, fix committed unrun:** group (b) (T1b correction, run
 45129042733; T-LOG: append mode, fixed in `valRunAsChild`).
 **Built, fix committed unrun:** the coverage range split (T1s, run 45129513148: `spec[["target"]]`).
-**Committed unrun:** group (c) code (driver parts, chain reader, kernel identity, hook, result tables,
-widening, results note, hand-off folder, ticket coverage files, `check-evidence.sh`, `val-run.R`
-record/pre/check) and the defect sweep (lists below). T0c (run 45131922735) showed group (c)'s 25
-tests failing first.
+**Committed unrun:** group (c) code and the defect sweep (T0c, run 45131922735, showed its 25 tests
+failing first); **group (d), the driver core** (T0d, run 45134811170, showed its 48 tests failing first;
+code at dcc27fb5, below).
 
-**Next work item: the driver core (group (d)), tests first.** As the coordinator ordered on
-2026-11-23: `valRunWorkflow` under `shiny::testServer`, `valActionScript` with `action-scripts.md`
-(7.4, VAL-41/VAL-26), `valReadArmTables` (7.3 standard tables; `valMatrixStages` gives the stage
-rule), `valReplay`, the RUV arm builders of 7.5 (`valArmShipped`, `valArmRuvLegacy`,
-`valArmRuvCalibrated`, `valArmRuvOff`, `valArmRuvDesign`, `valArmRuvSupplied`), `valRunCustomArm`,
-the parity stage (7.9; `parity.R`: `valParityBrowser`, `valCompareLedgers`; the `distributable.yml`
-stage on top of KIT-176's merged file), Part B (`integration.R`, starts with KIT-170), `USAGE.md`,
-`templates/`, and T-TAB.
-- Before writing: read `tests/testthat/helper-gui-entry.R` (the lanes, `guiEntryRunLane` 266-367,
-  the browser double 219-250, `api$defaults` 316-319, step builders 475/553/664),
-  `tests/testthat/helper-workflow-omics-residency.R` (`omicsUiInputDefaults` 67-103),
-  `tests/testthat/helper-e2e-browser.R` (`e2e_match_available_values` 463),
-  `packaging/verify/run-lanes.R` (`compareLane` 104-135, digests 137-146), and the module servers the
-  scripts press (7.4's citations). The driver reuses those helpers through `valExtractHelpers` (already
-  built: it evaluates only top-level function definitions into an environment whose parent is the
-  MultiScholaR namespace); no second implementation of what `helper-gui-entry.R` does. The driver's own
-  parts are built: `valUiDefaults` (replaces `omicsUiInputDefaults`, which misses text areas, checkbox
-  groups and rendered outputs), the input state and ledger, modals, `valStepOutcome`/`valRunSteps`,
-  `valWithForcedOptions`, `valCheckActionScript`.
-- Order: write the tests (a new file per area; T-TAB per route on the fixtures) as one tests-only commit;
-  send it under T0 with `val-tests.R <out> --files <the new test files>` (so no unrun fix runs); record
-  it as T0d in `runs.tsv` and here; then write the code and commit it unrun.
-- Run-request mechanics: `.github/run-tests/new-request.sh <name>` in
-  `/home/doktersmol/Projects/APAF/MultiScholaR-run-tests`; a script's `out` comes back in the run's
-  `scripts` artifact (`gh run download <id> -n scripts`), not `results`; `covr` and `lintr` need
-  `extra_packages`.
+**Group (d) as committed (unrun), by file under `harness/msrval/R/`:**
+- `scripts.R` (a file 7.2 does not list; 7.2 puts `valActionScript` in `driver.R`, split for
+  readability): `valStep`, `valActionScript` (the accepted scripts of 7.4 for the ten routes; QC
+  sub-tabs from the product's spec tables; declared states from the GUI-entry oracles),
+  `PROT_QC_STATES`. `action-scripts.md` (outside the pin) lists each route's step ids, pinned by
+  `test-action-scripts.R`, and four open points for G1(b)/G12.
+- `driver.R`: `valGuiHelpers` (extraction from a checkout, `install_enrichment_doubles` as the no-op in
+  the extraction parent), `valFixtureCell` (a route on its e2e fixture), `valRunWorkflow` /
+  `valWorkflowCell` (the frame of `guiEntryRunLane`, the browser double extended by
+  `valInstallDoubleExtension`, rendered `uiOutput`s and modals read after each action, ledger before
+  each action, action log for parity, step outcomes A21, forced options and the arm's options scoped by
+  `valWithForcedOptions`, the annotation rule `valAnnotationRule`, standard tables then `on_complete`),
+  `valReadArmTables` (DA tables read from the route's own written files through `valDaMap`; matrices
+  from the state objects by the stage rule), `valReplay`, `valMaskLedger`, `valMaskedDigest`; one
+  small fix to group (c)'s `valLedgerSnapshot` (an empty state).
+- `arms.R`: `valArmShipped`, `valArmRuvLegacy`, `valArmRuvCalibrated`, `valArmRuvOff`,
+  `valArmRuvDesign`, `valArmRuvSupplied`, `valArmInputs` (per-route values read from the panels at
+  a60c4e9a, G3 to confirm), `valCellRuv`, `valRunCustomArm`.
+- `parity.R`: `valBrowserValues`, `valParityBrowser` (replays the driver's action log through an
+  AppDriver), `valCompareLedgers`, `valCompareParityDa`. `integration.R`: `valIntegrationFunctions`,
+  `valRunIntegration`.
+- `harness/templates/` (the seven files of 7.2), `USAGE.md` (outside the pin).
 
-**After the owner's ruling:** one run of the whole suite at the head (expect every test of (a), (b),
-(c) passing); then T2 from `t2/t2-plan.tsv` (three requests A, B, C; `val-tests.R <out>
---coverage-plan docs/qa/workflow-execution/kit/kit-159/t2/t2-plan.tsv --request A --nsim 2000
---chunks 4`, script limit 280 minutes, combine the three `coverage-table.tsv` files); then T1 parts
-with `covr` and `lintr` over the whole package; then R1 (record twin of one small open https file,
-library table, phase `pre`; no live UniProt query for the `prot_dia` fixture's synthetic accessions,
-ruling 4; the live incomplete-answer refusal waits for KIT-175); then S0; stop before the release
-commit (G1(a), G1(r), L1a and later, P1). `prot_dia_limpa` awaits D19.
+**Not written (section 7 still open):** `val-run.R`'s cell phases (`lifecycle`, `counted`, `score`,
+`determinism`, `correction`, `amended`: steps 5 to 9 of 7.8, wiring `prepare.R`, `valRunCells`,
+`valRunWorkflow`, the hook and scoring together; they refuse today); `val-parity.R` and the
+`distributable.yml` stage `parity` (7.9: it must be one commit on top of KIT-176's merged workflow,
+which this branch, cut from a60c4e9a, does not have; a merge or rebase of `v0.9-staging` is the
+coordinator's call); the `run-val-mofa` lane (7.10). Kernel arms beyond the identity gate (a ticket's
+kernel function is called by the cell runner, not yet wired).
+
+**Known provisional points in the driver core (to be settled by its first run and by G1(b)/G3):**
+the DA column maps (`valDaMap`: metabolomics feature column `metabolite_id` is a reading, not seen); the
+display matrix of DIA_LIMPA and transcriptomics cells (read from the state's `args`, which may not hold
+it: T-TAB `prot_dia_limpa` will show); `ruv.tsv` reads `args$ruv_factors` and otherwise writes one
+`not_recorded` row; the transcriptomics matrices are the route's own transform (TMM, log-CPM, prior
+2) recomputed from the QC-complete counts; the DA confirmation modal is assumed to have one primary
+button; `MockShinySession` internals are read to find `renderUI` outputs (`private$outs`, as
+`guiEntryOutputs` does).
+
+**The next run's exact scope (committed, unrun), for whoever runs the whole suite next:** the whole test
+suite at the head (`val-tests.R <out>` with no `--files`), which holds group (a)'s `spec[["target"]]`
+fix and the split, group (b)'s `valRunAsChild` append-mode fix, group (c)'s code with the `diffRows`
+test fix and the sweep, and group (d)'s code with its tests (incl. the two `test-arm-tables.R`
+corrections of a0685450). Expected: groups (a) to (c) passing as stated before; group (d) is new code
+never run, so failures there are likely and are first-run findings. T-TAB runs the ten routes end to
+end (about 10 to 40 minutes in all; set `timeout_minutes` to 90 and `file_timeout_minutes` accordingly).
+Under ruling 1 group (d) has one correction pass of its own.
+
+**After the owner's ruling:** that run; then T2 from `t2/t2-plan.tsv` (three requests A, B, C;
+`val-tests.R <out> --coverage-plan docs/qa/workflow-execution/kit/kit-159/t2/t2-plan.tsv --request A
+--nsim 2000 --chunks 4`, script limit 280 minutes, combine the three `coverage-table.tsv` files); then
+T1 parts with `covr` and `lintr` over the whole package; then R1 (record twin of one small open https
+file, library table, phase `pre`; no live UniProt query for the `prot_dia` fixture's synthetic
+accessions, ruling 4; the live incomplete-answer refusal waits for KIT-175); then the cell phases of
+`val-run.R`; then S0; stop before the release commit (G1(a), G1(r), L1a and later, P1).
+`prot_dia_limpa` awaits D19.
+
+**Run-request mechanics:** `.github/run-tests/new-request.sh <name>` in
+`/home/doktersmol/Projects/APAF/MultiScholaR-run-tests`; **read the new blank file before writing it**
+(a write without the read failed once and the blank file was committed and refused by the plan job:
+T0d-blank in `runs.tsv`); a script's `out` comes back in the run's `scripts` artifact (`gh run download
+<id> -n scripts`), not `results`; `covr` and `lintr` need `extra_packages`.
 
 ## Rulings of 2026-11-23
 
@@ -309,6 +337,25 @@ holds: group (a)'s `spec[["target"]]` fix and the split; group (b)'s `valRunAsCh
 fix; group (c)'s code and the `diffRows` test fix; the sweep. Expected: every test of groups (a),
 (b), (c) passing.
 
+### T0d (group d tests only): run 45134811170 at 6d12a614
+
+Observed: the nine group (d) test files only (`--files action-scripts,workflow,arm-builders,
+arm-tables,tab,replay,custom-arm,parity,integration`, so no unrun fix of groups (a) to (c) was
+exercised): 48 tests, all fail (`t0/t0d-harness-tests.tsv`, `t0/t0d-harness-failures.txt`): 47 on
+missing msrval functions, the `action-scripts.md` test on the absent file. No test-script defect showed.
+Scripts job 10.7 minutes, 11.2 with the results job: 0.75 core-hours. Before it, the request
+`k159-t0d-6d12a614` was pushed blank (my write of the filled file failed because the blank file had not
+been read first, and the blank file was committed); the plan job refused it in 6 s (run 45134707220, no
+test ran, 0.01 core-hours); the filled request went under a new name. T0 now 3.60 of 6 core-hours.
+
+Test corrections after T0d, found by reading, not shown by the run (a0685450): two `test-arm-tables.R`
+values compared whole numbers read back from a TSV (integers) with doubles by `expect_identical`; now
+`expect_equal`.
+
+### Group (d) code (committed, unrun): dcc27fb5
+
+As listed under "Resume here". Written after T0d; nothing of it has run.
+
 ### Ticket revisions 1.8 and 1.9 (2026-11-23)
 
 The coordinator's amendment pass made the ticket 1.8 (register
@@ -323,7 +370,7 @@ The coordinator's amendment pass made the ticket 1.8 (register
 | Hand-off folder in `valCheckEvidence`, `check-evidence.sh`, `val-run.R check` | not yet (tests first) |
 | Hook named arguments (C22), standard tables in `val-work/` (C23) | not yet (driver, group c) |
 | `prepareInputs()$result_tables` | not yet (`val-run.R`) |
-| `matrix_display.tsv` on lipid and metabolite factor-in-model cells | not yet (`valReadArmTables`, group c) |
+| `matrix_display.tsv` on lipid and metabolite factor-in-model cells | written, unrun (`valReadArmTables`, `valCellRuv`, group d; tested on a hand-made state in `test-arm-tables.R`) |
 | `require: "match"` on a signed slope guard | built: `valClassifyMember` takes `require = "match"` on any guard (T-CLS-compound) |
 | Phase `score` widening from within-run rows, T-SCORE-2 | not yet (tests first) |
 | G1D aggregates under `g1d/`; `prot_dia_limpa` awaiting D19 | done (commit c6f3f0f2) |
@@ -355,8 +402,9 @@ family (T2 is sized on these).
 
 ## Not checked
 
-- Group (c) (driver, arms, parity, Part B), `val-run.R`, `check-evidence.sh`, templates, `USAGE.md`,
-  `action-scripts.md`: not written.
+- Groups (c) and (d) (driver parts and core, arms, parity comparisons, Part B runner), `val-run.R`,
+  `check-evidence.sh`: written, never run. T-TAB (the route column maps) not run.
+- Not written: `val-run.R`'s cell phases, `val-parity.R`, the `distributable.yml` stage, the MOFA lane.
 - `covr` line coverage and `lintr` (A2): not run (deferred to T1c over the whole package).
 - T-COV (T2): not run; R1, S0: not run.
 - `valBaselineArm` uses `edgeR::calcNormFactors` as the ticket states; edgeR prints that it has been
