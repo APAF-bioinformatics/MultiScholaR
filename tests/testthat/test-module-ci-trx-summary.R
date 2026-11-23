@@ -160,3 +160,45 @@ test_that("KIT-186 T7 the report of a run without RUV (design none) says that no
     expect_false(grepl(statement, text, fixed = TRUE), info = statement)
   }
 })
+
+test_that("KIT-192 T7b the report of a declared design whose k is 0 names the approach, the rule, the seed and the reason", {
+  skipWithoutTrxDeclReference()
+  withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+  fixture <- module_ci_trx_project(module_ci_trx_corpus())
+  assign("project_dirs", fixture$project_dirs, envir = globalenv())
+  withr::defer(if (exists("project_dirs", envir = globalenv())) rm("project_dirs", envir = globalenv()))
+  # The estimated count forced to 0 and nothing else (KIT-186 T3).
+  real <- estimateRuvFactorCount
+  testthat::local_mocked_bindings(estimateRuvFactorCount = function(...) {
+    e <- real(...)
+    e$k <- 0L
+    e
+  }, .package = "MultiScholaR")
+  module_ci_trx_tabs_journey(fixture, norm = list(ruv_mode = "automatic", ruv_design = "groups_all_features",
+    ruv_k_rule = "num_sv_be"), summary = module_ci_trx_summary_steps)
+  steps <- Filter(function(step) identical(step$operation, "trx_ruvs"), buildWorkflowAnalysisRecord(fixture$owner)$steps)
+  seed <- if (length(steps)) steps[[length(steps)]]$outcomes$ruv_k_seed
+  expect_true(checkmate::test_int(seed))
+  report <- list.files(fixture$paths$results_summary_dir, pattern = "^transcriptomics_report.*\\.docx$", full.names = TRUE)
+  expect_length(report, 1L)
+  text <- if (length(report)) module_ci_trx_docx_text(report[[1L]]) else ""
+  # Pandoc's smart quotes write each quoted label as its own Word run and the extraction puts a space at every tag, so
+  # both sides are compared with quotes made straight and all white space removed (AUDIT-KIT-192-plan-20261124.md A01).
+  squash <- function(x) gsub("\\s+", "", gsub("‘|’|&apos;|&#39;", "'", x))
+  shown <- regmatches(text, regexpr("No correction for unwanted variation.{0,1200}", text))
+  if (!length(shown)) shown <- "<absent>"
+  for (statement in c(
+    paste0("No correction for unwanted variation was applied. The approach chosen on the normalisation tab was ",
+      "'Estimate from all genes, within your groups', with the number of unwanted factors set by the rule ",
+      "'Estimated number', random seed ", seed, "."),
+    paste("(k = 0; recorded reason: the estimated count found no unwanted factor (no component above the permutation",
+      "null))"),
+    "This means the rule found no factor it could separate from noise, not that no unwanted variation is present.",
+    "The differential expression model held the experimental groups alone (~ 0 + group).",
+    "so the third column shows the TMM logCPM again")) {
+    expect_true(grepl(squash(statement), squash(text), fixed = TRUE), info = paste(statement, "| rendered:", shown))
+  }
+  for (statement in c("RUVs factors W_1", "inferred empirical negative control")) {
+    expect_false(grepl(squash(statement), squash(text), fixed = TRUE), info = statement)
+  }
+})
