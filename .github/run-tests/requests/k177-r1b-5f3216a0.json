@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-177 R1b: test-mechanics rerun (VAL-54) of test-prot-design-log2.R on staging 55710a87 plus tests (T3b helper order, T7 row names); ceiling 1 core-hour",
+  "label": "KIT-177 R1b tests-first mechanics rerun on 5f3216a0",
+  "package_commit": "5f3216a090e5f567f623fe66da85f3d5acc0b4fa",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-prot-design-log2.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
