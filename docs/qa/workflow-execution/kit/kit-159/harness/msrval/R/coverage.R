@@ -104,9 +104,12 @@ valCoverageStatus <- function(kind, coverage, level, achieved = NA_real_, nsim =
         return(if (coverage >= level - 3 * se - 1e-12) "conservative" else "fail")
     }
     if (coverage < level - 0.02 - 1e-12) return("fail")
-    if (coverage > min(level + 0.04, 1) + 1e-12) {
-        return(if (kind == "approx_run") "conservative" else "fail")
+    # r1.13 (VAL-69): run-level `conservative` is read on the miss rate, below a quarter of the
+    # nominal miss rate, so that it can be seen at every level; within-run keeps its upper band
+    if (kind == "approx_run") {
+        return(if (1 - coverage < (1 - level) / 4 - 1e-12) "conservative" else "pass")
     }
+    if (coverage > min(level + 0.04, 1) + 1e-12) return("fail")
     "pass"
 }
 
@@ -122,10 +125,17 @@ valGenUnits <- function(n, shape, centre) {
 #' Coverage rows of one cell and statistic from per-simulation hits (`sims x levels`)
 #' @noRd
 valCoverageRows <- function(cell, statistic, class, hits, kind, achieved = NULL,
-                            undefined = NULL, target = NA_real_) {
+                            undefined = NULL, target = NA_real_, zero_width = NULL,
+                            target_se = NA_real_, range = NULL, effect = NA_real_) {
     nsim <- nrow(hits)
     cov <- colMeans(hits)
     ach <- if (is.null(achieved)) rep(NA_real_, ncol(hits)) else colMeans(achieved, na.rm = TRUE)
+    zw <- if (is.null(zero_width)) rep(NA_real_, ncol(hits)) else colMeans(zero_width)
+    # r1.13 (VAL-69): `degenerate` when more than 1 % of the intervals have zero width, or the
+    # target lies within one Monte Carlo SE of a bound of the statistic's range
+    at_bound <- !is.null(range) && is.finite(target) && is.finite(target_se) &&
+        min(abs(target - range)) <= target_se
+    degenerate <- (is.finite(zw) & zw > 0.01) | at_bound
     data.frame(
         cell = cell$cell, regime = cell$regime, family = cell$family, n = cell$n,
         condition = cell$condition, statistic = statistic, class = class,
@@ -134,9 +144,10 @@ valCoverageRows <- function(cell, statistic, class, hits, kind, achieved = NULL,
         undefined = if (is.null(undefined)) 0 else mean(undefined),
         target = target,
         status = vapply(seq_along(cov), function(i) {
+            if (degenerate[[i]]) return("degenerate")
             valCoverageStatus(kind, cov[[i]], COVERAGE_LEVELS[[i]], ach[[i]], nsim)
         }, character(1)),
-        kind = kind, stringsAsFactors = FALSE
+        kind = kind, zero_width = zw, effect = effect, stringsAsFactors = FALSE
     )
 }
 
@@ -291,6 +302,8 @@ valSpecC3 <- function(cell, fam) {
 valSpecMatrix <- function(cell, form, n_feat) {
     g <- cell$n
     lay <- valCovLayout(form, g)
+    # r1.13 (VAL-69): the rank cells' effect is calibrated per g into the declared pAUC band
+    scale <- if (n_feat == 4840L) valRankEffect(form, g)$effect else 1
     statsOf <- function(x, l, truth) valCovStats(valCovFit(x, l, form), truth, n_feat, form)
     names_s <- if (n_feat == 4840L) {
         "rank.pauc_diff"
@@ -303,12 +316,14 @@ valSpecMatrix <- function(cell, form, n_feat) {
     parts <- strsplit(names_s, ".", fixed = TRUE)
     list(stats = data.frame(statistic = vapply(parts, `[`, "", 2L),
                             class = vapply(parts, `[`, "", 1L), kind = "approx_run"),
+         range = if (n_feat == 4840L) c(-1, 1),
+         effect = if (n_feat == 4840L) scale else NA_real_,
          target_one = function() {
-             dat <- valCovMatrixData(lay, n_feat, form)
+             dat <- valCovMatrixData(lay, n_feat, form, scale)
              unname(statsOf(dat$x, lay, dat$truth))
          },
          sim = function(s) {
-             dat <- valCovMatrixData(lay, n_feat, form)
+             dat <- valCovMatrixData(lay, n_feat, form, scale)
              full <- unname(statsOf(dat$x, lay, dat$truth))
              dels <- matrix(vapply(seq_len(g), function(u) {
                  keep <- lay$unit != u
@@ -446,6 +461,9 @@ valCombineCoverage <- function(cell, parts, nsim, target_sims) {
         total <- numeric(ncol(values))
         for (j in seq_len(nrow(values))) total <- total + values[j, ]
         target <- total / target_sims
+        target_se <- apply(values, 2L, stats::sd) / sqrt(target_sims)
+    } else {
+        target_se <- rep(NA_real_, nrow(spec$stats))
     }
     ord <- order(sims)
     bind <- function(field) {
@@ -460,9 +478,12 @@ valCombineCoverage <- function(cell, parts, nsim, target_sims) {
         hits <- lo[, , k, drop = FALSE] <= target[[k]] & target[[k]] <= hi[, , k, drop = FALSE]
         hits <- matrix(hits %in% TRUE, nrow = nsim)
         st <- spec$stats[k, ]
+        zero <- matrix((lo[, , k] == hi[, , k]) %in% TRUE, nrow = nsim)
         valCoverageRows(cell, st$statistic, st$class, hits, st$kind,
                         achieved = if (st$kind == "exact") matrix(ach[, , k], nrow = nsim),
-                        undefined = undefined[, k], target = target[[k]])
+                        undefined = undefined[, k], target = target[[k]], zero_width = zero,
+                        target_se = target_se[[k]], range = spec[["range"]],
+                        effect = spec[["effect"]] %||% NA_real_)
     }))
     out$seconds_sims <- sum(vapply(parts, `[[`, 0, "seconds_sims"))
     out$seconds_target <- sum(vapply(parts, `[[`, 0, "seconds_target"))
@@ -529,6 +550,54 @@ valTicketRegime <- function(regime, nsim, seed) {
     }))
 }
 
+RANK_EFFECT_GRID <- seq(0.05, 1, by = 0.05)
+RANK_CACHE <- new.env(parent = emptyenv())
+
+#' The rank cells' effect (KIT-159 10.2, r1.13, VAL-69)
+#'
+#' The generator's group effects are scaled by the grid value whose mean normalised pAUC at FPR 0.01
+#' of the plain (moderated) arm, over `nsim` seeded calibration simulations, lies in [0.4, 0.8] and
+#' is nearest 0.6; the grid is walked upwards and stops once the mean passes 0.8. Seeds depend on
+#' the form, g and the simulation index only, so every process finds the same effect. No grid value
+#' in the band is `val_spec_invalid`.
+#'
+#' @param form `replicate` (C4) or `block` (C4e).
+#' @param g Unit count.
+#' @param nsim Calibration simulations per grid value.
+#' @return A list: `effect`, `mean_pauc`.
+#' @export
+valRankEffect <- function(form, g, nsim = 50L) {
+    key <- paste(form, g, nsim)
+    if (!is.null(RANK_CACHE[[key]])) return(RANK_CACHE[[key]])
+    lay <- valCovLayout(form, g)
+    base <- 1900000000L + (if (form == "block") 50000L else 0L) + as.integer(g) * 1000L
+    means <- numeric()
+    for (scale in RANK_EFFECT_GRID) {
+        vals <- vapply(seq_len(nsim), function(s) {
+            valWithSeed(base + s, {
+                dat <- valCovMatrixData(lay, 4840L, form, scale)
+                fit <- valCovFit(dat$x, lay, form)
+                truth <- dat$truth
+                sc <- data.frame(key = seq_along(truth), expected = as.vector(truth),
+                                 estimate = as.vector(fit$est), p = as.vector(fit$p),
+                                 s_own = as.vector(fit$p), truth_status = "scored",
+                                 key_status = "ok", stringsAsFactors = FALSE)
+                valPartialAuc(sc, fpr_max = 0.01)$value
+            })
+        }, numeric(1))
+        means[[as.character(scale)]] <- mean(vals)
+        if (mean(vals) > 0.8) break
+    }
+    ok <- means >= 0.4 & means <= 0.8
+    if (!any(ok)) {
+        valAbort("no rank effect on the grid gives a mean pAUC in [0.4, 0.8]", "val_spec_invalid")
+    }
+    pick <- names(means)[ok][which.min(abs(means[ok] - 0.6))]
+    res <- list(effect = as.numeric(pick), mean_pauc = unname(means[[pick]]))
+    RANK_CACHE[[key]] <- res
+    res
+}
+
 #' Sample layout of C4 (two groups, g replicates; form `replicate`) and C4e (form `block`: g = 5
 #' blocks of two samples of each of five groups, KIT-162; otherwise g blocks of two samples of each
 #' of two groups)
@@ -548,10 +617,10 @@ valCovLayout <- function(form, g) {
 #' changed by +1 log2 per step of the group effects, residual SD 0.3, per-sample offset SD 0.1, and
 #' for form `block` a per-feature block effect of SD 0.1
 #' @noRd
-valCovMatrixData <- function(lay, n_feat, form) {
+valCovMatrixData <- function(lay, n_feat, form, scale = 1) {
     n_changed <- if (n_feat == 4840L) 40L else as.integer(n_feat / 5)
     groups <- sort(unique(lay$group))
-    effect <- if (length(groups) == 5L) c(0, 0.5, 1, 1.5, 2) else c(0, 1)
+    effect <- scale * (if (length(groups) == 5L) c(0, 0.5, 1, 1.5, 2) else c(0, 1))
     changed <- seq_len(n_feat) <= n_changed
     gi <- match(lay$group, groups)
     x <- matrix(stats::rnorm(n_feat, 20, 1), n_feat, nrow(lay)) +
@@ -653,6 +722,8 @@ valSummariseCoverage <- function(detail) {
             normal_ok <- all(st[r$condition == "normal"] %in% c("pass", "conservative"))
             skewed_bad <- any(st[r$condition == "skewed"] == "fail")
             if (normal_ok && skewed_bad) "flagged" else "fail"
+        } else if (any(st == "degenerate")) {
+            "degenerate"
         } else if (any(st == "not_offered")) {
             "not_offered"
         } else if (any(st == "fail")) {
@@ -678,6 +749,8 @@ valSummariseCoverage <- function(detail) {
                 paste(unique(r$condition[bad]), collapse = ","),
             failed_side = if (offered || !any(bad)) NA_character_ else
                 paste(unique(side[bad]), collapse = ","),
+            zero_width = if (is.null(r$zero_width)) NA_real_ else max(r$zero_width),
+            effect = if (is.null(r$effect)) NA_real_ else r$effect[[1L]],
             stringsAsFactors = FALSE
         )
     })
