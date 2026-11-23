@@ -26,26 +26,30 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-23, after the offered-regime table and the merge; read this first)
+## Resume here (state 2026-11-23 12:05 UTC; read this first)
 
-Done since 75108888: (1) offered-regime table in `USAGE.md` and provisional ledger row `VAL-<merge>`
-(H2) from `t2/coverage-table.tsv` (2eed1c94; four points for the auditor under "Offered regimes from
-T2" below); (2) `val-tests.R` runs lint before covr and records a covr error (26f71dce); (3) merge of
-`v0.9-staging` 5cbd4005 (true merge f350ef8c; one mechanical conflict in the ledger: staging's VAL-50
-to VAL-62 kept, this branch's row after them).
+Branch head after this commit; code of section 7 at 2b18b1e3 (unrun). Done in this session:
+1. Offered-regime table in `USAGE.md` and provisional ledger row `VAL-<merge>` (H2) from
+   `t2/coverage-table.tsv` (2eed1c94); four points for the auditor under "Offered regimes from T2".
+2. A2 run 45166390132 at 26f71dce (`k159-t1cov2-26f71dce`; the first send 45166193345 was refused by
+   the plan job, `requested_by` too long, 0.01): **covr 86.52 % (met, >= 80)**; **lintr 93 lints
+   (not met)**: 35 indentation, 30 object_name, 15 line_length, 6 brace, 4 assignment, 3
+   object_usage (`t1/t1cov-lint.txt`; driver.R 30, scripts.R 14). A result: recorded, not rerun.
+   Fixing the lints and showing lintr empty needs a further run: T1 is at 13.58 of 15 (one job of
+   about 26 minutes left would not fit with set-up and covr): coordinator's word needed.
+3. Merge of `v0.9-staging` 5cbd4005 (true merge f350ef8c; one mechanical ledger conflict).
+4. Section 7, tests first: tests-only e7a0c82c, **T0e run 45167156299: all 10 new tests fail on
+   missing functions as expected** (0.77; T0 now 4.37 of 6). Code 2b18b1e3: cell phases
+   (`phases.R`, `val-run.R`), kernel gate in the cell runner, parity stage (`distributable.yml`,
+   `val-parity.R`, `parity.R` checks, allow-lists), T2 table in `inst/extdata`. **Unrun**: its
+   passing run needs budget beyond T1 (coordinator's word).
 
-**In flight:** A2 run `k159-t1cov2-26f71dce`, run 45166390132 (covr over the whole suite, lintr;
-plain pass `--files metrics`; script limit 36 min; ceiling T1's remaining 3.16 core-hours). First
-send `k159-t1cov-26f71dce` (45166193345) refused by the plan job in 9 s (`requested_by` over 300
-characters; no test ran). Fetch: `gh run download 45166390132 -n scripts`, copy `t1cov-out/` to `t1/`.
+**Not started:** `run-val-mofa` (7.10 starts with KIT-170); R1 (its UniProt-cache part is barred by
+ruling 4 and the "small open file" is not named by the ticket: a choice for the coordinator); S0
+(needs the cell phases verified first).
 
-**Next:** record the A2 result; then section 7 code (tests first, T0 2.40 core-hours left): `val-run.R`
-cell phases (7.8 steps 5 to 9), kernel arms in the cell runner, `val-parity.R` and the
-`distributable.yml` stage (7.9), `run-val-mofa` (7.10). Passing runs need budget beyond T1's (T1
-after A2 has well under one job left): coordinator's word. R1 and S0 not started.
-
-Earlier state (T1 and T2 complete): T1 11.84 of 15 before A2; T2 18.59 of 60; every test of groups
-(a) to (d) passed (T1w3 45149434625, VAL-60 run 45154323190).
+**Next (each needs the coordinator's word on budget):** one run of the whole msrval suite at
+2b18b1e3 or later (T-PH, T-PAR, everything else) with the lint fixes and `--lint`; then R1 and S0.
 
 ## Earlier resume record (state at dcc27fb5)
 
@@ -407,6 +411,56 @@ against the regime table's statuses. Status counts: 337 pass, 35 conservative, 6
    Offered at 97.5 % and above with coverage to 1.0000 (the band's upper end is 1 there).
 4. C8 `clopper_pearson` is `conservative` on every row by construction of `valCoverageStatus` (kind
    `clopper` never returns `pass`); read as "always offered" per 4.4.
+
+### Section 7 code after the merge (2026-11-23): tests first, then code
+
+**Tests only (e7a0c82c):** `test-phases.R` (T-PH-1 to T-PH-7: the cell table, `prepare.R` in an
+isolated environment with `universe.tsv` and prepared hashes, the cell runner by arm kind writing
+`da.tsv`, a refusal as `val_arm_refused`, the kernel identity gate before kernel cells and the
+refusal of every kernel cell when it fails, per-unit metric rows in `metrics.tsv`'s columns and
+blinded in the lifecycle, run-level intervals with the refusal rule and `blinded` outcomes, a whole
+lifecycle phase writing `runs/<label>/`) and `test-parity-stage.R` (T-PAR-1 the parity request,
+T-PAR-2 the bundle's commit against the release commit over `PKG_PATHS`, T-PAR-3 the workflow's
+guard on the one admitted upload per platform job, with two mutated copies refused). These test
+names are this build's; section 10 lists no test for the cell phases or the stage, so they were
+written for the code of 7.8 steps 5 to 9 and 7.9 items 1, 3 and 5. T0e (below) shows them failing.
+
+**Code (2b18b1e3, unrun):**
+- `msrval/R/phases.R`: `valTicketEnv`, `valPrepare`, `valPhaseCells`, `valRunCell` (workflow through
+  `valRunWorkflow` with the arm builder, forced settings and the post-cell hook; kernel, custom,
+  published, baseline), `valKernelGate`, `valUnitMetrics`, `valRunLevel` (jackknife over
+  full/deletion units; `paired_t`/`exact_median` over independent/draw units with `valRefusalFill`;
+  compound members of each primary family), `valRunPhase` (steps 5 to 9 into `runs/<label>/`).
+- `val-run.R`: phases `lifecycle`, `counted`, `correction`, `determinism`, `amended` (declaration
+  check, G15 environment check, retrieval, `valRunPhase`) and `score` (`valScoreRuns`, `valRunLevel`).
+- `.github/workflows/distributable.yml` (the one workflow change of 7.9, on top of KIT-176's merged
+  file): stage `parity` (dispatch only, on `run-val-parity`, input `parity_request`, the request file
+  added once and never changed); the steps of stage `full` to the install and the test tools; the
+  lifecycle, hosts, lanes, e2e and figure steps skipped in stage parity; a `parity` step (the
+  harness of the request's `harness_commit` by `git archive`, `PKG_PATHS` sourced from
+  `packaging/package-commit.sh`); after the uninstall, `parity-check` (`check-evidence.sh`); one
+  upload `parity-results` per platform job with `if: ... stage == 'parity' &&
+  steps.parity-check.outcome == 'success'`, `path: val-out/parity/`, 30 days; the plan job's guard
+  admits exactly those two uploads besides the snapshot job's.
+- `val-parity.R` (7.9 item 4); `valParityRequest`, `valCheckBundleCommit`, `valCheckParityWorkflow`
+  in `parity.R`; `parity-<route>.tsv` and `parity-da.tsv` on both allow-lists (`licence.R`,
+  `check-evidence.sh`).
+- T2's `coverage-table.tsv` copied unchanged into `msrval/inst/extdata/` (the classifier's
+  `valHarnessRegimes()` reads it there; without it no interval can be classified).
+
+**Recorded divergences and readings (for the auditor):** (a) `metrics.tsv` has no comparison
+column, so the per-unit rows of an `intersection` or `union` view name their arm set in `view`
+(`intersection(a+b)`); (b) a forced setting whose name starts `MultiScholaR.` or `multischolar.` is
+set as an option, any other as an input; (c) the post-cell hook receives
+`workflow_data$da_analysis_results_list` as the DA results and `paths$integration_dir` as the
+Summary folder (read from the product's names, not run); (d) `clopper_pearson` and
+`bootstrap_within_run` comparisons over the run's per-unit rows are not wired in `valRunLevel`
+(it computes `jackknife`, `paired_t`, `exact_median`), and a within-run interval in the request's
+own comparisons (widening, A38) is not computed in a cell phase; (e) `val-parity.R` reads per-route
+inputs (`route_inputs`) and L1's digests (`l1`) from the request, fields the request schema of 7.9
+does not list by name.
+
+**Not built:** the `run-val-mofa` lane (7.10 sequences it to start with KIT-170; M1 is KIT-170's).
 
 ### Ticket revisions 1.8 and 1.9 (2026-11-23)
 

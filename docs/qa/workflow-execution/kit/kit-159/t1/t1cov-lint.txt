@@ -1,0 +1,94 @@
+filename	line_number	linter	message
+arms.R	117	object_name_linter	Variable and function name style should match camelCase or snake_case.
+arms.R	119	object_name_linter	Variable and function name style should match camelCase or snake_case.
+arms.R	202	indentation_linter	Hanging indent should be 65 spaces but is 64 spaces.
+arms.R	210	indentation_linter	Hanging indent should be 45 spaces but is 19 spaces.
+arms.R	210	line_length_linter	Lines should not be more than 100 characters. This line is 101 characters.
+arms.R	284	line_length_linter	Lines should not be more than 100 characters. This line is 101 characters.
+baseline.R	102	object_usage_linter	local variable 'bt' assigned but may not be used
+coverage.R	5	object_name_linter	Variable and function name style should match camelCase or snake_case.
+coverage.R	7	object_name_linter	Variable and function name style should match camelCase or snake_case.
+coverage.R	18	assignment_linter	Replace <<- by assigning to a specific environment (with assign() or <-) to avoid hard-to-predict behavior.
+coverage.R	445	indentation_linter	Hanging indent should be 71 spaces but is 73 spaces.
+declaration.R	3	object_name_linter	Variable and function name style should match camelCase or snake_case.
+declaration.R	4	object_name_linter	Variable and function name style should match camelCase or snake_case.
+declaration.R	7	object_name_linter	Variable and function name style should match camelCase or snake_case.
+declaration.R	50	brace_linter	Wrap multi-line function bodies in curly braces.
+declaration.R	167	indentation_linter	Indentation should be 20 spaces but is 16 spaces.
+declaration.R	179	brace_linter	Wrap multi-line function bodies in curly braces.
+declaration.R	180	indentation_linter	Hanging indent should be 53 spaces but is 55 spaces.
+declaration.R	270	brace_linter	Wrap multi-line function bodies in curly braces.
+declaration.R	357	indentation_linter	Indentation should be 20 spaces but is 16 spaces.
+driver.R	4	object_name_linter	Variable and function name style should match camelCase or snake_case.
+driver.R	5	object_name_linter	Variable and function name style should match camelCase or snake_case.
+driver.R	27	assignment_linter	Replace <<- by assigning to a specific environment (with assign() or <-) to avoid hard-to-predict behavior.
+driver.R	380	indentation_linter	Indentation should be 20 spaces but is 16 spaces.
+driver.R	491	line_length_linter	Lines should not be more than 100 characters. This line is 103 characters.
+driver.R	590	brace_linter	Wrap multi-line function bodies in curly braces.
+driver.R	690	brace_linter	Wrap multi-line function bodies in curly braces.
+driver.R	730	line_length_linter	Lines should not be more than 100 characters. This line is 102 characters.
+driver.R	741	indentation_linter	Hanging indent should be 61 spaces but is 12 spaces.
+driver.R	747	indentation_linter	Indentation should be 25 spaces but is 12 spaces.
+driver.R	806	indentation_linter	Hanging indent should be 66 spaces but is 16 spaces.
+driver.R	833	indentation_linter	Indentation should be 24 spaces but is 20 spaces.
+driver.R	875	indentation_linter	Indentation should be 28 spaces but is 24 spaces.
+driver.R	915	assignment_linter	Replace <<- by assigning to a specific environment (with assign() or <-) to avoid hard-to-predict behavior.
+driver.R	985	line_length_linter	Lines should not be more than 100 characters. This line is 101 characters.
+driver.R	995	line_length_linter	Lines should not be more than 100 characters. This line is 101 characters.
+driver.R	1008	line_length_linter	Lines should not be more than 100 characters. This line is 103 characters.
+driver.R	1059	line_length_linter	Lines should not be more than 100 characters. This line is 101 characters.
+driver.R	1064	indentation_linter	Hanging indent should be 66 spaces but is 20 spaces.
+driver.R	1067	indentation_linter	Hanging indent should be 66 spaces but is 20 spaces.
+driver.R	1079	indentation_linter	Hanging indent should be 62 spaces but is 16 spaces.
+driver.R	1082	line_length_linter	Lines should not be more than 100 characters. This line is 101 characters.
+driver.R	1109	line_length_linter	Lines should not be more than 100 characters. This line is 116 characters.
+driver.R	1116	object_usage_linter	no visible binding for global variable 'session'
+driver.R	1116	object_usage_linter	no visible binding for global variable 'workflow_data'
+driver.R	1231	line_length_linter	Lines should not be more than 100 characters. This line is 102 characters.
+driver.R	1261	indentation_linter	Indentation should be 34 spaces but is 19 spaces.
+driver.R	1321	indentation_linter	Hanging indent should be 19 spaces but is 12 spaces.
+driver.R	1431	line_length_linter	Lines should not be more than 100 characters. This line is 101 characters.
+driver.R	1459	line_length_linter	Lines should not be more than 100 characters. This line is 101 characters.
+gates.R	3	object_name_linter	Variable and function name style should match camelCase or snake_case.
+inputs.R	3	object_name_linter	Variable and function name style should match camelCase or snake_case.
+inputs.R	7	object_name_linter	Variable and function name style should match camelCase or snake_case.
+inputs.R	9	object_name_linter	Variable and function name style should match camelCase or snake_case.
+inputs.R	113	indentation_linter	Indentation should be 12 spaces but is 8 spaces.
+inputs.R	222	indentation_linter	Indentation should be 54 spaces but is 53 spaces.
+inputs.R	308	brace_linter	Wrap multi-line function bodies in curly braces.
+integration.R	50	assignment_linter	Replace <<- by assigning to a specific environment (with assign() or <-) to avoid hard-to-predict behavior.
+integration.R	66	line_length_linter	Lines should not be more than 100 characters. This line is 103 characters.
+intervals.R	3	object_name_linter	Variable and function name style should match camelCase or snake_case.
+intervals.R	7	object_name_linter	Variable and function name style should match camelCase or snake_case.
+intervals.R	283	object_name_linter	Variable and function name style should match camelCase or snake_case.
+licence.R	5	object_name_linter	Variable and function name style should match camelCase or snake_case.
+licence.R	31	object_name_linter	Variable and function name style should match camelCase or snake_case.
+licence.R	37	object_name_linter	Variable and function name style should match camelCase or snake_case.
+licence.R	38	object_name_linter	Variable and function name style should match camelCase or snake_case.
+licence.R	39	object_name_linter	Variable and function name style should match camelCase or snake_case.
+licence.R	40	object_name_linter	Variable and function name style should match camelCase or snake_case.
+licence.R	282	object_name_linter	Variable and function name style should match camelCase or snake_case.
+licence.R	283	object_name_linter	Variable and function name style should match camelCase or snake_case.
+licence.R	357	indentation_linter	Indentation should be 12 spaces but is 8 spaces.
+metrics.R	4	object_name_linter	Variable and function name style should match camelCase or snake_case.
+metrics.R	267	indentation_linter	Indentation should be 12 spaces but is 8 spaces.
+parity.R	36	indentation_linter	Hanging indent should be 52 spaces but is 16 spaces.
+parity.R	38	line_length_linter	Lines should not be more than 100 characters. This line is 101 characters.
+provenance.R	3	object_name_linter	Variable and function name style should match camelCase or snake_case.
+score.R	3	object_name_linter	Variable and function name style should match camelCase or snake_case.
+scripts.R	49	object_name_linter	Variable and function name style should match camelCase or snake_case.
+scripts.R	145	indentation_linter	Hanging indent should be 22 spaces but is 8 spaces.
+scripts.R	148	indentation_linter	Hanging indent should be 22 spaces but is 8 spaces.
+scripts.R	163	indentation_linter	Hanging indent should be 22 spaces but is 8 spaces.
+scripts.R	170	indentation_linter	Hanging indent should be 22 spaces but is 8 spaces.
+scripts.R	172	indentation_linter	Hanging indent should be 20 spaces but is 8 spaces.
+scripts.R	174	indentation_linter	Indentation should be 17 spaces but is 12 spaces.
+scripts.R	175	indentation_linter	Hanging indent should be 20 spaces but is 8 spaces.
+scripts.R	182	indentation_linter	Hanging indent should be 27 spaces but is 8 spaces.
+scripts.R	195	indentation_linter	Hanging indent should be 18 spaces but is 8 spaces.
+scripts.R	225	indentation_linter	Hanging indent should be 22 spaces but is 8 spaces.
+scripts.R	229	indentation_linter	Hanging indent should be 22 spaces but is 8 spaces.
+scripts.R	332	indentation_linter	Indentation should be 20 spaces but is 26 spaces.
+scripts.R	334	indentation_linter	Hanging indent should be 16 spaces but is 22 spaces.
+units.R	3	object_name_linter	Variable and function name style should match camelCase or snake_case.
+units.R	4	object_name_linter	Variable and function name style should match camelCase or snake_case.
