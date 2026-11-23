@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-177 R1: tests failing first on staging 55710a87 plus the tests-only commits (run branch run-k177-r1); ceiling 4 core-hours",
+  "label": "KIT-177 R1 tests-first on 8f7b4c6e",
+  "package_commit": "8f7b4c6ef04cbef055b13f8ed627813563b953a6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-prot-design-log2.R", "test-workflow-native-session.R", "test-workflow-analysis-record.R"],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
