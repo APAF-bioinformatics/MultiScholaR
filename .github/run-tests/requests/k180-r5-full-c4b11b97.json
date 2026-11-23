@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-180 R5: full suite before merge, c4b11b97 (fix and the three re-frozen GUI-entry references) against base a60c4e9a; check is R2's (same R/)",
+  "label": "KIT-180 R5 full suite c4b11b97 vs base a60c4e9a",
+  "package_commit": "c4b11b974038d3a4fc954a2a5aedc29309c7ebf5",
+  "base_commit": "a60c4e9a0ec8b7db47edddaa53926a61e2b60299",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
