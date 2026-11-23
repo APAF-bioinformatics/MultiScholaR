@@ -110,6 +110,30 @@ compiled `ora_cpp`, from the gene list and the sets. No KIT-173 code path that r
 difference is not explained. Which of KIT-173's change or the process arrangement causes it is the owner's question;
 the test and the product code are unchanged.
 
+## Declared control 2: the cross pair by collation (owner, VAL-57: "take recommended")
+
+Purpose: to learn whether T7(b)'s difference (protein order inside the `geneID` cells when a record captured on the
+base is replayed on the head, run 45141146856) comes from the process arrangement of that run (base capture in its
+own Rscript process, head replay in a second process under `testthat::test_file`, which sets its own collation) or
+from KIT-173's change. Design: one scripts request, `t7-cross.R` (job), `t7-cross-capture.R` (base capture process)
+and `t7-cross-replay.R` (head replay process). The base commit 62a41ba1 is installed into a private library as
+before. The cross pair (base capture, head replay; two processes, as in T7i1) is run twice: (a) both processes with
+`LC_COLLATE=C`; (b) both processes in the runner's locale. Each variant records the eleven expectations of T7(b), the
+DA table's row order at capture and at replay (same order yes or no, rows at another position), the gene vectors
+handed to `enricher` (same sequence yes or no, positions that differ), the `geneID` cells that differ (term id,
+number of proteins, same set yes or no; no accession leaves the job), and `Sys.getlocale("LC_COLLATE")` in every
+process. The job also records the collation of the T7i1 arrangement: an Rscript process in the runner's locale (the
+capture) and a `testthat::test_that` context in a second process (the replay). No test and no product code changes.
+Commit bound: the commit that adds these scripts (stated in `runs.tsv`). Ceiling: one job, 1.5 core-hours.
+
+Deciding rule, fixed now: identical in both (a) and (b) = the earlier failure was the test's process arrangement;
+different in both = the difference is KIT-173's; any other pattern is reported as found. Nothing further is decided
+here: no test is adjusted, no product code changes, A4 is not re-judged by the implementer. One run producing a
+result; if it fails on its own mechanics with no comparison produced, the mechanics may be fixed and the run sent once
+more, both recorded.
+
+Result: __CROSS__
+
 ## Acceptance criteria
 
 | # | Status | Evidence |
