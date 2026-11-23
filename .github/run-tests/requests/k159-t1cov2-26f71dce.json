@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-159 T1 final part (A2): covr over the whole msrval suite and lintr on msrval; ceiling T1's remaining 3.16 core-hours (resend: k159-t1cov-26f71dce refused, requested_by too long)",
+  "label": "KIT-159 T1 covr and lintr at 26f71dce",
+  "package_commit": "26f71dcea250ce719076b7e18a93a3b804784dfa",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["covr", "lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1cov-out",
+        "--files",
+        "metrics",
+        "--lint",
+        "--covr"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1cov-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 36
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
