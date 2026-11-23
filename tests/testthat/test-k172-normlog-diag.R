@@ -16,17 +16,31 @@ test_that("KIT-172 diagnosis: norm_log text per lane at step norm", {
     original(value, roots)
   }, envir = helpers)
   withr::defer(assign("guiEntryOutputValue", original, envir = helpers))
-  for (lane in c("lipid_canonical", "metab_lc", "metab_gc", "metab_combined")) {
-    record <- guiEntryRunLane(lane)
+  # Mode `testthat`: as the suite runs it (C collation). Mode `system`: two lanes again under the runner's own locale
+  # (LC_ALL ""), as the bundle's lane step runs the lanes outside testthat.
+  runs <- list(list(mode = "testthat", lanes = c("lipid_canonical", "metab_lc", "metab_gc", "metab_combined")),
+    list(mode = "system", lanes = c("lipid_canonical", "metab_gc")))
+  for (run in runs) for (lane in run$lanes) {
+    if (identical(run$mode, "system")) {
+      saved <- Sys.getlocale()
+      suppressWarnings(Sys.setlocale("LC_ALL", ""))
+      record <- guiEntryRunLane(lane)
+      locale <- Sys.getlocale()
+      suppressWarnings(Sys.setlocale("LC_ALL", saved))
+    } else {
+      record <- guiEntryRunLane(lane)
+      locale <- Sys.getlocale()
+    }
+    lane_label <- paste0(lane, "[", run$mode, "]")
     omic <- if (startsWith(lane, "lipid")) "lipidomics" else "metabolomics"
     key <- paste0(omic, "_workflow-norm-norm_log")
     oracle <- jsonlite::read_json(guiEntryOraclePath(lane), simplifyVector = FALSE)$steps$norm$outputs[[key]]
     text <- sub("^<fulltext> ", "", record$steps$norm$outputs[[key]])
     computed <- paste("<text>", digest::digest(text, algo = "sha256", serialize = FALSE))
-    fail(sprintf("K172DIAG %s chars %d computed %s oracle %s equal %s crlf %s", lane, nchar(text), computed, oracle,
-      identical(computed, oracle), grepl("\r", text, fixed = TRUE)))
+    fail(sprintf("K172DIAG %s chars %d computed %s oracle %s equal %s crlf %s locale %s", lane_label, nchar(text), computed,
+      oracle, identical(computed, oracle), grepl("\r", text, fixed = TRUE), substr(locale, 1L, 200L)))
     flat <- gsub("\r", "<CR>", gsub("\n", " | ", text, fixed = TRUE), fixed = TRUE)
     starts <- seq(1L, nchar(flat), by = 500L)
-    for (i in seq_along(starts)) fail(sprintf("K172TEXT %s %02d %s", lane, i, substr(flat, starts[[i]], starts[[i]] + 499L)))
+    for (i in seq_along(starts)) fail(sprintf("K172TEXT %s %02d %s", lane_label, i, substr(flat, starts[[i]], starts[[i]] + 499L)))
   }
 })
