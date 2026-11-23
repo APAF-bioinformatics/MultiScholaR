@@ -40,7 +40,8 @@ status("start", "", sprintf("head %s, base %s, cpu %s, base records %s", paste(s
 # --- compareLane, extracted as a definition (the file is never sourced) ---------------------------------------------
 lanes_file <- parse(file.path(head_root, "packaging", "verify", "run-lanes.R"), keep.source = FALSE)
 for (expression in lanes_file) {
-  if (is.call(expression) && identical(expression[[1L]], as.name("<-")) && as.character(expression[[2L]]) %in% c("compareLane", "truncate")) {
+  if (is.call(expression) && identical(expression[[1L]], as.name("<-")) && is.name(expression[[2L]]) &&
+    as.character(expression[[2L]]) %in% c("compareLane", "truncate")) {
     eval(expression, globalenv())
   }
 }
@@ -112,6 +113,15 @@ writeLines(c(
   '  if (identical(pass, "head0")) env$guiEntryExpectLane(lane) else env$guiEntryRunLane(lane)',
   '  cat(sprintf("%s\\t%.1f\\n", lane, as.numeric(difftime(Sys.time(), started, units = "mins"))), file = file.path(record_dir, "minutes.tsv"), append = TRUE)',
   '}'), child)
+
+# Native code compiled once per tree before the passes start side by side (two load_all in one tree at once would race).
+compile <- file.path(scratch, "kit172-compile.R")
+writeLines('suppressMessages(pkgload::load_all(".", quiet = TRUE))', compile)
+for (tree in c(if (is.null(base_records)) worktree, head_root)) {
+  code <- system2("bash", c("-c", shQuote(sprintf("cd %s && Rscript %s > %s 2>&1", shQuote(tree), shQuote(compile),
+    shQuote(file.path(out, paste0("compile-", basename(tree), ".log")))))))
+  status("compile", basename(tree), if (code == 0L) "pass" else sprintf("exit %d", code))
+}
 
 runPasses <- function(passes, lane_set) {
   jobs <- lapply(passes, function(pass) {
