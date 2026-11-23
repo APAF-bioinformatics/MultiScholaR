@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-171 R1: failing-first, tests-only commit (R/ equal to base); the reader's test file and script S1 on PXD000279",
+  "label": "KIT-171 R1 tests-only c3aa6f46: T1 to T4 expected red at stated values; S1 base counts",
+  "package_commit": "c3aa6f462d1f4bcc41b11c8a7510574ef164c4ac",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-import-maxquant-direct-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-171/real-file-counts.R",
+      "args": [
+        "k171-s1-out"
+      ],
+      "env": {},
+      "out": "k171-s1-out",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
