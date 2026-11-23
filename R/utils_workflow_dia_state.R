@@ -1352,16 +1352,12 @@ protDesignPlainLog2 <- function(table, id_column) {
         class = "prot_design_quantity_invalid", run = run, values = values)
     }
   }
-  counts <- c(nonpositive_set_to_na = 0L, nonfinite_set_to_na = 0L)
-  for (run in runs) {
-    x <- as.numeric(table[[run]])
-    zero <- !is.na(x) & x == 0
-    nan <- is.nan(x)
-    counts[["nonpositive_set_to_na"]] <- counts[["nonpositive_set_to_na"]] + sum(zero)
-    counts[["nonfinite_set_to_na"]] <- counts[["nonfinite_set_to_na"]] + sum(nan)
-    x[zero | nan] <- NA_real_
-    table[[run]] <- log2(x)
-  }
+  # KIT-172's shared plain-log2 kernel (ENG-25): after the refusal above only 0 and NaN remain to be set to missing,
+  # so its `nonpositive` count is the zeros and its `nonfinite` count the NaN cells.
+  log2ed <- omicsLog2SampleColumns(table, runs, 0, "protein design")
+  table <- log2ed$assay
+  counts <- c(nonpositive_set_to_na = as.integer(log2ed$counts[["nonpositive"]]),
+    nonfinite_set_to_na = as.integer(log2ed$counts[["nonfinite"]]))
   list(table = table, counts = counts)
 }
 
@@ -1484,8 +1480,7 @@ buildProtDesignStateCheckpoint <- function(
     logger::log_info(sprintf("%s %s: Applying log2 transformation to abundance values...", workflowType, actionLabel))
 
     # KIT-177 (VAL-25, VAL-27): plain log2. A negative or infinite quantity is refused before anything is committed;
-    # 0 and NaN become missing and are counted apart; then log2, in log2TransformPeptideMatrix's order. KIT-172's
-    # helper is not on this base and works on lipid and metabolite assays, so the rule is applied here.
+    # 0 and NaN become missing and are counted apart; then log2 (KIT-172's shared kernel).
     proteinIdCol <- workflowData$column_mapping$protein_col
     log2Result <- protDesignPlainLog2(proteinQuantTableWide, proteinIdCol)
     proteinQuantTableWide <- log2Result$table
