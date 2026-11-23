@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 T0f: r1.12 tests only (coverage-table, parity-stage, phases), shown failing before the code; ceiling T0's remaining 1.63 core-hours",
+  "label": "KIT-159 T0f tests only at 7f4bfc4b",
+  "package_commit": "7f4bfc4be612ab9537a7758b1c606e7ef98c2939",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t0f-out",
+        "--files",
+        "coverage-table,parity-stage,phases"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t0f-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
