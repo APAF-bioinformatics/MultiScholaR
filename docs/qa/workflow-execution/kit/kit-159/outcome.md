@@ -26,30 +26,28 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-23 12:05 UTC; read this first)
+## Resume here (state 2026-11-23, after the second build-points ruling; read this first)
 
-Branch head after this commit; code of section 7 at 2b18b1e3 (unrun). Done in this session:
-1. Offered-regime table in `USAGE.md` and provisional ledger row `VAL-<merge>` (H2) from
-   `t2/coverage-table.tsv` (2eed1c94); four points for the auditor under "Offered regimes from T2".
-2. A2 run 45166390132 at 26f71dce (`k159-t1cov2-26f71dce`; the first send 45166193345 was refused by
-   the plan job, `requested_by` too long, 0.01): **covr 86.52 % (met, >= 80)**; **lintr 93 lints
-   (not met)**: 35 indentation, 30 object_name, 15 line_length, 6 brace, 4 assignment, 3
-   object_usage (`t1/t1cov-lint.txt`; driver.R 30, scripts.R 14). A result: recorded, not rerun.
-   Fixing the lints and showing lintr empty needs a further run: T1 is at 13.58 of 15 (one job of
-   about 26 minutes left would not fit with set-up and covr): coordinator's word needed.
-3. Merge of `v0.9-staging` 5cbd4005 (true merge f350ef8c; one mechanical ledger conflict).
-4. Section 7, tests first: tests-only e7a0c82c, **T0e run 45167156299: all 10 new tests fail on
-   missing functions as expected** (0.77; T0 now 4.37 of 6). Code 2b18b1e3: cell phases
-   (`phases.R`, `val-run.R`), kernel gate in the cell runner, parity stage (`distributable.yml`,
-   `val-parity.R`, `parity.R` checks, allow-lists), T2 table in `inst/extdata`. **Unrun**: its
-   passing run needs budget beyond T1 (coordinator's word).
+Ticket r1.12 (main checkout): build-points2 points 3, 4, 5 (a), (b), (c), (e), (f) and R1 applied
+with the register's text (section 27). **HELD for the owner, nothing changed:** point 1 (exact
+binomial band for exact methods) and point 2 (rank generator re-pin and re-run of the C4/C4e rank
+cells); the offered-regime table stays as classified.
 
-**Not started:** `run-val-mofa` (7.10 starts with KIT-170); R1 (its UniProt-cache part is barred by
-ruling 4 and the "small open file" is not named by the ticket: a choice for the coordinator); S0
-(needs the cell phases verified first).
+Commits: tests only 7f4bfc4b (T-COV-ENDS, T-COV-ENDS-2, T-PAR-4, T-PH-8, T-PH-9); code and lint
+4150f21c (coverage table ends and failing condition computed from the recorded detail columns, no
+rerun; USAGE label for clopper_pearson; valCheckParityL1; valWithinRunRows, widening, run-level
+clopper_pearson, bootstrap_within_run verdicts; test mode not forceable; hook summary folder NULL
+without hooks.summary; lint fixes, false positives listed in CHANGES).
 
-**Next (each needs the coordinator's word on budget):** one run of the whole msrval suite at
-2b18b1e3 or later (T-PH, T-PAR, everything else) with the lint fixes and `--lint`; then R1 and S0.
+**In flight:** T0f run 45171499308 (tests only at 7f4bfc4b, `--files coverage-table,parity-stage,
+phases`; the new tests should fail; T-PH-1 to T-PH-7 there run the 2b18b1e3 code for the first
+time) under T0 (1.63 left); lint-only run 45172462054 at 4150f21c (`--lint`, plain pass
+test-metrics) under T1 (1.42 left). Fetch each with `gh run download <id> -n scripts` from the
+run-tests worktree; copy results to `t0/t0f-*` and `t1/t1lint-*`, add runs.tsv rows.
+
+**Waiting on the owner:** points 1 and 2; budget into T1 for the whole-suite run that proves the
+section 7 and r1.12 code. Not started: R1 (now specified by r1.12; needs
+`lifecycle/uniprot-accessions.tsv` and a pre script), S0, run-val-mofa (with KIT-170).
 
 ## Earlier resume record (state at dcc27fb5)
 
