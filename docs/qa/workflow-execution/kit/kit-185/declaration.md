@@ -86,3 +86,13 @@ N rows, 1,600 each; run-aligned `none` rows, 35,760). The failure was in `score-
 data frames read separately, whose inferred column types differ (an all-NA column is logical in one table, numeric in
 another). Fix: the compared columns are converted to text before `identical()`; no estimand, contrast, interval, band or
 classification code changed. New SHA-256 of `score-k185.R`: see the commit that adds this section. All rows re-scored once.
+
+## 8. Dated note (2026-11-24), after the implementation audit: record corrections only
+
+- Section 7's "see the commit that adds this section": the SHA-256 of `score-k185.R` at commit 4e6d426f is
+  6847852cc8f4032fb41b96d0e89fa14b9c5d8dec2d45e0a27f22935d85e62554. The scoring runs were SC 45281426216 (the E5/E8
+  comparison defect) and SC2 45283782973 (the re-score).
+- Section 6's job splits were made with `round()` (1-133, 134-267, 268-400), not 1-134 etc.; the same replicates.
+- Part B's proteomics DA reference arm failed silently (`outcome.md`, Instrument events); no classification depends on it.
+- P5's 38 replicates left by two timeouts were re-sent under VAL-54 instead of 5.7's "did not complete" rule: a departure
+  awaiting the owner. Nothing in sections 1 to 6 changes.
