@@ -1,0 +1,4 @@
+accession	not_term	qualifier	in_uniprot_go_id	ancestor_of_a_positive_term
+P27697	GO:0006468	NOT|involved_in	FALSE	FALSE
+P34227	GO:0050821	NOT|involved_in	FALSE	FALSE
+P38013	GO:0050821	NOT|involved_in	FALSE	FALSE

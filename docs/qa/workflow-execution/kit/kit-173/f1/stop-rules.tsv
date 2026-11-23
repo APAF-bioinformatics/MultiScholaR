@@ -1,0 +1,9 @@
+rule	triggered	detail
+2.2 edge counts by label reproduced	FALSE	BP isa 41725/41725; BP negatively regulates 2507/2507; BP part of 4493/4493; BP positively regulates 2506/2506; BP regulates 2867/2867; CC isa 4664/4664; CC part of 1824/1824; MF isa 12413/12413; MF part of 8/8
+2.2 pair counts and GO*ANCESTOR = five-relation closure reproduced	FALSE	BP five 464934 two 352532 map 464934 equal TRUE; MF five 64418 two 64418 map 64418 equal TRUE; CC five 42075 two 42075 map 42075 equal TRUE
+2.2 no edge to another aspect except each root's edge to all	FALSE	BP->BP 54097; BP->universal 1; MF->MF 12420; MF->universal 1; CC->CC 6487; CC->universal 1
+2.2 GO:0006110 18 vs 75 ancestors reproduced	FALSE	18 / 75
+fetch failed twice: europepmc_full_service_2023	TRUE	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10320099/fullTextXML
+fetch failed twice: europepmc_full_package_2020	TRUE	https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7859841/fullTextXML
+go_id includes ancestors (UniProt holds most ancestors of QuickGO's direct terms)	FALSE	P00330 0; P00549 0; P02829 0
+go_id includes NOT-qualified terms	FALSE	P27697 GO:0006468 FALSE; P34227 GO:0050821 FALSE; P38013 GO:0050821 FALSE

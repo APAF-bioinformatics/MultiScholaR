@@ -1,0 +1,11 @@
+name	value
+GOSOURCENAME	Gene Ontology
+GOSOURCEURL	https://current.geneontology.org/ontology/go-basic.obo
+GOSOURCEDATE	2026-01-23
+Db type	GODb
+package	AnnotationDbi
+DBSCHEMA	GO_DB
+GOEGSOURCEDATE	2026-Mar18
+GOEGSOURCENAME	Entrez Gene
+GOEGSOURCEURL	ftp://ftp.ncbi.nlm.nih.gov/gene/DATA
+DBSCHEMAVERSION	2.1
