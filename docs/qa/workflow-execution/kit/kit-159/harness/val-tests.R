@@ -7,9 +7,11 @@
 #   --covr                also covr line coverage of msrval -> <out>/coverage.txt
 #   --lint                also lintr on msrval (lintr from `extra_packages`) -> <out>/lint.txt
 #   --time-regime <id>    time one coverage regime in one process and in four concurrent chunks
-#                         (f_sim, G14 (c)) -> <out>/fsim.tsv; with --nsim <n>
-#   --coverage <ids>      run coverage regimes (comma-separated ids, or "all") in --chunks <k>
-#                         concurrent processes -> <out>/coverage-table.tsv; with --nsim <n>
+#                         (f_sim, G14 (c)) -> <out>/fsim.tsv; with --nsim <n>; and a cost probe
+#   --probe-cells <ids>   cost probe of the named cells only -> <out>/cost-probe.tsv
+#                         (--probe-nsim, --probe-target-sims)
+#   --coverage-plan <f>   run the plan's tasks of --request <id> in --chunks <k> concurrent
+#                         processes -> coverage-detail.tsv, coverage-table.tsv, coverage-tasks.tsv
 #   --ticket <dir>        run a ticket's pinned tests in <dir>/tests -> <out>/ticket-tests.tsv
 #
 # msrval is installed from this checkout into $RUNNER_TEMP/val-lib first (7.8 step 1). Only fixed
@@ -124,14 +126,18 @@ if (has("--lint")) {
 }
 
 # --- Coverage regimes (T-COV) and the chunk speed-up on simulations (f_sim) ---
-if (!is.null(optValue("--time-regime"))) {
-    msrval::valTimeRegime(optValue("--time-regime"), nsim = as.integer(optValue("--nsim", "200")),
-                          out_dir = out_dir, chunks = 4L)
-    say("f_sim written")
+if (!is.null(optValue("--time-regime")) || !is.null(optValue("--probe-cells"))) {
+    probe <- optValue("--probe-cells")
+    msrval::valTimeRegime(optValue("--time-regime", ""),
+                          nsim = as.integer(optValue("--nsim", "200")), out_dir = out_dir,
+                          chunks = 4L,
+                          probe_nsim = as.integer(optValue("--probe-nsim", "20")),
+                          probe_target_sims = as.integer(optValue("--probe-target-sims", "200")),
+                          probe_cells = if (is.null(probe)) NULL else strsplit(probe, ",")[[1L]])
+    say("f_sim and cost probe written")
 }
-if (!is.null(optValue("--coverage"))) {
-    ids <- optValue("--coverage")
-    msrval::valRunCoverage(ids = if (identical(ids, "all")) NULL else strsplit(ids, ",")[[1L]],
+if (!is.null(optValue("--coverage-plan"))) {
+    msrval::valRunCoverage(optValue("--coverage-plan"), request = optValue("--request", "all"),
                            nsim = as.integer(optValue("--nsim", "2000")),
                            chunks = as.integer(optValue("--chunks", "4")), out_dir = out_dir)
     say("coverage-table.tsv written")

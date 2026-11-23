@@ -4,9 +4,7 @@
 
 COVERAGE_LEVELS <- c(0.95, 0.975, 1 - 0.05 / 3, 1 - 0.05 / 4, 1 - 0.05 / 6, 1 - 0.05 / 8,
                      1 - 0.05 / 12, 1 - 0.05 / 15)
-COVERAGE_SEED <- 159200L
 TARGET_SIMS <- 20000L
-TARGET_SEED <- 159700000L
 
 #' The harness regime cells of T-COV
 #'
@@ -121,7 +119,7 @@ valGenUnits <- function(n, shape, centre) {
     0.02 * (exp(stats::rnorm(n)) - cc)
 }
 
-#' Coverage rows of one cell from per-simulation hits (`sims x levels` logical matrix)
+#' Coverage rows of one cell and statistic from per-simulation hits (`sims x levels`)
 #' @noRd
 valCoverageRows <- function(cell, statistic, class, hits, kind, achieved = NULL,
                             undefined = NULL, target = NA_real_) {
@@ -131,8 +129,8 @@ valCoverageRows <- function(cell, statistic, class, hits, kind, achieved = NULL,
     data.frame(
         cell = cell$cell, regime = cell$regime, family = cell$family, n = cell$n,
         condition = cell$condition, statistic = statistic, class = class,
-        level = COVERAGE_LEVELS, nsim = nsim, coverage = cov, mc_se = sqrt(cov * (1 - cov) / nsim),
-        achieved = ach,
+        level = COVERAGE_LEVELS, nsim = nsim, coverage = cov,
+        mc_se = sqrt(cov * (1 - cov) / nsim), achieved = ach,
         undefined = if (is.null(undefined)) 0 else mean(undefined),
         target = target,
         status = vapply(seq_along(cov), function(i) {
@@ -142,131 +140,114 @@ valCoverageRows <- function(cell, statistic, class, hits, kind, achieved = NULL,
     )
 }
 
-#' Run one coverage regime cell, or a ticket regime (section 4.4)
+#' The cell's index (the numeric suffix of its id)
+#' @noRd
+valCellIndex <- function(cell) as.integer(sub("^.*-", "", cell$cell))
+
+#' Seed of simulation `s` of a cell: fixed by the cell and `s` alone (never by the chunking)
 #'
-#' A harness cell is a row of [valCoverageCells()]. A ticket regime is a list with `id`, `method`,
-#' `class`, `form`, `g`, `levels`, `simulations`, a function `simulate(nsim, seed, levels)`
-#' returning a data frame with `level`, `covered` (and optionally `achieved`), and `kind` of its
-#' pass band (`approx_run` by default).
-#'
-#' @param regime A cell (one-row data frame) or a ticket regime (list).
-#' @param nsim Simulations (at least 2,000 in T2 and for a ticket regime).
-#' @param seed Seed of the cell.
-#' @param target_sims Simulations of the full statistic for the target (20,000; fewer only when
-#'   probing cost).
-#' @return A data frame of coverage rows, one per level (and statistic).
+#' @param cell A row of [valCoverageCells()].
+#' @param s Simulation index (1 to 99,999).
+#' @return An integer seed.
 #' @export
-valCoverageRegime <- function(regime, nsim = 2000L, seed = NULL, target_sims = TARGET_SIMS) {
-    if (is.list(regime) && !is.data.frame(regime)) return(valTicketRegime(regime, nsim, seed))
-    cell <- as.list(regime)
-    seed <- seed %||% (COVERAGE_SEED + as.integer(sub("^.*-", "", cell$cell)))
+valSimSeed <- function(cell, s) 1000000000L + valCellIndex(cell) * 100000L + as.integer(s)
+
+#' Seed of target simulation `t` of a cell (1 to 99,999)
+#'
+#' @inheritParams valSimSeed
+#' @param t Target simulation index.
+#' @return An integer seed.
+#' @export
+valTargetSeed <- function(cell, t) 1500000000L + valCellIndex(cell) * 100000L + as.integer(t)
+
+#' Seed of the bootstrap inside simulation `s` (C7)
+#' @noRd
+valBootSeed <- function(cell, s) 2000000000L + valCellIndex(cell) * 50000L + as.integer(s)
+
+#' The simulation spec of a harness cell: statistics, their pass band, one simulation, one target
+#' simulation (or an analytic target)
+#' @noRd
+valCovSpec <- function(cell) {
     fam <- strsplit(cell$family, ":", fixed = TRUE)[[1L]]
-    t0 <- proc.time()[["elapsed"]]
-    out <- switch(fam[[1L]],
-           exact_median = valCovUnits(cell, nsim, seed, "exact_median"),
-           paired_t = valCovUnits(cell, nsim, seed, "paired_t"),
-           c3 = valCovC3(cell, nsim, seed, fam, target_sims),
-           c4 = valCovMatrix(cell, nsim, seed, "replicate", as.integer(fam[[2L]]), target_sims),
-           c4e = valCovMatrix(cell, nsim, seed, "block", as.integer(fam[[2L]]), target_sims),
-           wilson = valCovBinomial(cell, nsim, seed, "wilson"),
-           clopper_pearson = valCovBinomial(cell, nsim, seed, "clopper_pearson"),
-           newcombe_paired = valCovNewcombe(cell, nsim, seed),
-           c7 = valCovBootstrap(cell, nsim, seed, fam[[2L]], target_sims),
+    switch(fam[[1L]],
+           exact_median = valSpecUnits(cell, "exact_median"),
+           paired_t = valSpecUnits(cell, "paired_t"),
+           wilson = valSpecBinomial(cell, "wilson"),
+           clopper_pearson = valSpecBinomial(cell, "clopper_pearson"),
+           newcombe_paired = valSpecNewcombe(cell),
+           c3 = valSpecC3(cell, fam),
+           c4 = valSpecMatrix(cell, "replicate", as.integer(fam[[2L]])),
+           c4e = valSpecMatrix(cell, "block", as.integer(fam[[2L]])),
+           c7 = valSpecBootstrap(cell, fam[[2L]]),
            valAbort("unknown coverage family {cell$family}", "val_spec_invalid"))
-    if (is.null(out$seconds_sims)) {
-        out <- valTimed(out, 0, proc.time()[["elapsed"]] - t0, 0L)
-    }
-    out
 }
 
-#' A ticket coverage regime (declared in `coverage_regimes`)
+#' Interval bounds of one statistic at every level, as a list
 #' @noRd
-valTicketRegime <- function(regime, nsim, seed) {
-    checkmate::assert_function(regime$simulate)
-    if (nsim < 2000L) {
-        valAbort("a ticket regime needs at least 2,000 simulations", "val_spec_invalid")
-    }
-    res <- regime$simulate(nsim, seed, regime$levels)
-    checkmate::assert_names(names(res), must.include = c("level", "covered"))
-    kind <- regime$kind %||% "approx_run"
-    do.call(rbind, lapply(regime$levels, function(lv) {
-        r <- res[abs(res$level - lv) < 5e-5, , drop = FALSE]
-        cov <- mean(r$covered)
-        ach <- if (is.null(r$achieved)) NA_real_ else mean(r$achieved)
-        data.frame(regime = regime$id, method = regime$method, class = regime$class,
-                   form = regime$form, n = regime$g, level = lv, nsim = nrow(r), coverage = cov,
-                   mc_se = sqrt(cov * (1 - cov) / nrow(r)), achieved = ach,
-                   status = valCoverageStatus(kind, cov, lv, ach, nrow(r)), source = "ticket",
-                   stringsAsFactors = FALSE)
-    }))
+valBounds <- function(intervals) {
+    list(lo = vapply(intervals, function(iv) iv$ci_low %||% NA_real_, numeric(1)),
+         hi = vapply(intervals, function(iv) iv$ci_high %||% NA_real_, numeric(1)),
+         achieved = vapply(intervals, function(iv) iv$achieved_level %||% NA_real_, numeric(1)),
+         undefined = any(vapply(intervals, function(iv) !identical(iv$status, "ok"), logical(1))))
 }
 
-#' C1 and C2: per-unit values
+#' C1 and C2: per-unit values (analytic target: 0.01 normal; 0 skewed, its median or mean)
 #' @noRd
-valCovUnits <- function(cell, nsim, seed, method) {
+valSpecUnits <- function(cell, method) {
     centre <- if (method == "exact_median") "median" else "mean"
-    target <- if (cell$condition == "normal") 0.01 else 0
-    hits <- matrix(FALSE, nsim, length(COVERAGE_LEVELS))
-    ach <- matrix(NA_real_, nsim, length(COVERAGE_LEVELS))
-    valWithSeed(seed, for (s in seq_len(nsim)) {
-        d <- valGenUnits(cell$n, cell$condition, centre)
-        for (j in seq_along(COVERAGE_LEVELS)) {
-            iv <- valInterval(d, method = method, conf = COVERAGE_LEVELS[[j]])
-            hits[s, j] <- isTRUE(iv$ci_low <= target && target <= iv$ci_high)
-            ach[s, j] <- iv$achieved_level
-        }
-    })
-    kind <- if (method == "exact_median") "exact" else "approx_run"
-    out <- valCoverageRows(cell, method, NA_character_, hits, kind,
-                           achieved = if (method == "exact_median") ach, target = target)
-    if (method == "exact_median") {
-        too_few <- is.na(colMeans(ach, na.rm = TRUE))
-        out$status[too_few] <- "not_offered"
-    }
-    out
+    list(stats = data.frame(statistic = method, class = NA_character_,
+                            kind = if (method == "exact_median") "exact" else "approx_run"),
+         target = if (cell$condition == "normal") 0.01 else 0,
+         sim = function(s) {
+             d <- valGenUnits(cell$n, cell$condition, centre)
+             b <- valBounds(lapply(COVERAGE_LEVELS, function(l) {
+                 valInterval(d, method = method, conf = l)
+             }))
+             list(bounds = list(b), data = d)
+         })
 }
 
 #' C5 and C8: binomial shares
 #' @noRd
-valCovBinomial <- function(cell, nsim, seed, method) {
+valSpecBinomial <- function(cell, method) {
     p <- as.numeric(sub("^p", "", cell$condition))
-    hits <- matrix(FALSE, nsim, length(COVERAGE_LEVELS))
-    valWithSeed(seed, for (s in seq_len(nsim)) {
-        x <- stats::rbinom(1L, cell$n, p)
-        for (j in seq_along(COVERAGE_LEVELS)) {
-            iv <- valInterval(x, n = cell$n, method = method, conf = COVERAGE_LEVELS[[j]])
-            hits[s, j] <- iv$ci_low <= p && p <= iv$ci_high
-        }
-    })
-    kind <- if (method == "wilson") "approx_within" else "clopper"
-    valCoverageRows(cell, method, NA_character_, hits, kind, target = p)
+    list(stats = data.frame(statistic = method, class = NA_character_,
+                            kind = if (method == "wilson") "approx_within" else "clopper"),
+         target = p,
+         sim = function(s) {
+             x <- stats::rbinom(1L, cell$n, p)
+             b <- valBounds(lapply(COVERAGE_LEVELS, function(l) {
+                 valInterval(x, n = cell$n, method = method, conf = l)
+             }))
+             list(bounds = list(b), data = x)
+         })
 }
 
 #' C6: correlated binary pairs (latent correlation 0.5)
 #' @noRd
-valCovNewcombe <- function(cell, nsim, seed) {
+valSpecNewcombe <- function(cell) {
     pp <- as.numeric(strsplit(sub("^p", "", cell$condition), "_", fixed = TRUE)[[1L]])
-    target <- pp[[1L]] - pp[[2L]]
-    hits <- matrix(FALSE, nsim, length(COVERAGE_LEVELS))
-    valWithSeed(seed, for (s in seq_len(nsim)) {
-        z1 <- stats::rnorm(cell$n)
-        z2 <- 0.5 * z1 + sqrt(1 - 0.25) * stats::rnorm(cell$n)
-        x1 <- z1 < stats::qnorm(pp[[1L]])
-        x2 <- z2 < stats::qnorm(pp[[2L]])
-        tab <- c(both = sum(x1 & x2), first_only = sum(x1 & !x2), second_only = sum(!x1 & x2),
-                 neither = sum(!x1 & !x2))
-        for (j in seq_along(COVERAGE_LEVELS)) {
-            iv <- valInterval(tab, method = "newcombe_paired", conf = COVERAGE_LEVELS[[j]])
-            hits[s, j] <- iv$ci_low <= target && target <= iv$ci_high
-        }
-    })
-    valCoverageRows(cell, "newcombe_paired", NA_character_, hits, "approx_within", target = target)
+    list(stats = data.frame(statistic = "newcombe_paired", class = NA_character_,
+                            kind = "approx_within"),
+         target = pp[[1L]] - pp[[2L]],
+         sim = function(s) {
+             z1 <- stats::rnorm(cell$n)
+             z2 <- 0.5 * z1 + sqrt(1 - 0.25) * stats::rnorm(cell$n)
+             x1 <- z1 < stats::qnorm(pp[[1L]])
+             x2 <- z2 < stats::qnorm(pp[[2L]])
+             tab <- c(both = sum(x1 & x2), first_only = sum(x1 & !x2),
+                      second_only = sum(!x1 & x2), neither = sum(!x1 & !x2))
+             b <- valBounds(lapply(COVERAGE_LEVELS, function(l) {
+                 valInterval(tab, method = "newcombe_paired", conf = l)
+             }))
+             list(bounds = list(b), data = tab)
+         })
 }
 
 #' C3: per-design values over units; theta = mean over designs, deletion j = mean over the designs
 #' not using unit j
 #' @noRd
-valCovC3 <- function(cell, nsim, seed, fam, target_sims) {
+valSpecC3 <- function(cell, fam) {
     cfg <- valC3Configs()[[fam[[2L]]]]
     cls <- fam[[3L]]
     tr <- fam[[4L]]
@@ -291,34 +272,254 @@ valCovC3 <- function(cell, nsim, seed, fam, target_sims) {
         p <- pmin(pmax(0.05 + m, 0), 1)
         stats::rbinom(length(p), 500L, p) / 500
     }
-    t0 <- proc.time()[["elapsed"]]
-    target <- valWithSeed(TARGET_SEED + seed, mean(replicate(target_sims, mean(oneSim()))))
-    t1 <- proc.time()[["elapsed"]]
-    hits <- matrix(FALSE, nsim, length(COVERAGE_LEVELS))
-    undefined <- logical(nsim)
-    valWithSeed(seed, for (s in seq_len(nsim)) {
-        v <- oneSim()
-        dels <- vapply(seq_len(ncol(uses)), function(j) mean(v[!uses[, j]]), numeric(1))
-        for (j in seq_along(COVERAGE_LEVELS)) {
-            iv <- valJackknife(full = mean(v), deletions = dels, conf = COVERAGE_LEVELS[[j]],
-                               form = "unit", transform = if (tr == "log") "log",
-                               class = cls)
-            undefined[s] <- iv$status != "ok"
-            hits[s, j] <- isTRUE(iv$ci_low <= target && target <= iv$ci_high)
-        }
-    })
-    out <- valCoverageRows(cell, paste(fam[-1L], collapse = ":"), cls, hits, "approx_run",
-                           undefined = undefined, target = target)
-    valTimed(out, t1 - t0, proc.time()[["elapsed"]] - t1, target_sims)
+    list(stats = data.frame(statistic = paste(fam[-1L], collapse = ":"), class = cls,
+                            kind = "approx_run"),
+         target_one = function() mean(oneSim()),
+         sim = function(s) {
+             v <- oneSim()
+             dels <- vapply(seq_len(ncol(uses)), function(j) mean(v[!uses[, j]]), numeric(1))
+             b <- valBounds(lapply(COVERAGE_LEVELS, function(l) {
+                 valJackknife(full = mean(v), deletions = dels, conf = l, form = "unit",
+                              transform = if (tr == "log") "log", class = cls)
+             }))
+             list(bounds = list(b), data = v)
+         })
 }
 
-#' Record the seconds of a cell's target phase and simulation phase
+#' C4 and C4e: jackknife forms (ii) and (iii) on simulated feature matrices
 #' @noRd
-valTimed <- function(out, seconds_target, seconds_sims, target_sims) {
-    out$seconds_target <- seconds_target
-    out$seconds_sims <- seconds_sims
-    out$target_sims <- target_sims
+valSpecMatrix <- function(cell, form, n_feat) {
+    g <- cell$n
+    lay <- valCovLayout(form, g)
+    statsOf <- function(x, l, truth) valCovStats(valCovFit(x, l, form), truth, n_feat, form)
+    names_s <- if (n_feat == 4840L) {
+        "rank.pauc_diff"
+    } else if (form == "replicate") {
+        c("accuracy.mae", "accuracy.mae_diff", "threshold_count.sens",
+          "threshold_count.sens_diff", "threshold_count.fcs", "threshold_count.fcs_diff")
+    } else {
+        c("accuracy.mae", "accuracy.bias", "threshold_count.rej")
+    }
+    parts <- strsplit(names_s, ".", fixed = TRUE)
+    list(stats = data.frame(statistic = vapply(parts, `[`, "", 2L),
+                            class = vapply(parts, `[`, "", 1L), kind = "approx_run"),
+         target_one = function() {
+             dat <- valCovMatrixData(lay, n_feat, form)
+             unname(statsOf(dat$x, lay, dat$truth))
+         },
+         sim = function(s) {
+             dat <- valCovMatrixData(lay, n_feat, form)
+             full <- unname(statsOf(dat$x, lay, dat$truth))
+             dels <- matrix(vapply(seq_len(g), function(u) {
+                 keep <- lay$unit != u
+                 unname(statsOf(dat$x[, keep], lay[keep, ], dat$truth))
+             }, numeric(length(names_s))), nrow = length(names_s))
+             bounds <- lapply(seq_along(names_s), function(k) {
+                 valBounds(lapply(COVERAGE_LEVELS, function(l) {
+                     valJackknife(full = full[[k]], deletions = dels[k, ], conf = l, form = form)
+                 }))
+             })
+             list(bounds = bounds, data = dat$x)
+         })
+}
+
+#' C7: the paired within-run bootstrap over 200 keys in two classes, iid within class
+#' @noRd
+valSpecBootstrap <- function(cell, cls) {
+    simData <- function() {
+        cl <- rep(c("x", "y"), each = 100L)
+        if (cls == "accuracy") {
+            e_a <- stats::rnorm(200L, 0, ifelse(cl == "x", 0.3, 0.5))
+            return(data.frame(class = cl, a = e_a, b = 0.8 * e_a + stats::rnorm(200L, 0, 0.15)))
+        }
+        z1 <- stats::rnorm(200L)
+        z2 <- 0.5 * z1 + sqrt(0.75) * stats::rnorm(200L)
+        pa <- ifelse(cl == "x", 0.7, 0.05)
+        pb <- ifelse(cl == "x", 0.6, 0.04)
+        data.frame(class = cl, a = as.numeric(z1 < stats::qnorm(pa)),
+                   b = as.numeric(z2 < stats::qnorm(pb)))
+    }
+    statistic <- if (cls == "accuracy") {
+        function(d) stats::median(abs(d$b)) - stats::median(abs(d$a))
+    } else {
+        function(d) {
+            x <- d$class == "x"
+            mean(d$a[x]) - mean(d$b[x])
+        }
+    }
+    b_max <- valBootstrapMinB(max(COVERAGE_LEVELS))
+    list(stats = data.frame(statistic = paste0("paired_", cls), class = cls,
+                            kind = "approx_within"),
+         target_one = function() statistic(simData()),
+         sim = function(s) {
+             d <- simData()
+             bs <- valBootstrap(d, statistic, B = b_max, conf = max(COVERAGE_LEVELS),
+                                seed = valBootSeed(cell, s), strata = "class",
+                                keep_replicates = TRUE)
+             reps <- bs$replicates[is.finite(bs$replicates)]
+             q <- lapply(COVERAGE_LEVELS, function(l) {
+                 tail <- (1 - l) / 2
+                 stats::quantile(reps, c(tail, 1 - tail), type = 6, names = FALSE)
+             })
+             b <- list(lo = vapply(q, `[`, 0, 1L), hi = vapply(q, `[`, 0, 2L),
+                       achieved = rep(NA_real_, length(COVERAGE_LEVELS)),
+                       undefined = !identical(bs$status, "ok"))
+             list(bounds = list(b), data = as.matrix(d[, c("a", "b")]))
+         })
+}
+
+#' Run a range of a cell's simulations and target simulations
+#'
+#' Each simulation `s` runs under [valSimSeed()] and each target simulation `t` under
+#' [valTargetSeed()], so any split of a cell into ranges gives the same data sets and bounds as the
+#' cell run whole (coordinator's ruling of 2026-11-23, point 3).
+#'
+#' @param cell A row of [valCoverageCells()].
+#' @param sims Simulation indices.
+#' @param targets Target simulation indices (empty for a cell with an analytic target).
+#' @return A list: the cell id, `sims`, bound arrays (`lo`, `hi`, `achieved`: sims x levels x
+#'   statistics), `undefined` (sims x statistics), per-simulation data digests, `targets`,
+#'   `target_sum`, and the seconds of each phase.
+#' @export
+valCoverageRange <- function(cell, sims, targets = integer()) {
+    cell <- as.list(cell)
+    spec <- valCovSpec(cell)
+    n_stat <- nrow(spec$stats)
+    n_lv <- length(COVERAGE_LEVELS)
+    lo <- hi <- ach <- array(NA_real_, c(length(sims), n_lv, n_stat))
+    undefined <- matrix(FALSE, length(sims), n_stat)
+    digests <- character(length(sims))
+    t0 <- proc.time()[["elapsed"]]
+    for (i in seq_along(sims)) {
+        r <- valWithSeed(valSimSeed(cell, sims[[i]]), spec$sim(sims[[i]]))
+        for (k in seq_len(n_stat)) {
+            b <- r$bounds[[k]]
+            lo[i, , k] <- b$lo
+            hi[i, , k] <- b$hi
+            ach[i, , k] <- b$achieved
+            undefined[i, k] <- b$undefined
+        }
+        digests[[i]] <- digest::digest(r$data, algo = "sha256")
+    }
+    t1 <- proc.time()[["elapsed"]]
+    target_sum <- numeric(n_stat)
+    if (is.null(spec$target_one)) targets <- integer()
+    for (t in targets) {
+        target_sum <- target_sum + valWithSeed(valTargetSeed(cell, t), spec$target_one())
+    }
+    list(cell = cell$cell, sims = as.integer(sims), lo = lo, hi = hi, achieved = ach,
+         undefined = undefined, digests = digests, targets = as.integer(targets),
+         target_sum = target_sum, seconds_sims = t1 - t0,
+         seconds_target = proc.time()[["elapsed"]] - t1)
+}
+
+#' Combine a cell's ranges into its coverage rows
+#'
+#' Refuses (`val_spec_invalid`) unless the ranges hold every simulation 1..`nsim` and (for a cell
+#' with a simulated target) every target simulation 1..`target_sims` exactly once.
+#'
+#' @param cell A row of [valCoverageCells()].
+#' @param parts Results of [valCoverageRange()].
+#' @param nsim,target_sims The cell's simulation counts.
+#' @return Coverage rows, one per statistic and level, with attribute `data_digests`.
+#' @export
+valCombineCoverage <- function(cell, parts, nsim, target_sims) {
+    cell <- as.list(cell)
+    spec <- valCovSpec(cell)
+    sims <- unlist(lapply(parts, `[[`, "sims"))
+    if (!identical(sort(sims), seq_len(nsim))) {
+        valAbort("the ranges of {cell$cell} do not hold each simulation exactly once",
+                 "val_spec_invalid")
+    }
+    target <- spec$target
+    if (is.null(target)) {
+        targets <- unlist(lapply(parts, `[[`, "targets"))
+        if (!identical(sort(targets), seq_len(target_sims))) {
+            valAbort("the ranges of {cell$cell} do not hold each target simulation exactly once",
+                     "val_spec_invalid")
+        }
+        target <- Reduce(`+`, lapply(parts, `[[`, "target_sum")) / target_sims
+    }
+    ord <- order(sims)
+    bind <- function(field) {
+        a <- do.call(abind3, lapply(parts, `[[`, field))
+        a[ord, , , drop = FALSE]
+    }
+    lo <- bind("lo")
+    hi <- bind("hi")
+    ach <- bind("achieved")
+    undefined <- do.call(rbind, lapply(parts, `[[`, "undefined"))[ord, , drop = FALSE]
+    out <- do.call(rbind, lapply(seq_len(nrow(spec$stats)), function(k) {
+        hits <- lo[, , k, drop = FALSE] <= target[[k]] & target[[k]] <= hi[, , k, drop = FALSE]
+        hits <- matrix(hits %in% TRUE, nrow = nsim)
+        st <- spec$stats[k, ]
+        valCoverageRows(cell, st$statistic, st$class, hits, st$kind,
+                        achieved = if (st$kind == "exact") matrix(ach[, , k], nrow = nsim),
+                        undefined = undefined[, k], target = target[[k]])
+    }))
+    out$seconds_sims <- sum(vapply(parts, `[[`, 0, "seconds_sims"))
+    out$seconds_target <- sum(vapply(parts, `[[`, 0, "seconds_target"))
+    attr(out, "data_digests") <- unlist(lapply(parts, `[[`, "digests"))[ord]
     out
+}
+
+#' Bind 3-d arrays along their first dimension
+#' @noRd
+abind3 <- function(...) {
+    xs <- list(...)
+    d <- dim(xs[[1L]])
+    n <- sum(vapply(xs, function(x) dim(x)[[1L]], 0))
+    out <- array(NA_real_, c(n, d[[2L]], d[[3L]]))
+    at <- 0L
+    for (x in xs) {
+        m <- dim(x)[[1L]]
+        if (m > 0L) out[at + seq_len(m), , ] <- x
+        at <- at + m
+    }
+    out
+}
+
+#' Run one coverage regime cell whole, or a ticket regime (section 4.4)
+#'
+#' A harness cell is a row of [valCoverageCells()]; its simulations use the per-index seeds of
+#' [valSimSeed()] and [valTargetSeed()]. A ticket regime is a list with `id`, `method`, `class`,
+#' `form`, `g`, `levels`, `simulations`, a function `simulate(nsim, seed, levels)` returning a data
+#' frame with `level`, `covered` (and optionally `achieved`), and `kind` of its pass band
+#' (`approx_run` by default).
+#'
+#' @param regime A cell (one-row data frame) or a ticket regime (list).
+#' @param nsim Simulations (at least 2,000 in T2 and for a ticket regime).
+#' @param seed Seed of a ticket regime (harness cells take theirs from the cell).
+#' @param target_sims Simulations of the full statistic for the target (20,000; fewer only when
+#'   probing cost).
+#' @return A data frame of coverage rows, one per level (and statistic).
+#' @export
+valCoverageRegime <- function(regime, nsim = 2000L, seed = NULL, target_sims = TARGET_SIMS) {
+    if (is.list(regime) && !is.data.frame(regime)) return(valTicketRegime(regime, nsim, seed))
+    part <- valCoverageRange(regime, seq_len(nsim), seq_len(target_sims))
+    valCombineCoverage(regime, list(part), nsim, target_sims)
+}
+
+#' A ticket coverage regime (declared in `coverage_regimes`)
+#' @noRd
+valTicketRegime <- function(regime, nsim, seed) {
+    checkmate::assert_function(regime$simulate)
+    if (nsim < 2000L) {
+        valAbort("a ticket regime needs at least 2,000 simulations", "val_spec_invalid")
+    }
+    res <- regime$simulate(nsim, seed, regime$levels)
+    checkmate::assert_names(names(res), must.include = c("level", "covered"))
+    kind <- regime$kind %||% "approx_run"
+    do.call(rbind, lapply(regime$levels, function(lv) {
+        r <- res[abs(res$level - lv) < 5e-5, , drop = FALSE]
+        cov <- mean(r$covered)
+        ach <- if (is.null(r$achieved)) NA_real_ else mean(r$achieved)
+        data.frame(regime = regime$id, method = regime$method, class = regime$class,
+                   form = regime$form, n = regime$g, level = lv, nsim = nrow(r), coverage = cov,
+                   mc_se = sqrt(cov * (1 - cov) / nrow(r)), achieved = ach,
+                   status = valCoverageStatus(kind, cov, lv, ach, nrow(r)), source = "ticket",
+                   stringsAsFactors = FALSE)
+    }))
 }
 
 #' Sample layout of C4 (two groups, g replicates; form `replicate`) and C4e (form `block`: g = 5
@@ -411,91 +612,6 @@ valCovStats <- function(fit, truth, n_feat, form) {
       threshold_count.rej = mean(fit$p[!pos] < 0.05))
 }
 
-#' C4 and C4e: jackknife forms (ii) and (iii) on simulated feature matrices
-#' @noRd
-valCovMatrix <- function(cell, nsim, seed, form, n_feat, target_sims) {
-    g <- cell$n
-    lay <- valCovLayout(form, g)
-    full_stats <- function(dat) valCovStats(valCovFit(dat$x, lay, form), dat$truth, n_feat, form)
-    t0 <- proc.time()[["elapsed"]]
-    target <- valWithSeed(TARGET_SEED + seed, {
-        res <- replicate(target_sims, full_stats(valCovMatrixData(lay, n_feat, form)),
-                         simplify = FALSE)
-        Reduce(`+`, res) / target_sims
-    })
-    t1 <- proc.time()[["elapsed"]]
-    n_stat <- length(target)
-    hits <- array(FALSE, c(nsim, length(COVERAGE_LEVELS), n_stat))
-    undefined <- matrix(FALSE, nsim, n_stat)
-    valWithSeed(seed, for (s in seq_len(nsim)) {
-        dat <- valCovMatrixData(lay, n_feat, form)
-        full <- valCovStats(valCovFit(dat$x, lay, form), dat$truth, n_feat, form)
-        dels <- vapply(seq_len(g), function(u) {
-            keep <- lay$unit != u
-            valCovStats(valCovFit(dat$x[, keep], lay[keep, ], form), dat$truth, n_feat, form)
-        }, numeric(n_stat))
-        dels <- matrix(dels, nrow = n_stat)
-        for (k in seq_len(n_stat)) for (j in seq_along(COVERAGE_LEVELS)) {
-            iv <- valJackknife(full = full[[k]], deletions = dels[k, ], conf = COVERAGE_LEVELS[[j]],
-                               form = form)
-            undefined[s, k] <- iv$status != "ok"
-            hits[s, j, k] <- isTRUE(iv$ci_low <= target[[k]] && target[[k]] <= iv$ci_high)
-        }
-    })
-    t2 <- proc.time()[["elapsed"]]
-    out <- do.call(rbind, lapply(seq_len(n_stat), function(k) {
-        nm <- strsplit(names(target)[[k]], ".", fixed = TRUE)[[1L]]
-        valCoverageRows(cell, nm[[2L]], nm[[1L]], hits[, , k, drop = TRUE], "approx_run",
-                        undefined = undefined[, k], target = target[[k]])
-    }))
-    valTimed(out, t1 - t0, t2 - t1, target_sims)
-}
-
-#' C7: the paired within-run bootstrap over 200 keys in two classes, iid within class
-#' @noRd
-valCovBootstrap <- function(cell, nsim, seed, cls, target_sims) {
-    simData <- function() {
-        cl <- rep(c("x", "y"), each = 100L)
-        if (cls == "accuracy") {
-            e_a <- stats::rnorm(200L, 0, ifelse(cl == "x", 0.3, 0.5))
-            return(data.frame(class = cl, a = e_a, b = 0.8 * e_a + stats::rnorm(200L, 0, 0.15)))
-        }
-        z1 <- stats::rnorm(200L)
-        z2 <- 0.5 * z1 + sqrt(0.75) * stats::rnorm(200L)
-        pa <- ifelse(cl == "x", 0.7, 0.05)
-        pb <- ifelse(cl == "x", 0.6, 0.04)
-        data.frame(class = cl, a = as.numeric(z1 < stats::qnorm(pa)),
-                   b = as.numeric(z2 < stats::qnorm(pb)))
-    }
-    statistic <- if (cls == "accuracy") {
-        function(d) stats::median(abs(d$b)) - stats::median(abs(d$a))
-    } else {
-        function(d) {
-            x <- d$class == "x"
-            mean(d$a[x]) - mean(d$b[x])
-        }
-    }
-    t0 <- proc.time()[["elapsed"]]
-    target <- valWithSeed(TARGET_SEED + seed, mean(replicate(target_sims, statistic(simData()))))
-    t1 <- proc.time()[["elapsed"]]
-    b_max <- valBootstrapMinB(max(COVERAGE_LEVELS))
-    hits <- matrix(FALSE, nsim, length(COVERAGE_LEVELS))
-    valWithSeed(seed, for (s in seq_len(nsim)) {
-        d <- simData()
-        bs <- valBootstrap(d, statistic, B = b_max, conf = max(COVERAGE_LEVELS),
-                           seed = seed * 10L + s, strata = "class", keep_replicates = TRUE)
-        reps <- bs$replicates[is.finite(bs$replicates)]
-        for (j in seq_along(COVERAGE_LEVELS)) {
-            tail <- (1 - COVERAGE_LEVELS[[j]]) / 2
-            q <- stats::quantile(reps, c(tail, 1 - tail), type = 6, names = FALSE)
-            hits[s, j] <- q[[1L]] <= target && target <= q[[2L]]
-        }
-    })
-    out <- valCoverageRows(cell, paste0("paired_", cls), cls, hits, "approx_within",
-                           target = target)
-    valTimed(out, t1 - t0, proc.time()[["elapsed"]] - t1, target_sims)
-}
-
 #' The regime table from coverage rows (section 10.2)
 #'
 #' One row per method x class x form x design x unit count x level. Over the data conditions and
@@ -550,79 +666,141 @@ valSummariseCoverage <- function(detail) {
     out[order(out$regime, out$method, out$class, out$n, out$level), , drop = FALSE]
 }
 
-#' Run coverage cells in one process (one chunk) and save the rows
+#' A coverage plan: each cell split into a fixed number of consecutive ranges
 #'
-#' @param cells Cell ids.
-#' @param nsim Simulations per cell.
-#' @param out_file RDS file for the rows.
-#' @param target_sims Target simulations.
-#' @return The rows, invisibly.
+#' Range k of a cell holds simulations `ceiling(nsim (k - 1) / r) + 1` to `ceiling(nsim k / r)`, and
+#' the same split of its target simulations; the ranges depend only on the declared `ranges`, never
+#' on the chunk count.
+#'
+#' @param cells Rows of [valCoverageCells()].
+#' @param ranges Ranges per cell (recycled).
+#' @param nsim,target_sims Simulation counts.
+#' @param request Request label of each cell (recycled).
+#' @return The plan: `task`, `request`, `cell`, `range`, `sim_from`, `sim_to`, `target_from`,
+#'   `target_to`.
 #' @export
-valCoverageChunk <- function(cells, nsim, out_file, target_sims = TARGET_SIMS) {
-    all_cells <- valCoverageCells()
-    rows <- lapply(cells, function(id) {
-        valCoverageRegime(all_cells[all_cells$cell == id, ], nsim = nsim, target_sims = target_sims)
+valCoveragePlan <- function(cells, ranges, nsim = 2000L, target_sims = TARGET_SIMS,
+                            request = "all") {
+    ranges <- rep_len(as.integer(ranges), nrow(cells))
+    request <- rep_len(request, nrow(cells))
+    cut <- function(n, r) as.integer(ceiling(n * (0:r) / r))
+    rows <- lapply(seq_len(nrow(cells)), function(i) {
+        r <- ranges[[i]]
+        s <- cut(nsim, r)
+        t <- cut(target_sims, r)
+        data.frame(request = request[[i]], cell = cells$cell[[i]], range = seq_len(r),
+                   sim_from = s[-length(s)] + 1L, sim_to = s[-1L],
+                   target_from = t[-length(t)] + 1L, target_to = t[-1L],
+                   stringsAsFactors = FALSE)
     })
     out <- do.call(rbind, rows)
-    saveRDS(out, out_file)
-    invisible(out)
+    out$task <- sprintf("%s.r%02d", out$cell, out$range)
+    out[, c("task", "request", "cell", "range", "sim_from", "sim_to", "target_from",
+            "target_to")]
 }
 
-#' Start chunk processes, each an `Rscript` with the thread variables at 1, and wait for all
+#' Run plan tasks in this process (one chunk) and save each task's range result
+#'
+#' @param plan_file The plan (`.tsv`).
+#' @param tasks Task ids to run.
+#' @param out_dir Folder for `<task>.rds`.
+#' @return `TRUE`, invisibly.
+#' @export
+valCoverageTasks <- function(plan_file, tasks, out_dir) {
+    plan <- utils::read.delim(plan_file, stringsAsFactors = FALSE)
+    cells <- valCoverageCells()
+    for (id in tasks) {
+        p <- plan[plan$task == id, ]
+        cell <- cells[cells$cell == p$cell, ]
+        targets <- if (p$target_to >= p$target_from) p$target_from:p$target_to else integer()
+        res <- valCoverageRange(cell, p$sim_from:p$sim_to, targets)
+        saveRDS(res, file.path(out_dir, paste0(id, ".rds")))
+    }
+    invisible(TRUE)
+}
+
+#' Start chunk processes (task groups), each an `Rscript` with the thread variables at 1; wait
 #' @noRd
-valRunChunksConcurrently <- function(groups, nsim, work_dir, target_sims) {
+valRunTaskChunks <- function(groups, plan_file, work_dir) {
     rscript <- file.path(R.home("bin"), "Rscript")
     env <- c("current", OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1")
     procs <- lapply(seq_along(groups), function(k) {
-        out_file <- file.path(work_dir, sprintf("chunk-%02d.rds", k))
-        code <- sprintf(
-            "msrval::valCoverageChunk(c(%s), nsim = %dL, out_file = '%s', target_sims = %dL)",
-            paste0("'", groups[[k]], "'", collapse = ", "), as.integer(nsim), out_file,
-            as.integer(target_sims)
-        )
+        code <- sprintf("msrval::valCoverageTasks('%s', c(%s), '%s')", plan_file,
+                        paste0("'", groups[[k]], "'", collapse = ", "), work_dir)
         processx::process$new(rscript, c("--vanilla", "-e", code), env = env,
                               stdout = file.path(work_dir, sprintf("chunk-%02d.log", k)),
                               stderr = "2>&1")
     })
     for (p in procs) p$wait()
-    status <- vapply(procs, function(p) p$get_exit_status(), integer(1))
-    files <- file.path(work_dir, sprintf("chunk-%02d.rds", seq_along(groups)))
-    list(status = status, files = files)
+    vapply(procs, function(p) p$get_exit_status(), integer(1))
 }
 
-#' Run T-COV in concurrent chunks and write `coverage-detail.tsv` and `coverage-table.tsv`
+#' Deal tasks to chunks by their expected seconds (largest first, to the least loaded chunk)
+#' @noRd
+valDealTasks <- function(tasks, seconds, chunks) {
+    load <- numeric(chunks)
+    groups <- vector("list", chunks)
+    for (i in order(-seconds)) {
+        k <- which.min(load)
+        groups[[k]] <- c(groups[[k]], tasks[[i]])
+        load[[k]] <- load[[k]] + seconds[[i]]
+    }
+    groups[lengths(groups) > 0L]
+}
+
+#' Run T-COV from a plan in concurrent chunks and write `coverage-detail.tsv`,
+#' `coverage-table.tsv`, `coverage-tasks.tsv` and `coverage-run.txt`
 #'
-#' Cells are dealt to the chunks in order of their expected cost; every cell has its own seed, so
-#' the result does not depend on the chunking.
+#' The dealing of tasks to chunks does not change any result (each simulation has its own seed);
+#' a cell whose ranges are incomplete is listed as missing, never scored.
 #'
-#' @param ids Regime ids (`C1`, ..., `C8`) or cell ids; `NULL` for all.
-#' @param nsim Simulations per cell (2,000 in T2).
+#' @param plan_file The plan (`.tsv`, from [valCoveragePlan()], with `est_seconds`).
+#' @param request The request label whose tasks run here (`all` for every task).
+#' @param nsim,target_sims Simulation counts the plan was made for.
 #' @param chunks Concurrent processes.
 #' @param out_dir Output folder.
-#' @param target_sims Target simulations.
 #' @return The regime table, invisibly.
 #' @export
-valRunCoverage <- function(ids = NULL, nsim = 2000L, chunks = 4L, out_dir,
-                           target_sims = TARGET_SIMS) {
-    cells <- valCoverageCells()
-    if (!is.null(ids)) cells <- cells[cells$regime %in% ids | cells$cell %in% ids, ]
-    if (nrow(cells) == 0L) valAbort("no coverage cell matches {ids}", "val_spec_invalid")
+valRunCoverage <- function(plan_file, request = "all", nsim = 2000L, target_sims = TARGET_SIMS,
+                           chunks = 4L, out_dir) {
+    plan <- utils::read.delim(plan_file, stringsAsFactors = FALSE)
+    if (request != "all") plan <- plan[plan$request == request, , drop = FALSE]
+    if (nrow(plan) == 0L) valAbort("no task of request {request}", "val_spec_invalid")
+    est <- if (is.null(plan$est_seconds)) rep(1, nrow(plan)) else plan$est_seconds
     work_dir <- file.path(Sys.getenv("RUNNER_TEMP", tempdir()), "val-coverage")
     dir.create(work_dir, recursive = TRUE, showWarnings = FALSE)
-    groups <- split(cells$cell, rep_len(seq_len(chunks), nrow(cells)))
+    groups <- valDealTasks(plan$task, est, chunks)
     started <- Sys.time()
-    run <- valRunChunksConcurrently(groups, nsim, work_dir, target_sims)
+    status <- valRunTaskChunks(groups, normalizePath(plan_file), work_dir)
     wall <- as.numeric(difftime(Sys.time(), started, units = "secs"))
-    ok <- file.exists(run$files)
-    detail <- do.call(rbind, lapply(run$files[ok], readRDS))
-    missing <- setdiff(cells$cell, detail$cell)
-    utils::write.table(detail, file.path(out_dir, "coverage-detail.tsv"), sep = "\t",
-                       quote = FALSE, row.names = FALSE)
+    cells <- valCoverageCells()
+    detail <- list()
+    tasks_out <- list()
+    missing <- character()
+    for (cid in unique(plan$cell)) {
+        ids <- plan$task[plan$cell == cid]
+        files <- file.path(work_dir, paste0(ids, ".rds"))
+        if (!all(file.exists(files))) {
+            missing <- c(missing, cid)
+            next
+        }
+        parts <- lapply(files, readRDS)
+        tasks_out[[cid]] <- data.frame(task = ids, seconds_sims = vapply(parts, `[[`, 0,
+                                                                         "seconds_sims"),
+                                       seconds_target = vapply(parts, `[[`, 0, "seconds_target"))
+        detail[[cid]] <- valCombineCoverage(cells[cells$cell == cid, ], parts, nsim, target_sims)
+    }
+    detail <- do.call(rbind, detail)
+    write <- function(x, f) {
+        utils::write.table(x, file.path(out_dir, f), sep = "\t", quote = FALSE, row.names = FALSE)
+    }
+    write(detail, "coverage-detail.tsv")
+    write(do.call(rbind, tasks_out), "coverage-tasks.tsv")
     table <- valSummariseCoverage(detail)
-    utils::write.table(table, file.path(out_dir, "coverage-table.tsv"), sep = "\t", quote = FALSE,
-                       row.names = FALSE)
-    writeLines(c(sprintf("wall_seconds\t%.1f", wall), sprintf("chunks\t%d", chunks),
-                 sprintf("chunk_exit\t%s", paste(run$status, collapse = ",")),
+    write(table, "coverage-table.tsv")
+    writeLines(c(sprintf("request\t%s", request), sprintf("wall_seconds\t%.1f", wall),
+                 sprintf("chunks\t%d", length(groups)),
+                 sprintf("chunk_exit\t%s", paste(status, collapse = ",")),
                  sprintf("cells_missing\t%s", paste(missing, collapse = ","))),
                file.path(out_dir, "coverage-run.txt"))
     invisible(table)
@@ -631,48 +809,60 @@ valRunCoverage <- function(ids = NULL, nsim = 2000L, chunks = 4L, out_dir,
 #' Time one regime in one process and in four concurrent chunks (f_sim, G14 (c), section 10.4),
 #' and probe the cost of one cell of every family
 #'
-#' @param id Regime id whose cells are timed.
+#' @param id Regime id whose cells are timed (whole cells).
 #' @param nsim Simulations per timed cell.
 #' @param out_dir Output folder: `fsim.tsv`, `cost-probe.tsv`.
 #' @param chunks Concurrent chunks (4).
 #' @param probe_nsim,probe_target_sims Sizes of the cost probe.
+#' @param probe_cells Cell ids to probe (default: one cell per family).
 #' @return f_sim, invisibly.
 #' @export
 valTimeRegime <- function(id, nsim, out_dir, chunks = 4L, probe_nsim = 20L,
-                          probe_target_sims = 200L) {
+                          probe_target_sims = 200L, probe_cells = NULL) {
     cells <- valCoverageCells()
-    ids <- cells$cell[cells$regime == id]
-    work <- file.path(Sys.getenv("RUNNER_TEMP", tempdir()), "val-fsim")
-    dir.create(file.path(work, "one"), recursive = TRUE, showWarnings = FALSE)
-    dir.create(file.path(work, "four"), recursive = TRUE, showWarnings = FALSE)
-    wallOf <- function(groups, dir) {
-        t0 <- Sys.time()
-        run <- valRunChunksConcurrently(groups, nsim, dir, TARGET_SIMS)
-        list(wall = as.numeric(difftime(Sys.time(), t0, units = "secs")), status = run$status)
+    f_sim <- NA_real_
+    if (!is.null(id) && nzchar(id)) {
+        timed <- cells[cells$regime == id, ]
+        work <- file.path(Sys.getenv("RUNNER_TEMP", tempdir()), "val-fsim")
+        dir.create(work, recursive = TRUE, showWarnings = FALSE)
+        plan <- valCoveragePlan(timed, 1L, nsim = nsim)
+        plan_file <- file.path(work, "plan.tsv")
+        utils::write.table(plan, plan_file, sep = "\t", quote = FALSE, row.names = FALSE)
+        wallOf <- function(groups) {
+            t0 <- Sys.time()
+            st <- valRunTaskChunks(groups, plan_file, work)
+            list(wall = as.numeric(difftime(Sys.time(), t0, units = "secs")), status = st)
+        }
+        one <- wallOf(list(plan$task))
+        four <- wallOf(split(plan$task, rep_len(seq_len(chunks), nrow(plan))))
+        f_sim <- one$wall / four$wall
+        utils::write.table(data.frame(regime = id, cells = nrow(timed), nsim = nsim,
+                                      wall_one_process = round(one$wall, 1),
+                                      wall_four_chunks = round(four$wall, 1),
+                                      f_sim = round(f_sim, 3),
+                                      exit_one = paste(one$status, collapse = ","),
+                                      exit_four = paste(four$status, collapse = ","),
+                                      cores = valCoreCount()),
+                           file.path(out_dir, "fsim.tsv"), sep = "\t", quote = FALSE,
+                           row.names = FALSE)
     }
-    one <- wallOf(list(ids), file.path(work, "one"))
-    four <- wallOf(split(ids, rep_len(seq_len(chunks), length(ids))), file.path(work, "four"))
-    f_sim <- one$wall / four$wall
-    utils::write.table(data.frame(regime = id, cells = length(ids), nsim = nsim,
-                                  wall_one_process = round(one$wall, 1),
-                                  wall_four_chunks = round(four$wall, 1), f_sim = round(f_sim, 3),
-                                  exit_one = paste(one$status, collapse = ","),
-                                  exit_four = paste(four$status, collapse = ","),
-                                  cores = valCoreCount()),
-                       file.path(out_dir, "fsim.tsv"), sep = "\t", quote = FALSE,
-                       row.names = FALSE)
-    fams <- cells[!duplicated(ifelse(cells$regime == "C3", "C3", cells$family)), ]
+    fams <- if (is.null(probe_cells)) {
+        cells[!duplicated(ifelse(cells$regime == "C3", "C3", cells$family)), ]
+    } else {
+        cells[cells$cell %in% probe_cells, ]
+    }
     probe <- do.call(rbind, lapply(seq_len(nrow(fams)), function(i) {
-        r <- valCoverageRegime(fams[i, ], nsim = probe_nsim, target_sims = probe_target_sims)
+        r <- valCoverageRange(fams[i, ], seq_len(probe_nsim), seq_len(probe_target_sims))
         data.frame(cell = fams$cell[[i]], family = fams$family[[i]], n = fams$n[[i]],
                    probe_nsim = probe_nsim, probe_target_sims = probe_target_sims,
-                   seconds_target = r$seconds_target[[1L]], seconds_sims = r$seconds_sims[[1L]],
+                   seconds_target = r$seconds_target, seconds_sims = r$seconds_sims,
                    stringsAsFactors = FALSE)
     }))
     utils::write.table(probe, file.path(out_dir, "cost-probe.tsv"), sep = "\t", quote = FALSE,
                        row.names = FALSE)
     invisible(f_sim)
 }
+
 
 #' Cores of the runner (from /proc/cpuinfo)
 #' @noRd
