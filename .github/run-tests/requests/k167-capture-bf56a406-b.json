@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-167 step 1: capture of the four UniProt reference proteomes and three UniParc proteomes at the current release, job b",
+  "label": "KIT-167 capture bf56a406 b",
+  "package_commit": "bf56a4062893514a8b2706b000e48ddc67d80911",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-167/capture-references.R",
+      "args": [],
+      "out": "capture-out",
+      "out_pattern": "\\.(fasta|tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
