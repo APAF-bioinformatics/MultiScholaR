@@ -41,12 +41,15 @@ miss rate.
   defect), fixed at 1827d420. Declaration of the T-COV re-run written and committed before sending:
   `t2/t2r-declaration.md`, plan `t2/t2r-plan.tsv` (13 ranges of C4-144, C4-146, C4e-148, C4e-150).
 
-**In flight:** T1 correction run 45225211841 at 1827d420 (`--files coverage-rank,coverage,phases
---lint`). If it passes: send the T-COV request R (`val-tests.R t2r-out --coverage-plan
-docs/qa/workflow-execution/kit/kit-159/t2/t2r-plan.tsv --request R --nsim 2000 --chunks 4`,
-timeout 280) at 1827d420; then USAGE.md's rank rows and the H2 row from that run only; KIT-162 told.
+**In flight:** T-COV request R, run 45227824000 at 1827d420 (`t2r-out`, 13 ranges, script limit
+280 min, sent 2026-11-23 17:30 UTC; expected about 3.5 h). T1 correction run 45225211841 passed
+(20 of 20, lintr 0). When R returns: `gh run download 45227824000 -n scripts` (run-tests worktree),
+copy `t2r-out/` to `t2/t2r-*`, add runs.tsv row, check no cell missing and chunks exit 0, then
+replace the four rank rows' classification in `USAGE.md` and the H2 ledger row from this run only
+(effect, zero_width, statuses); every other row keeps T2's classification. Tell the coordinator
+the C4e g = 5 rank result for KIT-162.
 
-**Budget:** T0 5.95 of 6; T1 about 16.56 of 21 before the correction run; T2 18.59 of 54.
+**Budget:** T0 5.95 of 6; T1 17.42 of 21; T2 18.59 of 54 before request R (ceiling of R about 20).
 
 **R1 (r1.12):** materials in `lifecycle/` (draft-inputs.tsv with the named open file,
 uniprot-accessions.tsv with 25 reviewed human accessions, r1-pre.R, r1-pre-outputs.tsv). Not sent:
