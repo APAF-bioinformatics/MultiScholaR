@@ -466,13 +466,18 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
   # left as it is), so a real proteinGroups.txt reads as the fixtures do (KIT-054 finding).
   names(data) <- normaliseMaxQuantColumnNames(names(data))
   
-  # Filter contaminants and reverse hits if requested
+  # Filter contaminants and reverse hits if requested. MaxQuant 1.4 and earlier name the contaminant column
+  # "Contaminant" (from 1.5.2.8 at the latest "Potential contaminant"); both are filtered (KIT-171). The whole group
+  # goes when MaxQuant marked it; accession prefixes are not consulted. A row marked in two columns is counted at the
+  # first, so the logged counts sum to the rows removed.
   if (filter_contaminants) {
-    if ("Potential.contaminant" %in% names(data)) {
-      data <- data[is.na(data$Potential.contaminant) | data$Potential.contaminant != "+", ]
+    if (!any(c("Potential.contaminant", "Contaminant") %in% names(data))) {
+      log_info("MaxQuant import: contaminant filtering requested but no contaminant column found ('Potential contaminant' or 'Contaminant'); no contaminant rows removed")
     }
-    if ("Reverse" %in% names(data)) {
-      data <- data[is.na(data$Reverse) | data$Reverse != "+", ]
+    for (column in intersect(c("Potential.contaminant", "Contaminant", "Reverse"), names(data))) {
+      keep <- is.na(data[[column]]) | data[[column]] != "+"
+      log_info(sprintf("MaxQuant import: removed %d rows marked '+' in %s", sum(!keep), column))
+      data <- data[keep, ]
     }
   }
   
