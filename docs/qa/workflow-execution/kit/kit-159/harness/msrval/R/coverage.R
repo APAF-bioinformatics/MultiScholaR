@@ -402,14 +402,17 @@ valCoverageRange <- function(cell, sims, targets = integer()) {
         digests[[i]] <- digest::digest(r$data, algo = "sha256")
     }
     t1 <- proc.time()[["elapsed"]]
-    target_sum <- numeric(n_stat)
     if (is.null(spec$target_one)) targets <- integer()
-    for (t in targets) {
-        target_sum <- target_sum + valWithSeed(valTargetSeed(cell, t), spec$target_one())
+    # Each target simulation's value is kept (targets x statistics), so that the combined target is
+    # summed in index order whatever the split (a sum of range sums differs in the last bits).
+    target_values <- matrix(NA_real_, length(targets), n_stat)
+    for (j in seq_along(targets)) {
+        target_values[j, ] <- valWithSeed(valTargetSeed(cell, targets[[j]]), spec$target_one())
     }
     list(cell = cell$cell, sims = as.integer(sims), lo = lo, hi = hi, achieved = ach,
          undefined = undefined, digests = digests, targets = as.integer(targets),
-         target_sum = target_sum, seconds_sims = t1 - t0,
+         target_values = target_values, target_sum = colSums(target_values),
+         seconds_sims = t1 - t0,
          seconds_target = proc.time()[["elapsed"]] - t1)
 }
 
@@ -438,7 +441,11 @@ valCombineCoverage <- function(cell, parts, nsim, target_sims) {
             valAbort("the ranges of {cell$cell} do not hold each target simulation exactly once",
                      "val_spec_invalid")
         }
-        target <- Reduce(`+`, lapply(parts, `[[`, "target_sum")) / target_sims
+        values <- do.call(rbind, lapply(parts, `[[`, "target_values"))[order(targets), ,
+                                                                         drop = FALSE]
+        total <- numeric(ncol(values))
+        for (j in seq_len(nrow(values))) total <- total + values[j, ]
+        target <- total / target_sims
     }
     ord <- order(sims)
     bind <- function(field) {

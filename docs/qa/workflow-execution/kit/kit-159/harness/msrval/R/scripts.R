@@ -241,7 +241,10 @@ valOmicsScript <- function(r, short, tool, assays, import_values, summary) {
         })
     design <- valStep("design", "design", list(head = state("raw_data_s4")), module = "design",
                       structural = "^design-builder-", press = "design-builder-save_results",
-                      run = function(api) api$design(prefix = "design-builder-", tech_rep = TRUE))
+                      run = function(api) {
+                          api$design(prefix = "design-builder-", tech_rep = TRUE,
+                                     match = "design-builder-selected_runs")
+                      })
     intensity <- valStep("qc_intensity", "qc", list(head = state("intensity_filtered")),
                          module = "qc", press = "qc-intensity-apply_filter",
                          run = function(api) {
@@ -325,7 +328,10 @@ valTrxScript <- function(summary) {
                 }),
         valStep("design", "design", list(head = "trx_raw_data_s4"), module = "design",
                 structural = "^design-builder-", press = "design-builder-save_results",
-                run = function(api) api$design(prefix = "design-builder-", tech_rep = TRUE)),
+                run = function(api) {
+                          api$design(prefix = "design-builder-", tech_rep = TRUE,
+                                     match = "design-builder-selected_runs")
+                      }),
         valStep("qc_filter", "qc", list(head = "trx_expression_filtered"), module = "qc",
                 press = "qc-filter-apply_filter",
                 run = function(api) {

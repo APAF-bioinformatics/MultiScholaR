@@ -19,7 +19,8 @@ for (route in driverRoutes()) {
                                   uniprot_cache = cell$uniprot_cache, tables_dir = out,
                                   pkg_root = root)
             expect_identical(res$exit, "completed",
-                             info = paste(res$steps$step, res$steps$outcome, collapse = "; "))
+                             info = paste(res$steps$step, res$steps$outcome, res$steps$reason,
+                                          res$steps$class, res$steps$message, collapse = "; "))
             expect_true(all(res$steps$outcome == "ok"))
             da <- utils::read.delim(file.path(out, "da.tsv"), stringsAsFactors = FALSE)
             expect_identical(names(da), DA_COLUMNS)

@@ -663,6 +663,8 @@ valInstallDoubleExtension <- function(log, env, notify = FALSE) {
 #' @param spec,observe A module spec and state reader (tests); default the route's.
 #' @param project Set up project directories and the store (FALSE for a toy module).
 #' @param technical_replicates The design has technical replicates (the calibrated design).
+#' @param record_messages Keep a refusal's or error's masked text in `steps$message` (FALSE when any
+#'   data input is `not_permitted`: then only its SHA-256, 5.2).
 #' @return A list: `exit`, `reason`, `steps`, `ledger`, `ledger_path`, `ledger_sha256`,
 #'   `actions`, `options_at_start`, `matched`, `fallback`, `tables`, `value`, `seconds`.
 #' @export
@@ -672,7 +674,8 @@ valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers
                            ledger_path = NULL, mask_ids = character(), roles = list(),
                            on_complete = NULL, pkg_root = ".",
                            work_dir = tempfile("val-cell-"), spec = NULL, observe = NULL,
-                           project = TRUE, technical_replicates = FALSE) {
+                           project = TRUE, technical_replicates = FALSE,
+                           record_messages = TRUE) {
     started <- Sys.time()
     valCheckActionScript(script$steps)
     arm_inputs <- if (is.null(arm$builder)) {
@@ -686,7 +689,8 @@ valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers
     ledger_path <- ledger_path %||% file.path(work_dir, paste0("ledger-", script$route, ".tsv"))
     cell <- function() valWorkflowCell(script, files, design, arm_inputs, helpers, forced_inputs,
                                        seed, uniprot_cache, annotation, tables_dir, arm,
-                                       on_complete, work_dir, spec, observe, project)
+                                       on_complete, work_dir, spec, observe, project,
+                                       record_messages)
     run <- valWithForcedOptions(c(forced, arm_inputs$options), cell())
     res <- run$value
     ledger <- if (length(res$ledger)) do.call(rbind, res$ledger) else
@@ -709,7 +713,7 @@ valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers
 #' @noRd
 valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_inputs, seed,
                             uniprot_cache, annotation, tables_dir, arm, on_complete, work_dir,
-                            spec, observe, project) {
+                            spec, observe, project, record_messages) {
     cell_env <- environment()
     withr::local_envvar(c(OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
                           MULTISCHOLAR_TEST_MODE = "true", http_proxy = "http://127.0.0.1:9",
@@ -771,6 +775,7 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
     acc$fallback <- NA_character_
     acc$tables <- NULL
     acc$value <- NULL
+    acc$destroyed <- FALSE
     server_args <- if (project) {
         list(id = spec$id, project_dirs = project_dirs, omic_type = omic,
              experiment_label = script$route)
@@ -1038,17 +1043,23 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
                 if (inherits(e, "val_error")) stop(e)
                 err <<- e
             })
-            after <- observe(obs_env)
+            after <- tryCatch(observe(obs_env), error = function(e) {
+                acc$destroyed <- TRUE
+                list(head = "<session destroyed>", history = before$history,
+                     tab_status = before$tab_status)
+            })
             errors <- Filter(function(n) identical(n$type, "error"), log$notes)
             msg <- if (length(errors)) {
                 paste(vapply(errors, function(n) n$message, character(1)), collapse = "\n")
             }
             if (!is.null(err)) {
                 acc$steps[[length(acc$steps) + 1L]] <- data.frame(
-                    step = step$id, outcome = "did_not_complete", class = NA_character_,
+                    step = step$id, outcome = "did_not_complete", class = class(err)[[1L]],
                     message_sha256 = digest::digest(valMaskMessage(conditionMessage(err)),
                                                     algo = "sha256", serialize = FALSE),
-                    reason = "error", head = after$head, stringsAsFactors = FALSE)
+                    reason = "error", head = after$head,
+                    message = valStepMessage(conditionMessage(err), record_messages),
+                    stringsAsFactors = FALSE)
                 acc$exit <- "did_not_complete"
                 acc$reason <- "error"
                 break
@@ -1060,7 +1071,7 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
             acc$steps[[length(acc$steps) + 1L]] <- data.frame(
                 step = step$id, outcome = o$outcome, class = o$class,
                 message_sha256 = o$message_sha256, reason = o$reason, head = after$head,
-                stringsAsFactors = FALSE)
+                message = valStepMessage(msg, record_messages), stringsAsFactors = FALSE)
             if (o$outcome == "ok" && identical(step$id, "design") && identical(omic, "proteomics")) {
                 acc$fallback <- valAnnotationRule(shiny::isolate(workflow_data$uniprot_dat_cln),
                                                   annotation, log$warnings)
@@ -1071,6 +1082,7 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
             acc$reason <- o$reason
             break
         }
+        if (isTRUE(acc$destroyed)) return(invisible())
         ctx <- list(manager = if (project) shiny::isolate(workflow_data$state_manager),
                     workflow_data = workflow_data, paths = paths, inputs = st,
                     observe = function() observe(obs_env), session = session)
@@ -1100,6 +1112,13 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
          steps = if (length(acc$steps)) do.call(rbind, acc$steps) else NULL,
          ledger = acc$ledger, actions = acc$actions, matched = acc$matched,
          fallback = acc$fallback, tables = acc$tables, value = acc$value)
+}
+
+#' A step's masked message text for `steps$message` (at most 300 characters), or NA
+#' @noRd
+valStepMessage <- function(msg, record) {
+    if (!isTRUE(record) || is.null(msg) || !length(msg)) return(NA_character_)
+    substr(gsub("[\t\r\n]+", " ", valMaskMessage(paste(msg, collapse = " "))), 1L, 300L)
 }
 
 #' The one primary confirming button of a modal (no dismiss), by id
@@ -1359,13 +1378,19 @@ valRuvRows <- function(obj, design_name) {
 #' @param model_state The state DA ran from.
 #' @param itsd_applied Whether ITSD normalisation was applied (lipidomics, metabolomics).
 #' @param design_name The arm's RUV design, for `ruv.tsv`.
+#' @param display_reader `function()` returning the display matrix (`feature_id, assay, <samples>`)
+#'   or `NULL`; default, with a manager, the product's own corrected matrix on DIA_LIMPA and
+#'   transcriptomics ([valProductDisplayReader()]).
 #' @return Named character vector of the written paths.
 #' @export
 valReadArmTables <- function(manager, paths, route, out_dir, ruv = "off", q_thresh = 0.05,
                              lfc_cutoff = 0, state_reader = NULL, model_state = NULL,
-                             itsd_applied = NA, design_name = NULL) {
+                             itsd_applied = NA, design_name = NULL, display_reader = NULL) {
     r <- valRoute(route)
     omic <- r$omic
+    if (is.null(display_reader) && !is.null(manager)) {
+        display_reader <- valProductDisplayReader(manager, r)
+    }
     state_reader <- state_reader %||% function(name) {
         ns <- asNamespace("MultiScholaR")
         ns$withWorkflowStateScope(manager, function() manager$getState(name))
@@ -1409,7 +1434,8 @@ valReadArmTables <- function(manager, paths, route, out_dir, ruv = "off", q_thre
         out <- c(out, itsd = write(itsd, "itsd"))
     }
     if (identical(ruv, "factors_in_model")) {
-        display <- valDisplayMatrix(model_obj, omic)
+        display <- if (!is.null(display_reader)) display_reader() else
+            valDisplayMatrix(model_obj, omic)
         if (!is.null(display)) {
             display <- cbind(display[, 1:2], label = MATRIX_DISPLAY_LABEL,
                              display[, -(1:2), drop = FALSE])
@@ -1417,6 +1443,37 @@ valReadArmTables <- function(manager, paths, route, out_dir, ruv = "off", q_thre
         }
     }
     out
+}
+
+#' The display matrix where the product keeps it outside the state object: DIA_LIMPA's
+#' `ruv-adjusted-science` checkpoint of the `ruv_covariates` state's product (as the Summary's
+#' integration input reads it, `protIntegrationInputSource`, R/utils_workflow_dia_summary.R:96-176);
+#' transcriptomics' RUVs-corrected log-CPM, the `corrected` table of the `trx_ruvs` state's product
+#' (R/utils_workflow_trx_declarations.R:522, read through `trxStateRuvs` and `trxSavedMatrix`). Other
+#' routes: `NULL` (their display is the state's own values).
+#' @noRd
+valProductDisplayReader <- function(manager, r) {
+    ns <- asNamespace("MultiScholaR")
+    scoped <- function(f) ns$withWorkflowStateScope(manager, f)
+    if (identical(r$workflow, "DIA_LIMPA")) {
+        return(function() {
+            src <- scoped(function() ns$protIntegrationInputSource(manager))
+            if (is.null(src$corrected)) return(NULL)
+            valFeatureTable(src$corrected, "feature_id", "all")
+        })
+    }
+    if (identical(r$omic, "transcriptomics")) {
+        return(function() {
+            m <- scoped(function() {
+                ruvs <- ns$trxStateRuvs(manager, ns$getWorkflowStateReference(manager, "trx_ruvs"))
+                if (is.null(ruvs$corrected)) NULL else ns$trxSavedMatrix(manager, ruvs$corrected)
+            })
+            if (is.null(m)) return(NULL)
+            cbind(data.frame(feature_id = rownames(m), assay = "all", stringsAsFactors = FALSE),
+                  as.data.frame(m, stringsAsFactors = FALSE))
+        })
+    }
+    NULL
 }
 
 #' The RUV-corrected display matrix where the state holds it (lipidomics and metabolomics: the

@@ -17,7 +17,8 @@ harness tests until both agree. The rules and reasons are section 7.4's; they ar
 - **Design**: the design builder through `guiEntryDesignActions` (extracted from the checkout): the
   declared groups, technical-replicate sets where the route takes them, the contrasts (a second and
   later contrast added before Save), sample names matched to the builder's offered runs with
-  `e2e_match_available_values` (proteomics; the match is recorded). The builder's formula is left
+  `e2e_match_available_values` on every route (the match is recorded; on routes whose import may
+  rename samples, such as `sanitize_names`, the builder's offered names are the ones used). The builder's formula is left
   at its rendered value when the UI renders one (the helper's `~ 0 + group` is dropped then).
 - **QC**: each sub-tab of the route's spec tables in order, its first `-apply_` button at rendered
   defaults (declared forced inputs applied where the sub-tab renders them).
