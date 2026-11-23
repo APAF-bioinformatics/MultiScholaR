@@ -8,11 +8,16 @@
    log2(x + 1), with the offset described as protecting zeros. Since KIT-118 the import already reads every zero as
    not detected (missing, not imputed) and refuses negative values, so the offset protected nothing; its only effect
    was on positive values, and it depended on the unit of the table: a value v moved by log2(1 + 1/v) (1.44e-4 at
-   v = 10,000, 0.0014 at v = 1,000, 0.58 at v = 1), and a true two-fold change between 0.1 and 0.2 was reported as
+   v = 10,000, 0.0014 at v = 1,000, 1 at v = 1), and a true two-fold change between 0.1 and 0.2 was reported as
    0.126 instead of 1. After this change the log step is unit-equivariant (multiplying a table by a constant shifts
    every log2 value by the same amount). Intensity tables (values of 10,000 and above) change by at most 1.44e-4 log2;
    concentration tables with values near or below 1 change materially, and their earlier fold changes were compressed
-   toward 0. The "Offset for zeros" field is removed from the normalisation tab. A project whose record used an offset
+   toward 0. Through the default normalisation with RUV-III Automatic, results on such tables change far more than
+   the log step alone: on two simulated concentration tables with no true difference between the groups (one data
+   set each), 165 and 0 features were called significant with the offset and 16 and 37 with plain log2, all of them
+   false. The RUV-III Automatic and Manual modes and the Scale option depend on the unit of the table (a change of
+   unit alone changed the significant calls in 20 of 20 simulated data sets) and are followed up separately. The
+   "Offset for zeros" field is removed from the normalisation tab. A project whose record used an offset
    replays with that offset unchanged, and the tab says so. Called directly, `logTransformAssays()` now defaults to
    offset 0: a value of 0 or below, or a value that is not finite, becomes missing and is counted in one warning
    (class `omics_log2_nonpositive`); an offset above 0 runs the earlier transformation unchanged; an offset below 0 is

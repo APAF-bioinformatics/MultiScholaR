@@ -50,8 +50,9 @@ error), `r2/t11.tsv`. First seed 8.8 minutes; the 20 lipid seeds and the metab s
 
 T11 (default route, offset 1 against offset 0): T7's concentration fixture: largest change of a log2 value 6.55, of a
 logFC 29.7, of t 1,680; 170 calls change (165 at offset 1, 16 at offset 0); legacy RUV k 7 to 2, control share 17 % to
-1 %. F172: 6.90, 196.7, 8.0; 37 calls change (0 to 37); k 1 to 2, share 12 % to 1 %. Lipid and metab identical. These
-sizes include the legacy RUV route's own unit dependence (T1b).
+1 %. F172: 6.90, 196.7, 8.0; 37 calls change (0 to 37); k 1 to 2, share 12 % to 1 %. Lipid and metab identical. Both fixtures have no true difference between the groups (`kit172Values(..., planted = FALSE)`; the concentration fixture is a monotone rescaling of the same draw), so every call at either offset is a false discovery: 165 and 16 on T7's fixture, 0 and 37 on F172 (one draw each). How much comes from the log step and how much from the legacy RUV route is not separated (inferred: mostly the RUV route, whose k and controls move). At plain log2, T1b's `legacy_automatic` row moves fold changes by up to 1,067 log2 units where cells are missing.
+
+On the four GUI-entry lanes (intensities 2.4e3 and above) no call changes (their DA summaries are identical at offset 1 and at plain log2, control run 45148367369); the change at the log step is at most about 6e-4 log2 (a bound from the smallest value, not measured).
 
 **7(b) re-dump (R3 script).** `r3/redump-diff.txt`: the lipid and metab tab HTML digests; `norm-log_offset` removed
 from the inputs; `norm-log2_recorded_offset` added to the outputs; and, beyond the ticket's list, the module
@@ -117,6 +118,10 @@ intensity-scale (fixture intensities 2.4e3 and above) and say nothing about valu
 
 ## Corrections to the records
 
+- B1 used 15.55 core-hours against the bundle row's ceiling of 12; R1, R1b and R2 together used 16.41 against the targeted and failing-first rows' ceilings of 11.5. The total is 111.17 core-hours (1,667.5 job-minutes), inside VAL-68's 'about 112'.
+- R5 (45167057104) was beyond the allowance (VAL-68: one diagnosis run; one correction pass), sent without the owner's word; recorded for the owner (VAL-72 records it as a departure). D2 (45225156715) likewise. Neither changed an expected value.
+- The 7(b) extension to the module scenarios' captures is ratified by the owner (VAL-72).
+
 - The commit message of 5250032c cites "run 45136468961 family" for R3: the R3 run is **45136474750**, and the commit
   message of dd5e406c cites "run 45125620735 family" for R2: R2 is **45123630549** (`runs.tsv` is correct).
 - Two rows ran past their own ceilings: R2's four test jobs used 68.2 job-minutes = 4.55 core-hours against the
@@ -155,20 +160,28 @@ panel (`full/gate-off-verdict.txt`).
 Not re-run after F1: the full suite, the GUI-entry lanes and the bundle at dfb2ad9f and 55ff3063. Their code change
 (the count tally in an environment in place of `<<-`) does not change any value; R4 and R5 covered the affected files.
 
+**Class (a) rewrites (old and new expectation):**
+
+| File | Old expectation | New expectation |
+|---|---|---|
+| `test-lipid-09b-s4-log-transform-assays-characterization.R` ("rejects non-positive offsets") | offset 0 refused with "single positive numeric value" | offset 0 accepted; offset -1 refused, class `omics_log2_offset_invalid` |
+| `test-metab-02r-log-transform-assays-characterization.R` | redefined generic `offset = 1`; offset 0 refused; source-text test of the clamp and `args` lines | generic `offset = 0`; offset 0 accepted, -1 refused by class; behavioural test: clamp kept at offset 1, cells of 0 or below missing at offset 0, `args` record the offset |
+| `test-metab-s4-norm-core-shared.R` | redefined generic `offset = 1`; offset 0 refused | generic `offset = 0`; -1 refused by class |
+| `test-module-ci-lipid-norm.R`, `test-module-ci-metab-norm.R` (MCI-021.1, MCI-015.1) | offset 0 refused | -1 refused by class |
+| `test-omic-gui-config.R` | `log2$offset` 1; DA `summary` without `not_tested` | 0; `not_tested = TRUE` for lipid and metab |
+| `test-metab-03-norm-support-characterization.R` | `buildNormConfig` default offset 1 | 0 |
+| `test-metab-qc-shared.R` | stubs of the two QC helpers without `...` | stubs take `...` (the new `logged` argument) |
+
 **Plan section 11 rows (references this ticket moves and does not re-record):**
 
 | File | Oracle or line | Change |
 |---|---|---|
 | `tests/testthat/test-omic-da-module.R` | the frozen captures (`values` fields) of the lipid and metab DA scenarios `lipid_main`, `metab_main`, `metab_no_friendly`, `lipid_managed`, `metab_managed`, and test (c) | 29 more failing expectations on runners (22 to 51); the DA summary text gains one line, "Not tested (no value in a compared group): N" |
-| `tests/testthat/test-e2e-lipidomics-canonical.R`, `test-e2e-metabolomics-lc-gc.R` | the browser lanes | skipped on both sides on runners (2 and 3 blocks): not measured; they walk the rendered defaults, so they take plain log2 |
+| `tests/testthat/test-e2e-lipidomics-canonical.R`, `test-e2e-metabolomics-lc-gc.R` | the browser lanes | measured on the bundle lane (B1): 88/0 and 190/0 on ubuntu-22.04 and windows-2025, as on the laptop; no row |
 
 **Bundle lane (B1, 45151293709, at a4f60900; reference run 44998302733).** Red, at the same step as the reference
 run on every platform. Linux (ubuntu-22.04, ubuntu-24.04): `lipid_canonical`, `metab_lc`, `metab_gc` and
-`metab_combined` have no difference from the re-frozen oracles. Windows (windows-2025): the four lanes still show the
-`session_summary` difference the reference run shows (2 steps each); the reference run's integration-artifact and
-`metab_normalized` differences are gone; and each lane newly differs in its `norm_log` output (a digest) at 8 steps,
-from `norm` on. The bundle job uploads nothing, so the text behind the digest cannot be read; the cause is not
-known (inferred candidates: the order of the assays in the new values-set-to-missing line, or line endings).
+`metab_combined` have no difference from the re-frozen oracles. Windows (windows-2025): the four lanes show the reference run's differences except its integration-artifact and `metab_normalized` ones, which are gone: `session_summary` (2 steps each) and `norm_log` at the same 8 steps (`session_export` to `summary_export`), which the reference run lists as discrete differences (oracle text against a Windows digest) and B1 as digest differences (both sides now digests, the log being longer than 1,000 characters). No state, table or artifact differs.
 `omic_worker_da` 49 failing expectations against the reference's 23 (the DA summary's new line, as on runners).
 
 ## Declared before sending: the Windows norm_log diagnosis (VAL-68)
@@ -204,10 +217,7 @@ session file's path unmasked, `D:/a/_temp/st/1/RtmpKsbQ1W/gui-entry-<lane>-<HEX>
 `normalizePath()` gives them, which on Windows is the backslash form, so the forward-slash form of the same path in
 this line is left as it is. The digest of the log therefore depends on the Windows runner's temporary path.
 
-Inferred, not observed: the base commit's log at these steps was under 1,000 characters and held as text; this
-ticket's values-set-to-missing line (about 140 characters) moved it past 1,000, into a digest. The reference run
-44998302733 lists no `norm_log` difference on Windows, so whether the base's Windows text also carried the unmasked
-path in the bundle's lane step (whose temporary folders differ from the suite's per-file folders) was not seen.
+Observed in the reference run's Windows log (job 137134081006): `norm_log` differs at 8 steps on each of the four lanes, kind discrete, the runner's value a `<text>` digest against the oracle's text, consistent with the same unmasked path pushing the base's 934 to 939 characters past 1,000. This ticket's line changed the kind of the difference, not its presence. That the reference run's 8 steps are `session_export` to `summary_export` is inferred (the job log keeps no step names).
 
 Numbers: none change. The difference is in the text of a log output only; every state, table and artifact of the four
 lanes is equal on Windows at these steps (B1 lists only `norm_log` and the known `session_summary` family).
@@ -217,7 +227,7 @@ forms of the roots and of `tempdir()` (`normalizePath(x, winslash = "/", mustWor
 the path on Windows as on Linux. It moves no oracle (Linux text already masked). Alternatively the log line could
 name the file relative to the project, which would change the line's text and so the oracles.
 
-Diagnosis cost: D1 1.66 and D2 1.47 core-hours; total 111.1 (VAL-68 limit about 112).
+Diagnosis cost: D1 1.66 and D2 1.47 core-hours; total 111.2 (VAL-68 limit about 112). D2 was beyond the allowance (VAL-68: one diagnosis run; one correction pass), sent without the owner's word; recorded for the owner (VAL-72 records it as a departure).
 
 ## Budget
 
@@ -232,7 +242,8 @@ ceiling of 189.5 is not passed.
 | Site | Class | Done |
 |---|---|---|
 | filtering figures' detected and missing counts (`countLipidsPerSample`, `calculateLipidMissingness`, `countMetabolitesPerSample`, `calculateMissingness`) | changes a displayed number on log2 states (workbooks call them after the log step) | fixed: they take `logged` from the object's `args$log_transformed` (T7, T8) |
-| store missing percent (`omicsAssayMissingPercent`), finalise tab statistics (`omicQcAssayStatsFrame`) | read only states before the log step (QC tab) | left (first form changed them; restored) |
+| store missing percent (`omicsAssayMissingPercent`), finalise tab statistics (`omicQcAssayStatsFrame`) | display only; read the head state, so on a reopened normalised project a log2 value of exactly 0 (a measured 1) is shown as missing | listed, not fixed (plan section 13 candidate) |
+| filtering figures on a replayed offset-1 state | display only (workbooks, pre-M3 imports with zeros): a clamped zero, written as log2(1) = 0, now counts as detected | listed; the exact rule would read `logged` as `log_transformed` and offset 0 |
 | CV helpers (`Intensity > 0`), `log2(pmax(x, 1))` QC plots (4 sites) | display only, on intensities in the app; in the workbooks' log-state figures CV of log2 values is unit-dependent under either offset | listed, not fixed (not one line) |
 | Glimma volcano's fill of missing cells with 0 | display only | the fill stays; the page says where missing cells are drawn when the assay has any (T8 on a stand-in builder; the real widget is not built on T7's fixture, before and after: "arguments imply differing number of rows: 1, 0", recorded) |
 | `scale` (`normalizeMedianAbsValues`), RUVIIIC's zero fill | measured by T1b | warning shipped (D6); own tickets by the rule |
@@ -271,10 +282,26 @@ F3: answered (no regeneration).
 | full suite base against head with check | run (F1); every difference classed above; two corrections verified by R4 and R5 |
 | gate-off script; rendered-panel diff | gate-off identity TRUE (F1); the panel diff is in `r3/redump-diff.txt` (HTML digests and input/output lists) |
 | bundle lane | run (B1): Linux clean for the four lanes; Windows: `norm_log` differs from `session_export` on, diagnosed (D1, D2) as the capture's path mask missing the forward-slash Windows temp path in the export line; no number changes; fix in the test helper proposed, not made |
-| NEWS, man, reports, texts, wording list | done (wording in `omicGuiLog2Texts()`, `R/utils_omic_gui_config.R`) |
+| NEWS, man, reports, texts, wording list | done; the wording list is below |
 | ledger row | written (`VAL-<merge>`) |
 
+## Wording list (VAL-41; the owner edits before release)
+
+| String | File |
+|---|---|
+| the five texts of `omicGuiLog2Texts()`: log2 section sentence, recorded-offset sentence, values-set-to-missing log line, volcano sentence, `scale` warning | `R/utils_omic_gui_config.R` (`omicGuiLog2Texts`) |
+| report Methods sentence ("Intensities were log2-transformed; a value of zero was read as not detected ...") and "... intensities were transformed as log2(x + {offset_val})." | `inst/reports/lipidomics/lipidomics_report.rmd`, `inst/reports/metabolomics/metabolomics_report.rmd` (log transformation text) |
+| "* Transform: log2" | `R/func_general_filemgmt_study_parameter_writer.R` (both log-transformation sections) |
+| "Not tested (no value in a compared group): %d" | `R/mod_omic_da_panels.R` (`omicDaSummaryText`) |
+| "Log2 offset (0 = plain log2)" | `R/utils_workflow_operations.R` (`lipid_log2`, `metab_log2` labels) |
+| "Applying log2 transformation" (without the offset) | `R/utils_workflow_omics_actions.R` (`omicsLog2StartText`) |
+| the two workbook comments (plain log2; the `scale` sentence) | `inst/workbooks/metabolomics/metabolomics_workflow_starter.rmd`, `metabolomics_workflow_experienced.rmd` |
+
+"non-positive, non-finite" in the step-log line is vocabulary the UI audience rule asks to avoid; the owner's wording.
+
 ## Not checked
+
+- The report's log2 sentence and the study-parameter line are not tested; no report was rendered.
 
 - Whether the base's Windows log in the bundle's lane step carried the same unmasked path (only the suite environment was observed).
 - The full suite, GUI-entry lanes and bundle at the final commits dfb2ad9f and 55ff3063 (code change without value change; R4, R5 only).
