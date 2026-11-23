@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-177 R4: control and freeze S2 on head 32ead4fc28f8aa7cbff580927db127fd668645df against base 55710a87 (three lanes, C collation); ceiling 8.7 core-hours",
+  "label": "KIT-177 R4 control and freeze on 32ead4fc",
+  "package_commit": "32ead4fc28f8aa7cbff580927db127fd668645df",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-177/gui-entry-control.R",
+      "args": ["55710a87eb7d8e0e7f1ce8f5dcb608bc0a641668", "docs/qa/workflow-execution/kit/kit-177/control"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-177/control",
+      "out_pattern": "\\.(json|tsv)$",
+      "timeout_minutes": 140
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-177 T1b instrument run 1 (VAL-54): the two new RUV designs only, ruv_k_seed set; head 32ead4fc28f8aa7cbff580927db127fd668645df; ceiling 7.6 core-hours",
+  "label": "KIT-177 T1b new designs on 32ead4fc",
+  "package_commit": "32ead4fc28f8aa7cbff580927db127fd668645df",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-177/t1b.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-177/t1b", "groups_all_features,first_pass_nulls"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-177/t1b",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 150
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
