@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-172 control and freeze of 7(c), the one run VAL-55 allows: child processes in C collation as testthat; base worktree a60c4e9a, head with log_offset 1, head at the default and frozen",
+  "label": "KIT-172 GUI-entry control and re-freeze, VAL-55 run, at 8fb3c215",
+  "package_commit": "8fb3c2159ecfb268935fff693b9fa5343fccd7be",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-172/gui-entry-control.R",
+      "args": [
+        "a60c4e9a0ec8b7db47edddaa53926a61e2b60299",
+        "docs/qa/workflow-execution/kit/kit-172/control-out"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-172/control-out",
+      "out_pattern": "\\.(json|tsv|txt|log)$",
+      "timeout_minutes": 80
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
