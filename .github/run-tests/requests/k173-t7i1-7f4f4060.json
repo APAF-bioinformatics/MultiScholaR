@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-173 T7 instrument run 1 of 3 (VAL-54): R2b's t7-replay.R returned only counts; same script, now writing the failing expectations to t7-failures.tsv; nothing else changed; inside the ticket's total ceiling",
+  "label": "KIT-173 T7 instrument run 1 7f4f4060",
+  "package_commit": "7f4f40601cfdebd13434de671f3f34fb62dfe2e2",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/t7-replay.R",
+      "args": [
+        "k173-t7-out"
+      ],
+      "env": {},
+      "out": "k173-t7-out",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
