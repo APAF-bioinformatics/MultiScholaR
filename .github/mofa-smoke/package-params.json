@@ -1,11 +1,7 @@
 {
-  "label": "k155-correction-d1fd2597",
-  "package_commit": "d1fd2597795c5f0d5cdde4cdb82661978529329a",
-  "tests": [
-    "test-integration-partitioned-mofa.R",
-    "test-integration-mofa-model.R",
-    "test-integration-enrichment-mofa.R"
-  ],
+  "label": "k183-camera-mofa",
+  "package_commit": "d53a5dd1d74de6328dc6a280e824dc790a9f1cd0",
+  "tests": ["test-integration-enrichment-mofa.R"],
   "record": false,
   "runs": 1
 }
