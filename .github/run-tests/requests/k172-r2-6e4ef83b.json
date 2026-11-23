@@ -1,0 +1,66 @@
+{
+  "requested_by": "KIT-172 R2: fix commit 6e4ef83b: the ticket's tests green, contract tests, key dependents; scripts: frozen-UI re-dump (7(b)), T1b and T11",
+  "label": "KIT-172 R2 fix 6e4ef83b: targeted tests, re-dump, T1b/T11",
+  "package_commit": "6e4ef83b308ebf4a4e6ad56b0420b3fcfc46473e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit172-log2-rule.R",
+    "test-kit172-unit-equivariance.R",
+    "test-kit172-downstream.R",
+    "test-kit172-reopen.R",
+    "test-lipid-09b-s4-log-transform-assays-characterization.R",
+    "test-metab-02r-log-transform-assays-characterization.R",
+    "test-metab-s4-norm-core-shared.R",
+    "test-module-ci-lipid-norm.R",
+    "test-module-ci-metab-norm.R",
+    "test-omic-norm-module.R",
+    "test-workflow-partitions.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-omics-norm-core.R",
+    "test-omic-gui-config.R",
+    "test-workflow-omics-sessions.R",
+    "test-module-ci-lipid-da.R",
+    "test-workflow-omics-application-reads.R",
+    "test-omics-qc-core.R",
+    "test-lipid-09-s4-normalization-methods.R",
+    "test-metab-01-qc-metrics-characterization.R",
+    "test-lipid-01-qc-filtering-helpers.R",
+    "test-general-filemgmt-s4-contracts.R"
+  ],
+  "shards": 4,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-172/redump-norm-ui.R",
+      "args": [
+        "k172-redump"
+      ],
+      "env": {},
+      "out": "k172-redump",
+      "out_pattern": "\\.(R|tsv)$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-172/t1b-t11.R",
+      "args": [
+        "k172-t1b",
+        "69"
+      ],
+      "env": {},
+      "out": "k172-t1b",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 110
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
