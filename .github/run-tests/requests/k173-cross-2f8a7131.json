@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-173 declared control 2 (VAL-57): base capture and head replay in two processes, (a) both in C collation, (b) both in the runner's locale, with order facts and collations; one job, ceiling 1.5 core-h",
+  "label": "KIT-173 declared control 2 2f8a7131",
+  "package_commit": "2f8a71319015d3e46a8f0859ef3bf51811842b3e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/t7-cross.R",
+      "args": [
+        "k173-cross-out"
+      ],
+      "env": {},
+      "out": "k173-cross-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
