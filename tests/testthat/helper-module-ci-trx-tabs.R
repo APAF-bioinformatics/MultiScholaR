@@ -233,7 +233,12 @@ module_ci_trx_tabs_journey <- function(fixture, managed = FALSE, norm = list(ruv
       session$setInputs(`norm-run_normalization` = 1L)
       session$flushReact()
       out$norm_log <- output$`norm-norm_log`
-      out$ruv_summary <- output$`norm-ruv_summary_counts`
+      # KIT-186: a declared RUV design has no grid, so the tab defines no grid summary output (ruv_optimization_results
+      # is empty, utils_workflow_trx_norm.R); only that absence is read as no summary.
+      out$ruv_summary <- tryCatch(output$`norm-ruv_summary_counts`, error = function(error) {
+        if (!grepl("hasn't been defined yet", conditionMessage(error), fixed = TRUE)) stop(error)
+        NULL
+      })
     })
     if (isTRUE(da)) step("da", {
       session$setInputs(`de-da_q_val_thresh` = 0.05, `de-treat_lfc_cutoff` = 1, `de-run_da_analysis` = 1L)
