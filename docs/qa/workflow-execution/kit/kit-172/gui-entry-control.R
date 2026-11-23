@@ -95,7 +95,7 @@ writeLines(c(
   'dir.create(record_dir, recursive = TRUE, showWarnings = FALSE)',
   'writeLines(env$guiEntrySourceSha(), file.path(record_dir, "source-sha.txt"))',
   'if (identical(pass, "head1")) {',
-  '  packaged <- get("omicsUiInputDefaults", envir = asNamespace("MultiScholaR"))',
+  '  packaged <- env$omicsUiInputDefaults',
   '  env$omicsUiInputDefaults <- function(...) {',
   '    values <- packaged(...)',
   '    at <- which(endsWith(names(values), "norm-norm_method"))',
