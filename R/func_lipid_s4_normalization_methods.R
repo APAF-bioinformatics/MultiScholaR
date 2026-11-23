@@ -509,7 +509,8 @@ setMethod(
         } else {
             message("Applying log2(x) transformation to assays.")
         }
-        counts <- list()
+        tally <- new.env(parent = emptyenv())
+        tally$counts <- list()
 
         # --- Get Object Slots ---
         assay_list <- methods::slot(theObject, "lipid_data")
@@ -585,7 +586,7 @@ setMethod(
             # --- Apply Log2 Transformation (KIT-172: the shared step; an error stops) ---
             step <- omicsLog2SampleColumns(assay_tibble, sample_cols, offset, assay_index_name)
             transformed_tibble <- step$assay
-            if (!is.null(step$counts)) counts[[assay_index_name]] <<- step$counts
+            if (!is.null(step$counts)) tally$counts[[assay_index_name]] <- step$counts
 
             # Check if transformation actually happened (e.g., if error occurred)
             if (identical(transformed_tibble, assay_tibble)) {
@@ -604,7 +605,7 @@ setMethod(
         methods::slot(theObject, "lipid_data") <- transformed_assay_list
 
         # Add log transformation status to args (KIT-172: at offset 0 also the counts, and the warning)
-        theObject <- omicsLog2RecordArgs(theObject, offset, counts)
+        theObject <- omicsLog2RecordArgs(theObject, offset, tally$counts)
 
 
         message("Log2 transformation complete for all assays.")

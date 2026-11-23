@@ -39,19 +39,20 @@ omicsLog2SampleColumns <- function(assay_tibble, sample_cols, offset, assay_name
         )
         return(list(assay = transformed, counts = NULL))
     }
-    counts <- c(nonpositive = 0L, nonfinite = 0L)
+    # The counts are kept in an environment (the package keeps no `<<-` outside its listed closures).
+    tally <- new.env(parent = emptyenv())
+    tally$counts <- c(nonpositive = 0L, nonfinite = 0L)
     plainLog2 <- function(x) {
         x <- as.numeric(x)
         # `-Inf` is non-positive; `NaN` and `+Inf` are non-finite; a missing cell (NA) is neither.
         nonpositive <- !is.na(x) & x <= 0
         nonfinite <- is.nan(x) | (!is.na(x) & x == Inf)
-        counts[["nonpositive"]] <<- counts[["nonpositive"]] + sum(nonpositive)
-        counts[["nonfinite"]] <<- counts[["nonfinite"]] + sum(nonfinite)
+        tally$counts <- tally$counts + c(nonpositive = sum(nonpositive), nonfinite = sum(nonfinite))
         x[nonpositive | nonfinite] <- NA_real_
         log2(x)
     }
     transformed <- tryCatch(dplyr::mutate(assay_tibble, dplyr::across(dplyr::all_of(sample_cols), plainLog2)), error = failed)
-    list(assay = transformed, counts = counts)
+    list(assay = transformed, counts = tally$counts)
 }
 
 #' Record the log2 step on the object (KIT-172): `log_transformed`, `log_transform_offset`, and at offset 0 the counts
@@ -122,7 +123,8 @@ setMethod(
         } else {
             message("Applying log2(x) transformation to assays.")
         }
-        counts <- list()
+        tally <- new.env(parent = emptyenv())
+        tally$counts <- list()
 
         # --- Get Object Slots ---
         assay_list <- methods::slot(theObject, "metabolite_data")
@@ -198,7 +200,7 @@ setMethod(
             # --- Apply Log2 Transformation (KIT-172: the shared step; an error stops) ---
             step <- omicsLog2SampleColumns(assay_tibble, sample_cols, offset, assay_index_name)
             transformed_tibble <- step$assay
-            if (!is.null(step$counts)) counts[[assay_index_name]] <<- step$counts
+            if (!is.null(step$counts)) tally$counts[[assay_index_name]] <- step$counts
 
             # Check if transformation actually happened (e.g., if error occurred)
             if (identical(transformed_tibble, assay_tibble)) {
@@ -217,7 +219,7 @@ setMethod(
         methods::slot(theObject, "metabolite_data") <- transformed_assay_list
 
         # Add log transformation status to args (KIT-172: at offset 0 also the counts, and the warning)
-        theObject <- omicsLog2RecordArgs(theObject, offset, counts)
+        theObject <- omicsLog2RecordArgs(theObject, offset, tally$counts)
 
 
         message("Log2 transformation complete for all assays.")
