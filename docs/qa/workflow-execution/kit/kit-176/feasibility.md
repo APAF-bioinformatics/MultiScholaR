@@ -1,6 +1,9 @@
 # KIT-176 feasibility (A1): F3, the package paths, and the two meanings of `package_commit`
 
-Read 2026-11-23 at `v0.9-staging` b052b824, before implementation. By reading only; nothing was run.
+Read 2026-11-23 at `v0.9-staging` b052b824, by reading only; nothing was run. Written down while R1 and R2 were
+running, after the fix commit 5700c8a1 had implemented D4 (the ticket's section 8 asks for the answer before
+implementation). The answer below did not change with the runs, and its run-time leg (A5: no difference family in
+one run only, none involving the software block) held in R2.
 
 ## F3: does any reference the bundle lane compares hold the record's `source_commit`?
 
