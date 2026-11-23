@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-173 declared control (coordinator-authorised): base-on-base and head-on-head capture+replay with DA row-order and enricher gene-order facts, to attribute T7(b)'s geneID-order difference; one job, ceiling 2 core-h",
+  "label": "KIT-173 declared control 3d92c315",
+  "package_commit": "3d92c3152c00b1cfbe1ed418b0f797f52e74cc71",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/t7-control.R",
+      "args": [
+        "k173-control-out"
+      ],
+      "env": {},
+      "out": "k173-control-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
