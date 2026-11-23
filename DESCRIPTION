@@ -94,6 +94,7 @@ Collate:
     'func_general_enrichment_plotting_helpers.R'
     'func_general_enrichment_pathway_helpers.R'
     'func_general_enrichment_engine_helpers.R'
+    'func_general_geneset_kernel.R'
     'func_general_enrichment_orchestration.R'
     'func_general_filemgmt_path_helpers.R'
     'func_general_filemgmt_directory_helpers.R'

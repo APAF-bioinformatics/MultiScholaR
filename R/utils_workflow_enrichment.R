@@ -50,7 +50,8 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
                                                   proteinIdColumn,
                                                   contrastNames,
                                                   correctionMethod,
-                                                  excludeIea = FALSE) {
+                                                  excludeIea = FALSE,
+                                                  goPropagation = NULL) {
   validatedParams <- validateProtEnrichProcessParameters(
     organismTaxid = organismTaxid,
     upCutoff = upCutoff,
@@ -74,7 +75,7 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
       contrast_names = contrastNames,
       correction_method = validatedParams$correction_method
     ),
-    processArgs = list(
+    processArgs = c(list(
       da_results = daResultsForEnrichment,
       taxon_id = taxonId,
       up_cutoff = validatedParams$up_cutoff,
@@ -86,7 +87,9 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
       protein_id_column = proteinIdColumn,
       contrast_names = contrastNames,
       correction_method = validatedParams$correction_method
-    )
+    ),
+    # KIT-173: the GO parent-term rule reaches the kernel only when given (the clusterProfiler route).
+    if (!is.null(goPropagation)) list(go_propagation = goPropagation))
   )
 }
 
@@ -788,7 +791,8 @@ workflowEnrichmentEffectiveCorrection <- function(method, requested) {
 #' @param config The omic's `enrichment` group (`omicGuiConfig(<omic>)$enrichment`).
 #' @param manifest The accepted DA result manifest.
 #' @param parameters The run's inputs: `selected_contrast`, `organism_taxid`, `up_cutoff`, `down_cutoff`, `q_cutoff`,
-#'   `correction_method`, `enable_organism_filter`.
+#'   `correction_method`, `enable_organism_filter`, and `go_propagation` (KIT-173; absent takes the shipped value,
+#'   `goPropagationShipped`; used on the clusterProfiler route only).
 #' @param paths Experiment paths (`da_output_dir`, `pathway_dir`, `results_dir`, `source_dir`).
 #' @param process_fn The kernel; NULL selects `config$kernel$select()` when called (the double in test mode).
 #' @param notify `function(message, type, duration)`: the organism filter's warning, and the notice that the backend
@@ -871,11 +875,15 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         supportedOrganisms = config[["organism"]]$supported())$methodInfo
     columns <- resolveProtEnrichAnalysisInputColumns(methodInfo = method, daResultsForEnrichment = da_results,
         currentS4Object = source_object)
+    # KIT-173: the GO parent-term rule, on the clusterProfiler route only (the g:Profiler route's arguments, declared
+    # names and record are unchanged).
+    go_propagation <- if (identical(method$method, "clusterprofiler"))
+        checkGoPropagation(parameters$go_propagation %||% goPropagationShipped)
     arguments <- buildProtEnrichProcessEnrichmentsArgs(daResultsForEnrichment = da_results,
         organismTaxid = parameters$organism_taxid, upCutoff = parameters$up_cutoff, downCutoff = parameters$down_cutoff,
         qCutoff = parameters$q_cutoff, pathwayDir = directories$pathwayDir, goAnnotations = annotations,
         proteinIdColumn = columns$idColumn, contrastNames = names(manifest$results),
-        correctionMethod = parameters$correction_method, excludeIea = config$exclude_iea)
+        correctionMethod = parameters$correction_method, excludeIea = config$exclude_iea, goPropagation = go_propagation)
     kernel <- process_fn %||% config$kernel$select()
     .capture_checkpoint(arguments$checkpointArgs, "cp10", "enrichment_input")
     # GUI audit R3, P-28: the organism filter is declared when it is on, and what it did is recorded as the step's
@@ -906,6 +914,9 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     # displayable columns as text, so the table in memory and a read-back of it agree). NA for no table or an empty one.
     outcomes <- c(outcomes, list(annotation_sha256 = diaAnnotationDigest(annotations) %||% NA_character_,
         da_inputs_sha256 = da_inputs))
+    if (!is.null(go_propagation) && !identical(go_propagation, "none")) {
+        outcomes <- c(outcomes, workflowEnrichmentGoOutcomes(annotations, go_propagation, da_results, columns$idColumn))
+    }
     declared <- config$run(workflow, manifest, run_arguments, process_fn = kernel)
     results <- declared$results
     contrast_results <- buildProtEnrichAllContrastResults(enrichmentResults = results, methodInfo = method)
@@ -948,6 +959,40 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         raw_contrast = selection$rawContrastName, contrasts_tbl = contrasts_tbl, pathway_dir = directories$pathwayDir,
         annotation_match = matching$annotationMatchResults, organism_filter = organism_filter, service = declared$service,
         reference = declared$reference, parameters = declared$parameters, saved = saved)
+}
+
+#' The GO parent-term outcomes of a propagated clusterProfiler run (KIT-173)
+#'
+#' Computed from the annotation table and the gene sets the kernel builds from it (`buildUniprotGoGeneSets()`, the
+#' same call `processEnrichments` makes), not from the result object, whose class does not change. Provenance only.
+#' @param annotations The annotation table the run passes to the kernel (its `go_ids_not_in_go_db` attribute, set by
+#'   `getUniprotAnnotations`, when present).
+#' @param go_propagation The run's propagating value.
+#' @param da_results The DA results the kernel receives.
+#' @param id_column The protein id column of the DA tables.
+#' @return Named list: `go_db_version`, `go_source_date`, `go_relations` (plain words), `go_ids_not_in_go_db` (by
+#'   class), `go_ids_not_in_go_db_total`, `go_annotation_go_db_version`, `go_annotation_go_source_date` (the release
+#'   in force when the table was built), `go_pairs_direct`, `go_pairs_propagated`, `go_root_only_proteins` and
+#'   `go_unreviewed_share`; `"not recorded"` where the table does not say.
+#' @noRd
+workflowEnrichmentGoOutcomes <- function(annotations, go_propagation, da_results, id_column) {
+    sets <- buildUniprotGoGeneSets(annotations, go_propagation)
+    lost <- attr(annotations, "go_ids_not_in_go_db", exact = TRUE)
+    da_ids <- unique(unlist(lapply(da_results@da_data, function(table)
+        if (is.data.frame(table) && id_column %in% names(table)) as.character(table[[id_column]])), use.names = FALSE))
+    pairs <- attr(sets, "pairs_propagated")
+    unreviewed <- attr(sets, "unreviewed_pairs", exact = TRUE)
+    plain <- c(isa = "is a", `part of` = "part of", regulates = "regulates",
+        `positively regulates` = "positively regulates", `negatively regulates` = "negatively regulates")
+    list(go_db_version = attr(sets, "go_db_version"), go_source_date = attr(sets, "go_source_date"),
+        go_relations = as.list(unname(plain[attr(sets, "relations")])),
+        go_ids_not_in_go_db = if (is.null(lost)) "not recorded" else lost[c("obsolete", "secondary", "unknown")],
+        go_ids_not_in_go_db_total = if (is.null(lost)) "not recorded" else lost$total,
+        go_annotation_go_db_version = lost$go_db_version %||% "not recorded",
+        go_annotation_go_source_date = lost$go_source_date %||% "not recorded",
+        go_pairs_direct = attr(sets, "pairs_direct"), go_pairs_propagated = pairs,
+        go_root_only_proteins = sum(da_ids %in% attr(sets, "root_only_proteins")),
+        go_unreviewed_share = if (is.null(unreviewed)) "not recorded" else if (pairs > 0) unreviewed / pairs else 0)
 }
 
 #' Save the completed enrichment state with its step provenance (KIT-107 D3, D4; F-16)
@@ -1152,7 +1197,9 @@ replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, co
         organism_taxid = format(parameters$taxon_id, scientific = FALSE, trim = TRUE), up_cutoff = parameters$up_cutoff,
         down_cutoff = parameters$down_cutoff, q_cutoff = parameters$q_cutoff,
         correction_method = parameters$correction_method,
-        enable_organism_filter = isTRUE(parameters$organism_filter_enabled)), run_paths)
+        enable_organism_filter = isTRUE(parameters$organism_filter_enabled),
+        # KIT-173: a record made before parent terms, or without them, replays without them.
+        go_propagation = parameters$go_propagation %||% "none"), run_paths)
     # The record holds each value through its JSON encoding; the produced values are compared in the same form.
     as_recorded <- function(value) decodeWorkflowRecordValue(jsonlite::fromJSON(jsonlite::toJSON(
         encodeWorkflowRecordValue(value), auto_unbox = TRUE, digits = I(17), null = "null", na = "null"),
@@ -1185,6 +1232,16 @@ replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, co
         cli::cli_warn(c("replayed step {.val {step$state}} queried {.val {unrecorded}}, which the record does not name",
             i = "the record names {.val {recorded}}; an enrichment result depends on the release of its service"),
             class = "workflow_replay_resource")
+    }
+    # KIT-173: propagated sets depend on the GO release the record names.
+    if (!is.null(step$outcomes$go_db_version) || !is.null(step$outcomes$go_source_date)) {
+        release <- goDbRelease()
+        recorded_go <- c(as.character(step$outcomes$go_db_version %||% NA), as.character(step$outcomes$go_source_date %||% NA))
+        if (!identical(recorded_go, c(release$version, release$date))) {
+            cli::cli_warn(c(paste("replayed step {.val {step$state}} propagated GO terms with GO.db {.val {release$version}}",
+                "({.val {release$date}}), not the recorded {.val {recorded_go[[1L]]}} ({.val {recorded_go[[2L]]}})"),
+                i = "parent-term gene sets depend on the GO release"), class = "workflow_replay_resource")
+        }
     }
     run
 }

@@ -1,5 +1,25 @@
 # MultiScholaR NEWS
 
+## MultiScholaR (unreleased; numbered at merge)
+
+### Scientific changes
+
+ * Proteomics enrichment for organisms outside the 13 served by g:Profiler: Gene Ontology sets now include each
+   term's more specific terms (parent-term propagation over is a, part of, regulates, positively and negatively
+   regulates, as g:Profiler does; is a and part of only is available as an option). Terms that had fewer than 10
+   measured proteins can now be tested, terms with more than 500 drop out, and parent terms of significant terms tend
+   to be significant too. The three top-level terms are not tested. `processEnrichments()` propagates by default
+   (`go_propagation = "is_a_part_of_regulates"`; `"none"` gives the previous sets). Analysis records made before this
+   version replay without propagation; records made with this version need this version or later. GO identifiers that
+   the installed GO release does not contain are counted and reported. Proteins annotated only to the three top-level
+   terms leave the background on such a run; their number is recorded. (KIT-173; the measured effect follows after the
+   owner has seen it.)
+ * Proteomics reports: for the 13 organisms served by g:Profiler, the enrichment paragraph now describes g:Profiler.
+   It described clusterProfiler with Benjamini-Hochberg correction, because the report did not recognise the recorded
+   method. The correction applied is named from the analysis record. On both routes the fold-change bullet now states
+   the cutoffs applied (it gave the down cutoff with the wrong sign, or said no cutoff was applied when only the down
+   cutoff was set). No result changes. (KIT-173)
+
 ## MultiScholaR 0.9.1 (staging)
 
 ### Scientific changes

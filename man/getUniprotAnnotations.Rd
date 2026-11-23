@@ -33,7 +33,9 @@ getUniprotAnnotations(
 \item{progress_callback}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
-A data frame containing UniProt annotations and GO terms
+A data frame containing UniProt annotations and GO terms. A table built here carries the attribute
+\code{go_ids_not_in_go_db}: the GO ids of the download that the installed GO.db does not hold (and that the table
+therefore omits), counted by class (obsolete, secondary, unknown), with up to 20 examples and the GO.db release.
 }
 \description{
 Downloads protein information from UniProt for a list of protein IDs,

@@ -272,12 +272,15 @@ getUniprotAnnotationsFull <- function(data_tbl,
         names(ensembl_lookup) <- c("Original_Ensembl_ID", "Entry")
         
         # Merge annotations with Ensembl mapping
+        go_ids_lost <- attr(uniprot_annotations, "go_ids_not_in_go_db", exact = TRUE)
         uniprot_annotations <- merge(
           uniprot_annotations,
           ensembl_lookup,
           by = "Entry",
           all.x = TRUE
         )
+        # KIT-173: merge() drops the table's attributes; the lost-GO-id count is put back.
+        attr(uniprot_annotations, "go_ids_not_in_go_db") <- go_ids_lost
         
         # For any annotations without Ensembl mapping, use Entry as Original_ID
         if ("Original_Ensembl_ID" %in% names(uniprot_annotations)) {

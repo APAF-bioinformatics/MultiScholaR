@@ -140,12 +140,21 @@ kit094LocalStub <- function(env = parent.frame()) {
     list(binding = stub, calls = calls)
 }
 
-#' KIT-095: the characterisation with exactly the transcriptomics entries taken out, for comparison with the snapshot
-#' taken before transcriptomics existed. The snapshot proves lipid and metab unchanged; a third omic adds its own
-#' entries and nothing else. The supported-types message is the one allowed textual change: it now lists TRANSCRIPTOMICS.
+#' KIT-095: the characterisation with the transcriptomics entries and KIT-173's enrichment sources taken out, for
+#' comparison with the snapshot taken before transcriptomics existed. The snapshot proves lipid and metab unchanged; a
+#' third omic adds its own entries and nothing else. The supported-types message is the one allowed textual change: it
+#' now lists TRANSCRIPTOMICS.
 kit095WithoutTranscriptomics <- function(current, expected) {
     stripped <- current
     stripped$report_sources[c("ruv_mode", "ruviii_m_source")] <- NULL
+    # KIT-173: the enrichment step's report sources, named here and checked to be new before they are taken out.
+    kit173 <- c("enrichment_go_propagation", "enrichment_go_db_version", "enrichment_go_source_date",
+        "enrichment_go_ids_not_in_go_db_total", "enrichment_go_annotation_go_db_version",
+        "enrichment_go_annotation_go_source_date", "enrichment_go_pairs_direct", "enrichment_go_pairs_propagated",
+        "enrichment_go_root_only_proteins", "enrichment_go_unreviewed_share", "enrichment_correction_method")
+    testthat::expect_true(all(kit173 %in% names(current$report_sources)))
+    testthat::expect_false(any(kit173 %in% names(expected$report_sources)))
+    stripped$report_sources[kit173] <- NULL
     for (name in c("ruv_applied", "best_k", "best_percentage", "num_neg_ctrl")) {
         stripped$report_sources[[name]]$record <- Filter(function(r) !identical(r[[2L]], "trx_ruvs"), stripped$report_sources[[name]]$record)
     }

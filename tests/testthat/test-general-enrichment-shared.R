@@ -805,7 +805,8 @@ test_that("processEnrichments unsupported-organism branch preserves GO annotatio
     go_annotations = go_annotations,
     exclude_iea = FALSE,
     protein_id_column = "Protein.IDs",
-    contrast_names = "short_gamma"
+    contrast_names = "short_gamma",
+    go_propagation = "none" # KIT-173: these GO ids are synthetic; the test is of the direct sets' path
   )
 
   expect_equal(names(enrichment_results@enrichment_data), "short_gamma")
@@ -941,7 +942,7 @@ test_that("the tab's plot is the run's saved plot, and a stored plot is shown as
   # The clusterProfiler path: the run's saved widget and PNG plot against the tab's render from the stored result.
   cluster <- suppressWarnings(processEnrichments(da_results = da_results, taxon_id = "999999", q_cutoff = 0.05,
     pathway_dir = pathway_dir, go_annotations = go_annotations, exclude_iea = FALSE,
-    protein_id_column = "Protein.IDs", contrast_names = "short_gamma"))
+    protein_id_column = "Protein.IDs", contrast_names = "short_gamma", go_propagation = "none")) # KIT-173
   expect_identical(cluster@enrichment_plots, list())
   expect_identical(cluster@enrichment_plotly, list())
   expect_setequal(names(saved$interactive), paste0("short_gamma_", c("up", "down"), "_enrichment_plot.html"))
