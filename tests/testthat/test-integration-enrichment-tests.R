@@ -19,6 +19,9 @@
 #   T12 the workbook: gsea override gives base's terms, the default is camera;
 #   T13 corpus check (6.6), with the size of the change written to the output;
 #   T15 integrationEnrichmentGsea unchanged (formals, body, value).
+# KIT-191 restated, where its texts changed by design (VAL-85 (2), VAL-97): T10 (the score column, the limits paragraph
+# per test and kind, the strength sentence per test and kind), T11 (the seed label, the notes per kind, the
+# few-samples sentences per test and kind), T15 under D9 (a) (the body differs from base only by the three RNG kinds).
 
 # --- Fixtures ---
 
@@ -492,9 +495,13 @@ test_that("KIT-183 T3, T9, T10: camera through the store: U_cam from the views, 
     expect_setequal(ranking, c(sprintf(texts[["enrich_ranking_value_camera"]], counts$samples, counts$universe),
         sprintf(texts[["enrich_ranking_value"]], "pearson", 5L)))
     strength <- integrationEnrichmentFactorStrength(value, "Factor1", view)
-    expect_identical(unique(tables$summary[[texts[["col_enrich_strength"]]]]), sprintf(texts[["enrich_factor_strength"]],
-        integrationEnrichmentPercent(strength$factor_r2_percent), integrationEnrichmentPercent(strength$largest_r2_percent)))
-    expect_identical(texts[["col_enrich_score"]], "Enrichment score (NES) or effect (camera)")
+    # KIT-191: each entry's own test's figure (metabolites: camera 6.7 %, gsea 34.4 %).
+    strengthOf <- function(figure, phrase) sprintf(texts[["enrich_factor_strength"]],
+        integrationEnrichmentPercent(strength$factor_r2_percent), integrationEnrichmentPercent(strength$largest_r2_percent),
+        "metabolite", texts[["enrich_strength_terms_metabolites"]], figure, phrase)
+    expect_setequal(unique(tables$summary[[texts[["col_enrich_strength"]]]]),
+        c(strengthOf("6.7 %", "correlation-adjusted test"), strengthOf("34.4 %", "pre-ranked test")))
+    expect_true(startsWith(texts[["col_enrich_score"]], "Enrichment score (NES), or effect"))
     methods <- integrationMethodsEnrichment(block, texts)
     camera_sentence <- sprintf(texts[["methods_enrich_camera"]], "Factor1", view, "KEGG", texts[["methods_test_name_camera"]],
         sprintf(texts[["methods_test_settings_camera"]], counts$samples, counts$universe,
@@ -502,7 +509,7 @@ test_that("KIT-183 T3, T9, T10: camera through the store: U_cam from the views, 
         camera$run$value$service$pathways_testable)
     expect_true(camera_sentence %in% methods)
     expect_true(any(startsWith(methods, sprintf("Factor1 in %s: KEGG pathways were tested by ranked gene-set", view))))
-    expect_identical(sum(methods == texts[["methods_enrich_limits_tests"]]), 1L)
+    expect_identical(sum(startsWith(methods, texts[["methods_enrich_limits_tests"]])), 1L)
     expect_identical(sum(startsWith(methods, "For enrichment, every measured feature")), 1L)
     expect_false(any(grepl("clusterProfiler", camera_sentence, fixed = TRUE)))
     # Only the camera entry: the ranking sentence is still printed; only STRING entries: no limits sentence.
@@ -512,8 +519,8 @@ test_that("KIT-183 T3, T9, T10: camera through the store: U_cam from the views, 
     string <- list(complete = TRUE, database = "string", factor = "Factor1", view = "proteomics",
         settings = list(correlation_method = "pearson", min_samples = 5L), mapping_counts = list(mapped = 10L),
         service = list(version = list(string_version = "12.5"), species = "9606", queried_at = "x"))
-    expect_false(texts[["methods_enrich_limits_tests"]] %in% integrationMethodsEnrichment(list(enrichment = list(string)),
-        texts))
+    expect_false(any(startsWith(integrationMethodsEnrichment(list(enrichment = list(string)), texts),
+        texts[["methods_enrich_limits_tests"]])))
 })
 
 test_that("KIT-183 T4: every factor score and weight multiplied by -1 gives an identical terms table", {
@@ -726,12 +733,23 @@ test_that("KIT-183 T8: (b) the base store's ranking and gsea identities equal th
     expect_identical(second$ranking$status, "hit")
 })
 
-test_that("KIT-183 T15: integrationEnrichmentGsea is unchanged: formals, body and value as at base", {
+test_that("KIT-183 T15 (KIT-191 D9 (a)): integrationEnrichmentGsea: formals and value as at base, body but the RNG kinds", {
     skip_if_not_installed("clusterProfiler")
     path <- file.path(intEtBaseStore(), "gsea-deparse.txt")
     testthat::skip_if_not(file.exists(path), "the KIT-183 base store is not present")
     gsea <- utils::removeSource(integrationEnrichmentGsea)
-    expect_identical(c(deparse(formals(gsea)), deparse(body(gsea))), readLines(path))
+    # The body differs from base only by the three RNG-kind arguments of the seeded call.
+    code <- body(gsea)
+    at <- which(vapply(as.list(code), function(e) startsWith(paste(deparse(e), collapse = ""),
+        "outcome <- withr::with_seed("), logical(1)))
+    expect_length(at, 1L)
+    call <- code[[at]][[3L]]
+    kinds <- c(".rng_kind", ".rng_normal_kind", ".rng_sample_kind")
+    expect_identical(lapply(as.list(call)[kinds], identity), list(.rng_kind = "Mersenne-Twister",
+        .rng_normal_kind = "Inversion", .rng_sample_kind = "Rejection"))
+    parts <- as.list(call)
+    code[[at]][[3L]] <- as.call(parts[!names(parts) %in% kinds])
+    expect_identical(c(deparse(formals(gsea)), deparse(code)), readLines(path))
     fixture <- intEtGseaFixture()
     value <- integrationEnrichmentGsea(fixture$ranked, fixture$term2gene, fixture$term2name, seed = 11L)
     expect_identical(value, readRDS(file.path(intEtBaseStore(), "gsea-fixture-value.rds")))
@@ -769,7 +787,7 @@ test_that("KIT-183 T11: the tab: the test selector, its default, notes, counts, 
     withr::local_options(MultiScholaR.integration_gui = TRUE)
     html <- as.character(htmltools::renderTags(mod_integration_enrichment_ui("integration_enrichment"))$html)
     expect_match(html, escaped(texts[["enrich_seed"]]), fixed = TRUE)
-    expect_identical(texts[["enrich_seed"]], "Seed of the pre-ranked test (the correlation-adjusted test uses none)")
+    expect_identical(texts[["enrich_seed"]], "Seed of the pre-ranked and permutation tests (the correlation-adjusted tests use none)")
     expect_match(html, 'data-testid="integration-enrichment-test"', fixed = TRUE)
     sets <- intEtCorpusSets(manager, fixture$run$value)
     bus <- do.call(shiny::reactiveValues, omicWorkflowInitialBus(integrationGuiConfig()$shell))
@@ -787,10 +805,11 @@ test_that("KIT-183 T11: the tab: the test selector, its default, notes, counts, 
         expect_match(selector, escaped(texts[["enrich_test_gsea"]]), fixed = TRUE)
         expect_false(grepl("camera_pr", selector, fixed = TRUE))
         session$setInputs(test = "camera")
-        expect_match(as.character(output$test_note$html), escaped(texts[["enrich_test_camera_note"]]), fixed = TRUE)
+        expect_match(as.character(output$test_note$html), escaped(texts[["enrich_test_camera_note_metabolites"]]), fixed = TRUE)
         session$setInputs(test = "gsea")
-        expect_match(as.character(output$test_note$html), escaped(texts[["enrich_test_gsea_note"]]), fixed = TRUE)
-        expect_false(grepl(escaped(texts[["enrich_test_camera_note"]]), as.character(output$test_note$html), fixed = TRUE))
+        expect_match(as.character(output$test_note$html), escaped(texts[["enrich_test_gsea_note_metabolites"]]), fixed = TRUE)
+        expect_false(grepl(escaped(texts[["enrich_test_camera_note_metabolites"]]), as.character(output$test_note$html),
+            fixed = TRUE))
         session$setInputs(database = "reactome")
         expect_match(as.character(output$test_ui$html), sprintf('id="%s"', session$ns("test")), fixed = TRUE)
         session$setInputs(database = "kegg", test = "camera", id_column = "kegg_id", correlation_method = "pearson",
@@ -809,7 +828,8 @@ test_that("KIT-183 T11: the tab: the test selector, its default, notes, counts, 
         strength <- integrationEnrichmentFactorStrength(fixture$run$value, "Factor1", "metabolomics_GCMS")
         expect_match(result, escaped(sprintf(texts[["enrich_factor_strength"]],
             integrationEnrichmentPercent(strength$factor_r2_percent),
-            integrationEnrichmentPercent(strength$largest_r2_percent))), fixed = TRUE)
+            integrationEnrichmentPercent(strength$largest_r2_percent), "metabolite",
+            texts[["enrich_strength_terms_metabolites"]], "6.7 %", "correlation-adjusted test")), fixed = TRUE)
         expect_false(grepl("Terms at the top of the list", result, fixed = TRUE))
         # STRING: no selector, no note.
         session$setInputs(view = "proteomics", database = "string")
@@ -826,10 +846,11 @@ test_that("KIT-183 T11: the tab: the test selector, its default, notes, counts, 
     expect_false(texts[["enrich_caution"]] %in% summary)
     expect_false(any(grepl("this factor explains", summary, fixed = TRUE)))
     # The notes: the few-samples sentence below 11 samples, the RUV note for a model trained on RUV-corrected values.
-    notes <- integrationEnrichmentTestNotes("camera", 8L, "ruv_corrected", texts)
-    expect_identical(notes, c(texts[["enrich_test_camera_note"]], sprintf(texts[["enrich_test_few_samples"]], 8L, 11L),
-        texts[["enrich_values_ruv_note"]]))
-    expect_identical(integrationEnrichmentTestNotes("gsea", 12L, "uncorrected", texts), texts[["enrich_test_gsea_note"]])
+    notes <- integrationEnrichmentTestNotes("camera", 8L, "ruv_corrected", "metabolomics", texts)
+    expect_identical(notes, c(texts[["enrich_test_camera_note_metabolites"]],
+        sprintf(texts[["enrich_test_few_samples_camera_metabolites"]], 8L), texts[["enrich_values_ruv_note"]]))
+    expect_identical(integrationEnrichmentTestNotes("gsea", 12L, "uncorrected", "metabolomics", texts),
+        texts[["enrich_test_gsea_note_metabolites"]])
     expect_identical(integrationEnrichmentPercent(0.04), "less than 0.1 %")
     expect_identical(integrationEnrichmentPercent(12.345), "12.3 %")
 })
