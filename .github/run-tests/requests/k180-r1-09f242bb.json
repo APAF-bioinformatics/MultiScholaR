@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-180 R1: failing-first on the tests-only commit 09f242bb (R/ equal to base a60c4e9a): T1, T2 fail at their stated values, T6 fails (no helper), T3 and T5 pass",
+  "label": "KIT-180 R1 failing-first 09f242bb",
+  "package_commit": "09f242bb30c9a4a54e4bb80fc15fd37c1cd6ba96",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-workflow-server-shared.R",
+    "test-omic-gui-config.R",
+    "test-omic-qc-module.R",
+    "test-e2e-browser-harness.R",
+    "test-workflow-analysis-record.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

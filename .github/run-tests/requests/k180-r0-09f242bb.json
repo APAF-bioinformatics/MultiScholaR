@@ -1,0 +1,42 @@
+{
+  "requested_by": "KIT-180 R0: tests-only commit 09f242bb (R/ equal to base a60c4e9a): S1 arms B and B-ruv on prot_tmt, prot_lfq, prot_lfq_fragpipe with gate F1; F2 replay of LFQ and TMT records",
+  "label": "KIT-180 R0 S1 arms B,B-ruv + F1 + F2 on 09f242bb",
+  "package_commit": "09f242bb30c9a4a54e4bb80fc15fd37c1cd6ba96",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-180/qc-effect.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-180/qc-effect",
+        "B,B-ruv"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-180/qc-effect",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 40
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-180/replay-check.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-180/replay"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-180/replay",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
