@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-185 VAL-98 (1): one-replicate lifecycle (rep 401) of the fixed part-B proteomics reference DA arm on P0, P1, P4b; blind",
+  "label": "KIT-185 part B fix lifecycle df60efa9",
+  "package_commit": "df60efa99ce77a313d527d243c0b098b4206b510",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "B",
+        "P0,P1,P4b",
+        "401",
+        "401",
+        "k185-l1pb"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1pb"
+      },
+      "out": "k185-l1pb",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
