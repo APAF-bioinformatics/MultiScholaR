@@ -61,11 +61,11 @@ check <- function(name, actual, expected) {
 }
 declared <- vapply(step$parameters, `[[`, "", "name")
 hit <- Filter(function(p) identical(p$name, "go_propagation"), step$parameters)
-recorded_go <- if (length(hit)) decodeWorkflowRecordValue(hit[[1L]]$value) else NULL
+recorded_go <- if (length(hit)) MultiScholaR:::decodeWorkflowRecordValue(hit[[1L]]$value) else NULL
 expectations <- rbind(
     check("states", replayed$states, c("initial", "correlation_filtered", "enrichment_completed")),
     # T7(b)'s nine names; a head capture with parent terms also declares go_propagation (the package's own rule)
-    check("record declared names", declared, diaEnrichmentDeclaredNames(diaEnrichmentOperation()$parameters,
+    check("record declared names", declared, MultiScholaR:::diaEnrichmentDeclaredNames(MultiScholaR:::diaEnrichmentOperation()$parameters,
         list(go_propagation = recorded_go))),
     check("provenance names", names(replayed$provenance$values), capture$provenance_names),
     check("product parameters", replayed$product$parameters, capture$product$parameters),
