@@ -1,0 +1,43 @@
+{
+  "requested_by": "KIT-189 L1: blind lifecycle (120 lists over 24 cells, E0-E4, E6, E7 continuation, blind scoring run); decides G1 (mechanism) and G2 (time); ceiling 6.67 core-h",
+  "label": "KIT-189 L1 lifecycle 426cebb0",
+  "package_commit": "426cebb0e41dfc150e7160e7f87814be20468693",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": ["l1", "all", "9001", "9005", "k189-l1"],
+      "env": {"K189_JOB": "l1", "OMP_NUM_THREADS": "1"},
+      "out": "k189-l1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 55
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/e7-k189.R",
+      "args": ["k189-l1", "k189-l1e7"],
+      "env": {"OMP_NUM_THREADS": "1"},
+      "out": "k189-l1e7",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 25
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/score-k189.R",
+      "args": ["k189-blind/rows", "k189-blind/score", "k189-l1s/score-blind.tsv"],
+      "env": {"OMP_NUM_THREADS": "1"},
+      "out": "k189-l1s",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
