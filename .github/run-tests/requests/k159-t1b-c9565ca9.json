@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-159 T1 (group b): records, licence guard, declarations, provenance, determinism, chunks; tests passing",
+  "label": "KIT-159 T1b msrval group (b) at c9565ca9",
+  "package_commit": "c9565ca9cf0d8451bf718dba0d8f7474611bac4a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1b-out"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1b-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
