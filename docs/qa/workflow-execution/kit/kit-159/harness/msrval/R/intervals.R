@@ -349,10 +349,10 @@ valFindRegime <- function(interval, regimes, accept_flagged) {
         (is.na(regimes$class) | regimes$class %in% interval$class) &
         (is.na(regimes$form) | regimes$form %in% interval$form)
     if (!is.null(regimes$design)) {
-        hit <- hit & (is.na(regimes$design) | regimes$design %in% interval$design)
+        hit <- hit & (is.na(regimes$design) | regimes$design %in% interval[["design"]])
     }
     if (!is.null(regimes$transform)) {
-        tr <- interval$transform %||% "identity"
+        tr <- interval[["transform"]] %||% "identity"
         hit <- hit & (is.na(regimes$transform) | regimes$transform %in% tr)
     }
     if (is_ticket) hit <- hit & regimes$source == "ticket"
@@ -361,7 +361,7 @@ valFindRegime <- function(interval, regimes, accept_flagged) {
     if (nrow(good) > 0L) return(good[1L, ])
     flagged <- m[m$status %in% "flagged", , drop = FALSE]
     if (nrow(flagged) > 0L) {
-        if (is.null(accept_flagged$label) || is.null(accept_flagged$ledger_row)) {
+        if (is.null(accept_flagged[["label"]]) || is.null(accept_flagged[["ledger_row"]])) {
             valAbort("regime {flagged$regime[1]} is flagged; accept_flagged is not declared",
                      "val_spec_invalid")
         }
@@ -431,7 +431,7 @@ valClassify <- function(interval, margin, higher_is_better, fixed = NULL, view =
     } else {
         "inconclusive"
     }
-    labels <- c(interval$label, if (reg$status == "flagged") accept_flagged$label)
+    labels <- c(interval[["label"]], if (reg$status == "flagged") accept_flagged[["label"]])
     list(outcome = outcome, no_worse = lo > -margin, status = "ok", regime = reg$regime,
          regime_status = reg$status, coverage = reg$coverage, mc_se = reg$mc_se,
          label = paste(labels[nzchar(labels)], collapse = "; "))
@@ -451,17 +451,17 @@ valClassify <- function(interval, margin, higher_is_better, fixed = NULL, view =
 #' @return A list: `outcome`, `no_worse`, `components`, `guard_text`.
 #' @export
 valClassifyMember <- function(member, outcomes) {
-    comps <- member$all_of
-    guards <- vapply(member$guards %||% list(), function(g) g$component, character(1))
-    requires <- vapply(member$guards %||% list(), function(g) g$require %||% "no_worse",
+    comps <- member[["all_of"]]
+    guards <- vapply(member[["guards"]] %||% list(), function(g) g[["component"]], character(1))
+    requires <- vapply(member[["guards"]] %||% list(), function(g) g[["require"]] %||% "no_worse",
                        character(1))
-    controls <- member$controls %||% list()
-    named <- c(comps, guards, unlist(controls), unlist(member$worse_when))
+    controls <- member[["controls"]] %||% list()
+    named <- c(comps, guards, unlist(controls), unlist(member[["worse_when"]]))
     if (!all(named %in% names(outcomes)) || !all(guards %in% comps)) {
         valAbort("a member names a component that is not a declared comparison",
                  "val_spec_invalid")
     }
-    oc <- function(c) outcomes[[c]]$outcome %||% NA_character_
+    oc <- function(c) outcomes[[c]][["outcome"]] %||% NA_character_
     not_sensitive <- vapply(comps, function(c) {
         ctl <- controls[[c]]
         !is.null(ctl) && !identical(oc(ctl), "worse")
@@ -481,10 +481,10 @@ valClassifyMember <- function(member, outcomes) {
     }
     a_out <- vapply(active, oc, character(1))
     a_nw <- vapply(active, function(c) isTRUE(outcomes[[c]]$no_worse), logical(1))
-    is_worse <- if (is.null(member$worse_when)) {
+    is_worse <- if (is.null(member[["worse_when"]])) {
         any(a_out %in% "worse")
     } else {
-        any(vapply(member$worse_when, function(grp) {
+        any(vapply(member[["worse_when"]], function(grp) {
             all(vapply(grp, function(c) identical(oc(c), "worse"), logical(1)))
         }, logical(1)))
     }

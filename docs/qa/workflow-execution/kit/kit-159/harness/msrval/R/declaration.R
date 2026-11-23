@@ -218,7 +218,7 @@ valCheckDeclaration <- function(repo, evidence_dir, stage, at = "HEAD", phase = 
                  "val_declaration_not_committed_alone")
     }
     amend <- if (identical(phase, "amended")) valReadAmendments(repo, at, sd) else NULL
-    replaced <- amend$code %||% list()
+    replaced <- amend[["code"]] %||% list()
     replaced_sha <- stats::setNames(vapply(replaced, function(x) x$sha256, character(1)),
                                     vapply(replaced, function(x) x$path, character(1)))
     valCheckFrozen(repo, dc, at, touched, sd, replaced_sha)
@@ -227,7 +227,7 @@ valCheckDeclaration <- function(repo, evidence_dir, stage, at = "HEAD", phase = 
         valAbort("the declaration commit is not an ancestor of {at}", "val_declaration_after_run")
     }
     diff <- if (stage == "counted") valCheckCountedOrder(repo, evidence_dir, decl, dc) else NULL
-    expected_tree <- amend$harness_tree %||% decl$harness_tree
+    expected_tree <- amend[["harness_tree"]] %||% decl[["harness_tree"]]
     if (!identical(valHarnessTree(repo, at), expected_tree)) {
         valAbort("the harness tree at {at} is not the declared one", "val_harness_mismatch")
     }
@@ -238,7 +238,7 @@ valCheckDeclaration <- function(repo, evidence_dir, stage, at = "HEAD", phase = 
     }
     valCheckDeclaredTables(repo, at, sd, decl, units)
     list(ok = TRUE, declaration = decl, declaration_commit = dc, at = at_commit,
-         amended = amend$label, declaration_diff = diff)
+         amended = amend[["label"]], declaration_diff = diff)
 }
 
 #' Read `declaration-amendments.json` at a commit
@@ -276,7 +276,7 @@ valCheckHashes <- function(repo, at, sd, evidence_dir, decl, dc, replaced_sha) {
         want <- if (x$path %in% names(replaced_sha)) replaced_sha[[x$path]] else x$sha256
         if (!identical(valGitSha(repo, at, file.path(sd, x$path)), want)) changed(x$path)
     }
-    prep <- decl$preparation
+    prep <- decl[["preparation"]]
     if (!is.null(prep)) {
         if (!valIsAncestor(repo, prep$commit, dc)) changed("the preparation commit's order")
         for (x in prep$files) {
@@ -292,7 +292,7 @@ valCheckHashes <- function(repo, at, sd, evidence_dir, decl, dc, replaced_sha) {
                 vapply(decl$arms, function(a) {
                     a[["function"]] %||% a[["builder"]] %||% NA_character_
                 }, character(1)),
-                unlist(decl$hooks %||% list()))
+                unlist(decl[["hooks"]] %||% list()))
     wanted <- wanted[!is.na(wanted) & is.character(wanted) & !wanted %in% c("TRUE", "FALSE")]
     if (!all(wanted %in% defined)) {
         valAbort("a declared function does not resolve: {setdiff(wanted, defined)}",
@@ -313,7 +313,7 @@ valCheckCountedOrder <- function(repo, evidence_dir, decl, dc) {
     provs <- grep("/provenance\\.json$", runs, value = TRUE)
     stages <- vapply(provs, function(p) {
         x <- jsonlite::fromJSON(valGitShow(repo, dc, p), simplifyVector = FALSE)
-        as.character(x$stage %||% "")
+        as.character(x[["stage"]] %||% "")
     }, character(1))
     if (!any(stages == "lifecycle")) {
         after("no lifecycle provenance precedes the counted declaration")
@@ -328,7 +328,8 @@ valCheckCountedOrder <- function(repo, evidence_dir, decl, dc) {
     ch <- c(hashes(decl), inputs.tsv = decl$inputs$sha256)
     paths <- union(names(lh), names(ch))
     differ <- paths[is.na(lh[paths]) | is.na(ch[paths]) | lh[paths] != ch[paths]]
-    listed <- vapply(decl$changes_from_lifecycle %||% list(), function(x) x$path, character(1))
+    listed <- vapply(decl[["changes_from_lifecycle"]] %||% list(), function(x) x[["path"]],
+                     character(1))
     if (!all(differ %in% listed)) {
         valAbort("changed from the lifecycle and not listed: {setdiff(differ, listed)}",
                  "val_declaration_changed")
@@ -346,14 +347,14 @@ valCheckDeclaredTables <- function(repo, at, sd, decl, units) {
     if (nrow(tab) > 0L && (!"citation" %in% names(tab) || any(!nzchar(trimws(tab$citation))))) {
         valAbort("an inputs.tsv row has no citation", "val_spec_invalid")
     }
-    arms <- vapply(decl$arms, function(a) a$id %||% NA_character_, character(1))
-    for (o in decl$outputs %||% list()) {
+    arms <- vapply(decl[["arms"]], function(a) a[["id"]] %||% NA_character_, character(1))
+    for (o in decl[["outputs"]] %||% list()) {
         valExpandOutputPaths(o, arms = arms, units = units)
-        if (identical(o$key %||% "none", "none")) {
+        if (identical(o[["key"]] %||% "none", "none")) {
             types <- vapply(o$columns, function(x) x$type, character(1))
             nm <- vapply(o$columns, function(x) x$name, character(1))
-            if (!all(types %in% RESULT_TYPES) || (o$max_rows %||% 1001L) > 1000L ||
-                !all(nm[types == "label"] %in% names(o$labels %||% list()))) {
+            if (!all(types %in% RESULT_TYPES) || (o[["max_rows"]] %||% 1001L) > 1000L ||
+                !all(nm[types == "label"] %in% names(o[["labels"]] %||% list()))) {
                 valAbort(paste("output {o$path}: a result table needs typed columns, labels",
                                "and at most 1,000 rows"), "val_spec_invalid")
             }

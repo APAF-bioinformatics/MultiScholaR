@@ -8,7 +8,9 @@ refRows <- function() {
 }
 
 diffRows <- function(steps, class, key = "integration/lipidomics/manifest", field = "artifacts") {
-    data.frame(step = steps, field = field, key = key, class = class, stringsAsFactors = FALSE)
+    n <- length(steps)
+    data.frame(step = steps, field = rep_len(field, n), key = rep_len(key, n),
+               class = rep_len(class, n), stringsAsFactors = FALSE)
 }
 
 goodLink <- function(base_diffs) {

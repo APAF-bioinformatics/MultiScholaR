@@ -204,6 +204,60 @@ about twice over.
 
 T2 waits for the split's fix to pass its run.
 
+### T0c (group c tests only): run 45131922735 at e25055d3
+
+Observed: the five group (c) test files only (`--files`, so no unrun fix of groups (a) and (b) was
+exercised): 25 tests, all fail (`t0/t0c-harness-tests.tsv`): missing functions, and three chain tests
+first on a test-helper defect (`diffRows` built a zero-row data frame with length-one columns;
+corrected after T0c). T0 now 2.84 of 6 core-hours.
+
+### Group (c) code and the defect sweep (committed, unrun)
+
+Written after T0c, not run (the coordinator's instruction of 2026-11-23):
+- `driver.R`: `valUiDefaults`, the input state and ledger (`valInputState`, `valApplyRendered`,
+  `valApplyServerUpdate`, `valSetInput`, `valScriptSet`, `valLedgerSnapshot`), modals
+  (`valApplyModal`, `valModalPress`), `valStepOutcome`, `valRunSteps`, `valWithForcedOptions`,
+  `valCheckActionScript`, `valMatrixStages` (revision 1.8 item 4 as a rule), `valExtractHelpers`.
+- `gates.R` (a file 7.2 does not list; it holds G1(a)'s chain reader): `valReadChain`,
+  `valAdoptReferenceRows`.
+- `arms.R`: `valKernelIdentity`, `valCallHook` (named arguments only through named formals, C22),
+  `valCopyResultTables` (revision 1.8 item 3).
+- `evidence.R`: `valWidenFromRequests` (T-SCORE-2), `valWriteResults`, `valWriteHandoffSha`;
+  `licence.R`: the hand-off folder check (`valCheckHandoff`, C21) and the `ticket-coverage.tsv` and
+  `ticket-coverage-cells.tsv` columns; `check-evidence.sh`; `val-run.R` with phases `record`, `pre`,
+  `check` (the phases that run cells refuse until the driver core exists).
+
+**Not written** (group (c)'s driver core, needed before S0 and the lifecycle): `valRunWorkflow`
+(driving `mod_<omic>_server` under `testServer` with the extracted helpers), `valActionScript` and
+`action-scripts.md`, `valReadArmTables`, `valReplay`, the RUV arm builders of 7.5, `valRunCustomArm`,
+`parity.R` and the `distributable.yml` stage, `integration.R` (Part B), `USAGE.md`, `templates/`,
+and T-TAB (which needs the driver core on the fixtures).
+
+Defect sweep (the coordinator's point 3), committed, unrun:
+1. Partial matching by `$`: one live defect found (`spec$target`, fixed earlier). Every other `$` on
+   a list or record whose element may be absent now uses `[[` with the exact name: `units.R` (eight
+   cell-result and condition fields), `driver.R` (`valRunSteps`' step results), `intervals.R`
+   (`interval$design`, `interval$transform`, `interval$label`, `accept_flagged$label` and
+   `$ledger_row`, and every `member$` field in `valClassifyMember`), `declaration.R`
+   (`amend$code`, `$harness_tree`, `$label`; `decl$preparation`, `$hooks`, `$outputs`,
+   `$changes_from_lifecycle`, `$arms`; `o$key`, `$labels`, `$max_rows`; provenance `x$stage`),
+   `licence.R` (`output$placeholders`, `o$key`, `o$placeholders`, `o$labels`, `o$max_rows`,
+   `o$lineage`), `evidence.R` (the provenance fields of `valScoreRuns`), `coverage.R`
+   (`regime$kind`, `r$achieved`). Data frame columns and records whose fields are always present
+   were left as they are.
+2. Files a child process shares for writing: `valRunAsChild` (fixed earlier) and the two chunk
+   launchers (`valStartChunks` in `units.R`, `valRunTaskChunks` in `coverage.R`) now start their
+   children through one helper, `valRscriptProcess` (`utils.R`), which opens the log in append mode
+   (`>>` through `sh`). Note: append mode protects against overwriting, not against truncation; a
+   cell that reopens `/dev/stderr` for writing still truncates its chunk log (O_TRUNC), which is why
+   the sentinel writes that line first (revision 1.10). `valStatus` already appends; the markers and
+   result files are one file per cell.
+
+**The next run's exact scope (committed, unrun):** the whole test suite at the head commit, which
+holds: group (a)'s `spec[["target"]]` fix and the split; group (b)'s `valRunAsChild` append-mode
+fix; group (c)'s code and the `diffRows` test fix; the sweep. Expected: every test of groups (a),
+(b), (c) passing.
+
 ### Ticket revisions 1.8 and 1.9 (2026-11-23)
 
 The coordinator's amendment pass made the ticket 1.8 (register

@@ -19,7 +19,11 @@ EVIDENCE_COLUMNS <- list(
     attribution.tsv = c("role", "kind", "licence", "redistribution", "citation"),
     determinism.tsv = c("table", "sha256_job1", "sha256_job2", "identical", "sha256_10_job1",
                         "sha256_10_job2", "max_abs_diff", "max_rel_diff", "cause"),
-    ledger = c("step", "action", "input_id", "value", "source", "location")
+    ledger = c("step", "action", "input_id", "value", "source", "location"),
+    `ticket-coverage.tsv` = c("regime", "cell", "method", "class", "form", "g", "level",
+                              "simulations", "bound", "coverage", "mc_se", "miss", "critical",
+                              "pass"),
+    `ticket-coverage-cells.tsv` = c("regime", "cell", "parameter", "value")
 )
 
 #' File names admitted without a column schema (their content is fixed by the harness)
@@ -27,7 +31,7 @@ EVIDENCE_COLUMNS <- list(
 EVIDENCE_FREE_NAMES <- c(
     "provenance.json", "results.md", "tables.sha256", "not-committed.sha256", "outputs.sha256",
     "inputs.tsv", "library.tsv", "coverage-table.tsv", "coverage-detail.tsv", "coverage-run.txt",
-    "ticket-coverage.tsv", "harness-tests.tsv", "harness-failures.txt", "ticket-tests.tsv",
+    "harness-tests.tsv", "pre-outputs.tsv", "harness-failures.txt", "ticket-tests.tsv",
     "ticket-failures.txt", "code-hashes.tsv", "fsim.tsv", "cost-probe.tsv"
 )
 RESULT_TYPES <- c("label", "count", "share", "quantile", "sd", "n", "abs_diff", "hash", "statistic")
@@ -128,7 +132,7 @@ valExpandOutputPaths <- function(output, arms = character(), units = character()
     path <- output$path
     used <- unique(regmatches(path, gregexpr("\\{[A-Za-z0-9_]+\\}", path))[[1L]])
     used <- gsub("[{}]", "", used)
-    declared <- output$placeholders %||% list()
+    declared <- output[["placeholders"]] %||% list()
     values <- list(unit = units, arm = arms)
     for (nm in names(declared)) values[[nm]] <- as.character(unlist(declared[[nm]]))
     if (!all(used %in% c("unit", "arm", names(declared)))) {
@@ -218,8 +222,13 @@ valCheckEvidence <- function(dir, manifest, outputs = list(), arms = character()
     closed <- manifest$kind == "data" & manifest$redistribution == "not_permitted"
     forbidden <- c(manifest$sha256[closed], forbidden_sha256)
     copies <- manifest[manifest$commit %in% TRUE, , drop = FALSE]
+    if (sum(vapply(outputs, function(o) isTRUE(o[["handoff"]]), logical(1))) > 1L) {
+        valAbort("a declaration may hold one hand-off in all", "val_spec_invalid")
+    }
+    folder <- Filter(function(o) isTRUE(o[["handoff"]]) && grepl("/$", o[["path"]]), outputs)
+    handoff_root <- if (length(folder)) sub("/$", "", folder[[1L]][["path"]]) else NULL
     declared <- list()
-    for (o in outputs) {
+    for (o in setdiff(outputs, folder)) {
         for (p in valExpandOutputPaths(o, arms = arms, units = units)) declared[[p]] <- o
     }
     att <- file.path(dir, "attribution.tsv")
@@ -230,6 +239,7 @@ valCheckEvidence <- function(dir, manifest, outputs = list(), arms = character()
     for (f in files) {
         path <- file.path(dir, f)
         base <- basename(f)
+        if (!is.null(handoff_root) && startsWith(f, paste0(handoff_root, "/"))) next
         if (file.size(path) > MAX_FILE_BYTES) forbid(paste(f, "is over 5 MB"))
         if (valSha256(path) %in% forbidden) forbid(paste(f, "copies a not-permitted input"))
         if (identical(f, "scored.tsv.gz")) {
@@ -263,7 +273,72 @@ valCheckEvidence <- function(dir, manifest, outputs = list(), arms = character()
         if (f %in% EVIDENCE_FREE_NAMES || grepl("^members-.*\\.tsv$", f)) next
         forbid(paste(f, "is not on the allow-list"))
     }
+    if (!is.null(handoff_root) && dir.exists(file.path(dir, handoff_root))) {
+        valCheckHandoff(file.path(dir, handoff_root), manifest, phase, folder[[1L]])
+    }
     TRUE
+}
+
+HANDOFF_NAMED <- c("sample-match.tsv", "string-requests.tsv", "handoff.sha256")
+HANDOFF_PARQUET <- "^(samples|matrix_.+|features_.+|corrected_.+)\\.parquet$"
+
+#' Check a hand-off folder (section 5.2, revision 1.8 item 1; C21)
+#'
+#' Only in the `counted` stage; only when every `kind = data` input of the job (truth roles
+#' included) is `permitted`; only integration-input manifests of schema
+#' `multischolar.integration_input.v2`, the Parquet files each names (each present, each with its
+#' manifest SHA-256) and the three named files; `.tsv` headers as declared; `handoff.sha256`
+#' listing every file with its hash; nothing over 5 MB.
+#' @noRd
+valCheckHandoff <- function(root, manifest, phase, o) {
+    forbid <- function(what) valAbort("hand-off: {what}", "val_publish_forbidden")
+    if (!identical(phase, "counted")) forbid("admitted only in the counted stage")
+    if (any(manifest[["kind"]] == "data" & manifest[["redistribution"]] != "permitted")) {
+        forbid("a data input of the job is not permitted")
+    }
+    files <- list.files(root, recursive = TRUE)
+    sha_path <- file.path(root, "handoff.sha256")
+    if (!file.exists(sha_path)) forbid("handoff.sha256 is missing")
+    lines <- readLines(sha_path, warn = FALSE)
+    listed <- sub("^[0-9a-f]{64}  ", "", lines)
+    if (!setequal(listed, setdiff(files, "handoff.sha256"))) forbid("handoff.sha256 is incomplete")
+    for (i in seq_along(lines)) {
+        if (!identical(valSha256(file.path(root, listed[[i]])), substr(lines[[i]], 1L, 64L))) {
+            forbid(paste(listed[[i]], "differs from handoff.sha256"))
+        }
+    }
+    for (f in files) {
+        base <- basename(f)
+        if (file.size(file.path(root, f)) > MAX_FILE_BYTES) forbid(paste(f, "is over 5 MB"))
+        ok <- (f %in% HANDOFF_NAMED) || base == "integration_input.json" ||
+            grepl(HANDOFF_PARQUET, base)
+        if (!ok) forbid(paste(f, "is not a hand-off file"))
+    }
+    for (j in files[basename(files) == "integration_input.json"]) {
+        man <- jsonlite::fromJSON(file.path(root, j), simplifyVector = FALSE)
+        if (!identical(man[["schema"]], "multischolar.integration_input.v2")) {
+            forbid("a manifest schema")
+        }
+        d <- dirname(file.path(root, j))
+        named <- names(man[["files"]])
+        for (nm in named) {
+            p <- file.path(d, nm)
+            if (!file.exists(p)) forbid(paste(nm, "named by a manifest is absent"))
+            if (!identical(valSha256(p), man[["files"]][[nm]])) {
+                forbid(paste(nm, "differs from its manifest"))
+            }
+        }
+        present <- list.files(d, pattern = "\\.parquet$")
+        if (!all(present %in% named)) forbid("a Parquet file its manifest does not name")
+    }
+    for (nm in names(o[["columns"]])) {
+        p <- file.path(root, nm)
+        want <- as.character(unlist(o[["columns"]][[nm]]))
+        if (file.exists(p) && !identical(valHeader(p), want)) {
+            forbid(paste(nm, "has other columns"))
+        }
+    }
+    invisible(TRUE)
 }
 
 #' Check a fixed evidence table: columns, classes, row bound, lifecycle call counts
@@ -273,7 +348,7 @@ valCheckFixedTable <- function(path, f, schema, classes, row_bounds, phase, prim
     tab <- utils::read.delim(path, colClasses = "character", na.strings = character(),
                              check.names = FALSE, stringsAsFactors = FALSE)
     if (!identical(names(tab), EVIDENCE_COLUMNS[[schema]])) forbid("has other columns")
-    if (!is.null(classes) && "class" %in% names(tab) && schema != "cells.tsv") {
+    if (!is.null(classes) && schema %in% c("metrics.tsv", "coverage.tsv")) {
         if (!all(tab$class %in% c(classes, "", "NA", "all"))) forbid("has an undeclared class")
     }
     bound <- row_bounds[[f]]
@@ -289,11 +364,11 @@ valCheckFixedTable <- function(path, f, schema, classes, row_bounds, phase, prim
 #' a result table by its typed columns
 #' @noRd
 valCheckDeclaredOutput <- function(path, f, o, manifest, universe, phase) {
-    lineage <- unlist(o$lineage)
+    lineage <- unlist(o[["lineage"]])
     publishable <- valPublishable(manifest, lineage)
     cols <- vapply(o$columns, function(x) x$type, character(1))
     names(cols) <- vapply(o$columns, function(x) x$name, character(1))
-    if (!identical(o$key %||% "none", "none")) {
+    if (!identical(o[["key"]] %||% "none", "none")) {
         if (!publishable || phase == "lifecycle") {
             valAbort("evidence: {f} is a keyed table of a not-permitted or blind source",
                      "val_publish_forbidden")
@@ -305,11 +380,11 @@ valCheckDeclaredOutput <- function(path, f, o, manifest, universe, phase) {
     }
     check_universe <- if (publishable) NULL else universe
     if (!is.null(check_universe)) {
-        vals <- unlist(o$placeholders %||% list())
+        vals <- unlist(o[["placeholders"]] %||% list())
         if (any(vals %in% check_universe)) {
             valAbort("evidence: {f} names a feature key in its path", "val_publish_forbidden")
         }
     }
-    labels <- lapply(o$labels %||% list(), function(x) as.character(unlist(x)))
-    valCheckResultTable(path, f, cols, labels, o$max_rows %||% 1000L, check_universe)
+    labels <- lapply(o[["labels"]] %||% list(), function(x) as.character(unlist(x)))
+    valCheckResultTable(path, f, cols, labels, o[["max_rows"]] %||% 1000L, check_universe)
 }

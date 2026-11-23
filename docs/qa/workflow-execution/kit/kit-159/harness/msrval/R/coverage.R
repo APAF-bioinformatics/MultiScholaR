@@ -509,11 +509,11 @@ valTicketRegime <- function(regime, nsim, seed) {
     }
     res <- regime$simulate(nsim, seed, regime$levels)
     checkmate::assert_names(names(res), must.include = c("level", "covered"))
-    kind <- regime$kind %||% "approx_run"
+    kind <- regime[["kind"]] %||% "approx_run"
     do.call(rbind, lapply(regime$levels, function(lv) {
         r <- res[abs(res$level - lv) < 5e-5, , drop = FALSE]
         cov <- mean(r$covered)
-        ach <- if (is.null(r$achieved)) NA_real_ else mean(r$achieved)
+        ach <- if (is.null(r[["achieved"]])) NA_real_ else mean(r[["achieved"]])
         data.frame(regime = regime$id, method = regime$method, class = regime$class,
                    form = regime$form, n = regime$g, level = lv, nsim = nrow(r), coverage = cov,
                    mc_se = sqrt(cov * (1 - cov) / nrow(r)), achieved = ach,
@@ -722,14 +722,10 @@ valCoverageTasks <- function(plan_file, tasks, out_dir) {
 #' Start chunk processes (task groups), each an `Rscript` with the thread variables at 1; wait
 #' @noRd
 valRunTaskChunks <- function(groups, plan_file, work_dir) {
-    rscript <- file.path(R.home("bin"), "Rscript")
-    env <- c("current", OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1")
     procs <- lapply(seq_along(groups), function(k) {
         code <- sprintf("msrval::valCoverageTasks('%s', c(%s), '%s')", plan_file,
                         paste0("'", groups[[k]], "'", collapse = ", "), work_dir)
-        processx::process$new(rscript, c("--vanilla", "-e", code), env = env,
-                              stdout = file.path(work_dir, sprintf("chunk-%02d.log", k)),
-                              stderr = "2>&1")
+        valRscriptProcess(code, file.path(work_dir, sprintf("chunk-%02d.log", k)))
     })
     for (p in procs) p$wait()
     vapply(procs, function(p) p$get_exit_status(), integer(1))

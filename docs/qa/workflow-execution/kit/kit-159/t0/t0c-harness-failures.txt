@@ -1,0 +1,77 @@
+== test-arms.R :: T-KER-1: a kernel equal to the workflow arm passes on seeded identity units and a refusal unit (1 not passed)
+Error in `valKernelIdentity(units, kernel = workflow, workflow = workflow, identity_seed = 159102L, refusal_units = "u07")`: could not find function "valKernelIdentity"
+
+== test-arms.R :: T-KER-2: a deliberately different kernel is refused (1 not passed)
+Error in `valKernelIdentity(units, kernel, workflow, identity_seed = 159102L)`: could not find function "valKernelIdentity"
+
+== test-arms.R :: the hook receives the named arguments only through formals that name them (C22) (1 not passed)
+Error in `valCallHook(named_hook, manager = NULL, results = NULL, summary_dir = NULL, tables = list(), unit = "u01", arm = "shipped", design_path = "d.tsv", out_dir = "/abs/val-out")`: could not find function "valCallHook"
+
+== test-arms.R :: prepareInputs' result tables are copied, checked, and an undeclared one refused (1 not passed)
+Error in `valCopyResultTables(tables, outputs, run_dir, arms = "a1")`: could not find function "valCopyResultTables"
+
+== test-chain.R :: T-CHAIN-1: a first link absorbing an unintended difference is refused at link one (1 not passed)
+Error in `data.frame(step = steps, field = field, key = key, class = class, stringsAsFactors = FALSE)`: arguments imply differing number of rows: 0, 1
+
+== test-chain.R :: T-CHAIN-1: a correct chain is accepted; a later link's base is compared with zero (1 not passed)
+Error in `data.frame(step = steps, field = field, key = key, class = class, stringsAsFactors = FALSE)`: arguments imply differing number of rows: 0, 1
+
+== test-chain.R :: T-CHAIN-1: a re-frozen file without a record; a lane not re-frozen against the counts (1 not passed)
+Error in `valReadChain("lipid_canonical", list(NULL), reference = refRows())`: could not find function "valReadChain"
+
+== test-chain.R :: T-CHAIN-1: declared keys before the changed step, and unclassed differences after it (1 not passed)
+Error in `data.frame(step = steps, field = field, key = key, class = class, stringsAsFactors = FALSE)`: arguments imply differing number of rows: 0, 1
+
+== test-chain.R :: T-CHAIN-1: rows a re-freezing ticket committed earlier are adopted when they agree (1 not passed)
+Error in `valAdoptReferenceRows(own, own[own$lane == "lipid_canonical", ])`: could not find function "valAdoptReferenceRows"
+
+== test-driver.R :: T-DRV-1: the defaults reader reads every tag type as a browser sends it (1 not passed)
+Error in `valUiDefaults(as.character(ui))`: could not find function "valUiDefaults"
+
+== test-driver.R :: T-DRV-2 and T-DRV-3: a choices-only update selects the first choice; a server value is not overwritten (1 not passed)
+Error in `valInputState()`: could not find function "valInputState"
+
+== test-driver.R :: T-DRV-4: a script may set only structural inputs, forced settings and overrides (1 not passed)
+Error in `valInputState()`: could not find function "valInputState"
+
+== test-driver.R :: T-DRV-5: a modal's inputs at their rendered values; Cancel is refused (1 not passed)
+Error in `valInputState()`: could not find function "valInputState"
+
+== test-driver.R :: T-DRV-6: a re-rendered uiOutput resets its inputs to the new rendered values (1 not passed)
+Error in `valInputState()`: could not find function "valInputState"
+
+== test-driver.R :: T-DRV-7 and T-DRV-8: step outcomes; a refused diagnostic step lets the cell continue (1 not passed)
+Error in `valStepOutcome(declared = "normalised", before = "qc", after = "normalised", history_changed = TRUE, error_notification = NULL)`: could not find function "valStepOutcome"
+
+== test-driver.R :: T-DRV-9: forced options are scoped to the cell, recorded, and refused when already set (1 not passed)
+Error in `valWithForcedOptions(list(msrval.test.forced = TRUE), getOption("msrval.test.forced"))`: could not find function "valWithForcedOptions"
+
+== test-driver.R :: enrichment buttons are refused in an action script (1 not passed)
+Error in `valCheckActionScript(list(list(tab = "enrich", press = "run_enrichment")))`: could not find function "valCheckActionScript"
+
+== test-driver.R :: the matrix stage rule: factors in the model test the uncorrected matrix; display is labelled (1 not passed)
+Error in `valMatrixStages("lipidomics", ruv = "factors_in_model")`: could not find function "valMatrixStages"
+
+== test-evidence.R :: T-SCORE-2: phase score widens a run-level interval bound by bound to the requests' within-run rows (1 not passed)
+Error in `valWidenFromRequests(run, within, arm = "legacy", comparator = "baseline", metric = "mae")`: could not find function "valWidenFromRequests"
+
+== test-evidence.R :: the results note prints the measured coverage beside every verdict and the attribution (1 not passed)
+Error in `valWriteResults(path, cmp, att)`: could not find function "valWriteResults"
+
+== test-evidence.R :: the hand-off folder: admitted only counted with every data input permitted, and checked (1 not passed)
+Error in `valWriteHandoffSha(root)`: could not find function "valWriteHandoffSha"
+
+== test-evidence.R :: ticket-coverage.tsv has its fixed columns; ticket-coverage-cells.tsv is admitted (1 not passed)
+<val_publish_forbidden/val_error/rlang_error/error/condition>
+Error in `forbid(paste(f, "is not on the allow-list"))`: evidence: ticket-coverage-cells.tsv is not on the allow-list
+
+== test-evidence.R :: check-evidence.sh: the pre-push allow-list and hash check without R (1 not passed)
+<cmdError/error/condition>
+Error in `system2("bash", c(script, d), stdout = TRUE, stderr = TRUE)`: error in running command
+
+== test-helpers.R :: T-HELP-1: extraction runs no top-level code (1 not passed)
+Error in `valExtractHelpers(helperFiles(), "named", parent = baseenv())`: could not find function "valExtractHelpers"
+
+== test-helpers.R :: T-HELP-2: the closure is extracted and hashed; a call to nothing defined is refused (1 not passed)
+Error in `valExtractHelpers(files, c("named", "other"), parent = baseenv())`: could not find function "valExtractHelpers"
+

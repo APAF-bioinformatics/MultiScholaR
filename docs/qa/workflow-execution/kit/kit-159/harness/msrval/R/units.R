@@ -80,7 +80,7 @@ valRunOneCell <- function(cell, run_cell, cell_seconds) {
         }, val_arm_refused = function(e) {
             setTimeLimit(elapsed = Inf)
             list(exit = "refused", step = e$step, class = e$refusal_class,
-                 message_sha256 = e$message_sha256 %||% NA_character_)
+                 message_sha256 = e[["message_sha256"]] %||% NA_character_)
         }, error = function(e) {
             setTimeLimit(elapsed = Inf)
             msg <- conditionMessage(e)
@@ -125,19 +125,13 @@ valRunChunk <- function(cells_rds, runner, out_dir, cell_seconds) {
 #' Start chunk processes at the same time and wait for them
 #' @noRd
 valStartChunks <- function(groups, runs, runner, work_dir, cell_seconds, tag, chunk_seconds) {
-    rscript <- file.path(R.home("bin"), "Rscript")
     procs <- lapply(seq_along(groups), function(k) {
         d <- file.path(work_dir, sprintf("chunk-%s%02d", tag, k))
         dir.create(d, recursive = TRUE, showWarnings = FALSE)
         rds <- file.path(d, "cells.rds")
         saveRDS(runs[runs$run %in% groups[[k]], , drop = FALSE], rds)
         code <- sprintf("msrval::valRunChunk('%s', '%s', '%s', %f)", rds, runner, d, cell_seconds)
-        list(dir = d, runs = groups[[k]],
-             proc = processx::process$new(
-                 rscript, c("--vanilla", "-e", code), stdout = file.path(d, "chunk.log"),
-                 stderr = "2>&1",
-                 env = c("current", OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1",
-                         MKL_NUM_THREADS = "1")))
+        list(dir = d, runs = groups[[k]], proc = valRscriptProcess(code, file.path(d, "chunk.log")))
     })
     for (i in seq_along(procs)) {
         procs[[i]]$proc$wait(timeout = if (is.finite(chunk_seconds)) chunk_seconds * 1000 else -1)
@@ -166,12 +160,13 @@ valCollectChunk <- function(p, k, tag, k_total) {
         } else {
             list(exit = "not_started")
         }
-        data.frame(run = r, exit = res$exit, stop_reason = res$stop_reason %||% NA_character_,
-                   step = res$step %||% NA_character_, class = res$class %||% NA_character_,
-                   message_sha256 = res$message_sha256 %||% NA_character_,
-                   seconds = res$seconds %||% NA_real_,
-                   random_state_changed = res$random_state_changed %||% NA,
-                   vmhwm_mib = res$vmhwm_mib %||% NA_real_,
+        data.frame(run = r, exit = res$exit, stop_reason = res[["stop_reason"]] %||% NA_character_,
+                   step = res[["step"]] %||% NA_character_,
+                   class = res[["class"]] %||% NA_character_,
+                   message_sha256 = res[["message_sha256"]] %||% NA_character_,
+                   seconds = res[["seconds"]] %||% NA_real_,
+                   random_state_changed = res[["random_state_changed"]] %||% NA,
+                   vmhwm_mib = res[["vmhwm_mib"]] %||% NA_real_,
                    chunk = sprintf("%s%02d", tag, k), stringsAsFactors = FALSE)
     })
     chunk <- data.frame(chunk = sprintf("%s%02d", tag, k), started = read_time("chunk.start"),

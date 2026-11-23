@@ -47,8 +47,8 @@ valScoreRuns <- function(dir, labels, expected_cells) {
         jsonlite::fromJSON(file.path(d, "provenance.json"), simplifyVector = FALSE)
     })
     ids <- vapply(provs, function(p) {
-        paste(p$code$package_commit %||% "", p$code$harness$tree %||% "",
-              p$code$declaration$commit %||% "")
+        paste(p[["code"]][["package_commit"]] %||% "", p[["code"]][["harness"]][["tree"]] %||% "",
+              p[["code"]][["declaration"]][["commit"]] %||% "")
     }, character(1))
     if (length(unique(ids)) != 1L) changed("the requests differ in commit, harness or declaration")
     read <- function(l, f) {
@@ -66,4 +66,97 @@ valScoreRuns <- function(dir, labels, expected_cells) {
                  "val_spec_invalid")
     }
     list(metrics = metrics, cells = cells, package_commit = provs[[1L]]$code$package_commit)
+}
+
+#' Widen a run-level interval in phase score to the requests' within-run intervals (4.4, A38;
+#' revision 1.8 item 9, T-SCORE-2)
+#'
+#' Below 6 units the widening is mandatory; at 6 or more it is the default and may be declared off
+#' (`widen = FALSE`), the within-run interval then reported beside the verdict.
+#'
+#' @param interval The run-level interval.
+#' @param comparisons The requests' `comparisons.tsv` rows combined.
+#' @param arm,comparator,metric The comparison.
+#' @param widen The declaration's `widen_to_within_run` (default `TRUE`).
+#' @return The interval, widened bound by bound or with `within_run_reported`.
+#' @export
+valWidenFromRequests <- function(interval, comparisons, arm, comparator, metric, widen = NULL) {
+    rows <- comparisons[comparisons[["scope"]] == "within_run" & comparisons[["arm"]] == arm &
+                            comparisons[["comparator"]] == comparator &
+                            comparisons[["metric"]] == metric, , drop = FALSE]
+    if (nrow(rows) == 0L) return(interval)
+    lo <- min(as.numeric(rows[["ci_low"]]))
+    hi <- max(as.numeric(rows[["ci_high"]]))
+    n <- interval[["n_units"]]
+    if (n < 6L && isFALSE(widen)) {
+        valAbort("widening to the within-run interval is mandatory below 6 units",
+                 "val_spec_invalid")
+    }
+    if (n < 6L || !isFALSE(widen)) {
+        interval[["ci_low"]] <- min(interval[["ci_low"]], lo)
+        interval[["ci_high"]] <- max(interval[["ci_high"]], hi)
+        interval[["flags"]] <- c(interval[["flags"]], "widened_to_within_run")
+    } else {
+        interval[["within_run_reported"]] <- c(lo, hi)
+    }
+    interval
+}
+
+#' Write `results.md`: every verdict with its regime's measured coverage and Monte Carlo SE, each
+#' primary family's nominal level beside the bound from measured misses, and the attribution
+#' (sections 4.4, 5.2)
+#'
+#' @param path Output path.
+#' @param comparisons Rows with `member`, `metric`, `arm`, `comparator`, `outcome`, `conf`,
+#'   `regime`, `coverage`, `mc_se`, `statistic`, `family`, `m`.
+#' @param attribution `attribution.tsv` rows.
+#' @return `path`, invisibly.
+#' @export
+valWriteResults <- function(path, comparisons, attribution) {
+    cmp <- comparisons
+    lines <- c("# Results", "")
+    fams <- unique(cmp[["family"]][!is.na(cmp[["family"]])])
+    if (length(fams) > 0L) lines <- c(lines, "## Primary families", "")
+    for (f in fams) {
+        r <- cmp[cmp[["family"]] %in% f, , drop = FALSE]
+        m <- r[["m"]][[1L]]
+        nominal <- 1 - m * (1 - r[["conf"]][[1L]])
+        bound <- sum(1 - r[["coverage"]])
+        lines <- c(lines, sprintf(
+            "- %s: m = %d, nominal family level %s, family error bound from measured misses %s",
+            f, as.integer(m), format(round(nominal, 6)), format(round(bound, 4))
+        ))
+    }
+    lines <- c(lines, "", "## Verdicts", "")
+    for (i in seq_len(nrow(cmp))) {
+        r <- cmp[i, ]
+        lines <- c(lines, sprintf(
+            paste("- %s (%s: %s - %s): %s; regime %s, measured coverage %s (Monte Carlo SE %s)",
+                  "at level %s, simulated on %s"),
+            r[["member"]], r[["metric"]], r[["arm"]], r[["comparator"]], r[["outcome"]],
+            r[["regime"]], format(r[["coverage"]]), format(r[["mc_se"]]), format(r[["conf"]]),
+            r[["statistic"]]
+        ))
+    }
+    lines <- c(lines, "", "## Sources and attribution", "")
+    for (i in seq_len(nrow(attribution))) {
+        a <- attribution[i, ]
+        lines <- c(lines, sprintf("- %s (%s): %s; %s; %s", a[["role"]], a[["kind"]],
+                                  a[["licence"]], a[["redistribution"]], a[["citation"]]))
+    }
+    writeLines(lines, path)
+    invisible(path)
+}
+
+#' Write `handoff.sha256` over every file of a hand-off folder
+#'
+#' @param root The hand-off folder.
+#' @return Its path, invisibly.
+#' @export
+valWriteHandoffSha <- function(root) {
+    files <- sort(setdiff(list.files(root, recursive = TRUE), "handoff.sha256"))
+    path <- file.path(root, "handoff.sha256")
+    writeLines(sprintf("%s  %s", vapply(file.path(root, files), valSha256, character(1)), files),
+               path)
+    invisible(path)
 }

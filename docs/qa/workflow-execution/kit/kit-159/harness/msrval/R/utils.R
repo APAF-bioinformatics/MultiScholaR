@@ -34,3 +34,16 @@ valScoredOnly <- function(scored) {
 valTCritical <- function(conf, df) {
     stats::qt(1 - (1 - conf) / 2, df)
 }
+
+#' Start an `Rscript -e <code>` child with the thread variables at 1, its stdout and stderr appended
+#' to one log (the shell opens the log in append mode, so a write by the child or by its own
+#' children never lands over earlier text)
+#' @noRd
+valRscriptProcess <- function(code, log) {
+    processx::process$new(
+        "sh", c("-c", 'exec "$0" "$@" >> "$VAL_LOG" 2>&1', file.path(R.home("bin"), "Rscript"),
+                "--vanilla", "-e", code),
+        env = c("current", OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1",
+                MKL_NUM_THREADS = "1", VAL_LOG = log)
+    )
+}
