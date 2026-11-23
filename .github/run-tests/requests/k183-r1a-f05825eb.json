@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-183 R1a: failing-first on the tests-only commit (R/ equal to the branch point 1e627f70) and the base-store capture",
+  "label": "KIT-183 R1a tests-only f05825eb: new tests fail on base code; capture kit183-base-store",
+  "package_commit": "f05825ebe597de1d7ce6e6af9274ecb44c892c01",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment-tests.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-183/capture-base-store.R",
+      "args": [
+        "k183-out/base-store"
+      ],
+      "out": "k183-out",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
