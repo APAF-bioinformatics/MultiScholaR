@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-190 R1a-2: instrument rerun (VAL-54) of the new test file on the tests-only commit after the self-check and T6 construction repairs",
+  "label": "KIT-190 R1a-2 tests-only 75a55cff",
+  "package_commit": "75a55cff9cd7a86423fb010145f23b5f4b6b23c9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-ruv-control-anova-grouping.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 10,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
