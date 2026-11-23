@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-159 G1D: prot_dia_limpa DA table at 28d5a4be (oracle tree) against 12d68ca7 (run 44953187101 base), each under load_all in its own worktree; aggregates only",
+  "label": "KIT-159 G1D prot_dia_limpa DA 28d5a4be vs 12d68ca7",
+  "package_commit": "c9c4a412d239738e412dcce2ea7d035a217f1b95",
+  "base_commit": "none",
+  "tools_ref": "76b57c0a52ce331246bf43611e9dc0b34ff356a2",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [{"path": "docs/qa/workflow-execution/kit/kit-159/g1d/g1d.R",
+               "args": ["28d5a4bed4b40ae87e43bcb1044a2849dd95804d", "12d68ca78442a50b46f52e33525dd85cf86df5e7",
+                        "docs/qa/workflow-execution/kit/kit-159/g1d/out"],
+               "env": {}, "out": "docs/qa/workflow-execution/kit/kit-159/g1d/out",
+               "out_pattern": "^(status|g1d-compare|g1d-captures)\\.tsv$", "timeout_minutes": 150}],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
