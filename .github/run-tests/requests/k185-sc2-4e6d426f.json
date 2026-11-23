@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-185 SC re-score once after the scoring defect (E5/E8 comparison by type; declaration section 7); same rows",
+  "label": "KIT-185 SC re-score 4e6d426f",
+  "package_commit": "4e6d426fa7724e523b9b81dee937383f983cf4bd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/score-k185.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-185",
+        "k185-results"
+      ],
+      "env": {},
+      "out": "k185-results",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
