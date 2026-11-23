@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 T0g (VAL-69): rank re-pin tests only (coverage-rank, coverage), shown failing before the code; ceiling T0's remaining 0.79 core-hours",
+  "label": "KIT-159 T0g tests only at 9903b62a",
+  "package_commit": "9903b62a54c98b4930d7c6bcead36486f815e55a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t0g-out",
+        "--files",
+        "coverage-rank,coverage"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t0g-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 5
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
