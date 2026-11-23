@@ -1,0 +1,86 @@
+{
+  "requested_by": "KIT-187 R2: fix (merge e6c42d1d) against branch point 604ec4dd; section 9 scope (45 files), R CMD check, S2 simulation (A3, A4, A5). Ceilings 6 x 75, 2 x 90, 160 min",
+  "label": "KIT-187 R2 e6c42d1d vs 604ec4dd: scope, check, S2",
+  "package_commit": "e6c42d1d8e18f04d34b3b2a850488ef43ab8d9ab",
+  "base_commit": "604ec4dd49f6eba3c842df09fdd0a057a7c83658",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-core.R",
+    "test-gui-entry-proteomics.R",
+    "test-prot-missing-value-counts.R",
+    "test-workflow-native-session.R",
+    "test-workflow-partitions.R",
+    "test-workflow-analysis-record.R",
+    "test-workflow-prot-declarations.R",
+    "test-workflow-dia-products.R",
+    "test-kit129-run-path.R",
+    "test-workflow-integration-input.R",
+    "test-perf107-audit.R",
+    "test-workflow-kit-harness.R",
+    "test-workflow-operation-registry.R",
+    "test-prot-05d-norm-module-characterization.R",
+    "test-prot-s4-qc-direct-shared.R",
+    "test-prot-02c-qc-protein-module-contracts.R",
+    "test-prot-05b-norm-module-contracts.R",
+    "test-prot-02-qc-filtering.R",
+    "test-dia-baseline-compatibility.R",
+    "test-prot-qc-peptide-methods-direct-shared.R",
+    "test-general-filemgmt-duplicate-resolution-contracts.R",
+    "test-module-ci-prot-norm.R",
+    "test-module-ci-prot-protein-qc.R",
+    "test-general-filemgmt-config-contracts.R",
+    "test-general-filemgmt-update-missing-value-shared.R",
+    "test-prot-02c-qc-peptide-intensity-shared.R",
+    "test-prot-02d-qc-protein-intensity-shared.R",
+    "test-prot-02-qc-peptide-groupaware.R",
+    "test-prot-qc-peptide-intensity-group-batches.R",
+    "test-prot-02b-qc-peptide-module-contracts.R",
+    "test-e2e-proteomics-tmt-lfq.R",
+    "test-e2e-proteomics-dia.R",
+    "test-workflow-trx-declarations.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-workflow-checkpoint-harness.R",
+    "test-workflow-ruv-pearson-diagnostic.R",
+    "test-module-ci-prot-peptide-qc.R",
+    "test-e2e-browser-harness.R",
+    "test-workflow-memory-mechanism-member.R",
+    "test-integration-model.R",
+    "test-integration-mofa-model.R",
+    "test-prot-summary-report-templates.R",
+    "test-prot-qc-peptide-intensity-legacy-counts.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-187/filter-effect.R",
+      "args": [
+        "604ec4dd49f6eba3c842df09fdd0a057a7c83658",
+        "docs/qa/workflow-execution/kit/kit-187/s2"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-187/s2",
+      "out_pattern": "\\.(tsv|json|txt)$",
+      "timeout_minutes": 150
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
