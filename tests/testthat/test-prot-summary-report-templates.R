@@ -62,3 +62,13 @@ test_that("the LFQ template names the import format it is rendered for", {
   for (format in c("maxquant", "fragpipe", "spectronaut")) expect_true(grepl(paste0("    ", format, " = paste0("), text, fixed = TRUE), info = format)
   expect_false(grepl("imported from FragPipe or MaxQuant", text, fixed = TRUE))
 })
+
+test_that("KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'", {
+  for (template in c("LFQ_report.rmd", "TMT_report.rmd", "DIANN_report.rmd")) {
+    text <- paste(readLines(file.path(template_dir, template), warn = FALSE), collapse = "\n")
+    expect_true(grepl("exceeded the allowed share", text, fixed = TRUE), info = template)
+    expect_true(grepl("did not exceed the allowed share", text, fixed = TRUE), info = template)
+    expect_false(grepl("or more of its values were missing", text, fixed = TRUE), info = template)
+    expect_false(grepl("failed in at most", text, fixed = TRUE), info = template)
+  }
+})
