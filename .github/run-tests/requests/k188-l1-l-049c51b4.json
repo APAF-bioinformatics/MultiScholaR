@@ -1,0 +1,40 @@
+{
+  "requested_by": "KIT-188 L1 blind lifecycle (lipidomics L12, L64; data sets 401-403; deciding, reported, munit, ba); plan 70 min, timeout 150; decides G1-G3, E1-E4, E6, E7, E9 before the declaration",
+  "label": "KIT-188 L1-l 049c51b4",
+  "package_commit": "049c51b445398433b3778dcef86260e06788db79",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12,L64",
+        "401",
+        "403",
+        "k188-l1-l"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_FAULT": "1",
+        "K188_JOB": "l1-l"
+      },
+      "out": "k188-l1-l",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 150
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
