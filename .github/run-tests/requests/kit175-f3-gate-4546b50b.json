@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-175 gate F3 (R0b): UniProt first-page truncation and X-Total-Results presence on real reference-proteome accessions; ceiling 4 core-h; decides whether implementation may start",
+  "label": "KIT-175 F3 gate on kit-175-uniprot-annotation 4546b50b",
+  "package_commit": "4546b50b13867c1a9b4f3e1fa2a8b825f398a380",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-175/f3-uniprot-pages.R",
+      "args": ["f3-out"],
+      "env": {},
+      "out": "f3-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
