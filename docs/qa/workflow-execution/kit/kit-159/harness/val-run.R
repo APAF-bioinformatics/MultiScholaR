@@ -1,6 +1,7 @@
 # KIT-159 entry script (section 7.8). From the package root, in a `run-tests` scripts request:
 #
 #   Rscript docs/qa/workflow-execution/kit/kit-159/harness/val-run.R record <evidence dir> <label>
+#       [--uniprot <accession list>]
 #   Rscript .../val-run.R pre <evidence dir> <label> --script <path> --pre-outputs <path>
 #   Rscript .../val-run.R check <folder> --manifest <inputs.tsv>
 #
@@ -87,6 +88,11 @@ if (phase == "record") {
     out <- file.path("val-out", "record", label)
     dir.create(out, recursive = TRUE, showWarnings = FALSE)
     manifest <- msrval::valRecordInputs(draft, file.path(tmp_root, "val-data"), out, repo_root = ".")
+    # R1 (r1.12): a UniProt cache recorded from a committed accession list; only uniprot.tsv
+    # (release and hash) enters the record folder, the cache stays private
+    if (!is.null(optValue("--uniprot"))) {
+        msrval::valRecordUniprot(optValue("--uniprot"), out, file.path(tmp_root, "val-uniprot"))
+    }
     lib <- msrval::valLibraryTable()
     utils::write.table(lib, file.path(out, "library.tsv"), sep = "\t", quote = FALSE,
                        row.names = FALSE)

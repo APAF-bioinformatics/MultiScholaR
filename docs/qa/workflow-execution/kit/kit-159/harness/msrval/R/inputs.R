@@ -430,3 +430,34 @@ valRunPre <- function(script, pre_outputs, out_dir) {
     }
     TRUE
 }
+
+#' R1: record a UniProt cache from a committed accession list (10.4 R1, r1.12)
+#'
+#' Reads `accession` and `taxon` (one taxon) from the list, calls [valRecordUniprotCache()] into the
+#' private `cache_dir`, and writes `uniprot.tsv` (taxon, accessions, rows, release,
+#' release_source, sha256) into `out_dir`; the cache itself never enters `out_dir`. Refusals
+#' (`val_annotation_incomplete`, `val_annotation_empty`) pass through and nothing is written.
+#'
+#' @param accessions Path of the accession list (`accession`, `taxon`).
+#' @param out_dir The record folder.
+#' @param cache_dir Private cache folder.
+#' @param annotate,release As [valRecordUniprotCache()].
+#' @return The record's row (a data frame), invisibly.
+#' @export
+valRecordUniprot <- function(accessions, out_dir, cache_dir, annotate = NULL, release = NULL) {
+    acc <- utils::read.delim(accessions, colClasses = "character", stringsAsFactors = FALSE)
+    taxon <- unique(acc$taxon)
+    if (length(taxon) != 1L || !all(nzchar(acc$accession))) {
+        valAbort("the accession list must name one taxon and no empty accession",
+                 "val_manifest_invalid")
+    }
+    res <- valRecordUniprotCache(data.frame(Protein.Ids = acc$accession), "Protein.Ids", taxon,
+                                 cache_dir, annotate = annotate, release = release)
+    row <- data.frame(taxon = taxon, accessions = nrow(acc), rows = nrow(res$table),
+                      release = res$release, release_source = res$release_source,
+                      sha256 = res$sha256, stringsAsFactors = FALSE)
+    dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+    utils::write.table(row, file.path(out_dir, "uniprot.tsv"), sep = "\t", quote = FALSE,
+                       row.names = FALSE)
+    invisible(row)
+}

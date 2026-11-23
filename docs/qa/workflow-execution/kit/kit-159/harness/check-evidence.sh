@@ -42,6 +42,7 @@ expected_header() {
         ticket-coverage-cells.tsv) join regime cell parameter value ;;
         ledger-*.tsv) join step action input_id value source location ;;
         parity-da.tsv) join route comparison status digest sha256_10 ;;
+        uniprot.tsv) join taxon accessions rows release release_source sha256 ;;
         parity-*.tsv) join action input_id driver_value browser_value equal excluded_class ;;
         *) echo "" ;;
     esac

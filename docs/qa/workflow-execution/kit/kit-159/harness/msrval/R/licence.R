@@ -22,6 +22,7 @@ EVIDENCE_COLUMNS <- list(
     ledger = c("step", "action", "input_id", "value", "source", "location"),
     parity = c("action", "input_id", "driver_value", "browser_value", "equal", "excluded_class"),
     `parity-da.tsv` = c("route", "comparison", "status", "digest", "sha256_10"),
+    uniprot.tsv = c("taxon", "accessions", "rows", "release", "release_source", "sha256"),
     `ticket-coverage.tsv` = c("regime", "cell", "method", "class", "form", "g", "level",
                               "simulations", "bound", "coverage", "mc_se", "miss", "critical",
                               "pass"),
