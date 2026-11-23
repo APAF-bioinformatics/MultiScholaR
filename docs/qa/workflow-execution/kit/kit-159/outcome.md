@@ -35,6 +35,14 @@ The third re-check's note applied in the main checkout's `tickets/kit/KIT-159.md
 with re-check2 C13's conditions)"; revision 1.7; closure section 22; history line. The rule's text is
 unchanged.
 
+### G1D recorded (2026-11-23; not run by this agent)
+
+Run 45121359461, script commit c9c4a412 (branch `run-k159-g1d`), about 1.1 core-hours. Tables and
+script copied to `g1d/` (aggregates, column names and digests only, checked before commit); entry in
+`gates.md` under G1(r). Observed: the same DA table on 28d5a4be and 12d68ca7 on the runner; head
+reproduction holds, base reproduction fails (8a4c2dd5 on the runner against the oracle's 80cfedaa),
+so `limpa_da_last_digits` is not admitted on G1D alone. `prot_dia_limpa`: awaiting D19 (owner).
+
 ## Next
 
 Group a: tests-only commit, then the T0 request for it.

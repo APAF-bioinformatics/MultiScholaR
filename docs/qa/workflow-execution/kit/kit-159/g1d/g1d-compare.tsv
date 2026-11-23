@@ -1,0 +1,223 @@
+quantity	column	value
+header_base		Protein.Group | gene_name | fdr_qvalue | raw_pvalue | log2FC | comparison | numerator | denominator | log2norm.ko_1.KO | log2norm.ko_2.KO | log2norm.ko_3.KO | log2norm.ko_4.KO | log2norm.wt_1.WT | log2norm.wt_2.WT | log2norm.wt_3.WT | log2norm.wt_4.WT | raw.ko_1.KO | raw.ko_2.KO | raw.ko_3.KO | raw.ko_4.KO | raw.wt_1.WT | raw.wt_2.WT | raw.wt_3.WT | raw.wt_4.WT | Protein.Ids | From | gene_names | Protein_existence | Protein_names | annotation_score | Organism | go_id_go_biological_process | go_term_go_biological_process | go_id_go_molecular_function | go_term_go_molecular_function | go_id_go_cellular_compartment | go_term_go_cellular_compartment
+columns_base		37
+header_head		Protein.Group | gene_name | fdr_qvalue | raw_pvalue | log2FC | comparison | numerator | denominator | log2norm.ko_1.KO | log2norm.ko_2.KO | log2norm.ko_3.KO | log2norm.ko_4.KO | log2norm.wt_1.WT | log2norm.wt_2.WT | log2norm.wt_3.WT | log2norm.wt_4.WT | raw.ko_1.KO | raw.ko_2.KO | raw.ko_3.KO | raw.ko_4.KO | raw.wt_1.WT | raw.wt_2.WT | raw.wt_3.WT | raw.wt_4.WT | Protein.Ids | From | gene_names | Protein_existence | Protein_names | annotation_score | Organism | go_id_go_biological_process | go_term_go_biological_process | go_id_go_molecular_function | go_term_go_molecular_function | go_id_go_cellular_compartment | go_term_go_cellular_compartment
+columns_head		37
+header_identical		TRUE
+na_count_base	Protein.Group	0
+na_count_head	Protein.Group	0
+na_count_base	gene_name	0
+na_count_head	gene_name	0
+na_count_base	fdr_qvalue	0
+na_count_head	fdr_qvalue	0
+na_count_base	raw_pvalue	0
+na_count_head	raw_pvalue	0
+na_count_base	log2FC	0
+na_count_head	log2FC	0
+na_count_base	comparison	0
+na_count_head	comparison	0
+na_count_base	numerator	0
+na_count_head	numerator	0
+na_count_base	denominator	0
+na_count_head	denominator	0
+na_count_base	log2norm.ko_1.KO	0
+na_count_head	log2norm.ko_1.KO	0
+na_count_base	log2norm.ko_2.KO	0
+na_count_head	log2norm.ko_2.KO	0
+na_count_base	log2norm.ko_3.KO	0
+na_count_head	log2norm.ko_3.KO	0
+na_count_base	log2norm.ko_4.KO	0
+na_count_head	log2norm.ko_4.KO	0
+na_count_base	log2norm.wt_1.WT	0
+na_count_head	log2norm.wt_1.WT	0
+na_count_base	log2norm.wt_2.WT	0
+na_count_head	log2norm.wt_2.WT	0
+na_count_base	log2norm.wt_3.WT	0
+na_count_head	log2norm.wt_3.WT	0
+na_count_base	log2norm.wt_4.WT	0
+na_count_head	log2norm.wt_4.WT	0
+na_count_base	raw.ko_1.KO	0
+na_count_head	raw.ko_1.KO	0
+na_count_base	raw.ko_2.KO	0
+na_count_head	raw.ko_2.KO	0
+na_count_base	raw.ko_3.KO	0
+na_count_head	raw.ko_3.KO	0
+na_count_base	raw.ko_4.KO	0
+na_count_head	raw.ko_4.KO	0
+na_count_base	raw.wt_1.WT	0
+na_count_head	raw.wt_1.WT	0
+na_count_base	raw.wt_2.WT	0
+na_count_head	raw.wt_2.WT	0
+na_count_base	raw.wt_3.WT	0
+na_count_head	raw.wt_3.WT	0
+na_count_base	raw.wt_4.WT	0
+na_count_head	raw.wt_4.WT	0
+na_count_base	Protein.Ids	0
+na_count_head	Protein.Ids	0
+na_count_base	From	0
+na_count_head	From	0
+na_count_base	gene_names	0
+na_count_head	gene_names	0
+na_count_base	Protein_existence	0
+na_count_head	Protein_existence	0
+na_count_base	Protein_names	0
+na_count_head	Protein_names	0
+na_count_base	annotation_score	0
+na_count_head	annotation_score	0
+na_count_base	Organism	0
+na_count_head	Organism	0
+na_count_base	go_id_go_biological_process	0
+na_count_head	go_id_go_biological_process	0
+na_count_base	go_term_go_biological_process	0
+na_count_head	go_term_go_biological_process	0
+na_count_base	go_id_go_molecular_function	0
+na_count_head	go_id_go_molecular_function	0
+na_count_base	go_term_go_molecular_function	0
+na_count_head	go_term_go_molecular_function	0
+na_count_base	go_id_go_cellular_compartment	0
+na_count_head	go_id_go_cellular_compartment	0
+na_count_base	go_term_go_cellular_compartment	0
+na_count_head	go_term_go_cellular_compartment	0
+na_counts_equal		TRUE
+key		Protein.Ids+comparison
+rows_base		393
+rows_head		393
+keys_both		393
+keys_only_base		0
+keys_only_head		0
+key_order_identical		TRUE
+values_differ	Protein.Group	0
+values_differ	gene_name	0
+rows_compared	fdr_qvalue	393
+max_abs_diff	fdr_qvalue	0
+max_rel_diff	fdr_qvalue	0
+na_one_side	fdr_qvalue	0
+values_differ	fdr_qvalue	0
+rows_compared	raw_pvalue	393
+max_abs_diff	raw_pvalue	0
+max_rel_diff	raw_pvalue	0
+na_one_side	raw_pvalue	0
+values_differ	raw_pvalue	0
+rows_compared	log2FC	393
+max_abs_diff	log2FC	0
+max_rel_diff	log2FC	0
+na_one_side	log2FC	0
+values_differ	log2FC	0
+values_differ	comparison	0
+values_differ	numerator	0
+values_differ	denominator	0
+rows_compared	log2norm.ko_1.KO	393
+max_abs_diff	log2norm.ko_1.KO	0
+max_rel_diff	log2norm.ko_1.KO	0
+na_one_side	log2norm.ko_1.KO	0
+values_differ	log2norm.ko_1.KO	0
+rows_compared	log2norm.ko_2.KO	393
+max_abs_diff	log2norm.ko_2.KO	0
+max_rel_diff	log2norm.ko_2.KO	0
+na_one_side	log2norm.ko_2.KO	0
+values_differ	log2norm.ko_2.KO	0
+rows_compared	log2norm.ko_3.KO	393
+max_abs_diff	log2norm.ko_3.KO	0
+max_rel_diff	log2norm.ko_3.KO	0
+na_one_side	log2norm.ko_3.KO	0
+values_differ	log2norm.ko_3.KO	0
+rows_compared	log2norm.ko_4.KO	393
+max_abs_diff	log2norm.ko_4.KO	0
+max_rel_diff	log2norm.ko_4.KO	0
+na_one_side	log2norm.ko_4.KO	0
+values_differ	log2norm.ko_4.KO	0
+rows_compared	log2norm.wt_1.WT	393
+max_abs_diff	log2norm.wt_1.WT	0
+max_rel_diff	log2norm.wt_1.WT	0
+na_one_side	log2norm.wt_1.WT	0
+values_differ	log2norm.wt_1.WT	0
+rows_compared	log2norm.wt_2.WT	393
+max_abs_diff	log2norm.wt_2.WT	0
+max_rel_diff	log2norm.wt_2.WT	0
+na_one_side	log2norm.wt_2.WT	0
+values_differ	log2norm.wt_2.WT	0
+rows_compared	log2norm.wt_3.WT	393
+max_abs_diff	log2norm.wt_3.WT	0
+max_rel_diff	log2norm.wt_3.WT	0
+na_one_side	log2norm.wt_3.WT	0
+values_differ	log2norm.wt_3.WT	0
+rows_compared	log2norm.wt_4.WT	393
+max_abs_diff	log2norm.wt_4.WT	0
+max_rel_diff	log2norm.wt_4.WT	0
+na_one_side	log2norm.wt_4.WT	0
+values_differ	log2norm.wt_4.WT	0
+rows_compared	raw.ko_1.KO	393
+max_abs_diff	raw.ko_1.KO	0
+max_rel_diff	raw.ko_1.KO	0
+na_one_side	raw.ko_1.KO	0
+values_differ	raw.ko_1.KO	0
+rows_compared	raw.ko_2.KO	393
+max_abs_diff	raw.ko_2.KO	0
+max_rel_diff	raw.ko_2.KO	0
+na_one_side	raw.ko_2.KO	0
+values_differ	raw.ko_2.KO	0
+rows_compared	raw.ko_3.KO	393
+max_abs_diff	raw.ko_3.KO	0
+max_rel_diff	raw.ko_3.KO	0
+na_one_side	raw.ko_3.KO	0
+values_differ	raw.ko_3.KO	0
+rows_compared	raw.ko_4.KO	393
+max_abs_diff	raw.ko_4.KO	0
+max_rel_diff	raw.ko_4.KO	0
+na_one_side	raw.ko_4.KO	0
+values_differ	raw.ko_4.KO	0
+rows_compared	raw.wt_1.WT	393
+max_abs_diff	raw.wt_1.WT	0
+max_rel_diff	raw.wt_1.WT	0
+na_one_side	raw.wt_1.WT	0
+values_differ	raw.wt_1.WT	0
+rows_compared	raw.wt_2.WT	393
+max_abs_diff	raw.wt_2.WT	0
+max_rel_diff	raw.wt_2.WT	0
+na_one_side	raw.wt_2.WT	0
+values_differ	raw.wt_2.WT	0
+rows_compared	raw.wt_3.WT	393
+max_abs_diff	raw.wt_3.WT	0
+max_rel_diff	raw.wt_3.WT	0
+na_one_side	raw.wt_3.WT	0
+values_differ	raw.wt_3.WT	0
+rows_compared	raw.wt_4.WT	393
+max_abs_diff	raw.wt_4.WT	0
+max_rel_diff	raw.wt_4.WT	0
+na_one_side	raw.wt_4.WT	0
+values_differ	raw.wt_4.WT	0
+values_differ	Protein.Ids	0
+values_differ	From	0
+values_differ	gene_names	0
+values_differ	Protein_existence	0
+values_differ	Protein_names	0
+rows_compared	annotation_score	393
+max_abs_diff	annotation_score	0
+max_rel_diff	annotation_score	0
+na_one_side	annotation_score	0
+values_differ	annotation_score	0
+values_differ	Organism	0
+values_differ	go_id_go_biological_process	0
+values_differ	go_term_go_biological_process	0
+values_differ	go_id_go_molecular_function	0
+values_differ	go_term_go_molecular_function	0
+values_differ	go_id_go_cellular_compartment	0
+values_differ	go_term_go_cellular_compartment	0
+non_numeric_values_differ		0
+column_types_differ		0
+masked_lines_base		394
+masked_lines_head		394
+masked_lines_differ		0
+masked_lines_differ_numeric_only		0
+masked_lines_differ_other		0
+calls_changed		0
+called_base		19
+called_up_base		14
+called_down_base		5
+called_head		19
+called_up_head		14
+called_down_head		5
+rule_max_rel_diff	log2FC+raw_pvalue+fdr_qvalue	0
+rule_na_one_side	log2FC+raw_pvalue+fdr_qvalue	0
+rule_structure_equal		TRUE
+rule_met		TRUE
