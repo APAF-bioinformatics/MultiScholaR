@@ -442,7 +442,7 @@ normaliseMaxQuantColumnNames <- function(names) {
 #' 
 #' @param filepath Path to MaxQuant proteinGroups.txt file
 #' @param use_lfq Whether to use LFQ intensities
-#' @param filter_contaminants Whether to filter contaminants
+#' @param filter_contaminants Whether to drop rows marked "+" in the contaminant column ("Potential contaminant", or "Contaminant" in MaxQuant 1.4 and earlier) and in "Reverse"; the rows removed per column are logged
 #' @return List with data, data_type, and column_mapping
 #' @export
 importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = TRUE) {
@@ -450,7 +450,7 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
   # and a sparse "+" column whose sample carries no mark is read as logical with every mark lost, so the rows it
   # flags are kept (reproduced by the KIT-021 corpus check: 50 decoys among 8,100 groups survived the import).
   header <- names(vroom::vroom(filepath, delim = "\t", n_max = 0L, show_col_types = FALSE))
-  flags <- intersect(c("Potential.contaminant", "Reverse", "Potential contaminant"), header)
+  flags <- intersect(c("Potential.contaminant", "Reverse", "Potential contaminant", "Contaminant"), header)
   col_types <- do.call(vroom::cols, c(list(.default = vroom::col_guess()),
     stats::setNames(rep(list(vroom::col_character()), length(flags)), flags)))
   data <- vroom::vroom(filepath, delim = "\t", show_col_types = FALSE, col_types = col_types)
@@ -466,13 +466,18 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
   # left as it is), so a real proteinGroups.txt reads as the fixtures do (KIT-054 finding).
   names(data) <- normaliseMaxQuantColumnNames(names(data))
   
-  # Filter contaminants and reverse hits if requested
+  # Filter contaminants and reverse hits if requested. MaxQuant 1.4 and earlier name the contaminant column
+  # "Contaminant" (from 1.5.2.8 at the latest "Potential contaminant"); both are filtered (KIT-171). The whole group
+  # goes when MaxQuant marked it; accession prefixes are not consulted. A row marked in two columns is counted at the
+  # first, so the logged counts sum to the rows removed.
   if (filter_contaminants) {
-    if ("Potential.contaminant" %in% names(data)) {
-      data <- data[is.na(data$Potential.contaminant) | data$Potential.contaminant != "+", ]
+    if (!any(c("Potential.contaminant", "Contaminant") %in% names(data))) {
+      log_info("MaxQuant import: contaminant filtering requested but no contaminant column found ('Potential contaminant' or 'Contaminant'); no contaminant rows removed")
     }
-    if ("Reverse" %in% names(data)) {
-      data <- data[is.na(data$Reverse) | data$Reverse != "+", ]
+    for (column in intersect(c("Potential.contaminant", "Contaminant", "Reverse"), names(data))) {
+      keep <- is.na(data[[column]]) | data[[column]] != "+"
+      log_info(sprintf("MaxQuant import: removed %d rows marked '+' in %s", sum(!keep), column))
+      data <- data[keep, ]
     }
   }
   

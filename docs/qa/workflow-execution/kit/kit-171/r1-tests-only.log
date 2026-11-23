@@ -1,0 +1,91 @@
+prot-import-maxquant-direct-shared: ........................::notice title=INFO::Starting FragPipe LFQ import from: /tmp/RtmpQ9phIF/file4c1d5e46b543.tsv
+::notice title=INFO::Read 3 rows and 7 columns
+::notice title=INFO::Found Protein ID column: Protein ID
+::notice title=INFO::Found 4 columns ending with 'Intensity'
+::notice title=INFO::Using MaxLFQ Intensity columns (4 columns)
+::notice title=INFO::Converting data from wide to long format...
+::notice title=INFO::Converted to long format: 12 rows
+::notice title=INFO::Unique proteins: 3, Unique samples: 4
+............W12.34W.W5..6789a.b
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. KIT-171 T1: the legacy Contaminant column removes the rows MaxQuant marked, not rows by accession prefix ('test-prot-import-maxquant-direct-shared.R:219:3') - One or more parsing issues, call `problems()` on your data frame for details, e.g.:
+  dat <- vroom(...)
+  problems(dat)
+
+2. KIT-171 T1: the legacy Contaminant column removes the rows MaxQuant marked, not rows by accession prefix ('test-prot-import-maxquant-direct-shared.R:226:3') - One or more parsing issues, call `problems()` on your data frame for details, e.g.:
+  dat <- vroom(...)
+  problems(dat)
+
+3. KIT-171 T2: a MaxQuant 1.3-style proteinGroups file (spaced names, CR LF) drops its Contaminant rows ('test-prot-import-maxquant-direct-shared.R:248:3') - One or more parsing issues, call `problems()` on your data frame for details, e.g.:
+  dat <- vroom(...)
+  problems(dat)
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-prot-import-maxquant-direct-shared.R:221:3'): KIT-171 T1: t
+Expected `ids` to have length 4997.
+Actual length: 4999.
+
+── 2. Failure ('test-prot-import-maxquant-direct-shared.R:222:3'): KIT-171 T1: t
+Expected `setdiff(table$Protein.IDs, ids)` to have the same values as `table$Protein.IDs[c(1234L, 3333L, 4321L)]`.
+Actual: "REV__P04321"
+Expected: "P01234", "P03333;CON__P03333", "REV__P04321"
+Absent: "P01234", "P03333;CON__P03333"
+
+── 3. Failure ('test-prot-import-maxquant-direct-shared.R:224:3'): KIT-171 T1: t
+Expected `sum(...)` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+
+── 4. Failure ('test-prot-import-maxquant-direct-shared.R:225:3'): KIT-171 T1: t
+Expected `sum(...)` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+
+── 5. Failure ('test-prot-import-maxquant-direct-shared.R:250:3'): KIT-171 T2: a
+Expected `ids` to have length 298.
+Actual length: 299.
+
+── 6. Failure ('test-prot-import-maxquant-direct-shared.R:253:3'): KIT-171 T2: a
+Expected `sum(...)` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+
+── 7. Failure ('test-prot-import-maxquant-direct-shared.R:254:3'): KIT-171 T2: a
+Expected `sum(...)` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+
+── 8. Failure ('test-prot-import-maxquant-direct-shared.R:282:3'): KIT-171 T3: a
+Expected `unique(imported$data$Protein.Ids)` to have length 297.
+Actual length: 298.
+
+── 9. Failure ('test-prot-import-maxquant-direct-shared.R:283:3'): KIT-171 T3: a
+Expected `sum(...)` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+
+── 10. Failure ('test-prot-import-maxquant-direct-shared.R:285:3'): KIT-171 T3: 
+Expected `sum(...)` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+  ... and 1 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-prot-import-maxquant-direct-shared.R pass 41 fail 11 error 0 skip 0 warn 3
