@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-183: base-store-job instrument correction (VAL-54; Rscript's trailing argument) with T5, T8, T15 and the X mutations; the new test file once more for the cross-platform reference",
+  "label": "KIT-183 R2b bf3543e8: base-store-job, new test file",
+  "package_commit": "bf3543e8ffc1c90d535cd589312c79a517fb770f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment-tests.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-183/base-store-job.R",
+      "args": [
+        "1e627f704580a42e66e45b9263c8fcd9684567ba",
+        "k183-out/guards"
+      ],
+      "out": "k183-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
