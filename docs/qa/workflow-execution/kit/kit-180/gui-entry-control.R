@@ -7,7 +7,10 @@
 #
 # (a) Base side: a git worktree of <base commit>; a fresh Rscript process with its working directory at that tree's root
 #     loads it (pkgload::load_all, helpers sourced into the global environment) and runs guiEntryRunLane() for the three
-#     lanes with MULTISCHOLAR_GUI_ENTRY_RECORD_DIR=<out>/base. No comparison is made there.
+#     lanes with MULTISCHOLAR_GUI_ENTRY_RECORD_DIR=<out>/base. No comparison is made there. Each lane runs inside
+#     testthat::test_that(), as the head side and the test files do: R4 (run 45129403566) showed that outside it the
+#     store-entry names of a capture are sorted in the runner's locale, not in test_that()'s C collation, so the base
+#     record differed from the frozen files and the head in key order only.
 # (b) Head side: a fresh Rscript process at this tree's root runs guiEntryExpectLane() for each lane inside
 #     testthat::test_that() with MULTISCHOLAR_GUI_ENTRY_RECORD_DIR=<out>/head, MULTISCHOLAR_GUI_ENTRY_FREEZE=1 and
 #     MULTISCHOLAR_GUI_ENTRY_ORACLE_DIR=<out>/oracles: one run per lane writes its record and its frozen file into out,
@@ -56,8 +59,7 @@ writeLines(c(
     "    ok <- tryCatch(if (identical(side, 'head')) {",
     "        testthat::test_that(paste('KIT-180 control', lane), guiEntryExpectLane(lane))",
     "    } else {",
-    "        guiEntryRunLane(lane)",
-    "        TRUE",
+    "        testthat::test_that(paste('KIT-180 control base', lane), { guiEntryRunLane(lane); testthat::succeed() })",
     "    }, error = function(e) {",
     "        cat('lane', lane, 'error', class(e)[[1L]], conditionMessage(e), '\\n')",
     "        FALSE",
