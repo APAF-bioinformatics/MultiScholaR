@@ -188,6 +188,7 @@ k177DaColumns <- function(result, id_column) {
     ids <- as.character(pick(da, c(id_column, "uniprot_acc", "Protein.Ids")))
     logfc <- as.numeric(pick(da, c("log2FC", "logFC")))
     p <- as.numeric(pick(da, c("raw_pvalue", "P.Value")))
+    q <- pick(da, c("fdr_qvalue"))
     t <- pick(da, c("t", "t.mod"))
     if (is.null(t) && nrow(result$results)) {
         rt <- result$results
@@ -195,5 +196,43 @@ k177DaColumns <- function(result, id_column) {
         tv <- pick(rt, c("t", "t.mod"))
         if (!is.null(tv) && length(rid)) t <- as.numeric(tv)[match(ids, rid)]
     }
-    data.frame(id = ids, logFC = logfc, t = if (is.null(t)) NA_real_ else as.numeric(t), p = p, stringsAsFactors = FALSE)
+    data.frame(id = ids, logFC = logfc, t = if (is.null(t)) NA_real_ else as.numeric(t), p = p,
+        q = if (is.null(q)) NA_real_ else as.numeric(q), stringsAsFactors = FALSE)
+}
+
+#' Fixture F177 (ticket section 5; the same construction as tests/testthat/test-prot-design-log2.R `k177F177`), with
+#' T1b's additions when `planted = TRUE`: one unwanted factor balanced across the groups (w = +1, -1 alternating within
+#' each group) with per-protein loadings N(0, 0.5^2) on the log2 scale, and 10 % of proteins changed by +1 or -1 log2 in
+#' group B (half each). Draw order: F177's draws, then the loadings, then the changed set and its signs.
+k177F177 <- function(seed, n = 400L, range = c(0.5, 1e7), planted = FALSE) {
+    set.seed(seed, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
+    level <- exp(stats::runif(n, log(range[[1L]]), log(range[[2L]])))
+    values <- level * 2^matrix(stats::rnorm(n * 10L, 0, 0.25), n, 10L)
+    for (i in seq_len(n)) for (g in list(1:5, 6:10)) {
+        missing <- sample(g, sample(0:2, 1L, prob = c(0.6, 0.3, 0.1)))
+        values[i, missing] <- NA_real_
+        observed <- setdiff(g, missing)
+        ones <- observed[stats::runif(length(observed)) < 0.02]
+        values[i, utils::head(ones, 2L)] <- 1
+    }
+    sign <- integer(n)
+    if (planted) {
+        loading <- stats::rnorm(n, 0, 0.5)
+        w <- rep(c(1, -1, 1, -1, 1), 2L)
+        changed <- sample(n, as.integer(n / 10))
+        sign[changed] <- sample(rep(c(1L, -1L), length.out = length(changed)))
+        values <- values * 2^(outer(loading, w))
+        values[, 6:10] <- values[, 6:10] * 2^sign
+    }
+    runs <- sprintf("S%02d", 1:10)
+    list(ids = sprintf("P%05d", seq_len(n)), runs = runs, values = values, sign = sign,
+        design = data.frame(Run = runs, group = rep(c("control", "treated"), each = 5L), replicates = rep(1:5, 2L),
+            stringsAsFactors = FALSE))
+}
+
+#' F177's wide table for one shape at scale s (the identifier column `Protein.Ids`).
+k177F177Wide <- function(sim, s = 1) {
+    values <- sim$values * s
+    colnames(values) <- sim$runs
+    tibble::as_tibble(cbind(data.frame(Protein.Ids = sim$ids, stringsAsFactors = FALSE), as.data.frame(values)))
 }

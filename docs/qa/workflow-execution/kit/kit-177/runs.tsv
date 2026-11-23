@@ -1,0 +1,2 @@
+step	run_name	run_id	package_commit	base_commit	purpose	result	job_minutes	core_hours
+R0	k177-r0-025c9542	45222712083	025c95426bb8dd3e05d60f0ae750b0c71638f16e	none (S2 base fc48b6ecea61815afaff4e759c36b805028c119d)	gates before code: F4 (S2 on prot_lfq), F3 replay state by state, 9.1 effect measurement; R/ = base	scripts ok (3 of 3); F4 yes; F3 outcome (3) replays in order, not identical, on both lanes: STOP for the owner; 9.1: 400 of 400 route runs ok, first seed 4.92 min, total 103 min	122.9	8.19
