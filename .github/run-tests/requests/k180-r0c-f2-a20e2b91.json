@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-180 R0c: gate F2, instrument run under VAL-54 (R0 and R0b stopped in the script's mechanics with no replay result); the script now records where a lane stops; run-k180-base, R/ equal to base a60c4e9a",
+  "label": "KIT-180 R0c F2 replay check on a20e2b91",
+  "package_commit": "a20e2b91c7bad66df211fca30e06dc410e28e87b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-180/replay-check.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-180/replay"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-180/replay",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
