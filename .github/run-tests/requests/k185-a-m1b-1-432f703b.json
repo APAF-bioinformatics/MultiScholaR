@@ -1,0 +1,38 @@
+{
+  "requested_by": "KIT-185 counted run S (a-m1b-1; determinism if d-), declaration 432f703b; ceiling = timeout + 10 min x 4 cores; result read only at scoring",
+  "label": "KIT-185 S a-m1b-1 432f703b",
+  "package_commit": "432f703b7e0d5f627e2990c288dbfe5f389fcd19",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "A",
+        "M1b",
+        "1",
+        "200",
+        "k185-a-m1b-1-1"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_JOB": "a-m1b-1-1"
+      },
+      "out": "k185-a-m1b-1-1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 175
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
