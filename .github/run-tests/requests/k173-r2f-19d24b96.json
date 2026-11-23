@@ -1,0 +1,44 @@
+{
+  "requested_by": "KIT-173 geneID fix (VAL-61): T12 failing on cf4b5fd4 (tests only) and passing on 19d24b96; enrichment files base vs head; two-process head-on-head check; T7(b) as restated in the one-job replay",
+  "label": "KIT-173 geneID fix 19d24b96 vs cf4b5fd4",
+  "package_commit": "19d24b96b516c90f3e24804120b328bf85983676",
+  "base_commit": "cf4b5fd4ab5fd24b3715e2df75b98c5f5605c89f",
+  "tools_ref": "",
+  "tests": [
+    "test-go-propagation.R",
+    "test-omic-enrich-module.R",
+    "test-general-enrichment-shared.R",
+    "test-omics-enrich-core.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/t7-headhead.R",
+      "args": [
+        "k173-headhead-out"
+      ],
+      "env": {},
+      "out": "k173-headhead-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/t7-replay.R",
+      "args": [
+        "k173-t7-out"
+      ],
+      "env": {},
+      "out": "k173-t7-out",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
