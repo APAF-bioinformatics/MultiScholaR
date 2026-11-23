@@ -1,0 +1,19 @@
+{
+  "requested_by": "KIT-175 R3: full suite base (branch merge point af04046f) vs head 873d6e8a, with R CMD check; full-suite template (sva, env, five 120-minute timeouts)",
+  "label": "KIT-175 R3 full suite 873d6e8a vs af04046f",
+  "package_commit": "873d6e8ae53055bb41fc8d1b8043f4ef2c8b289b",
+  "base_commit": "af04046f6cfb7da97ea6a649ea77cb65bd48f72f",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {"test-gui-entry-proteomics.R": 120, "test-gui-entry-transcriptomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120, "test-gui-entry-metabolomics.R": 120, "test-prot-norm-core.R": 120},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
