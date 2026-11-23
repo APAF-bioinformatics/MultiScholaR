@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-175 measurement F4 before D8: bare vs field-qualified UniProt query on F3's 120 requests and on secondary, deleted and other-organism accessions; within R0b ceiling 4 core-h (0.92 used)",
+  "label": "KIT-175 F4 measurement on kit-175-uniprot-annotation e27c9d69",
+  "package_commit": "e27c9d69e282aee9c475b6a8efdb0bca0ecd547b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-175/f4-query-forms.R",
+      "args": ["f4-out"],
+      "env": {},
+      "out": "f4-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
