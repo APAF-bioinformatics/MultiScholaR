@@ -2219,8 +2219,9 @@ omicGuiProteomicsQc <- function() {
 }
 
 #' The proteomics shell (mod_proteomics.R): no header; the icon as `tabPanel`'s argument
-#' (:117-184, stepper :380-386); the bus (:205-245) on `session$userData` (:248); the TMT/LFQ QC
-#' bypass (:406-416); the peptide-checkpoint panel (:101-113, :275-304).
+#' (:117-184, stepper :380-386); the bus (:205-245) on `session$userData` (:248); the
+#' peptide-checkpoint panel (:101-113, :275-304). TMT and LFQ open the QC tab after the design, as
+#' DIA does (VAL-26, KIT-180).
 #' @noRd
 omicGuiProteomicsShell <- function() {
     tab <- function(status_key, value, component, title, icon, testid, step_name) {
@@ -2250,7 +2251,7 @@ omicGuiProteomicsShell <- function() {
                 "network-wired", "prot-tab-enrichment", "Enrich"),
             tab("session_summary", "session_summary", "prot_summary", "Session Summary & Report",
                 "file-export", "prot-tab-session-summary", "Summary")),
-        chain_rules = list(qc_bypass = c("TMT", "LFQ")), bus = bus, bus_registration = "userData",
+        bus = bus, bus_registration = "userData",
         extras = "peptide_checkpoint")
 }
 

@@ -345,62 +345,6 @@ test_that("VAL-26: TMT and LFQ open the QC tab after the design", {
   for (route in c("TMT", "LFQ", "DIA")) check_route(route)
 })
 
-test_that("proteomics workflow server bypasses QC for TMT workflows", {
-  package_ns <- asNamespace("MultiScholaR")
-  captured <- new.env(parent = emptyenv())
-  captured$calls <- list()
-
-  fixture_dir <- tempfile("prot-workflow-tmt-")
-  dir.create(file.path(fixture_dir, "source"), recursive = TRUE)
-  withr::defer(unlink(fixture_dir, recursive = TRUE, force = TRUE))
-
-  localNamespaceBindings(
-    package_ns,
-    list(
-      createDIASessionOwner = function(workflow_data, experiment_paths, session, ...) makeWorkflowStateStub("TMT")$new(FALSE), # KIT-048: the owner is created at session start
-      mod_prot_import_server = makeRecordingServerStub(captured, "import"),
-      mod_prot_design_server = makeRecordingServerStub(captured, "design"),
-      mod_prot_qc_server = makeRecordingServerStub(captured, "qc"),
-      mod_prot_norm_server = makeRecordingServerStub(captured, "norm"),
-      mod_prot_da_server = makeRecordingServerStub(captured, "da"),
-      mod_prot_enrich_server = makeRecordingServerStub(captured, "enrich"),
-      mod_prot_summary_server = makeRecordingServerStub(captured, "summary"),
-      render_workflow_stepper = makeWorkflowStepperStub
-    )
-  )
-
-  local_mocked_bindings(
-    log_info = function(...) invisible(NULL),
-    log_warn = function(...) invisible(NULL),
-    log_error = function(...) invisible(NULL),
-    .package = "logger"
-  )
-
-  testServer(
-    mod_proteomics_server,
-    args = list(
-      project_dirs = list(
-        proteomics = list(
-          base_dir = fixture_dir,
-          source_dir = file.path(fixture_dir, "source"),
-          results_dir = file.path(fixture_dir, "results")
-        )
-      ),
-      omic_type = "proteomics",
-      experiment_label = "workflow-demo"
-    ),
-    {
-      updated_tabs <- workflow_data$tab_status
-      updated_tabs$design_matrix <- "complete"
-      workflow_data$tab_status <- updated_tabs
-      session$flushReact()
-
-      expect_equal(workflow_data$tab_status$quality_control, "complete")
-      expect_equal(workflow_data$tab_status$normalization, "pending")
-    }
-  )
-})
-
 test_that("lipidomics workflow server wires modules, status progression, and launcher shell", {
   package_ns <- asNamespace("MultiScholaR")
   captured <- new.env(parent = emptyenv())

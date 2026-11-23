@@ -140,8 +140,10 @@ omicWorkflowSteps <- function(tabs) {
 }
 
 #' The status chain, one observer per link in tab order: when a tab completes, the next opens. The import opens the
-#' step after it itself (`completeOmicImport`), so the chain starts at the second tab. With `chain_rules$qc_bypass`
-#' (proteomics), a route in it marks the QC tab complete and opens the tab after it instead.
+#' step after it itself (`completeOmicImport`), so the chain starts at the second tab. With `chain_rules$qc_bypass`,
+#' a route in it marks the QC tab complete and opens the tab after it instead. No shell sets `chain_rules$qc_bypass`
+#' since KIT-180 (VAL-26: label-free and TMT go through the protein-level QC); the branch is kept for the
+#' configuration contract.
 #' @noRd
 installOmicWorkflowChain <- function(workflow_data, shell) {
     keys <- vapply(shell$tabs, `[[`, character(1), "status_key")
@@ -167,7 +169,8 @@ installOmicWorkflowChain <- function(workflow_data, shell) {
 }
 
 #' One link of the chain: when `done` is complete, a disabled `next_key` becomes pending; with `bypass`, an incomplete
-#' `next_key` becomes complete and a disabled `after` pending (mod_proteomics.R's TMT/LFQ rule before KIT-102).
+#' `next_key` becomes complete and a disabled `after` pending (mod_proteomics.R's TMT/LFQ rule before KIT-102; no shell
+#' sets it since KIT-180, VAL-26).
 #' @return The statuses, changed or not.
 #' @noRd
 advanceOmicWorkflowStatus <- function(status, done, next_key, after = NULL, bypass = FALSE) {
