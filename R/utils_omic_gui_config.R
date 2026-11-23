@@ -1276,7 +1276,8 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
     list(module_id = "norm",
         panels = list(aesthetics = list(),
             itsd = list(aggregation = c("Median (recommended)" = "median", "Mean" = "mean", "Sum" = "sum")),
-            log2 = list(offset = 1),
+            # KIT-172: plain log2 (the offset is no longer offered; a record's offset replays).
+            log2 = list(offset = 0),
             between_sample = list(methods = c("Cyclic Loess" = "cyclicloess", "Quantile" = "quantile",
                 "Scale (Median Absolute Values)" = "scale", "None" = "none"), default = "cyclicloess"),
             ruv_iii = list(modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual",
@@ -1325,6 +1326,26 @@ omicGuiRuvDesignEnabled <- function() {
     isTRUE(getOption("MultiScholaR.ruv_design_panel", FALSE))
 }
 
+#' The log2 step's texts of lipidomics and metabolomics (KIT-172; proposed wording, implemented as proposed, the owner
+#' edits before release, VAL-41): the section's sentence, the recorded-offset sentence of a project whose record used an
+#' offset (`%s` the offset), the step-log line of the values set to missing (`%s` the counts per assay), the
+#' interactive volcano's sentence where missing cells are drawn, and the warning shown when `scale` runs on log2 values
+#' below 0 (`%s` the counts per assay).
+#' @noRd
+omicGuiLog2Texts <- function() {
+    c(help = "log2 of each value; zeros are read as not detected at import",
+        recorded_offset = paste("This project's record used log2(x + %s) for this step; its results replay with that offset.",
+            "A new run uses plain log2."),
+        nonpositive_log = "Log2 step: values set to missing (0 or below; not finite): %s",
+        volcano_missing = paste("Samples with no value for a feature are drawn at 0 in this plot's sample panel; the",
+            "interactive plot cannot draw missing values."),
+        scale_warning = paste("Scale normalisation rescales each sample so that the median of its absolute log2 values is the",
+            "same in every sample. Because it divides log2 values instead of shifting them, its result depends on the unit of",
+            "your table (for example \u00b5M against nM). In this data, %s values reaching the log2 step are below 1, so",
+            "their log2 values are negative, and taking absolute values treats a log2 value of \u22122 like +2. Cyclic Loess",
+            "and Quantile do not depend on the unit."))
+}
+
 #' The proteomics label-free and TMT log2 texts (KIT-177; proposed wording, implemented as proposed, the owner edits
 #' before release, VAL-41): the reopen sentence of a design saved by an earlier version, the notification and step-log
 #' lines of the values set to missing at the design step (`%d` the counts), the refusal of a negative or infinite
@@ -1344,7 +1365,7 @@ omicGuiProtLog2Texts <- function() {
             "positive; correct the file and import it again."),
         scale_warning = paste("Scale normalisation divides each sample by the median of its absolute log2 values. In this",
             "data, %d values are below 1, so their log2 values are negative, and taking absolute values treats a log2",
-            "value of −2 like +2. The result then depends on the unit of your table. Cyclic Loess and Quantile do not",
+            "value of \u22122 like +2. The result then depends on the unit of your table. Cyclic Loess and Quantile do not",
             "have this problem."),
         scale_log = "Scale normalisation: log2 values below 0 in the input: %d")
 }
@@ -2442,7 +2463,8 @@ omicGuiLipidDa <- function() {
     da <- omicGuiFeatureDa("lipid", list(
         columns = list(id = "lipid_id", label = "lipid_name", fold_change = "logFC", pvalue = "raw_pvalue",
             significance = "fdr_qvalue"),
-        summary = list(noun = "lipids", significance_label = "Q"),
+        # KIT-172: the count of rows not tested because a compared group has no observed value.
+        summary = list(noun = "lipids", significance_label = "Q", not_tested = TRUE),
         nouns = c(top_n = "Top N Lipids:", scaling = "Row (lipid) scaling", labels = "Show Lipid Labels", cluster = "lipids"),
         table_filter = "all_only",
         static_volcano = generateLipidDAVolcanoStatic,
@@ -2658,7 +2680,8 @@ omicGuiMetabDa <- function() {
     da <- omicGuiFeatureDa("metab", list(
         columns = list(id = "metabolite_id", label = "metabolite_name", fold_change = "logFC", pvalue = "raw_pvalue",
             significance = "fdr_qvalue"),
-        summary = list(noun = "metabolites", significance_label = "Q"),
+        # KIT-172: the count of rows not tested because a compared group has no observed value.
+        summary = list(noun = "metabolites", significance_label = "Q", not_tested = TRUE),
         nouns = c(top_n = "Top N Metabolites:", scaling = "Row (metabolite) scaling", labels = "Show Metabolite Labels",
             cluster = "metabolites"),
         table_filter = "all_or_combined",

@@ -1,0 +1,23 @@
+file: test-metab-qc-shared.R
+test: updateMetaboliteFiltering preserves metrics collection, save-path derivation, and grid return
+kind: error
+message:
+  <purrr_error_indexed/rlang_error/error/condition>
+  Error in `map2(.x, vec_index(.x), .f, ...)`: i In index: 1.
+  i With name: LC.
+  Caused by error in `countMetabolitesPerSample()`:
+  ! unused argument (logged = isTRUE(tryCatch(methods::slot(theObject, "args")$log_transformed, error = function(e) FALSE)))
+trace (first lines):
+       ▆
+    1. ├─MultiScholaR (local) update_fun(...) at test-metab-qc-shared.R:154:3
+    2. │ └─MultiScholaR:::computeMetabFilteringMetrics(...) at pkg/R/func_metab_qc.R:289:9
+    3. │   └─purrr::imap(...) at pkg/R/func_metab_qc.R:106:9
+    4. │     └─purrr::map2(.x, vec_index(.x), .f, ...)
+    5. │       └─purrr:::map2_("list", .x, .y, .f, ..., .progress = .progress)
+    6. │         ├─purrr:::with_indexed_errors(...)
+    7. │         │ └─base::withCallingHandlers(...)
+    8. │         ├─purrr:::call_with_cleanup(...)
+    9. │         └─MultiScholaR (local) .f(.x[[i]], .y[[i]], ...)
+   10. │           └─base::tryCatch(...) at pkg/R/func_metab_qc.R:130:13
+   11. │             └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+

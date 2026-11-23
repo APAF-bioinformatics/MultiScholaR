@@ -3,7 +3,7 @@
     "Ticket": "KIT-134 P1",
     "Generated": "2026-11-17T05:03:55+1100",
     "Package": "MultiScholaR",
-    "PackageVersion": "0.9.3",
+    "PackageVersion": "0.9.5",
     "Commit": "015d65773653b2afc003a80ecb43cc6f49ad2640",
     "Method": "utils::installed.packages() over .libPaths() in order, first hit per package; closure of DESCRIPTION Imports/Depends/LinkingTo/Suggests, recursive over Imports/Depends/LinkingTo; read-only",
     "Counts": {

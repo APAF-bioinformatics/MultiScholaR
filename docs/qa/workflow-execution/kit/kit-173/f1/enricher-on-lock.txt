@@ -1,0 +1,327 @@
+## formals(clusterProfiler::enricher)
+Dotted pair list of 10
+ $ gene         : symbol 
+ $ pvalueCutoff : num 0.05
+ $ pAdjustMethod: chr "BH"
+ $ universe     : NULL
+ $ minGSSize    : num 10
+ $ maxGSSize    : num 500
+ $ qvalueCutoff : num 0.2
+ $ gson         : NULL
+ $ TERM2GENE    : symbol 
+ $ TERM2NAME    : logi NA
+## body(clusterProfiler::enricher)
+{
+    if (inherits(gson, "GSONList")) {
+        res <- lapply(gson, function(USER_DATA) {
+            enrichit::ora_gson(gene = gene, pvalueCutoff = pvalueCutoff, 
+                pAdjustMethod = pAdjustMethod, universe = universe, 
+                minGSSize = minGSSize, maxGSSize = maxGSSize, 
+                qvalueCutoff = qvalueCutoff, gson = USER_DATA)
+        })
+        class(res) <- "enrichResultList"
+        return(res)
+    }
+    if (is.null(gson)) {
+        gsid2gene <- TERM2GENE
+        colnames(gsid2gene) <- c("gsid", "gene")
+        if (missing(TERM2NAME) || is.null(TERM2NAME) || all(is.na(TERM2NAME))) {
+            gsid2name <- data.frame(gsid = unique(gsid2gene$gsid), 
+                name = unique(gsid2gene$gsid))
+        }
+        else {
+            gsid2name <- TERM2NAME
+            colnames(gsid2name) <- c("gsid", "name")
+        }
+        USER_DATA <- gson::gson(gsid2gene = gsid2gene, gsid2name = gsid2name, 
+            species = "unknown", gsname = "unknown", version = "unknown", 
+            accessed_date = as.character(Sys.Date()), keytype = "unknown")
+    }
+    else {
+        if (!inherits(gson, "GSON")) {
+            stop("gson shoud be a GSON or GSONList object")
+        }
+        USER_DATA <- gson
+    }
+    enrichit::ora_gson(gene = gene, pvalueCutoff = pvalueCutoff, 
+        pAdjustMethod = pAdjustMethod, universe = universe, minGSSize = minGSSize, 
+        maxGSSize = maxGSSize, qvalueCutoff = qvalueCutoff, gson = USER_DATA)
+}
+## ls(asNamespace('enrichit'))
+_enrichit_gsea_adaptive_cpp _enrichit_gsea_cpp _enrichit_gsea_multilevel_cpp _enrichit_gsea_scores_cpp _enrichit_ora_cpp _enrichit_rwr_eigen_cpp .__C__compareClusterResult .__C__enrichResult .__C__gseaResult .__C__mnseaResult .__C__nseaResult .__NAMESPACE__. .__S3MethodsTable__. .__T__show:methods .__T__summary:base .build_bayes_enrich_input .build_mnsea_explain_cache .collapse_vector .new_late_fusion_result .packageName .posterior_covered_genes .print_common_info .run_multilayer_rwr .sample_active_terms .select_bayes_terms .validate_bayes_enrich_args [.enrichResult [.gseaResult [[.enrichResult [[.gseaResult %||% $.enrichResult $.gseaResult aggregate_enrichment aggregate_omics as.data.frame.enrichResult as.data.frame.gseaResult bayes_enrich bayes_summary build_mnsea_result build_nsea_result calculate_qvalue check_gene_id classify_omics_pattern collapse_multilayer_scores dim.enrichResult dim.gseaResult EXTID2NAME extract_mnsea_subnetwork geneID geneID.compareClusterResult geneID.enrichResult geneID.gseaResult geneInCategory geneInCategory.compareClusterResult geneInCategory.enrichResult geneInCategory.gseaResult get_enriched get_geneSet_index get_mnsea_contribution get_omics_contribution gsea gsea_adaptive_cpp gsea_cpp gsea_gson gsea_leading_edge_details gsea_multilevel_cpp gsea_scores_cpp gseaScores gsfilter harmonize_ids head.enrichResult head.gseaResult load_OrgDb mnsea mnsea_gson normalize_multilevel_sample_size nsea nsea_gson ora ora_cpp ora_gson prepare_gsea_inputs prepare_multilayer_network prepare_network print_citation_msg propagate_multilayer rwr_eigen_cpp scale_fgsea_ranks select_features_for_ora setReadable summary tail.enrichResult tail.gseaResult TERM2NAME TERMID2EXTID validate_gene_sets
+## enrichit:::ora_gson
+function (gene, pvalueCutoff, pAdjustMethod = "BH", universe = NULL, 
+    weight = NULL, minGSSize = 10, maxGSSize = 500, qvalueCutoff = 0.2, 
+    gson) 
+{
+    if (!inherits(gson, "GSON")) {
+        stop("gson should be a GSON object")
+    }
+    gene <- as.character(unique(gene))
+    gsid2gene <- gson@gsid2gene
+    if (!check_gene_id(gene, gsid2gene)) {
+        return(NULL)
+    }
+    extID <- unique(gsid2gene$gene)
+    if (missing(universe)) 
+        universe <- NULL
+    if (!is.null(universe)) {
+        if (is.character(universe)) {
+            force_universe <- getOption("enrichment_force_universe", 
+                FALSE)
+            if (force_universe) {
+                extID <- universe
+            }
+            else {
+                extID <- intersect(extID, universe)
+            }
+        }
+        else {
+            message("`universe` is not in character and will be ignored...")
+        }
+    }
+    geneSets <- split(gsid2gene$gene, gsid2gene$gsid)
+    geneSets <- lapply(geneSets, intersect, extID)
+    idx <- get_geneSet_index(geneSets, minGSSize, maxGSSize)
+    if (sum(idx) == 0) {
+        msg <- paste("No gene sets have size between", minGSSize, 
+            "and", maxGSSize, "...")
+        message(msg)
+        message("--> return NULL...")
+        return(NULL)
+    }
+    geneSets <- geneSets[idx]
+    ora_res <- ora(gene, geneSets, universe = extID, weight = weight)
+    if (is.null(ora_res) || nrow(ora_res) == 0) {
+        return(NULL)
+    }
+    if ("PValue" %in% names(ora_res)) {
+        names(ora_res)[names(ora_res) == "PValue"] <- "pvalue"
+    }
+    if ("GeneSet" %in% names(ora_res)) {
+        names(ora_res)[names(ora_res) == "GeneSet"] <- "ID"
+    }
+    if ("DEInSet" %in% names(ora_res)) {
+        names(ora_res)[names(ora_res) == "DEInSet"] <- "Count"
+    }
+    if ("Count" %in% names(ora_res)) {
+        ora_res <- ora_res[ora_res$Count > 0, , drop = FALSE]
+    }
+    if (nrow(ora_res) == 0) {
+        return(NULL)
+    }
+    if (all(c("Count", "DESize") %in% names(ora_res))) {
+        ora_res$GeneRatio <- paste0(ora_res$Count, "/", ora_res$DESize)
+    }
+    if (all(c("SetSize", "UniverseSize") %in% names(ora_res))) {
+        ora_res$BgRatio <- paste0(ora_res$SetSize, "/", ora_res$UniverseSize)
+    }
+    if (all(c("Count", "SetSize", "DESize", "UniverseSize") %in% 
+        names(ora_res))) {
+        ora_res$RichFactor <- ora_res$Count/ora_res$SetSize
+        ora_res$FoldEnrichment <- (ora_res$Count/ora_res$DESize)/(ora_res$SetSize/ora_res$UniverseSize)
+    }
+    p <- suppressWarnings(as.numeric(ora_res$pvalue))
+    invalid <- is.na(p) | !is.finite(p) | p < 0 | p > 1
+    if (any(invalid)) {
+        ids <- as.character(ora_res$ID)
+        bad_i <- which(invalid)
+        head_i <- bad_i[seq_len(min(length(bad_i), 10))]
+        bad_preview <- paste0(ids[head_i], "=", format(p[head_i], 
+            digits = 4, scientific = TRUE), collapse = ", ")
+        warning("Invalid p-values detected in ORA result (", 
+            length(bad_i), "/", length(p), "). Examples: ", bad_preview)
+        too_small <- !is.na(p) & is.finite(p) & p < 0
+        too_large <- !is.na(p) & is.finite(p) & p > 1
+        p[too_small] <- 0
+        p[too_large] <- 1
+        ora_res$pvalue <- p
+    }
+    else if (!isTRUE(all.equal(p, ora_res$pvalue))) {
+        ora_res$pvalue <- p
+    }
+    ora_res$p.adjust <- p.adjust(ora_res$pvalue, method = pAdjustMethod)
+    ora_res$qvalue <- calculate_qvalue(ora_res$pvalue)
+    N <- length(extID)
+    n <- length(intersect(gene, extID))
+    k <- ora_res$Count
+    M <- sapply(geneSets[ora_res$ID], length)
+    mu <- M * n/N
+    sigma <- mu * (N - n) * (N - M)/N/(N - 1)
+    zScore <- (k - mu)/sqrt(sigma)
+    ora_res$zScore <- zScore
+    gsid2name <- gson@gsid2name
+    if (!is.null(gsid2name) && "ID" %in% names(ora_res)) {
+        description <- gsid2name$name[match(ora_res$ID, gsid2name$gsid)]
+        na_idx <- is.na(description)
+        description[na_idx] <- ora_res$ID[na_idx]
+        ora_res$Description <- description
+    }
+    if (!"Description" %in% names(ora_res)) {
+        ora_res$Description <- ora_res$ID
+    }
+    expected_cols <- c("ID", "Description", "GeneRatio", "BgRatio", 
+        "RichFactor", "FoldEnrichment", "zScore", "pvalue", "p.adjust", 
+        "qvalue", "geneID", "Count")
+    missing_cols <- setdiff(expected_cols, names(ora_res))
+    if (length(missing_cols) > 0) {
+        warning("Missing columns in ORA result: ", paste(missing_cols, 
+            collapse = ", "), ". Filling with NA. (Note: 'qvalue' may be missing if p-value distribution does not allow q-value calculation)")
+        for (col in missing_cols) {
+            ora_res[[col]] <- NA
+        }
+    }
+    ora_res <- ora_res[, expected_cols]
+    ora_res <- ora_res[order(ora_res$pvalue), ]
+    ids <- as.character(ora_res$ID)
+    if (any(is.na(ids))) {
+        warning("NA values detected in gene set IDs. Replacing with string 'NA'.")
+        ids[is.na(ids)] <- "NA"
+    }
+    if (any(duplicated(ids))) {
+        dup_ids <- unique(ids[duplicated(ids)])
+        warning("Duplicate gene set IDs detected: ", paste(head(dup_ids), 
+            collapse = ", "), "... (Total ", length(dup_ids), 
+            "). Unique suffixes added.")
+        ids <- make.unique(ids)
+    }
+    rownames(ora_res) <- ids
+    x <- new("enrichResult", result = ora_res, pvalueCutoff = pvalueCutoff, 
+        pAdjustMethod = pAdjustMethod, qvalueCutoff = qvalueCutoff, 
+        gene = as.character(gene), universe = extID, geneSets = geneSets, 
+        organism = if (!is.null(gson@species)) 
+            gson@species
+        else "UNKNOWN", keytype = if (!is.null(gson@keytype)) 
+            gson@keytype
+        else "UNKNOWN", ontology = if (!is.null(gson@gsname)) 
+            gsub(".*;", "", gson@gsname)
+        else "UNKNOWN", readable = FALSE)
+    return(x)
+}
+## enrichit:::ora
+function (gene, gene_sets, universe, weight = NULL) 
+{
+    if (!is.character(gene)) {
+        stop("gene must be a character vector")
+    }
+    if (!is.character(universe)) {
+        stop("universe must be a character vector")
+    }
+    gene_sets <- validate_gene_sets(gene_sets)
+    gene <- unique(gene)
+    universe <- unique(universe)
+    gene_set_names <- names(gene_sets)
+    result <- ora_cpp(gene, universe, gene_sets, gene_set_names)
+    if (!is.null(weight)) {
+        if (!is.numeric(weight) || is.null(names(weight))) {
+            stop("weight must be a named numeric vector")
+        }
+        rlang::check_installed("BiasedUrn", "for weighted ORA.")
+        weight_map <- weight[universe]
+        names(weight_map) <- universe
+        if (any(is.na(weight_map))) {
+            warning("Some background genes do not have weights. Assigning median weight.")
+            weight_map[is.na(weight_map)] <- median(weight, na.rm = TRUE)
+        }
+        if (any(weight_map <= 0, na.rm = TRUE)) {
+            warning("Weights must be strictly positive for BiasedUrn. Adjusting non-positive weights.")
+            min_pos <- min(weight_map[weight_map > 0], na.rm = TRUE)
+            if (is.na(min_pos) || min_pos <= 0) 
+                min_pos <- 1e-06
+            weight_map[weight_map <= 0] <- min_pos
+        }
+        pvals <- numeric(nrow(result))
+        for (i in seq_len(nrow(result))) {
+            gs_name <- result$GeneSet[i]
+            gset <- gene_sets[[gs_name]]
+            genes_in_set <- intersect(gset, universe)
+            m1 <- length(genes_in_set)
+            m2 <- length(universe) - m1
+            x <- result$DEInSet[i]
+            n <- result$DESize[i]
+            if (m1 == 0 || x == 0) {
+                pvals[i] <- 1
+                next
+            }
+            w_in <- mean(weight_map[genes_in_set], na.rm = TRUE)
+            w_out <- mean(weight_map[setdiff(universe, genes_in_set)], 
+                na.rm = TRUE)
+            odds <- w_in/w_out
+            if (is.na(odds) || !is.finite(odds)) 
+                odds <- 1
+            pvals[i] <- 1 - BiasedUrn::pWNCHypergeo(x - 1, m1, 
+                m2, n, odds)
+        }
+        result$PValue <- pvals
+    }
+    names(result)[names(result) == "GeneSet"] <- "ID"
+    names(result)[names(result) == "PValue"] <- "pvalue"
+    names(result)[names(result) == "DEInSet"] <- "Count"
+    result$GeneRatio <- paste0(result$Count, "/", result$DESize)
+    result$BgRatio <- paste0(result$SetSize, "/", result$UniverseSize)
+    result$RichFactor <- result$Count/result$SetSize
+    result$FoldEnrichment <- (result$Count/result$DESize)/(result$SetSize/result$UniverseSize)
+    result <- result[order(result$pvalue), ]
+    rownames(result) <- NULL
+    return(result)
+}
+## enrichit:::calculate_qvalue
+function (pvals) 
+{
+    if (length(pvals) == 0) 
+        return(numeric(0))
+    if (!requireNamespace("qvalue", quietly = TRUE)) {
+        warning("qvalue package not installed. qvalue column will be NA.")
+        return(rep(NA_real_, length(pvals)))
+    }
+    qv <- rep(NA_real_, length(pvals))
+    ok <- is.finite(pvals) & !is.na(pvals) & pvals >= 0 & pvals <= 
+        1
+    if (any(!ok)) {
+        warning("Invalid p-values detected (NA, non-finite, <0, or >1). qvalue will be computed on valid p-values only.")
+    }
+    p <- pvals[ok]
+    if (length(p) == 0) {
+        return(qv)
+    }
+    if (all(p == 1)) {
+        qv[ok] <- 1
+        return(qv)
+    }
+    if (all(p == 0)) {
+        qv[ok] <- 0
+        return(qv)
+    }
+    qobj <- NULL
+    last_err <- NULL
+    try_qvalue <- function(expr) {
+        tryCatch(expr, error = function(e) {
+            last_err <<- e
+            NULL
+        })
+    }
+    qobj <- try_qvalue(qvalue::qvalue(p))
+    if (!inherits(qobj, "qvalue")) {
+        qobj <- try_qvalue(qvalue::qvalue(p, lambda = 0.05, pi0.method = "bootstrap"))
+    }
+    if (!inherits(qobj, "qvalue")) {
+        qobj <- try_qvalue(qvalue::qvalue(p, lambda = seq(0, 
+            0.9, 0.05), pi0.method = "bootstrap"))
+    }
+    if (!inherits(qobj, "qvalue")) {
+        qobj <- try_qvalue(qvalue::qvalue(p, lambda = seq(0, 
+            0.95, 0.05), pi0.method = "bootstrap"))
+    }
+    if (inherits(qobj, "qvalue")) {
+        qv[ok] <- qobj$qvalues
+        return(qv)
+    }
+    if (inherits(last_err, "error")) {
+        warning("qvalue::qvalue() failed, returning NA for qvalue. Error: ", 
+            conditionMessage(last_err))
+    }
+    else {
+        warning("qvalue::qvalue() failed, returning NA for qvalue. This may be due to p-value distribution.")
+    }
+    return(qv)
+}

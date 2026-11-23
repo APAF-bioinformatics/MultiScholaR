@@ -1,7 +1,7 @@
 {
   "name": "multischolar",
   "productName": "MultiScholaR",
-  "version": "0.9.3",
+  "version": "0.9.5",
   "description": "MultiScholaR: interactive multi-omics analysis, with its own R, R packages and Python",
   "private": true,
   "main": "main.js",

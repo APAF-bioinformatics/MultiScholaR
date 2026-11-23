@@ -42,11 +42,13 @@ test_that("lipidomics S4 log-transform method preserves current assay transforma
   expect_identical(transformed@args$log_transform_offset, 2)
 })
 
-test_that("lipidomics S4 log-transform method rejects non-positive offsets", {
+test_that("lipidomics S4 log-transform method accepts offset 0 and rejects negative offsets", {
+  # KIT-172: offset 0 (plain log2) is the default; below 0 is refused with its class.
+  expect_s4_class(suppressWarnings(suppressMessages(logTransformAssays(newLipidLogTransformObject(), offset = 0))),
+    "LipidomicsAssayData")
   expect_error(
-    logTransformAssays(newLipidLogTransformObject(), offset = 0),
-    "`offset` must be a single positive numeric value.",
-    fixed = TRUE
+    logTransformAssays(newLipidLogTransformObject(), offset = -1),
+    class = "omics_log2_offset_invalid"
   )
 })
 
