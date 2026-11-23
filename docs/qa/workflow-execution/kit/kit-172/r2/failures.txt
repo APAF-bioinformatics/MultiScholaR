@@ -1,0 +1,1788 @@
+file: test-kit172-log2-rule.R
+test: KIT-172 T3: lipid an invalid offset is refused and a failed transform stops
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_log2_failed>.
+
+file: test-kit172-log2-rule.R
+test: KIT-172 T3: metab an invalid offset is refused and a failed transform stops
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_log2_failed>.
+
+file: test-omic-norm-module.R
+test: (a) the lipid, metab and trx-profile norm UIs keep their HTML, ids, test ids and tab titles
+kind: failure
+message:
+  Expected `actual[[omic]][[part]]` to be identical to `omicNormFrozenUi[[omic]][[part]]`.
+  Differences:
+  `actual`:   "af70efbc914f11da2fcb410074a49045bfc443500556969797b4c1b544b571f1"
+  `expected`: "d27fa2638c9a5943f554fe47eab4e1b8b04c247b0386d1114d78c895c95e4725"
+  
+  lipid html
+
+file: test-omic-norm-module.R
+test: (a) the lipid, metab and trx-profile norm UIs keep their HTML, ids, test ids and tab titles
+kind: failure
+message:
+  Expected `actual[[omic]][[part]]` to be identical to `omicNormFrozenUi[[omic]][[part]]`.
+  Differences:
+  actual[7:12] vs expected[7:13]
+    "norm-color_variable"
+    "norm-export_session"
+    "norm-itsd_aggregation"
+    "norm-k_penalty_weight"
+  + "norm-log_offset"
+    "norm-min_pearson_correlation_threshold"
+    "norm-norm_method"
+    "norm-norm_qc_tabs"
+  
+  lipid inputs
+
+file: test-omic-norm-module.R
+test: (a) the lipid, metab and trx-profile norm UIs keep their HTML, ids, test ids and tab titles
+kind: failure
+message:
+  Expected `actual[[omic]][[part]]` to be identical to `omicNormFrozenUi[[omic]][[part]]`.
+  Differences:
+  actual[21:27] vs expected[21:26]
+    "norm-density_ruv_corrected_assay2"
+    "norm-final_qc_plot"
+    "norm-itsd_selection_ui"
+  - "norm-log2_recorded_offset"
+    "norm-norm_log"
+    "norm-pca_post_filter_assay1"
+    "norm-pca_post_filter_assay2"
+  
+  lipid outputs
+
+file: test-omic-norm-module.R
+test: (a) the lipid, metab and trx-profile norm UIs keep their HTML, ids, test ids and tab titles
+kind: failure
+message:
+  Expected `actual[[omic]][[part]]` to be identical to `omicNormFrozenUi[[omic]][[part]]`.
+  Differences:
+  `actual`:   "a996fb29c3f30ae665fd653638ea6a50333eca7fc3552ff33d9edbc766e41668"
+  `expected`: "51dc7b957cf66b34353b73686b6346e9d87f2392845ef5f15ca115465f95c427"
+  
+  metab html
+
+file: test-omic-norm-module.R
+test: (a) the lipid, metab and trx-profile norm UIs keep their HTML, ids, test ids and tab titles
+kind: failure
+message:
+  Expected `actual[[omic]][[part]]` to be identical to `omicNormFrozenUi[[omic]][[part]]`.
+  Differences:
+  actual[7:12] vs expected[7:13]
+    "norm-color_variable"
+    "norm-export_session"
+    "norm-itsd_aggregation"
+    "norm-k_penalty_weight"
+  + "norm-log_offset"
+    "norm-min_pearson_correlation_threshold"
+    "norm-norm_method"
+    "norm-norm_qc_tabs"
+  
+  metab inputs
+
+file: test-omic-norm-module.R
+test: (a) the lipid, metab and trx-profile norm UIs keep their HTML, ids, test ids and tab titles
+kind: failure
+message:
+  Expected `actual[[omic]][[part]]` to be identical to `omicNormFrozenUi[[omic]][[part]]`.
+  Differences:
+  actual[21:27] vs expected[21:26]
+    "norm-density_ruv_corrected_assay2"
+    "norm-final_qc_plot"
+    "norm-itsd_selection_ui"
+  - "norm-log2_recorded_offset"
+    "norm-norm_log"
+    "norm-pca_post_filter_assay1"
+    "norm-pca_post_filter_assay2"
+  
+  metab outputs
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "9d55a5ade3451e3d66053cf1112d4326f03b3b39281dad6c216cd188c96eba23"
+  `expected`: "42d09557af7dc50f2f25ce4e50d26dde6f24f737f258e34817e263b99a428111"
+  
+  lipid skip entry outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "9d55a5ade3451e3d66053cf1112d4326f03b3b39281dad6c216cd188c96eba23"
+  `expected`: "42d09557af7dc50f2f25ce4e50d26dde6f24f737f258e34817e263b99a428111"
+  
+  lipid skip export_refused outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[2:10] vs expected[2:9]
+    "Post-filtering state captured"
+    "Pre-normalization QC plots generated"
+    "ITSD normalization skipped"
+  - "Applying log2 transformation"
+  + "Applying log2 transformation (offset: 1 )"
+    "Log2 transformation complete"
+  - "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+    "Applying between-sample normalization (method: cyclicloess )"
+    "Between-sample normalization complete"
+    "Post-normalization QC plots generated"
+  
+  lipid skip run log
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "31025199f5c405d27d8c93889dd5d8b1f6fc57dde91dd0a6ec8e2ecd5d7176dc"
+  `expected`: "61f40c879fcabd7fd12ac7ab2434bb680513f0d441aa67b0a04f1cbe65f2a040"
+  
+  lipid skip run states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "99e077f328dfa6dbd791e05abd0ad81586a8527a7d52b88c0a6db4e2155c6ec1"
+  `expected`: "5a589b9c8122fd31678616579327660b75dc8cba51ef1938b2fa8a4d414dacb7"
+  
+  lipid skip run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "94c8dd2afb44cff1d3055b8f5759c55114c204a34eb9f9be445e142fd28c6877"
+  `expected`: "7aeee0129a88196d778d76329d167a0f4d89d90f224e097b75a6bfe2752f4de4"
+  
+  lipid skip run outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "61456e6cb1d87bba7cd019525e3b6174b1a09b04e02b20dedabbe57f0f816dc8"
+  + "814d34425159bfd122c00f94d6e1f83f2af248cb58b7c75a4b9e89c9eb4b08af"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "fc7843d5a58a38dbf6712848c4a6869c68a19548dbc61be7d75c446c51e865c3"
+  + "3d05a34b14714cdffd228befc1557670bdb3526d022459d32d07804a6ba5e851"
+  
+  lipid skip run final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "c92a31aee01598bc48101707760df6df0e6c4ea04b15544be69f1fada02b7874"
+  `expected`: "5fdeff360d4eb520f3e5526f0bd93ce3356c1b0cde259d712fb4f57bd43329c7"
+  
+  lipid skip correlation states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "204adbf5c25738f3b3f886c4932314ee2f427a37c82e012fd4c2793254da98dd"
+  `expected`: "8310d5ce05971ad3ea733765495f8c50de6da6b45f952e96f3cf4aa36ba4bc73"
+  
+  lipid skip correlation provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b90ac22ef2936d4e91b22b73b14fb49b69e0174f5e897117c525e4004d2fbe9c"
+  `expected`: "c9f2bad45bdd42f860944e6ab72e30ef2424745eb1ed20edb74b2519746cca49"
+  
+  lipid skip correlation normdata
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5843d77e3f2a910f5b7db8ec4045c3377a336d56f1f8acdf4f5686c12244ee85"
+  `expected`: "ef1c5f8b2a20b5698b201bcf7759ce9a68f30e32bc726ecb6ab2a4898aa84c10"
+  
+  lipid skip correlation outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "61456e6cb1d87bba7cd019525e3b6174b1a09b04e02b20dedabbe57f0f816dc8"
+  + "814d34425159bfd122c00f94d6e1f83f2af248cb58b7c75a4b9e89c9eb4b08af"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "fc7843d5a58a38dbf6712848c4a6869c68a19548dbc61be7d75c446c51e865c3"
+  + "3d05a34b14714cdffd228befc1557670bdb3526d022459d32d07804a6ba5e851"
+  
+  lipid skip correlation final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "c92a31aee01598bc48101707760df6df0e6c4ea04b15544be69f1fada02b7874"
+  `expected`: "5fdeff360d4eb520f3e5526f0bd93ce3356c1b0cde259d712fb4f57bd43329c7"
+  
+  lipid skip final_plot states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "204adbf5c25738f3b3f886c4932314ee2f427a37c82e012fd4c2793254da98dd"
+  `expected`: "8310d5ce05971ad3ea733765495f8c50de6da6b45f952e96f3cf4aa36ba4bc73"
+  
+  lipid skip final_plot provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b90ac22ef2936d4e91b22b73b14fb49b69e0174f5e897117c525e4004d2fbe9c"
+  `expected`: "c9f2bad45bdd42f860944e6ab72e30ef2424745eb1ed20edb74b2519746cca49"
+  
+  lipid skip final_plot normdata
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5843d77e3f2a910f5b7db8ec4045c3377a336d56f1f8acdf4f5686c12244ee85"
+  `expected`: "ef1c5f8b2a20b5698b201bcf7759ce9a68f30e32bc726ecb6ab2a4898aa84c10"
+  
+  lipid skip final_plot outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "c92a31aee01598bc48101707760df6df0e6c4ea04b15544be69f1fada02b7874"
+  `expected`: "5fdeff360d4eb520f3e5526f0bd93ce3356c1b0cde259d712fb4f57bd43329c7"
+  
+  lipid skip export states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "204adbf5c25738f3b3f886c4932314ee2f427a37c82e012fd4c2793254da98dd"
+  `expected`: "8310d5ce05971ad3ea733765495f8c50de6da6b45f952e96f3cf4aa36ba4bc73"
+  
+  lipid skip export provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b90ac22ef2936d4e91b22b73b14fb49b69e0174f5e897117c525e4004d2fbe9c"
+  `expected`: "c9f2bad45bdd42f860944e6ab72e30ef2424745eb1ed20edb74b2519746cca49"
+  
+  lipid skip export normdata
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0969e0dc301895d5fafdf0267933d36b49273c84c25d70b0c8b023fe162842d9"
+  `expected`: "6fba3782e9caa36e4caea859ca2e25678d9a52b91f619319d98a7c5f0f390339"
+  
+  lipid skip export outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "6260d1a2ec7d90fc81215f989130f624f31bb7e802e2ef5fc47c50c456ac23bb"
+  `expected`: "6933f8e4ed8fd73cf488b5f74f4ee27c6dc9ffc8054dfec7e9ac8e3d3a9f1ff3"
+  
+  lipid skip reset states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "baf23fbe2c61d7d0916ac38036a9549d55a76ba7e3bd9c2642031d650ae76c4e"
+  `expected`: "32e9ecb92dd79a4f63e102e94d532f30d8481d24293e6cd855e0afc8237a0042"
+  
+  lipid skip reset provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b90ac22ef2936d4e91b22b73b14fb49b69e0174f5e897117c525e4004d2fbe9c"
+  `expected`: "c9f2bad45bdd42f860944e6ab72e30ef2424745eb1ed20edb74b2519746cca49"
+  
+  lipid skip reset normdata
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "d1e8789f2273638c10ed72db5ba031a1e5532c90bd21fd614998340561bcd3e3"
+  `expected`: "e3e065ae81eb10a9501d1d228c4a33e0a10fb9437014859b302b82992200ae98"
+  
+  lipid skip reset outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$extra` to be identical to `frozen$extra`.
+  Differences:
+  actual$export$rds_values vs expected$export$rds_values
+  - "81956a6011619f17805cbbfd09db887ab5ba8ec7ddbd32bfdc9e29c20b86715b"
+  + "c03c89ed6eb4bc9f5daeb547fed1e0a78bbf4f89193013b4ce835d6def74faf3"
+  
+  actual$export$current_s4_object vs expected$export$current_s4_object
+  - "61456e6cb1d87bba7cd019525e3b6174b1a09b04e02b20dedabbe57f0f816dc8"
+  + "814d34425159bfd122c00f94d6e1f83f2af248cb58b7c75a4b9e89c9eb4b08af"
+  
+       actual$export$summary            | expected$export$summary              
+  [12] "- Method: cyclicloess"          | "- Method: cyclicloess"          [12]
+  [13] "- ITSD applied: No"             | "- ITSD applied: No"             [13]
+  [14] "- ITSD aggregation: N/A"        | "- ITSD aggregation: N/A"        [14]
+  [15] "- Log2 offset: 0"               - "- Log2 offset: 1"               [15]
+  [16] "- RUV mode: skip"               | "- RUV mode: skip"               [16]
+  [17] "- RUV grouping variable: group" | "- RUV grouping variable: group" [17]
+  [18] "- Correlation threshold: 0.5"   | "- Correlation threshold: 0.5"   [18]
+  
+  lipid skip extra
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "skip") at test-omic-norm-module.R:1554:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1547:5
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "9d55a5ade3451e3d66053cf1112d4326f03b3b39281dad6c216cd188c96eba23"
+  `expected`: "42d09557af7dc50f2f25ce4e50d26dde6f24f737f258e34817e263b99a428111"
+  
+  metab skip entry outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "9d55a5ade3451e3d66053cf1112d4326f03b3b39281dad6c216cd188c96eba23"
+  `expected`: "42d09557af7dc50f2f25ce4e50d26dde6f24f737f258e34817e263b99a428111"
+  
+  metab skip export_refused outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[2:10] vs expected[2:9]
+    "Post-filtering state captured"
+    "Pre-normalization QC plots generated"
+    "ITSD normalization skipped"
+  - "Applying log2 transformation"
+  + "Applying log2 transformation (offset: 1 )"
+    "Log2 transformation complete"
+  - "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+    "Applying between-sample normalization (method: cyclicloess )"
+    "Between-sample normalization complete"
+    "Post-normalization QC plots generated"
+  
+  metab skip run log
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "88ae8a7dfb4884bf1cdb1e75ab7eae65def800bddd17cb42aff7d5b194aadd26"
+  `expected`: "7b0ea9f8ad3e6b15ef1dc442f32afc0d7d81c14b13694ef43aa7d9d312ebb86d"
+  
+  metab skip run states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2384ec5aca8670566a398d6b791ffb4a5615ae519f89335aed01880efc9613b1"
+  `expected`: "5cbe229880e1540afded09e9ba53bd0e1da48128d14135635be56918660e67ca"
+  
+  metab skip run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "94c8dd2afb44cff1d3055b8f5759c55114c204a34eb9f9be445e142fd28c6877"
+  `expected`: "7aeee0129a88196d778d76329d167a0f4d89d90f224e097b75a6bfe2752f4de4"
+  
+  metab skip run outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "9ddd450e5ad72255e7158ae822cfed9374a61d4831e7b77abd487d3c248b4e37"
+  + "60e0303f4e7398a75611b1092b5dda9b4c1da4d40f1253941b372de24d47039f"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "fc7843d5a58a38dbf6712848c4a6869c68a19548dbc61be7d75c446c51e865c3"
+  + "3d05a34b14714cdffd228befc1557670bdb3526d022459d32d07804a6ba5e851"
+  
+  metab skip run final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0276c3872e8663bda7d88702701f7dbd41bb36b034189cc7652f356e8a9ceae6"
+  `expected`: "9d534995d3baf87f9269f9631119bc1f27e350c87e51c681fde68a3e66819a4a"
+  
+  metab skip correlation states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "d3c0ca7560bfb57b135edd092cdff381b6caf41ea05e3c9ddecc06fbd046ff29"
+  `expected`: "85fb639d11822112feef3d817c637fe05689027dc2bb722f0b6e48845a667699"
+  
+  metab skip correlation provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "4b0dea10b7acc65c43d560580b2cfbce4827a2d280afc5f527a06956115b41a2"
+  `expected`: "332c0f56d24a1a46e6f0bf914a98e41cc5efcfd9ada0d027b16b808b0f26948c"
+  
+  metab skip correlation normdata
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5843d77e3f2a910f5b7db8ec4045c3377a336d56f1f8acdf4f5686c12244ee85"
+  `expected`: "ef1c5f8b2a20b5698b201bcf7759ce9a68f30e32bc726ecb6ab2a4898aa84c10"
+  
+  metab skip correlation outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "9ddd450e5ad72255e7158ae822cfed9374a61d4831e7b77abd487d3c248b4e37"
+  + "60e0303f4e7398a75611b1092b5dda9b4c1da4d40f1253941b372de24d47039f"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "fc7843d5a58a38dbf6712848c4a6869c68a19548dbc61be7d75c446c51e865c3"
+  + "3d05a34b14714cdffd228befc1557670bdb3526d022459d32d07804a6ba5e851"
+  
+  metab skip correlation final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0276c3872e8663bda7d88702701f7dbd41bb36b034189cc7652f356e8a9ceae6"
+  `expected`: "9d534995d3baf87f9269f9631119bc1f27e350c87e51c681fde68a3e66819a4a"
+  
+  metab skip final_plot states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "d3c0ca7560bfb57b135edd092cdff381b6caf41ea05e3c9ddecc06fbd046ff29"
+  `expected`: "85fb639d11822112feef3d817c637fe05689027dc2bb722f0b6e48845a667699"
+  
+  metab skip final_plot provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "4b0dea10b7acc65c43d560580b2cfbce4827a2d280afc5f527a06956115b41a2"
+  `expected`: "332c0f56d24a1a46e6f0bf914a98e41cc5efcfd9ada0d027b16b808b0f26948c"
+  
+  metab skip final_plot normdata
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5843d77e3f2a910f5b7db8ec4045c3377a336d56f1f8acdf4f5686c12244ee85"
+  `expected`: "ef1c5f8b2a20b5698b201bcf7759ce9a68f30e32bc726ecb6ab2a4898aa84c10"
+  
+  metab skip final_plot outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0276c3872e8663bda7d88702701f7dbd41bb36b034189cc7652f356e8a9ceae6"
+  `expected`: "9d534995d3baf87f9269f9631119bc1f27e350c87e51c681fde68a3e66819a4a"
+  
+  metab skip export states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "d3c0ca7560bfb57b135edd092cdff381b6caf41ea05e3c9ddecc06fbd046ff29"
+  `expected`: "85fb639d11822112feef3d817c637fe05689027dc2bb722f0b6e48845a667699"
+  
+  metab skip export provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "4b0dea10b7acc65c43d560580b2cfbce4827a2d280afc5f527a06956115b41a2"
+  `expected`: "332c0f56d24a1a46e6f0bf914a98e41cc5efcfd9ada0d027b16b808b0f26948c"
+  
+  metab skip export normdata
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b68733e604659f6fb6dc3308c099e818e89146bcc6b4d4954749487d58404ec8"
+  `expected`: "b0e80029a5cbceeb6bb770b5edde364ae209ce52dcf0ed7bb58482476ae4d874"
+  
+  metab skip export outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "56ae7e9a2daf2a48e07625a7954894db060bc6dcf8ca1af824b2a0db4783b64a"
+  `expected`: "1c36f2cd9a29076c83a5558a69e7ceea5537d6309650a28a2bb65f1ec940101b"
+  
+  metab skip reset states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "4414a8e816bda4b1a9cae38f2b957145d36d7dff6fe20e003ac44c14bedc436d"
+  `expected`: "615eedf13522b608459e38030baa010ec309cda6e2f3f79f6d456492d847a83f"
+  
+  metab skip reset provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "4b0dea10b7acc65c43d560580b2cfbce4827a2d280afc5f527a06956115b41a2"
+  `expected`: "332c0f56d24a1a46e6f0bf914a98e41cc5efcfd9ada0d027b16b808b0f26948c"
+  
+  metab skip reset normdata
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "14f681814c490f959a355090fc882b49cb1c8c394c09b8a6b18a2e5e08f04c10"
+  `expected`: "b82b6405c8346bca747500a35fb834518f024a69af4e2c9cdaa4886ad0a2231c"
+  
+  metab skip reset outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+kind: failure
+message:
+  Expected `actual$extra` to be identical to `frozen$extra`.
+  Differences:
+  actual$export$rds_values vs expected$export$rds_values
+  - "a90028aa4d8b789d1eb8df0bf7638230a28097c9a3114f042c3c38f4c73d7a91"
+  + "6a56ef10cc76522ddb6ef197a583618149fbc10780d45e87584c40b19becf290"
+  
+  actual$export$current_s4_object vs expected$export$current_s4_object
+  - "9ddd450e5ad72255e7158ae822cfed9374a61d4831e7b77abd487d3c248b4e37"
+  + "60e0303f4e7398a75611b1092b5dda9b4c1da4d40f1253941b372de24d47039f"
+  
+       actual$export$summary            | expected$export$summary              
+  [12] "- Method: cyclicloess"          | "- Method: cyclicloess"          [12]
+  [13] "- ITSD applied: No"             | "- ITSD applied: No"             [13]
+  [14] "- ITSD aggregation: N/A"        | "- ITSD aggregation: N/A"        [14]
+  [15] "- Log2 offset: 0"               - "- Log2 offset: 1"               [15]
+  [16] "- RUV mode: skip"               | "- RUV mode: skip"               [16]
+  [17] "- RUV grouping variable: group" | "- RUV grouping variable: group" [17]
+  [18] "- Correlation threshold: 0.5"   | "- Correlation threshold: 0.5"   [18]
+  
+  metab skip extra
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "skip") at test-omic-norm-module.R:1559:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1547:5
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[5:13] vs expected[5:12]
+    "Assay LCMS_Pos : 1 ITSD features selected"
+    "Assay GCMS : 1 ITSD features selected"
+    "ITSD normalization complete"
+  - "Applying log2 transformation"
+  + "Applying log2 transformation (offset: 1 )"
+    "Log2 transformation complete"
+  - "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+    "Applying between-sample normalization (method: quantile )"
+    "Between-sample normalization complete"
+    "Post-normalization QC plots generated"
+  
+  lipid manual run log
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5da4f0b6387ef3a1d46478bbcd2cb73afe45d205224c67659c8869897784912a"
+  `expected`: "c974c0dfdc29c9567fd76dae509a47f5d552f274a0936dcb64c793ede3636ce3"
+  
+  lipid manual run states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "59874b22b54cbd563881934070fad28f40b6100e05352b785020ca7e8d8bd634"
+  `expected`: "a01af382e056b5e26bff87332f81543caae071eea65fecb9e7b4c97d3e897ab2"
+  
+  lipid manual run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a8a2cb84e449727a31e0dc2112ec3cf9faa4a4fb81bf734ea0b31536ec285c6c"
+  `expected`: "45543d7e025cd734bf76e1f34192064ed900a2c5eaa0189911b31cc95a3ff0c7"
+  
+  lipid manual run outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "908f7c3252e7327e99946634fd0672f2959ddb85d014c61901a8c6a8a2cdcf99"
+  + "b1ba801f9c3a13a5651eef5f6b3e8fa822a29c0b46cb9e3e14d766cddef2997c"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "faf63c5884dfed553d1ebbf293ec41068d0ca6b479671cf91edcb8806ad35bb3"
+  + "afce65984dc7e339bd3b3e914a6f87707c2b2b02675c58c36553de610e5ccf2e"
+  
+  lipid manual run final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a7117e34760a3ebf989bb64dfc1585dd3d9f6bfdd112cf7483068a4a6b114ecb"
+  `expected`: "8d48d9b982b994d92c7880fab1bf91e7ee4efcc7dd0075ee92295181dc19e643"
+  
+  lipid manual skip_correlation states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "012507dc293871cfb0228cbb15ffd923577c258590ee5f247591ffb30384b489"
+  `expected`: "f668e5302b5b7e4078dacca6434d9e7b1a7f7ca66e19c5184d5e07aa57507d6d"
+  
+  lipid manual skip_correlation provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "701a6ac1d87ea09b693aac28f20a465e43f8c30008b3c50d175c8b49582187f8"
+  `expected`: "1177c9e8abd01576c6c612424de3869d6a8b4b7b48136fe6c57107219bff690b"
+  
+  lipid manual skip_correlation outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "908f7c3252e7327e99946634fd0672f2959ddb85d014c61901a8c6a8a2cdcf99"
+  + "b1ba801f9c3a13a5651eef5f6b3e8fa822a29c0b46cb9e3e14d766cddef2997c"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "faf63c5884dfed553d1ebbf293ec41068d0ca6b479671cf91edcb8806ad35bb3"
+  + "afce65984dc7e339bd3b3e914a6f87707c2b2b02675c58c36553de610e5ccf2e"
+  
+  lipid manual skip_correlation final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b9369bc84f613b52d6bfcdc0a33262d45a453f050a90400c2632341a2b7eb25e"
+  `expected`: "7d8d63b94ea2195c066e7eb612ede33010b3f932e4e9a861210731f23a921dd2"
+  
+  lipid manual reset states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "192b57453a5a04a562b0bf6651a0b84233a30c87874738d5124908587868d273"
+  `expected`: "8657461e52e8cea6d8d4a5a77edb6b773dbddcdc5c0cfd47aeb8906d7a7537c2"
+  
+  lipid manual reset provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "3a4f085c66ea18873418f52fa26eb53d66b7b88bcad7ecf7f680d0c6cb248b6f"
+  `expected`: "85a94a38f2772cc2511058d2c8a727218e5e1a551b49579ca208147a0bf02523"
+  
+  lipid manual reset outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1564:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[5:13] vs expected[5:12]
+    "Assay LCMS_Pos : 1 ITSD features selected"
+    "Assay GCMS : 1 ITSD features selected"
+    "ITSD normalization complete"
+  - "Applying log2 transformation"
+  + "Applying log2 transformation (offset: 1 )"
+    "Log2 transformation complete"
+  - "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+    "Applying between-sample normalization (method: quantile )"
+    "Between-sample normalization complete"
+    "Post-normalization QC plots generated"
+  
+  metab manual run log
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "93eee0d874dd9b3b3ad622a3275f8d1c945d772f1f21cea1613f2ec461edc593"
+  `expected`: "4069f7e526041c28fd55ae17d98f7f9e477992394952feb47ba90d56340241f0"
+  
+  metab manual run states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "1367d1e211d35cc29d794333c116056c9261e2329bfcc7af362546ece93bf7da"
+  `expected`: "28f3eaebc6a1eeb064ad638a8c1b30dfa354f6ec17b464cef21a47a0b1e07404"
+  
+  metab manual run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a8a2cb84e449727a31e0dc2112ec3cf9faa4a4fb81bf734ea0b31536ec285c6c"
+  `expected`: "45543d7e025cd734bf76e1f34192064ed900a2c5eaa0189911b31cc95a3ff0c7"
+  
+  metab manual run outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "d5cec69e686991753afdf978e702b260cd79fd696bb920128731de242e51cedf"
+  + "fdb6fffdbfd873d59895f150dd86a3c9dcd8e2a86598f485dc048b16b29ed6b1"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "faf63c5884dfed553d1ebbf293ec41068d0ca6b479671cf91edcb8806ad35bb3"
+  + "afce65984dc7e339bd3b3e914a6f87707c2b2b02675c58c36553de610e5ccf2e"
+  
+  metab manual run final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "d3532d85f8088b09bd9e3a7e5b3cb43f2949fdc6c6063b95826cbf135df5ebaf"
+  `expected`: "a618753a9fc35cc25d23ba9a8e8df20f0b97505d81aa0712a2f362b89cc72d77"
+  
+  metab manual skip_correlation states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "e451d2517d0158d131bc019d4d796164797f41e5005a21adcb659e778304dda5"
+  `expected`: "8efee29e7f4fb67a11cc18b78d0e521ba4a1befd0878d8ecc3a3be67b2f3de04"
+  
+  metab manual skip_correlation provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "701a6ac1d87ea09b693aac28f20a465e43f8c30008b3c50d175c8b49582187f8"
+  `expected`: "1177c9e8abd01576c6c612424de3869d6a8b4b7b48136fe6c57107219bff690b"
+  
+  metab manual skip_correlation outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "d5cec69e686991753afdf978e702b260cd79fd696bb920128731de242e51cedf"
+  + "fdb6fffdbfd873d59895f150dd86a3c9dcd8e2a86598f485dc048b16b29ed6b1"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "faf63c5884dfed553d1ebbf293ec41068d0ca6b479671cf91edcb8806ad35bb3"
+  + "afce65984dc7e339bd3b3e914a6f87707c2b2b02675c58c36553de610e5ccf2e"
+  
+  metab manual skip_correlation final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b865c20134607feee16279faa1e4ede58b83f7744ac02a98f0abe79edd18d25e"
+  `expected`: "7e9b7a51a4c5c7dad726b1daeadeb52fbd10a086ef42f343cb015cb797464b09"
+  
+  metab manual reset states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "19403ac0f3d6a9ab746871c1a93556eb86c00b105ede7d84c50be6e06b16dfd1"
+  `expected`: "508e46943ae495bc8ed24e0abf3e9f9429e36fca39da53e7401cc09064986314"
+  
+  metab manual reset provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "3a4f085c66ea18873418f52fa26eb53d66b7b88bcad7ecf7f680d0c6cb248b6f"
+  `expected`: "85a94a38f2772cc2511058d2c8a727218e5e1a551b49579ca208147a0bf02523"
+  
+  metab manual reset outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1569:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[3:11] vs expected[3:10]
+    "Pre-normalization QC plots generated"
+    "Applying ITSD normalization (aggregation: median )"
+    "ITSD normalization complete"
+  - "Applying log2 transformation"
+  + "Applying log2 transformation (offset: 1 )"
+    "Log2 transformation complete"
+  - "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+    "Applying between-sample normalization (method: cyclicloess )"
+    "Between-sample normalization complete"
+    "Post-normalization QC plots generated"
+  
+  lipid automatic run log
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "301fdb2e29f92af0bcf0f6a22f93d8e04261e056b1cadee3a126953d35a1d8dc"
+  `expected`: "a11e397e3b5f7858bc3332997d4a69feac0ea516be79f166935a5fa6ddf1f4c1"
+  
+  lipid automatic run states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0e246af8d57eeb1ea9ce401e40a3a92056643a24e65b07fe800069677474ff70"
+  `expected`: "6e252e3853d400fa0823e4620e4853880059bb61dab8d9e07e7e6dc3a14c6bc0"
+  
+  lipid automatic run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  `expected`: "258a56a356180f82d13f062eadee6255a15a19455795ef22ef16b2884fd8c977"
+  
+  lipid automatic run outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "f5e52403880531a79194326125381470c78ecf65fae7b0da86127fc4f1553f4b"
+  + "52242e72d7d6bdeb5f5697dcddee7f9d0a44f49e1f21636bb3d01f43bed8d63c"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "22e285f329be62ec4b9ada0406dbda317f9256969517541d2ca413946ddcab09"
+  + "e563dcfac02f82d815a963f457c3034f797d2eb4764ff77cf47a3a888fe025ac"
+  
+  lipid automatic run final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "301fdb2e29f92af0bcf0f6a22f93d8e04261e056b1cadee3a126953d35a1d8dc"
+  `expected`: "a11e397e3b5f7858bc3332997d4a69feac0ea516be79f166935a5fa6ddf1f4c1"
+  
+  lipid automatic final_plot states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0e246af8d57eeb1ea9ce401e40a3a92056643a24e65b07fe800069677474ff70"
+  `expected`: "6e252e3853d400fa0823e4620e4853880059bb61dab8d9e07e7e6dc3a14c6bc0"
+  
+  lipid automatic final_plot provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  `expected`: "258a56a356180f82d13f062eadee6255a15a19455795ef22ef16b2884fd8c977"
+  
+  lipid automatic final_plot outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "301fdb2e29f92af0bcf0f6a22f93d8e04261e056b1cadee3a126953d35a1d8dc"
+  `expected`: "a11e397e3b5f7858bc3332997d4a69feac0ea516be79f166935a5fa6ddf1f4c1"
+  
+  lipid automatic final_plot_failing states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0e246af8d57eeb1ea9ce401e40a3a92056643a24e65b07fe800069677474ff70"
+  `expected`: "6e252e3853d400fa0823e4620e4853880059bb61dab8d9e07e7e6dc3a14c6bc0"
+  
+  lipid automatic final_plot_failing provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  `expected`: "258a56a356180f82d13f062eadee6255a15a19455795ef22ef16b2884fd8c977"
+  
+  lipid automatic final_plot_failing outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1574:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[3:11] vs expected[3:10]
+    "Pre-normalization QC plots generated"
+    "Applying ITSD normalization (aggregation: median )"
+    "ITSD normalization complete"
+  - "Applying log2 transformation"
+  + "Applying log2 transformation (offset: 1 )"
+    "Log2 transformation complete"
+  - "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+    "Applying between-sample normalization (method: cyclicloess )"
+    "Between-sample normalization complete"
+    "Post-normalization QC plots generated"
+  
+  metab automatic run log
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "174620d5e83109cb6c10bc35e110cccd7d446b5585a0e3004f5fc1f6c82a254d"
+  `expected`: "c03173d8653f9eae6ee4a36be3be91369e0540cb54b5deb781fbcda99f5112a3"
+  
+  metab automatic run states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "3f182e3fd9706a91fcf0aa294d79db676e7fff4bfa8e65452e1e944ea1b6c162"
+  `expected`: "a4ad3ceca6369b3eaabb5b3b5725db625dd573b444bc631bca3c5aae006ccec7"
+  
+  metab automatic run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  `expected`: "258a56a356180f82d13f062eadee6255a15a19455795ef22ef16b2884fd8c977"
+  
+  metab automatic run outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "c9534f2ae128e82c5bb75448777ab0e608bb762dd5b1e7cd49543b3d5e05d6c0"
+  + "cb3876ffff3a90915594a59b700a1b22667cd9dda7e3610b9d122df92d7bae02"
+  
+  actual[[1]]$data vs expected[[1]]$data
+  - "22e285f329be62ec4b9ada0406dbda317f9256969517541d2ca413946ddcab09"
+  + "e563dcfac02f82d815a963f457c3034f797d2eb4764ff77cf47a3a888fe025ac"
+  
+  metab automatic run final_pca
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "174620d5e83109cb6c10bc35e110cccd7d446b5585a0e3004f5fc1f6c82a254d"
+  `expected`: "c03173d8653f9eae6ee4a36be3be91369e0540cb54b5deb781fbcda99f5112a3"
+  
+  metab automatic final_plot states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "3f182e3fd9706a91fcf0aa294d79db676e7fff4bfa8e65452e1e944ea1b6c162"
+  `expected`: "a4ad3ceca6369b3eaabb5b3b5725db625dd573b444bc631bca3c5aae006ccec7"
+  
+  metab automatic final_plot provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  `expected`: "258a56a356180f82d13f062eadee6255a15a19455795ef22ef16b2884fd8c977"
+  
+  metab automatic final_plot outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "174620d5e83109cb6c10bc35e110cccd7d446b5585a0e3004f5fc1f6c82a254d"
+  `expected`: "c03173d8653f9eae6ee4a36be3be91369e0540cb54b5deb781fbcda99f5112a3"
+  
+  metab automatic final_plot_failing states
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "3f182e3fd9706a91fcf0aa294d79db676e7fff4bfa8e65452e1e944ea1b6c162"
+  `expected`: "a4ad3ceca6369b3eaabb5b3b5725db625dd573b444bc631bca3c5aae006ccec7"
+  
+  metab automatic final_plot_failing provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  `expected`: "258a56a356180f82d13f062eadee6255a15a19455795ef22ef16b2884fd8c977"
+  
+  metab automatic final_plot_failing outputs
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1579:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1543:13
+
+file: test-omic-norm-module.R
+test: KIT-110 W3 (D3): the frame registers each omic's outputs: lipid's and metab's as W1, trx's as W1 (b-trx) (fails before)
+kind: failure
+message:
+  Expected `omicNormRegisteredAtStart(omic, omicGuiConfig(omic)$norm)` to be identical to `sort(omicNormFrozenUi[[if (omic == "lipidomics") "lipid" else "metab"]]$outputs)`.
+  Differences:
+  actual[21:27] vs expected[21:26]
+    "norm-density_ruv_corrected_assay2"
+    "norm-final_qc_plot"
+    "norm-itsd_selection_ui"
+  - "norm-log2_recorded_offset"
+    "norm-norm_log"
+    "norm-pca_post_filter_assay1"
+    "norm-pca_post_filter_assay2"
+  
+  lipidomics
+
+file: test-omic-norm-module.R
+test: KIT-110 W3 (D3): the frame registers each omic's outputs: lipid's and metab's as W1, trx's as W1 (b-trx) (fails before)
+kind: failure
+message:
+  Expected `omicNormRegisteredAtStart(omic, omicGuiConfig(omic)$norm)` to be identical to `sort(omicNormFrozenUi[[if (omic == "lipidomics") "lipid" else "metab"]]$outputs)`.
+  Differences:
+  actual[21:27] vs expected[21:26]
+    "norm-density_ruv_corrected_assay2"
+    "norm-final_qc_plot"
+    "norm-itsd_selection_ui"
+  - "norm-log2_recorded_offset"
+    "norm-norm_log"
+    "norm-pca_post_filter_assay1"
+    "norm-pca_post_filter_assay2"
+  
+  metabolomics
+
+file: test-omic-gui-config.R
+test: the norm group holds today's values for lipid and metab, trx has one (KIT-110) and proteomics' is NULL
+kind: failure
+message:
+  Expected `norm$panels$log2$offset` to be identical to 1.
+  Differences:
+    `actual`: 0.0
+  `expected`: 1.0
+
+file: test-omic-gui-config.R
+test: the norm group holds today's values for lipid and metab, trx has one (KIT-110) and proteomics' is NULL
+kind: failure
+message:
+  Expected `norm$panels$log2$offset` to be identical to 1.
+  Differences:
+    `actual`: 0.0
+  `expected`: 1.0
+
+file: test-omic-gui-config.R
+test: KIT-106 W1 (D1): the da group holds each omic's DA tab values at the start commit
+kind: failure
+message:
+  Expected `lapply(configs, `[[`, "summary")` to be identical to `list(...)`.
+  Differences:
+  `actual$lipidomics` is length 3
+  `expected$lipidomics` is length 2
+  
+  `names(actual$lipidomics)`:   "noun" "significance_label" "not_tested"
+  `names(expected$lipidomics)`: "noun" "significance_label"             
+  
+  `actual$lipidomics$not_tested` is a logical vector (TRUE)
+  `expected$lipidomics$not_tested` is absent
+  
+  `actual$metabolomics` is length 3
+  `expected$metabolomics` is length 2
+  
+  `names(actual$metabolomics)`:   "noun" "significance_label" "not_tested"
+  `names(expected$metabolomics)`: "noun" "significance_label"             
+  
+  `actual$metabolomics$not_tested` is a logical vector (TRUE)
+  `expected$metabolomics$not_tested` is absent
+
+file: test-metab-01-qc-metrics-characterization.R
+test: metabolomics QC metric helpers preserve the current count and summary contracts
+kind: failure
+message:
+  Expected `counts$n_detected` to equal `c(2L, 2L, 2L)`.
+  Differences:
+    `actual`: 3 3 4
+  `expected`: 2 2 2
+
+file: test-metab-01-qc-metrics-characterization.R
+test: metabolomics QC metric helpers preserve the current count and summary contracts
+kind: failure
+message:
+  Expected `missingness` to equal `6/12 * 100`.
+  Differences:
+    `actual`: 16.7
+  `expected`: 50.0
+
+file: test-lipid-01-qc-filtering-helpers.R
+test: calculateLipidFilteringAssayMetrics returns the expected assay summary contract
+kind: failure
+message:
+  Expected `metrics$detected_per_sample$n_detected` to equal `c(2L, 2L, 1L)`.
+  Differences:
+    `actual`: 3 2 3
+  `expected`: 2 2 1
+
+file: test-lipid-01-qc-filtering-helpers.R
+test: calculateLipidFilteringAssayMetrics returns the expected assay summary contract
+kind: failure
+message:
+  Expected `metrics$missingness` to equal `4/9 * 100`.
+  Differences:
+    `actual`: 11.1
+  `expected`: 44.4
+

@@ -1,0 +1,1573 @@
+== test-gui-entry-lipidomics.R | fixed | KIT-101 entry lane lipid_canonical: two LipidSearch assays
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$artifacts` is length 113
+  `expected$artifacts` is length 107
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_lipid_canonical_final_s4.RDS"
+    "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv"
+    "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/lipidomics/features_lipidomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/features_lipidomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/features_lipidomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/features_lipidomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/samples.parquet` is absent
+  
+  lipid_canonical at step 'summary_copy' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$artifacts` is length 119
+  `expected$artifacts` is length 113
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_lipid_canonical_final_s4.RDS"
+    "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv"
+    "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/lipidomics/features_lipidomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/features_lipidomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/features_lipidomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/features_lipidomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/samples.parquet` is absent
+  
+  lipid_canonical at step 'summary_report' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$artifacts` is length 120
+  `expected$artifacts` is length 114
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_lipid_canonical_final_s4.RDS"
+    "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv"
+    "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/lipidomics/features_lipidomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/features_lipidomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/features_lipidomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/features_lipidomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/samples.parquet` is absent
+  
+  lipid_canonical at step 'summary_export' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  `actual$artifacts` is length 80
+  `expected$artifacts` is length 74
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_lipid_canonical_final_s4.RDS"
+    "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv"
+    "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/lipidomics/features_lipidomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/features_lipidomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/features_lipidomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/features_lipidomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/lipidomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/lipidomics/samples.parquet` is absent
+  
+  lipid_canonical at step 'summary_save' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+-- head:
+  <passes>
+
+== test-gui-entry-metabolomics.R | fixed | KIT-101 entry lane metab_lc: LC-MS positive and negative assays (custom format)
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  `actual$artifacts` is length 102
+  `expected$artifacts` is length 96
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_LCMS_Neg.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_lc_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "9253374e8eeff25a19cdc79cbe51750564200e07944ed9bdd4289fe6b893ffed"
+  + "cd88e60d55d0ed665faaf6c426fa0e4445ac7847932b5cf9bcd3719b0a6ad08c"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "bca2f7e0db74151a5102d113f3069088a957e20689b5a387cb87cc01c8af43ef"
+  + "ffe9d75c7fc479350484d86f0babdac93db8da60709c0c2e6a3c1035fc38f75a"
+  
+  metab_lc at step 'summary_copy' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  `actual$artifacts` is length 108
+  `expected$artifacts` is length 102
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_LCMS_Neg.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_lc_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "9253374e8eeff25a19cdc79cbe51750564200e07944ed9bdd4289fe6b893ffed"
+  + "cd88e60d55d0ed665faaf6c426fa0e4445ac7847932b5cf9bcd3719b0a6ad08c"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "bca2f7e0db74151a5102d113f3069088a957e20689b5a387cb87cc01c8af43ef"
+  + "ffe9d75c7fc479350484d86f0babdac93db8da60709c0c2e6a3c1035fc38f75a"
+  
+  metab_lc at step 'summary_report' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  `actual$artifacts` is length 109
+  `expected$artifacts` is length 103
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_LCMS_Neg.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_lc_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "9253374e8eeff25a19cdc79cbe51750564200e07944ed9bdd4289fe6b893ffed"
+  + "cd88e60d55d0ed665faaf6c426fa0e4445ac7847932b5cf9bcd3719b0a6ad08c"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "bca2f7e0db74151a5102d113f3069088a957e20689b5a387cb87cc01c8af43ef"
+  + "ffe9d75c7fc479350484d86f0babdac93db8da60709c0c2e6a3c1035fc38f75a"
+  
+  metab_lc at step 'summary_export' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  `actual$artifacts` is length 77
+  `expected$artifacts` is length 71
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_LCMS_Neg.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_lc_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Neg.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "9253374e8eeff25a19cdc79cbe51750564200e07944ed9bdd4289fe6b893ffed"
+  + "cd88e60d55d0ed665faaf6c426fa0e4445ac7847932b5cf9bcd3719b0a6ad08c"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "bca2f7e0db74151a5102d113f3069088a957e20689b5a387cb87cc01c8af43ef"
+  + "ffe9d75c7fc479350484d86f0babdac93db8da60709c0c2e6a3c1035fc38f75a"
+  
+  metab_lc at step 'summary_save' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "9253374e8eeff25a19cdc79cbe51750564200e07944ed9bdd4289fe6b893ffed"
+  + "cd88e60d55d0ed665faaf6c426fa0e4445ac7847932b5cf9bcd3719b0a6ad08c"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "bca2f7e0db74151a5102d113f3069088a957e20689b5a387cb87cc01c8af43ef"
+  + "ffe9d75c7fc479350484d86f0babdac93db8da60709c0c2e6a3c1035fc38f75a"
+  
+  metab_lc at step 'da' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_negmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "9253374e8eeff25a19cdc79cbe51750564200e07944ed9bdd4289fe6b893ffed"
+  + "cd88e60d55d0ed665faaf6c426fa0e4445ac7847932b5cf9bcd3719b0a6ad08c"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "bca2f7e0db74151a5102d113f3069088a957e20689b5a387cb87cc01c8af43ef"
+  + "ffe9d75c7fc479350484d86f0babdac93db8da60709c0c2e6a3c1035fc38f75a"
+  
+  metab_lc at step 'summary_refusal' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  metab_lc at step 'correlation' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  metab_lc at step 'da_load' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  metab_lc at step 'session_export' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "64eca0b724b8ae8351151b6774b76d5cd3d844a658d7c0ef2ce42395ef1d940a"
+  + "a9d460f579b6ae8d52a9ddc8cea8be1db6745ba863fc95183b7b0eb2d64e2032"
+  
+  metab_lc at step 'norm' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+-- head:
+  <passes>
+
+== test-gui-entry-metabolomics.R | fixed | KIT-101 entry lane metab_gc: one GC-MS assay (custom format)
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8]
+    ""
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.972, min=0.951, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  `actual$artifacts` is length 61
+  `expected$artifacts` is length 57
+  
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_gc_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "1a88b212deb86400c93afedcf5ab698ace1a6ead7eea6bbdf21fdea7ea93121f"
+  + "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce"
+  
+  metab_gc at step 'summary_save' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8]
+    ""
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.972, min=0.951, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  `actual$artifacts` is length 78
+  `expected$artifacts` is length 74
+  
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_gc_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "1a88b212deb86400c93afedcf5ab698ace1a6ead7eea6bbdf21fdea7ea93121f"
+  + "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce"
+  
+  metab_gc at step 'summary_copy' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8]
+    ""
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.972, min=0.951, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  `actual$artifacts` is length 84
+  `expected$artifacts` is length 80
+  
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_gc_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "1a88b212deb86400c93afedcf5ab698ace1a6ead7eea6bbdf21fdea7ea93121f"
+  + "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce"
+  
+  metab_gc at step 'summary_report' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8]
+    ""
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.972, min=0.951, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  `actual$artifacts` is length 85
+  `expected$artifacts` is length 81
+  
+  names(actual$artifacts)[1:8] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_gc_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "1a88b212deb86400c93afedcf5ab698ace1a6ead7eea6bbdf21fdea7ea93121f"
+  + "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce"
+  
+  metab_gc at step 'summary_export' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8]
+    ""
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.972, min=0.951, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "1a88b212deb86400c93afedcf5ab698ace1a6ead7eea6bbdf21fdea7ea93121f"
+  + "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce"
+  
+  metab_gc at step 'da' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8]
+    ""
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.972, min=0.951, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "1a88b212deb86400c93afedcf5ab698ace1a6ead7eea6bbdf21fdea7ea93121f"
+  + "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce"
+  
+  metab_gc at step 'summary_refusal' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8]
+    ""
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.972, min=0.951, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  metab_gc at step 'correlation' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8]
+    ""
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.972, min=0.951, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  metab_gc at step 'da_load' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:8]
+    ""
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.972, min=0.951, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  metab_gc at step 'session_export' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "d26885cccf6e44312398ed678c3c6ca9ff436db5a79433a681dae9c20acd455e"
+  + "502cbe8d03a303d40038999943a3e79204e1497f02194c34b65c8030d1c30f6c"
+  
+  metab_gc at step 'norm' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+-- head:
+  <passes>
+
+== test-gui-entry-metabolomics.R | fixed | KIT-101 entry lane metab_combined: LC-MS and GC-MS assays (custom format)
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11]
+    ""
+    "[LCMS_Pos]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.995, min=0.984, max=1.000"
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.997, min=0.990, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  `actual$artifacts` is length 102
+  `expected$artifacts` is length 96
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_combined_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "910faa436e0ed00fefe55d1a0e17ab829f9ca568e2461f11ca445200af968b40"
+  + "aa389ce669754846ff75715dfe4095d5f29ef79a30cfedd65e25af75fc5dde54"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "b61a0b0f8d1f0eaad294fdc53856042d95a6ba43af224132625c7585bea20906"
+  + "ba4f346fcd66fa54a2b7760aeb3513dc6be8d0fa89c51410c9256e048293fbdf"
+  
+  metab_combined at step 'summary_copy' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11]
+    ""
+    "[LCMS_Pos]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.995, min=0.984, max=1.000"
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.997, min=0.990, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  `actual$artifacts` is length 108
+  `expected$artifacts` is length 102
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_combined_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "910faa436e0ed00fefe55d1a0e17ab829f9ca568e2461f11ca445200af968b40"
+  + "aa389ce669754846ff75715dfe4095d5f29ef79a30cfedd65e25af75fc5dde54"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "b61a0b0f8d1f0eaad294fdc53856042d95a6ba43af224132625c7585bea20906"
+  + "ba4f346fcd66fa54a2b7760aeb3513dc6be8d0fa89c51410c9256e048293fbdf"
+  
+  metab_combined at step 'summary_report' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11]
+    ""
+    "[LCMS_Pos]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.995, min=0.984, max=1.000"
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.997, min=0.990, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  `actual$artifacts` is length 109
+  `expected$artifacts` is length 103
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_combined_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "910faa436e0ed00fefe55d1a0e17ab829f9ca568e2461f11ca445200af968b40"
+  + "aa389ce669754846ff75715dfe4095d5f29ef79a30cfedd65e25af75fc5dde54"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "b61a0b0f8d1f0eaad294fdc53856042d95a6ba43af224132625c7585bea20906"
+  + "ba4f346fcd66fa54a2b7760aeb3513dc6be8d0fa89c51410c9256e048293fbdf"
+  
+  metab_combined at step 'summary_export' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11]
+    ""
+    "[LCMS_Pos]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.995, min=0.984, max=1.000"
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.997, min=0.990, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  `actual$artifacts` is length 77
+  `expected$artifacts` is length 71
+  
+  names(actual$artifacts)[1:10] vs names(expected$artifacts)[1:4]
+    "<store entries>"
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_metab_combined_final_s4.RDS"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv"
+    "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx"
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/features_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/integration_input.json` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/integration_input.json` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_GCMS.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet` is absent
+  
+  `actual$artifacts$integration/metabolomics/samples.parquet` is a character vector ('<present>')
+  `expected$artifacts$integration/metabolomics/samples.parquet` is absent
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "910faa436e0ed00fefe55d1a0e17ab829f9ca568e2461f11ca445200af968b40"
+  + "aa389ce669754846ff75715dfe4095d5f29ef79a30cfedd65e25af75fc5dde54"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "b61a0b0f8d1f0eaad294fdc53856042d95a6ba43af224132625c7585bea20906"
+  + "ba4f346fcd66fa54a2b7760aeb3513dc6be8d0fa89c51410c9256e048293fbdf"
+  
+  metab_combined at step 'summary_save' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11]
+    ""
+    "[LCMS_Pos]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.995, min=0.984, max=1.000"
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.997, min=0.990, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "910faa436e0ed00fefe55d1a0e17ab829f9ca568e2461f11ca445200af968b40"
+  + "aa389ce669754846ff75715dfe4095d5f29ef79a30cfedd65e25af75fc5dde54"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "b61a0b0f8d1f0eaad294fdc53856042d95a6ba43af224132625c7585bea20906"
+  + "ba4f346fcd66fa54a2b7760aeb3513dc6be8d0fa89c51410c9256e048293fbdf"
+  
+  metab_combined at step 'da' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11]
+    ""
+    "[LCMS_Pos]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.995, min=0.984, max=1.000"
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.997, min=0.990, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv
+  - "910faa436e0ed00fefe55d1a0e17ab829f9ca568e2461f11ca445200af968b40"
+  + "aa389ce669754846ff75715dfe4095d5f29ef79a30cfedd65e25af75fc5dde54"
+  
+  actual$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv vs expected$artifacts$results/metabolomics/da_metabolites/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv
+  - "b61a0b0f8d1f0eaad294fdc53856042d95a6ba43af224132625c7585bea20906"
+  + "ba4f346fcd66fa54a2b7760aeb3513dc6be8d0fa89c51410c9256e048293fbdf"
+  
+  metab_combined at step 'summary_refusal' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11]
+    ""
+    "[LCMS_Pos]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.995, min=0.984, max=1.000"
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.997, min=0.990, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  metab_combined at step 'correlation' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11]
+    ""
+    "[LCMS_Pos]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.995, min=0.984, max=1.000"
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.997, min=0.990, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  metab_combined at step 'da_load' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  actual$states$metab_correlation_filtered vs expected$states$metab_correlation_filtered
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  lines(actual$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11] vs lines(expected$outputs$metabolomics_workflow-norm-correlation_filter_summary)[2:11]
+    ""
+    "[LCMS_Pos]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.995, min=0.984, max=1.000"
+    "[GCMS]"
+    "  Sample pairs: 6"
+  - "  Correlation: mean=1.000, min=1.000, max=1.000"
+  + "  Correlation: mean=0.997, min=0.990, max=1.000"
+    ""
+    "[Sample Filtering]"
+    "  Original: 6 samples"
+  
+  metab_combined at step 'session_export' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$metab_normalized vs expected$states$metab_normalized
+  - "cb95f2c61f587cfaa6cf73176fcd87354a8d92a5ab9c0a7ba933ff7dc42f3f1f"
+  + "4f03f279b0da6195f6636bb68b30eef509a55a71294c0823536f42eef32fd736"
+  
+  metab_combined at step 'norm' (oracle 79d6bc726fe1361264ef12a15ca8cbc490e07d52)
+-- head:
+  <passes>
+
+== test-metab-03-norm-support-characterization.R | new-failure | metabolomics normalization support helpers preserve current normalization config defaults
+-- base:
+  <passes>
+-- head:
+  Expected `default_config$log2$offset` to be identical to 1.
+  Differences:
+    `actual`: 0.0
+  `expected`: 1.0
+
+== test-omic-da-module.R | message-changed | (b) in process: lipid_main
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_main start states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"lipidomics_da_results_<DATE>.csv"
+  - sha256"6ba7c37a419bbb27aa98a92bbd18d1d9d5411620cede4c542edff10cf1d6c3d0"
+  + sha256"aad6f3f2fa52185a86eed5428dfef9f0c5f0548110add82a790e73486a522be4"
+  
+  lipid_main download download
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_main start states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"lipidomics_da_results_<DATE>.csv"
+  - sha256"6ba7c37a419bbb27aa98a92bbd18d1d9d5411620cede4c542edff10cf1d6c3d0"
+  + sha256"aad6f3f2fa52185a86eed5428dfef9f0c5f0548110add82a790e73486a522be4"
+  
+  lipid_main download download
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 0 (0.0%)"
+    "  Up-regulated: 0"
+    "  Down-regulated: 0"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main download values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 0 (0.0%)"
+    "  Up-regulated: 0"
+    "  Down-regulated: 0"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main table_combined values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main save_heatmap values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main select values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main tree_dynamic values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main tree_height values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main tree_k values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 4"
+    "  Down-regulated: 4"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main run values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 6"
+    "  Down-regulated: 2"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main table_down values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 6"
+    "  Down-regulated: 2"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_main table_limit values
+
+== test-omic-da-module.R | message-changed | (b) in process: metab_main
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_main start states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"metabolomics_da_results_<DATE>.csv"
+  - sha256"be6844650e3e1ab4608b3d2c9291d66efad1b8f81acd944d51f25da6d54d3658"
+  + sha256"7adfe999098a7dd429d3c5f97a522f719ca4e67c02d41b8a6837987c7acce284"
+  
+  metab_main download download
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_main start states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"metabolomics_da_results_<DATE>.csv"
+  - sha256"be6844650e3e1ab4608b3d2c9291d66efad1b8f81acd944d51f25da6d54d3658"
+  + sha256"7adfe999098a7dd429d3c5f97a522f719ca4e67c02d41b8a6837987c7acce284"
+  
+  metab_main download download
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main save_heatmap values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main select values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main tree_dynamic values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main tree_height values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main tree_k values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 4"
+    "  Down-regulated: 4"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main run values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 6"
+    "  Down-regulated: 2"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main download values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 6"
+    "  Down-regulated: 2"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main table_combined values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 6"
+    "  Down-regulated: 2"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main table_down values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 6"
+    "  Down-regulated: 2"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_main table_limit values
+
+== test-omic-da-module.R | message-changed | (b) in process: metab_no_friendly
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_no_friendly run states
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_no_friendly run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 4"
+    "  Down-regulated: 4"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_no_friendly run values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 4"
+    "  Down-regulated: 4"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_no_friendly table values
+
+== test-omic-da-module.R | message-changed | (b-managed) lipid_managed: the worker's operations in order, the notifications, tab_status and the rows
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_managed run states
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_managed run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_managed select values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 4"
+    "  Down-regulated: 4"
+  - "Not tested (no value in a compared group): 0"
+  
+  lipid_managed run values
+
+== test-omic-da-module.R | message-changed | (b-managed) metab_managed: the worker's operations in order, the notifications, tab_status and the rows
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_managed run states
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_managed run states
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 4 (66.7%)"
+    "  Up-regulated: 3"
+    "  Down-regulated: 1"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_managed select values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[5]])[2:5] vs lines(expected[[5]])[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 4"
+    "  Down-regulated: 4"
+  - "Not tested (no value in a compared group): 0"
+  
+  metab_managed run values
+
+== test-omic-da-module.R | new-failure | (c) the table filter: "Combined" selects every assay for metab and none for lipid and trx; a long table without friendly_name
+-- base:
+  <passes>
+-- head:
+  Expected `value("lipid_main", "table_combined", "da_summary_stats")` to be identical to "Total lipids: 0\nSignificant (Q < 0.050): 0 (0.0%)\n  Up-regulated: 0\n  Down-regulated: 0".
+  Differences:
+  lines(actual)[2:5] vs lines(expected)[2:4]
+    "Significant (Q < 0.050): 0 (0.0%)"
+    "  Up-regulated: 0"
+    "  Down-regulated: 0"
+  - "Not tested (no value in a compared group): 0"
+  Expected `value("metab_main", "table_combined", "da_summary_stats")` to be identical to "Total metabolites: 12\nSignificant (Q < 0.050): 8 (66.7%)\n  Up-regulated: 6\n  Down-regulated: 2".
+  Differences:
+  lines(actual)[2:5] vs lines(expected)[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 6"
+    "  Down-regulated: 2"
+  - "Not tested (no value in a compared group): 0"
+  Expected `value("metab_no_friendly", "table", "da_summary_stats")` to be identical to "Total metabolites: 12\nSignificant (Q < 0.050): 8 (66.7%)\n  Up-regulated: 4\n  Down-regulated: 4".
+  Differences:
+  lines(actual)[2:5] vs lines(expected)[2:4]
+    "Significant (Q < 0.050): 8 (66.7%)"
+    "  Up-regulated: 4"
+    "  Down-regulated: 4"
+  - "Not tested (no value in a compared group): 0"
+
+== test-omics-module-globals.R | new-failure | KIT-030: the super-assignments in the lipid and metab code are the listed local closures
+-- base:
+  <passes>
+-- head:
+  Expected `setdiff(files_hit, allowed_files)` to be identical to `character(0)`.
+  Differences:
+      actual                                   | expected 
+  [1] "func_lipid_s4_normalization_methods.R"  -          
+  [2] "func_metab_s4_transformation_methods.R" -          
+

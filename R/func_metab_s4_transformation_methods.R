@@ -1,20 +1,107 @@
+#' The offset of the log2 step, checked (KIT-172): a single finite number, 0 or above.
+#' @noRd
+omicsLog2CheckOffset <- function(offset) {
+    if (!is.numeric(offset) || length(offset) != 1L || !is.finite(offset) || offset < 0) {
+        rlang::abort("`offset` must be a single finite number, 0 or above.", class = "omics_log2_offset_invalid")
+    }
+    invisible(offset)
+}
+
+#' The log2 step of one assay's sample columns (KIT-172), shared by the lipidomics and metabolomics methods.
+#'
+#' Above offset 0 the code path of earlier releases, unchanged: negative values (including `-Inf`) are set to 0, then
+#' `log2(x + offset)`; `NaN` and `+Inf` pass through. At offset 0 plain `log2(x)`: a missing cell stays missing; a cell
+#' of 0 or below (including `-Inf`) and a `NaN` or `+Inf` cell become missing and are counted. An error of the
+#' transform itself stops with class `omics_log2_failed` (earlier releases returned the untransformed assay while the
+#' object still recorded the log transform).
+#' @param assay_tibble The assay.
+#' @param sample_cols Its sample columns.
+#' @param offset The offset, checked by `omicsLog2CheckOffset`.
+#' @param assay_name The assay's name, for the error.
+#' @return `list(assay, counts)`: the transformed assay; at offset 0 the counts `c(nonpositive, nonfinite)`, else NULL.
+#' @noRd
+omicsLog2SampleColumns <- function(assay_tibble, sample_cols, offset, assay_name) {
+    failed <- function(e) {
+        rlang::abort(sprintf("Assay '%s': error during log2 transformation: %s", assay_name, conditionMessage(e)),
+            class = "omics_log2_failed", parent = e)
+    }
+    if (offset > 0) {
+        transformed <- tryCatch(
+            {
+                assay_tibble %>%
+                    # Replace negative values with 0 before log transformation
+                    dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ ifelse(!is.na(.x) & .x < 0, 0, .x))) %>%
+                    # Ensure target columns are numeric before transformation
+                    dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), as.numeric)) %>%
+                    dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ log2(.x + offset)))
+            },
+            error = failed
+        )
+        return(list(assay = transformed, counts = NULL))
+    }
+    # The counts are kept in an environment, not by super-assignment (test-omics-module-globals).
+    tally <- new.env(parent = emptyenv())
+    tally$counts <- c(nonpositive = 0L, nonfinite = 0L)
+    plainLog2 <- function(x) {
+        x <- as.numeric(x)
+        # `-Inf` is non-positive; `NaN` and `+Inf` are non-finite; a missing cell (NA) is neither.
+        nonpositive <- !is.na(x) & x <= 0
+        nonfinite <- is.nan(x) | (!is.na(x) & x == Inf)
+        tally$counts <- tally$counts + c(nonpositive = sum(nonpositive), nonfinite = sum(nonfinite))
+        x[nonpositive | nonfinite] <- NA_real_
+        log2(x)
+    }
+    transformed <- tryCatch(dplyr::mutate(assay_tibble, dplyr::across(dplyr::all_of(sample_cols), plainLog2)), error = failed)
+    list(assay = transformed, counts = tally$counts)
+}
+
+#' Record the log2 step on the object (KIT-172): `log_transformed`, `log_transform_offset`, and at offset 0 the counts
+#' per assay `log_transform_nonpositive`; at offset 0 one warning of class `omics_log2_nonpositive` when a cell was set
+#' to missing. Above offset 0 the arguments of earlier releases, and no new condition.
+#' @param theObject The transformed object.
+#' @param offset The offset.
+#' @param counts The counts per assay (offset 0), named by assay.
+#' @return The object.
+#' @noRd
+omicsLog2RecordArgs <- function(theObject, offset, counts) {
+    if (!is.list(theObject@args)) {
+        warning("Slot 'args' is not a list. Cannot record log transformation status.", immediate. = TRUE)
+    } else {
+        theObject@args$log_transformed <- TRUE
+        theObject@args$log_transform_offset <- offset
+        if (offset == 0) theObject@args$log_transform_nonpositive <- counts
+    }
+    if (offset == 0 && length(counts) && sum(unlist(counts)) > 0) {
+        per_assay <- vapply(names(counts), function(assay) sprintf("%s: %d non-positive, %d non-finite", assay,
+            counts[[assay]][["nonpositive"]], counts[[assay]][["nonfinite"]]), "")
+        rlang::warn(paste0("log2: values of 0 or below, and values that are not finite, were set to missing (",
+            paste(per_assay, collapse = "; "), ")."), class = "omics_log2_nonpositive", counts = counts)
+    }
+    theObject
+}
+
 #' @title Log2 Transform Assay Data for MetaboliteAssayData
 #'
 #' @description
-#' Applies a log2 transformation (log2(x + offset)) to the numeric sample columns
-#' in all assay tibbles stored within the `metabolite_data` slot of a
-#' `MetaboliteAssayData` object.
+#' Applies a log2 transformation to the numeric sample columns in all assay tibbles stored within the
+#' `metabolite_data` slot of a `MetaboliteAssayData` object: plain `log2(x)` by default, `log2(x + offset)` for an
+#' offset above 0.
 #'
 #' @details
-#' This transformation is often applied to reduce skewness and stabilize variance
-#' in quantitative omics data, especially before visualization or statistical modeling.
-#' Zeros in the data are handled by adding a small `offset` before transformation.
+#' At the default offset of 0 a missing value stays missing, and a value of 0 or below or a value that is not finite
+#' (`NaN`, `Inf`, `-Inf`) becomes missing; these are counted per assay in `args$log_transform_nonpositive`
+#' (non-positive and non-finite) and reported in one warning of class `omics_log2_nonpositive`. The import already
+#' reads a zero as not detected and refuses negative values, so in the application every value reaching this step
+#' is positive. An offset above 0 runs the transformation of earlier releases unchanged (negative values set to 0,
+#' then `log2(x + offset)`), so a record made with an offset replays exactly; the result then depends on the unit of
+#' the table (a value v moves by log2(1 + offset / v)). An offset below 0, missing or not a single number is refused
+#' with class `omics_log2_offset_invalid`; an error of the transformation stops with class `omics_log2_failed`.
 #' Non-numeric columns and the metabolite ID column are preserved.
 #'
 #' @title Log Transform Assays for MetaboliteAssayData
 #' @name logTransformAssays,MetaboliteAssayData-method
 #' @param theObject A `MetaboliteAssayData` object.
-#' @param offset A small positive number to add before log transformation (default: 1).
+#' @param offset A number of 0 or above added before the log transformation (default: 0, plain log2).
 #' @param ... Currently unused.
 #'
 #' @return An updated `MetaboliteAssayData` object with log2 transformed values in the `metabolite_data` slot.
@@ -28,12 +115,16 @@
 setMethod(
     f = "logTransformAssays",
     signature = "MetaboliteAssayData",
-    definition = function(theObject, offset = 1, ...) {
+    definition = function(theObject, offset = 0, ...) {
         # --- Input Validation ---
-        if (!is.numeric(offset) || length(offset) != 1 || offset <= 0) {
-            stop("`offset` must be a single positive numeric value.")
+        omicsLog2CheckOffset(offset)
+        if (offset > 0) {
+            message(sprintf("Applying log2(x + %s) transformation to assays.", as.character(offset)))
+        } else {
+            message("Applying log2(x) transformation to assays.")
         }
-        message(sprintf("Applying log2(x + %s) transformation to assays.", as.character(offset)))
+        tally <- new.env(parent = emptyenv())
+        tally$counts <- list()
 
         # --- Get Object Slots ---
         assay_list <- methods::slot(theObject, "metabolite_data")
@@ -106,21 +197,10 @@ setMethod(
                 return(assay_tibble) # Return original
             }
 
-            # --- Apply Log2 Transformation ---
-            transformed_tibble <- tryCatch(
-                {
-                    assay_tibble %>%
-                        # Replace negative values with 0 before log transformation
-                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ ifelse(!is.na(.x) & .x < 0, 0, .x))) %>%
-                        # Ensure target columns are numeric before transformation
-                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), as.numeric)) %>%
-                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ log2(.x + offset)))
-                },
-                error = function(e) {
-                    warning(sprintf("Assay '%s': Error during log2 transformation: %s. Returning original assay data.", assay_index_name, e$message), immediate. = TRUE)
-                    return(assay_tibble) # Return original on error
-                }
-            )
+            # --- Apply Log2 Transformation (KIT-172: the shared step; an error stops) ---
+            step <- omicsLog2SampleColumns(assay_tibble, sample_cols, offset, assay_index_name)
+            transformed_tibble <- step$assay
+            if (!is.null(step$counts)) tally$counts[[assay_index_name]] <- step$counts
 
             # Check if transformation actually happened (e.g., if error occurred)
             if (identical(transformed_tibble, assay_tibble)) {
@@ -138,14 +218,8 @@ setMethod(
         # Assign the list of transformed assays back to the object
         methods::slot(theObject, "metabolite_data") <- transformed_assay_list
 
-        # Optional: Add log transformation status to args (consider structure)
-        # Ensure args is a list
-        if (!is.list(theObject@args)) {
-            warning("Slot 'args' is not a list. Cannot record log transformation status.", immediate. = TRUE)
-        } else {
-            theObject@args$log_transformed <- TRUE
-            theObject@args$log_transform_offset <- offset
-        }
+        # Add log transformation status to args (KIT-172: at offset 0 also the counts, and the warning)
+        theObject <- omicsLog2RecordArgs(theObject, offset, tally$counts)
 
 
         message("Log2 transformation complete for all assays.")

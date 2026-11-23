@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-omics-module-globals.R	14	0	0	0	0	5.9	ok
+test-kit172-log2-rule.R	212	0	0	0	0	33.9	ok

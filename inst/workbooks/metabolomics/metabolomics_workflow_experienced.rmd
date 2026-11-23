@@ -379,6 +379,7 @@ raw_data_qc_stats <- updateMetaboliteFiltering(
 ```
 
 ```{r 5 Log Transform Data}
+# Plain log2 (KIT-172): zeros were read as not detected at import (missing, not imputed); no offset is added.
 metabolite_itsd_log_transformed <- logTransformAssays(metabolite_itsd_normalised)
 
 raw_data_qc_stats <- updateMetaboliteFiltering(
@@ -546,6 +547,8 @@ setMethod(f = "cleanDesignMatrix",
 metabolite_cyclicloess_normalised <- normaliseBetweenSamples(
     metabolite_itsd_log_transformed,
     normalisation_method = "cyclicloess" # Or "quantile", "scale", "none", or NULL to use config
+    # "scale": because it divides log2 values instead of shifting them, its result depends on the unit of your
+    # table (for example µM against nM).
 )
 
 

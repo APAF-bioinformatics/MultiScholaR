@@ -422,7 +422,7 @@ setGeneric(name = "resolveDuplicateFeatures",
 # --- From metabolite_normalization.R ---
 
 setGeneric(name = "logTransformAssays",
-           def = function(theObject, offset = 1, ...) {
+           def = function(theObject, offset = 0, ...) {
              standardGeneric("logTransformAssays")
            }
 )

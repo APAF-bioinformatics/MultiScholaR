@@ -10,7 +10,8 @@ test_that("MCI-015.1 normalization method matrix preserves assay names, samples,
   expect_true(is.na(logged_mat["M_MISSING", "S1"]))
   expect_true(isTRUE(logged@args$log_transformed))
   expect_identical(logged@args$log_transform_offset, 1)
-  expect_error(logTransformAssays(raw_object, offset = 0), "single positive numeric")
+  # KIT-172: offset 0 is plain log2; a negative offset is refused with its class.
+  expect_error(logTransformAssays(raw_object, offset = -1), class = "omics_log2_offset_invalid")
 
   for (method_name in c("none", "cyclicloess", "quantile", "scale")) {
     object <- module_ci_metab_norm_object(

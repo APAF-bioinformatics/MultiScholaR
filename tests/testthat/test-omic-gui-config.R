@@ -885,7 +885,8 @@ test_that("the norm group holds today's values for lipid and metab, trx has one 
         # mod_metab_norm_ui.R:25-289).
         expect_identical(names(norm$panels), names(guiConfigNormPanels), info = omic)
         expect_identical(norm$panels$itsd$aggregation, c("Median (recommended)" = "median", "Mean" = "mean", "Sum" = "sum"))
-        expect_identical(norm$panels$log2$offset, 1)
+        # KIT-172: plain log2 (offset 0) is the default; the tab no longer offers the field.
+        expect_identical(norm$panels$log2$offset, 0)
         expect_identical(norm$panels$between_sample$methods, c("Cyclic Loess" = "cyclicloess", "Quantile" = "quantile",
             "Scale (Median Absolute Values)" = "scale", "None" = "none"))
         expect_identical(norm$panels$between_sample$default, "cyclicloess")
@@ -1267,7 +1268,9 @@ test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the 
     expect_identical(prot$columns, list(id_slot = "protein_id_column", fold_change = "log2FC", pvalue = "raw_pvalue",
         significance = "fdr_qvalue"))
     expect_identical(lapply(configs, `[[`, "summary"), list(proteomics = list(noun = "genes", significance_label = "q"),
-        lipidomics = list(noun = "lipids", significance_label = "Q"), metabolomics = list(noun = "metabolites", significance_label = "Q"),
+        # KIT-172: lipid and metab also show the count of rows not tested for an unobserved group.
+        lipidomics = list(noun = "lipids", significance_label = "Q", not_tested = TRUE),
+        metabolomics = list(noun = "metabolites", significance_label = "Q", not_tested = TRUE),
         transcriptomics = list(noun = "genes", significance_label = "FDR (BH)")))
     expect_identical(lipid$nouns, c(top_n = "Top N Lipids:", scaling = "Row (lipid) scaling", labels = "Show Lipid Labels",
         cluster = "lipids"))

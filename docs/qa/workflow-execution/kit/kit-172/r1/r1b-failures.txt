@@ -1,0 +1,198 @@
+file: test-kit172-downstream.R
+test: KIT-172 T7: lipid every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `as.data.frame(detected(assay_of(paste0(prefix, "_log2"))))` to be identical to `as.data.frame(detected(assay_of(paste0(prefix, "_itsd_norm"))))`.
+  Differences:
+  actual vs expected
+                   n_detected
+  - actual[1, ]           220
+  + expected[1, ]         465
+  - actual[2, ]           210
+  + expected[2, ]         457
+  - actual[3, ]           218
+  + expected[3, ]         455
+  - actual[4, ]           208
+  + expected[4, ]         448
+  - actual[5, ]           205
+  + expected[5, ]         455
+  - actual[6, ]           204
+  + expected[6, ]         456
+  - actual[7, ]           213
+  + expected[7, ]         455
+  - actual[8, ]           218
+  + expected[8, ]         465
+  - actual[9, ]           222
+  + expected[9, ]         461
+  - actual[10, ]          221
+  + expected[10, ]        478
+  - actual[11, ]          221
+  + expected[11, ]        471
+  - actual[12, ]          212
+  + expected[12, ]        459
+  
+    `actual$n_detected`: 220 210 218 208 205 204 213 218 222 221 221 212
+  `expected$n_detected`: 465 457 455 448 455 456 455 465 461 478 471 459
+
+file: test-kit172-downstream.R
+test: KIT-172 T7: lipid every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `missing(assay_of(paste0(prefix, "_log2")))` to be identical to `missing(assay_of(paste0(prefix, "_itsd_norm")))`.
+  Differences:
+    `actual`: 12.2
+  `expected`: 10.4
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `...$n_detected` to be identical to `c(2L, 3L)`.
+  Differences:
+    `actual`: 2  
+  `expected`: 2 3
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `calculateLipidMissingness(...)` to equal `100/6`.
+  Differences:
+    `actual`: 33.3
+  `expected`: 16.7
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `frame$Missingness` to equal `round(100/36, 1)`.
+  Differences:
+    `actual`: 5.6
+  `expected`: 2.8
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `percent(paste0(prefix, "_log2"))` to be identical to `percent(paste0(prefix, "_intensity_filtered"))`.
+  Differences:
+    `actual`: 12.2
+  `expected`: 10.4
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `is.null(widget)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: lipid the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `grepl(omicGuiLog2Texts()[["volcano_missing"]], prepended, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit172-downstream.R
+test: KIT-172 T7: metab every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `as.data.frame(detected(assay_of(paste0(prefix, "_log2"))))` to be identical to `as.data.frame(detected(assay_of(paste0(prefix, "_itsd_norm"))))`.
+  Differences:
+  actual vs expected
+                   n_detected
+  - actual[1, ]           220
+  + expected[1, ]         465
+  - actual[2, ]           210
+  + expected[2, ]         457
+  - actual[3, ]           218
+  + expected[3, ]         455
+  - actual[4, ]           208
+  + expected[4, ]         448
+  - actual[5, ]           205
+  + expected[5, ]         455
+  - actual[6, ]           204
+  + expected[6, ]         456
+  - actual[7, ]           213
+  + expected[7, ]         455
+  - actual[8, ]           218
+  + expected[8, ]         465
+  - actual[9, ]           222
+  + expected[9, ]         461
+  - actual[10, ]          221
+  + expected[10, ]        478
+  - actual[11, ]          221
+  + expected[11, ]        471
+  - actual[12, ]          212
+  + expected[12, ]        459
+  
+    `actual$n_detected`: 220 210 218 208 205 204 213 218 222 221 221 212
+  `expected$n_detected`: 465 457 455 448 455 456 455 465 461 478 471 459
+
+file: test-kit172-downstream.R
+test: KIT-172 T7: metab every step runs on concentration data, the counts hold and nothing is imputed
+kind: failure
+message:
+  Expected `missing(assay_of(paste0(prefix, "_log2")))` to be identical to `missing(assay_of(paste0(prefix, "_itsd_norm")))`.
+  Differences:
+    `actual`: 12.2
+  `expected`: 10.4
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `...$n_detected` to be identical to `c(2L, 3L)`.
+  Differences:
+    `actual`: 2  
+  `expected`: 2 3
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `calculateMissingness(...)` to equal `100/6`.
+  Differences:
+    `actual`: 33.3
+  `expected`: 16.7
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab QC counts read a log2 value of 0 or below as measured, not as missing
+kind: failure
+message:
+  Expected `frame$Missingness` to equal `round(100/36, 1)`.
+  Differences:
+    `actual`: 5.6
+  `expected`: 2.8
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `percent(paste0(prefix, "_log2"))` to be identical to `percent(paste0(prefix, "_intensity_filtered"))`.
+  Differences:
+    `actual`: 12.2
+  `expected`: 10.4
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `is.null(widget)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit172-downstream.R
+test: KIT-172 T8: metab the store's missing percent counts missing cells only; the volcano says where they are drawn
+kind: failure
+message:
+  Expected `grepl(omicGuiLog2Texts()[["volcano_missing"]], prepended, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

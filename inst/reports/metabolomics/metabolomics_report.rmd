@@ -414,7 +414,7 @@ ExtractStudyParametersNew <- function(study_params) {
 
     # Log Transformation
     log_transform_applied = parse_yes_no(log_transform_info$"Applied", TRUE),
-    log_transform_offset = log_transform_info$"Offset" %||% 1,
+    log_transform_offset = log_transform_info$"Offset" %||% 0,
 
     # Between-Sample Normalization
     normalisation_method = norm_info$"Method" %||% s4_norm$method %||% "cyclicloess",
@@ -559,9 +559,16 @@ FormatMethodDetails <- function(numbers) {
   }
 
   # Log transformation text
+  # KIT-172: plain log2 by default; a replayed record's offset is stated as the transform it was.
   log_text <- if (isTRUE(numbers$log_transform_applied)) {
-    offset_val <- numbers$log_transform_offset %||% 1
-    glue::glue("Metabolite intensities were log2-transformed with an offset of {offset_val} to stabilize variance.")
+    offset_val <- suppressWarnings(as.numeric(numbers$log_transform_offset %||% 0))
+    if (is.na(offset_val) || offset_val == 0) {
+      paste("Intensities were log2-transformed; a value of zero was read as not detected and was not imputed, so a",
+        "feature was tested only where it was measured, and a fold change can be underestimated when values fall below",
+        "the detection limit in one group.")
+    } else {
+      glue::glue("Metabolite intensities were transformed as log2(x + {offset_val}).")
+    }
   } else {
     "Data were analyzed on the original intensity scale without log transformation."
   }

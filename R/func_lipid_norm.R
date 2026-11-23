@@ -66,7 +66,7 @@ buildLipidNormConfig <- function(input) {
             , method = input$itsd_method %||% "median"
         )
         , log2 = list(
-            offset = input$log_offset %||% 1
+            offset = input$log_offset %||% 0
         )
         , normalization = list(
             method = input$norm_method %||% "cyclicloess"

@@ -119,7 +119,9 @@ computeLipidFilteringMetrics <- function(theObject, group_id_col = NULL, sample_
             sample_id_col = filtering_context$sample_id_col,
             lipid_id_col = filtering_context$lipid_id_col,
             is_pattern = filtering_context$is_pattern,
-            sample_columns = filtering_context$sample_columns
+            sample_columns = filtering_context$sample_columns,
+            # KIT-172: on log2 values a value of 0 or below is measured, not missing.
+            logged = isTRUE(tryCatch(methods::slot(theObject, "args")$log_transformed, error = function(e) FALSE))
         )
     })
     list(assay_names = filtering_context$assay_names, metrics_list_this_step = metrics_list_this_step,

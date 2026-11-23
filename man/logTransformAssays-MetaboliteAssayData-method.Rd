@@ -4,12 +4,12 @@
 \alias{logTransformAssays,MetaboliteAssayData-method}
 \title{Log2 Transform Assay Data for MetaboliteAssayData}
 \usage{
-\S4method{logTransformAssays}{MetaboliteAssayData}(theObject, offset = 1, ...)
+\S4method{logTransformAssays}{MetaboliteAssayData}(theObject, offset = 0, ...)
 }
 \arguments{
 \item{theObject}{A \code{MetaboliteAssayData} object.}
 
-\item{offset}{A small positive number to add before log transformation (default: 1).}
+\item{offset}{A number of 0 or above added before the log transformation (default: 0, plain log2).}
 
 \item{...}{Currently unused.}
 }
@@ -17,13 +17,18 @@
 An updated \code{MetaboliteAssayData} object with log2 transformed values in the \code{metabolite_data} slot.
 }
 \description{
-Applies a log2 transformation (log2(x + offset)) to the numeric sample columns
-in all assay tibbles stored within the \code{metabolite_data} slot of a
-\code{MetaboliteAssayData} object.
+Applies a log2 transformation to the numeric sample columns in all assay tibbles stored within the
+\code{metabolite_data} slot of a \code{MetaboliteAssayData} object: plain \code{log2(x)} by default, \code{log2(x + offset)} for an
+offset above 0.
 }
 \details{
-This transformation is often applied to reduce skewness and stabilize variance
-in quantitative omics data, especially before visualization or statistical modeling.
-Zeros in the data are handled by adding a small \code{offset} before transformation.
+At the default offset of 0 a missing value stays missing, and a value of 0 or below or a value that is not finite
+(\code{NaN}, \code{Inf}, \code{-Inf}) becomes missing; these are counted per assay in \code{args$log_transform_nonpositive}
+(non-positive and non-finite) and reported in one warning of class \code{omics_log2_nonpositive}. The import already
+reads a zero as not detected and refuses negative values, so in the application every value reaching this step
+is positive. An offset above 0 runs the transformation of earlier releases unchanged (negative values set to 0,
+then \code{log2(x + offset)}), so a record made with an offset replays exactly; the result then depends on the unit of
+the table (a value v moves by log2(1 + offset / v)). An offset below 0, missing or not a single number is refused
+with class \code{omics_log2_offset_invalid}; an error of the transformation stops with class \code{omics_log2_failed}.
 Non-numeric columns and the metabolite ID column are preserved.
 }

@@ -145,7 +145,9 @@ collectWorkflowOmicsNormSession <- function(binding, workflowData, normData, inp
         correlation_results = normData$correlation_results, assay_names = normData$assay_names,
         export_timestamp = exportTimestamp, omic_type = binding$omic_type, experiment_label = experimentLabel,
         normalization_method = input$norm_method, ruv_mode = input$ruv_mode, itsd_applied = input$apply_itsd,
-        itsd_aggregation = if (isTRUE(input$apply_itsd)) input$itsd_aggregation else NA, log_offset = input$log_offset,
+        itsd_aggregation = if (isTRUE(input$apply_itsd)) input$itsd_aggregation else NA,
+        # KIT-172: the offset the log step used (the record's; the tab no longer renders the field).
+        log_offset = omicNormRecordedLog2Offset(manager, binding$prefix) %||% input$log_offset %||% NA,
         correlation_threshold = input$min_pearson_correlation_threshold, ruv_grouping_variable = input$ruv_grouping_variable,
         feature_counts = feature_counts),
         stats::setNames(list(workflowData[[export$counts_field]]), export$counts_field),

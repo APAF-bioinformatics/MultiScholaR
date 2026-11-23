@@ -470,20 +470,24 @@ setMethod(
 #' @title Log2 Transform Assay Data for LipidomicsAssayData
 #'
 #' @description
-#' Applies a log2 transformation (log2(x + offset)) to the numeric sample columns
-#' in all assay tibbles stored within the `lipid_data` slot of a
-#' `LipidomicsAssayData` object.
+#' Applies a log2 transformation to the numeric sample columns in all assay tibbles stored within the `lipid_data`
+#' slot of a `LipidomicsAssayData` object: plain `log2(x)` by default, `log2(x + offset)` for an offset above 0.
 #'
 #' @details
-#' This transformation is often applied to reduce skewness and stabilize variance
-#' in quantitative omics data, especially before visualization or statistical modeling.
-#' Zeros in the data are handled by adding a small `offset` before transformation.
+#' At the default offset of 0 a missing value stays missing, and a value of 0 or below or a value that is not finite
+#' (`NaN`, `Inf`, `-Inf`) becomes missing; these are counted per assay in `args$log_transform_nonpositive`
+#' (non-positive and non-finite) and reported in one warning of class `omics_log2_nonpositive`. The import already
+#' reads a zero as not detected and refuses negative values, so in the application every value reaching this step
+#' is positive. An offset above 0 runs the transformation of earlier releases unchanged (negative values set to 0,
+#' then `log2(x + offset)`), so a record made with an offset replays exactly; the result then depends on the unit of
+#' the table (a value v moves by log2(1 + offset / v)). An offset below 0, missing or not a single number is refused
+#' with class `omics_log2_offset_invalid`; an error of the transformation stops with class `omics_log2_failed`.
 #' Non-numeric columns and the lipid ID column are preserved.
 #'
 #' @title Log Transform Assays for LipidomicsAssayData
 #' @name logTransformAssays,LipidomicsAssayData-method
 #' @param theObject A `LipidomicsAssayData` object.
-#' @param offset A small positive number to add before log transformation (default: 1).
+#' @param offset A number of 0 or above added before the log transformation (default: 0, plain log2).
 #' @param ... Currently unused.
 #'
 #' @return An updated `LipidomicsAssayData` object with log2 transformed values in the `lipid_data` slot.
@@ -497,12 +501,16 @@ setMethod(
 setMethod(
     f = "logTransformAssays",
     signature = "LipidomicsAssayData",
-    definition = function(theObject, offset = 1, ...) {
+    definition = function(theObject, offset = 0, ...) {
         # --- Input Validation ---
-        if (!is.numeric(offset) || length(offset) != 1 || offset <= 0) {
-            stop("`offset` must be a single positive numeric value.")
+        omicsLog2CheckOffset(offset)
+        if (offset > 0) {
+            message(sprintf("Applying log2(x + %s) transformation to assays.", as.character(offset)))
+        } else {
+            message("Applying log2(x) transformation to assays.")
         }
-        message(sprintf("Applying log2(x + %s) transformation to assays.", as.character(offset)))
+        tally <- new.env(parent = emptyenv())
+        tally$counts <- list()
 
         # --- Get Object Slots ---
         assay_list <- methods::slot(theObject, "lipid_data")
@@ -575,21 +583,10 @@ setMethod(
                 return(assay_tibble) # Return original
             }
 
-            # --- Apply Log2 Transformation ---
-            transformed_tibble <- tryCatch(
-                {
-                    assay_tibble %>%
-                        # Replace negative values with 0 before log transformation
-                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ ifelse(!is.na(.x) & .x < 0, 0, .x))) %>%
-                        # Ensure target columns are numeric before transformation
-                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), as.numeric)) %>%
-                        dplyr::mutate(dplyr::across(dplyr::all_of(sample_cols), ~ log2(.x + offset)))
-                },
-                error = function(e) {
-                    warning(sprintf("Assay '%s': Error during log2 transformation: %s. Returning original assay data.", assay_index_name, e$message), immediate. = TRUE)
-                    return(assay_tibble) # Return original on error
-                }
-            )
+            # --- Apply Log2 Transformation (KIT-172: the shared step; an error stops) ---
+            step <- omicsLog2SampleColumns(assay_tibble, sample_cols, offset, assay_index_name)
+            transformed_tibble <- step$assay
+            if (!is.null(step$counts)) tally$counts[[assay_index_name]] <- step$counts
 
             # Check if transformation actually happened (e.g., if error occurred)
             if (identical(transformed_tibble, assay_tibble)) {
@@ -607,14 +604,8 @@ setMethod(
         # Assign the list of transformed assays back to the object
         methods::slot(theObject, "lipid_data") <- transformed_assay_list
 
-        # Optional: Add log transformation status to args (consider structure)
-        # Ensure args is a list
-        if (!is.list(theObject@args)) {
-            warning("Slot 'args' is not a list. Cannot record log transformation status.", immediate. = TRUE)
-        } else {
-            theObject@args$log_transformed <- TRUE
-            theObject@args$log_transform_offset <- offset
-        }
+        # Add log transformation status to args (KIT-172: at offset 0 also the counts, and the warning)
+        theObject <- omicsLog2RecordArgs(theObject, offset, tally$counts)
 
 
         message("Log2 transformation complete for all assays.")

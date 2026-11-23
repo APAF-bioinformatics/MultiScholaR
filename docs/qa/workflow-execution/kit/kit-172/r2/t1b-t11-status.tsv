@@ -1,0 +1,7 @@
+step	outcome
+start	commit 6e4ef83b308ebf4a4e6ad56b0420b3fcfc46473e; cores 4; sva TRUE
+t11	pass: 4 rows
+t1b_first_seed	8.8 minutes; projected parallel part 44.1 minutes (limit 69)
+t1b_seeds	840 rows, 0 with an error, 83.1 minutes in all
+t1b_metab_seed	pass: identical to lipid
+t1b	pass

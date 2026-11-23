@@ -129,7 +129,9 @@ computeMetabFilteringMetrics <- function(theObject, group_id_col = NULL, sample_
 
             det_per_sample <- tryCatch(
                 {
-                    countMetabolitesPerSample(current_assay_data, sample_id_col, metabolite_id_col, sample_columns = sample_columns)
+                    # KIT-172: on log2 values a value of 0 or below is measured, not missing.
+                    countMetabolitesPerSample(current_assay_data, sample_id_col, metabolite_id_col, sample_columns = sample_columns,
+                        logged = isTRUE(tryCatch(methods::slot(theObject, "args")$log_transformed, error = function(e) FALSE)))
                 },
                 error = function(e) {
                     stop(e)
@@ -138,7 +140,8 @@ computeMetabFilteringMetrics <- function(theObject, group_id_col = NULL, sample_
 
             miss <- tryCatch(
                 {
-                    calculateMissingness(current_assay_data, sample_id_col, sample_columns = sample_columns)
+                    calculateMissingness(current_assay_data, sample_id_col, sample_columns = sample_columns,
+                        logged = isTRUE(tryCatch(methods::slot(theObject, "args")$log_transformed, error = function(e) FALSE)))
                 },
                 error = function(e) {
                     stop(e)
