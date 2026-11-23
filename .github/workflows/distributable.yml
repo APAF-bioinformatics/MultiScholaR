@@ -396,6 +396,59 @@ jobs:
           (cd packaging/electron && npx --no-install electron-fuses read --app "$DEST/app/multischolar") || status=1
           exit "$status"
 
+      # KIT-176 T3 (run-k176-base only; git only): the package-commit rule of packaging/package-commit.sh on the pairs
+      # declared in docs/qa/workflow-execution/kit/kit-176/t3-pairs.tsv, a shallow copy and two dirty trees, in scratch
+      # clones under RUNNER_TEMP (never the checkout). A missing declared commit is an instrumentation failure (exit 2).
+      - name: "KIT-176 T3 (dry): the package-commit rule on the declared pairs, a shallow copy and two dirty trees"
+        id: t3
+        if: ${{ !cancelled() }}
+        shell: bash
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
+        run: |
+          src="$PWD"
+          echo "KIT-176 T3 packaging/package-commit.sh sha256 $(sha256sum packaging/package-commit.sh | cut -d' ' -f1)"
+          source packaging/package-commit.sh
+          root="$(cd "$RUNNER_TEMP" && pwd)/kit176-t3"
+          mkdir "$root"
+          pairs="docs/qa/workflow-execution/kit/kit-176/t3-pairs.tsv"
+          git clone -q --mirror "$src" "$root/pairs.git"
+          for sha in $(tr -d '\r' < "$pairs" | awk -F'\t' 'NR > 1 { print $1; print $2; print $3 }' | sort -u); do
+            if ! git -C "$root/pairs.git" cat-file -e "$sha^{commit}" 2> /dev/null; then
+              echo "KIT-176 T3 INSTRUMENTATION FAILURE: the declared commit $sha is not in the clone"; exit 2
+            fi
+          done
+          echo "KIT-176 T3 the declared commits are present"
+          fail=0
+          while IFS=$'\t' read -r head line want_commit want_flag; do
+            if got=$(cd "$root/pairs.git" && package_commit_rule "$head" "$line"); then :; else got="stopped"; fi
+            if [ "$got" = "$want_commit $want_flag" ]; then verdict=ok; else verdict=FAIL; fail=1; fi
+            echo "KIT-176 T3 pair $verdict: package_commit_rule $head $line gave '$got'; declared '$want_commit $want_flag'"
+          done < <(tr -d '\r' < "$pairs" | awk 'NR > 1')
+          expect_stop() { # <clone> <what the first message line must contain> [the one status line expected after it]
+            local err="$root/$1.err" first rest
+            if (cd "$root/$1" && package_tree_checks "$(git rev-parse HEAD)") 2> "$err"; then
+              echo "KIT-176 T3 $1 FAIL: package_tree_checks did not stop"; fail=1; return
+            fi
+            first="$(sed -n 1p "$err")"; rest="$(sed 1d "$err")"
+            if [[ "$first" == *"$2"* ]] && [ "$rest" = "${3:-}" ]; then
+              echo "KIT-176 T3 $1 ok: stopped: $first${rest:+ [$rest]}"
+            else
+              echo "KIT-176 T3 $1 FAIL: stopped otherwise: $(cat "$err")"; fail=1
+            fi
+          }
+          git clone -q --no-local --depth 1 "$src" "$root/shallow"
+          echo "KIT-176 T3 shallow copy: is-shallow-repository $(git -C "$root/shallow" rev-parse --is-shallow-repository)"
+          expect_stop shallow "the clone is shallow"
+          git clone -q --no-local "$src" "$root/dirty-tracked"
+          echo "# KIT-176 T3" >> "$root/dirty-tracked/R/app_server.R"
+          expect_stop dirty-tracked "the package source differs" " M R/app_server.R"
+          git clone -q --no-local "$src" "$root/dirty-untracked"
+          echo "KIT-176 T3" > "$root/dirty-untracked/inst/kit176-t3-untracked.txt"
+          expect_stop dirty-untracked "the package source differs" "?? inst/kit176-t3-untracked.txt"
+          echo "KIT-176 T3 result: $([ "$fail" = 0 ] && echo 'every call as declared' || echo 'a call not as declared')"
+          exit "$fail"
+
       # The Linux library path (outcome.md, defect 2): the installed application's R on this runner and
       # in containers of other distributions; bash and sh started from R, a child R, the entry.
       # Decision M25: /usr/bin/which is a host requirement; the launcher stops without it (shown in the Arch Linux and
@@ -832,6 +885,59 @@ jobs:
           Pop-Location
           "lifecycle passes: test setting off $status1; on $status2; off with ELECTRON_RUN_AS_NODE=1 $status3; fuse read $fuses"
           if ($status1 -ne 0 -or $status2 -ne 0 -or $status3 -ne 0 -or $fuses -ne 0) { throw "a lifecycle pass or the fuse read failed" }
+
+      # KIT-176 T3 (run-k176-base only; git only): the package-commit rule of packaging/package-commit.sh on the pairs
+      # declared in docs/qa/workflow-execution/kit/kit-176/t3-pairs.tsv, a shallow copy and two dirty trees, in scratch
+      # clones under RUNNER_TEMP (never the checkout). A missing declared commit is an instrumentation failure (exit 2).
+      - name: "KIT-176 T3 (dry): the package-commit rule on the declared pairs, a shallow copy and two dirty trees"
+        id: t3
+        if: ${{ !cancelled() }}
+        shell: bash
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
+        run: |
+          src="$PWD"
+          echo "KIT-176 T3 packaging/package-commit.sh sha256 $(sha256sum packaging/package-commit.sh | cut -d' ' -f1)"
+          source packaging/package-commit.sh
+          root="$(cd "$RUNNER_TEMP" && pwd)/kit176-t3"
+          mkdir "$root"
+          pairs="docs/qa/workflow-execution/kit/kit-176/t3-pairs.tsv"
+          git clone -q --mirror "$src" "$root/pairs.git"
+          for sha in $(tr -d '\r' < "$pairs" | awk -F'\t' 'NR > 1 { print $1; print $2; print $3 }' | sort -u); do
+            if ! git -C "$root/pairs.git" cat-file -e "$sha^{commit}" 2> /dev/null; then
+              echo "KIT-176 T3 INSTRUMENTATION FAILURE: the declared commit $sha is not in the clone"; exit 2
+            fi
+          done
+          echo "KIT-176 T3 the declared commits are present"
+          fail=0
+          while IFS=$'\t' read -r head line want_commit want_flag; do
+            if got=$(cd "$root/pairs.git" && package_commit_rule "$head" "$line"); then :; else got="stopped"; fi
+            if [ "$got" = "$want_commit $want_flag" ]; then verdict=ok; else verdict=FAIL; fail=1; fi
+            echo "KIT-176 T3 pair $verdict: package_commit_rule $head $line gave '$got'; declared '$want_commit $want_flag'"
+          done < <(tr -d '\r' < "$pairs" | awk 'NR > 1')
+          expect_stop() { # <clone> <what the first message line must contain> [the one status line expected after it]
+            local err="$root/$1.err" first rest
+            if (cd "$root/$1" && package_tree_checks "$(git rev-parse HEAD)") 2> "$err"; then
+              echo "KIT-176 T3 $1 FAIL: package_tree_checks did not stop"; fail=1; return
+            fi
+            first="$(sed -n 1p "$err")"; rest="$(sed 1d "$err")"
+            if [[ "$first" == *"$2"* ]] && [ "$rest" = "${3:-}" ]; then
+              echo "KIT-176 T3 $1 ok: stopped: $first${rest:+ [$rest]}"
+            else
+              echo "KIT-176 T3 $1 FAIL: stopped otherwise: $(cat "$err")"; fail=1
+            fi
+          }
+          git clone -q --no-local --depth 1 "$src" "$root/shallow"
+          echo "KIT-176 T3 shallow copy: is-shallow-repository $(git -C "$root/shallow" rev-parse --is-shallow-repository)"
+          expect_stop shallow "the clone is shallow"
+          git clone -q --no-local "$src" "$root/dirty-tracked"
+          echo "# KIT-176 T3" >> "$root/dirty-tracked/R/app_server.R"
+          expect_stop dirty-tracked "the package source differs" " M R/app_server.R"
+          git clone -q --no-local "$src" "$root/dirty-untracked"
+          echo "KIT-176 T3" > "$root/dirty-untracked/inst/kit176-t3-untracked.txt"
+          expect_stop dirty-untracked "the package source differs" "?? inst/kit176-t3-untracked.txt"
+          echo "KIT-176 T3 result: $([ "$fail" = 0 ] && echo 'every call as declared' || echo 'a call not as declared')"
+          exit "$fail"
 
       # P6 (D4: no DIA on Windows): the lanes without DIA, in process with the installed application's R in the
       # shell's environment; the network is cut for the installed programs by the lifecycle step's rules.
