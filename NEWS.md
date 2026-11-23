@@ -10,15 +10,21 @@
    identifier, the one with the largest mean value is kept). The pre-ranked test used before (GSEA on each feature's
    correlation with the factor) assumes features are independent, which gives p-values that are too small for
    pathways whose features vary together; it stays selectable, with that assumption stated. Existing scripts that call
-   `integrationEnrichFactor()` without naming a test now get the new test and different p-values (on the synthetic test
-   corpus, of 40 invented pathways neither test called any at a 5 % false discovery rate, on proteins and on
-   metabolites; the change is in the p-values and the ranking of pathways, not counted further there). In a check on
-   simulated data shaped like a 12-sample study, unrelated pathways whose compounds vary together at a correlation
-   of 0.3 were called in 43.0 % of cases by the earlier test and at most 6.6 % by the new one, for any unrelated
-   pathway. To get the earlier test, pass `overrides = list(test = "gsea")`; its results are unchanged. In the
-   Enrichment tab the new test is pre-selected. Results made before this change keep their test when replayed. Every
+   `integrationEnrichFactor()` without naming a test now get the new test and different p-values (the size of the
+   change is given by the check on simulated data below; on the synthetic test corpus, 40 pathways of randomly chosen
+   measured features were called by neither test). In a check on simulated data shaped like a 12-sample study, on the
+   main factor, unrelated sets whose features vary together at a correlation of 0.3 were called at the 5 % level by
+   the earlier test in 13.5 % (sets of 5 to 10 metabolites) to 43.0 % (sets of 10 to 100 genes) of cases and by the
+   new test in at most 0.6 %. Over every kind of unrelated set checked, the new test called at most 4.4 % on the main
+   factor and at most 6.6 % against values unrelated to the data, except sets made only of the most variable features
+   (up to 10.1 %); on weaker factors both tests call unrelated sets of the model's features too often (the new test up
+   to 12.8 %, the earlier one up to 60.1 %). To get the earlier test, pass `overrides = list(test = "gsea")`; its
+   results are unchanged. In the Enrichment tab the new test is pre-selected. Results made before this change keep their test when replayed. Every
    KEGG and Reactome summary now carries a caution (the factor was learned from the same data, so the results are
    exploratory) and the factor's variance explained in the data set. STRING is unchanged and ignores the setting.
+   Further test options follow in KIT-191 (VAL-85 (2)): the correlation-adjusted test with negative correlations
+   floored, a permutation test and the pre-ranked test, each shown with its measured false-positive rate and power from
+   this check.
 
 ## MultiScholaR 0.9.2 (staging)
 

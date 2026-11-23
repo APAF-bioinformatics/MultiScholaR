@@ -6,7 +6,7 @@ after it). Every run: `runs.tsv`. Simulation: `declaration.md` (committed alone 
 
 ## Observed
 
-- **Simulation S (45225854502): outcome O1.** E1 holds at n = 12 (largest upper limit 0.0737) and n = 20 (0.0710);
+- **Simulation S (45225854502): outcome O1.** E1 holds at n = 12 (largest upper limit 0.0737) and n = 20 (0.0711);
   E2 holds for gsea (0.0599) and camera_pr (0.0637); E3 holds (33,877 and 34,891 called planted sets, all in the
   expected direction); 2,400 of 2,400 replicates completed; determinism identical. `camera` is the test of record for
   every data set; `camera_pr` is not offered (the code was written to O1).
@@ -36,8 +36,16 @@ after it). Every run: `runs.tsv`. Simulation: `declaration.md` (committed alone 
   (`cross-platform.tsv`). ubuntu-24.04 not run (the suite stage has no 24.04 job).
 - T13 (corpus): planted sets found in the expected direction, decoys not; of 40 invented pathways neither test called
   any at BH <= 0.05 on proteomics or metabolomics_GCMS (the measured size of the change, in NEWS).
-- Memory case (8.7), as measured: 2,000 sets on 20,000 features x 500 samples in 9.5 to 10.3 s; process peak RSS
-  1,176 MiB, of which 592 MiB before the case. Its reading against "1 GB peak RSS" is left to the implementation audit.
+- Memory case (8.7), not met as worded (VAL-85 (5)): 2,000 sets on 20,000 features x 500 samples in 9.5 to 10.3 s;
+  process peak RSS 1,176 MiB (the ticket's 1 GB peak not met as worded); the high-water mark before the case was
+  592 MiB, so the case added at least 584 MiB.
+- Budget: 2,065.9 job-minutes, 137.7 core-hours by GitHub job times, against 146.36 expected and 262.67 ceiling. The
+  L1 item used 4.21 core-hours against its 3.0 ceiling (three runs, two instrument corrections, VAL-54 (iii)); the
+  ticket total holds. Module CI runs triggered by the pushes are not counted here (as in earlier tickets' records).
+- Manuscripts deliverable (ticket 12: the Methods sentence, the limits sentence and the simulation's summary figures
+  with the four statements of 15.2): owed, not done on this branch (drafts go to ~/Projects/APAF/Manuscripts).
+- Release rule (DISPATCH-STATE, KIT-184 C02): B's bundles were built from d53a5dd1 and discarded inside their jobs; none
+  left development. From this merge until KIT-184 merges, no release or demo installer may be built from staging.
 
 ## Acceptance criteria
 

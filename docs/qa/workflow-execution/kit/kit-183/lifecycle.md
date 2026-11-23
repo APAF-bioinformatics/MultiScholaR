@@ -32,9 +32,9 @@ ceiling becomes 222.67 + 2 x (61.3 - 41.33) = 262.6 core-hours, above the 223 th
 ## Other L1 items
 
 - Pool counts and sets formed (6.2): **not measured** (written only for a completed replicate).
-- Memory case (8.7): 2,000 sets on 20,000 features x 500 samples in 9.5 and 10.3 s (ceiling 60 s); peak RSS of the
-  process 1,176 MiB, of which 592 MiB before the case (R, the package and the 20,000 x 500 table in memory). Against
-  the ticket's "1 GB peak RSS": the process's peak is above 1 GB; the increase during the case is 584 MiB.
+- Memory case (8.7): 2,000 sets on 20,000 features x 500 samples in 9.5 and 10.3 s (ceiling 60 s); process peak RSS
+  1,176 MiB (the ticket's 1 GB peak not met as worded, VAL-85 (5)); the high-water mark before the case was 592 MiB,
+  so the case added at least 584 MiB.
 - MOFA2's sample-count warnings: not recorded (written only for a completed replicate).
 - The defect is corrected in `simulate-k183.R` after run 45151737782 (column names only inside the formulas); not run.
 
@@ -55,3 +55,8 @@ transcriptomics 4,000 (no censoring). Classes with fewer than 90 % of their decl
 cells): proteomics C2 size 30 (n = 20: 0 %), C4 size 100 (n = 12: 60 %, n = 20: 0 %), P-up and P-down size 100
 (n = 20: 80 %); metabolomics P-up and P-down size 10 (40 to 80 %) and 20 (0 %). Redefined in the declaration's dated
 section before S: proteomics C2 sizes 10, 15; proteomics C4 and P sizes 10, 30; metabolomics P size 5.
+
+Not reported (ticket 6.2 asks the lifecycle for them): the within-block residual correlation and the variance-trend
+fit. They cannot be added without a run, and their absence is not a reason for one (AUDIT-KIT-183-impl I07). Run
+times in the tables above are times since each job's start; the GitHub job times are in `runs.tsv` (L1 16.5, L1b 16.6
+job-minutes).
