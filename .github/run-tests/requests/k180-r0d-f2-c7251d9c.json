@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-180 R0d: gate F2, second instrument run under VAL-54 (R0c located the stop: file.exists(NULL) in the script); run-k180-base, R/ equal to base a60c4e9a",
+  "label": "KIT-180 R0d F2 replay check on c7251d9c",
+  "package_commit": "c7251d9c461c3ef5be7c5c0f1f25f0f5562226b9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-180/replay-check.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-180/replay"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-180/replay",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
