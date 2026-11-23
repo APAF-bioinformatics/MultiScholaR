@@ -1,0 +1,55 @@
+{
+  "requested_by": "KIT-185 VAL-54 instrument run: P5 jobs 1 and 3 timed out at 175 min (302 s/rep, not the planned 205); the replicates not written, 117-133 and 380-400, same declaration; S' reserve",
+  "label": "KIT-185 S P5 remaining replicates 432f703b",
+  "package_commit": "432f703b7e0d5f627e2990c288dbfe5f389fcd19",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "A",
+        "P5",
+        "117",
+        "133",
+        "k185-p5r-1"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_JOB": "a-p5-rest-1"
+      },
+      "out": "k185-p5r-1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "A",
+        "P5",
+        "380",
+        "400",
+        "k185-p5r-2"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_JOB": "a-p5-rest-2"
+      },
+      "out": "k185-p5r-2",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
