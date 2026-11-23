@@ -8,8 +8,8 @@
 # 62a41ba1, whose R/ equals a60c4e9a) is installed into a private library in the job, capture-record.R runs on it, and
 # test-go-propagation.R runs on the installed head with KIT173_REPLAY_BASE pointing at that capture, so T7(b) replays
 # the base record on its own store. The store stays in the job. Writes to <out dir>: t7-base-check.tsv (which code made
-# the capture), t7-capture.tsv (the capture's values) and t7-tests.tsv (per test: expectations, failures, skips,
-# errors). Install and test consoles stay in the job; their exit statuses are in t7-base-check.tsv.
+# the capture), t7-capture.tsv (the capture's values), t7-tests.tsv (per test: expectations, failures, skips,
+# errors) and t7-failures.tsv (each failing expectation: test, class, first 12 message lines; added under VAL-54). Install and test consoles stay in the job; their exit statuses are in t7-base-check.tsv.
 
 args <- commandArgs(trailingOnly = TRUE)
 out <- normalizePath(if (length(args) >= 1L) args[[1L]] else "k173-t7-out", mustWork = FALSE)
@@ -40,7 +40,14 @@ file.copy(file.path(capture, "capture.tsv"), file.path(out, "t7-capture.tsv"))
 code <- paste0("res <- testthat::test_file('tests/testthat/test-go-propagation.R', package = 'MultiScholaR', ",
     "load_package = 'installed', reporter = 'silent', stop_on_failure = FALSE); ",
     "df <- as.data.frame(res); utils::write.table(df[, c('test', 'nb', 'failed', 'skipped', 'error')], ",
-    "file = '", file.path(out, "t7-tests.tsv"), "', sep = '\\t', quote = FALSE, row.names = FALSE)")
+    "file = '", file.path(out, "t7-tests.tsv"), "', sep = '\\t', quote = FALSE, row.names = FALSE); ",
+    # VAL-54 instrument fix: the failing expectations' test name, class and the first 12 lines of their message
+    "bad <- do.call(rbind, lapply(res, function(t) do.call(rbind, lapply(t$results, function(e) ",
+    "if (inherits(e, 'expectation_success') || inherits(e, 'expectation_skip')) NULL else data.frame(test = t$test, ",
+    "class = class(e)[[1L]], message = gsub('\\t', ' ', paste(utils::head(strsplit(conditionMessage(e), '\\n')[[1L]], 12L), ",
+    "collapse = ' | ')), stringsAsFactors = FALSE))))); ",
+    "if (is.null(bad)) bad <- data.frame(test = character(), class = character(), message = character()); ",
+    "utils::write.table(bad, file = '", file.path(out, "t7-failures.tsv"), "', sep = '\\t', quote = FALSE, row.names = FALSE)")
 checks$tests_exit <- system2(rscript, c("-e", shQuote(code)), stdout = file.path(work, "tests.log"),
     stderr = file.path(work, "tests.log"), env = c(paste0("KIT173_REPLAY_BASE=", capture), "NOT_CRAN=true"))
 utils::write.table(data.frame(measure = names(checks), value = vapply(checks, as.character, "")),
