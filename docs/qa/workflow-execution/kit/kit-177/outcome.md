@@ -114,3 +114,21 @@ sides is `identical()` (397 rows, the same columns in the same order); the kit f
 data slots and `@args` without that timestamp, and the DA table by column name (rows aligned by protein); the ticket
 says so (History, revision 1.6, VAL-79). This describes in-process records; nothing here is claimed for GUI-made
 records (KIT-180 R0d).
+
+## R1 declared (tests failing first)
+
+Binding: `run-k177-r1` 8f7b4c6e = v0.9-staging 55710a87 (R/ as shipped) plus the two tests-only commits (2cb0a7f1,
+a9822043; nothing under R/). Files: `test-prot-design-log2.R`, `test-workflow-native-session.R`,
+`test-workflow-analysis-record.R`; 3 shards, no base. Ceiling 4 core-hours (expected 1). Decides: T1a, T2, T3, T3b, T4,
+T8, T9 and the two contract rewrites fail at the stated values; T5 and T7 pass (regression); T6 fails on its cell
+rule (base: no change). A failure for another reason is recorded and, if it is the test's mechanics, corrected under
+VAL-54 before the fix's run.
+
+**R1, run 45270608493** (`r1/tests.tsv`, `r1/failures.txt`, `r1/kit177-lines.txt`; 3 jobs, 21.0 job-minutes longest,
+about 1.4 core-hours). As stated: T1a fails at (1), (2) and (3) for every shape, configuration and factor (e.g. TMT
+`none`, s = 1000: design-step shift off by 1.73); T2 reports 2.88; T3 (0 not missing, NaN kept, log2(200 + 1)) and T4
+(`log2(x + 1)`, no counts) fail; the contract rewrites fail (`log2(x + 1)`; 9.9955 against 9.9941); T6 fails its cell
+rule (base: no change); T8 and T9 stop on the absent text function (no notification and no warning exist on base); T5
+passes (regression). Two test-mechanics defects (VAL-54, instrument): T3b stopped because its fixture-session helper
+was defined after the test; T7 failed only on matrix row names (the kept and design matrices are indexed differently).
+Both corrected (tests only) and re-run as R1b on base.
