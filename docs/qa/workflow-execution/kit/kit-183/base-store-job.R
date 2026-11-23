@@ -78,14 +78,15 @@ rows <- list(runGuards(head, "head"))
 for (name in names(mutations)) rows[[length(rows) + 1L]] <- runGuards(mutate(name, mutations[[name]]), name)
 guards <- do.call(rbind, rows)
 utils::write.table(guards, file.path(out_dir, "guards.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+# A test id may cover several test_that blocks (T8 restated: (a), then (b) and (c)): every block must pass.
 ok <- function(variant, test) {
     d <- guards[guards$variant == variant & guards$test == test, , drop = FALSE]
-    nrow(d) == 1L && isTRUE(d$failed == 0L) && isTRUE(d$skipped == 0L) && !isTRUE(d$error) && isTRUE(d$passed > 0L)
+    nrow(d) >= 1L && all(d$failed == 0L) && !any(as.logical(d$skipped)) && !any(as.logical(d$error)) && all(d$passed > 0L)
 }
 verdict <- c(
     sprintf("head: T5 %s, T8 %s, T15 %s", ok("head", "KIT-183 T5: "), ok("head", "KIT-183 T8: "), ok("head", "KIT-183 T15:")),
     sprintf("m1_no_restore: T5 fails %s", !ok("m1_no_restore", "KIT-183 T5: ")),
-    sprintf("m2_test_declared: T8 fails %s", !ok("m2_test_declared", "KIT-183 T8: ")),
+    sprintf("m2_test_declared: T8 fails %s (T8 restated: (a) and (b) must fail)", !ok("m2_test_declared", "KIT-183 T8: ")),
     sprintf("m3_gsea_default: T15 fails %s", !ok("m3_gsea_default", "KIT-183 T15:")))
 writeLines(verdict, file.path(out_dir, "verdict.txt"))
 cat(verdict, sep = "\n")
