@@ -21,7 +21,12 @@ for (route in driverRoutes()) {
             expect_identical(res$exit, "completed",
                              info = paste(res$steps$step, res$steps$outcome, res$steps$reason,
                                           res$steps$class, res$steps$message, collapse = "; "))
-            expect_true(all(res$steps$outcome == "ok"))
+            # A refused diagnostic step is recorded and the cell continues (7.3, A21): on the
+            # fixtures the ITSD analysis refuses, as the GUI-entry oracles show.
+            scored <- res$steps$step %in% names(Filter(function(s) !identical(s$declared, "diagnostic"),
+                stats::setNames(cell$script$steps, vapply(cell$script$steps, `[[`, "", "id"))))
+            expect_true(all(res$steps$outcome[scored] == "ok"),
+                        info = paste(res$steps$step, res$steps$outcome, collapse = "; "))
             da <- utils::read.delim(file.path(out, "da.tsv"), stringsAsFactors = FALSE)
             expect_identical(names(da), DA_COLUMNS)
             expect_gt(nrow(da), 0L)

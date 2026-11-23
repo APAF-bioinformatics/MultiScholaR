@@ -1052,6 +1052,13 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
             msg <- if (length(errors)) {
                 paste(vapply(errors, function(n) n$message, character(1)), collapse = "\n")
             }
+            if (is.null(err) && isTRUE(acc$destroyed)) {
+                # An R error in a server observer ends the session (testServer does not rethrow it):
+                # the cell did not complete on an error.
+                err <- structure(class = c("val_session_ended", "error", "condition"),
+                                 list(message = "the module session ended on an error in the server",
+                                      call = NULL))
+            }
             if (!is.null(err)) {
                 acc$steps[[length(acc$steps) + 1L]] <- data.frame(
                     step = step$id, outcome = "did_not_complete", class = class(err)[[1L]],
