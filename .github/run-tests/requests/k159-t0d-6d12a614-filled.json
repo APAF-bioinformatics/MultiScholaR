@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 T0 (group d): driver core tests only, shown failing; nine new test files only (--files); k159-t0d-6d12a614 was pushed blank and refused by plan",
+  "label": "KIT-159 T0d driver-core tests-only at 6d12a614",
+  "package_commit": "6d12a6145aa04ab9b86ce83fc6a313de0e52ce95",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t0d-out",
+        "--files",
+        "action-scripts,workflow,arm-builders,arm-tables,tab,replay,custom-arm,parity,integration"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t0d-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
