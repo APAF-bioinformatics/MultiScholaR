@@ -1517,9 +1517,18 @@ valProductDisplayReader <- function(manager, r) {
 valProtRuvInput <- function(manager) {
     ns <- asNamespace("MultiScholaR")
     ns$withWorkflowStateScope(manager, function() {
-        lineage <- ns$protIntegrationInputLineage(manager, until = "ruv_corrected")
-        record <- lineage[["ruv_corrected"]]
-        if (is.null(record)) valAbort("the state object is missing", "val_spec_invalid")
+        # The state's own record, read directly (not by walking the lineage from the head).
+        reference <- ns$getDIAStateReference(manager, "ruv_corrected")
+        if (is.null(reference)) {
+            held <- paste(names(manager$.context$snapshot$states), collapse = ",")  # nolint
+            owner <- class(manager)[[1L]]  # nolint: object_usage_linter (glue)
+            valAbort("no ruv_corrected state to read the RUV input from ({owner}; states {held})",
+                     "val_spec_invalid")
+        }
+        record <- ns$readComponentMetadata(manager, reference)
+        if (is.null(record$data$products$normalization_science)) {
+            valAbort("the ruv_corrected state records no normalisation product", "val_spec_invalid")
+        }
         input <- ns$protIntegrationInputRuvInput(manager, record)
         tbl <- ns$readDIAExecutionComponents(manager, input$reference,
                                              fields = c("protein_quant_table",
