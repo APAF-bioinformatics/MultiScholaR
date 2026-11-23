@@ -251,31 +251,69 @@ omicsItsdNormalisationOperation <- function(binding) {
         })
 }
 
-#' Log2 transformation (row: `log2(x + offset)` per value).
+#' Per assay, the number of log2 values below 0 in the sample columns (KIT-172; read by the `scale` warning).
+#' @noRd
+omicsNegativeLogCounts <- function(binding, object) {
+    samples <- as.character(methods::slot(object, "design_matrix")[[methods::slot(object, "sample_id")]])
+    id_column <- methods::slot(object, binding$id_slot)
+    vapply(methods::slot(object, binding$data_slot), function(assay) {
+        columns <- setdiff(intersect(names(assay), samples), id_column)
+        sum(vapply(columns, function(column) sum(assay[[column]] < 0, na.rm = TRUE), integer(1)))
+    }, integer(1))
+}
+
+#' Log2 transformation (row: `log2(x)` per value at the default offset 0, `log2(x + offset)` above it).
+#' KIT-172: at offset 0 the result value also holds `nonpositive` (per assay, the cells of 0 or below and the cells
+#' that are not finite set to missing; summed over pages) and `negative_log` (per assay, the log2 values below 0). The
+#' declared operation does not store the method's count field (`args$log_transform_nonpositive`): the partitioned
+#' runner checkpoints the template's object, whose assays are empty, so the counts live in the result value only.
+#' Above offset 0 the operation and its result are those of earlier releases.
 #' @noRd
 omicsLog2Operation <- function(binding) {
     transform <- function(object, parameters) {
         logTransformAssaysFn <- logTransformAssays
         logTransformAssaysFn(theObject = object, offset = parameters$offset)
     }
+    plain <- function(parameters) isTRUE(parameters$offset == 0)
+    # The count warning reaches no tab from a worker or from inside the runner's suppression; the counts are returned.
+    quiet <- function(expr) withCallingHandlers(expr, omics_log2_nonpositive = function(w) invokeRestart("muffleWarning"))
     declaration <- newOmicsOperation(binding, paste0(binding$prefix, "_log2"), "row", parameters = "offset",
         product_type = paste0(binding$prefix, ".log2_result"),
         kernel = function(object, parameters, store) {
-            transformed <- transform(object, parameters)
+            transformed <- quiet(transform(object, parameters))
             object <- NULL
-            list(final = store$checkpoint(transformed, paste0(binding$prefix, "-log2")))
+            if (!plain(parameters)) return(list(final = store$checkpoint(transformed, paste0(binding$prefix, "-log2"))))
+            nonpositive <- transformed@args$log_transform_nonpositive
+            transformed@args$log_transform_nonpositive <- NULL
+            negative_log <- as.list(omicsNegativeLogCounts(binding, transformed))
+            list(final = store$checkpoint(transformed, paste0(binding$prefix, "-log2")), nonpositive = nonpositive,
+                negative_log = negative_log)
         })
     # KIT-079: the kernel per page, on the object with that page as its assay.
     declaration$partitioned <- function(parameters, store) {
-        run <- omicsRunPartitioned(binding, store, function(template) transform(template, parameters), paste0(binding$prefix, "-log2"),
+        nonpositive <- list()
+        negative_log <- list()
+        run <- omicsRunPartitioned(binding, store, function(template) {
+            x <- transform(template, parameters)
+            x@args$log_transform_nonpositive <- NULL
+            x
+        }, paste0(binding$prefix, "-log2"),
             write_assay = function(assay, component, prototype, template, partition) {
+                nonpositive[[assay]] <<- c(nonpositive = 0L, nonfinite = 0L)
+                negative_log[[assay]] <<- 0L
                 partition$write_rows(prototype, function(page) {
                     object <- template
                     methods::slot(object, binding$data_slot) <- stats::setNames(list(page), assay)
-                    methods::slot(transform(object, parameters), binding$data_slot)[[assay]]
+                    transformed <- withCallingHandlers(transform(object, parameters), omics_log2_nonpositive = function(w) {
+                        nonpositive[[assay]] <<- nonpositive[[assay]] + w$counts[[assay]]
+                        invokeRestart("muffleWarning")
+                    })
+                    if (plain(parameters)) negative_log[[assay]] <<- negative_log[[assay]] + omicsNegativeLogCounts(binding, transformed)[[assay]]
+                    methods::slot(transformed, binding$data_slot)[[assay]]
                 })
             })
-        list(final = run$final)
+        if (!plain(parameters)) return(list(final = run$final))
+        list(final = run$final, nonpositive = nonpositive, negative_log = negative_log)
     }
     declaration
 }

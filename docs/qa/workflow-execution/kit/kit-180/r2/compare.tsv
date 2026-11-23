@@ -1,0 +1,15 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-gui-entry-proteomics.R	171	22	0	0	failed	156	37	0	0	failed	message-changed	message-changed: KIT-101 entry lane prot_tmt: Proteome Discoverer TMT, the protein route; message-changed: KIT-101 entry lane prot_lfq: MaxQuant LFQ, the protein route; message-changed: KIT-101 entry lane prot_lfq_fragpipe: FragPipe LFQ, the protein route; counts: KIT-101 entry lane prot_lfq_fragpipe: FragPipe LFQ, the protein route (passed 33 -> 28, skipped 0 -> 0); counts: KIT-101 entry lane prot_lfq: MaxQuant LFQ, the protein route (passed 33 -> 28, skipped 0 -> 0); counts: KIT-101 entry lane prot_tmt: Proteome Discoverer TMT, the protein route (passed 33 -> 28, skipped 0 -> 0)	
+test-workflow-server-shared.R	204	0	0	0	ok	226	0	0	0	ok	count-changed	counts: proteomics workflow server bypasses QC for TMT workflows (passed 2 -> NA, skipped 0 -> NA); counts: VAL-26: TMT and LFQ open the QC tab after the design (passed NA -> 24, skipped NA -> 0)	
+test-omic-gui-config.R	1906	0	0	0	ok	1911	0	0	0	ok	count-changed	counts: no omic's shell bypasses QC (passed NA -> 5, skipped NA -> 0)	
+test-omic-qc-module.R	157	0	0	0	ok	160	0	0	0	ok	count-changed	counts: W5 the shell starts proteomics' groups on the trigger by route, keeps `qc_workflow_type` and completes (passed 8 -> 11, skipped 0 -> 0)	
+test-app-shell-shared.R	29	0	0	0	ok	29	0	0	0	ok	same		
+test-prot-qc-coordinator-direct-shared.R	4	0	0	3	ok	4	0	0	3	ok	same		
+test-prot-05b-norm-module-contracts.R	439	0	0	22	ok	439	0	0	22	ok	same		
+test-prot-02c-qc-protein-module-contracts.R	407	0	0	23	ok	407	0	0	23	ok	same		
+test-workflow-ui-shared.R	178	0	0	0	ok	178	0	0	0	ok	same		
+test-e2e-proteomics-tmt-lfq.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-e2e-proteomics-dia.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-e2e-proteomics-enrichment.R	0	0	0	2	ok	0	0	0	2	ok	same		
+test-e2e-browser-harness.R	123	0	0	1	ok	126	0	0	1	ok	count-changed	counts: KIT-180: the protein routes' QC helper and the DIA QC helper press the same four protein QC steps (passed NA -> 3, skipped NA -> 0)	
+test-workflow-analysis-record.R	299	0	0	0	ok	307	0	0	0	ok	count-changed	counts: KIT-180 T5 (VAL-26): an LFQ record made without the protein QC steps replays its own steps and inserts none (passed NA -> 8, skipped NA -> 0)	

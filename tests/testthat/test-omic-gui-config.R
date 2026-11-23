@@ -118,6 +118,15 @@ test_that("the shell keys, runners and panels are today's per omic", {
     expect_identical(vapply(metab$shell$tabs, `[[`, "", "testid")[[1L]], "metab-tab-import")
 })
 
+test_that("no omic's shell bypasses QC", {
+    # KIT-180 (VAL-26): label-free and TMT go through the protein-level QC; no shell marks the QC tab complete.
+    for (omic in c("proteomics", "lipidomics", "metabolomics", "transcriptomics")) {
+        expect_null(omicGuiConfig(omic)$shell$chain_rules$qc_bypass, label = omic)
+    }
+    expect_identical(omicGuiConfig("proteomics")$qc$complete_state[c("TMT", "LFQ")],
+        c(TMT = "protein_replicate_filtered", LFQ = "protein_replicate_filtered"))
+})
+
 test_that("removing a required field, or giving it the wrong type, is refused by class", {
     for (omic in c("proteomics", "lipidomics")) {
         config <- omicGuiConfig(omic)
@@ -876,7 +885,8 @@ test_that("the norm group holds today's values for lipid and metab, trx has one 
         # mod_metab_norm_ui.R:25-289).
         expect_identical(names(norm$panels), names(guiConfigNormPanels), info = omic)
         expect_identical(norm$panels$itsd$aggregation, c("Median (recommended)" = "median", "Mean" = "mean", "Sum" = "sum"))
-        expect_identical(norm$panels$log2$offset, 1)
+        # KIT-172: plain log2 (offset 0) is the default; the tab no longer offers the field.
+        expect_identical(norm$panels$log2$offset, 0)
         expect_identical(norm$panels$between_sample$methods, c("Cyclic Loess" = "cyclicloess", "Quantile" = "quantile",
             "Scale (Median Absolute Values)" = "scale", "None" = "none"))
         expect_identical(norm$panels$between_sample$default, "cyclicloess")
@@ -1258,7 +1268,9 @@ test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the 
     expect_identical(prot$columns, list(id_slot = "protein_id_column", fold_change = "log2FC", pvalue = "raw_pvalue",
         significance = "fdr_qvalue"))
     expect_identical(lapply(configs, `[[`, "summary"), list(proteomics = list(noun = "genes", significance_label = "q"),
-        lipidomics = list(noun = "lipids", significance_label = "Q"), metabolomics = list(noun = "metabolites", significance_label = "Q"),
+        # KIT-172: lipid and metab also show the count of rows not tested for an unobserved group.
+        lipidomics = list(noun = "lipids", significance_label = "Q", not_tested = TRUE),
+        metabolomics = list(noun = "metabolites", significance_label = "Q", not_tested = TRUE),
         transcriptomics = list(noun = "genes", significance_label = "FDR (BH)")))
     expect_identical(lipid$nouns, c(top_n = "Top N Lipids:", scaling = "Row (lipid) scaling", labels = "Show Lipid Labels",
         cluster = "lipids"))
@@ -1303,7 +1315,7 @@ test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the 
     # KIT-106 W2 merge: trx's source read, model text, static volcano, contrast entries and export report are wired to
     # the core (utils_workflow_trx_da.R), and lipid's preflight (func_omics_design_shared.R).
     expect_identical(trx$source, list(class = "TranscriptomicsAssayData", read_metadata = trxDaReadMetadata,
-        no_data = "Run the normalisation first: the DA runs on the normalised (RUVs) state."))
+        no_data = "Run the normalisation first: the differential analysis runs on the normalised data."))
     expect_identical(trx$model$text, trxDaModelText)
     expect_identical(trx$views$static_volcano$plot, trxDaStaticVolcano)
     expect_identical(c(trx$contrast_entries, trx$contrast_entry), c(trxDaContrastEntries, trxDaContrastEntry))

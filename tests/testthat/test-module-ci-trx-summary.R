@@ -140,3 +140,23 @@ test_that("MCI-032.5 the summary tab under the transcriptomics profile: the RUVI
   expect_match(lipid, "lipid-summary-generate-report", fixed = TRUE)
   expect_false(grepl("ruviii", lipid, ignore.case = TRUE))
 })
+
+test_that("KIT-186 T7 the report of a run without RUV (design none) says that no correction for unwanted variation was applied", {
+  skipWithoutTrxDeclReference()
+  withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+  fixture <- module_ci_trx_project(module_ci_trx_corpus())
+  assign("project_dirs", fixture$project_dirs, envir = globalenv())
+  withr::defer(if (exists("project_dirs", envir = globalenv())) rm("project_dirs", envir = globalenv()))
+  module_ci_trx_tabs_journey(fixture, norm = list(ruv_mode = "automatic", ruv_design = "none"),
+    summary = module_ci_trx_summary_steps)
+  report <- list.files(fixture$paths$results_summary_dir, pattern = "^transcriptomics_report.*\\.docx$", full.names = TRUE)
+  expect_length(report, 1L)
+  text <- if (length(report)) module_ci_trx_docx_text(report[[1L]]) else ""
+  for (statement in c(
+    "No correction for unwanted variation was applied: the analysis was run without RUV, as chosen on the normalisation tab.",
+    "The differential expression model held the experimental groups alone (~ 0 + group).",
+    "so the third column shows the TMM logCPM again")) expect_true(grepl(statement, text, fixed = TRUE), info = statement)
+  for (statement in c("RUVs factors W_1", "inferred empirical negative control")) {
+    expect_false(grepl(statement, text, fixed = TRUE), info = statement)
+  }
+})

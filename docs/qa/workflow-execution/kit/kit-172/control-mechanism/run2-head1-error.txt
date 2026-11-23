@@ -1,0 +1,4 @@
+
+Error in get("omicsUiInputDefaults", envir = asNamespace("MultiScholaR")) : 
+  object 'omicsUiInputDefaults' not found
+Execution halted

@@ -1,0 +1,6 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-workflow-server-shared.R	222	6	0	0	0	12	failed
+test-omic-gui-config.R	1910	1	0	0	0	42.4	failed
+test-omic-qc-module.R	160	0	0	0	0	72	ok
+test-e2e-browser-harness.R	123	0	1	1	0	8.1	failed
+test-workflow-analysis-record.R	307	0	0	0	4	227.9	ok

@@ -1,0 +1,12 @@
+variant	contrast	direction	term	proteins	same_set
+basebase	groupB-groupA	up	GO:0009085	10	TRUE
+basebase	groupB-groupA	up	GO:0005829	18	TRUE
+basebase	groupB-groupA	up	GO:0042802	8	TRUE
+basebase	groupB-groupA	up	GO:0042803	7	TRUE
+basebase	groupB-groupA	up	GO:0005737	5	TRUE
+basebase	groupB-groupA	down	GO:0070180	10	TRUE
+basebase	groupB-groupA	down	GO:0022625	10	TRUE
+basebase	groupB-groupA	down	GO:0002181	10	TRUE
+basebase	groupB-groupA	down	GO:0003735	10	TRUE
+basebase	groupB-groupA	down	GO:0005737	10	TRUE
+basebase	groupB-groupA	down	GO:0005829	10	TRUE

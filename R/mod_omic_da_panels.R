@@ -275,7 +275,8 @@ omicDaFilterRows <- function(results, selectedContrast, selectedAssay, tableFilt
 
 #' The summary statistics of a contrast and an assay (mod_lipid_da_results_helpers.R:1-41 at 2269a45f), in the group's
 #' noun and significance label.
-#' @param summary The group's `summary` (`noun`, `significance_label`).
+#' @param summary The group's `summary` (`noun`, `significance_label`; KIT-172: with `not_tested`, also the count of
+#'   result rows limma could not test because a compared group has no observed value, whose fold change is missing).
 #' @noRd
 omicDaSummaryText <- function(daResults, selectedContrast, selectedAssay, daQValThresh, summary, tableFilter = "all_only") {
     if (is.null(daResults) || nrow(daResults) == 0) return("No results available.")
@@ -285,7 +286,9 @@ omicDaSummaryText <- function(daResults, selectedContrast, selectedAssay, daQVal
     paste(c(sprintf("Total %s: %d", summary$noun, total),
         sprintf("Significant (%s < %.3f): %d (%.1f%%)", summary$significance_label, daQValThresh, sig, 100 * sig / max(total, 1)),
         sprintf("  Up-regulated: %d", sum(results$significant == "Up", na.rm = TRUE)),
-        sprintf("  Down-regulated: %d", sum(results$significant == "Down", na.rm = TRUE))), collapse = "\n")
+        sprintf("  Down-regulated: %d", sum(results$significant == "Down", na.rm = TRUE)),
+        if (isTRUE(summary$not_tested)) sprintf("Not tested (no value in a compared group): %d", sum(is.na(results$logFC)))),
+        collapse = "\n")
 }
 
 #' The results table of a contrast and an assay (mod_lipid_da_results_helpers.R:87-171 at 2269a45f): filtered by

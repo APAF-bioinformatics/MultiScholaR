@@ -309,7 +309,7 @@ omicDaW1FrozenUi <- list(
             `de-volcano_assay` = "Select Assay:", `de-volcano_contrast` = "Select Contrast:",
             `de-volcano_interactive` = "Interactive Plot (Glimma)"),
         help = c(
-            "\n        edgeR quasi-likelihood: estimateDisp and glmQLFit(robust = TRUE), then glmQLFTest per contrast on the\n        one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group plus the RUVs factors\n        W_1..W_k as covariates. No fold-change test is applied.\n      ",
+            "\n        edgeR quasi-likelihood: estimateDisp and glmQLFit(robust = TRUE), then glmQLFTest per contrast on the\n        one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group, plus the RUV factors\n        W_1..W_k as covariates when the normalisation added them. No fold-change test is applied.\n      ",
             "Contrasts defined in design matrix"),
         choices = list(
             `de-table_assay` = "All=All selected",
@@ -2788,7 +2788,7 @@ omicDaW1Frozen[["trx_refusals"]] <- list(
             formula_display = "Run the normalisation (RUVs) first; the formula is realised from its design.",
             volcano_static = "<req>"),
         calls = character(0),
-        notes = "[error 5 -] Run the normalisation first: the DA runs on the normalised (RUVs) state.",
+        notes = "[error 5 -] Run the normalisation first: the differential analysis runs on the normalised data.",
         updates = character(0),
         tab_status = c(
             quality_control = "complete", normalization = "pending", differential_analysis = "disabled",
@@ -4704,7 +4704,7 @@ test_that("(c) the refusal order: metab refuses an invalid preflight before the 
     expect_identical(omicDaW1Notes("metab_refusals", "run_no_data"),
         "[error 5 -] No metabolomics data loaded. Please load a filtered session first.")
     expect_identical(omicDaW1Notes("trx_refusals", "run_no_data"),
-        "[error 5 -] Run the normalisation first: the DA runs on the normalised (RUVs) state.")
+        "[error 5 -] Run the normalisation first: the differential analysis runs on the normalised data.")
     no_contrasts <- "[error 5 -] No contrasts defined. Please define contrasts in the design tab."
     for (case in c("lipid_no_contrasts", "metab_no_contrasts")) expect_identical(omicDaW1Notes(case, "run_no_contrasts"), no_contrasts)
     expect_identical(omicDaW1Notes("trx_refusals", "run_no_contrasts"), no_contrasts)

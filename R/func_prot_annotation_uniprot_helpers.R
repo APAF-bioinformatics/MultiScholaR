@@ -16,7 +16,9 @@
 #' @param timeout Timeout in seconds for the download operation
 #' @param api_delay Sleep time in seconds between API calls
 #'
-#' @return A data frame containing UniProt annotations and GO terms
+#' @return A data frame containing UniProt annotations and GO terms. A table built here carries the attribute
+#'   `go_ids_not_in_go_db`: the GO ids of the download that the installed GO.db does not hold (and that the table
+#'   therefore omits), counted by class (obsolete, secondary, unknown), with up to 20 examples and the GO.db release.
 #'
 #' @export
 #' @param progress_callback Runtime inputs used by this function; see the usage section for accepted values.
@@ -67,6 +69,9 @@ getUniprotAnnotations <- function(input_tbl,
   # Process annotations or create empty table if download failed
   if (!is.null(annotations) && nrow(annotations) > 0) {
     message("Processing GO terms...")
+    # KIT-173: the raw GO ids the installed GO.db does not hold are dropped by the conversion below; they are counted
+    # here, by class, with the GO.db release in force, and the count travels with the table.
+    go_ids_lost <- goIdsNotInGoDb(unlist(strsplit(as.character(annotations$Gene.Ontology.IDs), "; ", fixed = TRUE)))
     processed_annotations <- annotations |>
       uniprotGoIdToTerm(
         uniprot_id_column = Entry,
@@ -76,7 +81,8 @@ getUniprotAnnotations <- function(input_tbl,
     
     # Standardize column names
     uniprot_dat_cln <- standardizeUniprotColumns(processed_annotations)
-    
+    attr(uniprot_dat_cln, "go_ids_not_in_go_db") <- go_ids_lost
+
     # Save to cache
     saveRDS(uniprot_dat_cln, cache_file)
     message("UniProt annotations saved to cache.")

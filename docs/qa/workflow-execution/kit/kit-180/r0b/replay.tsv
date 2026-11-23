@@ -1,0 +1,7 @@
+lane	commit	measure	value
+prot_lfq	c9ca1ed54130093b48d082b866741be8dc1ac905	stopped	simpleError invalid 'file' argument
+prot_lfq	c9ca1ed54130093b48d082b866741be8dc1ac905	outcome	stopped
+prot_lfq	c9ca1ed54130093b48d082b866741be8dc1ac905	seconds	160
+prot_tmt	c9ca1ed54130093b48d082b866741be8dc1ac905	stopped	simpleError invalid 'file' argument
+prot_tmt	c9ca1ed54130093b48d082b866741be8dc1ac905	outcome	stopped
+prot_tmt	c9ca1ed54130093b48d082b866741be8dc1ac905	seconds	164

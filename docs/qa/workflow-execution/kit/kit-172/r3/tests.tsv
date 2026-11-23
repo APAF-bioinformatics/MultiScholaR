@@ -1,0 +1,9 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit172-log2-rule.R	212	0	0	0	0	20.5	ok
+test-kit172-downstream.R	84	0	0	0	0	104.5	ok
+test-omic-gui-config.R	1906	0	0	0	0	24.3	ok
+test-metab-01-qc-metrics-characterization.R	13	0	0	0	0	6.7	ok
+test-lipid-01-qc-filtering-helpers.R	58	0	0	2	0	6	ok
+test-metab-qc-shared.R	11	0	1	0	0	6.8	failed
+test-omics-qc-core.R	115	0	0	0	0	32.6	ok
+test-omic-qc-module.R	157	0	0	0	0	55.2	ok

@@ -187,3 +187,124 @@ test_that("KIT-101 F-18: the MaxQuant and FragPipe readers read a 0 intensity (n
     expect_equal(cell("P00003", "KO_2"), 3050)
   }
 })
+
+test_that("KIT-171 T1: the legacy Contaminant column removes the rows MaxQuant marked, not rows by accession prefix", {
+  # MaxQuant 1.4 and earlier name the contaminant column "Contaminant" (from 1.5.2.8 at the latest "Potential
+  # contaminant"). The mark decides: row 1234 is marked with a plain id and row 3333 is a marked mixed group (both
+  # removed); rows 2222 and 4000 hold a CON__ or REV__ member without a mark (both kept). The marks are sparse, so the
+  # column must be typed to keep them.
+  path <- withr::local_tempfile(fileext = ".txt")
+  n <- 5000L
+  table <- data.frame(
+    Protein.IDs = sprintf("P%05d", seq_len(n)),
+    Gene.names = sprintf("G%d", seq_len(n)),
+    LFQ.intensity.WT_1 = seq_len(n) + 0.5,
+    LFQ.intensity.KO_1 = seq_len(n) + 1.5,
+    Contaminant = "",
+    Reverse = "",
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  table$Contaminant[c(1234L, 3333L)] <- "+"
+  table$Reverse[[4321L]] <- "+"
+  table$Protein.IDs[[3333L]] <- "P03333;CON__P03333"
+  table$Protein.IDs[[2222L]] <- "P02222;CON__P99999"
+  table$Protein.IDs[[4321L]] <- "REV__P04321"
+  table$Protein.IDs[[4000L]] <- "P04000;REV__P04000"
+  utils::write.table(table, path, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
+  logged <- character()
+  old_appender <- logger::log_appender(function(lines) logged <<- c(logged, lines))
+  withr::defer(logger::log_appender(old_appender))
+
+  imported <- importMaxQuantData(path, use_lfq = TRUE, filter_contaminants = TRUE)
+  ids <- unique(imported$data$Protein.Ids)
+  expect_length(ids, 4997L)
+  expect_setequal(setdiff(table$Protein.IDs, ids), table$Protein.IDs[c(1234L, 3333L, 4321L)])
+  expect_true(all(table$Protein.IDs[c(2222L, 4000L)] %in% ids))
+  expect_identical(sum(grepl("MaxQuant import: removed 2 rows marked '+' in Contaminant", logged, fixed = TRUE)), 1L)
+  expect_identical(sum(grepl("MaxQuant import: removed 1 rows marked '+' in Reverse", logged, fixed = TRUE)), 1L)
+  kept <- importMaxQuantData(path, use_lfq = TRUE, filter_contaminants = FALSE)
+  expect_length(unique(kept$data$Protein.Ids), n)
+})
+
+test_that("KIT-171 T2: a MaxQuant 1.3-style proteinGroups file (spaced names, CR LF) drops its Contaminant rows", {
+  path <- withr::local_tempfile(fileext = ".txt")
+  n <- 300L
+  contaminant <- rep("", n)
+  reverse <- rep("", n)
+  by_site <- rep("", n)
+  contaminant[[7L]] <- "+"
+  reverse[[9L]] <- "+"
+  by_site[[11L]] <- "+"
+  writeLines(c(
+    paste("Protein IDs", "Majority protein IDs", "Gene names", "LFQ intensity H1", "LFQ intensity L1",
+      "Only identified by site", "Reverse", "Contaminant", sep = "\t"),
+    paste(sprintf("P%05d", seq_len(n)), sprintf("P%05d", seq_len(n)), sprintf("G%d", seq_len(n)),
+      seq_len(n) + 0.5, seq_len(n) + 1.5, by_site, reverse, contaminant, sep = "\t")), path, sep = "\r\n")
+  logged <- character()
+  old_appender <- logger::log_appender(function(lines) logged <<- c(logged, lines))
+  withr::defer(logger::log_appender(old_appender))
+
+  imported <- importMaxQuantData(path, use_lfq = TRUE, filter_contaminants = TRUE)
+  ids <- unique(imported$data$Protein.Ids)
+  expect_length(ids, 298L)
+  expect_true("P00011" %in% ids)
+  expect_setequal(unique(imported$data$Run), c("H1", "L1"))
+  expect_identical(sum(grepl("MaxQuant import: removed 1 rows marked '+' in Contaminant", logged, fixed = TRUE)), 1L)
+  expect_identical(sum(grepl("MaxQuant import: removed 1 rows marked '+' in Reverse", logged, fixed = TRUE)), 1L)
+})
+
+test_that("KIT-171 T3: a file with both contaminant columns removes a row marked in either, counted once", {
+  # MaxQuant never writes both names; the behaviour is defined anyway. Row 7 is marked in both and is counted at the
+  # first column that removes it.
+  path <- withr::local_tempfile(fileext = ".txt")
+  n <- 300L
+  table <- data.frame(
+    Protein.IDs = sprintf("P%05d", seq_len(n)),
+    Gene.names = sprintf("G%d", seq_len(n)),
+    LFQ.intensity.WT_1 = seq_len(n) + 0.5,
+    LFQ.intensity.KO_1 = seq_len(n) + 1.5,
+    Potential.contaminant = "",
+    Contaminant = "",
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  table$Potential.contaminant[c(5L, 7L)] <- "+"
+  table$Contaminant[c(6L, 7L)] <- "+"
+  names(table) <- c("Protein IDs", "Gene names", "LFQ intensity WT_1", "LFQ intensity KO_1", "Potential contaminant",
+    "Contaminant")
+  utils::write.table(table, path, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
+  logged <- character()
+  old_appender <- logger::log_appender(function(lines) logged <<- c(logged, lines))
+  withr::defer(logger::log_appender(old_appender))
+
+  imported <- importMaxQuantData(path, use_lfq = TRUE, filter_contaminants = TRUE)
+  expect_length(unique(imported$data$Protein.Ids), 297L)
+  expect_identical(
+    sum(grepl("MaxQuant import: removed 2 rows marked '+' in Potential.contaminant", logged, fixed = TRUE)), 1L)
+  expect_identical(sum(grepl("MaxQuant import: removed 1 rows marked '+' in Contaminant", logged, fixed = TRUE)), 1L)
+})
+
+test_that("KIT-171 T4: filtering requested on a file without a contaminant column says so in the log", {
+  path <- withr::local_tempfile(fileext = ".txt")
+  n <- 50L
+  table <- data.frame(
+    Protein.IDs = sprintf("P%05d", seq_len(n)),
+    Gene.names = sprintf("G%d", seq_len(n)),
+    LFQ.intensity.WT_1 = seq_len(n) + 0.5,
+    LFQ.intensity.KO_1 = seq_len(n) + 1.5,
+    Reverse = "",
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  table$Reverse[[3L]] <- "+"
+  utils::write.table(table, path, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
+  logged <- character()
+  old_appender <- logger::log_appender(function(lines) logged <<- c(logged, lines))
+  withr::defer(logger::log_appender(old_appender))
+
+  imported <- importMaxQuantData(path, use_lfq = TRUE, filter_contaminants = TRUE)
+  expect_length(unique(imported$data$Protein.Ids), 49L)
+  expect_true(any(grepl(paste0("MaxQuant import: contaminant filtering requested but no contaminant column found ",
+    "('Potential contaminant' or 'Contaminant'); no contaminant rows removed"), logged, fixed = TRUE)))
+})
