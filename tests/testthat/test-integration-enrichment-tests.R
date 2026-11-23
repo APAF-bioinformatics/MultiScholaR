@@ -826,3 +826,52 @@ test_that("KIT-183 T12: the workbook: the gsea override gives base's terms; the 
     added <- c(texts[["enrich_caution"]], gsea$summary[grepl("this factor explains", gsea$summary, fixed = TRUE)])
     expect_identical(setdiff(gsea$summary, added), base_summary)
 })
+
+# --- The cross-platform record (ticket 7): T1's fixture with camera and gsea; the terms printed at full precision (the
+# reference, from a Linux run-tests job, is tests/testdata/integration/kit183-cross-platform.tsv), and on another
+# platform compared by the rule: SHA-256 equal, or the same IDs and directions and every number within 1e-6 ---
+
+intEtPlatformTerms <- function() {
+    n <- 12L
+    g <- 40L
+    f <- c(-1.5, -1.3, -1.0, -0.7, -0.4, -0.2, 0.1, 0.3, 0.6, 0.9, 1.2, 1.6)
+    mu <- withr::with_seed(11L, stats::runif(g, 14, 22))
+    sd <- 0.2 + 0.6 * exp(-(mu - 14) / 2)
+    y <- mu + sd * withr::with_seed(12L, matrix(stats::rnorm(g * n), g, n))
+    y[1:8, ] <- y[1:8, ] + 0.8 * matrix(f, 8, n, byrow = TRUE)
+    y[9:16, ] <- y[9:16, ] - 0.6 * matrix(f, 8, n, byrow = TRUE)
+    ids <- sprintf("C%05d", seq_len(g))
+    rownames(y) <- ids
+    sets <- list(down = ids[9:16], mixed = ids[c(1:4, 20:25)], null = ids[26:35], up = ids[1:8])
+    term2gene <- data.frame(term = rep(names(sets), lengths(sets)), gene = unlist(sets, use.names = FALSE))
+    term2name <- data.frame(term = names(sets), name = names(sets))
+    values <- list(y = y, design = integrationEnrichmentTestDesign(f), counts = list(), design_covariates = "none")
+    ranked <- data.frame(identifier = ids, value = stats::cor(t(y), f)[, 1L])
+    camera <- integrationEnrichmentPathwayTest(ranked, term2gene, term2name, 1L, intEtSettings(), "camera", values)$terms
+    gsea <- integrationEnrichmentPathwayTest(ranked, term2gene, term2name, 20261121L, intEtSettings())$terms
+    rbind(data.frame(test = "camera", ID = camera$ID, direction = camera$Direction, pvalue = camera$pvalue,
+            p.adjust = camera$p.adjust, correlation = camera$correlation, effect = camera$effect, NES = NA_real_),
+        data.frame(test = "gsea", ID = gsea$ID, direction = ifelse(gsea$NES > 0, "Up", "Down"), pvalue = gsea$pvalue,
+            p.adjust = gsea$p.adjust, correlation = NA_real_, effect = NA_real_, NES = gsea$NES))
+}
+
+test_that("KIT-183 cross-platform: camera and gsea on T1's fixture agree with the Linux reference within 1e-6", {
+    skip_if_not_installed("clusterProfiler")
+    terms <- intEtPlatformTerms()
+    terms <- terms[order(terms$test, terms$ID), ]
+    rownames(terms) <- NULL
+    text <- utils::capture.output(utils::write.table(format(terms, digits = 17), sep = "\t", quote = FALSE,
+        row.names = FALSE))
+    cat("\nKIT-183 cross-platform terms (sha256 ", digest::digest(text, algo = "sha256"), "):\n", sep = "")
+    cat(text, sep = "\n")
+    reference <- file.path(intEtData(), "kit183-cross-platform.tsv")
+    testthat::skip_if_not(file.exists(reference), "the cross-platform reference is not recorded yet")
+    ref <- utils::read.delim(reference, stringsAsFactors = FALSE)
+    ref <- ref[order(ref$test, ref$ID), ]
+    expect_identical(terms$ID, ref$ID)
+    expect_identical(terms$direction, ref$direction)
+    for (column in c("pvalue", "p.adjust", "correlation", "effect", "NES")) {
+        difference <- max(abs(terms[[column]] - ref[[column]]), na.rm = TRUE)
+        expect_lte(difference, 1e-6, label = sprintf("largest absolute difference of %s (%g)", column, difference))
+    }
+})
