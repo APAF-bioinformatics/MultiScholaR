@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 VAL-60: the one further group (d) unit-test run, for the T-TAB change only (ticket r1.11: shipped arm on prot_dia_limpa and trx_screen); test-tab.R only",
+  "label": "KIT-159 T1 VAL-60 T-TAB at 8c78657c",
+  "package_commit": "8c78657c1209ecbd510728644a18f3cf41b9a24e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1v60-out",
+        "--files",
+        "tab"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1v60-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
