@@ -532,6 +532,7 @@ test_that("KIT-183 T4: every factor score and weight multiplied by -1 gives an i
     }
     plus <- run(1)
     minus <- run(-1)
+    expect_identical(plus$test, "camera")
     expect_identical(plus$direction$sign, -minus$direction$sign)
     expect_identical(plus$terms, minus$terms)
 })
