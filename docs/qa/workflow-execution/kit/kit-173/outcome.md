@@ -234,8 +234,6 @@ gains `parameters$go_propagation`) and "... kernel_clusterprofiler run step" (2:
 
 ## Not checked
 
-- Which two T7(b) expectations fail (see A4).
-- The full suite (R3): after D8, by the ticket.
 - The per-source correction statement rests on the gprofiler2 vignette; the 2023 and 2020 papers' full texts could not
   be fetched (HTTP 500).
 - `R CMD check` at the records commit.
