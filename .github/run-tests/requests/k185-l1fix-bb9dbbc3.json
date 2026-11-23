@@ -1,0 +1,75 @@
+{
+  "requested_by": "KIT-185 VAL-54 instrument runs after L1: E3/E6 on P0 (rep 401), part B comparator on L2 (L1b item) and L1b (L1c item); inside the L1 ceilings",
+  "label": "KIT-185 L1 instrument fixes bb9dbbc3",
+  "package_commit": "bb9dbbc3a6472f2175302b2df3695cab4fb336df",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "A",
+        "P0",
+        "401",
+        "401",
+        "k185-fix-a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1fix-a"
+      },
+      "out": "k185-fix-a",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "B",
+        "L2",
+        "401",
+        "402",
+        "k185-fix-b"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1fix-b"
+      },
+      "out": "k185-fix-b",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "B",
+        "L1b",
+        "401",
+        "402",
+        "k185-fix-c"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1fix-c"
+      },
+      "out": "k185-fix-c",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
