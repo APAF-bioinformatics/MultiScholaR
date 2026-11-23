@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 T0 (group c): driver, helper, chain, kernel, hook, evidence tests only, shown failing; group (c) test files only",
+  "label": "KIT-159 T0c group (c) tests-only at e25055d3",
+  "package_commit": "e25055d3a41643843fb5aad80c499bf9a98158fc",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t0c-out",
+        "--files",
+        "driver,helpers,chain,arms,evidence"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t0c-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
