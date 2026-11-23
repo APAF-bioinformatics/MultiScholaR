@@ -87,6 +87,8 @@ if (is.null(base_records) && system2("git", c("worktree", "add", "--detach", shQ
 child <- file.path(scratch, "kit172-control-child.R")
 writeLines(c(
   'args <- commandArgs(trailingOnly = TRUE); pass <- args[[1L]]; record_dir <- args[[2L]]; lanes <- strsplit(args[[3L]], ",")[[1L]]',
+  '# VAL-55: sort as testthat does (testthat 3.3.2 local_reproducible_output: withr::local_collate("C"), i.e. LC_COLLATE C).',
+  'invisible(Sys.setlocale("LC_COLLATE", "C"))',
   'Sys.setenv(MULTISCHOLAR_GUI_ENTRY_RECORD_DIR = record_dir, NOT_CRAN = "true", MULTISCHOLAR_GUI_ENTRY_ORACLE_DIR = "")',
   'if (identical(pass, "head0")) Sys.setenv(MULTISCHOLAR_GUI_ENTRY_FREEZE = "1") else Sys.unsetenv("MULTISCHOLAR_GUI_ENTRY_FREEZE")',
   'suppressMessages(pkgload::load_all(".", export_all = TRUE, helpers = FALSE, attach_testthat = FALSE, quiet = TRUE))',
