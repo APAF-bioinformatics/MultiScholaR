@@ -1,0 +1,17 @@
+regime	method	class	form	design	transform	n	level	status	coverage	mc_se	source	statistic
+C4e	jackknife	rank	block	NA	NA	14	0.95	conservative	1	0	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	14	0.975	pass	1	0	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	14	0.983333333333333	pass	1	0	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	14	0.9875	pass	1	0	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	14	0.991666666666667	pass	1	0	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	14	0.99375	pass	1	0	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	14	0.995833333333333	pass	1	0	harness	pauc_diff@matrix4840_block
+C4e	jackknife	rank	block	NA	NA	14	0.996666666666667	pass	1	0	harness	pauc_diff@matrix4840_block
+C7	bootstrap_within_run	threshold_count	NA	NA	NA	200	0.95	pass	0.9485	0.00494205169944629	harness	paired_threshold_count@iid_in_class
+C7	bootstrap_within_run	threshold_count	NA	NA	NA	200	0.975	pass	0.9735	0.00359150038284837	harness	paired_threshold_count@iid_in_class
+C7	bootstrap_within_run	threshold_count	NA	NA	NA	200	0.983333333333333	pass	0.983	0.00289058817544112	harness	paired_threshold_count@iid_in_class
+C7	bootstrap_within_run	threshold_count	NA	NA	NA	200	0.9875	pass	0.9875	0.00248432586429397	harness	paired_threshold_count@iid_in_class
+C7	bootstrap_within_run	threshold_count	NA	NA	NA	200	0.991666666666667	pass	0.9915	0.00205277251540447	harness	paired_threshold_count@iid_in_class
+C7	bootstrap_within_run	threshold_count	NA	NA	NA	200	0.99375	pass	0.9925	0.00192921616207204	harness	paired_threshold_count@iid_in_class
+C7	bootstrap_within_run	threshold_count	NA	NA	NA	200	0.995833333333333	pass	0.994	0.0017268468374468	harness	paired_threshold_count@iid_in_class
+C7	bootstrap_within_run	threshold_count	NA	NA	NA	200	0.996666666666667	pass	0.995	0.00157718102955875	harness	paired_threshold_count@iid_in_class

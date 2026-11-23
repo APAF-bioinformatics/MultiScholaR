@@ -26,28 +26,26 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state at 266d9dc8, after VAL-54; read this block first)
+## Resume here (state at the T2 records commit; read this block first)
 
-**In flight at handback (not yet fetched or recorded):** T1w3 run 45149434625 (whole suite at
-266d9dc8, instrument run 3 of the three VAL-54 allows for group d); T2 requests A 45149480750,
-B 45149529939, C 45149578690 (T-COV from `t2/t2-plan.tsv` at 266d9dc8, `--files coverage`, 2000 sims,
-4 chunks, limit 280 min each). Fetch with `gh run download <id> -n scripts`; T2 tables are
-`coverage-table.tsv`, `coverage-detail.tsv`, `coverage-tasks.tsv`, `coverage-run.txt` per request;
-join the three `coverage-table.tsv` (each regime row lies in one request). T2 is evidence: one
-correction rule as written; an instrument death before a table is VAL-54.
+**T1 is complete: every test of groups (a) to (d) has passed on a runner.** T1w3 (45149434625, at
+266d9dc8): 168 of 169, the one failure T-TAB `trx_screen` with RUV off, which the auditor ruled a
+product defect (`trxDaReadMetadata`, `R/utils_workflow_trx_da.R:34-37`; fixed in the product as
+KIT-186, VAL-59). Ticket r1.11 (build-points ruling, section 26) moved T-TAB's covariate routes to the
+shipped arm (8c78657c); the VAL-60 run (45154323190, at 8c78657c, `--files tab`) passed all ten
+T-TAB tests, with `ruv.tsv` and `matrix_display.tsv` (`feature_id, assay, label`, samples) on
+`prot_dia_limpa` and `trx_screen`. T1: 4.45 + 1.47 + 2.05 + 2.10 + 1.77 = **11.84 of 15** core-hours.
+Still owed under T1: `covr` and `lintr` over the whole package (A2; `extra_packages: ["covr",
+"lintr"]`), not sent.
 
-**T1 under VAL-54 (ceiling 15 core-hours; 4.45 before, +1.47 T1w1, +2.05 T1w2 = 7.97, plus T1w3):**
-T1w1 45141060431 at 4e8642a3: 161/169. T1w2 45144461803 at b2666213: 163/169; groups (a), (b), (c)
-all pass (coverage split identity fixed, T-LOG passes), T-TAB passes on six routes; open: trx_screen
-(below), lipid/metab test check (fixed at 266d9dc8), toy observer-error test (fixed at 266d9dc8).
-**trx_screen with RUV off (gate on, design `none`):** norm reaches `trx_ruvs`, then DA is refused,
-unclassed: "Run the normalisation first: the DA runs on the normalised (RUVs) state." Not changed:
-reported as a finding (G3 asks exactly whether `skip`/`none` behave); T-TAB trx will fail in T1w3.
-**matrix_display (item 3):** solved in the harness without a product change: DIA_LIMPA reads the
-`ruv-adjusted-science` checkpoint (`R/utils_workflow_dia_products.R:1366`, rooted :1742, read as the
-Summary does, `protIntegrationInputSource`, `R/utils_workflow_dia_summary.R:96-176`); transcriptomics
-reads the `trx_ruvs` product's `corrected` table (`R/utils_workflow_trx_declarations.R:522`, through
-`trxStateRuvs` :132 and `trxSavedMatrix` :108). T-TAB prot_dia_limpa passed in T1w2.
+**T2 is complete (evidence; nothing applied to it):** requests A 45149480750, B 45149529939,
+C 45149578690 at 266d9dc8, every cell present, chunks exit 0. Joined table `t2/coverage-table.tsv`
+(512 rows, no duplicate key); per-request tables `t2/t2{a,b,c}-coverage-*.tsv`. T2: **18.59 of 60**
+core-hours (expected 21.1). Per 10.2 a method failing its band in a regime is not offered there; the
+table of offered regimes goes into `USAGE.md` and ledger row H2 (provisional), not yet written.
+
+**Next (not started):** `covr`/`lintr`; R1; the cell phases of `val-run.R`; S0 (each needs the
+coordinator's word); `USAGE.md`'s offered-regime table from `t2/coverage-table.tsv`.
 
 ## Earlier resume record (state at dcc27fb5)
 
