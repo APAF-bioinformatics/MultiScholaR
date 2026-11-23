@@ -1,0 +1,1189 @@
+{
+  "schema": "multischolar.analysis_record.v1",
+  "generated_at": "2026-11-23T06:26:31.486+0000",
+  "workflow": "DIA",
+  "omic_type": "proteomics",
+  "store_identity": {
+    "project_id": "go-propagation",
+    "workflow_id": "DIA"
+  },
+  "software": {
+    "package": "MultiScholaR",
+    "version": "0.9.1",
+    "sha": null,
+    "build": "d242b1cd9785bae137afab9e651a5e01dacfe55ae443cb342aaac900264741cf",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "platform": "x86_64-pc-linux-gnu",
+    "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+    "lapack": null,
+    "omp_threads": null,
+    "blas_threads": null,
+    "duckdb_threads": {
+      "rollup": 8,
+      "codec_read": 2,
+      "codec_bulk": 8
+    },
+    "os_release": "6.8.0-1070-azure; Ubuntu 22.04.5 LTS",
+    "locale": "C.UTF-8",
+    "packages": [
+      {
+        "name": "abind",
+        "version": "1.4.8"
+      },
+      {
+        "name": "aisdk",
+        "version": "1.4.12"
+      },
+      {
+        "name": "AnnotationDbi",
+        "version": "1.74.0"
+      },
+      {
+        "name": "ape",
+        "version": "5.8.1"
+      },
+      {
+        "name": "aplot",
+        "version": "0.3.1"
+      },
+      {
+        "name": "arrow",
+        "version": "25.0.0"
+      },
+      {
+        "name": "assertthat",
+        "version": "0.2.1"
+      },
+      {
+        "name": "attempt",
+        "version": "0.3.1"
+      },
+      {
+        "name": "base",
+        "version": "4.6.1"
+      },
+      {
+        "name": "Biobase",
+        "version": "2.72.0"
+      },
+      {
+        "name": "BiocGenerics",
+        "version": "0.58.1"
+      },
+      {
+        "name": "BiocParallel",
+        "version": "1.46.0"
+      },
+      {
+        "name": "Biostrings",
+        "version": "2.80.1"
+      },
+      {
+        "name": "bit",
+        "version": "4.6.0"
+      },
+      {
+        "name": "bit64",
+        "version": "4.8.2"
+      },
+      {
+        "name": "blob",
+        "version": "1.3.0"
+      },
+      {
+        "name": "brio",
+        "version": "1.1.5"
+      },
+      {
+        "name": "cachem",
+        "version": "1.1.0"
+      },
+      {
+        "name": "callr",
+        "version": "3.8.0"
+      },
+      {
+        "name": "cellranger",
+        "version": "1.1.0"
+      },
+      {
+        "name": "cli",
+        "version": "3.6.6"
+      },
+      {
+        "name": "cluster",
+        "version": "2.1.8.2"
+      },
+      {
+        "name": "clusterProfiler",
+        "version": "4.20.0"
+      },
+      {
+        "name": "codetools",
+        "version": "0.2.20"
+      },
+      {
+        "name": "compiler",
+        "version": "4.6.1"
+      },
+      {
+        "name": "config",
+        "version": "0.3.2"
+      },
+      {
+        "name": "configr",
+        "version": "0.3.5"
+      },
+      {
+        "name": "corpcor",
+        "version": "1.6.10"
+      },
+      {
+        "name": "crayon",
+        "version": "1.5.3"
+      },
+      {
+        "name": "crosstalk",
+        "version": "1.2.2"
+      },
+      {
+        "name": "data.table",
+        "version": "1.18.4"
+      },
+      {
+        "name": "datasets",
+        "version": "4.6.1"
+      },
+      {
+        "name": "DBI",
+        "version": "1.3.0"
+      },
+      {
+        "name": "DelayedArray",
+        "version": "0.38.2"
+      },
+      {
+        "name": "DESeq2",
+        "version": "1.52.0"
+      },
+      {
+        "name": "digest",
+        "version": "0.6.39"
+      },
+      {
+        "name": "DOSE",
+        "version": "4.6.0"
+      },
+      {
+        "name": "dplyr",
+        "version": "1.2.1"
+      },
+      {
+        "name": "DT",
+        "version": "0.34.0"
+      },
+      {
+        "name": "edgeR",
+        "version": "4.10.1"
+      },
+      {
+        "name": "ellipse",
+        "version": "0.5.0"
+      },
+      {
+        "name": "enrichit",
+        "version": "0.2.0"
+      },
+      {
+        "name": "enrichplot",
+        "version": "1.32.0"
+      },
+      {
+        "name": "evaluate",
+        "version": "1.0.5"
+      },
+      {
+        "name": "farver",
+        "version": "2.1.2"
+      },
+      {
+        "name": "fastduckdb",
+        "version": "0.2.0"
+      },
+      {
+        "name": "fastmap",
+        "version": "1.2.0"
+      },
+      {
+        "name": "filelock",
+        "version": "1.0.3"
+      },
+      {
+        "name": "fontBitstreamVera",
+        "version": "0.1.1"
+      },
+      {
+        "name": "fontLiberation",
+        "version": "0.1.0"
+      },
+      {
+        "name": "fontquiver",
+        "version": "0.2.1"
+      },
+      {
+        "name": "forcats",
+        "version": "1.0.1"
+      },
+      {
+        "name": "fs",
+        "version": "2.1.0"
+      },
+      {
+        "name": "future",
+        "version": "1.75.0"
+      },
+      {
+        "name": "gdtools",
+        "version": "0.5.1"
+      },
+      {
+        "name": "generics",
+        "version": "0.1.4"
+      },
+      {
+        "name": "GenomicRanges",
+        "version": "1.64.0"
+      },
+      {
+        "name": "ggforce",
+        "version": "0.5.0"
+      },
+      {
+        "name": "ggfun",
+        "version": "0.2.1"
+      },
+      {
+        "name": "ggiraph",
+        "version": "0.9.6"
+      },
+      {
+        "name": "ggnewscale",
+        "version": "0.5.2"
+      },
+      {
+        "name": "ggplot2",
+        "version": "4.0.3"
+      },
+      {
+        "name": "ggplotify",
+        "version": "0.1.3"
+      },
+      {
+        "name": "ggrepel",
+        "version": "0.9.8"
+      },
+      {
+        "name": "ggtangle",
+        "version": "0.1.2"
+      },
+      {
+        "name": "ggtree",
+        "version": "4.2.0"
+      },
+      {
+        "name": "gh",
+        "version": "1.6.1"
+      },
+      {
+        "name": "Glimma",
+        "version": "2.15.2"
+      },
+      {
+        "name": "globals",
+        "version": "0.19.1"
+      },
+      {
+        "name": "glue",
+        "version": "1.8.1"
+      },
+      {
+        "name": "GO.db",
+        "version": "3.23.1"
+      },
+      {
+        "name": "golem",
+        "version": "1.0.1"
+      },
+      {
+        "name": "GOSemSim",
+        "version": "2.38.3"
+      },
+      {
+        "name": "graphics",
+        "version": "4.6.1"
+      },
+      {
+        "name": "grDevices",
+        "version": "4.6.1"
+      },
+      {
+        "name": "grid",
+        "version": "4.6.1"
+      },
+      {
+        "name": "gridExtra",
+        "version": "2.3.1"
+      },
+      {
+        "name": "gridGraphics",
+        "version": "0.5.1"
+      },
+      {
+        "name": "gson",
+        "version": "0.2.0"
+      },
+      {
+        "name": "gtable",
+        "version": "0.3.6"
+      },
+      {
+        "name": "gtools",
+        "version": "3.9.5"
+      },
+      {
+        "name": "here",
+        "version": "1.0.2"
+      },
+      {
+        "name": "hms",
+        "version": "1.1.4"
+      },
+      {
+        "name": "htmltools",
+        "version": "0.5.9"
+      },
+      {
+        "name": "htmlwidgets",
+        "version": "1.6.4"
+      },
+      {
+        "name": "httpuv",
+        "version": "1.6.17"
+      },
+      {
+        "name": "httr",
+        "version": "1.4.8"
+      },
+      {
+        "name": "httr2",
+        "version": "1.3.0"
+      },
+      {
+        "name": "igraph",
+        "version": "2.3.3"
+      },
+      {
+        "name": "ini",
+        "version": "0.3.1"
+      },
+      {
+        "name": "IRanges",
+        "version": "2.46.0"
+      },
+      {
+        "name": "janitor",
+        "version": "2.2.1"
+      },
+      {
+        "name": "jsonlite",
+        "version": "2.0.0"
+      },
+      {
+        "name": "KEGGREST",
+        "version": "1.52.2"
+      },
+      {
+        "name": "knitr",
+        "version": "1.51"
+      },
+      {
+        "name": "labeling",
+        "version": "0.4.3"
+      },
+      {
+        "name": "later",
+        "version": "1.4.8"
+      },
+      {
+        "name": "lattice",
+        "version": "0.22.9"
+      },
+      {
+        "name": "lazyeval",
+        "version": "0.2.3"
+      },
+      {
+        "name": "lifecycle",
+        "version": "1.0.5"
+      },
+      {
+        "name": "limma",
+        "version": "3.68.4"
+      },
+      {
+        "name": "listenv",
+        "version": "1.0.0"
+      },
+      {
+        "name": "locfit",
+        "version": "1.5.9.12"
+      },
+      {
+        "name": "logger",
+        "version": "0.4.2"
+      },
+      {
+        "name": "logging",
+        "version": "0.10.111"
+      },
+      {
+        "name": "lubridate",
+        "version": "1.9.5"
+      },
+      {
+        "name": "magick",
+        "version": "2.9.1"
+      },
+      {
+        "name": "magrittr",
+        "version": "2.0.5"
+      },
+      {
+        "name": "MASS",
+        "version": "7.3.66"
+      },
+      {
+        "name": "Matrix",
+        "version": "1.7.6"
+      },
+      {
+        "name": "MatrixGenerics",
+        "version": "1.24.0"
+      },
+      {
+        "name": "matrixStats",
+        "version": "1.5.0"
+      },
+      {
+        "name": "memoise",
+        "version": "2.0.1"
+      },
+      {
+        "name": "methods",
+        "version": "4.6.1"
+      },
+      {
+        "name": "mime",
+        "version": "0.13"
+      },
+      {
+        "name": "mixOmics",
+        "version": "6.36.0"
+      },
+      {
+        "name": "multidplyr",
+        "version": "0.1.4"
+      },
+      {
+        "name": "MultiScholaR",
+        "version": "0.9.1"
+      },
+      {
+        "name": "nlme",
+        "version": "3.1.170"
+      },
+      {
+        "name": "openxlsx",
+        "version": "4.2.8.1"
+      },
+      {
+        "name": "optparse",
+        "version": "1.8.2"
+      },
+      {
+        "name": "otel",
+        "version": "0.2.0"
+      },
+      {
+        "name": "pacman",
+        "version": "0.5.1"
+      },
+      {
+        "name": "parallel",
+        "version": "4.6.1"
+      },
+      {
+        "name": "parallelly",
+        "version": "1.48.0"
+      },
+      {
+        "name": "patchwork",
+        "version": "1.3.2"
+      },
+      {
+        "name": "pillar",
+        "version": "1.11.1"
+      },
+      {
+        "name": "pkgconfig",
+        "version": "2.0.3"
+      },
+      {
+        "name": "pkgload",
+        "version": "1.5.3"
+      },
+      {
+        "name": "plotly",
+        "version": "4.12.1"
+      },
+      {
+        "name": "plyr",
+        "version": "1.8.9"
+      },
+      {
+        "name": "png",
+        "version": "0.1.9"
+      },
+      {
+        "name": "polyclip",
+        "version": "1.10.7"
+      },
+      {
+        "name": "prettyunits",
+        "version": "1.2.0"
+      },
+      {
+        "name": "processx",
+        "version": "3.9.0"
+      },
+      {
+        "name": "progress",
+        "version": "1.2.3"
+      },
+      {
+        "name": "promises",
+        "version": "1.5.0"
+      },
+      {
+        "name": "ps",
+        "version": "1.9.3"
+      },
+      {
+        "name": "purrr",
+        "version": "1.2.2"
+      },
+      {
+        "name": "qs2",
+        "version": "0.2.2"
+      },
+      {
+        "name": "qvalue",
+        "version": "2.44.0"
+      },
+      {
+        "name": "R6",
+        "version": "2.6.1"
+      },
+      {
+        "name": "ragg",
+        "version": "1.5.2"
+      },
+      {
+        "name": "rappdirs",
+        "version": "0.3.4"
+      },
+      {
+        "name": "rARPACK",
+        "version": "0.11.0"
+      },
+      {
+        "name": "RColorBrewer",
+        "version": "1.1.3"
+      },
+      {
+        "name": "Rcpp",
+        "version": "1.1.2"
+      },
+      {
+        "name": "RcppParallel",
+        "version": "6.1.1"
+      },
+      {
+        "name": "RcppTOML",
+        "version": "0.2.3"
+      },
+      {
+        "name": "readr",
+        "version": "2.2.0"
+      },
+      {
+        "name": "readxl",
+        "version": "1.5.0"
+      },
+      {
+        "name": "reshape2",
+        "version": "1.4.5"
+      },
+      {
+        "name": "rlang",
+        "version": "1.3.0"
+      },
+      {
+        "name": "rmarkdown",
+        "version": "2.31"
+      },
+      {
+        "name": "rprojroot",
+        "version": "2.1.1"
+      },
+      {
+        "name": "RSpectra",
+        "version": "0.16.2"
+      },
+      {
+        "name": "RSQLite",
+        "version": "3.53.3"
+      },
+      {
+        "name": "rstudioapi",
+        "version": "0.19.0"
+      },
+      {
+        "name": "ruv",
+        "version": "0.9.7.1"
+      },
+      {
+        "name": "RUVIIIC",
+        "version": "1.0.19"
+      },
+      {
+        "name": "S4Arrays",
+        "version": "1.12.0"
+      },
+      {
+        "name": "S4Vectors",
+        "version": "0.50.1"
+      },
+      {
+        "name": "S7",
+        "version": "0.2.2"
+      },
+      {
+        "name": "scales",
+        "version": "1.4.0"
+      },
+      {
+        "name": "scatterpie",
+        "version": "0.2.6"
+      },
+      {
+        "name": "Seqinfo",
+        "version": "1.2.0"
+      },
+      {
+        "name": "shiny",
+        "version": "1.14.0"
+      },
+      {
+        "name": "shinydashboard",
+        "version": "0.7.3"
+      },
+      {
+        "name": "shinyFiles",
+        "version": "0.9.3"
+      },
+      {
+        "name": "shinyjqui",
+        "version": "0.4.1"
+      },
+      {
+        "name": "shinyjs",
+        "version": "2.1.1"
+      },
+      {
+        "name": "snakecase",
+        "version": "0.11.1"
+      },
+      {
+        "name": "SparseArray",
+        "version": "1.12.2"
+      },
+      {
+        "name": "splines",
+        "version": "4.6.1"
+      },
+      {
+        "name": "statmod",
+        "version": "1.5.2"
+      },
+      {
+        "name": "stats",
+        "version": "4.6.1"
+      },
+      {
+        "name": "stats4",
+        "version": "4.6.1"
+      },
+      {
+        "name": "stringfish",
+        "version": "0.19.0"
+      },
+      {
+        "name": "stringi",
+        "version": "1.8.7"
+      },
+      {
+        "name": "stringr",
+        "version": "1.6.0"
+      },
+      {
+        "name": "SummarizedExperiment",
+        "version": "1.42.0"
+      },
+      {
+        "name": "systemfonts",
+        "version": "1.3.2"
+      },
+      {
+        "name": "testthat",
+        "version": "3.3.2"
+      },
+      {
+        "name": "textshaping",
+        "version": "1.0.5"
+      },
+      {
+        "name": "tibble",
+        "version": "3.3.1"
+      },
+      {
+        "name": "tictoc",
+        "version": "1.2.1"
+      },
+      {
+        "name": "tidydr",
+        "version": "0.0.6"
+      },
+      {
+        "name": "tidyr",
+        "version": "1.3.2"
+      },
+      {
+        "name": "tidyselect",
+        "version": "1.2.1"
+      },
+      {
+        "name": "tidytree",
+        "version": "0.4.8"
+      },
+      {
+        "name": "timechange",
+        "version": "0.4.0"
+      },
+      {
+        "name": "tools",
+        "version": "4.6.1"
+      },
+      {
+        "name": "treeio",
+        "version": "1.36.1"
+      },
+      {
+        "name": "tweenr",
+        "version": "2.0.3"
+      },
+      {
+        "name": "tzdb",
+        "version": "0.5.0"
+      },
+      {
+        "name": "utils",
+        "version": "4.6.1"
+      },
+      {
+        "name": "vctrs",
+        "version": "0.7.3"
+      },
+      {
+        "name": "viridis",
+        "version": "0.6.5"
+      },
+      {
+        "name": "viridisLite",
+        "version": "0.4.3"
+      },
+      {
+        "name": "vroom",
+        "version": "1.7.1"
+      },
+      {
+        "name": "withr",
+        "version": "3.0.3"
+      },
+      {
+        "name": "writexl",
+        "version": "1.5.4"
+      },
+      {
+        "name": "xfun",
+        "version": "0.60"
+      },
+      {
+        "name": "xtable",
+        "version": "1.8.8"
+      },
+      {
+        "name": "XVector",
+        "version": "0.52.0"
+      },
+      {
+        "name": "yaml",
+        "version": "2.3.12"
+      },
+      {
+        "name": "yulab.utils",
+        "version": "0.2.4"
+      },
+      {
+        "name": "zip",
+        "version": "3.0.1"
+      }
+    ]
+  },
+  "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+  "defaults_changed": false,
+  "inputs": [],
+  "design": {
+    "entity_id": "ddc638327a8087d06d20cc2eade3ae9292a0ae48ea3f1026de4a0d3c5bc1240e",
+    "sample_id": "Run",
+    "group_id": "group",
+    "technical_replicate_id": "replicates",
+    "rows": [
+      {
+        "Run": "S1",
+        "group": "A",
+        "batch": "b1"
+      },
+      {
+        "Run": "S2",
+        "group": "A",
+        "batch": "b2"
+      },
+      {
+        "Run": "S3",
+        "group": "A",
+        "batch": "b3"
+      },
+      {
+        "Run": "S4",
+        "group": "B",
+        "batch": "b1"
+      },
+      {
+        "Run": "S5",
+        "group": "B",
+        "batch": "b2"
+      },
+      {
+        "Run": "S6",
+        "group": "B",
+        "batch": "b3"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "order": 1,
+      "state": "initial",
+      "operation": "import",
+      "variant": null,
+      "preceded_by": [],
+      "step_label": "initial",
+      "committed_at": "2026-11-23T06:26:22.005+0000",
+      "seed": null,
+      "result_entity_id": "1ab463d7c85bd9a3e7fc7600d329ac4bf4230e5faede419d33ff9b9edbd1de86",
+      "input_entity_ids": [],
+      "software": {
+        "version": "0.9.1",
+        "sha": null,
+        "build": "d242b1cd9785bae137afab9e651a5e01dacfe55ae443cb342aaac900264741cf"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": null,
+        "columns": null
+      },
+      "outcomes": {
+        "rows": null,
+        "columns": null
+      },
+      "description": "Initial empty state",
+      "parameters": [],
+      "products": [],
+      "stored_as_object": false
+    },
+    {
+      "order": 2,
+      "state": "correlation_filtered",
+      "operation": "design_builder",
+      "variant": null,
+      "preceded_by": [],
+      "step_label": "correlation_filtered",
+      "committed_at": "2026-11-23T06:26:22.454+0000",
+      "seed": null,
+      "result_entity_id": "ba8141b0a14ad08557a59f92ba7af5bac8f8ba17e5a9415e9cb5e048af57397a",
+      "input_entity_ids": [
+        "ba8141b0a14ad08557a59f92ba7af5bac8f8ba17e5a9415e9cb5e048af57397a"
+      ],
+      "software": {
+        "version": "0.9.1",
+        "sha": null,
+        "build": "d242b1cd9785bae137afab9e651a5e01dacfe55ae443cb342aaac900264741cf"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": 70,
+        "columns": 7
+      },
+      "outcomes": {
+        "rows": 70,
+        "columns": 7
+      },
+      "description": "fixture",
+      "parameters": [],
+      "products": [],
+      "stored_as_object": false
+    },
+    {
+      "order": 3,
+      "state": "enrichment_completed",
+      "operation": "enrichment",
+      "variant": "whole",
+      "preceded_by": [],
+      "step_label": "enrichment_completed",
+      "committed_at": "2026-11-23T06:26:31.373+0000",
+      "seed": null,
+      "result_entity_id": "eda332d4e2a735f91bac949a54e61b2c69f06f94dbed817c67b42cc1e54f37df",
+      "input_entity_ids": [
+        "ba8141b0a14ad08557a59f92ba7af5bac8f8ba17e5a9415e9cb5e048af57397a"
+      ],
+      "software": {
+        "version": "0.9.1",
+        "sha": null,
+        "build": "d242b1cd9785bae137afab9e651a5e01dacfe55ae443cb342aaac900264741cf"
+      },
+      "defaults_sha256": "79874ca8b3a73f6fc4c61dfc2218b4bbcd18e380b5799db138988ad8789f4e7f",
+      "dimensions": {
+        "rows": null,
+        "columns": 0
+      },
+      "outcomes": {
+        "rows": null,
+        "columns": 0,
+        "correction_method_requested": "gSCS",
+        "annotation_sha256": "7255f57b3fddf96b43fbc2452e76836185c3c5f6cd1c416700f86880cfe76440",
+        "da_inputs_sha256": {
+          "groupB-groupA": "fb5fa7219f52022da1703f41a26e6a8922cc1753b4a151e35f39922ff3d39f46"
+        }
+      },
+      "description": "Enrichment analysis completed using clusterprofiler for contrast: B_vs_A",
+      "parameters": [
+        {
+          "name": "taxon_id",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 999999,
+            "length": 1
+          },
+          "provenance": "input"
+        },
+        {
+          "name": "up_cutoff",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 0,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "down_cutoff",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 0,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "q_cutoff",
+          "source": "provenance",
+          "value": {
+            "type": "double",
+            "value": 0.050000000000000003,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "exclude_iea",
+          "source": "provenance",
+          "value": {
+            "type": "logical",
+            "value": false,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "correction_method",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "BH",
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        },
+        {
+          "name": "protein_id_column",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "uniprot_acc",
+            "length": 1
+          },
+          "provenance": "input"
+        },
+        {
+          "name": "contrast_names",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "groupB-groupA",
+            "length": 1
+          },
+          "provenance": "input"
+        },
+        {
+          "name": "results",
+          "source": "provenance",
+          "value": {
+            "type": "character",
+            "value": "568fce2ac4563646e1b618597ba3ced2c7e00e8a52d85bcd6b50a263f46eaf47",
+            "names": "groupB-groupA",
+            "length": 1
+          },
+          "provenance": "input"
+        }
+      ],
+      "products": [],
+      "stored_as_object": false
+    }
+  ],
+  "analyses": {
+    "differential_abundance": {
+      "operation": "DA-contrast-output",
+      "source_state": "correlation_filtered",
+      "source_entity_id": "ba8141b0a14ad08557a59f92ba7af5bac8f8ba17e5a9415e9cb5e048af57397a",
+      "parameters": [
+        {
+          "name": "formula",
+          "source": "manifest",
+          "value": {
+            "type": "character",
+            "value": "~ 0 + group",
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "qvalue",
+          "source": "manifest",
+          "value": {
+            "type": "double",
+            "value": 0.050000000000000003,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "lfc",
+          "source": "manifest",
+          "value": {
+            "type": "double",
+            "value": 0,
+            "length": 1
+          },
+          "provenance": "default"
+        },
+        {
+          "name": "weights",
+          "source": "manifest",
+          "value": {
+            "type": "logical",
+            "value": null,
+            "length": 1
+          },
+          "provenance": "no_shipped_default"
+        }
+      ],
+      "contrasts": [
+        {
+          "contrasts": "groupB-groupA",
+          "full_format": "B_vs_A=groupB-groupA",
+          "friendly_names": "B_vs_A"
+        }
+      ],
+      "model": {
+        "model": "limma",
+        "formula_used": "~ 0 + group",
+        "w_terms": [],
+        "k": 0,
+        "ruv_mode": "none",
+        "treat_applied": false,
+        "treat_lfc_cutoff_requested": 0,
+        "route": "iq",
+        "group_id": "group",
+        "technical_replicate_id": "replicates",
+        "block_reason": "no_declaration",
+        "uses_duplicate_correlation": false,
+        "consensus_correlation": null
+      },
+      "results": [
+        {
+          "contrast": "groupB-groupA",
+          "entity_id": "568fce2ac4563646e1b618597ba3ced2c7e00e8a52d85bcd6b50a263f46eaf47",
+          "rows": 70,
+          "fdr_method": "qvalue"
+        }
+      ]
+    }
+  },
+  "external_resources": [
+    {
+      "service": "clusterProfiler",
+      "release": "4.20.0",
+      "release_kind": "package_version",
+      "query_date": "2026-11-23T06:26:30.967+0000",
+      "query_summary": "enrichment of 1 contrasts, taxon 999999"
+    }
+  ],
+  "limits": {
+    "external_resources": "services queried inside a worker process are not recorded (KIT-026); the list covers queries made by the controlling process",
+    "legacy_steps": "a step committed before step provenance was recorded is `legacy` and lists its arguments without provenance"
+  }
+}

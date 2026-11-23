@@ -15,9 +15,17 @@ network closed; `test-go-propagation.R` checks each file against the SHA-256 bel
 | `report-base/TMT_report.R` | `4c748776d7a67be5442079f46cc0c2945b4ccc92598355ec03f597472fd31864` | the same chunk of `TMT_report.rmd` at a60c4e9a |
 | `report-base/DIANN_report.R` | `c2a74607f3d8580c461d223a659ef16e1d5601d1ba8d229c8348eb97bb765a28` | the same chunk of `DIANN_report.rmd` at a60c4e9a |
 | `report-base/DIANN_limpa_report.R` | `4949e6a16db8650ca764c63d65ba8a4b48743361ad3f49e560bc319f43a73147` | the same chunk of `DIANN_limpa_report.rmd` at a60c4e9a |
+| `replay-base/record.json` | `0812c62c1a6297bd0ed56524c1f4e60afc040ec2e2a6b5efe2a904700e08fff6` | T7(a) capture on the base code (below) |
+| `replay-base/enricher.tsv` | `5df53ef7740f2a59bd9bb8e2cb5f6f15374caab8a1b9dee2c0fd0dd71bb442fd` | T7(a) capture on the base code (below) |
+| `replay-base/evidence.rds` | `0e65813e03ecc12b34b0080408dccf0d7fc993008ce7fdc0f814b17afee16ce9` | T7(a) capture on the base code (below) |
+| `replay-base/product.rds` | `65ab5efb635c3cb760612a658b4c9398bee51dc7a42727125a97734dc83ac7be` | T7(a) capture on the base code (below) |
+| `replay-base/capture.tsv` | `5ebbb5539f9a18c17f89714b55ac43303a612bcdb535e5b906819aefafd31df3` | T7(a) capture on the base code (below) |
 
 `replay-base/` (T7(a)): the outputs of `docs/qa/workflow-execution/kit/kit-173/capture-record.R` run on the
-tests-only commit (R1), whose `R/` equals the base; their SHA-256 are in `replay-base/capture.tsv`.
+tests-only commit 536080c5 (R1, run of `k173-r1-536080c5`), whose `R/` equals the base a60c4e9a: `record.json`,
+`enricher.tsv`, `evidence.rds`, `product.rds` and `capture.tsv` (commit, versions, declared names and the SHA-256 of each
+file). The captured project store (`project.tar`) was withheld by the run's upload scan and is not committed; T7(b)
+replays the base record on a project with the same import and design states built from the fixtures above.
 
 Licences: UniProt CC BY 4.0 (The UniProt Consortium, UniProt: the Universal Protein Knowledgebase, Nucleic Acids
 Res.); Gene Ontology annotations and g:Profiler's GO GMT, CC BY 4.0 (Gene Ontology Consortium; g:Profiler, Kolberg et

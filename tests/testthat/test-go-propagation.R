@@ -284,11 +284,11 @@ test_that("KIT-173 T6: the yeast gene-set build stays under 200 MB of added peak
 test_that("KIT-173 T7(b): a record made on the base commit replays with the same names, sets, tables and files (regression)", {
     goPropSkipUnlessGoDb()
     base_dir <- goPropFixtureDir("replay-base")
-    skip_if_not(file.exists(file.path(base_dir, "project.tar")), "replay-base not captured yet (R1 makes it)")
+    skip_if_not(file.exists(file.path(base_dir, "record.json")), "replay-base not captured yet (R1 makes it)")
     scratch <- withr::local_tempdir()
-    project <- file.path(scratch, "origin")
-    dir.create(project)
-    utils::untar(file.path(base_dir, "project.tar"), exdir = project, tar = "internal")
+    # The base record replays on a project with the same import and design states, built here from the same
+    # fixtures (the captured store itself was withheld by the run's upload scan in R1 and is not committed).
+    project <- file.path(goPropFresh()$work, "project")
     record <- jsonlite::read_json(file.path(base_dir, "record.json"), simplifyVector = FALSE)
     base_evidence <- readRDS(file.path(base_dir, "evidence.rds"))
     base_product <- readRDS(file.path(base_dir, "product.rds"))
