@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-159 T1 instrument run 3 (VAL-54): whole msrval suite after the T1w2 fixes (session end on an observer error; T-TAB diagnostic steps)",
+  "label": "KIT-159 T1 whole suite at 266d9dc8",
+  "package_commit": "266d9dc852949ef2b76139705144e3c43aeb5c2f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1w3-out"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1w3-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
