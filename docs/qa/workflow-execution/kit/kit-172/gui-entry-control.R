@@ -98,7 +98,7 @@ writeLines(c(
   '  packaged <- env$omicsUiInputDefaults',
   '  env$omicsUiInputDefaults <- function(...) {',
   '    values <- packaged(...)',
-  '    at <- which(endsWith(names(values), "norm-norm_method"))',
+  '    at <- which(endsWith(as.character(names(values)), "norm-norm_method"))',
   '    if (length(at)) values[[sub("norm_method$", "log_offset", names(values)[[at[[1L]]]])]] <- 1',
   '    values',
   '  }',
