@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-173 declared control, instrument run 3 of 3 (VAL-54): C1's pair script stopped on unqualified internal calls after capture and replay; fixed with MultiScholaR:::, nothing else changed; ceiling 2 core-h for the control",
+  "label": "KIT-173 declared control rerun 041d8147",
+  "package_commit": "041d814771f884bc0c08182a3df7dad8f94618a7",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/t7-control.R",
+      "args": [
+        "k173-control-out"
+      ],
+      "env": {},
+      "out": "k173-control-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
