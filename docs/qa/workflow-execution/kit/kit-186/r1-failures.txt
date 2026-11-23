@@ -1,0 +1,722 @@
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `out$errors` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('norm', 'da')
+  `names(expected)` is absent
+  
+  actual vs expected
+  - norm"The test referenced an output that hasn't been defined yet: output$norm-ruv_summary_counts"
+  - da""
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `is.null(da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `da$model$formula_used` to be identical to "~ 0 + group".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('~ 0 + group')
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `da$source_state` to be identical to "trx_ruvs".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('trx_ruvs')
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `fixture$workflow$tab_status$differential_analysis` to be identical to "complete".
+  Differences:
+  `actual`:   "disabled"
+  `expected`: "complete"
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `trxNoRuvNotes(out)` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "Run the normalisation first: the DA runs on the normalised (RUVs) state."
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `startsWith(trxDaModelText(fixture$workflow), "Formula: ~ 0 + group\n")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `is.null(out$da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `rownames(top)` to be identical to `rownames(expected)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('TRXG00010', 'TRXG00165', 'TRXG00103', 'TRXG00111', 'TRXG00100', ...)
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `top[columns]` to equal `expected[columns]`.
+  Differences:
+  `actual` is NULL
+  `expected` is an S3 object of class <data.frame>, a list
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `worker$errors` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('norm', 'da')
+  `names(expected)` is absent
+  
+  actual vs expected
+  - norm"The test referenced an output that hasn't been defined yet: output$norm-ruv_summary_counts"
+  - da""
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `trxNoRuvNotes(worker)` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "Run the normalisation first: the DA runs on the normalised (RUVs) state."
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `all(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  trx_qc_figures trx_tmm_logcpm trx_ruv_grid trx_ruvs trx_qc_figures trx_qc_figures trx_ruv_publication trx_composite_figure
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `is.null(worker$da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `all(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `out$errors` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('norm', 'da')
+  `names(expected)` is absent
+  
+  actual vs expected
+  - norm"The test referenced an output that hasn't been defined yet: output$norm-ruv_summary_counts"
+  - da""
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `trxNoRuvNotes(out)` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "Run the normalisation first: the DA runs on the normalised (RUVs) state."
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `record$analyses$differential_abundance$model$formula_used` to be identical to "~ 0 + group".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('~ 0 + group')
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `is.null(out$da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `is.null(none$da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T4: a state never normalised is refused; a legacy-style state with W_ columns is accepted
+kind: failure
+message:
+  Expected `out$errors` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('norm')
+  `names(expected)` is absent
+  
+  actual vs expected
+  - norm"The test referenced an output that hasn't been defined yet: output$norm-ruv_summary_counts"
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T4: a state never normalised is refused; a legacy-style state with W_ columns is accepted
+kind: failure
+message:
+  Expected `omicGuiConfig("transcriptomics")$da$source$no_data` to be identical to `trxNoRuvRefusalW1`.
+  Differences:
+  actual vs expected
+  - "Run the normalisation first: the DA runs on the normalised (RUVs) state."
+  + "Run the normalisation first: the differential analysis runs on the normalised data."
+
+file: test-omic-gui-config.R
+test: KIT-106 W1 (D1): the da group holds each omic's DA tab values at the start commit
+kind: failure
+message:
+  Expected `trx$source` to be identical to `list(...)`.
+  Differences:
+  actual$no_data vs expected$no_data
+  - "Run the normalisation first: the DA runs on the normalised (RUVs) state."
+  + "Run the normalisation first: the differential analysis runs on the normalised data."
+
+file: test-omic-da-module.R
+test: (a) the lipid, metab, trx-profile and proteomics DA UIs keep their HTML, ids, test ids, tab titles, labels, choices and defaults
+kind: failure
+message:
+  Expected `actual[[omic]][[part]]` to be identical to `omicDaW1FrozenUi[[omic]][[part]]`.
+  Differences:
+  lines(actual[[1]]) vs lines(expected[[1]])
+    ""
+    "        edgeR quasi-likelihood: estimateDisp and glmQLFit(robust = TRUE), then glmQLFTest per contrast on the"
+  - "        one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group plus the RUVs factors"
+  + "        one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group, plus the RUV factors"
+  - "        W_1..W_k as covariates. No fold-change test is applied."
+  + "        W_1..W_k as covariates when the normalisation added them. No fold-change test is applied."
+    "      "
+  
+  trx help
+
+file: test-omic-da-module.R
+test: (b) in process: lipid_mismatch
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_mismatch load_mismatch states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: lipid_reordered
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_reordered load_reordered states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: lipid_no_contrasts
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_no_contrasts run_no_contrasts states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: lipid_invalid_preflight
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_invalid_preflight run_invalid states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: lipid_main
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_main start states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: lipid_main
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"lipidomics_da_results_<DATE>.csv"
+  - sha256"6ba7c37a419bbb27aa98a92bbd18d1d9d5411620cede4c542edff10cf1d6c3d0"
+  + sha256"aad6f3f2fa52185a86eed5428dfef9f0c5f0548110add82a790e73486a522be4"
+  
+  lipid_main download download
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: lipid_no_friendly
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_no_friendly run states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: metab_mismatch
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_mismatch load_mismatch states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: metab_reordered
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_reordered load_reordered states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: metab_no_contrasts
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_no_contrasts run_no_contrasts states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: metab_invalid_preflight
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_invalid_preflight run_invalid states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: metab_main
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_main start states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: metab_main
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"metabolomics_da_results_<DATE>.csv"
+  - sha256"be6844650e3e1ab4608b3d2c9291d66efad1b8f81acd944d51f25da6d54d3658"
+  + sha256"7adfe999098a7dd429d3c5f97a522f719ca4e67c02d41b8a6837987c7acce284"
+  
+  metab_main download download
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: metab_no_friendly
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_no_friendly run states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: trx_refusals
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "[error 5 -] Run the normalisation first: the DA runs on the normalised (RUVs) state."
+  + "[error 5 -] Run the normalisation first: the differential analysis runs on the normalised data."
+  
+  trx_refusals run_no_data notes
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: trx_main
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "187x11 a7283c4ffd2a524d"
+  `expected`: "187x11 121582784dc95c0a"
+  
+  trx_main run rows
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: trx_main
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[11:17] vs expected[11:17]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/gene_qc/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+    results/transcriptomics/gene_qc/trx_raw_pca.png"<present>"
+    results/transcriptomics/gene_qc/trx_raw_rle.png"<present>"
+  
+  trx_main run files
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: trx_main
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[11:17] vs expected[11:17]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/gene_qc/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+    results/transcriptomics/gene_qc/trx_raw_pca.png"<present>"
+    results/transcriptomics/gene_qc/trx_raw_rle.png"<present>"
+  
+  trx_main select files
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b) in process: trx_main
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+    file"transcriptomics_da_results_<DATE>.csv"
+  - sha256"2e6d57a23dcc9e6f84af18b943e2d7ccd2b32833ae52161b84f3f3edcefdd635"
+  + sha256"d9e7dd3dfa432147d91b1d36d3ce60ecf26ee6de44ade9f217ae792e4ee346c4"
+  
+  trx_main download download
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b-managed) lipid_managed: the worker's operations in order, the notifications, tab_status and the rows
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "9e234f5c19e68c52cd7e23174fd5610877747d4c7139c973cdfd63148df840f4"
+  `expected`: "672439f0bdf18a5a8ee3d7579dd29fee0560710d5d3fab6f415ede89199c64f6"
+  
+  lipid_managed run states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b-managed) metab_managed: the worker's operations in order, the notifications, tab_status and the rows
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "2bcb7d92fea939441acc2e9388bc9c62d550d8e6ff27f1559c6dce0688fae017"
+  `expected`: "6c9129cd1741dcb566b9899e1e1abc5e14149d4d16741cf1f4844656c1a0e73f"
+  
+  metab_managed run states
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b-managed) trx_managed: the worker's operations in order, the notifications, tab_status and the rows
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "187x11 a7283c4ffd2a524d"
+  `expected`: "187x11 121582784dc95c0a"
+  
+  trx_managed run rows
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (b-managed) trx_managed: the worker's operations in order, the notifications, tab_status and the rows
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[11:17] vs expected[11:17]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/gene_qc/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+    results/transcriptomics/gene_qc/trx_raw_pca.png"<present>"
+    results/transcriptomics/gene_qc/trx_raw_rle.png"<present>"
+  
+  trx_managed run files
+trace (first lines):
+      ▆
+   1. └─expectOmicDaW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-da-module.R:4662:13
+
+file: test-omic-da-module.R
+test: (c) the refusal order: metab refuses an invalid preflight before the running notice, lipid after it; no data and no contrasts come first for lipid, metab and trx
+kind: failure
+message:
+  Expected `omicDaW1Notes("trx_refusals", "run_no_data")` to be identical to "[error 5 -] Run the normalisation first: the differential analysis runs on the normalised data.".
+  Differences:
+  actual vs expected
+  - "[error 5 -] Run the normalisation first: the DA runs on the normalised (RUVs) state."
+  + "[error 5 -] Run the normalisation first: the differential analysis runs on the normalised data."
+
+file: test-omic-da-module.R
+test: (W3) the shared frame's trx UI is W1 (a)'s trx UI
+kind: failure
+message:
+  Expected `parts[[part]]` to be identical to `omicDaW1FrozenUi$trx[[part]]`.
+  Differences:
+  lines(actual[[1]]) vs lines(expected[[1]])
+    ""
+    "        edgeR quasi-likelihood: estimateDisp and glmQLFit(robust = TRUE), then glmQLFTest per contrast on the"
+  - "        one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group plus the RUVs factors"
+  + "        one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group, plus the RUV factors"
+  - "        W_1..W_k as covariates. No fold-change test is applied."
+  + "        W_1..W_k as covariates when the normalisation added them. No fold-change test is applied."
+    "      "
+  
+  help
+
+file: test-module-ci-trx-summary.R
+test: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report
+kind: failure
+message:
+  Expected `trxDeclSha(products[[name]])` to be identical to `prints$sha256[prints$product == name]`.
+  Differences:
+  `actual`:   "1c02bfdd2b6e93ee7a2d9b03e7c037da24d8cbc04fbbb82bb3002a00392fbfb8"
+  `expected`: "a1f43e2db82b39ad738e2308d8483abd5c9e406da7a7bbfb38d3049bbd03093e"
+  
+  trx_edge_12 the summary tab's RUVIII export ruviii_newY
+trace (first lines):
+      ▆
+   1. └─expectTrxDeclProducts(...) at test-module-ci-trx-summary.R:52:3
+   2.   └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:67:5
+
+file: test-module-ci-trx-summary.R
+test: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report
+kind: failure
+message:
+  Expected `digest::digest(file = tsv, algo = "sha256")` to be identical to `stable$sha256[stable$path == "results/transcriptomics/transcriptomics_normalized_data.tsv"]`.
+  Differences:
+  `actual`:   "be38d28699cfc9c3be07755b999b07ba41ab17facb0c3d225b887e806f4f7272"
+  `expected`: "a704598297e348d2c05c8741a043e92223c1d5eb625d0cf54a7b685fd7be636c"
+
+file: test-module-ci-trx-summary.R
+test: KIT-186 T7 the report of a run without RUV (design none) says that no correction for unwanted variation was applied
+kind: failure
+message:
+  Expected `grepl(statement, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  No correction for unwanted variation was applied: the analysis was run without RUV, as chosen on the normalisation tab.
+
+file: test-module-ci-trx-summary.R
+test: KIT-186 T7 the report of a run without RUV (design none) says that no correction for unwanted variation was applied
+kind: failure
+message:
+  Expected `grepl(statement, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  The differential expression model held the experimental groups alone (~ 0 + group).
+
+file: test-module-ci-trx-summary.R
+test: KIT-186 T7 the report of a run without RUV (design none) says that no correction for unwanted variation was applied
+kind: failure
+message:
+  Expected `grepl(statement, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  so the third column shows the TMM logCPM again
+
+file: test-module-ci-trx-summary.R
+test: KIT-186 T7 the report of a run without RUV (design none) says that no correction for unwanted variation was applied
+kind: failure
+message:
+  Expected `grepl(statement, text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  RUVs factors W_1
+
+file: test-module-ci-trx-summary.R
+test: KIT-186 T7 the report of a run without RUV (design none) says that no correction for unwanted variation was applied
+kind: failure
+message:
+  Expected `grepl(statement, text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  inferred empirical negative control
+

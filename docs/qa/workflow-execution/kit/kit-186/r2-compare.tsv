@@ -1,0 +1,31 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-omic-da-module.R	1347	22	0	0	failed	1345	24	0	0	failed	new-failure	new-failure: (a) the lipid, metab, trx-profile and proteomics DA UIs keep their HTML, ids, test ids, tab titles, labels, choices and defaults; new-failure: (W3) the shared frame's trx UI is W1 (a)'s trx UI; counts: (a) the lipid, metab, trx-profile and proteomics DA UIs keep their HTML, ids, test ids, tab titles, labels, choices and defaults (passed 37 -> 36, skipped 0 -> 0); counts: (W3) the shared frame's trx UI is W1 (a)'s trx UI (passed 10 -> 9, skipped 0 -> 0)	
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-trx-da-without-ruv.R	0	0	0	0	absent	57	0	0	0	ok	only-on-head		
+test-omic-gui-config.R	1906	0	0	0	ok	1906	0	0	0	ok	same		
+test-omics-da-core.R	129	0	0	2	ok	129	0	0	2	ok	same		
+test-omic-da-head-fallback.R	9	0	0	0	ok	9	0	0	0	ok	same		
+test-module-ci-trx-da.R	52	1	0	0	failed	52	1	0	0	failed	same		
+test-module-ci-trx-norm.R	63	1	0	0	failed	63	1	0	0	failed	same		
+test-module-ci-trx-summary.R	71	2	0	0	failed	77	2	0	0	failed	count-changed	counts: KIT-186 T7 the report of a run without RUV (design none) says that no correction for unwanted variation was applied (passed NA -> 6, skipped NA -> 0)	
+test-module-ci-trx-app.R	50	0	0	0	ok	50	0	0	0	ok	same		
+test-kit129-run-path.R	711	0	0	1	ok	711	0	0	1	ok	same		
+test-trx-ruv-designs.R	368	0	0	0	ok	368	0	0	0	ok	same		
+test-workflow-trx-declarations.R	309	33	0	0	failed	309	33	0	0	failed	same		
+test-trx-norm-core.R	58	0	0	0	ok	58	0	0	0	ok	same		
+test-trx-norm-module.R	109	0	0	0	ok	109	0	0	0	ok	same		
+test-trx-publication.R	92	82	0	0	failed	92	82	0	0	failed	same		
+test-kit128-tech-reps-trx.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-integration-input-transcriptomics.R	57	0	0	0	ok	57	0	0	0	ok	same		
+test-e2e-trx-journey.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-e2e-transcriptomics-screen.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-gui-entry-transcriptomics.R	16	13	0	0	failed	16	13	0	0	failed	message-changed	message-changed: KIT-101 entry lane trx_screen: the KIT-040 count corpus, 12 samples, 300 genes	
+test-e2e-manifest.R	237	0	0	0	ok	237	0	0	0	ok	same		
+test-omic-norm-ruv-design.R	1153	0	0	0	ok	1153	0	0	0	ok	same		
+test-omics-summary-core.R	676	25	0	2	failed	676	25	0	2	failed	same		
+test-workflow-kit-harness.R	734	1	0	0	failed	734	1	0	0	failed	same		
+test-workflow-omics-binding-steps.R	56	1	0	0	failed	56	1	0	0	failed	same		
+test-workflow-operation-registry.R	1091	2	0	0	failed	1091	2	0	0	failed	same		
+test-module-ci-lipid-da.R	140	0	0	0	ok	140	0	0	0	ok	same		
+test-module-ci-metab-da.R	138	0	0	0	ok	138	0	0	0	ok	same		

@@ -1,0 +1,201 @@
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `out$errors` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('da')
+  `names(expected)` is absent
+  
+  `actual`:   ""
+  `expected`:   
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `is.null(da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `da$model$formula_used` to be identical to "~ 0 + group".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('~ 0 + group')
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `da$source_state` to be identical to "trx_ruvs".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('trx_ruvs')
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `fixture$workflow$tab_status$differential_analysis` to be identical to "complete".
+  Differences:
+  `actual`:   "disabled"
+  `expected`: "complete"
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `trxNoRuvNotes(out)` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "Run the normalisation first: the DA runs on the normalised (RUVs) state."
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `startsWith(trxDaModelText(fixture$workflow), "Formula: ~ 0 + group\n")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `is.null(out$da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `rownames(top)` to be identical to `rownames(expected)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('TRXG00010', 'TRXG00165', 'TRXG00103', 'TRXG00111', 'TRXG00100', ...)
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `top[columns]` to equal `expected[columns]`.
+  Differences:
+  `actual` is NULL
+  `expected` is an S3 object of class <data.frame>, a list
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `worker$errors` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('da')
+  `names(expected)` is absent
+  
+  `actual`:   ""
+  `expected`:   
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `trxNoRuvNotes(worker)` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "Run the normalisation first: the DA runs on the normalised (RUVs) state."
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `all(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  trx_qc_figures trx_tmm_logcpm trx_ruv_grid trx_ruvs trx_qc_figures trx_qc_figures trx_ruv_publication trx_composite_figure
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `is.null(worker$da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T1 T2: design none, in process and managed: the DA runs on ~ 0 + group and is edgeR QL
+kind: failure
+message:
+  Expected `all(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `out$errors` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('da')
+  `names(expected)` is absent
+  
+  `actual`:   ""
+  `expected`:   
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `trxNoRuvNotes(out)` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "Run the normalisation first: the DA runs on the normalised (RUVs) state."
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `record$analyses$differential_abundance$model$formula_used` to be identical to "~ 0 + group".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('~ 0 + group')
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `is.null(out$da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T3: a declared design whose estimated k is 0 runs the same DA as the design none
+kind: failure
+message:
+  Expected `is.null(none$da)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-trx-da-without-ruv.R
+test: KIT-186 T4: a state never normalised is refused; a legacy-style state with W_ columns is accepted
+kind: failure
+message:
+  Expected `omicGuiConfig("transcriptomics")$da$source$no_data` to be identical to `trxNoRuvRefusalW1`.
+  Differences:
+  actual vs expected
+  - "Run the normalisation first: the DA runs on the normalised (RUVs) state."
+  + "Run the normalisation first: the differential analysis runs on the normalised data."
+
