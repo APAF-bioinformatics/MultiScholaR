@@ -1,0 +1,35 @@
+{
+  "requested_by": "KIT-177 R2: fix c8fc140e against staging 55710a87, targeted and dependents (26 files, 4 shards per side), R CMD check; T1b script on head; ceilings 24 + 14 core-hours",
+  "label": "KIT-177 R2 fix c8fc140e vs 55710a87 with T1b",
+  "package_commit": "c8fc140e9d17f2e2e2b7184624f1c6c059f9fa44",
+  "base_commit": "55710a87eb7d8e0e7f1ce8f5dcb608bc0a641668",
+  "tools_ref": "",
+  "tests": ["test-prot-design-log2.R", "test-workflow-native-session.R", "test-workflow-analysis-record.R",
+    "test-gui-entry-proteomics.R", "test-prot-design-core.R", "test-prot-04a-design-module-characterization.R",
+    "test-prot-04-design.R", "test-prot-04b-design-server-shared.R", "test-prot-design-save-preflight.R",
+    "test-omic-design-module.R", "test-e2e-proteomics-tmt-lfq.R", "test-module-ci-prot-design.R",
+    "test-module-ci-prot-norm.R", "test-module-ci-prot-da.R", "test-module-ci-prot-summary.R",
+    "test-module-ci-prot-protein-qc.R", "test-prot-norm-core.R", "test-workflow-kit-harness.R",
+    "test-prot-05b-norm-module-contracts.R", "test-prot-05d-norm-module-characterization.R",
+    "test-prot-07b-da-handlers-compat.R", "test-workflow-saved-qc.R", "test-workflow-gui-memory-lifetimes.R",
+    "test-omic-norm-ruv-design.R", "test-omic-gui-config.R", "test-workflow-dia-products.R"],
+  "shards": 4,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {"test-gui-entry-proteomics.R": 120},
+  "extra_packages": ["sva"],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-177/t1b.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-177/t1b"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-177/t1b",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 210
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
