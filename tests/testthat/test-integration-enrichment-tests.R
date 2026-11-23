@@ -635,13 +635,18 @@ test_that("KIT-183 T13: corpus check: planted sets found in the expected directi
 
 # --- T5, T8, T15: guards against the base (the store made at base, kit183-base-store) ---
 
+# The base store is built by the base commit's code inside the runner job that runs these tests
+# (docs/qa/workflow-execution/kit/kit-183/base-store-job.R, VAL-64 (2)), which names it in K183_BASE_STORE; it is never
+# kept in the repository. Without it T5 and T8 skip.
 intEtBaseStoreCopy <- function(.local_envir = parent.frame()) {
-    testthat::skip_if_not(dir.exists(file.path(intEtBaseStore(), "store", ".workflow-entities")),
-        "the KIT-183 base store is not present")
+    source_store <- Sys.getenv("K183_BASE_STORE", unset = "")
+    testthat::skip_if_not(nzchar(source_store) && dir.exists(file.path(source_store, ".workflow-entities")),
+        "the KIT-183 base store is built only inside base-store-job.R's runner job")
     testthat::skip_if_not(workflowOwnerCapable(), "the integration store needs qs2, DuckDB and Arrow")
     root <- withr::local_tempdir(.local_envir = .local_envir)
-    stopifnot(file.copy(file.path(intEtBaseStore(), "store"), root, recursive = TRUE))
-    root <- file.path(root, "store")
+    stopifnot(file.copy(source_store, root, recursive = TRUE))
+    root <- file.path(root, basename(source_store))
+    stopifnot(dir.exists(file.path(root, ".workflow-entities")))
     identity <- readSavedStoreIdentity(file.path(root, ".workflow-entities", "store.json"))
     manager <- newWorkflowStateOwner(newWorkflowEntityStore(root, identity$project_id, identity$workflow_id), reopen = TRUE)
     withr::defer(closeWorkflowStateOwner(manager), envir = .local_envir)
