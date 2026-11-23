@@ -377,6 +377,37 @@ values compared whole numbers read back from a TSV (integers) with doubles by `e
 
 As listed under "Resume here". Written after T0d; nothing of it has run.
 
+### Offered regimes from T2 (USAGE.md; provisional ledger row H2) (2026-11-23)
+
+Section 10.2's rule applied as written to `t2/coverage-table.tsv`: a row's recorded status decides
+(pass: offered; conservative: offered, so labelled; fail: not offered; flagged: not offered without
+`accept_flagged`; not_offered: no interval). No row re-classified. Table in `USAGE.md` (64 rows by
+method x class x form x design x transform x n, eight levels each, with the lowest and highest
+simulated coverage over the row's conditions and statistics, joined from `t2/t2{a,b,c}-coverage-
+detail.tsv`); generator: a 60-line Python join run on this machine (no R), output checked by eye
+against the regime table's statuses. Status counts: 337 pass, 35 conservative, 69 fail, 55 flagged,
+16 no interval (512). Ledger row `VAL-<merge>` (H2, provisional) in `docs/methods-decision-ledger.md`.
+
+**For the auditor (the rule's wording leaves these unclear; not decided here):**
+1. C1 `exact_median` n = 10 at 98.33 % to 99.67 %: `fail` with simulated coverage 0.995 (normal) and
+   0.997 (skewed), above the nominal level; achieved level 0.99805. `valCoverageStatus` takes the
+   Monte Carlo SE at the achieved level (0.00099; 3 SE = 0.00296), so |0.995 - 0.99805| = 0.00305
+   fails by 0.0001; with the SE at the simulated coverage (0.00158, as `coverage-table.tsv`'s `mc_se`
+   column prints) it would pass. The ticket says "within 3 Monte Carlo SE of the achieved level" and
+   does not say which SE. The interval also under-covers its achieved level, not its nominal one.
+2. Rank rows at coverage near or equal to 1: C4e g = 14 `rank` coverage 1.0000 with MC SE 0 and target
+   exactly 0 at every level (`conservative` at 95 %, `pass` from 97.5 %, because the upper band
+   min(level + 0.04, 1) is 1 from 96 % on); C4 g = 6 and C4e g = 5 `rank` 0.994 to 0.9995 likewise.
+   Above 96 % the band cannot mark over-coverage, and a coverage of exactly 1 with a target of 0
+   suggests a degenerate statistic (paired pAUC difference to FPR 0.01 identically 0 at 14 blocks?):
+   whether these rows license `rank` intervals is for the auditor.
+3. C6 `newcombe_paired` 21 pairs at 95 %: `fail` only because the (0.9, 0.9) condition covers 0.9925,
+   above the within-run upper band 0.99; the regime table's `coverage` column prints the minimum
+   (0.9765), so the table alone does not show why the row fails (the USAGE table prints both ends).
+   Offered at 97.5 % and above with coverage to 1.0000 (the band's upper end is 1 there).
+4. C8 `clopper_pearson` is `conservative` on every row by construction of `valCoverageStatus` (kind
+   `clopper` never returns `pass`); read as "always offered" per 4.4.
+
 ### Ticket revisions 1.8 and 1.9 (2026-11-23)
 
 The coordinator's amendment pass made the ticket 1.8 (register
