@@ -1,0 +1,43 @@
+{
+  "requested_by": "KIT-177 R0 (gates before code): F4 = S2 on prot_lfq against base fc48b6ec (mechanism, expected no difference), F3 replay of LFQ and TMT records state by state, 9.1 effect measurement; commit 025c9542, R/ = base; ceiling 18 core-hours",
+  "label": "KIT-177 R0 F4 F3 9.1 on 025c9542",
+  "package_commit": "025c95426bb8dd3e05d60f0ae750b0c71638f16e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-177/gui-entry-control.R",
+      "args": ["fc48b6ecea61815afaff4e759c36b805028c119d", "docs/qa/workflow-execution/kit/kit-177/f4", "prot_lfq"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-177/f4",
+      "out_pattern": "\\.(json|tsv)$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-177/replay-check.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-177/replay"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-177/replay",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 45
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-177/effect.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-177/effect", "187"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-177/effect",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 200
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
