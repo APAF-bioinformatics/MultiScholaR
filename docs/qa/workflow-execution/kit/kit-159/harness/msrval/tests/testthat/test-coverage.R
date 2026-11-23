@@ -46,3 +46,48 @@ test_that("small runs of a C1 and a C3 cell return one row per level", {
     expect_identical(nrow(c3), 8L)
     expect_true(all(c3$coverage >= 0 & c3$coverage <= 1))
 })
+
+# The range split of T2 (coordinator's ruling of 2026-11-23, point 3): one seed per simulation and
+# per target simulation, fixed by the cell and the index alone, so a cell run as ranges gives the
+# same simulated data sets, counts and coverage as the cell run whole.
+splitCompare <- function(cell, nsim, ntarget) {
+    drop_time <- function(x) x[, setdiff(names(x), c("seconds_target", "seconds_sims"))]
+    whole_part <- valCoverageRange(cell, seq_len(nsim), seq_len(ntarget))
+    whole <- valCombineCoverage(cell, list(whole_part), nsim, ntarget)
+    half <- nsim %/% 2L
+    th <- ntarget %/% 2L
+    parts <- list(valCoverageRange(cell, (half + 1L):nsim, if (ntarget) (th + 1L):ntarget),
+                  valCoverageRange(cell, seq_len(half), if (ntarget) seq_len(th)))
+    split <- valCombineCoverage(cell, parts, nsim, ntarget)
+    expect_identical(drop_time(split), drop_time(whole))
+    expect_identical(attr(split, "data_digests"), attr(whole, "data_digests"))
+    expect_identical(length(attr(whole, "data_digests")), as.integer(nsim))
+    expect_error(valCombineCoverage(cell, parts[1], nsim, ntarget), class = "val_spec_invalid")
+    expect_error(valCombineCoverage(cell, c(parts, parts[2]), nsim, ntarget),
+                 class = "val_spec_invalid")
+}
+
+test_that("a coverage cell run as ranges equals the cell run whole; a dropped or repeated range is refused", {
+    cells <- valCoverageCells()
+    splitCompare(cells[cells$regime == "C3", ][1L, ], 6L, 6L)
+    splitCompare(cells[cells$regime == "C1", ][1L, ], 6L, 0L)
+    splitCompare(cells[cells$family == "c4:500", ][1L, ], 4L, 4L)
+})
+
+test_that("seeds depend on the cell and the index only", {
+    cells <- valCoverageCells()
+    a <- cells[cells$regime == "C3", ][1L, ]
+    expect_identical(valSimSeed(a, 7L), valSimSeed(a, 7L))
+    expect_false(identical(valSimSeed(a, 7L), valSimSeed(a, 8L)))
+    expect_false(identical(valSimSeed(a, 7L), valTargetSeed(a, 7L)))
+})
+
+test_that("a coverage plan splits each cell into fixed consecutive ranges", {
+    cells <- valCoverageCells()
+    plan <- valCoveragePlan(cells[cells$regime == "C3", ][1:2, ], ranges = c(2L, 1L), nsim = 10L,
+                            target_sims = 7L)
+    expect_identical(nrow(plan), 3L)
+    a <- plan[plan$cell == plan$cell[1L], ]
+    expect_identical(c(a$sim_from, a$sim_to), c(1L, 6L, 5L, 10L))
+    expect_identical(c(a$target_from, a$target_to), c(1L, 5L, 4L, 7L))
+})
