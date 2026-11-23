@@ -1,0 +1,65 @@
+{
+  "requested_by": "KIT-186 R2b (6.4): merge with v0.9-staging d12f04ae; R2's scope and check, S1 repeated (incoming code changes R/utils_omic_gui_config.R); base = staging head",
+  "label": "KIT-186 R2b merge 4433f86c vs d12f04ae",
+  "package_commit": "4433f86ce0dfe3d4835a0191b0f17826aae80331",
+  "base_commit": "d12f04ae9595a315d329a8bdbb30133ede06cdf3",
+  "tools_ref": "",
+  "tests": [
+    "test-omic-da-module.R",
+    "test-workflow-omics-application-reads.R",
+    "test-omic-summary-module.R",
+    "test-trx-da-without-ruv.R",
+    "test-omic-gui-config.R",
+    "test-omics-da-core.R",
+    "test-omic-da-head-fallback.R",
+    "test-module-ci-trx-da.R",
+    "test-module-ci-trx-norm.R",
+    "test-module-ci-trx-summary.R",
+    "test-module-ci-trx-app.R",
+    "test-kit129-run-path.R",
+    "test-trx-ruv-designs.R",
+    "test-workflow-trx-declarations.R",
+    "test-trx-norm-core.R",
+    "test-trx-norm-module.R",
+    "test-trx-publication.R",
+    "test-kit128-tech-reps-trx.R",
+    "test-integration-input-transcriptomics.R",
+    "test-e2e-trx-journey.R",
+    "test-e2e-transcriptomics-screen.R",
+    "test-gui-entry-transcriptomics.R",
+    "test-e2e-manifest.R",
+    "test-omic-norm-ruv-design.R",
+    "test-omics-summary-core.R",
+    "test-workflow-kit-harness.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-workflow-operation-registry.R",
+    "test-module-ci-lipid-da.R",
+    "test-module-ci-metab-da.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-transcriptomics.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-186/ruv-routes-control.R",
+      "args": [
+        "d12f04ae9595a315d329a8bdbb30133ede06cdf3"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-186/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
