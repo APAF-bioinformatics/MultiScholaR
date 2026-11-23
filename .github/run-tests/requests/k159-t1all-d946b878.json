@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-159 T1 whole msrval suite with --lint at d946b878 (VAL-69): section 7 code, r1.12 tests, A2 lintr; ceiling T1's remaining 6.62 core-hours",
+  "label": "KIT-159 T1 whole suite and lint at d946b878",
+  "package_commit": "d946b878521e5e22ef7e1ef1b6f50bfcc208e7f6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1all-out",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1all-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 80
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
