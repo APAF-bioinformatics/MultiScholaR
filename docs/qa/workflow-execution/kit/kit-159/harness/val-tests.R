@@ -99,17 +99,6 @@ if (!is.null(optValue("--ticket"))) {
              "harness-failures.txt")
 }
 
-# --- Line coverage ---
-if (has("--covr")) {
-    cov <- covr::package_coverage(pkg_dir, type = "tests", quiet = TRUE)
-    per_file <- covr::tally_coverage(cov, by = "line")
-    by_file <- tapply(per_file$value > 0, per_file$filename, mean)
-    lines <- c(sprintf("total\t%.2f", covr::percent_coverage(cov)),
-               sprintf("%s\t%.2f", names(by_file), 100 * by_file))
-    writeLines(lines, file.path(out_dir, "coverage.txt"))
-    say("covr: ", lines[[1L]])
-}
-
 # --- Lint ---
 if (has("--lint")) {
     linters <- lintr::linters_with_defaults(
@@ -127,6 +116,26 @@ if (has("--lint")) {
                            row.names = FALSE)
     }
     say("lintr: ", nrow(lint_df), " lints")
+}
+
+# --- Line coverage ---
+if (has("--covr")) {
+    # Lint runs first (it takes seconds), so a covr failure or a time-out cannot lose it; a covr
+    # error is written to coverage.txt (its class only on the console) instead of ending the script.
+    cov <- tryCatch(covr::package_coverage(pkg_dir, type = "tests", quiet = TRUE),
+                    error = function(e) e)
+    if (inherits(cov, "error")) {
+        writeLines(c("error", substr(conditionMessage(cov), 1L, 2000L)),
+                   file.path(out_dir, "coverage.txt"))
+        say("covr: error (", class(cov)[[1L]], ")")
+    } else {
+        per_file <- covr::tally_coverage(cov, by = "line")
+        by_file <- tapply(per_file$value > 0, per_file$filename, mean)
+        lines <- c(sprintf("total\t%.2f", covr::percent_coverage(cov)),
+                   sprintf("%s\t%.2f", names(by_file), 100 * by_file))
+        writeLines(lines, file.path(out_dir, "coverage.txt"))
+        say("covr: ", lines[[1L]])
+    }
 }
 
 # --- Coverage regimes (T-COV) and the chunk speed-up on simulations (f_sim) ---
