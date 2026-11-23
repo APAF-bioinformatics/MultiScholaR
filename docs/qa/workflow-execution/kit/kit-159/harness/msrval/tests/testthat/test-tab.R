@@ -12,7 +12,9 @@ for (route in driverRoutes()) {
             root <- driverPkgRoot()
             cell <- valFixtureCell(route, root)
             helpers <- valGuiHelpers(root)
-            arm <- if (identical(route, "prot_dia_limpa")) valArmShipped() else valArmRuvOff()
+            # The covariate routes with the shipped arm, so ruv.tsv and matrix_display.tsv are written
+            # and checked on both; the others with RUV off as their GUI-entry lanes run (10.3, r1.11).
+            arm <- if (route %in% c("prot_dia_limpa", "trx_screen")) valArmShipped() else valArmRuvOff()
             out <- withr::local_tempdir()
             res <- valRunWorkflow(cell$script, files = cell$files, design = cell$design, arm = arm,
                                   helpers = helpers, forced_inputs = cell$forced_inputs,
@@ -45,9 +47,13 @@ for (route in driverRoutes()) {
             feats <- utils::read.delim(file.path(out, "features.tsv"), stringsAsFactors = FALSE)
             expect_identical(names(feats), c("feature_id", "assay", "in_matrix_pre_ruv", "in_matrix",
                                              "tested"))
-            if (identical(route, "prot_dia_limpa")) {
+            if (route %in% c("prot_dia_limpa", "trx_screen")) {
                 expect_true(file.exists(file.path(out, "ruv.tsv")))
                 expect_true(file.exists(file.path(out, "matrix_display.tsv")))
+                display <- utils::read.delim(file.path(out, "matrix_display.tsv"),
+                                             stringsAsFactors = FALSE, check.names = FALSE)
+                expect_identical(names(display)[1:3], c("feature_id", "assay", "label"))
+                expect_gt(ncol(display), 3L)
             }
             if (cell$omic %in% c("lipidomics", "metabolomics")) {
                 expect_true(file.exists(file.path(out, "itsd.tsv")))

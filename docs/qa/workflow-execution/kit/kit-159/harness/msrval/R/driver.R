@@ -1473,7 +1473,11 @@ valProductDisplayReader <- function(manager, r) {
         return(function() {
             m <- scoped(function() {
                 ruvs <- ns$trxStateRuvs(manager, ns$getWorkflowStateReference(manager, "trx_ruvs"))
-                if (is.null(ruvs$corrected)) NULL else ns$trxSavedMatrix(manager, ruvs$corrected)
+                # No display matrix where RUV was not applied (design none, or k = 0; 7.3 r1.11), by
+                # the product's own rule (trxIntegrationRuvState).
+                applied <- isTRUE(ruvs$outcomes$ruv_applied) && isTRUE(as.integer(ruvs$k) > 0L)
+                if (!applied || is.null(ruvs$corrected)) NULL else
+                    ns$trxSavedMatrix(manager, ruvs$corrected)
             })
             if (is.null(m)) return(NULL)
             cbind(data.frame(feature_id = rownames(m), assay = "all", stringsAsFactors = FALSE),
