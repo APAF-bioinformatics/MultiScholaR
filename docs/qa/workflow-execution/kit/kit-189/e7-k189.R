@@ -67,7 +67,7 @@ result <- tryCatch({
     data.frame(id = "E7", pass = pass, detail = clean(sprintf(paste(
         "limit %d s; killed run exit %d after %.0f s: %d complete parts, %d .tmp parts left (not read), %d assembled files;",
         "continuation of %d replicates exit %d (%.0f s); uninterrupted exit %d (%.0f s); union holds each of the 40",
-        "replicates once: %s; union rows %d; rows equal to the uninterrupted run's without part and seconds: %s")),
+        "replicates once: %s; union rows %d; rows equal to the uninterrupted run's without part and seconds: %s"),
         limit, killed$status, killed$seconds, length(complete_k), length(tmp_k), length(gz_k), length(missing), cont$status,
         cont$seconds, whole$status, whole$seconds, all(per_rep == 1L), nrow(union_rows), identical(a, b))),
         stringsAsFactors = FALSE)
