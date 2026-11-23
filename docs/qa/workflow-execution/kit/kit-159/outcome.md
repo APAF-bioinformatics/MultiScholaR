@@ -26,6 +26,57 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
+## Resume here (state at 034af2a0, written for a fresh agent)
+
+**Read first:** the brief `tickets/kit/audits/IMPLEMENTER-BRIEF.md`; the ticket `tickets/kit/KIT-159.md`
+(revision 1.10, main checkout); "Rulings of 2026-11-23" above. Nothing runs on T1 and T2 stays held until
+the owner answers the development-run rule; tests-only runs go under T0 (2.84 of 6 core-hours used).
+
+**Built and verified on a runner:** group (a) scoring (T1a correction, run 45125695623).
+**Built, verified except one code defect, fix committed unrun:** group (b) (T1b correction, run
+45129042733; T-LOG: append mode, fixed in `valRunAsChild`).
+**Built, fix committed unrun:** the coverage range split (T1s, run 45129513148: `spec[["target"]]`).
+**Committed unrun:** group (c) code (driver parts, chain reader, kernel identity, hook, result tables,
+widening, results note, hand-off folder, ticket coverage files, `check-evidence.sh`, `val-run.R`
+record/pre/check) and the defect sweep (lists below). T0c (run 45131922735) showed group (c)'s 25
+tests failing first.
+
+**Next work item: the driver core (group (d)), tests first.** As the coordinator ordered on
+2026-11-23: `valRunWorkflow` under `shiny::testServer`, `valActionScript` with `action-scripts.md`
+(7.4, VAL-41/VAL-26), `valReadArmTables` (7.3 standard tables; `valMatrixStages` gives the stage
+rule), `valReplay`, the RUV arm builders of 7.5 (`valArmShipped`, `valArmRuvLegacy`,
+`valArmRuvCalibrated`, `valArmRuvOff`, `valArmRuvDesign`, `valArmRuvSupplied`), `valRunCustomArm`,
+the parity stage (7.9; `parity.R`: `valParityBrowser`, `valCompareLedgers`; the `distributable.yml`
+stage on top of KIT-176's merged file), Part B (`integration.R`, starts with KIT-170), `USAGE.md`,
+`templates/`, and T-TAB.
+- Before writing: read `tests/testthat/helper-gui-entry.R` (the lanes, `guiEntryRunLane` 266-367,
+  the browser double 219-250, `api$defaults` 316-319, step builders 475/553/664),
+  `tests/testthat/helper-workflow-omics-residency.R` (`omicsUiInputDefaults` 67-103),
+  `tests/testthat/helper-e2e-browser.R` (`e2e_match_available_values` 463),
+  `packaging/verify/run-lanes.R` (`compareLane` 104-135, digests 137-146), and the module servers the
+  scripts press (7.4's citations). The driver reuses those helpers through `valExtractHelpers` (already
+  built: it evaluates only top-level function definitions into an environment whose parent is the
+  MultiScholaR namespace); no second implementation of what `helper-gui-entry.R` does. The driver's own
+  parts are built: `valUiDefaults` (replaces `omicsUiInputDefaults`, which misses text areas, checkbox
+  groups and rendered outputs), the input state and ledger, modals, `valStepOutcome`/`valRunSteps`,
+  `valWithForcedOptions`, `valCheckActionScript`.
+- Order: write the tests (a new file per area; T-TAB per route on the fixtures) as one tests-only commit;
+  send it under T0 with `val-tests.R <out> --files <the new test files>` (so no unrun fix runs); record
+  it as T0d in `runs.tsv` and here; then write the code and commit it unrun.
+- Run-request mechanics: `.github/run-tests/new-request.sh <name>` in
+  `/home/doktersmol/Projects/APAF/MultiScholaR-run-tests`; a script's `out` comes back in the run's
+  `scripts` artifact (`gh run download <id> -n scripts`), not `results`; `covr` and `lintr` need
+  `extra_packages`.
+
+**After the owner's ruling:** one run of the whole suite at the head (expect every test of (a), (b),
+(c) passing); then T2 from `t2/t2-plan.tsv` (three requests A, B, C; `val-tests.R <out>
+--coverage-plan docs/qa/workflow-execution/kit/kit-159/t2/t2-plan.tsv --request A --nsim 2000
+--chunks 4`, script limit 280 minutes, combine the three `coverage-table.tsv` files); then T1 parts
+with `covr` and `lintr` over the whole package; then R1 (record twin of one small open https file,
+library table, phase `pre`; no live UniProt query for the `prot_dia` fixture's synthetic accessions,
+ruling 4; the live incomplete-answer refusal waits for KIT-175); then S0; stop before the release
+commit (G1(a), G1(r), L1a and later, P1). `prot_dia_limpa` awaits D19.
+
 ## Rulings of 2026-11-23
 
 Recorded as the coordinator gave them (engineering rulings, for the owner):
