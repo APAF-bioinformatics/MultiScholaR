@@ -17,6 +17,8 @@
 #   K190_CELLS        comma list among E1,N-r,N-s,E-r,E-s,E-p,E-g (default all), to split the work by cell.
 #   K190_WORKERS      forked workers per side (default 2; the two sides run at once on the runner's 4 cores).
 #   K190_E3_N         comma list of features per assay for `e3` (default 5000,20000).
+# Reported only (VAL-100, for the owner's D2): per journey, what candidate rules (b) rank by p with a feature-id
+# tie-break, (c) one-group features not candidates, (d) both, would select at the chosen percentage (rule_* columns).
 # Each side runs in a fresh Rscript (`--side`) with pkgload::load_all(<tree>, export_all = TRUE) and the test helpers of
 # the head tree sourced read-only (tests/testthat/helper-*.R); journeys as kit172Journey (helper-kit172.R:110-130),
 # RUV kit172LegacyRuv("automatic") (:149-153). parallel::mclapply, mc.preschedule = FALSE, one journey per task.
@@ -110,6 +112,7 @@ k190Oracle <- function(m, groups, pct) {
     value <- summary(fit)[[1]][["Pr(>F)"]][1]
     if (is.na(value)) 1 else value
   }, numeric(1L))
+  one_group_ids <- rownames(m)[apply(!is.na(m), 1L, function(x) length(unique(groups[x])) < 2L)]
   p <- p[!is.na(p)]
   n <- length(p)
   o <- order(p)
@@ -119,7 +122,21 @@ k190Oracle <- function(m, groups, pct) {
   candidates <- names(q)[q > CUTOFF]
   ranked <- candidates[order(-q[candidates])]
   chosen <- utils::head(ranked, max(min(count, length(ranked)), 1L))
-  list(selected = rownames(m)[rownames(m) %in% chosen], q = q, count = count, valid = rownames(m))
+  list(selected = rownames(m)[rownames(m) %in% chosen], q = q, p = p, count = count, valid = rownames(m),
+    one_group = one_group_ids)
+}
+
+# Reported only (VAL-100; D2's candidate rules, at the percentage the shipped sweep chose; nothing ships from this): the
+# controls each candidate rule would select from the same BH family. (b) candidates q > cutoff ranked by p, highest
+# first, ties broken by feature id; (c) the shipped ranking with features observed in fewer than two groups not
+# candidates (they stay in the BH family); (d) both.
+k190Candidate <- function(orc, rule) {
+  candidates <- names(orc$q)[orc$q > CUTOFF]
+  if (rule %in% c("c", "d")) candidates <- setdiff(candidates, orc$one_group)
+  ranked <- if (rule %in% c("b", "d")) candidates[order(-orc$p[candidates], candidates)] else
+    candidates[order(-orc$q[candidates])]
+  if (!length(ranked)) return(character())
+  utils::head(ranked, max(min(orc$count, length(ranked)), 1L))
 }
 
 # ---- one journey ----------------------------------------------------------------------------------------------------
@@ -149,7 +166,8 @@ k190Journey <- function(task, side, fault) {
   valid <- rownames(input)[rowSums(!is.na(input)) > 1]
   pct <- opt$best_percentage %||% NA_real_
   controls <- if (isTRUE(opt$success)) names(opt$control_genes_index)[opt$control_genes_index] else character()
-  if (fault && identical(side, "head") && identical(task$class, "lipid") && task$r == 1L && length(controls) > 1L)
+  if (fault && identical(side, "head") && identical(task$kind, "e2") && identical(task$class, "lipid") && task$r == 1L &&
+    length(controls) > 1L)
     controls <- controls[-1L]
   first <- if (is.finite(pct)) utils::head(valid, max(round(length(valid) * pct / 100), 1L)) else character()
   orc <- if (is.finite(pct)) k190Oracle(input, groups, pct) else NULL
@@ -175,6 +193,7 @@ k190Journey <- function(task, side, fault) {
     dropped = !isTRUE(opt$success),
     share_first = share(first), share_planted = share(planted), share_complete = share(complete),
     share_tie_decided = tie_decided, share_one_group = share(one_group),
+    share_one_group_features = if (length(valid)) sum(one_group %in% valid) / length(valid) else NA_real_,
     eg_survived = if (length(task$one_group)) sum(task$one_group %in% rownames(input)) else NA_integer_,
     calls = length(called), any_call = length(called) > 0L,
     fdp = if (length(called)) sum(!called %in% planted) / length(called) else 0,
@@ -183,10 +202,29 @@ k190Journey <- function(task, side, fault) {
     matches_first = if (length(controls) && !is.null(orc)) setequal(controls, first) else NA,
     matches_oracle = if (length(controls) && !is.null(orc)) setequal(controls, orc$selected) else NA,
     seconds = proc.time()[[3L]] - started,
-    controls = list(controls), logfc = list(stats::setNames(da$logFC, da$feature))))
+    controls = list(controls), logfc = list(stats::setNames(da$logFC, da$feature))),
+    rule_metrics(orc, controls, planted, complete, one_group))
 }
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
+
+# Per candidate rule (b, c, d; reported only): its selection's size, its overlap (Jaccard) with the shipped rule's,
+# and its shares of planted, one-group and complete features.
+rule_metrics <- function(orc, controls, planted, complete, one_group) {
+  out <- list()
+  for (rule in c("b", "c", "d")) {
+    sel <- if (is.null(orc)) character() else k190Candidate(orc, rule)
+    shipped <- if (is.null(orc)) character() else orc$selected
+    sh <- function(set) if (length(sel)) sum(sel %in% set) / length(sel) else NA_real_
+    out[[paste0("rule_", rule, "_n")]] <- length(sel)
+    out[[paste0("rule_", rule, "_jaccard_shipped")]] <- if (length(union(sel, shipped))) length(intersect(sel, shipped)) /
+      length(union(sel, shipped)) else NA_real_
+    out[[paste0("rule_", rule, "_share_planted")]] <- sh(planted)
+    out[[paste0("rule_", rule, "_share_one_group")]] <- sh(one_group)
+    out[[paste0("rule_", rule, "_share_complete")]] <- sh(complete)
+  }
+  out
+}
 
 e1Tasks <- function(lifecycle) {
   tasks <- list()
@@ -384,7 +422,9 @@ if (any(status != 0L) || !all(file.exists(file.path(work, c("base.rds", "head.rd
 data <- lapply(c(base = "base", head = "head"), function(side) readRDS(file.path(work, paste0(side, ".rds"))))
 
 scalar <- c("n_v", "percentage", "n_controls", "k", "share_first", "share_planted", "share_complete", "share_tie_decided",
-  "share_one_group", "eg_survived", "calls", "fdp", "power", "abs_lfc_error", "seconds")
+  "share_one_group", "share_one_group_features", "eg_survived", "calls", "fdp", "power", "abs_lfc_error", "seconds",
+  as.vector(outer(c("rule_b", "rule_c", "rule_d"), c("_n", "_jaccard_shipped", "_share_planted", "_share_one_group",
+    "_share_complete"), paste0)))
 flags <- c("dropped", "refused", "any_call", "matches_first", "matches_oracle")
 flat <- function(results) do.call(rbind, lapply(results, function(x) {
   row <- data.frame(kind = x$kind, cell = x$cell, class = x$class, r = x$r, grouping = x$grouping, dataset = x$dataset %||% "",
@@ -490,13 +530,25 @@ if ("E1" %in% cells && is.null(stopped_at)) {
 writeRows <- function(x, name) if (length(x)) utils::write.table(do.call(rbind, x), file.path(out, name), sep = "\t",
   quote = FALSE, row.names = FALSE, na = "NA")
 writeRows(cell_rows, "cells.tsv")
+# The counts the lifecycle must show (ticket section 10 as ruled by VAL-100): F1, F3 and the oracle check 0; F2 every
+# evaluated head journey in the cells with planted effects and in E1 (the tree is base, so the repair's change is
+# absent), and 0 in the null cells N-r and N-s, where the designed selection equals the row-order one (the top q tie
+# block holds every control). Outside the lifecycle every falsifier's stated count is 0.
+if (length(falsifier_rows)) {
+  falsifier_rows <- lapply(falsifier_rows, function(row) {
+    row$stated <- if (lifecycle && !fault && row$falsifier == "F2" && !row$cell %in% c("N-r", "N-s")) row$evaluated else 0L
+    row
+  })
+}
+lifecycle_counts_as_stated <- if (length(falsifier_rows)) all(vapply(falsifier_rows, function(row) row$count == row$stated,
+  logical(1L))) else NA
 writeRows(falsifier_rows, "falsifiers.tsv")
 writeRows(fixture_rows, "fixtures.tsv")
 journey_seconds <- rows$seconds[is.finite(rows$seconds) & rows$kind != "oracle_check"]
 full_journeys <- 46L + length(E2_CELLS) * 2L * 50L
 provenance <- c(list(ticket = "KIT-190 E", head_commit = head_commit, base_commit = base_commit, base_arg = args[[2L]],
   generator = GENERATOR_SOURCE, lifecycle = lifecycle, fault = fault, stop_rule = stop_rule, cells = cells,
-  replicates = replicates, workers_per_side = workers,
+  replicates = replicates, workers_per_side = workers, falsifier_counts_as_stated = lifecycle_counts_as_stated,
   seed_rule = "set.seed(190000000 + 10000 * cell + r); cells N-r 1, N-s 2, E-r 3, E-s 4, E-p 5, E-g 6",
   side_exit_status = as.list(stats::setNames(status, names(sides))), journeys = nrow(rows),
   mean_journey_seconds = if (length(journey_seconds)) mean(journey_seconds) else NA_real_,
