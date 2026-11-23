@@ -165,3 +165,14 @@ missing parameter ruv_k_seed", a script mechanics defect (the tab sends the seed
 two new-design configurations only, with `ruv_k_seed` set to the package default (`RUV_FACTOR_COUNT_SEED`); no rule
 or comparison changes; declared here before sending (binding the same head, ceiling the T1b row's remainder, 7.6
 core-hours).
+
+## R4 declared (control and freeze, S2)
+
+Binding: S2 `gui-entry-control.R` on head e51eded6 (the fix; `R/` as c8fc140e) against base 55710a87 (staging,
+containing KIT-180's re-frozen files), lanes `prot_tmt`, `prot_lfq`, `prot_lfq_fragpipe`, child processes under C
+collation; `out` = `docs/qa/workflow-execution/kit/kit-177/control`, `out_pattern` `\.(json|tsv)$`, `timeout_minutes`
+140. Ceiling 8.7 core-hours. Decides (section 6): step 1 frozen against base: no row on any lane; step 2: no row before
+`design`; step 3: every row from `design` on classed `plain_log2 (KIT-177)` (values in states, artifacts and outputs on
+keys both sides hold), none `unexplained`; state tables: at `protein_s4_initial` every cell base minus head =
+log2(1 + 2^-head) to 1e-12, no other missing-value change; later tables identical in shape and identifiers. Only then
+the three oracles are committed (scripts.tsv `ok`, no `withheld.txt`). Anything else stops the ticket.
