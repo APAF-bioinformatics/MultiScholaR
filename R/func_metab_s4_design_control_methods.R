@@ -84,10 +84,18 @@ setMethod(
 #' Get Negative Control Features using ANOVA (Metabolites)
 #'
 #' Identifies potential negative control features (metabolites) for RUV correction
-#' based on ANOVA across a specified grouping variable. Features with the least
-#' significant variation across the groups are selected.
+#' based on ANOVA across a specified grouping variable. Features are ranked by a
+#' one-way ANOVA across the grouping variable (Benjamini-Hochberg q-value above
+#' the cutoff, highest first); ties in the q-value keep the table's order, and
+#' features observed in one group score p = 1.
 #'
-#' This method iterates through each assay in the `MetaboliteAssayData` object.
+#' This method iterates through each assay in the `MetaboliteAssayData` object. Samples of
+#' groups whose name contains "pool" are left out of the ANOVA. A grouping column
+#' absent from the design, or fewer than two groups left after leaving out the
+#' pools, is refused with an error of class `multischolar_ruv_grouping_unusable`.
+#' Records made before this rule (which took the first rows of the table) replay
+#' with the selection they recorded; that earlier rule is set only in process,
+#' by the replay of such a record, and no argument selects it.
 #'
 #' @param theObject A `MetaboliteAssayData` object.
 #' @param ruv_grouping_variable Character string. The column name in the
@@ -252,8 +260,10 @@ setMethod(
 
             # Check if grouping variable has enough levels/samples after filtering
             if (!ruv_grouping_variable_final %in% colnames(design_matrix_filtered)) {
-                log_warn("Assay '{assay_name}': Grouping variable '{ruv_grouping_variable_final}' not found in filtered design matrix. Skipping ANOVA.", .logr = TRUE)
-                return(NULL)
+                cli::cli_abort(
+                    "Control features cannot be chosen for {assay_name}: the design has no column '{ruv_grouping_variable_final}', so the features cannot be compared between groups. Choose a grouping column that is in the design.",
+                    class = c("multischolar_ruv_grouping_unusable", "multischolar_refusal")
+                )
             }
             group_counts <- table(design_matrix_filtered[[ruv_grouping_variable_final]])
             if (length(group_counts) < 2 || any(group_counts < 2)) {
@@ -345,12 +355,21 @@ setMethod(
 
 
             # --- Prepare Design Matrix for Helper ---
-            # Helper expects rownames = sample IDs, and group_id column removed
+            # Helper expects rownames = sample IDs and reads the grouping column, so only that column is passed
+            # (as the proteomics method does). The earlier rule removed group_id, which is the grouping column on
+            # every route, so the helper saw no grouping and took the first rows; it is reached only through the
+            # option set when replaying records made with it (KIT-190).
             design_matrix_for_helper <- tryCatch(
                 {
-                    design_matrix_filtered |>
-                        tibble::column_to_rownames(var = sample_id) |>
-                        dplyr::select(-dplyr::any_of(group_id)) # Remove group_id if it exists
+                    if (identical(getOption("MultiScholaR.ruv_control_grouping", "kept"), "dropped")) {
+                        design_matrix_filtered |>
+                            tibble::column_to_rownames(var = sample_id) |>
+                            dplyr::select(-dplyr::any_of(group_id)) # Remove group_id if it exists
+                    } else {
+                        design_matrix_filtered |>
+                            tibble::column_to_rownames(var = sample_id) |>
+                            dplyr::select(dplyr::all_of(ruv_grouping_variable_final))
+                    }
                 },
                 error = function(e) {
                     log_warn("Assay '{assay_name}': Error preparing design matrix for helper: {e$message}. Skipping.", .logr = TRUE)
@@ -378,6 +397,18 @@ setMethod(
                     )
                 },
                 error = function(e) {
+                    # Within this method only the helper's pool check raises this class: the method refuses an
+                    # absent column itself and passes the column to the helper.
+                    if (inherits(e, "multischolar_ruv_grouping_unusable")) {
+                        cli::cli_abort(
+                            c(
+                                "Control features cannot be chosen for {assay_name}: after leaving out the pooled samples, fewer than two groups of '{ruv_grouping_variable_final}' remain.",
+                                i = "Choose a grouping column with at least two groups that are not pools."
+                            ),
+                            parent = e,
+                            class = c("multischolar_ruv_grouping_unusable", "multischolar_refusal")
+                        )
+                    }
                     log_warn("Assay '{assay_name}': Error calling getNegCtrlProtAnovaHelper: {e$message}. Skipping.", .logr = TRUE)
                     return(NULL) # Return NULL for this assay on error
                 }

@@ -63,17 +63,33 @@ is named with the feature IDs.
 }
 \description{
 Identifies potential negative control features (metabolites) for RUV correction
-based on ANOVA across a specified grouping variable. Features with the least
-significant variation across the groups are selected.
+based on ANOVA across a specified grouping variable. Features are ranked by a
+one-way ANOVA across the grouping variable (Benjamini-Hochberg q-value above
+the cutoff, highest first); ties in the q-value keep the table's order, and
+features observed in one group score p = 1.
 
 Identifies potential negative control features (lipids) for RUV correction
-based on ANOVA across a specified grouping variable. Features with the least
-significant variation across the groups are selected.
+based on ANOVA across a specified grouping variable. Features are ranked by a
+one-way ANOVA across the grouping variable (Benjamini-Hochberg q-value above
+the cutoff, highest first); ties in the q-value keep the table's order, and
+features observed in one group score p = 1.
 }
 \details{
-This method iterates through each assay in the \code{MetaboliteAssayData} object.
+This method iterates through each assay in the \code{MetaboliteAssayData} object. Samples of
+groups whose name contains "pool" are left out of the ANOVA. A grouping column
+absent from the design, or fewer than two groups left after leaving out the
+pools, is refused with an error of class \code{multischolar_ruv_grouping_unusable}.
+Records made before this rule (which took the first rows of the table) replay
+with the selection they recorded; that earlier rule is set only in process,
+by the replay of such a record, and no argument selects it.
 
-This method iterates through each assay in the \code{LipidomicsAssayData} object.
+This method iterates through each assay in the \code{LipidomicsAssayData} object. Samples of
+groups whose name contains "pool" are left out of the ANOVA. A grouping column
+absent from the design, or fewer than two groups left after leaving out the
+pools, is refused with an error of class \code{multischolar_ruv_grouping_unusable}.
+Records made before this rule (which took the first rows of the table) replay
+with the selection they recorded; that earlier rule is set only in process,
+by the replay of such a record, and no argument selects it.
 }
 \section{Functions}{
 \itemize{

@@ -457,6 +457,7 @@ resolveProtRuvReplicateBlocks <- function(design_matrix, sample_id, group_id, te
 #' @param ruv_qval_cutoff The FDR threshold. No proteins with q-values lower than this value are included in the list of negative control proteins. This means the number of negative control proteins could be less than the number specified in \code{num_neg_ctrl} when some were excluded by this threshold.
 #' @param ruv_fdr_method The FDR calculation method, default is "qvalue". The other option is "BH"
 #' @param exclude_pool_samples Logical. If TRUE (default), automatically exclude samples from groups containing "Pool" in their name from ANOVA calculation. Pool/QC samples are excluded from negative control selection but remain in RUV-III correction.
+#' @details Features are ranked by the q-value of a one-way ANOVA on \code{grouping_variable}, highest first; ties keep the order of \code{data_matrix}'s rows, and a feature observed in fewer than two groups scores p = 1. A \code{design_matrix} without the \code{grouping_variable} column, or fewer than two groups left after leaving out the pools, is an error of class \code{multischolar_ruv_grouping_unusable}.
 #' @return A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
 #'@export
 #' @param percentage_as_neg_ctrl Runtime inputs used by this function; see the usage section for accepted values.
@@ -469,6 +470,15 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
                                 , ruv_fdr_method = "qvalue"
                                 , exclude_pool_samples = TRUE) {
 
+  # Without its grouping column the ANOVA has nothing to compare and every feature would score p = 1, so the
+  # first rows would be taken (KIT-190). Refused, except under the earlier rule kept for replaying old records.
+  if (!identical(getOption("MultiScholaR.ruv_control_grouping", "kept"), "dropped") &&
+      !grouping_variable %in% colnames(design_matrix)) {
+    cli::cli_abort(
+      "Control features cannot be chosen: the design passed to the control selection has no column '{grouping_variable}', so the features cannot be compared between groups. Pass a design that holds the grouping column, with sample ids as row names.",
+      class = c("multischolar_ruv_grouping_unusable", "multischolar_refusal")
+    )
+  }
 
   ## Both percentage_as_neg_ctrl and num_neg_ctrl is missing, and number of proteins >= 50 use only 10 percent of the proteins as negative control by default
   if((is.null(percentage_as_neg_ctrl) ||
@@ -530,9 +540,10 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
         # Validate sufficient samples remain for ANOVA
         remaining_groups <- unique(design_matrix_for_anova[[grouping_variable]])
         if (length(remaining_groups) < 2) {
-          stop(paste("*** NEG CTRL ANOVA ERROR: After excluding Pool samples, only", 
+          stop(errorCondition(paste("*** NEG CTRL ANOVA ERROR: After excluding Pool samples, only", 
                     length(remaining_groups), 
-                    "group(s) remain. Need at least 2 groups for ANOVA. ***"))
+                    "group(s) remain. Need at least 2 groups for ANOVA. ***"),
+                    class = "multischolar_ruv_grouping_unusable", call = sys.call()))
         }
         
         # Check samples per group

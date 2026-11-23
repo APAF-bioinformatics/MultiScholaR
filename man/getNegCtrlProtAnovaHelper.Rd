@@ -38,3 +38,6 @@ A boolean vector which indicates which row in the input data matrix is a control
 \description{
 Identify negative control proteins for use in removal of unwanted variation, using an ANOVA test.
 }
+\details{
+Features are ranked by the q-value of a one-way ANOVA on \code{grouping_variable}, highest first; ties keep the order of \code{data_matrix}'s rows, and a feature observed in fewer than two groups scores p = 1. A \code{design_matrix} without the \code{grouping_variable} column, or fewer than two groups left after leaving out the pools, is an error of class \code{multischolar_ruv_grouping_unusable}.
+}
