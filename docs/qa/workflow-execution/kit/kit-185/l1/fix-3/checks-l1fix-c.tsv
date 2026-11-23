@@ -1,0 +1,4 @@
+check	cell	rep	mask	value	threshold	pass	note
+E4_B	constructed	0	none	0.25	0.25 +- 1e-12	TRUE	
+E4_rho	constructed	0	none	1	1 +- 1e-12	TRUE	
+E4_Cstar	constructed	0	none	0.1	0.10 +- 1e-12	TRUE	
