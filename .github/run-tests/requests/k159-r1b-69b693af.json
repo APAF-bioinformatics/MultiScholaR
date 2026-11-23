@@ -1,0 +1,49 @@
+{
+  "requested_by": "KIT-159 R1 request b of 2 (record twin, r1.12/r1.13): record of the named open file with the UniProt cache of 25 accessions, then phase pre; R1 ceiling 4",
+  "label": "KIT-159 R1 r1b at 69b693af",
+  "package_commit": "69b693af0e3370ce7d9fa42bedb25e967d9851ea",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-run.R",
+      "args": [
+        "record",
+        "docs/qa/workflow-execution/kit/kit-159/lifecycle",
+        "r1b",
+        "--uniprot",
+        "docs/qa/workflow-execution/kit/kit-159/lifecycle/uniprot-accessions.tsv"
+      ],
+      "env": {},
+      "out": "val-out",
+      "out_pattern": "\\.(tsv|json|md|sha256|txt)$",
+      "timeout_minutes": 12
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-run.R",
+      "args": [
+        "pre",
+        "docs/qa/workflow-execution/kit/kit-159/lifecycle",
+        "r1b",
+        "--script",
+        "docs/qa/workflow-execution/kit/kit-159/lifecycle/r1-pre.R",
+        "--pre-outputs",
+        "docs/qa/workflow-execution/kit/kit-159/lifecycle/r1-pre-outputs.tsv"
+      ],
+      "env": {},
+      "out": "val-out",
+      "out_pattern": "\\.(tsv|json|md|sha256|txt)$",
+      "timeout_minutes": 8
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
