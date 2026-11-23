@@ -65,6 +65,9 @@ mod_integration_enrichment_ui <- function(id) {
                     min = 5L, step = 1L)),
                 shiny::column(3, shiny::numericInput(ns("max_set_size"), texts[["enrich_max_set"]], spec$max_set_size$default,
                     min = 5L, step = 1L))),
+            # KIT-183: the test, pre-selected with the test of record for the chosen data set, and its sentence.
+            testid(shiny::uiOutput(ns("test_ui")), "integration-enrichment-test"),
+            testid(shiny::uiOutput(ns("test_note")), "integration-enrichment-test-note"),
             shiny::p(shiny::em(texts[["enrich_kegg_terms"]])),
             testid(shiny::actionButton(ns("download"), texts[["enrich_download"]], icon = shiny::icon("download")),
                 "integration-enrichment-download"),
@@ -88,7 +91,11 @@ integrationEnrichmentRequest <- function(input) {
         correlation_method = input$correlation_method, min_samples = input$min_samples, seed = input$seed,
         string_species = input$string_species, string_fdr = input$string_fdr, kegg_organism = input$kegg_organism,
         reactome_organism = input$reactome_organism, min_set_size = input$min_set_size, max_set_size = input$max_set_size)
-    if (isTRUE(input$database %in% c("kegg", "reactome"))) out$id_column <- input$id_column
+    if (isTRUE(input$database %in% c("kegg", "reactome"))) {
+        out$id_column <- input$id_column
+        # KIT-183: the test for KEGG and Reactome only; STRING ignores it.
+        out$test <- input$test
+    }
     Filter(Negate(is.null), out)
 }
 
@@ -125,10 +132,16 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
             if (is.null(model) || is.null(manager)) return()
             facts <- tryCatch(withWorkflowStateScope(manager, function() {
                 value <- hydrateSavedWorkflowEntity(manager$.context$store, model$reference)$value
-                object <- integrationImportedObject(manager, fields = c("features", "inputs"))
+                object <- integrationImportedObject(manager, fields = c("features", "design_matrix", "inputs"))
+                parameters <- manager$.context$snapshot$exports[[INTEGRATION_MODEL_OPERATION]]$parameters
                 list(factors = setdiff(names(value$factors), "biological_sample"), views = names(value$weights),
                     omics = integrationViewOmics(object)[names(value$weights)],
-                    columns = lapply(object@features[names(value$weights)], function(f) setdiff(names(f), "feature_id")))
+                    columns = lapply(object@features[names(value$weights)], function(f) setdiff(names(f), "feature_id")),
+                    # KIT-183: each data set's biological samples (the test of record and the few-samples sentence)
+                    # and the values the model was trained on (the RUV note).
+                    samples = vapply(names(value$weights), function(view) length(integrationEnrichmentViewSamples(object,
+                        value, parameters, view)), integer(1)),
+                    input_matrix = as.character(parameters$input_matrix %||% "uncorrected"))
             }), error = function(error) NULL)
             state$model <- facts
             if (is.null(facts)) return()
@@ -151,6 +164,23 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
             }
             shiny::tagList(shiny::selectInput(session$ns("id_column"), texts[["enrich_id_column"]],
                 choices = facts$columns[[input$view]]), shiny::p(shiny::em(texts[[paste0("enrich_id_column_", input$database)]])))
+        })
+        # KIT-183: the test selector, for KEGG and Reactome only (STRING has its own test).
+        output$test_ui <- shiny::renderUI({
+            facts <- state$model
+            if (is.null(facts) || !isTRUE(input$database %in% c("kegg", "reactome")) || !isTRUE(input$view %in% facts$views)) {
+                return(NULL)
+            }
+            integrationEnrichmentTestInput(session$ns("test"), facts$samples[[input$view]], texts)
+        })
+        output$test_note <- shiny::renderUI({
+            facts <- state$model
+            if (is.null(facts) || !isTRUE(input$database %in% c("kegg", "reactome")) || !isTRUE(input$view %in% facts$views) ||
+                is.null(input$test)) {
+                return(NULL)
+            }
+            lapply(integrationEnrichmentTestNotes(input$test, facts$samples[[input$view]], facts$input_matrix, texts),
+                function(sentence) shiny::p(shiny::em(sentence)))
         })
         shiny::observeEvent(input$download, {
             state$download_error <- NULL
@@ -196,7 +226,7 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
             if (is.null(run)) return()
             state$run <- run
             workflow_data$integration_enrichment <- list(model = workflow_data$integration_model$reference$entity_id,
-                entry = integrationEnrichmentKey(run$entry$factor, run$entry$view, run$entry$database))
+                entry = integrationEnrichmentKey(run$entry$factor, run$entry$view, run$entry$database, run$entry$settings$test))
             status <- shiny::isolate(workflow_data$tab_status)
             status$integration_enrichment <- "complete"
             workflow_data$tab_status <- status
@@ -212,7 +242,8 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
             }
             run <- state$run
             if (is.null(run)) return(NULL)
-            shiny::div(class = "alert alert-success", lapply(integrationEnrichmentSummary(run$run$value, texts), shiny::p))
+            shiny::div(class = "alert alert-success", lapply(integrationEnrichmentSummary(run$run$value, texts, run$entry),
+                shiny::p))
         })
         output$terms <- DT::renderDT({
             run <- state$run
@@ -223,22 +254,64 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
     })
 }
 
+#' KIT-183: the test selector, pre-selected with the test of record for a data set of `n_samples` biological samples.
+#' @param id The input's (namespaced) id.
+#' @param n_samples The data set's biological samples.
+#' @noRd
+integrationEnrichmentTestInput <- function(id, n_samples, texts = integrationGuiTexts()) {
+    shiny::selectInput(id, texts[["enrich_test"]], choices = stats::setNames(INTEGRATION_ENRICHMENT_TESTS_OFFERED,
+        unname(texts[paste0("enrich_test_", INTEGRATION_ENRICHMENT_TESTS_OFFERED)])),
+        selected = integrationEnrichmentTestOfRecord(n_samples))
+}
+
+#' KIT-183: the sentences beside the test selector: the selected test's note; for a correlated test on a data set with
+#' fewer biological samples than the check covered, the few-samples sentence; for a model trained on RUV-corrected
+#' values, the RUV note.
+#' @param test The selected test.
+#' @param n_samples The data set's biological samples.
+#' @param input_matrix The values the model was trained on (`uncorrected` or `ruv_corrected`).
+#' @noRd
+integrationEnrichmentTestNotes <- function(test, n_samples, input_matrix, texts = integrationGuiTexts()) {
+    if (!isTRUE(test %in% INTEGRATION_ENRICHMENT_TESTS)) return(character())
+    c(texts[[paste0("enrich_test_", test, "_note")]],
+        if (test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS && isTRUE(n_samples < INTEGRATION_ENRICHMENT_CHECKED_SAMPLES))
+            sprintf(texts[["enrich_test_few_samples"]], as.integer(n_samples), INTEGRATION_ENRICHMENT_CHECKED_SAMPLES),
+        if (identical(input_matrix, "ruv_corrected")) texts[["enrich_values_ruv_note"]])
+}
+
 #' An enrichment's facts in words (KIT-141): what was enriched against which release, the counts, the mapping, the
-#' direction and the number of tests.
+#' direction and the number of tests. KIT-183: for a correlated test the counts it used and the relative direction;
+#' for KEGG and Reactome, whatever the test, the caution and, with the accepted entry, the factor's strength and the
+#' RUV note for a model trained on RUV-corrected values.
 #' @param value The enrichment product.
+#' @param entry The entry accepted on the head (`runIntegrationEnrichment()$entry`), or NULL: the factor-strength
+#'   sentence and the RUV note are left out.
 #' @return A character vector of sentences.
 #' @noRd
-integrationEnrichmentSummary <- function(value, texts = integrationGuiTexts()) {
+integrationEnrichmentSummary <- function(value, texts = integrationGuiTexts(), entry = NULL) {
     service <- value$service
     release <- if (identical(value$database, "string")) sprintf("STRING %s", service$version$string_version %||% "?") else
         as.character(service$release)
     r <- value$ranking_counts
     m <- value$mapping_counts
     d <- value$direction
+    correlated <- isTRUE(value$test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS)
+    pathways <- !identical(value$database, "string")
+    counts <- value$test_counts
     c(sprintf(texts[["enrich_done"]], value$factor, value$view, integrationEnrichmentDatabaseName(value$database), release),
         sprintf(texts[["enrich_counts"]], as.integer(r$features), as.integer(r$ranked), as.integer(r$too_few_samples),
             as.integer(r$no_variation), as.integer(r$internal_standard)),
         sprintf(texts[["enrich_mapping"]], as.integer(m$mapped), as.integer(m$unmapped), as.integer(m$duplicated)),
-        sprintf(texts[["enrich_direction"]], as.character(d$feature_id), as.character(d$view), as.integer(d$sign)),
-        if (as.integer(value$tests) > 0L) sprintf(texts[["enrich_tests"]], as.integer(value$tests)) else texts[["enrich_none"]])
+        if (correlated) sprintf(texts[["enrich_test_counts"]], as.integer(counts$universe), as.integer(counts$samples),
+            as.integer(counts$incomplete), as.integer(counts$collapsed)),
+        if (correlated) paste(sprintf(texts[["enrich_direction_oriented"]], as.character(d$feature_id), as.character(d$view),
+            as.integer(d$sign)), texts[["enrich_direction_camera"]]) else
+            sprintf(texts[["enrich_direction"]], as.character(d$feature_id), as.character(d$view), as.integer(d$sign)),
+        if (as.integer(value$tests) > 0L) sprintf(texts[["enrich_tests"]], as.integer(value$tests)) else texts[["enrich_none"]],
+        if (pathways) texts[["enrich_caution"]],
+        if (pathways && !is.null(entry)) {
+            strength <- integrationEnrichmentStrengthText(entry, texts)
+            if (nzchar(strength)) strength
+        },
+        if (pathways && identical(entry$input_matrix, "ruv_corrected")) texts[["enrich_values_ruv_note"]])
 }

@@ -322,7 +322,7 @@ integrationRecordTexts <- function() {
         col_enrich_term = "Term or pathway",
         col_enrich_description = "Description",
         col_enrich_category = "Category",
-        col_enrich_score = "Enrichment score",
+        col_enrich_score = "Enrichment score (NES) or effect (camera)",
         col_enrich_fdr = "False discovery rate (adjusted p-value)",
         # %s: STRING's version, its address.
         enrich_string_release = "STRING %s (%s)",
@@ -349,7 +349,54 @@ integrationRecordTexts <- function() {
             "(%d pathways), every pathway kept, no random tie-breaking, seed %d."),
         methods_enrich_family = paste("P-values were adjusted with the Benjamini-Hochberg method within one factor, one",
             "data set and one database (STRING: within each of its term categories); they were not adjusted across",
-            "factors, data sets or databases. The results depend on external databases at the release stated.")
+            "factors, data sets or databases. The results depend on external databases at the release stated."),
+        # KIT-183 (VAL-51, VAL-53; proposed wording, VAL-41). The numbers in brackets are the simulation's measured rates
+        # (docs/qa/workflow-execution/kit/kit-183/results.md), written in as constants.
+        col_enrich_strength = "Strength of the factor in this data set",
+        enrich_factor_strength = integrationGuiTexts()[["enrich_factor_strength"]],
+        enrich_string_test_note = "STRING runs its own ranked test; the test setting does not apply.",
+        # %d: biological samples, features used.
+        enrich_ranking_value_camera = paste("regression of each feature on the factor over %d biological samples",
+            "(features measured in all of them: %d); correlation-adjusted test (camera, correlation estimated)"),
+        enrich_ranking_value_camera_pr = paste("regression of each feature on the factor over %d biological samples",
+            "(features measured in all of them: %d); pre-ranked test with an assumed correlation of 0.01 (cameraPR)"),
+        methods_test_name_camera = paste("a competitive gene-set test that allows for the correlation between a term's",
+            "features (limma camera, the correlation estimated for each term from the residuals; Wu and Smyth 2012),",
+            "applied to the regression of each feature's values on the oriented factor"),
+        methods_test_name_camera_pr = paste("a competitive gene-set test with the correlation between a term's features",
+            "assumed to be 0.01 (limma cameraPR on the moderated t of the regression of each feature's values on the",
+            "oriented factor)"),
+        methods_test_name_gsea = paste("ranked gene-set enrichment (clusterProfiler GSEA) on each feature's correlation",
+            "with the oriented factor"),
+        # %d: biological samples, identifiers used, matched identifiers.
+        methods_test_settings_camera = paste("the correlation estimated for each term (negative estimates kept),",
+            "moderated variances with an abundance trend, an intercept and no other covariate, features measured in",
+            "every one of %d biological samples (%d of %d matched identifiers; several features on one identifier: the",
+            "one with the largest mean value kept)"),
+        methods_test_settings_camera_pr = paste("the correlation assumed to be 0.01, moderated variances with an",
+            "abundance trend, an intercept and no other covariate, features measured in every one of %d biological",
+            "samples (%d of %d matched identifiers; several features on one identifier: the one with the largest mean",
+            "value kept)"),
+        # %d: the seed.
+        methods_test_settings_gsea = "no random tie-breaking, seed %d",
+        # %s: factor, data set, database, the test's name, its settings, release, organism; %d: smallest, largest
+        # pathway size, pathways tested.
+        methods_enrich_camera = paste("%s in %s: %s pathways were tested with %s, %s, %s, organism %s, pathways with %d",
+            "to %d of these identifiers (%d pathways), every pathway kept."),
+        methods_enrich_camera_pr = paste("%s in %s: %s pathways were tested with %s, %s, %s, organism %s, pathways with",
+            "%d to %d of these identifiers (%d pathways), every pathway kept."),
+        methods_enrich_limits_tests = paste("The factor was learned from these same data, which neither test allows for,",
+            "so the enrichment results are exploratory: features the model was trained on shaped the factor and tend to be",
+            "more strongly associated with it than other features even without a biological link, the more so for factors",
+            "weaker than the main effect. In a check on simulated data shaped like this study (12 biological samples),",
+            "sets with no link to the factor were called at the 5 % level in [R_cam] (95 % interval [I_cam]) of cases by",
+            "the correlation-adjusted test and, when their features were correlated at 0.3, in [R_gsea_0.3]",
+            "([I_gsea_0.3]) by the pre-ranked test. The correlation-adjusted test uses only features measured in every",
+            "biological sample, which favours abundant features and leaves out features that fall below detection in",
+            "some samples, often those that change most. Both tests use each data set's normalised values before RUV",
+            "correction, the values the model is trained on by default; for a model trained on RUV-corrected values,",
+            "variation the correction removed stays in the values tested. P-values were adjusted within each factor, data",
+            "set and database (and Gene Ontology aspect), not across them.")
     )
 }
 

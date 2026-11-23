@@ -614,7 +614,7 @@ integrationGuiTexts <- function() {
         enrich_reactome_organism = "Reactome organism (such as Homo sapiens)",
         enrich_min_set = "Smallest pathway tested (measured compounds in it)",
         enrich_max_set = "Largest pathway tested (measured compounds in it)",
-        enrich_seed = "Seed of the pathway test",
+        enrich_seed = "Seed of the pre-ranked test (the correlation-adjusted test uses none)",
         enrich_key = "Your STRING key",
         enrich_key_note = paste("STRING needs a personal key (free from string-db.org). It is used only for this query",
             "and is never saved, recorded or written to a file. Enter it each time."),
@@ -642,7 +642,58 @@ integrationGuiTexts <- function() {
         enrich_tests = paste("%d terms or pathways in the table. P-values are adjusted within this factor, data set and",
             "database only, not across factors, data sets or databases."),
         enrich_none = "No term or pathway passed the threshold.",
-        enrich_terms_heading = "Enriched terms and pathways"
+        enrich_terms_heading = "Enriched terms and pathways",
+        # KIT-183 (VAL-51, VAL-53; proposed wording, VAL-41: the owner edits before release). The numbers in brackets
+        # are the simulation's measured rates (docs/qa/workflow-execution/kit/kit-183/results.md), written in as constants.
+        enrich_test = "Test",
+        enrich_test_camera = "Correlation-adjusted test (camera), recommended",
+        enrich_test_gsea = "Pre-ranked test (GSEA)",
+        enrich_test_camera_pr = "Correlation-adjusted test with an assumed correlation (cameraPR)",
+        enrich_test_camera_note = paste("Each feature's values are regressed on the factor across the biological samples.",
+            "A term is called when its features follow the factor more closely, in one direction, than the other",
+            "features, allowing for how strongly the term's features vary together, as measured in these data (limma",
+            "camera; Wu and Smyth 2012). Only features measured in every biological sample of this data set can be used.",
+            "The factor was learned from these same data, which the test does not allow for, so read the result as a list",
+            "of terms worth a closer look, not as proof. In a check on simulated data with 12 biological samples, terms",
+            "with no link to the factor were called in [R_cam] of cases at the 5 % level, and terms made only of features",
+            "the model used in up to [S_cam] (largest for a factor weaker than the main effect)."),
+        enrich_test_gsea_note = paste("Every feature is ranked by its correlation with the factor, and a term is called",
+            "when its features sit nearer the top or the bottom of the list than chance (GSEA). The test shuffles",
+            "features as if each were independent. Features that vary together, such as the members of one pathway or",
+            "one complex, make its p-values too small: in a check on simulated data with 12 biological samples, terms",
+            "with no link to the factor whose features were correlated at 0.3 were called in [R_gsea_0.3] of cases at",
+            "the 5 % level, against 5 % expected. The factor was learned from these same data. Use it to explore; it also",
+            "uses features with missing values, whose correlations, computed on fewer samples, are noisier and sit more",
+            "often near the ends of the list."),
+        enrich_test_camera_pr_note = paste("Like the correlation-adjusted test, but with the correlation between a",
+            "term's features assumed to be 0.01 instead of measured, because measuring it did not hold the error rate in",
+            "the check on simulated data. Terms whose features vary together more strongly get p-values that are too",
+            "small: [R_cpr_0.3] of terms with no link to the factor, correlated at 0.3, were called at the 5 % level.",
+            "The factor was learned from these same data. Read the result as a list of terms worth a closer look, not as",
+            "proof."),
+        enrich_values_ruv_note = paste("This model was trained on RUV-corrected values, but the enrichment uses the",
+            "normalised values before RUV correction; variation the correction removed stays in them, which lowers power",
+            "and, if it follows the factor, can bias the result."),
+        enrich_caution = paste("Exploratory: the factor was learned from these same data, so these terms are worth a",
+            "closer look, not proof. P-values are adjusted within this factor, data set and database only."),
+        # %s: the factor's variance explained, the largest factor's (r2_percent of the data set's model features).
+        enrich_factor_strength = paste("In this data set, this factor explains %s of the variance of the features the",
+            "model was trained on (the factor that explains most explains %s). In a check on simulated data, on factors",
+            "weaker than the main effect, terms made of features the model used, or of features that vary together with",
+            "them, were called in up to [S_cam] of cases although they had no link to the simulated biology; no error",
+            "rate is claimed for such factors."),
+        # %d: the data set's biological samples, the smallest number checked.
+        enrich_test_few_samples = paste("This data set has %d biological samples, fewer than the smallest number (%d)",
+            "at which the test's error rate was checked; at 6 samples the check found [R_cam_6]."),
+        # %d: features used, biological samples, ranked features with a missing value, second features on one identifier.
+        enrich_test_counts = paste("Used by the correlation-adjusted test: %d features measured in all %d biological",
+            "samples (%d ranked features had a missing value and were left out; %d set aside as a second feature on one",
+            "identifier)."),
+        # The first sentence of `enrich_direction` (%s: the feature, its data set; %d: +1 or -1), for camera results.
+        enrich_direction_oriented = paste("Direction: the factor is oriented so that its largest weight (%s in %s) is",
+            "positive (multiplied by %d)."),
+        enrich_direction_camera = paste("Up: the term's features rise with the factor more than the other features do",
+            "on average; Down: they rise less, or fall more, than the other features do on average.")
     )
 }
 

@@ -1,5 +1,21 @@
 # MultiScholaR NEWS
 
+## MultiScholaR (unreleased; numbered at merge)
+
+### Scientific changes
+
+ * Integration enrichment of a factor against KEGG and Reactome pathways now uses a correlation-adjusted test by
+   default (limma's camera on each feature's regression on the factor, allowing for the correlation measured between
+   a pathway's features, on the features measured in every biological sample; of several features on one compound
+   identifier, the one with the largest mean value is kept). The pre-ranked test used before (GSEA on each feature's
+   correlation with the factor) assumes features are independent, which gives p-values that are too small for
+   pathways whose features vary together; it stays selectable, with that assumption stated. Existing scripts that call
+   `integrationEnrichFactor()` without naming a test now get the new test and different p-values: [size of the
+   change]. To get the earlier test, pass `overrides = list(test = "gsea")`; its results are unchanged. In the
+   Enrichment tab the new test is pre-selected. Results made before this change keep their test when replayed. Every
+   KEGG and Reactome summary now carries a caution (the factor was learned from the same data, so the results are
+   exploratory) and the factor's variance explained in the data set. STRING is unchanged and ignores the setting.
+
 ## MultiScholaR 0.9.2 (staging)
 
 ### Distribution

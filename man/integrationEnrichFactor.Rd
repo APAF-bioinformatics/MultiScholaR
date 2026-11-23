@@ -26,7 +26,11 @@ integrationEnrichFactor(
 \item{id_columns}{A named list giving, for a metabolite or lipid data set, the column of its feature table that
 holds KEGG compound or ChEBI identifiers, for example \code{list(metabolomics_LCMS_Pos = "kegg_id")}.}
 
-\item{overrides}{A named list of enrichment settings and their values (see \code{integrationSettings()$enrichment}).}
+\item{overrides}{A named list of enrichment settings and their values (see \code{integrationSettings()$enrichment}).
+\code{test} chooses the test for KEGG and Reactome: \code{"camera"}, the test of record and the default (limma's camera
+on each feature's regression on the factor, allowing for the correlation measured between a pathway's features,
+on the features measured in every biological sample), or \code{"gsea"}, the pre-ranked test used before (each
+feature's correlation with the factor, tested as if features were independent). STRING ignores it.}
 }
 \value{
 A list: \code{enrichments}, a list named \code{"<data set> <database>"} of the enrichments made, each a list with
@@ -44,6 +48,9 @@ used for the query only and is never written to the project, the record or the v
 \dontrun{
 enriched <- integrationEnrichFactor(project, results, api_key = Sys.getenv("STRING_API_KEY"))
 writeLines(enriched$skipped)
+# The pre-ranked test used before KIT-183, for KEGG and Reactome:
+earlier <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+    overrides = list(test = "gsea"))
 names(enriched$enrichments)
 }
 }
