@@ -131,6 +131,54 @@ intensity-scale (fixture intensities 2.4e3 and above) and say nothing about valu
   line "- Log2 offset: 0" with the `rds_values` and `current_s4_object` digests; and the KIT-110 W3 test that compares
   the registered outputs with `omicNormFrozenUi$outputs`. Added to the ticket's 7(b) with a History note.
 
+## Full suite, check, gate-off and bundle lane
+
+**Full suite (F1, 45151310949, head a4f60900 against base a60c4e9a, 14 shards per side, `sva` in both).** 452
+files: 441 `same`; 2 `fixed` (`test-gui-entry-lipidomics.R` 4 to 0 and `test-gui-entry-metabolomics.R` 30 to 0
+failing expectations: the re-frozen oracles pass under testthat); 4 `only-on-head` (the KIT-172 files, all green); 2
+`count-changed` (the rewritten log-transform contract files); 3 `new-failure`:
+- `test-metab-03-norm-support-characterization.R`: the `buildNormConfig` pin of offset 1, class (a); rewritten to 0
+  (dfb2ad9f), `same` in R4.
+- `test-omics-module-globals.R`: the new `<<-` in the two log methods; the counts are kept in an environment
+  (dfb2ad9f, 55ff3063), green in R5.
+- `test-omic-da-module.R`: 22 failing expectations on both sides become 51 on head. The frozen DA-module captures of
+  `lipid_main`, `metab_main`, `metab_no_friendly`, `lipid_managed`, `metab_managed` and the table-filter test (c)
+  hold the DA summary text, which now ends with "Not tested (no value in a compared group): N" (the declared change
+  of 6.3 item 1); no number in them moves otherwise. Not re-recorded (no exception names this file): a row for the
+  plan's section 11.
+`test-omic-norm-module.R` (the pasted re-dump) and `test-metab-qc-shared.R` (the stub fix): 639 and 19 passed on head.
+R CMD check: base and head 0 ERROR, 3 WARNING, 3 NOTE; one NOTE line only on head, a record path of this ticket over
+100 bytes, renamed (dfb2ad9f); R4's check: findings identical on both sides, none only on head. Gate-off identity:
+the head's gate-off pages identical to the base's, renders deterministic, the integration module the unavailable
+panel (`full/gate-off-verdict.txt`).
+
+Not re-run after F1: the full suite, the GUI-entry lanes and the bundle at dfb2ad9f and 55ff3063. Their code change
+(the count tally in an environment in place of `<<-`) does not change any value; R4 and R5 covered the affected files.
+
+**Plan section 11 rows (references this ticket moves and does not re-record):**
+
+| File | Oracle or line | Change |
+|---|---|---|
+| `tests/testthat/test-omic-da-module.R` | the frozen captures (`values` fields) of the lipid and metab DA scenarios `lipid_main`, `metab_main`, `metab_no_friendly`, `lipid_managed`, `metab_managed`, and test (c) | 29 more failing expectations on runners (22 to 51); the DA summary text gains one line, "Not tested (no value in a compared group): N" |
+| `tests/testthat/test-e2e-lipidomics-canonical.R`, `test-e2e-metabolomics-lc-gc.R` | the browser lanes | skipped on both sides on runners (2 and 3 blocks): not measured; they walk the rendered defaults, so they take plain log2 |
+
+**Bundle lane (B1, 45151293709, at a4f60900; reference run 44998302733).** Red, at the same step as the reference
+run on every platform. Linux (ubuntu-22.04, ubuntu-24.04): `lipid_canonical`, `metab_lc`, `metab_gc` and
+`metab_combined` have no difference from the re-frozen oracles. Windows (windows-2025): the four lanes still show the
+`session_summary` difference the reference run shows (2 steps each); the reference run's integration-artifact and
+`metab_normalized` differences are gone; and each lane newly differs in its `norm_log` output (a digest) at 8 steps,
+from `norm` on. The bundle job uploads nothing, so the text behind the digest cannot be read; the cause is not
+known (inferred candidates: the order of the assays in the new values-set-to-missing line, or line endings).
+`omic_worker_da` 49 failing expectations against the reference's 23 (the DA summary's new line, as on runners).
+
+## Budget
+
+108.0 core-hours used: R1 3.90, R1b 1.04, R2 11.47, R3 2.47, C1 0.58, C2 0.97, C3 0.83, C4 1.46, C5 1.21, F1 64.46,
+R4 3.46, R5 0.64, B1 15.55. This is above the owner's limit of 106 by 2.0. The full suite and the bundle lane were sent
+together at 23.9 core-hours used, against the ticket's expected 30.4 and 11.2; they took 64.46 (14 shards per side,
+33 jobs, longest 80 minutes) and 15.55 (the Windows job 122.6 minutes against the reference's 79). The ticket's
+ceiling of 189.5 is not passed.
+
 ## F1b (consumers of post-log values)
 
 | Site | Class | Done |
@@ -172,13 +220,13 @@ F3: answered (no regeneration).
 | F2, F1, F3 | above |
 | base-saved project reopens and replays | met (T9, R2) |
 | control of 7(c) and re-freeze | met by C5 (VAL-55): steps 1 to 3 pass; oracles re-frozen (a4f60900); C4's stop recorded |
-| full suite base against head with check | not run |
-| gate-off script; rendered-panel diff | not run; the panel diff is in `r3/redump-diff.txt` (HTML digests and input/output lists) |
-| bundle lane | not run |
+| full suite base against head with check | run (F1); every difference classed above; two corrections verified by R4 and R5 |
+| gate-off script; rendered-panel diff | gate-off identity TRUE (F1); the panel diff is in `r3/redump-diff.txt` (HTML digests and input/output lists) |
+| bundle lane | run (B1): Linux clean for the four lanes; Windows: an unexplained `norm_log` digest difference from `norm` on in the four lanes (open) |
 | NEWS, man, reports, texts, wording list | done (wording in `omicGuiLog2Texts()`, `R/utils_omic_gui_config.R`) |
 | ledger row | written (`VAL-<merge>`) |
 
 ## Not checked
 
-- The full suite and R CMD check base against head; the bundle lane; the gate-off script.
-- `test-omic-norm-module.R` after the pasted re-dump; `test-metab-qc-shared.R` after its stub fix.
+- The text behind the Windows `norm_log` digests (the bundle uploads nothing).
+- The full suite, GUI-entry lanes and bundle at the final commits dfb2ad9f and 55ff3063 (code change without value change; R4, R5 only).
