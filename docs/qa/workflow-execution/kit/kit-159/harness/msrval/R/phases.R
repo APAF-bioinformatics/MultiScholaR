@@ -221,6 +221,12 @@ valRunCell <- function(cell, ctx) {
 #' A workflow cell (7.3): action script, arm builder, forced settings, hook
 #' @noRd
 valRunWorkflowCell <- function(cell, ctx, ds, arm, inputs, contrasts, cell_dir) {
+    owned <- c("multischolar.test_mode", "MULTISCHOLAR_TEST_MODE")
+    if (any(vapply(arm[["forced"]] %||% list(), function(f) f[["setting"]] %in% owned,
+                   logical(1)))) {
+        valAbort("arm {arm$id}: test mode cannot be forced (the harness owns it)",
+                 "val_spec_invalid")
+    }
     builder <- get(arm[["builder"]], envir = asNamespace("msrval"))
     arm_obj <- do.call(builder, arm[intersect(names(arm), names(formals(builder)))])
     pairs <- inputs[["contrast_pairs"]] %||%
@@ -242,11 +248,13 @@ valRunWorkflowCell <- function(cell, ctx, ds, arm, inputs, contrasts, cell_dir) 
         f[["reason"]] %||% ""
     }, character(1)), collapse = "; ")
     hook_name <- ctx$decl[["hooks"]][["post_cell"]]
+    summary <- isTRUE(ctx$decl[["hooks"]][["summary"]])
     on_complete <- if (!is.null(hook_name)) {
         function(sctx) {
             valCallHook(ctx$env[[hook_name]], sctx$manager,
                         shiny::isolate(sctx$workflow_data$da_analysis_results_list),
-                        sctx$paths[["integration_dir"]], as.list(sctx$tables), unit = cell$unit,
+                        if (summary) sctx$paths[["integration_dir"]],
+                        as.list(sctx$tables), unit = cell$unit,
                         arm = cell$arm, design_path = inputs[["design_path"]],
                         out_dir = ctx$out_dir)
         }
@@ -353,14 +361,7 @@ valMetricFunction <- function(name, env) {
 #' @return Rows in the columns of `metrics.tsv`.
 #' @export
 valUnitMetrics <- function(decl, dataset, unit, da, truth, universe, env, blind_seed = NULL) {
-    arms_tab <- lapply(da, function(p) {
-        d <- if (is.character(p)) utils::read.delim(p, stringsAsFactors = FALSE) else p
-        data.frame(feature_id = as.character(d$feature_id),
-                   key = as.character(env$featureKey(as.character(d$feature_id))),
-                   assay = as.character(d$assay %||% "all"), contrast = as.character(d$contrast),
-                   estimate = as.numeric(d$log2fc), p = as.numeric(d$p),
-                   s_own = as.numeric(d$s_own), stringsAsFactors = FALSE)
-    })
+    arms_tab <- valArmTables(da, env)
     rows <- list()
     for (m in decl[["metrics"]]) {
         tid <- m[["truth"]] %||% "primary"
@@ -427,9 +428,12 @@ valUnitMetrics <- function(decl, dataset, unit, da, truth, universe, env, blind_
 #' @param units The unit table.
 #' @param regimes The regime table for the classifier (default the harness's).
 #' @param phase The phase.
+#' @param within The run's within-run rows ([valWithinRunRows()]): the run-level interval is widened
+#'   to them bound by bound (4.4, A38; mandatory below 6 units), and a metric whose method is
+#'   `bootstrap_within_run` is classified on them, one row per unit.
 #' @return Rows in the columns of `comparisons.tsv`.
 #' @export
-valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted") {
+valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted", within = NULL) {
     units <- valUnits(units)
     blind <- identical(phase, "lifecycle")
     rows <- list()
@@ -446,6 +450,13 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted")
                     r <- metrics[metrics$metric == m[["id"]] & metrics$arm == a &
                                      metrics$view %in% c(vk, v), , drop = FALSE]
                     stats::setNames(as.numeric(r$value), r$unit)[units$unit]
+                }
+                component <- paste0(m[["id"]], ":", paste(cmp_arms, collapse = "-"))
+                if (identical(method, "bootstrap_within_run")) {
+                    got <- valClassifyWithin(m, cmp_arms, vk, within, regimes, blind)
+                    rows <- c(rows, got$rows)
+                    outcomes[[component]] <- got$outcome
+                    next
                 }
                 d <- value_of(cmp_arms[[1L]])
                 if (length(cmp_arms) == 2L) d <- d - value_of(cmp_arms[[2L]])
@@ -464,6 +475,23 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted")
                                        unequal_deletion = any(units$unequal_deletion %in%
                                                                   c("TRUE", TRUE)),
                                        design = iv_spec[["design"]] %||% NA_character_)
+                } else if (identical(method, "clopper_pearson")) {
+                    if (length(cmp_arms) != 1L) {
+                        valAbort("clopper_pearson is a one-arm share over units (against `fixed`)",
+                                 "val_spec_invalid")
+                    }
+                    ind <- units$unit[units$unit_role %in% c("independent", "draw")]
+                    dd <- unname(d[ind])
+                    n_ref <- sum(!is.finite(dd))
+                    ok <- dd[is.finite(dd)]
+                    if (!all(ok %in% c(0, 1))) {
+                        valAbort("clopper_pearson needs per-unit values 0 or 1", "val_spec_invalid")
+                    }
+                    draw <- all(units$unit_role[units$unit %in% ind] == "draw")
+                    iv <- valInterval(as.integer(sum(ok)), method = "clopper_pearson",
+                                      n = length(ok), conf = m[["conf"]] %||% 0.95,
+                                      unit_role = if (draw) "draw" else "independent",
+                                      class = m[["class"]] %||% NA_character_)
                 } else {
                     role <- units$unit_role
                     ind <- units$unit[role %in% c("independent", "draw")]
@@ -489,6 +517,10 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted")
                                           class = m[["class"]] %||% NA_character_)
                     }
                 }
+                if (length(cmp_arms) == 2L && !is.null(within) && is.null(rf)) {
+                    iv <- valWidenFromRequests(iv, within, cmp_arms[[1L]], cmp_arms[[2L]],
+                                               m[["id"]], widen = m[["widen_to_within_run"]])
+                }
                 cl <- list(outcome = "blinded", no_worse = NA, regime = NA_character_)
                 if (!blind) {
                     cl <- if (!is.null(rf)) {
@@ -507,7 +539,6 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted")
                                  })
                     }
                 }
-                component <- paste0(m[["id"]], ":", paste(cmp_arms, collapse = "-"))
                 outcomes[[component]] <- cl
                 rows[[length(rows) + 1L]] <- data.frame(
                     arm = cmp_arms[[1L]],
@@ -550,6 +581,139 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted")
     }
     out <- do.call(rbind, rows)
     out[, EVIDENCE_COLUMNS[["comparisons.tsv"]]]
+}
+
+#' Within-run rows of one unit: a paired percentile bootstrap over keys (4.4; contract row 15)
+#'
+#' For each metric that declares `within_run` (`B`, `seed`, optional `strata` = `"class"` and
+#' `cluster` = a function of the keys in the ticket's code) or whose interval method is
+#' `bootstrap_within_run`, and each two-arm comparison and view: one set of resampled keys per
+#' replicate applied to both arms ([valBootstrap()]), the statistic the metric's difference. Rows
+#' are in `comparisons.tsv`'s columns with scope `within_run`; `flags` carries `unit=<id>;n=<keys>`.
+#'
+#' @inheritParams valUnitMetrics
+#' @return Rows in the columns of `comparisons.tsv` (none when no metric asks for them).
+#' @export
+valWithinRunRows <- function(decl, unit, da, truth, universe, env, blind_seed = NULL) {
+    rows <- list()
+    arms_tab <- valArmTables(da, env)
+    for (m in decl[["metrics"]]) {
+        spec <- m[["within_run"]]
+        if (is.null(spec) && !identical(m[["interval"]][["method"]], "bootstrap_within_run")) next
+        spec <- spec %||% list()
+        tid <- m[["truth"]] %||% "primary"
+        tr <- truth[[tid]]
+        if (!is.null(blind_seed)) tr <- valBlindTruth(tr, as.integer(blind_seed))
+        tr <- tr[, c("key", "class", "expected", "truth_status")]
+        fn <- valMetricFunction(m[["function"]], env)
+        mtype <- if (identical(m[["class"]], "accuracy")) "accuracy" else "detection"
+        conf <- m[["conf"]] %||% 0.95
+        for (cmp in m[["comparisons"]]) {
+            cmp_arms <- unlist(cmp)
+            if (length(cmp_arms) != 2L || !all(cmp_arms %in% names(arms_tab))) next
+            s <- valScoreTable(arms_tab[cmp_arms], tr, universe, unit = unit, truth_id = tid)
+            s <- s[s$contrast == m[["contrast"]], , drop = FALSE]
+            for (v in unlist(m[["views"]])) {
+                sv <- valViews(s, cmp_arms, v, mtype)
+                a1 <- sv[sv$arm == cmp_arms[[1L]], , drop = FALSE]
+                a2 <- sv[sv$arm == cmp_arms[[2L]], , drop = FALSE]
+                keys <- intersect(paste(a1$assay, a1$key), paste(a2$assay, a2$key))
+                i1 <- match(keys, paste(a1$assay, a1$key))
+                i2 <- match(keys, paste(a2$assay, a2$key))
+                args <- m[["args"]] %||% list()
+                if ("call_rule" %in% names(formals(fn))) args$call_rule <- m[["call_rule"]]
+                val <- function(rows_) {
+                    r <- do.call(fn, c(list(rows_), args))
+                    if (is.list(r)) as.numeric(r[["value"]]) else as.numeric(r)
+                }
+                data <- data.frame(j = seq_along(keys), class = a1$class[i1],
+                                   stringsAsFactors = FALSE)
+                if (is.function(env[[spec[["cluster"]] %||% ""]])) {
+                    data$cluster <- env[[spec[["cluster"]]]](a1$key[i1])
+                }
+                stat <- function(df) val(a1[i1[df$j], , drop = FALSE]) -
+                    val(a2[i2[df$j], , drop = FALSE])
+                iv <- valBootstrap(data, stat, B = as.integer(spec[["B"]] %||%
+                                                                  valBootstrapMinB(conf)),
+                                   conf = conf, seed = as.integer(spec[["seed"]] %||% 1L),
+                                   strata = if (identical(spec[["strata"]], "class")) "class",
+                                   cluster = if (!is.null(data$cluster)) "cluster",
+                                   class = m[["class"]] %||% NA_character_)
+                rows[[length(rows) + 1L]] <- data.frame(
+                    arm = cmp_arms[[1L]], comparator = cmp_arms[[2L]], truth_id = tid,
+                    metric = m[["id"]], view = valViewKey(v, cmp_arms),
+                    call_rule = m[["call_rule"]] %||% NA_character_,
+                    diff = iv[["estimate"]] %||% NA_real_, method = "bootstrap_within_run",
+                    scope = "within_run", ci_low = iv[["ci_low"]], ci_high = iv[["ci_high"]],
+                    margin = m[["margin"]] %||% NA_real_, conf = conf, outcome = NA_character_,
+                    no_worse = NA, outcome_family = NA_character_, n_refused = 0L,
+                    regime = NA_character_,
+                    flags = sprintf("unit=%s;n=%d;status=%s", unit, nrow(data), iv[["status"]]),
+                    member = NA_character_,
+                    component = paste0(m[["id"]], ":", paste(cmp_arms, collapse = "-")),
+                    not_sensitive = NA, amended = NA_character_, headline = FALSE,
+                    blinded = !is.null(blind_seed), stringsAsFactors = FALSE)
+            }
+        }
+    }
+    if (length(rows) == 0L) return(NULL)
+    do.call(rbind, rows)
+}
+
+#' Arm DA tables keyed for scoring
+#' @noRd
+valArmTables <- function(da, env) {
+    lapply(da, function(p) {
+        d <- if (is.character(p)) utils::read.delim(p, stringsAsFactors = FALSE) else p
+        data.frame(feature_id = as.character(d$feature_id),
+                   key = as.character(env$featureKey(as.character(d$feature_id))),
+                   assay = as.character(d$assay %||% "all"), contrast = as.character(d$contrast),
+                   estimate = as.numeric(d$log2fc), p = as.numeric(d$p),
+                   s_own = as.numeric(d$s_own), stringsAsFactors = FALSE)
+    })
+}
+
+#' Classify the within-run rows of a `bootstrap_within_run` metric, one per unit
+#' @noRd
+valClassifyWithin <- function(m, cmp_arms, vk, within, regimes, blind) {
+    r <- if (is.null(within)) within else
+        within[within$metric == m[["id"]] & within$arm == cmp_arms[[1L]] &
+                   within$comparator == (if (length(cmp_arms) == 2L) cmp_arms[[2L]] else "") &
+                   within$view == vk, , drop = FALSE]
+    if (is.null(r) || nrow(r) == 0L) {
+        valAbort("metric {m$id}: no within-run rows for a bootstrap_within_run verdict",
+                 "val_spec_invalid")
+    }
+    out <- list()
+    last <- NULL
+    for (i in seq_len(nrow(r))) {
+        x <- r[i, ]
+        n <- as.integer(sub("^.*n=([0-9]+).*$", "\\1", x$flags))
+        st <- sub("^.*status=([a-z_]+).*$", "\\1", x$flags)
+        iv <- valNewInterval(x$ci_low, x$ci_high, "bootstrap_within_run", n, x$conf,
+                             "within_run", m[["class"]] %||% NA_character_, status = st,
+                             estimate = x$diff)
+        cl <- list(outcome = "blinded", no_worse = NA, regime = NA_character_)
+        if (!blind) {
+            cl <- tryCatch(valClassify(iv, m[["margin"]], isTRUE(m[["higher_is_better"]]),
+                                       fixed = m[["fixed"]], view = "intersection",
+                                       feature_interval_decides = isTRUE(
+                                           m[["feature_interval_decides"]]),
+                                       regimes = regimes,
+                                       accept_flagged = m[["interval"]][["accept_flagged"]]),
+                           val_spec_invalid = function(e) {
+                               list(outcome = NA_character_, no_worse = NA,
+                                    regime = paste("refused:", conditionMessage(e)))
+                           })
+        }
+        x$outcome <- cl$outcome
+        x$no_worse <- cl$no_worse
+        x$regime <- cl$regime %||% NA_character_
+        x$blinded <- blind
+        out[[length(out) + 1L]] <- x
+        last <- cl
+    }
+    list(rows = out, outcome = last)
 }
 
 #' Run a phase's cells and score them into `runs/<label>/` (7.8 steps 5 to 9)
@@ -643,8 +807,19 @@ valRunPhase <- function(phase, decl, dataset, units, label, code_files, data_dir
     }))
     utils::write.table(metrics, file.path(run_dir, "metrics.tsv"), sep = "\t", quote = FALSE,
                        row.names = FALSE)
+    within <- do.call(rbind, lapply(unique(cells$unit), function(u) {
+        r <- done[done$unit == u, , drop = FALSE]
+        da <- stats::setNames(as.list(file.path(valCellDir(ctx$work_dir, r$run), "da.tsv")),
+                              r$arm)
+        valWithinRunRows(decl, u, da, prep$truth, prep$universe, env, blind_seed = blind_seed)
+    }))
     scored_units <- units[units$unit %in% cells$unit, , drop = FALSE]
-    comparisons <- valRunLevel(decl, metrics, scored_units, regimes = regimes, phase = phase)
+    comparisons <- valRunLevel(decl, metrics, scored_units, regimes = regimes, phase = phase,
+                               within = within)
+    if (!is.null(within)) {
+        key <- function(x) paste(x$component, x$scope, x$flags)
+        comparisons <- rbind(comparisons, within[!key(within) %in% key(comparisons), ])
+    }
     utils::write.table(comparisons, file.path(run_dir, "comparisons.tsv"), sep = "\t",
                        quote = FALSE, row.names = FALSE)
     if (!is.null(manifest)) {

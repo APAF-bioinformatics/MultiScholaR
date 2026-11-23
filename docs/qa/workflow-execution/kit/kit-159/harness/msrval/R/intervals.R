@@ -280,7 +280,7 @@ valBootstrapMinB <- function(conf) {
 #' @param keep_replicates Return the replicates (`replicates`), for the coverage regimes.
 #' @return An interval record (scope `within_run`).
 #' @export
-valBootstrap <- function(data, statistic, B, conf = 0.95, seed, strata = NULL, cluster = NULL,
+valBootstrap <- function(data, statistic, B, conf = 0.95, seed, strata = NULL, cluster = NULL,  # nolint
                          events = NULL, min_events = 5L, class = NA_character_,
                          keep_replicates = FALSE) {
     checkmate::assert_data_frame(data, min.rows = 1L)

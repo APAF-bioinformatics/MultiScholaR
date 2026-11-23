@@ -99,7 +99,7 @@ valBaselineDesign <- function(groups, batch) {
     x_mat <- if (is.null(batch)) {
         stats::model.matrix(~ 0 + grp)
     } else {
-        bt <- factor(batch)
+        bt <- factor(batch)  # nolint
         stats::model.matrix(~ 0 + grp + bt)
     }
     colnames(x_mat)[seq_len(nlevels(grp))] <- levels(grp)

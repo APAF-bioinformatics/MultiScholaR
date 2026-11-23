@@ -33,9 +33,13 @@ valParityBrowser <- function(app, actions, prefix) {
         sent <- valBrowserValues(app$get_js("Shiny.shinyapp.$inputValues"), prefix)
         if (length(sent)) {
             rows[[length(rows) + 1L]] <- data.frame(
-                action = a$input_id, input_id = names(sent),
+                action = a$input_id, input_id = names(sent),  # nolint
                 value = vapply(sent, function(v) {
-                    if (is.null(v)) "NULL" else paste(format(unlist(v), digits = 15), collapse = "|")
+                    if (is.null(v)) {
+                        "NULL"
+                    } else {
+                        paste(format(unlist(v), digits = 15), collapse = "|")
+                    }
                 }, character(1), USE.NAMES = FALSE),
                 stringsAsFactors = FALSE)
         }
@@ -207,5 +211,33 @@ valCheckParityWorkflow <- function(path) {
         }
     }
     if (length(outside) != 2L) bad("an upload outside the snapshot job and the two parity-results")
+    TRUE
+}
+
+#' Check a parity request's copied L1 values against L1's committed evidence (7.9 item 1, r1.12)
+#'
+#' The request names `l1_path`, L1's committed digests and fingerprints per route; the values the
+#' request copies (`l1`) must equal that file at the given commit.
+#'
+#' @param req The request (from [valParityRequest()]).
+#' @param repo The checkout (full history).
+#' @param at The commit to read the evidence at (default the request's release commit).
+#' @return `TRUE`, or `val_spec_invalid`.
+#' @export
+valCheckParityL1 <- function(req, repo = ".", at = req[["release_commit"]]) {
+    bad <- function(what) valAbort("parity request: {what}", "val_spec_invalid")
+    path <- req[["l1_path"]] %||% ""
+    if (!nzchar(path)) bad("no l1_path")
+    text <- valGitShow(repo, at, path)
+    if (length(text) == 0L || !nzchar(paste(text, collapse = ""))) bad("{path} is not committed")
+    committed <- jsonlite::fromJSON(paste(text, collapse = "\n"), simplifyVector = FALSE)
+    for (route in names(req[["l1"]])) {
+        got <- req[["l1"]][[route]]
+        want <- committed[[route]]
+        if (is.null(want) || !identical(got[["digest"]], want[["digest"]]) ||
+            !identical(got[["fingerprint"]][["sha256_10"]], want[["fingerprint"]][["sha256_10"]])) {
+            bad(paste("the copied L1 values of", route, "differ from", path))
+        }
+    }
     TRUE
 }

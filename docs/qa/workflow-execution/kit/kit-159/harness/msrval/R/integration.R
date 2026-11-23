@@ -47,7 +47,7 @@ valSettingsTable <- function(settings) {
 valRunIntegration <- function(spec, fns = valIntegrationFunctions(), post_integration = NULL) {
     warnings <- character()
     keep <- function(w) {
-        warnings <<- c(warnings, conditionMessage(w))
+        warnings <<- c(warnings, conditionMessage(w))  # nolint
         invokeRestart("muffleWarning")
     }
     settings <- valSettingsTable(fns$integrationSettings())
@@ -63,7 +63,11 @@ valRunIntegration <- function(spec, fns = valIntegrationFunctions(), post_integr
     }
     hit <- match(settings$setting, names(forced))
     settings$value <- ifelse(is.na(hit), settings$default, vapply(seq_along(hit), function(i) {
-        if (is.na(hit[[i]])) NA_character_ else paste(format(forced[[hit[[i]]]]$value), collapse = "|")
+        if (is.na(hit[[i]])) {
+            NA_character_
+        } else {
+            paste(format(forced[[hit[[i]]]]$value), collapse = "|")
+        }
     }, character(1)))
     settings$source <- ifelse(is.na(hit), "default", "forced")
     settings$reason <- ifelse(is.na(hit), NA_character_, vapply(seq_along(hit), function(i) {

@@ -362,7 +362,7 @@ valCheckFixedTable <- function(path, f, schema, classes, row_bounds, phase, prim
     bound <- row_bounds[[f]]
     if (!is.null(bound) && nrow(tab) > bound) forbid("has more rows than its bound")
     if (phase == "lifecycle" && schema == "metrics.tsv" &&
-        any(tab$metric %in% CALL_COUNT_METRICS & tab$unit %in% primary_units)) {
+            any(tab$metric %in% CALL_COUNT_METRICS & tab$unit %in% primary_units)) {
         forbid("holds a call count of a primary unit in the lifecycle")
     }
     invisible(TRUE)

@@ -199,16 +199,16 @@ valArmInputs <- function(arm, route, roles = list(), technical_replicates = FALS
                    stats::setNames(list("covariates"), id("ruv_mode"))
                } else if (r$omic %in% c("lipidomics", "metabolomics")) {
                    stats::setNames(list("automatic", 5, 2), id(c("ruv_mode", "ruv_percentage",
-                                                                "ruv_k")))
+                                                                 "ruv_k")))
                } else {
                    stats::setNames(list("automatic"), id("ruv_mode"))
                }
            },
            calibrated = {
                out$options <- gate(TRUE)
-               out$expect <- stats::setNames(
-                   list(if (technical_replicates) "technical_replicates" else "groups_all_features"),
-                   id("ruv_design"))
+               cal_design <- if (technical_replicates) "technical_replicates" else
+                   "groups_all_features"
+               out$expect <- stats::setNames(list(cal_design), id("ruv_design"))
            },
            off = {
                if (identical(r$omic, "transcriptomics")) {
@@ -281,7 +281,8 @@ valCellRuv <- function(route, arm) {
 valRunCustomArm <- function(arm, unit, inputs) {
     kind <- arm$kind %||% ""
     if (!kind %in% c("custom", "published") || !is.function(arm$fn)) {
-        valAbort("arm {arm$id} is not a custom or published arm with a function", "val_spec_invalid")
+        valAbort("arm {arm$id} is not a custom or published arm with a function",
+                 "val_spec_invalid")
     }
     if (identical(kind, "published") && !is.function(arm$anchor)) {
         valAbort("published arm {arm$id} declares no anchor check", "val_spec_invalid")

@@ -264,7 +264,7 @@ valPartialAuc <- function(scored, fpr_max, min_nulls_in_region = 10L, min_events
                           positive_rule = c("expected", "class"), delta = 0) {
     positive_rule <- match.arg(positive_rule)
     if (missing(fpr_max) || !checkmate::test_number(fpr_max, lower = 0, upper = 1) ||
-        fpr_max <= 0) {
+            fpr_max <= 0) {
         valAbort("{.arg fpr_max} must be declared, in (0, 1]", "val_spec_invalid")
     }
     s <- valScoredOnly(scored)

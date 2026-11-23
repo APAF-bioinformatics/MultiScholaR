@@ -15,7 +15,7 @@ TARGET_SIMS <- 20000L
 #' @export
 valCoverageCells <- function() {
     cells <- list()
-    add <- function(...) cells[[length(cells) + 1L]] <<- data.frame(..., stringsAsFactors = FALSE)
+    add <- function(...) cells[[length(cells) + 1L]] <<- data.frame(..., stringsAsFactors = FALSE)  # nolint
     for (n in c(6L, 7L, 8L, 9L, 10L, 13L, 21L)) for (shape in c("normal", "skewed")) {
         add(regime = "C1", family = "exact_median", n = n, condition = shape)
     }
@@ -442,7 +442,7 @@ valCombineCoverage <- function(cell, parts, nsim, target_sims) {
                      "val_spec_invalid")
         }
         values <- do.call(rbind, lapply(parts, `[[`, "target_values"))[order(targets), ,
-                                                                         drop = FALSE]
+                                                                       drop = FALSE]
         total <- numeric(ncol(values))
         for (j in seq_len(nrow(values))) total <- total + values[j, ]
         target <- total / target_sims
@@ -624,7 +624,10 @@ valCovStats <- function(fit, truth, n_feat, form) {
 #' One row per method x class x form x design x unit count x level. Over the data conditions and
 #' statistics of a row: any `fail` fails it, except that a paired t count whose normal case passes
 #' and skewed case fails is `flagged` (C2); otherwise any `conservative` makes it conservative;
-#' `not_offered` where the method gives no interval at that count and level.
+#' `not_offered` where the method gives no interval at that count and level. Each row carries
+#' `coverage_min` and `coverage_max` over its conditions and statistics and, for a row not offered
+#' because a condition failed its band, `failed_condition` and `failed_side` (`low`, `high`; for
+#' an exact method against its achieved level) (5.7, r1.12).
 #'
 #' @param detail Rows of [valCoverageRegime()].
 #' @return The regime table (`coverage-table.tsv`).
@@ -660,12 +663,21 @@ valSummariseCoverage <- function(detail) {
             "pass"
         }
         w <- which.min(r$coverage)
+        bad <- r$status == "fail"
+        side <- ifelse(r$kind == "exact", ifelse(r$coverage < r$achieved, "low", "high"),
+                       ifelse(r$coverage < r$level, "low", "high"))
+        offered <- status %in% c("pass", "conservative")
         data.frame(
             regime = r$regime[[1L]], method = r$method[[1L]], class = r$class[[1L]],
             form = r$form[[1L]], design = r$design[[1L]], transform = r$transform[[1L]],
             n = r$n[[1L]], level = r$level[[1L]], status = status, coverage = r$coverage[[w]],
             mc_se = r$mc_se[[w]], source = "harness",
             statistic = paste(unique(paste(r$statistic, r$condition, sep = "@")), collapse = ", "),
+            coverage_min = min(r$coverage), coverage_max = max(r$coverage),
+            failed_condition = if (offered || !any(bad)) NA_character_ else
+                paste(unique(r$condition[bad]), collapse = ","),
+            failed_side = if (offered || !any(bad)) NA_character_ else
+                paste(unique(side[bad]), collapse = ","),
             stringsAsFactors = FALSE
         )
     })

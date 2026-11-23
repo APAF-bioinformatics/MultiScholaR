@@ -59,11 +59,16 @@ unit count x level; `valClassify` refuses an interval with no offered regime (`v
 unless the consumer registers a passing ticket coverage regime (section 4.4).
 
 Cell legend: `Y` offered (pass); `Yc` offered, reported `conservative` (a run-level method above
-min(level + 0.04, 1), or `clopper_pearson`, conservative by construction); `N` not offered (fails
+min(level + 0.04, 1)); `Yb` `clopper_pearson`: offered (conservative by construction; its expected
+status, not a flag); `N` not offered (fails
 its band); `Fl` `flagged`, not offered unless the declaration sets `accept_flagged` naming the
 owner's ledger row; `-` no interval at that count and level (`exact_median` below its smallest n).
 The numbers are the simulated coverage, the lowest and highest over the row's data conditions and
-statistics (one number where they agree). Levels in per cent: 95, 97.5, 98.33 (m = 3), 98.75 (m =
+statistics (one number where they agree). `coverage-table.tsv` carries the same ends
+(`coverage_min`, `coverage_max`) and, for a row not offered, the condition that failed and on which
+side (`failed_condition`, `failed_side`: `low`, `high`) (5.7, r1.12; computed from the recorded
+detail columns, no rerun). Two rulings on this table wait for the owner (build-points2 points 1 and
+2: the exact-method band at C1 n = 10, and the rank rows); the table stays as classified meanwhile. Levels in per cent: 95, 97.5, 98.33 (m = 3), 98.75 (m =
 4), 99.17 (m = 6), 99.375 (m = 8), 99.58 (m = 12), 99.67 (m = 15). C3 designs: `pairs5`, `pairs8`,
 `pairs21` (pairs from 5, 8, 21 batches), `r8_2x2` (2 + 2 of 3 and 5), `r21_2x2` (2 + 2 of 7 and
 14), `en3x3` (3 + 3 of 7 and 14), `labs8` (the laboratory grouping); n is the batch count.
@@ -118,9 +123,9 @@ statistics (one number where they agree). Levels in per cent: 95, 97.5, 98.33 (m
 | C6 | newcombe_paired |  |  |  |  | 21 | N 0.9765-0.9925 | Y 0.9910-0.9985 | Y 0.9985-0.9990 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 |
 | C6 | newcombe_paired |  |  |  |  | 48 | Y 0.9615-0.9720 | Y 0.9860-0.9925 | Y 0.9925-0.9965 | Y 0.9945-0.9970 | Y 0.9970-0.9985 | Y 0.9990-1.0000 | Y 0.9990-1.0000 | Y 0.9995-1.0000 |
 | C7 | bootstrap_within_run | accuracy |  |  |  | 200 | Y 0.9735 | Y 0.9920 | Y 0.9950 | Y 0.9970 | Y 0.9990 | Y 0.9995 | Y 0.9995 | Y 0.9995 |
-| C8 | clopper_pearson |  |  |  |  | 10 | Yc 0.9835-0.9910 | Yc 0.9835-0.9910 | Yc 0.9990-1.0000 | Yc 0.9990-1.0000 | Yc 0.9990-1.0000 | Yc 0.9990-1.0000 | Yc 0.9990-1.0000 | Yc 0.9990-1.0000 |
-| C8 | clopper_pearson |  |  |  |  | 21 | Yc 0.9770-0.9865 | Yc 0.9915-0.9980 | Yc 0.9915-0.9980 | Yc 0.9915-0.9980 | Yc 0.9915-0.9980 | Yc 0.9985-1.0000 | Yc 0.9985-1.0000 | Yc 0.9985-1.0000 |
-| C8 | clopper_pearson |  |  |  |  | 250 | Yc 0.9440-0.9770 | Yc 0.9745-0.9885 | Yc 0.9805-0.9885 | Yc 0.9860-0.9915 | Yc 0.9900-0.9955 | Yc 0.9930-0.9975 | Yc 0.9955-0.9975 | Yc 0.9965-0.9975 |
+| C8 | clopper_pearson |  |  |  |  | 10 | Yb 0.9835-0.9910 | Yb 0.9835-0.9910 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 |
+| C8 | clopper_pearson |  |  |  |  | 21 | Yb 0.9770-0.9865 | Yb 0.9915-0.9980 | Yb 0.9915-0.9980 | Yb 0.9915-0.9980 | Yb 0.9915-0.9980 | Yb 0.9985-1.0000 | Yb 0.9985-1.0000 | Yb 0.9985-1.0000 |
+| C8 | clopper_pearson |  |  |  |  | 250 | Yb 0.9440-0.9770 | Yb 0.9745-0.9885 | Yb 0.9805-0.9885 | Yb 0.9860-0.9915 | Yb 0.9900-0.9955 | Yb 0.9930-0.9975 | Yb 0.9955-0.9975 | Yb 0.9965-0.9975 |
 | C4e | jackknife | rank | block |  |  | 14 | Yc 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 |
 | C7 | bootstrap_within_run | threshold_count |  |  |  | 200 | Y 0.9485 | Y 0.9735 | Y 0.9830 | Y 0.9875 | Y 0.9915 | Y 0.9925 | Y 0.9940 | Y 0.9950 |
 | C4 | jackknife | accuracy | replicate |  |  | 4 | N 0.9180-0.9775 | N 0.9535-0.9875 | Y 0.9695-0.9940 | Y 0.9765-0.9955 | Y 0.9855-0.9980 | Y 0.9880-0.9985 | Y 0.9920-0.9990 | Y 0.9935-1.0000 |

@@ -33,6 +33,8 @@ status <- system2(file.path(R.home("bin"), "R"),
 if (!identical(as.integer(status), 0L)) stop("msrval did not install", call. = FALSE)
 
 req <- msrval::valParityRequest(request)
+# r1.12 (7.9 item 1): the request's copied L1 digests and fingerprints equal L1's committed file.
+msrval::valCheckParityL1(req, repo = ".", at = req$evidence_commit %||% "HEAD")
 version_file <- c(file.path(app, "VERSION.json"), file.path(app, "resources", "VERSION.json"))
 version_file <- version_file[file.exists(version_file)]
 if (length(version_file) == 0L) {

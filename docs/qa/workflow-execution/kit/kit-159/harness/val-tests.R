@@ -104,7 +104,9 @@ if (has("--lint")) {
     linters <- lintr::linters_with_defaults(
         line_length_linter = lintr::line_length_linter(100L),
         indentation_linter = lintr::indentation_linter(indent = 4L),
-        object_name_linter = lintr::object_name_linter(styles = c("camelCase", "snake_case"))
+        # constants are UPPER_SNAKE_CASE by conventions/R.md (naming table)
+        object_name_linter = lintr::object_name_linter(styles = c("camelCase", "snake_case",
+                                                                  "SNAKE_CASE"))
     )
     lints <- lintr::lint_dir(file.path(pkg_dir, "R"), linters = linters)
     lint_df <- as.data.frame(lints)

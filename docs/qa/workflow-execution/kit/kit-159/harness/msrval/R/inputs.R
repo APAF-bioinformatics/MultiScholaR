@@ -110,7 +110,7 @@ valReadMembers <- function(members_dir, name) {
     if (!file.exists(path)) valAbort("members file {name} does not exist", "val_manifest_invalid")
     mm <- utils::read.delim(path, colClasses = "character", stringsAsFactors = FALSE)
     if (!all(c("member", "sha256", "bytes") %in% names(mm)) ||
-        !all(grepl("^[0-9a-f]{64}$", mm$sha256))) {
+            !all(grepl("^[0-9a-f]{64}$", mm$sha256))) {
         valAbort("members file {name} is not valid", "val_manifest_invalid")
     }
     mm$bytes <- as.numeric(mm$bytes)
@@ -219,7 +219,7 @@ valInputPath <- function(role, member = NULL) {
     }
     want <- member %||% ""
     hit <- if (is.null(reg)) integer() else which(reg$role == role & reg$member == want &
-                                                     reg$status == "verified")
+                                                      reg$status == "verified")
     if (length(hit) != 1L) valAbort("input {role} {want} is not declared and verified",
                                     "val_input_undeclared")
     reg$path[[hit]]
@@ -305,8 +305,10 @@ valExtractMembersUnverified <- function(archive, names_m, exdir) {
 #'   `rows` (per role).
 #' @export
 valCompareRecords <- function(dir_a, dir_b, listed_sizes = NULL) {
-    read <- function(d) utils::read.delim(file.path(d, "inputs.tsv"), colClasses = "character",
-                                          na.strings = character(), stringsAsFactors = FALSE)
+    read <- function(d) {
+        utils::read.delim(file.path(d, "inputs.tsv"), colClasses = "character",
+                          na.strings = character(), stringsAsFactors = FALSE)
+    }
     a <- read(dir_a)
     b <- read(dir_b)
     m <- merge(a[, c("role", "sha256", "bytes", "members")],

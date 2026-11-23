@@ -142,10 +142,10 @@ valProtScript <- function(r, tool, summary) {
                 })
     }
     import <- valStep(
-        "import", "setup", list(tab = c(setup_import = "complete")), module = "setup_import",
+        "import", "setup", list(tab = c(setup_import = "complete")), module = "setup_import",  # nolint
         structural = paste0("^setup_import-(search_results_standard|fasta_file_standard|",
                             "format_override|dia_route)$"),
-        press = "setup_import-process_data",
+        press = "setup_import-process_data",  # nolint
         run = function(api) {
             api$defaults(ns$mod_prot_import_ui, "setup_import")
             api$defaults(function(id) {
@@ -160,26 +160,26 @@ valProtScript <- function(r, tool, summary) {
             if (api$modal_open()) api$modal_confirm("Confirm Selection")
         })
     design <- valStep(
-        "design", "design",
+        "design", "design",  # nolint
         list(head = if (peptide_level) "raw_data_s4" else "protein_s4_initial"),
         module = "design_matrix", structural = "^design_matrix-builder-",
         press = "design_matrix-builder-save_results",
         run = function(api) {
             api$design(prefix = "design_matrix-builder-", tech_rep = FALSE,
                        match = "design_matrix-builder-selected_runs")
-        })
+        })  # nolint
     norm <- valStep(
-        "norm", "normalization",
+        "norm", "normalization",  # nolint
         list(head = if (limpa) c("peptide_count_filtered", "ruv_covariates") else
-            c("normalized", "ruv_corrected")),
-        module = "normalization", press = "normalization-run_normalization",
+            c("normalized", "ruv_corrected")),  # nolint
+        module = "normalization", press = "normalization-run_normalization",  # nolint
         run = function(api) {
             api$defaults(ns$mod_prot_norm_ui, "normalization")
             api$overrides()
             api$press("normalization-run_normalization")
         })
     correlation <- valStep(
-        "correlation", "normalization", list(head = "correlation_filtered"),
+        "correlation", "normalization", list(head = "correlation_filtered"),  # nolint
         module = "normalization", structural = "^normalization-norm_qc_tabs$",
         press = "normalization-apply_correlation_filter",
         run = function(api) {
@@ -192,7 +192,7 @@ valProtScript <- function(r, tool, summary) {
                 run = function(api) api$press("normalization-apply_ruv_covariates"))
     }
     da <- valStep(
-        "da", "da", list(tab = c(differential_expression = "complete")),
+        "da", "da", list(tab = c(differential_expression = "complete")),  # nolint
         module = "differential_expression", press = "differential_expression-run_da_analysis",
         run = function(api) {
             api$defaults(ns$mod_prot_da_ui, "differential_expression")
@@ -222,11 +222,11 @@ valOmicsScript <- function(r, short, tool, assays, import_values, summary) {
     ui <- function(name) get(paste0("mod_", short, "_", name, "_ui"), envir = ns)
     state <- function(x) paste0(short, "_", x)
     import <- valStep(
-        "import", "import", list(tab = c(setup_import = "complete")), module = "import",
+        "import", "import", list(tab = c(setup_import = "complete")), module = "import",  # nolint
         structural = paste0("^import-(assay[12]_name|vendor_format|assay[12]_file_std|",
                             "metabolite_id_col_custom|annotation_col_custom|",
                             "sample_cols_pattern|is_pattern)$"),
-        press = "import-process_import",
+        press = "import-process_import",  # nolint
         run = function(api) {
             api$defaults(ui("import"), "import")
             if (length(assays) >= 1L) api$set(list(`import-assay1_name` = assays[[1L]]))
@@ -329,9 +329,9 @@ valTrxScript <- function(summary) {
         valStep("design", "design", list(head = "trx_raw_data_s4"), module = "design",
                 structural = "^design-builder-", press = "design-builder-save_results",
                 run = function(api) {
-                          api$design(prefix = "design-builder-", tech_rep = TRUE,
+                          api$design(prefix = "design-builder-", tech_rep = TRUE,  # nolint
                                      match = "design-builder-selected_runs")
-                      }),
+                      }),  # nolint
         valStep("qc_filter", "qc", list(head = "trx_expression_filtered"), module = "qc",
                 press = "qc-filter-apply_filter",
                 run = function(api) {

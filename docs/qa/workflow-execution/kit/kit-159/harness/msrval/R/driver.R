@@ -24,7 +24,7 @@ valUiDefaults <- function(ui_html) {
     html <- paste(as.character(ui_html), collapse = "\n")
     doc <- xml2::read_html(paste0("<html><body>", html, "</body></html>"))
     out <- list()
-    put <- function(id, value) out[id] <<- list(value)
+    put <- function(id, value) out[id] <<- list(value)  # nolint
     for (g in xml2::xml_find_all(doc, "//div[@id]")) {
         id <- xml2::xml_attr(g, "id")
         if (valHasClass(g, "shiny-input-checkboxgroup")) {
@@ -377,7 +377,7 @@ valTopLevelFunctions <- function(files) {
     for (f in files) {
         for (e in parse(f, keep.source = FALSE)) {
             if (is.call(e) && as.character(e[[1L]]) %in% c("<-", "=") && is.name(e[[2L]]) &&
-                is.call(e[[3L]]) && identical(e[[3L]][[1L]], as.name("function"))) {
+                    is.call(e[[3L]]) && identical(e[[3L]][[1L]], as.name("function"))) {
                 nm <- as.character(e[[2L]])
                 defs[[nm]] <- list(expr = e[[3L]], file = basename(f),
                                    text = paste(deparse(e), collapse = "\n"))
@@ -488,7 +488,9 @@ valFixtureCell <- function(route, pkg_root) {
                                       fasta = file.path(dir, lane$fasta_file)),
                     transcriptomics = list(counts = file.path(dir, lane$seed_file)),
                     c(list(assay1 = file.path(dir, lane$seed_file)),
-                      if (!is.null(lane$assay2_file)) list(assay2 = file.path(dir, lane$assay2_file))))
+                      if (!is.null(lane$assay2_file)) {
+                          list(assay2 = file.path(dir, lane$assay2_file))
+                      }))
     import_values <- if (identical(lane$import_tool, "custom")) {
         list(`import-metabolite_id_col_custom` = "Feature.Name",
              `import-annotation_col_custom` = "",
@@ -588,7 +590,9 @@ valInstallDoubleExtension <- function(log, env, notify = FALSE) {
     dom <- function() shiny::getDefaultReactiveDomain()
     bindings <- list(
         updateSelectInput = function(session = dom(), inputId, label = NULL, choices = NULL,
-                                     selected = NULL) queue(session, inputId, selected, choices),
+                                     selected = NULL) {
+            queue(session, inputId, selected, choices)
+        },
         updateSelectizeInput = function(session = dom(), inputId, label = NULL, choices = NULL,
                                         selected = NULL, options = list(), server = FALSE) {
             queue(session, inputId, selected, choices)
@@ -687,10 +691,11 @@ valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers
     }
     dir.create(work_dir, recursive = TRUE, showWarnings = FALSE)
     ledger_path <- ledger_path %||% file.path(work_dir, paste0("ledger-", script$route, ".tsv"))
-    cell <- function() valWorkflowCell(script, files, design, arm_inputs, helpers, forced_inputs,
-                                       seed, uniprot_cache, annotation, tables_dir, arm,
-                                       on_complete, work_dir, spec, observe, project,
-                                       record_messages)
+    cell <- function() {
+        valWorkflowCell(script, files, design, arm_inputs, helpers, forced_inputs, seed,
+                        uniprot_cache, annotation, tables_dir, arm, on_complete, work_dir, spec,
+                        observe, project, record_messages)
+    }
     run <- valWithForcedOptions(c(forced, arm_inputs$options), cell())
     res <- run$value
     ledger <- if (length(res$ledger)) do.call(rbind, res$ledger) else
@@ -727,7 +732,8 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
     observe <- observe %||% function(env) {
         wd <- env$workflow_data
         m <- shiny::isolate(wd$state_manager)
-        list(head = tryCatch(shiny::isolate(m$current_state), error = function(e) NULL) %||% "<none>",
+        cur_head <- tryCatch(shiny::isolate(m$current_state), error = function(e) NULL)
+        list(head = cur_head %||% "<none>",
              history = helpers$guiEntryHistory(m),
              tab_status = lapply(shiny::isolate(wd$tab_status), as.character))
     }
@@ -738,13 +744,13 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
             valAbort("the session owner is not available (qs2/duckdb)", "val_spec_invalid")
         }
         project_dirs <- suppressMessages(ns$setupDirectories(
-            base_dir = file.path(work_dir, "project", script$route), omic_types = omic,
+            base_dir = file.path(work_dir, "project", script$route), omic_types = omic,  # nolint
             label = NULL, force = TRUE, reuse_existing = TRUE))
         paths <- project_dirs[[omic]]
         old_dirs <- get0("project_dirs", envir = globalenv(), inherits = FALSE)
         assign("project_dirs", project_dirs, envir = globalenv())
         withr::defer(if (is.null(old_dirs)) rm("project_dirs", envir = globalenv()) else
-            assign("project_dirs", old_dirs, envir = globalenv()), envir = cell_env)
+            assign("project_dirs", old_dirs, envir = globalenv()), envir = cell_env)  # nolint
         if (identical(omic, "proteomics") && !is.null(uniprot_cache)) {
             target <- file.path(paths$results_dir, "cache", "uniprot_annotations")
             dir.create(target, recursive = TRUE, showWarnings = FALSE)
@@ -803,7 +809,7 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
         }
         logAction <- function(kind, id, value) {
             acc$actions[[length(acc$actions) + 1L]] <- data.frame(
-                step = current$id, kind = kind, input_id = id,
+                step = current$id, kind = kind, input_id = id,  # nolint
                 value = paste(format(value), collapse = "|"), stringsAsFactors = FALSE)
         }
         applyUpdates <- function() {
@@ -830,7 +836,7 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
                 of <- tryCatch(attr(private$outs[[name]]$func, "outputFunc"),
                                error = function(e) NULL)
                 if (!is.null(of) && !identical(of, shiny::uiOutput) &&
-                    !identical(of, shiny::htmlOutput)) next
+                        !identical(of, shiny::htmlOutput)) next
                 value <- tryCatch(rootSession$getOutput(name), error = function(e) NULL)
                 if (!is.list(value) || is.null(value$html)) next
                 html <- paste(as.character(value$html), collapse = "\n")
@@ -872,7 +878,7 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
                 hit <- ids[ids == name | endsWith(ids, paste0("-", name))]
                 for (id in hit) {
                     if (identical(unname(st$source[id]), "forced") &&
-                        identical(st$values[[id]], forced_inputs[[name]])) next
+                            identical(st$values[[id]], forced_inputs[[name]])) next
                     valSetInput(st, id, forced_inputs[[name]], "forced")
                     setFull(stats::setNames(list(forced_inputs[[name]]), id))
                     changed <- TRUE
@@ -912,7 +918,7 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
         pressValue <- function(id, value) {
             ledgerBefore(id)
             logAction("press", id, value)
-            clicks[[id]] <<- value
+            clicks[[id]] <<- value  # nolint
             setFull(stats::setNames(list(value), id))
             settle()
         }
@@ -982,7 +988,9 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
             },
             design = function(prefix_builder, tech_rep = TRUE, match = NULL) {
                 contrasts <- script$contrasts
-                if (!length(contrasts)) valAbort("the cell declares no contrast", "val_spec_invalid")
+                if (!length(contrasts)) {
+                    valAbort("the cell declares no contrast", "val_spec_invalid")
+                }
                 d <- design
                 if (!is.null(match)) {
                     offered <- log$choices[[paste0(prefix, match)]] %||% character()
@@ -992,7 +1000,8 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
                     d$sample <- matched
                 }
                 extra <- contrasts[-1L]
-                buttons <- "(add_factor|assign_metadata|assign_tech_reps|add_contrast|save_results)$"
+                buttons <- paste0("(add_factor|assign_metadata|assign_tech_reps|add_contrast|",
+                                  "save_results)$")
                 dapi <- list(set = function(values) {
                     ids <- names(values)
                     formula <- paste0(prefix_builder, "formula_string")
@@ -1003,9 +1012,9 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
                     if (any(grepl("save_results$", ids)) && length(extra)) {
                         n <- clicks[[paste0(prefix_builder, "add_contrast")]] %||% 0L
                         for (pair in extra) {
-                            setValues(stats::setNames(list(pair[[1L]], pair[[2L]]),
-                                                      paste0(prefix_builder,
-                                                             c("contrast_group1", "contrast_group2"))))
+                            pair_ids <- paste0(prefix_builder,
+                                               c("contrast_group1", "contrast_group2"))
+                            setValues(stats::setNames(list(pair[[1L]], pair[[2L]]), pair_ids))
                             n <- n + 1L
                             pressValue(paste0(prefix_builder, "add_contrast"), n)
                         }
@@ -1056,15 +1065,16 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
                 # An R error in a server observer ends the session (testServer does not rethrow it):
                 # the cell did not complete on an error.
                 err <- structure(class = c("val_session_ended", "error", "condition"),
-                                 list(message = "the module session ended on an error in the server",
+                                 list(message = paste("the module session ended on an error",
+                                                      "in the server"),
                                       call = NULL))
             }
             if (!is.null(err)) {
                 acc$steps[[length(acc$steps) + 1L]] <- data.frame(
-                    step = step$id, outcome = "did_not_complete", class = class(err)[[1L]],
+                    step = step$id, outcome = "did_not_complete", class = class(err)[[1L]],  # nolint
                     message_sha256 = digest::digest(valMaskMessage(conditionMessage(err)),
                                                     algo = "sha256", serialize = FALSE),
-                    reason = "error", head = after$head,
+                    reason = "error", head = after$head,  # nolint
                     message = valStepMessage(conditionMessage(err), record_messages),
                     stringsAsFactors = FALSE)
                 acc$exit <- "did_not_complete"
@@ -1076,10 +1086,11 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
                                 !identical(before$history, after$history), msg,
                                 valMessageClass(msg))
             acc$steps[[length(acc$steps) + 1L]] <- data.frame(
-                step = step$id, outcome = o$outcome, class = o$class,
+                step = step$id, outcome = o$outcome, class = o$class,  # nolint
                 message_sha256 = o$message_sha256, reason = o$reason, head = after$head,
                 message = valStepMessage(msg, record_messages), stringsAsFactors = FALSE)
-            if (o$outcome == "ok" && identical(step$id, "design") && identical(omic, "proteomics")) {
+            if (o$outcome == "ok" && identical(step$id, "design") &&
+                    identical(omic, "proteomics")) {
                 acc$fallback <- valAnnotationRule(shiny::isolate(workflow_data$uniprot_dat_cln),
                                                   annotation, log$warnings)
             }
@@ -1101,19 +1112,20 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
             }
             itsd <- names(st$values)[endsWith(names(st$values), "-apply_itsd")]
             da_head <- acc$steps[[length(acc$steps)]]$head
+            itsd_applied <- if (length(itsd)) isTRUE(st$values[[itsd[[1L]]]]) else NA
             acc$tables <- valReadArmTables(ctx$manager, paths, script$route, tables_dir,
                                            ruv = valCellRuv(script$route, arm),
                                            q_thresh = num("-da_q_val_thresh", 0.05),
                                            lfc_cutoff = num("-treat_lfc_cutoff", 0),
                                            model_state = da_head,
-                                           itsd_applied = if (length(itsd)) isTRUE(st$values[[itsd[[1L]]]]) else NA)
+                                           itsd_applied = itsd_applied)
             ctx$tables <- acc$tables
         }
         if (!is.null(on_complete)) acc$value <- on_complete(ctx)
         if (project) shiny::isolate(ns$closeDIAStateAdapter(workflow_data$state_manager))
     }
     shiny::testServer(spec$server, args = server_args, {
-        body(session, workflow_data)
+        body(session, workflow_data)  # nolint
     })
     list(exit = acc$exit, reason = acc$reason,
          steps = if (length(acc$steps)) do.call(rbind, acc$steps) else NULL,
@@ -1228,7 +1240,9 @@ valFeatureTable <- function(tbl, id_col, assay) {
 #' Bind per-assay feature tables, the union of sample columns
 #' @noRd
 valBindAssays <- function(tables) {
-    samples <- unique(unlist(lapply(tables, function(t) setdiff(names(t), c("feature_id", "assay")))))
+    samples <- unique(unlist(lapply(tables, function(t) {
+        setdiff(names(t), c("feature_id", "assay"))
+    })))
     do.call(rbind, lapply(tables, function(t) {
         for (s in setdiff(samples, names(t))) t[[s]] <- NA_real_
         t[, c("feature_id", "assay", samples), drop = FALSE]
@@ -1258,7 +1272,7 @@ valStateMatrix <- function(obj, omic, which = c("data", "uncorrected")) {
            {
                slot <- if (identical(omic, "lipidomics")) "lipid_data" else "metabolite_data"
                id <- valField(obj, if (identical(omic, "lipidomics")) "lipid_id_column" else
-                   "metabolite_id_column")
+                   "metabolite_id_column")  # nolint
                data <- if (identical(which, "uncorrected")) {
                    valField(obj, "args")$ruv_uncorrected_assays
                } else {
@@ -1318,7 +1332,7 @@ valReadDa <- function(da_dir, omic, q_thresh, lfc_cutoff) {
         log2fc <- as.numeric(x[[map$log2fc]])
         s_own <- as.numeric(x[[map$s_own]])
         data.frame(
-            feature_id = as.character(x[[feature]]),
+            feature_id = as.character(x[[feature]]),  # nolint
             assay = if (is.null(map$assay)) rep("all", nrow(x)) else as.character(x[[map$assay]]),
             contrast = contrast, log2fc = log2fc, p = as.numeric(x[[map$p]]), s_own = s_own,
             call_statistic = rep(map$call_statistic, nrow(x)),
@@ -1428,7 +1442,9 @@ valReadArmTables <- function(manager, paths, route, out_dir, ruv = "off", q_thre
                            tested = key(all_keys) %in% key(da[is.finite(da$p), ]),
                            stringsAsFactors = FALSE)
     out <- c(out, features = write(features, "features"))
-    if (!identical(ruv, "off")) out <- c(out, ruv = write(valRuvRows(model_obj, design_name), "ruv"))
+    if (!identical(ruv, "off")) {
+        out <- c(out, ruv = write(valRuvRows(model_obj, design_name), "ruv"))
+    }
     if (omic %in% c("lipidomics", "metabolomics")) {
         regex <- valField(pre_obj, "internal_standard_regex")
         assays <- unique(pre$assay)
@@ -1456,7 +1472,8 @@ valReadArmTables <- function(manager, paths, route, out_dir, ruv = "off", q_thre
 #' `ruv-adjusted-science` checkpoint of the `ruv_covariates` state's product (as the Summary's
 #' integration input reads it, `protIntegrationInputSource`, R/utils_workflow_dia_summary.R:96-176);
 #' transcriptomics' RUVs-corrected log-CPM, the `corrected` table of the `trx_ruvs` state's product
-#' (R/utils_workflow_trx_declarations.R:522, read through `trxStateRuvs` and `trxSavedMatrix`). Other
+#' (R/utils_workflow_trx_declarations.R:522, read through `trxStateRuvs` and `trxSavedMatrix`).
+#' Other
 #' routes: `NULL` (their display is the state's own values).
 #' @noRd
 valProductDisplayReader <- function(manager, r) {

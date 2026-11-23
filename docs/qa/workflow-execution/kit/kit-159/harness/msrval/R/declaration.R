@@ -47,8 +47,9 @@ valGitSha <- function(repo, at, path) {
 valReadDeclaration <- function(path = NULL, text = NULL) {
     txt <- text %||% paste(readLines(path, warn = FALSE), collapse = "\n")
     decl <- tryCatch(jsonlite::fromJSON(txt, simplifyVector = FALSE),
-                     error = function(e) valAbort("the declaration is not valid JSON",
-                                                  "val_spec_invalid"))
+                     error = function(e) {
+                         valAbort("the declaration is not valid JSON", "val_spec_invalid")
+                     })
     missing <- setdiff(DECLARATION_FIELDS, names(decl))
     if (length(missing) > 0L) {
         valAbort("the declaration lacks {paste(missing, collapse = ', ')}", "val_spec_invalid")
@@ -164,7 +165,7 @@ valDefinedFunctions <- function(texts) {
         exprs <- tryCatch(parse(text = txt, keep.source = FALSE), error = function(e) NULL)
         unlist(lapply(exprs, function(e) {
             if (is.call(e) && as.character(e[[1L]]) %in% c("<-", "=") && is.name(e[[2L]]) &&
-                is.call(e[[3L]]) && identical(e[[3L]][[1L]], as.name("function"))) {
+                    is.call(e[[3L]]) && identical(e[[3L]][[1L]], as.name("function"))) {
                 as.character(e[[2L]])
             }
         }))
@@ -176,8 +177,9 @@ valDefinedFunctions <- function(texts) {
 valStageAllowed <- function(touched, stage_dir, code_paths) {
     inside <- startsWith(touched, paste0(stage_dir, "/"))
     rel <- substring(touched, nchar(stage_dir) + 2L)
-    pattern_ok <- vapply(rel, function(r) any(vapply(STAGE_FILE_PATTERNS, grepl, logical(1),
-                                                       x = r)), logical(1))
+    pattern_ok <- vapply(rel, function(r) {
+        any(vapply(STAGE_FILE_PATTERNS, grepl, logical(1), x = r))
+    }, logical(1))
     inside & (pattern_ok | rel %in% code_paths)
 }
 
@@ -267,8 +269,9 @@ valCheckFrozen <- function(repo, dc, at, touched, sd, replaced_sha) {
 #' Hashes of inputs.tsv, code and preparation files; names resolve
 #' @noRd
 valCheckHashes <- function(repo, at, sd, evidence_dir, decl, dc, replaced_sha) {
-    changed <- function(what) valAbort("{what} differs from the declaration",
-                                       "val_declaration_changed")
+    changed <- function(what) {
+        valAbort("{what} differs from the declaration", "val_declaration_changed")
+    }
     if (!identical(valGitSha(repo, at, file.path(sd, decl$inputs$path)), decl$inputs$sha256)) {
         changed("inputs.tsv")
     }
@@ -354,7 +357,7 @@ valCheckDeclaredTables <- function(repo, at, sd, decl, units) {
             types <- vapply(o$columns, function(x) x$type, character(1))
             nm <- vapply(o$columns, function(x) x$name, character(1))
             if (!all(types %in% RESULT_TYPES) || (o[["max_rows"]] %||% 1001L) > 1000L ||
-                !all(nm[types == "label"] %in% names(o[["labels"]] %||% list()))) {
+                    !all(nm[types == "label"] %in% names(o[["labels"]] %||% list()))) {
                 valAbort(paste("output {o$path}: a result table needs typed columns, labels",
                                "and at most 1,000 rows"), "val_spec_invalid")
             }
