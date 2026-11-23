@@ -30,8 +30,10 @@
    depends on the unit of the table, and on log2 values below 0 the absolute value treats -2 like +2. It stays
    selectable; when it runs on log2 values below 0, the normalisation log and a notification now say so. Cyclic
    Loess and Quantile do not depend on the unit.
- * Lipidomics and metabolomics QC counts: a value is counted as detected when it is not missing (before: when it was
-   above 0, which dropped measured values below 1 once logged); the missingness of a step counts missing cells only.
+ * Lipidomics and metabolomics filtering figures on log2 values (the workbooks draw them after the log step): a value
+   is counted as detected when it is not missing, and the step's missingness counts missing cells only (before, a log2
+   value of 0 or below, that is a measured value of 1 or below, was counted as not detected). On intensities a zero
+   still counts as not detected.
  * The interactive volcano draws a sample's missing value at 0 (it cannot draw missing values); it now says so when
    the assay holds missing values.
 

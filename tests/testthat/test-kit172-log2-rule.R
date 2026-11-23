@@ -63,7 +63,9 @@ for (class in c("lipid", "metab")) {
     broken <- object
     slot <- kit172Binding(class)$data_slot
     assay <- methods::slot(broken, slot)$LCMS_Pos
-    assay$A_1 <- lapply(assay$A_1, list)
+    # A column of functions: the transform cannot coerce it to numbers (R1, run 45121678056: a column of one-element
+    # lists was coerced without an error).
+    assay$A_1 <- lapply(assay$A_1, function(value) function() value)
     methods::slot(broken, slot)$LCMS_Pos <- assay
     expect_error(suppressWarnings(suppressMessages(logTransformAssays(broken, offset = 0))), class = "omics_log2_failed")
   })

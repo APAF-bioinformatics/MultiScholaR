@@ -21,7 +21,8 @@
 args <- commandArgs(trailingOnly = TRUE)
 stopifnot(length(args) >= 2L, grepl("^[0-9a-f]{40}$", args[[1L]]))
 base_sha <- args[[1L]]
-out <- normalizePath(args[[2L]], mustWork = FALSE)
+dir.create(args[[2L]], recursive = TRUE, showWarnings = FALSE)
+out <- normalizePath(args[[2L]])
 base_records <- if (length(args) >= 4L && identical(args[[3L]], "--base-records")) normalizePath(args[[4L]]) else NULL
 head_root <- normalizePath(".")
 dir.create(out, recursive = TRUE, showWarnings = FALSE)

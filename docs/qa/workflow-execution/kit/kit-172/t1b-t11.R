@@ -23,9 +23,9 @@ if (seed_mode) {
   out <- dirname(args[[4L]])
   status <- function(step, outcome) invisible(NULL)
 } else {
-  out <- normalizePath(args[[1L]], mustWork = FALSE)
+  dir.create(args[[1L]], recursive = TRUE, showWarnings = FALSE)
+  out <- normalizePath(args[[1L]])
   limit <- if (length(args) >= 2L) as.numeric(args[[2L]]) else 69
-  dir.create(out, recursive = TRUE, showWarnings = FALSE)
   status_file <- file.path(out, "status.tsv")
   cat("step\toutcome\n", file = status_file)
   status <- function(step, outcome) cat(sprintf("%s\t%s\n", step, gsub("[\t\n]", " ", outcome)), file = status_file, append = TRUE)

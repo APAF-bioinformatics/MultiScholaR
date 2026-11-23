@@ -5,8 +5,8 @@
 #
 # Usage (run-tests scripts lane, from the package root): Rscript docs/qa/workflow-execution/kit/kit-172/redump-norm-ui.R <out dir>
 args <- commandArgs(trailingOnly = TRUE)
-out <- normalizePath(args[[1L]], mustWork = FALSE)
-dir.create(out, recursive = TRUE, showWarnings = FALSE)
+dir.create(args[[1L]], recursive = TRUE, showWarnings = FALSE)
+out <- normalizePath(args[[1L]])
 dump <- file.path(out, "omic-norm-dump.R")
 unlink(dump)
 Sys.setenv(MULTISCHOLAR_KIT105_W1_DUMP = dump, NOT_CRAN = "true")

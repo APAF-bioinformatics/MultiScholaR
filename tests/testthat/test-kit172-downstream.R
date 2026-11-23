@@ -1,5 +1,5 @@
 # KIT-172: plain log2 downstream: T7 (the steps after the log step on concentration-scale data, with the counts that
-# must not move), T8 (the consumers F1b fixed: QC detected and missing counts, the store's missing percent, the
+# must not move), T8 (the consumers F1b fixed: the filtering figures' detected and missing counts on log2 values, the
 # interactive volcano's sentence) and T10 (the `scale` warning through the normalisation tab's run, in process and
 # managed). Fixtures from helper-kit172.R.
 library(testthat)
@@ -44,12 +44,21 @@ for (class in c("lipid", "metab")) {
     # The QC tabs' detected and missing counts on the log state equal those on the state before it.
     assay_of <- function(state) methods::slot(journey$owner$getState(state), journey$binding$data_slot)$LCMS_Pos
     id <- methods::slot(journey$owner$getState(paste0(prefix, "_log2")), journey$binding$id_slot)
-    detected <- function(assay) if (identical(class, "lipid")) countLipidsPerSample(assay, "Run", id, sample_columns = kit172Runs()) else
-      countMetabolitesPerSample(assay, "Run", id, sample_columns = kit172Runs())
-    missing <- function(assay) if (identical(class, "lipid")) calculateLipidMissingness(assay, "Run", sample_columns = kit172Runs()) else
-      calculateMissingness(assay, "Run", sample_columns = kit172Runs())
-    expect_identical(as.data.frame(detected(assay_of(paste0(prefix, "_log2")))), as.data.frame(detected(assay_of(paste0(prefix, "_itsd_norm")))))
-    expect_identical(missing(assay_of(paste0(prefix, "_log2"))), missing(assay_of(paste0(prefix, "_itsd_norm"))))
+    # The filtering figures' helpers read the state's log flag (`args$log_transformed`), as their callers pass it.
+    logged_flag <- function(state) isTRUE(journey$owner$getState(state)@args$log_transformed)
+    detected <- function(state) {
+      assay <- assay_of(state)
+      if (identical(class, "lipid")) countLipidsPerSample(assay, "Run", id, sample_columns = kit172Runs(), logged = logged_flag(state)) else
+        countMetabolitesPerSample(assay, "Run", id, sample_columns = kit172Runs(), logged = logged_flag(state))
+    }
+    missing <- function(state) {
+      assay <- assay_of(state)
+      if (identical(class, "lipid")) calculateLipidMissingness(assay, "Run", sample_columns = kit172Runs(), logged = logged_flag(state)) else
+        calculateMissingness(assay, "Run", sample_columns = kit172Runs(), logged = logged_flag(state))
+    }
+    expect_true(logged_flag(paste0(prefix, "_log2")))
+    expect_identical(as.data.frame(detected(paste0(prefix, "_log2"))), as.data.frame(detected(paste0(prefix, "_itsd_norm"))))
+    expect_identical(missing(paste0(prefix, "_log2")), missing(paste0(prefix, "_itsd_norm")))
     # The DA summary counts the features not tested for a group with no observed value.
     groups <- kit172Design()$group
     unobserved <- sum(rowSums(!is.na(corrected[, groups == "A", drop = FALSE])) == 0 |
@@ -68,30 +77,30 @@ for (class in c("lipid", "metab")) {
     expect_identical(sum(is.na(written)), sum(is.na(normalised[as.character(view$matrix$feature_id), colnames(written), drop = FALSE])))
   })
 
-  test_that(paste("KIT-172 T8:", class, "QC counts read a log2 value of 0 or below as measured, not as missing"), {
+  test_that(paste("KIT-172 T8:", class, "QC counts read a log2 value of 0 or below as measured on log2 values, a zero as missing on intensities"), {
     logged <- tibble::tibble(ID = c("a", "b", "c"), A_1 = c(-1.5, 0, NA), A_2 = c(2, -0.2, 0.3))
+    raw <- tibble::tibble(ID = c("a", "b", "c"), A_1 = c(5, 0, NA), A_2 = c(2, 7, 0.3))
+    runs <- c("A_1", "A_2")
     if (identical(class, "lipid")) {
-      expect_identical(as.data.frame(countLipidsPerSample(logged, "Run", "ID", sample_columns = c("A_1", "A_2")))$n_detected, c(2L, 3L))
-      expect_equal(calculateLipidMissingness(logged, "Run", sample_columns = c("A_1", "A_2")), 100 / 6)
+      count <- function(x, ...) as.data.frame(countLipidsPerSample(x, "Run", "ID", sample_columns = runs, ...))$n_detected
+      missing <- function(x, ...) calculateLipidMissingness(x, "Run", sample_columns = runs, ...)
     } else {
-      expect_identical(as.data.frame(countMetabolitesPerSample(logged, "Run", "ID", sample_columns = c("A_1", "A_2")))$n_detected, c(2L, 3L))
-      expect_equal(calculateMissingness(logged, "Run", sample_columns = c("A_1", "A_2")), 100 / 6)
+      count <- function(x, ...) as.data.frame(countMetabolitesPerSample(x, "Run", "ID", sample_columns = runs, ...))$n_detected
+      missing <- function(x, ...) calculateMissingness(x, "Run", sample_columns = runs, ...)
     }
-    shell <- kit172Object(matrix(c(0, -1, NA, rep(2, 33)), 3, dimnames = list(c("F001", "F002", "IS_1"), kit172Runs())), class)
-    frame <- omicQcAssayStatsFrame(shell, omicGuiConfig(omic))
-    expect_equal(frame$Missingness, round(100 / 36, 1))
+    expect_identical(count(logged, logged = TRUE), c(2L, 3L))
+    expect_equal(missing(logged, logged = TRUE), 100 / 6)
+    # On intensities a zero is not detected, as before.
+    expect_identical(count(raw), c(1L, 3L))
+    expect_equal(missing(raw), 200 / 6)
   })
 
-  test_that(paste("KIT-172 T8:", class, "the store's missing percent counts missing cells only; the volcano says where they are drawn"), {
+  test_that(paste("KIT-172 T8:", class, "the volcano says where it draws missing cells"), {
     skip_if_not(workflowOwnerCapable())
     root <- withr::local_tempdir()
-    # ITSD off: the cells that are exactly 1 reach the log step and are written as log2 values of exactly 0.
     journey <- kit172Journey(file.path(root, "j"), kit172Object(kit172ConcentrationValues(), class), class, itsd = FALSE)
     withr::defer(closeDIAStateAdapter(journey$owner))
     prefix <- journey$prefix
-    expect_gt(sum(kit172StateMatrix(journey, paste0(prefix, "_log2")) == 0, na.rm = TRUE), 0L)
-    percent <- function(state) attr(readWorkflowOmicsShell(journey$binding, journey$owner, state, c("features", "missing")), "missing_percent")
-    expect_identical(percent(paste0(prefix, "_log2")), percent(paste0(prefix, "_intensity_filtered")))
     skip_if_not_installed("Glimma")
     results <- journey$da$results
     results$theObject <- readWorkflowOmicsState(journey$binding, journey$owner, getWorkflowStateReference(journey$owner))
