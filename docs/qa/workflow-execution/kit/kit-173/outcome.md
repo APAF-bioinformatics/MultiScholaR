@@ -169,6 +169,21 @@ set of proteins. By the rule fixed above the cause is shown: the order inside a 
 follows the hash of each string's memory address, Rcpp 1.1.2 `IndexHash.h:111-117, 232-238`), and occurs without
 KIT-173. **The attribution of C3 to KIT-173 is withdrawn.**
 
+## The geneID fix (VAL-61), run R2f
+
+Commits cf4b5fd4 (T12 and scripts, `R/` unchanged) and 19d24b96 (`sortEnrichmentGeneIds()` after each `enricher` call
+in `processEnrichments`; T7(b) compares pre-fix records' `geneID` cells as sets and their results TSV files by name;
+NEWS; ledger row). Run 45153295682 (base cf4b5fd4, head 19d24b96), observed:
+
+- T12 fails on cf4b5fd4 (112 `geneID` cells not in alphabetical order) and passes on 19d24b96.
+- Two Rscript processes, capture and replay both on the head (`t7-headhead.R`, `r2f/headhead-*.tsv`): 11 of 11
+  expectations pass, the result tables and the results files' SHA-256 included; no `geneID` cell differs.
+- T7(b) as restated, with the base store (`t7-replay.R`): 12 of 12 expectations pass.
+- `test-general-enrichment-shared.R` same; `test-omic-enrich-module.R` 6 to 11 and `test-omics-enrich-core.R` 3 to 7
+  failures, every one in a clusterProfiler (taxon 999999) lane's capture (the live lane's stand-in table now has its
+  `geneID` cells sorted): "(b) in process: clusterprofiler", "... kernel_clusterprofiler", "(KIT-113 W1) ...",
+  "(W2, core side) ... clusterprofiler run step", "... kernel_clusterprofiler run step". For the plan's re-record row.
+
 ## Acceptance criteria
 
 | # | Status | Evidence |
@@ -177,7 +192,7 @@ KIT-173. **The attribution of C3 to KIT-173 is withdrawn.**
 | A1 | met | `feasibility.md`, `f1/` |
 | A2 | met, except T7(c) on head is shown in R2b and T7(b) below | R1 (base failing), R2b (head passing); `runs.tsv` |
 | A3 | met | `t5-summary.tsv` (three conditions TRUE), the two-relation report, the 40 lowest |
-| A4 | **not met (result)**: the base record replays on head with the same nine declared names, product parameters, service, contrasts, TERM2GENE and TERM2NAME hashes and plot-data digests; the stored result tables differ in one column, `geneID` (each row lists the same proteins in another order), and so the two `*_enrichment_results.tsv` files' SHA-256 differ. Found by instrument run 1 (VAL-54); stopped and reported, the test not adjusted | `t7i1/t7-failures.tsv`, `r2b/` |
+| A4 | **met as restated (VAL-61)**: records made after the fix replay byte-identical across processes (R2f head-on-head 11 of 11); the base record replays with every expectation equal and its `geneID` cells equal as sets (T7(b) 12 of 12). History:  the base record replays on head with the same nine declared names, product parameters, service, contrasts, TERM2GENE and TERM2NAME hashes and plot-data digests; the stored result tables differ in one column, `geneID` (each row lists the same proteins in another order), and so the two `*_enrichment_results.tsv` files' SHA-256 differ. Found by instrument run 1 (VAL-54); stopped and reported, the test not adjusted | `t7i1/t7-failures.tsv`, `r2b/` |
 | A5 | measured, waiting for the owner (D8); not yet in NEWS or the ledger | `effect.tsv` |
 | A6 | partly: targeted files, dependents and check done (R2, R2b); full suite (R3) not run, it follows D8 | `r2b/`, `check-compare.txt` |
 | A7 | met | diff: NEWS under the unnumbered heading, no version change, Rd by hand, `Collate` |

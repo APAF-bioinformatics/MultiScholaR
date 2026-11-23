@@ -1,0 +1,12 @@
+variant	expectation	result
+headhead	states	pass
+headhead	record declared names	pass
+headhead	provenance names	pass
+headhead	product parameters	pass
+headhead	product service	pass
+headhead	product contrasts	pass
+headhead	TERM2GENE hashes	pass
+headhead	TERM2NAME hashes	pass
+headhead	result tables	pass
+headhead	plot data digests	pass
+headhead	pathway files	pass
