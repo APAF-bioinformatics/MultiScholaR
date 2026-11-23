@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-183 R1a correction: failing-first again with T4 asserting the test, and the base-store capture (script names fixed) on a commit whose R/ equals 1e627f70",
+  "label": "KIT-183 R1a2 cab55462 failing-first and kit183-base-store capture",
+  "package_commit": "cab554626aec27d2e981f03aafb2eaf1169f9c29",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment-tests.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-183/capture-base-store.R",
+      "args": [
+        "k183-out/base-store"
+      ],
+      "out": "k183-out",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
