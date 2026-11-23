@@ -4,6 +4,7 @@
 #   Rscript docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R <out dir> [options]
 #
 #   (no option)           msrval's own tests -> <out>/harness-tests.tsv, harness-failures.txt
+#   --files <names>       only these test files (comma-separated names after "test-", without ".R")
 #   --covr                also covr line coverage of msrval -> <out>/coverage.txt
 #   --lint                also lintr on msrval (lintr from `extra_packages`) -> <out>/lint.txt
 #   --time-regime <id>    time one coverage regime in one process and in four concurrent chunks
@@ -47,6 +48,7 @@ status <- system2(r_bin, c("CMD", "INSTALL", "--no-multiarch", paste0("--library
 say("install msrval: exit ", status)
 if (!identical(as.integer(status), 0L)) quit(status = 2L)
 .libPaths(c(val_lib, .libPaths()))
+Sys.setenv(VAL_HARNESS_DIR = normalizePath(harness_dir))
 src <- sort(list.files(pkg_dir, recursive = TRUE, full.names = TRUE))
 utils::write.table(data.frame(path = sub(paste0("^", harness_dir, "/"), "", src),
                               sha256 = vapply(src, function(f) digest::digest(file = f,
@@ -60,7 +62,9 @@ Sys.setenv(R_LIBS = paste(c(val_lib, .libPaths()), collapse = .Platform$path.sep
 runTests <- function(test_path, package, tsv_name, failures_name) {
     started <- Sys.time()
     load <- if (is.null(package)) "none" else "installed"
-    res <- testthat::test_dir(test_path, package = package, load_package = load,
+    only <- optValue("--files")
+    filter <- if (is.null(only)) NULL else paste0("^(", gsub(",", "|", only), ")$")
+    res <- testthat::test_dir(test_path, package = package, load_package = load, filter = filter,
                               reporter = testthat::ListReporter$new(), stop_on_failure = FALSE,
                               stop_on_warning = FALSE)
     df <- as.data.frame(res)

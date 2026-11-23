@@ -1,31 +1,5 @@
 # The licence guard (KIT-159 5.2, VAL-47; section 10.3: T-LIC-1 to T-LIC-11, T-LOG-1, T-LOG-2).
 
-writeTsv <- function(df, path) {
-    dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-    utils::write.table(df, path, sep = "\t", quote = FALSE, row.names = FALSE)
-    path
-}
-
-emptyTable <- function(name, n = 1L) {
-    cols <- EVIDENCE_COLUMNS[[name]]
-    as.data.frame(stats::setNames(rep(list(rep("x", n)), length(cols)), cols))
-}
-
-# A licence fixture: one permitted and one not-permitted data input, and a GPL program.
-licenceManifest <- function(dir) {
-    rbind(manifestRow(dir, "open", "open.tsv", commit = TRUE),
-          manifestRow(dir, "closed", "closed.tsv", redistribution = "not_permitted"),
-          manifestRow(dir, "tool", "open.tsv", kind = "program", citation = "tool 1.0, GPL-3"))
-}
-
-evidenceDir <- function(manifest) {
-    ev <- withr::local_tempdir(.local_envir = parent.frame())
-    writeTsv(manifest[, c("role", "kind", "licence", "redistribution", "citation")],
-             file.path(ev, "attribution.tsv"))
-    writeTsv(emptyTable("cells.tsv"), file.path(ev, "cells.tsv"))
-    ev
-}
-
 test_that("T-LIC-1 to T-LIC-4: unlisted file, extra column, per-feature class, too many rows", {
     dir <- inputRepo()
     man <- licenceManifest(dir)
