@@ -26,6 +26,18 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
+## Rulings of 2026-11-23
+
+Recorded as the coordinator gave them (engineering rulings, for the owner):
+
+1. **T1b correction run: GO, once.** Reason: the ticket's one correction pass was written for T1 as one run; because nothing runs on this machine T0 and T1 were split into three module groups (scoring; records and the licence guard; the driver), each shown failing first on a runner. Each group is its own bounded verification item, so the rule is applied per group: ONE correction pass for group (a) (used), ONE for group (b) (this run), ONE for group (c). T1's ceiling of 6 core-hours is unchanged and all three groups and their corrections must fit inside it. A group that still fails after its one correction stops and comes back; nothing is renamed to get another. This is stated now, before group (c) starts, and it applies to instrument defects (a test or script fault) and code defects alike.
+2. **T-LOG:** the ticket's own sentinel uses the same `file("/dev/stderr")` call that truncated the private stderr file. Fix the test, and correct the ticket text's sentinel so that it writes the descriptor-2 line first (revision 1.10, closure row); a correction of the instrument, not of a rule.
+3. **T2:** splitting each coverage cell's simulations into seeded ranges is approved as implementation, on these conditions: the split is by a declared, fixed seed range per chunk (no seed depends on the chunk count); a test shows the split result is IDENTICAL to the unsplit one on a small cell (same simulated data sets, same counts, same coverage) and fails if a range is dropped or run twice; T2 is sized on the measured factor 2.19 as section 11 says (a third request, +20 to T2's ceiling). No cell may run past the 280-minute script limit by design: ranges sized from the probe with section 11's margin; the probe's per-cell figures recorded. If the projected T2 total passes its ceiling after the third request, stop before sending and report the figure.
+4. **R1 and KIT-175:** KIT-175 is blocked on an owner decision. Do everything of R1 that does not need KIT-175's classed UniProt conditions; for the incomplete-answer refusal keep the mocked test T-ANN-1; the live part waits for KIT-175's merge (named open item). Do NOT send a live UniProt query for the `prot_dia` fixture's synthetic accessions (P00001 to P00400); if R1 as written does that, stop that part and report what the ticket says there.
+5. The six revision 1.8 additions not yet built belong to group (c) and after, with their tests.
+
+**Open item (ruling 4): R1's live incomplete-answer refusal (G6 in R1) waits for KIT-175's merge.**
+
 ## Log
 
 ### Step 0 (2026-11-23)
