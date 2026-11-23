@@ -6,7 +6,9 @@ test_that("pass bands: approximate run-level, within-run, exact and Clopper-Pear
     expect_identical(valCoverageStatus("approx_run", 0.93, 0.95), "pass")
     expect_identical(valCoverageStatus("approx_run", 0.995, 0.95), "conservative")
     expect_identical(valCoverageStatus("approx_within", 0.995, 0.95), "fail")
-    expect_identical(valCoverageStatus("approx_run", 1, 1 - 0.05 / 15), "pass")
+    # r1.13 (VAL-69): run-level `conservative` is read on the miss rate (misses below a quarter of
+    # the nominal miss rate), so it can be seen at levels where level + 0.04 exceeds 1
+    expect_identical(valCoverageStatus("approx_run", 1, 1 - 0.05 / 15), "conservative")
     expect_identical(valCoverageStatus("exact", 0.99, 0.95, achieved = 0.9921875), "pass")
     expect_identical(valCoverageStatus("exact", 0.98, 0.95, achieved = 0.9921875), "fail")
     expect_identical(valCoverageStatus("clopper", 0.94, 0.95), "conservative")
