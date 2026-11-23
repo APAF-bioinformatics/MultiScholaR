@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 T1 (coordinator, VAL-69): R1 UniProt record wiring tests only (record-uniprot), shown failing before the code; T1 ceiling 21",
+  "label": "KIT-159 R1 wiring tests only at 1992d121",
+  "package_commit": "1992d12164cf439a12f5bab9ad7ac7c5c6f2f759",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1r1a-out",
+        "--files",
+        "record-uniprot"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1r1a-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 5
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
