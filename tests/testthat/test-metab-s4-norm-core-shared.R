@@ -33,7 +33,7 @@ if (!methods::isClass("MetaboliteAssayData")) {
 if (!methods::isGeneric("logTransformAssays")) {
   methods::setGeneric(
     "logTransformAssays",
-    function(theObject, offset = 1, ...) {
+    function(theObject, offset = 0, ...) {
       standardGeneric("logTransformAssays")
     }
   )
@@ -158,9 +158,10 @@ test_that("logTransformAssays preserves negative-value cleanup, unnamed assays, 
     ignore.case = TRUE
   )
 
+  # KIT-172: offset 0 is plain log2; a negative offset is refused with its class.
   expect_error(
-    logTransformAssays(the_object, offset = 0),
-    "single positive numeric"
+    logTransformAssays(the_object, offset = -1),
+    class = "omics_log2_offset_invalid"
   )
 })
 

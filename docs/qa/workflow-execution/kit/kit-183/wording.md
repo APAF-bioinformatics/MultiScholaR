@@ -17,3 +17,10 @@ Refusals (`R/utils_integration_enrichment.R`, 8.4): `integration_enrichment_too_
 
 Numbers written in from the simulation (results.md): R_cam 6.6 %, I_cam 5.8 to 7.4 %, S_cam 12.8 %, R_gsea_0.3 43.0 %,
 I_gsea_0.3 41.9 to 44.1 %, R_cpr_0.3 29.9 %, R_cam_6 5.0 %.
+
+Replaced after the implementation audit (AUDIT-KIT-183-impl I01, I02, I10; VAL-85): `enrich_test_camera_note` (the
+range 0.4 to 6.6 % and the 10.1 % case), `methods_enrich_limits_tests` (the same, and the pre-ranked figures for
+metabolites and genes), `enrich_factor_strength` (the pre-ranked test's 60.1 %), `enrich_test_gsea_note` (13.5 % for
+metabolites to 43.0 % for genes), `enrich_test_camera_pr_note` (not offered in this release), `enrich_test_few_samples`
+(the quantity named; up to 9.9 % for the most variable features), `enrich_test_counts` ("ranked features with an
+identifier"); NEWS.

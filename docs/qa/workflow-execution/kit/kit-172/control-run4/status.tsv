@@ -1,0 +1,11 @@
+step	lane	outcome
+start		head e623d6e25d58c3d3b89907e6af4766a1a04e18ec, base a60c4e9a0ec8b7db47edddaa53926a61e2b60299, cpu AMD EPYC 7763 64-Core Processor, base records none
+fixtures	lipid_canonical	pass
+fixtures	metab_lc	pass
+fixtures	metab_gc	pass
+fixtures	metab_combined	pass
+compile	kit172-base	pass
+compile	pkg	pass
+mechanism		base child source sha a60c4e9a0ec8b7db47edddaa53926a61e2b60299
+mechanism	lipid_canonical	pass
+control		stop: lipid_canonical: base's differing steps (da,summary_copy,summary_export,summary_refusal,summary_report,summary_save) are not the reference list (summary_copy,summary_export,summary_report,summary_save)

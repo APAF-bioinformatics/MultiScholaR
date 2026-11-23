@@ -1,0 +1,9 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-omics-module-globals.R	14	0	0	0	ok	13	1	0	0	failed	new-failure	new-failure: KIT-030: the super-assignments in the lipid and metab code are the listed local closures; counts: KIT-030: the super-assignments in the lipid and metab code are the listed local closures (passed 1 -> 0, skipped 0 -> 0)	
+test-metab-03-norm-support-characterization.R	41	0	0	0	ok	41	0	0	0	ok	same		
+test-kit172-log2-rule.R	0	0	0	0	absent	212	0	0	0	ok	only-on-head		
+test-lipid-09b-s4-log-transform-assays-characterization.R	19	0	0	0	ok	20	0	0	0	ok	count-changed	counts: lipidomics S4 log-transform method accepts offset 0 and rejects negative offsets (passed NA -> 2, skipped NA -> 0); counts: lipidomics S4 log-transform method rejects non-positive offsets (passed 1 -> NA, skipped 0 -> NA)	
+test-metab-02r-log-transform-assays-characterization.R	13	0	0	0	ok	16	0	0	0	ok	count-changed	counts: metabolomics S4 log-transform method accepts offset 0 and rejects negative offsets (passed NA -> 2, skipped NA -> 0); counts: metabolomics S4 log-transform method keeps the negative-value clamp above offset 0 and reads non-positive values as missing at 0 (passed NA -> 6, skipped NA -> 0); counts: metabolomics S4 log-transform method rejects non-positive offsets (passed 1 -> NA, skipped 0 -> NA); counts: metabolomics S4 log-transform source retains the current negative-value clamp and args updates (passed 4 -> NA, skipped 0 -> NA)	
+test-metab-s4-norm-core-shared.R	25	0	0	0	ok	25	0	0	0	ok	same		
+test-lipid-09-s4-normalization-methods.R	39	0	0	0	ok	39	0	0	0	ok	same		
+test-workflow-lipid-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		

@@ -1087,7 +1087,20 @@ workflowRecordReportSources <- list(
     da_model = list(record = c("model", "model")),
     da_formula_used = list(record = c("model", "formula_used")),
     da_k = list(record = c("model", "k")),
-    da_block_reason = list(record = c("model", "block_reason")))
+    da_block_reason = list(record = c("model", "block_reason")),
+    # KIT-173: the enrichment step's GO parent-term rule and its outcomes (clusterProfiler route, propagated runs),
+    # and the declared correction the corrected g:Profiler paragraph names.
+    enrichment_go_propagation = list(record = c("enrichment", "go_propagation")),
+    enrichment_go_db_version = list(record = c("outcomes", "enrichment", "go_db_version")),
+    enrichment_go_source_date = list(record = c("outcomes", "enrichment", "go_source_date")),
+    enrichment_go_ids_not_in_go_db_total = list(record = c("outcomes", "enrichment", "go_ids_not_in_go_db_total")),
+    enrichment_go_annotation_go_db_version = list(record = c("outcomes", "enrichment", "go_annotation_go_db_version")),
+    enrichment_go_annotation_go_source_date = list(record = c("outcomes", "enrichment", "go_annotation_go_source_date")),
+    enrichment_go_pairs_direct = list(record = c("outcomes", "enrichment", "go_pairs_direct")),
+    enrichment_go_pairs_propagated = list(record = c("outcomes", "enrichment", "go_pairs_propagated")),
+    enrichment_go_root_only_proteins = list(record = c("outcomes", "enrichment", "go_root_only_proteins")),
+    enrichment_go_unreviewed_share = list(record = c("outcomes", "enrichment", "go_unreviewed_share")),
+    enrichment_correction_method = list(record = c("enrichment", "correction_method")))
 
 #' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
 #' returned unchanged. With one, every report variable the record carries takes the record's value, and the

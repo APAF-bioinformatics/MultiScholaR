@@ -1,0 +1,3 @@
+Error in is.call(expression) && identical(expression[[1L]], as.name("<-")) &&  : 
+  'length = 3' in coercion to 'logical(1)'
+Execution halted

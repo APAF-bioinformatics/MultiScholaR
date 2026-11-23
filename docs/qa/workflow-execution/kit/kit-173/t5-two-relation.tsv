@@ -1,0 +1,8 @@
+measure	value
+bp_terms_gaining_descendants_through_regulates	5218
+terms_in_scope	2703
+terms_without_regulates_only_descendant	1592
+C_median_those_terms	0.935483870967742
+terms_with_regulates_only_descendant	1111
+C_median_those_terms	0.80952380952381
+P_median_all_terms	1

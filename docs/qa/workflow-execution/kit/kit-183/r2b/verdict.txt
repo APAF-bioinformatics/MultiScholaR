@@ -2,3 +2,4 @@ head: T5 TRUE, T8 FALSE, T15 TRUE
 m1_no_restore: T5 fails TRUE
 m2_test_declared: T8 fails TRUE
 m3_gsea_default: T15 fails TRUE
+(annotation: T8 as then written also failed on head, 0 of 3, so the m2 line is not evidence; T8 was restated, VAL-85 (3))

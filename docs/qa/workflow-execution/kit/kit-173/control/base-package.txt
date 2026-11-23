@@ -1,0 +1,2 @@
+package /home/runner/work/_temp/k173-control/base-lib/MultiScholaR
+has_propagateGoAnnotations FALSE

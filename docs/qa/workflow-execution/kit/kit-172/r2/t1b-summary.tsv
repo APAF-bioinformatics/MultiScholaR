@@ -1,0 +1,6 @@
+row	seeds_run	seeds_with_call_change	seeds_changed	max_dt	max_dlogfc	rule
+scale	20	20	20	7.45845754734303	1.50255972123282	own ticket (more than 1 seed of 20)
+legacy_automatic	20	20	20	210.606055828195	1066.7674137218	own ticket (more than 1 seed of 20)
+legacy_manual	20	20	20	10.0285973910772	41.0102691251878	own ticket (more than 1 seed of 20)
+groups_all_features	20	0	0	8.86402062860725e-13	2.70616862252382e-14	measured (no rule: new design)
+first_pass_nulls	20	0	0	2.42117437210254e-12	2.58126853225349e-14	measured (no rule: new design)

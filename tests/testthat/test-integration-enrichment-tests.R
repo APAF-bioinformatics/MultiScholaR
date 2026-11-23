@@ -11,7 +11,8 @@
 #   T5  the base store's KEGG entry (made at base, `kit183-base-store`) replays with gsea, terms identical;
 #   T6  collapse among complete features by the largest mean; counts by hand;
 #   T7  refusals; STRING ignores the test (key, record note, never refused);
-#   T8  the base store's gsea request at head is a cache hit with the recorded entity id;
+#   T8  restated (VAL-85 (3)): (a) the declarations are base's; (b) the base store's identities equal the head's apart
+#       from the build; (c) a hit within one build;
 #   T9  camera declares no seed;
 #   T10 record and Methods name each entry's test; the limits sentence once; factor strength;
 #   T11 the tab: selector, default, notes, counts, caution, relabelled seed, key with the test;
@@ -666,18 +667,63 @@ test_that("KIT-183 T5: a KEGG entry made at base replays with the pre-ranked tes
     expect_identical(entry$settings$test, "gsea")
 })
 
-test_that("KIT-183 T8: the base store's pre-ranked request at head is a cache hit with the recorded entity id", {
+# T8 restated (AUDIT-KIT-183-impl I03, VAL-85 (3)): the pre-ranked test's identity is unchanged by this ticket apart
+# from the build. A cache hit across builds is not expected and not tested: every saved product's identity includes the
+# build's digest (R/utils_workflow_dia_products.R:273-277, R/utils_workflow_dia_state.R:1655-1665).
+test_that("KIT-183 T8: (a) the ranking and pre-ranked declarations are those of base", {
+    ranking <- integrationEnrichmentRankingOperation()
+    enrichment <- integrationEnrichmentOperation()
+    expect_identical(ranking[c("name", "input_class", "fields", "unit", "product_type", "factors", "parameters")],
+        list(name = "integration_enrichment_ranking", input_class = "IntegrationViewsData",
+            fields = c("features", "design_matrix", "inputs"), unit = "whole_matrix",
+            product_type = "integration.enrichment_ranking",
+            factors = list(product_schema = "multischolar.integration_enrichment_ranking.v1"),
+            parameters = c("model", "factor", "view", "correlation_method", "min_samples", "direction_rule")))
+    expect_identical(enrichment[c("name", "input_class", "fields", "unit", "product_type", "factors", "parameters")],
+        list(name = "integration_enrichment", input_class = "IntegrationViewsData", fields = c("features", "inputs"),
+            unit = "whole_matrix", product_type = "integration.enrichment",
+            factors = list(product_schema = "multischolar.integration_enrichment.v1"),
+            parameters = c("ranking", "database", "id_column", "service_response", "mapping", "organism", "string_species",
+                "string_fdr", "string_rank_direction", "min_set_size", "max_set_size", "seed")))
+})
+
+test_that("KIT-183 T8: (b) the base store's ranking and gsea identities equal the head's apart from the build; (c) a hit in one build", {
     skip_if_not_installed("clusterProfiler")
     manager <- intEtBaseStoreCopy()
+    export <- manager$.context$snapshot$exports$integration_mofa_model
     recorded <- integrationRecordedEnrichment(manager)[[1L]]
-    settings <- recorded$entry$settings
-    request <- list(factor = settings$factor, view = settings$view, database = settings$database,
-        id_column = settings$id_column, test = "gsea")
-    mapping <- c(lapply(recorded$entry$mapping, identity), list(table = recorded$stored))
-    out <- runIntegrationEnrichment(manager, request, mapping = mapping)
-    expect_identical(out$ranking$status, "hit")
-    expect_identical(out$run$status, "hit")
-    expect_identical(out$run$reference$entity_id, recorded$entry$reference$entity_id)
+    entry <- recorded$entry
+    s <- entry$settings
+    keys <- c("input", "design", "parameters", "selectors")
+    identityAtHead <- function(declaration, parameters) withWorkflowStateScope(manager, function()
+        workflowComponentScientificIdentity(manager, export$source, declaration$name, parameters[declaration$parameters]))
+    recordedIdentity <- function(entity_id) withWorkflowStateScope(manager, function()
+        describeSavedWorkflowEntity(manager$.context$store, entity_id)$identity)
+    # (b) the ranking.
+    ranking <- integrationEnrichmentRankingOperation()
+    head_ranking <- identityAtHead(ranking, list(model = export$reference$entity_id, factor = s$factor, view = s$view,
+        correlation_method = s$correlation_method, min_samples = s$min_samples,
+        direction_rule = INTEGRATION_ENRICHMENT_DIRECTION_RULE))
+    base_ranking <- recordedIdentity(entry$ranking$entity_id)
+    expect_identical(head_ranking[keys], base_ranking[keys])
+    expect_false(identical(head_ranking$software, base_ranking$software))
+    # (b) the KEGG gsea product, with the enrichment's `ranking` set to the recorded ranking's entity id.
+    enrichment <- integrationEnrichmentOperation()
+    head_gsea <- identityAtHead(enrichment, list(ranking = entry$ranking$entity_id, database = s$database,
+        id_column = s$id_column, service_response = "none", mapping = entry$stored$sha256, organism = s$kegg_organism,
+        string_species = s$string_species, string_fdr = s$string_fdr, string_rank_direction = s$string_rank_direction,
+        min_set_size = s$min_set_size, max_set_size = s$max_set_size, seed = s$seed, test = "gsea"))
+    base_gsea <- recordedIdentity(entry$reference$entity_id)
+    expect_identical(head_gsea[keys], base_gsea[keys])
+    expect_false(identical(head_gsea$software, base_gsea$software))
+    # (c) same build: the recorded request run twice at head; the second run is a hit with the first run's entity id.
+    request <- list(factor = s$factor, view = s$view, database = s$database, id_column = s$id_column, test = "gsea")
+    mapping <- c(lapply(entry$mapping, identity), list(table = recorded$stored))
+    first <- runIntegrationEnrichment(manager, request, mapping = mapping)
+    second <- runIntegrationEnrichment(manager, request, mapping = mapping)
+    expect_identical(second$run$status, "hit")
+    expect_identical(second$run$reference$entity_id, first$run$reference$entity_id)
+    expect_identical(second$ranking$status, "hit")
 })
 
 test_that("KIT-183 T15: integrationEnrichmentGsea is unchanged: formals, body and value as at base", {
