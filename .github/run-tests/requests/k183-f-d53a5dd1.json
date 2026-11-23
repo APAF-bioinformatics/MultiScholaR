@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-183 F: the full suite base (1e627f70) against head (d53a5dd1) with R CMD check, before merge",
+  "label": "KIT-183 F full suite d53a5dd1 vs 1e627f70",
+  "package_commit": "d53a5dd1d74de6328dc6a280e824dc790a9f1cd0",
+  "base_commit": "1e627f704580a42e66e45b9263c8fcd9684567ba",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
