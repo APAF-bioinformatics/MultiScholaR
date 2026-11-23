@@ -576,3 +576,25 @@ test_that("KIT-173 T11(f): on both routes the fold-change bullet states the cuto
         }
     }
 })
+
+# --- T12 (VAL-61): geneID cells in a defined order ----------------------------------------------------------------
+
+test_that("KIT-173 T12 (VAL-61): every geneID cell of the clusterProfiler route lists its proteins alphabetically", {
+    goPropSkipUnlessGoDb()
+    roles <- goPropReadTsv("t7-fixture-entries.tsv")
+    direct <- goPropConvert(goPropReadTsv("t7-annotation-ecoli.tsv"))
+    entries <- sort(direct$Entry)
+    table <- data.frame(Protein.IDs = entries, fdr_qvalue = 0.01,
+        log2FC = ifelse(entries %in% roles$entry[roles$role == "p_term"], 3,
+            ifelse(entries %in% roles$entry[roles$role == "d_term"], -3, 0)), stringsAsFactors = FALSE)
+    da <- methods::new("da_results_for_enrichment", contrasts = tibble::tibble(contrast = "t12"),
+        da_data = list(t12 = table), design_matrix = data.frame(sample = "S1", stringsAsFactors = FALSE))
+    results <- NULL
+    utils::capture.output(results <- suppressMessages(suppressWarnings(processEnrichments(da, "999999",
+        q_cutoff = 0.05, pathway_dir = withr::local_tempdir(), go_annotations = direct, exclude_iea = FALSE,
+        protein_id_column = "Protein.IDs", contrast_names = "t12"))))
+    cells <- unlist(lapply(c("up", "down"), function(direction) results@enrichment_data$t12[[direction]]@result$geneID))
+    expect_gt(sum(grepl("/", cells, fixed = TRUE)), 10L)
+    sorted <- vapply(strsplit(cells, "/", fixed = TRUE), function(g) identical(g, sort(g, method = "radix")), logical(1))
+    expect_identical(sum(!sorted), 0L)
+})

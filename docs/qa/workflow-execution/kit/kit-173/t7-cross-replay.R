@@ -42,6 +42,8 @@ replay <- list(da = rec$da, calls = rec$calls, evidence = h$goPropRunEvidence(re
 # --- T7(b)'s eleven comparisons -------------------------------------------------------------------------------------
 step <- Filter(function(s) identical(s$operation, "enrichment"), record$steps)[[1L]]
 declared <- vapply(step$parameters, function(p) p$name, "")
+hit <- Filter(function(p) identical(p$name, "go_propagation"), step$parameters)
+recorded_go <- if (length(hit)) MultiScholaR:::decodeWorkflowRecordValue(hit[[1L]]$value) else NULL
 check <- function(name, actual, expected) {
     same <- identical(actual, expected)
     data.frame(variant = variant, expectation = name, result = if (same) "pass" else "fail")
@@ -49,7 +51,10 @@ check <- function(name, actual, expected) {
 genes_of <- function(calls, field) vapply(calls, function(call) call[[field]], "")
 expectations <- rbind(
     check("states", replayed$states, c("initial", "correlation_filtered", "enrichment_completed")),
-    check("record declared names", declared, utils::head(MultiScholaR:::diaEnrichmentOperation()$parameters, 9L)),
+    # T7(b)'s nine names on a base record; a head record with parent terms also declares go_propagation (the
+    # package's rule; added for t7-headhead.R after C3 and C4, which ran on base records)
+    check("record declared names", declared, MultiScholaR:::diaEnrichmentDeclaredNames(
+        MultiScholaR:::diaEnrichmentOperation()$parameters, list(go_propagation = recorded_go))),
     check("provenance names", names(replayed$provenance$values), capture$provenance_names),
     check("product parameters", replayed$product$parameters, capture$product$parameters),
     check("product service", replayed$product$service, capture$product$service),
