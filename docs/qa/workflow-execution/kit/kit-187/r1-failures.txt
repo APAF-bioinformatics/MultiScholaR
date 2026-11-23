@@ -1,0 +1,396 @@
+file: test-prot-missing-value-counts.R
+test: T1: groups of 3 at the tab's defaults keep a protein with one missing value per group
+kind: failure
+message:
+  Expected `result$kept` to have the same values as `k187T1Kept`.
+  Actual: "P_full"
+  Expected: "P_full", "P_one", "P_oneEach", "P_floor"
+  Absent: "P_one", "P_oneEach", "P_floor"
+
+file: test-prot-missing-value-counts.R
+test: T2: three groups with two required keep a protein failing exactly one group
+kind: failure
+message:
+  Expected `result$kept` to have the same values as `c("P_full", "P_failOne", "P_floor")`.
+  Actual: "P_full", "P_floor"
+  Expected: "P_full", "P_failOne", "P_floor"
+  Absent: "P_failOne"
+
+file: test-prot-missing-value-counts.R
+test: T3: every balanced (n, m) up to 20 and every (G, g) up to 7 groups follows the count rule
+kind: failure
+message:
+  Expected `names(outcome)[!outcome]` to be identical to `character()`.
+  Differences:
+       actual    | expected 
+   [1] "n3_m2"   -          
+   [2] "n6_m1"   -          
+   [3] "n6_m4"   -          
+   [4] "n7_m1"   -          
+   [5] "n7_m4"   -          
+   [6] "n7_m5"   -          
+   [7] "n9_m5"   -          
+   [8] "n9_m6"   -          
+   [9] "n9_m7"   -          
+  [10] "n9_m8"   -          
+  [11] "n11_m1"  -          
+  [12] "n11_m2"  -          
+  [13] "n11_m3"  -          
+  [14] "n11_m4"  -          
+  [15] "n11_m5"  -          
+  [16] "n12_m2"  -          
+  [17] "n12_m5"  -          
+  [18] "n12_m8"  -          
+  [19] "n12_m11" -          
+  [20] "n13_m2"  -          
+  [21] "n13_m3"  -          
+  [22] "n13_m5"  -          
+  [23] "n13_m6"  -          
+  [24] "n13_m9"  -          
+  [25] "n13_m12" -          
+  [26] "n14_m1"  -          
+  [27] "n14_m2"  -          
+  [28] "n14_m3"  -          
+  [29] "n14_m8"  -          
+  [30] "n14_m9"  -          
+  [31] "n14_m10" -          
+  [32] "n15_m1"  -          
+  [33] "n15_m4"  -          
+  [34] "n15_m7"  -          
+  [35] "n15_m10" -          
+  [36] "n15_m13" -          
+  [37] "n17_m2"  -          
+  [38] "n17_m5"  -          
+  [39] "n17_m8"  -          
+  [40] "n17_m10" -          
+  [41] "n17_m11" -          
+  [42] "n17_m13" -          
+  [43] "n17_m14" -          
+  [44] "n17_m16" -          
+  [45] "n18_m1"  -          
+  [46] "n18_m3"  -          
+  [47] "n18_m5"  -          
+  [48] "n18_m7"  -          
+  [49] "n18_m10" -          
+  [50] "n18_m12" -          
+  [51] "n18_m14" -          
+  [52] "n18_m16" -          
+  [53] "n19_m4"  -          
+  [54] "n19_m5"  -          
+  [55] "n19_m6"  -          
+  [56] "n19_m10" -          
+  [57] "n19_m11" -          
+  [58] "n19_m12" -          
+  [59] "n19_m16" -          
+  [60] "n19_m17" -          
+  [61] "n19_m18" -          
+  [62] "n20_m9"  -          
+  [63] "G3_g2"   -          
+  [64] "G6_g1"   -          
+  [65] "G6_g4"   -          
+  [66] "G7_g1"   -          
+  [67] "G7_g4"   -          
+  [68] "G7_g5"   -          
+
+file: test-prot-missing-value-counts.R
+test: T4: unequal groups keep the largest group's share (3 and 6: unchanged), applied exactly (2 and 3)
+kind: failure
+message:
+  Expected `k187Filter(k187Object(table, design), 2, 2)$kept` to have the same values as `c("P_full", "P_oneB")`.
+  Actual: "P_full"
+  Expected: "P_full", "P_oneB"
+  Absent: "P_oneB"
+
+file: test-prot-missing-value-counts.R
+test: T6: explicit percentages give the same sets, and 55 % with 20 samples passes 11 missing values
+kind: failure
+message:
+  Expected `k187Helper(table, design, 55, 0)$Protein.Ids` to have the same values as `c("P_full", "P_eleven", "P_floor")`.
+  Actual: "P_full", "P_floor"
+  Expected: "P_full", "P_eleven", "P_floor"
+  Absent: "P_eleven"
+
+file: test-prot-missing-value-counts.R
+test: T7: the clean-up after RUV reads the stored cutoffs and applies the count rule
+kind: failure
+message:
+  Expected `filtered@protein_quant_table$Protein.Ids` to have the same values as `k187T1Kept`.
+  Actual: "P_full"
+  Expected: "P_full", "P_one", "P_oneEach", "P_floor"
+  Absent: "P_one", "P_oneEach", "P_floor"
+
+file: test-prot-missing-value-counts.R
+test: T8 (i): a step replays with the count rule only when it lists the marker with source fixed
+kind: failure
+message:
+  Expected `exists(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-prot-missing-value-counts.R
+test: T8 (iii): a step made in process lists the marker; a step without fixed constants lists none
+kind: failure
+message:
+  Expected `k187Marker(buildWorkflowAnalysisRecord(manager), "protein_intensity_filtered")` to be identical to `list(source = "fixed", value = "counts")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-prot-missing-value-counts.R
+test: T8 (iv): records made before and after the change replay, each step with its own rule
+kind: failure
+message:
+  Expected `k187Marker(b$record, filter_state)` to be identical to `list(source = "fixed", value = "counts")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-prot-missing-value-counts.R
+test: T8 (iv): records made before and after the change replay, each step with its own rule
+kind: failure
+message:
+  Expected `k187Marker(b$replayed_record, filter_state)` to be identical to `list(source = "fixed", value = "counts")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-prot-missing-value-counts.R
+test: T8 (iv): records made before and after the change replay, each step with its own rule
+kind: failure
+message:
+  Expected `all(first_five %in% proteins(b))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-prot-missing-value-counts.R
+test: T8 (iv): records made before and after the change replay, each step with its own rule
+kind: failure
+message:
+  Expected `k187Marker(c_$record, norm_state)` to be identical to `list(source = "fixed", value = "counts")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-prot-missing-value-counts.R
+test: T8 (iv): records made before and after the change replay, each step with its own rule
+kind: failure
+message:
+  Expected `k187Marker(c_$replayed_record, norm_state)` to be identical to `list(source = "fixed", value = "counts")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-prot-missing-value-counts.R
+test: T8 (iv): records made before and after the change replay, each step with its own rule
+kind: failure
+message:
+  Expected `all(result$rules[[filter_state]] == "rounded_percentage")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-prot-missing-value-counts.R
+test: T8 (iv): records made before and after the change replay, each step with its own rule
+kind: failure
+message:
+  Expected `all(result$rules[[filter_state]] == "rounded_percentage")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-prot-missing-value-counts.R
+test: T8 (iv): records made before and after the change replay, each step with its own rule
+kind: failure
+message:
+  Expected `all(d$rules[[norm_state]] == "rounded_percentage")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-prot-missing-value-counts.R
+test: T9: the scripted entry keeps four of T1's five proteins
+kind: failure
+message:
+  Expected `value$protein_count` to be identical to 4L.
+  Differences:
+    `actual`: 1
+  `expected`: 4
+
+file: test-prot-missing-value-counts.R
+test: T12: a cutoff that is not one finite number in [0, 100] is refused
+kind: failure
+message:
+  Expected `outcome` to inherit from "multischolar_missing_filter_invalid".
+  Actual class: "data.frame".
+
+file: test-prot-missing-value-counts.R
+test: T12: a cutoff that is not one finite number in [0, 100] is refused
+kind: failure
+message:
+  Expected `outcome` to inherit from "multischolar_missing_filter_invalid".
+  Actual class: "data.frame".
+
+file: test-prot-missing-value-counts.R
+test: T12: a cutoff that is not one finite number in [0, 100] is refused
+kind: failure
+message:
+  Expected `outcome` to inherit from "multischolar_missing_filter_invalid".
+  Actual class: "data.frame".
+
+file: test-prot-missing-value-counts.R
+test: T12: a cutoff that is not one finite number in [0, 100] is refused
+kind: failure
+message:
+  Expected `outcome` to inherit from "multischolar_missing_filter_invalid".
+  Actual class: "data.frame".
+
+file: test-prot-missing-value-counts.R
+test: T12: a cutoff that is not one finite number in [0, 100] is refused
+kind: failure
+message:
+  Expected `outcome` to inherit from "multischolar_missing_filter_invalid".
+  Actual class: "data.frame".
+
+file: test-prot-qc-peptide-intensity-legacy-counts.R
+test: T10: a peptide observed in two of three runs of each group passes the percentage call at 33.333 and 0
+kind: failure
+message:
+  Expected `result$Stripped.Sequence` to have the same values as `c("FULL", "TWOOFTHREE")`.
+  Actual: "FULL"
+  Expected: "FULL", "TWOOFTHREE"
+  Absent: "TWOOFTHREE"
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("exceeded the allowed share", text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("did not exceed the allowed share", text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("or more of its values were missing", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("failed in at most", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("exceeded the allowed share", text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("did not exceed the allowed share", text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("or more of its values were missing", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("failed in at most", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("exceeded the allowed share", text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("did not exceed the allowed share", text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("or more of its values were missing", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd
+
+file: test-prot-summary-report-templates.R
+test: KIT-187 (VAL-71, D3): the missing-value sentences state the allowed share, not 'or more' or 'at most'
+kind: failure
+message:
+  Expected `grepl("failed in at most", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd
+

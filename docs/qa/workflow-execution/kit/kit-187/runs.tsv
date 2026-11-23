@@ -1,0 +1,3 @@
+run_id	commit	purpose	minutes	result
+45272974170	4a58a3be8635322c86593a8df8782436bae8474a	R1: tests-only commit, six files (failing first); S2 lifecycle mechanics and fault runs	45.6	as stated: 22 failing-first assertions at their stated values, 0 errors; T3 base set = section 2.2; lifecycle falsifiers 1, 2 = 0, falsifier 3 = 2 per mask in A; fault run stopped (k187_falsifier) with falsifier 2 = 1
+45278755270	e6c42d1d8e18f04d34b3b2a850488ef43ab8d9ab	R2: fix (merged with staging 604ec4dd) vs 604ec4dd; 45 scope files, 3 shards per side, R CMD check, S2 (R = 100)	385.2	STOP: test-prot-norm-core.R message-changed (KIT-111 frozen provenance digests move on head); 41 same, 1 count-changed, 2 only-on-head; check identical; S2 no falsifier
