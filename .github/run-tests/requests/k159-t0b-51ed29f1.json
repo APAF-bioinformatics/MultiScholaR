@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-159 T0 (group b): records and licence-guard tests shown failing before their msrval code exists",
+  "label": "KIT-159 T0b msrval group (b) tests-only at 51ed29f1",
+  "package_commit": "51ed29f1ac6b06afb19930b8af4a72356adff1ea",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t0b-out"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t0b-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
