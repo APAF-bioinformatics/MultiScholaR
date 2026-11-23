@@ -1,4 +1,4 @@
-# KIT-172 outcome: plain log2 for lipidomics and metabolomics (state: stopped at step 1 of the GUI-entry control, a result)
+# KIT-172 outcome: plain log2 for lipidomics and metabolomics
 
 Ticket revision 1.6. Branch `kit-172-plain-log2` from `v0.9-staging` a60c4e9a. Every run on `run-tests` (R 4.6.1,
 reference BLAS, ubuntu-22.04); run ids, commits and job minutes in `runs.tsv`.
@@ -98,6 +98,23 @@ C4 (45142934736, e623d6e2) produced the comparison (`control-run4/`: `gui-entry-
   from `norm` on is `plain_log2 (KIT-172)`.
 - Under 7(c) a differing step list stops the ticket. The re-frozen files are not committed. Not re-run (a result).
 
+**C5 (45148367369, 8fb3c215), the one run VAL-55 allows.** The only change: each child process sets
+`LC_COLLATE` to C at its start, as testthat does inside `test_that` (testthat 3.3.2, `local_reproducible_output`:
+`withr::local_collate("C")`, read in testthat's source at tag v3.3.2). Result: **pass, steps 1 to 3.** Step 1: the
+base's differing steps equal the reference list lane by lane (`lipid_canonical` 4, `integration_artifacts`;
+`metab_lc`, `metab_gc`, `metab_combined` 10 each, `metab_fixture_4`), which shows C4's two extra steps were the key
+order of `<store entries>` under the children's locale. Step 2: differences only on the two declared keys; 160 of 160
+declared values equal their expected value. Step 3: nothing differs before `norm`; every difference from `norm` on is
+`plain_log2 (KIT-172)`. Nothing withheld; `scripts.tsv` ok. The four re-frozen oracles (source SHA 8fb3c215, written
+under C collation by `guiEntryExpectLane`) are committed in a4f60900. The control record is `gui-entry-control.tsv`
+(first line: runner CPU AMD EPYC 9V45; changed step `norm` for every lane), with `gui-entry-digests.tsv`,
+`declared-keys.tsv`, `gui-entry-control-status.tsv` and the passes' records in `control-run5/`.
+
+What the re-frozen files absorb besides this ticket's change: on `lipid_canonical` the integration-input artifact
+names and the `<store entries>` counts of the summary steps (KIT-147 to KIT-153); on the three metabolomics lanes
+`metab_fixture_4` from `norm` on (with the integration artifact names in their summary steps). They are
+intensity-scale (fixture intensities 2.4e3 and above) and say nothing about values below 1.
+
 ## Corrections to the records
 
 - The commit message of 5250032c cites "run 45136468961 family" for R3: the R3 run is **45136474750**, and the commit
@@ -154,7 +171,7 @@ F3: answered (no regeneration).
 | `scale` warning (D6) | shipped, T10 |
 | F2, F1, F3 | above |
 | base-saved project reopens and replays | met (T9, R2) |
-| control of 7(c) and re-freeze | **not met**: C4 stopped at step 1 (lipid_canonical's differing step list; key order of `<store entries>` only); steps 2 and 3 conform |
+| control of 7(c) and re-freeze | met by C5 (VAL-55): steps 1 to 3 pass; oracles re-frozen (a4f60900); C4's stop recorded |
 | full suite base against head with check | not run |
 | gate-off script; rendered-panel diff | not run; the panel diff is in `r3/redump-diff.txt` (HTML digests and input/output lists) |
 | bundle lane | not run |
@@ -163,6 +180,5 @@ F3: answered (no regeneration).
 
 ## Not checked
 
-- The four lipid and metabolomics GUI-entry oracles are not re-frozen. The collation explanation of step 1's extra steps is inferred, not tested.
 - The full suite and R CMD check base against head; the bundle lane; the gate-off script.
 - `test-omic-norm-module.R` after the pasted re-dump; `test-metab-qc-shared.R` after its stub fix.
