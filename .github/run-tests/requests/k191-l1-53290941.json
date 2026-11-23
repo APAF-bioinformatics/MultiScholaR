@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-191 L1 (part of R2's scripts job budget): the permutation test's time and memory in fresh processes; sets the guard's coefficients; stop rule: an increase above 1 GB stops; ceiling 60 job-minutes",
+  "label": "KIT-191 L1 lifecycle at 53290941",
+  "package_commit": "5329094138fe94f6d4d9441fa8611a51373faa65",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-191/lifecycle-k191.R", "args": ["k191-out/l1"], "out": "k191-out", "out_pattern": "\\.(tsv|log)$", "timeout_minutes": 50}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
