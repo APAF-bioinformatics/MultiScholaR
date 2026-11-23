@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 T1 (VAL-69): rank re-pin tests at the implementation (coverage-rank, coverage), before the T-COV rank request; T1 ceiling 21",
+  "label": "KIT-159 T1 rank tests at facf45e9",
+  "package_commit": "facf45e92e294fa36bfd8c897f2d51da91cc8edb",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1rank-out",
+        "--files",
+        "coverage-rank,coverage"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1rank-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
