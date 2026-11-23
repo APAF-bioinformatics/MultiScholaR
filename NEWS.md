@@ -1,6 +1,6 @@
 # MultiScholaR NEWS
 
-## MultiScholaR 0.9.6 (staging)
+## MultiScholaR (unreleased; becomes 0.9.1, the first alpha for testing on real data)
 
 ### Fixes
 
@@ -15,7 +15,6 @@
    applied. On these runs the tab still reports that the results could not be saved to disk, although the result tables
    and figures are written; this is fixed separately (KIT-192).
 
-## MultiScholaR 0.9.5 (staging)
 
 ### Scientific changes
 
@@ -51,7 +50,6 @@
    number changes: counts, set sizes, ratios, p-values, q-values and the sets themselves are unchanged. (KIT-173,
    VAL-61)
 
-## MultiScholaR 0.9.4 (staging)
 
 ### Scientific changes
 
@@ -93,7 +91,6 @@
  * The interactive volcano draws a sample's missing value at 0 (it cannot draw missing values); it now says so when
    the assay holds missing values.
 
-## MultiScholaR 0.9.3 (staging)
 
 ### Scientific changes
 
@@ -121,7 +118,6 @@
    Control tab shows the number of proteins left after each step. Projects and analysis records made before this
    change are not altered; replaying a record repeats the steps it recorded.
 
-## MultiScholaR 0.9.2 (staging)
 
 ### Distribution
 
@@ -131,7 +127,6 @@
    from. Reports and analysis records made with the installed application name the same commit; before, they named
    none.
 
-## MultiScholaR 0.9.1 (staging)
 
 ### Scientific changes
 

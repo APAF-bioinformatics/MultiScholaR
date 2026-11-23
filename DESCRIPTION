@@ -1,7 +1,7 @@
 Package: MultiScholaR
 Config/MultiScholaR/DIA-output-policy: native_first_v1
 Title: Interactive Multi-Omics Analysis with Best Modular, Reproducible Workflows
-Version: 0.9.6
+Version: 0.9.0
 Authors@R: c(
     person(given = "Ignatius",
            family = "Pang",
