@@ -39,7 +39,9 @@ test_that("small runs of a C1 and a C3 cell return one row per level", {
     cells <- valCoverageCells()
     c1 <- valCoverageRegime(cells[cells$regime == "C1", ][1L, ], nsim = 30L)
     expect_identical(nrow(c1), 8L)
-    expect_true(all(c1$achieved[c1$status != "not_offered"] >= c1$level - 1e-12))
+    offered <- c1$status != "not_offered"
+    expect_identical(offered, c(TRUE, rep(FALSE, 7)))
+    expect_equal(c1$achieved[offered], 0.96875)
     c3 <- valCoverageRegime(cells[cells$regime == "C3", ][1L, ], nsim = 5L, target_sims = 50L)
     expect_identical(nrow(c3), 8L)
     expect_true(all(c3$coverage >= 0 & c3$coverage <= 1))

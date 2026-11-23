@@ -59,3 +59,13 @@ regimeRows <- function(method, n, level = 0.95, class = NA_character_, form = NA
         statistic = "test fixture", stringsAsFactors = FALSE
     )
 }
+
+# The ticket prints hand-computed values to a fixed number of decimals; a value matches when it is
+# within one unit of the last printed decimal (the printed value is rounded, so the true one lies
+# within half a unit).
+expectClose <- function(actual, expected, digits) {
+    testthat::expect_true(
+        all(abs(actual - expected) <= 10^-digits),
+        info = paste("actual", paste(format(actual, digits = 15), collapse = ", "))
+    )
+}
