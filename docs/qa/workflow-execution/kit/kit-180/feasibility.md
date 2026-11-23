@@ -21,18 +21,27 @@ Observed in R0 (run 45120111092, tests-only commit 09f242bb) and again in R3 (ru
   oracle unchanged. The child process sets its working directory with `setwd()` as its first line rather than
   being started there; the effect is the same.
 
-## F2: does a label-free and a TMT record replay on base? Not answered (instrumentation failed twice).
+## F2: does a label-free and a TMT record replay on base? Yes, in order; the replayed states are not identical().
 
-- R0 (run 45120111092): `replay-check.R` stopped on both lanes at its own check `length(stores) == 1L`: the session
-  owner's store is not under the lane's root, where the script looked (`r0/replay.tsv`).
-- R0b, the gate's one correction pass (run 45122598592, run branch `run-k180-base` c9ca1ed5 = 09f242bb with the
-  corrected script, `R/` equal to base): the store root read from the owner; both lanes stopped with
-  `simpleError invalid 'file' argument` after 160 s, before any replay result was written (`r0b/replay.tsv`).
-  Not diagnosed further: the correction budget is spent.
-- So F2's question is open: no GUI-made label-free or TMT record was replayed. This is an instrumentation failure,
-  not the "not supported" outcome of the stop rule. T5 (an LFQ record made in process without QC steps, replayed
-  into a copy holding the import and design states) passed on the tests-only commit (R1, run 45120113965) and on
-  head (R2, run 45124754518); TMT replay is tested by nothing.
+- R0 (run 45120111092): `replay-check.R` stopped on both lanes at its own check `length(stores) == 1L` (the session
+  owner's store is not under the lane's root). Instrument failure, no result (`r0/replay.tsv`).
+- R0b, the gate's correction pass (run 45122598592): both lanes stopped with `invalid 'file' argument`, no location,
+  no result (`r0b/replay.tsv`).
+- R0c, instrument run 1 under VAL-54 (run 45147720852): the script now records where a lane stops:
+  `file.exists(sources)` with `sources` NULL (no recorded input carries a source path). No result (`r0c/replay.tsv`).
+- R0d, instrument run 2 under VAL-54 (run 45149789668, run branch `run-k180-base` c7251d9c, `R/` equal to base
+  a60c4e9a), the result (`r0d/replay.tsv`). On `prot_lfq` and `prot_tmt` the GUI lane's record (import, design,
+  the four protein QC steps, normalisation with RUV skipped, correlation filter; valid) replayed into a copy cut to
+  `initial` and `protein_s4_initial`, with the inputs checked by SHA-256 (`maxquant_report` or `pd_tmt_report`,
+  `fasta`): the replayed state history equals the record's (8 states) on both lanes. **None of the 6 later states is
+  `identical()` to the first run's, on either lane.** Not diagnosed: no comparison by digest or by slot was made, so
+  whether the difference is in the data or only in object attributes (for example `@args`) is not known. Observed on
+  base, before this ticket's change; the replay reads no chain rule or tab status (2.5), so this ticket does not
+  change it. A result, so not re-run.
+- What follows for T5: F2's stop rule ("not supported") does not apply, because the records do replay. T5 (an LFQ
+  record made in process without QC steps) passed on the tests-only commit (R1) and on head (R2, R5), with every
+  replayed state `identical()`. The ticket's claim "a replayed record repeats the steps it recorded" is shown (step
+  order); "every replayed state identical" is shown for T5's in-process record only, not for GUI-made records.
 
 ## F3: does `test-e2e-proteomics-tmt-lfq.R` run on run-tests? No.
 
