@@ -57,7 +57,7 @@ guiEntrySteps <- function(lane) {
         dir.create(current$inputs, showWarnings = FALSE)
         file.copy(list.files(api$inputs$scratch, full.names = TRUE), current$inputs, overwrite = TRUE)
         # The recorded inputs where the session read them (the import's uploads, a design file when one was imported).
-        sources <- unlist(lapply(manager$.context$snapshot$file_dependencies, function(dependency) dependency$source))
+        sources <- as.character(unlist(lapply(manager$.context$snapshot$file_dependencies, function(dependency) dependency$source)))
         sources <- unique(sources[!is.na(sources) & file.exists(sources)])
         if (length(sources)) file.copy(sources, current$inputs, overwrite = TRUE)
         current$json <- json
