@@ -11,13 +11,17 @@
 
 arguments <- commandArgs(trailingOnly = TRUE)
 stopifnot(length(arguments) == 1L)
-out <- arguments[[1L]]
-if (dir.exists(out)) stop("the output folder exists: ", out)
-dir.create(out, recursive = TRUE)
-out <- normalizePath(out)
-data <- normalizePath(file.path("tests", "testdata", "integration"), mustWork = TRUE)
+# Prefixed names: the evaluation environment's parent is the package namespace, whose imports hold functions such as
+# utils::data, which a plain `data` would find first.
+k183_out <- arguments[[1L]]
+if (dir.exists(k183_out)) stop("the output folder exists: ", k183_out)
+dir.create(k183_out, recursive = TRUE)
+k183_out <- normalizePath(k183_out)
+k183_data <- normalizePath(file.path("tests", "testdata", "integration"), mustWork = TRUE)
 
 local(envir = new.env(parent = asNamespace("MultiScholaR")), {
+    out <- k183_out
+    data <- k183_data
     stored <- function(name) utils::read.delim(file.path(data, "mofa_reference", paste0(name, ".tsv")),
         check.names = FALSE, stringsAsFactors = FALSE)
     trainer <- function(views, options) {
