@@ -1,0 +1,52 @@
+{
+  "requested_by": "KIT-159 S0, VAL-54 instrument run 2 of 3 (the RUV input read by a lineage walk found no record; now read from the ruv_corrected state directly): tests incl. T-TAB-RUV, then the 6 cells without a result; no rule changed; S0 ceiling 16",
+  "label": "KIT-159 S0 instrument run 2 at df71922f",
+  "package_commit": "df71922f5afc68403c0455166bfe64e48975dea8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/s0-out",
+        "--files",
+        "corpus,alternatives,tab-ruv",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/s0-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-run.R",
+      "args": [
+        "s0",
+        "docs/qa/workflow-execution/kit/kit-159/lifecycle",
+        "s0i2",
+        "--tests",
+        "docs/qa/workflow-execution/kit/kit-159/s0-out/harness-tests.tsv",
+        "--test-files",
+        "corpus,alternatives,tab-ruv",
+        "--cells",
+        "prot_dia,prot_lfq,prot_lfq_fragpipe,prot_tmt,prot_dia-export_load,prot_dia_two_species"
+      ],
+      "env": {},
+      "out": "val-out",
+      "out_pattern": "\\.(tsv|txt|sha256)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
