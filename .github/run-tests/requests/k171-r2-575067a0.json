@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-171 R2: fix commit 575067a0 against the branch point 9a53d791; the reader's file and its dependents, R CMD check, script S1",
+  "label": "KIT-171 R2 fix 575067a0 vs base 9a53d791: nine files, check, S1",
+  "package_commit": "575067a01c9f1db93295ebbffb3117495fec6787",
+  "base_commit": "9a53d79133b5f7ee037d742aeda1033d4d7d85a7",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R",
+    "test-workflow-native-session.R",
+    "test-workflow-kit-harness.R",
+    "test-prot-import-maxquant-direct-shared.R",
+    "test-prot-import-core.R",
+    "test-prot-import-quantity-text.R",
+    "test-module-ci-prot-import.R",
+    "test-prot-01c-import-module-contracts.R",
+    "test-e2e-proteomics-tmt-lfq.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-171/real-file-counts.R",
+      "args": [
+        "k171-s1-out"
+      ],
+      "env": {},
+      "out": "k171-s1-out",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
