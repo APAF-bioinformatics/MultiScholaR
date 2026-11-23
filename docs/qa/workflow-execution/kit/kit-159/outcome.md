@@ -141,6 +141,69 @@ not run: `gitDo`/`gitRepo` quote their arguments (`shQuote`); the T-LOG script w
 first; T-DET-1 writes values with `%.17g`. Needed to continue: the coordinator's word on a T1b
 correction run (about 0.6 core-hours; T1 so far 2.5 of 6).
 
+### T1b correction (ruling 1): run 45129042733 at ae464305 -- group (b) STOPPED
+
+Observed: 93 tests, 92 pass (`t1/t1b2-harness-tests.tsv`): the seven T-DECL tests, T-ENV-1 and
+T-DET-1 now pass, so those were test-script defects as reported. **T-LOG-1/2 still fails, and this is
+a code defect after all:** `valRunAsChild` lets processx open the private stdout and stderr files
+without append mode. The child's `writeLines(..., file("/dev/stderr"))` (now first, as revision 1.10
+orders) writes through a fresh descriptor at offset 0. The next `message()` on descriptor 2 writes at
+that descriptor's own offset 0 and overwrites it (both lines are 18 characters), so the descriptor-2
+sentinel is missing from the private log. Nothing reached the template lines or any public file; the
+private log is incomplete.
+
+Under ruling 1 group (b) has used its one correction and stops here, to come back. A fix is committed
+but not run: `valRunAsChild` starts the child through `sh -c 'exec ... >> out 2>> err'`, so both
+private files are in append mode and a reopened `/dev/stderr` cannot overwrite earlier text. It needs
+the coordinator's word for a run (group (b) has no correction left).
+
+### Coverage range split (ruling 3): T0s run 45129239148, T1s run 45129513148
+
+- T0s at 64bbbc7c: the three new tests (split identity with data digests, refusal of a dropped or
+  repeated range, per-index seeds, the range plan) fail on missing functions; the earlier coverage
+  tests pass.
+- Implementation at 1a300abe: each simulation, target simulation and C7 bootstrap has a seed fixed by
+  the cell's index and its own index only (`valSimSeed`, `valTargetSeed`; ranges 1e9, 1.5e9, 2e9 plus
+  index; never the chunk count); `valCoverageRange` runs any range of a cell, `valCombineCoverage`
+  joins ranges and refuses a dropped or repeated one; `valCoveragePlan` cuts each cell into a declared
+  number of consecutive ranges; `valRunCoverage` runs a plan's request in concurrent chunks (the
+  dealing of tasks to chunks changes no result).
+- T1s: 93 of 95 pass. **Code defect:** the split-identity test and the small-run test fail because
+  `valCombineCoverage` read `spec$target`, which R's `$` partially matches to `target_one` for a cell
+  with a simulated target (the function is returned; `notSubsettableError`). Fixed to
+  `spec[["target"]]`, committed, not run. Under ruling 1 this code is group (a)'s, whose correction is
+  spent, so it waits for the coordinator's word with group (b)'s T-LOG fix. The cost probe of the
+  heavy cells came back (`t1/t1s-cost-probe.tsv`).
+
+### T2 plan and sizing (ready, not sent)
+
+`t2/t2-plan.tsv`: 190 tasks over the 169 cells, three requests. Process seconds per cell at 2,000
+simulations and 20,000 target simulations, from the two probes (each phase x100; probes at 20 and
+200, `t1/t1a2-cost-probe.tsv`, `t1/t1s-cost-probe.tsv`):
+
+| Cell | Estimate (s) | Ranges | Request |
+|---|---|---|---|
+| C7-159 (bootstrap, accuracy) | 11,556 | 8 | A |
+| C7-160 (bootstrap, threshold) | 7,618 | 6 | B |
+| C4e-150 (4,840 features, 14 blocks) | 6,459 | 5 | B |
+| C4e-148 (4,840 features, 5 blocks) | 7,107 | 5 | C |
+| C4-146 (4,840 features, g = 6) | 1,777 | 2 | C |
+| C4-144 (4,840 features, g = 4) | 1,268 | 1 | C |
+| C4e-149, C4e-147, C4-145, C4-143 (500 features) | 709, 485, 150, 118 | 1 | C |
+| C3 (112 cells, each at the dearest probed C3 cell) | 3.5 each | 1 | A |
+| C1, C2, C5, C6, C8 | 1 to 2 each | 1 | A |
+
+Per request: A 12,034, B 14,077, C 11,615 process seconds; at f_sim = 2.19 with 10 minutes of set-up,
+expected wall 102, 117 and 98 minutes (limit 240 expected, 280 script); the largest task 1,444 s
+solo, about 44 minutes at the four-chunk speed of 0.55. Total 10.5 process-hours (the ticket's
+estimate was 17.5). Expected 21.1 core-hours; ceiling 60 (40 + 20 for the third request, as section
+11 provides); inside it. Every regime row of the coverage table falls within one request (keys carry
+the unit count), so the three requests' tables join without recombination. f_sim was measured on C3;
+the limma-heavy and bootstrap cells may scale differently, which the margin to 240 minutes covers
+about twice over.
+
+T2 waits for the split's fix to pass its run.
+
 ### Ticket revisions 1.8 and 1.9 (2026-11-23)
 
 The coordinator's amendment pass made the ticket 1.8 (register
@@ -164,7 +227,10 @@ No addition changes finished and verified work beyond adding to it.
 
 ## Next
 
-1. On the coordinator's word: a T1b correction run on the commit carrying the three test fixes.
+0. **Waiting on the coordinator:** a run of the two prepared fixes (group (b): `valRunAsChild` append
+   mode for T-LOG; coverage split: `spec[["target"]]`), both code defects found after the groups'
+   correction passes. Then T2 from `t2/t2-plan.tsv`, three requests (A, B, C).
+1. (Done) The T1b correction run.
 2. Before T2: split coverage cells into seeded simulation ranges (one seed per simulation; test: the
    split result equals the unsplit one), then T2 in three requests sized on f_sim = 2.19 (each request
    at most 240 minutes of expected wall).

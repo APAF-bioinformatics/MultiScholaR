@@ -431,7 +431,7 @@ valCombineCoverage <- function(cell, parts, nsim, target_sims) {
         valAbort("the ranges of {cell$cell} do not hold each simulation exactly once",
                  "val_spec_invalid")
     }
-    target <- spec$target
+    target <- spec[["target"]]
     if (is.null(target)) {
         targets <- unlist(lapply(parts, `[[`, "targets"))
         if (!identical(sort(targets), seq_len(target_sims))) {

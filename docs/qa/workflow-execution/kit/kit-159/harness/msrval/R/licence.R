@@ -101,10 +101,14 @@ valRunAsChild <- function(script, args, private_dir) {
     dir.create(logs, recursive = TRUE, showWarnings = FALSE)
     tpl <- file.path(private_dir, "template.txt")
     file.create(tpl)
-    res <- processx::run(file.path(R.home("bin"), "Rscript"), c("--vanilla", script, args),
-                         stdout = file.path(logs, "child.out"),
-                         stderr = file.path(logs, "child.err"),
-                         env = c("current", VAL_TEMPLATE_FILE = tpl), error_on_status = FALSE)
+    # The shell opens both private files in append mode, so a child that reopens /dev/stderr
+    # (a fresh descriptor at offset 0) cannot make a later write overwrite earlier text.
+    res <- processx::run("sh", c("-c", 'exec "$0" "$@" >> "$VAL_OUT" 2>> "$VAL_ERR"',
+                                 file.path(R.home("bin"), "Rscript"), "--vanilla", script, args),
+                         env = c("current", VAL_TEMPLATE_FILE = tpl,
+                                 VAL_OUT = file.path(logs, "child.out"),
+                                 VAL_ERR = file.path(logs, "child.err")),
+                         error_on_status = FALSE)
     lines <- readLines(tpl, warn = FALSE)
     if (length(lines) > 0L) cat(lines, sep = "\n")
     structure(lines, status = res$status)
