@@ -96,3 +96,15 @@ classification code changed. New SHA-256 of `score-k185.R`: see the commit that 
 - Part B's proteomics DA reference arm failed silently (`outcome.md`, Instrument events); no classification depends on it.
 - P5's 38 replicates left by two timeouts were re-sent under VAL-54 instead of 5.7's "did not complete" rule: a departure
   awaiting the owner. Nothing in sections 1 to 6 changes.
+
+## 9. Dated section (2026-11-24), before the part-B proteomics re-run (VAL-98)
+
+The owner decided (VAL-98): part B's six proteomics jobs (b-p0-1/2, b-p1-1/2, b-p4b-1/2) are re-run with the script
+defect fixed, as the one instrumentation correction of S (section 10's reserve). Two changes in `sim-k185.R`, nothing
+else: `subsetState` resets the protein table's row names after the subset (the DA's `column_to_rownames` refuses
+non-default row names), and the reference DA arm's `tryCatch` records the error message in the row's `class` instead of
+returning NULL silently. No band, contrast, estimand or rule changes. New SHA-256 of `sim-k185.R`:
+5ffc96049efbcba0c7c465c78201465aa7a6cc13490b20afa6e705524aa234ce. First a one-replicate lifecycle (replicate 401 of P0,
+P1, P4b, part B) must show the reference DA arm returning a table in every proteomics part-B cell; then the six jobs, the
+same seeds and replicate ranges (1-50, 51-100). Their rows replace the earlier part-B proteomics rows (kept in the git
+history) and part B is re-scored with the pinned `score-k185.R`; part A's tables must come out identical.

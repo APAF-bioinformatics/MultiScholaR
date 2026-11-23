@@ -898,6 +898,7 @@ subsetState <- function(sim, state, ids) {
     if (identical(sim$p$omic, "prot")) {
         keep <- state@protein_quant_table[[state@protein_id_column]] %in% ids
         state@protein_quant_table <- state@protein_quant_table[keep, , drop = FALSE]
+        rownames(state@protein_quant_table) <- NULL # VAL-98 (1): the DA's column_to_rownames needs default row names
         if (!is.null(state@args$ruv_uncorrected_quant)) {
             state@args$ruv_uncorrected_quant <- state@args$ruv_uncorrected_quant[rownames(state@args$ruv_uncorrected_quant) %in% ids, , drop = FALSE]
         }
@@ -991,7 +992,11 @@ unitB <- function(cellname, r) {
             }
             S0_name <- paste0("SB", tag, "0")
             if (!identical(mask, "none") && res_none$status %in% c("ok", "none")) {
-                fits[[S0_name]]$da <- tryCatch(routeDa(sim, none, res_none, route, ids = intersect(F_filt, none$ids)), error = function(e) NULL)
+                # VAL-98 (1): the error is recorded (in the row's class), not dropped
+                fits[[S0_name]]$da <- tryCatch(routeDa(sim, none, res_none, route, ids = intersect(F_filt, none$ids)), error = function(e) {
+                    fits[[S0_name]]$class <<- substr(paste("da_error:", gsub("[\r\n\t]+", " ", conditionMessage(e))), 1L, 300L)
+                    NULL
+                })
             }
             finiteRows <- function(m) if (is.null(m)) character() else rownames(m)[rowSums(is.finite(m)) > 0]
             F_set <- if (ok_matrix && identical(res_none$status, "ok")) Reduce(intersect, list(F_filt, finiteRows(res$matrix),
