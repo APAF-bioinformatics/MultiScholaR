@@ -1,4 +1,4 @@
-# KIT-172 outcome: plain log2 for lipidomics and metabolomics (state: stopped at the GUI-entry control's mechanism rule)
+# KIT-172 outcome: plain log2 for lipidomics and metabolomics (state: stopped at step 1 of the GUI-entry control, a result)
 
 Ticket revision 1.6. Branch `kit-172-plain-log2` from `v0.9-staging` a60c4e9a. Every run on `run-tests` (R 4.6.1,
 reference BLAS, ubuntu-22.04); run ids, commits and job minutes in `runs.tsv`.
@@ -71,6 +71,49 @@ run. `control-mechanism/`.
 metabolomics summary steps classed `metab_fixture_4` by the lane-range rule; testthat truncated the integration
 artifact names in the summary steps, flagged in `names_list_truncated`.
 
+## The GUI-entry control (7(c)), after the owner's rule VAL-54
+
+C1 (45136470598), C2 (45137945090) and C3 (45141094821) were instrument failures (no comparison produced): C1 the
+`compareLane` extraction; C2 the head-at-offset-1 wrapper looked up `omicsUiInputDefaults` in the package namespace (it is
+a test helper); C3 the same wrapper stopped on a UI with no inputs (`names()` NULL). Fixes: 9931beea, e485208b (also:
+the expected recorded-offset capture read through `renderUI` and the lanes' own output reader), e623d6e2. No expected
+value, threshold, declared comparison or stop rule changed. Evidence: `control-mechanism/`.
+
+C4 (45142934736, e623d6e2) produced the comparison (`control-run4/`: `gui-entry-control.tsv`, `gui-entry-digests.tsv`,
+`declared-keys.tsv`, the three passes' records; runner CPU AMD EPYC 7763; nothing withheld). Result:
+
+- Step 1 (base against the frozen file): **stop.** The metabolomics lanes' differing steps equal the reference list
+  (10 each, `metab_fixture_4`). `lipid_canonical` differs at 6 steps, the list has 4: `da` and `summary_refusal` also
+  differ, both only in the `artifacts` key `<store entries>`. Observed: at those steps the base's and the frozen file's
+  `<store entries>` hold the same paths with the same counts; only their order differs (the frozen file has
+  `lipid-da-fit-<ID>` before `lipid_between_sample_normalisation-<ID>`, the base after the `lipid_*` entries).
+  Inferred, not tested: the oracles were written inside `test_that`, where testthat sets the C collation (`-` sorts
+  before `_`), and the control's children run the lanes outside `test_that` under the runner's locale, so `table()`
+  orders the paths differently wherever such names occur. If so, the re-frozen files written by the head-at-default
+  child carry the same locale ordering and would not match a later run under testthat.
+- Step 2 (head with `log_offset = 1` against base): conforms. Differences only on the two declared keys, at every
+  step; each observed value equals its expected value (`declared-keys.tsv`: 136 of 136 equal; the recorded-offset
+  sentence's capture `<ui> 916f8a8c...` as computed).
+- Step 3 (head at the default against head at offset 1): conforms. No difference before `norm`; every difference
+  from `norm` on is `plain_log2 (KIT-172)`.
+- Under 7(c) a differing step list stops the ticket. The re-frozen files are not committed. Not re-run (a result).
+
+## Corrections to the records
+
+- The commit message of 5250032c cites "run 45136468961 family" for R3: the R3 run is **45136474750**, and the commit
+  message of dd5e406c cites "run 45125620735 family" for R2: R2 is **45123630549** (`runs.tsv` is correct).
+- Two rows ran past their own ceilings: R2's four test jobs used 68.2 job-minutes = 4.55 core-hours against the
+  targeted row's ceiling of 4 (expected 2); the T1b and T11 scripts job ran 103.3 job-minutes = 6.89 core-hours, inside
+  the T1b row's ceiling of 7.5 but above its expected 4.4, because the parallel part took 74 minutes against the
+  first seed's projection of 44 (four seed processes sharing the runner's four cores with T11 done).
+- The 7(b) re-dump moved, besides the listed interface values, the module scenarios' frozen captures
+  (`omicNormFrozen[["lipid"|"metab"]][["skip"|"manual"|"automatic"]]`): they drive the server with the tab's rendered
+  defaults, which no longer carry `norm-log_offset`, so they run at offset 0. Moved: the `outputs` digest at every
+  step (the new output), the step log (the start line, the values-set-to-missing line), the `states`, `provenance`,
+  `normdata` and per-slot `state` and `data` digests from the run on, and in the `skip` scenarios' export the summary
+  line "- Log2 offset: 0" with the `rds_values` and `current_s4_object` digests; and the KIT-110 W3 test that compares
+  the registered outputs with `omicNormFrozenUi$outputs`. Added to the ticket's 7(b) with a History note.
+
 ## F1b (consumers of post-log values)
 
 | Site | Class | Done |
@@ -111,7 +154,7 @@ F3: answered (no regeneration).
 | `scale` warning (D6) | shipped, T10 |
 | F2, F1, F3 | above |
 | base-saved project reopens and replays | met (T9, R2) |
-| control of 7(c) and re-freeze | **not met**: stopped at the mechanism rule after its correction pass |
+| control of 7(c) and re-freeze | **not met**: C4 stopped at step 1 (lipid_canonical's differing step list; key order of `<store entries>` only); steps 2 and 3 conform |
 | full suite base against head with check | not run |
 | gate-off script; rendered-panel diff | not run; the panel diff is in `r3/redump-diff.txt` (HTML digests and input/output lists) |
 | bundle lane | not run |
@@ -120,7 +163,6 @@ F3: answered (no regeneration).
 
 ## Not checked
 
-- The GUI-entry control and re-freeze; the four lipid and metabolomics GUI-entry oracles are not re-frozen.
+- The four lipid and metabolomics GUI-entry oracles are not re-frozen. The collation explanation of step 1's extra steps is inferred, not tested.
 - The full suite and R CMD check base against head; the bundle lane; the gate-off script.
 - `test-omic-norm-module.R` after the pasted re-dump; `test-metab-qc-shared.R` after its stub fix.
-- Whether the recorded-offset output's `<ui>` capture equals the value computed in the head child (head1 never ran).
