@@ -26,26 +26,26 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state at the T2 records commit; read this block first)
+## Resume here (state 2026-11-23, after the offered-regime table and the merge; read this first)
 
-**T1 is complete: every test of groups (a) to (d) has passed on a runner.** T1w3 (45149434625, at
-266d9dc8): 168 of 169, the one failure T-TAB `trx_screen` with RUV off, which the auditor ruled a
-product defect (`trxDaReadMetadata`, `R/utils_workflow_trx_da.R:34-37`; fixed in the product as
-KIT-186, VAL-59). Ticket r1.11 (build-points ruling, section 26) moved T-TAB's covariate routes to the
-shipped arm (8c78657c); the VAL-60 run (45154323190, at 8c78657c, `--files tab`) passed all ten
-T-TAB tests, with `ruv.tsv` and `matrix_display.tsv` (`feature_id, assay, label`, samples) on
-`prot_dia_limpa` and `trx_screen`. T1: 4.45 + 1.47 + 2.05 + 2.10 + 1.77 = **11.84 of 15** core-hours.
-Still owed under T1: `covr` and `lintr` over the whole package (A2; `extra_packages: ["covr",
-"lintr"]`), not sent.
+Done since 75108888: (1) offered-regime table in `USAGE.md` and provisional ledger row `VAL-<merge>`
+(H2) from `t2/coverage-table.tsv` (2eed1c94; four points for the auditor under "Offered regimes from
+T2" below); (2) `val-tests.R` runs lint before covr and records a covr error (26f71dce); (3) merge of
+`v0.9-staging` 5cbd4005 (true merge f350ef8c; one mechanical conflict in the ledger: staging's VAL-50
+to VAL-62 kept, this branch's row after them).
 
-**T2 is complete (evidence; nothing applied to it):** requests A 45149480750, B 45149529939,
-C 45149578690 at 266d9dc8, every cell present, chunks exit 0. Joined table `t2/coverage-table.tsv`
-(512 rows, no duplicate key); per-request tables `t2/t2{a,b,c}-coverage-*.tsv`. T2: **18.59 of 60**
-core-hours (expected 21.1). Per 10.2 a method failing its band in a regime is not offered there; the
-table of offered regimes goes into `USAGE.md` and ledger row H2 (provisional), not yet written.
+**In flight:** A2 run `k159-t1cov2-26f71dce`, run 45166390132 (covr over the whole suite, lintr;
+plain pass `--files metrics`; script limit 36 min; ceiling T1's remaining 3.16 core-hours). First
+send `k159-t1cov-26f71dce` (45166193345) refused by the plan job in 9 s (`requested_by` over 300
+characters; no test ran). Fetch: `gh run download 45166390132 -n scripts`, copy `t1cov-out/` to `t1/`.
 
-**Next (not started):** `covr`/`lintr`; R1; the cell phases of `val-run.R`; S0 (each needs the
-coordinator's word); `USAGE.md`'s offered-regime table from `t2/coverage-table.tsv`.
+**Next:** record the A2 result; then section 7 code (tests first, T0 2.40 core-hours left): `val-run.R`
+cell phases (7.8 steps 5 to 9), kernel arms in the cell runner, `val-parity.R` and the
+`distributable.yml` stage (7.9), `run-val-mofa` (7.10). Passing runs need budget beyond T1's (T1
+after A2 has well under one job left): coordinator's word. R1 and S0 not started.
+
+Earlier state (T1 and T2 complete): T1 11.84 of 15 before A2; T2 18.59 of 60; every test of groups
+(a) to (d) passed (T1w3 45149434625, VAL-60 run 45154323190).
 
 ## Earlier resume record (state at dcc27fb5)
 
