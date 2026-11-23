@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-173 declared control 3 (VAL-61): base capture and base replay in two Rscript processes, same columns as control 2; one job, ceiling 1 core-h; decides whether the geneID order is process-address dependent",
+  "label": "KIT-173 declared control 3 d8cf2a55",
+  "package_commit": "d8cf2a5573dd131f5eff32d681f96c8d9816b96f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/t7-basebase.R",
+      "args": [
+        "k173-basebase-out"
+      ],
+      "env": {},
+      "out": "k173-basebase-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
