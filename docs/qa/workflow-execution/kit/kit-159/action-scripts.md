@@ -67,3 +67,19 @@ With `summary`, each script ends with `summary_save`.
    :290). T-TAB on `prot_dia_limpa` shows whether it is found.
 4. The design builder's formula: dropped from the helper's sets when rendered; if the builder
    renders none, the helper's `~ 0 + group` is set as part of the structural design.
+
+## G1(b) alternatives (r1.14; S0, then L1a; no consumer runs them)
+
+`valActionScript(route, alternative = ...)`, pinned by `test-alternatives.R`:
+
+- `export_load` (any route but `trx_screen`, which has no load button; S0 and L1a run it on
+  `prot_dia`, `lipid_canonical`, `metab_lc`): after the last normalisation step, `export_session`
+  presses the tab's export button (`normalization-export_filtered_session`; lipidomics and
+  metabolomics `norm-export_session`), then `load_session` opens the DA tab and presses "Load
+  Filtered Session" (`differential_expression-load_filtered_session`; `de-load_filtered_session`)
+  with no file chosen, which loads the latest export; both declare the head unchanged; then `da`.
+- `no_covariates` (`prot_dia_limpa` only): the accepted script without `ruv_covariates`.
+
+The two-species route (`prot_dia_two_species`) is `prot_dia`'s accepted script on the two-species
+generated input with `mixed_species_fasta = TRUE` declared forced; the organism modal is confirmed at
+its rendered values, as in every script.

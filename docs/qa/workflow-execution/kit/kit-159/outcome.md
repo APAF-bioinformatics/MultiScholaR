@@ -26,7 +26,52 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, R1 done, S0 not started; read this first)
+## Resume here (state 2026-11-24, S0 sent; read this first)
+
+**Ticket r1.14** (main checkout; register `AUDIT-KIT-159-build-points3-20261124.md` applied as
+written, with two corrections recorded in its section 29: the failing-first run is charged to S0's
+line, not T0's, by the coordinator's ruling, since T0 had 0.05 core-hours left; the half-width ratio
+of point 4 sits in 4.4, where the "share of zero-width intervals" sentence is, and cannot be computed
+from T2's detail tables, which hold per-row coverage, Monte Carlo SE, target and zero-width share but
+no per-simulation half-widths or statistics: those rows print `not_recorded`; its code and any re-run
+are the coordinator's decision, not built).
+
+**S0's three pieces (r1.14), built tests first:**
+- tests only 3e4b5e7a: `test-corpus.R` (T-CORP-1 to 6), `test-alternatives.R` (T-ALT-1 to 4,
+  T-S0-1, 2); run 45275103241 (S0t0): all 12 fail as expected (missing functions; `alternative` an
+  unused argument); 0.70 core-hours, charged to S0's line (coordinator's ruling). `s0/s0t0-*`.
+- code a29a43c0: `R/corpus.R` (`valCorpusSpec`, `valCorpusFor`, `valWriteCorpus`, `valCorpusCell`:
+  the five proteomics formats by the e2e fixture writers of `tests/testdata/e2e/generate_fixtures.R`,
+  whose abundances are `tools/profiling/kit_protein_corpus.R`'s recipe, taken with
+  `valExtractHelpers` so the file's top-level generation never runs; transcriptomics, lipidomics,
+  metabolomics by `tools/profiling/kit_omics_corpus.R` through `sys.source` behind its own
+  `sys.nframe()` guard; both read only, a test hashes them before and after; a synthetic UniProt
+  cache from each FASTA as `tests/testdata/gui-entry/uniprot/build.R` builds it; the two-species input
+  = the `prot_dia` corpus with the last 30 % of FASTA entries moved to E. coli K12, taxon 83333, and
+  `mixed_species_fasta = TRUE` as a declared forced input); `scripts.R` (`valActionScript(...,
+  alternative = "export_load" | "no_covariates")`); `R/s0.R` (`valCompareAlternative`, `valS0Plan`,
+  `valS0TestsPassed`, `valRunS0`); `val-run.R s0`.
+- **S0 sent at a29a43c0: run 45277101451** (request `k159-s0-a29a43c0`): script 1 the 12 tests with
+  `--lint`; script 2 `val-run.R s0`, which refuses before any corpus or route unless every test of
+  script 1 passed (VAL-54 instrument fault: fix and resend, at most three instrument runs). Script
+  limits 20 + 190 min; with S0t0 the worst case is 15.4 of S0's 16 core-hours.
+
+**Divergences recorded (for the auditor):** (1) the corpus writer lives in msrval (`R/corpus.R`),
+not `lifecycle/` (7.2), so that it is tested, linted and pinned (conventions/R.md: a package, not
+sourced scripts); (2) FragPipe is written by the e2e generator's existing FragPipe writer (KIT-101
+r2.2, from the LFQ recipe), not a new `lifecycle/corpus-fragpipe.R`: 1.2's "no FragPipe generator
+exists" was out of date; (3) DIA uses the e2e DIA-NN writer (KO/WT effect from the KIT-021 recipe,
+UniProt-style FASTA that the organism modal reads), not `workflow_perf107_synthetic.R` (no group
+effect; FASTA headers without OS=/OX=); (4) metabolomics generated inputs are MS-DIAL exports
+(`import_tool = "msdial"`), the routes' e2e fixtures use `custom`; `metab_lc` runs LCMS_Pos only,
+`metab_gc` GCMS only, `metab_combined` both.
+
+**Budget:** T0 5.95 of 6; T1 19.09 of 21; T2 26.93 of 54; R1 2.78 of 4; S0 0.70 of 16 (S0t0) plus
+run 45277101451 in flight.
+
+---
+
+Earlier state (R1 done; kept as written):
 
 Ticket r1.13 (VAL-69). Every msrval test has passed (whole suite 45219635014, corrections
 45225211841 and 45265533254; lintr 0). Rank re-run R (45227824000) done; USAGE and H2 updated
@@ -48,7 +93,7 @@ d099e6e7...; library table byte-identical between the twins; phase pre `ref-qc-s
 twin comparison by `valCompareRecords` is L1b's step. The live incomplete-answer refusal waits for
 KIT-175 (T-ANN-1 mocked stands).
 
-**S0 not started: preconditions do not hold.** S0 (10.4) needs the G1(b) alternatives: both QC
+**S0 not started (superseded by r1.14 above): preconditions do not hold.** S0 (10.4) needs the G1(b) alternatives: both QC
 paths on label-free and TMT "the bypass still being present there", export-then-load, DIA_LIMPA
 with and without the covariates button, and `prot_dia` on a two-species input through the organism
 modal, all on generated inputs. On `v0.9-staging` the bypass is gone (KIT-180: no shell sets
