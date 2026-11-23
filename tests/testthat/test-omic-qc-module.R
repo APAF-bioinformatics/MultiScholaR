@@ -430,7 +430,7 @@ test_that("W5 the shell starts proteomics' groups on the trigger by route, keeps
         .package = "MultiScholaR")
     config <- omicGuiConfig("proteomics")
     for (case in list(list(route = "DIA", groups = c("peptide_qc", "protein_qc")),
-        list(route = "TMT", groups = "protein_qc"))) {
+        list(route = "TMT", groups = "protein_qc"), list(route = "LFQ", groups = "protein_qc"))) {
         started <- character()
         bus <- shiny::reactiveValues(state_manager = list(workflow_type = case$route, states = list()),
             tab_status = list(quality_control = "pending", normalization = "disabled"))

@@ -48,6 +48,19 @@ library(testthat)
     e2e_complete_prot_design_from_manifest(driver, lane, timeout = 120000L)
     e2e_wait_for_step_status(driver, "proteomics", "design_matrix", "complete", timeout = 120000L)
     e2e_assert_no_uniprot_network(driver)
+    # KIT-180 (VAL-26): the design opens the QC tab, as on DIA; the four protein QC steps complete it.
+    e2e_wait_for_step_status(driver, "proteomics", "quality_control", "pending", timeout = 120000L)
+    e2e_assert_step_statuses(
+      driver,
+      "proteomics",
+      list(
+        design_matrix = "complete",
+        quality_control = "pending",
+        normalization = "disabled"
+      ),
+      timeout = 60000L
+    )
+    e2e_run_prot_protein_qc(driver, timeout = 120000L)
     e2e_wait_for_step_status(driver, "proteomics", "quality_control", "complete", timeout = 120000L)
     e2e_assert_step_statuses(
       driver,
