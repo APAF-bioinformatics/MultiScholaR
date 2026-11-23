@@ -49,7 +49,8 @@ test_that("proteomics: da.tsv's columns and values, the matrices by stage, featu
     expect_identical(da$s_own, c(0.01, 0.2, 0.04))
     expect_identical(unique(da$call_statistic), "qvalue")
     expect_identical(da$called_own, c(TRUE, FALSE, TRUE))
-    expect_identical(da$mean_expression, c(11, 11, 11))
+    # Whole numbers read back from a TSV are integers: compared by value.
+    expect_equal(da$mean_expression, c(11, 11, 11))
     pre <- readTsv(paths[["matrix_pre_ruv"]])
     expect_identical(names(pre), c("feature_id", "assay", "s1", "s2"))
     expect_identical(nrow(pre), 4L)
@@ -122,7 +123,7 @@ test_that("lipidomics with factors in the model: matrix.tsv uncorrected, W, a la
     expect_identical(names(da), DA_COLUMNS)
     expect_setequal(unique(da$assay), c("LCMS_Pos", "LCMS_Neg"))
     model <- readTsv(paths[["matrix"]])
-    expect_identical(model$s1[model$feature_id == "posmode1"], 5)
+    expect_equal(model$s1[model$feature_id == "posmode1"], 5)
     display <- readTsv(paths[["matrix_display"]])
     expect_identical(names(display)[1:3], c("feature_id", "assay", "label"))
     expect_identical(unique(display$label), "display; not what is tested")
