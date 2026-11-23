@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-177 F3 diagnostic, the one mechanics rerun (VAL-79, VAL-54): DA manifest read as the record reads it, both sides; ceiling 1 core-hour",
+  "label": "KIT-177 F3 diagnostic mechanics rerun on 016b426a",
+  "package_commit": "016b426aec9cdc9d331f9ec13472f16fc98f9d6e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-177/replay-check.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-177/replay"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-177/replay",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
