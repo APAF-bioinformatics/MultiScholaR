@@ -96,6 +96,7 @@ classification code changed. New SHA-256 of `score-k185.R`: see the commit that 
 - Part B's proteomics DA reference arm failed silently (`outcome.md`, Instrument events); no classification depends on it.
 - P5's 38 replicates left by two timeouts were re-sent under VAL-54 instead of 5.7's "did not complete" rule: a departure
   awaiting the owner. Nothing in sections 1 to 6 changes.
+- Later the same day: owner told 2026-11-24 (VAL-98); the P5 re-send is accepted as a recorded departure (VAL-98 (4)).
 
 ## 9. Dated section (2026-11-24), before the part-B proteomics re-run (VAL-98)
 
@@ -108,3 +109,11 @@ returning NULL silently. No band, contrast, estimand or rule changes. New SHA-25
 P1, P4b, part B) must show the reference DA arm returning a table in every proteomics part-B cell; then the six jobs, the
 same seeds and replicate ranges (1-50, 51-100). Their rows replace the earlier part-B proteomics rows (kept in the git
 history) and part B is re-scored with the pinned `score-k185.R`; part A's tables must come out identical.
+
+## 10. Dated section (2026-11-24): the reported-only summary (VAL-98 (2))
+
+`summ-k185.R` (SHA-256 75282dd1b2c8aafe108679955f808e8d2c9a1f0b1c2cd70b98738a39d1497b4f) summarises, from the committed part-A rows and before it runs, the estimands the implementation
+audit's I03 lists: features lost by residual dimension and planted status, B2, the incomplete-feature recovery, every
+canonical correlation and the rank, the comp/inc strata, the residual-dimension strata of the DA measures, the oracle's
+own change and the uncorrected arm's departure, the arms' mechanics, and the q-value methods with their S/S0 mismatches.
+Reported only: no classification, no band; it changes nothing in sections 1 to 9.

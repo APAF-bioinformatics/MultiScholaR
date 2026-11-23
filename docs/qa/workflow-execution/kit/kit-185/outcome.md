@@ -243,15 +243,18 @@ to VD 10 %, and did not measure it for proteomics (instrument defect), so for pr
 part B's Delta_tot" uses part A alone; their corrected matrices (figures, export, the
 integration input) carry the limitation measured here. KIT-161's PXD000279 (P2's shape) waits for KIT-187 and P2.
 
-How D2 applies to these results. (1) In 11 of the 13 cells the mechanism with the lower safe rate (at random in nine
-cells, value-dependent in P4b and L1b) was measured up to 10 %, so a data set whose realised share exceeds 10 % is "not
-covered" under D2 and its RUV-III-C result stays held (VAL-56). (2) In P3 and M1b both mechanisms have the same safe
-rate; which one applies is the owner's decision. (3) A data set's realised share (11.1 item 2, after the route's filter)
-is compared with the cells' realised shares (the "realised share" columns), not with the nominal rates, subject to the
-owner's confirmation. (4) For proteomics, part B gave no DA contrast (instrument defect), so the reading uses part A
-alone. In practice, a data set on an affected route is read as evidence of correction only at or below the safe rate
-of its cell's D2 mechanism (0 to 2 %). Open for the owner: the mechanism when safe rates tie (P3, M1b); realised against
-nominal rates; data sets above 10 % on the at-random mechanism ("not covered" as D2 is written).
+How D2 applies to these results, as the owner decided (VAL-98 (3)):
+1. **Mechanism.** The mechanism with the lower safe rate in the matched cell; on a tie (P3, M1b) the lower safe rate is
+   the tied value, so either mechanism gives the same reading.
+2. **Rates.** A data set's realised share (11.1 item 2, after the route's filter) is compared with the cells' realised
+   shares after the filter (the "realised share" columns), not with the nominal rates.
+3. **Coverage.** Where the matched cell and mechanism were measured only up to 10 % (at random in L1, L2, M1, M2, P0,
+   P0r, P1, P4 and P5; value-dependent in P4b and L1b), a data set whose realised share is above 10 % is "not covered",
+   and its RUV-III-C result stays held (VAL-56).
+4. For proteomics, part B's DA contrasts are those of the re-run (VAL-98 (1), section "Part B re-run" below).
+In practice, a data set on an affected route is read as evidence of correction only at or below the safe rate of its
+cell's D2 mechanism (0 to 2 %). **No remedy is decided here**: VAL-56 keeps the remedy for its own decision on this
+measurement, and P2 still waits for KIT-187.
 
 ## Acceptance criteria
 
@@ -295,7 +298,7 @@ count from the rows): the closed-form features (exactly k residual dimensions) c
   was applied to an inferred 260 s instead (a deviation from G3 as written, disclosed in `lifecycle.md` before S). Jobs 1
   and 3 hit their 175-minute timeouts with 116 and 112 of 133 replicates written. The 38 unwritten replicates (117-133,
   380-400) were re-sent once under VAL-54 (run 45268841462, same commit and seeds), in place of 5.7's "did not complete"
-  rule, which would have made P5 "not determined". **This is a departure awaiting the owner's ratification.** The
+  rule, which would have made P5 "not determined". **A recorded departure, accepted by the owner: VAL-98 (4).** The
   timed-out jobs' rows were assembled outside R from their uploaded part files (text identical, verified by the
   implementation audit). Those jobs wrote no checks, so E2 did not run for P5 replicates 20-100 and 280-360 (every 20th);
   "E2 450 of 450" counts the checks that exist.
@@ -310,7 +313,7 @@ count from the rows): the closed-form features (exactly k residual dimensions) c
   `rownames(state@protein_quant_table) <- NULL` after the subset in `subsetState`, a new hash in a dated declaration
   section, and the six proteomics part-B jobs re-run (b-p0, b-p1, b-p4b, two each); the owner decides (VAL-54).
 - Scoring: E5 and E8 compared tables by inferred column type; fixed (declaration section 7), re-scored once; every
-  scored table identical between the two scoring runs (owner to be told; ticket section 10).
+  scored table identical between the two scoring runs (owner told 2026-11-24; ticket section 10).
 - Job splits used `round()` boundaries (1-133, 134-267, 268-400) where the declaration's section 6 wrote 1-134 etc.;
   the same replicates.
 
