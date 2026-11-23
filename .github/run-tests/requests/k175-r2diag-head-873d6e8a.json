@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-175 R2 diagnosis (head side): the plot text behind the changed digest in test-omic-enrich-module.R refusals/pre_da; no result judged",
+  "label": "KIT-175 R2 diagnosis head 873d6e8a",
+  "package_commit": "873d6e8ae53055bb41fc8d1b8043f4ef2c8b289b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [{"path": "docs/qa/workflow-execution/kit/kit-175/r2-diag-plot.R", "args": ["k175-diag-out"], "env": {}, "out": "k175-diag-out", "out_pattern": "\\.txt$", "timeout_minutes": 60}],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
