@@ -4,7 +4,12 @@
 #       [--uniprot <accession list>]
 #   Rscript .../val-run.R pre <evidence dir> <label> --script <path> --pre-outputs <path>
 #   Rscript .../val-run.R check <folder> --manifest <inputs.tsv>
+#   Rscript .../val-run.R s0 <evidence dir> <label> --tests <harness-tests.tsv>
+#       --test-files <a,b> [--cells <c1,c2>]
 #
+# s0 (10.4, r1.14): the evidence run on generated inputs -> val-out/s0/<label>/ (corpus.tsv,
+# routes.tsv, steps.tsv, modal.tsv, alternatives.tsv, ledgers/, run.tsv, outputs.sha256); refused
+# (exit 3) before any route unless the named test files of the job's first script all passed.
 # record: draft-inputs.tsv of <evidence dir> -> val-out/record/<label>/ (inputs.tsv, members-*.tsv,
 # library.tsv, attribution.tsv, provenance.json, outputs.sha256); no declaration check.
 # pre: the ticket's pre-declaration script on the recorded inputs (val-out/record/<label>/inputs.tsv
@@ -124,6 +129,31 @@ if (phase == "record") {
     })
     msrval::valStatus(phase = "pre", status = "completed", count = length(list.files(work)))
     finish(out, manifest, "pre", outputs)
+} else if (phase == "s0") {
+    # S0 (10.4, r1.14): the evidence run on generated inputs, gating nothing (VAL-41). The job's
+    # first script ran the new pieces' tests; unless they all passed, S0 ends here before any
+    # corpus or route (VAL-54 instrument fault).
+    out <- file.path("val-out", "s0", label)
+    cells <- optValue("--cells")
+    res <- tryCatch(
+        msrval::valRunS0(out, ".", list(path = optValue("--tests"),
+                                         files = strsplit(optValue("--test-files", ""), ",")[[1L]]),
+                         file.path(tmp_root, "val-s0"),
+                         cells = if (is.null(cells)) NULL else strsplit(cells, ",")[[1L]]),
+        val_error = function(e) e
+    )
+    if (inherits(res, "val_error")) {
+        msrval::valStatus(phase = "s0", status = "refused", class = class(res)[[1L]])
+        quit(status = 3L)
+    }
+    run <- data.frame(field = c("package_commit", "harness_tree", "started", "finished"),
+                      value = c(system2("git", c("rev-parse", "HEAD"), stdout = TRUE),
+                                msrval::valHarnessTree("."), started,
+                                format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")))
+    utils::write.table(run, file.path(out, "run.tsv"), sep = "\t", quote = FALSE,
+                       row.names = FALSE)
+    msrval::valWriteOutputsSha(out)
+    msrval::valStatus(phase = "s0", status = "completed", count = nrow(res))
 } else if (phase == "check") {
     manifest <- msrval::valReadManifest(optValue("--manifest"))
     runs <- file.path(evidence_dir, "runs.tsv")

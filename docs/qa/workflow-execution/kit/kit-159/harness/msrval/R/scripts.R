@@ -82,24 +82,63 @@ PROT_QC_STATES <- c(
 #' @param import_values Further structural import inputs (custom column mapping), by input id.
 #' @param contrasts List of group pairs, the first the builder's first contrast.
 #' @param summary `list(label, description)` to continue to the Summary step, or `NULL`.
-#' @return A list: `route`, `omic`, `workflow`, `contrasts`, `steps`.
+#' @param alternative `NULL` (the accepted script) or one of G1(b)'s alternatives, which no
+#'   consumer runs (r1.14): `export_load` ("Export session" after the last normalisation step,
+#'   then "Load Filtered Session" on the DA tab before Run; not on transcriptomics, which has no
+#'   load button) and `no_covariates` (DIA_LIMPA without "Compute RUV-III Covariates").
+#' @return A list: `route`, `omic`, `workflow`, `contrasts`, `alternative`, `steps`.
 #' @export
 valActionScript <- function(route, assays = NULL, import_tool = NULL, import_values = list(),
-                            contrasts = NULL, summary = NULL) {
+                            contrasts = NULL, summary = NULL, alternative = NULL) {
     r <- valRoute(route)
+    valCheckAlternative(r, alternative)
     tool <- import_tool %||% r$import_tool
     steps <- switch(r$omic,
-                    proteomics = valProtScript(r, tool, summary),
+                    proteomics = valProtScript(r, tool, summary, alternative),
                     transcriptomics = valTrxScript(summary),
                     valOmicsScript(r, if (r$omic == "lipidomics") "lipid" else "metab", tool,
-                                   assays, import_values, summary))
+                                   assays, import_values, summary, alternative))
     list(route = route, omic = r$omic, workflow = r$workflow, contrasts = contrasts,
-         steps = steps)
+         alternative = alternative, steps = steps)
+}
+
+#' Refuse an alternative the route does not have (G1(b); r1.14)
+#' @noRd
+valCheckAlternative <- function(r, alternative) {
+    if (is.null(alternative)) return(invisible(TRUE))
+    ok <- switch(alternative,
+                 export_load = !identical(r$omic, "transcriptomics"),
+                 no_covariates = identical(r$workflow, "DIA_LIMPA"),
+                 FALSE)
+    if (!isTRUE(ok)) {
+        valAbort("route {r$route} has no alternative {alternative}", "val_spec_invalid")
+    }
+    invisible(TRUE)
+}
+
+#' The export-then-load steps (A17; G1(b)): the tab's export button after the last normalisation
+#' step, then the DA tab's "Load Filtered Session" with no file chosen (the latest export); neither
+#' changes the head, which stays at the last normalisation state
+#' @noRd
+valExportLoadSteps <- function(head, norm_tab, norm_module, export_button, da_tab, da_module,
+                               da_ui) {
+    force(export_button)
+    force(da_ui)
+    load_button <- paste0(da_module, "-load_filtered_session")
+    list(
+        valStep("export_session", norm_tab, list(head = head), module = norm_module,
+                press = export_button, run = function(api) api$press(export_button)),
+        valStep("load_session", da_tab, list(head = head), module = da_module, press = load_button,
+                run = function(api) {
+                    api$defaults(da_ui, da_module)
+                    api$press(load_button)
+                })
+    )
 }
 
 #' The proteomics script
 #' @noRd
-valProtScript <- function(r, tool, summary) {
+valProtScript <- function(r, tool, summary, alternative = NULL) {
     ns <- asNamespace("MultiScholaR")
     workflow <- r$workflow
     peptide_level <- workflow %in% c("DIA", "DIA_LIMPA")
@@ -186,10 +225,16 @@ valProtScript <- function(r, tool, summary) {
             api$set(list(`normalization-norm_qc_tabs` = "Correlation Filtering"))
             api$press("normalization-apply_correlation_filter")
         })
-    covariates <- if (limpa) {
+    covariates <- if (limpa && !identical(alternative, "no_covariates")) {
         valStep("ruv_covariates", "normalization", list(head = "ruv_covariates"),
                 module = "normalization", press = "normalization-apply_ruv_covariates",
                 run = function(api) api$press("normalization-apply_ruv_covariates"))
+    }
+    export_load <- if (identical(alternative, "export_load")) {
+        valExportLoadSteps(if (is.null(covariates)) "correlation_filtered" else "ruv_covariates",
+                           "normalization", "normalization",
+                           "normalization-export_filtered_session", "da",
+                           "differential_expression", ns$mod_prot_da_ui)
     }
     da <- valStep(
         "da", "da", list(tab = c(differential_expression = "complete")),  # nolint
@@ -212,12 +257,12 @@ valProtScript <- function(r, tool, summary) {
                 })
     }
     Filter(Negate(is.null), c(list(import, design), lapply(specs, qcStep),
-                              list(norm, correlation, covariates, da, save)))
+                              list(norm, correlation, covariates), export_load, list(da, save)))
 }
 
 #' The lipidomics and metabolomics script (`short`: `lipid` or `metab`)
 #' @noRd
-valOmicsScript <- function(r, short, tool, assays, import_values, summary) {
+valOmicsScript <- function(r, short, tool, assays, import_values, summary, alternative = NULL) {
     ns <- asNamespace("MultiScholaR")
     ui <- function(name) get(paste0("mod_", short, "_", name, "_ui"), envir = ns)
     state <- function(x) paste0(short, "_", x)
@@ -288,8 +333,12 @@ valOmicsScript <- function(r, short, tool, assays, import_values, summary) {
                       api$press("de-run_da_analysis")
                   })
     save <- if (!is.null(summary)) valSummaryStep(ui("summary"), summary)
-    Filter(Negate(is.null), list(import, design, intensity, duplicates, itsd, finalize, norm,
-                                 correlation, da, save))
+    export_load <- if (identical(alternative, "export_load")) {
+        valExportLoadSteps(state("correlation_filtered"), "norm", "norm", "norm-export_session",
+                           "de", "de", ui("da"))
+    }
+    Filter(Negate(is.null), c(list(import, design, intensity, duplicates, itsd, finalize, norm,
+                                   correlation), export_load, list(da, save)))
 }
 
 #' The lipidomics, metabolomics and transcriptomics Summary save step
