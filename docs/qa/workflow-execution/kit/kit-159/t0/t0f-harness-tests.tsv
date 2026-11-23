@@ -1,0 +1,16 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-coverage-table.R	T-COV-ENDS: both ends and the failing condition and side are in the regime row	9	1	8	0	0	0	0.311
+test-coverage-table.R	T-COV-ENDS-2: the committed T2 table is what the summary gives on the committed detail	5	5	0	0	0	0	0.525
+test-parity-stage.R	T-PAR-1: a parity request is read and checked	7	7	0	0	0	0	0.122
+test-parity-stage.R	T-PAR-2: the bundle's commit is the release commit, or equal over PKG_PATHS	3	3	0	0	0	0	0.149
+test-parity-stage.R	T-PAR-3: distributable.yml has stage parity and one guarded upload per platform job	3	3	0	0	0	0	0.081
+test-parity-stage.R	T-PAR-4: the request's copied L1 values must equal L1's committed evidence (5 (e))	0	0	0	0	1	0	0.054
+test-phases.R	T-PH-1: the cell table crosses units and arms, one run per (run, arm), fixed seeds	7	7	0	0	0	0	0.035
+test-phases.R	T-PH-2: prepare.R runs in an isolated environment; universe and prepared hashes	7	7	0	0	0	0	0.065
+test-phases.R	T-PH-3: the cell runner by kind writes da.tsv; a refusal is val_arm_refused	8	8	0	0	0	0	0.403
+test-phases.R	T-PH-4: kernel arms pass the identity gate before their cells, or are all refused	5	5	0	0	0	0	0.064
+test-phases.R	T-PH-5: per-unit metric rows carry the fixed columns; blinded in the lifecycle	5	5	0	0	0	0	0.062
+test-phases.R	T-PH-6: run-level intervals over units, refusals, and blinded outcomes	5	5	0	0	0	0	0.029
+test-phases.R	T-PH-7: a phase writes its run folder (cells, metrics, comparisons, provenance)	12	12	0	0	0	0	0.55
+test-phases.R	T-PH-8: within-run bootstrap rows per unit, widening, clopper_pearson and a within-run verdict	0	0	0	0	1	0	0.026
+test-phases.R	T-PH-9: test mode cannot be forced (r1.12, 7.3)	1	1	0	0	1	1	2.486

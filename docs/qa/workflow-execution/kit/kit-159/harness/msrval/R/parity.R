@@ -202,7 +202,7 @@ valCheckParityWorkflow <- function(path) {
         cond <- step[grepl("^\\s*if:", step)]
         guard <- "steps.parity-check.outcome == 'success'"
         if (length(cond) != 1L || !grepl(guard, cond, fixed = TRUE) ||
-            !grepl("parity", sub(guard, "", cond, fixed = TRUE))) {
+                !grepl("parity", sub(guard, "", cond, fixed = TRUE))) {
             bad(paste("the", j, "upload's if: lacks stage parity or the parity-check condition"))
         }
         if (!any(grepl("path: *val-out/parity/\\s*$", step))) bad(paste("the", j, "upload's path"))
@@ -234,8 +234,9 @@ valCheckParityL1 <- function(req, repo = ".", at = req[["release_commit"]]) {
     for (route in names(req[["l1"]])) {
         got <- req[["l1"]][[route]]
         want <- committed[[route]]
-        if (is.null(want) || !identical(got[["digest"]], want[["digest"]]) ||
-            !identical(got[["fingerprint"]][["sha256_10"]], want[["fingerprint"]][["sha256_10"]])) {
+        same_fp <- identical(got[["fingerprint"]][["sha256_10"]],
+                             want[["fingerprint"]][["sha256_10"]])
+        if (is.null(want) || !identical(got[["digest"]], want[["digest"]]) || !same_fp) {
             bad(paste("the copied L1 values of", route, "differ from", path))
         }
     }

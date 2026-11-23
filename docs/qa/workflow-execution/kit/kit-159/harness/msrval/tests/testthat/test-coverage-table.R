@@ -37,6 +37,9 @@ test_that("T-COV-ENDS-2: the committed T2 table is what the summary gives on the
     got <- valSummariseCoverage(detail)
     want <- utils::read.delim(file.path(t2, "coverage-table.tsv"), stringsAsFactors = FALSE)
     key <- function(x) paste(x$regime, x$class, x$design, x$transform, x$n, sprintf("%.6f", x$level))
+    ends <- c("coverage_min", "coverage_max", "failed_condition", "failed_side")
+    expect_true(all(ends %in% names(want)))
+    expect_true(all(ends %in% names(got)))
     got <- got[match(key(want), key(got)), ]
     expect_identical(got$status, want$status)
     expect_equal(got$coverage_min, want$coverage_min)

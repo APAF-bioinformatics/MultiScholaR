@@ -315,11 +315,11 @@ valKernelGate <- function(cells, ctx) {
             list(refused = FALSE, da = utils::read.delim(r$da, stringsAsFactors = FALSE))
         }
         gate <- tryCatch(
-            valKernelIdentity(unique(kc$unit), kernel = function(u) one(a, u),
+            valKernelIdentity(unique(kc$unit), kernel = function(u) one(a, u),  # nolint
                               workflow = function(u) one(arm[["identity_of"]], u),
                               identity_seed = as.integer(arm[["identity_seed"]]),
                               refusal_units = unlist(arm[["refusal_units"]]) %||% character()),
-            val_kernel_identity_failed = function(e) {
+            val_kernel_identity_failed = function(e) {  # nolint
                 list(passed = FALSE, units = character(), note = conditionMessage(e))
             })
         if (!isTRUE(gate$passed)) out$refused <- c(out$refused, kc$run)
@@ -390,7 +390,7 @@ valUnitMetrics <- function(decl, dataset, unit, da, truth, universe, env, blind_
                         status <- if (is.list(res)) res[["status"]] %||% "ok" else "ok"
                     }
                     rows[[length(rows) + 1L]] <- data.frame(
-                        ticket = decl[["ticket"]] %||% NA_character_, dataset = dataset,
+                        ticket = decl[["ticket"]] %||% NA_character_, dataset = dataset,  # nolint
                         truth_id = tid, unit = unit, contrast = m[["contrast"]], arm = a,
                         assay = "all", view = valViewKey(v, cmp_arms),
                         class = m[["args"]][["class"]] %||% NA_character_,
@@ -504,8 +504,8 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted",
                     }
                     if (!blind && n_ref > 0L && length(cmp_arms) == 2L) {
                         rf <- valRefusalFill(dd, tolerance = as.integer(
-                            decl[["refusal_tolerance"]][[m[["id"]]]] %||% 0L),
-                            higher_is_better = hib, margin = m[["margin"]], method = method,
+                            decl[["refusal_tolerance"]][[m[["id"]]]] %||% 0L),  # nolint
+                            higher_is_better = hib, margin = m[["margin"]], method = method,  # nolint
                             conf = m[["conf"]] %||% 0.95, regimes = regimes,
                             accept_flagged = iv_spec[["accept_flagged"]])
                         iv <- rf$interval_dropped %||%
@@ -530,18 +530,18 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted",
                         tryCatch(valClassify(iv, m[["margin"]], hib, fixed = m[["fixed"]],
                                              view = v,
                                              feature_interval_decides = isTRUE(
-                                                 m[["feature_interval_decides"]]),
+                                                 m[["feature_interval_decides"]]),  # nolint
                                              regimes = regimes,
                                              accept_flagged = iv_spec[["accept_flagged"]]),
-                                 val_spec_invalid = function(e) {
+                                 val_spec_invalid = function(e) {  # nolint
                                      list(outcome = NA_character_, no_worse = NA,
                                           regime = paste("refused:", conditionMessage(e)))
-                                 })
+                                 })  # nolint
                     }
                 }
                 outcomes[[component]] <- cl
                 rows[[length(rows) + 1L]] <- data.frame(
-                    arm = cmp_arms[[1L]],
+                    arm = cmp_arms[[1L]],  # nolint
                     comparator = if (length(cmp_arms) == 2L) cmp_arms[[2L]] else "fixed",
                     truth_id = m[["truth"]] %||% "primary", metric = m[["id"]], view = vk,
                     call_rule = m[["call_rule"]] %||% NA_character_,
@@ -566,7 +566,7 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted",
                 mem$all_of <- unlist(mem$all_of)
                 res <- valClassifyMember(mem, outcomes)
                 rows[[length(rows) + 1L]] <- data.frame(
-                    arm = nm, comparator = NA_character_, truth_id = NA_character_,
+                    arm = nm, comparator = NA_character_, truth_id = NA_character_,  # nolint
                     metric = NA_character_, view = NA_character_, call_rule = NA_character_,
                     diff = NA_real_, method = NA_character_, scope = NA_character_,
                     ci_low = NA_real_, ci_high = NA_real_, margin = NA_real_, conf = NA_real_,
@@ -631,8 +631,9 @@ valWithinRunRows <- function(decl, unit, da, truth, universe, env, blind_seed = 
                 if (is.function(env[[spec[["cluster"]] %||% ""]])) {
                     data$cluster <- env[[spec[["cluster"]]]](a1$key[i1])
                 }
-                stat <- function(df) val(a1[i1[df$j], , drop = FALSE]) -
-                    val(a2[i2[df$j], , drop = FALSE])
+                stat <- function(df) {
+                    val(a1[i1[df$j], , drop = FALSE]) - val(a2[i2[df$j], , drop = FALSE])
+                }
                 iv <- valBootstrap(data, stat, B = as.integer(spec[["B"]] %||%
                                                                   valBootstrapMinB(conf)),
                                    conf = conf, seed = as.integer(spec[["seed"]] %||% 1L),
@@ -640,7 +641,7 @@ valWithinRunRows <- function(decl, unit, da, truth, universe, env, blind_seed = 
                                    cluster = if (!is.null(data$cluster)) "cluster",
                                    class = m[["class"]] %||% NA_character_)
                 rows[[length(rows) + 1L]] <- data.frame(
-                    arm = cmp_arms[[1L]], comparator = cmp_arms[[2L]], truth_id = tid,
+                    arm = cmp_arms[[1L]], comparator = cmp_arms[[2L]], truth_id = tid,  # nolint
                     metric = m[["id"]], view = valViewKey(v, cmp_arms),
                     call_rule = m[["call_rule"]] %||% NA_character_,
                     diff = iv[["estimate"]] %||% NA_real_, method = "bootstrap_within_run",
@@ -698,13 +699,13 @@ valClassifyWithin <- function(m, cmp_arms, vk, within, regimes, blind) {
             cl <- tryCatch(valClassify(iv, m[["margin"]], isTRUE(m[["higher_is_better"]]),
                                        fixed = m[["fixed"]], view = "intersection",
                                        feature_interval_decides = isTRUE(
-                                           m[["feature_interval_decides"]]),
+                                           m[["feature_interval_decides"]]),  # nolint
                                        regimes = regimes,
                                        accept_flagged = m[["interval"]][["accept_flagged"]]),
-                           val_spec_invalid = function(e) {
+                           val_spec_invalid = function(e) {  # nolint
                                list(outcome = NA_character_, no_worse = NA,
                                     regime = paste("refused:", conditionMessage(e)))
-                           })
+                           })  # nolint
         }
         x$outcome <- cl$outcome
         x$no_worse <- cl$no_worse

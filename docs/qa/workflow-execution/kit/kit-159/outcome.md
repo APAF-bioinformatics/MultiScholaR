@@ -26,27 +26,31 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-23, after the second build-points ruling; read this first)
+## Resume here (state 2026-11-23 12:35 UTC, after the second build-points ruling; read first)
 
 Ticket r1.12 (main checkout): build-points2 points 3, 4, 5 (a), (b), (c), (e), (f) and R1 applied
 with the register's text (section 27). **HELD for the owner, nothing changed:** point 1 (exact
-binomial band for exact methods) and point 2 (rank generator re-pin and re-run of the C4/C4e rank
-cells); the offered-regime table stays as classified.
+binomial band) and point 2 (rank generator re-pin and re-run); the offered-regime table stays as
+classified.
 
-Commits: tests only 7f4bfc4b (T-COV-ENDS, T-COV-ENDS-2, T-PAR-4, T-PH-8, T-PH-9); code and lint
-4150f21c (coverage table ends and failing condition computed from the recorded detail columns, no
-rerun; USAGE label for clopper_pearson; valCheckParityL1; valWithinRunRows, widening, run-level
-clopper_pearson, bootstrap_within_run verdicts; test mode not forceable; hook summary folder NULL
-without hooks.summary; lint fixes, false positives listed in CHANGES).
+**Runs this round:**
+- T0f 45171499308 at 7f4bfc4b (tests only), 0.84: new tests fail as expected (T-COV-ENDS,
+  T-PAR-4, T-PH-8), except T-COV-ENDS-2, which passed trivially (NULL equals NULL before the
+  columns existed: test defect, corrected after with a column-presence check) and T-PH-9 (its one
+  expectation passed, then an error). **T-PH-1 to T-PH-7 and T-PAR-1 to T-PAR-3 pass (59
+  expectations): the first run of the section 7 code of 2b18b1e3, on the toy fixtures.**
+- Lint-only 45172462054 at 4150f21c, 0.80: **93 -> 17 lints**, all in this session's new code
+  (parity.R 2, phases.R 15). The 17 are fixed or marked after the run (CHANGES), **unrun**. A2's
+  lintr part therefore still unshown; covr 86.52 % stands.
 
-**In flight:** T0f run 45171499308 (tests only at 7f4bfc4b, `--files coverage-table,parity-stage,
-phases`; the new tests should fail; T-PH-1 to T-PH-7 there run the 2b18b1e3 code for the first
-time) under T0 (1.63 left); lint-only run 45172462054 at 4150f21c (`--lint`, plain pass
-test-metrics) under T1 (1.42 left). Fetch each with `gh run download <id> -n scripts` from the
-run-tests worktree; copy results to `t0/t0f-*` and `t1/t1lint-*`, add runs.tsv rows.
+**Budget:** T0 5.21 of 6; T1 14.38 of 15 (no further run fits); T2 18.59 of 60.
 
-**Waiting on the owner:** points 1 and 2; budget into T1 for the whole-suite run that proves the
-section 7 and r1.12 code. Not started: R1 (now specified by r1.12; needs
+**Code state (head of this commit), unrun since its last run:** r1.12 code (coverage table ends,
+L1 check, within-run widening, run-level clopper_pearson, bootstrap_within_run verdicts, test mode
+not forceable, hook summary NULL), the 17 lint fixes, the T-COV-ENDS-2 correction.
+
+**Waiting on the owner:** points 1 and 2; budget into T1 for one whole-suite run with `--lint` that
+proves the section 7 and r1.12 code and A2's lintr part. Not started: R1 (r1.12 text; needs
 `lifecycle/uniprot-accessions.tsv` and a pre script), S0, run-val-mofa (with KIT-170).
 
 ## Earlier resume record (state at dcc27fb5)
