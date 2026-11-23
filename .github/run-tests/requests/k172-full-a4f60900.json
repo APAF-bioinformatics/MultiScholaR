@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-172 counted full suite base a60c4e9a against head a4f60900 with R CMD check; script: the gate-off identity (regression only)",
+  "label": "KIT-172 full suite with check, head a4f60900 vs base a60c4e9a",
+  "package_commit": "a4f60900ec74c3598f7a8d4b467de2e5efc3c666",
+  "base_commit": "a60c4e9a0ec8b7db47edddaa53926a61e2b60299",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 14,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "a60c4e9a0ec8b7db47edddaa53926a61e2b60299",
+        "gate-off-out"
+      ],
+      "env": {},
+      "out": "gate-off-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
