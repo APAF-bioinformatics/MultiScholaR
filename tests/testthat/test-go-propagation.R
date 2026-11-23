@@ -137,12 +137,15 @@ test_that("KIT-173 T2(c, d): three proteins on GO:0006110 reach exactly 19 terms
     expect_false(any(c("GO:0006096", "GO:0008152") %in% two_set))
     expect_true(all(c("GO:0006096", "GO:0008152") %in% five_set))
     # (d) the route: with "none" only GO:0006110 holds them; with parent terms, (c)'s sets without the BP root.
-    annotations <- data.frame(Entry = c("Q1", "Q2", "Q3"), go_id_go_biological_process = "GO:0006110",
-        go_term_go_biological_process = "regulation of glycolytic process", go_id_go_molecular_function = NA_character_,
-        go_term_go_molecular_function = NA_character_, go_id_go_cellular_compartment = NA_character_,
-        go_term_go_cellular_compartment = NA_character_, stringsAsFactors = FALSE)
+    # A fourth protein carries one MF and one CC term: the direct sets' code (unchanged from base) fails on an aspect
+    # column with no annotation at all.
+    annotations <- data.frame(Entry = c("Q1", "Q2", "Q3", "Q4"),
+        go_id_go_biological_process = c(rep("GO:0006110", 3L), NA), go_term_go_biological_process = NA_character_,
+        go_id_go_molecular_function = c(NA, NA, NA, "GO:0005515"), go_term_go_molecular_function = NA_character_,
+        go_id_go_cellular_compartment = c(NA, NA, NA, "GO:0005739"), go_term_go_cellular_compartment = NA_character_,
+        stringsAsFactors = FALSE)
     none <- buildUniprotGoGeneSets(annotations, "none")$term2gene
-    expect_identical(sort(unique(none$TERM)), "GO:0006110")
+    expect_identical(sort(unique(none$TERM[none$Entry %in% c("Q1", "Q2", "Q3")])), "GO:0006110")
     for (case in list(list(value = "is_a_part_of", set = two_set), list(value = "is_a_part_of_regulates",
         set = five_set))) {
         sets <- buildUniprotGoGeneSets(annotations, case$value)
@@ -283,12 +286,15 @@ test_that("KIT-173 T6: the yeast gene-set build stays under 200 MB of added peak
 
 test_that("KIT-173 T7(b): a record made on the base commit replays with the same names, sets, tables and files (regression)", {
     goPropSkipUnlessGoDb()
-    base_dir <- goPropFixtureDir("replay-base")
-    skip_if_not(file.exists(file.path(base_dir, "record.json")), "replay-base not captured yet (R1 makes it)")
+    # The base capture with its project store: script t7-replay.R makes it on the runner (base code installed beside
+    # the head) and points KIT173_REPLAY_BASE at it. The committed replay-base/ holds the record and evidence without
+    # the store (R1's upload withheld it), and a replay needs the record's own store (states are checked by entity id).
+    base_dir <- Sys.getenv("KIT173_REPLAY_BASE", goPropFixtureDir("replay-base"))
+    skip_if_not(file.exists(file.path(base_dir, "project.tar")), "the base project store is present only in t7-replay.R")
     scratch <- withr::local_tempdir()
-    # The base record replays on a project with the same import and design states, built here from the same
-    # fixtures (the captured store itself was withheld by the run's upload scan in R1 and is not committed).
-    project <- file.path(goPropFresh()$work, "project")
+    project <- file.path(scratch, "origin")
+    dir.create(project)
+    utils::untar(file.path(base_dir, "project.tar"), exdir = project, tar = "internal")
     record <- jsonlite::read_json(file.path(base_dir, "record.json"), simplifyVector = FALSE)
     base_evidence <- readRDS(file.path(base_dir, "evidence.rds"))
     base_product <- readRDS(file.path(base_dir, "product.rds"))

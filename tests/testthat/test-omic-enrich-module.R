@@ -4258,8 +4258,9 @@ omicEnrichR3FilterNames <- c("organism_filter_enabled", "organism_filter_taxon")
 test_that("(R3, P-28) a filtered run declares the organism filter, records what it did and has its own identity", {
     seen <- omicEnrichR3FilterDrive(list(record = omicEnrichR3Record))
     r3 <- seen$record$r3
-    expect_identical(utils::tail(diaEnrichmentOperation()$parameters, 2L), omicEnrichR3FilterNames)
-    expect_identical(r3$provenance$parameter_names, diaEnrichmentOperation()$parameters)
+    # KIT-173: `go_propagation` is appended after the filter's two and is declared on the clusterProfiler route only.
+    expect_identical(utils::tail(setdiff(diaEnrichmentOperation()$parameters, "go_propagation"), 2L), omicEnrichR3FilterNames)
+    expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters, "go_propagation"))
     expect_identical(r3$provenance$values[omicEnrichR3FilterNames],
         list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
     expect_identical(omicEnrichR3Parameters(r3$step)[omicEnrichR3FilterNames],
@@ -4292,7 +4293,8 @@ test_that("(R3, P-28) the product's identity changes while the filter is on, and
 test_that("(R3, P-28) an unfiltered run keeps its nine declared names, its record, its product and its identity", {
     seen <- omicEnrichW3Drive("gprofiler", list(record = omicEnrichR3Record))
     r3 <- seen$record$r3
-    expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters, omicEnrichR3FilterNames))
+    expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters,
+        c(omicEnrichR3FilterNames, "go_propagation"))) # KIT-173
     expect_length(r3$provenance$parameter_names, 9L)
     expect_identical(names(omicEnrichR3Parameters(r3$step)), r3$provenance$parameter_names)
     # KIT-119 (2), A107-06: every run records its inputs' identities beside the outcomes every step has (it recorded
