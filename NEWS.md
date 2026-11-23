@@ -1,5 +1,15 @@
 # MultiScholaR NEWS
 
+## MultiScholaR (unreleased; numbered at merge)
+
+### Distribution
+
+ * MultiScholaR now opens normally when it is started from a shell that an editor extension or a coding agent
+   opened; before, it closed at once without a window. (Linux and Windows.)
+ * Help, About names the commit of the analysis code that was installed, beside the commit the installer was built
+   from. Reports and analysis records made with the installed application name the same commit; before, they named
+   none.
+
 ## MultiScholaR 0.9.1 (staging)
 
 ### Scientific changes
