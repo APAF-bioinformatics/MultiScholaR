@@ -315,9 +315,20 @@ test_that("KIT-173 T7(b): a record made on the base commit replays with the same
     expect_identical(vapply(acc$calls, `[[`, "", "term2gene_sha256"), base_calls$term2gene_sha256)
     expect_identical(vapply(acc$calls, `[[`, "", "term2name_sha256"), base_calls$term2name_sha256)
     evidence <- goPropRunEvidence(replayed$state, replayed$pathway_dir)
-    expect_identical(evidence$tables, base_evidence$tables)
+    # A4 as restated (VAL-61): a record made before the geneID fix is compared with its geneID cells as sets (their
+    # order was set per R process); every other column exactly. Its results TSV files differ only in that text, so they
+    # are compared by name; the plot files by existence as before.
+    as_sets <- function(tables) lapply(tables, function(contrast) lapply(contrast, function(table) {
+        if (is.null(table) || !"geneID" %in% names(table)) return(table)
+        table$geneID <- vapply(strsplit(as.character(table$geneID), "/", fixed = TRUE),
+            function(g) paste(sort(g, method = "radix"), collapse = "/"), character(1))
+        table
+    }))
+    expect_identical(as_sets(evidence$tables), as_sets(base_evidence$tables))
     expect_identical(evidence$plot_inputs, base_evidence$plot_inputs)
-    expect_identical(evidence$files, base_evidence$files)
+    expect_identical(evidence$files$file, base_evidence$files$file)
+    expect_identical(evidence$files$sha256[!grepl("\\.tsv$", evidence$files$file)],
+        base_evidence$files$sha256[!grepl("\\.tsv$", base_evidence$files$file)])
 })
 
 test_that("KIT-173 T7(c): the same DA and annotation run fresh declare go_propagation and pass other sets", {

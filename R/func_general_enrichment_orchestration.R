@@ -12,6 +12,22 @@ stripEnrichmentIdSuffix <- function(ids) {
   stringr::str_remove(ids, ":.*")
 }
 
+#' The proteins of each `geneID` cell in alphabetical order (KIT-173, VAL-61)
+#'
+#' enrichit's `ora_cpp` writes a cell in the iteration order of a hash set filled from `Rcpp::unique()`, whose order
+#' follows the strings' memory addresses, so the same analysis listed the same proteins in another order in another R
+#' process. Sorting fixes the order; counts, sizes, ratios, p-values and the sets are unchanged.
+#' @param result An `enrichResult`; anything else (NULL, a stand-in without `geneID`) is returned as it is.
+#' @return `result` with each `geneID` cell's proteins sorted (byte order, `method = "radix"`).
+#' @noRd
+sortEnrichmentGeneIds <- function(result) {
+  if (!isS4(result) || !"result" %in% methods::slotNames(result) || !is.data.frame(result@result) ||
+      !nrow(result@result) || !"geneID" %in% names(result@result)) return(result)
+  result@result$geneID <- vapply(strsplit(as.character(result@result$geneID), "/", fixed = TRUE),
+    function(proteins) paste(sort(proteins, method = "radix"), collapse = "/"), character(1))
+  result
+}
+
 # processEnrichments
 # ----------------------------------------------------------------------------
 #' Process Enrichments
@@ -424,14 +440,14 @@ processEnrichments <- function(da_results,
         # Perform enrichment for up-regulated genes
         up_enrich <- tryCatch({
           if(length(up_genes) > 0) {
-            clusterProfiler::enricher(
+            sortEnrichmentGeneIds(clusterProfiler::enricher(
               gene = up_genes,
               universe = background_IDs,
               TERM2GENE = term2gene,
               TERM2NAME = term2name,
               pvalueCutoff = q_cutoff,
               pAdjustMethod = "BH"
-            )
+            )) # KIT-173 (VAL-61): geneID order fixed
           } else NULL
         }, error = function(e) {
           warning(sprintf("Error processing up-regulated genes: %s", e$message))
@@ -441,14 +457,14 @@ processEnrichments <- function(da_results,
         # Perform enrichment for down-regulated genes
         down_enrich <- tryCatch({
           if(length(down_genes) > 0) {
-            clusterProfiler::enricher(
+            sortEnrichmentGeneIds(clusterProfiler::enricher(
               gene = down_genes,
               universe = background_IDs,
               TERM2GENE = term2gene,
               TERM2NAME = term2name,
               pvalueCutoff = q_cutoff,
               pAdjustMethod = "BH"
-            )
+            )) # KIT-173 (VAL-61): geneID order fixed
           } else NULL
         }, error = function(e) {
           warning(sprintf("Error processing down-regulated genes: %s", e$message))

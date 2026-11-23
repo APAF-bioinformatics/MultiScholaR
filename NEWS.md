@@ -19,6 +19,11 @@
    method. The correction applied is named from the analysis record. On both routes the fold-change bullet now states
    the cutoffs applied (it gave the down cutoff with the wrong sign, or said no cutoff was applied when only the down
    cutoff was set). No result changes. (KIT-173)
+ * Proteomics enrichment for organisms outside the 13 served by g:Profiler: the `geneID` cells of the result tables
+   now list their proteins alphabetically. Before, the order inside a cell was set by the R process (enrichit's hash
+   set over `Rcpp::unique()`, ordered by memory address), so a replay could list the same proteins in another order. No
+   number changes: counts, set sizes, ratios, p-values, q-values and the sets themselves are unchanged. (KIT-173,
+   VAL-61)
 
 ## MultiScholaR 0.9.1 (staging)
 
