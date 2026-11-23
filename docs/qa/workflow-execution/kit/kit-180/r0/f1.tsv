@@ -1,0 +1,8 @@
+check	value
+worktree_added	TRUE
+child_exit_status	0
+test_path_inside_worktree	TRUE
+test_that_returned_true	TRUE
+record_written	TRUE
+frozen_file_written	TRUE
+checkout_oracle_unchanged	TRUE

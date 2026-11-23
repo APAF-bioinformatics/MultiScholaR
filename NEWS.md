@@ -1,5 +1,30 @@
 # MultiScholaR NEWS
 
+## MultiScholaR (unreleased; numbered at merge)
+
+### Scientific changes
+
+ * Label-free (MaxQuant, FragPipe, Spectronaut) and TMT (Proteome Discoverer) analyses now go through the
+   protein-level quality control that DIA analyses use. After the design is saved, the step guide moves to Quality
+   Control, which has four steps: Accession Cleanup, Protein Intensity Filter, Duplicate Removal and Protein Replicate
+   Filter. The guide moves on to Normalization once the Protein Replicate Filter has been applied. Normalization can
+   still be opened earlier, and then shows a warning that the quality control steps are not complete. Before this
+   change, the app marked quality control as done as soon as the design was saved, so an analysis that followed the
+   step guide normalised every protein of the imported table. With RUV at its default, the only proteins removed
+   before testing were those failing the missing-value rule in every group; with RUV skipped, none. Results made by
+   following the step guide can therefore change. A protein is now tested only if at least two groups each have at
+   least two values above the lowest 1 % of all intensities (for groups of equal size). Protein identifiers follow the
+   accession the clean-up chooses. Normalisation, RUV and the test are computed on the filtered table. On the
+   package's test data (400 proteins, two groups of five, 2 % to 8 % of values missing at random; 40 proteins with a
+   true difference), with RUV at its default: proteins tested 398 to 392 (TMT), 398 to 394 (MaxQuant), 397 to 393
+   (FragPipe); significant at q < 0.05, 20 to 18 (TMT; 17 to 16 of the 40 true differences, 3 to 2 of the 360
+   others), 16 to 18 (MaxQuant; 15 to 15, 1 to 3), 25 to 25 (FragPipe; 22 to 22, 3 to 3). With RUV skipped: proteins
+   tested 400 to 397, 400 to 397 and 400 to 396; significant 19 to 18 (18 to 17 true, 1 to 1 other), 17 to 16 (16 to
+   15, 1 to 1) and 25 to 22 (24 to 21, 1 to 1). Real data usually have more missing values, mostly in low-abundance
+   proteins, so the filters can remove a much larger share. The Quality Control tab shows the number of proteins left
+   after each step. Projects and analysis records made before this change are not altered; replaying a record repeats
+   the steps it recorded.
+
 ## MultiScholaR 0.9.1 (staging)
 
 ### Scientific changes
