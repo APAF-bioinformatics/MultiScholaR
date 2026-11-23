@@ -228,3 +228,72 @@ test_that("T-PH-7: a phase writes its run folder (cells, metrics, comparisons, p
     expect_true(prov$blinded)
     expect_identical(prov$phase, "lifecycle")
 })
+
+test_that("T-PH-8: within-run bootstrap rows per unit, widening, clopper_pearson and a within-run verdict", {
+    dir <- withr::local_tempdir()
+    env <- valTicketEnv(toyTicket(dir))
+    prep <- valPrepare(env, data_dir = dir, work_dir = file.path(dir, "work"))
+    decl <- toyDeclaration()
+    decl$metrics[[1L]]$within_run <- list(B = 2000L, seed = 159103L, strata = "class")
+    ctx <- list(decl = decl, dataset = "d1", units = prep$units, env = env,
+                work_dir = file.path(dir, "cells"), pkg_root = ".")
+    cells <- valPhaseCells(decl, "d1", toyUnits(), phase = "counted")
+    u1 <- cells[cells$unit == "u01" & cells$arm %in% c("custom", "baseline"), ]
+    da <- lapply(seq_len(nrow(u1)), function(i) valRunCell(as.list(u1[i, ]), ctx)$da)
+    names(da) <- u1$arm
+    wr <- valWithinRunRows(decl, "u01", da, prep$truth, prep$universe, env, blind_seed = NULL)
+    expect_identical(names(wr), msrval:::EVIDENCE_COLUMNS[["comparisons.tsv"]])
+    expect_identical(wr$scope, "within_run")
+    expect_identical(wr$method, "bootstrap_within_run")
+    expect_true(is.finite(wr$ci_low) && is.finite(wr$ci_high))
+    expect_match(wr$flags, "unit=u01", fixed = TRUE)
+    m <- function(arm, values) {
+        data.frame(unit = sprintf("u%02d", seq_along(values)), metric = "mae", arm = arm,
+                   view = "intersection", contrast = "B-A", truth_id = "primary",
+                   value = values, stringsAsFactors = FALSE)
+    }
+    metrics <- rbind(m("custom", c(0.10, 0.11, 0.09, 0.10, 0.12)),
+                     m("baseline", c(0.10, 0.10, 0.10, 0.11, 0.11)))
+    wide <- wr
+    wide$ci_low <- -0.5
+    wide$ci_high <- 0.5
+    cmp <- valRunLevel(decl, metrics, toyUnits(), regimes = regimeRows("paired_t", 5L),
+                       phase = "counted", within = wide)
+    run <- cmp[cmp$scope == "run_level", ]
+    expect_equal(run$ci_low[[1L]], -0.5)
+    expect_match(run$flags[[1L]], "widened_to_within_run", fixed = TRUE)
+    cp <- toyDeclaration()
+    cp$metrics[[1L]]$interval <- list(method = "clopper_pearson")
+    cp$metrics[[1L]]$comparisons <- list(list("custom"))
+    cp$metrics[[1L]]$fixed <- 0.5
+    shares <- m("custom", c(1, 1, 0, 1, 1))
+    res <- valRunLevel(cp, shares, toyUnits(), regimes = regimeRows("clopper_pearson", 5L,
+                                                                   status = "conservative"),
+                       phase = "counted")
+    want <- valInterval(4L, method = "clopper_pearson", n = 5L, conf = 0.95)
+    expect_equal(c(res$ci_low[[1L]], res$ci_high[[1L]]), c(want$ci_low, want$ci_high))
+    wd <- toyDeclaration()
+    wd$metrics[[1L]]$interval <- list(method = "bootstrap_within_run")
+    wd$metrics[[1L]]$within_run <- list(B = 2000L, seed = 159103L)
+    wd$metrics[[1L]]$feature_interval_decides <- TRUE
+    verdict <- valRunLevel(wd, metrics, toyUnits(),
+                           regimes = regimeRows("bootstrap_within_run", 20L), phase = "counted",
+                           within = wr)
+    expect_identical(verdict$scope[[1L]], "within_run")
+    expect_false(is.na(verdict$outcome[[1L]]))
+})
+
+test_that("T-PH-9: test mode cannot be forced (r1.12, 7.3)", {
+    dir <- withr::local_tempdir()
+    env <- valTicketEnv(toyTicket(dir))
+    prep <- valPrepare(env, data_dir = dir, work_dir = file.path(dir, "work"))
+    decl <- toyDeclaration()
+    decl$arms[[4L]] <- list(id = "shipped", kind = "workflow", builder = "valArmShipped",
+                            route = "prot_lfq",
+                            forced = list(list(setting = "multischolar.test_mode", value = FALSE,
+                                               reason = "x")))
+    ctx <- list(decl = decl, dataset = "d1", units = prep$units, env = env,
+                work_dir = file.path(dir, "cells"), pkg_root = ".")
+    cell <- as.list(valPhaseCells(decl, "d1", toyUnits(), "counted", arms = "shipped")[1L, ])
+    expect_error(valRunCell(cell, ctx), class = "val_spec_invalid")
+})

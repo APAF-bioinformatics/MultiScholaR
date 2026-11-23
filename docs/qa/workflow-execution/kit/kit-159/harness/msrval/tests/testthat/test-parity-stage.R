@@ -67,3 +67,17 @@ test_that("T-PAR-3: distributable.yml has stage parity and one guarded upload pe
                       after = at - 2L), extra)
     expect_error(valCheckParityWorkflow(extra), class = "val_spec_invalid")
 })
+
+test_that("T-PAR-4: the request's copied L1 values must equal L1's committed evidence (5 (e))", {
+    repo <- gitRepo()
+    l1 <- list(prot_lfq = list(digest = strrep("d", 64L),
+                               fingerprint = list(sha256_10 = strrep("e", 64L))))
+    path <- "docs/qa/workflow-execution/kit/kit-159/lifecycle/l1-digests.json"
+    dir.create(file.path(repo, dirname(path)), recursive = TRUE)
+    jsonlite::write_json(l1, file.path(repo, path), auto_unbox = TRUE)
+    commit <- gitCommitFiles(repo, list(), "l1 evidence")
+    req <- list(release_commit = commit, l1_path = path, l1 = l1)
+    expect_true(valCheckParityL1(req, repo, at = commit))
+    req$l1$prot_lfq$digest <- strrep("f", 64L)
+    expect_error(valCheckParityL1(req, repo, at = commit), class = "val_spec_invalid")
+})
