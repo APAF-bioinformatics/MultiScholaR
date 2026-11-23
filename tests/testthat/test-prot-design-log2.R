@@ -269,6 +269,13 @@ test_that("KIT-177 T3: 0, NaN and NA become missing, counted apart; a negative o
 
 # --- T3b through the route -------------------------------------------------------------------------------------------
 
+makeK177FixtureSession <- function() {
+    session <- new.env(parent = emptyenv())
+    session$userData <- new.env(parent = emptyenv())
+    session$onFlush <- session$onFlushed <- session$onSessionEnded <- function(...) function() invisible(NULL)
+    session
+}
+
 test_that("KIT-177 T3b: zeros from a Spectronaut table and from a stored data_cln.tab are missing, recorded and notified", {
     skip_if_not(workflowOwnerCapable())
     notes <- list()
@@ -348,13 +355,6 @@ test_that("KIT-177 T3b: zeros from a Spectronaut table and from a stored data_cl
     expect_true("3 values of 0 were read as not measured (missing). They are not used in the analysis." %in%
         vapply(notes, `[[`, "", "text"))
 })
-
-makeK177FixtureSession <- function() {
-    session <- new.env(parent = emptyenv())
-    session$userData <- new.env(parent = emptyenv())
-    session$onFlush <- session$onFlushed <- session$onSessionEnded <- function(...) function() invisible(NULL)
-    session
-}
 
 # --- T4 provenance ---------------------------------------------------------------------------------------------------
 
@@ -457,7 +457,7 @@ test_that("KIT-177 T7: on values of 0.5 to 50 every later step runs and the coun
         ids <- kept[[route$correlated@protein_id_column]]
         entering <- !is.na(k177Matrix(route$correlated, ids, runs))
         leaving <- !is.na(k177Matrix(design_state, ids, runs))
-        expect_identical(entering, leaving, label = paste(shape, "observed cells of the kept proteins"))
+        expect_identical(unname(entering), unname(leaving), label = paste(shape, "observed cells of the kept proteins"))
     }
 })
 
