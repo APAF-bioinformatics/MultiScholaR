@@ -1,0 +1,75 @@
+{
+  "requested_by": "KIT-185 L1b: blind lifecycle, lipid/metab cells (shipped and presence), part B, sensitivity variants (rep 401), E3, E6, E7; ceiling 10.67 core-hours",
+  "label": "KIT-185 L1b lifecycle lipid metab part B sensitivity 819d882e",
+  "package_commit": "819d882e1333b1e29cbde5d419e66bdf8d5cadd9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "A",
+        "L1,L2,M1,M2",
+        "401",
+        "403",
+        "k185-l1b-a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1b-a"
+      },
+      "out": "k185-l1b-a",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 80
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "B",
+        "P0,L2,M2",
+        "401",
+        "402",
+        "k185-l1b-b"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1b-b"
+      },
+      "out": "k185-l1b-b",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 40
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "S",
+        "P0,M2",
+        "401",
+        "401",
+        "k185-l1b-s"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1b-s"
+      },
+      "out": "k185-l1b-s",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

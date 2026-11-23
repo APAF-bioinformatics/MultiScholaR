@@ -1,0 +1,75 @@
+{
+  "requested_by": "KIT-185 L1c (D5): blind lifecycle, batch cells P4b L1b M1b, run-aligned masks, part B extension; ceiling 10.67 core-hours",
+  "label": "KIT-185 L1c lifecycle D5 819d882e",
+  "package_commit": "819d882e1333b1e29cbde5d419e66bdf8d5cadd9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "A",
+        "P4b,L1b,M1b",
+        "401",
+        "403",
+        "k185-l1c-a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1c-a"
+      },
+      "out": "k185-l1c-a",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 70
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "R",
+        "P0,P1,L2,M2",
+        "401",
+        "403",
+        "k185-l1c-r"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1c-r"
+      },
+      "out": "k185-l1c-r",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 40
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "B",
+        "P1,P4b,L1b,M1b",
+        "401",
+        "402",
+        "k185-l1c-b"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1c-b"
+      },
+      "out": "k185-l1c-b",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
