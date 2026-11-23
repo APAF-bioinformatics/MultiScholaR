@@ -171,6 +171,23 @@ from `norm` on. The bundle job uploads nothing, so the text behind the digest ca
 known (inferred candidates: the order of the assays in the new values-set-to-missing line, or line endings).
 `omic_worker_da` 49 failing expectations against the reference's 23 (the DA summary's new line, as on runners).
 
+## Declared before sending: the Windows norm_log diagnosis (VAL-68)
+
+- Purpose: read the text behind the Windows-only `norm_log` digest difference of the four lanes (B1). Diagnosis
+  only: no package code, oracle or ticket test changes.
+- Binding: run branch `run-k172-win` = the ticket head 55ff3063 plus instrumentation only: the suite stage of
+  `run-win-k147` (13f755bb: `distributable.yml` stage `suite`, `packaging/verify/run-suite*.R`) and one diagnosis
+  file, `tests/testthat/test-k172-normlog-diag.R`, that wraps the lanes' capture function to keep the `norm_log`
+  text whole and returns it in failure messages (SUITEFAIL lines of the job log), with the digest the capture would
+  write and the re-frozen oracle's. Four lanes under testthat (C collation, as the suite runs files), then
+  `lipid_canonical` and `metab_gc` again under the runner's own locale (`LC_ALL ""`), as the bundle's lane step runs
+  lanes outside testthat.
+- Request: `distributable.yml` dispatched on `run-k172-win`, stage `suite`, platform `windows`, files
+  `test-k172-normlog-diag.R`. Linux not run (a separate job; not free).
+- Ceiling: one Windows suite job, about 60 minutes (bundle build about 40, lanes about 20), about 4 core-hours; total
+  limit about 112 (VAL-68). One mechanics rerun at most if no text comes back.
+- Decides: the cause as observed, the smallest fix, and whether any number changes.
+
 ## Budget
 
 108.0 core-hours used: R1 3.90, R1b 1.04, R2 11.47, R3 2.47, C1 0.58, C2 0.97, C3 0.83, C4 1.46, C5 1.21, F1 64.46,
