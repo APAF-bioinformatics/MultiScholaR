@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-173 R1: tests-only commit (R/ equal to base a60c4e9a); T1-T11 must fail at the stated values, T7(a) capture on base code; ceiling 4 core-h; decides whether the fix may follow",
+  "label": "KIT-173 R1 tests-only 536080c5 and T7(a) capture",
+  "package_commit": "536080c5744efa16f54b8c4c30ea254da3307e45",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-go-propagation.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/capture-record.R",
+      "args": [
+        "k173-capture-out"
+      ],
+      "env": {},
+      "out": "k173-capture-out",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
