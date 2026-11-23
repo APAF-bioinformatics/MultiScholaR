@@ -1,0 +1,48 @@
+{
+  "requested_by": "KIT-159 S0 (r1.14, 10.4): new pieces' tests (must pass, else S0 ends before any route, VAL-54), then the 15 route runs on generated inputs; evidence run, gates nothing (VAL-41); S0 ceiling 16 core-hours",
+  "label": "KIT-159 S0 at a29a43c0",
+  "package_commit": "a29a43c0dfb51cdd4c7bb692d999e85c8e4904e0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/s0-out",
+        "--files",
+        "corpus,alternatives",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/s0-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-run.R",
+      "args": [
+        "s0",
+        "docs/qa/workflow-execution/kit/kit-159/lifecycle",
+        "s0",
+        "--tests",
+        "docs/qa/workflow-execution/kit/kit-159/s0-out/harness-tests.tsv",
+        "--test-files",
+        "corpus,alternatives"
+      ],
+      "env": {},
+      "out": "val-out",
+      "out_pattern": "\\.(tsv|txt|sha256)$",
+      "timeout_minutes": 190
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
