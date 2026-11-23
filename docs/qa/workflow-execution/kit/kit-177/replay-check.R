@@ -68,8 +68,10 @@ slotDifferences <- function(lane, state, a, b) {
 readDa <- function(manager) tryCatch(withDIAStateScope(manager, function() {
     reference <- manager$.context$snapshot$da_results
     if (is.null(reference)) return(NULL)
-    manifest <- hydrateSavedWorkflowEntity(manager$.context$store, reference)$value
-    as.data.frame(readDIAContrastOutput(manifest$results[[1L]], "da_proteins_long")$da_proteins_long)
+    # As the record reads it (`buildWorkflowAnalysisRecord`): the head's DA manifest, then the contrast's long table.
+    manifest <- resolveWorkflowStateValue(manager$.context, reference)
+    long <- readDIAContrastOutput(manifest$results[[1L]], "da_proteins_long")$da_proteins_long
+    if (is.null(long)) NULL else as.data.frame(long)
 }), error = function(e) NULL)
 readDa <- (function(f) { environment(f) <- env; f })(readDa)
 
@@ -125,7 +127,12 @@ for (lane in names(lanes)) {
         api("writeWorkflowAnalysisRecord")(manager, json)
         states_first <- lapply(stats::setNames(first$states, first$states), function(name)
             api("withDIAStateScope")(manager, function() manager$getState(name)))
-        da_first <- first$da
+        # The first run's DA table read from its store the same way as the replay's (the in-memory read kept beside it).
+        da_memory <- first$da
+        da_first <- readDa(manager)
+        put(lane, "da_first_store_read_rows", if (is.null(da_first)) "not read" else nrow(da_first))
+        put(lane, "da_first_store_equals_memory_by_name", !is.null(da_first) && setequal(names(da_first), names(da_memory)) &&
+            nrow(da_first) == nrow(da_memory))
         store_root <- dirname(manager$.context$store$directory)
         put(lane, "store_root_is_root", identical(normalizePath(store_root), normalizePath(root)))
         api("closeDIAStateAdapter")(manager)
