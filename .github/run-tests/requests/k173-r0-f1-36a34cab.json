@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-173 R0 (F1): GO.db values of 2.2, enricher on the lock, UniProt/GMT fixture fetches, QuickGO checks, T5 pilot, term selections; ceiling 4 core-h; decides whether implementation may start",
+  "label": "KIT-173 R0 F1 feasibility on kit-173-go-propagation 36a34cab",
+  "package_commit": "36a34cab1c5286b5074ce3baaa6c5972a061d686",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/f1-feasibility.R",
+      "args": [
+        "k173-f1-out"
+      ],
+      "env": {},
+      "out": "k173-f1-out",
+      "out_pattern": "\\.(tsv|txt|json|gz)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
