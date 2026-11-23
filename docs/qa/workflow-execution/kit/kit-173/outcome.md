@@ -38,6 +38,14 @@ Ticket revision 1.5. Branch `kit-173-go-propagation` from `v0.9-staging` a60c4e9
   `propagateGoAnnotations`), `capture-record.R` run on it, then `test-go-propagation.R` on the installed head with the
   capture: all tests pass except T7(b), 9 of 11 expectations passed, **2 failed**. Which two is not known: the test
   console stayed in the job by the script's design and only the counts were uploaded (`r2b/t7-tests.tsv`).
+- **T7 instrument run 1 (VAL-54, run 45141146856, commit 7f4f4060)**: the instrument defect of R2b (only counts
+  returned) fixed by writing the failing expectations (test, class, first 12 message lines) to `t7-failures.tsv`;
+  nothing else changed. T7(b)'s two failures: `evidence$tables` (the `geneID` strings of the up table differ in order
+  only, e.g. row 1 has the same 10 accessions) and `evidence$files` (the up and down results TSV SHA-256 differ: b50f9813...
+  against dba72b18..., a13410fa... against e1c525b8...). Every other T7(b) expectation passed, TERM2GENE included.
+  Reading (inferred, not tested): enrichit writes `geneID` in the order of the `gene` vector, which `processEnrichments`
+  takes from the DA table's row order; the TERM2GENE is identical, so the order of the replayed DA table differs from
+  the original's. Whether a base-on-base replay shows the same was not run.
 - **Effect (R2e)**: E. coli, 4,024 annotated proteins, the background N 4,024 for every value and arm (no root-only
   protein in the real data, `go_root_only_proteins` 0). Pairs 21,882 (none), 127,808 (two relations), 133,420 (five);
   terms in the 10-to-500 range 314, 1,242, 1,249 (947 enter at 10, 12 leave at 500, five relations). Per arm (median over
@@ -58,7 +66,7 @@ Ticket revision 1.5. Branch `kit-173-go-propagation` from `v0.9-staging` a60c4e9
 | A1 | met | `feasibility.md`, `f1/` |
 | A2 | met, except T7(c) on head is shown in R2b and T7(b) below | R1 (base failing), R2b (head passing); `runs.tsv` |
 | A3 | met | `t5-summary.tsv` (three conditions TRUE), the two-relation report, the 40 lowest |
-| A4 | **not met**: the base record replays on head in the job, 9 of 11 expectations pass, 2 fail and are not identified; the correction pass is used, so the work stops here for this criterion | `r2b/t7-base-check.tsv`, `r2b/t7-tests.tsv` |
+| A4 | **not met (result)**: the base record replays on head with the same nine declared names, product parameters, service, contrasts, TERM2GENE and TERM2NAME hashes and plot-data digests; the stored result tables differ in one column, `geneID` (each row lists the same proteins in another order), and so the two `*_enrichment_results.tsv` files' SHA-256 differ. Found by instrument run 1 (VAL-54); stopped and reported, the test not adjusted | `t7i1/t7-failures.tsv`, `r2b/` |
 | A5 | measured, waiting for the owner (D8); not yet in NEWS or the ledger | `effect.tsv` |
 | A6 | partly: targeted files, dependents and check done (R2, R2b); full suite (R3) not run, it follows D8 | `r2b/`, `check-compare.txt` |
 | A7 | met | diff: NEWS under the unnumbered heading, no version change, Rd by hand, `Collate` |
