@@ -167,8 +167,10 @@ test_that("KIT-190 self-check: the trace records the helper's p-values", {
   k190 <- k190Trace()
   m <- k190M40()
   design <- data.frame(group = k190Groups, row.names = k190Samples)
-  k190Quiet(getNegCtrlProtAnovaHelper(m, design, grouping_variable = "group", percentage_as_neg_ctrl = 10,
-    ruv_fdr_method = "BH"))
+  # Called through the namespace binding the trace modified (the S4 methods' enclosure), not the attached copy that a
+  # name looked up from the test environment finds.
+  traced <- get("getNegCtrlProtAnovaHelper", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+  k190Quiet(traced(m, design, grouping_variable = "group", percentage_as_neg_ctrl = 10, ruv_fdr_method = "BH"))
   expect_length(unlist(k190$ps), 40L)
 })
 
@@ -283,7 +285,8 @@ test_that("KIT-190 T6: proteomics and peptide selections follow the ANOVA (unaff
   design <- data.frame(Run = k190Samples, group = k190Groups, stringsAsFactors = FALSE)
 
   protein <- ProteinQuantitativeData(
-    protein_quant_table = data.frame(Protein.Ids = rownames(m), m, check.names = FALSE, stringsAsFactors = FALSE),
+    protein_quant_table = data.frame(Protein.Ids = rownames(m), m, check.names = FALSE, stringsAsFactors = FALSE,
+      row.names = NULL),
     protein_id_column = "Protein.Ids",
     protein_id_table = data.frame(Protein.Ids = rownames(m), stringsAsFactors = FALSE),
     design_matrix = design, sample_id = "Run", group_id = "group", technical_replicate_id = "replicates",
