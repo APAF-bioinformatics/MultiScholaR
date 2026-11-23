@@ -33,3 +33,22 @@ Gate result: **passes**. No difference in any fact 5.1 relies on.
 Full SHA-256 of the files read (3.68.4 = 3.68.5):
 - `R/geneset-camera.R` `4c4c0b437f05f0fab3ab38ae2d865f7e20fd7364067917b71e44f790883dc23f`
 - `R/geneset-cameraPR.R` `ecfae11557f45b4467453c5f2f0dd27a5e02ee7918390e2478057de474a75c9c`
+
+## F3: one training seed gives the reported model of five (L1, runs 45148992728 and 45151737782)
+
+Observed: replicate 1 of n = 12 trained with `training_seeds = 1` and with 5: factors identical, weights identical,
+largest absolute difference of the factors 0 (both runs). Gate result: **passes**; S may train one seed.
+
+## F4: MOFA2 1.22.0's enrichment code (read, no run)
+
+`MOFA2_1.22.0.tar.gz` from `https://bioconductor.org/packages/3.23/bioc/src/contrib/Archive/MOFA2/` (SHA-256
+`128c1b4dc889970a9f17363d3504801d1ba5563c094ae7d1fd5840bc360db19d`, `git_last_commit: b132e6c`), `R/enrichment.R`
+(633 lines) read: `run_enrichment(object, view, feature.sets, factors = "all", set.statistic = c("mean.diff",
+"rank.sum"), statistical.test = c("parametric", "cor.adj.parametric", "permutation"), sign = c("all", "positive",
+"negative"), min.size = 10, nperm = 1000, p.adj.method = "BH", alpha = 0.1, verbose = TRUE)`; the feature statistic is
+the absolute scaled weight (`.compute_feature_statistics`); sets filtered to at least `min.size` model features; the
+default `parametric` test (`.pcgse_ttest`, `cor.adjustment = FALSE`) is the mean difference over the pooled standard
+deviation times sqrt(1/m1 + 1/m2), t on m1 + m2 - 2 df, two-sided; `cor.adj.parametric` takes the VIF from
+`cor(data[, set], use = "complete.obs")` with df = samples - 2; `permutation` permutes the weight matrix's rows
+(features). This is the description of ticket 2.2 (read there on master); master itself was not re-read here.
+Gate result: **passes**; the comparator `mofa_default` in `simulate-k183.R` is coded as 1.22.0 has it.
