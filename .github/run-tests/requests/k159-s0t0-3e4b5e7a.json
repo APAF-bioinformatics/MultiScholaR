@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 S0 (r1.14): corpus writer, alternative scripts, two-species input, S0 gate: tests only, shown failing before the code; charged to S0's line (ceiling 16) by the coordinator's ruling, T0 exhausted",
+  "label": "KIT-159 S0 pieces tests only at 3e4b5e7a",
+  "package_commit": "3e4b5e7a79310de8a6ccf8886dfa4046a603ddae",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/s0t0-out",
+        "--files",
+        "corpus,alternatives"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/s0t0-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
