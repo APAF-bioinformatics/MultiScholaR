@@ -1,0 +1,59 @@
+{
+  "requested_by": "KIT-173 R2: fix commit vs base 62a41ba1 (R/ equal to a60c4e9a, tests and fixtures added); targeted files and dependents, R CMD check both sides, T5 evidence and D9 texts; ceiling 38 core-h; decides R2e",
+  "label": "KIT-173 R2 fix a3d6d84f vs 62a41ba1",
+  "package_commit": "a3d6d84fa2afc27e31691eedcb32b75d4f9dacc7",
+  "base_commit": "62a41ba1ed35cecc8562c2ad9bd603b8bf9151fb",
+  "tools_ref": "",
+  "tests": [
+    "test-go-propagation.R",
+    "test-omic-enrich-module.R",
+    "test-workflow-analysis-record.R",
+    "test-general-enrichment-shared.R",
+    "test-omics-enrich-core.R",
+    "test-e2e-proteomics-enrichment.R",
+    "test-module-ci-prot-enrich.R",
+    "test-prot-11-enrichment-module-contracts.R",
+    "test-prot-11a-enrichment-module-characterization.R",
+    "test-prot-annotation-uniprot-direct-shared.R",
+    "test-prot-annotation-ensembl-full-direct-shared.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-omic-gui-config.R",
+    "test-workflow-dia-products.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-prot-declarations.R",
+    "test-prot-summary-report-templates.R",
+    "test-module-ci-prot-summary.R",
+    "test-general-filemgmt-report-helpers-shared.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/t5-agreement.R",
+      "args": [
+        "k173-t5-out"
+      ],
+      "env": {},
+      "out": "k173-t5-out",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 60
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-173/d9-paragraphs.R",
+      "args": [
+        "k173-d9-out"
+      ],
+      "env": {},
+      "out": "k173-d9-out",
+      "out_pattern": "\\.txt$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
