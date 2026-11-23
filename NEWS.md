@@ -12,7 +12,8 @@
    when the Differential Analysis tab is pressed before the normalisation now reads 'Run the normalisation first: the
    differential analysis runs on the normalised data.', and the tab's model help says that the RUV factors enter the
    model only when the normalisation added them. The report then states that no correction for unwanted variation was
-   applied.
+   applied. On these runs the tab still reports that the results could not be saved to disk, although the result tables
+   and figures are written; this is fixed separately (KIT-192).
 
 ## MultiScholaR 0.9.5 (staging)
 
