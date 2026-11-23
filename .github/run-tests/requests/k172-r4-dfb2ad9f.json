@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-172 correction after the full suite: the counts tally (no <<-), the buildNormConfig pin, the record path; the affected files base against head with R CMD check",
+  "label": "KIT-172 R4 dfb2ad9f vs a60c4e9a: affected files and check",
+  "package_commit": "dfb2ad9fe2600cc303692a0a70e7bb651fcad307",
+  "base_commit": "a60c4e9a0ec8b7db47edddaa53926a61e2b60299",
+  "tools_ref": "",
+  "tests": [
+    "test-omics-module-globals.R",
+    "test-metab-03-norm-support-characterization.R",
+    "test-kit172-log2-rule.R",
+    "test-lipid-09b-s4-log-transform-assays-characterization.R",
+    "test-metab-02r-log-transform-assays-characterization.R",
+    "test-metab-s4-norm-core-shared.R",
+    "test-lipid-09-s4-normalization-methods.R",
+    "test-workflow-lipid-declarations.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
