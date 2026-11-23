@@ -1,0 +1,4 @@
+variant	what	index	rows_capture	rows_replay	same_set	same_order	rows_at_another_position
+basebase	DA table read by the kernel	1 groupB-groupA	70	70	TRUE	TRUE	0
+basebase	gene vector handed to enricher	1	25	25	TRUE	TRUE	0
+basebase	gene vector handed to enricher	2	10	10	TRUE	TRUE	0

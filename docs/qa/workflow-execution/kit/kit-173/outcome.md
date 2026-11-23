@@ -144,7 +144,8 @@ Result (run C3, 45149307211; `cross/`). Observed:
 | TERM2GENE, TERM2NAME hashes | identical | identical | identical |
 | `geneID` cells that differ | up table rows 1 to 4 shown (message cut at 12 lines) | 11: up GO:0009085, GO:0005829, GO:0042802, GO:0042803, GO:0005737; down GO:0070180, GO:0022625, GO:0002181, GO:0003735, GO:0005737, GO:0005829; each the same set of proteins | the same 11 |
 
-Pattern: different in both (a) and (b). By the rule fixed above, the difference is KIT-173's. Observed beside it: the
+Pattern: different in both (a) and (b). By the rule fixed above, the difference is KIT-173's (withdrawn after
+control 3, below: the same difference occurs on the base alone across two processes). Observed beside it: the
 inputs this control records (the DA table's order, the gene vectors, the TERM2GENE and TERM2NAME content hashes, which
 compare names and values as text in row order) are identical at capture and replay; the reordering happens inside or
 after the enrichment call. Which code path does it was not determined here (no further run; nothing decided).
@@ -160,7 +161,13 @@ No test and no product code changes. Commit bound: the commit adding `t7-basebas
 job, 1 core-hour. Rule fixed now: if the `geneID` cells differ as in C3, the cause is shown and the record withdraws
 the attribution to KIT-173; if identical, stop and report (the diagnosis is then wrong). One mechanics rerun at most.
 
-Result: __BASEBASE__
+Result (run C4, 45151486004; `basebase/`). Observed: both processes on the base (no `propagateGoAnnotations`), collation
+C.UTF-8 in both; 9 of 11 expectations pass, result tables and pathway files fail; the DA table (70 rows) and both gene
+vectors (25, 10) in the same order at capture and replay; the same 11 `geneID` cells as in C3 differ, each the same
+set of proteins. By the rule fixed above the cause is shown: the order inside a `geneID` cell is set per R process
+(enrichit 0.2.0 `src/enrichit.cpp:24-28, 69-76` iterate an `unordered_set` filled from `Rcpp::unique()`, whose order
+follows the hash of each string's memory address, Rcpp 1.1.2 `IndexHash.h:111-117, 232-238`), and occurs without
+KIT-173. **The attribution of C3 to KIT-173 is withdrawn.**
 
 ## Acceptance criteria
 
