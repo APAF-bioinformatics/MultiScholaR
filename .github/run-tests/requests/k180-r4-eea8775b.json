@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-180 R4: control and freeze (script S2) on fix eea8775b: base a60c4e9a lanes in a worktree, head lanes recorded and frozen into out; prot_tmt, prot_lfq, prot_lfq_fragpipe; changed step design on each lane (declared in the ticket); F4 rows committed",
+  "label": "KIT-180 R4 control and freeze eea8775b vs a60c4e9a",
+  "package_commit": "eea8775b51bbf3ef09fd98980e6fbfcecf8eaa55",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-180/gui-entry-control.R",
+      "args": [
+        "a60c4e9a0ec8b7db47edddaa53926a61e2b60299",
+        "docs/qa/workflow-execution/kit/kit-180/control"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-180/control",
+      "out_pattern": "\\.(json|tsv)$",
+      "timeout_minutes": 110
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
