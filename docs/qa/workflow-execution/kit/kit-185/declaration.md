@@ -77,3 +77,12 @@ L2, M2 1-400; M1 1-134, 135-267, 268-400; P0lo, P0hi 1-200; P4b 1-134, 135-267, 
 Part B: P0 1-50, 51-100; L2 and M2 1-100 (one job); P1 and P4b 1-50, 51-100; L1b and M1b 1-100 (one job). Sensitivity:
 P0 1-100, 101-200; M2 1-200. Run-aligned: P0, L2, M2 1-400 (one job); P1 1-200, 201-400. Determinism D: P0 and M2
 replicates 1-5 (rows renamed `d-` for E5). Scoring SC once over the committed rows.
+
+## 7. Dated section (2026-11-24), made after the results: scoring defect fixed and rows re-scored once
+
+The first scoring run (SC, run 45281426216, script SHA-256 5a708c6e…71eb) reported E5 and E8 as failed. Checked outside R
+on the committed text rows, the compared rows are identical (E5: P0 and M2 replicates 1-5, 2,360 rows each; E8: k1 and k4
+N rows, 1,600 each; run-aligned `none` rows, 35,760). The failure was in `score-k185.R`'s comparison: `identical()` on
+data frames read separately, whose inferred column types differ (an all-NA column is logical in one table, numeric in
+another). Fix: the compared columns are converted to text before `identical()`; no estimand, contrast, interval, band or
+classification code changed. New SHA-256 of `score-k185.R`: see the commit that adds this section. All rows re-scored once.

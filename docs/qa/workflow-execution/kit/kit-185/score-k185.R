@@ -262,6 +262,9 @@ checks <- do.call(rbind, lapply(check_files, function(f) cbind(utils::read.delim
 drop_cols <- c("seconds")
 comparable <- function(x, keys) {
     x <- x[, setdiff(names(x), c(drop_cols, "part")), drop = FALSE]
+    # compared as text: tables read separately can infer different column types (an all-NA column is logical in one
+    # and numeric in another), which identical() would count as a difference (dated section of the declaration)
+    x[] <- lapply(x, as.character)
     x <- x[do.call(order, x[keys]), , drop = FALSE]
     rownames(x) <- NULL
     x
