@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-185 SC: score-k185.R (hash pinned in the declaration) once over the committed rows; ceiling 3.33 core-hours",
+  "label": "KIT-185 SC scoring 65b9beb4",
+  "package_commit": "65b9beb4fae134ee36f3aebedf61121118ed8c0e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/score-k185.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-185",
+        "k185-results"
+      ],
+      "env": {},
+      "out": "k185-results",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
