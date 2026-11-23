@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 coverage range split: implementation, tests passing, cost probe of the unprobed heavy T-COV cells for the T2 plan",
+  "label": "KIT-159 coverage split at 1a300abe",
+  "package_commit": "1a300abef49e57ff22d0a7ed29dee5fceb472789",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1s-out",
+        "--probe-cells",
+        "C4-145,C4-146,C4e-149,C4e-150,C3-079,C3-127,C2-030"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1s-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
