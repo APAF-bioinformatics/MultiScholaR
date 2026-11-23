@@ -355,7 +355,7 @@ test_that("KIT-183 T3: sets are counted and tested on the complete identifiers; 
     expect_identical(camera$test_counts$universe, 36L)
     expect_null(camera$service$seed)
     expect_identical(camera$service$test_settings, INTEGRATION_ENRICHMENT_TEST_SETTINGS[["camera"]])
-    expect_null(gsea$test)
+    expect_null(gsea[["test"]])
     # 300 identifiers absent from the data, in a set of their own and added to a tested set: nothing changes.
     absent <- sprintf("C%05d", 50000L + seq_len(300L))
     padded <- intEtUnitKegg(list(PX = absent))

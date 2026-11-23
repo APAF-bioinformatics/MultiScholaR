@@ -204,17 +204,28 @@ trainReplicate <- function(sim, root, training = list(training_seeds = 1L)) {
 
 fisherZ <- function(r) atanh(pmax(pmin(r, 1 - 1e-12), -1 + 1e-12))
 
-# PCGSE's t of a set's mean difference against the other features (`.pcgse_ttest`, MOFA2 1.22.0).
+# PCGSE's t of a set's mean difference against the other features (`.pcgse_ttest`, MOFA2 1.22.0): mean in the set
+# minus mean outside, over the pooled standard deviation, times sqrt(vif/m1 + 1/m2). `stat` is features x columns
+# (one column per permutation); the result is sets x columns. Computed from the sums and sums of squares in and out of
+# each set (the same quantities as the per-set loop of .pcgse_ttest).
 pcgseT <- function(stat, index, vif = NULL) {
-    vapply(seq_along(index), function(i) {
-        inside <- index[[i]]
-        a <- stat[inside]
-        b <- stat[-inside]
-        m1 <- length(a)
-        m2 <- length(b)
-        pooled <- sqrt(((m1 - 1) * stats::var(a) + (m2 - 1) * stats::var(b)) / (m1 + m2 - 2))
-        (mean(a) - mean(b)) / (pooled * sqrt((if (is.null(vif)) 1 else vif[[i]]) / m1 + 1 / m2))
-    }, numeric(1))
+    stat <- as.matrix(stat)
+    g <- nrow(stat)
+    member <- matrix(0, length(index), g)
+    for (i in seq_along(index)) member[i, index[[i]]] <- 1
+    m1 <- rowSums(member)
+    m2 <- g - m1
+    sum_in <- member %*% stat
+    sq_in <- member %*% stat^2
+    sum_all <- matrix(colSums(stat), length(index), ncol(stat), byrow = TRUE)
+    sq_all <- matrix(colSums(stat^2), length(index), ncol(stat), byrow = TRUE)
+    mean_a <- sum_in / m1
+    mean_b <- (sum_all - sum_in) / m2
+    ss_a <- sq_in - m1 * mean_a^2
+    ss_b <- (sq_all - sq_in) - m2 * mean_b^2
+    pooled <- sqrt((ss_a + ss_b) / (m1 + m2 - 2))
+    inflation <- if (is.null(vif)) rep(1, length(index)) else vif
+    (mean_a - mean_b) / (pooled * sqrt(inflation / m1 + 1 / m2))
 }
 
 comparators <- function(values, sets, f, perm_seed, weights_view) {
@@ -230,19 +241,18 @@ comparators <- function(values, sets, f, perm_seed, weights_view) {
         cm <- stats::cor(t(y[i, , drop = FALSE]))
         1 + (m - 1) * (sum(cm) - m) / (m * (m - 1))
     }, numeric(1))
-    t_cor <- pcgseT(z, index, vif)
+    t_cor <- pcgseT(z, index, vif)[, 1L]
     p_cor <- 2 * stats::pt(-abs(t_cor), df = n - 2)
     # (ii) permutation of the factor's scores across S_d (the model not refitted), the uncorrected t's |t| against its
     # permutation distribution: p = (1 + #{|t*| >= |t|}) / (1 + permutations).
-    t_obs <- pcgseT(z, index)
+    t_obs <- pcgseT(z, index)[, 1L]
     ys <- t(scale(t(y)))
     perms <- withr::with_seed(perm_seed, vapply(seq_len(K$permutations), function(i) sample(n), integer(n)))
     fs <- matrix(f[perms], n, K$permutations)
     fs <- scale(fs)
     rp <- (ys %*% fs) / (n - 1)
     zp <- fisherZ(rp)
-    t_perm <- vapply(seq_len(K$permutations), function(j) pcgseT(zp[, j], index), numeric(length(index)))
-    t_perm <- matrix(t_perm, nrow = length(index))
+    t_perm <- pcgseT(zp, index)
     p_perm <- (1 + rowSums(abs(t_perm) >= abs(t_obs))) / (1 + K$permutations)
     out <- data.frame(set = names(sets), pcgse_cor = p_cor, pcgse_perm = p_perm, stringsAsFactors = FALSE)
     out$pcgse_cor_t <- t_cor
@@ -256,7 +266,7 @@ comparators <- function(values, sets, f, perm_seed, weights_view) {
         model_index <- lapply(sets, function(s) which(weights_view$identifier %in% s))
         ok <- lengths(model_index) >= K$mofa_min_size
         if (any(ok)) {
-            t_mofa <- pcgseT(stat, model_index[ok])
+            t_mofa <- pcgseT(stat, model_index[ok])[, 1L]
             m1 <- lengths(model_index[ok])
             out$mofa_default_t[ok] <- t_mofa
             out$mofa_default[ok] <- 2 * stats::pt(-abs(t_mofa), df = length(stat) - 2)
@@ -471,8 +481,8 @@ analyse <- function(sim, v, fit, factor, kind, value_aug, object, export, settin
     long <- merge(long, meta, by = "set")
     long$padj <- stats::ave(long$pvalue, long$test, FUN = function(p) stats::p.adjust(p, "BH"))
     # camera's diagnostic: within-set variance of z against camera's pooled variance.
-    z <- limma::zscoreT(limma::eBayes(limma::lmFit(values$y, values$design), trend = TRUE)$t[, "factor"],
-        df = limma::eBayes(limma::lmFit(values$y, values$design), trend = TRUE)$df.total, approx = TRUE, method = "hill")
+    fit <- limma::eBayes(limma::lmFit(values$y, values$design), trend = TRUE)
+    z <- limma::zscoreT(fit$t[, "factor"], df = fit$df.total, approx = TRUE, method = "hill")
     names(z) <- rownames(values$y)
     g <- length(z)
     diag <- do.call(rbind, lapply(names(sets), function(s) {
@@ -605,7 +615,7 @@ runReplicate <- function(n, r, cell_label, design = DESIGN) {
     append(stamp(losses), "losses")
     append(stamp(factor_rows), "factors")
     append(stamp(data.frame(f_main = f_main, sign_main = sign_main, raw_cor_main_z1 = raw_cor_main,
-        warnings = paste(unique(fit$warnings), collapse = " | "), stringsAsFactors = FALSE)), "orientation")
+        warnings = gsub("[\t\r\n]+", " ", paste(unique(fit$warnings), collapse = " | ")), stringsAsFactors = FALSE)), "orientation")
     data.frame(train_seconds = train_seconds, analysis_seconds = analysis_seconds,
         total_seconds = as.numeric(difftime(Sys.time(), started, units = "secs")))
 }

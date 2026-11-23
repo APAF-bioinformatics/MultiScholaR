@@ -1,0 +1,5 @@
+Factor1 in metabolomics_GCMS against KEGG (KEGG Release fixture).
+Features: 150 measured, 150 ranked, 0 left out for too few samples, 0 left out for no spread, 0 internal standards left out.
+Matched to the database: 140; not matched: 0; set aside as a second feature on one identifier: 10.
+Direction: the factor is oriented so that its largest weight (TRXG00252 in transcriptomics) is positive (multiplied by -1). Terms at the top of the list follow the factor; terms at the bottom go against it.
+3 terms or pathways in the table. P-values are adjusted within this factor, data set and database only, not across factors, data sets or databases.
