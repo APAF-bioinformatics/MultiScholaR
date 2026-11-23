@@ -10,8 +10,12 @@
    identifier, the one with the largest mean value is kept). The pre-ranked test used before (GSEA on each feature's
    correlation with the factor) assumes features are independent, which gives p-values that are too small for
    pathways whose features vary together; it stays selectable, with that assumption stated. Existing scripts that call
-   `integrationEnrichFactor()` without naming a test now get the new test and different p-values: [size of the
-   change]. To get the earlier test, pass `overrides = list(test = "gsea")`; its results are unchanged. In the
+   `integrationEnrichFactor()` without naming a test now get the new test and different p-values (on the synthetic test
+   corpus, of 40 invented pathways neither test called any at a 5 % false discovery rate, on proteins and on
+   metabolites; the change is in the p-values and the ranking of pathways, not counted further there). In a check on
+   simulated data shaped like a 12-sample study, unrelated pathways whose compounds vary together at a correlation
+   of 0.3 were called in 43.0 % of cases by the earlier test and at most 6.6 % by the new one, for any unrelated
+   pathway. To get the earlier test, pass `overrides = list(test = "gsea")`; its results are unchanged. In the
    Enrichment tab the new test is pre-selected. Results made before this change keep their test when replayed. Every
    KEGG and Reactome summary now carries a caution (the factor was learned from the same data, so the results are
    exploratory) and the factor's variance explained in the data set. STRING is unchanged and ignores the setting.

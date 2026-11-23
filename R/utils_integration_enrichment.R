@@ -860,7 +860,7 @@ integrationEnrichmentParameterSpec <- function() {
         # (`integrationEnrichmentTestOfRecord()`); STRING ignores it.
         test = list(default = NULL, choices = INTEGRATION_ENRICHMENT_TESTS_OFFERED, type = "text",
             default_text = "the test of record for the data set (camera)",
-            settled_by = "VAL-51; KIT-183 simulation, run [S run id]"))
+            settled_by = "VAL-51; KIT-183 simulation, run 45225854502"))
 }
 
 #' Resolve and check an enrichment request against the model (KIT-141). Refused in plain words

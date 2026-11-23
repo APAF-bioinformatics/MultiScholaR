@@ -1,0 +1,8 @@
+name	value	source
+R_cam	6.6 %	C2  proteomics F_ind
+I_cam	5.8 to 7.4 %	C2  proteomics F_ind
+S_cam	12.8 %	C4b 0.6 proteomics F_none
+R_gsea_0.3	43.0 %	transcriptomics F_main
+I_gsea_0.3	41.9 to 44.1 %	transcriptomics F_main
+R_cpr_0.3	29.9 %	transcriptomics F_main
+R_cam_6	5.0 %	C1 0.1 proteomics F_ind
