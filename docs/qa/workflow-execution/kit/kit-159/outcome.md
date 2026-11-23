@@ -80,12 +80,102 @@ the missing internal constants `HARNESS_PATH` and `EVIDENCE_COLUMNS`; T-DET-1 al
 `fwrite`'s round-trip form). The git-repository fixtures ran (git is in the job). T0 total: 1.46 of 6
 core-hours.
 
+### T1a correction (group a): run 45125695623 at 5e1c3202
+
+Observed: all 57 group (a) tests pass, among them every hand case of 10.1, T-VIEW, T-KEY,
+T-BLIND-1 and the coverage machinery (`t1/t1a2-harness-tests.tsv`); the 36 group (b) tests fail by
+design at this commit. f_sim (G14 (c) on simulations): regime C3, 112 cells at 200 simulations, 94.4 s
+in one process against 43.1 s in four concurrent chunks on a 4-core runner: **f_sim = 2.19**
+(`t1/t1a2-fsim.tsv`). Cost probe, one cell per family at 20 simulations and 200 target simulations
+(`t1/t1a2-cost-probe.tsv`). T1 so far 1.89 of 6 core-hours.
+
+**T2 sizing (inferred from the probe, linear in simulations; not yet a request).** Extrapolated to
+2,000 simulations and 20,000 target simulations per cell: about 12 process-hours in all (the ticket
+estimated 17.5), dominated by C7 (accuracy about 3.2 h, threshold about 2.1 h, each one cell), C4e at
+4,840 features (block count 5: about 2.0 h; 14: not probed, estimated 3 to 5 h) and C4 at 4,840
+features (about 0.85 h for g = 4). Two consequences:
+1. f_sim = 2.19 is below the ticket's 2.28, so T2 needs a third request (+20 to T2's ceiling, 10.4,
+   section 11), which T1 was to show before T2: shown here.
+2. A cell is today indivisible (one seeded stream per cell), and at f = 2.19 each of four concurrent
+   chunks runs at about 0.55 of solo speed, so a 3-hour cell takes about 5.5 hours of wall and
+   overruns the 280-minute script limit. Before T2 the runner must split a cell's simulations (and its
+   target simulations) into seeded ranges (one seed per simulation) and combine them; this changes
+   `coverage.R`'s seeding and needs its own test (the split result equals the unsplit one). T2 is not
+   sent until then.
+
+### T1b (group b implementation): run 45127184692 at c9565ca9 -- STOPPED HERE
+
+Observed: 93 tests, 84 pass (`t1/t1b-harness-tests.tsv`, `t1/t1b-harness-failures.txt`): all 57 of
+group (a) and 27 of 36 of group (b) (all of T-IN, T-ANN-1, T-PRE-1, T-CHUNK-1 to 7, T-RUN-1, T-RNG-1,
+T-LIC-1 to 11, T-PROV-1, T-DET-2, T-SCORE-1, T-DECL-13, T-DECL-15, T-DECL-17, T-ENV via T-DECL-8 not
+reached). Nine fail, each on a test defect read from its message:
+- T-DECL-1 to 12 and 14 (seven tests): the test helpers `gitDo`/`gitRepo` pass their arguments to
+  `system2` unquoted, so a multi-word commit message (`-m declaration lifecycle`) becomes a pathspec
+  and the commit fails; the check then correctly finds no committed declaration
+  (`val_declaration_missing`) or the files swept into a later commit (`not_committed_alone`).
+  T-DECL-13 passed only because a later one-word commit committed the files.
+- T-LOG-1/2: the child script's `writeLines(..., file("/dev/stderr"))` reopens the private stderr file
+  in write mode and truncates it, losing the earlier `message()` sentinel. The sentinel did not leak
+  (the returned template lines held none); the test's "every sentinel is in the private log" fails.
+  Note for the ticket's sentinel (5.2): this call truncates a file-backed stderr, so the sentinel run
+  should write the descriptor-2 line first or the check reads it as absent from the log.
+- T-DET-1: `data.table::fwrite` writes 15 significant digits, so the 1e-15 change was lost and the
+  tables compared `identical`.
+
+Decision under the ticket's attempts rule (section 11: one correction pass for the whole ticket; the
+brief: one correction pass per stop rule): T1's correction pass was spent on T1a, so T1b's failures
+stop this step and are reported, though all nine are test defects. The three fixes are committed but
+not run: `gitDo`/`gitRepo` quote their arguments (`shQuote`); the T-LOG script writes to descriptor 2
+first; T-DET-1 writes values with `%.17g`. Needed to continue: the coordinator's word on a T1b
+correction run (about 0.6 core-hours; T1 so far 2.5 of 6).
+
+### Ticket revisions 1.8 and 1.9 (2026-11-23)
+
+The coordinator's amendment pass made the ticket 1.8 (register
+`AUDIT-KIT-159-plan-amendment-r1.8-20261123.md`); its four minors C21 to C24 applied by me as written
+(revision 1.9, closure section 24, history line). Status of the 1.8 additions in the build:
+
+| Addition | Status |
+|---|---|
+| Phase `pre` result-table types `sd`, `n`, `abs_diff`, `statistic` | built: `valRunPre` checks through `valCheckResultTable`, whose types are 5.2's list (test T-PRE-1 uses `count`; no test yet for the four) |
+| `{unit}` over several data sets; a missing expanded file not an error | built in effect: `valExpandOutputPaths` takes the unit ids it is given (the caller passes the union) and `valCheckEvidence` checks only files that exist; no dedicated test yet |
+| `ticket-coverage.tsv` fixed columns; `ticket-coverage-cells.tsv` on the allow-list | not yet (allow-list entry and `valTicketRegime`'s column set to change with a test) |
+| Hand-off folder in `valCheckEvidence`, `check-evidence.sh`, `val-run.R check` | not yet (tests first) |
+| Hook named arguments (C22), standard tables in `val-work/` (C23) | not yet (driver, group c) |
+| `prepareInputs()$result_tables` | not yet (`val-run.R`) |
+| `matrix_display.tsv` on lipid and metabolite factor-in-model cells | not yet (`valReadArmTables`, group c) |
+| `require: "match"` on a signed slope guard | built: `valClassifyMember` takes `require = "match"` on any guard (T-CLS-compound) |
+| Phase `score` widening from within-run rows, T-SCORE-2 | not yet (tests first) |
+| G1D aggregates under `g1d/`; `prot_dia_limpa` awaiting D19 | done (commit c6f3f0f2) |
+
+No addition changes finished and verified work beyond adding to it.
+
 ## Next
 
-T1a correction run (k159-t1a2-5e1c3202); then group (b) implementation. Former plan for T1a: the group (a) implementation (`utils.R`, `score.R`, `metrics.R`, `intervals.R`, `baseline.R`,
+1. On the coordinator's word: a T1b correction run on the commit carrying the three test fixes.
+2. Before T2: split coverage cells into seeded simulation ranges (one seed per simulation; test: the
+   split result equals the unsplit one), then T2 in three requests sized on f_sim = 2.19 (each request
+   at most 240 minutes of expected wall).
+3. Group (c): driver, arms, helper extraction (T-HELP), the G1(a) chain reader (T-CHAIN), kernel
+   identity (T-KER), T-TAB, `valWriteResults`, `val-run.R` (record, pre, check and the other phases),
+   `check-evidence.sh`, templates, and the revision 1.8 additions listed above; tests first (T0c),
+   then T1c with `covr` and `lintr` (`extra_packages: ["covr", "lintr"]`) over the whole package.
+4. R1 (record twin, phase pre, UniProt cache) once `val-run.R record` exists. Its incomplete-answer
+   refusal on the real package needs KIT-175's classed conditions, which are not in `v0.9-staging`
+   (a60c4e9a has neither `prot_annotation_uniprot_incomplete` nor `_empty`); until KIT-175 merges only
+   the mocked unit test T-ANN-1 covers it.
+5. S0, then stop before the release commit (G1(a), G1(r), L1a and later, P1).
+
+Former plan for T1a: the group (a) implementation (`utils.R`, `score.R`, `metrics.R`, `intervals.R`, `baseline.R`,
 `coverage.R`), tests passing, `covr`, `lintr`, f_sim on regime C3 and a cost probe of every T-COV
 family (T2 is sized on these).
 
 ## Not checked
 
-(filled as work proceeds)
+- Group (c) (driver, arms, parity, Part B), `val-run.R`, `check-evidence.sh`, templates, `USAGE.md`,
+  `action-scripts.md`: not written.
+- `covr` line coverage and `lintr` (A2): not run (deferred to T1c over the whole package).
+- T-COV (T2): not run; R1, S0: not run.
+- `valBaselineArm` uses `edgeR::calcNormFactors` as the ticket states; edgeR prints that it has been
+  renamed `normLibSizes` (a message, no change of result read).
+- The 1.8 additions marked "not yet" above.

@@ -173,10 +173,10 @@ test_that("T-LOG-1 and T-LOG-2: a child's text, system2 output and fd 2 reach on
     private <- withr::local_tempdir()
     script <- tempfile(fileext = ".R")
     writeLines(c(
+        "writeLines('SENTINEL-FD2-7731', file('/dev/stderr'))",
         "cat('SENTINEL-OUT-7731\\n')",
         "message('SENTINEL-MSG-7731')",
         "system2('echo', 'SENTINEL-ECHO-7731')",
-        "writeLines('SENTINEL-FD2-7731', file('/dev/stderr'))",
         "msrval::valStatus(phase = 'lifecycle', status = 'completed', count = 3L)"
     ), script)
     lines <- valRunAsChild(script, character(), private)

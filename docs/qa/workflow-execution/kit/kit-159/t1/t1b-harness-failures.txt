@@ -1,0 +1,41 @@
+== test-declaration.R :: T-DECL-1, T-DECL-2: a missing declaration; a declaration committed with another file (1 not passed)
+<val_declaration_missing/val_error/rlang_error/error/condition>
+Error in `valCheckDeclaration(repo, EV, stage, at = "HEAD", ...)`: docs/qa/workflow-execution/kit/kit-999/lifecycle/declaration.json is not committed at HEAD
+
+== test-declaration.R :: T-DECL-3, T-DECL-4: a changed design file or scoring file is refused (1 not passed)
+<val_declaration_missing/val_error/rlang_error/error/condition>
+Error in `valCheckDeclaration(repo, EV, stage, at = "HEAD", ...)`: docs/qa/workflow-execution/kit/kit-999/lifecycle/declaration.json is not committed at HEAD
+
+== test-declaration.R :: T-DECL-5 to T-DECL-7: evidence beside the harness is accepted; harness and product changes are refused (1 not passed)
+<val_declaration_not_committed_alone/val_error/rlang_error/error/condition>
+Error in `valCheckDeclaration(repo, EV, stage, at = "HEAD", ...)`: the declaration commit touches other files
+
+== test-declaration.R :: T-DECL-8 and T-ENV-1: the library table against the declared hash and extras (1 not passed)
+<val_declaration_missing/val_error/rlang_error/error/condition>
+Error in `valCheckDeclaration(repo, EV, stage, at = "HEAD", ...)`: docs/qa/workflow-execution/kit/kit-999/lifecycle/declaration.json is not committed at HEAD
+
+== test-declaration.R :: T-DECL-9 to T-DECL-11 and T-DECL-16: the two-stage order and the listed changes (1 not passed)
+<val_declaration_missing/val_error/rlang_error/error/condition>
+Error in `valCheckDeclaration(repo, EV, stage, at = "HEAD", ...)`: docs/qa/workflow-execution/kit/kit-999/counted/declaration.json is not committed at HEAD
+
+== test-declaration.R :: T-DECL-12: a correction at another commit than the counted run's is refused (1 not passed)
+Expected `valCheckCorrection(repo, EV, "c1", at = "HEAD")` to throw a error with class <val_declaration_changed>.
+
+== test-declaration.R :: T-DECL-14: a changed preparation file is refused (1 not passed)
+<val_declaration_missing/val_error/rlang_error/error/condition>
+Error in `valCheckDeclaration(repo, EV, stage, at = "HEAD", ...)`: docs/qa/workflow-execution/kit/kit-999/lifecycle/declaration.json is not committed at HEAD
+
+== test-licence.R :: T-LOG-1 and T-LOG-2: a child's text, system2 output and fd 2 reach only the private log (1 not passed)
+Expected `any(grepl(paste0("SENTINEL-", s, "-7731"), log_text))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+== test-records.R :: T-DET-1: identical, within rounding, and different tables (1 not passed)
+Expected `valCompareRuns(a, b, keys = keys)$result` to be identical to "within_rounding".
+Differences:
+`actual`:   "identical"      
+`expected`: "within_rounding"
+
+

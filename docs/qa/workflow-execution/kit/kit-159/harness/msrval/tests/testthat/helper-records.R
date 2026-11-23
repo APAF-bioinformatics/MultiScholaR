@@ -34,7 +34,7 @@ writeManifest <- function(rows, path) {
 # A small git repository for the declaration tests: a product file, a harness folder and an
 # evidence folder; returns the path. Commits are made with a fixed identity.
 gitRepo <- function(dir = withr::local_tempdir(.local_envir = parent.frame())) {
-    git <- function(...) system2("git", c("-C", dir, ...), stdout = TRUE, stderr = TRUE)
+    git <- function(...) system2("git", shQuote(c("-C", dir, ...)), stdout = TRUE, stderr = TRUE)
     git("init", "-q")
     git("config", "user.email", "test@example.invalid")
     git("config", "user.name", "msrval test")
@@ -48,7 +48,9 @@ gitRepo <- function(dir = withr::local_tempdir(.local_envir = parent.frame())) {
     dir
 }
 
-gitDo <- function(dir, ...) system2("git", c("-C", dir, ...), stdout = TRUE, stderr = TRUE)
+gitDo <- function(dir, ...) {
+    system2("git", shQuote(c("-C", dir, ...)), stdout = TRUE, stderr = TRUE)
+}
 
 gitCommitFiles <- function(dir, files, message = "change") {
     for (f in names(files)) {

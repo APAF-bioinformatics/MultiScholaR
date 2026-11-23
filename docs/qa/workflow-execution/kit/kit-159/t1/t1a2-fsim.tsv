@@ -1,0 +1,2 @@
+regime	cells	nsim	wall_one_process	wall_four_chunks	f_sim	exit_one	exit_four	cores
+C3	112	200	94.4	43.1	2.192	0	0,0,0,0	4
