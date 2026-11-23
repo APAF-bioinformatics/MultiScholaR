@@ -1,0 +1,13 @@
+(a) requests: 120; both forms status 200: 120; Entry sets identical: 120
+(a) bare: next link 115 of 120; X-Total-Results above rows 115; requested returned 3000 of 3000; outside 0
+(a) qualified: next link 0 of 120; X-Total-Results above rows 0; requested returned 3000 of 3000; outside 0
+sec_ac.txt: 1175771 secondary-primary pairs read
+delac_sp.txt: 1914 deleted accessions read
+samples: secondary 200, deleted 200, other organism 100
+(b) secondary, bare: requests 40; probes 200: as requested 0, under another accession 1, not found 199; fillers returned 800 of 800; next link on 40 requests (on 40 of the 40 requests with a probe not found as requested)
+(b) secondary, qualified: requests 40; probes 200: as requested 0, under another accession 0, not found 200; fillers returned 800 of 800; next link on 0 requests (on 0 of the 40 requests with a probe not found as requested)
+(b) deleted, bare: requests 40; probes 200: as requested 0, under another accession 0, not found 200; fillers returned 800 of 800; next link on 40 requests (on 40 of the 40 requests with a probe not found as requested)
+(b) deleted, qualified: requests 40; probes 200: as requested 0, under another accession 0, not found 200; fillers returned 800 of 800; next link on 0 requests (on 0 of the 40 requests with a probe not found as requested)
+(b) other_organism_ecoli_under_9606, bare: requests 20; probes 100: as requested 0, under another accession 0, not found 100; fillers returned 400 of 400; next link on 20 requests (on 20 of the 20 requests with a probe not found as requested)
+(b) other_organism_ecoli_under_9606, qualified: requests 20; probes 100: as requested 0, under another accession 0, not found 100; fillers returned 400 of 400; next link on 0 requests (on 0 of the 20 requests with a probe not found as requested)
+releases seen: 2026_04

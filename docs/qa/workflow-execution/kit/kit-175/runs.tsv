@@ -1,2 +1,3 @@
 run_id	commit	purpose	minutes	result
 45118859939	4546b50b13867c1a9b4f3e1fa2a8b825f398a380	R0b gate F3: UniProt first page on real reference-proteome accessions (scripts job, network open)	14	case (ii): X-Total-Results exceeds rows on 115 of 120 requests; stop for the owner
+45121855739	e27c9d69e282aee9c475b6a8efdb0bca0ecd547b	F4 measurement before D8: bare vs field-qualified query (F3 requests; secondary, deleted, other-organism probes)	21	Entry sets identical 120/120; next links bare 115, qualified 0; absences: qualified never links, bare always; secondaries not found under either form (1 of 200 under bare)
