@@ -1,0 +1,19 @@
+{
+  "requested_by": "KIT-186 R3: full suite base (branch point) vs head, with R CMD check (coordinator); decides A5 under r1.3 (VAL-74)",
+  "label": "KIT-186 R3 full suite af7f0738 vs ffdfdfb7",
+  "package_commit": "af7f07388241f53578179949689b808a8005b719",
+  "base_commit": "ffdfdfb76a9eacdc681f2098f75ac574e2cf8af4",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {"test-gui-entry-proteomics.R": 120, "test-gui-entry-transcriptomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120, "test-gui-entry-metabolomics.R": 120, "test-prot-norm-core.R": 120},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
