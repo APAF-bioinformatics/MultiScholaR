@@ -1,0 +1,75 @@
+{
+  "schema": "msrval.provenance.v1",
+  "ticket": "lifecycle",
+  "stage": "record",
+  "label": "r1a",
+  "phase": "pre",
+  "amended": null,
+  "blinded": false,
+  "started": "2026-11-23T21:29:09Z",
+  "ended": "2026-11-23T21:29:09Z",
+  "status": "completed",
+  "refusal": null,
+  "run": {
+    "github_run_id": "45268141191",
+    "run_attempt": "1",
+    "job": "scripts",
+    "workflow": "run-tests",
+    "request_file": ".github/run-tests/requests/k159-r1a-69b693af.json",
+    "request_commit": "37b3b0be5f74890a5662514ab0480263467dd24b",
+    "runner": {
+      "image_os": "ubuntu22",
+      "image_version": "20261116.365.1",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "cores": 4,
+      "mem_total_mib": 15989,
+      "kernel": "6.8.0-1070-azure"
+    }
+  },
+  "code": {
+    "package_commit": "69b693af0e3370ce7d9fa42bedb25e967d9851ea",
+    "release_commit": "none",
+    "harness": {
+      "commit": "69b693af0e3370ce7d9fa42bedb25e967d9851ea",
+      "tree": "ebbb296a62132a2c94d8472a9f08543f52179f26"
+    },
+    "declaration": []
+  },
+  "environment": {
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "bioc_version": null,
+    "lockfile_sha256": null,
+    "library_sha256": null,
+    "differs_from_lockfile": [],
+    "environment_check": null,
+    "packages": {
+      "MultiScholaR": "0.9.2",
+      "limma": "3.68.4",
+      "edgeR": "4.10.1",
+      "fastduckdb": "0.2.0",
+      "fastlimpadpc": "0.1.0",
+      "duckdb": "1.5.5",
+      "arrow": "25.0.0",
+      "shiny": "1.14.0",
+      "testthat": "3.3.2",
+      "msrval": "1.1.0"
+    },
+    "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+    "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+    "locale": "LC_CTYPE=C.UTF-8;LC_NUMERIC=C;LC_TIME=C.UTF-8;LC_COLLATE=C.UTF-8;LC_MONETARY=C.UTF-8;LC_MESSAGES=C.UTF-8;LC_PAPER=C.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=C.UTF-8;LC_IDENTIFICATION=C",
+    "timezone": "Etc/UTC",
+    "threads": {
+      "OMP_NUM_THREADS": "",
+      "OPENBLAS_NUM_THREADS": "",
+      "MKL_NUM_THREADS": ""
+    },
+    "test_mode": null,
+    "python": null
+  },
+  "inputs": [],
+  "truth": [],
+  "cells": [],
+  "chunks": [],
+  "scoring": [],
+  "outputs": []
+}

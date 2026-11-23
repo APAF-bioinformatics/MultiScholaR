@@ -26,7 +26,7 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, R1 in flight; read this first)
+## Resume here (state 2026-11-24, R1 stopped on a harness defect; read this first)
 
 Ticket r1.13 (VAL-69). Every msrval test has passed (whole suite 45219635014, corrections
 45225211841 and 45265533254; lintr 0). Rank re-run R (45227824000) done; USAGE and H2 updated
@@ -37,15 +37,17 @@ purpose; T0 was exhausted):** tests only 1992d121, run 45264824991 fails first (
 d6d3c1e1 (`valRecordUniprot`, `val-run.R record --uniprot`, `uniprot.tsv` on both allow-lists), run
 45265533254 passes with lintr 0 (0.90).
 
-**In flight: R1** (r1.12/r1.13; one run each, two requests, one push), at 69b693af: runs 45268141191
-(`r1a`) and 45268145400 (`r1b`). Each: `val-run.R record lifecycle r1X --uniprot
-lifecycle/uniprot-accessions.tsv`, then `val-run.R pre lifecycle r1X --script lifecycle/r1-pre.R
---pre-outputs lifecycle/r1-pre-outputs.tsv`. Fetch both (`gh run download <id> -n scripts`), copy
-`val-out/record/r1X/` and `val-out/pre/r1X/` to `kit-159/r1/`, check the open file's size and hash
-against r1.12 (1,086 bytes, 566d7b3d...), and that the two records agree (the twin comparison by
-`valCompareRecords` is L1b's step).
+**R1 stopped (runs 45268141191, 45268145400 at 69b693af; 1.53 of R1's 4):** the open file was
+recorded in both twins, equal to r1.12 (1,086 bytes, SHA-256 566d7b3d...) and to each other; phase
+pre wrote `ref-qc-shape.tsv` (21 rows, 6 columns) with provenance in both. The UniProt record
+stopped before any query result in both: **harness code defect**, `valRecordUniprot` passed the
+taxon as text and the product's `getUniprotAnnotationsFull` formats it with `%d`
+(`R/func_prot_annotation_uniprot_helpers.R:33`). Fixed (`as.integer(taxon)`), committed, unrun.
+R1 is "one run each" with the ticket's single correction pass; whether resending R1 (both
+requests) is that correction or an instrument re-run under VAL-54 is the coordinator's call.
+Evidence in `r1/r1a/`, `r1/r1b/`.
 
-**Budget:** T0 5.95 of 6; T1 19.09 of 21; T2 26.93 of 54; R1 ceiling 4.
+**Budget:** T0 5.95 of 6; T1 19.09 of 21; T2 26.93 of 54; R1 1.53 of 4.
 
 **For the harness auditor (noted, nothing changed):** in the rank re-run, C4e g = 14 (rank,
 delete-one-block) has simulated coverage 1.000 at every level (no miss in 2,000 simulations) with a

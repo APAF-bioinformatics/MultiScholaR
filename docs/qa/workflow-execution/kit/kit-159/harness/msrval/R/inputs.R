@@ -451,7 +451,10 @@ valRecordUniprot <- function(accessions, out_dir, cache_dir, annotate = NULL, re
         valAbort("the accession list must name one taxon and no empty accession",
                  "val_manifest_invalid")
     }
-    res <- valRecordUniprotCache(data.frame(Protein.Ids = acc$accession), "Protein.Ids", taxon,
+    # the product's annotation call formats the taxon as an integer (R1 runs 45268141191 and
+    # 45268145400 stopped on a character taxon)
+    res <- valRecordUniprotCache(data.frame(Protein.Ids = acc$accession), "Protein.Ids",
+                                 as.integer(taxon),
                                  cache_dir, annotate = annotate, release = release)
     row <- data.frame(taxon = taxon, accessions = nrow(acc), rows = nrow(res$table),
                       release = res$release, release_source = res$release_source,

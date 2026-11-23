@@ -1,0 +1,6 @@
+   Data rows: 25
+   Protein column: Protein.Ids
+Error in sprintf("   Taxon ID: %d", taxon_id) : 
+  invalid format '%d'; use format %s for character objects
+Calls: <Anonymous> ... withCallingHandlers -> annotate -> fun -> message -> sprintf
+Execution halted
