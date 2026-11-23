@@ -585,15 +585,15 @@ valRankEffect <- function(form, g, nsim = 50L) {
                 valPartialAuc(sc, fpr_max = 0.01)$value
             })
         }, numeric(1))
-        means[[as.character(scale)]] <- mean(vals)
+        means <- c(means, mean(vals))
         if (mean(vals) > 0.8) break
     }
     ok <- means >= 0.4 & means <= 0.8
     if (!any(ok)) {
         valAbort("no rank effect on the grid gives a mean pAUC in [0.4, 0.8]", "val_spec_invalid")
     }
-    pick <- names(means)[ok][which.min(abs(means[ok] - 0.6))]
-    res <- list(effect = as.numeric(pick), mean_pauc = unname(means[[pick]]))
+    i <- which(ok)[which.min(abs(means[ok] - 0.6))]
+    res <- list(effect = RANK_EFFECT_GRID[[i]], mean_pauc = means[[i]])
     RANK_CACHE[[key]] <- res
     res
 }
