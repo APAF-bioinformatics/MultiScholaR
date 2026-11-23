@@ -1,0 +1,50 @@
+{
+  "requested_by": "KIT-190 lifecycle re-run after VAL-100: counts as now stated; fault keyed on the E2 journey; tests-only tree (4ec3e7c8) with the new effect.R",
+  "label": "KIT-190 R1 E lifecycle re-run 04020e0b",
+  "package_commit": "04020e0bc2f07b3cbb36bcf2a4d670b9b58505ea",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "e",
+        "self",
+        "k190-lc2/e-lc"
+      ],
+      "env": {
+        "K190_LIFECYCLE": "1"
+      },
+      "out": "k190-lc2",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 18
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "e",
+        "self",
+        "k190-lc2/e-fault"
+      ],
+      "env": {
+        "K190_LIFECYCLE": "1",
+        "K190_FAULT": "1"
+      },
+      "out": "k190-lc2",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 6
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
