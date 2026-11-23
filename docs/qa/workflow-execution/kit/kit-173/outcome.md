@@ -149,6 +149,19 @@ inputs this control records (the DA table's order, the gene vectors, the TERM2GE
 compare names and values as text in row order) are identical at capture and replay; the reordering happens inside or
 after the enrichment call. Which code path does it was not determined here (no further run; nothing decided).
 
+## Declared control 3: base capture, base replay, two processes (owner, VAL-61)
+
+Purpose: to test the reading that the `geneID` order is set by string memory addresses in Rcpp's `unique()`
+(enrichit `ora_cpp`), not by KIT-173. Design: `t7-basebase.R` installs the base 62a41ba1 into a private library as
+before and runs `t7-cross-capture.R` and then `t7-cross-replay.R` (variant `basebase`), each in its own Rscript process
+and both on the base, in the runner's locale; the same columns as control 2 (eleven expectations, DA row order, gene
+vectors, differing `geneID` cells, collation and whether the package has `propagateGoAnnotations` in each process).
+No test and no product code changes. Commit bound: the commit adding `t7-basebase.R` (in `runs.tsv`). Ceiling: one
+job, 1 core-hour. Rule fixed now: if the `geneID` cells differ as in C3, the cause is shown and the record withdraws
+the attribution to KIT-173; if identical, stop and report (the diagnosis is then wrong). One mechanics rerun at most.
+
+Result: __BASEBASE__
+
 ## Acceptance criteria
 
 | # | Status | Evidence |
