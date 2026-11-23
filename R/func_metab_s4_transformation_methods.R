@@ -39,7 +39,7 @@ omicsLog2SampleColumns <- function(assay_tibble, sample_cols, offset, assay_name
         )
         return(list(assay = transformed, counts = NULL))
     }
-    # The counts are kept in an environment (the package keeps no `<<-` outside its listed closures).
+    # The counts are kept in an environment, not by super-assignment (test-omics-module-globals).
     tally <- new.env(parent = emptyenv())
     tally$counts <- c(nonpositive = 0L, nonfinite = 0L)
     plainLog2 <- function(x) {
