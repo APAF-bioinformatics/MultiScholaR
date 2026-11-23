@@ -9,8 +9,14 @@
 # pre: the ticket's pre-declaration script on the recorded inputs (val-out/record/<label>/inputs.tsv
 # of the same job) -> val-out/pre/<label>/ (the listed typed tables only).
 # check: the allow-list and hashes on a committed folder (valCheckEvidence, runs.tsv corrections).
-# The phases that run cells (lifecycle, counted, score, determinism, correction, amended, parity)
-# are not yet wired to the driver core (msrval's valRunWorkflow and valRunCells); they refuse.
+#   Rscript .../val-run.R <lifecycle|counted|correction|determinism|amended> <evidence dir> <stage>
+#       <label> --dataset <id> [--units <first:last>] [--arms <a,b>] [--chunks <k>]
+#   Rscript .../val-run.R score <evidence dir> <stage> <label> --dataset <id> --runs <l1,l2,...>
+# The cell phases (7.8 steps 4 to 9): declaration check for the stage, environment check (G15),
+# retrieval, then msrval::valRunPhase (prepare.R, kernel gate, cells in chunks, blind scoring in
+# the lifecycle) into val-out/runs/<label>/ (amended: <label>-amended). score: the committed
+# runs/<label>/ folders of the named requests combined (valScoreRuns) and scored at run level.
+# parity runs in the bundle jobs (val-parity.R, 7.9), not here.
 
 harness_dir <- "docs/qa/workflow-execution/kit/kit-159/harness"
 args <- commandArgs(trailingOnly = TRUE)
@@ -40,7 +46,12 @@ Sys.setenv(R_LIBS = paste(.libPaths(), collapse = .Platform$path.sep))
 started <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 
 # --- Step 2: private logs when any data input is not permitted (5.2, A27) ---
-draft_path <- file.path(evidence_dir, "draft-inputs.tsv")
+cell_phases <- c("lifecycle", "counted", "correction", "determinism", "amended", "score")
+draft_path <- if (phase %in% cell_phases && length(opts) > 0L) {
+    file.path(evidence_dir, opts[[1L]], "inputs.tsv")
+} else {
+    file.path(evidence_dir, "draft-inputs.tsv")
+}
 draft <- if (file.exists(draft_path)) {
     utils::read.delim(draft_path, colClasses = "character", na.strings = character())
 } else {
@@ -113,6 +124,78 @@ if (phase == "record") {
     if (file.exists(runs)) msrval::valCheckRuns(utils::read.delim(runs, stringsAsFactors = FALSE))
     msrval::valCheckEvidence(evidence_dir, manifest, phase = optValue("--phase", "counted"))
     msrval::valStatus(phase = "check", status = "completed")
+} else if (phase %in% cell_phases) {
+    stage <- opts[[1L]]
+    label <- opts[[2L]]
+    dataset <- optValue("--dataset")
+    if (is.null(dataset)) stop("--dataset is required", call. = FALSE)
+    sd <- file.path(evidence_dir, stage)
+    decl <- jsonlite::read_json(file.path(sd, "declaration.json"), simplifyVector = FALSE)
+    ds <- Filter(function(d) identical(d$id, dataset), decl$datasets)[[1L]]
+    units <- msrval::valUnits(file.path(sd, ds$units$table))
+    lib <- msrval::valLibraryTable()
+    # Step 4: the declaration check and the environment check (G15), before any download.
+    msrval::valCheckDeclaration(".", evidence_dir, stage, at = "HEAD", phase = phase,
+                                library_table = lib, units = units$unit)
+    env_check <- msrval::valCheckEnvironment(lib, decl$environment$library_sha256,
+                                             extra_packages = unlist(decl$environment$extra_packages))
+    manifest_path <- file.path(sd, decl$inputs$path)
+    manifest <- msrval::valReadManifest(manifest_path)
+    commit <- system2("git", c("rev-parse", "HEAD"), stdout = TRUE)
+    decl_commit <- utils::tail(system2("git", c("log", "--format=%H", "--diff-filter=A", "HEAD",
+                                                "--", file.path(sd, "declaration.json")),
+                                       stdout = TRUE), 1L)
+    code <- list(package_commit = commit, release_commit = decl$release_commit,
+                 harness = list(commit = commit, tree = msrval::valHarnessTree(".")),
+                 declaration = list(stage = stage, commit = decl_commit),
+                 environment_check = env_check)
+    if (phase == "score") {
+        labels <- strsplit(optValue("--runs", ""), ",")[[1L]]
+        cells <- msrval::valPhaseCells(decl, dataset, units, "counted")
+        got <- msrval::valScoreRuns(evidence_dir, labels, cells[, c("unit", "arm")])
+        metrics <- got$metrics
+        metrics$value <- as.numeric(metrics$value)
+        out <- file.path("val-out", "runs", label)
+        dir.create(out, recursive = TRUE, showWarnings = FALSE)
+        cmp <- msrval::valRunLevel(decl, metrics, units, phase = stage)
+        utils::write.table(cmp, file.path(out, "comparisons.tsv"), sep = "\t", quote = FALSE,
+                           row.names = FALSE)
+        utils::write.table(manifest[, c("role", "kind", "licence", "redistribution", "citation")],
+                           file.path(out, "attribution.tsv"), sep = "\t", quote = FALSE,
+                           row.names = FALSE)
+        prov <- msrval::valProvenance(ticket = decl$ticket, stage = stage, label = label,
+                                      phase = "score", status = "completed",
+                                      blinded = identical(stage, "lifecycle"), started = started,
+                                      code = code, scoring = list(requests = labels))
+        msrval::valWriteProvenance(prov, file.path(out, "provenance.json"))
+        msrval::valCheckProvenance(file.path(out, "provenance.json"))
+        msrval::valCheckEvidence(out, manifest, phase = stage)
+        msrval::valWriteOutputsSha(out)
+    } else {
+        # Step 5: retrieval into the private folder, then the phase (steps 5 to 9).
+        data_dir <- file.path(tmp_root, "val-data")
+        msrval::valFetchInputs(manifest_path, data_dir, repo_root = ".")
+        range <- optValue("--units")
+        unit_ids <- if (is.null(range)) NULL else {
+            ends <- strsplit(range, ":", fixed = TRUE)[[1L]]
+            i <- match(ends, units$unit)
+            if (anyNA(i)) stop("--units names a unit not in the unit table", call. = FALSE)
+            units$unit[i[[1L]]:i[[length(i)]]]
+        }
+        arms <- optValue("--arms")
+        work <- file.path(tmp_root, "val-work")
+        dir.create(work, recursive = TRUE, showWarnings = FALSE)
+        msrval::valRunPhase(
+            phase = phase, decl = decl, dataset = dataset, units = units,
+            label = if (phase == "amended") paste0(label, "-amended") else label,
+            code_files = file.path(sd, vapply(decl$code, function(x) x$path, character(1))),
+            data_dir = data_dir, work_dir = normalizePath(work), out_dir = "val-out",
+            chunks = as.integer(optValue("--chunks", "4")),
+            arms = if (is.null(arms)) NULL else strsplit(arms, ",")[[1L]], unit_ids = unit_ids,
+            manifest = manifest, code = code, pkg_root = "."
+        )
+    }
+    msrval::valStatus(phase = phase, status = "completed")
 } else {
-    stop(sprintf("phase %s is not yet wired to the driver core", phase), call. = FALSE)
+    stop(sprintf("unknown phase %s", phase), call. = FALSE)
 }

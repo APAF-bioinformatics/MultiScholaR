@@ -41,6 +41,8 @@ expected_header() {
             mc_se miss critical pass ;;
         ticket-coverage-cells.tsv) join regime cell parameter value ;;
         ledger-*.tsv) join step action input_id value source location ;;
+        parity-da.tsv) join route comparison status digest sha256_10 ;;
+        parity-*.tsv) join action input_id driver_value browser_value equal excluded_class ;;
         *) echo "" ;;
     esac
 }

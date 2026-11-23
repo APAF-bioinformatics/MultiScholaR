@@ -20,6 +20,8 @@ EVIDENCE_COLUMNS <- list(
     determinism.tsv = c("table", "sha256_job1", "sha256_job2", "identical", "sha256_10_job1",
                         "sha256_10_job2", "max_abs_diff", "max_rel_diff", "cause"),
     ledger = c("step", "action", "input_id", "value", "source", "location"),
+    parity = c("action", "input_id", "driver_value", "browser_value", "equal", "excluded_class"),
+    `parity-da.tsv` = c("route", "comparison", "status", "digest", "sha256_10"),
     `ticket-coverage.tsv` = c("regime", "cell", "method", "class", "form", "g", "level",
                               "simulations", "bound", "coverage", "mc_se", "miss", "critical",
                               "pass"),
@@ -265,7 +267,13 @@ valCheckEvidence <- function(dir, manifest, outputs = list(), arms = character()
             }
             next
         }
-        schema <- if (grepl("^ledger-.*\\.tsv$", base)) "ledger" else f
+        schema <- if (grepl("^ledger-.*\\.tsv$", base)) {
+            "ledger"
+        } else if (grepl("^parity-.*\\.tsv$", base) && !identical(base, "parity-da.tsv")) {
+            "parity"
+        } else {
+            f
+        }
         if (!is.null(EVIDENCE_COLUMNS[[schema]])) {
             valCheckFixedTable(path, f, schema, classes, row_bounds, phase, primary_units)
             next

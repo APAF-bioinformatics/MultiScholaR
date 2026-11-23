@@ -100,3 +100,112 @@ valCompareParityDa <- function(da, l1) {
     }
     list(status = status, digest = d, sha256_10 = f$sha256_10)
 }
+
+PARITY_TWO_SPECIES <- "prot_dia_two_species"
+PARITY_WINDOWS_EXCLUDED <- c("prot_dia", "prot_dia_limpa", PARITY_TWO_SPECIES)
+
+#' Read and check a parity request (7.9 item 1; `msrval.parity_request.v1`)
+#'
+#' Routes are the ten of section 7.4 and the two-species route; Windows excludes the DIA routes
+#' (KIT-134 D4). Commits are 40 hex digits; each declared generated input carries a SHA-256.
+#'
+#' @param path The request file.
+#' @return The request (a list).
+#' @export
+valParityRequest <- function(path) {
+    req <- jsonlite::read_json(path, simplifyVector = FALSE)
+    bad <- function(what) valAbort("parity request: {what}", "val_spec_invalid")
+    if (!identical(req[["schema"]], "msrval.parity_request.v1")) bad("schema")
+    if (!req[["platform"]] %in% c("linux", "windows")) bad("platform")
+    routes <- unlist(req[["routes"]])
+    if (length(routes) == 0L || !all(routes %in% c(valRouteTable()$route, PARITY_TWO_SPECIES))) {
+        bad("an unknown route")
+    }
+    if (identical(req[["platform"]], "windows") && any(routes %in% PARITY_WINDOWS_EXCLUDED)) {
+        bad("a DIA route on Windows")
+    }
+    for (f in c("release_commit", "harness_commit", "harness_tree")) {
+        if (!grepl("^[0-9a-f]{40}$", req[[f]] %||% "")) bad(f)
+    }
+    for (x in req[["inputs"]]) {
+        if (!grepl("^[0-9a-f]{64}$", x[["sha256"]] %||% "") || !nzchar(x[["path"]] %||% "")) {
+            bad("an input without a path or SHA-256")
+        }
+    }
+    req
+}
+
+#' The installed bundle's commit against the release commit (7.9 item 3; KIT-176 A02)
+#'
+#' Accepted when `VERSION.json`'s `package_commit` equals the release commit, or when
+#' `git diff --quiet` finds no difference between them under `pkg_paths` (KIT-176's `PKG_PATHS`,
+#' read from `packaging/package-commit.sh` by the caller, never a copy).
+#'
+#' @param version The bundle's `VERSION.json` (a list).
+#' @param release_commit The request's release commit.
+#' @param pkg_paths KIT-176's `PKG_PATHS`, split into paths.
+#' @param repo The checkout (full history).
+#' @return `equal` or `same_package_paths`; otherwise `val_product_tree_mismatch`.
+#' @export
+valCheckBundleCommit <- function(version, release_commit, pkg_paths, repo = ".") {
+    pc <- version[["package_commit"]] %||% ""
+    if (identical(pc, release_commit)) return("equal")
+    st <- valGit(repo, "diff", "--quiet", pc, release_commit, "--", pkg_paths)$status
+    if (identical(as.integer(st), 0L)) return("same_package_paths")
+    valAbort("the bundle's package commit {pc} differs from the release commit under PKG_PATHS",
+             "val_product_tree_mismatch")
+}
+
+#' Check the workflow's guard for the parity stage (7.9 items 1, 5)
+#'
+#' The stage `parity` is offered; outside the snapshot job exactly one upload exists in each of the
+#' `linux` and `windows` jobs, each a step named `parity-results` whose `if:` requires stage
+#' `parity` and `steps.parity-check.outcome == 'success'` and whose `path:` is `val-out/parity/`;
+#' each of those jobs has a step `parity-check`.
+#'
+#' @param path `.github/workflows/distributable.yml`.
+#' @return `TRUE`, or `val_spec_invalid`.
+#' @export
+valCheckParityWorkflow <- function(path) {
+    lines <- readLines(path, warn = FALSE)
+    bad <- function(what) valAbort("distributable.yml: {what}", "val_spec_invalid")
+    if (!any(grepl("options: \\[.*\\bparity\\b.*\\]", lines, perl = TRUE))) {
+        bad("no stage parity")
+    }
+    job <- character(length(lines))
+    cur <- ""
+    for (i in seq_along(lines)) {
+        if (grepl("^  [a-z][a-z0-9-]*:\\s*$", lines[[i]])) {
+            cur <- sub(":\\s*$", "", trimws(lines[[i]]))
+        }
+        job[[i]] <- cur
+    }
+    starts <- grep("^\\s*- (name|uses|id):", lines)
+    step_of <- function(i) {
+        s <- max(starts[starts <= i])
+        e <- min(c(starts[starts > s], length(lines) + 1L)) - 1L
+        lines[s:e]
+    }
+    ups <- grep("uses: *actions/upload-artifact", lines)
+    outside <- ups[job[ups] != "snapshot"]
+    for (j in c("linux", "windows")) {
+        u <- outside[job[outside] == j]
+        if (length(u) != 1L) bad(sprintf("%d uploads in job %s (one admitted)", length(u), j))
+        step <- step_of(u)
+        if (!any(grepl("name: *parity-results\\s*$", step))) {
+            bad(paste("the", j, "upload is not parity-results"))
+        }
+        cond <- step[grepl("^\\s*if:", step)]
+        guard <- "steps.parity-check.outcome == 'success'"
+        if (length(cond) != 1L || !grepl(guard, cond, fixed = TRUE) ||
+            !grepl("parity", sub(guard, "", cond, fixed = TRUE))) {
+            bad(paste("the", j, "upload's if: lacks stage parity or the parity-check condition"))
+        }
+        if (!any(grepl("path: *val-out/parity/\\s*$", step))) bad(paste("the", j, "upload's path"))
+        if (!any(job == j & grepl("id: *parity-check\\s*$", lines))) {
+            bad(paste("no parity-check in", j))
+        }
+    }
+    if (length(outside) != 2L) bad("an upload outside the snapshot job and the two parity-results")
+    TRUE
+}
