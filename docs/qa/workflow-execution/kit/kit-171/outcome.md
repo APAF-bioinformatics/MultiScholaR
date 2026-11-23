@@ -19,13 +19,14 @@ Ticket revision 1.2. Branch `kit-171-maxquant-contaminant` from `v0.9-staging` 9
 | T4 | 49 ids, no such line | 49 ids (pass); the line absent (1 failure) | pass |
 
 All failures at the tests-only commit are expectation failures; no test errored. Logs:
-`r1-failing-first-*.log`, `r2-fix-commit-*.log`.
+`r1-tests-only.log`, `r2-fix.log`.
 
 ## Middle commit (A2), R1b on 770155ba
 
-T4 green. T2 and T3 green. T1 red at 4,999 with rows 1234 and 3333 present, and its log line reads 0 rows removed in
-`Contaminant` (expected 2): the column was guessed logical by vroom and its marks lost (vroom's parsing-issue warning
-in T1). The typing change is shown red on its own by T1. Log: `r1b-filter-commit-*.log`.
+T4 green. T2 and T3 green. T1 red at 4,999 with rows 1234 and 3333 present, and no log line reports 2 rows removed in
+`Contaminant` (by the code, the line reports 0; the test captures T1's log lines, so no console shows them): the
+column was guessed logical by vroom and its marks lost (vroom's parsing-issue warning in T1). The typing change is
+shown red on its own by T1. Log: `r1b-filter-only.log`.
 
 ## Real file (A5), script S1
 
@@ -39,6 +40,8 @@ in T1). The typing change is shown red on its own by T1. Log: `r1b-filter-commit
 | logged rows removed, `Contaminant` / `Reverse` | absent (base logs nothing) | 44 / 84 | 44 / 84 at the fix |
 | runs | H1,H2,H3,L1,L2,L3 | same | H1..H3, L1..L3 |
 | contaminant-marked groups with `_ECOLI` in `Fasta headers` | 0 | 0 | 0 |
+
+No contaminant-marked group has an `_ECOLI` entry in `Fasta headers` (no positive control was counted).
 
 Parsing checks (text read): 0 double-quote characters; header 112 fields, 0 data lines with another count; 6,694
 data rows, 0 duplicated and 0 empty `Majority protein IDs`; 6,695 CR bytes (CR LF endings). Flags: `Reverse` 84,
@@ -64,6 +67,19 @@ with and made only of `REV__` members. No unmarked group leads with a tagged mem
   failures are the same on base and head.
 - One vroom parsing-issue warning at the fix commit in T2: the untyped `Only identified by site` column (out of
   scope, 2.4), not a failure.
+
+The 36 files failing on both sides of R3 are base state, with equal counts and byte-identical failure text on both
+sides: 27 are stored or frozen references not re-recorded, 9 are runner-environment failures (missing `devtools` or
+`lobstr`, `systemd-inhibit`, a bash diagnostic, an installed-library path, the optional-package load check).
+
+## Not checked
+
+- A positive control for the `_ECOLI` count: the rows whose `Fasta headers` contain `_ECOLI` at all were not counted,
+  so the zero cannot be told apart from a column without that token.
+- The rule that a line is logged also when 0 rows are removed: implemented, but no test asserts it.
+- `R CMD check` at the records commit: the check ran at 575067a0, before the evidence files existed.
+- Windows: no lane (by design, section 9).
+- The vroom warning on the untyped `Only identified by site` column remains (stated above; out of scope).
 
 ## Budget
 

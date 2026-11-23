@@ -9,11 +9,12 @@
    contaminant` from MaxQuant 1.5.2.8 at the latest); before, these rows were kept although 'Filter contaminants' was
    ticked (44 protein groups in the Cox et al. 2014 benchmark, PXD000279, 22 of them sharing a human accession such
    as keratin or actin with a contaminant entry and removed whole, as MaxQuant instructs). Reports generated before
-   this change from such files stated that contaminant rows had been removed; they had not. The rows removed per
-   flag are now logged. Existing projects are not changed; import the file again to apply the correction. On
-   spike-in standards whose proteins overlap MaxQuant's contaminant list, such as UPS1 and UPS2 (gelsolin, serum
-   albumin, transferrins), this rule can remove true analytes; untick 'Filter contaminants' to keep them, which also
-   keeps the reverse (decoy) rows.
+   this change from such files stated that contaminant rows had been removed; they had not. Until a later change
+   corrects it, the label-free report still states this removal when 'Filter contaminants' is unticked or the file
+   has no contaminant column. The rows removed per flag are now logged. Existing projects are not changed; import the
+   file again to apply the correction. On spike-in standards whose proteins overlap MaxQuant's contaminant list, such
+   as UPS1 and UPS2 (gelsolin, serum albumin, transferrins), this rule can remove true analytes; untick 'Filter
+   contaminants' to keep them, which also keeps the reverse (decoy) rows.
 
 ## MultiScholaR 0.9.0 (staging)
 
