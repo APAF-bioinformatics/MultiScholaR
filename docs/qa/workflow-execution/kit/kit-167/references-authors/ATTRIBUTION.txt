@@ -1,0 +1,22 @@
+Attribution for the files in this folder
+
+Source: UniParc, release 2026_04 (The UniProt Consortium), https://www.uniprot.org
+Proteomes: UP000001734, UP000000530, UP000002436
+Files: <UPID>_uniparc.fasta
+Retrieved from:
+  https://rest.uniprot.org/uniparc/stream?query=upid:UP000000530&format=fasta
+  https://rest.uniprot.org/uniparc/stream?query=upid:UP000001734&format=fasta
+  https://rest.uniprot.org/uniparc/stream?query=upid:UP000002436&format=fasta
+Release read from: https://ftp.uniprot.org/pub/databases/uniprot/current_release/RELEASE.metalink
+Captured by docs/qa/workflow-execution/kit/kit-167/capture-references.R (KIT-167 step 1),
+GitHub Actions runs 45127082405 and 45127086068 (identical results).
+
+Licence: Creative Commons Attribution 4.0 International (CC BY 4.0),
+https://creativecommons.org/licenses/by/4.0/
+These files are not under the MultiScholaR package licence.
+
+Changes: unmodified apart from decompression (FASTA) and the order of rows
+(tables, sorted by accession; UniParc records, sorted by UPI).
+SHA-256 and sizes: docs/qa/workflow-execution/kit/kit-167/capture/hashes.tsv
+
+Please cite: The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in 2025. Nucleic Acids Res 53:D609-D617 (2025). doi:10.1093/nar/gkae1010; UniParc release 2026_04, proteomes UP000001734, UP000000530, UP000002436
