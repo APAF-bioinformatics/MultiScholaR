@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-173 R3: full suite before merge, base 62a41ba1 (R/ = a60c4e9a) against head, 20 shards per side, R CMD check both sides; ceiling 187 core-h (measured full suite ~61)",
+  "label": "KIT-173 R3 full suite 4bc1a361 vs 62a41ba1",
+  "package_commit": "4bc1a36119cb8885ba2c58086d3a6c92669b1777",
+  "base_commit": "62a41ba1ed35cecc8562c2ad9bd603b8bf9151fb",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
