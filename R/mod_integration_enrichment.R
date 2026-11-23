@@ -47,7 +47,12 @@ mod_integration_enrichment_ui <- function(id) {
                     "enrich_correlation_spearman")])), selected = spec$correlation_method$default)),
             shiny::column(4, shiny::numericInput(ns("min_samples"), texts[["enrich_min_samples"]], spec$min_samples$default,
                 min = 3L, step = 1L)),
-            shiny::column(4, shiny::numericInput(ns("seed"), texts[["enrich_seed"]], spec$seed$default, step = 1L))),
+            # KIT-191: the seed is shown for the tests that use one (the pre-ranked and permutation tests).
+            shiny::column(4, testid(shiny::conditionalPanel(sprintf(paste("(input['%s'] == 'kegg' || input['%s'] ==",
+                "'reactome') && (input['%s'] == 'gsea' || input['%s'] == 'permutation')"), ns("database"), ns("database"),
+                ns("test"), ns("test")),
+                shiny::numericInput(ns("seed"), texts[["enrich_seed"]], spec$seed$default, step = 1L)),
+                "integration-enrichment-seed"))),
         testid(shiny::div(
             shiny::fluidRow(
                 shiny::column(4, shiny::numericInput(ns("string_species"), texts[["enrich_string_species"]],
@@ -67,7 +72,15 @@ mod_integration_enrichment_ui <- function(id) {
                     min = 5L, step = 1L))),
             # KIT-183: the test, pre-selected with the test of record for the chosen data set, and its sentence.
             testid(shiny::uiOutput(ns("test_ui")), "integration-enrichment-test"),
+            # KIT-191 (D1): the number of reorderings, for the permutation test only.
+            testid(shiny::conditionalPanel(sprintf("input['%s'] == 'permutation'", ns("test")),
+                shiny::selectInput(ns("permutations"), texts[["enrich_permutations"]],
+                    choices = stats::setNames(as.character(INTEGRATION_ENRICHMENT_PERMUTATIONS),
+                        unname(texts[paste0("enrich_permutations_", INTEGRATION_ENRICHMENT_PERMUTATIONS)])),
+                    selected = as.character(spec$permutations$default))), "integration-enrichment-permutations"),
             testid(shiny::uiOutput(ns("test_note")), "integration-enrichment-test-note"),
+            # KIT-191 (D6 (a)): how each test behaved, for the data set's kind.
+            testid(shiny::uiOutput(ns("evidence")), "integration-enrichment-evidence"),
             shiny::p(shiny::em(texts[["enrich_kegg_terms"]])),
             testid(shiny::actionButton(ns("download"), texts[["enrich_download"]], icon = shiny::icon("download")),
                 "integration-enrichment-download"),
@@ -95,6 +108,10 @@ integrationEnrichmentRequest <- function(input) {
         out$id_column <- input$id_column
         # KIT-183: the test for KEGG and Reactome only; STRING ignores it.
         out$test <- input$test
+        # KIT-191: the number of reorderings, for the permutation test only.
+        if (identical(input$test, "permutation") && !is.null(input$permutations)) {
+            out$permutations <- as.integer(input$permutations)
+        }
     }
     Filter(Negate(is.null), out)
 }
@@ -179,8 +196,15 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
                 is.null(input$test)) {
                 return(NULL)
             }
-            lapply(integrationEnrichmentTestNotes(input$test, facts$samples[[input$view]], facts$input_matrix, texts),
-                function(sentence) shiny::p(shiny::em(sentence)))
+            lapply(integrationEnrichmentTestNotes(input$test, facts$samples[[input$view]], facts$input_matrix,
+                facts$omics[[input$view]], texts), function(sentence) shiny::p(shiny::em(sentence)))
+        })
+        output$evidence <- shiny::renderUI({
+            facts <- state$model
+            if (is.null(facts) || !isTRUE(input$database %in% c("kegg", "reactome")) || !isTRUE(input$view %in% facts$views)) {
+                return(NULL)
+            }
+            integrationEnrichmentEvidenceUi(facts$omics[[input$view]], texts)
         })
         shiny::observeEvent(input$download, {
             state$download_error <- NULL
@@ -217,7 +241,8 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
             shiny::updateTextInput(session, "string_key", value = "")
             run <- tryCatch(withProgressFn(message = texts[["enrich_running"]], value = 0.5,
                 runIntegrationEnrichment(manager, request, api_key = if (identical(request$database, "string")) key,
-                    mapping = state$mapping[[request$database %||% ""]], query = query)),
+                    mapping = state$mapping[[request$database %||% ""]], query = query,
+                    time_limit = INTEGRATION_ENRICHMENT_TAB_SECONDS)),
                 error = function(error) {
                     state$error <- integrationRefusalText(error, texts)
                     NULL
@@ -264,19 +289,41 @@ integrationEnrichmentTestInput <- function(id, n_samples, texts = integrationGui
         selected = integrationEnrichmentTestOfRecord(n_samples))
 }
 
-#' KIT-183: the sentences beside the test selector: the selected test's note; for a correlated test on a data set with
-#' fewer biological samples than the check covered, the few-samples sentence; for a model trained on RUV-corrected
-#' values, the RUV note.
-#' @param test The selected test.
+#' KIT-183: the sentences beside the test selector: the selected test's note; for a data set with fewer biological
+#' samples than the check covered, the few-samples sentence; for a model trained on RUV-corrected values, the RUV note.
+#' KIT-191: the note and the few-samples sentence of the test and of the data set's kind (lipids: the metabolites').
+#' @param test The selected test (one of `INTEGRATION_ENRICHMENT_TESTS_OFFERED`).
 #' @param n_samples The data set's biological samples.
 #' @param input_matrix The values the model was trained on (`uncorrected` or `ruv_corrected`).
+#' @param omic The data set's omic.
 #' @noRd
-integrationEnrichmentTestNotes <- function(test, n_samples, input_matrix, texts = integrationGuiTexts()) {
-    if (!isTRUE(test %in% INTEGRATION_ENRICHMENT_TESTS)) return(character())
-    c(texts[[paste0("enrich_test_", test, "_note")]],
-        if (test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS && isTRUE(n_samples < INTEGRATION_ENRICHMENT_CHECKED_SAMPLES))
-            sprintf(texts[["enrich_test_few_samples"]], as.integer(n_samples), INTEGRATION_ENRICHMENT_CHECKED_SAMPLES),
+integrationEnrichmentTestNotes <- function(test, n_samples, input_matrix, omic, texts = integrationGuiTexts()) {
+    if (!isTRUE(test %in% INTEGRATION_ENRICHMENT_TESTS_OFFERED)) return(character())
+    kind <- integrationEnrichmentEvidenceKind(omic)
+    c(texts[[paste0("enrich_test_", test, "_note_", kind)]],
+        if (isTRUE(n_samples < INTEGRATION_ENRICHMENT_CHECKED_SAMPLES))
+            sprintf(texts[[paste0("enrich_test_few_samples_", test, "_", kind)]], as.integer(n_samples)),
         if (identical(input_matrix, "ruv_corrected")) texts[["enrich_values_ruv_note"]])
+}
+
+#' KIT-191 (5.4, D6 (a)): the evidence table beside the selector: the four tests' figures at 12 biological samples for
+#' the data set's kind (metabolite and lipid data sets: rows A, B, D, E, C3, I; gene and protein data sets: A, B, D, E,
+#' G, H), with, for a lipid data set, the line saying no lipid data were simulated.
+#' @param omic The data set's omic.
+#' @noRd
+integrationEnrichmentEvidenceUi <- function(omic, texts = integrationGuiTexts()) {
+    kind <- integrationEnrichmentEvidenceKind(omic)
+    tests <- INTEGRATION_ENRICHMENT_TESTS_OFFERED
+    header <- shiny::tags$tr(shiny::tags$th(texts[["enrich_evidence_measure"]]),
+        lapply(tests, function(test) shiny::tags$th(texts[[paste0("enrich_test_", test)]])))
+    rows <- lapply(integrationEnrichmentEvidenceRows(kind), function(measure) {
+        label <- if (measure == "E") paste0("enrich_evidence_E_", kind) else paste0("enrich_evidence_", measure)
+        shiny::tags$tr(shiny::tags$td(texts[[label]]), lapply(tests, function(test)
+            shiny::tags$td(integrationEnrichmentEvidenceValue(kind, test, measure))))
+    })
+    shiny::div(shiny::h5(sprintf(texts[["enrich_evidence_heading"]], texts[[paste0("enrich_evidence_kind_", kind)]])),
+        if (identical(omic, "lipidomics")) shiny::p(shiny::em(texts[["enrich_evidence_lipids"]])),
+        shiny::tags$table(class = "table table-condensed table-bordered", shiny::tags$thead(header), shiny::tags$tbody(rows)))
 }
 
 #' An enrichment's facts in words (KIT-141): what was enriched against which release, the counts, the mapping, the
@@ -296,22 +343,42 @@ integrationEnrichmentSummary <- function(value, texts = integrationGuiTexts(), e
     m <- value$mapping_counts
     d <- value$direction
     correlated <- isTRUE(value$test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS)
+    permutation <- identical(value$test, "permutation")
     pathways <- !identical(value$database, "string")
     counts <- value$test_counts
     c(sprintf(texts[["enrich_done"]], value$factor, value$view, integrationEnrichmentDatabaseName(value$database), release),
         sprintf(texts[["enrich_counts"]], as.integer(r$features), as.integer(r$ranked), as.integer(r$too_few_samples),
             as.integer(r$no_variation), as.integer(r$internal_standard)),
         sprintf(texts[["enrich_mapping"]], as.integer(m$mapped), as.integer(m$unmapped), as.integer(m$duplicated)),
-        if (correlated) sprintf(texts[["enrich_test_counts"]], as.integer(counts$universe), as.integer(counts$samples),
-            as.integer(counts$incomplete), as.integer(counts$collapsed)),
+        if (correlated) sprintf(texts[[if (permutation) "enrich_test_counts_permutation" else "enrich_test_counts"]],
+            as.integer(counts$universe), as.integer(counts$samples), as.integer(counts$incomplete),
+            as.integer(counts$collapsed)),
         if (correlated) paste(sprintf(texts[["enrich_direction_oriented"]], as.character(d$feature_id), as.character(d$view),
             as.integer(d$sign)), texts[["enrich_direction_camera"]]) else
             sprintf(texts[["enrich_direction"]], as.character(d$feature_id), as.character(d$view), as.integer(d$sign)),
         if (as.integer(value$tests) > 0L) sprintf(texts[["enrich_tests"]], as.integer(value$tests)) else texts[["enrich_none"]],
+        # KIT-191 (5.2 step 8): the permutation test's floor of p-values and of BH.
+        if (permutation) integrationEnrichmentPermutationFloorText(value$permutation, as.integer(value$tests), texts),
         if (pathways) texts[["enrich_caution"]],
         if (pathways && !is.null(entry)) {
             strength <- integrationEnrichmentStrengthText(entry, texts)
             if (nzchar(strength)) strength
         },
         if (pathways && identical(entry$input_matrix, "ruv_corrected")) texts[["enrich_values_ruv_note"]])
+}
+
+#' KIT-191 (5.2 steps 7 and 8): the permutation test's floor. With d reorderings that left the factor unchanged no
+#' p-value is below p_min = (1 + d) / (1 + B); with m terms tested, BH at 5 % calls a term only when at least
+#' k_min = ceiling(m p_min / 0.05) terms have a p-value of 0.05 k_min / m or less.
+#' @param permutation The product's `permutation` (`permutations`, `identity_draws`, `min_p`, `samples`).
+#' @param terms The number of terms tested (m).
+#' @return The sentence (`enrich_test_permutation_floor`), or NULL without terms.
+#' @noRd
+integrationEnrichmentPermutationFloorText <- function(permutation, terms, texts = integrationGuiTexts()) {
+    if (is.null(permutation) || !isTRUE(terms > 0L) || is.na(permutation$min_p)) return(NULL)
+    p_min <- as.numeric(permutation$min_p)
+    k_min <- as.integer(ceiling(terms * p_min / 0.05 - 1e-9))
+    number <- function(x) format(signif(x, 3), scientific = FALSE, trim = TRUE)
+    sprintf(texts[["enrich_test_permutation_floor"]], as.integer(permutation$permutations), as.integer(permutation$samples),
+        number(p_min), terms, k_min, number(0.05 * k_min / terms))
 }
