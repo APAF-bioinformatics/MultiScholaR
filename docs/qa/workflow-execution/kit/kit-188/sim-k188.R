@@ -77,6 +77,7 @@ BLIND <- c("n_null", "null_p05", "null_p01", "calls", "false_calls", "true_calls
     "bh_calls", "bh_false", "bh_any", "bh_fdp", "bh_power", "err_med", "err_p99", "err_rmse", "err_max", "gross1", "slope",
     "n_common", "s5", "or_s5", "gross1_common", "or_gross1_common", "ctl_planted_share", "ctl_labelled", "mdf_null05",
     "mdf_null05_reduced", "mdf_df_le_k", "mdf_tested", "mamp_sigma_min", "mamp_e_max", "mamp_planted_share",
+    "mamp_cf_n", "mamp_cf_singular", "mamp_cf_log10kappa",
     "mu_itsd_dev", "mu_log2_dev", "mu_loess_dev", "mu_ctl_same", "mu_k_same", "mu_pct_same", "mu_ruv_dev", "mu_logfc_dev",
     "mu_t_dev", "mu_call_changes", "mu_t_dev_notrend")
 
@@ -922,6 +923,36 @@ checkE8 <- function(sim, journey, choice, condition) {
     }
     out
 }
+#' M-amp, closed-form branch (KIT-193 audit U3; reported): the features whose observed runs leave exactly k residual
+#' dimensions, those with fewer complete controls than observed runs (Y_c Y_c' singular), and the largest log10 condition
+#' number of Y_c Y_c' (runs by runs, on the observed RUV input values), per assay, with the arm's k and controls.
+cfBranch <- function(sim, journey, choice) {
+    out <- list()
+    for (a in names(choice)) {
+        ch <- choice[[a]]
+        Y <- journey$m_in[[a]]
+        if (is.null(Y) || is.na(ch$k %||% NA)) next
+        obs <- is.finite(Y)
+        group <- sim$design$group[match(colnames(Y), sim$design$Run)]
+        sets <- vapply(unique(group), function(g) rowSums(obs[, group == g, drop = FALSE]) > 0L, logical(nrow(Y)))
+        if (is.null(dim(sets))) sets <- matrix(sets, nrow = nrow(Y))
+        rd <- rowSums(obs) - rowSums(sets)
+        cf <- which(rd == ch$k)
+        ctl <- intersect(ch$controls, rownames(Y))
+        singular <- 0L
+        worst <- NA_real_
+        for (j in cf) {
+            runs <- which(obs[j, ])
+            cj <- ctl[rowSums(!obs[ctl, runs, drop = FALSE]) == 0L]
+            if (length(cj) < length(runs)) singular <- singular + 1L
+            Yc <- t(Y[cj, runs, drop = FALSE])
+            kap <- if (length(cj)) tryCatch(kappa(Yc %*% t(Yc), exact = TRUE), error = function(e) Inf) else Inf
+            worst <- max(worst, log10(kap), na.rm = TRUE)
+        }
+        out[[a]] <- list(mamp_cf_n = length(cf), mamp_cf_singular = singular, mamp_cf_log10kappa = worst)
+    }
+    out
+}
 #' M-df: the corrected matrix refitted as the route does, and with the residual variance re-estimated on df - k.
 mdf <- function(sim, journey, choice) {
     out <- list()
@@ -1080,6 +1111,11 @@ runConditionL <- function(sim, mask, job, d, lifecycle, fault_now, first_conditi
             rows[[i]][names(amp[[rows[[i]]$assay]])] <- amp[[rows[[i]]$assay]]
         }
     }
+    # M-amp, closed-form branch (LA, deciding, every mask; reported)
+    if (identical(job, "deciding") && !is.null(journeys$LA) && !is.null(choices$LA)) {
+        cf <- cfBranch(sim, journeys$LA, choices$LA)
+        for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(cf[[rows[[i]]$assay]])) rows[[i]][names(cf[[rows[[i]]$assay]])] <- cf[[rows[[i]]$assay]]
+    }
     # M-df (LA and LM, N0 and N1, mask none; L12 and M12)
     if (identical(job, "reported") && identical(mask, "none") && sim$scenario %in% c("N0", "N1") && sim$cell %in% c("L12", "M12")) {
         for (arm in intersect(c("LA", "LM"), names(choices))) {
@@ -1220,6 +1256,10 @@ runConditionP <- function(sim, mask, job, d, lifecycle, fault_now, config) {
         if (identical(arm, "LA") && identical(mask, "none") && identical(j$status, "ok") && !is.na(ch$proteins$k) && identical(job, "deciding")) {
             amp <- checkE8(sim, j, ch, condition)
             for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(amp$proteins)) rows[[i]][names(amp$proteins)] <- amp$proteins
+        }
+        if (identical(arm, "LA") && identical(job, "deciding") && !is.na(ch$proteins$k)) {
+            cf <- cfBranch(sim, j, ch)
+            for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(cf$proteins)) rows[[i]][names(cf$proteins)] <- cf$proteins
         }
     }
     if (!is.null(or_errs)) {

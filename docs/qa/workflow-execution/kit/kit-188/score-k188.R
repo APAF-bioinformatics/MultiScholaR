@@ -179,6 +179,8 @@ partm <- function(columns, filter, name) {
 }
 partm(c("k", "mdf_null05", "mdf_null05_reduced", "mdf_df_le_k", "mdf_tested"), !is.na(num(rows$mdf_null05)), "partm-df.tsv")
 partm(c("k", "n_controls", "mamp_sigma_min", "mamp_e_max", "mamp_planted_share", "s5", "null_p05"), !is.na(num(rows$mamp_e_max)), "partm-amp.tsv")
+partm(c("k", "n_controls", "mamp_cf_n", "mamp_cf_singular", "mamp_cf_log10kappa", "s5", "err_max"), !is.na(num(rows$mamp_cf_n)),
+    "partm-closed-form.tsv")
 partm(c("mu_itsd_dev", "mu_log2_dev", "mu_loess_dev", "mu_ctl_same", "mu_k_same", "mu_pct_same", "mu_ruv_dev", "mu_logfc_dev", "mu_t_dev",
     "mu_call_changes", "mu_t_dev_notrend"), rows$job == "munit", "partm-unit.tsv")
 repair <- conditions[conditions$arm %in% c("LA", "LP") & conditions$job %in% c("deciding", "lp") & conditions$scenario %in% c("N0", "N1", "E0", "E1"), ]
