@@ -1,0 +1,55 @@
+{
+  "requested_by": "KIT-183 R1b: the integration test files base (1e627f70) against head (b21099d6), R CMD check both sides, gate-off identity script",
+  "label": "KIT-183 R1b b21099d6 vs 1e627f70: integration files, check, gate-off",
+  "package_commit": "b21099d612077ee9408e21d614b19ef626f7c85c",
+  "base_commit": "1e627f704580a42e66e45b9263c8fcd9684567ba",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-corpus.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-enrichment.R",
+    "test-integration-feature-selection.R",
+    "test-integration-gui.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-matrix.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-model-tab-mofa.R",
+    "test-integration-model.R",
+    "test-integration-mofa-model.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-outputs.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-partitioned-mofa.R",
+    "test-integration-record-mofa.R",
+    "test-integration-record.R",
+    "test-integration-results-mofa.R",
+    "test-integration-results.R",
+    "test-integration-sample-match.R",
+    "test-integration-workbook-api.R",
+    "test-integration-workbook-mofa.R",
+    "test-integration-workbook.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_K183_OUT": "k183-r1b"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "1e627f704580a42e66e45b9263c8fcd9684567ba",
+        "k183-out/gate-off"
+      ],
+      "out": "k183-out",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
