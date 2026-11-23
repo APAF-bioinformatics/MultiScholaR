@@ -1,0 +1,5 @@
+{
+  "run": "lifecycle",
+  "package_commit": "11545cb37e096814e09c9fd635573bcec7f06e6e",
+  "note": "KIT-183 L1: 5 replicates per cell, F3, memory case, a declared failing replicate"
+}

@@ -1,0 +1,257 @@
+name: MOFA2 evidence k183 (integration enrichment, the test of record's simulation)
+
+# Run-only lane (branch run-mofa-evidence-k183; KIT-183 section 6.2, methods ledger VAL-51, VAL-53). Declaration:
+# docs/qa/workflow-execution/kit/kit-183/declaration.md of the package commit under test (committed before the counted
+# run). Copied from the MOFA2 package lane (run-mofa-smoke-k155, .github/workflows/mofa-package.yml): R 4.6.1, the
+# KIT-134 snapshot library with the internal packages built in the job and MultiScholaR at package_commit installed by
+# the library action, MOFA2's closure and the bundle's Python, R started through the bundle's launcher. The simulation
+# is the package commit's docs/qa/workflow-execution/kit/kit-183/simulate-k183.R (this lane's .github/mofa-smoke/k183.R
+# is a byte copy, checked); the scorer is k183-score.R of the same commit.
+#
+# The jobs of each run are fixed here (declared), not taken from the parameters:
+#   lifecycle    one job: 5 replicates of each cell (n = 12, 20, 6) in three workers, F3 (1 against 5 training seeds),
+#                the 20,000 x 500 memory and time case, one replicate with a declared invalid argument (n = 7)
+#   counted      8 jobs of 300 replicates (4 single-thread workers each) and the determinism job (replicates 1 to 10
+#                of n = 12 again), then the scorer
+#   correction   as counted (S', only after an instrumentation failure of counted)
+# Start: change .github/mofa-smoke/k183-params.json in a commit and push it to run-mofa-evidence-k183.
+#   run             lifecycle | counted | correction
+#   package_commit  40-digit commit of MultiScholaR under test
+# Token rules (as the package lane): the token goes only to the library action; no cache of any kind; nothing built
+# with it and no install or build output is uploaded (only the result tables under RUNNER_TEMP/result, scanned first).
+
+on:
+  push:
+    branches:
+      - "run-mofa-evidence-k183"
+    paths:
+      - .github/mofa-smoke/k183-params.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: k183-evidence-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Parameters
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.plan.outputs.commit }}
+      run: ${{ steps.plan.outputs.run }}
+      jobs: ${{ steps.plan.outputs.jobs }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/mofa-smoke
+          persist-credentials: false
+      - id: plan
+        run: |
+          p=.github/mofa-smoke/k183-params.json
+          jq -e '(.run | IN("lifecycle", "counted", "correction")) and
+            (.package_commit | type == "string" and test("^[0-9a-f]{40}$"))' "$p" > /dev/null \
+            || { echo "::error::k183-params.json is not valid"; exit 1; }
+          run="$(jq -r .run "$p")"
+          if [ "$run" = lifecycle ]; then
+            jobs='[{"id":"life","timeout":45,"segments":"12:1:5;20:1:5;6:1:5","extra":"seeds memory fail"}]'
+          else
+            jobs='[
+              {"id":"s1","timeout":75,"segments":"12:1:300","extra":""},
+              {"id":"s2","timeout":75,"segments":"12:301:600","extra":""},
+              {"id":"s3","timeout":75,"segments":"12:601:800;20:1:100","extra":""},
+              {"id":"s4","timeout":75,"segments":"20:101:400","extra":""},
+              {"id":"s5","timeout":75,"segments":"20:401:700","extra":""},
+              {"id":"s6","timeout":75,"segments":"20:701:800;6:1:200","extra":""},
+              {"id":"s7","timeout":75,"segments":"6:201:500","extra":""},
+              {"id":"s8","timeout":75,"segments":"6:501:800","extra":""},
+              {"id":"det","timeout":20,"segments":"12:1:10","extra":""}]'
+          fi
+          {
+            echo "commit=$(jq -r .package_commit "$p")"
+            echo "run=$run"
+            echo "jobs=$(echo "$jobs" | jq -c .)"
+          } | tee -a "$GITHUB_OUTPUT"
+
+  evidence:
+    name: ${{ matrix.job.id }} (package ${{ needs.plan.outputs.commit }})
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        job: ${{ fromJSON(needs.plan.outputs.jobs) }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: ${{ matrix.job.timeout }}
+    steps:
+      - name: Job start
+        run: echo "JOB_STARTED=$(date +%s)" | tee -a "$GITHUB_ENV"
+
+      - name: The package under test (package_commit)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.commit }}
+          persist-credentials: false
+          lfs: false
+
+      - name: This lane's scripts (the MOFA2 installer, the launcher, the Python build)
+        uses: actions/checkout@v4
+        with:
+          path: lane
+          persist-credentials: false
+
+      - name: Versions from the distributable workflow; paths; the runner
+        run: |
+          for key in R_VERSION PBS_RELEASE PBS_PYTHON; do
+            value="$(sed -n "s/^  $key: \"\(.*\)\"$/\1/p" lane/.github/workflows/distributable.yml)"
+            test -n "$value" || { echo "::error::$key not found in distributable.yml"; exit 1; }
+            echo "$key=$value" | tee -a "$GITHUB_ENV"
+          done
+          {
+            echo "BUNDLE=$RUNNER_TEMP/bundle"
+            echo "OUT=$RUNNER_TEMP/evidence"
+            echo "RES=$RUNNER_TEMP/result"
+          } >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/evidence" "$RUNNER_TEMP/result"
+          {
+            echo "image: ${ImageOS:-?} ${ImageVersion:-?}"
+            nproc
+            grep -E '^(MemTotal)' /proc/meminfo
+            lscpu | grep -E '^(Model name|Vendor ID|CPU\(s\))'
+          } | tee "$RUNNER_TEMP/result/runner.txt"
+          sim=docs/qa/workflow-execution/kit/kit-183/simulate-k183.R
+          test -f "$sim" || { echo "::error::$sim is not in the package commit"; exit 1; }
+          cmp "$sim" lane/.github/mofa-smoke/k183.R || { echo "::error::the lane's k183.R is not a copy of $sim"; exit 1; }
+          sha256sum "$sim" docs/qa/workflow-execution/kit/kit-183/score-k183.R lane/.github/workflows/k183-evidence.yml \
+            | tee "$RUNNER_TEMP/result/script-sha256.txt"
+
+      - name: R 4.6.1, the KIT-134 library, the internal packages and MultiScholaR at package_commit (no cache)
+        uses: ./.github/actions/snapshot-library
+        with:
+          token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: ""
+
+      - name: MOFA2's closure from the snapshot (plan, system libraries, install; versions against the bundle's)
+        run: |
+          set -o pipefail
+          R_LIBS="$MSR_TOOLS_LIB" /opt/R/4.6.1/bin/Rscript --vanilla lane/.github/mofa-smoke/install-mofa-library.R plan lane "$OUT"
+          (cd lane && bash packaging/linux/build.sh sysreqs)
+          R_LIBS="$MSR_TOOLS_LIB" /opt/R/4.6.1/bin/Rscript --vanilla lane/.github/mofa-smoke/install-mofa-library.R install lane "$OUT" \
+            2>&1 | tee "$OUT/install-mofa-library.log" | { grep -vE '^(\* |trying URL|Content type|downloaded|=+$)' || true; } | tail -n 40
+          cp "$OUT/mofa-library-versions.tsv" "$RES/"
+
+      - name: The bundle's Python (packaging/linux/build.sh python; hashes checked)
+        run: |
+          (cd lane && bash packaging/linux/build.sh python)
+          cp "$OUT/python-packages.txt" "$RES/"
+
+      - name: Bundle-shaped folder for the launcher (bin/Rscript = packaging/linux/Rscript, R -> the R home)
+        run: |
+          mkdir -p "$BUNDLE/bin"
+          install -m 0755 lane/packaging/linux/Rscript "$BUNDLE/bin/Rscript"
+          ln -s "/opt/R/$R_VERSION/lib/R" "$BUNDLE/R"
+
+      - name: Simulate (${{ matrix.job.id }})
+        env:
+          SEGMENTS: ${{ matrix.job.segments }}
+          EXTRA: ${{ matrix.job.extra }}
+          TIMEOUT_MIN: ${{ matrix.job.timeout }}
+        run: |
+          set -o pipefail
+          export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+          # No replicate starts after this time (6 minutes before the job's limit, so the results are uploaded).
+          export K183_DEADLINE=$((JOB_STARTED + (TIMEOUT_MIN - 6) * 60))
+          sim="$GITHUB_WORKSPACE/docs/qa/workflow-execution/kit/kit-183/simulate-k183.R"
+          echo "setup took $(( $(date +%s) - JOB_STARTED )) s; deadline $(date -d "@$K183_DEADLINE" -u +%H:%M:%SZ)" | tee "$RES/plan.txt"
+          # Four single-thread workers: each segment's replicates dealt into four contiguous ranges.
+          workers=()
+          IFS=';' read -ra segs <<< "$SEGMENTS"
+          for seg in "${segs[@]}"; do
+            IFS=':' read -r n first last <<< "$seg"
+            count=$((last - first + 1))
+            parts=4; [ "$count" -lt 4 ] && parts="$count"
+            for ((i = 0; i < parts; i++)); do
+              a=$((first + i * count / parts)); b=$((first + (i + 1) * count / parts - 1))
+              workers+=("$n:$a:$b")
+            done
+          done
+          echo "workers: ${workers[*]}" | tee -a "$RES/plan.txt"
+          # At most four workers at a time.
+          i=0
+          for w in "${workers[@]}"; do
+            i=$((i + 1))
+            IFS=':' read -r n a b <<< "$w"
+            ( "$BUNDLE/bin/Rscript" --vanilla "$sim" "$RES/w$i" replicates "$n" "$a" "$b" > "$RES/w$i.log" 2>&1
+              echo "worker $i ($w) exit $?" >> "$RES/plan.txt" ) &
+            while [ "$(jobs -rp | wc -l)" -ge 4 ]; do wait -n; done
+          done
+          wait
+          for x in $EXTRA; do
+            case "$x" in
+              seeds) "$BUNDLE/bin/Rscript" --vanilla "$sim" "$RES/extra" seeds 12 1 > "$RES/seeds.log" 2>&1 ;;
+              memory) "$BUNDLE/bin/Rscript" --vanilla "$sim" "$RES/extra" memory > "$RES/memory.log" 2>&1 ;;
+              fail) "$BUNDLE/bin/Rscript" --vanilla "$sim" "$RES/extra" fail > "$RES/fail.log" 2>&1 ;;
+            esac
+            echo "$x exit $?" >> "$RES/plan.txt"
+          done
+          echo "simulation done after $(( $(date +%s) - JOB_STARTED )) s" | tee -a "$RES/plan.txt"
+          cat "$RES"/w*/status.tsv 2>/dev/null | awk -F'\t' 'NR > 1 && $1 != "cell" { s[$4]++ } END { for (k in s) print k, s[k] }' \
+            | tee -a "$RES/plan.txt"
+
+      - name: Nothing token-like in the upload; files naming the internal packages withheld
+        if: ${{ !cancelled() }}
+        run: |
+          if grep -rlE 'ghp_|github_pat_|gho_|Bearer ' "$RES"; then
+            echo "::error::token-like text in the result"; exit 1
+          fi
+          grep -rlE 'fast_duckdb|fast_limpa_dpc|fastduckdb|fastlimpadpc' "$RES" | while read -r f; do
+            rm -f "$f"; echo "withheld: ${f#"$RES"/}" | tee -a "$RES/withheld.txt"
+          done
+          du -sh "$RES"
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: k183-${{ matrix.job.id }}
+          path: ${{ runner.temp }}/result
+          retention-days: 30
+
+  score:
+    name: Score once
+    needs: [plan, evidence]
+    if: ${{ !cancelled() && needs.plan.outputs.run != 'lifecycle' }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: This lane (R's installer)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: The package under test (its scorer)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.commit }}
+          path: pkg
+          persist-credentials: false
+          sparse-checkout: docs/qa/workflow-execution/kit/kit-183
+      - name: R (as the evidence jobs)
+        run: |
+          R_VERSION="$(sed -n 's/^  R_VERSION: "\(.*\)"$/\1/p' .github/workflows/distributable.yml)"
+          echo "R_VERSION=$R_VERSION" >> "$GITHUB_ENV"
+          R_VERSION="$R_VERSION" TOOLS_LIB="$RUNNER_TEMP/tools-lib" OUT="$RUNNER_TEMP/evidence" bash packaging/linux/build.sh r
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: k183-*
+          path: ${{ runner.temp }}/jobs
+      - name: Score
+        run: |
+          sha256sum pkg/docs/qa/workflow-execution/kit/kit-183/score-k183.R
+          "/opt/R/$R_VERSION/bin/Rscript" --vanilla pkg/docs/qa/workflow-execution/kit/kit-183/score-k183.R "$RUNNER_TEMP/jobs" \
+            "$RUNNER_TEMP/score"
+          cat "$RUNNER_TEMP/score/results-summary.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: score
+          path: ${{ runner.temp }}/score
+          retention-days: 30
