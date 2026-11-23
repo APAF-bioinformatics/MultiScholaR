@@ -12,8 +12,13 @@
    (`go_propagation = "is_a_part_of_regulates"`; `"none"` gives the previous sets). Analysis records made before this
    version replay without propagation; records made with this version need this version or later. GO identifiers that
    the installed GO release does not contain are counted and reported. Proteins annotated only to the three top-level
-   terms leave the background on such a run; their number is recorded. (KIT-173; the measured effect follows after the
-   owner has seen it.)
+   terms leave the background on such a run; their number is recorded. Measured on the reviewed E. coli K-12 proteome
+   (UniProt 2026_04; 4,024 annotated proteins, the background for every setting; 20 lists per scenario; none, is a and
+   part of, and the five relations): terms tested in range 314, 1,242 and 1,249; median significant terms (q-value
+   below 0.05) for a planted specific, mid-level and broad process 1.5, 20 and 19; 10, 54 and 47; 13, 130 and 129; the
+   planted term significant in 20 of 20 lists with parent terms in every scenario, without them in 0, 20 and 0 of 20;
+   random lists: median 0 significant terms, and 1 of 20 lists with any significant term by q-value under each setting
+   (by Benjamini-Hochberg 0, 1 and 1 of 20). (KIT-173, VAL-65)
  * Proteomics reports: for the 13 organisms served by g:Profiler, the enrichment paragraph now describes g:Profiler.
    It described clusterProfiler with Benjamini-Hochberg correction, because the report did not recognise the recorded
    method. The correction applied is named from the analysis record. On both routes the fold-change bullet now states

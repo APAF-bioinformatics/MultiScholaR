@@ -193,7 +193,7 @@ NEWS; ledger row). Run 45153295682 (base cf4b5fd4, head 19d24b96), observed:
 | A2 | met, except T7(c) on head is shown in R2b and T7(b) below | R1 (base failing), R2b (head passing); `runs.tsv` |
 | A3 | met | `t5-summary.tsv` (three conditions TRUE), the two-relation report, the 40 lowest |
 | A4 | **met as restated (VAL-61)**: records made after the fix replay byte-identical across processes (R2f head-on-head 11 of 11); the base record replays with every expectation equal and its `geneID` cells equal as sets (T7(b) 12 of 12). History:  the base record replays on head with the same nine declared names, product parameters, service, contrasts, TERM2GENE and TERM2NAME hashes and plot-data digests; the stored result tables differ in one column, `geneID` (each row lists the same proteins in another order), and so the two `*_enrichment_results.tsv` files' SHA-256 differ. Found by instrument run 1 (VAL-54); stopped and reported, the test not adjusted | `t7i1/t7-failures.tsv`, `r2b/` |
-| A5 | measured, waiting for the owner (D8); not yet in NEWS or the ledger | `effect.tsv` |
+| A5 | met: shown to the owner, accepted (VAL-65); written into NEWS and the ledger row | `effect.tsv`, NEWS, ledger |
 | A6 | partly: targeted files, dependents and check done (R2, R2b); full suite (R3) not run, it follows D8 | `r2b/`, `check-compare.txt` |
 | A7 | met | diff: NEWS under the unnumbered heading, no version change, Rd by hand, `Collate` |
 | A8 | met | T11(a) to (f) pass on head in R2b; (e) passes on base too |
