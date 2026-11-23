@@ -857,9 +857,12 @@ anovaControls <- function(m, group, pct) {
     ps <- apply(m, 1L, function(x) {
         if (length(unique(grps[!is.na(x)])) > 1L) summary(stats::aov(as.numeric(x) ~ grps))[[1L]][["Pr(>F)"]][1L] else NA_real_
     })
+    # as the helper: a feature with zero residual df has no Pr(>F) (NULL) and `unlist` drops it (KIT-190 audit A11);
+    # the count stays round(nrow x pct / 100) over every row, as the helper's
+    if (is.list(ps)) ps <- unlist(ps)
     ps[is.na(ps)] <- 1
     pick <- function(q) {
-        names(q) <- rownames(m)
+        names(q) <- names(ps)
         filtered <- q[q > 0.05]
         n <- min(round(nrow(m) * pct / 100, 0), length(filtered))
         names(sort(filtered, decreasing = TRUE)[seq_len(n)])
