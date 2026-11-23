@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-192 R1: failing-first run of the tests-only commit (T1-T6, T7b); ceiling 45 min; decides fix or stop",
+  "label": "KIT-192 R1 tests-only 31c9dd64",
+  "package_commit": "31c9dd64144c250f3647ee31c6904434d08e0f8f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-trx-da-without-ruv.R", "test-module-ci-trx-summary.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
