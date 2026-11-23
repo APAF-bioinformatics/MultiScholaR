@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-159 T1 (group a) correction pass: hand-case tests at the ticket's printed precision, f_sim on regime C3, T-COV cost probe",
+  "label": "KIT-159 T1a correction at 5e1c3202",
+  "package_commit": "5e1c32028c8ad9115dbf8749c875d7c4847515c4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1a2-out",
+        "--time-regime",
+        "C3",
+        "--nsim",
+        "200"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1a2-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
