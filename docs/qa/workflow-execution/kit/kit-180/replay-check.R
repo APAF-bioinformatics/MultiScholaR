@@ -70,7 +70,8 @@ guiEntrySteps <- function(lane) {
 for (lane in c("prot_lfq", "prot_tmt")) {
     for (name in ls(current)) rm(list = name, envir = current)
     started <- Sys.time()
-    outcome <- tryCatch({
+    where <- character()
+    outcome <- tryCatch(withCallingHandlers({
         guiEntryRunLane(lane)
         record <- jsonlite::read_json(current$json, simplifyVector = FALSE)
         states <- vapply(record$steps, function(step) step$state, "")
@@ -112,7 +113,12 @@ for (lane in c("prot_lfq", "prot_tmt")) {
         put(lane, "states_not_identical", paste(later[!same], collapse = ","))
         "replayed"
     }, error = function(e) {
-        put(lane, "stopped", paste(class(e)[[1L]], conditionMessage(e)))
+        # VAL-54 instrument run: record where a stop happened (the innermost calls), not only its message.
+        calls <- vapply(utils::tail(sys.calls(), 8L), function(call) substr(paste(deparse(call, nlines = 1L), collapse = " "), 1L, 120L), "")
+        where <<- calls
+    }), error = function(e) {
+        put(lane, "stopped", paste(class(e)[[1L]], conditionMessage(e), "| call:", paste(deparse(conditionCall(e), nlines = 1L), collapse = " ")))
+        put(lane, "stopped_in", paste(where, collapse = " <- "))
         "stopped"
     })
     put(lane, "outcome", outcome)
