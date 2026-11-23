@@ -1,12 +1,13 @@
 # KIT-186 outcome: transcriptomics differential abundance without RUV
 
-Ticket `tickets/kit/KIT-186.md` revision 1.2 (VAL-59; owner decisions VAL-66 D1 to D4 as recommended).
+Ticket `tickets/kit/KIT-186.md` revision 1.3 (VAL-59; owner decisions VAL-66 D1 to D4 as recommended; VAL-74).
 Branch `kit-186-trx-da-without-ruv` from `v0.9-staging` ffdfdfb7 (the branch point, "base" in R2).
 
-**State: stopped after R2, before R3.** R2 shows one verdict that differs from section 6.2's prediction:
-`test-omic-da-module.R` is `new-failure`, not `same`. The cause is one frozen value the ticket did not list (below).
-The fix would be a correction pass that edits that frozen value, which the ticket's D2 exception names by file
-(`test-omic-da-module.R`) but not by line (`:312` only). That needs the coordinator's or owner's decision.
+**State: done, ready for its implementation audit.** R2 showed one verdict that revision 1.2 had not predicted:
+`test-omic-da-module.R` `new-failure` at the frozen trx panel's whole-page digest (`:293`), which the help text W2 moves.
+The owner decided (VAL-74) that the value is not edited here and waits for the end-of-project re-record (plan section 11
+row, "Not here", beside `:312`), and revision 1.3 restates 6.2, A3 and A5 to admit exactly that one new failure; no
+correction pass. R3 (full suite, with R CMD check at the coordinator's request) then gave exactly 6.2's verdicts.
 
 ## Commits
 
@@ -81,9 +82,9 @@ Scope search re-run at the branch point (ticket section 9's `grep`): it finds th
 |---|---|---|
 | A1 | Met, with the R1 instrument defect recorded | R1, R1b (failing first at stated values); R2 head: the new file passes, T7 passes, the four updated expectations pass |
 | A2 | Met | `s1/ruv-routes-compare.tsv`: 36/36 |
-| A3 | **Not met** | `test-omic-da-module.R` `new-failure` (frozen `html` digest at `:293`); every other verdict as predicted |
-| A4 | Met | `r2-check-compare.txt` |
-| A5 | Not run | R3 runs after R2 is green |
+| A3 | Met under r1.3 (VAL-74) | R2: every verdict as 6.2 predicts; the one `new-failure` is the admitted `:293` digest |
+| A4 | Met | `r2-check-compare.txt`; R3's check also identical (`r3-check-compare.txt`) |
+| A5 | Met under r1.3 | R3 below |
 | A6 | Met in the diff | NEWS under the unreleased heading; ledger row `VAL-<merge>`; no `DESCRIPTION`, `packaging/`, `man/` or `NAMESPACE` change |
 | A7 | Met (read) | below |
 
@@ -105,13 +106,30 @@ Scope search re-run at the branch point (ticket section 9's `grep`): it finds th
   changed between base and head, and all other trx UI parts pass on head. The rendered HTML was not compared text to text.
 - That the correction would be one value, `:293` set to the head digest "56d6c2da95d26603a47eb607893f694b1e70098a6262af04766fbe660b10df04".
 
+### R3 (run 45241570517, head af7f0738 against base ffdfdfb7; `r3-full-suite-compare.tsv`, `r3-full-suite-compare-failures.txt`, `r3-check-compare.txt`)
+
+Full suite, 20 shards per side, one process per file, with R CMD check (the coordinator's request; the ticket had
+`check: false`). Head af7f0738 is e9e1df74's code plus these records. No file timed out or crashed on either side.
+
+| Verdict | Files | Class |
+|---|---|---|
+| `same` | 445 | unchanged |
+| `only-on-head` | `test-trx-da-without-ruv.R` (57 passed, 0 failed) | this ticket's new tests |
+| `message-changed` | `test-gui-entry-transcriptomics.R` | W1: the base and head blocks differ only by the `da_refusal` notification (head: W1 actual, old text expected; `trx_screen.json:907`, section 11 row) |
+| `count-changed` | `test-module-ci-trx-summary.R` (71 to 77 passed; the 2 failures, MCI-032.1's laptop hashes, on both sides) | T7 added (D3) |
+| `new-failure` | `test-omic-da-module.R`: tests `(a)` and `(W3)`, both at the trx panel `html` digest only (actual `56d6c2da...0b10df04`, stored `001abe86...dd56c7ac`) | W2 (VAL-74), `:293`, section 11 row |
+
+R CMD check: base and head 0 errors, 3 warnings, 3 notes; identical findings, none only on head.
+
 ## Core-hours
 
-R1 1.3, R1b 0.7, R2 16.8: 18.8 used, against 24.0 expected for R1 and R2 (85.0 for the ticket) and a ceiling of 456.4.
+R1 1.3, R1b 0.7, R2 16.8, R3 67.2: 86.0 used, against 85.0 expected and a ceiling of 456.4. R3 included the check jobs
+the ticket's R3 did not (`check: true` at the coordinator's request).
 
 ## Not checked
 
-- R3 (full suite base against head) and A5: not run.
+- R2b: `v0.9-staging` has gained code since R2 (KIT-172 merged, 2308f3f8, touching `R/utils_omic_gui_config.R` and
+  `tests/testthat/test-omic-gui-config.R`); under the merger's rule (6.4) R2b runs on the merge.
 - The report text of a declared design with k = 0 (W3's second sentence): rendered by no test; T3 checks the DA only.
 - The RUVIII export after a k = 0 run (F3), the worker's normalisation log at k = 0 (F1).
 - Windows; real data.
