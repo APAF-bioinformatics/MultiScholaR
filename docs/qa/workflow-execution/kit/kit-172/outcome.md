@@ -188,6 +188,37 @@ known (inferred candidates: the order of the assays in the new values-set-to-mis
   limit about 112 (VAL-68). One mechanics rerun at most if no text comes back.
 - Decides: the cause as observed, the smallest fix, and whether any number changes.
 
+## The Windows norm_log diagnosis (VAL-68): observed
+
+D1 (45219858480) returned the four lanes' `norm_log` text at step `norm` on Windows (the bundle's R, installed
+package, under testthat and again under the runner's own locale): it equals the re-frozen oracle's text exactly
+(866, 866, 823 and 868 characters). The re-frozen oracles hold this log as text up to `correlation` and as a digest
+from `session_export` on (the log passes 1,000 characters there); B1's eight differing steps per lane are exactly the
+digest steps. D1 had captured the wrong step, so D2 (45225156715, the one rerun) returned the text at
+`session_export` for `lipid_canonical` and `metab_gc`.
+
+Observed in D2: the last line, "Exported comprehensive session data to: <path>" (`R/mod_omic_norm.R:629`), carries the
+session file's path unmasked, `D:/a/_temp/st/1/RtmpKsbQ1W/gui-entry-<lane>-<HEX>/project/...`, where Linux writes
+`<ROOT>/project/...`. The text is ASCII, without carriage returns; every other line equals Linux's. The capture's mask
+(`guiEntryMask`, `tests/testthat/helper-gui-entry.R:51-58`) replaces the lane's root and `tempdir()` as
+`normalizePath()` gives them, which on Windows is the backslash form, so the forward-slash form of the same path in
+this line is left as it is. The digest of the log therefore depends on the Windows runner's temporary path.
+
+Inferred, not observed: the base commit's log at these steps was under 1,000 characters and held as text; this
+ticket's values-set-to-missing line (about 140 characters) moved it past 1,000, into a digest. The reference run
+44998302733 lists no `norm_log` difference on Windows, so whether the base's Windows text also carried the unmasked
+path in the bundle's lane step (whose temporary folders differ from the suite's per-file folders) was not seen.
+
+Numbers: none change. The difference is in the text of a log output only; every state, table and artifact of the four
+lanes is equal on Windows at these steps (B1 lists only `norm_log` and the known `session_summary` family).
+
+Smallest fix (not made; diagnosis only, and it is a test helper): in `guiEntryMask`, also replace the forward-slash
+forms of the roots and of `tempdir()` (`normalizePath(x, winslash = "/", mustWork = FALSE)`), so the capture masks
+the path on Windows as on Linux. It moves no oracle (Linux text already masked). Alternatively the log line could
+name the file relative to the project, which would change the line's text and so the oracles.
+
+Diagnosis cost: D1 1.66 and D2 1.47 core-hours; total 111.1 (VAL-68 limit about 112).
+
 ## Budget
 
 108.0 core-hours used: R1 3.90, R1b 1.04, R2 11.47, R3 2.47, C1 0.58, C2 0.97, C3 0.83, C4 1.46, C5 1.21, F1 64.46,
@@ -239,11 +270,11 @@ F3: answered (no regeneration).
 | control of 7(c) and re-freeze | met by C5 (VAL-55): steps 1 to 3 pass; oracles re-frozen (a4f60900); C4's stop recorded |
 | full suite base against head with check | run (F1); every difference classed above; two corrections verified by R4 and R5 |
 | gate-off script; rendered-panel diff | gate-off identity TRUE (F1); the panel diff is in `r3/redump-diff.txt` (HTML digests and input/output lists) |
-| bundle lane | run (B1): Linux clean for the four lanes; Windows: an unexplained `norm_log` digest difference from `norm` on in the four lanes (open) |
+| bundle lane | run (B1): Linux clean for the four lanes; Windows: `norm_log` differs from `session_export` on, diagnosed (D1, D2) as the capture's path mask missing the forward-slash Windows temp path in the export line; no number changes; fix in the test helper proposed, not made |
 | NEWS, man, reports, texts, wording list | done (wording in `omicGuiLog2Texts()`, `R/utils_omic_gui_config.R`) |
 | ledger row | written (`VAL-<merge>`) |
 
 ## Not checked
 
-- The text behind the Windows `norm_log` digests (the bundle uploads nothing).
+- Whether the base's Windows log in the bundle's lane step carried the same unmasked path (only the suite environment was observed).
 - The full suite, GUI-entry lanes and bundle at the final commits dfb2ad9f and 55ff3063 (code change without value change; R4, R5 only).
