@@ -281,7 +281,7 @@ omicDaReadSource <- function(workflowData, source) {
 #' observation). Lipidomics and metabolomics accept any head of the omic's class, so before this the DA ran on
 #' un-normalised (even raw) data and reported complete; their fallback now needs the normalisation tab complete, and
 #' the tab otherwise refuses with the group's `no_data` text. Transcriptomics has its own refusal (its reader reads
-#' only a normalised RUVs state) and every other omic is as before.
+#' only a normalised state, with or without RUV factors) and every other omic is as before.
 #' @noRd
 omicDaHeadFallbackAllowed <- function(workflowData, binding) {
     if (!isTRUE(binding$omic_type %in% c("lipidomics", "metabolomics"))) return(TRUE)

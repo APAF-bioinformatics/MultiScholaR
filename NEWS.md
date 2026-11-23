@@ -1,5 +1,16 @@
 # MultiScholaR NEWS
 
+## MultiScholaR (unreleased; numbered at merge)
+
+### Fixes
+
+ * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation
+   (the RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0).
+   The model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
+   refused these runs with 'Run the normalisation first', although the normalisation had run. Runs that applied RUV are
+   unchanged. Both cases are offered only when the RUV design panel is switched on. The report then states that no
+   correction for unwanted variation was applied.
+
 ## MultiScholaR 0.9.2 (staging)
 
 ### Distribution
