@@ -109,3 +109,205 @@ valCopyResultTables <- function(tables, outputs, run_dir, arms = character(), un
     }
     names(tables)
 }
+
+# ---------------------------------------------------------------------------------------------
+# Workflow arm builders (section 7.5) and their inputs per route; the custom and published kinds.
+# ---------------------------------------------------------------------------------------------
+
+RUV_DESIGNS <- c("groups_all_features", "technical_replicates", "first_pass_nulls", "legacy",
+                 "none", "legacy_correction", "supplied_controls")
+RUV_FACTORS_IN_MODEL <- c("groups_all_features", "technical_replicates", "supplied_controls",
+                          "first_pass_nulls")
+
+#' A workflow arm
+#' @noRd
+valWorkflowArm <- function(id, builder, ...) {
+    list(id = id, kind = "workflow", builder = builder, ...)
+}
+
+#' The release as a default user runs it: no option, no override
+#' @return An arm.
+#' @export
+valArmShipped <- function() valWorkflowArm("shipped", "shipped")
+
+#' The shipped legacy default, pinned: gate off, the mode and its parameters written explicitly
+#' @return An arm.
+#' @export
+valArmRuvLegacy <- function() valWorkflowArm("ruv_legacy", "legacy")
+
+#' The calibrated design (VAL-3, VAL-13): gate on, the design the panel selects (recorded as
+#' expected), the k rule and seed at the panel's defaults
+#' @return An arm.
+#' @export
+valArmRuvCalibrated <- function() valWorkflowArm("ruv_calibrated", "calibrated")
+
+#' RUV off: `skip` with the gate off; transcriptomics design `none` with the gate on
+#' @return An arm.
+#' @export
+valArmRuvOff <- function() valWorkflowArm("ruv_off", "off")
+
+#' Any RUV design the route offers, with the gate on
+#' @param design One of the designs of section 7.5.
+#' @param k_rule The k rule, or `NULL` for the panel's default.
+#' @return An arm.
+#' @export
+valArmRuvDesign <- function(design, k_rule = NULL) {
+    if (!design %in% RUV_DESIGNS) valAbort("RUV design {design} is not offered", "val_spec_invalid")
+    valWorkflowArm(paste0("ruv_", design), "design", design = design, k_rule = k_rule)
+}
+
+#' The supplied-controls design: the list from a declared or prepared role, one per line (A42)
+#' @param controls_role The role holding the control identifiers.
+#' @return An arm.
+#' @export
+valArmRuvSupplied <- function(controls_role) {
+    valWorkflowArm("ruv_supplied_controls", "supplied", design = "supplied_controls",
+                   controls_role = controls_role)
+}
+
+#' The input-id prefix of a route's normalisation module
+#' @noRd
+valNormPrefix <- function(route) {
+    if (identical(valRoute(route)$omic, "proteomics")) "normalization-" else "norm-"
+}
+
+#' An arm's options, overrides and expected server values on a route
+#'
+#' Legacy values are those of the panels at a60c4e9a (`R/utils_omic_gui_config.R`: proteomics
+#' `ruv_iii` default `automatic`, k NULL; lipidomics and metabolomics `automatic`, 5 %, k 2;
+#' transcriptomics grid `automatic`; DIA_LIMPA `covariates`, set by the server); the calibrated
+#' design is the table's `selected` (`groups_all_features`, `technical_replicates` when the design
+#' has technical replicates). G3 re-reads them in the lifecycle.
+#'
+#' @param arm A workflow arm.
+#' @param route Route id.
+#' @param roles Identifier lists by role (supplied controls).
+#' @param technical_replicates The design has technical replicates.
+#' @return A list: `options`, `overrides`, `expect`, `mask`.
+#' @export
+valArmInputs <- function(arm, route, roles = list(), technical_replicates = FALSE) {
+    out <- list(options = list(), overrides = list(), expect = list(), mask = character())
+    if (identical(arm$builder, "shipped")) return(out)
+    r <- valRoute(route)
+    p <- valNormPrefix(route)
+    id <- function(x) paste0(p, x)
+    gate <- function(on) list(MultiScholaR.ruv_design_panel = on)
+    switch(arm$builder,
+           legacy = {
+               out$options <- gate(FALSE)
+               out$overrides <- if (identical(r$workflow, "DIA_LIMPA")) {
+                   stats::setNames(list("covariates"), id("ruv_mode"))
+               } else if (r$omic %in% c("lipidomics", "metabolomics")) {
+                   stats::setNames(list("automatic", 5, 2), id(c("ruv_mode", "ruv_percentage",
+                                                                "ruv_k")))
+               } else {
+                   stats::setNames(list("automatic"), id("ruv_mode"))
+               }
+           },
+           calibrated = {
+               out$options <- gate(TRUE)
+               out$expect <- stats::setNames(
+                   list(if (technical_replicates) "technical_replicates" else "groups_all_features"),
+                   id("ruv_design"))
+           },
+           off = {
+               if (identical(r$omic, "transcriptomics")) {
+                   out$options <- gate(TRUE)
+                   out$overrides <- stats::setNames(list("none"), id("ruv_design"))
+               } else {
+                   out$options <- gate(FALSE)
+                   out$overrides <- stats::setNames(list("skip"), id("ruv_mode"))
+               }
+           },
+           design = {
+               out$options <- gate(TRUE)
+               out$overrides <- stats::setNames(list(arm$design), id("ruv_design"))
+               if (!is.null(arm$k_rule)) out$overrides[[id("ruv_k_rule")]] <- arm$k_rule
+           },
+           supplied = {
+               ids <- roles[[arm$controls_role]]
+               if (!length(ids)) {
+                   valAbort("no identifiers for the controls role {arm$controls_role}",
+                            "val_spec_invalid")
+               }
+               out$options <- gate(TRUE)
+               out$overrides <- stats::setNames(list("supplied_controls",
+                                                     paste(ids, collapse = "\n")),
+                                                id(c("ruv_design", "ruv_control_list")))
+               out$mask <- id("ruv_control_list")
+           },
+           valAbort("unknown arm builder {arm$builder}", "val_spec_invalid"))
+    out
+}
+
+#' Where a cell's RUV puts its factors (the stage rule of 7.3): `off`, `correction` or
+#' `factors_in_model`
+#'
+#' @param route Route id.
+#' @param arm A workflow arm.
+#' @return One of the three.
+#' @export
+valCellRuv <- function(route, arm) {
+    r <- valRoute(route)
+    b <- arm$builder %||% "shipped"
+    design <- arm$design
+    if (identical(b, "off") || identical(design, "none")) return("off")
+    if (identical(r$omic, "transcriptomics")) return("factors_in_model")
+    if (identical(r$workflow, "DIA_LIMPA")) {
+        return(if (identical(design, "legacy_correction")) "correction" else "factors_in_model")
+    }
+    if (r$omic %in% c("lipidomics", "metabolomics")) {
+        if (identical(b, "calibrated")) return("factors_in_model")
+        if (!is.null(design) && design %in% RUV_FACTORS_IN_MODEL) return("factors_in_model")
+        return("correction")
+    }
+    "correction"
+}
+
+#' Run an arm of kind `custom` or `published` on one unit (section 7.5; 4.7)
+#'
+#' A `custom` arm is labelled "not the harness baseline". A `published` arm (a published
+#' processing re-run) must declare its `anchor` check; on failure `anchor_on_fail = "stop"` (the
+#' default) refuses the arm (`val_arm_refused`) and `"context"` keeps it, labelled "anchor not
+#' reproduced: context only", never primary (KIT-163 N6). A ticket function that signals an error
+#' is a refusal with the condition's class and the SHA-256 of its masked message.
+#'
+#' @param arm List: `id`, `kind`, `fn(unit, inputs)`, and for `published` `anchor(da)` and
+#'   `anchor_on_fail`.
+#' @param unit Unit id.
+#' @param inputs The unit's inputs.
+#' @return A list: `refused`, `class`, `message_sha256`, `da`, `label`, `anchor`, `primary`.
+#' @export
+valRunCustomArm <- function(arm, unit, inputs) {
+    kind <- arm$kind %||% ""
+    if (!kind %in% c("custom", "published") || !is.function(arm$fn)) {
+        valAbort("arm {arm$id} is not a custom or published arm with a function", "val_spec_invalid")
+    }
+    if (identical(kind, "published") && !is.function(arm$anchor)) {
+        valAbort("published arm {arm$id} declares no anchor check", "val_spec_invalid")
+    }
+    label <- if (identical(kind, "custom")) "not the harness baseline" else
+        "published processing re-run"
+    da <- tryCatch(arm$fn(unit, inputs), error = function(e) e)
+    if (inherits(da, "error")) {
+        return(list(refused = TRUE, class = class(da)[[1L]],
+                    message_sha256 = digest::digest(valMaskMessage(conditionMessage(da)),
+                                                    algo = "sha256", serialize = FALSE),
+                    da = NULL, label = label, anchor = NA_character_, primary = FALSE))
+    }
+    anchor <- NA_character_
+    primary <- TRUE
+    if (identical(kind, "published")) {
+        if (isTRUE(arm$anchor(da))) {
+            anchor <- "reproduced"
+        } else if (identical(arm$anchor_on_fail %||% "stop", "context")) {
+            anchor <- "not_reproduced"
+            label <- "anchor not reproduced: context only"
+            primary <- FALSE
+        } else {
+            valAbort("arm {arm$id}: the published anchor is not reproduced", "val_arm_refused")
+        }
+    }
+    list(refused = FALSE, class = NA_character_, message_sha256 = NA_character_, da = da,
+         label = label, anchor = anchor, primary = primary)
+}

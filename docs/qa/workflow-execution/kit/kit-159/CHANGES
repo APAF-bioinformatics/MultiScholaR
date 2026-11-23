@@ -1,1 +1,2 @@
 2026-11-23	msrval 1.1.0 started: package skeleton, val-tests.R, group (a) tests (scoring, metrics, intervals, classifier, baseline).
+2026-11-23	driver core (group d) written after T0d, unrun: scripts.R (valStep, valActionScript), driver.R (valGuiHelpers, valFixtureCell, valRunWorkflow, valReadArmTables, valReplay, valMaskLedger, valMaskedDigest), arms.R (arm builders, valArmInputs, valCellRuv, valRunCustomArm), parity.R, integration.R; templates/; action-scripts.md, USAGE.md outside the pin.

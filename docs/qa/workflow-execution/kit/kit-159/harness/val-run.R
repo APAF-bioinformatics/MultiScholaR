@@ -10,7 +10,7 @@
 # of the same job) -> val-out/pre/<label>/ (the listed typed tables only).
 # check: the allow-list and hashes on a committed folder (valCheckEvidence, runs.tsv corrections).
 # The phases that run cells (lifecycle, counted, score, determinism, correction, amended, parity)
-# need the driver core, not built yet; they refuse.
+# are not yet wired to the driver core (msrval's valRunWorkflow and valRunCells); they refuse.
 
 harness_dir <- "docs/qa/workflow-execution/kit/kit-159/harness"
 args <- commandArgs(trailingOnly = TRUE)
@@ -114,5 +114,5 @@ if (phase == "record") {
     msrval::valCheckEvidence(evidence_dir, manifest, phase = optValue("--phase", "counted"))
     msrval::valStatus(phase = "check", status = "completed")
 } else {
-    stop(sprintf("phase %s needs the driver core, which is not built yet", phase), call. = FALSE)
+    stop(sprintf("phase %s is not yet wired to the driver core", phase), call. = FALSE)
 }

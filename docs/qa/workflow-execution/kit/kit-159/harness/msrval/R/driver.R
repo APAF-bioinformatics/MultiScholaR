@@ -187,7 +187,7 @@ valInputSource <- function(st, id) unname(st$source[id])
 #' @return A data frame: step, action, input_id, value, source, location.
 #' @export
 valLedgerSnapshot <- function(st, step, action) {
-    ids <- names(st$values)
+    ids <- names(st$values) %||% character()
     value <- vapply(ids, function(id) {
         v <- st$values[[id]]
         if (is.null(v)) "NULL" else paste(format(v, digits = 15), collapse = "|")
@@ -436,4 +436,1053 @@ valExtractHelpers <- function(files, names, parent = asNamespace("MultiScholaR")
         check.names = FALSE, stringsAsFactors = FALSE, row.names = NULL
     )
     env
+}
+
+# ---------------------------------------------------------------------------------------------
+# The driver core: valRunWorkflow (section 7.3), the helpers' extraction from a checkout, the
+# fixture cells, the standard tables (valReadArmTables) and replay (valReplay).
+# ---------------------------------------------------------------------------------------------
+
+#' The GUI-entry helpers of a checkout, extracted (G1(c)): the nine named functions and the step
+#' builders, with their closure; `install_enrichment_doubles` is the one no-op (7.3)
+#'
+#' @param pkg_root The package checkout.
+#' @return The extraction environment (attribute `helpers`).
+#' @export
+valGuiHelpers <- function(pkg_root) {
+    files <- file.path(pkg_root, "tests", "testthat",
+                       c("helper-gui-entry.R", "helper-workflow-omics-residency.R",
+                         "helper-e2e-browser.R"))
+    named <- c("guiEntryServerSpec", "guiEntryInstallBrowserDouble", "guiEntryInstallUniprotCache",
+               "guiEntryDesignActions", "guiEntryActionIds", "guiEntryMask", "guiEntryDigest",
+               "guiEntryRunLane", "guiEntryTrxSteps", "guiEntryOmicsSteps", "guiEntryProtSteps",
+               "e2e_match_available_values", "guiEntryHistory")
+    parent <- new.env(parent = asNamespace("MultiScholaR"))
+    parent$install_enrichment_doubles <- function() invisible(NULL)
+    valExtractHelpers(files, named, parent = parent)
+}
+
+#' A route's cell on its committed e2e fixture (tests/testdata/e2e/manifest.json): the script, the
+#' files by role, the design, the contrast, and for the six-sample fixtures the GUI-entry lanes'
+#' permissive QC settings as declared forced inputs (proteomics)
+#'
+#' @param route Route (lane) id.
+#' @param pkg_root The package checkout.
+#' @return A list: `route`, `omic`, `script`, `files`, `design`, `contrasts`, `assays`,
+#'   `forced_inputs`, `uniprot_cache`.
+#' @export
+valFixtureCell <- function(route, pkg_root) {
+    e2e <- file.path(pkg_root, "tests", "testdata", "e2e")
+    manifest <- jsonlite::read_json(file.path(e2e, "manifest.json"), simplifyVector = FALSE)
+    lane <- Filter(function(l) identical(l$lane_id, route), manifest$lanes)
+    if (length(lane) != 1L) valAbort("no e2e fixture for route {route}", "val_spec_invalid")
+    lane <- lane[[1L]]
+    dir <- file.path(e2e, lane$fixture_dir)
+    design <- utils::read.delim(file.path(dir, "design.tsv"), stringsAsFactors = FALSE,
+                                check.names = FALSE)
+    contrasts <- lapply(unlist(lane$expected_contrasts), function(x) strsplit(x, "_vs_")[[1L]])
+    assays <- unlist(lane$assays)
+    omic <- lane$omic_type
+    files <- switch(omic,
+                    proteomics = list(search_results = file.path(dir, lane$seed_file),
+                                      fasta = file.path(dir, lane$fasta_file)),
+                    transcriptomics = list(counts = file.path(dir, lane$seed_file)),
+                    c(list(assay1 = file.path(dir, lane$seed_file)),
+                      if (!is.null(lane$assay2_file)) list(assay2 = file.path(dir, lane$assay2_file))))
+    import_values <- if (identical(lane$import_tool, "custom")) {
+        list(`import-metabolite_id_col_custom` = "Feature.Name",
+             `import-annotation_col_custom` = "",
+             `import-sample_cols_pattern` = "^(WT|KO)_",
+             `import-is_pattern` = "^ITSD|_d[0-9]+$")
+    } else {
+        list()
+    }
+    forced_inputs <- if (identical(omic, "proteomics")) {
+        structure(list(use_strict_mode = FALSE, min_reps_per_group = 1, min_groups = 1,
+                       intensity_cutoff_percentile = 0.1,
+                       proteins_intensity_cutoff_percentile = 0.1, min_peptides_per_protein = 1,
+                       min_peptidoforms_per_protein = 1, min_peptides_per_sample = 1,
+                       proportion_missing_values = 1.0, parallel_cores = 1),
+                  reason = "six-sample e2e fixture: the GUI-entry lanes' QC settings")
+    } else {
+        list()
+    }
+    script <- valActionScript(route, assays = assays, import_tool = lane$import_tool,
+                              import_values = import_values, contrasts = contrasts)
+    list(route = route, omic = omic, script = script, files = files, design = design,
+         contrasts = contrasts, assays = assays, forced_inputs = forced_inputs,
+         uniprot_cache = if (identical(omic, "proteomics")) {
+             file.path(pkg_root, "tests", "testdata", "gui-entry", "uniprot",
+                       "uniprot_annotations.RDS")
+         })
+}
+
+#' Drop inputs from the state (a modal's inputs when it is removed)
+#' @noRd
+valDropInputs <- function(st, ids) {
+    ids <- intersect(ids, names(st$values))
+    if (!length(ids)) return(invisible(st))
+    st$values[ids] <- NULL
+    keep <- setdiff(names(st$source), ids)
+    st$source <- st$source[keep]
+    st$location <- st$location[keep]
+    invisible(st)
+}
+
+#' A refusal's class, where the message names one (`<class>: ...`)
+#' @noRd
+valMessageClass <- function(msg) {
+    if (is.null(msg)) return(NULL)
+    m <- regmatches(msg, regexec("^\\s*([a-z][a-z0-9]*(_[a-z0-9]+)+):", msg))[[1L]]
+    if (length(m)) m[[2L]] else NULL
+}
+
+#' The observed and declared tokens of a step's state (head state, or a tab status)
+#' @noRd
+valStateToken <- function(declared, before, after) {
+    if (identical(declared, "diagnostic")) {
+        return(list(declared = "diagnostic", before = before$head, after = after$head))
+    }
+    if (!is.null(declared[["head"]])) {
+        allowed <- declared[["head"]]
+        return(list(declared = if (after$head %in% allowed) after$head else allowed[[1L]],
+                    before = before$head, after = after$head))
+    }
+    key <- names(declared[["tab"]])[[1L]]
+    tok <- function(obs) paste0(key, "=", obs$tab_status[[key]] %||% "<none>")
+    list(declared = paste0(key, "=", declared[["tab"]][[1L]]), before = tok(before),
+         after = tok(after))
+}
+
+#' The ledger with the listed inputs' identifiers written as their SHA-256, one per line (5.2)
+#'
+#' @param ledger Ledger rows.
+#' @param ids Input ids whose values are identifier lists.
+#' @return The ledger.
+#' @export
+valMaskLedger <- function(ledger, ids) {
+    hit <- ledger$input_id %in% ids
+    ledger$value[hit] <- vapply(ledger$value[hit], function(v) {
+        lines <- strsplit(v, "\n", fixed = TRUE)[[1L]]
+        paste(vapply(lines, function(x) digest::digest(x, algo = "sha256", serialize = FALSE),
+                     character(1), USE.NAMES = FALSE), collapse = "\n")
+    }, character(1), USE.NAMES = FALSE)
+    ledger
+}
+
+#' Extend the browser double (A01 point 3, A18): a choices-only update selects the first choice;
+#' a modal's UI is kept until removeModal
+#' @noRd
+valInstallDoubleExtension <- function(log, env, notify = FALSE) {
+    queue <- function(session, input_id, value, choices = NULL) {
+        if (is.null(session)) return(invisible(NULL))
+        id <- session$ns(input_id)
+        if (!is.null(choices)) log$choices[[id]] <- as.character(unlist(choices, use.names = FALSE))
+        if (is.null(value) && !is.null(choices) && length(log$choices[[id]])) {
+            value <- log$choices[[id]][[1L]]
+        }
+        if (is.null(value)) return(invisible(NULL))
+        log$updates[[length(log$updates) + 1L]] <- list(id = id, value = value)
+        invisible(NULL)
+    }
+    dom <- function() shiny::getDefaultReactiveDomain()
+    bindings <- list(
+        updateSelectInput = function(session = dom(), inputId, label = NULL, choices = NULL,
+                                     selected = NULL) queue(session, inputId, selected, choices),
+        updateSelectizeInput = function(session = dom(), inputId, label = NULL, choices = NULL,
+                                        selected = NULL, options = list(), server = FALSE) {
+            queue(session, inputId, selected, choices)
+        },
+        updateRadioButtons = function(session = dom(), inputId, label = NULL, choices = NULL,
+                                      selected = NULL, inline = FALSE, choiceNames = NULL,
+                                      choiceValues = NULL) {
+            queue(session, inputId, selected, choices %||% choiceValues)
+        },
+        showModal = function(ui, session = dom()) {
+            log$modals <- c(log$modals, 1L)
+            log$modal_html <- paste(as.character(htmltools::renderTags(ui)$html), collapse = "\n")
+            invisible(NULL)
+        },
+        removeModal = function(session = dom()) {
+            log$modal_html <- NULL
+            invisible(NULL)
+        }
+    )
+    if (notify) {
+        bindings$showNotification <- function(ui, action = NULL, duration = 5, closeButton = TRUE,
+                                              id = NULL, type = "default", session = dom()) {
+            log$notes[[length(log$notes) + 1L]] <- list(type = type,
+                                                        message = paste(as.character(ui),
+                                                                        collapse = " "))
+            invisible(id %||% "notification")
+        }
+        bindings$removeNotification <- function(...) invisible(NULL)
+    }
+    do.call(testthat::local_mocked_bindings, c(bindings, list(.package = "shiny", .env = env)))
+    if (isNamespaceLoaded("MultiScholaR")) {
+        imported <- intersect(names(bindings),
+                              unlist(getNamespaceImports("MultiScholaR")$shiny, use.names = FALSE))
+        if (length(imported)) {
+            do.call(testthat::local_mocked_bindings,
+                    c(bindings[imported], list(.package = "MultiScholaR", .env = env)))
+        }
+    }
+    invisible(log)
+}
+
+#' Run one workflow cell: a route's action script on a module server under `shiny::testServer`
+#' (section 7.3)
+#'
+#' The runtime frame of `guiEntryRunLane` (directories, test mode on for the file-input fallback
+#' only, proxies at a closed port, the browser double, extended), with the thread variables at 1,
+#' the cell's seed, the forced options and the arm's options scoped to the cell, and for
+#' proteomics the declared UniProt cache. Before each action the full input vector goes to the
+#' ledger. Inputs come only from the rendered UI (static, `uiOutput`s, modals), server updates, the
+#' step's structural inputs, the declared forced inputs and the arm's overrides; anything else is
+#' `val_spec_invalid`. Step outcomes as A21. With `tables_dir`, the standard tables are written
+#' after the last step; `on_complete(ctx)` is then called inside the session (the post-cell hook's
+#' place).
+#'
+#' @param script From [valActionScript()] (or a list with `route`, `omic`, `steps`, `contrasts`).
+#' @param files Named list, file role to path.
+#' @param design The design (sample, group, optional tech_rep_group and replicates).
+#' @param arm An arm (a builder's value, or a list with `options` and `overrides`).
+#' @param helpers From [valGuiHelpers()].
+#' @param forced Forced options (named list).
+#' @param forced_inputs Forced inputs by id or by id suffix; attribute `reason`.
+#' @param seed The cell's seed.
+#' @param uniprot_cache A UniProt cache file placed where the design step reads it.
+#' @param annotation `list(expected, min_share, accessions, in_taxon)` for the annotation rule.
+#' @param tables_dir Where the standard tables are written, or `NULL`.
+#' @param ledger_path The ledger file (default in the work folder).
+#' @param mask_ids Further input ids whose identifiers the ledger hashes.
+#' @param roles Prepared identifier lists by role (supplied controls).
+#' @param on_complete `function(ctx)` called inside the session after the tables.
+#' @param pkg_root The package checkout.
+#' @param work_dir The cell's work folder.
+#' @param spec,observe A module spec and state reader (tests); default the route's.
+#' @param project Set up project directories and the store (FALSE for a toy module).
+#' @param technical_replicates The design has technical replicates (the calibrated design).
+#' @return A list: `exit`, `reason`, `steps`, `ledger`, `ledger_path`, `ledger_sha256`,
+#'   `actions`, `options_at_start`, `matched`, `fallback`, `tables`, `value`, `seconds`.
+#' @export
+valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers = NULL,
+                           forced = list(), forced_inputs = list(), seed = 20261107L,
+                           uniprot_cache = NULL, annotation = NULL, tables_dir = NULL,
+                           ledger_path = NULL, mask_ids = character(), roles = list(),
+                           on_complete = NULL, pkg_root = ".",
+                           work_dir = tempfile("val-cell-"), spec = NULL, observe = NULL,
+                           project = TRUE, technical_replicates = FALSE) {
+    started <- Sys.time()
+    valCheckActionScript(script$steps)
+    arm_inputs <- if (is.null(arm$builder)) {
+        list(options = arm$options %||% list(), overrides = arm$overrides %||% list(),
+             mask = character(), expect = list())
+    } else {
+        valArmInputs(arm, script$route, roles = roles,
+                     technical_replicates = technical_replicates)
+    }
+    dir.create(work_dir, recursive = TRUE, showWarnings = FALSE)
+    ledger_path <- ledger_path %||% file.path(work_dir, paste0("ledger-", script$route, ".tsv"))
+    cell <- function() valWorkflowCell(script, files, design, arm_inputs, helpers, forced_inputs,
+                                       seed, uniprot_cache, annotation, tables_dir, arm,
+                                       on_complete, work_dir, spec, observe, project)
+    run <- valWithForcedOptions(c(forced, arm_inputs$options), cell())
+    res <- run$value
+    ledger <- if (length(res$ledger)) do.call(rbind, res$ledger) else
+        valLedgerSnapshot(valInputState(), "none", "none")
+    ledger <- valMaskLedger(ledger, c(arm_inputs$mask, mask_ids))
+    dir.create(dirname(ledger_path), recursive = TRUE, showWarnings = FALSE)
+    utils::write.table(ledger, ledger_path, sep = "\t", quote = TRUE, row.names = FALSE)
+    actions <- if (length(res$actions)) do.call(rbind, res$actions) else
+        data.frame(step = character(), kind = character(), input_id = character(),
+                   value = character(), stringsAsFactors = FALSE)
+    list(exit = res$exit, reason = res$reason, steps = res$steps, ledger = ledger,
+         ledger_path = ledger_path,
+         ledger_sha256 = digest::digest(file = ledger_path, algo = "sha256"),
+         actions = actions, options_at_start = run$options_at_start, matched = res$matched,
+         fallback = res$fallback, tables = res$tables, value = res$value,
+         seconds = round(as.numeric(difftime(Sys.time(), started, units = "secs")), 1))
+}
+
+#' The cell itself, inside the forced options (internal to valRunWorkflow)
+#' @noRd
+valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_inputs, seed,
+                            uniprot_cache, annotation, tables_dir, arm, on_complete, work_dir,
+                            spec, observe, project) {
+    cell_env <- environment()
+    withr::local_envvar(c(OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
+                          MULTISCHOLAR_TEST_MODE = "true", http_proxy = "http://127.0.0.1:9",
+                          https_proxy = "http://127.0.0.1:9", HTTP_PROXY = "http://127.0.0.1:9",
+                          HTTPS_PROXY = "http://127.0.0.1:9", no_proxy = "", NO_PROXY = ""))
+    withr::local_options(list(warn = 1))
+    withr::local_seed(seed)
+    omic <- script$omic
+    ns <- if (project) asNamespace("MultiScholaR") else NULL
+    spec <- spec %||% helpers$guiEntryServerSpec(omic)
+    observe <- observe %||% function(env) {
+        wd <- env$workflow_data
+        m <- shiny::isolate(wd$state_manager)
+        list(head = tryCatch(shiny::isolate(m$current_state), error = function(e) NULL) %||% "<none>",
+             history = helpers$guiEntryHistory(m),
+             tab_status = lapply(shiny::isolate(wd$tab_status), as.character))
+    }
+    paths <- NULL
+    project_dirs <- NULL
+    if (project) {
+        if (!ns$workflowOwnerCapable()) {
+            valAbort("the session owner is not available (qs2/duckdb)", "val_spec_invalid")
+        }
+        project_dirs <- suppressMessages(ns$setupDirectories(
+            base_dir = file.path(work_dir, "project", script$route), omic_types = omic,
+            label = NULL, force = TRUE, reuse_existing = TRUE))
+        paths <- project_dirs[[omic]]
+        old_dirs <- get0("project_dirs", envir = globalenv(), inherits = FALSE)
+        assign("project_dirs", project_dirs, envir = globalenv())
+        withr::defer(if (is.null(old_dirs)) rm("project_dirs", envir = globalenv()) else
+            assign("project_dirs", old_dirs, envir = globalenv()), envir = cell_env)
+        if (identical(omic, "proteomics") && !is.null(uniprot_cache)) {
+            target <- file.path(paths$results_dir, "cache", "uniprot_annotations")
+            dir.create(target, recursive = TRUE, showWarnings = FALSE)
+            file.copy(uniprot_cache, file.path(target, "uniprot_annotations.RDS"), overwrite = TRUE)
+        }
+    }
+    log <- new.env(parent = emptyenv())
+    log$updates <- list()
+    log$notes <- list()
+    log$modals <- integer()
+    log$choices <- list()
+    log$modal_html <- NULL
+    log$modal_seen <- NULL
+    log$rendered <- list()
+    log$warnings <- character()
+    if (!is.null(helpers)) helpers$guiEntryInstallBrowserDouble(log, env = cell_env)
+    valInstallDoubleExtension(log, cell_env, notify = is.null(helpers))
+    scratch <- file.path(work_dir, "inputs")
+    dir.create(scratch, recursive = TRUE, showWarnings = FALSE)
+    st <- valInputState()
+    acc <- new.env(parent = emptyenv())
+    acc$ledger <- list()
+    acc$actions <- list()
+    acc$steps <- list()
+    acc$exit <- "completed"
+    acc$reason <- NA_character_
+    acc$matched <- NULL
+    acc$fallback <- NA_character_
+    acc$tables <- NULL
+    acc$value <- NULL
+    server_args <- if (project) {
+        list(id = spec$id, project_dirs = project_dirs, omic_type = omic,
+             experiment_label = script$route)
+    } else {
+        c(list(id = spec$id), spec$args)
+    }
+    body <- function(session, workflow_data) {
+        rootSession <- session$rootScope()
+        prefix <- paste0(spec$id, "-")
+        obs_env <- new.env(parent = emptyenv())
+        obs_env$workflow_data <- workflow_data
+        clicks <- list()
+        current <- NULL
+        rel <- function(ids) {
+            if (!length(ids)) return(character())
+            ifelse(startsWith(ids, prefix), substring(ids, nchar(prefix) + 1L), ids)
+        }
+        setFull <- function(values) {
+            if (!length(values)) return(invisible())
+            names(values) <- paste0(prefix, names(values))
+            do.call(rootSession$setInputs, values)
+        }
+        ledgerBefore <- function(action) {
+            acc$ledger[[length(acc$ledger) + 1L]] <- valLedgerSnapshot(st, current$id, action)
+        }
+        logAction <- function(kind, id, value) {
+            acc$actions[[length(acc$actions) + 1L]] <- data.frame(
+                step = current$id, kind = kind, input_id = id,
+                value = paste(format(value), collapse = "|"), stringsAsFactors = FALSE)
+        }
+        applyUpdates <- function() {
+            changed <- FALSE
+            for (i in seq_len(50L)) {
+                if (!length(log$updates)) break
+                pending <- log$updates
+                log$updates <- list()
+                values <- stats::setNames(lapply(pending, `[[`, "value"),
+                                          rel(vapply(pending, `[[`, "", "id")))
+                values <- values[!duplicated(names(values), fromLast = TRUE)]
+                for (id in names(values)) valApplyServerUpdate(st, id, value = values[[id]])
+                setFull(values)
+                changed <- TRUE
+            }
+            changed
+        }
+        scanRendered <- function(module) {
+            private <- rootSession$.__enclos_env__$private
+            outs <- names(private$outs)
+            scope <- if (is.null(module)) prefix else paste0(prefix, module, "-")
+            changed <- FALSE
+            for (name in outs[startsWith(outs, scope)]) {
+                of <- tryCatch(attr(private$outs[[name]]$func, "outputFunc"),
+                               error = function(e) NULL)
+                if (!is.null(of) && !identical(of, shiny::uiOutput) &&
+                    !identical(of, shiny::htmlOutput)) next
+                value <- tryCatch(rootSession$getOutput(name), error = function(e) NULL)
+                if (!is.list(value) || is.null(value$html)) next
+                html <- paste(as.character(value$html), collapse = "\n")
+                d <- digest::digest(html, algo = "sha256", serialize = FALSE)
+                if (identical(log$rendered[[name]], d)) next
+                rerender <- !is.null(log$rendered[[name]])
+                log$rendered[[name]] <- d
+                defaults <- valUiDefaults(html)
+                if (!length(defaults)) next
+                names(defaults) <- rel(names(defaults))
+                before <- names(st$values)
+                valApplyRendered(st, defaults, location = paste0("uiOutput:", rel(name)),
+                                 rerender = rerender)
+                new <- if (rerender) names(defaults) else setdiff(names(defaults), before)
+                if (length(new)) {
+                    setFull(st$values[new])
+                    changed <- TRUE
+                }
+            }
+            changed
+        }
+        applyModal <- function() {
+            if (identical(log$modal_seen, log$modal_html)) return(FALSE)
+            if (is.null(log$modal_html)) {
+                valDropInputs(st, names(st$location)[st$location == "modal"])
+            } else {
+                defaults <- valUiDefaults(log$modal_html)
+                names(defaults) <- rel(names(defaults))
+                valApplyRendered(st, defaults, location = "modal", rerender = TRUE)
+                setFull(st$values[names(defaults)])
+            }
+            log$modal_seen <- log$modal_html
+            TRUE
+        }
+        applyForced <- function() {
+            changed <- FALSE
+            for (name in names(forced_inputs)) {
+                ids <- names(st$values)
+                hit <- ids[ids == name | endsWith(ids, paste0("-", name))]
+                for (id in hit) {
+                    if (identical(unname(st$source[id]), "forced") &&
+                        identical(st$values[[id]], forced_inputs[[name]])) next
+                    valSetInput(st, id, forced_inputs[[name]], "forced")
+                    setFull(stats::setNames(list(forced_inputs[[name]]), id))
+                    changed <- TRUE
+                }
+            }
+            changed
+        }
+        settle <- function() {
+            for (i in seq_len(10L)) {
+                session$flushReact()
+                updated <- applyUpdates()
+                modal <- applyModal()
+                rendered <- scanRendered(current$module)
+                forced_now <- applyForced()
+                if (!(updated || modal || rendered || forced_now)) break
+            }
+            invisible()
+        }
+        structuralId <- function(id) {
+            any(vapply(current$structural, function(p) grepl(p, id), logical(1)))
+        }
+        setValues <- function(values) {
+            for (id in names(values)) {
+                if (!structuralId(id)) {
+                    valAbort(paste("the action script sets {id}, which is not one of the",
+                                   "step's structural inputs"), "val_spec_invalid")
+                }
+            }
+            ledgerBefore(paste(names(values), collapse = ","))
+            for (id in names(values)) {
+                valSetInput(st, id, values[[id]], "structural")
+                logAction("set", id, values[[id]])
+            }
+            setFull(values)
+            settle()
+        }
+        pressValue <- function(id, value) {
+            ledgerBefore(id)
+            logAction("press", id, value)
+            clicks[[id]] <<- value
+            setFull(stats::setNames(list(value), id))
+            settle()
+        }
+        press <- function(id) pressValue(id, (clicks[[id]] %||% 0L) + 1L)
+        api <- list(
+            helpers = helpers,
+            defaults = function(ui_fn, module = NULL) {
+                html <- paste(as.character(htmltools::renderTags(ui_fn(module))$html),
+                              collapse = "\n")
+                defaults <- valUiDefaults(html)
+                before <- names(st$values)
+                valApplyRendered(st, defaults, location = "ui")
+                new <- setdiff(names(defaults), before)
+                if (length(new)) setFull(st$values[new])
+                settle()
+            },
+            set = setValues,
+            press = press,
+            upload = function(id, role) {
+                path <- files[[role]]
+                if (is.null(path) || !file.exists(path)) {
+                    valAbort("no declared file for role {role}", "val_spec_invalid")
+                }
+                if (!structuralId(id)) {
+                    valAbort("{id} is not a structural file input of the step", "val_spec_invalid")
+                }
+                copy <- file.path(scratch, basename(path))
+                file.copy(path, copy, overwrite = TRUE)
+                ledgerBefore(id)
+                logAction("upload", id, path)
+                valSetInput(st, id, basename(path), "structural")
+                setFull(stats::setNames(list(data.frame(name = basename(path),
+                                                        size = file.size(copy), type = "",
+                                                        datapath = copy,
+                                                        stringsAsFactors = FALSE)), id))
+                settle()
+            },
+            has_file = function(role) !is.null(files[[role]]),
+            choices = function(id) log$choices[[paste0(prefix, id)]] %||% character(),
+            modal_open = function() !is.null(log$modal_html),
+            modal_confirm = function(button = NULL) {
+                html <- log$modal_html
+                if (is.null(html)) valAbort("no modal is open", "val_spec_invalid")
+                id <- if (is.null(button)) valModalPrimary(html) else valModalPress(html, button)
+                press(rel(id))
+            },
+            overrides = function() {
+                for (id in names(arm_inputs$overrides)) {
+                    if (!id %in% names(st$values)) {
+                        valAbort("the arm overrides {id}, which the route does not render here",
+                                 "val_spec_invalid")
+                    }
+                }
+                for (id in names(arm_inputs$expect)) {
+                    if (!identical(st$values[[id]], arm_inputs$expect[[id]])) {
+                        valAbort("{id} is not the arm's expected value", "val_spec_invalid")
+                    }
+                }
+                if (!length(arm_inputs$overrides)) return(invisible())
+                ledgerBefore(paste(names(arm_inputs$overrides), collapse = ","))
+                for (id in names(arm_inputs$overrides)) {
+                    valSetInput(st, id, arm_inputs$overrides[[id]], "override")
+                    logAction("set", id, arm_inputs$overrides[[id]])
+                }
+                setFull(arm_inputs$overrides)
+                settle()
+            },
+            design = function(prefix_builder, tech_rep = TRUE, match = NULL) {
+                contrasts <- script$contrasts
+                if (!length(contrasts)) valAbort("the cell declares no contrast", "val_spec_invalid")
+                d <- design
+                if (!is.null(match)) {
+                    offered <- log$choices[[paste0(prefix, match)]] %||% character()
+                    matched <- helpers$e2e_match_available_values(d$sample, offered)
+                    acc$matched <- data.frame(declared = d$sample, matched = matched,
+                                              stringsAsFactors = FALSE)
+                    d$sample <- matched
+                }
+                extra <- contrasts[-1L]
+                buttons <- "(add_factor|assign_metadata|assign_tech_reps|add_contrast|save_results)$"
+                dapi <- list(set = function(values) {
+                    ids <- names(values)
+                    formula <- paste0(prefix_builder, "formula_string")
+                    if (formula %in% ids && formula %in% names(st$values)) {
+                        values <- values[ids != formula]
+                        ids <- names(values)
+                    }
+                    if (any(grepl("save_results$", ids)) && length(extra)) {
+                        n <- clicks[[paste0(prefix_builder, "add_contrast")]] %||% 0L
+                        for (pair in extra) {
+                            setValues(stats::setNames(list(pair[[1L]], pair[[2L]]),
+                                                      paste0(prefix_builder,
+                                                             c("contrast_group1", "contrast_group2"))))
+                            n <- n + 1L
+                            pressValue(paste0(prefix_builder, "add_contrast"), n)
+                        }
+                        extra <<- list()
+                    }
+                    is_button <- grepl(buttons, ids)
+                    if (any(!is_button)) setValues(values[!is_button])
+                    for (id in ids[is_button]) pressValue(id, as.integer(values[[id]]))
+                })
+                helpers$guiEntryDesignActions(dapi, d, contrasts[[1L]], prefix = prefix_builder,
+                                              tech_rep = tech_rep)
+            }
+        )
+        on_warning <- function(w) {
+            log$warnings <- c(log$warnings, class(w)[[1L]])
+            invokeRestart("muffleWarning")
+        }
+        for (step in script$steps) {
+            current <- step
+            before <- observe(obs_env)
+            log$notes <- list()
+            log$warnings <- character()
+            err <- NULL
+            tryCatch(withCallingHandlers({
+                if (!is.null(step$tab)) {
+                    tab <- stats::setNames(list(step$tab), spec$tabs)
+                    ledgerBefore(spec$tabs)
+                    valSetInput(st, spec$tabs, step$tab, "structural")
+                    logAction("set", spec$tabs, step$tab)
+                    setFull(tab)
+                    settle()
+                }
+                step$run(api)
+            }, warning = on_warning), error = function(e) {
+                if (inherits(e, "val_error")) stop(e)
+                err <<- e
+            })
+            after <- observe(obs_env)
+            errors <- Filter(function(n) identical(n$type, "error"), log$notes)
+            msg <- if (length(errors)) {
+                paste(vapply(errors, function(n) n$message, character(1)), collapse = "\n")
+            }
+            if (!is.null(err)) {
+                acc$steps[[length(acc$steps) + 1L]] <- data.frame(
+                    step = step$id, outcome = "did_not_complete", class = NA_character_,
+                    message_sha256 = digest::digest(valMaskMessage(conditionMessage(err)),
+                                                    algo = "sha256", serialize = FALSE),
+                    reason = "error", head = after$head, stringsAsFactors = FALSE)
+                acc$exit <- "did_not_complete"
+                acc$reason <- "error"
+                break
+            }
+            tok <- valStateToken(step$declared, before, after)
+            o <- valStepOutcome(tok$declared, tok$before, tok$after,
+                                !identical(before$history, after$history), msg,
+                                valMessageClass(msg))
+            acc$steps[[length(acc$steps) + 1L]] <- data.frame(
+                step = step$id, outcome = o$outcome, class = o$class,
+                message_sha256 = o$message_sha256, reason = o$reason, head = after$head,
+                stringsAsFactors = FALSE)
+            if (o$outcome == "ok" && identical(step$id, "design") && identical(omic, "proteomics")) {
+                acc$fallback <- valAnnotationRule(shiny::isolate(workflow_data$uniprot_dat_cln),
+                                                  annotation, log$warnings)
+            }
+            if (o$outcome == "ok") next
+            if (o$outcome == "refused" && identical(step$declared, "diagnostic")) next
+            acc$exit <- o$outcome
+            acc$reason <- o$reason
+            break
+        }
+        ctx <- list(manager = if (project) shiny::isolate(workflow_data$state_manager),
+                    workflow_data = workflow_data, paths = paths, inputs = st,
+                    observe = function() observe(obs_env), session = session)
+        if (identical(acc$exit, "completed") && !is.null(tables_dir)) {
+            num <- function(suffix, default) {
+                id <- names(st$values)[endsWith(names(st$values), suffix)]
+                v <- if (length(id)) suppressWarnings(as.numeric(st$values[[id[[1L]]]])) else NA
+                if (length(v) != 1L || is.na(v)) default else v
+            }
+            itsd <- names(st$values)[endsWith(names(st$values), "-apply_itsd")]
+            da_head <- acc$steps[[length(acc$steps)]]$head
+            acc$tables <- valReadArmTables(ctx$manager, paths, script$route, tables_dir,
+                                           ruv = valCellRuv(script$route, arm),
+                                           q_thresh = num("-da_q_val_thresh", 0.05),
+                                           lfc_cutoff = num("-treat_lfc_cutoff", 0),
+                                           model_state = da_head,
+                                           itsd_applied = if (length(itsd)) isTRUE(st$values[[itsd[[1L]]]]) else NA)
+            ctx$tables <- acc$tables
+        }
+        if (!is.null(on_complete)) acc$value <- on_complete(ctx)
+        if (project) shiny::isolate(ns$closeDIAStateAdapter(workflow_data$state_manager))
+    }
+    shiny::testServer(spec$server, args = server_args, {
+        body(session, workflow_data)
+    })
+    list(exit = acc$exit, reason = acc$reason,
+         steps = if (length(acc$steps)) do.call(rbind, acc$steps) else NULL,
+         ledger = acc$ledger, actions = acc$actions, matched = acc$matched,
+         fallback = acc$fallback, tables = acc$tables, value = acc$value)
+}
+
+#' The one primary confirming button of a modal (no dismiss), by id
+#' @noRd
+valModalPrimary <- function(modal_html) {
+    doc <- xml2::read_html(paste0("<html><body>", modal_html, "</body></html>"))
+    ids <- character()
+    for (b in xml2::xml_find_all(doc, "//button")) {
+        dismiss <- !is.na(xml2::xml_attr(b, "data-dismiss")) ||
+            !is.na(xml2::xml_attr(b, "data-bs-dismiss"))
+        id <- xml2::xml_attr(b, "id")
+        if (!dismiss && !is.na(id) && valHasClass(b, "btn-primary")) ids <- c(ids, id)
+    }
+    if (length(ids) != 1L) {
+        valAbort("the modal has no single primary confirming button", "val_spec_invalid")
+    }
+    ids
+}
+
+#' The annotation rule after the design step (7.3; 5.1, G6, C72)
+#'
+#' @param uniprot The bus's `uniprot_dat_cln`.
+#' @param annotation `list(expected, min_share, accessions, in_taxon)` or `NULL` (no rule).
+#' @param warning_classes Warning classes raised during the design step.
+#' @return The cell's fallback flag (`NA` when none).
+#' @noRd
+valAnnotationRule <- function(uniprot, annotation, warning_classes) {
+    if (is.null(annotation)) return(NA_character_)
+    if (identical(annotation$expected, "none")) {
+        return(paste(c("annotation_none", intersect(warning_classes,
+                                                    c("prot_annotation_uniprot_incomplete",
+                                                      "prot_annotation_uniprot_empty"))),
+                     collapse = ":"))
+    }
+    if ("prot_annotation_uniprot_incomplete" %in% warning_classes) {
+        valAbort("the UniProt answer is incomplete", "val_annotation_incomplete")
+    }
+    if (is.null(uniprot) || !NROW(uniprot)) {
+        valAbort("the annotation table has no rows", "val_annotation_empty")
+    }
+    acc <- unique(annotation$accessions)
+    in_taxon <- acc[annotation$in_taxon(acc)]
+    share <- if (length(in_taxon)) mean(in_taxon %in% uniprot$Entry) else 0
+    if (share < annotation$min_share) {
+        valAbort("the annotation covers too few of the taxon's accessions", "val_annotation_empty")
+    }
+    NA_character_
+}
+
+# ---------------------------------------------------------------------------------------------
+# Standard tables (7.3) and replay (7.3, G5).
+# ---------------------------------------------------------------------------------------------
+
+#' How a route's DA table is read (the product's own written table; G3 re-reads the maps):
+#' proteomics `R/func_prot_da_results_io.R:332`, lipidomics `R/func_lipid_da_export.R:164`,
+#' metabolomics `R/func_metab_da_results_output.R:166`, transcriptomics
+#' `R/utils_workflow_trx_declarations.R:903` (edgeR `topTags`, BH)
+#' @noRd
+valDaMap <- function(omic) {
+    switch(omic,
+           proteomics = list(pattern = "^da_proteins_(.+)_long_annot\\.tsv$", sep = "\t",
+                             feature = character(), assay = NULL, log2fc = "log2FC",
+                             p = "raw_pvalue", s_own = "fdr_qvalue", contrast = "comparison",
+                             mean = "^log2norm\\.", call_statistic = "qvalue"),
+           lipidomics = list(pattern = "^de_(.+)_lipids_(.+)_long_annot\\.tsv$", sep = "\t",
+                             feature = "lipid_id", assay = "assay", log2fc = "logFC",
+                             p = "raw_pvalue", s_own = "fdr_qvalue", contrast = "comparison",
+                             mean = "^intensity\\.", call_statistic = "qvalue"),
+           metabolomics = list(pattern = "^de_(.+)_metabolites_(.+)_long_annot\\.tsv$",
+                               sep = "\t", feature = "metabolite_id", assay = "assay",
+                               log2fc = "logFC", p = "raw_pvalue", s_own = "fdr_qvalue",
+                               contrast = "comparison", mean = "^intensity\\.",
+                               call_statistic = "qvalue"),
+           transcriptomics = list(pattern = "^de_results_(.+)\\.csv$", sep = ",",
+                                  feature = character(), assay = NULL, log2fc = "logFC",
+                                  p = "PValue", s_own = "FDR", contrast = NULL, mean = "logCPM",
+                                  call_statistic = "BH"))
+}
+
+#' A slot of an S4 object or an element of a list
+#' @noRd
+valField <- function(obj, name) {
+    if (isS4(obj)) {
+        if (name %in% methods::slotNames(obj)) methods::slot(obj, name) else NULL
+    } else {
+        obj[[name]]
+    }
+}
+
+#' A feature table as `feature_id, assay, <samples>` (numeric sample columns only)
+#' @noRd
+valFeatureTable <- function(tbl, id_col, assay) {
+    tbl <- as.data.frame(tbl, stringsAsFactors = FALSE)
+    samples <- setdiff(names(tbl)[vapply(tbl, is.numeric, logical(1))], id_col)
+    out <- data.frame(feature_id = as.character(tbl[[id_col]]), assay = rep(assay, nrow(tbl)),
+                      stringsAsFactors = FALSE)
+    cbind(out, tbl[, samples, drop = FALSE])
+}
+
+#' Bind per-assay feature tables, the union of sample columns
+#' @noRd
+valBindAssays <- function(tables) {
+    samples <- unique(unlist(lapply(tables, function(t) setdiff(names(t), c("feature_id", "assay")))))
+    do.call(rbind, lapply(tables, function(t) {
+        for (s in setdiff(samples, names(t))) t[[s]] <- NA_real_
+        t[, c("feature_id", "assay", samples), drop = FALSE]
+    }))
+}
+
+#' A state object's matrix by stage (`data`: the object's values; `uncorrected`: the values the
+#' test reads where RUV factors enter the model, `args$ruv_uncorrected_assays`)
+#' @noRd
+valStateMatrix <- function(obj, omic, which = c("data", "uncorrected")) {
+    which <- match.arg(which)
+    if (is.null(obj)) valAbort("the state object is missing", "val_spec_invalid")
+    switch(omic,
+           proteomics = valFeatureTable(valField(obj, "protein_quant_table"),
+                                        valField(obj, "protein_id_column"), "all"),
+           transcriptomics = {
+               tbl <- valField(obj, "count_data")[[1L]]
+               id <- valField(obj, "gene_id_column")
+               counts <- valFeatureTable(tbl, id, "all")
+               m <- as.matrix(counts[, -(1:2), drop = FALSE])
+               # The route's own transform (R/utils_workflow_trx_declarations.R:250-251, 278): TMM,
+               # log-CPM, prior count 2.
+               dge <- edgeR::calcNormFactors(edgeR::DGEList(counts = m), method = "TMM")
+               logcpm <- edgeR::cpm(dge, log = TRUE, prior.count = 2)
+               cbind(counts[, 1:2], as.data.frame(logcpm, stringsAsFactors = FALSE))
+           },
+           {
+               slot <- if (identical(omic, "lipidomics")) "lipid_data" else "metabolite_data"
+               id <- valField(obj, if (identical(omic, "lipidomics")) "lipid_id_column" else
+                   "metabolite_id_column")
+               data <- if (identical(which, "uncorrected")) {
+                   valField(obj, "args")$ruv_uncorrected_assays
+               } else {
+                   valField(obj, slot)
+               }
+               if (is.null(data)) valAbort("the state holds no {which} values", "val_spec_invalid")
+               valBindAssays(lapply(names(data), function(a) valFeatureTable(data[[a]], id, a)))
+           })
+}
+
+#' The state that enters RUV, per route (7.3's table)
+#' @noRd
+valPreRuvState <- function(route) {
+    r <- valRoute(route)
+    switch(r$omic,
+           proteomics = if (identical(r$workflow, "DIA_LIMPA")) "peptide_count_filtered" else
+               "normalized",
+           lipidomics = "lipid_normalized",
+           metabolomics = "metab_normalized",
+           transcriptomics = "trx_qc_complete")
+}
+
+#' Read a route's DA tables into the standard `da.tsv` rows
+#' @noRd
+valReadDa <- function(da_dir, omic, q_thresh, lfc_cutoff) {
+    map <- valDaMap(omic)
+    files <- list.files(da_dir, pattern = map$pattern)
+    if (!length(files)) {
+        valAbort("no DA table of the route in its DA folder", "val_spec_invalid")
+    }
+    rows <- lapply(sort(files), function(f) {
+        path <- file.path(da_dir, f)
+        x <- if (identical(map$sep, ",")) {
+            utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
+        } else {
+            utils::read.delim(path, stringsAsFactors = FALSE, check.names = FALSE)
+        }
+        feature <- intersect(map$feature, names(x))
+        feature <- if (length(feature)) feature[[1L]] else names(x)[[1L]]
+        needed <- c(map$log2fc, map$p, map$s_own)
+        if (!all(needed %in% names(x))) {
+            valAbort("a DA table lacks {setdiff(needed, names(x))}", "val_spec_invalid")
+        }
+        contrast <- if (is.null(map$contrast)) {
+            rep(sub(map$pattern, "\\1", f), nrow(x))
+        } else {
+            as.character(x[[map$contrast]])
+        }
+        mean_expression <- if (map$mean %in% names(x)) {
+            as.numeric(x[[map$mean]])
+        } else {
+            cols <- grep(map$mean, names(x), value = TRUE)
+            v <- if (length(cols)) rowMeans(as.matrix(x[, cols, drop = FALSE]), na.rm = TRUE) else
+                rep(NA_real_, nrow(x))
+            ifelse(is.nan(v), NA_real_, v)
+        }
+        log2fc <- as.numeric(x[[map$log2fc]])
+        s_own <- as.numeric(x[[map$s_own]])
+        data.frame(
+            feature_id = as.character(x[[feature]]),
+            assay = if (is.null(map$assay)) rep("all", nrow(x)) else as.character(x[[map$assay]]),
+            contrast = contrast, log2fc = log2fc, p = as.numeric(x[[map$p]]), s_own = s_own,
+            call_statistic = rep(map$call_statistic, nrow(x)),
+            called_own = !is.na(s_own) & s_own < q_thresh & !is.na(log2fc) &
+                abs(log2fc) >= lfc_cutoff,
+            mean_expression = mean_expression, stringsAsFactors = FALSE)
+    })
+    do.call(rbind, rows)
+}
+
+#' The `ruv.tsv` rows of a state object: per assay the design, k, controls, features tested,
+#' fallback and W (long), from `args$ruv_factors` where the state holds it
+#' @noRd
+valRuvRows <- function(obj, design_name) {
+    factors <- valField(obj, "args")$ruv_factors
+    cols <- c("assay", "design", "k", "controls_n", "controls_share", "features_tested",
+              "fallback", "sample", "factor", "w")
+    if (!length(factors)) {
+        return(stats::setNames(data.frame("all", design_name %||% NA_character_, NA_integer_,
+                                          NA_integer_, NA_real_, NA_integer_, "not_recorded",
+                                          NA_character_, NA_character_, NA_real_,
+                                          stringsAsFactors = FALSE), cols))
+    }
+    do.call(rbind, lapply(names(factors), function(a) {
+        f <- factors[[a]]
+        w <- f$W
+        tested <- f$features_tested %||% NA_integer_
+        base <- list(a, f$design %||% design_name %||% NA_character_,
+                     as.integer(f$k %||% if (is.matrix(w)) ncol(w) else NA_integer_),
+                     as.integer(f$controls_n %||% NA_integer_),
+                     if (is.na(tested)) NA_real_ else (f$controls_n %||% NA_integer_) / tested,
+                     as.integer(tested), f$fallback %||% "none")
+        if (!is.matrix(w) || !length(w)) {
+            return(stats::setNames(data.frame(base, NA_character_, NA_character_, NA_real_,
+                                              stringsAsFactors = FALSE), cols))
+        }
+        grid <- expand.grid(sample = rownames(w) %||% as.character(seq_len(nrow(w))),
+                            factor = colnames(w) %||% paste0("W", seq_len(ncol(w))),
+                            stringsAsFactors = FALSE)
+        out <- data.frame(base, stringsAsFactors = FALSE)[rep(1L, nrow(grid)), , drop = FALSE]
+        out <- cbind(out, grid, as.vector(w))
+        names(out) <- cols
+        rownames(out) <- NULL
+        out
+    }))
+}
+
+#' Write a cell's standard tables (section 7.3; the stage rule A12, revision 1.8 item 4)
+#'
+#' `da.tsv` (`feature_id, assay, contrast, log2fc, p, s_own, call_statistic, called_own,
+#' mean_expression`) from the route's own DA tables; `matrix_pre_ruv.tsv` (the normalised matrix
+#' that enters RUV) and `matrix.tsv` (the matrix the DA model is fitted to: the state DA ran from;
+#' where RUV factors enter the model, the uncorrected values) with an `assay` column;
+#' `features.tsv`; `ruv.tsv` when RUV ran; `itsd.tsv` on lipidomics and metabolomics; and where RUV
+#' factors enter the model `matrix_display.tsv`, labelled "display; not what is tested".
+#'
+#' @param manager The cell's state manager (used through `state_reader`).
+#' @param paths The experiment paths (`da_output_dir`).
+#' @param route Route id.
+#' @param out_dir Where the tables are written (the cell's work folder).
+#' @param ruv `off`, `correction` or `factors_in_model` ([valCellRuv()]).
+#' @param q_thresh,lfc_cutoff The DA call rule's inputs (the ledger's values).
+#' @param state_reader `function(state)` returning a committed state's object.
+#' @param model_state The state DA ran from.
+#' @param itsd_applied Whether ITSD normalisation was applied (lipidomics, metabolomics).
+#' @param design_name The arm's RUV design, for `ruv.tsv`.
+#' @return Named character vector of the written paths.
+#' @export
+valReadArmTables <- function(manager, paths, route, out_dir, ruv = "off", q_thresh = 0.05,
+                             lfc_cutoff = 0, state_reader = NULL, model_state = NULL,
+                             itsd_applied = NA, design_name = NULL) {
+    r <- valRoute(route)
+    omic <- r$omic
+    state_reader <- state_reader %||% function(name) {
+        ns <- asNamespace("MultiScholaR")
+        ns$withWorkflowStateScope(manager, function() manager$getState(name))
+    }
+    dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+    write <- function(x, name) {
+        path <- file.path(out_dir, paste0(name, ".tsv"))
+        utils::write.table(x, path, sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+        path
+    }
+    da <- valReadDa(paths$da_output_dir, omic, q_thresh, lfc_cutoff)
+    pre_obj <- state_reader(valPreRuvState(route))
+    model_obj <- if (identical(omic, "transcriptomics")) pre_obj else
+        state_reader(model_state %||% valPreRuvState(route))
+    pre <- valStateMatrix(pre_obj, omic)
+    model <- if (identical(ruv, "factors_in_model") && omic %in% c("lipidomics", "metabolomics")) {
+        valStateMatrix(model_obj, omic, "uncorrected")
+    } else {
+        valStateMatrix(model_obj, omic)
+    }
+    out <- c(da = write(da, "da"), matrix_pre_ruv = write(pre, "matrix_pre_ruv"),
+             matrix = write(model, "matrix"))
+    key <- function(x) paste(x$assay, x$feature_id, sep = "\r")
+    all_keys <- unique(rbind(pre[, 1:2], model[, 1:2], da[, c("feature_id", "assay")]))
+    features <- data.frame(feature_id = all_keys$feature_id, assay = all_keys$assay,
+                           in_matrix_pre_ruv = key(all_keys) %in% key(pre),
+                           in_matrix = key(all_keys) %in% key(model),
+                           tested = key(all_keys) %in% key(da[is.finite(da$p), ]),
+                           stringsAsFactors = FALSE)
+    out <- c(out, features = write(features, "features"))
+    if (!identical(ruv, "off")) out <- c(out, ruv = write(valRuvRows(model_obj, design_name), "ruv"))
+    if (omic %in% c("lipidomics", "metabolomics")) {
+        regex <- valField(pre_obj, "internal_standard_regex")
+        assays <- unique(pre$assay)
+        itsd <- data.frame(assay = assays, applied = rep(itsd_applied, length(assays)),
+                           standards_n = vapply(assays, function(a) {
+                               ids <- pre$feature_id[pre$assay == a]
+                               if (length(regex) && nzchar(regex)) sum(grepl(regex, ids)) else 0L
+                           }, integer(1), USE.NAMES = FALSE),
+                           stringsAsFactors = FALSE)
+        out <- c(out, itsd = write(itsd, "itsd"))
+    }
+    if (identical(ruv, "factors_in_model")) {
+        display <- valDisplayMatrix(model_obj, omic)
+        if (!is.null(display)) {
+            display <- cbind(display[, 1:2], label = MATRIX_DISPLAY_LABEL,
+                             display[, -(1:2), drop = FALSE])
+            out <- c(out, matrix_display = write(display, "matrix_display"))
+        }
+    }
+    out
+}
+
+#' The RUV-corrected display matrix where the state holds it (lipidomics and metabolomics: the
+#' state's values, `runOmicsRuvFactors()$corrected`; proteomics and transcriptomics: an `adjusted`
+#' or `corrected` element of `args` where present; otherwise `NULL`)
+#' @noRd
+valDisplayMatrix <- function(obj, omic) {
+    if (omic %in% c("lipidomics", "metabolomics")) return(valStateMatrix(obj, omic, "data"))
+    args <- valField(obj, "args")
+    held <- args$adjusted %||% args$corrected
+    if (is.null(held)) return(NULL)
+    if (is.matrix(held)) {
+        held <- data.frame(feature_id = rownames(held), held, check.names = FALSE,
+                           stringsAsFactors = FALSE)
+    }
+    valFeatureTable(held, names(held)[[1L]], "all")
+}
+
+#' The masked digest of a table (feature-level tables compared without leaving the job)
+#'
+#' @param table A data frame.
+#' @return SHA-256 of its tab-separated text with numbers at 15 significant digits.
+#' @export
+valMaskedDigest <- function(table) {
+    x <- table
+    for (col in names(x)) if (is.numeric(x[[col]])) x[[col]] <- ifelse(is.finite(x[[col]]),
+                                                                       sprintf("%.15g", x[[col]]),
+                                                                       "NA")
+    text <- utils::capture.output(utils::write.table(x, sep = "\t", quote = FALSE,
+                                                     row.names = FALSE))
+    digest::digest(paste(text, collapse = "\n"), algo = "sha256", serialize = FALSE)
+}
+
+#' Replay a cell from its analysis record (section 7.3; statuses as G5)
+#'
+#' `buildWorkflowAnalysisRecord`, then `replayWorkflowAnalysisRecord` on a fresh store with the
+#' same inputs; the replayed DA table is compared by masked digest, then by value.
+#'
+#' @param manager The cell's state manager.
+#' @param original_da The cell's `da.tsv` rows.
+#' @param build `function(manager)` returning the record (default the package's builder).
+#' @param replay `function(record)` returning the replayed `da.tsv` rows.
+#' @return A list: `status` (`identical`, `differs`, `unsupported`), `class`, `max_abs_diff`,
+#'   `rows_only_one_side`.
+#' @export
+valReplay <- function(manager, original_da, build = NULL, replay) {
+    build <- build %||% function(m) asNamespace("MultiScholaR")$buildWorkflowAnalysisRecord(m)
+    res <- tryCatch(list(da = replay(build(manager))), error = function(e) e)
+    if (inherits(res, "error")) {
+        return(list(status = "unsupported", class = class(res)[[1L]], max_abs_diff = NA_real_,
+                    rows_only_one_side = NA_integer_))
+    }
+    da <- res$da
+    if (identical(valMaskedDigest(da), valMaskedDigest(original_da))) {
+        return(list(status = "identical", class = NA_character_, max_abs_diff = 0,
+                    rows_only_one_side = 0L))
+    }
+    k <- function(x) paste(x$assay, x$contrast, x$feature_id, sep = "\r")
+    common <- intersect(k(da), k(original_da))
+    only <- length(setdiff(union(k(da), k(original_da)), common))
+    a <- da[match(common, k(da)), , drop = FALSE]
+    b <- original_da[match(common, k(original_da)), , drop = FALSE]
+    num <- intersect(names(a)[vapply(a, is.numeric, logical(1))],
+                     names(b)[vapply(b, is.numeric, logical(1))])
+    diffs <- unlist(lapply(num, function(col) abs(a[[col]] - b[[col]])))
+    list(status = "differs", class = NA_character_,
+         max_abs_diff = if (length(diffs)) max(diffs, na.rm = TRUE) else NA_real_,
+         rows_only_one_side = as.integer(only))
 }
