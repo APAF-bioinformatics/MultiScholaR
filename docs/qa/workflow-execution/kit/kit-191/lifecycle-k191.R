@@ -85,9 +85,9 @@ coefficients <- data.frame(
     coefficient = c("a", "c", "s"),
     from_cases = c("c1, c2", "d", "b1, b2"),
     seconds_per_unit = c(
-        per(c("c1", "c2"), function(r) r$samples * r$features * r$permutations),
-        per("d", function(r) r$features * r$permutations),
-        per(c("b1", "b2"), function(r) r$members * r$permutations)))
+        per(c("c1", "c2"), function(r) as.numeric(r$samples) * r$features * r$permutations),
+        per("d", function(r) as.numeric(r$features) * r$permutations),
+        per(c("b1", "b2"), function(r) as.numeric(r$members) * r$permutations)))
 coefficients$value <- signif(2 * coefficients$seconds_per_unit, 3)
 utils::write.table(coefficients, file.path(out_dir, "coefficients.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 

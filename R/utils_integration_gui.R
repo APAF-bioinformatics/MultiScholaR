@@ -815,10 +815,11 @@ integrationGuiTexts <- function() {
             "samples (%d ranked features with an identifier had a missing value and were left out; %d set aside as a",
             "second feature on one identifier)."),
         # %d: reorderings, biological samples; %s: the smallest p-value; %d: terms tested, the smallest number of terms
-        # that must reach the threshold; %s: the threshold (5.2 step 8).
+        # called together (5.2 step 8, as corrected by AUDIT-KIT-193 A05: BH calls k* terms with p_(k*) <= 0.05 k* / m,
+        # and p_(k*) >= p_min, so k* >= m p_min / 0.05).
         enrich_test_permutation_floor = paste("With %d reorderings of %d biological samples no p-value can be below %s;",
-            "among the %d terms tested, at least %d must have a p-value of %s or less before any can be called at a 5 %%",
-            "false discovery rate."),
+            "among the %d terms tested, none can be called at a 5 %% false discovery rate unless at least %d are called",
+            "together."),
         # %s: seconds; %d: features, biological samples, terms, reorderings (the scripted run, D4 (c)).
         enrich_test_permutation_time = paste("The permutation test is predicted to take about %s seconds (%d features, %d",
             "biological samples, %d terms, %d reorderings); the prediction was measured on a test computer, and this",

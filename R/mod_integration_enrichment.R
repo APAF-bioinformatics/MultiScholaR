@@ -367,9 +367,10 @@ integrationEnrichmentSummary <- function(value, texts = integrationGuiTexts(), e
         if (pathways && identical(entry$input_matrix, "ruv_corrected")) texts[["enrich_values_ruv_note"]])
 }
 
-#' KIT-191 (5.2 steps 7 and 8): the permutation test's floor. With d reorderings that left the factor unchanged no
-#' p-value is below p_min = (1 + d) / (1 + B); with m terms tested, BH at 5 % calls a term only when at least
-#' k_min = ceiling(m p_min / 0.05) terms have a p-value of 0.05 k_min / m or less.
+#' KIT-191 (5.2 steps 7 and 8, corrected by AUDIT-KIT-193 A05): the permutation test's floor. With d reorderings that
+#' left the factor unchanged no p-value is below p_min = (1 + d) / (1 + B); with m terms tested, BH at 5 % calls none
+#' unless it calls at least k_min = ceiling(m p_min / 0.05) together (it calls k* terms with p_(k*) <= 0.05 k* / m, and
+#' p_(k*) >= p_min).
 #' @param permutation The product's `permutation` (`permutations`, `identity_draws`, `min_p`, `samples`).
 #' @param terms The number of terms tested (m).
 #' @return The sentence (`enrich_test_permutation_floor`), or NULL without terms.
@@ -380,5 +381,5 @@ integrationEnrichmentPermutationFloorText <- function(permutation, terms, texts 
     k_min <- as.integer(ceiling(terms * p_min / 0.05 - 1e-9))
     number <- function(x) format(signif(x, 3), scientific = FALSE, trim = TRUE)
     sprintf(texts[["enrich_test_permutation_floor"]], as.integer(permutation$permutations), as.integer(permutation$samples),
-        number(p_min), terms, k_min, number(0.05 * k_min / terms))
+        number(p_min), terms, k_min)
 }

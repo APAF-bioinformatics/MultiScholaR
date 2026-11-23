@@ -843,8 +843,18 @@ INTEGRATION_ENRICHMENT_TEST_SETTINGS <- c(
 #' and the seed. The factor's values are reordered with the model unchanged.
 #' @noRd
 INTEGRATION_ENRICHMENT_PERMUTATION_SETTINGS <- paste0("statistic=fisher_z(pearson);set=pcgse_t(vif=1);",
-    "permute=factor_values_free;permutations=%d;p=(1+b)/(1+B);unchanged_draws=counted;two_sided=abs;seed=%d;",
+    "permute=factor_values_free;permutations=%d;p=(1+b)/(1+B);unchanged_draws=counted;ties=abs_within_1e-9;two_sided=abs;",
+    "seed=%d;",
     "rng=Mersenne-Twister/Inversion/Rejection;sums=by_index;complete=all_samples;collapse=largest_mean_among_complete")
+
+#' KIT-191 (5.2 step 5, AUDIT-KIT-193 U2): a reordering whose |t*| is below |t| by at most this much is counted as at
+#' least as extreme. Exact ties occur besides the unchanged draws: a reordering that reflects the factor about its mean
+#' (for example (1, 2, 3, 4) reversed) gives t* = -t for every set, and the observed t (from `stats::cor`) and t* (from a
+#' matrix product) differ in their last bits, so an exact comparison would leave the count to rounding. The rounding
+#' error of t is of order 1e-13 at the package's sizes, far below this tolerance, so no exact tie is lost; a draw within
+#' the tolerance that is not an exact tie is counted too, which can only make p larger (the p-value stays valid).
+#' @noRd
+INTEGRATION_ENRICHMENT_PERMUTATION_TIE <- 1e-9
 
 #' KIT-191 (D1, VAL-97 (1)): the numbers of reorderings offered for the permutation test, the default first.
 #' @noRd
@@ -859,7 +869,7 @@ INTEGRATION_ENRICHMENT_TAB_SECONDS <- 120
 #' biological samples, G features, B reorderings). Each coefficient is twice the seconds per unit of its own term,
 #' measured in the case its term dominates (L1, `docs/qa/workflow-execution/kit/kit-191/lifecycle.md`, run below).
 #' @noRd
-INTEGRATION_ENRICHMENT_PERMUTATION_COST <- list(a = 2e-9, c = 2e-8, s = 2e-8, run = "not measured yet")
+INTEGRATION_ENRICHMENT_PERMUTATION_COST <- list(a = 5.12e-9, c = 2.13e-7, s = 5.48e-8, run = "45285106025")
 
 #' KIT-191 (VAL-85 (2), ticket 2.3 and 5.4): how each offered test behaved in KIT-183's counted simulation (run
 #' 45225854502, package fae77e5f, 800 replicates per cell), per kind of data set (`metabolites`: its metabolomics data
@@ -1562,9 +1572,10 @@ integrationEnrichmentPermutationSeconds <- function(n_samples, features, permuta
 #' correlation with the oriented factor over S_d, Fisher-transformed; each set's uncorrected two-sample t against the
 #' other features of U_cam; B free reorderings of the factor's values across the biological samples, drawn once per
 #' call with the declared seed and R's default generator kinds (the session's random state is restored), the model
-#' unchanged; the same reorderings for every set. p = (1 + b) / (1 + B), b the reorderings whose |t*| is at least |t|,
-#' a reordering that leaves the factor's values in their own order (the identity, or one among tied values) counted
-#' without comparing (Phipson and Smyth 2010). Two-sided; `Direction` the sign of t; BH over the sets of the call.
+#' unchanged; the same reorderings for every set. p = (1 + b) / (1 + B), b the reorderings whose |t*| is at least |t|
+#' less `INTEGRATION_ENRICHMENT_PERMUTATION_TIE` (so exact ties such as the factor's reflection are always counted), a
+#' reordering that leaves the factor's values in their own order (the identity, or one among tied values) counted
+#' without comparing (Phipson and Smyth 2010); (1 + d) / (1 + B) is then a lower bound of every p-value. Two-sided; `Direction` the sign of t; BH over the sets of the call.
 #' Reorderings are processed in blocks of min(B, 1000, floor(5e6 / G)) columns. Refusals as `camera`; a run predicted
 #' above `settings$time_limit` seconds is refused (`integration_enrichment_test_too_large`; the tab), without a limit the
 #' predicted time is given in a message first (scripts). No other test is run in its place (INT-19).
@@ -1632,7 +1643,7 @@ integrationEnrichmentPermutation <- function(values, term2gene, term2name, setti
         columns <- start:min(permutations, start + width - 1L)
         fs <- scale(matrix(f[perms[, columns, drop = FALSE]], n))
         zp <- integrationEnrichmentFisherZ((ys %*% fs) / (n - 1))
-        at_least <- abs(integrationEnrichmentSetT(zp, members)$t) >= abs(t_obs)
+        at_least <- abs(integrationEnrichmentSetT(zp, members)$t) >= abs(t_obs) - INTEGRATION_ENRICHMENT_PERMUTATION_TIE
         at_least[, unchanged[columns]] <- TRUE
         exceed <- exceed + rowSums(at_least)
     }

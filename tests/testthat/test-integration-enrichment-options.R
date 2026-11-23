@@ -197,7 +197,7 @@ intEoPermutationFixture <- function(n = 12L, g = 60L) {
 
 # 5.2 written as loops: per permutation the factor reordered and each feature's correlation recomputed from the
 # row-standardised values; per set the two-sample t from the means and sums of squares in and out; a reordering that
-# leaves the factor unchanged counted without comparing.
+# leaves the factor unchanged counted without comparing; |t*| within 1e-9 below |t| counted (AUDIT-KIT-193 U2).
 intEoPermutationReference <- function(y, f, sets, seed, permutations) {
     n <- ncol(y)
     fisher <- function(r) atanh(pmax(pmin(r, 1 - 1e-12), -1 + 1e-12))
@@ -227,7 +227,7 @@ intEoPermutationReference <- function(y, f, sets, seed, permutations) {
         fs <- as.numeric(scale(fb))
         zb <- fisher(vapply(seq_len(nrow(y)), function(i) sum(ys[i, ] * fs) / (n - 1), numeric(1)))
         for (k in seq_along(members)) {
-            if (abs(setT(zb, members[[k]])[["t"]]) >= abs(observed[k, "t"])) count[[k]] <- count[[k]] + 1
+            if (abs(setT(zb, members[[k]])[["t"]]) >= abs(observed[k, "t"]) - 1e-9) count[[k]] <- count[[k]] + 1
         }
     }
     pvalue <- (1 + count) / (1 + permutations)
@@ -314,6 +314,25 @@ test_that("KIT-191 U2: the permutation test equals the loops of 5.2; reorderings
     terms_four <- four$terms[match(reference_four$ID, four$terms$ID), , drop = FALSE]
     expect_identical(terms_four$pvalue, reference_four$pvalue)
     expect_true(all(four$terms$pvalue >= (1 + d) / 1001))
+    # A factor symmetric about its mean (AUDIT-KIT-193 U2): the reversal of (1, 2, 3, 4) gives t* = -t for every set, an
+    # exact tie of |t| that the product counts whatever the rounding; with d unchanged draws and r reversals every
+    # p-value is at least (1 + d + r) / 1001, and equals the loops'.
+    symmetric <- small
+    symmetric$f <- c(1, 2, 3, 4)
+    symmetric$values$f <- symmetric$f
+    symmetric$values$design <- integrationEnrichmentTestDesign(symmetric$f)
+    reflected <- intEoTest(symmetric, "permutation", intEoSettings(permutations = 1000L), seed = 11L)
+    perms <- withr::with_seed(11L, vapply(seq_len(1000L), function(i) sample(4L), integer(4L)),
+        .rng_kind = "Mersenne-Twister", .rng_normal_kind = "Inversion", .rng_sample_kind = "Rejection")
+    d_sym <- sum(apply(perms, 2L, function(x) identical(x, 1:4)))
+    r_sym <- sum(apply(perms, 2L, function(x) identical(x, 4:1)))
+    expect_gt(r_sym, 0L)
+    expect_identical(reflected$permutation$identity_draws, as.integer(d_sym))
+    expect_true(all(reflected$terms$pvalue >= (1 + d_sym + r_sym) / 1001))
+    reference_sym <- intEoPermutationReference(symmetric$y, symmetric$f, symmetric$sets, 11L, 1000L)
+    expect_identical(reflected$terms$pvalue[match(reference_sym$ID, reflected$terms$ID)], reference_sym$pvalue)
+    expect_identical(reflected$settings$test_settings, sprintf(INTEGRATION_ENRICHMENT_PERMUTATION_SETTINGS, 1000L, 11L))
+    expect_match(reflected$settings$test_settings, "ties=abs_within_1e-9", fixed = TRUE)
 })
 
 # --- U4, U5, U6: randomness, identity, resolver ---
@@ -613,13 +632,22 @@ test_that("KIT-191 U10: the tab: four tests, camera pre-selected, the kind's not
         expect_match(few[[2L]], "This data set has 6 biological samples", fixed = TRUE)
     }
     expect_length(integrationEnrichmentTestNotes("permutation", 12L, "uncorrected", "metabolomics", texts), 1L)
-    # The floor: 2,000 terms, 1,000 reorderings, none unchanged: 40 terms must reach 0.001.
+    # The floor (corrected, AUDIT-KIT-193 A05): 2,000 terms, 1,000 reorderings, none unchanged: none is called unless at
+    # least 40 are called together.
     floor <- integrationEnrichmentPermutationFloorText(list(permutations = 1000L, identity_draws = 0L, min_p = 1 / 1001,
         samples = 12L), 2000L, texts)
-    expect_identical(floor, sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 12L, "0.000999", 2000L, 40L, "0.001"))
+    expect_identical(floor, sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 12L, "0.000999", 2000L, 40L))
+    expect_match(floor, "none can be called at a 5 % false discovery rate unless at least 40 are called together",
+        fixed = TRUE)
     five <- integrationEnrichmentPermutationFloorText(list(permutations = 1000L, identity_draws = 8L, min_p = 9 / 1001,
         samples = 5L), 30L, texts)
-    expect_identical(five, sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 5L, "0.00899", 30L, 6L, "0.01"))
+    expect_identical(five, sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 5L, "0.00899", 30L, 6L))
+    # The sentence is true of A05's counterexample: 100 terms, four at 2/1001, the rest at 1: BH calls the four, with
+    # no p-value at or below 1/1000, and four is at least the sentence's ceiling(100 (1/1001) / 0.05) = 2.
+    p <- c(rep(2 / 1001, 4L), rep(1, 96L))
+    expect_identical(sum(stats::p.adjust(p, "BH") <= 0.05), 4L)
+    expect_identical(sum(p <= 0.001), 0L)
+    expect_gte(sum(stats::p.adjust(p, "BH") <= 0.05), ceiling(100 * (1 / 1001) / 0.05))
 })
 
 test_that("KIT-191 U11: the workbook: the permutation and camera_floor overrides run and record; STRING has no test", {
@@ -686,7 +714,7 @@ test_that("KIT-191 U12: the guard: the prediction, refused above the tab's limit
     expect_identical(scripted$terms, runs$terms)
     expect_identical(INTEGRATION_ENRICHMENT_TAB_SECONDS, 120)
     # The coefficients are L1's (docs/qa/workflow-execution/kit/kit-191/lifecycle.md).
-    expect_identical(INTEGRATION_ENRICHMENT_PERMUTATION_COST$run, "L1 not run yet")
+    expect_identical(INTEGRATION_ENRICHMENT_PERMUTATION_COST, list(a = 5.12e-9, c = 2.13e-7, s = 5.48e-8, run = "45285106025"))
 })
 
 # --- U13: the corpus control ---

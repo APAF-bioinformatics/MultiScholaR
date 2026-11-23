@@ -40,8 +40,8 @@ mutations <- list(
         from = 'parameters$test <- if (identical(database, "string")) NULL else settings$test %||% "gsea"',
         to = 'parameters$test <- NULL'),
     m3_permutation_text_no_seed = list(file = "R/utils_integration_enrichment.R",
-        from = 'two_sided=abs;seed=%d;',
-        to = 'two_sided=abs;'))
+        from = '"seed=%d;",',
+        to = '"",'))
 mutate <- function(name, m) {
     tree <- file.path(work, name)
     stopifnot(system2("git", c("worktree", "add", "--detach", tree, "HEAD")) == 0L)

@@ -3,7 +3,7 @@
 # simulate-k183.R (their deparsed SHA-256 recorded) and run, with K$permutations = 1000, on three fixtures (n = 6, 12,
 # 20 biological samples; G = 300 features; 30 sets of 5 to 40) with perm_seed = the product's seed. Expected: p-values
 # identical except where a count differs on a reordering that leaves the factor unchanged (counted by the product,
-# decided by rounding in the script) or where | |t*| - |t| | <= 1e-9; each such reordering listed with its set (expected:
+# decided by rounding in the script) or where | |t*| - |t| | <= 1e-9 (the product counts |t*| >= |t| - 1e-9, AUDIT-KIT-193 U2); each such reordering listed with its set (expected:
 # in the 6-sample fixture only); t within 1e-10.
 #
 # Usage (from the installed head's package root): Rscript instrument-identity.R <out dir>
@@ -65,7 +65,7 @@ for (n in c(6L, 12L, 20L)) {
     t_obs_product <- ns$integrationEnrichmentSetT(ns$integrationEnrichmentFisherZ(as.numeric(stats::cor(t(y), f))), members)$t[, 1L]
     unchanged <- vapply(seq_len(1000L), function(b) identical(f[perms[, b]], f), logical(1))
     script_ge <- abs(t_script) >= abs(t_obs_script)
-    product_ge <- abs(t_product) >= abs(t_obs_product)
+    product_ge <- abs(t_product) >= abs(t_obs_product) - ns$INTEGRATION_ENRICHMENT_PERMUTATION_TIE
     product_ge[, unchanged] <- TRUE
     differ <- which(script_ge != product_ge, arr.ind = TRUE)
     if (nrow(differ)) {
