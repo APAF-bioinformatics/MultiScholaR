@@ -58,6 +58,36 @@ Ticket revision 1.5. Branch `kit-173-go-propagation` from `v0.9-staging` a60c4e9
   descendants (for example broad, five relations: 537 descendant and 2,027 other significant term-draws).
   `effect.tsv`, `effect-draws.tsv`, `effect-sets.tsv`; R2e, 1,459 s of script time
 
+## Declared control: attribution of T7(b)'s difference (authorised by the coordinator, 2026-11-23)
+
+Purpose: to learn whether the difference found in T7(b) (the order of proteins inside the `geneID` cells of the two
+saved enrichment result tables, and therefore the two results files' hashes, when a record saved on the base is
+replayed on the head) is caused by KIT-173's change or exists in replay independently of it. Design, in one scripts
+request, changing no test and no product code: (1) capture on the BASE commit, replay on the BASE commit (the base
+installed into a private library as the one-job design already does), compare the same eleven expectations; (2)
+capture on the HEAD commit, replay on the HEAD commit, compare the same eleven; and, to test the reading of the cause
+directly, (3) in each pair record whether the differential-abundance table the enrichment reads has the same ROW ORDER
+at capture and at replay (a yes or no and the count of rows whose position differs; no feature-level rows leave the
+job), and whether the `gene` vector handed to the enrichment call is the same sequence. Outputs: a small table with one
+row per pair and expectation (pass or fail), the two order facts per pair, and the failing expectations' first 12
+message lines as before. Ceiling: one job, at most 2 core-hours. Decision it supports, fixed now: if base-on-base shows
+the same difference, the cause is in replay as it stands on `v0.9-staging` and not in this ticket: A4 as worded ("a
+project saved on the base replays unchanged on the head") is then not met for a reason that predates the ticket, and
+what follows (a product fix of replay's row order as its own ticket; or A4 restated as "replays as the base itself
+replays it", with the defect recorded) is the owner's decision, not the implementer's or the coordinator's. If
+base-on-base and head-on-head are both identical and only base-on-head differs, the change is KIT-173's: report exactly
+which code path reorders, and stop; the fix is then a code change after a result, which comes back to the owner under
+the one-correction rule. If the control itself fails on mechanics, the instrument-defect rule applies (T7i1 was
+instrument run 1 of 3).
+
+Implementation: `t7-control.R` (the job) and `t7-control-pair.R` (one capture and its replay in one R process, on the
+library given). The eleven comparisons are T7(b)'s, computed in the script on the same objects (the test file is not
+run or changed). The capture and the replay each record, through wrappers that call the real functions, the protein
+id column of every DA table `processEnrichments` receives and every `gene` vector handed to `clusterProfiler::enricher`;
+only the comparison (same order yes or no, rows at another position) leaves the job.
+
+Result: __CONTROL__
+
 ## Acceptance criteria
 
 | # | Status | Evidence |
