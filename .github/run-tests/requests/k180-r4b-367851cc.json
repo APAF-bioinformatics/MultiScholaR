@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-180 R4b: the control-and-freeze's one correction pass (R4 run 45129403566: the base side ran outside test_that, so its store-entry keys were sorted in the runner's locale; instrumentation). S2 on 367851cc (R/ as fix c6bbd40d) against base a60c4e9a; changed step design on each lane",
+  "label": "KIT-180 R4b control and freeze 367851cc vs a60c4e9a",
+  "package_commit": "367851cc7347f0b48302b2cdb9a6d934f6a05ae3",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-180/gui-entry-control.R",
+      "args": [
+        "a60c4e9a0ec8b7db47edddaa53926a61e2b60299",
+        "docs/qa/workflow-execution/kit/kit-180/control"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-180/control",
+      "out_pattern": "\\.(json|tsv)$",
+      "timeout_minutes": 110
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
