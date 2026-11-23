@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 T0e: cell-phase and parity-stage tests only (test-phases, test-parity-stage), shown failing before the code; ceiling T0's remaining 2.40 core-hours",
+  "label": "KIT-159 T0e tests only at e7a0c82c",
+  "package_commit": "e7a0c82c61f973d6210571314ef2fe6e23191054",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t0e-out",
+        "--files",
+        "phases,parity-stage"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t0e-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
