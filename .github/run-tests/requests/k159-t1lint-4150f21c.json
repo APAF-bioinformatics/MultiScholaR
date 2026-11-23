@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 T1 lint-only run (A2 lintr, after the fixes; build-points2 ruling); plain pass test-metrics only; ceiling T1's remaining 1.42 core-hours",
+  "label": "KIT-159 T1 lint at 4150f21c",
+  "package_commit": "4150f21c60818e18ec9216da6ceb635c262fbb16",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1lint-out",
+        "--files",
+        "metrics",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1lint-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
