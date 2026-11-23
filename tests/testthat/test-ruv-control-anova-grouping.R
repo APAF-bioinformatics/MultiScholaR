@@ -217,7 +217,8 @@ for (omic in names(k190Signature)) {
       percentage_as_neg_ctrl = 10)), error = function(e) e)
     expect_s3_class(err, k190GroupingClass)
     if (inherits(err, "condition")) {
-      expect_match(conditionMessage(err), "after leaving out the pooled samples, fewer than two groups", fixed = TRUE)
+      # cli wraps the message to the console width: words are matched across any white space.
+      expect_match(conditionMessage(err), "after\\s+leaving\\s+out\\s+the\\s+pooled\\s+samples,\\s+fewer\\s+than\\s+two\\s+groups")
       expect_match(conditionMessage(err$parent), "After excluding Pool samples, only 1 group(s) remain", fixed = TRUE)
     }
   })
