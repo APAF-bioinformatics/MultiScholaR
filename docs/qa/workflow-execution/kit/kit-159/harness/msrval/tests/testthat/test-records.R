@@ -38,7 +38,7 @@ test_that("T-DET-1: identical, within rounding, and different tables", {
     b <- withr::local_tempdir()
     v <- c(1.234567890123, 2.5, 1e-3)
     put <- function(values, dir) {
-        data.table::fwrite(detTable(values), file.path(dir, "da.tsv"), sep = "\t", digits = 17)
+        data.table::fwrite(detTable(values), file.path(dir, "da.tsv"), sep = "\t")
     }
     put(v, a)
     put(v, b)

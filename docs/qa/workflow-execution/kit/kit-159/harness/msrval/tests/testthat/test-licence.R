@@ -70,8 +70,8 @@ test_that("T-LIC-5 to T-LIC-8: copies, archives and the size of scored.tsv.gz", 
     big <- file.path(ev4, "scored.tsv.gz")
     con <- gzfile(big, "w")
     withr::with_seed(1, writeLines(c(paste(SCORED_COLUMNS, collapse = "\t"),
-                                     replicate(60000, paste(sample(c(0:9, letters), 120, TRUE),
-                                                            collapse = ""))), con))
+                                     replicate(90000, paste(sample(c(0:9, letters, LETTERS), 120,
+                                                                   TRUE), collapse = ""))), con))
     close(con)
     expect_gt(file.size(big), 5 * 1024^2)
     expect_error(valCheckEvidence(ev4, man[man$role != "closed", ], scored_lineage = "open"),

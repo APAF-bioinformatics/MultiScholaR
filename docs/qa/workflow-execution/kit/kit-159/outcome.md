@@ -55,9 +55,34 @@ hand case (the T0a version omitted it, so the 10-feature floor would have made t
 `test-coverage.R` (pass bands, the regime summary, small regime runs) was written with the coverage
 code and has no failing-first run.
 
+### T1a (group a implementation): run 45124309425 at 5ab037ae
+
+Observed: 57 tests, 49 pass (`t1/t1a-harness-tests.tsv`, `t1/t1a-harness-failures.txt`). Seven hand
+cases (T-PT, T-JK-1, T-JK-2, T-JK-crit, T-CP, T-ONE, T-REF-FILL) fail with "actual != expected but
+don't know how to show the difference": the tests used a relative tolerance (1e-6 or 1e-9) tighter
+than the ticket's printed rounding (7 to 10 decimals), so values equal to print precision failed. One
+test (small C1 run) recycled a filtered vector against the full level column. Inferred: test defects,
+not implementation defects (the waldo message means the difference is below print precision; the
+correction run shows the values). `covr` is not in the scripts job's library (it needs
+`extra_packages`, as `lintr` does), so the script stopped before covr, lintr and f_sim.
+
+Correction (T1a's one correction pass): the hand-case tests compare within one unit of the ticket's
+last printed decimal (`expectClose`, which prints the actual value); the C1 test fixed. covr and lintr
+move to the final T1 part over the complete package (A2 is over the whole `msrval`).
+
+T0b (group b tests only, 51ed29f1) was sent before this; its result is recorded when it returns.
+
+### T0b (group b tests only): run 45124916341 at 51ed29f1
+
+Observed: 93 tests; all 36 group (b) tests fail: 23 with "could not find function", the others with
+the missing internal constants `HARNESS_PATH` and `EVIDENCE_COLUMNS`; T-DET-1 also had a test defect
+(`data.table::fwrite` has no `digits` argument; corrected after T0b, the test now writes with
+`fwrite`'s round-trip form). The git-repository fixtures ran (git is in the job). T0 total: 1.46 of 6
+core-hours.
+
 ## Next
 
-T1a: the group (a) implementation (`utils.R`, `score.R`, `metrics.R`, `intervals.R`, `baseline.R`,
+T1a correction run (k159-t1a2-5e1c3202); then group (b) implementation. Former plan for T1a: the group (a) implementation (`utils.R`, `score.R`, `metrics.R`, `intervals.R`, `baseline.R`,
 `coverage.R`), tests passing, `covr`, `lintr`, f_sim on regime C3 and a cost probe of every T-COV
 family (T2 is sized on these).
 
