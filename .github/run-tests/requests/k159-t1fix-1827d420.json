@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 T1 correction (VAL-69): the two code defects found by runs 45219635014 and 45222394118 (T-PH-8, T-RANK-1) with --lint; T1 ceiling 21",
+  "label": "KIT-159 T1 correction at 1827d420",
+  "package_commit": "1827d420c3afc7ac89ade2f03e42ce8456aa0c52",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1fix-out",
+        "--files",
+        "coverage-rank,coverage,phases",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1fix-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
