@@ -8,7 +8,10 @@
 #                            libraries on Linux, Python and its packages, pandoc, Electron): version,
 #                            licence and where its source is; and where the release's sources archive is (U6)
 #   sources-list.tsv         the same components, one row each, for the sources archive
-#   VERSION.json             release, lockfile sha256, commit, snapshot date, build date, runner image
+#   VERSION.json             release, lockfile sha256, commit, package commit, snapshot date, build date, runner image
+#
+# KIT-176: MSR_PACKAGE_COMMIT (40 hexadecimal characters) and MSR_PACKAGE_ON_RELEASE_LINE (true or false), set by the
+# workflow's package-commit step (packaging/package-commit.sh), are required; nothing falls back to GITHUB_SHA.
 
 arguments <- commandArgs(trailingOnly = TRUE)
 if (length(arguments) != 5L) {
@@ -31,6 +34,14 @@ python <- lockfile$Python
 description <- read.dcf(file.path(checkout, "DESCRIPTION"))
 release <- unname(description[1L, "Version"])
 commit <- Sys.getenv("GITHUB_SHA", "unknown")
+package_commit <- Sys.getenv("MSR_PACKAGE_COMMIT")
+package_on_release_line <- Sys.getenv("MSR_PACKAGE_ON_RELEASE_LINE")
+if (!grepl("^[0-9a-f]{40}$", package_commit)) {
+    stop(sprintf("MSR_PACKAGE_COMMIT must be the 40-character package commit (packaging/package-commit.sh), not '%s'", package_commit))
+}
+if (!package_on_release_line %in% c("true", "false")) {
+    stop(sprintf("MSR_PACKAGE_ON_RELEASE_LINE must be true or false, not '%s'", package_on_release_line))
+}
 repository <- sprintf("https://github.com/%s", Sys.getenv("GITHUB_REPOSITORY", "APAF-bioinformatics/MultiScholaR"))
 
 rows <- list()
@@ -140,6 +151,8 @@ text <- c(
     sprintf("archive beside the installers of this release, at %s/releases. Questions:", repository),
     sprintf("%s/issues.", repository),
     "",
+    if (!identical(package_commit, commit)) sprintf(paste("Analysis code from commit %s; the source address below names the",
+        "commit that was built."), package_commit),
     sprintf("Built from commit %s with packages from the Posit Package Manager snapshot of %s.", commit, snapshot),
     "",
     sprintf("%-28s %-22s %-45s %s", "Component", "Version", "Licence", "Source"),
@@ -151,6 +164,8 @@ stamp <- list(
     release = release,
     lockfile_sha256 = digest::digest(file = lockfile_path, algo = "sha256"),
     commit = commit,
+    package_commit = package_commit,
+    package_on_release_line = identical(package_on_release_line, "true"),
     snapshot = snapshot,
     build_date = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
     runner_image = trimws(paste(Sys.getenv("ImageOS"), Sys.getenv("ImageVersion"))),
@@ -161,5 +176,5 @@ stamp <- list(
         sprintf("%s %s", package, installed[package, "Version"]) else paste(package, "not included"), character(1)), collapse = "; ")
 )
 writeLines(jsonlite::toJSON(stamp, auto_unbox = TRUE, pretty = TRUE), file.path(out_dir, "VERSION.json"))
-cat(sprintf("notices: %d components; VERSION.json: release %s, commit %s, snapshot %s\n", nrow(notices), release,
-    commit, snapshot))
+cat(sprintf("notices: %d components; VERSION.json: release %s, commit %s, package commit %s (on the release line: %s), snapshot %s\n",
+    nrow(notices), release, commit, package_commit, package_on_release_line, snapshot))

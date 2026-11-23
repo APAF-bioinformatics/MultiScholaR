@@ -5,7 +5,7 @@
 //
 // Usage: node lifecycle-test.js <label> <application executable> <application folder>
 //            --expect-launcher <in-process|process|systemd> [--expect-reason <text>] [--network-closed]
-//            [--expect-test-features <on|off>]
+//            [--expect-test-features <on|off>] [--expect-package-commit <sha>] [--expect-run-as-node-variable <value>]
 //
 // <application folder> is the installed or unpacked application; every process whose executable
 // lies under it counts as "from the bundle", and those under its resources/runtime as R.
@@ -16,6 +16,10 @@
 // closed: the application exits 0, then no process from the bundle is left and the port refuses.
 // (4) Started again and the shell killed hard: R is gone within 10 s. With --network-closed it
 // first checks that this process cannot reach the network either (the caller closed it).
+// KIT-176: with --expect-package-commit <sha>, the VERSION.json the application reads (beside the runtime folder)
+// names that package commit, its package_on_release_line is a JSON boolean, and the About lines the application
+// recorded at its start are the ones that VERSION.json gives. With --expect-run-as-node-variable <value>, the
+// application's start shows that ELECTRON_RUN_AS_NODE reached it with that value.
 
 const { spawn, execFileSync } = require('child_process');
 const fs = require('fs');
@@ -33,8 +37,14 @@ const expectReason = option('--expect-reason');
 // KIT-156: --expect-test-features on|off: whether the test setting (MULTISCHOLAR_TEST_FEATURES=1) is expected, as R
 // reports it and as the served page shows it (the home page's Integration tile live, or the placeholder).
 const expectTestFeatures = option('--expect-test-features');
+const expectPackageCommit = option('--expect-package-commit');
+const expectRunAsNode = option('--expect-run-as-node-variable');
 if (!label || !executable || !folder || !expectLauncher) {
   console.error('usage: node lifecycle-test.js <label> <executable> <application folder> --expect-launcher <launcher> [--expect-reason <text>] [--network-closed]');
+  process.exit(2);
+}
+if (flag('--expect-package-commit') && !/^[0-9a-f]{40}$/.test(expectPackageCommit || '')) {
+  console.error(`--expect-package-commit needs a 40-character hexadecimal commit, not "${expectPackageCommit}"`);
   process.exit(2);
 }
 const isWindows = process.platform === 'win32';
@@ -101,6 +111,20 @@ function launch(env) {
   return state;
 }
 
+// KIT-176 (D5): the About lines for a VERSION.json, the form chosen by package_on_release_line first.
+function aboutLines(stamp) {
+  let commitLines;
+  if (stamp.package_on_release_line === false) {
+    commitLines = [`Analysis code: commit ${stamp.commit} (test build, not on the release line)`];
+  } else if (stamp.package_commit === stamp.commit) {
+    commitLines = [`Commit: ${stamp.package_commit}`];
+  } else {
+    commitLines = [`Analysis code: commit ${stamp.package_commit}`, `Test build from: commit ${stamp.commit}`];
+  }
+  return [`MultiScholaR ${stamp.release}`, ...commitLines, `Lockfile sha256: ${stamp.lockfile_sha256 || 'unknown'}`,
+    `Package snapshot: ${stamp.snapshot || 'unknown'}`, `Built: ${stamp.build_date || 'unknown'} on ${stamp.runner_image || 'unknown'}`];
+}
+
 function reader(logFile) {
   const events = () => (fs.existsSync(logFile)
     ? fs.readFileSync(logFile, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line)) : []);
@@ -143,6 +167,23 @@ async function main() {
   const launcher = log1.find('launcher') || {};
   const answered = log1.find('application-answered') || {};
   check('the shell started', Boolean(startUp.pid), JSON.stringify({ electron: startUp.electron, noSandbox: startUp.noSandbox }));
+  if (expectRunAsNode !== undefined) {
+    check(`ELECTRON_RUN_AS_NODE=${expectRunAsNode} reached the application`, startUp.runAsNodeVariable === expectRunAsNode,
+      JSON.stringify({ runAsNodeVariable: startUp.runAsNodeVariable === undefined ? '<absent>' : startUp.runAsNodeVariable }));
+  }
+  if (expectPackageCommit !== undefined) {
+    const stampFile = path.join(path.dirname(runtimeFolder), 'VERSION.json');
+    let stamp = null;
+    try { stamp = JSON.parse(fs.readFileSync(stampFile, 'utf8')); } catch (error) { stamp = null; }
+    check(`VERSION.json names the package commit ${expectPackageCommit}`, Boolean(stamp) && stamp.package_commit === expectPackageCommit,
+      `${stampFile}: ${JSON.stringify(stamp ? { commit: stamp.commit, package_commit: stamp.package_commit, package_on_release_line: stamp.package_on_release_line } : null)}`);
+    const onLine = Boolean(stamp) && typeof stamp.package_on_release_line === 'boolean';
+    check('VERSION.json\'s package_on_release_line is a JSON boolean', onLine, JSON.stringify(stamp ? stamp.package_on_release_line : null));
+    const expected = onLine ? aboutLines(stamp) : null;
+    check('the About lines the application recorded are the ones VERSION.json gives',
+      Boolean(expected) && JSON.stringify(startUp.about) === JSON.stringify(expected),
+      `recorded ${JSON.stringify(startUp.about === undefined ? '<absent>' : startUp.about)}; expected ${JSON.stringify(expected)}`);
+  }
   check('the probe ran', Boolean(log1.find('probe')), JSON.stringify(log1.find('probe') || {}));
   check('the window loaded the application and a live session rendered the first tab',
     Boolean(firstTab && firstTab.connected && firstTab.home && firstTab.rendered),

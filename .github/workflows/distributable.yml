@@ -63,6 +63,8 @@ env:
   PBS_PYTHON: "3.12.16"
   PANDOC_VERSION: "3.11"
   NODE_VERSION: "22"
+  # KIT-176: the release line the package commit is taken from (packaging/package-commit.sh).
+  RELEASE_LINE: v0.9-staging
 
 jobs:
   plan:
@@ -171,7 +173,10 @@ jobs:
       R_LIBS_USER: /nonexistent-user-library
       R_LIBS_SITE: /nonexistent-site-library
     steps:
+      # KIT-176: the whole history, for the package commit (packaging/package-commit.sh stops on a shallow clone).
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # The bundle is built against Ubuntu 22.04 (D1): on the ubuntu-22.04 runner itself, elsewhere in
       # an ubuntu:22.04 container that sees the runner's temporary folder and the checkout at their
@@ -193,7 +198,7 @@ jobs:
               ubuntu:22.04 sleep infinity
             # the build script's sudo, for a root that needs none (and keeps its environment)
             docker exec msr-build sh -c 'printf "#!/bin/sh\nexec \"\$@\"\n" > /usr/local/bin/sudo && chmod 0755 /usr/local/bin/sudo'
-            names="R_VERSION RUNNER_TEMP BUNDLE TOOLS_LIB OUT RLIB PBS_RELEASE PBS_PYTHON PANDOC_VERSION GITHUB_STEP_SUMMARY R_LIBS_USER R_LIBS_SITE MSR_INTERNAL GITHUB_PAT"
+            names="R_VERSION RUNNER_TEMP BUNDLE TOOLS_LIB OUT RLIB PBS_RELEASE PBS_PYTHON PANDOC_VERSION GITHUB_STEP_SUMMARY R_LIBS_USER R_LIBS_SITE MSR_INTERNAL GITHUB_PAT MSR_PACKAGE_COMMIT MSR_PACKAGE_ON_RELEASE_LINE GITHUB_SHA"
             echo "BUILD_EXEC=docker exec$(printf ' --env %s' $names) msr-build" >> "$GITHUB_ENV"
           fi
 
@@ -211,6 +216,20 @@ jobs:
 
       - name: Rust for the internal packages (rustc 1.88 or later)
         run: $BUILD_EXEC bash packaging/linux/build.sh rust
+
+      # KIT-176 (D1, VAL-31): the package commit, before the library is installed. The job stops on a shallow clone, a
+      # HEAD that is not the build commit, or a changed or untracked file under the package paths.
+      - name: "The package commit: where the build left the release line, if the package source there equals what was built"
+        shell: bash
+        run: |
+          echo "packaging/package-commit.sh sha256 $(sha256sum packaging/package-commit.sh | cut -d' ' -f1)"
+          source packaging/package-commit.sh
+          package_tree_checks "$GITHUB_SHA"
+          result=$(package_commit_rule HEAD "origin/$RELEASE_LINE")
+          package_commit="${result%% *}"
+          on_release_line="${result##* }"
+          echo "package commit $package_commit; on the release line ($RELEASE_LINE): $on_release_line; build commit $GITHUB_SHA"
+          { echo "MSR_PACKAGE_COMMIT=$package_commit"; echo "MSR_PACKAGE_ON_RELEASE_LINE=$on_release_line"; } >> "$GITHUB_ENV"
 
       - name: "Install the library: snapshot binaries, the source builds, the internal packages (read token), MultiScholaR from this commit"
         env:
@@ -274,6 +293,19 @@ jobs:
             2>&1 | tee "$OUT/notices.log"
           cat packaging/electron/stamp/VERSION.json
           echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      # KIT-176 T4 (D4): the installed package names the package commit (the field workflowSoftwareIdentity() reads).
+      - name: "The installed MultiScholaR names the package commit (Config/MultiScholaR/SourceCommit)"
+        id: sourcecommit
+        if: ${{ !cancelled() && steps.stamp.outcome == 'success' }}
+        run: |
+          value="$("$MOVED/bin/Rscript" --vanilla -e 'cat(utils::packageDescription("MultiScholaR", lib.loc = .Library, fields = "Config/MultiScholaR/SourceCommit"))')"
+          echo "T4 installed Config/MultiScholaR/SourceCommit: $value; package commit (MSR_PACKAGE_COMMIT): ${MSR_PACKAGE_COMMIT:-unset}"
+          if [ -n "${MSR_PACKAGE_COMMIT:-}" ] && [ "$value" = "$MSR_PACKAGE_COMMIT" ]; then
+            echo "T4 ok: the installed package names the package commit"
+          else
+            echo "::error::T4: the installed package names '$value', not the package commit '${MSR_PACKAGE_COMMIT:-unset}'"; exit 1
+          fi
 
       - name: The Electron shell (directory target)
         id: electron
@@ -358,17 +390,27 @@ jobs:
           # from the bundle is tested on the laptop (a real login session), not on a hosted runner.
           reason=""
           if [ "${{ matrix.runner }}" = ubuntu-24.04 ]; then reason="D-Bus"; fi
-          # KIT-156: twice, without and with the test setting (MULTISCHOLAR_TEST_FEATURES=1, packaging/electron/entry.R):
+          # KIT-156: without and with the test setting (MULTISCHOLAR_TEST_FEATURES=1, packaging/electron/entry.R):
           # off, R reports nothing and the Integration tile is the placeholder; on, both pre-release options are TRUE.
-          for features in off on; do
-            value=""; if [ "$features" = on ]; then value=1; fi
+          # KIT-176: pass 1 also checks the package commit and the About lines (T2); pass 3, test setting off, runs the
+          # application with ELECTRON_RUN_AS_NODE=1 (T1). Every pass runs whatever the one before gave; the step fails
+          # after the third if any failed. Values enter the inner command as positional parameters (the outer sudo
+          # resets the environment): $6 the test setting, $7 its name, $8 ELECTRON_RUN_AS_NODE, then extra arguments.
+          lifecycle_pass() { # <label suffix> <test setting value> <on|off> <ELECTRON_RUN_AS_NODE value> [lifecycle-test arguments]
             sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -E -u "$0" env PATH="$1" HOME="$2" \
-              ${6:+MULTISCHOLAR_TEST_FEATURES=$6} \
+              ${6:+MULTISCHOLAR_TEST_FEATURES=$6} ${8:+ELECTRON_RUN_AS_NODE=$8} \
               xvfb-run -a node packaging/electron/lifecycle-test.js "$3" "$4/multischolar" "$4" --expect-launcher process \
-              --network-closed --expect-test-features "$7" ${5:+--expect-reason "$5"}' \
-              "$(id -un)" "$PATH" "$HOME" "Linux, installed with install.sh in the job that built it, ${{ matrix.runner }}, test setting $features" \
-              "$DEST" "$reason" "$value" "$features"
-          done
+              --network-closed --expect-test-features "$7" ${5:+--expect-reason "$5"} "${@:9}"' \
+              "$(id -un)" "$PATH" "$HOME" "Linux, installed with install.sh in the job that built it, ${{ matrix.runner }}, $1" \
+              "$DEST" "$reason" "$2" "$3" "$4" "${@:5}"
+          }
+          status=0
+          lifecycle_pass "test setting off" "" off "" --expect-package-commit "${MSR_PACKAGE_COMMIT:-}" || status=1
+          lifecycle_pass "test setting on" 1 on "" || status=1
+          lifecycle_pass "test setting off, ELECTRON_RUN_AS_NODE=1" "" off 1 --expect-run-as-node-variable 1 || status=1
+          echo "the fuses of the installed binary ($DEST/app/multischolar):"
+          (cd packaging/electron && npx --no-install electron-fuses read --app "$DEST/app/multischolar") || status=1
+          exit "$status"
 
       # The Linux library path (outcome.md, defect 2): the installed application's R on this runner and
       # in containers of other distributions; bash and sh started from R, a child R, the entry.
@@ -525,7 +567,10 @@ jobs:
       run:
         shell: pwsh
     steps:
+      # KIT-176: the whole history, for the package commit (packaging/package-commit.sh stops on a shallow clone).
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Paths
         run: |
@@ -552,6 +597,20 @@ jobs:
           "RUSTUP_TOOLCHAIN=1.99.1" >> $env:GITHUB_ENV
           $env:RUSTUP_TOOLCHAIN = '1.99.1'
           rustc --version; cargo --version; rustup show
+
+      # KIT-176 (D1, VAL-31): the package commit, before the library is installed. The job stops on a shallow clone, a
+      # HEAD that is not the build commit, or a changed or untracked file under the package paths.
+      - name: "The package commit: where the build left the release line, if the package source there equals what was built"
+        shell: bash
+        run: |
+          echo "packaging/package-commit.sh sha256 $(sha256sum packaging/package-commit.sh | cut -d' ' -f1)"
+          source packaging/package-commit.sh
+          package_tree_checks "$GITHUB_SHA"
+          result=$(package_commit_rule HEAD "origin/$RELEASE_LINE")
+          package_commit="${result%% *}"
+          on_release_line="${result##* }"
+          echo "package commit $package_commit; on the release line ($RELEASE_LINE): $on_release_line; build commit $GITHUB_SHA"
+          { echo "MSR_PACKAGE_COMMIT=$package_commit"; echo "MSR_PACKAGE_ON_RELEASE_LINE=$on_release_line"; } >> "$GITHUB_ENV"
 
       - name: "Install the library: snapshot binaries, the source builds, the internal packages attempted (read token), MultiScholaR from this commit"
         env:
@@ -701,6 +760,18 @@ jobs:
           Get-Content packaging\electron\stamp\VERSION.json
           "VERSION=$version" >> $env:GITHUB_ENV
 
+      # KIT-176 T4 (D4): the installed package names the package commit (the field workflowSoftwareIdentity() reads).
+      - name: "The installed MultiScholaR names the package commit (Config/MultiScholaR/SourceCommit)"
+        id: sourcecommit
+        if: ${{ !cancelled() && steps.stamp.outcome == 'success' }}
+        run: |
+          $value = & "$env:MOVED\R\bin\Rscript.exe" --vanilla -e "cat(utils::packageDescription('MultiScholaR', lib.loc = .Library, fields = 'Config/MultiScholaR/SourceCommit'))"
+          if ($LASTEXITCODE -ne 0) { throw "T4: R could not read the installed DESCRIPTION" }
+          $expected = if ($env:MSR_PACKAGE_COMMIT) { $env:MSR_PACKAGE_COMMIT } else { 'unset' }
+          "T4 installed Config/MultiScholaR/SourceCommit: $value; package commit (MSR_PACKAGE_COMMIT): $expected"
+          if (-not $env:MSR_PACKAGE_COMMIT -or "$value" -cne $env:MSR_PACKAGE_COMMIT) { throw "T4: the installed package names '$value', not the package commit '$expected'" }
+          "T4 ok: the installed package names the package commit"
+
       - name: The Electron shell and the NSIS per-user installer
         id: electron
         if: ${{ !cancelled() && needs.plan.outputs.full == 'true' && steps.stamp.outcome == 'success' }}
@@ -770,14 +841,27 @@ jobs:
             New-NetFirewallRule -DisplayName "kit-134 block $($program.FullName)" -Direction Outbound -Action Block -Program $program.FullName | Out-Null
           }
           "outbound traffic blocked for the installed application's $($programs.Count) programs"
-          node packaging\electron\lifecycle-test.js "Windows, installed per user in the job that built it, windows-2025, test setting off" $env:APP $env:APP_FOLDER --expect-launcher process --expect-test-features off
-          if ($LASTEXITCODE -ne 0) { throw "the lifecycle test failed" }
+          # KIT-176: pass 1 also checks the package commit and the About lines (T2); pass 3, test setting off, runs the
+          # application with ELECTRON_RUN_AS_NODE=1 (T1). Every pass runs whatever the one before gave; the step fails
+          # after the third if any failed.
+          node packaging\electron\lifecycle-test.js "Windows, installed per user in the job that built it, windows-2025, test setting off" $env:APP $env:APP_FOLDER --expect-launcher process --expect-test-features off --expect-package-commit "$env:MSR_PACKAGE_COMMIT"
+          $status1 = $LASTEXITCODE
           # KIT-156: again with the test setting (MULTISCHOLAR_TEST_FEATURES=1, packaging/electron/entry.R).
           $env:MULTISCHOLAR_TEST_FEATURES = '1'
           node packaging\electron\lifecycle-test.js "Windows, installed per user in the job that built it, windows-2025, test setting on" $env:APP $env:APP_FOLDER --expect-launcher process --expect-test-features on
-          $status = $LASTEXITCODE
+          $status2 = $LASTEXITCODE
           Remove-Item Env:MULTISCHOLAR_TEST_FEATURES
-          if ($status -ne 0) { throw "the lifecycle test with the test setting failed" }
+          $env:ELECTRON_RUN_AS_NODE = '1'
+          node packaging\electron\lifecycle-test.js "Windows, installed per user in the job that built it, windows-2025, test setting off, ELECTRON_RUN_AS_NODE=1" $env:APP $env:APP_FOLDER --expect-launcher process --expect-test-features off --expect-run-as-node-variable 1
+          $status3 = $LASTEXITCODE
+          Remove-Item Env:ELECTRON_RUN_AS_NODE
+          "the fuses of the installed binary ($env:APP):"
+          Push-Location packaging\electron
+          npx --no-install electron-fuses read --app "$env:APP"
+          $fuses = $LASTEXITCODE
+          Pop-Location
+          "lifecycle passes: test setting off $status1; on $status2; off with ELECTRON_RUN_AS_NODE=1 $status3; fuse read $fuses"
+          if ($status1 -ne 0 -or $status2 -ne 0 -or $status3 -ne 0 -or $fuses -ne 0) { throw "a lifecycle pass or the fuse read failed" }
 
       # P6 (D4: no DIA on Windows): the lanes without DIA, in process with the installed application's R in the
       # shell's environment; the network is cut for the installed programs by the lifecycle step's rules.
