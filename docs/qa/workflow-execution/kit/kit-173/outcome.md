@@ -132,7 +132,22 @@ here: no test is adjusted, no product code changes, A4 is not re-judged by the i
 result; if it fails on its own mechanics with no comparison produced, the mechanics may be fixed and the run sent once
 more, both recorded.
 
-Result: __CROSS__
+Result (run C3, 45149307211; `cross/`). Observed:
+
+| | T7i1 (run 45141146856) | (a) both processes C | (b) both processes runner locale |
+|---|---|---|---|
+| Collation, capture (base) | C.UTF-8 (Rscript, runner locale) | C | C.UTF-8 |
+| Collation, replay (head) | C (inside a testthat test) | C | C.UTF-8 |
+| Eleven expectations | 9 pass; result tables and pathway files fail | 9 pass; result tables and pathway files fail | 9 pass; result tables and pathway files fail |
+| DA table, capture vs replay | not recorded | 70 rows, same order | 70 rows, same order |
+| Gene vectors to `enricher` | not recorded | calls 1 (25) and 2 (10): same sequence | same sequence |
+| TERM2GENE, TERM2NAME hashes | identical | identical | identical |
+| `geneID` cells that differ | up table rows 1 to 4 shown (message cut at 12 lines) | 11: up GO:0009085, GO:0005829, GO:0042802, GO:0042803, GO:0005737; down GO:0070180, GO:0022625, GO:0002181, GO:0003735, GO:0005737, GO:0005829; each the same set of proteins | the same 11 |
+
+Pattern: different in both (a) and (b). By the rule fixed above, the difference is KIT-173's. Observed beside it: the
+inputs this control records (the DA table's order, the gene vectors, the TERM2GENE and TERM2NAME content hashes, which
+compare names and values as text in row order) are identical at capture and replay; the reordering happens inside or
+after the enrichment call. Which code path does it was not determined here (no further run; nothing decided).
 
 ## Acceptance criteria
 
