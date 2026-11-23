@@ -68,8 +68,10 @@ slotDifferences <- function(lane, state, a, b) {
 readDa <- function(manager) tryCatch(withDIAStateScope(manager, function() {
     reference <- manager$.context$snapshot$da_results
     if (is.null(reference)) return(NULL)
-    manifest <- hydrateSavedWorkflowEntity(manager$.context$store, reference)$value
-    as.data.frame(readDIAContrastOutput(manifest$results[[1L]], "da_proteins_long")$da_proteins_long)
+    # As the record reads it (`buildWorkflowAnalysisRecord`): the head's DA manifest, then the contrast's long table.
+    manifest <- resolveWorkflowStateValue(manager$.context, reference)
+    long <- readDIAContrastOutput(manifest$results[[1L]], "da_proteins_long")$da_proteins_long
+    if (is.null(long)) NULL else as.data.frame(long)
 }), error = function(e) NULL)
 readDa <- (function(f) { environment(f) <- env; f })(readDa)
 
@@ -125,7 +127,12 @@ for (lane in names(lanes)) {
         api("writeWorkflowAnalysisRecord")(manager, json)
         states_first <- lapply(stats::setNames(first$states, first$states), function(name)
             api("withDIAStateScope")(manager, function() manager$getState(name)))
-        da_first <- first$da
+        # The first run's DA table read from its store the same way as the replay's (the in-memory read kept beside it).
+        da_memory <- first$da
+        da_first <- readDa(manager)
+        put(lane, "da_first_store_read_rows", if (is.null(da_first)) "not read" else nrow(da_first))
+        put(lane, "da_first_store_equals_memory_by_name", !is.null(da_first) && setequal(names(da_first), names(da_memory)) &&
+            nrow(da_first) == nrow(da_memory))
         store_root <- dirname(manager$.context$store$directory)
         put(lane, "store_root_is_root", identical(normalizePath(store_root), normalizePath(root)))
         api("closeDIAStateAdapter")(manager)
@@ -167,28 +174,71 @@ for (lane in names(lanes)) {
         history_equal <- identical(as.character(replay$states), states)
         put(lane, "history_equal", history_equal)
         later <- setdiff(states, preconditions)
-        same <- vapply(later, function(state) identical(replayed[[state]], states_first[[state]]), logical(1))
+        # VAL-79 diagnostic: every replayed state read after the replayed DA, from the replay store reopened at its end
+        # (the first run's states were read after its DA).
+        identity <- api("readSavedStoreIdentity")(file.path(prepared, ".workflow-entities", "store.json"))
+        reopened <- api("newDIAStateAdapter")(api("newWorkflowEntityStore")(prepared, identity$project_id, identity$workflow_id),
+            reopen = TRUE)
+        replayed_end <- lapply(stats::setNames(later, later), function(name)
+            api("withDIAStateScope")(reopened, function() reopened$getState(name)))
+        da_end <- readDa(reopened)
+        api("closeDIAStateAdapter")(reopened)
+        same <- vapply(later, function(state) identical(replayed_end[[state]], states_first[[state]]), logical(1))
+        same_on_step <- vapply(later, function(state) identical(replayed[[state]], states_first[[state]]), logical(1))
         put(lane, "states_compared", length(later))
-        put(lane, "states_identical", sum(same))
+        put(lane, "states_identical_after_da", sum(same))
+        put(lane, "states_identical_on_step", sum(same_on_step))
         put(lane, "states_not_identical", paste(later[!same], collapse = ","))
-        for (state in later[!same]) put(lane, paste0("slots_differing:", state),
-            paste(slotDifferences(lane, state, states_first[[state]], replayed[[state]]), collapse = ","))
-        da_same <- !is.null(da_replayed) && identical(da_replayed, da_first)
-        put(lane, "da_replayed_read", !is.null(da_replayed))
-        put(lane, "da_identical", da_same)
-        if (!is.null(da_replayed) && !da_same) {
-            put(lane, "da_columns_equal", identical(names(da_replayed), names(da_first)))
-            numeric <- intersect(names(da_first)[vapply(da_first, is.numeric, logical(1))], names(da_replayed))
-            if (nrow(da_replayed) == nrow(da_first) && length(numeric)) put(lane, "da_max_abs_difference",
-                signif(max(vapply(numeric, function(n) max(abs(da_replayed[[n]] - da_first[[n]]), na.rm = TRUE), 0)), 6L))
+        allowed <- TRUE
+        for (state in later[!same]) {
+            slots <- slotDifferences(lane, state, states_first[[state]], replayed_end[[state]])
+            put(lane, paste0("slots_differing:", state), paste(slots, collapse = ","))
+            a <- states_first[[state]]@args
+            b <- replayed_end[[state]]@args
+            entries <- union(names(a), names(b))
+            entries <- entries[!vapply(entries, function(n) identical(a[[n]], b[[n]]), logical(1))]
+            put(lane, paste0("args_entries_differing:", state), paste(entries, collapse = ","))
+            inner <- if (identical(entries, "daAnalysisUI")) {
+                x <- a$daAnalysisUI
+                y <- b$daAnalysisUI
+                fields <- union(names(x), names(y))
+                fields[!vapply(fields, function(n) identical(x[[n]], y[[n]]), logical(1))]
+            } else NA_character_
+            put(lane, paste0("daAnalysisUI_fields_differing:", state), paste(inner, collapse = ","))
+            if (!identical(slots, "args") || !identical(entries, "daAnalysisUI") || !identical(inner, "timestamp")) allowed <- FALSE
         }
+        da_replayed <- da_end %||% da_replayed
+        put(lane, "da_replayed_read", !is.null(da_replayed))
+        put(lane, "da_identical", !is.null(da_replayed) && identical(da_replayed, da_first))
+        da_by_name <- FALSE
+        if (!is.null(da_replayed)) {
+            put(lane, "da_columns_first_order", paste(names(da_first), collapse = ","))
+            put(lane, "da_columns_replay_order", paste(names(da_replayed), collapse = ","))
+            put(lane, "da_column_sets_equal", setequal(names(da_first), names(da_replayed)))
+            put(lane, "da_rows", paste(nrow(da_first), nrow(da_replayed)))
+            id <- if ("Protein.Ids" %in% names(da_first)) "Protein.Ids" else names(da_first)[[1L]]
+            key <- function(table) paste(table[[id]], table[["comparison"]] %||% "")
+            first <- da_first[order(key(da_first)), , drop = FALSE]
+            again <- da_replayed[order(key(da_replayed)), , drop = FALSE]
+            rows_same <- nrow(first) == nrow(again) && identical(key(first), key(again))
+            put(lane, "da_row_keys_equal", rows_same)
+            put(lane, "da_row_order_equal", identical(key(da_first), key(da_replayed)))
+            columns <- intersect(names(da_first), names(da_replayed))
+            differing <- if (rows_same) columns[!vapply(columns, function(n) identical(unname(first[[n]]), unname(again[[n]])),
+                logical(1))] else columns
+            put(lane, "da_columns_differing_by_name", paste(differing, collapse = ","))
+            da_by_name <- rows_same && setequal(names(da_first), names(da_replayed)) && !length(differing)
+        }
+        put(lane, "da_equal_by_name", da_by_name)
+        put(lane, "only_settings_timestamp_and_column_order", history_equal && allowed && da_by_name)
         origin <- kit$kitFingerprintStore(file.path(store_root, ".workflow-entities"), api)
         again <- kit$kitFingerprintStore(file.path(prepared, ".workflow-entities"), api)
         as_populations <- function(fingerprints) lapply(fingerprints$states, function(x) list(fingerprint = x))
         mismatches <- as.vector(kit$kitReproduceMismatches(as_populations(origin), as_populations(again)))
         put(lane, "kit_fingerprint_mismatches", if (length(mismatches)) paste(mismatches, collapse = ",") else "none")
-        if (history_equal && all(same) && da_same) "identical" else if (history_equal) "in_order_not_identical" else
-            "history_differs"
+        if (history_equal && all(same) && identical(da_replayed, da_first)) "identical" else
+            if (history_equal && allowed && da_by_name) "in_order_settings_timestamp_and_column_order_only" else
+            if (history_equal) "in_order_not_identical" else "history_differs"
     }), error = function(e) {
         calls <- vapply(utils::tail(sys.calls(), 8L), function(call) substr(paste(deparse(call, nlines = 1L), collapse = " "),
             1L, 120L), "")

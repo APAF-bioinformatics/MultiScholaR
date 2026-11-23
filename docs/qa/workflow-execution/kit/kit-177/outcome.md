@@ -76,3 +76,41 @@ answer on F3.
 - Why the DA long table's column names differ between the first run's read and the replay's read.
 - The prepared tests and fix: never run; no claim about them.
 - Proteome Discoverer's default "Reporter Abundance Based On" setting (F2: not found in Thermo's pages read).
+
+## F3 diagnostic run (owner's decision VAL-79, 2026-11-24), declared before it is sent
+
+- **Purpose.** Tell the moment of capture from a replay difference. The replayed `correlation_filtered` is read after
+  the replayed DA (the replay store reopened at its end), as the first run's was read after its DA; the DA long table is
+  compared column by column by name (rows aligned by protein), with both reads' column orders recorded.
+- **Binding.** Run branch `run-k177-f3d` = `v0.9-staging` 55710a87 (R/ as shipped, KIT-172 and KIT-173 merged) plus
+  the changed `replay-check.R`; nothing else differs. Script entry `timeout_minutes` 45; ceiling 1 core-hour (one
+  scripts job: set-up 10 + about 5 minutes).
+- **Decision (VAL-79).** If on both lanes the only differences are `@args$daAnalysisUI` (its timestamp) and the DA
+  table's column order: T5 compares data slots and DA columns by name, the ticket says so (History, VAL-79), and the
+  work continues. Any other difference: stop and report to the owner. One mechanics rerun at most (VAL-54); a
+  comparison produced is a result and is not re-run.
+
+**F3 diagnostic, run 45265502101** (commit 7194105d on `run-k177-f3d` = staging 55710a87 plus `replay-check.R` and
+`route.R` of this branch; 11.7 job-minutes = 0.78 core-hours; `f3d/replay.tsv`). States: on both lanes 5 of 6 later
+states identical; `correlation_filtered` differs only in `@args$daAnalysisUI`, and inside it only in `timestamp`, read
+after the replayed DA as before it. The kit fingerprint: no mismatch. DA table: **not compared**: the replay's table
+read back from the reopened replay store returned no rows and no columns (`da_rows 397 0`), so no column could be
+compared by name. Diagnosis from the code: the script read the manifest with `hydrateSavedWorkflowEntity(...)$value`,
+whereas the record reads it with `resolveWorkflowStateValue` (`R/utils_workflow_analysis_record.R:494-495`); on the
+reopened owner the contrast entry it handed `readDIAContrastOutput` was not a contrast reference, so the long table came
+back empty. This is the mechanics of the script's read, with no DA comparison produced.
+
+**Mechanics rerun (the one VAL-79 and VAL-54 allow), declared before sending.** The only change: `readDa` reads the
+manifest as the record does (`resolveWorkflowStateValue`), and the first run's DA table is read from its own store the
+same way (the in-memory read recorded beside it), so both sides are read by one path. No expected value, comparison or
+stop rule changes; the state comparison is not altered. Same binding form (run branch at staging 55710a87 plus the
+script), same ceiling (1 core-hour), same decision as above.
+
+**F3 diagnostic, mechanics rerun, run 45267978186** (commit 016b426a; 12.5 job-minutes = 0.83 core-hours;
+`f3d2/replay.tsv`). On both lanes: replayed history equal to the record's; 5 of 6 later states identical, and
+`correlation_filtered` differs only in `@args$daAnalysisUI$timestamp`; the DA long table read the same way on both
+sides is `identical()` (397 rows, the same columns in the same order); the kit fingerprint finds no mismatch.
+**Result: only the stored DA settings' timestamp differs.** Under VAL-79 the work continues: T5 compares the states'
+data slots and `@args` without that timestamp, and the DA table by column name (rows aligned by protein); the ticket
+says so (History, revision 1.6, VAL-79). This describes in-process records; nothing here is claimed for GUI-made
+records (KIT-180 R0d).
