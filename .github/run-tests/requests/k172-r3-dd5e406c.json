@@ -1,0 +1,38 @@
+{
+  "requested_by": "KIT-172 R3: correction pass after R2: the corrected tests and QC helpers; the frozen-UI re-dump (7(b)) again",
+  "label": "KIT-172 R3 dd5e406c: corrected files, re-dump",
+  "package_commit": "dd5e406c0832b77c4f0d5caf13efa7f2cd91b854",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit172-log2-rule.R",
+    "test-kit172-downstream.R",
+    "test-omic-gui-config.R",
+    "test-metab-01-qc-metrics-characterization.R",
+    "test-lipid-01-qc-filtering-helpers.R",
+    "test-metab-qc-shared.R",
+    "test-omics-qc-core.R",
+    "test-omic-qc-module.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-172/redump-norm-ui.R",
+      "args": [
+        "k172-redump"
+      ],
+      "env": {},
+      "out": "k172-redump",
+      "out_pattern": "\\.(R|tsv)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
