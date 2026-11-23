@@ -43,9 +43,23 @@ script copied to `g1d/` (aggregates, column names and digests only, checked befo
 reproduction holds, base reproduction fails (8a4c2dd5 on the runner against the oracle's 80cfedaa),
 so `limpa_da_last_digits` is not admitted on G1D alone. `prot_dia_limpa`: awaiting D19 (owner).
 
+### T0a (group a tests only): run 45122558749 at 525f9733
+
+Observed: `msrval` (no R code) installs; all 53 group (a) tests error with "could not find function"
+(`t0/t0a-harness-tests.tsv`, `t0/t0a-harness-failures.txt`). Scripts job 13.2 min, 13.7 job-minutes
+with the results job: 0.91 core-hours of T0's 2 expected / 6 ceiling. The script's `out` comes back in
+the run's `scripts` artifact (not `results`): `gh run download <id> -n scripts`.
+
+Test corrected after T0a (recorded): T-M3 now passes `n_min = 1`, as 10.1's preamble states for every
+hand case (the T0a version omitted it, so the 10-feature floor would have made the value NA).
+`test-coverage.R` (pass bands, the regime summary, small regime runs) was written with the coverage
+code and has no failing-first run.
+
 ## Next
 
-Group a: tests-only commit, then the T0 request for it.
+T1a: the group (a) implementation (`utils.R`, `score.R`, `metrics.R`, `intervals.R`, `baseline.R`,
+`coverage.R`), tests passing, `covr`, `lintr`, f_sim on regime C3 and a cost probe of every T-COV
+family (T2 is sized on these).
 
 ## Not checked
 

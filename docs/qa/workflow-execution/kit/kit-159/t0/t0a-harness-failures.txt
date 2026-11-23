@@ -1,0 +1,159 @@
+== test-baseline.R :: T-BASE: median and no normalisation; t equals a direct limma fit; zeros become NA (1 not passed)
+Error in `valBaselineArm(q, baseDesign(), c(B_vs_A = "B-A"), normalise = "median")`: could not find function "valBaselineArm"
+
+== test-baseline.R :: T-BASE-filter: a key enters a contrast by that contrast's two groups only (1 not passed)
+Error in `valBaselineArm(q, design, contrasts, normalise = "none")`: could not find function "valBaselineArm"
+
+== test-baseline.R :: T-BASE-batch: a balanced batch term leaves the fold changes unchanged (1 not passed)
+Error in `valBaselineArm(q, baseDesign(batch = c(1, 2, 1, 2)), c(B_vs_A = "B-A"), normalise = "none", batch = "batch")`: could not find function "valBaselineArm"
+
+== test-baseline.R :: the baseline refuses a contrast group below min_per_group (1 not passed)
+Error in `valBaselineArm(baseQuant(), d, c(B_vs_A = "B-A"), normalise = "none")`: could not find function "valBaselineArm"
+
+== test-baseline.R :: the counts baseline runs voom-limma after filterByExpr and TMM (1 not passed)
+Error in `valBaselineArm(counts, design, c(B_vs_A = "B-A"), data_type = "counts")`: could not find function "valBaselineArm"
+
+== test-classify.R :: T-CLS: the four outcomes, no_worse and inclusive ends (1 not passed)
+Error in `valClassify(iv(lo, hi), margin = 0.01, higher_is_better = TRUE, regimes = reg8, ...)`: could not find function "valClassify"
+
+== test-classify.R :: T-CLS: refusals and a one-arm comparison against a fixed value (1 not passed)
+Error in `valClassify(iv(-0.005, 0.008), margin = NULL, higher_is_better = TRUE, regimes = reg8)`: could not find function "valClassify"
+
+== test-classify.R :: T-CLS: a within-run interval decides only when declared on that comparison (1 not passed)
+Error in `valNewInterval(ci_low = lo, ci_high = hi, method = method, n_units = n, conf = 0.95, scope = scope, class = class, status = status)`: could not find function "valNewInterval"
+
+== test-classify.R :: T-CLS-regime: no regime, no harness regime for the class, flagged without consent (1 not passed)
+Error in `valNewInterval(ci_low = lo, ci_high = hi, method = method, n_units = n, conf = 0.95, scope = scope, class = class, status = status)`: could not find function "valNewInterval"
+
+== test-classify.R :: T-CLS-compound: conjunctions, worse_when, controls and guards (1 not passed)
+Error in `valClassify(iv(lo, hi), margin = 0.01, higher_is_better = TRUE, regimes = reg8, ...)`: could not find function "valClassify"
+
+== test-classify.R :: T-CLS-compound: a guard requiring match, and a contradicted guard (1 not passed)
+Error in `valClassify(iv(lo, hi), margin = 0.01, higher_is_better = TRUE, regimes = reg8, ...)`: could not find function "valClassify"
+
+== test-intervals.R :: T-ORD: order-statistic intervals and their achieved levels (1 not passed)
+Error in `valInterval(c(-0.02, -0.01, 0, 0.01, 0.01, 0.02, 0.03, 0.04), method = "exact_median", conf = 0.95)`: could not find function "valInterval"
+
+== test-intervals.R :: T-PT: paired t on eight per-unit differences (1 not passed)
+Error in `valInterval(d8, method = "paired_t", conf = 0.95)`: could not find function "valInterval"
+
+== test-intervals.R :: T-JK-1: the delete-one jackknife of the mean has SE sd / sqrt(n) (1 not passed)
+Error in `valJackknife(values = d8, statistic = mean, form = "unit", conf = 0.95)`: could not find function "valJackknife"
+
+== test-intervals.R :: T-JK-2: jackknife from full and deletion values (1 not passed)
+Error in `valJackknife(full = 0.031, deletions = c(0.028, 0.035, 0.03, 0.033), form = "replicate", conf = 0.95)`: could not find function "valJackknife"
+
+== test-intervals.R :: T-JK-2-bias: the bias estimate and its flag against half the margin (1 not passed)
+Error in `valJackknife(full = 0.031, deletions = c(0.028, 0.035, 0.03, 0.033), form = "replicate", conf = 0.95, margin = 0.002)`: could not find function "valJackknife"
+
+== test-intervals.R :: T-JK-log: the log transform and an undefined deletion (1 not passed)
+Error in `valJackknife(full = 0.05, deletions = c(0.04, 0.06, 0.05, 0.05), form = "replicate", conf = 0.95, transform = "log")`: could not find function "valJackknife"
+
+== test-intervals.R :: T-JK-crit: a declared critical value may be larger than t, never smaller (1 not passed)
+Error in `valJackknife(full = 0.031, deletions = del, form = "replicate", conf = 0.95, critical = 3)`: could not find function "valJackknife"
+
+== test-intervals.R :: T-JK-3: the jackknife of a median is refused (1 not passed)
+Error in `valJackknife(values = d8, statistic = stats::median, form = "unit")`: could not find function "valJackknife"
+
+== test-intervals.R :: the jackknife needs four deletions; dependent units are refused (1 not passed)
+Error in `valJackknife(full = 0.031, deletions = c(0.028, 0.035, 0.03), form = "replicate")`: could not find function "valJackknife"
+
+== test-intervals.R :: T-CP: Clopper-Pearson intervals (1 not passed)
+Error in `valInterval(20, n = 21, method = "clopper_pearson", conf = 0.95)`: could not find function "valInterval"
+
+== test-intervals.R :: T-ONE: the one-sample paired t against a fixed value (1 not passed)
+Error in `valInterval(d8, method = "paired_t", conf = 0.95, fixed = 0)`: could not find function "valInterval"
+
+== test-intervals.R :: T-WIL: Wilson intervals without an event floor (1 not passed)
+Error in `valInterval(21, n = 21, method = "wilson", conf = 0.95)`: could not find function "valInterval"
+
+== test-intervals.R :: T-NEW: Newcombe's paired interval, method 10 (1 not passed)
+Error in `valInterval(c(both = 18, first_only = 2, second_only = 0, neither = 1), method = "newcombe_paired", conf = 0.95)`: could not find function "valInterval"
+
+== test-intervals.R :: T-BOOT-1: the same seed and B give identical intervals (1 not passed)
+Error in `valBootstrap(w, stat, B = 2000, conf = 0.95, seed = 159001)`: could not find function "valBootstrap"
+
+== test-intervals.R :: T-BOOT-2: a constant paired shift gives a zero-width interval at the shift (1 not passed)
+Error in `valBootstrap(w, stat, B = 2000, conf = 0.95, seed = 159002)`: could not find function "valBootstrap"
+
+== test-intervals.R :: T-BOOT-3: strata keep their sizes; clusters are resampled whole (1 not passed)
+Error in `valBootstrap(w, stat, B = 2000, conf = 0.95, seed = 159003, strata = "class")`: could not find function "valBootstrap"
+
+== test-intervals.R :: T-BOOT-4: B below 50 / tail probability is refused (1 not passed)
+Error in `valBootstrap(w, function(d) mean(d$err_a), B = 1000, conf = 0.95, seed = 1)`: could not find function "valBootstrap"
+
+== test-intervals.R :: T-REF-FILL: the least favourable fill decides whether the verdict stands (1 not passed)
+Error in `valRefusalFill(d, tolerance = 1, higher_is_better = TRUE, margin = 0.01, method = "paired_t", conf = 0.95, regimes = reg)`: could not find function "valRefusalFill"
+
+== test-intervals.R :: refusals under 30 units: one is dropped with a substitute required, two are not evaluable (1 not passed)
+Error in `valRefusalFill(c(d8[1:7], NA), tolerance = 0, higher_is_better = TRUE, margin = 0.01, method = "paired_t", conf = 0.95, regimes = reg)`: could not find function "valRefusalFill"
+
+== test-metrics.R :: T-M1/M2: bias and median absolute error with one missing estimate (1 not passed)
+Error in `valBias(s, class = "ecoli", n_min = 1)`: could not find function "valBias"
+
+== test-metrics.R :: T-M2-pooled: pooled median and the mean of per-class medians (1 not passed)
+Error in `valMedianAbsError(s, class = NULL, n_min = 1)`: could not find function "valMedianAbsError"
+
+== test-metrics.R :: T-M3: linear and geometric CV; a group with one finite value is skipped (1 not passed)
+Error in `valCv(x, g, scale = "linear")`: could not find function "valCv"
+
+== test-metrics.R :: T-M4/M5/M6: confusion, FDP and sensitivity in the own and union views (1 not passed)
+Error in `valConfusion(tm4Rows(), alpha = 0.05, call_rule = "own", positive_rule = "expected")`: could not find function "valConfusion"
+
+== test-metrics.R :: T-M4-sign: a wrong-sign call is a false discovery and its key stays a miss (1 not passed)
+Error in `valConfusion(tm4Rows(estimate_f2 = -0.8), alpha = 0.05, call_rule = "own")`: could not find function "valConfusion"
+
+== test-metrics.R :: T-M4-nostat: a finite estimate without p is quantified, not testable, and a union miss (1 not passed)
+Error in `valConfusion(s, alpha = 0.05, call_rule = "own")`: could not find function "valConfusion"
+
+== test-metrics.R :: T-M5-zero: no call gives FDP 0; an all-null truth with one call gives FDP 1 (1 not passed)
+Error in `valFdp(valConfusion(s, alpha = 0.05))`: could not find function "valFdp"
+
+== test-metrics.R :: T-M7: partial AUC from the origin, normalised by fpr_max, and the null floor (1 not passed)
+Error in `valPartialAuc(s, fpr_max = 0.5, min_nulls_in_region = 0, min_events = 1)`: could not find function "valPartialAuc"
+
+== test-metrics.R :: T-M7-ties: a tied block is one straight segment (1 not passed)
+Error in `valPartialAuc(s, fpr_max = 0.5, min_nulls_in_region = 0, min_events = 1)`: could not find function "valPartialAuc"
+
+== test-metrics.R :: T-M7-sign: a wrong-sign positive ranks by its one-sided p near the end (1 not passed)
+Error in `valPartialAuc(s, fpr_max = 0.5, min_nulls_in_region = 0, min_events = 1)`: could not find function "valPartialAuc"
+
+== test-metrics.R :: T-M7-prev: 5 nulls in the region are refused at the default floor (1 not passed)
+Error in `valPartialAuc(s, fpr_max = 0.1, min_events = 1)`: could not find function "valPartialAuc"
+
+== test-metrics.R :: T-M8: Pearson and Spearman correlations (1 not passed)
+Error in `valCorrelation(s, method = "pearson", n_min = 1)`: could not find function "valCorrelation"
+
+== test-metrics.R :: T-M9: Quartet SNR from scores (1 not passed)
+Error in `valSnrFromScores(scores, weights = c(0.8, 0.2), groups = c("A", "A", "B", "B"))`: could not find function "valSnrFromScores"
+
+== test-metrics.R :: T-M9-pca: the matrix form equals the score form with prcomp's weights (1 not passed)
+Error in `valQuartetSnr(x, groups, weights = "rounded5")`: could not find function "valQuartetSnr"
+
+== test-metrics.R :: T-M10: Matthews correlation from the confusion table (1 not passed)
+Error in `valConfusion(s, alpha = 0.05)`: could not find function "valConfusion"
+
+== test-metrics.R :: T-M10-sign: a wrong-sign key counts in FP and FN (1 not passed)
+Error in `valConfusion(tm4Rows(estimate_f2 = -0.8), alpha = 0.05)`: could not find function "valConfusion"
+
+== test-metrics.R :: M11: coverage counts quantified, testable and called keys per class (1 not passed)
+Error in `valCoverage(s, x, alpha = 0.05)`: could not find function "valCoverage"
+
+== test-score.R :: T-BH: the matched rule is Benjamini-Hochberg of the raw p (1 not passed)
+Error in `valScoreTable(arms, truth, universe, alpha = 0.05)`: could not find function "valScoreTable"
+
+== test-score.R :: T-BH-assay: one family per assay; the same key in two assays is two rows (1 not passed)
+Error in `valScoreTable(arms, truth, universe, alpha = 0.05)`: could not find function "valScoreTable"
+
+== test-score.R :: T-VIEW: intersection, union, and union metrics unchanged by a third arm (1 not passed)
+Error in `valScoreTable(list(a1 = a1, a2 = a2), truth, universe)`: could not find function "valScoreTable"
+
+== test-score.R :: T-KEY: a duplicate in one arm and an unmapped key in another leave the comparison (1 not passed)
+Error in `valScoreTable(list(a1 = a1, a2 = a2), truth, universe)`: could not find function "valScoreTable"
+
+== test-score.R :: T-VIEW: an own-view comparison between arms is refused by the classifier (1 not passed)
+Error in `valNewInterval(ci_low = -0.005, ci_high = 0.008, method = "paired_t", n_units = 8, conf = 0.95)`: could not find function "valNewInterval"
+
+== test-score.R :: T-BLIND-1: two truths with one key set and label multiset blind identically (1 not passed)
+Error in `valBlindTruth(t1, seed = 159101)`: could not find function "valBlindTruth"
+

@@ -38,12 +38,12 @@ test_that("T-M2-pooled: pooled median and the mean of per-class medians", {
 test_that("T-M3: linear and geometric CV; a group with one finite value is skipped", {
     x <- matrix(c(10, 11, 12), nrow = 1, dimnames = list("f1", c("s1", "s2", "s3")))
     g <- c("a", "a", "a")
-    expect_equal(valCv(x, g, scale = "linear")$value, 0.6546536707, tolerance = 1e-9)
-    expect_equal(valCv(x, g, scale = "geometric")$value, 0.7853704045, tolerance = 1e-9)
+    expect_equal(valCv(x, g, scale = "linear", n_min = 1)$value, 0.6546536707, tolerance = 1e-9)
+    expect_equal(valCv(x, g, scale = "geometric", n_min = 1)$value, 0.7853704045, tolerance = 1e-9)
     x2 <- matrix(c(10, 11, 12, 9, NA), nrow = 1,
                  dimnames = list("f1", c("s1", "s2", "s3", "s4", "s5")))
     g2 <- c("a", "a", "a", "b", "b")
-    expect_equal(valCv(x2, g2, scale = "linear")$value, 0.6546536707, tolerance = 1e-9)
+    expect_equal(valCv(x2, g2, scale = "linear", n_min = 1)$value, 0.6546536707, tolerance = 1e-9)
 })
 
 test_that("T-M4/M5/M6: confusion, FDP and sensitivity in the own and union views", {

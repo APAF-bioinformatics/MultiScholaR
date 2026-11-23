@@ -1,2 +1,3 @@
 step	run_name	run_id	package_commit	purpose	result	observed	jobs	job_minutes	core_hours	ceiling_core_hours
 G1D	k159-g1d-c9c4a412	45121359461	c9c4a412d239738e412dcce2ea7d035a217f1b95	prot_dia_limpa DA table 28d5a4be vs 12d68ca7 (section 2.1; run by another agent, recorded here)	valid; class not admitted	same DA table on both trees (393 rows, 0 differences, 0 calls changed); head reproduction holds (8a4c2dd5), base fails (8a4c2dd5, oracle 80cfedaa); D19 with the owner	1 (scripts)		1.1	12
+T0a	k159-t0a-525f9733	45122558749	525f9733e5e61dd27d14edd844e676e99284f2fd	group (a) tests only, shown failing (no msrval/R)	as expected	53 tests, 53 error with could not find function (t0/t0a-harness-tests.tsv); msrval installs; script 2 s	1 (scripts)	13.7	0.91	6 (T0 row)

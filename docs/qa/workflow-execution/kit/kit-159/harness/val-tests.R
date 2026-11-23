@@ -45,6 +45,13 @@ status <- system2(r_bin, c("CMD", "INSTALL", "--no-multiarch", paste0("--library
 say("install msrval: exit ", status)
 if (!identical(as.integer(status), 0L)) quit(status = 2L)
 .libPaths(c(val_lib, .libPaths()))
+src <- sort(list.files(pkg_dir, recursive = TRUE, full.names = TRUE))
+utils::write.table(data.frame(path = sub(paste0("^", harness_dir, "/"), "", src),
+                              sha256 = vapply(src, function(f) digest::digest(file = f,
+                                                                             algo = "sha256"),
+                                              character(1))),
+                   file.path(out_dir, "code-hashes.tsv"), sep = "\t", quote = FALSE,
+                   row.names = FALSE)
 Sys.setenv(R_LIBS = paste(c(val_lib, .libPaths()), collapse = .Platform$path.sep))
 
 # --- msrval's own tests ---
@@ -101,6 +108,7 @@ if (has("--covr")) {
 if (has("--lint")) {
     linters <- lintr::linters_with_defaults(
         line_length_linter = lintr::line_length_linter(100L),
+        indentation_linter = lintr::indentation_linter(indent = 4L),
         object_name_linter = lintr::object_name_linter(styles = c("camelCase", "snake_case"))
     )
     lints <- lintr::lint_dir(file.path(pkg_dir, "R"), linters = linters)
