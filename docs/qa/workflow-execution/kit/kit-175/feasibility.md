@@ -1,0 +1,70 @@
+# KIT-175 feasibility: gate F3 (stopped for the owner)
+
+Ticket revision 1.4. Branch `kit-175-uniprot-annotation`, from `v0.9-staging` 271cd3c4 (a ledger-only commit after
+b052b824: `git diff --stat b052b824..271cd3c4` touches `docs/methods-decision-ledger.md` only, so the ticket's line
+numbers hold).
+
+## F3: what was run
+
+- Run 45118859939 (`run-tests kit175-f3-gate-4546b50b`), one scripts job on a GitHub-hosted runner (ubuntu-22.04,
+  R 4.6.1), network open. Script `f3-uniprot-pages.R` at commit 4546b50b; job wall time 13.9 minutes, about 0.92
+  core-hours (ticket R0b: expected 1, ceiling 4).
+- Lists: one request each to `https://rest.uniprot.org/uniprotkb/stream` for `proteome:UP000005640 AND reviewed:true`
+  (20,414 entries) and `proteome:UP000000625` (4,403 entries), fields `accession,organism_id`; sorted by accession on
+  the runner; the first 2,000 (human) and 1,000 (E. coli) taken. All 3,000 match the UniProt accession pattern; the
+  organism ids of the taken entries are 9606 and 83333 only (`f3-lists.tsv`). The accession lists are not kept.
+- Annotation requests: exactly as `directUniprotDownload` sends them at the base commit (`httr::GET` on
+  `/uniprotkb/search`, query `(<25 accessions joined by OR>) AND organism_id:<taxon>`, `format=tsv`, the same ten
+  fields, no `size`, time-out 30 s, 1 s apart, one attempt): 80 human requests under 9606, 40 E. coli under 83333.
+  Per request the script wrote counts, header presence and the release only (`f3-requests.tsv`, `f3-summary.txt`).
+
+## F3: what was observed
+
+| Measure | Human (80 requests) | E. coli (40 requests) |
+|---|---|---|
+| status 200 | 80 | 40 |
+| `X-Total-Results` present | 80 | 40 |
+| requests whose `X-Total-Results` exceeds the rows returned | 76 | 39 |
+| hits beyond the rows returned, summed | 9,956 | 568 |
+| largest `X-Total-Results` of one request | 559 | 68 |
+| `Link` header present (all `rel="next"`) | 76 | 39 |
+| rows returned per request | 25 (every request) | 25 (every request) |
+| requested accessions not returned | 0 | 0 |
+| returned entries outside the requested accessions | 0 | 0 |
+| `Retry-After` seen | none (no refusal occurred) | none |
+| release header | 2026_04 | 2026_04 |
+
+## Case reached: (ii), stop for the owner
+
+The ticket's stop rule: "Any request with more hits than rows: stop for the owner". 115 of 120 requests had more hits
+than rows, so the work stopped here, before any test or product code was committed. Case (iii) was not reached (the
+header is present on every TSV answer); case (iv): no refusal occurred, so no `Retry-After` value was seen.
+
+What the numbers show (observed): every one of the 3,000 requested accessions came back on the first page, the first
+page held only requested entries, and the extra hits are further entries that the query matches beyond the 25
+requested ones, served on later pages (`Link: rel="next"`).
+
+Inferred, not verified (later pages were not fetched): the extra hits are entries that the bare accession terms
+match in other fields (for example a secondary accession or a cross-reference that names a requested accession). On
+these lists the first page was never short of a requested accession; the default page size (25) equals the chunk
+size, and UniProt appears to rank the exact accession matches first.
+
+Consequence for the ticket as written (item 1a): a 200 answer whose `X-Total-Results` exceeds its rows counts as a
+failed request and its rows are dropped (C02). On these real lists that rule would mark 96 % of requests failed and
+drop their rows although every requested accession was returned: nearly every real retrieval would end
+"incomplete" with most of its annotation discarded. Implementing item 1a as written would turn a correct
+annotation into a near-empty one.
+
+Questions for the owner (the ticket's stop rule says a query change is a separate ticket, D7):
+
+1. Truncation signal: keep `X-Total-Results > rows` (as written, unusable on real lists), or replace it, for
+   example by "a requested accession is absent from the answer and the answer has `Link: rel=\"next\"`", which
+   detects a cut that loses a requested entry and did not fire on any of these 120 requests.
+2. Query: field-qualified terms (`accession:<acc>`) or a page size of 500 would make the hit count equal the
+   requested entries; both change the query, which the ticket puts out of scope (D7).
+
+## Not run
+
+- F1 (R0): not run; it follows the gate.
+- The re-run of 2.3's greps on the implementation base: the base differs from b052b824 by a ledger row only; not
+  re-run.
