@@ -63,6 +63,8 @@ env:
   PBS_PYTHON: "3.12.16"
   PANDOC_VERSION: "3.11"
   NODE_VERSION: "22"
+  # KIT-176: the release line the package commit is taken from (packaging/package-commit.sh).
+  RELEASE_LINE: v0.9-staging
 
 jobs:
   plan:
@@ -196,7 +198,7 @@ jobs:
               ubuntu:22.04 sleep infinity
             # the build script's sudo, for a root that needs none (and keeps its environment)
             docker exec msr-build sh -c 'printf "#!/bin/sh\nexec \"\$@\"\n" > /usr/local/bin/sudo && chmod 0755 /usr/local/bin/sudo'
-            names="R_VERSION RUNNER_TEMP BUNDLE TOOLS_LIB OUT RLIB PBS_RELEASE PBS_PYTHON PANDOC_VERSION GITHUB_STEP_SUMMARY R_LIBS_USER R_LIBS_SITE MSR_INTERNAL GITHUB_PAT"
+            names="R_VERSION RUNNER_TEMP BUNDLE TOOLS_LIB OUT RLIB PBS_RELEASE PBS_PYTHON PANDOC_VERSION GITHUB_STEP_SUMMARY R_LIBS_USER R_LIBS_SITE MSR_INTERNAL GITHUB_PAT MSR_PACKAGE_COMMIT MSR_PACKAGE_ON_RELEASE_LINE GITHUB_SHA"
             echo "BUILD_EXEC=docker exec$(printf ' --env %s' $names) msr-build" >> "$GITHUB_ENV"
           fi
 
@@ -214,6 +216,20 @@ jobs:
 
       - name: Rust for the internal packages (rustc 1.88 or later)
         run: $BUILD_EXEC bash packaging/linux/build.sh rust
+
+      # KIT-176 (D1, VAL-31): the package commit, before the library is installed. The job stops on a shallow clone, a
+      # HEAD that is not the build commit, or a changed or untracked file under the package paths.
+      - name: "The package commit: where the build left the release line, if the package source there equals what was built"
+        shell: bash
+        run: |
+          echo "packaging/package-commit.sh sha256 $(sha256sum packaging/package-commit.sh | cut -d' ' -f1)"
+          source packaging/package-commit.sh
+          package_tree_checks "$GITHUB_SHA"
+          result=$(package_commit_rule HEAD "origin/$RELEASE_LINE")
+          package_commit="${result%% *}"
+          on_release_line="${result##* }"
+          echo "package commit $package_commit; on the release line ($RELEASE_LINE): $on_release_line; build commit $GITHUB_SHA"
+          { echo "MSR_PACKAGE_COMMIT=$package_commit"; echo "MSR_PACKAGE_ON_RELEASE_LINE=$on_release_line"; } >> "$GITHUB_ENV"
 
       - name: "Install the library: snapshot binaries, the source builds, the internal packages (read token), MultiScholaR from this commit"
         env:
@@ -581,6 +597,20 @@ jobs:
           "RUSTUP_TOOLCHAIN=1.99.1" >> $env:GITHUB_ENV
           $env:RUSTUP_TOOLCHAIN = '1.99.1'
           rustc --version; cargo --version; rustup show
+
+      # KIT-176 (D1, VAL-31): the package commit, before the library is installed. The job stops on a shallow clone, a
+      # HEAD that is not the build commit, or a changed or untracked file under the package paths.
+      - name: "The package commit: where the build left the release line, if the package source there equals what was built"
+        shell: bash
+        run: |
+          echo "packaging/package-commit.sh sha256 $(sha256sum packaging/package-commit.sh | cut -d' ' -f1)"
+          source packaging/package-commit.sh
+          package_tree_checks "$GITHUB_SHA"
+          result=$(package_commit_rule HEAD "origin/$RELEASE_LINE")
+          package_commit="${result%% *}"
+          on_release_line="${result##* }"
+          echo "package commit $package_commit; on the release line ($RELEASE_LINE): $on_release_line; build commit $GITHUB_SHA"
+          { echo "MSR_PACKAGE_COMMIT=$package_commit"; echo "MSR_PACKAGE_ON_RELEASE_LINE=$on_release_line"; } >> "$GITHUB_ENV"
 
       - name: "Install the library: snapshot binaries, the source builds, the internal packages attempted (read token), MultiScholaR from this commit"
         env:

@@ -351,6 +351,33 @@ if (!is_windows && identical(Sys.getenv("MSR_BUNDLE_RUNPATH"), "1")) {
 # (3) MultiScholaR from the checkout.
 rInstall(checkout)
 
+# KIT-176 (D4, VAL-31): the bundle lane's package commit (MSR_PACKAGE_COMMIT, packaging/package-commit.sh) is written
+# into the installed package as Config/MultiScholaR/SourceCommit, in DESCRIPTION and Meta/package.rds (which
+# packageDescription and so workflowSoftwareIdentity() read), as tools/profiling/run_workflow_kit.sh does, and read
+# back. Unset (the run-tests lane's snapshot-library action), nothing is written.
+package_commit <- Sys.getenv("MSR_PACKAGE_COMMIT")
+if (nzchar(package_commit)) {
+    if (!grepl("^[0-9a-f]{40}$", package_commit)) {
+        stop(sprintf("MSR_PACKAGE_COMMIT must be the 40-character package commit, not '%s'", package_commit))
+    }
+    installed_package <- file.path(lib, "MultiScholaR")
+    meta <- file.path(installed_package, "Meta", "package.rds")
+    package_meta <- readRDS(meta)
+    package_meta$DESCRIPTION["Config/MultiScholaR/SourceCommit"] <- package_commit
+    saveRDS(package_meta, meta)
+    cat("Config/MultiScholaR/SourceCommit: ", package_commit, "\n", sep = "", file = file.path(installed_package, "DESCRIPTION"),
+        append = TRUE)
+    written <- c(DESCRIPTION = unname(read.dcf(file.path(installed_package, "DESCRIPTION"),
+        fields = "Config/MultiScholaR/SourceCommit")[1L, 1L]),
+        package.rds = unname(utils::packageDescription("MultiScholaR", lib.loc = lib,
+            fields = "Config/MultiScholaR/SourceCommit")))
+    if (!all(written %in% package_commit)) {
+        stop(sprintf("Config/MultiScholaR/SourceCommit reads back as %s, not %s",
+            paste(names(written), written, sep = " ", collapse = ", "), package_commit))
+    }
+    cat(sprintf("MultiScholaR: Config/MultiScholaR/SourceCommit %s written into the installed package\n", package_commit))
+}
+
 installed <- utils::installed.packages(lib.loc = lib, fields = c("RemoteSha", "RemoteUsername", "RemoteRepo"))
 missing <- setdiff(c(closure, "MultiScholaR"), rownames(installed))
 if (length(missing)) stop("not installed: ", paste(missing, collapse = ", "))
