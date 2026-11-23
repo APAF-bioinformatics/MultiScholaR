@@ -1,0 +1,4 @@
+Var1	Freq
+	800
+only 11 biological samples are measured in every view (fewer than 16); factor models need more samples | The total number of samples is very small for learning 5 factors.       Try to reduce the number of factors to obtain meaningful results. It should not exceed ~3.	800
+only 6 biological samples are measured in every view (fewer than 16); factor models need more samples | Some group(s) have less than 10 samples, MOFA will have little power to learn meaningful factors for these group(s)... | The total number of samples is very small for learning 5 factors.       Try to reduce the number of factors to obtain meaningful results. It should not exceed ~1.	800

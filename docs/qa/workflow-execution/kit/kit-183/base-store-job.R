@@ -23,7 +23,7 @@ store_out <- file.path(work, "base-store")
 capture <- file.path(head, "docs/qa/workflow-execution/kit/kit-183/capture-base-store.R")
 code <- sprintf("suppressMessages(pkgload::load_all('%s', quiet = TRUE, export_all = TRUE, helpers = FALSE)); source('%s')",
     base_tree, capture)
-status <- system2(rscript, c("--vanilla", "-e", shQuote(code), "--args", shQuote(store_out)), stdout = file.path(out_dir,
+status <- system2(rscript, c("--vanilla", "-e", shQuote(code), shQuote(store_out)), stdout = file.path(out_dir,
     "capture.log"), stderr = file.path(out_dir, "capture.log"))
 stopifnot(status == 0L, dir.exists(file.path(store_out, "store", ".workflow-entities")))
 

@@ -1,0 +1,481 @@
+n	view	kind	class	rho_key	ratio
+6	metabolomics_LCMS	F_ind	C0		1.00134944406892
+12	metabolomics_LCMS	F_ind	C0		1.00346174567215
+20	metabolomics_LCMS	F_ind	C0		0.998236798018991
+6	proteomics	F_ind	C0		1.00479913318208
+12	proteomics	F_ind	C0		1.00392915321875
+20	proteomics	F_ind	C0		0.999479959174608
+6	transcriptomics	F_ind	C0		1.00296358824618
+12	transcriptomics	F_ind	C0		1.00202177626133
+20	transcriptomics	F_ind	C0		1.0033911629065
+6	metabolomics_LCMS	F_main	C0		1.00097618847163
+12	metabolomics_LCMS	F_main	C0		0.998301211068904
+20	metabolomics_LCMS	F_main	C0		0.995511779765789
+6	proteomics	F_main	C0		1.00216136303578
+12	proteomics	F_main	C0		0.998884376159376
+20	proteomics	F_main	C0		0.998967289956991
+6	transcriptomics	F_main	C0		0.998339856197346
+12	transcriptomics	F_main	C0		0.998131880962449
+20	transcriptomics	F_main	C0		1.00666455757145
+6	metabolomics_LCMS	F_none	C0		1.00164236324284
+12	metabolomics_LCMS	F_none	C0		1.00767305412301
+20	metabolomics_LCMS	F_none	C0		0.995278255434083
+6	proteomics	F_none	C0		0.99822403513946
+12	proteomics	F_none	C0		1.00155875238405
+20	proteomics	F_none	C0		1.00080238315304
+6	transcriptomics	F_none	C0		0.99768017326105
+12	transcriptomics	F_none	C0		0.998635755464662
+20	transcriptomics	F_none	C0		0.998496209662365
+6	metabolomics_LCMS	F_weak	C0		0.996042877589596
+12	metabolomics_LCMS	F_weak	C0		1.00530817312152
+20	metabolomics_LCMS	F_weak	C0		1.00477812595744
+6	proteomics	F_weak	C0		1.00041798474576
+12	proteomics	F_weak	C0		0.997437613058389
+20	proteomics	F_weak	C0		0.998876776456206
+6	transcriptomics	F_weak	C0		0.997368390400912
+12	transcriptomics	F_weak	C0		1.00014066917941
+20	transcriptomics	F_weak	C0		0.999103103452573
+6	metabolomics_LCMS	F_ind	C2		0.971392048763531
+12	metabolomics_LCMS	F_ind	C2		0.964120023848198
+20	metabolomics_LCMS	F_ind	C2		0.974734242371002
+6	proteomics	F_ind	C2		0.913222118486521
+12	proteomics	F_ind	C2		0.965200348823301
+20	proteomics	F_ind	C2		0.973046753953961
+6	transcriptomics	F_ind	C2		0.951832880028217
+12	transcriptomics	F_ind	C2		0.963304896696751
+20	transcriptomics	F_ind	C2		0.950400177792021
+6	metabolomics_LCMS	F_main	C2		0.655640440024133
+12	metabolomics_LCMS	F_main	C2		0.47102156806201
+20	metabolomics_LCMS	F_main	C2		0.337315662693067
+6	proteomics	F_main	C2		0.614966155353427
+12	proteomics	F_main	C2		0.443700972893612
+20	proteomics	F_main	C2		0.324903287434091
+6	transcriptomics	F_main	C2		0.653226709394736
+12	transcriptomics	F_main	C2		0.488140942314595
+20	transcriptomics	F_main	C2		0.329256377314413
+6	metabolomics_LCMS	F_none	C2		1.09105473808442
+12	metabolomics_LCMS	F_none	C2		1.00683833790454
+20	metabolomics_LCMS	F_none	C2		1.03788177151374
+6	proteomics	F_none	C2		1.09569547094528
+12	proteomics	F_none	C2		0.912123841844936
+20	proteomics	F_none	C2		0.758757067135366
+6	transcriptomics	F_none	C2		1.09069900164927
+12	transcriptomics	F_none	C2		1.03235029697621
+20	transcriptomics	F_none	C2		0.999673538899895
+6	metabolomics_LCMS	F_weak	C2		1.07155519058739
+12	metabolomics_LCMS	F_weak	C2		1.05419231343314
+20	metabolomics_LCMS	F_weak	C2		1.04445458025321
+6	proteomics	F_weak	C2		0.914500381430205
+12	proteomics	F_weak	C2		0.871180412182314
+20	proteomics	F_weak	C2		0.74921013839659
+6	transcriptomics	F_weak	C2		0.987234741491137
+12	transcriptomics	F_weak	C2		0.883893492925401
+20	transcriptomics	F_weak	C2		0.739250614190003
+6	metabolomics_LCMS	F_ind	C3		0.928968954464432
+12	metabolomics_LCMS	F_ind	C3		0.953692252180938
+20	metabolomics_LCMS	F_ind	C3		0.953569154391636
+6	metabolomics_LCMS	F_main	C3		0.639636448879775
+12	metabolomics_LCMS	F_main	C3		0.465744507038749
+20	metabolomics_LCMS	F_main	C3		0.331971003782852
+6	metabolomics_LCMS	F_none	C3		1.01482758127078
+12	metabolomics_LCMS	F_none	C3		1.03087941522263
+20	metabolomics_LCMS	F_none	C3		1.04276704111173
+6	metabolomics_LCMS	F_weak	C3		1.01580616622675
+12	metabolomics_LCMS	F_weak	C3		1.00955838892949
+20	metabolomics_LCMS	F_weak	C3		1.0389718494083
+6	metabolomics_LCMS	F_ind	C4		0.934449772038786
+12	metabolomics_LCMS	F_ind	C4		0.94340229826225
+20	metabolomics_LCMS	F_ind	C4		0.965717424914513
+6	proteomics	F_ind	C4		1.27902858581556
+12	proteomics	F_ind	C4		1.18993931349
+20	proteomics	F_ind	C4		1.1239266394312
+6	transcriptomics	F_ind	C4		1.65615056794406
+12	transcriptomics	F_ind	C4		1.40687649538767
+20	transcriptomics	F_ind	C4		1.22591545675015
+6	metabolomics_LCMS	F_main	C4		0.642241052347374
+12	metabolomics_LCMS	F_main	C4		0.461444181941056
+20	metabolomics_LCMS	F_main	C4		0.336903931847504
+6	proteomics	F_main	C4		0.858763399050734
+12	proteomics	F_main	C4		0.576173947255686
+20	proteomics	F_main	C4		0.39159067160642
+6	transcriptomics	F_main	C4		1.18710885738066
+12	transcriptomics	F_main	C4		0.768078255577936
+20	transcriptomics	F_main	C4		0.465984407605293
+6	metabolomics_LCMS	F_none	C4		1.0402279510391
+12	metabolomics_LCMS	F_none	C4		1.00271113717176
+20	metabolomics_LCMS	F_none	C4		1.0170074234704
+6	proteomics	F_none	C4		1.50587114519839
+12	proteomics	F_none	C4		1.14235196295642
+20	proteomics	F_none	C4		0.859467587955535
+6	transcriptomics	F_none	C4		1.84411458494238
+12	transcriptomics	F_none	C4		1.51827511143796
+20	transcriptomics	F_none	C4		1.27450359930093
+6	metabolomics_LCMS	F_weak	C4		1.0130846559076
+12	metabolomics_LCMS	F_weak	C4		1.03350566439687
+20	metabolomics_LCMS	F_weak	C4		1.03476291532738
+6	proteomics	F_weak	C4		1.25455494763718
+12	proteomics	F_weak	C4		1.07658525610142
+20	proteomics	F_weak	C4		0.891584757258735
+6	transcriptomics	F_weak	C4		1.68309752009773
+12	transcriptomics	F_weak	C4		1.3001370110761
+20	transcriptomics	F_weak	C4		0.969840073184109
+6	metabolomics_LCMS	F_ind	Pdown		1.15738345074256
+12	metabolomics_LCMS	F_ind	Pdown		1.11189857541147
+20	metabolomics_LCMS	F_ind	Pdown		1.08069880308807
+6	proteomics	F_ind	Pdown		1.12277980342522
+12	proteomics	F_ind	Pdown		1.07826874195006
+20	proteomics	F_ind	Pdown		1.04135520050506
+6	transcriptomics	F_ind	Pdown		1.07674270860385
+12	transcriptomics	F_ind	Pdown		1.04770658130132
+20	transcriptomics	F_ind	Pdown		1.00428836059531
+6	metabolomics_LCMS	F_main	Pdown		1.84114640948168
+12	metabolomics_LCMS	F_main	Pdown		2.30029489469708
+20	metabolomics_LCMS	F_main	Pdown		2.6206077525464
+6	proteomics	F_main	Pdown		1.7432910489141
+12	proteomics	F_main	Pdown		2.09883270105685
+20	proteomics	F_main	Pdown		2.37249871371829
+6	transcriptomics	F_main	Pdown		1.68425153542758
+12	transcriptomics	F_main	Pdown		1.99425132371935
+20	transcriptomics	F_main	Pdown		2.24245947916019
+6	metabolomics_LCMS	F_none	Pdown		0.950073584354685
+12	metabolomics_LCMS	F_none	Pdown		0.937469530210992
+20	metabolomics_LCMS	F_none	Pdown		0.9125123893152
+6	proteomics	F_none	Pdown		1.01373662591701
+12	proteomics	F_none	Pdown		0.818641736711366
+20	proteomics	F_none	Pdown		0.644698671537167
+6	transcriptomics	F_none	Pdown		0.941384035797206
+12	transcriptomics	F_none	Pdown		0.900856270588335
+20	transcriptomics	F_none	Pdown		0.850816966246469
+6	metabolomics_LCMS	F_weak	Pdown		0.969184154693795
+12	metabolomics_LCMS	F_weak	Pdown		0.948756602052352
+20	metabolomics_LCMS	F_weak	Pdown		0.922353009900255
+6	proteomics	F_weak	Pdown		0.85140554051418
+12	proteomics	F_weak	Pdown		0.786570478138325
+20	proteomics	F_weak	Pdown		0.661046357797112
+6	transcriptomics	F_weak	Pdown		0.854222415368801
+12	transcriptomics	F_weak	Pdown		0.775959855656296
+20	transcriptomics	F_weak	Pdown		0.639529011250564
+6	metabolomics_LCMS	F_ind	Pup		1.13986948210864
+12	metabolomics_LCMS	F_ind	Pup		1.13240560406318
+20	metabolomics_LCMS	F_ind	Pup		1.08161537057205
+6	proteomics	F_ind	Pup		1.13319263977214
+12	proteomics	F_ind	Pup		1.06670711368284
+20	proteomics	F_ind	Pup		1.03927505824111
+6	transcriptomics	F_ind	Pup		1.08103265568297
+12	transcriptomics	F_ind	Pup		1.02913604078164
+20	transcriptomics	F_ind	Pup		1.0037438198507
+6	metabolomics_LCMS	F_main	Pup		1.83124841649005
+12	metabolomics_LCMS	F_main	Pup		2.26783165571592
+20	metabolomics_LCMS	F_main	Pup		2.59820852954811
+6	proteomics	F_main	Pup		1.72585773796585
+12	proteomics	F_main	Pup		2.09887270271596
+20	proteomics	F_main	Pup		2.35842302255327
+6	transcriptomics	F_main	Pup		1.69091564200285
+12	transcriptomics	F_main	Pup		1.93572914003785
+20	transcriptomics	F_main	Pup		2.23969727863114
+6	metabolomics_LCMS	F_none	Pup		0.9705492827348
+12	metabolomics_LCMS	F_none	Pup		0.942551407862644
+20	metabolomics_LCMS	F_none	Pup		0.908789987319697
+6	proteomics	F_none	Pup		1.01947371152127
+12	proteomics	F_none	Pup		0.816481196006571
+20	proteomics	F_none	Pup		0.644613022142701
+6	transcriptomics	F_none	Pup		0.947239079879696
+12	transcriptomics	F_none	Pup		0.898771037989328
+20	transcriptomics	F_none	Pup		0.854690454649754
+6	metabolomics_LCMS	F_weak	Pup		0.957603147619631
+12	metabolomics_LCMS	F_weak	Pup		0.95183365892248
+20	metabolomics_LCMS	F_weak	Pup		0.91357057774514
+6	proteomics	F_weak	Pup		0.849729934454594
+12	proteomics	F_weak	Pup		0.786806710625363
+20	proteomics	F_weak	Pup		0.666464712791055
+6	transcriptomics	F_weak	Pup		0.856631207829665
+12	transcriptomics	F_weak	Pup		0.766855250124347
+20	transcriptomics	F_weak	Pup		0.632744736695177
+6	metabolomics_LCMS	F_ind	C1	0.1	0.850939618745004
+12	metabolomics_LCMS	F_ind	C1	0.1	0.867262618551906
+20	metabolomics_LCMS	F_ind	C1	0.1	0.875493836796642
+6	proteomics	F_ind	C1	0.1	0.827974650827223
+12	proteomics	F_ind	C1	0.1	0.867989409661883
+20	proteomics	F_ind	C1	0.1	0.87399815295837
+6	transcriptomics	F_ind	C1	0.1	0.822138459731797
+12	transcriptomics	F_ind	C1	0.1	0.846174876535357
+20	transcriptomics	F_ind	C1	0.1	0.856253648754239
+6	metabolomics_LCMS	F_main	C1	0.1	0.558926396332232
+12	metabolomics_LCMS	F_main	C1	0.1	0.418996824299741
+20	metabolomics_LCMS	F_main	C1	0.1	0.302195342248709
+6	proteomics	F_main	C1	0.1	0.550051970684998
+12	proteomics	F_main	C1	0.1	0.396855868528954
+20	proteomics	F_main	C1	0.1	0.287409518510122
+6	transcriptomics	F_main	C1	0.1	0.550932927573351
+12	transcriptomics	F_main	C1	0.1	0.421425713071025
+20	transcriptomics	F_main	C1	0.1	0.293326269388252
+6	metabolomics_LCMS	F_none	C1	0.1	0.932168616718464
+12	metabolomics_LCMS	F_none	C1	0.1	0.913391449192977
+20	metabolomics_LCMS	F_none	C1	0.1	0.923287924641602
+6	proteomics	F_none	C1	0.1	0.994257000080637
+12	proteomics	F_none	C1	0.1	0.830417888569333
+20	proteomics	F_none	C1	0.1	0.680644308107107
+6	transcriptomics	F_none	C1	0.1	0.944945798004233
+12	transcriptomics	F_none	C1	0.1	0.913222017257587
+20	transcriptomics	F_none	C1	0.1	0.894387755499731
+6	metabolomics_LCMS	F_weak	C1	0.1	0.933752772560093
+12	metabolomics_LCMS	F_weak	C1	0.1	0.940327803121543
+20	metabolomics_LCMS	F_weak	C1	0.1	0.949990695176791
+6	proteomics	F_weak	C1	0.1	0.820557164212716
+12	proteomics	F_weak	C1	0.1	0.789097211316362
+20	proteomics	F_weak	C1	0.1	0.68681989243415
+6	transcriptomics	F_weak	C1	0.1	0.842792575759675
+12	transcriptomics	F_weak	C1	0.1	0.778441712775763
+20	transcriptomics	F_weak	C1	0.1	0.662129055776708
+6	proteomics	F_ind	C1out	0.1	0.459460876759306
+12	proteomics	F_ind	C1out	0.1	0.639467537087099
+20	proteomics	F_ind	C1out	0.1	0.718594551771828
+6	transcriptomics	F_ind	C1out	0.1	0.676711317550439
+12	transcriptomics	F_ind	C1out	0.1	0.758077618248023
+20	transcriptomics	F_ind	C1out	0.1	0.814639854277771
+6	proteomics	F_main	C1out	0.1	0.28937473918605
+12	proteomics	F_main	C1out	0.1	0.268178048947851
+20	proteomics	F_main	C1out	0.1	0.217313940252658
+6	transcriptomics	F_main	C1out	0.1	0.438623597984134
+12	transcriptomics	F_main	C1out	0.1	0.367641123730823
+20	transcriptomics	F_main	C1out	0.1	0.270459017069577
+6	proteomics	F_none	C1out	0.1	0.565952503962221
+12	proteomics	F_none	C1out	0.1	0.614933463579359
+20	proteomics	F_none	C1out	0.1	0.567627175026093
+6	transcriptomics	F_none	C1out	0.1	0.79240624700264
+12	transcriptomics	F_none	C1out	0.1	0.822994469254277
+20	transcriptomics	F_none	C1out	0.1	0.849812964237058
+6	proteomics	F_weak	C1out	0.1	0.46529007901851
+12	proteomics	F_weak	C1out	0.1	0.575083710841742
+20	proteomics	F_weak	C1out	0.1	0.565139295825516
+6	transcriptomics	F_weak	C1out	0.1	0.695350280161663
+12	transcriptomics	F_weak	C1out	0.1	0.700828070365319
+20	transcriptomics	F_weak	C1out	0.1	0.627658944089875
+6	metabolomics_LCMS	F_ind	C4b	0.1	0.850939618745004
+12	metabolomics_LCMS	F_ind	C4b	0.1	0.867262618551906
+20	metabolomics_LCMS	F_ind	C4b	0.1	0.875493836796642
+6	proteomics	F_ind	C4b	0.1	1.10345669468479
+12	proteomics	F_ind	C4b	0.1	1.04201081236541
+20	proteomics	F_ind	C4b	0.1	0.991484180442873
+6	transcriptomics	F_ind	C4b	0.1	1.37436669508873
+12	transcriptomics	F_ind	C4b	0.1	1.20365018556769
+20	transcriptomics	F_ind	C4b	0.1	1.05621087120546
+6	metabolomics_LCMS	F_main	C4b	0.1	0.558926396332232
+12	metabolomics_LCMS	F_main	C4b	0.1	0.418996824299741
+20	metabolomics_LCMS	F_main	C4b	0.1	0.302195342248709
+6	proteomics	F_main	C4b	0.1	0.742028767845769
+12	proteomics	F_main	C4b	0.1	0.497723006985683
+20	proteomics	F_main	C4b	0.1	0.34336790856703
+6	transcriptomics	F_main	C4b	0.1	0.977268882279994
+12	transcriptomics	F_main	C4b	0.1	0.653078647054167
+20	transcriptomics	F_main	C4b	0.1	0.402434473991671
+6	metabolomics_LCMS	F_none	C4b	0.1	0.932168616718464
+12	metabolomics_LCMS	F_none	C4b	0.1	0.913391449192977
+20	metabolomics_LCMS	F_none	C4b	0.1	0.923287924641602
+6	proteomics	F_none	C4b	0.1	1.31636588621722
+12	proteomics	F_none	C4b	0.1	0.993573065183041
+20	proteomics	F_none	C4b	0.1	0.767310383544944
+6	transcriptomics	F_none	C4b	0.1	1.53225734141402
+12	transcriptomics	F_none	C4b	0.1	1.28326268678501
+20	transcriptomics	F_none	C4b	0.1	1.10649203575144
+6	metabolomics_LCMS	F_weak	C4b	0.1	0.933752772560093
+12	metabolomics_LCMS	F_weak	C4b	0.1	0.940327803121543
+20	metabolomics_LCMS	F_weak	C4b	0.1	0.949990695176791
+6	proteomics	F_weak	C4b	0.1	1.08843976499327
+12	proteomics	F_weak	C4b	0.1	0.948660278562538
+20	proteomics	F_weak	C4b	0.1	0.782767176484108
+6	transcriptomics	F_weak	C4b	0.1	1.39972041337472
+12	transcriptomics	F_weak	C4b	0.1	1.0985200886666
+20	transcriptomics	F_weak	C4b	0.1	0.829662895346684
+6	metabolomics_LCMS	F_ind	C1	0.3	0.661037549813984
+12	metabolomics_LCMS	F_ind	C1	0.3	0.680035004558042
+20	metabolomics_LCMS	F_ind	C1	0.3	0.703553440384723
+6	proteomics	F_ind	C1	0.3	0.650423707426709
+12	proteomics	F_ind	C1	0.3	0.671238951069042
+20	proteomics	F_ind	C1	0.3	0.689678229836447
+6	transcriptomics	F_ind	C1	0.3	0.641620070607291
+12	transcriptomics	F_ind	C1	0.3	0.658141569048142
+20	transcriptomics	F_ind	C1	0.3	0.668028723354963
+6	metabolomics_LCMS	F_main	C1	0.3	0.443683092024817
+12	metabolomics_LCMS	F_main	C1	0.3	0.316166153568001
+20	metabolomics_LCMS	F_main	C1	0.3	0.236942450602756
+6	proteomics	F_main	C1	0.3	0.429489187483683
+12	proteomics	F_main	C1	0.3	0.314080790973598
+20	proteomics	F_main	C1	0.3	0.225611870464218
+6	transcriptomics	F_main	C1	0.3	0.432819443798504
+12	transcriptomics	F_main	C1	0.3	0.326262850940775
+20	transcriptomics	F_main	C1	0.3	0.228437325294637
+6	metabolomics_LCMS	F_none	C1	0.3	0.715157785503897
+12	metabolomics_LCMS	F_none	C1	0.3	0.715141134719375
+20	metabolomics_LCMS	F_none	C1	0.3	0.735835846928789
+6	proteomics	F_none	C1	0.3	0.775131352610087
+12	proteomics	F_none	C1	0.3	0.654161437467694
+20	proteomics	F_none	C1	0.3	0.536091254596126
+6	transcriptomics	F_none	C1	0.3	0.730944950516353
+12	transcriptomics	F_none	C1	0.3	0.707091414411348
+20	transcriptomics	F_none	C1	0.3	0.700222988510676
+6	metabolomics_LCMS	F_weak	C1	0.3	0.71755254729936
+12	metabolomics_LCMS	F_weak	C1	0.3	0.710046828716851
+20	metabolomics_LCMS	F_weak	C1	0.3	0.738880383571578
+6	proteomics	F_weak	C1	0.3	0.642559178146503
+12	proteomics	F_weak	C1	0.3	0.614835028170274
+20	proteomics	F_weak	C1	0.3	0.535266588948319
+6	transcriptomics	F_weak	C1	0.3	0.652408227382309
+12	transcriptomics	F_weak	C1	0.3	0.602098888407458
+20	transcriptomics	F_weak	C1	0.3	0.51841438376204
+6	proteomics	F_ind	C1out	0.3	0.400055924108962
+12	proteomics	F_ind	C1out	0.3	0.533054158695343
+20	proteomics	F_ind	C1out	0.3	0.600448772287144
+6	transcriptomics	F_ind	C1out	0.3	0.548952372347724
+12	transcriptomics	F_ind	C1out	0.3	0.609424133696803
+20	transcriptomics	F_ind	C1out	0.3	0.644017037538918
+6	proteomics	F_main	C1out	0.3	0.248595042725146
+12	proteomics	F_main	C1out	0.3	0.226308766783848
+20	proteomics	F_main	C1out	0.3	0.180677337529163
+6	transcriptomics	F_main	C1out	0.3	0.357937282236583
+12	transcriptomics	F_main	C1out	0.3	0.293823627265114
+20	transcriptomics	F_main	C1out	0.3	0.213976251924533
+6	proteomics	F_none	C1out	0.3	0.492323589034857
+12	proteomics	F_none	C1out	0.3	0.515376638684051
+20	proteomics	F_none	C1out	0.3	0.458101860591241
+6	transcriptomics	F_none	C1out	0.3	0.637389218307559
+12	transcriptomics	F_none	C1out	0.3	0.658040505988167
+20	transcriptomics	F_none	C1out	0.3	0.675234616432679
+6	proteomics	F_weak	C1out	0.3	0.401246000011493
+12	proteomics	F_weak	C1out	0.3	0.478434883548086
+20	proteomics	F_weak	C1out	0.3	0.459492974232682
+6	transcriptomics	F_weak	C1out	0.3	0.559692288926966
+12	transcriptomics	F_weak	C1out	0.3	0.557051734750059
+20	transcriptomics	F_weak	C1out	0.3	0.49672704843223
+6	metabolomics_LCMS	F_ind	C4b	0.3	0.661037549813984
+12	metabolomics_LCMS	F_ind	C4b	0.3	0.680035004558042
+20	metabolomics_LCMS	F_ind	C4b	0.3	0.703553440384723
+6	proteomics	F_ind	C4b	0.3	0.799739522048946
+12	proteomics	F_ind	C4b	0.3	0.763956080082921
+20	proteomics	F_ind	C4b	0.3	0.749918657412964
+6	transcriptomics	F_ind	C4b	0.3	0.933204024012803
+12	transcriptomics	F_ind	C4b	0.3	0.845166048606486
+20	transcriptomics	F_ind	C4b	0.3	0.757230628078948
+6	metabolomics_LCMS	F_main	C4b	0.3	0.443683092024817
+12	metabolomics_LCMS	F_main	C4b	0.3	0.316166153568001
+20	metabolomics_LCMS	F_main	C4b	0.3	0.236942450602756
+6	proteomics	F_main	C4b	0.3	0.536077578611134
+12	proteomics	F_main	C4b	0.3	0.373869877372707
+20	proteomics	F_main	C4b	0.3	0.256830224395434
+6	transcriptomics	F_main	C4b	0.3	0.67276622947921
+12	transcriptomics	F_main	C4b	0.3	0.456630607326519
+20	transcriptomics	F_main	C4b	0.3	0.287449241187413
+6	metabolomics_LCMS	F_none	C4b	0.3	0.715157785503897
+12	metabolomics_LCMS	F_none	C4b	0.3	0.715141134719375
+20	metabolomics_LCMS	F_none	C4b	0.3	0.735835846928789
+6	proteomics	F_none	C4b	0.3	0.954744263794138
+12	proteomics	F_none	C4b	0.3	0.740918743686671
+20	proteomics	F_none	C4b	0.3	0.576586957664823
+6	transcriptomics	F_none	C4b	0.3	1.04225449482172
+12	transcriptomics	F_none	C4b	0.3	0.898645145250594
+20	transcriptomics	F_none	C4b	0.3	0.786666774452192
+6	metabolomics_LCMS	F_weak	C4b	0.3	0.71755254729936
+12	metabolomics_LCMS	F_weak	C4b	0.3	0.710046828716851
+20	metabolomics_LCMS	F_weak	C4b	0.3	0.738880383571578
+6	proteomics	F_weak	C4b	0.3	0.786470593221527
+12	proteomics	F_weak	C4b	0.3	0.699597191208126
+20	proteomics	F_weak	C4b	0.3	0.584587118974516
+6	transcriptomics	F_weak	C4b	0.3	0.928830402848179
+12	transcriptomics	F_weak	C4b	0.3	0.774754759431068
+20	transcriptomics	F_weak	C4b	0.3	0.60286557248576
+6	metabolomics_LCMS	F_ind	C1	0.6	0.385923883451366
+12	metabolomics_LCMS	F_ind	C1	0.6	0.399238366245345
+20	metabolomics_LCMS	F_ind	C1	0.6	0.399708506654542
+6	proteomics	F_ind	C1	0.6	0.373989089926691
+12	proteomics	F_ind	C1	0.6	0.391228960416468
+20	proteomics	F_ind	C1	0.6	0.396567069482684
+6	transcriptomics	F_ind	C1	0.6	0.370758744668497
+12	transcriptomics	F_ind	C1	0.6	0.378918993602336
+20	transcriptomics	F_ind	C1	0.6	0.384541425809387
+6	metabolomics_LCMS	F_main	C1	0.6	0.267619694330895
+12	metabolomics_LCMS	F_main	C1	0.6	0.189694273940778
+20	metabolomics_LCMS	F_main	C1	0.6	0.131356159856795
+6	proteomics	F_main	C1	0.6	0.249387689484484
+12	proteomics	F_main	C1	0.6	0.17949853955092
+20	proteomics	F_main	C1	0.6	0.129970264428291
+6	transcriptomics	F_main	C1	0.6	0.250971848421674
+12	transcriptomics	F_main	C1	0.6	0.190303457865893
+20	transcriptomics	F_main	C1	0.6	0.131218318621959
+6	metabolomics_LCMS	F_none	C1	0.6	0.420678231673121
+12	metabolomics_LCMS	F_none	C1	0.6	0.41825704442556
+20	metabolomics_LCMS	F_none	C1	0.6	0.409718194699846
+6	proteomics	F_none	C1	0.6	0.448552150566029
+12	proteomics	F_none	C1	0.6	0.382889184724729
+20	proteomics	F_none	C1	0.6	0.317786650644391
+6	transcriptomics	F_none	C1	0.6	0.425680904960881
+12	transcriptomics	F_none	C1	0.6	0.407630928883579
+20	transcriptomics	F_none	C1	0.6	0.400232882832698
+6	metabolomics_LCMS	F_weak	C1	0.6	0.420842983129324
+12	metabolomics_LCMS	F_weak	C1	0.6	0.418354009771645
+20	metabolomics_LCMS	F_weak	C1	0.6	0.449244400246509
+6	proteomics	F_weak	C1	0.6	0.376363619994549
+12	proteomics	F_weak	C1	0.6	0.353379982691379
+20	proteomics	F_weak	C1	0.6	0.310579198417279
+6	transcriptomics	F_weak	C1	0.6	0.380383300021977
+12	transcriptomics	F_weak	C1	0.6	0.347151238916165
+20	transcriptomics	F_weak	C1	0.6	0.298223680837193
+6	proteomics	F_ind	C1out	0.6	0.269918522909589
+12	proteomics	F_ind	C1out	0.6	0.337668949628148
+20	proteomics	F_ind	C1out	0.6	0.369970850372134
+6	transcriptomics	F_ind	C1out	0.6	0.33419090838913
+12	transcriptomics	F_ind	C1out	0.6	0.36154554933231
+20	transcriptomics	F_ind	C1out	0.6	0.377228795817114
+6	proteomics	F_main	C1out	0.6	0.171287583366958
+12	proteomics	F_main	C1out	0.6	0.14453717180081
+20	proteomics	F_main	C1out	0.6	0.112667410013367
+6	transcriptomics	F_main	C1out	0.6	0.218243119607604
+12	transcriptomics	F_main	C1out	0.6	0.176623974232345
+20	transcriptomics	F_main	C1out	0.6	0.125739224920633
+6	proteomics	F_none	C1out	0.6	0.332589112669735
+12	proteomics	F_none	C1out	0.6	0.326111564421773
+20	proteomics	F_none	C1out	0.6	0.284189503892608
+6	transcriptomics	F_none	C1out	0.6	0.390802246944192
+12	transcriptomics	F_none	C1out	0.6	0.390047238643744
+20	transcriptomics	F_none	C1out	0.6	0.391070864295502
+6	proteomics	F_weak	C1out	0.6	0.274590284626577
+12	proteomics	F_weak	C1out	0.6	0.302955307243172
+20	proteomics	F_weak	C1out	0.6	0.289492325599823
+6	transcriptomics	F_weak	C1out	0.6	0.343903374322284
+12	transcriptomics	F_weak	C1out	0.6	0.329577378762809
+20	transcriptomics	F_weak	C1out	0.6	0.292623415390003
+6	metabolomics_LCMS	F_ind	C4b	0.6	0.385923883451366
+12	metabolomics_LCMS	F_ind	C4b	0.6	0.399238366245345
+20	metabolomics_LCMS	F_ind	C4b	0.6	0.399708506654542
+6	proteomics	F_ind	C4b	0.6	0.42212676066178
+12	proteomics	F_ind	C4b	0.6	0.41736887393054
+20	proteomics	F_ind	C4b	0.6	0.407826490682924
+6	transcriptomics	F_ind	C4b	0.6	0.433053142025718
+12	transcriptomics	F_ind	C4b	0.6	0.412839642449786
+20	transcriptomics	F_ind	C4b	0.6	0.39352073450916
+6	metabolomics_LCMS	F_main	C4b	0.6	0.267619694330895
+12	metabolomics_LCMS	F_main	C4b	0.6	0.189694273940778
+20	metabolomics_LCMS	F_main	C4b	0.6	0.131356159856795
+6	proteomics	F_main	C4b	0.6	0.280479127079823
+12	proteomics	F_main	C4b	0.6	0.199182539337895
+20	proteomics	F_main	C4b	0.6	0.139961780970472
+6	transcriptomics	F_main	C4b	0.6	0.319554826849165
+12	transcriptomics	F_main	C4b	0.6	0.224146387488033
+20	transcriptomics	F_main	C4b	0.6	0.147048103181938
+6	metabolomics_LCMS	F_none	C4b	0.6	0.420678231673121
+12	metabolomics_LCMS	F_none	C4b	0.6	0.41825704442556
+20	metabolomics_LCMS	F_none	C4b	0.6	0.409718194699846
+6	proteomics	F_none	C4b	0.6	0.509711494006125
+12	proteomics	F_none	C4b	0.6	0.39943130679988
+20	proteomics	F_none	C4b	0.6	0.316327054601354
+6	transcriptomics	F_none	C4b	0.6	0.495044346379834
+12	transcriptomics	F_none	C4b	0.6	0.435488505739686
+20	transcriptomics	F_none	C4b	0.6	0.406331062796382
+6	metabolomics_LCMS	F_weak	C4b	0.6	0.420842983129324
+12	metabolomics_LCMS	F_weak	C4b	0.6	0.418354009771645
+20	metabolomics_LCMS	F_weak	C4b	0.6	0.449244400246509
+6	proteomics	F_weak	C4b	0.6	0.414971565071895
+12	proteomics	F_weak	C4b	0.6	0.377634398389374
+20	proteomics	F_weak	C4b	0.6	0.322299089574112
+6	transcriptomics	F_weak	C4b	0.6	0.43414533146186
+12	transcriptomics	F_weak	C4b	0.6	0.378525154863234
+20	transcriptomics	F_weak	C4b	0.6	0.306600159530483

@@ -1,0 +1,4 @@
+n	replicates	completed	did_not_complete	not_started	median_total_seconds	median_train_seconds	decided
+6	800	800	0	0	44.9827737808228	11.7135381698609	TRUE
+12	800	800	0	0	51.3527299165725	17.9967163801193	TRUE
+20	800	800	0	0	48.2341531515121	19.7313486337661	TRUE

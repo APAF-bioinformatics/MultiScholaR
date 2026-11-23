@@ -37,3 +37,21 @@ ceiling becomes 222.67 + 2 x (61.3 - 41.33) = 262.6 core-hours, above the 223 th
   the ticket's "1 GB peak RSS": the process's peak is above 1 GB; the increase during the case is 584 MiB.
 - MOFA2's sample-count warnings: not recorded (written only for a completed replicate).
 - The defect is corrected in `simulate-k183.R` after run 45151737782 (column names only inside the formulas); not run.
+
+## L1 check after the aggregation fix (run 45219821547, package 874f6c45; VAL-54 instrument rule, VAL-64)
+
+Observed: 15 of 15 replicates completed. Time per replicate under four workers: n = 12 57.4 to 60.5 s (training 20 to
+22 s, analysis 35 to 38 s), n = 20 59.2 to 61.6 s, n = 6 53.4 to 60.0 s; the last replicates of two-replicate workers
+31 to 49 s. Within the re-split's 65 s (VAL-64). F3 identical; the memory case as before; the declared failure recorded.
+MOFA2's messages at n = 6 and 12 (n = 12 counts 11 biological samples in every view, the transcriptomics view lacking
+one): "only 6 (11) biological samples are measured in every view (fewer than 16); factor models need more samples",
+"The total number of samples is very small for learning 5 factors. Try to reduce the number of factors to obtain
+meaningful results. It should not exceed ~3.", at n = 6 also "Some group(s) have less than 10 samples, MOFA will have
+little power to learn meaningful factors for these group(s)".
+
+Pools (means over the 5 replicates): proteomics complete features 1,217 (n = 12), 1,118 (n = 20), 1,344 (n = 6), with
+494, 633, 200 ranked features incomplete; metabolomics complete 164, 151, 180, identifiers in U_cam 144, 133, 155;
+transcriptomics 4,000 (no censoring). Classes with fewer than 90 % of their declared sets formed (16 class-size-cell
+cells): proteomics C2 size 30 (n = 20: 0 %), C4 size 100 (n = 12: 60 %, n = 20: 0 %), P-up and P-down size 100
+(n = 20: 80 %); metabolomics P-up and P-down size 10 (40 to 80 %) and 20 (0 %). Redefined in the declaration's dated
+section before S: proteomics C2 sizes 10, 15; proteomics C4 and P sizes 10, 30; metabolomics P size 5.
