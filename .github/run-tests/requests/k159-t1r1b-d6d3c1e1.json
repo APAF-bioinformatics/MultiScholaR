@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 T1 (coordinator, VAL-69): R1 UniProt record wiring at the code (record-uniprot, inputs, licence) with --lint; T1 ceiling 21",
+  "label": "KIT-159 R1 wiring tests at d6d3c1e1",
+  "package_commit": "d6d3c1e120aef8140b1e85bcf1412301389f5cd9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1r1b-out",
+        "--files",
+        "record-uniprot,inputs,licence",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1r1b-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
