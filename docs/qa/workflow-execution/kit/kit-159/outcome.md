@@ -26,32 +26,31 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, VAL-69 work done except R1; read this first)
+## Resume here (state 2026-11-24, R1 in flight; read this first)
 
-Ticket r1.13 (main checkout, section 28; VAL-69).
+Ticket r1.13 (VAL-69). Every msrval test has passed (whole suite 45219635014, corrections
+45225211841 and 45265533254; lintr 0). Rank re-run R (45227824000) done; USAGE and H2 updated
+from it.
 
-**Done (runs in runs.tsv):**
-- T1 whole suite with lint 45219635014 at d946b878: 183 of 184, lintr 0 (A2 met). The one failure
-  (T-PH-8, cluster lookup) and T-RANK-1's defect (effect read from a name) fixed; correction run
-  45225211841 at 1827d420: 20 of 20, lintr 0. Every msrval test has passed at 1827d420's code.
-- Rank re-pin: T0g 45220113873 (fails first, as expected); request R 45227824000 at 1827d420
-  (wall 111 min, 8.34 core-hours): no cell degenerate; effects 0.6 (C4 g 4), 0.5 (C4 g 6), 0.35
-  (C4e g 5), 0.25 (C4e g 14); all four rank regimes offered (pass or conservative; C4e g 14
-  coverage 1.000 at every level). `USAGE.md`'s four rank rows, the pinned
-  `msrval/inst/extdata/coverage-table.tsv` (rank rows replaced, request R) and the H2 row updated
-  from this run only. `t2/coverage-table.tsv` stays T2's evidence.
+**R1 wiring (coordinator's word, 2026-11-24: charged to T1 as unit tests of harness code, VAL-69's
+purpose; T0 was exhausted):** tests only 1992d121, run 45264824991 fails first (0.77); code
+d6d3c1e1 (`valRecordUniprot`, `val-run.R record --uniprot`, `uniprot.tsv` on both allow-lists), run
+45265533254 passes with lintr 0 (0.90).
 
-**Budget:** T0 5.95 of 6; T1 17.42 of 21; T2 26.93 of 54.
+**In flight: R1** (r1.12/r1.13; one run each, two requests, one push), at 69b693af: runs 45268141191
+(`r1a`) and 45268145400 (`r1b`). Each: `val-run.R record lifecycle r1X --uniprot
+lifecycle/uniprot-accessions.tsv`, then `val-run.R pre lifecycle r1X --script lifecycle/r1-pre.R
+--pre-outputs lifecycle/r1-pre-outputs.tsv`. Fetch both (`gh run download <id> -n scripts`), copy
+`val-out/record/r1X/` and `val-out/pre/r1X/` to `kit-159/r1/`, check the open file's size and hash
+against r1.12 (1,086 bytes, 566d7b3d...), and that the two records agree (the twin comparison by
+`valCompareRecords` is L1b's step).
 
-**For KIT-162 (via the coordinator):** C4e g = 5 rank (paired pAUC difference, delete-one-block) is
-offered at every level: `conservative` at 95 % (0.990), `pass` at 97.5 % (0.9935), `conservative`
-from 98.33 %; simulated on a plain-arm pAUC of 0.4 to 0.8 (effect 0.35) and the target 0.024.
+**Budget:** T0 5.95 of 6; T1 19.09 of 21; T2 26.93 of 54; R1 ceiling 4.
 
-**R1 (r1.12) not sent:** materials in `lifecycle/` (draft-inputs.tsv, uniprot-accessions.tsv with
-25 reviewed human accessions, r1-pre.R, r1-pre-outputs.tsv). The record phase does not call
-`valRecordUniprotCache`; wiring it (and an allow-listed record of release and hash) is harness code
-with tests first, and T0 has 0.05 core-hours left. Needs the coordinator's word on where that
-failing-first run is charged (T1 has 3.58 left).
+**For the harness auditor (noted, nothing changed):** in the rank re-run, C4e g = 14 (rank,
+delete-one-block) has simulated coverage 1.000 at every level (no miss in 2,000 simulations) with a
+target of 0.049 (not at a bound, zero-width share 0), so it is `conservative` everywhere under
+r1.13 and offered.
 
 ## Earlier resume record (state at dcc27fb5)
 
