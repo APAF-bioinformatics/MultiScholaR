@@ -622,8 +622,14 @@ runReplicate <- function(n, r, cell_label, design = DESIGN) {
 
 safeReplicate <- function(n, r, cell_label, design = DESIGN) {
     started <- Sys.time()
-    outcome <- tryCatch(runReplicate(n, r, cell_label, design), error = function(e) e)
+    # The error's call stack (the innermost calls) is kept with its message, so a failure can be located.
+    stack <- character()
+    outcome <- tryCatch(withCallingHandlers(runReplicate(n, r, cell_label, design), error = function(e) {
+        calls <- vapply(sys.calls(), function(call) paste(deparse(call, nlines = 1L), collapse = ""), character(1))
+        stack <<- utils::tail(calls, 12L)
+    }), error = function(e) e)
     ok <- !inherits(outcome, "error")
+    if (!ok) outcome$message <- paste(conditionMessage(outcome), "| calls:", paste(substr(stack, 1L, 160L), collapse = " <- "))
     append(data.frame(cell = cell_label, n = n, r = r, status = if (ok) "completed" else "did_not_complete",
         message = if (ok) "" else gsub("[\t\r\n]+", " ", conditionMessage(outcome)),
         train_seconds = if (ok) outcome$train_seconds else NA_real_,

@@ -1,5 +1,5 @@
 {
   "run": "lifecycle",
-  "package_commit": "11545cb37e096814e09c9fd635573bcec7f06e6e",
-  "note": "KIT-183 L1: 5 replicates per cell, F3, memory case, a declared failing replicate"
+  "package_commit": "51ca10b64789d55d6c06395766df6cf2b25276a1",
+  "note": "KIT-183 L1 correction: run 45148992728 found every replicate stopped (\"$ operator is invalid for atomic vectors\"); the replicate now records its call stack"
 }
