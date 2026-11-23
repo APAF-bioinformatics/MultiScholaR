@@ -82,7 +82,8 @@ test_that("metabolomics normalization support helpers preserve current normaliza
 
   expect_false(default_config$itsd$applied)
   expect_identical(default_config$itsd$method, "median")
-  expect_identical(default_config$log2$offset, 1)
+  # KIT-172: plain log2 (offset 0) when the input supplies no offset.
+  expect_identical(default_config$log2$offset, 0)
   expect_identical(default_config$normalization$method, "cyclicloess")
   expect_identical(default_config$ruv$mode, "skip")
   expect_null(default_config$ruv$grouping_variable)
