@@ -67,8 +67,13 @@ The numbers are the simulated coverage, the lowest and highest over the row's da
 statistics (one number where they agree). `coverage-table.tsv` carries the same ends
 (`coverage_min`, `coverage_max`) and, for a row not offered, the condition that failed and on which
 side (`failed_condition`, `failed_side`: `low`, `high`) (5.7, r1.12; computed from the recorded
-detail columns, no rerun). Two rulings on this table wait for the owner (build-points2 points 1 and
-2: the exact-method band at C1 n = 10, and the rank rows); the table stays as classified meanwhile. Levels in per cent: 95, 97.5, 98.33 (m = 3), 98.75 (m =
+detail columns, no rerun). By VAL-69 (r1.13) `exact_median` at n = 10 and 98.33 % and above keeps `fail` (an
+exact binomial tail is a candidate rule only). **The four `rank` rows (C4 g = 4, 6; C4e g = 5, 14)
+come from the rank re-run, request R (run 45227824000 at 1827d420; `t2/t2r-*`)**, with the
+generator re-pinned (group effects scaled by 0.6, 0.5, 0.35 and 0.25 so that the plain arm's mean
+normalised pAUC at FPR 0.01 is in [0.4, 0.8]; second arm the unmoderated ranking), the `degenerate`
+rule (no cell degenerate: zero-width share 0, targets 0.27, 0.18, 0.024, 0.049) and run-level
+`conservative` read on the miss rate (r1.13); every other row is T2's. Levels in per cent: 95, 97.5, 98.33 (m = 3), 98.75 (m =
 4), 99.17 (m = 6), 99.375 (m = 8), 99.58 (m = 12), 99.67 (m = 15). C3 designs: `pairs5`, `pairs8`,
 `pairs21` (pairs from 5, 8, 21 batches), `r8_2x2` (2 + 2 of 3 and 5), `r21_2x2` (2 + 2 of 7 and
 14), `en3x3` (3 + 3 of 7 and 14), `labs8` (the laboratory grouping); n is the batch count.
@@ -126,17 +131,17 @@ detail columns, no rerun). Two rulings on this table wait for the owner (build-p
 | C8 | clopper_pearson |  |  |  |  | 10 | Yb 0.9835-0.9910 | Yb 0.9835-0.9910 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 | Yb 0.9990-1.0000 |
 | C8 | clopper_pearson |  |  |  |  | 21 | Yb 0.9770-0.9865 | Yb 0.9915-0.9980 | Yb 0.9915-0.9980 | Yb 0.9915-0.9980 | Yb 0.9915-0.9980 | Yb 0.9985-1.0000 | Yb 0.9985-1.0000 | Yb 0.9985-1.0000 |
 | C8 | clopper_pearson |  |  |  |  | 250 | Yb 0.9440-0.9770 | Yb 0.9745-0.9885 | Yb 0.9805-0.9885 | Yb 0.9860-0.9915 | Yb 0.9900-0.9955 | Yb 0.9930-0.9975 | Yb 0.9955-0.9975 | Yb 0.9965-0.9975 |
-| C4e | jackknife | rank | block |  |  | 14 | Yc 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 | Y 1.0000 |
+| C4e | jackknife | rank | block |  |  | 14 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 |
 | C7 | bootstrap_within_run | threshold_count |  |  |  | 200 | Y 0.9485 | Y 0.9735 | Y 0.9830 | Y 0.9875 | Y 0.9915 | Y 0.9925 | Y 0.9940 | Y 0.9950 |
 | C4 | jackknife | accuracy | replicate |  |  | 4 | N 0.9180-0.9775 | N 0.9535-0.9875 | Y 0.9695-0.9940 | Y 0.9765-0.9955 | Y 0.9855-0.9980 | Y 0.9880-0.9985 | Y 0.9920-0.9990 | Y 0.9935-1.0000 |
 | C4 | jackknife | accuracy | replicate |  |  | 6 | N 0.8980-0.9905 | N 0.9395-0.9960 | N 0.9560-0.9975 | N 0.9655-0.9985 | Y 0.9765-0.9990 | Y 0.9830-0.9990 | Y 0.9865-0.9995 | Y 0.9890-1.0000 |
-| C4 | jackknife | rank | replicate |  |  | 4 | Y 0.9840 | Y 0.9920 | Y 0.9955 | Y 0.9970 | Y 0.9985 | Y 0.9985 | Y 0.9990 | Y 0.9995 |
-| C4 | jackknife | rank | replicate |  |  | 6 | Yc 0.9975 | Y 0.9980 | Y 0.9990 | Y 0.9990 | Y 0.9995 | Y 0.9995 | Y 0.9995 | Y 0.9995 |
+| C4 | jackknife | rank | replicate |  |  | 4 | Y 0.9685 | Y 0.9885 | Y 0.9925 | Y 0.9945 | Y 0.9960 | Y 0.9965 | Y 0.9980 | Y 0.9985 |
+| C4 | jackknife | rank | replicate |  |  | 6 | Y 0.9855 | Yc 0.9950 | Yc 0.9975 | Yc 0.9985 | Yc 0.9985 | Yc 0.9985 | Yc 0.9995 | Yc 0.9995 |
 | C4 | jackknife | threshold_count | replicate |  |  | 4 | N 0.9080-0.9855 | N 0.9490-0.9950 | Y 0.9640-0.9975 | Y 0.9735-0.9980 | Y 0.9815-0.9980 | Y 0.9865-0.9985 | Y 0.9885-0.9995 | Y 0.9925-0.9995 |
 | C4 | jackknife | threshold_count | replicate |  |  | 6 | N 0.8995-0.9990 | N 0.9405-1.0000 | N 0.9575-1.0000 | Y 0.9675-1.0000 | Y 0.9780-1.0000 | Y 0.9845-1.0000 | Y 0.9870-1.0000 | Y 0.9900-1.0000 |
 | C4e | jackknife | accuracy | block |  |  | 5 | N 0.7450-0.7565 | N 0.8230-0.8370 | N 0.8685-0.8815 | N 0.8925-0.9015 | N 0.9170-0.9310 | N 0.9350-0.9445 | N 0.9515-0.9610 | N 0.9575-0.9630 |
 | C4e | jackknife | accuracy | block |  |  | 14 | N 0.7065-0.7070 | N 0.7810-0.7820 | N 0.8145 | N 0.8330 | N 0.8555 | N 0.8720 | N 0.8880-0.8885 | N 0.8960-0.8965 |
-| C4e | jackknife | rank | block |  |  | 5 | Yc 0.9940 | Y 0.9985 | Y 0.9990 | Y 0.9990 | Y 0.9990 | Y 0.9995 | Y 0.9995 | Y 0.9995 |
+| C4e | jackknife | rank | block |  |  | 5 | Yc 0.9900 | Y 0.9935 | Yc 0.9960 | Yc 0.9970 | Yc 0.9980 | Yc 0.9985 | Yc 0.9995 | Yc 0.9995 |
 | C4e | jackknife | threshold_count | block |  |  | 5 | N 0.7065 | N 0.8005 | N 0.8385 | N 0.8660 | N 0.8950 | N 0.9130 | N 0.9325 | N 0.9445 |
 | C4e | jackknife | threshold_count | block |  |  | 14 | N 0.7260 | N 0.7895 | N 0.8235 | N 0.8460 | N 0.8750 | N 0.8865 | N 0.9035 | N 0.9160 |
 
@@ -146,7 +151,9 @@ What the table means for the consumers (read off it; nothing decided here):
   99.67 % (offered), and offered at n = 800 at every level: at the small counts it is usable only
   with `accept_flagged`.
 - `jackknife` form (iii), delete-one-block (C4e): `accuracy` and `threshold_count` are not offered at
-  g = 5 (KIT-162) or g = 14 (KIT-166) at any level; `rank` is offered at both.
+  g = 5 (KIT-162) or g = 14 (KIT-166) at any level; `rank` is offered at both (re-run R): at g = 5
+  `conservative` at 95 % (coverage 0.990) and from 98.33 %, `pass` at 97.5 %; at g = 14
+  `conservative` at every level (coverage 1.000: no miss in 2,000).
 - `jackknife` form (ii), delete-one-replicate-per-group (C4): `accuracy` and `threshold_count` are not
   offered at 95 % or 97.5 % at g = 4 (KIT-160, KIT-161), nor below 99.17 % (accuracy) or 98.75 %
   (threshold) at g = 6 (KIT-170); `rank` is offered at both counts.

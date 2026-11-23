@@ -26,36 +26,32 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, VAL-69; read this first)
+## Resume here (state 2026-11-24, VAL-69 work done except R1; read this first)
 
-Ticket r1.13 (main checkout, section 28): T1 21, T2 54; exact-tail rule a candidate (C1 n = 10 at
-98.33 % and above keeps `fail`); rank generator re-pinned, `degenerate` rule, `conservative` on the
-miss rate.
+Ticket r1.13 (main checkout, section 28; VAL-69).
 
-**Done:**
-- Whole-suite run 45219635014 at d946b878: **183 of 184 pass, lintr 0 lints (A2 met)**; T-TAB on
-  all ten routes, T-PH-1 to 7, T-PH-9, T-PAR-1 to 4, T-COV-ENDS(-2) pass. T-PH-8 failed on a code
-  defect (cluster lookup), fixed at 52a1e2c2.
-- Rank re-pin: tests only 9903b62a, T0g 45220113873 fails as expected (T0 now 5.95 of 6); code
-  facf45e9; T1 rank run 45222394118: all pass except T-RANK-1 (effect read back from a name: code
-  defect), fixed at 1827d420. Declaration of the T-COV re-run written and committed before sending:
-  `t2/t2r-declaration.md`, plan `t2/t2r-plan.tsv` (13 ranges of C4-144, C4-146, C4e-148, C4e-150).
+**Done (runs in runs.tsv):**
+- T1 whole suite with lint 45219635014 at d946b878: 183 of 184, lintr 0 (A2 met). The one failure
+  (T-PH-8, cluster lookup) and T-RANK-1's defect (effect read from a name) fixed; correction run
+  45225211841 at 1827d420: 20 of 20, lintr 0. Every msrval test has passed at 1827d420's code.
+- Rank re-pin: T0g 45220113873 (fails first, as expected); request R 45227824000 at 1827d420
+  (wall 111 min, 8.34 core-hours): no cell degenerate; effects 0.6 (C4 g 4), 0.5 (C4 g 6), 0.35
+  (C4e g 5), 0.25 (C4e g 14); all four rank regimes offered (pass or conservative; C4e g 14
+  coverage 1.000 at every level). `USAGE.md`'s four rank rows, the pinned
+  `msrval/inst/extdata/coverage-table.tsv` (rank rows replaced, request R) and the H2 row updated
+  from this run only. `t2/coverage-table.tsv` stays T2's evidence.
 
-**In flight:** T-COV request R, run 45227824000 at 1827d420 (`t2r-out`, 13 ranges, script limit
-280 min, sent 2026-11-23 17:30 UTC; expected about 3.5 h). T1 correction run 45225211841 passed
-(20 of 20, lintr 0). When R returns: `gh run download 45227824000 -n scripts` (run-tests worktree),
-copy `t2r-out/` to `t2/t2r-*`, add runs.tsv row, check no cell missing and chunks exit 0, then
-replace the four rank rows' classification in `USAGE.md` and the H2 ledger row from this run only
-(effect, zero_width, statuses); every other row keeps T2's classification. Tell the coordinator
-the C4e g = 5 rank result for KIT-162.
+**Budget:** T0 5.95 of 6; T1 17.42 of 21; T2 26.93 of 54.
 
-**Budget:** T0 5.95 of 6; T1 17.42 of 21; T2 18.59 of 54 before request R (ceiling of R about 20).
+**For KIT-162 (via the coordinator):** C4e g = 5 rank (paired pAUC difference, delete-one-block) is
+offered at every level: `conservative` at 95 % (0.990), `pass` at 97.5 % (0.9935), `conservative`
+from 98.33 %; simulated on a plain-arm pAUC of 0.4 to 0.8 (effect 0.35) and the target 0.024.
 
-**R1 (r1.12):** materials in `lifecycle/` (draft-inputs.tsv with the named open file,
-uniprot-accessions.tsv with 25 reviewed human accessions, r1-pre.R, r1-pre-outputs.tsv). Not sent:
-the record phase of `val-run.R` does not call `valRecordUniprotCache`; wiring it is harness code,
-tests first, and T0 has 0.05 core-hours left. Needs the coordinator's word on where its
-failing-first run is charged.
+**R1 (r1.12) not sent:** materials in `lifecycle/` (draft-inputs.tsv, uniprot-accessions.tsv with
+25 reviewed human accessions, r1-pre.R, r1-pre-outputs.tsv). The record phase does not call
+`valRecordUniprotCache`; wiring it (and an allow-listed record of release and hash) is harness code
+with tests first, and T0 has 0.05 core-hours left. Needs the coordinator's word on where that
+failing-first run is charged (T1 has 3.58 left).
 
 ## Earlier resume record (state at dcc27fb5)
 
