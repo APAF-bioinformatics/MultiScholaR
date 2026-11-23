@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-159 T1 (group b) correction pass: the three test-script fixes (quoted git arguments, descriptor-2 write first, %.17g values)",
+  "label": "KIT-159 T1b correction at ae464305",
+  "package_commit": "ae464305c01c47b3d8e56f0e8e9a7b59a7092c9c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/t1b2-out"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/t1b2-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
