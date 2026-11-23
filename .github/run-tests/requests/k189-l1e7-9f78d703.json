@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-189 L1 E7 instrument run 1 of 3 (VAL-54): e7-k189.R stopped at a parse error in its report line (run 45275836889); same check, limit from L1's committed timing",
+  "label": "KIT-189 L1 E7 rerun 9f78d703",
+  "package_commit": "9f78d703a14225c83f1de753ae5f75291f608365",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/e7-k189.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-189/l1", "k189-l1e7"],
+      "env": {"OMP_NUM_THREADS": "1"},
+      "out": "k189-l1e7",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
