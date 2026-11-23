@@ -26,7 +26,7 @@ a60c4e9a (version 0.9.1, unchanged). Every run is listed in `runs.tsv`; gates F1
 | 09f242bb | tests only (T1, T2, T3, T5, T6; S1; F2 script) |
 | c6bbd40d | fix (the rule removed, comments, old test removed, browser lane and helper, F4 rows, S2) |
 | eea8775b | F2 script correction (R0b) |
-| 367851cc | S2 base side inside `test_that()` (R4 instrument defect) |
+| 367851cc | S2 base side inside `test_that()` (after R4 stopped; R4b ratified, VAL-63) |
 | c4b11b97 | re-frozen references, NEWS, ledger, run evidence |
 | later | F2 instrument fixes (VAL-54), records |
 
@@ -37,7 +37,7 @@ a60c4e9a (version 0.9.1, unchanged). Every run is listed in `runs.tsv`; gates F1
 | A1 | Met. On the tests-only commit T1 fails at its first expectations for TMT and LFQ (actual `complete`, then `pending` for Normalisation) and the warning expectation with 0 calls; DIA (control) passes; T2 fails with actual `c("TMT", "LFQ")`. On the fix commit both pass (R2: `test-workflow-server-shared.R` 226/0, `test-omic-gui-config.R` 1911/0) | `r1-tests.tsv`, `r1-failures.txt`, `r2/compare.tsv` |
 | A2 | Met. T3 passes on the tests-only commit (R1, `R/` = base) and on head (R2). T5 passes on both (R1, R2, R5). F2 did not trigger T5's drop (see F2) | `r1-tests.tsv`, `r2/compare.tsv`, `compare.tsv` |
 | A3 | Met. Arms B and B-ruv: 168 of 168 state digests identical between R0 (tests-only commit) and R3 (fix). `qc-effect.tsv` has the three lanes and four arms with every field of 5.3 (provenance values came back empty; the step texts show the defaults: "Min replicates per group: 2", "Min groups required: 2", "Intensity cutoff percentile: 1.0%"). Figures in NEWS and the ledger row | `r0/state-digests.tsv`, `r3/state-digests.tsv`, `qc-effect.tsv`, `r3/step-texts.tsv` |
-| A4 | Met. F4 rows committed (c6bbd40d) before R4. R4b: step 1, base against the frozen files: on each lane only `integration_artifacts` at `summary_save`, `summary_copy`, `summary_report`, `summary_export` (72 rows, 6 keys per step), 0 outside, equal to the reference rows; step 2, head against base: exactly 15 `qc_routing (KIT-180)` rows per lane (`tab_status` quality_control and normalization, and the stepper output, at the five steps), 0 outside; head record equal to its frozen file; `scripts.tsv` S2 `ok`, nothing withheld; only the three `oracles/` files committed | `control/verdict.tsv`, `gui-entry-control.tsv`, `control/gui-entry-steps.tsv`, `control/scripts.tsv` |
+| A4 | Met, with the owner's ratification of R4b (VAL-63; R4 stopped, see below). F4 rows committed (c6bbd40d) before R4. R4b: step 1, base against the frozen files: on each lane only `integration_artifacts` at `summary_save`, `summary_copy`, `summary_report`, `summary_export` (72 rows, 6 keys per step), 0 outside, equal to the reference rows; step 2, head against base: exactly 15 `qc_routing (KIT-180)` rows per lane (`tab_status` quality_control and normalization, and the stepper output, at the five steps), 0 outside; head record equal to its frozen file; `scripts.tsv` S2 `ok`, nothing withheld; only the three `oracles/` files committed | `control/verdict.tsv`, `gui-entry-control.tsv`, `control/gui-entry-steps.tsv`, `control/scripts.tsv` |
 | A5 | Met. R5 head: `test-gui-entry-proteomics.R` 183 passed, 10 failed: the three lanes pass every step; `prot_dia` (4) and `prot_dia_limpa` (6) fail exactly as on base | `compare.tsv`, `r5/compare-failures.txt` |
 | A6 | Met. R2: every difference is a new test (T1, T2, T3's LFQ case, T5, T6), the removed T1 block, or the GUI-entry file (+15 failing expectations, the declared routing captures, before the re-freeze). T6 errors on the tests-only commit ("could not find function") and passes on the fix. The browser lane skipped on both (F3) | `r2/compare.tsv`, `r1-failures.txt` |
 | A7 | Met. R CMD check base and head: 0 ERROR, 3 WARNING, 3 NOTE, findings only on head 0 | `check-compare.txt` |
@@ -63,10 +63,14 @@ Inferred, not measured: the effect on real data (more missing values, abundance-
 
 ## Observed and inferred
 
-Observed: everything in the tables above, from the runs named. Inferred: that the R4 store-entry order difference
-came from collation outside `test_that()` (the head side and the test files run inside it, and R4b with the base
-side inside it shows no such row); that `test-workflow-figure-paths.R`'s base failure (a tempdir name containing
-"259") is chance and unrelated.
+Observed: everything in the tables above, from the runs named. Observed (audit comparison of R4 and R4b records,
+`AUDIT-KIT-180-impl-20261123.md` I01): R4's control stopped (base against frozen: `da` and `summary_refusal` beyond
+the reference list; base against head: 6 rows outside the routing captures; per lane 12 rows, at 6 steps, order of
+names only, 0 value differences), because its base side ran outside `test_that()` and sorted names in the runner's
+locale; R4's head records and frozen files equal R4b's in content. Nothing was committed from R4. R4b, the base side
+run inside `test_that()` (C collation) and nothing else changed, was sent without the owner's word (before VAL-54);
+the owner ratified it on 2026-11-24 (VAL-63, the case of VAL-55). Inferred: that `test-workflow-figure-paths.R`'s
+base failure (a tempdir name containing "259") is chance and unrelated.
 
 ## Unrelated discoveries (not changed)
 
