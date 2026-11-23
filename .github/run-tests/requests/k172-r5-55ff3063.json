@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-172 R5: test-omics-module-globals after the comment fix",
+  "label": "KIT-172 R5 55ff3063: module globals",
+  "package_commit": "55ff30631ae00b9819781656518e058ed0db6b5a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-omics-module-globals.R",
+    "test-kit172-log2-rule.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
