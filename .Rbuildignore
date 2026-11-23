@@ -25,3 +25,4 @@
 
 ^inst/duckdb$
 ^packaging$
+^data/benchmark$
