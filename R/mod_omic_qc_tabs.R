@@ -646,7 +646,8 @@ omicQcAssayStatsFrame <- function(shell, config) {
     table$Missingness <- attr(shell, "missing_percent") %||% sapply(assays, function(a) {
         columns <- names(a)[vapply(a, is.numeric, logical(1))]
         if (length(columns) == 0) return(NA)
-        missing <- sum(vapply(columns, function(column) sum(is.na(a[[column]]) | a[[column]] == 0), numeric(1)))
+        # KIT-172: NA only (zeros are read as missing at import; a log2 value of 0 is a measured value of 1).
+        missing <- sum(vapply(columns, function(column) sum(is.na(a[[column]])), numeric(1)))
         round((missing / (nrow(a) * length(columns))) * 100, 1)
     })
     table

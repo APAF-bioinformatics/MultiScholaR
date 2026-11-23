@@ -1207,7 +1207,8 @@ omicsReadRows <- function(scope, columns, keep = NULL) {
     rows
 }
 
-#' Percent of the numeric cells that are NA or zero, as the QC tabs' assay statistics count them.
+#' Percent of the numeric cells that are missing, as the QC tabs' assay statistics count them (KIT-172: NA only; zeros
+#' are read as missing at import, and a log2 value of 0 is a measured value of 1).
 #' @noRd
 omicsAssayMissingPercent <- function(scope) {
     prototype <- readSavedWorkflowTablePrototype(scope)
@@ -1215,7 +1216,7 @@ omicsAssayMissingPercent <- function(scope) {
     if (!length(columns)) return(NA_real_)
     missing <- 0
     if (scope$metadata$rows) streamWorkflowTableRows(scope, columns, function(page, offset, row_names) {
-        for (column in columns) missing <<- missing + sum(is.na(page[[column]]) | page[[column]] == 0)
+        for (column in columns) missing <<- missing + sum(is.na(page[[column]]))
         invisible(NULL)
     })
     round((missing / (scope$metadata$rows * length(columns))) * 100, 1)

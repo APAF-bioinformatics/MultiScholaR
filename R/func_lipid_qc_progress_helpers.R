@@ -130,8 +130,9 @@ countLipidsPerSample <- function(assay_data, sample_id_col, lipid_id_col, sample
             names_to = "Run",
             values_to = "Intensity"
         ) |>
-        # Define 'detected' as non-NA and greater than 0 (adjust if needed)
-        dplyr::filter(!is.na(.data$Intensity) & .data$Intensity > 0) |>
+        # KIT-172: 'detected' is non-missing. Zeros are read as missing at import, and a log2 value of 0 or below is a
+        # measured value below 1 (plain log2), so a sign test would drop measured values.
+        dplyr::filter(!is.na(.data$Intensity)) |>
         dplyr::group_by(.data$Run) |>
         dplyr::summarise(n_detected = dplyr::n(), .groups = "drop")
 }
@@ -174,7 +175,8 @@ calculateLipidMissingness <- function(assay_data, sample_id_col, sample_columns 
     missing_values <- 0
 
     for (col in sample_names) {
-        missing_values <- missing_values + sum(is.na(quant_data[[col]]) | quant_data[[col]] == 0)
+        # KIT-172: missing is NA only (zeros are read as missing at import; a log2 value of 0 is a measured 1).
+        missing_values <- missing_values + sum(is.na(quant_data[[col]]))
     }
 
     # Calculate percentage
