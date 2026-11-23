@@ -1,0 +1,53 @@
+{
+  "requested_by": "KIT-189 S job p3b (counted run, declaration 8deb1649; VAL-101 budget): B3 cells 21,24; planned 134 min",
+  "label": "KIT-189 S p3b 8deb1649",
+  "package_commit": "8deb16494d2bcb8cb65ecf3f577bfd124271985f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "s",
+        "21",
+        "1",
+        "400",
+        "k189-s-21-1"
+      ],
+      "env": {
+        "K189_JOB": "s-21-1-400",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-s-21-1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 135
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "s",
+        "24",
+        "1",
+        "200",
+        "k189-s-24-1"
+      ],
+      "env": {
+        "K189_JOB": "s-24-1-200",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-s-24-1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 70
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

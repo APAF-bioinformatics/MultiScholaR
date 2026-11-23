@@ -1,0 +1,104 @@
+{
+  "requested_by": "KIT-189 S job p2 (counted run, declaration 8deb1649; VAL-101 budget): B2 cells 15,16,17,18,19; planned 130 min",
+  "label": "KIT-189 S p2 8deb1649",
+  "package_commit": "8deb16494d2bcb8cb65ecf3f577bfd124271985f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "s",
+        "15",
+        "1",
+        "400",
+        "k189-s-15-1"
+      ],
+      "env": {
+        "K189_JOB": "s-15-1-400",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-s-15-1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 50
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "s",
+        "16",
+        "1",
+        "400",
+        "k189-s-16-1"
+      ],
+      "env": {
+        "K189_JOB": "s-16-1-400",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-s-16-1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 50
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "s",
+        "17",
+        "1",
+        "400",
+        "k189-s-17-1"
+      ],
+      "env": {
+        "K189_JOB": "s-17-1-400",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-s-17-1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 50
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "s",
+        "18",
+        "1",
+        "200",
+        "k189-s-18-1"
+      ],
+      "env": {
+        "K189_JOB": "s-18-1-200",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-s-18-1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "s",
+        "19",
+        "1",
+        "200",
+        "k189-s-19-1"
+      ],
+      "env": {
+        "K189_JOB": "s-19-1-200",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-s-19-1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

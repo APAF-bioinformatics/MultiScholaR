@@ -1,0 +1,36 @@
+{
+  "requested_by": "KIT-189 S job n7c (counted run, declaration 8deb1649; VAL-101 budget): B3 cells 7; planned 147 min",
+  "label": "KIT-189 S n7c 8deb1649",
+  "package_commit": "8deb16494d2bcb8cb65ecf3f577bfd124271985f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "s",
+        "7",
+        "1335",
+        "2000",
+        "k189-s-7-1335"
+      ],
+      "env": {
+        "K189_JOB": "s-7-1335-2000",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-s-7-1335",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 225
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

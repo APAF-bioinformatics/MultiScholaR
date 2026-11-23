@@ -1,0 +1,53 @@
+{
+  "requested_by": "KIT-189 D (E5): replicates 1-10 of cells 2 and 11 in a separate job, compared with S's rows without part and seconds",
+  "label": "KIT-189 D determinism 8deb1649",
+  "package_commit": "8deb16494d2bcb8cb65ecf3f577bfd124271985f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "d",
+        "2",
+        "1",
+        "10",
+        "k189-d-2"
+      ],
+      "env": {
+        "K189_JOB": "d-2-1-10",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-d-2",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 15
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/sim-k189.R",
+      "args": [
+        "d",
+        "11",
+        "1",
+        "10",
+        "k189-d-11"
+      ],
+      "env": {
+        "K189_JOB": "d-11-1-10",
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k189-d-11",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
