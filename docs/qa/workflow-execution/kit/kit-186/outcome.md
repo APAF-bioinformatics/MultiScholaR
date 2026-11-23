@@ -3,10 +3,10 @@
 Ticket `tickets/kit/KIT-186.md` revision 1.3 (VAL-59; owner decisions VAL-66 D1 to D4 as recommended; VAL-74).
 Branch `kit-186-trx-da-without-ruv` from `v0.9-staging` ffdfdfb7 (the branch point, "base" in R2).
 
-**State: done, ready for its implementation audit.** R2 showed one verdict that revision 1.2 had not predicted:
+**State: done; implementation audit `AUDIT-KIT-186-impl-20261124.md` text repairs I02 to I05 applied (VAL-87: merge as is; the export failure I01 goes to KIT-192).** R2 showed one verdict that revision 1.2 had not predicted:
 `test-omic-da-module.R` `new-failure` at the frozen trx panel's whole-page digest (`:293`), which the help text W2 moves.
 The owner decided (VAL-74) that the value is not edited here and waits for the end-of-project re-record (plan section 11
-row, "Not here", beside `:312`), and revision 1.3 restates 6.2, A3 and A5 to admit exactly that one new failure; no
+row, as a value to re-record; `:312` is updated here), and revision 1.3 restates 6.2, A3 and A5 to admit exactly that one new failure; no
 correction pass. R3 (full suite, with R CMD check at the coordinator's request) then gave exactly 6.2's verdicts.
 
 ## Commits
@@ -75,36 +75,7 @@ Scope search re-run at the branch point (ticket section 9's `grep`): it finds th
   notifications, route 1's masked report-text SHA-256). The `errors` field differs on routes 4 to 6 by the base helper's
   `norm` entry only (recorded, not an A2 field, as written in the script before the run).
 - **A4.** Check base and head: 0 errors, 3 warnings, 3 notes each; identical findings, none only on head.
-
-## Acceptance criteria
-
-| # | Status | Evidence |
-|---|---|---|
-| A1 | Met, with the R1 instrument defect recorded | R1, R1b (failing first at stated values); R2 head: the new file passes, T7 passes, the four updated expectations pass |
-| A2 | Met | `s1/ruv-routes-compare.tsv`: 36/36 |
-| A3 | Met under r1.3 (VAL-74) | R2: every verdict as 6.2 predicts; the one `new-failure` is the admitted `:293` digest |
-| A4 | Met | `r2-check-compare.txt`; R3's check also identical (`r3-check-compare.txt`) |
-| A5 | Met under r1.3 | R3 below |
-| A6 | Met in the diff | NEWS under the unreleased heading; ledger row `VAL-<merge>`; no `DESCRIPTION`, `packaging/`, `man/` or `NAMESPACE` change |
-| A7 | Met (read) | below |
-
-## A7: the other omics' DA readers, re-read at ffdfdfb7
-
-- Proteomics DIA, label-free, TMT: the DA tab accepts by state name (`R/mod_prot_da_handlers_init.R:19`, `:151`). RUV
-  `skip` commits `normalized`; a declared design with k = 0 keeps `ruv_corrected` with `ruv_applied = FALSE`
-  (`R/utils_workflow_dia_products.R:789-799`). DIA with limpa without RUV commits `ruv_covariates` (`:1469`, `:1483`).
-- Lipidomics and metabolomics: `readLipidWorkflowMetadata` / `readMetabWorkflowMetadata`
-  (`R/utils_workflow_lipid_declarations.R:125`, `R/utils_workflow_metab_declarations.R:119`) behind the head fallback
-  that needs the normalisation tab complete (`R/mod_omic_da.R:286-289`; `completeOmicNormTab`,
-  `R/mod_omic_norm.R:414-420`), whatever k.
-- Outside transcriptomics, `"W_` occurs in `R/` only in the normalisation help (`R/mod_omic_norm_panels.R:113`) and the
-  trx DA help (`R/utils_omic_gui_config.R:2907`). No other omic has the rule; nothing changed.
-
-## Inferred, not observed
-
-- That the trx panel's `html` digest changes only because of W2: the help part is the only other trx UI part that
-  changed between base and head, and all other trx UI parts pass on head. The rendered HTML was not compared text to text.
-- That the correction would be one value, `:293` set to the head digest "56d6c2da95d26603a47eb607893f694b1e70098a6262af04766fbe660b10df04".
+- **The DA export on runs without RUV (ticket 2.6, third bullet): it does not complete.** All four DA runs of `test-trx-da-without-ruv.R` (T1, T2 managed, T3 twice) and T7's run log 'Could not write DA results to disk: non-numeric argument to mathematical function' (R2 and R2b head logs), and the tab shows it as a warning. The tables, figures and `top_de_genes.tsv` are written; `ruv_optimization_summary.txt` is not (`R/utils_workflow_trx_declarations.R:910-912` writes the legacy grid's summary, which these runs do not have). `s1/ruv-routes.tsv` shows the same warning on routes 4 to 6 (declared designs, k at least 1) on base and head, so the cause predates this ticket. T2 passed because it checks the operations' statuses and two files written before that step. Reported to the owner (`AUDIT-KIT-186-impl-20261124.md` I01). Moved to KIT-192 by the owner (VAL-87).
 
 ### R3 (run 45241570517, head af7f0738 against base ffdfdfb7; `r3-full-suite-compare.tsv`, `r3-full-suite-compare-failures.txt`, `r3-check-compare.txt`)
 
@@ -143,6 +114,36 @@ routes k at least 1 on both sides (k 2, 2, 2, 2, 3, 1), 36 of 36 A2 values equal
 Under 6.4, R3 is not repeated (R3b): the only hand-resolved conflicts were NEWS and the ledger, and R2b shows 6.2's
 verdicts.
 
+## Acceptance criteria
+
+| # | Status | Evidence |
+|---|---|---|
+| A1 | Met, with the R1 instrument defect recorded | R1, R1b (failing first at stated values); R2 head: the new file passes, T7 passes, the four updated expectations pass; T2 does not check the export's outcome (I01) |
+| A2 | Met | `s1/ruv-routes-compare.tsv`: 36/36 |
+| A3 | Met under r1.3 (VAL-74) | R2: every verdict as 6.2 predicts; the one `new-failure` is the admitted `:293` digest |
+| A4 | Met | `r2-check-compare.txt`; R3's check also identical (`r3-check-compare.txt`) |
+| A5 | Met under r1.3 | R3 below |
+| A6 | Met in the diff | NEWS under the unreleased heading; ledger row `VAL-<merge>`; no `DESCRIPTION`, `packaging/`, `man/` or `NAMESPACE` change |
+| A7 | Met (read) | below |
+
+## A7: the other omics' DA readers, re-read at ffdfdfb7
+
+- Proteomics DIA, label-free, TMT: the DA tab accepts by state name (`R/mod_prot_da_handlers_init.R:19`, `:151`). RUV
+  `skip` commits `normalized`; a declared design with k = 0 keeps `ruv_corrected` with `ruv_applied = FALSE`
+  (`R/utils_workflow_dia_products.R:789-799`). DIA with limpa without RUV commits `ruv_covariates` (`:1469`, `:1483`).
+- Lipidomics and metabolomics: `readLipidWorkflowMetadata` / `readMetabWorkflowMetadata`
+  (`R/utils_workflow_lipid_declarations.R:125`, `R/utils_workflow_metab_declarations.R:119`) behind the head fallback
+  that needs the normalisation tab complete (`R/mod_omic_da.R:286-289`; `completeOmicNormTab`,
+  `R/mod_omic_norm.R:414-420`), whatever k.
+- Outside transcriptomics, `"W_` occurs in `R/` only in the normalisation help (`R/mod_omic_norm_panels.R:113`) and the
+  trx DA help (`R/utils_omic_gui_config.R:2907`). No other omic has the rule; nothing changed.
+
+## Inferred, not observed
+
+- That the trx panel's `html` digest changes only because of W2: the help part is the only other trx UI part that
+  changed between base and head, and all other trx UI parts pass on head. The rendered HTML was not compared text to text.
+- That the correction would be one value, `:293` set to the head digest "56d6c2da95d26603a47eb607893f694b1e70098a6262af04766fbe660b10df04".
+
 ## Core-hours
 
 R1 1.3, R1b 0.7, R2 16.8, R3 67.2: 86.0 for R1 to R3, against 85.0 expected and a ceiling of 456.4; R2b 15.5 (expected 19.5, ceiling 36.0). Total 101.5. R3 included the check jobs
@@ -152,4 +153,5 @@ the ticket's R3 did not (`check: true` at the coordinator's request).
 
 - The report text of a declared design with k = 0 (W3's second sentence): rendered by no test; T3 checks the DA only.
 - The RUVIII export after a k = 0 run (F3), the worker's normalisation log at k = 0 (F1).
+- How the validation driver of KIT-159 treats the DA export's warning on transcriptomics runs without RUV (I01).
 - Windows; real data.

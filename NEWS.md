@@ -4,12 +4,15 @@
 
 ### Fixes
 
- * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation
-   (the RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0).
-   The model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
+ * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
+   RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
+   model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
    refused these runs with 'Run the normalisation first', although the normalisation had run. Runs that applied RUV are
-   unchanged. Both cases are offered only when the RUV design panel is switched on. The report then states that no
-   correction for unwanted variation was applied.
+   unchanged. Both cases are offered only when the RUV design panel is switched on. For every user, the message shown
+   when the Differential Analysis tab is pressed before the normalisation now reads 'Run the normalisation first: the
+   differential analysis runs on the normalised data.', and the tab's model help says that the RUV factors enter the
+   model only when the normalisation added them. The report then states that no correction for unwanted variation was
+   applied.
 
 ## MultiScholaR 0.9.5 (staging)
 
