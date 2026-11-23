@@ -11,7 +11,7 @@ importMaxQuantData(filepath, use_lfq = TRUE, filter_contaminants = TRUE)
 
 \item{use_lfq}{Whether to use LFQ intensities}
 
-\item{filter_contaminants}{Whether to filter contaminants}
+\item{filter_contaminants}{Whether to drop rows marked "+" in the contaminant column ("Potential contaminant", or "Contaminant" in MaxQuant 1.4 and earlier) and in "Reverse"; the rows removed per column are logged}
 }
 \value{
 List with data, data_type, and column_mapping

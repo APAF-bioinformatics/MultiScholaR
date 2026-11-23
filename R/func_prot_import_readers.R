@@ -442,7 +442,7 @@ normaliseMaxQuantColumnNames <- function(names) {
 #' 
 #' @param filepath Path to MaxQuant proteinGroups.txt file
 #' @param use_lfq Whether to use LFQ intensities
-#' @param filter_contaminants Whether to filter contaminants
+#' @param filter_contaminants Whether to drop rows marked "+" in the contaminant column ("Potential contaminant", or "Contaminant" in MaxQuant 1.4 and earlier) and in "Reverse"; the rows removed per column are logged
 #' @return List with data, data_type, and column_mapping
 #' @export
 importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = TRUE) {
@@ -450,7 +450,7 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
   # and a sparse "+" column whose sample carries no mark is read as logical with every mark lost, so the rows it
   # flags are kept (reproduced by the KIT-021 corpus check: 50 decoys among 8,100 groups survived the import).
   header <- names(vroom::vroom(filepath, delim = "\t", n_max = 0L, show_col_types = FALSE))
-  flags <- intersect(c("Potential.contaminant", "Reverse", "Potential contaminant"), header)
+  flags <- intersect(c("Potential.contaminant", "Reverse", "Potential contaminant", "Contaminant"), header)
   col_types <- do.call(vroom::cols, c(list(.default = vroom::col_guess()),
     stats::setNames(rep(list(vroom::col_character()), length(flags)), flags)))
   data <- vroom::vroom(filepath, delim = "\t", show_col_types = FALSE, col_types = col_types)
