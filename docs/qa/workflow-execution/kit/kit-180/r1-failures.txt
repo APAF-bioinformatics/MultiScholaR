@@ -1,0 +1,161 @@
+file: test-workflow-server-shared.R
+test: VAL-26: TMT and LFQ open the QC tab after the design
+kind: failure
+message:
+  Expected `workflow_data$tab_status$quality_control` to equal "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  TMT
+trace (first lines):
+       ▆
+    1. ├─check_route(route) at test-workflow-server-shared.R:345:3
+    2. │ └─shiny::testServer(...) at test-workflow-server-shared.R:291:5
+    3. │   ├─shiny:::withMockContext(...)
+    4. │   │ ├─shiny::isolate(...)
+    5. │   │ │ ├─shiny::..stacktraceoff..(...)
+    6. │   │ │ └─ctx$run(...)
+    7. │   │ │   ├─promises::with_promise_domain(...)
+    8. │   │ │   │ └─domain$wrapSync(expr)
+    9. │   │ │   ├─shiny::withReactiveDomain(...)
+   10. │   │ │   │ └─promises::with_promise_domain(...)
+   11. │   │ │   │   └─domain$wrapSync(expr)
+
+file: test-workflow-server-shared.R
+test: VAL-26: TMT and LFQ open the QC tab after the design
+kind: failure
+message:
+  Expected `workflow_data$tab_status$normalization` to equal "disabled".
+  Differences:
+  `actual`:   "pending" 
+  `expected`: "disabled"
+  
+  TMT
+trace (first lines):
+       ▆
+    1. ├─check_route(route) at test-workflow-server-shared.R:345:3
+    2. │ └─shiny::testServer(...) at test-workflow-server-shared.R:291:5
+    3. │   ├─shiny:::withMockContext(...)
+    4. │   │ ├─shiny::isolate(...)
+    5. │   │ │ ├─shiny::..stacktraceoff..(...)
+    6. │   │ │ └─ctx$run(...)
+    7. │   │ │   ├─promises::with_promise_domain(...)
+    8. │   │ │   │ └─domain$wrapSync(expr)
+    9. │   │ │   ├─shiny::withReactiveDomain(...)
+   10. │   │ │   │ └─promises::with_promise_domain(...)
+   11. │   │ │   │   └─domain$wrapSync(expr)
+
+file: test-workflow-server-shared.R
+test: VAL-26: TMT and LFQ open the QC tab after the design
+kind: failure
+message:
+  Expected `calls$warned` to be identical to "protein_s4_initial".
+  Differences:
+  `actual`:                       
+  `expected`: "protein_s4_initial"
+  
+  TMT
+trace (first lines):
+       ▆
+    1. ├─check_route(route) at test-workflow-server-shared.R:345:3
+    2. │ └─shiny::testServer(...) at test-workflow-server-shared.R:291:5
+    3. │   ├─shiny:::withMockContext(...)
+    4. │   │ ├─shiny::isolate(...)
+    5. │   │ │ ├─shiny::..stacktraceoff..(...)
+    6. │   │ │ └─ctx$run(...)
+    7. │   │ │   ├─promises::with_promise_domain(...)
+    8. │   │ │   │ └─domain$wrapSync(expr)
+    9. │   │ │   ├─shiny::withReactiveDomain(...)
+   10. │   │ │   │ └─promises::with_promise_domain(...)
+   11. │   │ │   │   └─domain$wrapSync(expr)
+
+file: test-workflow-server-shared.R
+test: VAL-26: TMT and LFQ open the QC tab after the design
+kind: failure
+message:
+  Expected `workflow_data$tab_status$quality_control` to equal "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  LFQ
+trace (first lines):
+       ▆
+    1. ├─check_route(route) at test-workflow-server-shared.R:345:3
+    2. │ └─shiny::testServer(...) at test-workflow-server-shared.R:291:5
+    3. │   ├─shiny:::withMockContext(...)
+    4. │   │ ├─shiny::isolate(...)
+    5. │   │ │ ├─shiny::..stacktraceoff..(...)
+    6. │   │ │ └─ctx$run(...)
+    7. │   │ │   ├─promises::with_promise_domain(...)
+    8. │   │ │   │ └─domain$wrapSync(expr)
+    9. │   │ │   ├─shiny::withReactiveDomain(...)
+   10. │   │ │   │ └─promises::with_promise_domain(...)
+   11. │   │ │   │   └─domain$wrapSync(expr)
+
+file: test-workflow-server-shared.R
+test: VAL-26: TMT and LFQ open the QC tab after the design
+kind: failure
+message:
+  Expected `workflow_data$tab_status$normalization` to equal "disabled".
+  Differences:
+  `actual`:   "pending" 
+  `expected`: "disabled"
+  
+  LFQ
+trace (first lines):
+       ▆
+    1. ├─check_route(route) at test-workflow-server-shared.R:345:3
+    2. │ └─shiny::testServer(...) at test-workflow-server-shared.R:291:5
+    3. │   ├─shiny:::withMockContext(...)
+    4. │   │ ├─shiny::isolate(...)
+    5. │   │ │ ├─shiny::..stacktraceoff..(...)
+    6. │   │ │ └─ctx$run(...)
+    7. │   │ │   ├─promises::with_promise_domain(...)
+    8. │   │ │   │ └─domain$wrapSync(expr)
+    9. │   │ │   ├─shiny::withReactiveDomain(...)
+   10. │   │ │   │ └─promises::with_promise_domain(...)
+   11. │   │ │   │   └─domain$wrapSync(expr)
+
+file: test-workflow-server-shared.R
+test: VAL-26: TMT and LFQ open the QC tab after the design
+kind: failure
+message:
+  Expected `calls$warned` to be identical to "protein_s4_initial".
+  Differences:
+  `actual`:                       
+  `expected`: "protein_s4_initial"
+  
+  LFQ
+trace (first lines):
+       ▆
+    1. ├─check_route(route) at test-workflow-server-shared.R:345:3
+    2. │ └─shiny::testServer(...) at test-workflow-server-shared.R:291:5
+    3. │   ├─shiny:::withMockContext(...)
+    4. │   │ ├─shiny::isolate(...)
+    5. │   │ │ ├─shiny::..stacktraceoff..(...)
+    6. │   │ │ └─ctx$run(...)
+    7. │   │ │   ├─promises::with_promise_domain(...)
+    8. │   │ │   │ └─domain$wrapSync(expr)
+    9. │   │ │   ├─shiny::withReactiveDomain(...)
+   10. │   │ │   │ └─promises::with_promise_domain(...)
+   11. │   │ │   │   └─domain$wrapSync(expr)
+
+file: test-omic-gui-config.R
+test: no omic's shell bypasses QC
+kind: failure
+message:
+  Expected proteomics to be NULL.
+  Differences:
+  `actual` is a character vector ('TMT', 'LFQ')
+  `expected` is NULL
+
+file: test-e2e-browser-harness.R
+test: KIT-180: the protein routes' QC helper and the DIA QC helper press the same four protein QC steps
+kind: error
+message:
+  Error in `e2e_run_prot_protein_qc(driver)`: could not find function "e2e_run_prot_protein_qc"
+trace (first lines):
+  ▆
+

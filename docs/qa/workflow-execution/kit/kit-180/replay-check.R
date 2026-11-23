@@ -46,12 +46,12 @@ guiEntrySteps <- function(lane) {
         dir.create(keep, recursive = TRUE, showWarnings = FALSE)
         json <- file.path(keep, "analysis_record.json")
         writeWorkflowAnalysisRecord(manager, json)
-        stores <- list.dirs(api$inputs$root, recursive = TRUE, full.names = TRUE)
-        stores <- stores[basename(stores) == ".workflow-entities"]
-        current$store_count <- length(stores)
+        # The session owner's own store (R0 correction: the store is not under the lane's root).
+        store_root <- dirname(manager$.context$store$directory)
+        current$store_count <- as.integer(dir.exists(file.path(store_root, ".workflow-entities")))
         current$origin <- file.path(keep, "origin")
         dir.create(current$origin, showWarnings = FALSE)
-        stopifnot(length(stores) == 1L, system2("cp", c("-a", shQuote(file.path(dirname(stores[[1L]]), ".")),
+        stopifnot(current$store_count == 1L, system2("cp", c("-a", shQuote(file.path(store_root, ".")),
             shQuote(current$origin))) == 0L)
         current$inputs <- file.path(keep, "inputs")
         dir.create(current$inputs, showWarnings = FALSE)
