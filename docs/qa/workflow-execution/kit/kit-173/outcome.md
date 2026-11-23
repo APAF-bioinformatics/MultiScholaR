@@ -184,6 +184,21 @@ NEWS; ledger row). Run 45153295682 (base cf4b5fd4, head 19d24b96), observed:
   `geneID` cells sorted): "(b) in process: clusterprofiler", "... kernel_clusterprofiler", "(KIT-113 W1) ...",
   "(W2, core side) ... clusterprofiler run step", "... kernel_clusterprofiler run step". For the plan's re-record row.
 
+## Full suite (R3, run 45219690402, head 4bc1a361 against base 62a41ba1)
+
+449 files. 444 `same` (36 of them fail identically on both sides: stored references recorded on the laptop and
+runner-environment failures, as in KIT-171's R3). `test-go-propagation.R` `fixed` (the new tests: 77 passed and 176
+failing or erroring on base, 319 passed and 0 failing on head, 1 skipped: T7(b), which needs the base store and runs in
+`t7-replay.R`). Two `new-failure`, every failure a capture of a clusterProfiler (taxon 999999) lane:
+`test-omic-enrich-module.R` "(b) in process: clusterprofiler" (1), "(b) in process: kernel_clusterprofiler" (8; one of
+them also fails on base), "(KIT-113 W1) each W1 (b) session's committed record ..." (2); `test-omics-enrich-core.R`
+"(W2, core side) ... clusterprofiler run step" (1) and "... kernel_clusterprofiler run step" (6). They move with the
+propagated sets, the step's outcomes, the declared `go_propagation` and the sorted `geneID` cells (6.2; the plan's
+re-record row). Two `count-changed` with the same failure on both sides: `test-workflow-omics-binding-steps.R` (the
+KIT-094 characterisation fails on base and head alike; the passes grow by the two KIT-173 assertions) and
+`test-workflow-operation-registry.R` (two failures on both sides). No 9606 capture moved. R CMD check: base and head
+0 ERROR, 3 WARNING, 3 NOTE; nothing only on head (`r3/r3-check-compare.txt`).
+
 ## Acceptance criteria
 
 | # | Status | Evidence |
@@ -194,7 +209,7 @@ NEWS; ledger row). Run 45153295682 (base cf4b5fd4, head 19d24b96), observed:
 | A3 | met | `t5-summary.tsv` (three conditions TRUE), the two-relation report, the 40 lowest |
 | A4 | **met as restated (VAL-61)**: records made after the fix replay byte-identical across processes (R2f head-on-head 11 of 11); the base record replays with every expectation equal and its `geneID` cells equal as sets (T7(b) 12 of 12). History:  the base record replays on head with the same nine declared names, product parameters, service, contrasts, TERM2GENE and TERM2NAME hashes and plot-data digests; the stored result tables differ in one column, `geneID` (each row lists the same proteins in another order), and so the two `*_enrichment_results.tsv` files' SHA-256 differ. Found by instrument run 1 (VAL-54); stopped and reported, the test not adjusted | `t7i1/t7-failures.tsv`, `r2b/` |
 | A5 | met: shown to the owner, accepted (VAL-65); written into NEWS and the ledger row | `effect.tsv`, NEWS, ledger |
-| A6 | partly: targeted files, dependents and check done (R2, R2b); full suite (R3) not run, it follows D8 | `r2b/`, `check-compare.txt` |
+| A6 | met: full suite base against head, every difference a new test or a clusterProfiler capture (listed); check unchanged | `r3/` |
 | A7 | met | diff: NEWS under the unnumbered heading, no version change, Rd by hand, `Collate` |
 | A8 | met | T11(a) to (f) pass on head in R2b; (e) passes on base too |
 
