@@ -90,10 +90,10 @@ test_that("updateMetaboliteFiltering preserves metrics collection, save-path der
   overrides <- list(
       getFilteringProgressMetabolomics = function() "progress-object",
       countUniqueMetabolites = function(current_assay_data, metabolite_id_col) 2L,
-      countMetabolitesPerSample = function(current_assay_data, sample_id_col, metabolite_id_col, sample_columns) {
+      countMetabolitesPerSample = function(current_assay_data, sample_id_col, metabolite_id_col, sample_columns, ...) {
         data.frame(Run = sample_columns, n_detected = c(2L, 1L), stringsAsFactors = FALSE)
       },
-      calculateMissingness = function(current_assay_data, sample_id_col, sample_columns) 0.25,
+      calculateMissingness = function(current_assay_data, sample_id_col, sample_columns, ...) 0.25,
       calculateSumIntensityPerSample = function(current_assay_data, sample_id_col, sample_columns) {
         data.frame(Run = sample_columns, sum_intensity = c(10, 20), stringsAsFactors = FALSE)
       },
