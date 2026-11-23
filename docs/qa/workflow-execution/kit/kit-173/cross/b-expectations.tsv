@@ -1,0 +1,12 @@
+variant	expectation	result
+b	states	pass
+b	record declared names	pass
+b	provenance names	pass
+b	product parameters	pass
+b	product service	pass
+b	product contrasts	pass
+b	TERM2GENE hashes	pass
+b	TERM2NAME hashes	pass
+b	result tables	fail
+b	plot data digests	pass
+b	pathway files	fail

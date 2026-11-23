@@ -1,0 +1,1317 @@
+== test-go-propagation.R | fixed | KIT-173 T1: a hand-built 8-term graph propagates to the hand-computed closure under each relation set
+-- base:
+  Error in `testthat::local_mocked_bindings(goParentTable = function(ontology) parents, goDbTermAspects = function() stats::setNames(rep("BP", 8L), ids), goDbRelease = function() list(version = "toy", date = "toy"))`: Can't find binding for `goParentTable`, `goDbTermAspects`, and `goDbRelease`
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T2(a): over five relations the function's ancestors of every GO term equal GO.db's GO*ANCESTOR
+-- base:
+  Error in `propagateGoAnnotations(data.frame(TERM = terms, GENE = terms, stringsAsFactors = FALSE), aspect, goPropFive)`: could not find function "propagateGoAnnotations"
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T2(b): over is a and part of the term-ancestor pairs per aspect equal a recursive SQL count
+-- base:
+  Error in `propagateGoAnnotations(data.frame(TERM = terms, GENE = terms, stringsAsFactors = FALSE), aspect, goPropTwo)`: could not find function "propagateGoAnnotations"
+-- head:
+  <passes>
+
+== test-go-propagation.R | message-changed | KIT-173 T2(c, d): three proteins on GO:0006110 reach exactly 19 terms over two relations and 76 over five
+-- base:
+  Error in `propagateGoAnnotations(direct, "BP", case$relations)`: could not find function "propagateGoAnnotations"
+-- head:
+  Error in `data.frame(..., check.names = FALSE)`: arguments imply differing number of rows: 0, 1
+
+== test-go-propagation.R | fixed | KIT-173 T3(a): ids GO.db does not hold, or of another aspect, are dropped and counted by the function
+-- base:
+  Error in `propagateGoAnnotations(direct, "BP", goPropFive)`: could not find function "propagateGoAnnotations"
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T3(b): getUniprotAnnotations counts one obsolete, one secondary and one unknown id; the step records them
+-- base:
+  Error in `workflowEnrichmentGoOutcomes(plain, "is_a_part_of_regulates", da, "uniprot_acc")`: could not find function "workflowEnrichmentGoOutcomes"
+  Expected `lost[c("obsolete", "secondary", "unknown", "total")]` to be identical to `list(obsolete = 1L, secondary = 1L, unknown = 1L, total = 3L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+  Expected `lost$go_db_version` to be identical to `as.character(utils::packageVersion("GO.db"))`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('3.23.1')
+  Expected `lost$go_source_date` to be identical to `info$value[match("GOSOURCEDATE", info$name)]`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('2026-01-23')
+  Expected `outcomes$go_annotation_go_db_version` to be identical to `as.character(utils::packageVersion("GO.db"))`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('3.23.1')
+  Expected `outcomes$go_ids_not_in_go_db_total` to equal 3.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (3)
+  Expected `unlist(outcomes$go_ids_not_in_go_db)` to equal `c(obsolete = 1, secondary = 1, unknown = 1)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (1, 1, 1)
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T4: shuffled annotation rows give identical TERM2GENE and identical enricher p-values
+-- base:
+  Error in `buildUniprotGoGeneSets(annotations, value)`: could not find function "buildUniprotGoGeneSets"
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T5: yeast sets agree with g:Profiler's propagated sets (median C and P >= 0.90; C gains >= 0.20)
+-- base:
+  Expected `shipped_c - none_c` >= 0.2.
+  Actual comparison: 0.00 < 0.20
+  Difference: -0.20 < 0
+  Expected `shipped_c` >= 0.9.
+  Actual comparison: 0.29 < 0.90
+  Difference: -0.61 < 0
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T6: the yeast gene-set build stays under 200 MB of added peak RSS and 30 s
+-- base:
+  Error in `buildUniprotGoGeneSets(annotations[1:10, ], "is_a_part_of_regulates")`: could not find function "buildUniprotGoGeneSets"
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T7(c): the same DA and annotation run fresh declare go_propagation and pass other sets
+-- base:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `Filter(function(p) identical(p$name, "go_propagation"), step$parameters)[[1L]]`: subscript out of bounds
+  Expected `names` to be identical to `c(utils::head(diaEnrichmentOperation()$parameters, 9L), "go_propagation")`.
+  Differences:
+      actual              | expected                
+  [7] "protein_id_column" | "protein_id_column" [7] 
+  [8] "contrast_names"    | "contrast_names"    [8] 
+  [9] "results"           | "results"           [9] 
+                          - "go_propagation"    [10]
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T8: a propagated run labels parent terms from GO.db, tests no root, and drops the root-only protein from the background
+-- base:
+  Error in `processEnrichments(da, "999999", q_cutoff = 0.05, pathway_dir = withr::local_tempdir(), go_annotations = direct, exclude_iea = FALSE, protein_id_column = "Protein.IDs", contrast_names = "t8", go_propagation = value)`: unused argument (go_propagation = value)
+  Expected `any(!saved$ID %in% direct_terms)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T9: a 9606 run declares the nine names and passes no go_propagation; a clusterProfiler record declares it with its outcomes
+-- base:
+  Expected `all(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `outcomes$go_db_version` to be identical to `as.character(utils::packageVersion("GO.db"))`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('3.23.1')
+  Expected `outcomes$go_unreviewed_share` to equal 0.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (0)
+  Expected `unlist(outcomes$go_relations)` to be identical to `c("is a", "part of", "regulates", "positively regulates", "negatively regulates")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('is a', 'part of', 'regulates', 'positively regulates', 'negatively regulates')
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T9: a replay under another GO.db release warns with class workflow_replay_resource
+-- base:
+  Error in `testthat::local_mocked_bindings(goDbRelease = function() list(version = "0.0.0", date = "2000-01-01"))`: Can't find binding for `goDbRelease`
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workbook-shaped call propagates; the workbooks pass the value
+-- base:
+  Error in `data.frame(..., check.names = FALSE)`: arguments imply differing number of rows: 0, 1
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+-- base:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+  Expected `grepl("all identified proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl("all identified proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd
+  Expected `grepl("all identified proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd
+  Expected `grepl("all identified proteins", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd
+  Expected `grepl(d3, text_c, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl(d3, text_c, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+  Expected `grepl(d3, text_c, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+  Expected `grepl(d3, text_c, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+  Expected `grepl(d3, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl(d3, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+  Expected `grepl(d3, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+  Expected `grepl(d3, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+  Expected `grepl(goPropD7, plain, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl(goPropD7, plain, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+  Expected `grepl(goPropD7, plain, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+  Expected `grepl(goPropD7, plain, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+  Expected `grepl(goPropD7, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl(goPropD7, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+  Expected `grepl(goPropD7, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+  Expected `grepl(goPropD7, text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+  Expected `params$enrichment_correction_method` to be identical to "BH".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('BH')
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record
+-- base:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd fdr
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd fdr
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gSCS
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gSCS
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd none
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd none
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd fdr
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd fdr
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gSCS
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gSCS
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd none
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd none
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd fdr
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd fdr
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gSCS
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gSCS
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd none
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd none
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd fdr
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd fdr
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gSCS
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gSCS
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd none
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd none
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd fdr
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gSCS
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd none
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd fdr
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gSCS
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd none
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd fdr
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gSCS
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd none
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd fdr
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gSCS
+  Expected `grepl("adjusted FDR cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd none
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd fdr
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gSCS
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd none
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd fdr
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gSCS
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd none
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd fdr
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gSCS
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd none
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd fdr
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gSCS
+  Expected `grepl("Benjamini-Hochberg method", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd none
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd fdr
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gSCS
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd none
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd fdr
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gSCS
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd none
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd fdr
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gSCS
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd none
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd fdr
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gSCS
+  Expected `grepl("clusterProfiler", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd none
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd fdr
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gSCS
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd none
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd fdr
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gSCS
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd none
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd fdr
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gSCS
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd none
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd fdr
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gSCS
+  Expected `grepl(paste0(tool, cases[[name]]$ending), text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd none
+-- head:
+  <passes>
+
+== test-go-propagation.R | fixed | KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies
+-- base:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd clusterprofiler
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd clusterprofiler
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gprofiler2
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gprofiler2
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd clusterprofiler
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd clusterprofiler
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gprofiler2
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gprofiler2
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd clusterprofiler
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd clusterprofiler
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gprofiler2
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gprofiler2
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd clusterprofiler
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd clusterprofiler
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gprofiler2
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gprofiler2
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd clusterprofiler
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gprofiler2
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd clusterprofiler
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gprofiler2
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd clusterprofiler
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gprofiler2
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd clusterprofiler
+  Expected `grepl("< 1", both, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gprofiler2
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd clusterprofiler
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd gprofiler2
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd clusterprofiler
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd gprofiler2
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd clusterprofiler
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd gprofiler2
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd clusterprofiler
+  Expected `grepl("No fold change cutoff", text, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd gprofiler2
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd clusterprofiler
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd gprofiler2
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd clusterprofiler
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd gprofiler2
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd clusterprofiler
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd gprofiler2
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd clusterprofiler
+  Expected `grepl("no fold-change cutoff was applied", none, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd gprofiler2
+-- head:
+  <passes>
+
+== test-omic-enrich-module.R | new-failure | (b) in process: clusterprofiler
+-- base:
+  <passes>
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler run product
+
+== test-omic-enrich-module.R | message-changed | (b) in process: kernel_clusterprofiler
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 75ab10ded48a1b1761e4b36bdd7371a039ab91982951da140ec468162d71877b"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 75ab10ded48a1b1761e4b36bdd7371a039ab91982951da140ec468162d71877b"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler run product
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 75ab10ded48a1b1761e4b36bdd7371a039ab91982951da140ec468162d71877b"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 75ab10ded48a1b1761e4b36bdd7371a039ab91982951da140ec468162d71877b"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+
+== test-omic-enrich-module.R | new-failure | (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+-- base:
+  <passes>
+-- head:
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 45dcef65e31e97cd"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"5cbbde4509069e50"
+  + value"9f26ed375c4b34a4"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"824ba94bb240476c"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  
+  actual$record[13:16] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  
+  clusterprofiler
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 45dcef65e31e97cd"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"d8289efe33d30cd8"
+  + value"8d7955ab39314468"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"824ba94bb240476c"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  
+  actual$record[13:16] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  
+  kernel_clusterprofiler
+
+== test-omic-enrich-module.R | new-failure | (R3, P-28) a filtered run declares the organism filter, records what it did and has its own identity
+-- base:
+  <passes>
+-- head:
+  Expected `r3$provenance$parameter_names` to be identical to `diaEnrichmentOperation()$parameters`.
+  Differences:
+       actual                    | expected                      
+   [9] "results"                 | "results"                 [9] 
+  [10] "organism_filter_enabled" | "organism_filter_enabled" [10]
+  [11] "organism_filter_taxon"   | "organism_filter_taxon"   [11]
+                                 - "go_propagation"          [12]
+  Expected `utils::tail(diaEnrichmentOperation()$parameters, 2L)` to be identical to `omicEnrichR3FilterNames`.
+  Differences:
+  `actual`:   "organism_filter_taxon"   "go_propagation"       
+  `expected`: "organism_filter_enabled" "organism_filter_taxon"
+
+== test-omic-enrich-module.R | new-failure | (R3, P-28) an unfiltered run keeps its nine declared names, its record, its product and its identity
+-- base:
+  <passes>
+-- head:
+  Expected `r3$provenance$parameter_names` to be identical to `setdiff(diaEnrichmentOperation()$parameters, omicEnrichR3FilterNames)`.
+  Differences:
+      actual              | expected                
+  [7] "protein_id_column" | "protein_id_column" [7] 
+  [8] "contrast_names"    | "contrast_names"    [8] 
+  [9] "results"           | "results"           [9] 
+                          - "go_propagation"    [10]
+
+== test-workflow-analysis-record.R | new-failure | KIT-107 F-16: a DIA record's enrichment step replays after the DA to the same enrichment data, summaries and product (D6 test 3)
+-- base:
+  <passes>
+-- head:
+  Expected `replayed_filter$provenance$parameter_names` to be identical to `diaEnrichmentOperation()$parameters`.
+  Differences:
+       actual                    | expected                      
+   [9] "results"                 | "results"                 [9] 
+  [10] "organism_filter_enabled" | "organism_filter_enabled" [10]
+  [11] "organism_filter_taxon"   | "organism_filter_taxon"   [11]
+                                 - "go_propagation"          [12]
+
+== test-omics-enrich-core.R | new-failure | (W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step
+-- base:
+  <passes>
+-- head:
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler
+
+== test-omics-enrich-core.R | new-failure | (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step
+-- base:
+  <passes>
+-- head:
+  Expected `run[[field]]` to be identical to `frozen$run[[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+  Expected `run$run_product` to be identical to `frozen$run$product`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler
+

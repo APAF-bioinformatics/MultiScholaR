@@ -1,0 +1,12 @@
+pair	expectation	result	difference
+head	states	pass	
+head	record declared names	pass	
+head	provenance names	pass	
+head	product parameters	pass	
+head	product service	pass	
+head	product contrasts	pass	
+head	TERM2GENE hashes	pass	
+head	TERM2NAME hashes	pass	
+head	result tables	pass	
+head	plot data digests	pass	
+head	pathway files	pass	

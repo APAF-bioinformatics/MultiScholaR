@@ -1,0 +1,10 @@
+aspect	label	edges
+BP	isa	41725
+BP	negatively regulates	2507
+BP	part of	4493
+BP	positively regulates	2506
+BP	regulates	2867
+MF	isa	12413
+MF	part of	8
+CC	isa	4664
+CC	part of	1824

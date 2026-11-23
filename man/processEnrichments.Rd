@@ -15,7 +15,8 @@ processEnrichments(
   exclude_iea = FALSE,
   protein_id_column = "Protein.IDs",
   contrast_names = NULL,
-  correction_method = "gSCS"
+  correction_method = "gSCS",
+  go_propagation = goPropagationShipped
 )
 }
 \arguments{
@@ -33,13 +34,25 @@ processEnrichments(
 
 \item{go_annotations}{UniProt GO annotations (required for unsupported organisms)}
 
-\item{exclude_iea}{Whether to exclude IEA (Inferred Electronic Annotation) terms (default: FALSE)}
+\item{exclude_iea}{Whether to exclude IEA (Inferred Electronic Annotation) terms (default: FALSE). It applies to
+the 13 organisms served by g:Profiler only: the UniProt annotations used for any other organism carry no evidence
+codes, so for those \code{TRUE} gives a warning (class \code{multischolar_enrichment_iea_not_excludable}) and electronic
+annotations are included.}
 
 \item{protein_id_column}{Name of the protein ID column (default: "Protein.IDs")}
 
 \item{contrast_names}{Vector of contrast names for output labeling}
 
 \item{correction_method}{Method for FDR correction (default: "gSCS")}
+
+\item{go_propagation}{For organisms outside the 13 served by g:Profiler, how the Gene Ontology sets built from
+\code{go_annotations} take parent terms (KIT-173): \code{"is_a_part_of_regulates"} (the default) adds to each term the
+proteins annotated to its more specific terms over the relations is a, part of, regulates, positively regulates
+and negatively regulates, as g:Profiler and GO.db's ancestor tables do (a biological-process term then also holds
+proteins annotated as regulating that process); \code{"is_a_part_of"} follows is a and part of only, the relations the
+GO Consortium calls safe for grouping annotations; \code{"none"} uses the direct annotations only (the sets before
+KIT-173). On a propagating value the three aspect roots are not tested, so proteins annotated only to them leave
+the background, and the GO release is that of the installed GO.db. Not used on the g:Profiler route.}
 }
 \value{
 S4 EnrichmentResults object containing enrichment data and summaries. Its plot slots are left empty: the

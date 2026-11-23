@@ -1,0 +1,12 @@
+pair	expectation	result	difference
+base	states	pass	
+base	record declared names	pass	
+base	provenance names	pass	
+base	product parameters	pass	
+base	product service	pass	
+base	product contrasts	pass	
+base	TERM2GENE hashes	pass	
+base	TERM2NAME hashes	pass	
+base	result tables	pass	
+base	plot data digests	pass	
+base	pathway files	pass	

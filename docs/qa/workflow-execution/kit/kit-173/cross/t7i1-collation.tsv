@@ -1,0 +1,3 @@
+variant	process	collation
+T7i1	capture (base): Rscript	C.UTF-8
+T7i1	replay (head): testthat test	CTest passed with 1 success 🎉.

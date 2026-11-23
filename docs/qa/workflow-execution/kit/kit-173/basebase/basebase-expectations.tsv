@@ -1,0 +1,12 @@
+variant	expectation	result
+basebase	states	pass
+basebase	record declared names	pass
+basebase	provenance names	pass
+basebase	product parameters	pass
+basebase	product service	pass
+basebase	product contrasts	pass
+basebase	TERM2GENE hashes	pass
+basebase	TERM2NAME hashes	pass
+basebase	result tables	fail
+basebase	plot data digests	pass
+basebase	pathway files	fail

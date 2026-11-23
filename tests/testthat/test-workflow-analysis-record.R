@@ -1046,7 +1046,8 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
             replayed_filter$provenance <<- manager$.context$snapshot$step_provenance$enrichment_completed
             replayed_filter$config <<- readComponentMetadata(manager, manager$.context$snapshot$states$enrichment_completed)$config
         }))))
-    expect_identical(replayed_filter$provenance$parameter_names, diaEnrichmentOperation()$parameters)
+    expect_identical(replayed_filter$provenance$parameter_names,
+        setdiff(diaEnrichmentOperation()$parameters, "go_propagation")) # KIT-173: clusterProfiler route only
     expect_identical(replayed_filter$provenance$values[c("organism_filter_enabled", "organism_filter_taxon")],
         list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
     # KIT-119 (A107-06): the outcomes also hold the input identities (the three filter outcomes are as before).

@@ -1,0 +1,4 @@
+accession	uniprot_go_ids	quickgo_positive	both	uniprot_only	quickgo_only	uniprot_only_that_are_ancestors_of_quickgo	ancestors_of_quickgo_terms	share_of_those_ancestors_in_uniprot
+P00330	13	24	13	0	11	0	72	0
+P00549	9	13	9	0	4	0	103	0
+P02829	25	26	25	0	1	0	107	0

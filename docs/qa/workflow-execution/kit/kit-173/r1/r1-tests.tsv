@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-go-propagation.R	67	163	12	1	0	69.4	failed

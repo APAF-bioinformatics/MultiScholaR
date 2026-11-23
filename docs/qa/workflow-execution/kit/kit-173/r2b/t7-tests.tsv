@@ -1,0 +1,21 @@
+test	nb	failed	skipped	error
+KIT-173 fixtures: every committed fixture matches the SHA-256 its README states	29	0	FALSE	FALSE
+KIT-173 T1: a hand-built 8-term graph propagates to the hand-computed closure under each relation set	13	0	FALSE	FALSE
+KIT-173 T2(a): over five relations the function's ancestors of every GO term equal GO.db's GO*ANCESTOR	7	0	FALSE	FALSE
+KIT-173 T2(b): over is a and part of the term-ancestor pairs per aspect equal a recursive SQL count	6	0	FALSE	FALSE
+KIT-173 T2(c, d): three proteins on GO:0006110 reach exactly 19 terms over two relations and 76 over five	32	0	FALSE	FALSE
+KIT-173 T3(a): ids GO.db does not hold, or of another aspect, are dropped and counted by the function	5	0	FALSE	FALSE
+KIT-173 T3(b): getUniprotAnnotations counts one obsolete, one secondary and one unknown id; the step records them	9	0	FALSE	FALSE
+KIT-173 T4: shuffled annotation rows give identical TERM2GENE and identical enricher p-values	8	0	FALSE	FALSE
+KIT-173 T5: yeast sets agree with g:Profiler's propagated sets (median C and P >= 0.90; C gains >= 0.20)	4	0	FALSE	FALSE
+KIT-173 T6: the yeast gene-set build stays under 200 MB of added peak RSS and 30 s	2	0	FALSE	FALSE
+KIT-173 T7(b): a record made on the base commit replays with the same names, sets, tables and files (regression)	11	2	FALSE	FALSE
+KIT-173 T7(c): the same DA and annotation run fresh declare go_propagation and pass other sets	3	0	FALSE	FALSE
+KIT-173 T8: a propagated run labels parent terms from GO.db, tests no root, and drops the root-only protein from the background	8	0	FALSE	FALSE
+KIT-173 T9: a 9606 run declares the nine names and passes no go_propagation; a clusterProfiler record declares it with its outcomes	7	0	FALSE	FALSE
+KIT-173 T9: a replay under another GO.db release warns with class workflow_replay_resource	1	0	FALSE	FALSE
+KIT-173 T10: exclude_iea = TRUE warns on the UniProt route; the workbook-shaped call propagates; the workbooks pass the value	12	0	FALSE	FALSE
+KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background	49	0	FALSE	FALSE
+KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler paragraph, the correction named from the record	84	0	FALSE	FALSE
+KIT-173 T11(e): N/A and an absent method print the base paragraph byte for byte (regression)	12	0	FALSE	FALSE
+KIT-173 T11(f): on both routes the fold-change bullet states the cutoffs the kernel applies	40	0	FALSE	FALSE
