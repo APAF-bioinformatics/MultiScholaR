@@ -1,0 +1,27 @@
+== test-coverage-rank.R :: T-RANK-1: the rank effect is calibrated into the declared pAUC band and recorded (1 not passed)
+Error in `valRankEffect("replicate", 4L, nsim = 20L)`: could not find function "valRankEffect"
+
+== test-coverage-rank.R :: T-RANK-2: a cell with zero-width intervals or a target at a bound is degenerate (1 not passed)
+Error in `valCoverageRows(cell, "pauc_diff", "rank", hits, "approx_run", target = 0.3, zero_width = zero, target_se = 0.001, range = c(-1, 1), effect = 0.35)`: unused arguments (zero_width = zero, target_se = 0.001, range = c(-1, 1), effect = 0.35)
+
+== test-coverage-rank.R :: T-RANK-3: run-level conservative is read on the miss rate (2 not passed)
+Expected `valCoverageStatus("approx_run", 0.99, 0.95)` to be identical to "conservative".
+Differences:
+`actual`:   "pass"        
+`expected`: "conservative"
+
+
+== test-coverage-rank.R :: T-RANK-4: a degenerate condition makes the regime row degenerate (not offered) (1 not passed)
+Expected `tab$status` to be identical to "degenerate".
+Differences:
+`actual`:   "pass"      
+`expected`: "degenerate"
+
+
+== test-coverage.R :: pass bands: approximate run-level, within-run, exact and Clopper-Pearson (1 not passed)
+Expected `valCoverageStatus("approx_run", 1, 1 - 0.05/15)` to be identical to "conservative".
+Differences:
+`actual`:   "pass"        
+`expected`: "conservative"
+
+

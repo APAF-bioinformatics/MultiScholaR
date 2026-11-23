@@ -628,7 +628,8 @@ valWithinRunRows <- function(decl, unit, da, truth, universe, env, blind_seed = 
                 }
                 data <- data.frame(j = seq_along(keys), class = a1$class[i1],
                                    stringsAsFactors = FALSE)
-                if (is.function(env[[spec[["cluster"]] %||% ""]])) {
+                cl_name <- spec[["cluster"]]
+                if (!is.null(cl_name) && is.function(env[[cl_name]])) {
                     data$cluster <- env[[spec[["cluster"]]]](a1$key[i1])
                 }
                 stat <- function(df) {
