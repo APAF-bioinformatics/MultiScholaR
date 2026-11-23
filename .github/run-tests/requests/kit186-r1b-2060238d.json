@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-186 R1b: instrument re-run (VAL-54) of the new file on the corrected tests-only commit; failing-first; ceiling 45 min",
+  "label": "KIT-186 R1b tests-only 2060238d",
+  "package_commit": "2060238d2cd245212b0ab3e6abd217affc9068f3",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-trx-da-without-ruv.R"],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
