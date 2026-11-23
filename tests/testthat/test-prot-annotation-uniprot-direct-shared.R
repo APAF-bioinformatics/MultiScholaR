@@ -71,6 +71,15 @@ test_that("UniProt annotation helpers preserve cache, download, and empty-table 
     headers = function(x) list(`x-uniprot-release` = "2026_03"),
     .package = "httr"
   )
+  # KIT-175 (D5): the request moved to httr2; the same answers are served through its double, and the proxy points at
+  # a closed port so that a request escaping both doubles fails instead of reaching UniProt.
+  withr::local_envvar(http_proxy = "http://127.0.0.1:9", https_proxy = "http://127.0.0.1:9",
+    HTTP_PROXY = "http://127.0.0.1:9", HTTPS_PROXY = "http://127.0.0.1:9")
+  httr2::local_mocked_responses(function(req) {
+    request_log$query <- httr2::url_parse(req$url)$query$query
+    httr2::response(status_code = request_log$status, url = req$url, method = "GET",
+      headers = list(`x-uniprot-release` = "2026_03"), body = charToRaw(response_text))
+  })
 
   downloaded <- directUniprotDownload(
     input_tbl = input_tbl,
@@ -93,14 +102,14 @@ test_that("UniProt annotation helpers preserve cache, download, and empty-table 
     list(service = "uniprot", release = "2026_03", release_kind = "header"))
 
   request_log$status <- 500L
-  failed_download <- directUniprotDownload(
+  failed_download <- suppressWarnings(directUniprotDownload(
     input_tbl = input_tbl,
     output_path = tempfile(fileext = ".tsv"),
     taxon_id = 9606,
     batch_size = 10,
     timeout = 60,
     api_delay = 0
-  )
+  ))
 
   standardized <- standardizeUniprotColumns(data.frame(
     Protein.existence = "1",
