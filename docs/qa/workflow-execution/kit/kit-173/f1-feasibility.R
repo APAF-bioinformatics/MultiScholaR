@@ -284,6 +284,9 @@ if (!is.null(gmt_response)) {
     record("gmt_lines_full", length(lines))
     record("gmt_prefixes_full", names(table(sub(":.*$", "", sub("\t.*$", "", lines)))))
     go_lines <- lines[startsWith(lines, "GO:")]
+    # R0b: the description field is replaced by the term id (the committed GMT keeps ids and genes only): a GO term
+    # name such as "cargo receptor activity" matches the run's upload scan, which withheld the file in R0.
+    go_lines <- sub("^([^\t]*)\t[^\t]*\t", "\\1\t\\1\t", go_lines)
     gmt_gz <- file.path(fixture_dir, "gprofiler-scerevisiae-go.ENSG.gmt.gz")
     zcon <- gzfile(gmt_gz, "w")
     writeLines(go_lines, zcon)
@@ -298,13 +301,22 @@ if (!is.null(gmt_response)) {
 writeAll()
 
 # --- Europe PMC metadata of the two g:Profiler papers (F2) -------------------------------------------------------
-for (doi in c(service_2023 = "10.1093/nar/gkad347", package_2020 = "10.12688/f1000research.24956.2")) {
-    name <- names(which(c(service_2023 = "10.1093/nar/gkad347", package_2020 = "10.12688/f1000research.24956.2") ==
-        doi))
+papers <- c(service_2023 = "10.1093/nar/gkad347", package_2020 = "10.12688/f1000research.24956.2",
+    service_2019 = "10.1093/nar/gkz369")
+for (name in names(papers)) {
     r <- fetch(paste0("europepmc_", name), "https://www.ebi.ac.uk/europepmc/webservices/rest/search",
-        query = list(query = sprintf("DOI:\"%s\"", doi), format = "json", resultType = "core"))
-    if (!is.null(r)) writeLines(httr::content(r, "text", encoding = "UTF-8"),
-        file.path(out_dir, sprintf("europepmc-%s.json", name)))
+        query = list(query = sprintf("DOI:\"%s\"", papers[[name]]), format = "json", resultType = "core"))
+    if (is.null(r)) next
+    text <- httr::content(r, "text", encoding = "UTF-8")
+    writeLines(text, file.path(out_dir, sprintf("europepmc-%s.json", name)))
+    # R0b: the open-access full text, for F2's check of the per-source correction statement
+    pmcid <- tryCatch(jsonlite::fromJSON(text)$resultList$result$pmcid[[1L]], error = function(e) NA)
+    if (is.character(pmcid) && !is.na(pmcid)) {
+        full <- fetch(paste0("europepmc_full_", name), sprintf(
+            "https://www.ebi.ac.uk/europepmc/webservices/rest/%s/fullTextXML", pmcid))
+        if (!is.null(full)) writeLines(httr::content(full, "text", encoding = "UTF-8"),
+            file.path(out_dir, sprintf("europepmc-%s-fulltext.xml.txt", name)))
+    }
 }
 
 # --- QuickGO checks (stop rule: go_id holds ancestors or NOT-qualified terms) -------------------------------------
@@ -461,8 +473,10 @@ if (!is.null(ecoli)) {
 
     # T7 fixture (rule of this script, stated in feasibility.md): P = a BP term with at most 3 direct proteins and
     # 15 to 40 propagated proteins; D = a term with 10 to 20 direct proteins; both drawn with seed 20261123 + 7
-    # from sorted candidates. Fixture = P's propagated proteins, D's direct proteins, seeded fill from the
-    # non-root-only proteins to 69, plus one root-only protein (GO ids exactly GO:0008150 if one exists).
+    # from sorted candidates. Fixture = P's propagated proteins, D's direct proteins, seeded fill from the proteins
+    # with a non-root direct term to 69, plus one root-only protein. R0 found no reviewed entry whose GO ids are all
+    # aspect roots (yeast 0, E. coli 0), so the root-only protein is synthetic: an entry without GO annotation, drawn
+    # with seed 20261123 + 8, given GO:0008150 alone (as a curator's "no biological data available" annotation).
     direct_bp_size <- table(direct$TERM[direct$aspect == "BP"])
     direct_all_size <- table(direct$TERM)
     ids_raw <- strsplit(ifelse(is.na(ecoli$Gene.Ontology.IDs), "", ecoli$Gene.Ontology.IDs), "; ", fixed = TRUE)
@@ -478,12 +492,18 @@ if (!is.null(ecoli)) {
     d_term <- cand_d[[sample.int(length(cand_d), 1L)]]
     members <- union(unique(bp$Entry[bp$TERM == p_term]), unique(direct$Entry[direct$TERM == d_term]))
     members <- setdiff(members, root_only)
-    pool <- sort(setdiff(unique(direct$Entry), c(members, root_only)))
+    has_nonroot <- unique(direct$Entry[!direct$TERM %in% ROOTS])
+    members <- intersect(members, has_nonroot)
+    pool <- sort(setdiff(has_nonroot, members))
     fill <- if (length(members) < 69L) sample(pool, 69L - length(members)) else character()
-    root_pick <- if (length(only_bp_root)) sort(only_bp_root)[[1L]] else sort(root_only[vapply(ids_raw[root_only],
-        function(x) "GO:0008150" %in% x, logical(1L))])[[1L]]
+    no_go <- sort(ecoli$Entry[is.na(ecoli$Gene.Ontology.IDs) | !nzchar(ecoli$Gene.Ontology.IDs)])
+    set.seed(SEED_TERMS + 8L)
+    root_pick <- no_go[[sample.int(length(no_go), 1L)]]
     fixture_entries <- sort(c(members, fill, root_pick))
     t7 <- ecoli[ecoli$Entry %in% fixture_entries, ]
+    t7$Gene.Ontology.IDs[t7$Entry == root_pick] <- "GO:0008150"
+    ids_raw[[root_pick]] <- "GO:0008150"
+    root_only <- c(root_only, root_pick)
     t7_path <- file.path(fixture_dir, "t7-annotation-ecoli.tsv")
     utils::write.table(t7, t7_path, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
     # within-fixture checks
