@@ -26,32 +26,33 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-23 12:35 UTC, after the second build-points ruling; read first)
+## Resume here (state 2026-11-24, VAL-69; read this first)
 
-Ticket r1.12 (main checkout): build-points2 points 3, 4, 5 (a), (b), (c), (e), (f) and R1 applied
-with the register's text (section 27). **HELD for the owner, nothing changed:** point 1 (exact
-binomial band) and point 2 (rank generator re-pin and re-run); the offered-regime table stays as
-classified.
+Ticket r1.13 (main checkout, section 28): T1 21, T2 54; exact-tail rule a candidate (C1 n = 10 at
+98.33 % and above keeps `fail`); rank generator re-pinned, `degenerate` rule, `conservative` on the
+miss rate.
 
-**Runs this round:**
-- T0f 45171499308 at 7f4bfc4b (tests only), 0.84: new tests fail as expected (T-COV-ENDS,
-  T-PAR-4, T-PH-8), except T-COV-ENDS-2, which passed trivially (NULL equals NULL before the
-  columns existed: test defect, corrected after with a column-presence check) and T-PH-9 (its one
-  expectation passed, then an error). **T-PH-1 to T-PH-7 and T-PAR-1 to T-PAR-3 pass (59
-  expectations): the first run of the section 7 code of 2b18b1e3, on the toy fixtures.**
-- Lint-only 45172462054 at 4150f21c, 0.80: **93 -> 17 lints**, all in this session's new code
-  (parity.R 2, phases.R 15). The 17 are fixed or marked after the run (CHANGES), **unrun**. A2's
-  lintr part therefore still unshown; covr 86.52 % stands.
+**Done:**
+- Whole-suite run 45219635014 at d946b878: **183 of 184 pass, lintr 0 lints (A2 met)**; T-TAB on
+  all ten routes, T-PH-1 to 7, T-PH-9, T-PAR-1 to 4, T-COV-ENDS(-2) pass. T-PH-8 failed on a code
+  defect (cluster lookup), fixed at 52a1e2c2.
+- Rank re-pin: tests only 9903b62a, T0g 45220113873 fails as expected (T0 now 5.95 of 6); code
+  facf45e9; T1 rank run 45222394118: all pass except T-RANK-1 (effect read back from a name: code
+  defect), fixed at 1827d420. Declaration of the T-COV re-run written and committed before sending:
+  `t2/t2r-declaration.md`, plan `t2/t2r-plan.tsv` (13 ranges of C4-144, C4-146, C4e-148, C4e-150).
 
-**Budget:** T0 5.21 of 6; T1 14.38 of 15 (no further run fits); T2 18.59 of 60.
+**In flight:** T1 correction run 45225211841 at 1827d420 (`--files coverage-rank,coverage,phases
+--lint`). If it passes: send the T-COV request R (`val-tests.R t2r-out --coverage-plan
+docs/qa/workflow-execution/kit/kit-159/t2/t2r-plan.tsv --request R --nsim 2000 --chunks 4`,
+timeout 280) at 1827d420; then USAGE.md's rank rows and the H2 row from that run only; KIT-162 told.
 
-**Code state (head of this commit), unrun since its last run:** r1.12 code (coverage table ends,
-L1 check, within-run widening, run-level clopper_pearson, bootstrap_within_run verdicts, test mode
-not forceable, hook summary NULL), the 17 lint fixes, the T-COV-ENDS-2 correction.
+**Budget:** T0 5.95 of 6; T1 about 16.56 of 21 before the correction run; T2 18.59 of 54.
 
-**Waiting on the owner:** points 1 and 2; budget into T1 for one whole-suite run with `--lint` that
-proves the section 7 and r1.12 code and A2's lintr part. Not started: R1 (r1.12 text; needs
-`lifecycle/uniprot-accessions.tsv` and a pre script), S0, run-val-mofa (with KIT-170).
+**R1 (r1.12):** materials in `lifecycle/` (draft-inputs.tsv with the named open file,
+uniprot-accessions.tsv with 25 reviewed human accessions, r1-pre.R, r1-pre-outputs.tsv). Not sent:
+the record phase of `val-run.R` does not call `valRecordUniprotCache`; wiring it is harness code,
+tests first, and T0 has 0.05 core-hours left. Needs the coordinator's word on where its
+failing-first run is charged.
 
 ## Earlier resume record (state at dcc27fb5)
 
