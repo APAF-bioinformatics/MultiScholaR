@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-217 ML: blind lifecycle of measurement M (declaration rev 2, 8ef4f158), gate G-M; no tests",
+  "label": "KIT-217 M lifecycle on kit-217-measure 9e15166a",
+  "package_commit": "9e15166ae4a4cba1cb682370c87b6ad025084ec8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-217/m/sim-k217.R", "args": ["L2,L1,M2,M1,Lv,Le,Me", "401", "403", "docs/qa/workflow-execution/kit/kit-217/m/ml"], "env": {"K217_LIFECYCLE": "1", "K217_FAULT": "1", "K217_WORKERS": "4"}, "out": "docs/qa/workflow-execution/kit/kit-217/m/ml", "timeout_minutes": 120},
+    {"path": "docs/qa/workflow-execution/kit/kit-217/m/score-k217.R", "args": ["selftest", "docs/qa/workflow-execution/kit/kit-217/m/ml-selftest"], "env": {}, "out": "docs/qa/workflow-execution/kit/kit-217/m/ml-selftest", "timeout_minutes": 90},
+    {"path": "docs/qa/workflow-execution/kit/kit-217/m/score-k217.R", "args": ["e7", "docs/qa/workflow-execution/kit/kit-217/m/ml-e7"], "env": {}, "out": "docs/qa/workflow-execution/kit/kit-217/m/ml-e7", "timeout_minutes": 60}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
