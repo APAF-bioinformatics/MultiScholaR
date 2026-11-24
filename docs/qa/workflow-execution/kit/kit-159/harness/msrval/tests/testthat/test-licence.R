@@ -6,24 +6,28 @@ test_that("T-LIC-1 to T-LIC-4: unlisted file, extra column, per-feature class, t
     ev <- evidenceDir(man)
     expect_true(valCheckEvidence(ev, man))
     writeLines("x", file.path(ev, "notes.txt"))
-    expect_error(valCheckEvidence(ev, man), class = "val_publish_forbidden")
+    expect_error(valCheckEvidence(ev, man), "notes.txt is not on the allow-list",
+                 class = "val_publish_forbidden", fixed = TRUE)
     ev2 <- evidenceDir(man)
     cells <- emptyTable("cells.tsv")
     cells$extra <- 1
     writeTsv(cells, file.path(ev2, "cells.tsv"))
-    expect_error(valCheckEvidence(ev2, man), class = "val_publish_forbidden")
+    expect_error(valCheckEvidence(ev2, man), "cells.tsv has other columns",
+                 class = "val_publish_forbidden", fixed = TRUE)
     ev3 <- evidenceDir(man)
     met <- emptyTable("metrics.tsv", 2L)
     met$class <- c("changed", "P69905")
     writeTsv(met, file.path(ev3, "metrics.tsv"))
     expect_error(valCheckEvidence(ev3, man, classes = c("changed", "null")),
-                 class = "val_publish_forbidden")
+                 "metrics.tsv has an undeclared class", class = "val_publish_forbidden",
+                 fixed = TRUE)
     met$class <- c("changed", "null")
     writeTsv(met, file.path(ev3, "metrics.tsv"))
     expect_true(valCheckEvidence(ev3, man, classes = c("changed", "null")))
     expect_error(valCheckEvidence(ev3, man, classes = c("changed", "null"),
                                   row_bounds = list(metrics.tsv = 1L)),
-                 class = "val_publish_forbidden")
+                 "metrics.tsv has more rows than its bound", class = "val_publish_forbidden",
+                 fixed = TRUE)
 })
 
 test_that("T-LIC-5 to T-LIC-8: copies, archives and the size of scored.tsv.gz", {
@@ -32,14 +36,16 @@ test_that("T-LIC-5 to T-LIC-8: copies, archives and the size of scored.tsv.gz", 
     ev <- evidenceDir(man)
     dir.create(file.path(ev, "inputs"))
     file.copy(file.path(dir, "data/closed.tsv"), file.path(ev, "inputs/closed.tsv"))
-    expect_error(valCheckEvidence(ev, man), class = "val_publish_forbidden")
+    expect_error(valCheckEvidence(ev, man), "closed.tsv copies a not-permitted input",
+                 class = "val_publish_forbidden", fixed = TRUE)
     ev2 <- evidenceDir(man)
     dir.create(file.path(ev2, "inputs"))
     file.copy(file.path(dir, "data/open.tsv"), file.path(ev2, "inputs/open.tsv"))
     expect_true(valCheckEvidence(ev2, man))
     ev3 <- evidenceDir(man)
     writeLines("x", file.path(ev3, "bundle.zip"))
-    expect_error(valCheckEvidence(ev3, man), class = "val_publish_forbidden")
+    expect_error(valCheckEvidence(ev3, man), "bundle.zip is an archive or binary",
+                 class = "val_publish_forbidden", fixed = TRUE)
     ev4 <- evidenceDir(man[man$role != "closed", ])
     big <- file.path(ev4, "scored.tsv.gz")
     con <- gzfile(big, "w")
@@ -49,7 +55,8 @@ test_that("T-LIC-5 to T-LIC-8: copies, archives and the size of scored.tsv.gz", 
     close(con)
     expect_gt(file.size(big), 5 * 1024^2)
     expect_error(valCheckEvidence(ev4, man[man$role != "closed", ], scored_lineage = "open"),
-                 class = "val_publish_forbidden")
+                 "scored.tsv.gz is over 5 MB", class = "val_publish_forbidden",
+                 fixed = TRUE)
 })
 
 test_that("T-LIC-9: declared outputs, keyed lineage, and path placeholders", {
@@ -74,17 +81,20 @@ test_that("T-LIC-9: declared outputs, keyed lineage, and path placeholders", {
     writeTsv(data.frame(arm = "a1", pc1 = 0.5, extra = 1),
              file.path(ev, "ticket/pca/s1-a2-scores.tsv"))
     expect_error(valCheckEvidence(ev, man, outputs = outputs, arms = arms),
-                 class = "val_publish_forbidden")
+                 "columns differ from the declaration", class = "val_publish_forbidden",
+                 fixed = TRUE)
     ev2 <- evidenceDir(man)
     writeTsv(data.frame(arm = "a1", pc1 = 0.5), file.path(ev2, "ticket/pca/s2-a1-scores.tsv"))
     expect_error(valCheckEvidence(ev2, man, outputs = outputs, arms = arms),
-                 class = "val_publish_forbidden")
+                 "s2-a1-scores.tsv is not on the allow-list", class = "val_publish_forbidden",
+                 fixed = TRUE)
     closed_keyed <- outputs
     closed_keyed[[2]]$lineage <- "closed"
     ev3 <- evidenceDir(man)
     writeTsv(data.frame(protein = "P1", value = 1), file.path(ev3, "ticket/keyed.tsv"))
     expect_error(valCheckEvidence(ev3, man, outputs = closed_keyed, arms = arms),
-                 class = "val_publish_forbidden")
+                 "keyed.tsv is a keyed table", class = "val_publish_forbidden",
+                 fixed = TRUE)
     undeclared <- outputs[1]
     undeclared[[1]]$path <- "ticket/pca/{variant}-{arm}.tsv"
     expect_error(valExpandOutputPaths(undeclared[[1]], arms = arms), class = "val_spec_invalid")
@@ -97,7 +107,8 @@ test_that("T-LIC-9: declared outputs, keyed lineage, and path placeholders", {
     writeTsv(data.frame(arm = "a1", pc1 = 0.5), file.path(ev4, "ticket/pca/P69905-a1-scores.tsv"))
     expect_error(valCheckEvidence(ev4, man, outputs = key_value, arms = arms,
                                   universe = c("P69905", "P68871")),
-                 class = "val_publish_forbidden")
+                 "names a feature key", class = "val_publish_forbidden",
+                 fixed = TRUE)
 })
 
 test_that("T-LIC-10: the lifecycle keeps scored.tsv.gz and primary call counts private", {
@@ -109,14 +120,16 @@ test_that("T-LIC-10: the lifecycle keeps scored.tsv.gz and primary call counts p
     close(con)
     expect_true(valCheckEvidence(ev, man, scored_lineage = "open", phase = "counted"))
     expect_error(valCheckEvidence(ev, man, scored_lineage = "open", phase = "lifecycle"),
-                 class = "val_publish_forbidden")
+                 "scored.tsv.gz never leaves a lifecycle job", class = "val_publish_forbidden",
+                 fixed = TRUE)
     ev2 <- evidenceDir(man)
     met <- emptyTable("metrics.tsv")
     met$unit <- "u01"
     met$metric <- "keys_called"
     writeTsv(met, file.path(ev2, "metrics.tsv"))
     expect_error(valCheckEvidence(ev2, man, phase = "lifecycle", primary_units = "u01"),
-                 class = "val_publish_forbidden")
+                 "holds a call count of a primary unit", class = "val_publish_forbidden",
+                 fixed = TRUE)
 })
 
 test_that("T-LIC-11: result tables of a not-permitted input, label keys, attribution", {
@@ -133,11 +146,13 @@ test_that("T-LIC-11: result tables of a not-permitted input, label keys, attribu
     writeTsv(data.frame(group = c("A", "P69905"), n = c(3, 4)),
              file.path(ev, "ticket/summary.tsv"))
     expect_error(valCheckEvidence(ev, man, outputs = out, universe = c("P69905", "P68871")),
-                 class = "val_publish_forbidden")
+                 "a label is a feature key", class = "val_publish_forbidden",
+                 fixed = TRUE)
     ev2 <- evidenceDir(man)
     writeTsv(man[1, c("role", "kind", "licence", "redistribution", "citation")],
              file.path(ev2, "attribution.tsv"))
-    expect_error(valCheckEvidence(ev2, man), class = "val_publish_forbidden")
+    expect_error(valCheckEvidence(ev2, man), "attribution.tsv does not list every input",
+                 class = "val_publish_forbidden", fixed = TRUE)
     expect_true(valPublishable(man, "open"))
     expect_true(valPublishable(man, c("open", "tool")))
     expect_false(valPublishable(man, c("open", "closed")))

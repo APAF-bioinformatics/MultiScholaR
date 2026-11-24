@@ -192,7 +192,11 @@ test_that("R-I05, I07, I08: a counted phase writes the run folder of 5.7, result
     txt <- readLines(file.path(out, "results.md"))
     expect_true(any(grepl("measured coverage 1 ", txt, fixed = TRUE)))
     expect_true(any(grepl("fam: m = 2, nominal family level 0.95", txt, fixed = TRUE)))
-    expect_true(any(grepl("entered at 3/simulations", txt, fixed = TRUE)))
+    # VAL-137 (2): one convention for every component (no rule of three for zero misses)
+    expect_false(any(grepl("3/simulations", txt, fixed = TRUE)))
+    expect_true(any(grepl(sprintf("family error bound from measured misses %s",
+                                  format(round(2 * stats::qbeta(0.95, 1, 2000), 4))),
+                          txt, fixed = TRUE)))
     cmp <- utils::read.delim(file.path(out, "comparisons.tsv"), stringsAsFactors = FALSE)
     expect_true(all(is.na(cmp$outcome_family[!is.na(cmp$member)])))
     expect_true(all(grepl("family=fam", cmp$flags[!is.na(cmp$member)], fixed = TRUE)))
@@ -228,7 +232,8 @@ test_that("R-I08: the guard in production: a universe key as a label, a lifecycl
                              out_dir = file.path(dir, "o1"), chunks = 2L,
                              regimes = regimeRows("paired_t", 5L),
                              manifest = repairManifest("not_permitted")),
-                 class = "val_publish_forbidden")
+                 "ticket/keys.tsv: a label is a feature key", class = "val_publish_forbidden",
+                 fixed = TRUE)
     life <- repairDeclaration(family = TRUE, conf = 0.975)
     life$metrics[[2L]]$id <- "calls"
     life$metrics[[2L]]$`function` <- "callsMetric"
@@ -241,11 +246,13 @@ test_that("R-I08: the guard in production: a universe key as a label, a lifecycl
                              data_dir = dir, work_dir = file.path(dir, "w2"),
                              out_dir = file.path(dir, "o2"), chunks = 2L,
                              manifest = repairManifest()),
-                 class = "val_publish_forbidden")
+                 "metrics.tsv holds a call count of a primary unit",
+                 class = "val_publish_forbidden", fixed = TRUE)
     stray <- file.path(dir, "o3")
     dir.create(stray)
     writeLines("x", file.path(stray, "loose.txt"))
-    expect_error(msrval:::valCheckOutsideRuns(stray), class = "val_publish_forbidden")
+    expect_error(msrval:::valCheckOutsideRuns(stray), "loose.txt was written outside runs/",
+                 class = "val_publish_forbidden", fixed = TRUE)
 })
 
 test_that("R-I06: phase score reads the requests' within-run rows; jackknife widens to the full unit's same view", {

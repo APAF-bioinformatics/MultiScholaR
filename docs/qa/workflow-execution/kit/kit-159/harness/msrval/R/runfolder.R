@@ -274,21 +274,6 @@ valTruthProvenance <- function(truth, work_dir, blind_seed) {
     c(out, list(blind = list(seed = blind_seed %||% NA_integer_, applied = !is.null(blind_seed))))
 }
 
-#' The provenance `truth` block's per-unit truths (4.1, KIT-163 N5; re-check E4): per unit and
-#' per-unit truth id its SHA-256 (of the key-sorted table, as [valTruthProvenance()]) and rows
-#' @noRd
-valPerUnitTruthProvenance <- function(truths, dataset_truth, work_dir) {
-    out <- list()
-    for (u in names(truths)) {
-        for (tid in setdiff(names(truths[[u]]), names(dataset_truth))) {
-            h <- valTruthProvenance(truths[[u]][tid], work_dir, NULL)[[tid]]
-            out[[length(out) + 1L]] <- list(unit = u, truth_id = tid, sha256 = h$sha256,
-                                            rows = h$rows)
-        }
-    }
-    out
-}
-
 #' The provenance `helpers_extracted` (5.6; re-check E4): the GUI-entry helpers where the phase
 #' runs workflow cells, and the replay kit where it replays any; each file, function and the
 #' SHA-256 of its source

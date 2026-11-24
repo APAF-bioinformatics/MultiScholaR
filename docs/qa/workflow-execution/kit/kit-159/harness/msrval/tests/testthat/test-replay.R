@@ -139,9 +139,9 @@ test_that("T-REP-4: a declared replay cell runs on metab_combined; its result is
     expect_true(all(vapply(prov$code$helpers_extracted, function(h) {
         grepl("^[0-9a-f]{64}$", h$sha256_of_source)
     }, logical(1))))
+    # E4, in builder A's form: unit -> truth id -> hash (the data set's and the per-unit truth).
     pu <- prov$truth$per_unit
-    expect_identical(length(pu), 1L)
-    expect_identical(pu[[1L]]$unit, "u01")
-    expect_identical(pu[[1L]]$truth_id, "unit")
-    expect_match(pu[[1L]]$sha256, "^[0-9a-f]{64}$")
+    expect_identical(names(pu), "u01")
+    expect_true(all(c("primary", "unit") %in% names(pu$u01)))
+    expect_match(pu$u01$unit$sha256, "^[0-9a-f]{64}$")
 })

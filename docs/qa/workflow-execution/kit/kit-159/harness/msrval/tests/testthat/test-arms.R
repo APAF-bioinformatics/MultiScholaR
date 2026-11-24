@@ -74,8 +74,10 @@ test_that("prepareInputs' result tables are copied, checked, and an undeclared o
     expect_identical(paths, "ticket/feasibility/a1.tsv")
     bad <- list(`ticket/other.tsv` = data.frame(group = "A", n = 1))
     expect_error(valCopyResultTables(bad, outputs, withr::local_tempdir(), arms = "a1"),
-                 class = "val_publish_forbidden")
+                 "ticket/other.tsv is not a declared output", class = "val_publish_forbidden",
+                 fixed = TRUE)
     wrong <- list(`ticket/feasibility/a1.tsv` = data.frame(group = "Z", n = 1))
     expect_error(valCopyResultTables(wrong, outputs, withr::local_tempdir(), arms = "a1"),
-                 class = "val_publish_forbidden")
+                 "a label outside the declared vocabulary", class = "val_publish_forbidden",
+                 fixed = TRUE)
 })

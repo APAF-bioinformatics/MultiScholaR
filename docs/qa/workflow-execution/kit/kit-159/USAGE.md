@@ -15,7 +15,7 @@ and Part B, the lanes of sections 7.9 and 7.10).
 | Driver core: action scripts, `valRunWorkflow`, arm builders, standard tables, replay, custom arms, parity comparisons, Part B runner (group d) | yes | yes (T1w3, 168 of 169; T-TAB in the VAL-60 run) |
 | `val-run.R` phases `record`, `pre`, `check` | yes | no |
 | Coverage regimes T-COV (T2) | yes | yes (offered regimes below) |
-| `val-run.R` phases that run cells (`lifecycle`, `counted`, `score`, `determinism`, `correction`, `amended`), `val-parity.R`, the `distributable.yml` stage `parity` | yes (2b18b1e3) | no; the cell-to-verdict path is repaired after the 2026-11-24 audit (I01 to I20, at 8f37e3e1) and its end-to-end tests (`test-e2e.R`) are not yet run |
+| `val-run.R` phases that run cells (`lifecycle`, `counted`, `score`, `determinism`, `correction`, `amended`), `val-parity.R`, the `distributable.yml` stage `parity` | yes (2b18b1e3; repaired after the 2026-11-24 audit, I01 to I20) | the cell-to-verdict path, yes: `test-e2e.R` drives `valRunPhase` and `valScorePhase` from cells to verdicts on `prot_dia`, `metab_combined` and `trx_screen` (R4d, run 45323093762 at 89094e2a); the entry script `val-run.R`'s cell and score branches, no (no test runs the script; re-audit E2) |
 | Ticket coverage regimes (`val-tests.R --ticket <dir> --declaration <json>`, pinned in the declaration as `ticket_coverage: {path, sha256}`) | yes (8f37e3e1) | no |
 | Replay of declared cells (`replay`) inside a cell phase | no (recorded `not_built` in provenance) | no |
 | Known pending change: KIT-202 (lipid and metabolite intensity filter counts the design's samples only) | the five metabolomics corpora are MS-DIAL tables whose integer `Alignment ID` is counted as a sample by today's filter, so every stored metabolomics value after the filter step moves when KIT-202 merges: S0's committed `s0/s0r1/` metabolomics rows (`routes.tsv`, `steps.tsv`, `alternatives.tsv`, ledgers of `metab_lc`, `metab_gc`, `metab_combined`, `metab_lc-export_load`) (the ledgers hold the settings each step saw, so they move only where a default is read from the data; the row counts in `routes.tsv` and `steps.tsv` move); the harness stores no `bindings.json` (the `bindings.json` files under `docs/qa/workflow-execution/` belong to other tickets); lipidomics (LipidSearch) is unaffected unless its tables carry a numeric id. No gate compares a new run against them (S0 gates nothing; G1(a) compares against the product's GUI-entry oracles, not these; parity and the lifecycle run fresh); no test reads them. After KIT-202 merges: re-run S0's three metabolomics routes and the `metab_lc` export-then-load alternative (S0 run 1 took 2,425 s for nine routes; about 1 core-hour) and the T-TAB metabolomics cases in the next whole-suite run | no |
@@ -159,13 +159,23 @@ What the table means for the consumers (read off it; nothing decided here):
 - `paired_t` (C2) is `flagged` at every count from 4 to 100 and every level, except n = 100 at
   99.67 % (offered), and offered at n = 800 at every level: at the small counts it is usable only
   with `accept_flagged`.
-- `jackknife` form (iii), delete-one-block (C4e): `accuracy` and `threshold_count` are not offered at
-  g = 5 (KIT-162) or g = 14 (KIT-166) at any level; `rank` is offered at both (re-run R): at g = 5
-  `conservative` at 95 % (coverage 0.990) and from 98.33 %, `pass` at 97.5 %; at g = 14
-  `conservative` at every level (coverage 1.000: no miss in 2,000).
-- `jackknife` form (ii), delete-one-replicate-per-group (C4): `accuracy` and `threshold_count` are not
-  offered at 95 % or 97.5 % at g = 4 (KIT-160, KIT-161), nor below 99.17 % (accuracy) or 98.75 %
-  (threshold) at g = 6 (KIT-170); `rank` is offered at both counts.
+- `jackknife` form (iii), delete-one-block (C4e), after the I10 re-pin (VAL-109 (2), VAL-137 (1)):
+  at g = 5 (KIT-162) `accuracy` is offered at every level (`conservative`) and `threshold_count` at
+  every level (`pass` at 95 %, 97.5 % and 99.67 %, `conservative` between); at g = 14 (KIT-166)
+  `accuracy` and `threshold_count` are offered at every level (`conservative`). `rank` is offered at
+  both (re-run R): at g = 5 `conservative` at 95 % (coverage 0.990) and from 98.33 %, `pass` at
+  97.5 %; at g = 14 `conservative` at every level (coverage 1.000: no miss in 2,000).
+- `jackknife` form (ii), delete-one-replicate-per-group (C4), after the I10 re-pin: at g = 4
+  (KIT-160, KIT-161) `accuracy` (`pass` to 99.375 %, `conservative` above) and `threshold_count`
+  (`conservative`, `pass` at 99.67 %) are offered at every level; at g = 6 (KIT-170) `accuracy` is
+  offered at every level (`conservative`) and `threshold_count` is `degenerate`, not offered at any
+  level (its sensitivity statistic saturates at 1: see the I10 paragraph); `rank` is offered at both
+  counts.
+- The re-pinned 500-feature rows give coverage conditional on one feature draw with changes split
+  +1 and -1 (`generator` `fixed_symmetric` in the pinned table); the rank rows and every other row
+  keep draws made anew in every simulation (`redraw`). Whether the 500-feature rows hold under
+  one-directional changes, as in the spike-in benchmarks, is the confirmatory cell DI10b
+  (`t2/di10b-declaration.md`; reported to the owner, it changes no row by itself).
 - `jackknife` form (i) (C3): offered on every design at every level except the identity transform on
   `pairs8` (both classes, below 99.375 % or 99.58 %), on `pairs21` (accuracy at 95 %; threshold below
   99.375 %) and on `pairs5` (threshold at 95 % and 97.5 %); the log transform is offered on every
@@ -192,19 +202,30 @@ so a step with seven changed integration keys is one `integration_artifacts` uni
 re-freezing ticket's declared keys are listed one row per key (`lane`, `step`, `key`, `expected`;
 KIT-199: `kit-199/declared-keys.tsv`); only listed keys are accepted as its `declared_change`.
 
-Owner's decisions VAL-133 (to build, tests first; not built yet): G13 compares the bundle's
+Owner's decisions VAL-133 (built, tests first: R11 to R13, run 45331779071 at 80d17087): G13 compares the bundle's
 numbers under the SWD-083 tolerance rule (not 10 significant digits); G1(a) at the release commit
 keeps identical masked captures as its first check and, when that fails, compares values (keys,
 order, missing values and calls exactly; numbers under SWD-083) and reports `certified` with the
 difference printed or `not_certified`; the Linux bundle's GUI-entry lane's six DIA-with-limpa DA
 steps are excluded by name from installer acceptance (no harness stage reads that lane).
 
-Not built yet (I15 remaining; KIT-199 implementation audit): the loader of `gui-entry-control.tsv`
-and `declared-keys.tsv`, link (i) checking declared digest values, reference-row adoption by key
-sets, and the G1(a) part (1) and (2) runners, the loader of committed
-`gui-entry-control.tsv` records (to be built against KIT-172's, 177's and 180's records as
-fixtures), and the release-commit DA-value comparison of the DIA-with-limpa lane (VAL-120 (2);
-KIT-199 section 12.3).
+Built and tested on stubs and the committed records (R13): the loader of a ticket's
+`gui-entry-control.tsv` (all four committed forms) and `declared-keys.tsv` (fixtures: KIT-199's,
+172's, 177's and 180's records), link (i) checking the declared rows' values, reference-row adoption
+by key sets, the release-commit DA-value comparison of the DIA-with-limpa lane (VAL-120 (2); KIT-199
+section 12.3), and the G1(a) part (1) and (2) runners (run so far only with a stubbed lane runner).
+
+Two readings of the G1(a) value path, confirmed by the coordinator (2026-11-24):
+- Under VAL-133 (2) the value comparison is taken only when the DA artifact is the only capture
+  that differs from the re-frozen file; any other difference is `not_certified` (the G1(a) text's
+  "expected identical").
+- A link's change classes default to the classes of its control record whose every `; `-separated
+  part carries the ticket's tag, for example `(KIT-199)` (`valTicketClasses`; a ticket does not list
+  its classes separately in the record); a caller may pass `change_classes` instead.
+
+Not built yet: the G1(a) entry script that chains part (1), part (2) and `gates.md`; the job's
+environment recorder for D7 (KIT-199 `control.R` `writeEnvironment` is the template); L1's committed
+DA tables for G13 (`valCheckParityL1` does not yet check a table's hash).
 
 ## Transcriptomics RUV grid summary (KIT-192)
 
@@ -220,29 +241,59 @@ changes, so median normalisation shifted every estimate by a feature-level amoun
 jackknife cannot see; the fixed per-cell feature draw with changes split +1/-1 (`fixed_symmetric`,
 ticket 10.2 r1.16) removes it (C4e targets: bias 0.0008 and -0.0091, null rejection 0.051 and
 0.051, against -0.21/-0.19 and 0.37/0.63 in T2). Every one of the 11 rows that failed at 95 % now
-covers at or above 0.9605; no row fails. C4 g = 6 `threshold_count` is `degenerate` (its
-sensitivity statistic gives zero-width intervals in more than 1 % of simulations): not offered.
-`half_width_ratio` is printed for these rows (about 1.4 to 5.3: the jackknife intervals are
-conservative) and for the two consumer-used rank rows in `t2/di10h-*` (200 simulations: C4 g = 6
-rank 2.0 to 2.7, C4e g = 5 rank 2.1 to 3.2; not in the pinned table, which keeps T2R's rank rows).
+covers at or above 0.9605. **By the rule declared before the run the outcome was "partial", not
+"confirmed"**: C4 g = 6 `sens` covers 0.7265 at every level, which T2's band (fail below level -
+0.02) reads as a fail; the code labels it `degenerate` by r1.13's rule (sensitivity equals 1 in the
+full run and every deletion in 27 % of simulations, a property of the simulated effect sizes, not
+of the method), a label the declaration did not name. The owner ruled that the replacement of the
+64 rows stands, with that row recorded as not offered (no validation ticket uses it; methods
+ledger VAL-137 (1)). So C4 g = 6 `threshold_count` is `degenerate`: not offered. "No row fails"
+holds only under the `degenerate` label.
 
-## Within-run intervals beside a run-level verdict (4.4; O8 of VAL-109)
+**How wide the intervals are (E8 of the re-audit).** `half_width_ratio` (mean half-width over the
+simulated SD of the statistic times z) is printed for these rows; for a jackknife it equals
+t(g - 1) / z, not 1, when the SE is exact (1.62 at g = 4, 1.42 at g = 5, 1.31 at g = 6, 1.10 at
+g = 14, at 95 %). `se_inflation` (the ratio with the t factor removed: mean jackknife SE over the
+true SD; 1.00 for an exact SE) is the column to read, constant across levels: C4e g = 5 `bias`
+0.99, C4e g = 14 `bias` 1.29, `fcs` 1.16 to 1.81, `rej` 1.28 and 2.02, `mae` 1.37 to 2.20, `sens`
+1.86 to 2.98 (from `t2/di10d-coverage-detail.tsv`; the pinned table holds the worst-coverage
+statistic of each row); the two consumer-used rank rows of `t2/di10h-*` (200 simulations; not in
+the pinned table, which keeps T2R's rank rows) 1.52 (C4 g = 6) and 1.51 (C4e g = 5). These
+regimes are valid and conservative for two reasons: the t multiplier at small g, and a jackknife SE
+biased upwards (about 1.5 times for rank and accuracy, up to 3 times for sensitivity). Plan margins
+and power on intervals about 1.5 to 3 times the true SD (VAL-137, for information). The rules
+forbid a critical value below t, so this cannot be calibrated away.
+
+## Within-run intervals beside a run-level verdict (4.4; O8 of VAL-109; VAL-137 (3))
 
 - Jackknife forms (ii) and (iii) (`full` plus `deletion` units): the run-level interval is widened,
   bound by bound, to the `full` unit's within-run interval of the same view; mandatory below 6
-  units, the declarable default at 6 or more (`widen_to_within_run = false` with its reason).
-- Independent (or `draw`) units: nothing is widened at any unit count. Each unit's within-run
-  interval is reported beside the verdict (`within_run_reported=<unit>:[low,high]` in `flags`), with
-  `within_run_widening=report_only(O8:below_6)` below 6 units (the owner's ruling) or
-  `report_only(O8:6_or_more_open)` at 6 or more: the audit register leaves open which unit's
-  interval would widen there, so the harness reports only; `widen_to_within_run` has no effect on
-  independent units, and `results.md` says so beside the verdict. A widening rule for independent
-  units is the owner's to make.
+  units, the declarable default at 6 or more (`widen_to_within_run = false` with its reason). These
+  are the only intervals ever widened.
+- Independent (or `draw`) units, and jackknife form (i): a run-level interval is never widened by a
+  within-run interval, at any unit count (the owner's rule, VAL-137 (3): the two answer different
+  questions and their combination has no measured coverage). Each unit's within-run interval is
+  reported beside the verdict (`within_run_reported=<unit>:[low,high]` in `flags`, also after a
+  refused unit), with `within_run_widening=never(VAL-137:independent)` (or
+  `never(VAL-137:jackknife_unit)`); `widen_to_within_run` has no effect there; `results.md` states
+  beside the verdict that the claim is over repeat runs, for the features scored. Generalisation
+  over features is a separately declared reading with its own coverage regime, not a harness
+  default.
+
+## The results note's family bound (VAL-137 (2))
+
+The header of a primary family prints the nominal family level beside a family error bound: the
+sum, over the family's classified components, of each component's one-sided 95 % Clopper-Pearson
+upper bound on its miss rate (its regime's misses of its simulations, 2,000 for the harness's
+table), one convention whether or not misses were observed. Beside each verdict the regime's
+generator is named with its estimand (for example `fixed_symmetric`: coverage conditional on one
+feature draw).
 
 ## Not yet usable
 
-- The cell phases are built but have not run end to end on a runner (the repair's runs are listed
-  in `outcome.md`, "Resume here"). A request's `out` for a cell phase is `val-out` and its
+- The cell phases have run from cells to verdicts through `valRunPhase` and `valScorePhase` (R4d);
+  the entry script `val-run.R` has not run its cell and score branches (E2), so the first lifecycle
+  request would be its first execution until that test exists. A request's `out` for a cell phase is `val-out` and its
   `out_pattern` must admit the run folder's files: `\\.(tsv|txt|md|json|sha256|gz)$` (the files of
   5.7 and `allowed-paths.txt`; ledgers are `ledger-<route>-<arm>-<unit>.tsv`).
 - The ticket's `prepareInputs()` returns `features` (`assay`, `feature_id`: every feature of the
@@ -252,7 +303,5 @@ rank 2.0 to 2.7, C4e g = 5 rank 2.1 to 3.2; not in the pinned table, which keeps
   under `out_dir` (`runs/<label>/ticket/`).
 - After a refused unit a verdict needs a regime for n - k units (O7 (b), VAL-109), else
   `not_evaluable`.
-- The I10 diagnostic of the C4 and C4e 500-feature cells is not yet run; until it is, the C4 and
-  C4e `accuracy` and `threshold_count` rows marked fail are not evidence about the method.
 - Parity (G13) needs `val-parity.R` and the `distributable.yml` stage on top of KIT-176's merged
   workflow.

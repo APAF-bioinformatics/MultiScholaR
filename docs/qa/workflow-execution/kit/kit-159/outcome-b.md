@@ -13,7 +13,7 @@ REPAIR line's 25 core-hours (14.81 used before builder B; builder A shares the r
 | 1. Replay of declared cells (G5) | I07, E5 | `R/replay.R`: the cell writes its analysis record inside its session (`writeWorkflowAnalysisRecord`); after the session, a copy of its store is pruned to the record's import and design states by the package's `kitPrepareReplayProject` (extracted from `tools/profiling/workflow_kit.R` with its closure, never edited), the record replayed there with `replayWorkflowAnalysisRecord` on fresh experiment paths, under the cell's thread variables and seed; the two stores compared by the package's own fingerprints (every state, as KIT-028's `kitReplayJourney`, and the head's DA result). Statuses `identical`, `differs` (the differing states and `da_results` named), `unsupported` (class); `not_declared` and `not_run` for cells not replayed. `replay = not_built` removed; `valCheckProvenance` refuses a cell without a status of this set and a `differs` without its differences | T-REP-1 to T-REP-4, T-PROV-2 |
 | 2. `val-run.R` driven itself | E2 | The cell and score phases read the committed declaration through `valCheckDeclaration` first (the working tree is no longer read for it), and any `val_error` ends the job with one template line (class) and exit 3 | T-RUN-E2 |
 | 3. G1(a)'s job pieces | I15 remaining, VAL-120 (2), VAL-133 (1) | `R/g1a-entry.R`: `valJobEnvironment` (CPU model, image, the ten D7 keys, lockfile SHA-256; derived as KIT-199's `writeEnvironment`), `valLockfileUnchanged`, `valG1aDaInputs` (live table, link, mode), `valG1aGatesMd`, `valParityL1Tables` (L1's DA tables for G13 read by path and checked by SHA-256); the entry script `val-g1a.R` (environment, part (1), part (2), `gates.md`) | T-G1A-ENV-1, -ENV-2, -GATES, -ENTRY, T-PAR-5; the one-lane smoke run |
-| 4. E4 | E4 | `helpers_extracted` filled (the GUI-entry helpers where a phase runs workflow cells, the replay kit where it replays); per-unit truths hashed into `truth.per_unit` | in T-REP-4, T-PROV-2 |
+| 4. E4 | E4 | `helpers_extracted` filled by `valRunPhase` whenever its caller (`val-run.R`) passes none: the GUI-entry helpers where a phase runs workflow cells, the replay kit where it replays. Per-unit truths: builder A's `truth.per_unit` (unit -> truth id -> hash) kept at the merge; builder B's parallel version removed | in T-REP-4, T-PROV-2 |
 
 ## Decisions and divergences for the owner (they change what a G5 status means)
 
@@ -45,7 +45,7 @@ See `runs-b.tsv`.
 ## Resume here (handed over)
 
 1. Read the smoke run and RB1 (fetch.sh); record both in `runs-b.tsv`; one correction per item.
-2. Merge `kit-159-validation-harness` (builder A's head) into this branch, run the changed test
+2. DONE early (coordinator's note): merged builder A's head 67594694 (conflicts in `phases.R` and `provenance.R` resolved to A's `truth.per_unit`; tests adapted). Still to do: re-merge A's later head if any, (builder A's head) into this branch, run the changed test
    files once (replay, records, valrun, g1a-entry, phases, repair plus A's), push, report the merge.
 
 ## Not checked

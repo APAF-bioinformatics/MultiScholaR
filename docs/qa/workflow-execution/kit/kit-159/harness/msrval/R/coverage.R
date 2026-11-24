@@ -130,11 +130,17 @@ valCoverageRows <- function(cell, statistic, class, hits, kind, achieved = NULL,
                             half_width = NULL, estimate = NULL) {
     nsim <- nrow(hits)
     # r1.14 (4.4) and O4 of VAL-109: the mean half-width over the simulated SD of the statistic
-    # times the level's normal quantile (1.00 for a correctly scaled interval)
+    # times the level's normal quantile. For a jackknife interval (critical value t(g - 1)) with an
+    # exactly estimated SE this is t(g - 1) / z, not 1; `se_inflation` removes the t factor (the
+    # mean jackknife SE over the simulated SD; 1.00 for an exactly estimated SE; E8 of the re-audit)
     hw_ratio <- rep(NA_real_, ncol(hits))
+    se_infl <- rep(NA_real_, ncol(hits))
     if (!is.null(half_width) && !is.null(estimate) && sum(is.finite(estimate)) > 1L) {
         z <- stats::qnorm(1 - (1 - COVERAGE_LEVELS) / 2)
-        hw_ratio <- colMeans(half_width, na.rm = TRUE) / (stats::sd(estimate, na.rm = TRUE) * z)
+        sd_est <- stats::sd(estimate, na.rm = TRUE)
+        hw_ratio <- colMeans(half_width, na.rm = TRUE) / (sd_est * z)
+        tq <- stats::qt(1 - (1 - COVERAGE_LEVELS) / 2, as.integer(cell$n) - 1L)
+        se_infl <- colMeans(half_width, na.rm = TRUE) / (sd_est * tq)
     }
     cov <- colMeans(hits)
     ach <- if (is.null(achieved)) rep(NA_real_, ncol(hits)) else colMeans(achieved, na.rm = TRUE)
@@ -156,7 +162,7 @@ valCoverageRows <- function(cell, statistic, class, hits, kind, achieved = NULL,
             valCoverageStatus(kind, cov[[i]], COVERAGE_LEVELS[[i]], ach[[i]], nsim)
         }, character(1)),
         kind = kind, zero_width = zw, effect = effect, half_width_ratio = hw_ratio,
-        stringsAsFactors = FALSE
+        se_inflation = se_infl, stringsAsFactors = FALSE
     )
 }
 
@@ -314,8 +320,9 @@ valSpecMatrix <- function(cell, form, n_feat) {
     # r1.13 (VAL-69): the rank cells' effect is calibrated per g into the declared pAUC band
     scale <- if (n_feat == 4840L) valRankEffect(form, g)$effect else 1
     # I10 diagnostic (VAL-109): `fixed_symmetric` draws the feature baselines once per cell and
-    # splits the changed features +1 and -1; `redraw` (T2) draws them in every simulation
-    fixed <- if (identical(cell[["generator"]], "fixed_symmetric")) {
+    # splits the changed features +1 and -1; `fixed_onedir` (DI10b, VAL-137 (1)) keeps that draw
+    # with every change +1, as T2's; `redraw` (T2) draws them in every simulation
+    fixed <- if (isTRUE(cell[["generator"]] %in% c("fixed_symmetric", "fixed_onedir"))) {
         valCovFixedFeatures(cell, n_feat)
     }
     statsOf <- function(x, l, truth) valCovStats(valCovFit(x, l, form), truth, n_feat, form)
@@ -663,12 +670,15 @@ valCovMatrixData <- function(lay, n_feat, form, scale = 1, fixed = NULL) {
 #' The I10 diagnostic generator's feature draw (VAL-109): one seeded draw per cell of the feature
 #' baselines (normal, mean 20, SD 1), and the changed features (the first fifth, or 40 of 4,840)
 #' split alternately +1 and -1, so that median normalisation is not shifted by the changes and the
-#' target is conditional on the features, as a fixed benchmark's is
+#' target is conditional on the features, as a fixed benchmark's is. Generator `fixed_onedir`
+#' (DI10b): the same draw with every changed feature +1, as T2's and the spike-in benchmarks'
+#' one-directional changes
 #' @noRd
 valCovFixedFeatures <- function(cell, n_feat) {
     n_changed <- if (n_feat == 4840L) 40L else as.integer(n_feat / 5)
     baseline <- valWithSeed(2100000000L + valCellIndex(cell), stats::rnorm(n_feat, 20, 1))
-    sign <- c(rep_len(c(1, -1), n_changed), rep(0, n_feat - n_changed))
+    step <- if (identical(cell[["generator"]], "fixed_onedir")) 1 else c(1, -1)
+    sign <- c(rep_len(step, n_changed), rep(0, n_feat - n_changed))
     list(baseline = baseline, sign = sign)
 }
 
@@ -798,6 +808,8 @@ valSummariseCoverage <- function(detail) {
             effect = if (is.null(r$effect)) NA_real_ else r$effect[[1L]],
             half_width_ratio = if (is.null(r$half_width_ratio)) NA_real_ else
                 r$half_width_ratio[[w]],
+            se_inflation = if (is.null(r$se_inflation)) NA_real_ else r$se_inflation[[w]],
+            generator = if (is.null(r$generator)) NA_character_ else r$generator[[1L]],
             stringsAsFactors = FALSE
         )
     })

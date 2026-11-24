@@ -26,7 +26,41 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, repair runs R0 to R13 in; items 1 and 2 of the hand-over done)
+## Resume here (state 2026-11-24, builder A after the re-audit; builder B on `kit-159-replay`)
+
+**Builder A (this branch; register `AUDIT-KIT-159-impl-recheck-20261124.md`, rulings VAL-137 and the
+coordinator's two confirmations of 2026-11-24).** Builder B works on branch `kit-159-replay` (replay
+of declared cells I07/E5, driving `val-run.R` E2, the G1(a) entry script and the D7 environment
+recorder) and merges into this branch at its end; E4's `helpers_extracted` is B's (it is filled in
+`val-run.R`). Shared REPAIR line: builder A 4 core-hours of it, plus DI10b's 1.5.
+
+| Item | State |
+|---|---|
+| I10 record (VAL-137 (1)) | Corrected below and in `runs.tsv`: **by its declared rule the I10 diagnostic was "partial", not "confirmed"**. M1 and M2 held and every one of the 11 rows that failed in T2 rose (lowest 0.9605), but C4-145 `sens` (C4 g = 6) covers 0.7265 at every level: sensitivity is 1 in the full run and every deletion in 27.35 % of simulations (target 0.9992), so its interval has zero width there. T2's band (the declared band: fail below level - 0.02) reads that as a fail; the code labelled it `degenerate` by r1.13's rule, which the declaration did not name and T2's code did not have. Owner's ruling VAL-137 (1): the replacement of the 64 rows stands; C4 g = 6 `threshold_count` is recorded as not offered (no validation ticket uses it); the record states the partial outcome |
+| E3 (`USAGE.md`) | done: consumer bullets for C4 and C4e to the re-pinned statuses; the "have not run end to end" line replaced (`valRunPhase`/`valScorePhase` ran end to end in R4d; `val-run.R`'s branches have not, E2); the duplicated loader sentence replaced by the built state; VAL-133 marked built; the stale "I10 not yet run" bullet removed |
+| VAL-137 (2) family bound | code (`valWriteResults`), tests, `USAGE.md`, ticket 4.4: each component at its one-sided 95 % Clopper-Pearson upper bound on its miss rate, one convention |
+| VAL-137 (3) no widening over independent units | code (`valLevelOne`, `valWidenFromRequests`), tests, `USAGE.md`, ticket 4.4: never widened at any count; each unit's within-run interval reported (also after a refusal fill); `results.md` states "over repeat runs, for the features scored"; widening only for jackknife forms (ii) and (iii) |
+| E8 | `se_inflation` in the coverage rows, the summary and the pinned table (64 measured rows: half_width_ratio x z / t(g - 1), computed here by a standard-library t quantile checked against R's to 1e-12 and asserted against `qt` in R-E8); ticket's "1.00 for a correctly scaled interval" corrected |
+| E7 | `generator` in the pinned table (`fixed_symmetric` for the 64 re-pinned rows, `redraw` elsewhere), in `valClassify`, the verdict table and `results.md` with its estimand |
+| E4 | per-unit truths hashed into provenance (`truth.per_unit`, checked where recorded); `helpers_extracted`: left to builder B (`val-run.R`) |
+| E6 | the licence guard's refusal tests assert the rule's message (R-I08, T-LIC-1 to 11, the hand-off and ticket-coverage cases, result tables, phase pre); no code change: the messages already name the rule; these tests pass on the old code by design (strengthening, not a fault demonstration) |
+| DI10b | declared before the request in `t2/di10b-declaration.md` (what it measures, N1/N2 mechanism checks, which result means the symmetric split was needed); generator `fixed_onedir`; result below when in |
+| Coordinator's confirmations | (1) under VAL-133 (2) the value path is taken only when the DA artifact is the only differing capture, any other difference `not_certified`; (2) a link's change classes default to the record's classes whose every part carries the ticket's tag: both in `USAGE.md` and the ticket |
+
+**Failing-first at the audited fault, per finding (re-audit section 1; this replaces "every new test
+fails" in the R0 and R11 lines below).** Shown failing AT the fault before the fix: I01 (R0 T-PH-5/7/8),
+I07 (T-PROV-1 after its correction, R6), I15 (R0 R-I15; R5, R8, R9), I16 (R0), I18 (R0); as absence
+of the mechanism: I03, I11. Shown only by the fix passing (the new test first failed at a
+precondition or an API change, not at the fault): I02, I04, I05, I06, I08, I09, I13, I17 (and I20
+partly: the anchor case at its fault). Of this builder's items: VAL-137 (2), (3), E4, E7, E8 and the
+DI10b generator are shown in run A1 (below); E6 is a strengthening of passing tests.
+
+**Runs of builder A** (REPAIR line unless stated):
+- A1 (k159-rep-a1-d1c8d4e6, run 45334780977, tests only at d1c8d4e6): sent; purpose: show each new
+  test failing at its fault; ceiling 25 min; decides nothing else.
+- A2 (fix at 647706dd, same files with `--lint`): to send after A1.
+- DI10b (fixed_onedir C4e-147, at 647706dd, line DI10b): to send after A2 shows R-DI10b passing.
+
 
 Ticket r1.16 (main checkout; section 31). Rulings: VAL-109; KIT-199 plan audit ruling C1 (a); KIT-199
 re-check Q01; KIT-192 implementation audit I04. Repair line: 15 core-hours (VAL-109).
@@ -62,8 +96,11 @@ no comparison rows (R4b, I06; 5901132a); lints (R1, R4b).
 **Then (all observed):** R4c (36297e25): repair and records pass, lint 0; E2E stopped because the
 test passed no `pkg_root` (mechanics, corrected 89094e2a). R4d (89094e2a): the three end-to-end
 cell-to-verdict tests pass on the merged product (prot_dia 56/56, metab_combined 59/59, trx_screen
-56/56). I10 diagnostic (45316883316 at 169aee9f, T2's line): confirmed by its declared rule (M1, M2
-hold; no row fails; all 11 rows failing at 95 % in T2 rise, lowest now 0.9605); re-pinned
+56/56). I10 diagnostic (45316883316 at 169aee9f, T2's line): by its declared rule "partial", not
+"confirmed" as first written here (corrected after the re-audit, S1: M1, M2 hold; all 11 rows
+failing at 95 % in T2 rise, lowest now 0.9605; C4 g = 6 `sens` 0.7265 at every level, a fail under
+the declared band, labelled `degenerate` by r1.13's rule); re-pin ratified by the owner (VAL-137
+(1)); re-pinned
 (d0492872): 64 C4/C4e accuracy and threshold rows replaced, C4 g = 6 threshold `degenerate`;
 half-width ratios 1.4 to 5.3 (D) and 2.0 to 3.2 (consumer rank rows, H). R10 (d0492872): 48 tests
 pass, lint 0.
@@ -200,7 +237,7 @@ product merge (KIT-177, 182, 187, 190, 192, 194; I12) is a further R1, about 6.
 registered for n - k units, else `not_evaluable` with the reason in `regime`. O8: jackknife widened
 by the `full` unit's within-run interval (same view); independent units report each unit's
 within-run interval in `flags`, no widening. O1: bands as run; results.md prints measured coverage,
-the family bound (3/simulations for zero misses) and a FLAG where the worst-condition miss rate is at
+the family bound (3/simulations for zero misses; replaced by VAL-137 (2)) and a FLAG where the worst-condition miss rate is at
 least twice nominal; `fail` is not read on the miss rate. I16 as the register recommends.
 
 **Divergences to record:** per-unit truths are built in the scoring process, not as the unit's

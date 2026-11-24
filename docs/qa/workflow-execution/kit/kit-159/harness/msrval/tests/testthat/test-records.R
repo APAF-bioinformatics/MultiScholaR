@@ -66,10 +66,9 @@ test_that("T-PROV-2: every cell carries a replay status of G5; per-unit truths a
     s$cells[[1L]]$replay$differences <- list("da_results")
     expect_true(valCheckProvenance(s))
     s <- p
-    s$truth$per_unit <- list(list(unit = "u01", truth_id = "unit", sha256 = strrep("5", 64),
-                                  rows = 20L))
+    s$truth$per_unit <- list(u01 = list(unit = list(sha256 = strrep("5", 64), rows = 20L)))
     expect_true(valCheckProvenance(s))
-    s$truth$per_unit[[1L]]$sha256 <- NULL
+    s$truth$per_unit$u01$unit$sha256 <- NULL
     expect_error(valCheckProvenance(s), class = "val_provenance_invalid")
 })
 

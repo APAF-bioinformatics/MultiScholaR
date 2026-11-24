@@ -557,9 +557,10 @@ valCellMatrix <- function(path) {
 #' `not_evaluable`. Statuses go into `flags` (`not_evaluable`, `refusal_substitute_required`,
 #' `n_refused=<k>`); a refused classification is recorded in `regime` and never aborts the run.
 #'
-#' The widening (4.4, A38; O8 ruled in VAL-109): a jackknife interval (forms (ii), (iii)) is
-#' widened to the `full` unit's within-run interval of the same view; over independent units each
-#' unit's within-run interval is reported in `flags` beside the verdict, without widening.
+#' The widening (4.4, A38; O8 of VAL-109; VAL-137 (3)): only a jackknife interval of form (ii) or
+#' (iii) is widened, to the `full` unit's within-run interval of the same view; over independent
+#' units (and jackknife form (i)) nothing is widened at any unit count: each unit's within-run
+#' interval is reported in `flags` beside the verdict and the claim's scope is stated.
 #'
 #' A metric with `family_adjustment` (`"bonferroni"`, or `list(method = "bonferroni", m = <m>)`)
 #' is also classified at 1 - 0.05/m (m: the declared count, else the metric's comparisons) into
@@ -723,6 +724,7 @@ valVerdictRow <- function(component, member, metric, cmp_arms, view, cl, conf, f
                mc_se = as.numeric(cl$mc_se %||% NA_real_),
                nsim = as.numeric(cl$nsim %||% NA_real_),
                statistic = as.character(cl$statistic %||% NA_character_),
+               generator = as.character(cl$generator %||% NA_character_),
                coverage_min = as.numeric(cl$coverage_min %||% NA_real_),
                miss_twice_nominal = isTRUE(cl$miss_twice_nominal),
                family = unname(family), m = fm, within_note = within_note,
@@ -833,25 +835,28 @@ valLevelOne <- function(decl, m, cmp_arms, v, vk, metrics, units, cells, regimes
         } else {
             iv <- valLevelInterval(dd[is.finite(dd)], method, conf, unit_role, cls)
         }
-        if (!is.null(within) && length(cmp_arms) == 2L && is.null(rf)) {
-            wr <- valWithinRowsOf(within, m[["id"]], cmp_arms, vk)
-            if (nrow(wr) > 0L) {
-                # O8 (VAL-109): over independent units nothing is widened at any unit count; each
-                # unit's within-run interval is reported beside the verdict. Below 6 units this is
-                # the owner's ruling; at 6 or more the register leaves the rule open, so the
-                # harness reports only and says so (`widen_to_within_run` has no effect here).
-                count <- if (length(keep) < 6L) "below_6" else "6_or_more_open"
-                reported <- sprintf("within_run_reported=%s:[%s,%s]",
-                                    sub("^.*unit=([^;]+);.*$", "\\1", wr$flags),
-                                    signif(as.numeric(wr$ci_low), 6),
-                                    signif(as.numeric(wr$ci_high), 6))
-                flags <- c(flags, sprintf("within_run_widening=report_only(O8:%s)", count),
-                           reported)
-            }
+        # VAL-137 (3): over independent units a run-level interval is never widened by a
+        # within-run interval, at any unit count (`widen_to_within_run` has no effect here); the
+        # claim is over repeat runs, for the features scored, and each unit's within-run interval
+        # is reported beside the verdict.
+        if (unit_role == "independent") {
+            flags <- c(flags, "within_run_widening=never(VAL-137:independent)")
+        }
+        if (!is.null(within) && length(cmp_arms) == 2L) {
+            flags <- c(flags, valWithinReported(valWithinRowsOf(within, m[["id"]], cmp_arms, vk)))
         }
     }
-    if (method == "jackknife" && !is.null(within) && length(cmp_arms) == 2L &&
-            identical(iv$status, "ok")) {
+    jk_form <- iv_spec[["form"]] %||% "unit"
+    if (method == "jackknife" && identical(jk_form, "unit")) {
+        # VAL-137 (3): the widening applies to forms (ii) and (iii) only; form (i) is over
+        # independent units
+        flags <- c(flags, "within_run_widening=never(VAL-137:jackknife_unit)")
+        if (!is.null(within) && length(cmp_arms) == 2L) {
+            flags <- c(flags, valWithinReported(valWithinRowsOf(within, m[["id"]], cmp_arms, vk)))
+        }
+    }
+    if (method == "jackknife" && jk_form %in% c("replicate", "block") && !is.null(within) &&
+            length(cmp_arms) == 2L && identical(iv$status, "ok")) {
         full_u <- units$unit[units$unit_role == "full"][1L]
         wr <- valWithinRowsOf(within, m[["id"]], cmp_arms, vk)
         if (nrow(wr) > 0L) {
@@ -876,6 +881,14 @@ valLevelOne <- function(decl, m, cmp_arms, v, vk, metrics, units, cells, regimes
         }
     }
     list(iv = iv, n_ref = n_ref, flags = flags, cl = cl)
+}
+
+#' Flags reporting each unit's within-run interval beside a verdict (VAL-137 (3))
+#' @noRd
+valWithinReported <- function(wr) {
+    if (nrow(wr) == 0L) return(character())
+    sprintf("within_run_reported=%s:[%s,%s]", sub("^.*unit=([^;]+);.*$", "\\1", wr$flags),
+            signif(as.numeric(wr$ci_low), 6), signif(as.numeric(wr$ci_high), 6))
 }
 
 #' A comparison's within-run rows (scope `within_run`) of one view
@@ -1218,7 +1231,7 @@ valRunPhase <- function(phase, decl, dataset, units, label, code_files, data_dir
                                       rows = nrow(prep$universe),
                                       by_status = prep$universe_counts)),
         truth = c(valTruthProvenance(prep$truth, work_dir, blind_seed),
-                  list(per_unit = valPerUnitTruthProvenance(truths, prep$truth, work_dir))),
+                  list(per_unit = valUnitTruthsProvenance(truths, work_dir))),
         cells = valCellsProvenance(res, cells, values, run_dir, ctx$work_dir,
                                    !is.null(decl[["hooks"]][["post_cell"]]), decl = decl),
         chunks = chunk_tab %||% list(),
