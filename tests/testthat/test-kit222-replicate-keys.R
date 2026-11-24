@@ -490,7 +490,7 @@ test_that("KIT-222 E14: 'Specify replicate number' A=2, then 'Use lowest replica
   expect_identical(design$replicates[design$Run == "B_1"], design$replicates[design$Run == "A_1"])
   refused <- kit222Save(design)
   expect_type(refused, "character")
-  expect_match(refused, "B_1", fixed = TRUE)
+  if (is.character(refused)) expect_match(refused, "B_1", fixed = TRUE)
 })
 
 test_that("KIT-222 E15: 'Specify replicate number' A=2, then B=2: two samples, A shown as 1", {
@@ -515,7 +515,7 @@ test_that("KIT-222 E16: re-assigning a marked run to another group clears its ma
   kit222Obs("E16 save", if (is.character(refused)) refused else kit222KeyText(split(refused$design_matrix$Run,
     refused$design_matrix$tech_rep_group)))
   expect_type(refused, "character")
-  expect_match(refused, "A_3, C_1, C_2", fixed = TRUE)
+  if (is.character(refused)) expect_match(refused, "A_3, C_1, C_2", fixed = TRUE)
 })
 
 test_that("KIT-222 E16b: the proteomics builder's re-assignment clears the mark; the proteomics save refuses", {
@@ -547,8 +547,10 @@ test_that("KIT-222 E8: the shared save refuses a design whose key holds two mark
   refused <- kit222Save(rows[, setdiff(names(rows), "tech_rep_group")])
   kit222Obs("E8", if (is.character(refused)) refused else class(refused))
   expect_type(refused, "character")
-  expect_match(refused, "Ctrl_3", fixed = TRUE)
-  expect_match(refused, "A_1, B_1, A_2, B_2", fixed = TRUE)
+  if (is.character(refused)) {
+    expect_match(refused, "Ctrl_3", fixed = TRUE)
+    expect_match(refused, "A_1, B_1, A_2, B_2", fixed = TRUE)
+  }
 })
 
 kit222D2Rows <- function() {
@@ -566,7 +568,7 @@ test_that("KIT-222 E9: the proteomics save refuses D1, D2 and an unmarked shared
     list(id = "OD-5", design = od5, runs = "A_1"))) {
     owner <- kit222ProtOwner(paste0("kit222-e9-", case$id), case$design$Run)
     outcome <- tryCatch(suppressMessages(withDIAStateScope(owner$manager, function() {
-      buildProtDesignSaveResultsPayload(case$design, character(), resolveDIAOwnedValue(owner$reference, owner$manager),
+      buildProtDesignSaveResultsPayload(case$design, character(), owner$reference,
         NULL, owner$settings, "~ 0 + group")
     })), error = identity)
     kit222Obs(paste("E9 save", case$id), if (is.character(outcome)) outcome else if (inherits(outcome, "condition"))
@@ -734,7 +736,7 @@ test_that("KIT-222 G5: the peptide replicate filter's grouping is unchanged on a
     stringsAsFactors = FALSE)
   peptides <- peptides[!(peptides$Stripped.Sequence == "CCK" & peptides$Run %in% c("A1_1", "A1_2", "B1_1")), ]
   filter <- function(design) removePeptidesWithOnlyOneReplicateHelper(peptides, design, Run, Run, replicates,
-    Protein.Ids, Stripped.Sequence)
+    Protein.Ids, Stripped.Sequence, core_utilisation = NA)
   expect_identical(filter(head), filter(base))
 })
 
