@@ -184,6 +184,15 @@
    change, no longer replays; it is refused with the same message. The first change does not affect data imported in
    the application, whose names come from the annotation; the others change only g:Profiler runs in which some
    protein has no gene name (KIT-208).
+ * Proteomics enrichment, g:Profiler: the results table, its downloads and the tab's 'Download results' archive no
+   longer show g:Profiler's adjusted p-value under the names pvalue and qvalue; p.adjust holds it, a new column
+   p_adjust_method names the correction as g:Profiler reports it (for example g_SCS; 'not recorded' when the answer
+   does not say), and Count is the number of the list's genes in the term (it showed the term's size). The published
+   per-comparison enrichment tables and the enrichment workbook also carry p_adjust_method. The g:Profiler figure's
+   axis and hover text, in the application, the published figures and the report, now say 'adjusted p-value' (the
+   points do not move), and the archive's summary says 'Adjusted p-value cutoff'. No term, flag or order changes.
+   Projects saved before this change show the corrected table when opened; files already downloaded keep the old
+   labels. Present since the legacy pipeline (KIT-226).
 
 ### Scientific changes
 
