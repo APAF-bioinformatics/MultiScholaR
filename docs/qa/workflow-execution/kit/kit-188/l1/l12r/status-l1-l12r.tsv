@@ -1,0 +1,92 @@
+cell	job	arm	arm_scale	scenario	mask	status	class	n
+L12	reported	LA		N1	vd5	dropped		2
+L12	reported	LM		N1	vd5	dropped		2
+L12	reported	FP		E0	none	ok		3
+L12	reported	LA		E0	none	ok		3
+L12	reported	LCm		E0	none	ok		3
+L12	reported	LM		E0	none	ok		3
+L12	reported	OR		E0	none	ok		3
+L12	reported	SC		E0	none	ok		3
+L12	reported	FP		E1	none	ok		3
+L12	reported	LA		E1	none	ok		3
+L12	reported	LCm		E1	none	ok		3
+L12	reported	LM		E1	none	ok		3
+L12	reported	OR		E1	none	ok		3
+L12	reported	SC		E1	none	ok		3
+L12	reported	FP		N0	none	ok		3
+L12	reported	LA		N0	none	ok		2
+L12	reported	LCm		N0	none	ok		2
+L12	reported	LM		N0	none	ok		3
+L12	reported	OR		N0	none	ok		2
+L12	reported	SC		N0	none	ok		3
+L12	reported	FP		N1	none	ok		3
+L12	reported	LA		N1	none	ok		3
+L12	reported	LCm		N1	none	ok		3
+L12	reported	LM		N1	none	ok		3
+L12	reported	OR		N1	none	ok		3
+L12	reported	SC		N1	none	ok		3
+L12	reported	FP		E0	vd20	ok		2
+L12	reported	OR		E0	vd20	ok		2
+L12	reported	SC		E0	vd20	ok		2
+L12	reported	FP		E1	vd20	ok		2
+L12	reported	OR		E1	vd20	ok		2
+L12	reported	SC		E1	vd20	ok		3
+L12	reported	SC		N0	vd20	ok		1
+L12	reported	FP		N1	vd20	ok		2
+L12	reported	OR		N1	vd20	ok		2
+L12	reported	SC		N1	vd20	ok		3
+L12	reported	FP		E0	vd5	ok		3
+L12	reported	LA		E0	vd5	ok		3
+L12	reported	LCm		E0	vd5	ok		3
+L12	reported	LM		E0	vd5	ok		3
+L12	reported	OR		E0	vd5	ok		3
+L12	reported	SC		E0	vd5	ok		3
+L12	reported	FP		E1	vd5	ok		3
+L12	reported	LA		E1	vd5	ok		3
+L12	reported	LCm		E1	vd5	ok		2
+L12	reported	LM		E1	vd5	ok		3
+L12	reported	OR		E1	vd5	ok		3
+L12	reported	SC		E1	vd5	ok		3
+L12	reported	FP		N0	vd5	ok		3
+L12	reported	LA		N0	vd5	ok		3
+L12	reported	LCm		N0	vd5	ok		3
+L12	reported	LM		N0	vd5	ok		3
+L12	reported	OR		N0	vd5	ok		3
+L12	reported	SC		N0	vd5	ok		3
+L12	reported	FP		N1	vd5	ok		3
+L12	reported	OR		N1	vd5	ok		3
+L12	reported	SC		N1	vd5	ok		3
+L12	reported	LA		E0	vd20	uncorrected		2
+L12	reported	LM		E0	vd20	uncorrected		2
+L12	reported	LA		E1	vd20	uncorrected		2
+L12	reported	LM		E1	vd20	uncorrected		2
+L12	reported	LA		N1	vd20	uncorrected		2
+L12	reported	LM		N1	vd20	uncorrected		2
+L12	reported	LA		N1	vd5	uncorrected		1
+L12	reported	LM		N1	vd5	uncorrected		1
+L12	reported	LCm		N0	none	not_run	LA gave no k or controls	1
+L12	reported	LCm		E0	vd20	not_run	LA gave no k or controls	3
+L12	reported	LCm		E1	vd20	not_run	LA gave no k or controls	3
+L12	reported	LCm		N0	vd20	not_run	LA gave no k or controls	3
+L12	reported	LCm		N1	vd20	not_run	LA gave no k or controls	3
+L12	reported	LCm		N1	vd5	not_run	LA gave no k or controls	3
+L12	reported	LCm		E1	vd5	refused	ruv_k_above_limit	1
+L12	reported	LA		N0	none	crashed	simpleError: K188 deliberate fault (E7)	1
+L12	reported	FP		E0	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	LA		E0	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	LM		E0	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	OR		E0	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	SC		E0	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	FP		E1	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	LA		E1	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	LM		E1	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	OR		E1	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	FP		N0	vd20	crashed	simpleError: prior.weights contain NA values	3
+L12	reported	LA		N0	vd20	crashed	simpleError: prior.weights contain NA values	3
+L12	reported	LM		N0	vd20	crashed	simpleError: prior.weights contain NA values	3
+L12	reported	OR		N0	vd20	crashed	simpleError: prior.weights contain NA values	3
+L12	reported	SC		N0	vd20	crashed	simpleError: prior.weights contain NA values	2
+L12	reported	FP		N1	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	LA		N1	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	LM		N1	vd20	crashed	simpleError: prior.weights contain NA values	1
+L12	reported	OR		N1	vd20	crashed	simpleError: prior.weights contain NA values	1

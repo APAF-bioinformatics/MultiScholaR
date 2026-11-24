@@ -1,0 +1,4 @@
+cell	job	rep	scenario	mask	wall_seconds	unit_seconds	exit	error	rows	rows_sha256	fault	e7
+L12	reported	401	all	all	1524.2	1519.7	0		172	3ba6dc8c4323b6317f468e7147fc550c3b17e0b8c64fa7d53357e72fa529538b	TRUE	TRUE
+L12	reported	402	all	all	1526	1522.3	0		177	88caccb11cd87f54a7722e8dfaac93c549a5a892dc6907019938d95bd96f1535	FALSE	FALSE
+L12	reported	403	all	all	1548.7	1544.6	0		177	9e1f290addb2fec3c5d79795e292a1d6caa2ddff15602895e83ccd806ac52620	FALSE	FALSE

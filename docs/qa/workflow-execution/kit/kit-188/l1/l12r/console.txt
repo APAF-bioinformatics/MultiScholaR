@@ -1,0 +1,2 @@
+KIT-188 l1-l12r: 3 units, 4 workers, lifecycle TRUE, jobs reported
+KIT-188 l1-l12r finished: 3 units (0 with an error), wall 25.9 min
