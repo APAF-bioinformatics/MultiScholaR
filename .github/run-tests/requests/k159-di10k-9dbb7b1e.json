@@ -1,0 +1,41 @@
+{
+  "requested_by": "KIT-159 line DI10K (VAL-163 (3)): confirmatory cell C4e-170 (KIT-162's composition) under fixed_onedir, 2000 sims; declaration t2/di10k-declaration.md committed alone at 9dbb7b1e before the send; one run; ceiling 4.13 core-hours",
+  "label": "KIT-159 DI10K confirmatory cell C4e-170 at 9dbb7b1e",
+  "package_commit": "9dbb7b1e11b3e778152df3016bca00462555522f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/di10k-out",
+        "--files",
+        "metrics",
+        "--coverage-plan",
+        "docs/qa/workflow-execution/kit/kit-159/t2/di10k-plan.tsv",
+        "--request",
+        "DK",
+        "--nsim",
+        "2000",
+        "--target-sims",
+        "20000",
+        "--chunks",
+        "4"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/di10k-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
