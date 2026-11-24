@@ -60,7 +60,6 @@ valG1rUnquote <- function(v) {
 #' @noRd
 valG1rBlockDiffs <- function(block) {
     msg <- block$message
-    where <- paste(block$lane, block$step)
     rows <- list()
     put <- function(field, key, side, value) {
         id <- paste(field, key, sep = "\r")
@@ -72,10 +71,11 @@ valG1rBlockDiffs <- function(block) {
             col <- if (identical(side, "actual")) "live" else "base"
             r[[col]] <- if (is.na(r[[col]])) value else paste(r[[col]], value, sep = "\n")
         }
-        rows[[id]] <<- r
+        rows[[id]] <<- r  # nolint: assignment_linter.
     }
     unreadable <- function() {
-        valAbort("a line outside the four forms in {where}", "val_g1r_unreadable")
+        valAbort("a line outside the four forms in {block$lane} {block$step}",
+                 "val_g1r_unreadable")
     }
     blank <- function(l) !nzchar(trimws(l))
     match1 <- function(re, l) regmatches(l, regexec(re, l, perl = TRUE))[[1L]]
@@ -168,7 +168,9 @@ valG1rBlockDiffs <- function(block) {
         }
         unreadable()
     }
-    if (length(rows) == 0L) valAbort("a block gives no difference: {where}", "val_g1r_unreadable")
+    if (length(rows) == 0L) {
+        valAbort("a block gives no difference: {block$lane} {block$step}", "val_g1r_unreadable")
+    }
     col <- function(name) unname(vapply(rows, `[[`, "", name))
     data.frame(lane = block$lane, step = block$step, field = col("field"), key = col("key"),
                base = col("base"), live = col("live"), oracle = block$oracle,

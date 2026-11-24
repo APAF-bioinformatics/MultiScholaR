@@ -116,14 +116,18 @@ result <- tryCatch({
     found <- system2("git", c("grep", "-l", source_sha, "--", paste0(kit_dir, "/")),
                      stdout = TRUE)
     earlier <- found[grepl("[.]tsv$", found) & !startsWith(found, file.path(kit_dir, "kit-159"))]
+    # the committed key errata (coordinator's ruling on re-audit 3, R3.B3) are applied by
+    # valReferenceDisagreements(); the number applying to each file is reported beside it
+    errata <- msrval:::valG1rKeyErrata()
     adoption <- data.frame(file = character(), groups = integer(), disagreements = integer(),
-                           stringsAsFactors = FALSE)
+                           errata = integer(), stringsAsFactors = FALSE)
     dis_all <- NULL
     for (f in earlier) {
         e <- msrval::valReadReferenceRows(f)
         dis <- msrval::valReferenceDisagreements(rows, e)
         adoption[nrow(adoption) + 1L, ] <- list(f, length(unique(paste(e$lane, e$step,
-                                                                       e$class))), nrow(dis))
+                                                                       e$class))), nrow(dis),
+                                                sum(errata$earlier_file == f))
         if (nrow(dis)) dis_all <- rbind(dis_all, cbind(file = f, dis))
     }
     writeTsv(adoption, "g1r-adoption.tsv")
