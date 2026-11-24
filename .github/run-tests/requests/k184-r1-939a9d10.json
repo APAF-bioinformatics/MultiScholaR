@@ -1,0 +1,75 @@
+{
+  "requested_by": "KIT-184 R1 (with R0 and X as scripts): targeted files and dependents, base = the tests-only commit against the fix, check on both sides; scripts: base-store job with the four mutations, gate-off identity, the writer's cost; ceiling 450 + 30 + 45 job-minutes; decides A1 to A11, A14 to A16 and gate G1",
+  "label": "KIT-184 R1 939a9d10 vs a5229552 (tests-only)",
+  "package_commit": "939a9d10492ae868b99842cbd973c76ac7d45365",
+  "base_commit": "a5229552e1e487da222b002f098d6a16f724354c",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-removed-factors.R",
+    "test-workflow-integration-input.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-input-matrix.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-enrichment-options.R",
+    "test-integration-record.R",
+    "test-integration-gui.R",
+    "test-integration-workbook-api.R",
+    "test-integration-workbook.R",
+    "test-integration-enrichment.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-corpus.R",
+    "test-integration-feature-selection.R",
+    "test-integration-model.R",
+    "test-integration-outputs.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-record-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-integration-sample-match.R",
+    "test-kit129-run-path.R",
+    "test-kit172-downstream.R",
+    "test-workflow-analysis-record.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-184/base-store-job.R",
+      "args": [
+        "a5229552e1e487da222b002f098d6a16f724354c",
+        "k184-out/x",
+        "mutations"
+      ],
+      "out": "k184-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 90
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "a5229552e1e487da222b002f098d6a16f724354c",
+        "k184-out/gate-off"
+      ],
+      "out": "k184-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-184/measure-removed-factors.R",
+      "args": [
+        "k184-out/cost"
+      ],
+      "out": "k184-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
