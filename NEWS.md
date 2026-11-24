@@ -54,8 +54,8 @@
    or infinite values') when a protein has no value in any of the analysed samples, for example a protein measured only
    in samples the correlation filter removed. As for lipidomics and metabolomics, such a protein is not tested: it
    appears in each comparison's table without a fold change or p-value and does not change any other protein's
-   differential-abundance result. Until the enrichment background is changed in its own update, such a protein is still
-   counted in that comparison's enrichment background, as proteins without a p-value are today. This applies to every
+   differential-abundance result. Like every row without a p-value, it is left out of that comparison's enrichment
+   background (KIT-205). This applies to every
    proteomics analysis route except DIA with limpa, which was not affected, and to the older
    `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects. Results of analyses that completed before
    with the default settings are unchanged, except for data of only one or two proteins, one of them without values,
