@@ -64,15 +64,19 @@ is named with the feature IDs.
 \description{
 Identifies potential negative control features (metabolites) for RUV correction
 based on ANOVA across a specified grouping variable. Features are ranked by a
-one-way ANOVA across the grouping variable (Benjamini-Hochberg q-value above
-the cutoff, highest first); ties in the q-value keep the table's order, and
-features observed in one group score p = 1.
+one-way ANOVA across the grouping variable: features with a Benjamini-Hochberg
+q-value above the cutoff, observed in at least two groups, ranked by p-value,
+highest first, ties broken by feature identifier, so the table's row order
+does not decide (features observed in one group score p = 1 in the family and
+are not chosen).
 
 Identifies potential negative control features (lipids) for RUV correction
 based on ANOVA across a specified grouping variable. Features are ranked by a
-one-way ANOVA across the grouping variable (Benjamini-Hochberg q-value above
-the cutoff, highest first); ties in the q-value keep the table's order, and
-features observed in one group score p = 1.
+one-way ANOVA across the grouping variable: features with a Benjamini-Hochberg
+q-value above the cutoff, observed in at least two groups, ranked by p-value,
+highest first, ties broken by feature identifier, so the table's row order
+does not decide (features observed in one group score p = 1 in the family and
+are not chosen).
 }
 \details{
 This method iterates through each assay in the \code{MetaboliteAssayData} object. Samples of

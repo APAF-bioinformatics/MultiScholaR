@@ -12,7 +12,8 @@ getNegCtrlProtAnovaHelper(
   num_neg_ctrl = round(nrow(data_matrix) * percentage_as_neg_ctrl/100, 0),
   ruv_qval_cutoff = 0.05,
   ruv_fdr_method = "qvalue",
-  exclude_pool_samples = TRUE
+  exclude_pool_samples = TRUE,
+  candidate_rule = c("q_table_order", "p_id_two_groups")
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ getNegCtrlProtAnovaHelper(
 \item{ruv_fdr_method}{The FDR calculation method, default is "qvalue". The other option is "BH"}
 
 \item{exclude_pool_samples}{Logical. If TRUE (default), automatically exclude samples from groups containing "Pool" in their name from ANOVA calculation. Pool/QC samples are excluded from negative control selection but remain in RUV-III correction.}
+
+\item{candidate_rule}{\code{"q_table_order"} (the default; every caller but the lipidomics and metabolomics methods): candidates ranked by q-value, highest first, ties in the order of \code{data_matrix}'s rows. \code{"p_id_two_groups"} (KIT-190, the lipidomics and metabolomics methods): features observed in fewer than two groups are not candidates (they stay in the BH family with p = 1), and candidates are ranked by p-value, highest first, ties broken by row name in C-locale byte order.}
 }
 \value{
 A boolean vector which indicates which row in the input data matrix is a control gene. The row is included if the value is TRUE. The names of each element is the row ID / protein accessions of the input data matrix.
@@ -39,5 +42,5 @@ A boolean vector which indicates which row in the input data matrix is a control
 Identify negative control proteins for use in removal of unwanted variation, using an ANOVA test.
 }
 \details{
-Features are ranked by the q-value of a one-way ANOVA on \code{grouping_variable}, highest first; ties keep the order of \code{data_matrix}'s rows, and a feature observed in fewer than two groups scores p = 1. A \code{design_matrix} without the \code{grouping_variable} column, or fewer than two groups left after leaving out the pools, is an error of class \code{multischolar_ruv_grouping_unusable}.
+Features are ranked as \code{candidate_rule} says; a feature observed in fewer than two groups scores p = 1. A \code{design_matrix} without the \code{grouping_variable} column, or fewer than two groups left after leaving out the pools, is an error of class \code{multischolar_ruv_grouping_unusable}.
 }

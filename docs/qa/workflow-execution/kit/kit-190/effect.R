@@ -16,6 +16,8 @@
 #   K190_FAULT=1      cell N-r alone; the "head" side drops one control in its first lipid journey; the stop rule on.
 #   K190_CELLS        comma list among E1,N-r,N-s,E-r,E-s,E-p,E-g (default all), to split the work by cell.
 #   K190_WORKERS      forked workers per side (default 2; the two sides run at once on the runner's 4 cores).
+#   K190_RULE=d       the head carries rule (d) of section 2.7a (VAL-110, VAL-126): F2 compares the head's controls
+#                     with that rule's selection instead of the first repair's.
 #   K190_E3_N         comma list of features per assay for `e3` (default 5000,20000).
 # Reported only (VAL-100, for the owner's D2): per journey, what candidate rules (b) rank by p with a feature-id
 # tie-break, (c) one-group features not candidates, (d) both, would select at the chosen percentage (rule_* columns).
@@ -133,7 +135,7 @@ k190Oracle <- function(m, groups, pct) {
 k190Candidate <- function(orc, rule) {
   candidates <- names(orc$q)[orc$q > CUTOFF]
   if (rule %in% c("c", "d")) candidates <- setdiff(candidates, orc$one_group)
-  ranked <- if (rule %in% c("b", "d")) candidates[order(-orc$p[candidates], candidates)] else
+  ranked <- if (rule %in% c("b", "d")) candidates[order(-orc$p[candidates], candidates, method = "radix")] else
     candidates[order(-orc$q[candidates])]
   if (!length(ranked)) return(character())
   utils::head(ranked, max(min(orc$count, length(ranked)), 1L))
@@ -200,7 +202,9 @@ k190Journey <- function(task, side, fault) {
     power = if (length(planted)) sum(called %in% planted) / length(planted) else NA_real_,
     abs_lfc_error = mean(abs(da$logFC - truth), na.rm = TRUE),
     matches_first = if (length(controls) && !is.null(orc)) setequal(controls, first) else NA,
-    matches_oracle = if (length(controls) && !is.null(orc)) setequal(controls, orc$selected) else NA,
+    # K190_RULE=d (VAL-110, VAL-126): the head's lipid and metab controls are checked against rule (d) (2.7a).
+    matches_oracle = if (length(controls) && !is.null(orc)) setequal(controls, if (identical(side, "head") &&
+      identical(Sys.getenv("K190_RULE"), "d")) k190Candidate(orc, "d") else orc$selected) else NA,
     seconds = proc.time()[[3L]] - started,
     controls = list(controls), logfc = list(stats::setNames(da$logFC, da$feature))),
     rule_metrics(orc, controls, planted, complete, one_group))
