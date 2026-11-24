@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-208 R1b: tests-only commit on the unaligned merge with KIT-205; T10 (n 6 not 4), T11 (2 of 5 not 1 of 4) and T6's literal must fail at those values, T12, T13 and T1-T9 pass; ceiling 4 core-hours",
+  "label": "KIT-208 R1b tests only at 4565c7f6 (merge with staging 446b5878)",
+  "package_commit": "4565c7f66ccb12d6a9ed01b795adf0b8d17eae27",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit208-gprofiler-identifiers.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
