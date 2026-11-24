@@ -17,6 +17,23 @@
 
 ### Fixes
 
+ * Lipidomics and metabolomics: the differential analysis no longer stops with 'prior.weights contain NA values' (or
+   'covariate contains NA or infinite values') when an assay holds a feature with no value in any sample. Examples are a
+   feature below the detection limit everywhere, which the intensity filter keeps, or a feature measured only in samples
+   the correlation filter removed. Such a feature is not tested: it appears in each comparison's table without a fold
+   change or p-value and is counted in the summary's 'Not tested' line, and it no longer affects any other feature's
+   result. Before, the assay's analysis failed, and the whole analysis stopped when every assay failed. A saved analysis
+   that failed this way now completes when it is replayed. With the default settings every result produced before is
+   unchanged, except in an assay of only one or two features, one of them without values, where the B statistic changes;
+   an assay that failed this way while the other assays completed now has results too, also when the saved analysis is
+   replayed. The older S4 method `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects is not
+   changed. With the trend option off (available only when calling the functions directly), on data that contain such
+   features the result tables change: those features move to the end of each table without an average intensity. With
+   the robust option also on, the other features' results change, to those of the same data without them. With RUV
+   factors in the model these features were already left out of the tables and listed separately; that is unchanged. An
+   assay in which no feature has any value is now refused with 'no feature has a value in any sample, so nothing can be
+   tested'. `runLipidsDA()` and `runMetabolitesDA()` return `features_without_values` (per assay, the ids) when there
+   are such features (KIT-196).
  * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
    Pre-Normalization', 'Apply Correlation Filter', 'Skip Filtering & Proceed to DE', 'Export Normalized Data' and the
    differential analysis could run on data that had not been normalised (no internal-standard step, no log2, no
