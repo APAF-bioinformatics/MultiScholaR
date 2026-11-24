@@ -1,0 +1,56 @@
+{
+  "requested_by": "KIT-205 R2b (audit K205-I01): R2's 26 files and check on the merge with staging (head db09ddfa) vs staging tip; dump control of the UI and 5 W113 cases (no re-freeze); ceiling 540 job-min (36.00 core-h); expected only 6.3's moves, check identical",
+  "label": "KIT-205 R2b db09ddfa vs staging 8cb536cc",
+  "package_commit": "db09ddfa6ce2ae66cfc31aa5b783701a2110a2b7",
+  "base_commit": "8cb536cc3bc09591ec1bfb6fef0cb15437a5ad4a",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-core.R",
+    "test-prot-missing-value-counts.R",
+    "test-gui-entry-proteomics.R",
+    "test-kit205-enrichment-background.R",
+    "test-omic-enrich-module.R",
+    "test-kit129-run-path.R",
+    "test-integration-model.R",
+    "test-prot-annotation-uniprot-empty.R",
+    "test-workflow-analysis-record.R",
+    "test-go-propagation.R",
+    "test-omics-enrich-core.R",
+    "test-workflow-trx-declarations.R",
+    "test-enrichment-significance.R",
+    "test-workflow-dia-products.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-lipid-declarations.R",
+    "test-integration-mofa-model.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-omic-gui-config.R",
+    "test-general-enrichment-shared.R",
+    "test-kit172-log2-rule.R",
+    "test-workflow-operation-registry.R",
+    "test-module-ci-prot-da.R",
+    "test-prot-11-enrichment-module-contracts.R",
+    "test-module-ci-prot-enrich.R",
+    "test-prot-11a-enrichment-module-characterization.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-205/dumps-k205.R",
+      "args": [
+        "kit205-out/dumps",
+        "8cb536cc3bc09591ec1bfb6fef0cb15437a5ad4a"
+      ],
+      "out": "kit205-out/dumps",
+      "out_pattern": "\\.(tsv|txt|R)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
