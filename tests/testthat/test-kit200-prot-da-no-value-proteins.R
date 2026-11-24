@@ -779,3 +779,25 @@ test_that("KIT-200 T12: with the trend off the removal applies too (D2)", {
     if (!kit200Completed(run, "T12 (b) error")) return(invisible())
     kit200ExpectEqual(run$value$results, reference$results, rownames(reference_x))
 })
+
+test_that("KIT-200 audit I05: without row names, every row keeps its input position as its label", {
+    design <- kit200Design()
+    reference_x <- kit200SetScatter(kit200Matrix())
+    x <- rbind(reference_x[1:2, ], NA_real_, reference_x[-(1:2), ])
+    rownames(x) <- NULL
+    rownames(reference_x) <- NULL
+    for (trend in c(TRUE, FALSE)) {
+        run <- kit200Run(x, design, lfc = 0, trend = trend, robust = trend)
+        if (!kit200Completed(run, sprintf("I05 error (trend %s)", trend))) next
+        reference <- kit200Run(reference_x, design, lfc = 0, trend = trend, robust = trend)$value
+        expect_identical(run$value$features_without_values, "3")
+        for (contrast in kit200Strings) {
+            got <- run$value$results[[contrast]]
+            ref <- reference$results[[contrast]]
+            expect_setequal(rownames(got), as.character(1:61))
+            expect_true(all(is.na(unlist(got["3", kit200Columns]))), info = contrast)
+            expect_identical(as.list(got[as.character(c(1:2, 4:61)), kit200Columns]),
+                as.list(ref[as.character(1:60), kit200Columns]), info = contrast)
+        }
+    }
+})
