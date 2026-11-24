@@ -94,3 +94,62 @@ Ticket section 11, revision 1.5, has the re-derivation row by row. Two figures a
   job holding only cell D replicates would run its last replicate close to the job's limit (31 x 127.8 s = 66.0 minutes
   against 68.4 available before the last-start time); the job list in `declaration-draft.md` therefore gives every job
   100 replicates of cell A or B and 25 of cell D.
+
+## L1b, the blind lifecycle extension: written before it is sent (2026-11-24)
+
+Authority: declaration audit K184-D05 and its re-check 1 (K184-R02, "order before the freeze", steps 1 to 5); the
+coordinator's word for L1b, given on the condition that this section is written first. Not a VAL-54 re-run.
+
+**Purpose.** To run, before anything is frozen, the code L1 did not run: the simulation writing its error table per set
+size and its package versions in every replicate; the scorer summing the sizes, reading proteomics C5 in two
+compositions, and comparing a determinism pass; and to measure the scorer at the counted run's size (about 2,000
+replicates). It shows mechanics and counts. It decides nothing about the simulation's results, and no rate leaves
+the job.
+
+**Commits.** Package `kit-184-ruv-factors-in-integration` at 9e525fd94ec585cc116919884cea83cc1d014091
+(`simulate-k184.R` SHA-256 58333b1ef1b479a65f30089dd0307aad5ebab2495c1fb060621a8738a873a75b, `score-k184.R`
+282b844e1c3427e8c99f296aa486c313957776bda8067d782a9a4511b43fa8b2; no file under `R/` differs from L1's commit
+21053957). Lane `run-mofa-evidence-k184` at 41013a465eb477bf5a27f65c0685b41e996a9c68 (`k184-evidence.yml` SHA-256
+2b680757025310996e0d35e70a11c3d0b94034f8173f9a03717bbc754826b6fe; `k184.R` the byte copy of `simulate-k184.R`,
+58333b1e...). Sent by a commit to the lane's `k184-params.json` with `run = blind` and that package commit.
+
+**Ceiling.** One job with a timeout of 50 minutes, and the parameters job (seconds): inside what is left of L1's row,
+52.3 job-minutes (75 less the 22.7 L1 used). Expected about 25 job-minutes: set-up 11, the replicates 5, the
+determinism pass 2, the scorer under 1, the scale test a few minutes (its own limit is 25). One attempt. A failure in
+the mechanics is fixed and sent again under VAL-54 (at most three sends in all) only if what is left of the 52.3
+job-minutes covers another job; if it does not, I stop and report.
+
+**What it decides.** Whether the two scripts at 9e525fd9 may be the frozen ones (every item of the list below), and
+the `score` job's timeout and budget line (three times the scale test's measured time, at least 30 and at most 90
+minutes). A failed item is a defect of the instrument, not a result.
+
+**The check that nothing but the listed files can leave the job** (the workflow at 41013a46, read again line by line
+after the commit):
+
+| Way out of the job | What the workflow does for `run = blind` |
+|---|---|
+| Artifacts | Two upload steps. The one for the whole result folder runs only when `run != 'blind'` (line 369). The other runs only when `run == 'blind'` and uploads `RUNNER_TEMP/staged` (line 377), a folder the L1b step creates and fills by name: `plan.txt`, `runner.txt`, `script-sha256.txt`, `status.tsv` and `formed.tsv` (the workers' rows), `completion.tsv`, `not-completed.tsv`, `pools.tsv`, `versions.tsv`, `determinism.tsv`, `determinism-selftest.tsv`, `l1-reference-check.tsv` (copied one by one from the scorer's folder if they exist), `scale-test.txt`, the workers' logs (`w*.log`, `det-w*.log`) and `tables.tsv`. The workers' tables, the scorer's folder and the scale test's folders are in other folders of `RUNNER_TEMP` that no step uploads; the scale test's output folder is deleted |
+| The `score` job | Skipped: its condition is `run != 'blind'` (line 386). It is the only step that writes to the step summary (line 419) and the only other upload (line 420) |
+| The step summary | Nothing in the evidence job writes to it |
+| Job outputs | The evidence job has none; the parameters job's are the commit, the run kind and the job list |
+| The log | The simulate step prints the set-up time, the workers' ranges, the seconds and a count of replicates per status. The L1b step prints the scorer's exit status, the scale test's line and the names of the staged files. The scorer runs with `K184_BLIND`, so it prints no summary, and its standard output and error go to a file that is not staged |
+
+Not on the re-check's list, and in the job on purpose (declaration draft, section 6): `tables.tsv` has a column with the
+rows per cell; if the scorer exits with an error, the lines of its standard error from `Error` on (at most twelve)
+are printed, which is R's error message and call. Also possible: `withheld.txt`, the lane's standing token rule, which
+names a staged file it removed for naming an internal package. The workers' logs hold R's warnings only: the
+simulation prints nothing itself (`simulate-k184.R` has no `cat`, `message` or `print`).
+
+**How it is judged**: from the staged files alone, against the re-check's list. Nothing else of the run is opened,
+downloaded or printed.
+
+| Item of the list | Read from |
+|---|---|
+| every cell A replicate completed | `status.tsv`, `completion.tsv` |
+| at least one cell D replicate `not_started`, and counted | `status.tsv`, `completion.tsv`, `not-completed.tsv` |
+| `ke1-checks` and `ke5-checks` 34 rows, `ke4-checks` 4 rows, per deciding cell (cell B with missing values) | `tables.tsv` (rows and rows per cell) |
+| `error-rates-by-size` exists | `tables.tsv` |
+| `versions.tsv` has four rows | `versions.tsv` |
+| `determinism.tsv` 12 of 12 TRUE; the altered copy FALSE | `determinism.tsv`, `determinism-selftest.tsv` |
+| `l1-reference-check` TRUE | `l1-reference-check.tsv` (with its counts if FALSE) |
+| the scale test ends within 25 minutes and below 12 GiB | `scale-test.txt` |
