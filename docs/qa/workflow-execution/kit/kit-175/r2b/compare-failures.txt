@@ -1,0 +1,12 @@
+== test-omic-enrich-module.R | fixed | (b) in process: refusals
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 5e2f3b55014aa79172378872e177a2f712ea6ccb0234a7d17e9a9736bab2c456"
+  + "<text> d4fb7d7310ead9d16c488b464913a0e5924d14ef0038fdaef46b4caa5cd76332"
+  
+  refusals q_cutoff/run_q_cutoff values
+-- head:
+  <passes>
+

@@ -1,0 +1,1 @@
+BLAS /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 LAPACK /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so 3.10.0 

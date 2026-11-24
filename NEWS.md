@@ -36,6 +36,19 @@
    canonical-correlation panels and the grid workbook) are not removed, and describe that earlier run. Runs that used
    the RUV grid are unchanged. The RUV design panel is off by default.
 
+ * Proteomics: when protein annotation from UniProt is empty or incomplete the app now says why, keeps the notice
+   until it is closed, writes the fact into the analysis record, and no longer keeps an empty or incomplete answer
+   for the next attempt. An incomplete annotation stays marked as incomplete when the project is saved and reopened.
+   Projects whose annotation was empty under an earlier version: save the design again. Enrichment now refuses to run
+   when the project has no protein annotation (previously: the UniProt GO route stopped with a 'column not found'
+   error, and the g:Profiler route was sent no protein, since data imported in the app carry no gene names of their
+   own). An earlier analysis record whose enrichment ran without any protein annotation is no longer replayed: the
+   replay is refused, because that run had nothing to test. Each request to UniProt is now tried up to three times,
+   and asks for each protein by its accession only (`accession:` terms; an isoform is asked for by its canonical
+   accession, as the design step already did), so an answer holds exactly the requested entries; a protein UniProt
+   has merged into another entry (a secondary accession) still gets no annotation. DA tables written before the
+   annotation was retrieved keep their blank gene names until the DA is run again. (KIT-175)
+
 ### Scientific changes
 
  * Gene Ontology enrichment for organisms outside g:Profiler's set now calls a term significant by its
