@@ -523,6 +523,12 @@ test_that("KIT-206 E12: S3, the DA, then an enrichment result on the head: the e
     before <- k206Snapshot(fixture$paths)
     log <- k206Export(fixture, norm, "manual")
     k206ExpectRefused("E12", log, fixture, norm, before)
+    # Implementation audit I01: a second enrichment run on this stale head names itself as its previous state; the
+    # table it was made from (`normalized`) is still judged, and the export is still refused.
+    expect_null(k206Enrichment(fixture))
+    before <- k206Snapshot(fixture$paths)
+    log <- k206Export(fixture, norm, "manual")
+    k206ExpectRefused("E12 second enrichment", log, fixture, norm, before)
 })
 
 # ------------------------------------------------------------------------------------------------
@@ -570,4 +576,91 @@ test_that("KIT-206 E13: the export takes its results file and RUV statement from
     if (length(log$errors) == 1L) expect_s3_class(log$errors[[1L]], "workflow_export_dependency_missing")
     expect_false(pending)
     expect_null(applied)
+})
+
+# ------------------------------------------------------------------------------------------------
+# The implementation audit's repairs (the ticket's correction pass): E14 (I01) and E11b (I02); both fail before
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-206 E14 (audit I01): after a second enrichment run the export proceeds and the Summary's refresh writes (fails before)", {
+    fixture <- k206Owner()
+    norm <- new.env(parent = emptyenv())
+    k206Click(fixture, norm, "skip")
+    k206Correlation(fixture, norm, 0.5)
+    exported <- k206Export(fixture, norm, "skip")
+    k206ExpectExported("E14 export", exported, fixture$paths, list(archives = character()), "correlation_filtered")
+    k206Da(fixture)
+    expect_null(k206Enrichment(fixture))
+    expect_null(k206Enrichment(fixture))
+    record <- k206Scope(fixture, function() readComponentMetadata(fixture$manager, k206Head(fixture)))
+    cat(sprintf("KIT-206 E14 head=%s previous_state=%s\n", fixture$manager$current_state, format(record$previous_state)))
+    expect_identical(record$previous_state, "enrichment_completed")
+    recorder <- k206Recorder()
+    log <- k206Export(fixture, norm, "skip", recorder)
+    cat(sprintf("KIT-206 E14 export notes=%s calls=%d\n", paste(log$notes, collapse = " | "), recorder$calls))
+    expect_identical(recorder$calls, 1L)
+    expect_length(log$errors, 0L)
+    before <- k206Snapshot(fixture$paths)
+    error <- k206Error(protNormCoreQuiet(refreshDIANativeSummaryArchive(fixture$workflow, fixture$paths$source_dir)))
+    added <- setdiff(k206Snapshot(fixture$paths)$archives, before$archives)
+    cat(sprintf("KIT-206 E14 refresh error=%s new_archives=%d\n", if (is.null(error)) "none" else conditionMessage(error),
+        length(added)))
+    expect_null(error)
+    expect_length(added, 1L)
+    # DIA with limpa: E10's sequence, then a second enrichment.
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    fixture <- protNormW1LimpaOwner()
+    norm <- new.env(parent = emptyenv())
+    k206PassThrough(fixture, norm)
+    k206Correlation(fixture, norm, 0.5)
+    k206RuvCovariates(fixture, norm, "covariates")
+    testthat::local_mocked_bindings(updateSelectInput = function(...) invisible(NULL), .package = "shiny")
+    protNormCoreQuiet(restoreProtNormTabState(NULL, fixture$workflow, norm))
+    k206Da(fixture)
+    expect_null(k206Enrichment(fixture))
+    expect_null(k206Enrichment(fixture))
+    recorder <- k206Recorder()
+    log <- k206Export(fixture, norm, "covariates", recorder)
+    cat(sprintf("KIT-206 E14 limpa notes=%s calls=%d\n", paste(log$notes, collapse = " | "), recorder$calls))
+    expect_identical(recorder$calls, 1L)
+})
+
+test_that("KIT-206 E11b (audit I02): a Save refused at a stale head removes the earlier proteomics integration input (fails before)", {
+    fixture <- k206Owner()
+    norm <- new.env(parent = emptyenv())
+    k206Click(fixture, norm, "skip")
+    k206Correlation(fixture, norm, 0.5)
+    exported <- k206Export(fixture, norm, "skip")
+    k206ExpectExported("E11b export", exported, fixture$paths, list(archives = character()), "correlation_filtered")
+    k206Da(fixture)
+    dirs <- list(proteomics = c(fixture$paths, list(integration_dir = file.path(fixture$root, "integration"),
+        base_dir = fixture$root)))
+    input <- file.path(dirs$proteomics$integration_dir, "proteomics")
+    seen <- new.env(parent = emptyenv())
+    save <- function() {
+        seen$notes <- character()
+        seen$failed <- list()
+        seen$done <- list()
+        protNormCoreQuiet(saveWorkflowSummaryParameters(omicGuiConfig("proteomics")$summary, fixture$workflow, dirs,
+            "proteomics", "k206", "d", notify = function(message, type = NULL, duration = NULL) {
+                seen$notes <- c(seen$notes, as.character(message))
+                invisible(NULL)
+            }, done = function(saved) seen$done <- c(seen$done, list(saved)),
+            failed = function(error) seen$failed <- c(seen$failed, list(error)),
+            createWorkflowArgsFn = function(...) "study_parameters.txt", writeAnalysisRecordFn = function(...) NULL,
+            catFn = function(...) NULL))
+    }
+    save()
+    cat(sprintf("KIT-206 E11b valid save notes=%s input=%s\n", paste(seen$notes, collapse = " | "),
+        file.exists(file.path(input, "integration_input.json"))))
+    expect_length(seen$failed, 0L)
+    expect_true(file.exists(file.path(input, "integration_input.json")))
+    k206Revert(fixture, "protein_replicate_filtered")
+    save()
+    cat(sprintf("KIT-206 E11b refused save notes=%s failed=%d input_present=%s\n", paste(seen$notes, collapse = " | "),
+        length(seen$failed), dir.exists(input)))
+    expect_false(dir.exists(input))
+    expect_true(paste("The session could not be saved:", k206Text) %in% seen$notes)
+    expect_length(seen$failed, 1L)
 })
