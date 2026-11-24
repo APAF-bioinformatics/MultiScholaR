@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-159 REPAIR (VAL-109), last step on the coordinator's word: E1 whole harness suite with --lint and --covr at a5a084cf (ticket head 5aab46a2 + staging 735c2ea5); ceiling 75 min, 5.0 core-hours; decides E1 and A2 (covr >= 80 %, no lints)",
+  "label": "KIT-159 E1 whole suite + covr at a5a084cf",
+  "package_commit": "a5a084cfd1e1e0379cb01d7f8e7d313ce67d320e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-e1-out",
+        "--lint",
+        "--covr"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-e1-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
