@@ -1,4 +1,4 @@
-name: MOFA2 evidence k184 (integration enrichment, the removed RUV factors in the test's design: the simulation)
+name: "MOFA2 evidence k184 (integration enrichment, the removed RUV factors in the design of the test; the simulation)"
 
 # Run-only lane (branch run-mofa-evidence-k184; KIT-184 section 6.2, methods ledger VAL-53 (1), VAL-58, VAL-62, VAL-97
 # (3)). Copied from the KIT-183 lane (run-mofa-evidence-k183, .github/workflows/k183-evidence.yml): R 4.6.1, the KIT-134
