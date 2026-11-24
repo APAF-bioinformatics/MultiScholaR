@@ -40,10 +40,10 @@ enrichmentSignificanceShipped <- "bh_whole_family"
 #' @noRd
 ENRICHMENT_SIGNIFICANCE_RULES <- data.frame(
   rule = c("bh_whole_family", "qvalue"),
-  label = c("Benjamini-Hochberg over every term of 10 to 500 measured proteins (default)",
+  label = c("Benjamini-Hochberg over every term of 10 to 500 tested proteins (default)",
     "Storey q-value over the terms with at least one listed protein (as in earlier versions)"),
   note = c(paste("Each term's p-value is adjusted together with every Gene Ontology term (biological process, molecular",
-    "function and cellular component together) that has 10 to 500 of your measured proteins, including terms with none",
+    "function and cellular component together) that has 10 to 500 of your tested proteins, including terms with none",
     "of the listed proteins (they count as p = 1). In a check on simulated protein lists at a cutoff of 0.05 (reviewed",
     "E. coli and yeast annotations; lists of 25, 126 and 400 proteins drawn at random; with and without parent terms;",
     "2,000 random lists per setting), lists with no real signal had at least one significant term in 1.0 % to 2.5 % of",
@@ -67,7 +67,7 @@ ENRICHMENT_SIGNIFICANCE_RULES <- data.frame(
     "25 with parent terms the average was 10.7 %. It found the process's own term up to 5.8 percentage points more often",
     "than the default with parent terms and up to 8.8 points more often without.")),
   notice = c(paste("For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value over every",
-    "term of 10 to 500 measured proteins."),
+    "term of 10 to 500 tested proteins."),
     paste("For this organism, terms are called significant by the Storey q-value over the terms with at least one listed",
     "protein (Benjamini-Hochberg adjusted p-values over the same terms are also given).")),
   methods = c(paste("A term was called significant when its Benjamini-Hochberg adjusted p-value over that family was below",
@@ -137,6 +137,25 @@ addEnrichmentFamilyAdjustment <- function(result, significance_rule) {
   result
 }
 
+#' The rows of one comparison's DA table that were tested (KIT-205; VAL-129 (2))
+#'
+#' A protein without a p-value in a comparison (no value in a compared group) can never be in that comparison's lists,
+#' so it is not in their background (universe) either. Tested means a finite `fdr_qvalue` and, where the table has the
+#' column, a finite `raw_pvalue`; on the package's DA tables the two coincide. A table with no untested row is returned
+#' as it is. Under the earlier rule (the option of `workflowReplayRuleMarkers$enrichment_background` holding its
+#' earlier token, set only by the record replay of a step made before this rule) every row is kept.
+#' @param de_data One comparison's DA table.
+#' @return `list(rows, left_out)`: the rows the lists and the background are formed from, and how many were left out.
+#' @noRd
+enrichmentTestedRows <- function(de_data) {
+  marker <- workflowReplayRuleMarkers$enrichment_background
+  if (identical(getOption(marker$option), marker$earlier)) return(list(rows = de_data, left_out = 0L))
+  tested <- is.finite(de_data[["fdr_qvalue"]])
+  if ("raw_pvalue" %in% names(de_data)) tested <- tested & is.finite(de_data[["raw_pvalue"]])
+  if (all(tested)) return(list(rows = de_data, left_out = 0L))
+  list(rows = de_data[tested, , drop = FALSE], left_out = sum(!tested))
+}
+
 # processEnrichments
 # ----------------------------------------------------------------------------
 #' Process Enrichments
@@ -166,10 +185,17 @@ addEnrichmentFamilyAdjustment <- function(result, significance_rule) {
 #'   the background, and the GO release is that of the installed GO.db. Not used on the g:Profiler route.
 #' @param significance_rule For organisms outside the 13 served by g:Profiler, how a term is called significant
 #'   (KIT-203): `"bh_whole_family"` (the default) by its Benjamini-Hochberg adjusted p-value over every term of 10 to
-#'   500 measured proteins, terms without a listed protein entering with p = 1 (columns `p_adjust_family` and
+#'   500 tested proteins, terms without a listed protein entering with p = 1 (columns `p_adjust_family` and
 #'   `family_size` added to the result); `"qvalue"` by Storey's q-value over the terms with at least one listed protein,
 #'   as in earlier versions (in simulations it called terms on up to 42.9 % of random protein lists). Not used on the
 #'   g:Profiler route.
+#'
+#' @details The background (universe) of each comparison is the proteins tested in that comparison (KIT-205, VAL-129
+#'   (2)): before the up and down lists and the background are formed, the comparison's table is reduced to its rows
+#'   with a finite `fdr_qvalue` and, where the table has a `raw_pvalue` column, a finite `raw_pvalue` (a table without
+#'   `raw_pvalue` is reduced by `fdr_qvalue` alone). A protein without a p-value could never be in a list, so it is not
+#'   counted in the background either. One background per comparison serves both lists, on both routes; the number of
+#'   rows left out is written to the log. Analyses recorded before this rule replay with every row.
 #'
 #' @return S4 EnrichmentResults object containing enrichment data and summaries. Its plot slots are left empty: the
 #'   plots are written to `pathway_dir` and rebuilt from the enrichment data when shown.
@@ -249,6 +275,10 @@ processEnrichments <- function(da_results,
           stop(sprintf("ERROR: Column '%s' not found in DE data. Available columns: %s", 
                       protein_id_column, paste(names(de_data), collapse = ", ")))
         }
+
+        # KIT-205 (VAL-129 (2)): the lists and the background are formed from the rows tested in this comparison.
+        reduced <- enrichmentTestedRows(de_data)
+        de_data <- reduced$rows
         
         # Check if the column has valid data
         protein_col_data <- de_data[[protein_id_column]]
@@ -302,7 +332,8 @@ processEnrichments <- function(da_results,
         custom_bg <- stripEnrichmentIdSuffix(de_data[[protein_id_column]]) |>
           unique()
 
-        message(sprintf("Using %d unique proteins as background for enrichment analysis", length(custom_bg)))
+        message(sprintf("Using %d unique proteins as background for enrichment analysis (%d rows without a p-value left out)",
+          length(custom_bg), reduced$left_out))
         
         # Process up and down regulated genes
         list(
@@ -544,6 +575,10 @@ processEnrichments <- function(da_results,
         # Split data into up/down regulated
         message(sprintf("Total proteins before filtering: %d", nrow(de_data)))
 
+        # KIT-205 (VAL-129 (2)): the lists and the background are formed from the rows tested in this comparison.
+        reduced <- enrichmentTestedRows(de_data)
+        de_data <- reduced$rows
+
         subset_sig <- de_data |>
           dplyr::filter(.data$fdr_qvalue < q_cutoff)
 
@@ -559,6 +594,8 @@ processEnrichments <- function(da_results,
 
         # Background genes
         background_IDs <- unique(de_data |> dplyr::pull({{protein_id_column}}))
+        message(sprintf("Using %d unique proteins as background for enrichment analysis (%d rows without a p-value left out)",
+          length(background_IDs), reduced$left_out))
 
         # Perform enrichment for up-regulated genes
         up_enrich <- tryCatch({

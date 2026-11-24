@@ -1,0 +1,26 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-arms.R	T-KER-1: a kernel equal to the workflow arm passes on seeded identity units and a refusal unit	0	0	0	0	1	0	0.009
+test-arms.R	T-KER-2: a deliberately different kernel is refused	0	0	0	0	1	0	0.082
+test-arms.R	the hook receives the named arguments only through formals that name them (C22)	0	0	0	0	1	0	0.003
+test-arms.R	prepareInputs' result tables are copied, checked, and an undeclared one refused	0	0	0	0	1	0	0.003
+test-chain.R	T-CHAIN-1: a first link absorbing an unintended difference is refused at link one	0	0	0	0	1	0	0.004
+test-chain.R	T-CHAIN-1: a correct chain is accepted; a later link's base is compared with zero	0	0	0	0	1	0	0.004
+test-chain.R	T-CHAIN-1: a re-frozen file without a record; a lane not re-frozen against the counts	0	0	0	0	1	0	0.003
+test-chain.R	T-CHAIN-1: declared keys before the changed step, and unclassed differences after it	0	0	0	0	1	0	0.003
+test-chain.R	T-CHAIN-1: rows a re-freezing ticket committed earlier are adopted when they agree	0	0	0	0	1	0	0.004
+test-driver.R	T-DRV-1: the defaults reader reads every tag type as a browser sends it	0	0	0	0	1	0	0.106
+test-driver.R	T-DRV-2 and T-DRV-3: a choices-only update selects the first choice; a server value is not overwritten	0	0	0	0	1	0	0.003
+test-driver.R	T-DRV-4: a script may set only structural inputs, forced settings and overrides	0	0	0	0	1	0	0.003
+test-driver.R	T-DRV-5: a modal's inputs at their rendered values; Cancel is refused	0	0	0	0	1	0	0.012
+test-driver.R	T-DRV-6: a re-rendered uiOutput resets its inputs to the new rendered values	0	0	0	0	1	0	0.003
+test-driver.R	T-DRV-7 and T-DRV-8: step outcomes; a refused diagnostic step lets the cell continue	0	0	0	0	1	0	0.002
+test-driver.R	T-DRV-9: forced options are scoped to the cell, recorded, and refused when already set	0	0	0	0	1	0	0.003
+test-driver.R	enrichment buttons are refused in an action script	0	0	0	0	1	0	0.003
+test-driver.R	the matrix stage rule: factors in the model test the uncorrected matrix; display is labelled	0	0	0	0	1	0	0.002
+test-evidence.R	T-SCORE-2: phase score widens a run-level interval bound by bound to the requests' within-run rows	0	0	0	0	1	0	0.003
+test-evidence.R	the results note prints the measured coverage beside every verdict and the attribution	0	0	0	0	1	0	0.003
+test-evidence.R	the hand-off folder: admitted only counted with every data input permitted, and checked	0	0	0	0	1	0	0.009
+test-evidence.R	ticket-coverage.tsv has its fixed columns; ticket-coverage-cells.tsv is admitted	0	0	0	0	1	0	0.026
+test-evidence.R	check-evidence.sh: the pre-push allow-list and hash check without R	1	1	0	0	1	0	0.009
+test-helpers.R	T-HELP-1: extraction runs no top-level code	0	0	0	0	1	0	0.003
+test-helpers.R	T-HELP-2: the closure is extracted and hashed; a call to nothing defined is refused	0	0	0	0	1	0	0.003

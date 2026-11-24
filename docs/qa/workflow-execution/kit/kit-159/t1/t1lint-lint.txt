@@ -1,0 +1,18 @@
+filename	line_number	linter	message
+parity.R	205	indentation_linter	Indentation should be 16 spaces but is 12 spaces.
+parity.R	238	indentation_linter	Indentation should be 16 spaces but is 12 spaces.
+phases.R	318	indentation_linter	Hanging indent should be 25 spaces but is 12 spaces.
+phases.R	322	indentation_linter	Hanging indent should be 25 spaces but is 12 spaces.
+phases.R	393	indentation_linter	Hanging indent should be 60 spaces but is 24 spaces.
+phases.R	507	indentation_linter	Hanging indent should be 72 spaces but is 28 spaces.
+phases.R	508	indentation_linter	Indentation should be 24 spaces but is 28 spaces.
+phases.R	533	indentation_linter	Hanging indent should be 79 spaces but is 49 spaces.
+phases.R	536	indentation_linter	Indentation should be 24 spaces but is 33 spaces.
+phases.R	539	indentation_linter	Indentation should be 24 spaces but is 33 spaces.
+phases.R	544	indentation_linter	Hanging indent should be 56 spaces but is 20 spaces.
+phases.R	569	indentation_linter	Hanging indent should be 56 spaces but is 20 spaces.
+phases.R	634	brace_linter	Wrap multi-line function bodies in curly braces.
+phases.R	643	indentation_linter	Hanging indent should be 56 spaces but is 20 spaces.
+phases.R	701	indentation_linter	Hanging indent should be 73 spaces but is 43 spaces.
+phases.R	704	indentation_linter	Indentation should be 12 spaces but is 27 spaces.
+phases.R	707	indentation_linter	Indentation should be 12 spaces but is 27 spaces.

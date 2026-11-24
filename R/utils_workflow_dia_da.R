@@ -670,8 +670,11 @@ diaEnrichmentOperation <- function() {
         parameters = c("taxon_id", "up_cutoff", "down_cutoff", "q_cutoff", "exclude_iea", "correction_method",
             "protein_id_column", "contrast_names", "results", "organism_filter_enabled", "organism_filter_taxon",
             "go_propagation", "significance_rule"),
-        global_statistics = c(per_contrast_da_table =
-            "the background universe and the significant set are the complete DA table of each contrast"),
+        global_statistics = c(per_contrast_da_table = paste("the background universe is the rows of each contrast's DA",
+            "table with a p-value; the lists are drawn from it")),
+        # KIT-205 (VAL-129 (2)): the background is each comparison's tested rows; a recorded step without this marker
+        # replays with every row (`workflowReplayRuleMarkers`).
+        fixed = list(enrichment_background = "tested"),
         kernel = function(object, parameters, store) {
             process <- parameters$process_fn %||% processEnrichments
             arguments <- list(da_results = parameters$da_results, taxon_id = parameters$taxon_id,

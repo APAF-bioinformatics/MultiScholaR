@@ -1,0 +1,4 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-record-uniprot.R	T-R1-1: the record writes uniprot.tsv with the release and hash; the cache stays private	0	0	0	0	1	0	0.016
+test-record-uniprot.R	T-R1-2: uniprot.tsv is on the allow-list with its columns; an extra column is refused	0	0	0	0	1	0	0.163
+test-record-uniprot.R	T-R1-3: an incomplete UniProt answer refuses the record and writes nothing	0	0	0	0	1	0	0.008

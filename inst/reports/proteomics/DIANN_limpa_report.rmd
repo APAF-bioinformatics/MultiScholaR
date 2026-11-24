@@ -694,6 +694,9 @@ FormatGOEnrichment <- function(numbers) {
   # KIT-173: the run records its method as "gprofiler2" or "clusterprofiler"; "gprofiler" is the legacy literal.
   is_gprofiler <- isTRUE(database_source_val %in% c("gprofiler2", "gprofiler"))
   is_clusterprofiler <- identical(database_source_val, "clusterprofiler")
+  # KIT-205 (VAL-129 (2)): the background rule the run recorded. A record without it was made before the rule, with
+  # every row of each comparison's table; a report without a record describes the current rule (the tested proteins).
+  every_row <- isTRUE(numbers$record_present) && !identical(numbers$enrichment_background %||% NA, "tested")
 
   enrichment_tool_text <- if (database_source_val == "gprofiler") {
     # g:Profiler text
@@ -741,9 +744,15 @@ FormatGOEnrichment <- function(numbers) {
     # KIT-203: the significance rule the run recorded (declared, else the rule it recorded as applied); a record
     # carrying neither was made with the q-value.
     family_rule <- identical(numbers$enrichment_significance_rule %||% NA, "bh_whole_family")
-    family_text <- if (family_rule) paste0("terms with 10 to 500 annotated measured proteins, whether or not a listed ",
+    family_members <- if (every_row) "annotated proteins of that comparison's differential-abundance table" else
+      "annotated tested proteins"
+    family_text <- if (family_rule) paste0("terms with 10 to 500 ", family_members, ", whether or not a listed ",
       "protein falls in them (terms without one enter with p = 1).") else paste0("terms with 10 to 500 ",
-      "annotated measured proteins and at least one protein in the list.")
+      family_members, " and at least one protein in the list.")
+    background_text <- if (every_row) paste0("The background was every protein listed in that comparison's ",
+      "differential-abundance table, including any without a p-value, with at least one Gene Ontology annotation") else
+      paste0("The background was the proteins tested in that comparison (those with a p-value) with at least one Gene ",
+      "Ontology annotation")
     flag_text <- if (family_rule) glue::glue("A term was called significant when its Benjamini-Hochberg adjusted ",
       "p-value over that family was below {q_val_cutoff_val}; Storey's q-value and the Benjamini-Hochberg value over ",
       "the terms with at least one listed protein are also given in the results table.") else
@@ -767,8 +776,8 @@ FormatGOEnrichment <- function(numbers) {
     enrichment_tool_text <- glue::glue("{go_sets_text}Over-representation was tested with clusterProfiler (Yu et al., ",
       "2012) against Gene Ontology annotations from UniProt. Biological process, molecular function and cellular ",
       "component terms were tested together as one family per comparison and direction: {family_text} {flag_text}",
-      "{if (family_rule) limits_text else ''} The background was the measured proteins with at least one Gene Ontology ",
-      "annotation{background_clause}.{if (family_rule) '' else limits_text}")
+      "{if (family_rule) limits_text else ''} {background_text}{background_clause}.",
+      "{if (family_rule) '' else limits_text}")
   } else if (is_gprofiler) {
     # KIT-173: the corrected g:Profiler paragraph; the correction is named from the analysis record when there is one.
     correction_val <- numbers$enrichment_correction_method %||% NA
@@ -780,10 +789,15 @@ FormatGOEnrichment <- function(numbers) {
     } else {
       "with the correction selected for the run (g:SCS unless the Benjamini-Hochberg false discovery rate was chosen)"
     }
+    # KIT-208 (E-7): a protein without a gene name is never sent as its accession; it leaves the lists and background.
+    named_clause <- paste0("the first gene name of each protein, from the protein annotation or, where the annotation ",
+      "gives none, from the identifier table; proteins without a gene name were left out of the lists and the background")
     parameter_bullets <- paste0(lfc_text, "\n",
       "• A term was called significant when its adjusted p-value was below ", q_val_cutoff_val, ".", "\n",
-      "• The background was the identifiers of each comparison's differential-abundance table (gene names where the ",
-      "table has them, otherwise protein accessions) that g:Profiler recognises (a custom background).")
+      if (every_row) paste0("• The background was the identifiers of each comparison's differential-abundance table (",
+        named_clause, ") that g:Profiler recognises (a custom background).") else
+        paste0("• The background was the identifiers of the proteins tested in each comparison (those with a p-value ",
+        "in its differential-abundance table; ", named_clause, ") that g:Profiler recognises (a custom background)."))
     enrichment_tool_text <- glue::glue("The enrichment analysis was performed with g:Profiler (Kolberg et al., 2023) ",
       "through the gprofiler2 R package (Kolberg et al., 2020). Gene Ontology biological process, molecular function ",
       "and cellular component terms, KEGG pathways and Reactome pathways were tested, each data source as its own ",

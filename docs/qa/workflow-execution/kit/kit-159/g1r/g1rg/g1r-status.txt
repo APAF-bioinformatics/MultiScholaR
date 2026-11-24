@@ -1,0 +1,3 @@
+state	built
+reason	adopted unchanged: docs/qa/workflow-execution/kit/kit-172/k156-gui-entry-failures.tsv, docs/qa/workflow-execution/kit/kit-180/g1a-reference-protein-lanes.tsv, docs/qa/workflow-execution/kit/kit-199/g1a-reference-dia-limpa.tsv
+commit	34696937165f34603c91252c88aec6e2991188a5
