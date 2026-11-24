@@ -1,11 +1,8 @@
 {
-  "label": "g0a-3-error-facts",
-  "attempt": "instrument",
+  "label": "g0p-1",
+  "attempt": "g0p",
   "jobs": [
-    {
-      "name": "g0a-error",
-      "plan": "g0a-error",
-      "timeout": 60
-    }
+    {"name": "g0p1", "plan": "g0p1", "timeout": 240},
+    {"name": "g0p2", "plan": "g0p2", "timeout": 240}
   ]
 }
