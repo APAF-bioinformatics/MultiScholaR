@@ -277,7 +277,7 @@ the standard axioms). P03: the coordinator adopted the auditor's two sharper wit
 P05 and P06 concern the paired tests.
 
 **Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
-system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system).
+system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system).
 
 ## P03: two sharper witnesses (new Spec file; proved)
 
@@ -316,6 +316,17 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   as stated (not derived). Laptop: 7 Lean calls, 49.7 CPU-seconds (45.7 user + 4.0 system), 23.3 s wall (labels
   `rP2-alg-*`). Agent time 0.13 h (13:24 to 13:32), against R-B1 4/6, R-B2 2/4, R-D1 3/5, R-D2 5/9, R-E1 4/7,
   R-E2 2/3, R-K1 7/12 expected/ceiling.
+- **R-G1, R-J1, R-J2, R-L1 proved; group R priority 2 complete** (`Proof/RuvDownstream2.lean`: `Ruv.G1`,
+  `G1_witness`; `Proof/RuvIIIC.lean`: `J1`, `J1_witness`, `J2`, `J2_contribution`, `J2_witness`, `L1`,
+  `L1_invariance`, `L1_invariance_witness`; each on `propext`, `Classical.choice`, `Quot.sound`). R-G1 from R-F2 with
+  `X2 = C` (`R_C X = X` because `C'X = 0`; `y* = R_C y`), the Gram matrix of `[X, C]` block diagonal, and the real
+  identity `N/√(ρv/a) = √(a/b) · N/√(ρv/b)` for `a, b > 0`, which holds also where a square-root argument is not
+  positive (both sides Lean's `x/0 = 0`), as the statement's docstring says. R-J1: on a complete feature `R_j` is every
+  run, the mask is `I`, and `W_j`, `a_j` are those of `complete`. R-J2 by `Σ(x_i - c)² = Σx_i² - 2cΣx_i + mc²` at the
+  two means; its link through `(1'1)⁻¹ = 1/(m+1)`. R-L1 by `λ'(Y_C w) = (Y_C'λ)'w`; the invariance because `U'1 = 0`
+  kills constants in `a` and in `U'Y_C`, and `Σλ = 0` kills them in `d_C`. Laptop: 5 Lean calls, 15.0 CPU-seconds
+  (labels `rP2-G1-*`, `rP2-J-*`, `rP2-GJL-*`). Agent time 0.05 h (13:32 to 13:35), against R-G1 4/6, R-J1 5/8,
+  R-J2 3/5, R-L1 5/8.
 
 ## Resume here
 

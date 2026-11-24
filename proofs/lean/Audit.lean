@@ -254,3 +254,25 @@ example : Ruv.K1_gls_witness_stmt := Ruv.K1_gls_witness
 #print axioms Ruv.D_witness
 #print axioms Ruv.K1_witness
 #print axioms Ruv.K1_gls_witness
+
+example : Ruv.G1_stmt := Ruv.G1
+example : Ruv.G1_witness_stmt := Ruv.G1_witness
+example : Ruv.J1_stmt := Ruv.J1
+example : Ruv.J1_witness_stmt := Ruv.J1_witness
+example : Ruv.J2_stmt := Ruv.J2
+example : Ruv.J2_contribution_stmt := Ruv.J2_contribution
+example : Ruv.J2_witness_stmt := Ruv.J2_witness
+example : Ruv.L1_stmt := Ruv.L1
+example : Ruv.L1_invariance_stmt := Ruv.L1_invariance
+example : Ruv.L1_invariance_witness_stmt := Ruv.L1_invariance_witness
+
+#print axioms Ruv.G1
+#print axioms Ruv.G1_witness
+#print axioms Ruv.J1
+#print axioms Ruv.J1_witness
+#print axioms Ruv.J2
+#print axioms Ruv.J2_contribution
+#print axioms Ruv.J2_witness
+#print axioms Ruv.L1
+#print axioms Ruv.L1_invariance
+#print axioms Ruv.L1_invariance_witness

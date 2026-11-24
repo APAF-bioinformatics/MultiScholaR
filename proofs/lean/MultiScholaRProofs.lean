@@ -21,6 +21,8 @@ public import MultiScholaRProofs.Proof.RuvAlgebra
 public import MultiScholaRProofs.Proof.RuvDownstream
 public import MultiScholaRProofs.Proof.SharperWitnesses
 public import MultiScholaRProofs.Proof.RuvAlgebra2
+public import MultiScholaRProofs.Proof.RuvDownstream2
+public import MultiScholaRProofs.Proof.RuvIIIC
 
 /-!
 # KIT-193: machine-checked statements about exact models of parts of MultiScholaR's methods

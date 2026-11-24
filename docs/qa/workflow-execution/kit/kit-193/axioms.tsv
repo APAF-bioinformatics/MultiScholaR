@@ -102,3 +102,13 @@ Ruv.B1_witness	Ruv.B1_witness_stmt	propext, Classical.choice, Quot.sound
 Ruv.D_witness	Ruv.D_witness_stmt	propext, Classical.choice, Quot.sound
 Ruv.K1_witness	Ruv.K1_witness_stmt	propext, Classical.choice, Quot.sound
 Ruv.K1_gls_witness	Ruv.K1_gls_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.G1	Ruv.G1_stmt	propext, Classical.choice, Quot.sound
+Ruv.G1_witness	Ruv.G1_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.J1	Ruv.J1_stmt	propext, Classical.choice, Quot.sound
+Ruv.J1_witness	Ruv.J1_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.J2	Ruv.J2_stmt	propext, Classical.choice, Quot.sound
+Ruv.J2_contribution	Ruv.J2_contribution_stmt	propext, Classical.choice, Quot.sound
+Ruv.J2_witness	Ruv.J2_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.L1	Ruv.L1_stmt	propext, Classical.choice, Quot.sound
+Ruv.L1_invariance	Ruv.L1_invariance_stmt	propext, Classical.choice, Quot.sound
+Ruv.L1_invariance_witness	Ruv.L1_invariance_witness_stmt	propext, Classical.choice, Quot.sound
