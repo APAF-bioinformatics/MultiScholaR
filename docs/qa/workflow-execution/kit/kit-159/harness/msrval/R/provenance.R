@@ -161,6 +161,13 @@ valCheckProvenance <- function(x) {
         for (cl in x$cells) {
             need(cl, c("unit", "arm", "exit"), is_chr, "cells[].")
             need(cl, "seed", is.numeric, "cells[].")
+            # G5 (I07, E5): every cell says whether it was replayed and with what result.
+            need(cl, "replay", is.list, "cells[].")
+            st <- cl$replay$status
+            if (!is_chr(st) || is.na(st) || !st %in% REPLAY_STATUSES) bad("cells[].replay.status")
+            if (identical(st, "differs") && !length(cl$replay$differences)) {
+                bad("cells[].replay.differences")
+            }
         }
         need(x$scoring, c("metrics_sha256", "comparisons_sha256"), is_chr, "scoring.")
         if (!is.list(x$outputs) || !length(x$outputs)) bad("outputs")

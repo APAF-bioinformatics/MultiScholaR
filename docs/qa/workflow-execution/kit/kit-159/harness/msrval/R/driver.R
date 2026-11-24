@@ -676,8 +676,10 @@ valInstallDoubleExtension <- function(log, env, notify = FALSE) {
 #' @param technical_replicates The design has technical replicates (the calibrated design).
 #' @param record_messages Keep a refusal's or error's masked text in `steps$message` (FALSE when any
 #'   data input is `not_permitted`: then only its SHA-256, 5.2).
+#' @param replay Replay the completed cell from its analysis record (G5, [valReplayStore()]).
 #' @return A list: `exit`, `reason`, `steps`, `ledger`, `ledger_path`, `ledger_sha256`,
-#'   `actions`, `options_at_start`, `matched`, `fallback`, `tables`, `value`, `seconds`.
+#'   `actions`, `options_at_start`, `matched`, `fallback`, `tables`, `value`, `seconds`,
+#'   `replay` (with `replay`, after a completed cell).
 #' @export
 valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers = NULL,
                            forced = list(), forced_inputs = list(), seed = 20261107L,
@@ -686,7 +688,7 @@ valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers
                            on_complete = NULL, pkg_root = ".",
                            work_dir = tempfile("val-cell-"), spec = NULL, observe = NULL,
                            project = TRUE, technical_replicates = FALSE,
-                           record_messages = TRUE) {
+                           record_messages = TRUE, replay = FALSE) {
     started <- Sys.time()
     valCheckActionScript(script$steps)
     arm_inputs <- if (is.null(arm$builder)) {
@@ -701,10 +703,17 @@ valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers
     cell <- function() {
         valWorkflowCell(script, files, design, arm_inputs, helpers, forced_inputs, seed,
                         uniprot_cache, annotation, tables_dir, arm, on_complete, work_dir, spec,
-                        observe, project, record_messages)
+                        observe, project, record_messages, replay = replay && project)
     }
     run <- valWithForcedOptions(c(forced, arm_inputs$options), cell())
     res <- run$value
+    # G5: the replay runs after the session has closed, on a copy of the store, under the cell's
+    # thread variables and seed.
+    if (isTRUE(replay) && project && identical(res$exit, "completed")) {
+        res$replay <- withr::with_envvar(VAL_CELL_ENV, withr::with_seed(seed, {
+            valReplayCell(work_dir, script$route, script$omic, pkg_root)
+        }))
+    }
     ledger <- if (length(res$ledger)) do.call(rbind, res$ledger) else
         valLedgerSnapshot(valInputState(), "none", "none")
     ledger <- valMaskLedger(ledger, c(arm_inputs$mask, mask_ids))
@@ -718,20 +727,25 @@ valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers
          ledger_sha256 = digest::digest(file = ledger_path, algo = "sha256"),
          actions = actions, options_at_start = run$options_at_start, matched = res$matched,
          fallback = res$fallback, tables = res$tables, value = res$value, hook = res$hook,
-         qvalue_fallback = res$qvalue_fallback,
+         qvalue_fallback = res$qvalue_fallback, replay = res$replay,
          seconds = round(as.numeric(difftime(Sys.time(), started, units = "secs")), 1))
 }
+
+#' The environment of a workflow cell (thread variables at 1, test mode for the file-input
+#' fallback, proxies at a closed port)
+#' @noRd
+VAL_CELL_ENV <- c(OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
+                  MULTISCHOLAR_TEST_MODE = "true", http_proxy = "http://127.0.0.1:9",
+                  https_proxy = "http://127.0.0.1:9", HTTP_PROXY = "http://127.0.0.1:9",
+                  HTTPS_PROXY = "http://127.0.0.1:9", no_proxy = "", NO_PROXY = "")
 
 #' The cell itself, inside the forced options (internal to valRunWorkflow)
 #' @noRd
 valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_inputs, seed,
                             uniprot_cache, annotation, tables_dir, arm, on_complete, work_dir,
-                            spec, observe, project, record_messages) {
+                            spec, observe, project, record_messages, replay = FALSE) {
     cell_env <- environment()
-    withr::local_envvar(c(OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
-                          MULTISCHOLAR_TEST_MODE = "true", http_proxy = "http://127.0.0.1:9",
-                          https_proxy = "http://127.0.0.1:9", HTTP_PROXY = "http://127.0.0.1:9",
-                          HTTPS_PROXY = "http://127.0.0.1:9", no_proxy = "", NO_PROXY = ""))
+    withr::local_envvar(VAL_CELL_ENV)
     withr::local_options(list(warn = 1))
     withr::local_seed(seed)
     omic <- script$omic
@@ -1144,6 +1158,8 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
             acc$value <- got$value
             acc$hook <- got$hook
         }
+        # G5: the analysis record, built while the owner is open.
+        if (replay && identical(acc$exit, "completed")) valWriteCellRecord(ctx$manager, work_dir)
         if (project) shiny::isolate(ns$closeDIAStateAdapter(workflow_data$state_manager))
     }
     shiny::testServer(spec$server, args = server_args, {
