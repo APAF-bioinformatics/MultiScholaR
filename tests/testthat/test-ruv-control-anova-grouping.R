@@ -477,16 +477,38 @@ test_that("KIT-190 T7 (v): a new-design RUV step replays unchanged and never rea
   }
 })
 
+# Copy of kit129OmicsObject (test-kit129-run-path.R:14-45), lipidomics, no technical replicates.
+k190Kit129Object <- function(seed = 129L, p = 50L) {
+  set.seed(seed)
+  design <- data.frame(Sample_ID = sprintf("S%02d", 1:12), group = rep(c("A", "B"), each = 6L), stringsAsFactors = FALSE)
+  f <- stats::residuals(stats::lm(stats::rnorm(12L) ~ factor(design$group)))
+  f <- f / sqrt(mean(f^2))
+  tables <- lapply(c(pos = "pos", neg = "neg"), function(assay) {
+    effect <- c(rep(1, 5L), rep(-1, 5L), rep(0, p - 10L))
+    y <- stats::rnorm(p, 20, 2) + outer(effect, as.numeric(design$group == "B")) + outer(stats::rnorm(p, sd = 0.6), f) +
+      matrix(stats::rnorm(p * 12L, sd = 0.5), p)
+    seen <- y >= stats::quantile(y, 0.08)
+    kept <- rowSums(seen[, design$group == "A"]) >= 2L & rowSums(seen[, design$group == "B"]) >= 2L
+    seen[!kept, ] <- TRUE
+    y[!seen] <- NA_real_
+    dimnames(y) <- list(sprintf("%s_f%03d", assay, seq_len(p)), design$Sample_ID)
+    table <- tibble::as_tibble(as.data.frame(y, check.names = FALSE))
+    table <- tibble::add_column(table, database_identifier = rownames(y), .before = 1L)
+    tibble::add_column(table, name = rownames(y), .after = 1L)
+  })
+  methods::new("LipidomicsAssayData", lipid_data = tables, lipid_id_column = "database_identifier",
+    annotation_id_column = "name", design_matrix = design, sample_id = "Sample_ID", group_id = "group", args = list())
+}
+
 test_that("KIT-190 T7 (vi): a managed legacy RUV step records the marker; a managed new-design step does not", {
   skip_if_not(workflowOwnerCapable())
   skip_if_not_installed("sva")
   testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
     assertWorkflowController = function(...) invisible(TRUE), .package = "MultiScholaR")
   managed <- function(parameters, env = parent.frame()) {
-    # F172 on the log2 scale without missing cells: unique feature ids (the declarations fixture's default object holds
-    # duplicates, which the declared designs refuse before the duplicate step) and values the declared correction needs.
-    fixture <- lipidDeclarationsOwner(withr::local_tempdir(.local_envir = env),
-      object = kit172Object(log2(kit172Values(172001L, missing = FALSE)$values), "lipid"))
+    # The object test-kit129-run-path.R runs through the worker (its kit129OmicsObject, lipid, copied below): the
+    # declarations fixture's default object holds duplicate ids, which the declared designs refuse.
+    fixture <- lipidDeclarationsOwner(withr::local_tempdir(.local_envir = env), object = k190Kit129Object())
     withr::defer(closeDIAStateAdapter(fixture$owner), envir = env)
     worker <- omicsWorkerRun(fixture, "lipid_ruv", parameters)
     expect_identical(worker$status, "complete", info = worker$error)
