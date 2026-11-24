@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-206 R1-2 (instrument run 1 of 3, VAL-54): tests-only d268d860 after the E3/E12 fixture repair; purpose: failing-first values and guards, stop rule 1; ceiling within R1's 60 job-minutes",
+  "label": "KIT-206 R1-2 tests-only d268d860",
+  "package_commit": "d268d8604322d6fcc07543f38b57274fce6e97af",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit206-prot-norm-export-guard.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
