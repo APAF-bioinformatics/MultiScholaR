@@ -279,8 +279,13 @@ test_that("KIT-206 E2b: S2, then a second normalisation without the correlation 
 test_that("KIT-206 E3: after RUV and two Reverts (head `normalized`, before RUV) the export is refused (fails before)", {
     fixture <- k206Owner()
     norm <- new.env(parent = emptyenv())
+    # R1 instrument repair (VAL-54): a run with RUV commits `ruv_corrected` only, so `normalized` comes from a run
+    # with RUV skipped before it (KIT-182 T10 (g)'s two runs); the head after the Reverts is that table, before RUV.
+    k206Click(fixture, norm, "skip")
     k206Click(fixture, norm, "manual")
     k206Correlation(fixture, norm, 0.5)
+    expect_identical(utils::tail(diaStateHistory(fixture$manager), 3L),
+        c("normalized", "ruv_corrected", "correlation_filtered"))
     k206Revert(fixture, "normalized")
     before <- k206Snapshot(fixture$paths)
     log <- k206Export(fixture, norm, "manual")
@@ -494,8 +499,13 @@ test_that("KIT-206 E11: the Summary's archive refresh is refused after a Revert 
 test_that("KIT-206 E12: S3, the DA, then an enrichment result on the head: the export judges the table it was made from (fails before)", {
     fixture <- k206Owner()
     norm <- new.env(parent = emptyenv())
+    # R1 instrument repair (VAL-54): a run with RUV commits `ruv_corrected` only, so `normalized` comes from a run
+    # with RUV skipped before it (KIT-182 T10 (g)'s two runs); the head after the Reverts is that table, before RUV.
+    k206Click(fixture, norm, "skip")
     k206Click(fixture, norm, "manual")
     k206Correlation(fixture, norm, 0.5)
+    expect_identical(utils::tail(diaStateHistory(fixture$manager), 3L),
+        c("normalized", "ruv_corrected", "correlation_filtered"))
     k206Revert(fixture, "normalized")
     k206Da(fixture)
     error <- k206Enrichment(fixture)
