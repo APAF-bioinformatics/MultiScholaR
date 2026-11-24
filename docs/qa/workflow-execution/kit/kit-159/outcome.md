@@ -59,9 +59,20 @@ re-check Q01; KIT-192 implementation audit I04. Repair line: 15 core-hours (VAL-
 units without files (R5/R1, I02; 55e349a2); verdict row names (R4b, I05; 5901132a); phase score with
 no comparison rows (R4b, I06; 5901132a); lints (R1, R4b).
 
-**Running:** R4c (36297e25: repair, records, e2e with workflow cells, lint); the I10 diagnostic
-and the O4 half-width run (169aee9f, T2's line, declared in `t2/di10-declaration.md` at 3571510a
-before the send).
+**Then (all observed):** R4c (36297e25): repair and records pass, lint 0; E2E stopped because the
+test passed no `pkg_root` (mechanics, corrected 89094e2a). R4d (89094e2a): the three end-to-end
+cell-to-verdict tests pass on the merged product (prot_dia 56/56, metab_combined 59/59, trx_screen
+56/56). I10 diagnostic (45316883316 at 169aee9f, T2's line): confirmed by its declared rule (M1, M2
+hold; no row fails; all 11 rows failing at 95 % in T2 rise, lowest now 0.9605); re-pinned
+(d0492872): 64 C4/C4e accuracy and threshold rows replaced, C4 g = 6 threshold `degenerate`;
+half-width ratios 1.4 to 5.3 (D) and 2.0 to 3.2 (consumer rank rows, H). R10 (d0492872): 48 tests
+pass, lint 0.
+
+**Lines:** REPAIR 12.50 of 15 (R0 0.86, R1 2.21, R3 0.70, R4 0.20 cancelled, R5 0.90, R6 0.68, R7
+0.57, R8 0.78, R4b 0.87, R9 0.81, R4c 0.88, R4d 2.27, R10 0.77); T2 29.00 of 39 (DI10 2.07).
+VAL-54 instrument runs per item: R0 item 1 (R6), R3 item 1 (R7), E2E item 1 (R4d).
+Inferred, not run: the whole suite at the final head (R1 ran at 4a57cbdb; every changed file has
+been run since, in R4b, R4c, R4d, R10).
 
 **Not built (handed over):** I07 replay of declared cells (`replayWorkflowAnalysisRecord` needs a
 prepared project store holding only the import and design states and the record's inputs; provenance

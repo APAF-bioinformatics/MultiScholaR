@@ -192,7 +192,16 @@ so a step with seven changed integration keys is one `integration_artifacts` uni
 re-freezing ticket's declared keys are listed one row per key (`lane`, `step`, `key`, `expected`;
 KIT-199: `kit-199/declared-keys.tsv`); only listed keys are accepted as its `declared_change`.
 
-Not built yet (I15 remaining): the G1(a) part (1) and (2) runners, the loader of committed
+Owner's decisions VAL-133 (to build, tests first; not built yet): G13 compares the bundle's
+numbers under the SWD-083 tolerance rule (not 10 significant digits); G1(a) at the release commit
+keeps identical masked captures as its first check and, when that fails, compares values (keys,
+order, missing values and calls exactly; numbers under SWD-083) and reports `certified` with the
+difference printed or `not_certified`; the Linux bundle's GUI-entry lane's six DIA-with-limpa DA
+steps are excluded by name from installer acceptance (no harness stage reads that lane).
+
+Not built yet (I15 remaining; KIT-199 implementation audit): the loader of `gui-entry-control.tsv`
+and `declared-keys.tsv`, link (i) checking declared digest values, reference-row adoption by key
+sets, and the G1(a) part (1) and (2) runners, the loader of committed
 `gui-entry-control.tsv` records (to be built against KIT-172's, 177's and 180's records as
 fixtures), and the release-commit DA-value comparison of the DIA-with-limpa lane (VAL-120 (2);
 KIT-199 section 12.3).
