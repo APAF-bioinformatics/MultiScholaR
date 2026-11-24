@@ -510,7 +510,7 @@ test_that("KIT-203 S10: the tab offers both rules before Run, each with its note
         tab <- shiny::reactiveValues(analysis_complete = FALSE, all_enrichment_results = NULL)
         ran <- shiny::reactiveVal(NULL)
         manager <- list(.context = list(snapshot = list(step_provenance = list(enrichment_completed = list(
-            values = list(up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "BH")))))))
+            values = list(up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "BH"))))))
         workflow <- shiny::reactiveValues(state_manager = manager)
         registerOmicEnrichSelectedContrastObserver(input, tab, workflow, list(state_name = "enrichment_completed"), ran)
     }, {

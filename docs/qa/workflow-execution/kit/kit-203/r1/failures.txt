@@ -1,0 +1,583 @@
+file: test-enrichment-significance.R
+test: <test_file itself>
+kind: error
+message:
+  test-enrichment-significance.R:513:106: unexpected ')'
+  512:         manager <- list(.context = list(snapshot = list(step_provenance = list(enrichment_completed = list(
+  513:             values = list(up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "BH")))))))
+                                                                                                                ^
+
+file: test-go-propagation.R
+test: KIT-173 T7(c): the same DA and annotation run fresh declare go_propagation and pass other sets
+kind: failure
+message:
+  Expected `names` to be identical to `c(...)`.
+  Differences:
+       actual           | expected                
+   [8] "contrast_names" | "contrast_names"    [8] 
+   [9] "results"        | "results"           [9] 
+  [10] "go_propagation" | "go_propagation"    [10]
+                        - "significance_rule" [11]
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd
+
+file: test-go-propagation.R
+test: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+
+file: test-general-enrichment-shared.R
+test: processEnrichments unsupported-organism branch preserves GO annotation enrichment and plot assembly
+kind: failure
+message:
+  Expected `names(stored_up@result)` to be identical to `c(...)`.
+  Differences:
+  `actual[5:7]`:   "Count" "GeneRatio" "BgRatio"                                
+  `expected[5:9]`: "Count" "GeneRatio" "BgRatio" "p_adjust_family" "family_size"
+
+file: test-general-enrichment-shared.R
+test: processEnrichments unsupported-organism branch preserves GO annotation enrichment and plot assembly
+kind: failure
+message:
+  Expected `attr(stored_up, "enrichment_plot_inputs")` to be identical to `list(...)`.
+  Differences:
+  `actual` is length 2
+  `expected` is length 3
+  
+  `names(actual)`:   "go_terms" "q_cutoff"                    
+  `names(expected)`: "go_terms" "q_cutoff" "significance_rule"
+  
+  `actual$significance_rule` is absent
+  `expected$significance_rule` is a character vector ('bh_whole_family')
+
+file: test-general-enrichment-shared.R
+test: processEnrichments unsupported-organism branch preserves GO annotation enrichment and plot assembly
+kind: error
+message:
+  Error in `processEnrichments(da_results = da_results, taxon_id = "999999", q_cutoff = 0.05, pathway_dir = pathway_dir, go_annotations = go_annotations, exclude_iea = FALSE, protein_id_column = "Protein.IDs", contrast_names = "short_gamma", go_propagation = "none", significance_rule = "qvalue")`: unused argument (significance_rule = "qvalue")
+trace (first lines):
+  ▆
+
+file: test-general-enrichment-shared.R
+test: the tab's plot is the run's saved plot, and a stored plot is shown as stored (KIT-119)
+kind: failure
+message:
+  Expected `names(...)` to be identical to `c(...)`.
+  Differences:
+       actual        | expected                
+   [5] "Count"       | "Count"             [5] 
+   [6] "GeneRatio"   | "GeneRatio"         [6] 
+   [7] "BgRatio"     | "BgRatio"           [7] 
+   [8] "ONTOLOGY"    - "p_adjust_family"   [8] 
+   [9] "source"      - "family_size"       [9] 
+  [10] "term"        - "ONTOLOGY"          [10]
+  [11] "neg_log10_q" - "source"            [11]
+  [12] "gene_count"  - "term"              [12]
+  [13] "significant" - "neg_log10_q"       [13]
+                     - "gene_count"        [14]
+                     - "significant"       [15]
+                     - "significance_rule" [16]
+
+file: test-general-enrichment-shared.R
+test: the tab's plot is the run's saved plot, and a stored plot is shown as stored (KIT-119)
+kind: error
+message:
+  Error in `processEnrichments(da_results = da_results, taxon_id = "999999", q_cutoff = 0.05, pathway_dir = pathway_dir, go_annotations = go_annotations, exclude_iea = FALSE, protein_id_column = "Protein.IDs", contrast_names = "short_gamma", go_propagation = "none", significance_rule = "qvalue")`: unused argument (significance_rule = "qvalue")
+trace (first lines):
+      ▆
+   1. └─base::suppressWarnings(...) at test-general-enrichment-shared.R:982:3
+   2.   └─base::withCallingHandlers(...)
+
+file: test-workflow-omics-binding-steps.R
+test: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+kind: failure
+message:
+  Expected `all(kit173 %in% names(current$report_sources))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─kit095WithoutTranscriptomics(current, expected) at test-workflow-omics-binding-steps.R:194:5
+   2.   └─testthat::expect_true(all(kit173 %in% names(current$report_sources))) at test-workflow-omics-binding-steps.R:156:5
+
+file: test-workflow-omics-binding-steps.R
+test: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+kind: failure
+message:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  records
+
+file: test-module-ci-prot-enrich.R
+test: MCI-010.5 export ZIP and publication/report metadata preserve backend state
+kind: failure
+message:
+  Expected `summary_text` to match string "Significance cutoff: 0.05".
+  Actual text:
+  x | # MultiScholaR Enrichment Analysis Results
+    | Date: 2026-11-24 05:17:56.880317
+    | Contrast: B_vs_A
+    | Analysis Method: clusterprofiler
+    | Organism: Taxon ID 999999
+    | Taxonomy ID: 999999
+    | 
+    | ## Analysis Parameters:
+    | Up log2FC Cutoff: 1
+    | Down log2FC Cutoff: 0
+    | Q-value Cutoff: 0.05
+    | 
+    | ## Results Summary:
+    | gprofiler2 terms: 0
+    | clusterProfileR terms: 3
+    | STRING-DB networks: 0
+    | 
+    | ## Files Included:
+    | * clusterProfileR_results.tsv
+    | 
+    | Generated by MultiScholaR Enrichment Analysis Module
+
+file: test-omic-enrich-module.R
+test: (b) in process: clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "5d6736b697306a94"            | "5d6736b697306a94"            [13]
+  
+  clusterprofiler run product
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3656:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 75ab10ded48a1b1761e4b36bdd7371a039ab91982951da140ec468162d71877b"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 75ab10ded48a1b1761e4b36bdd7371a039ab91982951da140ec468162d71877b"
+  + "<text> 2f283053fa50943b4cc6916efa22c2fc73b6ba470a3db5efdb9d7e0cc49124e2"
+  
+  kernel_clusterprofiler run values
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3656:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  `actual`:   "71557d1c8bac9bbe" "5acf333d81fb9c8a" "ed5efc8210418316"
+  `expected`: "71557d1c8bac9bbe" "5acf333d81fb9c8a" "1167a2b0dbbd17a5"
+  
+  kernel_clusterprofiler run states
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3656:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+       names(actual)                  | names(expected)                    
+   [8] "parameters$correction_method" | "parameters$correction_method" [8] 
+   [9] "parameters$protein_id_column" | "parameters$protein_id_column" [9] 
+  [10] "parameters$contrast_names"    | "parameters$contrast_names"    [10]
+  [11] "parameters$go_propagation"    -                                    
+  [12] "results$groupB-groupA"        | "results$groupB-groupA"        [11]
+  [13] "contrasts"                    | "contrasts"                    [12]
+  [14] "summaries"                    | "summaries"                    [13]
+  
+       actual                        | expected                          
+   [8] "BH"                          | "BH"                          [8] 
+   [9] "uniprot_acc"                 | "uniprot_acc"                 [9] 
+  [10] "groupB-groupA"               | "groupB-groupA"               [10]
+  [11] "is_a_part_of_regulates"      -                                   
+  [12] "<manifest da_proteins_long>" | "<manifest da_proteins_long>" [11]
+  [13] "groupB-groupA"               | "groupB-groupA"               [12]
+  [14] "28df520b992b4a4b"            | "28df520b992b4a4b"            [13]
+  
+  kernel_clusterprofiler run product
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3656:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  - "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=d55bee1aee30e2b5 ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  + "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"
+  
+  kernel_clusterprofiler run services
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3656:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[1:4] vs expected[1:4]
+  - enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters 1ef49c8f2278265c"
+  + enrichment_analysis_results"gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e"
+    enrichment_ui_params$up_log2fc_cutoff"0"
+    enrichment_ui_params$down_log2fc_cutoff"0"
+    enrichment_ui_params$q_value_cutoff"0.05"
+  
+  kernel_clusterprofiler run bus
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3656:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                       | expected                        
+  [1] "<NULL>"                     | "<NULL>"                     [1]
+  [2] "6x11 598624d8a7388e0f"      - "6x11 3fbdfddf484f8372"      [2]
+  [3] "<saved> 6 598624d8a7388e0f" - "<saved> 6 3fbdfddf484f8372" [3]
+  [4] "<NULL>"                     | "<NULL>"                     [4]
+  
+  kernel_clusterprofiler run display
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3656:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  actual[19:25] vs expected[19:25]
+    results/da_proteins/da_proteins_groupB-groupA_long_annot.xlsx"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_down_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"2c1b7ca19097eef50fd8c7525c3179f1a5ec475460553b79ffccb5ebae528ddf"
+  + results/pathway_enrichment/groupB-groupA_down_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.html"<present>"
+    results/pathway_enrichment/groupB-groupA_up_enrichment_plot.png"<present>"
+  - results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"2c1b7ca19097eef50fd8c7525c3179f1a5ec475460553b79ffccb5ebae528ddf"
+  + results/pathway_enrichment/groupB-groupA_up_enrichment_results.tsv"c6983b1b6899f01b7555fad52d39a290da33e578504e83ce5b5acf1155b8d14a"
+  
+  kernel_clusterprofiler run files
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3656:13
+
+file: test-omic-enrich-module.R
+test: (b) in process: kernel_clusterprofiler
+kind: failure
+message:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+      actual                          | expected                           
+  [1] "<list> c53a37b383548f32"       - "<list> 6961aaa3fc9d92d9"       [1]
+  [2] "TRUE"                          | "TRUE"                          [2]
+  [3] "clusterprofiler"               | "clusterprofiler"               [3]
+  [4] "<data.frame> 598624d8a7388e0f" - "<data.frame> 3fbdfddf484f8372" [4]
+  [5] "<ref>"                         | "<ref>"                         [5]
+  [6] "B_vs_A"                        | "B_vs_A"                        [6]
+  [7] "<list> 28df520b992b4a4b"       | "<list> 28df520b992b4a4b"       [7]
+  
+  actual[10:16] vs expected[10:16]
+    enrichment_plots"<list> 28df520b992b4a4b"
+    enrichment_product"<ref>"
+    enrichment_results"<NULL>"
+  - enrichment_results_full"<EnrichmentResults> ed5efc8210418316"
+  + enrichment_results_full"<EnrichmentResults> 1167a2b0dbbd17a5"
+    enrichment_service"unavailable"
+    gprofiler_results"<NULL>"
+    gprofiler_results_table"<NULL>"
+  
+  kernel_clusterprofiler run returned
+trace (first lines):
+      ▆
+   1. └─expectOmicEnrichW1Case(name)
+   2.   └─testthat::expect_identical(...) at test-omic-enrich-module.R:3656:13
+
+file: test-omic-enrich-module.R
+test: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+kind: failure
+message:
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 45dcef65e31e97cd"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"5cbbde4509069e50"
+  + value"9f26ed375c4b34a4"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"824ba94bb240476c"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  
+  actual$record[13:16] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  
+  clusterprofiler
+
+file: test-omic-enrich-module.R
+test: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+kind: failure
+message:
+  Expected `capture` to be identical to `omicEnrichW113Frozen[[key]]`.
+  Differences:
+  actual$state[6:12] vs expected$state[6:12]
+    config$q_cutoff"0.05"
+    config$organism_taxid"999999"
+    config$pathway_dir"<ROOT>/results/pathway_enrichment"
+  - config$outcomes"<digest> 45dcef65e31e97cd"
+  + config$outcomes"<digest> 50149aa3bd860548"
+    description"Enrichment analysis completed using clusterprofiler for contrast: B_vs_A"
+    previous"correlation_filtered"
+    products""
+  
+      actual$results      | expected$results       
+  [1] "EnrichmentResults" | "EnrichmentResults" [1]
+  [2] "01ca7072915d67c7"  - "46a64d167ddd9c1b"  [2]
+  [3] "28df520b992b4a4b"  | "28df520b992b4a4b"  [3]
+  [4] "950ddbb7d830df8c"  | "950ddbb7d830df8c"  [4]
+  [5] "28df520b992b4a4b"  | "28df520b992b4a4b"  [5]
+  
+  actual$products vs expected$products
+    type"dia-enrichment-results"
+    status"available"
+  - value"d8289efe33d30cd8"
+  + value"8d7955ab39314468"
+    identity"ad3ef17b26bf1067"
+    roots"checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"
+  
+  actual$provenance vs expected$provenance
+    operation"enrichment"
+    variant"whole"
+  - parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|go_propagation"
+  + parameter_names"taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results"
+  - rest"824ba94bb240476c"
+  + rest"b0ebc0294fa2a808"
+  
+       names(actual$record)           | names(expected$record)             
+  [13] "parameters$protein_id_column" | "parameters$protein_id_column" [13]
+  [14] "parameters$contrast_names"    | "parameters$contrast_names"    [14]
+  [15] "parameters$results"           | "parameters$results"           [15]
+  [16] "parameters$go_propagation"    -                                    
+  
+  actual$record[13:16] vs expected$record[13:15]
+    parameters$protein_id_column"provenance ; input ; uniprot_acc"
+    parameters$contrast_names"provenance ; input ; groupB-groupA"
+    parameters$results"provenance ; input ; groupB-groupA=<id>"
+  - parameters$go_propagation"provenance ; no_shipped_default ; is_a_part_of_regulates"
+  
+  kernel_clusterprofiler
+
