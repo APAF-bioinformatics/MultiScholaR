@@ -107,6 +107,17 @@ halves without its zero-df features. No computation failed (1,020 rows).
 `count-changed`, timeout or crash (`r3-compare.tsv`). R CMD check: findings identical on both sides, none only on head
 (`r3-check-compare.txt`). 42 jobs, 1,205 job-minutes.
 
+## Core-hours (job minutes x 4 / 60)
+
+| Row | Used | Ceiling |
+|---|---|---|
+| R1 (incl. three instrument runs) | 12.4 | 13.0 |
+| R2 (incl. the cancelled 21.2 and S1 repeated on both sides at KIT-194's base) | 58.6 | 52.0, plus R2b's S1 16.0 (the 6.4 condition, triggered) |
+| R3 (with check, covering R2b's tests) | 80.3 | 186.7 |
+| Total | 151.3 | 490.4 (251.7 without a correction); expected 96.2 |
+
+No correction pass was used.
+
 ## Acceptance criteria
 
 | # | Verdict | Evidence |
