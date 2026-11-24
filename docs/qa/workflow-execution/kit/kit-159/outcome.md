@@ -234,6 +234,19 @@ On the coordinator's word, the last step of the repair: one `run-tests` scripts 
   (written first) and covr is recorded as not measured within the line; no re-send without a new
   budget word.
 
+**Result (run 45341230066, E1 row of `runs.tsv`; observed).** The whole harness suite at a5a084cf:
+**43 files, 265 tests, 2,260 expectations, 0 failures, 0 skips, 0 errors**; **lintr: no lints**
+(`rep/e1-harness-tests.tsv`, `rep/e1-lint.txt`). E1 is met: a whole-suite pass at one commit after
+the repair, merged with current staging. **covr was not measured**: `covr` is not in the job's
+library (`packageNotFoundError`, `rep/e1-coverage.txt`) because the request did not list it in
+`extra_packages`, the same mechanics defect as T1a. That is an instrument defect under VAL-54 (1 of
+3), but it was NOT re-sent: the job took 74.18 minutes (4.95 core-hours) and the REPAIR line stands
+at 24.93 of 25, while a covr run re-runs every test instrumented (the suite alone took 63 minutes).
+A2's covr criterion (at least 80 % line coverage of `msrval`) is therefore not shown on the current
+tree; the last measurement is T1cov's 86.52 % at 26f71dce (an older tree). Needed: a budget word
+for one covr request (`extra_packages: ["covr", "lintr"]`), expected about 5 to 6 core-hours at the
+suite's present length.
+
 ## Builder B (branch `kit-159-replay`): replay, `val-run.R` driven, G1(a)'s job pieces, E4
 
 Branch `kit-159-replay` from `kit-159-validation-harness` at b8683b3d, worktree
