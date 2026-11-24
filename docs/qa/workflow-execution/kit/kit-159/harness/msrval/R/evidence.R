@@ -82,8 +82,10 @@ valScoreRuns <- function(dir, labels, expected_cells) {
 #' Widen a run-level interval in phase score to the requests' within-run intervals (4.4, A38;
 #' revision 1.8 item 9, T-SCORE-2)
 #'
-#' Below 6 units the widening is mandatory; at 6 or more it is the default and may be declared off
-#' (`widen = FALSE`), the within-run interval then reported beside the verdict.
+#' Only a jackknife of form (ii) (`replicate`) or (iii) (`block`) is widened (VAL-137 (3)): below 6
+#' units the widening is mandatory; at 6 or more it is the default and may be declared off
+#' (`widen = FALSE`). Any other interval, and a declared-off widening, is not widened and the
+#' within-run interval is reported beside the verdict.
 #'
 #' @param interval The run-level interval.
 #' @param comparisons The requests' `comparisons.tsv` rows combined.
@@ -108,11 +110,13 @@ valWidenFromRequests <- function(interval, comparisons, arm, comparator, metric,
     lo <- min(as.numeric(rows[["ci_low"]]))
     hi <- max(as.numeric(rows[["ci_high"]]))
     n <- interval[["n_units"]]
-    if (n < 6L && isFALSE(widen)) {
+    jk_form <- identical(interval[["method"]], "jackknife") &&
+        isTRUE(interval[["form"]] %in% c("replicate", "block"))
+    if (jk_form && n < 6L && isFALSE(widen)) {
         valAbort("widening to the within-run interval is mandatory below 6 units",
                  "val_spec_invalid")
     }
-    if (n < 6L || !isFALSE(widen)) {
+    if (jk_form && (n < 6L || !isFALSE(widen))) {
         interval[["ci_low"]] <- min(interval[["ci_low"]], lo)
         interval[["ci_high"]] <- max(interval[["ci_high"]], hi)
         interval[["flags"]] <- c(interval[["flags"]], "widened_to_within_run")
@@ -127,19 +131,33 @@ valWidenFromRequests <- function(interval, comparisons, arm, comparator, metric,
 
 HARNESS_REGIME_NSIM <- 2000L
 
+#' What a coverage generator's estimand is, for the results note (E7; 10.2)
+#' @noRd
+valGeneratorText <- function(generator) {
+    switch(generator,
+           redraw = "all simulated data drawn anew in every simulation",
+           fixed_symmetric = paste("feature baselines drawn once per cell, changes split +1",
+                                   "and -1; coverage conditional on one feature draw"),
+           fixed_onedir = paste("feature baselines drawn once per cell, every change +1;",
+                                "coverage conditional on one feature draw"),
+           "as declared in the ticket's coverage regime")
+}
+
 #' Write `results.md`: every verdict with its regime's measured coverage and Monte Carlo SE, each
 #' primary family's nominal level beside the bound from measured misses, and the attribution
 #' (sections 4.4, 5.2; I05; O1 and O5 of VAL-109)
 #'
-#' The family bound sums the measured miss rates (1 - coverage) of the family's classified
-#' components; a regime with no observed miss enters at 3 / simulations (the rule of three), and
-#' the note says so. A verdict whose regime's worst-condition miss rate is at least twice nominal is
-#' flagged.
+#' The family bound sums, over the family's classified components, the one-sided 95 %
+#' Clopper-Pearson upper bound on each component's miss rate (its regime's misses
+#' `round(nsim (1 - coverage))` of `nsim` simulations), one convention whether or not misses were
+#' observed (VAL-137 (2)); the note says so. A verdict whose regime's worst-condition miss rate is
+#' at least twice nominal is flagged. Beside each verdict: the regime's generator (E7) and, over
+#' independent units, the claim's scope (VAL-137 (3)).
 #'
 #' @param path Output path.
 #' @param comparisons Verdict rows with `member`, `metric`, `arm`, `comparator`, `outcome`, `conf`,
 #'   `regime`, `coverage`, `mc_se`, `statistic`, `family`, `m` (and optionally `nsim`,
-#'   `regime_status`, `miss_twice_nominal`).
+#'   `regime_status`, `miss_twice_nominal`, `generator`, `within_note`).
 #' @param attribution `attribution.tsv` rows.
 #' @return `path`, invisibly.
 #' @export
@@ -156,18 +174,14 @@ valWriteResults <- function(path, comparisons, attribution) {
         k <- r[is.finite(r[["coverage"]]), , drop = FALSE]
         nsim <- if (is.null(k[["nsim"]])) rep(NA_real_, nrow(k)) else as.numeric(k[["nsim"]])
         nsim[!is.finite(nsim)] <- HARNESS_REGIME_NSIM
-        miss <- 1 - k[["coverage"]]
-        zero <- miss <= 0
-        miss[zero] <- 3 / nsim[zero]
-        zero_note <- ""
-        if (any(zero)) {
-            zero_note <- sprintf(
-                " (%d component(s) with no observed miss entered at 3/simulations)", sum(zero)
-            )
-        }
+        misses <- pmin(pmax(round(nsim * (1 - k[["coverage"]])), 0), nsim)
+        upper <- ifelse(misses >= nsim, 1, stats::qbeta(0.95, misses + 1, nsim - misses))
         lines <- c(lines, sprintf(
-            "- %s: m = %d, nominal family level %s, family error bound from measured misses %s%s",
-            f, as.integer(m), format(round(nominal, 6)), format(round(sum(miss), 4)), zero_note
+            paste("- %s: m = %d, nominal family level %s, family error bound from measured misses",
+                  "%s (the sum over its %d component(s) of each one's one-sided 95 %%",
+                  "Clopper-Pearson upper bound on its miss rate)"),
+            f, as.integer(m), format(round(nominal, 6)), format(round(sum(upper), 4)),
+            length(upper)
         ))
     }
     lines <- c(lines, "", "## Verdicts", "")
@@ -185,19 +199,20 @@ valWriteResults <- function(path, comparisons, attribution) {
         }
         note <- if (is.null(r[["within_note"]])) NA_character_ else r[["within_note"]]
         note_txt <- ""
-        if (!is.na(note) && grepl("6_or_more_open", note, fixed = TRUE)) {
-            note_txt <- paste("; within-run intervals reported beside the verdict, not widened:",
-                              "at 6 or more independent units the widening rule is open (O8)")
-        } else if (!is.na(note) && grepl("below_6", note, fixed = TRUE)) {
-            note_txt <- paste("; within-run intervals reported beside the verdict, not widened:",
-                              "independent units below 6 (O8, VAL-109)")
+        if (!is.na(note) && grepl("VAL-137:", note, fixed = TRUE)) {
+            note_txt <- paste("; claim over repeat runs, for the features scored; each unit's",
+                              "within-run interval is reported beside the verdict, never widening",
+                              "it (VAL-137 (3))")
         }
+        gen <- if (is.null(r[["generator"]])) NA_character_ else r[["generator"]]
+        gen_txt <- if (is.na(gen)) "" else
+            sprintf(" (generator %s: %s)", gen, valGeneratorText(gen))
         lines <- c(lines, sprintf(
             paste("- %s (%s: %s - %s): %s; regime %s%s, measured coverage %s (Monte Carlo SE %s)",
-                  "at level %s, simulated on %s%s%s"),
+                  "at level %s, simulated on %s%s%s%s"),
             r[["member"]], r[["metric"]], r[["arm"]], r[["comparator"]], r[["outcome"]],
             r[["regime"]], label, format(r[["coverage"]]), format(r[["mc_se"]]),
-            format(r[["conf"]]), r[["statistic"]],
+            format(r[["conf"]]), r[["statistic"]], gen_txt,
             if (twice) "; FLAG: worst-condition miss rate at least twice nominal" else "",
             note_txt
         ))

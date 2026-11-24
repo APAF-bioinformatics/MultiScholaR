@@ -97,6 +97,16 @@ valWriteProvenance <- function(prov, path) {
     invisible(path)
 }
 
+#' Hashes of the per-unit truths the scoring used (5.6; E4 of the re-audit): unit -> truth id ->
+#' `sha256`, `rows`, `by_truth_status`, as [valTruthProvenance()] gives for the whole truth
+#' @noRd
+valUnitTruthsProvenance <- function(truths, work_dir) {
+    lapply(truths, function(tu) {
+        x <- valTruthProvenance(tu, work_dir, NULL)
+        x[setdiff(names(x), "blind")]
+    })
+}
+
 #' Check a provenance record's required fields and types (an invalid file fails the job)
 #'
 #' @param x A provenance list or the path of `provenance.json`.
@@ -139,9 +149,13 @@ valCheckProvenance <- function(x) {
     if (x$phase %in% c("lifecycle", "counted", "correction", "determinism", "amended")) {
         need(x$inputs$universe, "sha256", is_chr, "inputs.universe.")
         need(x$inputs$universe, "rows", is.numeric, "inputs.universe.")
-        truths <- x$truth[setdiff(names(x$truth), "blind")]
+        truths <- x$truth[setdiff(names(x$truth), c("blind", "per_unit"))]
         if (!length(truths)) bad("truth")
         for (t1 in truths) need(t1, "sha256", is_chr, "truth.")
+        # E4 (I07): the per-unit truths the scoring used, each hashed (where recorded)
+        for (u in x$truth$per_unit) {
+            for (t1 in u) need(t1, "sha256", is_chr, "truth.per_unit.")
+        }
         need(x$truth, "blind", is.list, "truth.")
         if (!is.list(x$cells) || !length(x$cells)) bad("cells")
         for (cl in x$cells) {

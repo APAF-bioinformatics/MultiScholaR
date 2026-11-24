@@ -413,7 +413,8 @@ valFindRegime <- function(interval, regimes, accept_flagged) {
 #' @param feature_interval_decides Declared on this comparison: a within-run interval may decide.
 #' @param regimes Regime table (default: the harness's committed coverage table).
 #' @param accept_flagged `list(label, ledger_row)` admitting a flagged regime.
-#' @return A list: `outcome`, `no_worse`, `status`, `regime`, `coverage`, `mc_se`, `label`.
+#' @return A list: `outcome`, `no_worse`, `status`, `regime`, `coverage`, `mc_se`, `label`, and
+#'   the regime's `statistic` and `generator` (E7).
 #' @export
 valClassify <- function(interval, margin, higher_is_better, fixed = NULL, view = "intersection",
                         feature_interval_decides = FALSE, regimes = NULL,
@@ -469,6 +470,7 @@ valClassify <- function(interval, margin, higher_is_better, fixed = NULL, view =
          coverage = reg$coverage, mc_se = reg$mc_se,
          coverage_min = worst, nsim = suppressWarnings(as.numeric(reg[["nsim"]] %||% NA)),
          statistic = as.character(reg[["statistic"]] %||% NA_character_),
+         generator = as.character(reg[["generator"]] %||% NA_character_),
          miss_twice_nominal = isTRUE(1 - worst >= 2 * (1 - interval$conf) - 1e-12),
          label = paste(labels[nzchar(labels)], collapse = "; "))
 }
