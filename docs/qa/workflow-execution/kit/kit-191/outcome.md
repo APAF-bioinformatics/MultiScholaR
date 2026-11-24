@@ -1,6 +1,22 @@
 # KIT-191 outcome: the integration enrichment's tests as a list of options
 
-## Resume here (2026-11-24, after the implementation audit)
+## State (2026-11-24, after VAL-115): ready to merge on the auditor's closure
+
+Run V (45312506156, e2903265 = the branch merged with staging 7d90a4c8, against 7d90a4c8), the one verification run
+VAL-115 allowed, as declared below: green. The new file 271 passed, 0 failed, 0 skipped; KIT-183's file count-changed
+(its restated tests); the other 11 files same; R CMD check identical on both, nothing only on head; U3, U14 (120 of 120
+cells, 58 of 58 text figures), U7 (b) and U8's store, gate-off pass; X: head passes, m1 fails U7, m2 fails U8 and the
+replay of the branch-point store's old entries (`v/x/m2-old-entries/verdict.txt`: replay_terms_identical FALSE), m3 fails
+U5. Every declared expectation of the changed tests held (no failure in the file). Tables in `v/`. Core-hours: V 8.80
+(of VAL-115's 28.00); ticket total 101.00 of 231.00.
+
+State of the audit's items: I01 repaired (exact fraction, `_none`, whole-number k_min; U10 passes); I02, I03, I04, I05,
+I06, I07 repaired (U9, U6, T10, X pass; records corrected); I08 to I13 notes, no change asked. Owner: O1 the exact
+fraction kept; O2 the floor in the permutation's Methods sentence (U9 passes); O3 wording applied as the auditor
+proposed (the reorderings chosen, the caution for every test, lipid wording, refusal in seconds, power clause expected,
+I05's texts); O4, O5, O6 accepted without change.
+
+## Before VAL-115 (2026-11-24, after the implementation audit)
 
 Register `tickets/kit/audits/AUDIT-KIT-191-impl-20261124.md`: ready after repairs, one major (I01). The repairs are
 written and committed but UNRUN (the one correction pass was used by R2c; the verification run is the owner's, pool
@@ -138,7 +154,7 @@ the coordinator's instruction). Owner decisions: VAL-85 (2), VAL-97 (D1 to D9 as
 | A9 | guard and L1 | met | U12 (R2c); `lifecycle.md` |
 | A10 | corpus positive control | met | U13 (R2c) |
 | A11 | every figure equals the regenerated table | met | U14 `u14/` |
-| A12 | failing first; guards fail on mutations | met (m2 is caught by the replay of the head's new entries in U5/U8; the branch-point store's old entries were replayed unmutated in U7 (b), `u7b/replay.tsv`; the mutant logs do not name the failing expectation. The repaired X script also replays the old entries under m2: unrun) | R1; X `x/` |
+| A12 | failing first; guards fail on mutations | met (m2 is caught by the replay of the head's new entries in U5/U8 and, in V, by the replay of the branch-point store's old entries; the mutant logs do not name the failing expectation) | R1; X `x/`; V `v/x/` |
 | A13 | cross-platform | met | B, B24, `cross-platform.tsv` |
 | A14 | full suite base against head with check | met | F 45300767142 |
 | A15 | ledger row, NEWS under the unreleased heading, no version change, wording list | met | `docs/methods-decision-ledger.md` (VAL-<merge>), `NEWS.md`, `wording.md` |

@@ -1,0 +1,43 @@
+Preparing worktree (detached HEAD 7d90a4c8)
+HEAD is now at 7d90a4c8 Methods ledger VAL-115: KIT-191 after its implementation audit (the floor printed as an exact fraction; repairs and one verification run allowed; wording and limits as recommended)
+base exit 0 
+head exit 0 
+[1] TRUE TRUE
+                     check
+1 t1_terms_camera_and_gsea
+2      corpus_camera_terms
+3        corpus_gsea_terms
+4      corpus_default_test
+                                                       base_sha256
+1 0a5b8310f97eb06308f2a41dada724dbe76ec2c66060fdad3a391cbc736dade7
+2 68ec89cc5a9ed36c0c8715f5dfec7c6d718fd48843b364db8d4901a7a28b9eb8
+3 3ea0ed7bd9f71084ccbe66515100dbf10fea63f77f62da6e469d190271993ffd
+4                                                           camera
+                                                       head_sha256 identical
+1 0a5b8310f97eb06308f2a41dada724dbe76ec2c66060fdad3a391cbc736dade7      TRUE
+2 68ec89cc5a9ed36c0c8715f5dfec7c6d718fd48843b364db8d4901a7a28b9eb8      TRUE
+3 3ea0ed7bd9f71084ccbe66515100dbf10fea63f77f62da6e469d190271993ffd      TRUE
+4                                                           camera      TRUE
+                             enrichment     mode ranking_equal terms_equal
+1 Factor1|metabolomics_GCMS|kegg|camera recorded          TRUE        TRUE
+2        Factor1|metabolomics_GCMS|kegg recorded          TRUE       FALSE
+  terms_identical terms_only_recorded terms_only_repeated note test_recorded
+1            TRUE                   0                   0   NA        camera
+2           FALSE                   0                   0   NA          gsea
+  test_after
+1     camera
+2       gsea
+   component equal
+1      input  TRUE
+2     design  TRUE
+3 parameters  TRUE
+4  selectors  TRUE
+5   software FALSE
+            terms_identical          replay_two_entries 
+                       TRUE                        TRUE 
+     replay_terms_identical           replay_tests_kept 
+                      FALSE                        TRUE 
+identity_equal_but_software 
+                       TRUE 
+Error: all(checks) is not TRUE
+Execution halted
