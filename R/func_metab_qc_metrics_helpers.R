@@ -40,6 +40,8 @@ countUniqueMetabolites <- function(assay_data, metabolite_id_col) {
 #' @param sample_id_col ***Currently unused.***
 #' @param metabolite_id_col ***Currently unused.***
 #' @param sample_columns Character vector of explicit sample column names from design matrix.
+#' @param logged KIT-172: TRUE when the values are log2 values (the object's `args$log_transformed`): every non-missing
+#'   value then counts as measured, including a log2 value of 0 or below.
 #'
 #' @return A data frame with columns 'Run' (sample name) and 'n_detected'.
 #'
@@ -48,7 +50,7 @@ countUniqueMetabolites <- function(assay_data, metabolite_id_col) {
 #' @keywords internal
 #' @noRd
 #' @export
-countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_col, sample_columns = NULL) {
+countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_col, sample_columns = NULL, logged = FALSE) {
     quant_info <- getMetaboliteQuantData(assay_data, sample_columns = sample_columns)
     quant_data <- quant_info$quant_data
     sample_names <- quant_info$sample_names
@@ -67,8 +69,9 @@ countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_c
             names_to = "Run",
             values_to = "Intensity"
         ) |>
-        # Define 'detected' as non-NA and greater than 0 (adjust if needed)
-        dplyr::filter(!is.na(.data$Intensity) & .data$Intensity > 0) |>
+        # Define 'detected' as non-NA and greater than 0 on the intensity scale; KIT-172: on log2 values (`logged`) every
+        # non-missing value is detected (a log2 value of 0 or below is a measured value of 1 or below).
+        dplyr::filter(!is.na(.data$Intensity) & (logged | .data$Intensity > 0)) |>
         dplyr::group_by(.data$Run) |>
         dplyr::summarise(n_detected = dplyr::n(), .groups = "drop")
 }
@@ -83,13 +86,15 @@ countMetabolitesPerSample <- function(assay_data, sample_id_col, metabolite_id_c
 #' @param assay_data A tibble/data.frame for one assay.
 #' @param sample_id_col ***Currently unused.***
 #' @param sample_columns Character vector of explicit sample column names from design matrix.
+#' @param logged KIT-172: TRUE when the values are log2 values (the object's `args$log_transformed`): every non-missing
+#'   value then counts as measured, including a log2 value of 0 or below.
 #'
 #' @return A single numeric value: the percentage of missing data points.
 #'
 #' @keywords internal
 #' @noRd
 #' @export
-calculateMissingness <- function(assay_data, sample_id_col, sample_columns = NULL) {
+calculateMissingness <- function(assay_data, sample_id_col, sample_columns = NULL, logged = FALSE) {
     # Get only the quantitative columns (sample columns)
     quant_info <- getMetaboliteQuantData(assay_data, sample_columns = sample_columns)
     quant_data <- quant_info$quant_data
@@ -111,7 +116,8 @@ calculateMissingness <- function(assay_data, sample_id_col, sample_columns = NUL
     missing_values <- 0
 
     for (col in sample_names) {
-        missing_values <- missing_values + sum(is.na(quant_data[[col]]) | quant_data[[col]] == 0)
+        # KIT-172: on log2 values (`logged`) missing is NA only (a log2 value of 0 is a measured value of 1).
+        missing_values <- missing_values + sum(is.na(quant_data[[col]]) | (!logged & quant_data[[col]] == 0), na.rm = TRUE)
     }
 
     # Calculate percentage

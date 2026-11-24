@@ -1,4 +1,9 @@
 'use strict';
+// KIT-176: ELECTRON_RUN_AS_NODE from the caller's environment (a shell an editor extension or a coding agent
+// opened). The binary ignores it (the runAsNode fuse is off, package.json electronFuses); it is kept here for
+// the start event and removed, so nothing the shell starts (R, the probe, the system's opener) inherits it.
+const RUN_AS_NODE_VARIABLE = process.env.ELECTRON_RUN_AS_NODE;
+delete process.env.ELECTRON_RUN_AS_NODE;
 // MultiScholaR desktop shell (KIT-134 P3, revision 2.0, 2.0.5). From the KIT-130 spike's main.js.
 //
 // One window that shows only the application served on 127.0.0.1 by the bundled R. The shell:
@@ -294,13 +299,31 @@ function applyLauncher() {
   mainWindow.webContents.executeJavaScript(script).then(() => record('notice-shown')).catch(() => {});
 }
 
-function showAbout() {
-  const lines = [
+// The release, commit, lockfile, snapshot and build lines of About (KIT-176, D5): the commit lines are chosen by
+// package_on_release_line first; a stamp without it (an unpackaged start) keeps the build commit's line.
+function stampLines() {
+  let commitLines;
+  if (stamp.package_on_release_line === false) {
+    commitLines = [`Analysis code: commit ${stamp.commit} (test build, not on the release line)`];
+  } else if (stamp.package_on_release_line === true && stamp.package_commit === stamp.commit) {
+    commitLines = [`Commit: ${stamp.package_commit}`];
+  } else if (stamp.package_on_release_line === true) {
+    commitLines = [`Analysis code: commit ${stamp.package_commit}`, `Test build from: commit ${stamp.commit}`];
+  } else {
+    commitLines = [`Commit: ${stamp.commit || 'unknown'}`];
+  }
+  return [
     `MultiScholaR ${stamp.release}`,
-    `Commit: ${stamp.commit || 'unknown'}`,
+    ...commitLines,
     `Lockfile sha256: ${stamp.lockfile_sha256 || 'unknown'}`,
     `Package snapshot: ${stamp.snapshot || 'unknown'}`,
     `Built: ${stamp.build_date || 'unknown'} on ${stamp.runner_image || 'unknown'}`,
+  ];
+}
+
+function showAbout() {
+  const lines = [
+    ...stampLines(),
     '',
     `How steps run: ${launcher.launcher}`,
     `Why: ${launcher.reason}`,
@@ -420,6 +443,7 @@ if (!app.requestSingleInstanceLock()) {
       release: stamp.release, resources, runtime, packaged: app.isPackaged, platform: process.platform,
       electron: process.versions.electron, pid: process.pid, noSandbox: app.commandLine.hasSwitch('no-sandbox'),
       logs: app.getPath('logs'), startedAt,
+      runAsNodeVariable: RUN_AS_NODE_VARIABLE === undefined ? null : RUN_AS_NODE_VARIABLE, about: stampLines(),
     });
     buildMenu();
     try {

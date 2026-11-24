@@ -1,9 +1,9 @@
 {
   "lane": "prot_lfq_fragpipe",
-  "source_sha": "5d38127250d0122ebbe09d52b0477295c870112c",
+  "source_sha": "32ead4fc28f8aa7cbff580927db127fd668645df",
   "load_mode": "load_all",
   "r_version": "R version 4.6.1 (2026-06-24)",
-  "frozen": "2026-11-17",
+  "frozen": "2026-11-23",
   "steps": {
     "import_refusal": {
       "step": "import_refusal",
@@ -345,15 +345,15 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "complete",
-        "normalization": "pending",
+        "quality_control": "pending",
+        "normalization": "disabled",
         "differential_expression": "disabled",
         "enrichment_analysis": "disabled",
         "session_summary": "disabled"
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -426,7 +426,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> 3d7c3e663422265fcb07b8d8dac649395f604e75535072689f25a647ed670a7e",
         "proteomics_workflow-setup_import-import_status": "<ui> 2fab07afca7137bb5da6c81c89d5613365cd8c55c2eb5bdf23de1f3edb35b111",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+        "proteomics_workflow-workflow_progress": "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
       },
       "artifacts": {
         "<store entries>": {
@@ -472,16 +472,16 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "complete",
-        "normalization": "pending",
+        "quality_control": "pending",
+        "normalization": "disabled",
         "differential_expression": "disabled",
         "enrichment_analysis": "disabled",
         "session_summary": "disabled"
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -555,7 +555,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> 3d7c3e663422265fcb07b8d8dac649395f604e75535072689f25a647ed670a7e",
         "proteomics_workflow-setup_import-import_status": "<ui> 2fab07afca7137bb5da6c81c89d5613365cd8c55c2eb5bdf23de1f3edb35b111",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+        "proteomics_workflow-workflow_progress": "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
       },
       "artifacts": {
         "<store entries>": {
@@ -612,16 +612,16 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "complete",
-        "normalization": "pending",
+        "quality_control": "pending",
+        "normalization": "disabled",
         "differential_expression": "disabled",
         "enrichment_analysis": "disabled",
         "session_summary": "disabled"
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -695,7 +695,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> 3d7c3e663422265fcb07b8d8dac649395f604e75535072689f25a647ed670a7e",
         "proteomics_workflow-setup_import-import_status": "<ui> 2fab07afca7137bb5da6c81c89d5613365cd8c55c2eb5bdf23de1f3edb35b111",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+        "proteomics_workflow-workflow_progress": "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
       },
       "artifacts": {
         "<store entries>": {
@@ -758,17 +758,17 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "complete",
-        "normalization": "pending",
+        "quality_control": "pending",
+        "normalization": "disabled",
         "differential_expression": "disabled",
         "enrichment_analysis": "disabled",
         "session_summary": "disabled"
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -843,7 +843,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> 3d7c3e663422265fcb07b8d8dac649395f604e75535072689f25a647ed670a7e",
         "proteomics_workflow-setup_import-import_status": "<ui> 2fab07afca7137bb5da6c81c89d5613365cd8c55c2eb5bdf23de1f3edb35b111",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+        "proteomics_workflow-workflow_progress": "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
       },
       "artifacts": {
         "<store entries>": {
@@ -914,18 +914,18 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "complete",
-        "normalization": "pending",
+        "quality_control": "pending",
+        "normalization": "disabled",
         "differential_expression": "disabled",
         "enrichment_analysis": "disabled",
         "session_summary": "disabled"
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -1001,7 +1001,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> 3d7c3e663422265fcb07b8d8dac649395f604e75535072689f25a647ed670a7e",
         "proteomics_workflow-setup_import-import_status": "<ui> 2fab07afca7137bb5da6c81c89d5613365cd8c55c2eb5bdf23de1f3edb35b111",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+        "proteomics_workflow-workflow_progress": "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
       },
       "artifacts": {
         "<store entries>": {
@@ -1093,11 +1093,11 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -1281,11 +1281,11 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -1474,11 +1474,11 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -1670,12 +1670,12 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -1873,13 +1873,13 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc",
-        "correlation_filtered": "6edd096b663bfbc6d2a1d9e8b5e6b8e278bb4d549ffba983c34fa9813b79b3b5"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117",
+        "correlation_filtered": "315b2b4fb6a9cb528ea004edb996f79a369d1b12202016e51e24afefe5637bd3"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -2093,13 +2093,13 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc",
-        "correlation_filtered": "6edd096b663bfbc6d2a1d9e8b5e6b8e278bb4d549ffba983c34fa9813b79b3b5"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117",
+        "correlation_filtered": "315b2b4fb6a9cb528ea004edb996f79a369d1b12202016e51e24afefe5637bd3"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -2318,13 +2318,13 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc",
-        "correlation_filtered": "6edd096b663bfbc6d2a1d9e8b5e6b8e278bb4d549ffba983c34fa9813b79b3b5"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117",
+        "correlation_filtered": "315b2b4fb6a9cb528ea004edb996f79a369d1b12202016e51e24afefe5637bd3"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -2544,13 +2544,13 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc",
-        "correlation_filtered": "922b727c3b73090ee34acee223dc57cc1c7b4c2a2d9aae72558409788ee7a42a"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117",
+        "correlation_filtered": "e9360851ce026d5005099935d46c9cd1e2e85ebf1332c66214b6048e3cdc912e"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -2651,7 +2651,7 @@
         },
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
-        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "37b1ca9beaca9dc56f7964851c1a5fa22cb6c7fb633765438377d3fefaff53f0",
+        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "9f1125740f8cde6bad606106c1ae67b786ad21fe2bbf3a9d6d12131a276ecd8f",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
         "results/proteomics/protein_qc/normalized_protein_matrix_pre_ruv.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
@@ -2790,13 +2790,13 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc",
-        "correlation_filtered": "922b727c3b73090ee34acee223dc57cc1c7b4c2a2d9aae72558409788ee7a42a"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117",
+        "correlation_filtered": "e9360851ce026d5005099935d46c9cd1e2e85ebf1332c66214b6048e3cdc912e"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -2897,7 +2897,7 @@
         },
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
-        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "37b1ca9beaca9dc56f7964851c1a5fa22cb6c7fb633765438377d3fefaff53f0",
+        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "9f1125740f8cde6bad606106c1ae67b786ad21fe2bbf3a9d6d12131a276ecd8f",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
         "results/proteomics/protein_qc/normalized_protein_matrix_pre_ruv.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
@@ -3037,13 +3037,13 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc",
-        "correlation_filtered": "922b727c3b73090ee34acee223dc57cc1c7b4c2a2d9aae72558409788ee7a42a"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117",
+        "correlation_filtered": "e9360851ce026d5005099935d46c9cd1e2e85ebf1332c66214b6048e3cdc912e"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -3142,13 +3142,13 @@
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-pairs-<ID>": 1,
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-selection-<ID>": 1
         },
-        "integration/proteomics/features_proteomics.tsv": "d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4",
+        "integration/proteomics/features_proteomics.parquet": "<present>",
         "integration/proteomics/integration_input.json": "<present>",
-        "integration/proteomics/matrix_proteomics.tsv": "6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a",
-        "integration/proteomics/samples.tsv": "2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d",
+        "integration/proteomics/matrix_proteomics.parquet": "<present>",
+        "integration/proteomics/samples.parquet": "<present>",
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
-        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "37b1ca9beaca9dc56f7964851c1a5fa22cb6c7fb633765438377d3fefaff53f0",
+        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "9f1125740f8cde6bad606106c1ae67b786ad21fe2bbf3a9d6d12131a276ecd8f",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
         "results/proteomics/protein_qc/normalized_protein_matrix_pre_ruv.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
@@ -3289,13 +3289,13 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc",
-        "correlation_filtered": "922b727c3b73090ee34acee223dc57cc1c7b4c2a2d9aae72558409788ee7a42a"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117",
+        "correlation_filtered": "e9360851ce026d5005099935d46c9cd1e2e85ebf1332c66214b6048e3cdc912e"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -3395,13 +3395,13 @@
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-pairs-<ID>": 1,
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-selection-<ID>": 1
         },
-        "integration/proteomics/features_proteomics.tsv": "d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4",
+        "integration/proteomics/features_proteomics.parquet": "<present>",
         "integration/proteomics/integration_input.json": "<present>",
-        "integration/proteomics/matrix_proteomics.tsv": "6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a",
-        "integration/proteomics/samples.tsv": "2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d",
+        "integration/proteomics/matrix_proteomics.parquet": "<present>",
+        "integration/proteomics/samples.parquet": "<present>",
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
-        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "37b1ca9beaca9dc56f7964851c1a5fa22cb6c7fb633765438377d3fefaff53f0",
+        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "9f1125740f8cde6bad606106c1ae67b786ad21fe2bbf3a9d6d12131a276ecd8f",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
         "results/proteomics/protein_qc/normalized_protein_matrix_pre_ruv.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
@@ -3557,13 +3557,13 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc",
-        "correlation_filtered": "922b727c3b73090ee34acee223dc57cc1c7b4c2a2d9aae72558409788ee7a42a"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117",
+        "correlation_filtered": "e9360851ce026d5005099935d46c9cd1e2e85ebf1332c66214b6048e3cdc912e"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -3664,13 +3664,13 @@
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-pairs-<ID>": 1,
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-selection-<ID>": 1
         },
-        "integration/proteomics/features_proteomics.tsv": "d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4",
+        "integration/proteomics/features_proteomics.parquet": "<present>",
         "integration/proteomics/integration_input.json": "<present>",
-        "integration/proteomics/matrix_proteomics.tsv": "6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a",
-        "integration/proteomics/samples.tsv": "2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d",
+        "integration/proteomics/matrix_proteomics.parquet": "<present>",
+        "integration/proteomics/samples.parquet": "<present>",
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
-        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "37b1ca9beaca9dc56f7964851c1a5fa22cb6c7fb633765438377d3fefaff53f0",
+        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "9f1125740f8cde6bad606106c1ae67b786ad21fe2bbf3a9d6d12131a276ecd8f",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
         "results/proteomics/protein_qc/normalized_protein_matrix_pre_ruv.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
@@ -3835,13 +3835,13 @@
       },
       "states": {
         "initial": "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
-        "protein_s4_initial": "5a783ab5cf4d34928893ae4582095d47597c652e34c05d5ddb20d1a06d8d6c98",
-        "protein_accession_cleaned": "16653b5eef32c7481bddc5fa8571c854b6dd30e53bc150ae42c02f3c81db3adc",
-        "protein_intensity_filtered": "f7f3e3db876d0a12422a0f42f6f7aa53759e89ab3247c207452476650e50c4da",
-        "duplicates_removed": "2cc9800ac723e066202f6cbefa1873adc03d0c91bbac5ee32ec013def0b782dc",
-        "protein_replicate_filtered": "59c5e5b7e4a7920a878c9d945b0b1df94901e6ff1023dec5ccb19fbdb40c5be5",
-        "normalized": "3c0257cc94bf2df90e00b3f6d5b473c62a5b24ef2597e998039c5f801a8f3afc",
-        "correlation_filtered": "922b727c3b73090ee34acee223dc57cc1c7b4c2a2d9aae72558409788ee7a42a"
+        "protein_s4_initial": "8a006863cdbaf949258995497be925ee51e45f08bb8e5eb6960c5a9145c2b8ad",
+        "protein_accession_cleaned": "727ee556dd928684938d0b85046de885e71e475b1929d3c51bfd338a9c15a471",
+        "protein_intensity_filtered": "464b5be395704776cd06e4b2b6790441f5dd68cf713f8f42340c2ecca2f0d033",
+        "duplicates_removed": "1422abab8d5fa3891e620479106cf9df497ffae6303493cbb376cd19037f3cc1",
+        "protein_replicate_filtered": "863ce18b97d21bdd2520a365196b3c99cd8625777f25f8f524dfbdedc04ed461",
+        "normalized": "f25bf2a539eac6631b871f69e43b77251b04ab08166d3a165b3ddabbb7a69117",
+        "correlation_filtered": "e9360851ce026d5005099935d46c9cd1e2e85ebf1332c66214b6048e3cdc912e"
       },
       "outputs": {
         "proteomics_workflow-design_matrix-builder-available_factors_display": "<ui> 29a80852c6b8e82a1efa7ea1449b84b95d45399a8769404984a2cfcd14a8bf46",
@@ -3942,13 +3942,13 @@
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-pairs-<ID>": 1,
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-selection-<ID>": 1
         },
-        "integration/proteomics/features_proteomics.tsv": "d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4",
+        "integration/proteomics/features_proteomics.parquet": "<present>",
         "integration/proteomics/integration_input.json": "<present>",
-        "integration/proteomics/matrix_proteomics.tsv": "6341bdcef5caddc66141ac888aed8bceb781b96eaeb80b8dc5261a758da1343a",
-        "integration/proteomics/samples.tsv": "2ccfb3607c99a41d04068d96ab56a0e669fe03480d8a69ecabfb7533c4a3511d",
+        "integration/proteomics/matrix_proteomics.parquet": "<present>",
+        "integration/proteomics/samples.parquet": "<present>",
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
-        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "37b1ca9beaca9dc56f7964851c1a5fa22cb6c7fb633765438377d3fefaff53f0",
+        "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "9f1125740f8cde6bad606106c1ae67b786ad21fe2bbf3a9d6d12131a276ecd8f",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",
         "results/proteomics/protein_qc/normalized_protein_matrix_pre_ruv.tsv": "5962c09291433627605cd8f366884501919b16b95f97975bec9332d1683f9284",

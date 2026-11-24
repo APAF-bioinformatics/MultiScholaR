@@ -530,7 +530,32 @@ finishProtNormNormalization <- function(completed, settings, workflowData, normD
     )
   }
   showNotificationFn(buildCompletionNotificationFn(settings$ruv_mode), type = "message", duration = 10)
+  warnProtNormScaleNegativeLogs(completed, settings, workflowData, normData, showNotificationFn, messageFn)
   completed
+}
+
+#' KIT-177 D6: `scale` divides each sample by the median of its absolute log2 values, so on plain log2 values below 0
+#' its result depends on the table's unit. When `scale` ran and the normalisation's input protein table holds log2
+#' values below 0: one step-log line and one warning notification with their count. `scale` itself is unchanged.
+#' @return The count, invisibly (NA when not counted).
+#' @noRd
+warnProtNormScaleNegativeLogs <- function(completed, settings, workflowData, normData, showNotificationFn, messageFn) {
+  if (!isTRUE(completed) || !identical(settings$norm_method, "scale")) return(invisible(NA_integer_))
+  manager <- shiny::isolate(workflowData$state_manager)
+  reference <- shiny::isolate(normData$normalization_input_reference)
+  if (is.null(manager) || is.null(reference)) return(invisible(NA_integer_))
+  count <- withDIAStateScope(manager, function() {
+    object <- readDIAReferenceProteinObject(manager, reference)
+    table <- object@protein_quant_table
+    values <- table[setdiff(names(table), object@protein_id_column)]
+    sum(vapply(values, function(x) if (is.numeric(x)) sum(x < 0, na.rm = TRUE) else 0L, integer(1)))
+  })
+  if (count > 0L) {
+    texts <- omicGuiProtLog2Texts()
+    messageFn(sprintf(texts[["scale_log"]], count))
+    showNotificationFn(sprintf(texts[["scale_warning"]], count), type = "warning", duration = NULL)
+  }
+  invisible(count)
 }
 
 #' The managed normalisation (KIT-111 D3): the gate and the request (`diaNormalizationRequest`, which records the

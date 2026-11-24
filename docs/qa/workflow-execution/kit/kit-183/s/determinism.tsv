@@ -1,0 +1,10 @@
+table	identical
+errors	TRUE
+power	TRUE
+familywise	TRUE
+diagnostic	TRUE
+formed	TRUE
+counts	TRUE
+losses	TRUE
+factors	TRUE
+orientation	TRUE

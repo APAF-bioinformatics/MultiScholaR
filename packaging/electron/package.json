@@ -1,7 +1,7 @@
 {
   "name": "multischolar",
   "productName": "MultiScholaR",
-  "version": "0.9.1",
+  "version": "0.9.0",
   "description": "MultiScholaR: interactive multi-omics analysis, with its own R, R packages and Python",
   "private": true,
   "main": "main.js",
@@ -14,6 +14,9 @@
   "build": {
     "appId": "au.edu.mq.apaf.multischolar",
     "productName": "MultiScholaR",
+    "electronFuses": {
+      "runAsNode": false
+    },
     "directories": {
       "output": "dist",
       "buildResources": "build"

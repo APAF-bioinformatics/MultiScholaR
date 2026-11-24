@@ -1,0 +1,5 @@
+fixture	class	max_dlog2	max_dlogfc	max_dt	call_changes	calls_offset1	calls_offset0	k_offset1	k_offset0	share_offset1	share_offset0	controls_offset1	controls_offset0
+t7_concentration	lipid	6.54940879629349	29.727502591455	1679.66234047976	170	165	16	LCMS_Pos=7	LCMS_Pos=2	LCMS_Pos=17	LCMS_Pos=1	LCMS_Pos=87	LCMS_Pos=5
+t7_concentration	metab	6.54940879629349	29.727502591455	1679.66234047976	170	165	16	LCMS_Pos=7	LCMS_Pos=2	LCMS_Pos=17	LCMS_Pos=1	LCMS_Pos=87	LCMS_Pos=5
+f172	lipid	6.90465660410956	196.737007848178	8.01391706432346	37	0	37	LCMS_Pos=1	LCMS_Pos=2	LCMS_Pos=12	LCMS_Pos=1	LCMS_Pos=62	LCMS_Pos=5
+f172	metab	6.90465660410956	196.737007848178	8.01391706432346	37	0	37	LCMS_Pos=1	LCMS_Pos=2	LCMS_Pos=12	LCMS_Pos=1	LCMS_Pos=62	LCMS_Pos=5

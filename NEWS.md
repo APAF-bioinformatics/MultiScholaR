@@ -1,6 +1,233 @@
 # MultiScholaR NEWS
 
-## MultiScholaR 0.9.1 (staging)
+## MultiScholaR (unreleased; becomes 0.9.1, the first alpha for testing on real data)
+
+### New features
+
+ * Integration enrichment (KEGG and Reactome, for metabolite and lipid data sets): besides the correlation-adjusted
+   test (the default, unchanged) and the pre-ranked test, two more tests can be chosen: the correlation-adjusted test
+   with negative correlations counted as zero, and a permutation test of the factor's values (PCGSE). The tab and every
+   record show how each test behaved in a check on simulated data of the same kind (false calls and power; no lipid
+   data were simulated), so the choice can be made on those figures. With a permutation result, the tab and the
+   record's Methods state the smallest attainable p-value as an exact fraction (for example 1/1,001) and the smallest
+   number of terms that can be called together at a 5 % false discovery rate, or that none can be called when that
+   p-value is above 0.05 (VAL-115). Results of the default test are unchanged. The
+   pre-ranked test now draws its random numbers with R's default generator whatever the session's setting; results in
+   a session with default settings are unchanged (KIT-191).
+
+### Fixes
+
+ * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
+   RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
+   model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
+   refused these runs with 'Run the normalisation first', although the normalisation had run. Runs that applied RUV are
+   unchanged. Both cases are offered only when the RUV design panel is switched on. For every user, the message shown
+   when the Differential Analysis tab is pressed before the normalisation now reads 'Run the normalisation first: the
+   differential analysis runs on the normalised data.', and the tab's model help says that the RUV factors enter the
+   model only when the normalisation added them. The report then states that no correction for unwanted variation was
+   applied.
+
+ * Transcriptomics: on runs of the RUV design panel (the option 'No removal of unwanted variation', an RUV design whose
+   rule finds no unwanted factor, or any RUV design that adds factors), the Differential Analysis tab no longer reports
+   'Could not save results to disk: non-numeric argument to mathematical function' after writing the result tables and
+   figures. The RUV grid summary (`ruv_optimization_summary.txt`) is written only for runs that used the RUV grid
+   search; the other runs have no grid to summarise, and their RUV choices are in the analysis record and the report.
+   Files written by an earlier run of the same project that used the RUV grid search (this summary, the
+   canonical-correlation panels and the grid workbook) are not removed, and describe that earlier run. Runs that used
+   the RUV grid are unchanged. The RUV design panel is off by default.
+
+ * Proteomics: when protein annotation from UniProt is empty or incomplete the app now says why, keeps the notice
+   until it is closed, writes the fact into the analysis record, and no longer keeps an empty or incomplete answer
+   for the next attempt. An incomplete annotation stays marked as incomplete when the project is saved and reopened.
+   Projects whose annotation was empty under an earlier version: save the design again. Enrichment now refuses to run
+   when the project has no protein annotation (previously: the UniProt GO route stopped with a 'column not found'
+   error, and the g:Profiler route was sent no protein, since data imported in the app carry no gene names of their
+   own). An earlier analysis record whose enrichment ran without any protein annotation is no longer replayed: the
+   replay is refused, because that run had nothing to test. Each request to UniProt is now tried up to three times,
+   and asks for each protein by its accession only (`accession:` terms; an isoform is asked for by its canonical
+   accession, as the design step already did), so an answer holds exactly the requested entries; a protein UniProt
+   has merged into another entry (a secondary accession) still gets no annotation. DA tables written before the
+   annotation was retrieved keep their blank gene names until the DA is run again. (KIT-175)
+
+### Scientific changes
+
+ * Proteomics, MaxQuant, FragPipe, Spectronaut and Proteome Discoverer TMT: protein quantities are now
+   log2-transformed without first adding 1. Adding 1 changed each value v by log2(1 + 1/v): 0.00014 at 10,000, 0.0014
+   at 1,000, 0.14 at 10; a fold change of 10 against 80 was reported as 2.88 instead of 3. Measured on simulated data
+   (2,000 proteins, two groups of five, 10 % of proteins changed by a factor of 2; 20 simulated data sets per setting):
+   where typical values are near 10, fold changes were shrunk to 0.81 of their true size with the offset and 0.94
+   without it; near 40, 0.96 and 1.00; from about 150 on the two agree. Low-abundance calls stay unreliable either
+   way: in the lowest third of abundance, with values near 10, 14.5 % of the true changes were found with the offset
+   and 8.4 % without it with RUV Automatic (5.2 % and 3.1 % with RUV skipped), and 65 % against 71 % of the calls
+   there were false with RUV Automatic (50 % against 42 % with RUV skipped; the whole list's false share was 0.19
+   against 0.17, and 0.05 against 0.04). The Benjamini-Hochberg procedure controls the false discovery rate of the
+   whole list, not of an abundance stratum. The test used by default does not model the larger variance of log values
+   at low abundance. On the package's five test data sets (values of 500 and above) no call changed (fold changes
+   moved by at most 0.0001). Some Proteome Discoverer exports report signal-to-noise values, which are small; there
+   the change is largest. A value of 0 is read as not measured (missing) and counted; for Spectronaut tables and for
+   designs re-imported from files saved before 7 November 2026 this changes which values are tested. A negative or
+   infinite value now stops the design step with a message naming the run. Saved projects keep their results; saving
+   the design again applies the new transform, and a project whose design was saved by an earlier version says so
+   once when it is opened. Sessions from versions before the session owner (filtered sessions adopted for DA) are not
+   told. Scale normalisation (limma's two-colour M-value scaling) multiplies each sample's log2 values by a factor, so
+   its result depends on the unit of the table on any data; on log2 values below 0 (values below 1) it also treats -2
+   like +2, and a warning now says so when the data hold such values. Cyclic Loess and Quantile do not depend on the
+   unit.
+
+ * Proteomics (DIA, label-free, TMT): the protein missing-value filter ('Protein Intensity Filter', and the clean-up
+   after RUV) now decides by counting missing values. Before, it compared each group's share of missing values with a
+   percentage rounded to three decimals. With three samples per group and 'Min Replicates per Group' 2, one missing
+   value of three (33.3333 %) exceeded the rounded 33.333 %, so at the tab's defaults only proteins measured in every
+   sample were kept. The same happened for some other group sizes (for example 6, 7 or 11 samples with 1 required; 11
+   to 14 with 2) and for three groups with 'Min Groups Required' 2. Group sizes whose allowed share is exact or rounds
+   up (for example 2, 4, 5, 6, 7, 8, 9 or 10 samples with 2 required) give the same results as before. In simulated
+   data (KIT-185's generator with no unwanted variation and no RUV, 2 groups of 3, 3,000 proteins, R = 100 draws per
+   condition) the filter now keeps, at 5 %, 10 % and 25 % value-dependent missingness, 2,838, 2,668 and 2,086 proteins
+   instead of 2,442, 2,060 and 1,261; the differential analysis finds 53, 81 and 110 more proteins (the share of truly
+   changed proteins found rises from 0.65 to 0.73, 0.55 to 0.68 and 0.33 to 0.51), with the false discovery proportion
+   unchanged at about 0.05 for the whole list (among the newly kept proteins about 6 to 8 % of the proteins called
+   were false); these are simulated figures, and the size on real data is not yet measured. Designs with unequal group
+   sizes keep the rule of the largest group, as before, so a smaller group can pass with fewer values than 'Min
+   Replicates per Group' (for example one of three when the largest group has six). Analysis records made before this
+   version replay with the earlier rule; each step of a record replays with the rule it was made with. In an analysis
+   record, the protein intensity filter and normalisation steps made with this version list the fixed parameter
+   'missing_value_comparison = counts'; a step without it was made with the earlier rule. A session saved before this
+   version and continued after it applies the new rule from its next missing-value step. The peptide intensity
+   filter's percentage-only call (deprecated) reads its percentages the same way. The proteomics reports now say that
+   a protein failed a group when its share of missing values exceeded the allowed share, and was kept when the share
+   of groups it failed did not exceed the allowed share; they said 'or more' and 'at most' of the rounded percentages.
+   (KIT-187, VAL-71)
+ * Integration enrichment of a factor against KEGG and Reactome pathways now uses a correlation-adjusted test by
+   default (limma's camera on each feature's regression on the factor, allowing for the correlation measured between
+   a pathway's features, on the features measured in every biological sample; of several features on one compound
+   identifier, the one with the largest mean value is kept). The pre-ranked test used before (GSEA on each feature's
+   correlation with the factor) assumes features are independent, which gives p-values that are too small for
+   pathways whose features vary together; it stays selectable, with that assumption stated. Existing scripts that call
+   `integrationEnrichFactor()` without naming a test now get the new test and different p-values (the size of the
+   change is given by the check on simulated data below; on the synthetic test corpus, 40 pathways of randomly chosen
+   measured features were called by neither test). In a check on simulated data shaped like a 12-sample study, on the
+   main factor, unrelated sets whose features vary together at a correlation of 0.3 were called at the 5 % level by
+   the earlier test in 13.5 % (sets of 5 to 10 metabolites) to 43.0 % (sets of 10 to 100 genes) of cases and by the
+   new test in at most 0.6 %. Over every kind of unrelated set checked, the new test called at most 4.4 % on the main
+   factor and at most 6.6 % against values unrelated to the data, except sets made only of the most variable features
+   (up to 10.1 %); on weaker factors both tests call unrelated sets of the model's features too often (the new test up
+   to 12.8 %, the earlier one up to 60.1 %). To get the earlier test, pass `overrides = list(test = "gsea")`; its
+   results are unchanged. In the Enrichment tab the new test is pre-selected. Results made before this change keep their test when replayed. Every
+   KEGG and Reactome summary now carries a caution (the factor was learned from the same data, so the results are
+   exploratory) and the factor's variance explained in the data set. STRING is unchanged and ignores the setting.
+   Further test options follow in KIT-191 (VAL-85 (2)): the correlation-adjusted test with negative correlations
+   floored, a permutation test and the pre-ranked test, each shown with its measured false-positive rate and power from
+   this check.
+
+ * Proteomics enrichment for organisms outside the 13 served by g:Profiler: Gene Ontology sets now include each
+   term's more specific terms (parent-term propagation over is a, part of, regulates, positively and negatively
+   regulates, as g:Profiler does; is a and part of only is available to scripts as an option). Terms that had fewer
+   than 10 measured proteins can now be tested, terms with more than 500 drop out, and parent terms of significant
+   terms tend to be significant too. The three top-level terms are not tested. `processEnrichments()` propagates by
+   default (`go_propagation = "is_a_part_of_regulates"`; `"none"` gives the previous sets). Analysis records made
+   before this version replay without propagation; records made with this version need this version or later. GO
+   identifiers that the installed GO release does not contain are counted and reported. Proteins annotated only to
+   the three top-level terms leave the background on such a run; their number is recorded. Measured on one proteome,
+   the reviewed E. coli K-12 entries of UniProt 2026_04 (4,024 annotated proteins, the background for every setting),
+   with synthetic lists, 20 per scenario, the same lists for none, is a and part of, and the five relations: 314,
+   1,242 and 1,249 terms in the testable range (10 to 500 annotated proteins); median significant terms (q-value
+   below 0.05) for lists made of half of a specific, a mid-level or a broad process term's proteins plus as many
+   random proteins 1.5, 20 and 19; 10, 53.5 and 46.5; 12.5, 129.5 and 129. With parent terms the planted term was
+   significant in 20 of 20 lists in every scenario; without them the specific and the broad term are not tested at
+   all (too few directly annotated proteins) and the mid-level term was significant in 20 of 20. Random lists: median
+   0 significant terms; under each setting 1 of 20 lists had a term significant by q-value (by Benjamini-Hochberg 0,
+   1 and 1 of 20); without parent terms that list had 120 of its 156 tested terms significant by q-value and none by
+   Benjamini-Hochberg, with parent terms 4 by either. These counts describe this proteome and these lists; they are
+   not estimates of power or of the false-discovery rate (1 of 20 is compatible with any rate from 0.1 % to 25 %).
+   (KIT-173, VAL-65)
+ * Proteomics reports: for the 13 organisms served by g:Profiler, the enrichment paragraph now describes g:Profiler.
+   It described clusterProfiler with Benjamini-Hochberg correction, because the report did not recognise the recorded
+   method. The correction applied is named from the analysis record. On both routes the fold-change bullet now states
+   the cutoffs applied (it gave the down cutoff with the wrong sign, or said no cutoff was applied when only the down
+   cutoff was set). No result changes. (KIT-173)
+ * Proteomics enrichment for organisms outside the 13 served by g:Profiler: the `geneID` cells of the result tables
+   now list their proteins alphabetically. Before, the order inside a cell was set by the R process (enrichit's hash
+   set over `Rcpp::unique()`, ordered by memory address), so a replay could list the same proteins in another order. No
+   number changes: counts, set sizes, ratios, p-values, q-values and the sets themselves are unchanged. (KIT-173,
+   VAL-61)
+
+
+### Scientific changes
+
+ * Lipidomics and metabolomics normalisation: the log2 step is now plain log2(x) by default; before, it was
+   log2(x + 1), with the offset described as protecting zeros. Since KIT-118 the import already reads every zero as
+   not detected (missing, not imputed) and refuses negative values, so the offset protected nothing; its only effect
+   was on positive values, and it depended on the unit of the table: a value v moved by log2(1 + 1/v) (1.44e-4 at
+   v = 10,000, 0.0014 at v = 1,000, 1 at v = 1), and a true two-fold change between 0.1 and 0.2 was reported as
+   0.126 instead of 1. After this change the log step is unit-equivariant (multiplying a table by a constant shifts
+   every log2 value by the same amount). Intensity tables (values of 10,000 and above) change by at most 1.44e-4 log2;
+   concentration tables with values near or below 1 change materially, and their earlier fold changes were compressed
+   toward 0. Through the default normalisation with RUV-III Automatic, results on such tables change far more than
+   the log step alone: on two simulated concentration tables with no true difference between the groups (one data
+   set each), 165 and 0 features were called significant with the offset and 16 and 37 with plain log2, all of them
+   false. The RUV-III Automatic and Manual modes and the Scale option depend on the unit of the table (a change of
+   unit alone changed the significant calls in 20 of 20 simulated data sets) and are followed up separately. The
+   "Offset for zeros" field is removed from the normalisation tab. A project whose record used an offset
+   replays with that offset unchanged, and the tab says so. Called directly, `logTransformAssays()` now defaults to
+   offset 0: a value of 0 or below, or a value that is not finite, becomes missing and is counted in one warning
+   (class `omics_log2_nonpositive`); an offset above 0 runs the earlier transformation unchanged; an offset below 0 is
+   refused (class `omics_log2_offset_invalid`); an error of the transformation now stops (class `omics_log2_failed`)
+   instead of returning untransformed values labelled as log2.
+ * Statistical position, stated: zeros in these tables are often values below a detection limit. They are read as
+   not detected and not imputed, so a feature is tested only where it was measured (limma on the available values),
+   and a fold change can be underestimated when values fall below the detection limit in one group; a feature with
+   no value in one of the compared groups is not tested, and the differential analysis summary now counts these
+   ("Not tested (no value in a compared group)"). No variance-stabilising transform (generalised log) is offered; the
+   test models variance against mean level (limma-trend with robust hyperparameters). Unchanged: a table that is
+   already on the log scale is logged again, and tables with negative values are refused at import.
+ * The `scale` between-sample option is limma's two-colour M-value scaling (`limma::normalizeMedianAbsValues`): it
+   divides each sample's log2 values so that their median absolute value is the same in every sample, so its result
+   depends on the unit of the table, and on log2 values below 0 the absolute value treats -2 like +2. It stays
+   selectable; when it runs on log2 values below 0, the normalisation log and a notification now say so. Cyclic
+   Loess and Quantile do not depend on the unit.
+ * Lipidomics and metabolomics filtering figures on log2 values (the workbooks draw them after the log step): a value
+   is counted as detected when it is not missing, and the step's missingness counts missing cells only (before, a log2
+   value of 0 or below, that is a measured value of 1 or below, was counted as not detected). On intensities a zero
+   still counts as not detected.
+ * The interactive volcano draws a sample's missing value at 0 (it cannot draw missing values); it now says so when
+   the assay holds missing values.
+
+
+### Scientific changes
+
+ * Label-free (MaxQuant, FragPipe, Spectronaut) and TMT (Proteome Discoverer) analyses now go through the
+   protein-level quality control that DIA analyses use. After the design is saved, the step guide moves to Quality
+   Control, which has four steps: Accession Cleanup, Protein Intensity Filter, Duplicate Removal and Protein
+   Replicate Filter. The guide moves on to Normalization once the Protein Replicate Filter has been applied.
+   Normalization can still be opened earlier, and then shows a warning that the quality control steps are not
+   complete. Before this change, the app marked quality control as done as soon as the design was saved, so an
+   analysis that followed the step guide normalised every protein of the imported table. With RUV at its default, the
+   only proteins removed before testing were those failing the missing-value rule in every group; with RUV skipped,
+   none. Results made by following the step guide can therefore change. A protein is now tested only if at least two
+   groups each have at least two values above the lowest 1 % of all intensities (for groups of equal size). Protein
+   identifiers follow the accession the clean-up chooses. Normalisation, RUV and the test are computed on the
+   filtered table. With RUV at its default, the clean-up after RUV now applies the same rule to the corrected values,
+   so it can remove a few more proteins. On the package's test data (one simulated data set per format: 400 proteins,
+   two groups of five, 2 % to 8 % of values missing at random; 40 proteins with a true difference), with RUV at its
+   default: proteins tested 398 to 392 (TMT), 398 to 394 (MaxQuant), 397 to 393 (FragPipe); significant at q < 0.05,
+   20 to 18 (TMT; 17 to 16 of the 40 true differences, 3 to 2 of the 360 others), 16 to 18 (MaxQuant; 15 to 15, 1 to
+   3), 25 to 25 (FragPipe; 22 to 22, 3 to 3). With RUV skipped: proteins tested 400 to 397, 400 to 397 and 400 to
+   396; significant 19 to 18 (18 to 17 true, 1 to 1 other), 17 to 16 (16 to 15, 1 to 1) and 25 to 22 (24 to 21, 1 to
+   1). Each figure comes from that one data set: a change of one to three proteins is not a measured change in power
+   or in the false-discovery rate, and a protein the filters remove counts as not significant. Real data usually have
+   more missing values, mostly in low-abundance proteins, so the filters can remove a much larger share. The Quality
+   Control tab shows the number of proteins left after each step. Projects and analysis records made before this
+   change are not altered; replaying a record repeats the steps it recorded.
+
+
+### Distribution
+
+ * MultiScholaR now opens normally when it is started from a shell that an editor extension or a coding agent
+   opened; before, it closed at once without a window. (Linux and Windows.)
+ * Help, About names the commit of the analysis code that was installed, beside the commit the installer was built
+   from. Reports and analysis records made with the installed application name the same commit; before, they named
+   none.
+
 
 ### Scientific changes
 

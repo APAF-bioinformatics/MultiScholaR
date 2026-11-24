@@ -84,6 +84,10 @@
 #' @param cache_dir Directory of the UniProt cache.
 #' @param taxon_id Taxonomic ID of the organism.
 #' @return Data frame with UniProt annotations.
+#' @details
+#' When the retrieval fails, a warning of class `prot_annotation_uniprot_empty` with its `reason` (`request_failed`,
+#' `processing_failed`, or `id_conversion_failed` when the Ensembl conversion failed) is signalled and an empty
+#' annotation table is returned. Requests carry a time-out and up to three attempts (see `directUniprotDownload`).
 #' @export
 #' @param chunk_size,progress_callback Runtime inputs used by this function; see the usage section for accepted values.
 getUniprotAnnotationsFull <- function(data_tbl,
@@ -163,6 +167,7 @@ getUniprotAnnotationsFull <- function(data_tbl,
   ensembl_detection <- detectEnsemblIds(cleaned_proteins)
   ensembl_mapping <- NULL  # Initialize mapping variable
   proteins_to_query <- cleaned_proteins  # Default: use original proteins
+  conversion_failed <- NULL  # KIT-175: the reason the Ensembl conversion failed, when it did
   
   if (ensembl_detection$is_ensembl) {
     cat("\n=== ENSEMBL ID CONVERSION ===\n")
@@ -204,12 +209,14 @@ getUniprotAnnotationsFull <- function(data_tbl,
       } else {
         cat("[FAIL] ERROR: gprofiler2 conversion returned 0 results!\n")
         warning("No Ensembl IDs could be converted. Falling back to direct query with original IDs.")
+        conversion_failed <- "no identifier could be converted"
         proteins_to_query <- cleaned_proteins
         ensembl_mapping <- NULL
       }
       
     }, error = function(e) {
       warning(sprintf("Ensembl conversion failed: %s. Falling back to direct UniProt query.", e$message))
+      conversion_failed <<- uniprotConditionDetail(e)
       cat(sprintf("Error details: %s\n", e$message))
       proteins_to_query <- cleaned_proteins
       ensembl_mapping <- NULL
@@ -248,11 +255,23 @@ getUniprotAnnotationsFull <- function(data_tbl,
   cat("Calling getUniprotAnnotations for comprehensive annotation retrieval...\n")
   
   tryCatch({
-    uniprot_annotations <- getUniprotAnnotations(
-      input_tbl = temp_protein_table,
-      cache_dir = cache_dir,
-      taxon_id = taxon_id,
-      progress_callback = progress_callback
+    # KIT-175: when the Ensembl conversion failed, the query found no UniProt accession; that outcome is recorded and
+    # signalled as `id_conversion_failed` instead (the only condition muffled on the way).
+    uniprot_annotations <- withCallingHandlers(
+      getUniprotAnnotations(
+        input_tbl = temp_protein_table,
+        cache_dir = cache_dir,
+        taxon_id = taxon_id,
+        progress_callback = progress_callback
+      ),
+      prot_annotation_uniprot_empty = function(w) {
+        if (!is.null(conversion_failed) && identical(w$reason, "no_uniprot_accessions")) {
+          recordUniprotOutcome(NA_character_, "not_queried",
+            "not queried: the Ensembl identifiers could not be converted to UniProt accessions")
+          signalUniprotEmpty("id_conversion_failed", w$requested, detail = conversion_failed, taxon_id = taxon_id)
+          invokeRestart("muffleWarning")
+        }
+      }
     )
     
     cat(sprintf("Successfully retrieved UniProt annotations for %d proteins\n", nrow(uniprot_annotations)))
@@ -272,12 +291,15 @@ getUniprotAnnotationsFull <- function(data_tbl,
         names(ensembl_lookup) <- c("Original_Ensembl_ID", "Entry")
         
         # Merge annotations with Ensembl mapping
+        go_ids_lost <- attr(uniprot_annotations, "go_ids_not_in_go_db", exact = TRUE)
         uniprot_annotations <- merge(
           uniprot_annotations,
           ensembl_lookup,
           by = "Entry",
           all.x = TRUE
         )
+        # KIT-173: merge() drops the table's attributes; the lost-GO-id count is put back.
+        attr(uniprot_annotations, "go_ids_not_in_go_db") <- go_ids_lost
         
         # For any annotations without Ensembl mapping, use Entry as Original_ID
         if ("Original_Ensembl_ID" %in% names(uniprot_annotations)) {
@@ -319,17 +341,19 @@ getUniprotAnnotationsFull <- function(data_tbl,
     return(uniprot_annotations)
     
   }, error = function(e) {
-    cat("=== DEBUG66: ERROR in getUniprotAnnotationsFull ===\n")
-    cat(sprintf("Error message: %s\n", e$message))
-    cat(sprintf("Error class: %s\n", paste(class(e), collapse = ", ")))
-    cat("Full error details:\n")
-    print(str(e))
-    cat(sprintf("Error in getUniProtAnnotation: %s\n", e$message))
-    
-    # KIT-101 F-28: the empty annotation table getUniprotAnnotations returns when its download fails
-    # (columns Entry, gene_names, ...), which the DA exports join on; it is not cached, so a retry fetches again.
-    cat("Returning empty annotation table due to error\n")
-
+    # KIT-175: an error already recorded (a transport error, a processing failure) is signalled with its reason; any
+    # other error here (the Ensembl merge-back) is recorded as `processing_failed` and signalled. The empty annotation
+    # table getUniprotAnnotations returns when its download fails (KIT-101 F-28) is returned; it is not cached.
+    if (!inherits(e, "prot_annotation_uniprot_recorded")) {
+      recordUniprotOutcome(NA_character_, "failed", "annotation failed after retrieval: the answer could not be processed")
+      e <- markUniprotRecorded(e, "processing_failed", list(detail = uniprotConditionDetail(e),
+        requested = length(proteins_to_query), taxon_id = taxon_id))
+    }
+    message(sprintf("UniProt annotation ended without a table: %s", e$reason))
+    counts <- unclass(e)[intersect(c("requests_total", "requests_failed", "requests_not_sent", "requests_truncated",
+      "accessions_requested", "accessions_not_looked_up", "hits_beyond_rows", "statuses", "stage"), names(e))]
+    signalUniprotEmpty(e$reason, e$requested %||% length(proteins_to_query), detail = e$detail %||% NA_character_,
+      taxon_id = taxon_id, counts = counts)
     return(createEmptyUniprotTable())
   })
 }
@@ -348,8 +372,14 @@ getUniprotAnnotationsFull <- function(data_tbl,
 #' @noRd
 retrieveProtDesignUniprotAnnotations <- function(manager, dataCln, proteinColumn, taxonId,
     resultsDir = NULL, sourceDir = NULL, progressCallback = NULL) {
+    # KIT-175: an error before any request is recorded as `not_attempted` and re-raised, message unchanged.
+    notAttempted <- function(e, detail) {
+        recordUniprotOutcome(NA_character_, "not_queried", sprintf("not queried: annotation was not attempted (%s)", detail))
+        stop(markUniprotRecorded(e, "not_attempted", list(detail = detail)))
+    }
     if (is.null(proteinColumn)) {
-        stop("Protein column not found in column_mapping. Cannot get annotations.")
+        notAttempted(simpleError("Protein column not found in column_mapping. Cannot get annotations."),
+            "no protein identifier column is selected")
     }
 
     cacheDir <- if (!is.null(resultsDir)) {
@@ -363,21 +393,55 @@ retrieveProtDesignUniprotAnnotations <- function(manager, dataCln, proteinColumn
         dir.create(uniprotCacheDir, recursive = TRUE)
     }
 
-    uniprotDatCln <- getUniprotAnnotationsFull(
-        data_tbl = readDIAAnnotationIdentifiers(manager, dataCln, proteinColumn),
-        protein_id_column = proteinColumn,
-        cache_dir = uniprotCacheDir,
-        taxon_id = taxonId,
-        progress_callback = progressCallback
+    # KIT-175: the classed conditions are kept, never muffled (they reach every caller); the last one becomes the
+    # table's `annotation_outcome` attribute, which travels with it to the bus, the project file and the session.
+    rowsBefore <- uniprotRecordRows()
+    lastCondition <- NULL
+    keep <- function(w) lastCondition <<- w
+    uniprotDatCln <- tryCatch(
+        withCallingHandlers(
+            getUniprotAnnotationsFull(
+                data_tbl = readDIAAnnotationIdentifiers(manager, dataCln, proteinColumn),
+                protein_id_column = proteinColumn,
+                cache_dir = uniprotCacheDir,
+                taxon_id = taxonId,
+                progress_callback = progressCallback
+            ),
+            prot_annotation_uniprot_empty = keep,
+            prot_annotation_uniprot_incomplete = keep
+        ),
+        error = function(e) {
+            if (inherits(e, "prot_annotation_uniprot_recorded")) stop(e)
+            detail <- if (inherits(e, "saved_entity_limit")) {
+                "the data have more than 10,000 distinct protein groups, the most the annotation step reads"
+            } else if (identical(conditionMessage(e), "data_tbl cannot be empty")) {
+                "the data have no protein identifiers"
+            } else {
+                uniprotConditionDetail(e)
+            }
+            notAttempted(e, detail)
+        }
     )
+    if (!is.null(lastCondition)) {
+        attr(uniprotDatCln, "annotation_outcome") <- uniprotOutcomeFromCondition(lastCondition)
+    }
 
     # KIT-115 (A101-09): an empty table is a failed retrieval (F-28) and is not written as the project's annotations.
     if (!is.null(sourceDir) && nrow(uniprotDatCln) > 0) {
         scriptsUniprotPath <- file.path(sourceDir, "uniprot_dat_cln.RDS")
-        saveRDS(uniprotDatCln, scriptsUniprotPath)
-        log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scriptsUniprotPath))
+        tryCatch({
+            saveRDS(uniprotDatCln, scriptsUniprotPath)
+            log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scriptsUniprotPath))
+        }, error = function(e) {
+            # KIT-175 (C04): recorded only after a retrieval that wrote a row in this call (none on a cache hit).
+            detail <- uniprotConditionDetail(e)
+            if (uniprotRecordRows() > rowsBefore) {
+                recordUniprotOutcome(NA_character_, "failed",
+                    sprintf("annotation retrieved but not saved to the project file (%s)", detail))
+            }
+            stop(markUniprotRecorded(e, "processing_failed", list(detail = detail, stage = "save")))
+        })
     }
 
     uniprotDatCln
 }
-

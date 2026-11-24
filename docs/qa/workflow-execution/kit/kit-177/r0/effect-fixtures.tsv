@@ -1,0 +1,11 @@
+fixture	config	proteins	min_positive_quantity	zeros	status_old	status_new	tested_old	tested_new	calls_old	calls_new	calls_changed	max_abs_logfc_change
+prot_lfq	automatic	5	522	0	error simpleError No valid percentage found. Please check your data and parameters.	error simpleError No valid percentage found. Please check your data and parameters.	NA	NA	NA	NA	NA	NA
+prot_lfq	skip	5	522	0	ok	ok	4	4	0	0	0	9.13386e-05
+prot_tmt	automatic	5	522	0	error simpleError No valid percentage found. Please check your data and parameters.	error simpleError No valid percentage found. Please check your data and parameters.	NA	NA	NA	NA	NA	NA
+prot_tmt	skip	5	522	0	ok	ok	4	4	0	0	0	9.13386e-05
+prot_lfq_fragpipe	automatic	400	3352.2	0	ok	ok	393	393	23	23	0	1.74225e-05
+prot_lfq_fragpipe	skip	400	3352.2	0	ok	ok	396	396	20	20	0	1.73434e-05
+prot_tmt_pd	automatic	400	5154.6	0	ok	ok	392	392	17	17	0	3.53132e-05
+prot_tmt_pd	skip	400	5154.6	0	ok	ok	397	397	18	18	0	0.000100962
+prot_lfq_maxquant	automatic	400	5788.1	0	ok	ok	394	394	18	18	0	1.48122e-05
+prot_lfq_maxquant	skip	400	5788.1	0	ok	ok	397	397	16	16	0	2.04269e-05

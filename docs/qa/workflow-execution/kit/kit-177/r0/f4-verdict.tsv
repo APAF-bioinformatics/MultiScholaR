@@ -1,0 +1,23 @@
+check	value
+base_worktree_present	TRUE
+base_child_collate	C test_path /tmp/Rtmp3AzPF6/kit177-s2-base/tests/testthat 
+head_child_collate	C test_path /home/runner/work/MultiScholaR/MultiScholaR/pkg/tests/testthat 
+base_test_path_inside_worktree	TRUE
+head_oracle_dir_redirected	TRUE
+prot_lfq files_present	TRUE
+prot_lfq step_lists_equal	TRUE
+prot_lfq step1_rows	0
+prot_lfq step2_rows_before_changed_step	0
+prot_lfq step3_rows_plain_log2	0
+prot_lfq step3_rows_unexplained	0
+prot_lfq base_vs_head_steps_differing	
+prot_lfq state_tables_compared	8
+prot_lfq state_tables_unexplained	1
+prot_lfq design_state_compared	TRUE
+prot_lfq head_record_vs_oracle_rows	0
+checkout_oracles_unchanged	TRUE
+base_side_exit_status	0
+head_side_exit_status	0
+head_commit	025c95426bb8dd3e05d60f0ae750b0c71638f16e
+base_commit	fc48b6ecea61815afaff4e759c36b805028c119d
+changed_step	design

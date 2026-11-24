@@ -1276,7 +1276,8 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
     list(module_id = "norm",
         panels = list(aesthetics = list(),
             itsd = list(aggregation = c("Median (recommended)" = "median", "Mean" = "mean", "Sum" = "sum")),
-            log2 = list(offset = 1),
+            # KIT-172: plain log2 (the offset is no longer offered; a record's offset replays).
+            log2 = list(offset = 0),
             between_sample = list(methods = c("Cyclic Loess" = "cyclicloess", "Quantile" = "quantile",
                 "Scale (Median Absolute Values)" = "scale", "None" = "none"), default = "cyclicloess"),
             ruv_iii = list(modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual",
@@ -1323,6 +1324,50 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
 #' @noRd
 omicGuiRuvDesignEnabled <- function() {
     isTRUE(getOption("MultiScholaR.ruv_design_panel", FALSE))
+}
+
+#' The log2 step's texts of lipidomics and metabolomics (KIT-172; proposed wording, implemented as proposed, the owner
+#' edits before release, VAL-41): the section's sentence, the recorded-offset sentence of a project whose record used an
+#' offset (`%s` the offset), the step-log line of the values set to missing (`%s` the counts per assay), the
+#' interactive volcano's sentence where missing cells are drawn, and the warning shown when `scale` runs on log2 values
+#' below 0 (`%s` the counts per assay).
+#' @noRd
+omicGuiLog2Texts <- function() {
+    c(help = "log2 of each value; zeros are read as not detected at import",
+        recorded_offset = paste("This project's record used log2(x + %s) for this step; its results replay with that offset.",
+            "A new run uses plain log2."),
+        nonpositive_log = "Log2 step: values set to missing (0 or below; not finite): %s",
+        volcano_missing = paste("Samples with no value for a feature are drawn at 0 in this plot's sample panel; the",
+            "interactive plot cannot draw missing values."),
+        scale_warning = paste("Scale normalisation rescales each sample so that the median of its absolute log2 values is the",
+            "same in every sample. Because it divides log2 values instead of shifting them, its result depends on the unit of",
+            "your table (for example \u00b5M against nM). In this data, %s values reaching the log2 step are below 1, so",
+            "their log2 values are negative, and taking absolute values treats a log2 value of \u22122 like +2. Cyclic Loess",
+            "and Quantile do not depend on the unit."))
+}
+
+#' The proteomics label-free and TMT log2 texts (KIT-177; proposed wording, implemented as proposed, the owner edits
+#' before release, VAL-41): the reopen sentence of a design saved by an earlier version, the notification and step-log
+#' lines of the values set to missing at the design step (`%d` the counts), the refusal of a negative or infinite
+#' quantity (`%s` the run and the values), and the warning shown when `scale` runs on log2 values below 0 (`%d` the count).
+#' @noRd
+omicGuiProtLog2Texts <- function() {
+    c(reopen = paste("This design was saved by an earlier version, which added 1 to every value before taking log2.",
+            "Your saved results are unchanged. If you save the design again, values are log2-transformed without adding 1,",
+            "and later results will differ slightly, most for small values."),
+        notice_zero = "%d values of 0",
+        notice_nan = "%d values that were not a number",
+        notice_both = "%d values of 0 and %d values that were not a number",
+        notice_tail = "were read as not measured (missing). They are not used in the analysis.",
+        log_zero = "Values equal to 0 set to missing: %d",
+        log_nan = "Values that were not a number set to missing: %d",
+        refusal = paste("Run '%s' contains negative or infinite values (for example %s). Quantities must be zero or",
+            "positive; correct the file and import it again."),
+        scale_warning = paste("Scale normalisation divides each sample by the median of its absolute log2 values. In this",
+            "data, %d values are below 1, so their log2 values are negative, and taking absolute values treats a log2",
+            "value of \u22122 like +2. The result then depends on the unit of your table. Cyclic Loess and Quantile do not",
+            "have this problem."),
+        scale_log = "Scale normalisation: log2 values below 0 in the input: %d")
 }
 
 #' An omic's RUV design group: the gate, the tier labels, the k rules and its tables.
@@ -2219,8 +2264,9 @@ omicGuiProteomicsQc <- function() {
 }
 
 #' The proteomics shell (mod_proteomics.R): no header; the icon as `tabPanel`'s argument
-#' (:117-184, stepper :380-386); the bus (:205-245) on `session$userData` (:248); the TMT/LFQ QC
-#' bypass (:406-416); the peptide-checkpoint panel (:101-113, :275-304).
+#' (:117-184, stepper :380-386); the bus (:205-245) on `session$userData` (:248); the
+#' peptide-checkpoint panel (:101-113, :275-304). TMT and LFQ open the QC tab after the design, as
+#' DIA does (VAL-26, KIT-180).
 #' @noRd
 omicGuiProteomicsShell <- function() {
     tab <- function(status_key, value, component, title, icon, testid, step_name) {
@@ -2250,7 +2296,7 @@ omicGuiProteomicsShell <- function() {
                 "network-wired", "prot-tab-enrichment", "Enrich"),
             tab("session_summary", "session_summary", "prot_summary", "Session Summary & Report",
                 "file-export", "prot-tab-session-summary", "Summary")),
-        chain_rules = list(qc_bypass = c("TMT", "LFQ")), bus = bus, bus_registration = "userData",
+        bus = bus, bus_registration = "userData",
         extras = "peptide_checkpoint")
 }
 
@@ -2417,7 +2463,8 @@ omicGuiLipidDa <- function() {
     da <- omicGuiFeatureDa("lipid", list(
         columns = list(id = "lipid_id", label = "lipid_name", fold_change = "logFC", pvalue = "raw_pvalue",
             significance = "fdr_qvalue"),
-        summary = list(noun = "lipids", significance_label = "Q"),
+        # KIT-172: the count of rows not tested because a compared group has no observed value.
+        summary = list(noun = "lipids", significance_label = "Q", not_tested = TRUE),
         nouns = c(top_n = "Top N Lipids:", scaling = "Row (lipid) scaling", labels = "Show Lipid Labels", cluster = "lipids"),
         table_filter = "all_only",
         static_volcano = generateLipidDAVolcanoStatic,
@@ -2633,7 +2680,8 @@ omicGuiMetabDa <- function() {
     da <- omicGuiFeatureDa("metab", list(
         columns = list(id = "metabolite_id", label = "metabolite_name", fold_change = "logFC", pvalue = "raw_pvalue",
             significance = "fdr_qvalue"),
-        summary = list(noun = "metabolites", significance_label = "Q"),
+        # KIT-172: the count of rows not tested because a compared group has no observed value.
+        summary = list(noun = "metabolites", significance_label = "Q", not_tested = TRUE),
         nouns = c(top_n = "Top N Metabolites:", scaling = "Row (metabolite) scaling", labels = "Show Metabolite Labels",
             cluster = "metabolites"),
         table_filter = "all_or_combined",
@@ -2903,8 +2951,8 @@ omicGuiTrxDa <- function() {
         testids = c(run = "trx-da-run", download = "trx-da-download", results_tabs = "trx-da-results-tabs"),
         model = list(editable = FALSE, heading = "Model", output = "formula_display",
             help = c("edgeR quasi-likelihood: estimateDisp and glmQLFit(robust = TRUE), then glmQLFTest per contrast on the",
-                "one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group plus the RUVs factors",
-                "W_1..W_k as covariates. No fold-change test is applied."),
+                "one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group, plus the RUV factors",
+                "W_1..W_k as covariates when the normalisation added them. No fold-change test is applied."),
             formula = trxRealisedFormula, text = trxDaModelText),
         threshold = list(label = "FDR (BH) threshold:", value = 0.05, min = 0.001, max = 0.2, step = 0.005),
         lfc = list(label = "Fold-change line (display only; no test):", value = 0, min = 0, max = 2, step = 0.1,
@@ -2921,7 +2969,7 @@ omicGuiTrxDa <- function() {
         run = list(managed = runWorkflowOmicsManagedDa, in_process = runTrxReferenceDaAnalysis,
             export_report = trxDaExport),
         source = list(class = "TranscriptomicsAssayData", read_metadata = trxDaReadMetadata,
-            no_data = "Run the normalisation first: the DA runs on the normalised (RUVs) state."),
+            no_data = "Run the normalisation first: the differential analysis runs on the normalised data."),
         preflight_first = FALSE,
         texts = c(status_ready = "Ready. The DA runs on the normalised (RUVs) state.",
             status_waiting = "Ready. The DA runs on the normalised (RUVs) state.",

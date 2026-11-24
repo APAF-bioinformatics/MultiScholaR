@@ -12,6 +12,22 @@ stripEnrichmentIdSuffix <- function(ids) {
   stringr::str_remove(ids, ":.*")
 }
 
+#' The proteins of each `geneID` cell in alphabetical order (KIT-173, VAL-61)
+#'
+#' enrichit's `ora_cpp` writes a cell in the iteration order of a hash set filled from `Rcpp::unique()`, whose order
+#' follows the strings' memory addresses, so the same analysis listed the same proteins in another order in another R
+#' process. Sorting fixes the order; counts, sizes, ratios, p-values and the sets are unchanged.
+#' @param result An `enrichResult`; anything else (NULL, a stand-in without `geneID`) is returned as it is.
+#' @return `result` with each `geneID` cell's proteins sorted (byte order, `method = "radix"`).
+#' @noRd
+sortEnrichmentGeneIds <- function(result) {
+  if (!isS4(result) || !"result" %in% methods::slotNames(result) || !is.data.frame(result@result) ||
+      !nrow(result@result) || !"geneID" %in% names(result@result)) return(result)
+  result@result$geneID <- vapply(strsplit(as.character(result@result$geneID), "/", fixed = TRUE),
+    function(proteins) paste(sort(proteins, method = "radix"), collapse = "/"), character(1))
+  result
+}
+
 # processEnrichments
 # ----------------------------------------------------------------------------
 #' Process Enrichments
@@ -23,10 +39,21 @@ stripEnrichmentIdSuffix <- function(ids) {
 #' @param q_cutoff FDR q-value threshold for enrichment significance (default: 0.05)
 #' @param pathway_dir Directory for saving pathway results
 #' @param go_annotations UniProt GO annotations (required for unsupported organisms)
-#' @param exclude_iea Whether to exclude IEA (Inferred Electronic Annotation) terms (default: FALSE)
+#' @param exclude_iea Whether to exclude IEA (Inferred Electronic Annotation) terms (default: FALSE). It applies to
+#'   the 13 organisms served by g:Profiler only: the UniProt annotations used for any other organism carry no evidence
+#'   codes, so for those `TRUE` gives a warning (class `multischolar_enrichment_iea_not_excludable`) and electronic
+#'   annotations are included.
 #' @param protein_id_column Name of the protein ID column (default: "Protein.IDs")
 #' @param contrast_names Vector of contrast names for output labeling
 #' @param correction_method Method for FDR correction (default: "gSCS")
+#' @param go_propagation For organisms outside the 13 served by g:Profiler, how the Gene Ontology sets built from
+#'   `go_annotations` take parent terms (KIT-173): `"is_a_part_of_regulates"` (the default) adds to each term the
+#'   proteins annotated to its more specific terms over the relations is a, part of, regulates, positively regulates
+#'   and negatively regulates, as g:Profiler and GO.db's ancestor tables do (a biological-process term then also holds
+#'   proteins annotated as regulating that process); `"is_a_part_of"` follows is a and part of only, the relations the
+#'   GO Consortium calls safe for grouping annotations; `"none"` uses the direct annotations only (the sets before
+#'   KIT-173). On a propagating value the three aspect roots are not tested, so proteins annotated only to them leave
+#'   the background, and the GO release is that of the installed GO.db. Not used on the g:Profiler route.
 #'
 #' @return S4 EnrichmentResults object containing enrichment data and summaries. Its plot slots are left empty: the
 #'   plots are written to `pathway_dir` and rebuilt from the enrichment data when shown.
@@ -42,7 +69,8 @@ processEnrichments <- function(da_results,
                                exclude_iea = FALSE,
                                protein_id_column = "Protein.IDs",
                                contrast_names = NULL,
-                               correction_method = "gSCS") {
+                               correction_method = "gSCS",
+                               go_propagation = goPropagationShipped) {
 
   message("--- RUNNING processEnrichments VERSION [Timestamp: ", Sys.time(), "] ---")
 
@@ -346,44 +374,17 @@ processEnrichments <- function(da_results,
     }
 
     message(sprintf("Using custom GO annotations for taxon ID %s", taxon_id))
+    checkGoPropagation(go_propagation) # KIT-173
+    if (isTRUE(exclude_iea)) {
+      cli::cli_warn(paste("Electronic annotations cannot be excluded for this organism: the UniProt annotations used",
+        "here carry no evidence codes. They are included."), class = "multischolar_enrichment_iea_not_excludable")
+    }
 
-    # Prepare GO term mappings
-    bp_terms <- go_annotations |>
-      dplyr::filter(!is.na(.data$go_id_go_biological_process)) |>
-      tidyr::separate_rows(.data$go_id_go_biological_process, sep = "; ") |>
-      dplyr::select(.data$Entry, .data$go_id_go_biological_process) |>
-      dplyr::rename(TERM = .data$go_id_go_biological_process)
-
-    mf_terms <- go_annotations |>
-      dplyr::filter(!is.na(.data$go_id_go_molecular_function)) |>
-      tidyr::separate_rows(.data$go_id_go_molecular_function, sep = "; ") |>
-      dplyr::select(.data$Entry, .data$go_id_go_molecular_function) |>
-      dplyr::rename(TERM = .data$go_id_go_molecular_function)
-
-    cc_terms <- go_annotations |>
-      dplyr::filter(!is.na(.data$go_id_go_cellular_compartment)) |>
-      tidyr::separate_rows(.data$go_id_go_cellular_compartment, sep = "; ") |>
-      dplyr::select(.data$Entry, .data$go_id_go_cellular_compartment) |>
-      dplyr::rename(TERM = .data$go_id_go_cellular_compartment)
-
-    # Combine all terms
-    all_terms <- rbind(
-      cbind(bp_terms, ONTOLOGY = "BP"),
-      cbind(mf_terms, ONTOLOGY = "MF"),
-      cbind(cc_terms, ONTOLOGY = "CC")
-    )
-
-    # Create term mappings with explicit dplyr namespace
-    term2gene <- all_terms |>
-      dplyr::select(.data$TERM, .data$Entry) |>
-      dplyr::distinct()
-
-    term2name <- data.frame(
-      TERM = unique(all_terms$TERM),
-      NAME = purrr::map_chr(unique(all_terms$TERM),
-                            ~tryCatch(AnnotationDbi::Term(GO.db::GOTERM[[.x]]),
-                                      error = function(e) .x))
-    )
+    # Prepare GO term mappings (KIT-173: with parent terms unless `go_propagation` is "none")
+    gene_sets <- buildUniprotGoGeneSets(go_annotations, go_propagation)
+    all_terms <- gene_sets$all_terms
+    term2gene <- gene_sets$term2gene
+    term2name <- gene_sets$term2name
 
     # Get the internal long names (only used initially if short names aren't provided or needed for mapping)
     internal_contrast_names <- names(da_results@da_data)
@@ -439,14 +440,14 @@ processEnrichments <- function(da_results,
         # Perform enrichment for up-regulated genes
         up_enrich <- tryCatch({
           if(length(up_genes) > 0) {
-            clusterProfiler::enricher(
+            sortEnrichmentGeneIds(clusterProfiler::enricher(
               gene = up_genes,
               universe = background_IDs,
               TERM2GENE = term2gene,
               TERM2NAME = term2name,
               pvalueCutoff = q_cutoff,
               pAdjustMethod = "BH"
-            )
+            )) # KIT-173 (VAL-61): geneID order fixed
           } else NULL
         }, error = function(e) {
           warning(sprintf("Error processing up-regulated genes: %s", e$message))
@@ -456,14 +457,14 @@ processEnrichments <- function(da_results,
         # Perform enrichment for down-regulated genes
         down_enrich <- tryCatch({
           if(length(down_genes) > 0) {
-            clusterProfiler::enricher(
+            sortEnrichmentGeneIds(clusterProfiler::enricher(
               gene = down_genes,
               universe = background_IDs,
               TERM2GENE = term2gene,
               TERM2NAME = term2name,
               pvalueCutoff = q_cutoff,
               pAdjustMethod = "BH"
-            )
+            )) # KIT-173 (VAL-61): geneID order fixed
           } else NULL
         }, error = function(e) {
           warning(sprintf("Error processing down-regulated genes: %s", e$message))
@@ -484,8 +485,11 @@ processEnrichments <- function(da_results,
     }
     # Now enrichment_results@enrichment_data uses SHORT names
 
-    # Create GO term mappings once (moved outside the plotting function)
-    go_term_map <- dplyr::bind_rows(
+    # Create GO term mappings once (moved outside the plotting function). KIT-173: with parent terms, the names come
+    # from the gene sets' GO.db lookup, which covers every tested term.
+    go_term_map <- if (!identical(go_propagation, "none")) {
+      data.frame(ID = term2name$TERM, term = term2name$NAME, stringsAsFactors = FALSE)
+    } else dplyr::bind_rows(
       go_annotations |>
         tidyr::separate_rows(.data$go_id_go_biological_process, .data$go_term_go_biological_process, sep = "; ") |>
         dplyr::select(.data$go_id_go_biological_process, .data$go_term_go_biological_process) |>

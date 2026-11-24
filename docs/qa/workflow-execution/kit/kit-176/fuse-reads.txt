@@ -1,0 +1,79 @@
+# npx --no-install electron-fuses read --app <installed binary> (lock's @electron/fuses 1.8.0), printed after the lifecycle passes
+
+## R1 base, run 45112185913, ubuntu-22.04
+Analyzing app: multischolar
+Fuse Version: v1
+  RunAsNode is Enabled
+  EnableCookieEncryption is Disabled
+  EnableNodeOptionsEnvironmentVariable is Enabled
+  EnableNodeCliInspectArguments is Enabled
+  EnableEmbeddedAsarIntegrityValidation is Disabled
+  OnlyLoadAppFromAsar is Disabled
+  LoadBrowserProcessSpecificV8Snapshot is Disabled
+  GrantFileProtocolExtraPrivileges is Enabled
+  undefined is Enabled
+
+## R1 base, run 45112185913, ubuntu-24.04
+Analyzing app: multischolar
+Fuse Version: v1
+  RunAsNode is Enabled
+  EnableCookieEncryption is Disabled
+  EnableNodeOptionsEnvironmentVariable is Enabled
+  EnableNodeCliInspectArguments is Enabled
+  EnableEmbeddedAsarIntegrityValidation is Disabled
+  OnlyLoadAppFromAsar is Disabled
+  LoadBrowserProcessSpecificV8Snapshot is Disabled
+  GrantFileProtocolExtraPrivileges is Enabled
+  undefined is Enabled
+
+## R1 base, run 45112185913, windows-2025
+Analyzing app: MultiScholaR.exe
+Fuse Version: v1
+  RunAsNode is Enabled
+  EnableCookieEncryption is Disabled
+  EnableNodeOptionsEnvironmentVariable is Enabled
+  EnableNodeCliInspectArguments is Enabled
+  EnableEmbeddedAsarIntegrityValidation is Disabled
+  OnlyLoadAppFromAsar is Disabled
+  LoadBrowserProcessSpecificV8Snapshot is Disabled
+  GrantFileProtocolExtraPrivileges is Enabled
+  undefined is Enabled
+
+## R2 head, run 45112365197, ubuntu-22.04
+Analyzing app: multischolar
+Fuse Version: v1
+  RunAsNode is Disabled
+  EnableCookieEncryption is Disabled
+  EnableNodeOptionsEnvironmentVariable is Enabled
+  EnableNodeCliInspectArguments is Enabled
+  EnableEmbeddedAsarIntegrityValidation is Disabled
+  OnlyLoadAppFromAsar is Disabled
+  LoadBrowserProcessSpecificV8Snapshot is Disabled
+  GrantFileProtocolExtraPrivileges is Enabled
+  undefined is Enabled
+
+## R2 head, run 45112365197, ubuntu-24.04
+Analyzing app: multischolar
+Fuse Version: v1
+  RunAsNode is Disabled
+  EnableCookieEncryption is Disabled
+  EnableNodeOptionsEnvironmentVariable is Enabled
+  EnableNodeCliInspectArguments is Enabled
+  EnableEmbeddedAsarIntegrityValidation is Disabled
+  OnlyLoadAppFromAsar is Disabled
+  LoadBrowserProcessSpecificV8Snapshot is Disabled
+  GrantFileProtocolExtraPrivileges is Enabled
+  undefined is Enabled
+
+## R2 head, run 45112365197, windows-2025
+Analyzing app: MultiScholaR.exe
+Fuse Version: v1
+  RunAsNode is Disabled
+  EnableCookieEncryption is Disabled
+  EnableNodeOptionsEnvironmentVariable is Enabled
+  EnableNodeCliInspectArguments is Enabled
+  EnableEmbeddedAsarIntegrityValidation is Disabled
+  OnlyLoadAppFromAsar is Disabled
+  LoadBrowserProcessSpecificV8Snapshot is Disabled
+  GrantFileProtocolExtraPrivileges is Enabled
+  undefined is Enabled

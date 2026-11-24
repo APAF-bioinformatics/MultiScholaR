@@ -96,6 +96,8 @@ runOmicNormServer <- function(input, output, session, id, workflowData, experime
         return(invisible(normData))
     }
     registerOmicNormLogOutput(output, omicNormLogRenderer(normData))
+    # KIT-172: the sentence of a project whose record used a log2 offset.
+    if ("log2" %in% panels) output$log2_recorded_offset <- omicNormRecordedOffsetUi(workflowData, normData, config$binding$binding$prefix)
     if ("itsd" %in% tabs) output$itsd_selection_ui <- omicNormItsdSelectionUi(normData, session$ns)
     registerOmicNormRuvQcOutput(output, omicNormRuvQcUiRenderer(normData, session$ns))
     registerOmicNormStageGrid(output, normData, experimentPaths, norm, norm$qc_dir %||% config$binding$binding$qc_dir_role)
@@ -262,10 +264,13 @@ runOmicNormPreQc <- function(workflowData, experimentPaths, normData, addLog, ge
 #' @param itsdFeatureIds The manual ITSD selection's feature ids (managed: from the candidates; in process: NULL, D8).
 #' @param ruvDesign KIT-129 fourth pass item 2: the RUV design section's choice (`omicNormRuvDesignChoice`); NULL (the
 #'   gate off) or a legacy design keeps today's settings.
+#' @param logOffset KIT-172: the log2 offset when no input supplies one (the tab no longer renders the field): the
+#'   configuration's, 0 (plain log2). A supplied `log_offset` input (a test, a replayed setting) is passed through.
 #' @noRd
-omicNormRunSettings <- function(input, aesthetics, normData, experimentPaths, binding, itsdFeatureIds = NULL, ruvDesign = NULL) {
+omicNormRunSettings <- function(input, aesthetics, normData, experimentPaths, binding, itsdFeatureIds = NULL, ruvDesign = NULL,
+    logOffset = 0) {
     settings <- list(apply_itsd = input$apply_itsd, itsd_aggregation = input$itsd_aggregation, itsd_feature_ids = itsdFeatureIds,
-        log_offset = input$log_offset, norm_method = input$norm_method, ruv_mode = input$ruv_mode,
+        log_offset = input$log_offset %||% logOffset, norm_method = input$norm_method, ruv_mode = input$ruv_mode,
         ruv_parameters = list(ruv_mode = input$ruv_mode, percentage_min = input$auto_percentage_min,
             percentage_max = input$auto_percentage_max, ruv_grouping_variable = input$ruv_grouping_variable,
             separation_metric = input$separation_metric, k_penalty_weight = input$k_penalty_weight,
@@ -273,6 +278,32 @@ omicNormRunSettings <- function(input, aesthetics, normData, experimentPaths, bi
         grouping_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var, assay_names = normData$assay_names,
         qc_dir = experimentPaths[[binding$qc_dir_role]])
     omicNormApplyRuvDesign(settings, ruvDesign, input$ruv_grouping_variable)
+}
+
+#' The log2 offset the project's record used (KIT-172): the declared parameter of the latest `<prefix>_log2` step in the
+#' state history, or NULL when the project has none (or no session owner).
+#' @noRd
+omicNormRecordedLog2Offset <- function(manager, prefix) {
+    snapshot <- tryCatch(manager$.context$snapshot, error = function(e) NULL)
+    if (is.null(snapshot)) return(NULL)
+    for (state in rev(as.character(unlist(snapshot$state_history)))) {
+        provenance <- snapshot$step_provenance[[state]]
+        if (identical(provenance$operation, paste0(prefix, "_log2"))) return(provenance$values$offset)
+    }
+    NULL
+}
+
+#' The recorded-offset sentence's renderer (KIT-172): the sentence when the project's record used a log2 offset above 0,
+#' else nothing. It is read again when the tab runs its log step or the project's tab status changes (a project opened).
+#' @noRd
+omicNormRecordedOffsetUi <- function(workflowData, normData, prefix) {
+    shiny::renderUI({
+        normData$post_log2_obj
+        workflowData$tab_status
+        offset <- omicNormRecordedLog2Offset(workflowData$state_manager, prefix)
+        if (!is.numeric(offset) || length(offset) != 1L || is.na(offset) || offset <= 0) return(NULL)
+        shiny::helpText(sprintf(omicGuiLog2Texts()[["recorded_offset"]], format(offset)))
+    })
 }
 
 #' The new design's RUV request of lipidomics and metabolomics (KIT-129 fourth pass item 2): the RUV step runs (its mode
@@ -326,7 +357,8 @@ runOmicNormPipeline <- function(input, workflowData, experimentPaths, normData, 
         aesthetics <- getPlotAesthetics()
         normData$post_filter_obj <- getWorkflowStateReference(manager)
         itsd_feature_ids <- if (isTRUE(input$apply_itsd)) omicsManualItsdFeatureIds(normData$itsd_selections, normData$itsd_candidate_ids, addLog)
-        settings <- omicNormRunSettings(input, aesthetics, normData, experimentPaths, binding, itsd_feature_ids, ruv_design$choice)
+        settings <- omicNormRunSettings(input, aesthetics, normData, experimentPaths, binding, itsd_feature_ids, ruv_design$choice,
+            logOffset = config$norm$panels$log2$offset %||% 0)
         return(config$norm$run$managed(binding, runner, manager, settings, normData, workflowData$config_list, addLog,
             finish = finish, failed = function(error) {
                 addLog(paste("ERROR:", conditionMessage(error)))
@@ -336,8 +368,8 @@ runOmicNormPipeline <- function(input, workflowData, experimentPaths, normData, 
                 if (omicGuiRuvDesignEnabled()) shiny::showNotification(paste("Error:", conditionMessage(error)), type = "error")
             }))
     }
-    settings <- c(omicNormRunSettings(input, getPlotAesthetics(), normData, experimentPaths, binding, ruvDesign = ruv_design$choice),
-        list(experiment_paths = experimentPaths))
+    settings <- c(omicNormRunSettings(input, getPlotAesthetics(), normData, experimentPaths, binding, ruvDesign = ruv_design$choice,
+        logOffset = config$norm$panels$log2$offset %||% 0), list(experiment_paths = experimentPaths))
     shiny::withProgress(message = "Running normalization pipeline...", value = 0, {
         config$norm$run$in_process(binding, manager, settings, normData, workflowData$config_list, addLog,
             advance = function(detail) shiny::incProgress(1 / 6, detail = detail),

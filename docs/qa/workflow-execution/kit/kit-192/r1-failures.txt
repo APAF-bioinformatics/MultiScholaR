@@ -1,0 +1,204 @@
+file: test-trx-da-without-ruv.R
+test: KIT-192 T1: design none, in process: the DA export completes and writes no grid summary
+kind: failure
+message:
+  Expected `trxExportTail(out)` to be identical to `trxExportInProcessTail`.
+  Differences:
+  actual vs expected
+    "[default] Running differential expression analysis..."
+    "[message] Differential expression analysis complete!"
+  - "[warning] Warning: Could not save results to disk: non-numeric argument to mathematical function"
+  + "[message] DA results saved to disk (tables, volcano plots, heatmaps)"
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T1: design none, in process: the DA export completes and writes no grid summary
+kind: failure
+message:
+  Expected `any(grepl("Could not save results to disk", shown, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Normalization complete! Proceeding to DE analysis. || Running differential expression analysis... || Differential expression analysis complete! || Warning: Could not save results to disk: non-numeric argument to mathematical function
+trace (first lines):
+      ▆
+   1. └─trxExportExpectNoSaveWarning(out) at test-trx-da-without-ruv.R:271:5
+   2.   └─testthat::expect_false(...) at test-trx-da-without-ruv.R:238:5
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T2: design none, managed: the worker's DA export completes and writes no grid summary
+kind: failure
+message:
+  Expected `trxExportSaved %in% trxNoRuvNotes(worker, "message")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  [default] Applying transcriptomics step ... || [message] Differential expression analysis complete! || [warning] Warning: Could not save results to disk: non-numeric argument to mathematical function
+trace (first lines):
+      ▆
+   1. └─trxExportExpectManaged(worker, probe, managed$paths) at test-trx-da-without-ruv.R:283:5
+   2.   └─testthat::expect_true(...) at test-trx-da-without-ruv.R:257:5
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T2: design none, managed: the worker's DA export completes and writes no grid summary
+kind: failure
+message:
+  Expected `any(grepl("Could not save results to disk", shown, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Normalization complete! Proceeding to DE analysis. || Running differential expression analysis... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Differential expression analysis complete! || Warning: Could not save results to disk: non-numeric argument to mathematical function
+trace (first lines):
+      ▆
+   1. └─trxExportExpectManaged(worker, probe, managed$paths) at test-trx-da-without-ruv.R:283:5
+   2.   └─trxExportExpectNoSaveWarning(worker) at test-trx-da-without-ruv.R:259:5
+   3.     └─testthat::expect_false(...) at test-trx-da-without-ruv.R:238:5
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T3: a declared design whose estimated k is 0, in process: the DA export completes
+kind: failure
+message:
+  Expected `trxExportTail(out)` to be identical to `trxExportInProcessTail`.
+  Differences:
+  actual vs expected
+    "[default] Running differential expression analysis..."
+    "[message] Differential expression analysis complete!"
+  - "[warning] Warning: Could not save results to disk: non-numeric argument to mathematical function"
+  + "[message] DA results saved to disk (tables, volcano plots, heatmaps)"
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T3: a declared design whose estimated k is 0, in process: the DA export completes
+kind: failure
+message:
+  Expected `any(grepl("Could not save results to disk", shown, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Normalization complete! Proceeding to DE analysis. || Running differential expression analysis... || Differential expression analysis complete! || Warning: Could not save results to disk: non-numeric argument to mathematical function
+trace (first lines):
+      ▆
+   1. └─trxExportExpectNoSaveWarning(out) at test-trx-da-without-ruv.R:303:5
+   2.   └─testthat::expect_false(...) at test-trx-da-without-ruv.R:238:5
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T4: a declared design with two factors, in process and managed: the DA export completes
+kind: failure
+message:
+  Expected `trxExportTail(out)` to be identical to `trxExportInProcessTail`.
+  Differences:
+  actual vs expected
+    "[default] Running differential expression analysis..."
+    "[message] Differential expression analysis complete!"
+  - "[warning] Warning: Could not save results to disk: non-numeric argument to mathematical function"
+  + "[message] DA results saved to disk (tables, volcano plots, heatmaps)"
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T4: a declared design with two factors, in process and managed: the DA export completes
+kind: failure
+message:
+  Expected `any(grepl("Could not save results to disk", shown, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Normalization complete! Proceeding to DE analysis. || Running differential expression analysis... || Differential expression analysis complete! || Warning: Could not save results to disk: non-numeric argument to mathematical function
+trace (first lines):
+      ▆
+   1. └─trxExportExpectNoSaveWarning(out) at test-trx-da-without-ruv.R:322:5
+   2.   └─testthat::expect_false(...) at test-trx-da-without-ruv.R:238:5
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T4: a declared design with two factors, in process and managed: the DA export completes
+kind: failure
+message:
+  Expected `trxExportSaved %in% trxNoRuvNotes(worker, "message")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  [default] Applying transcriptomics step ... || [message] Differential expression analysis complete! || [warning] Warning: Could not save results to disk: non-numeric argument to mathematical function
+trace (first lines):
+      ▆
+   1. └─trxExportExpectManaged(worker, probe, managed$paths) at test-trx-da-without-ruv.R:330:5
+   2.   └─testthat::expect_true(...) at test-trx-da-without-ruv.R:257:5
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T4: a declared design with two factors, in process and managed: the DA export completes
+kind: failure
+message:
+  Expected `any(grepl("Could not save results to disk", shown, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Normalization complete! Proceeding to DE analysis. || Running differential expression analysis... || Applying transcriptomics step ... || Applying transcriptomics step ... || Applying transcriptomics step ... || Differential expression analysis complete! || Warning: Could not save results to disk: non-numeric argument to mathematical function
+trace (first lines):
+      ▆
+   1. └─trxExportExpectManaged(worker, probe, managed$paths) at test-trx-da-without-ruv.R:330:5
+   2.   └─trxExportExpectNoSaveWarning(worker) at test-trx-da-without-ruv.R:259:5
+   3.     └─testthat::expect_false(...) at test-trx-da-without-ruv.R:238:5
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T6: a scripted call of the DA publication on a none run returns saved = TRUE
+kind: failure
+message:
+  Expected `isTRUE(display$saved)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T6: a scripted call of the DA publication on a none run returns saved = TRUE
+kind: failure
+message:
+  Expected `display$message` to be NULL.
+  Differences:
+  `actual` is a character vector ('non-numeric argument to mathematical function')
+  `expected` is NULL
+
+file: test-trx-da-without-ruv.R
+test: KIT-192 T6: a scripted call of the DA publication on a none run returns saved = TRUE
+kind: failure
+message:
+  Expected `isTRUE(trxDaExport(display)$success)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-module-ci-trx-summary.R
+test: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report
+kind: failure
+message:
+  Expected `trxDeclSha(products[[name]])` to be identical to `prints$sha256[prints$product == name]`.
+  Differences:
+  `actual`:   "1c02bfdd2b6e93ee7a2d9b03e7c037da24d8cbc04fbbb82bb3002a00392fbfb8"
+  `expected`: "a1f43e2db82b39ad738e2308d8483abd5c9e406da7a7bbfb38d3049bbd03093e"
+  
+  trx_edge_12 the summary tab's RUVIII export ruviii_newY
+trace (first lines):
+      ▆
+   1. └─expectTrxDeclProducts(...) at test-module-ci-trx-summary.R:52:3
+   2.   └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:67:5
+
+file: test-module-ci-trx-summary.R
+test: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report
+kind: failure
+message:
+  Expected `digest::digest(file = tsv, algo = "sha256")` to be identical to `stable$sha256[stable$path == "results/transcriptomics/transcriptomics_normalized_data.tsv"]`.
+  Differences:
+  `actual`:   "be38d28699cfc9c3be07755b999b07ba41ab17facb0c3d225b887e806f4f7272"
+  `expected`: "a704598297e348d2c05c8741a043e92223c1d5eb625d0cf54a7b685fd7be636c"
+
+file: test-module-ci-trx-summary.R
+test: KIT-192 T7b the report of a declared design whose k is 0 names the approach, the rule, the seed and the reason
+kind: error
+message:
+  Error in `regexpr("No correction for unwanted variation.{0,1200}", text)`: invalid regular expression, reason 'Invalid contents of {}'
+trace (first lines):
+      ▆
+   1. ├─base::regmatches(...) at test-module-ci-trx-summary.R:188:3
+   2. └─base::regexpr(...)
+

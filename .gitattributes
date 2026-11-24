@@ -5,3 +5,4 @@ docs/qa/workflow-execution/kit/kit-167/references-authors/** -text
 tests/testdata/**/*.rds filter=lfs diff=lfs merge=lfs -text
 *.rds filter=lfs diff=lfs merge=lfs -text
 tests/testdata/integration/** -text
+packaging/package-commit.sh text eol=lf

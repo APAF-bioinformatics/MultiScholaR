@@ -208,6 +208,20 @@ page. Without a key STRING is skipped. KEGG and Reactome need the column of a me
 table that holds KEGG compound or ChEBI identifiers: name it in `enrichment_id_columns`, for example
 `list(metabolomics_LCMS_Pos = "kegg_id")`; the pathway tables are then downloaded with their release recorded.
 
+KEGG and Reactome pathways are tested by default with the correlation-adjusted test (`test = "camera"`): each
+feature's values are regressed on the factor, and a pathway is called when its features follow the factor more
+closely than the other features, allowing for how strongly the pathway's features vary together, as measured in these
+data (limma camera). Only features measured in every biological sample are used. The pre-ranked test used before
+(GSEA on each feature's correlation, which treats features as independent and so gives p-values that are too small
+for pathways whose features vary together) stays available: `enrichment_overrides <- list(test = "gsea")`. Two more
+tests can be chosen: the correlation-adjusted test with negative correlations counted as zero (`test =
+"camera_floor"`; it never calls a pathway the default test does not call), and a permutation test of the factor's
+values (PCGSE; `enrichment_overrides <- list(test = "permutation", seed = 1L)`, with `permutations = 10000L` for
+smaller attainable p-values; the run starts with a message giving its predicted time). The Enrichment tab and the
+record show how each test behaved in a check on simulated data of the same kind (no lipid data were simulated). The
+factor was learned from these same data, which none of the tests allows for: read the results as a list of pathways
+worth a closer look, not as proof.
+
 ```{r wb-enrichment}
 enrichment_overrides <- list()
 enrichment_id_columns <- list()

@@ -33,10 +33,18 @@ getUniprotAnnotations(
 \item{progress_callback}{Runtime inputs used by this function; see the usage section for accepted values.}
 }
 \value{
-A data frame containing UniProt annotations and GO terms
+A data frame containing UniProt annotations and GO terms. A table built here carries the attribute
+\code{go_ids_not_in_go_db}: the GO ids of the download that the installed GO.db does not hold (and that the table
+therefore omits), counted by class (obsolete, secondary, unknown), with up to 20 examples and the GO.db release.
 }
 \description{
 Downloads protein information from UniProt for a list of protein IDs,
 processes the results including Gene Ontology annotations, and caches
 the result for future use.
+}
+\details{
+A cache file with zero rows, or one that cannot be read, is not used: it is removed and the query runs. An empty
+or incomplete answer (the conditions of \code{directUniprotDownload}, which pass through) is never written to the
+cache. An error in the processing of the answer or in the cache write is recorded once and re-raised with the
+class \code{prot_annotation_uniprot_recorded} added (field \code{reason = "processing_failed"}).
 }

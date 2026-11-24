@@ -460,7 +460,8 @@ workflowOperationDefaults <- local({
         enrichment = list(taxon_id = "input", up_cutoff = "no_shipped_default", down_cutoff = "no_shipped_default", q_cutoff = "no_shipped_default",
             exclude_iea = "no_shipped_default", correction_method = "no_shipped_default", protein_id_column = "input",
             contrast_names = "input", results = "input",
-            organism_filter_enabled = "no_shipped_default", organism_filter_taxon = "input"), # GUI audit R3, P-28
+            organism_filter_enabled = "no_shipped_default", organism_filter_taxon = "input", # GUI audit R3, P-28
+            go_propagation = "no_shipped_default"), # KIT-173
         # KIT-031: the lipidomics declarations. `config.ini` ships no lipid filter section (the module's defaults
         # apply); the between-sample method, the RUV grouping/k and the DA settings share the proteomics keys.
         lipid_intensity_filter = list(lipids_intensity_cutoff_percentile = "no_shipped_default",
@@ -583,7 +584,8 @@ workflowParameterLabels <- local({
             q_cutoff = "Enrichment q-value threshold", exclude_iea = "Exclude electronic GO annotations",
             correction_method = "Multiple-testing correction", protein_id_column = "Protein id column (input)",
             contrast_names = "Contrasts (input)", results = "Differential results (input)",
-            organism_filter_enabled = "Organism filter enabled", organism_filter_taxon = "Organism filter target taxon"),
+            organism_filter_enabled = "Organism filter enabled", organism_filter_taxon = "Organism filter target taxon",
+            go_propagation = "Gene Ontology sets include parent terms (relations followed)"), # KIT-173
         # KIT-031: the lipidomics declarations.
         lipid_intensity_filter = list(lipids_intensity_cutoff_percentile = "Intensity cutoff percentile (per assay)",
             lipids_proportion_of_samples_below_cutoff = "Maximum proportion of samples below the cutoff"),
@@ -591,7 +593,7 @@ workflowParameterLabels <- local({
         lipid_qc_finalize = list(), lipid_norm_complete = list(), lipid_reset = list(),
         lipid_itsd_normalisation = list(itsd_aggregation = "Internal-standard aggregation (sum, mean or median)",
             itsd_feature_ids = "Internal-standard features selected per assay (input)"),
-        lipid_log2 = list(offset = "Log2 offset"),
+        lipid_log2 = list(offset = "Log2 offset (0 = plain log2)"),
         lipid_between_sample_normalisation = list(normalisation_method = "Between-sample normalisation method"),
         lipid_ruv = list(ruv_mode = "RUV-III mode (automatic or manual)", ruv_grouping_variable = "RUV grouping variable",
             percentage_min = "Negative-control percentage sweep, minimum", percentage_max = "Negative-control percentage sweep, maximum",
@@ -612,7 +614,7 @@ workflowParameterLabels <- local({
         metab_qc_finalize = list(), metab_norm_complete = list(), metab_reset = list(),
         metab_itsd_normalisation = list(itsd_aggregation = "Internal-standard aggregation (sum, mean or median)",
             itsd_feature_ids = "Internal-standard features selected per assay (input)"),
-        metab_log2 = list(offset = "Log2 offset"),
+        metab_log2 = list(offset = "Log2 offset (0 = plain log2)"),
         metab_between_sample_normalisation = list(normalisation_method = "Between-sample normalisation method"),
         metab_ruv = list(ruv_mode = "RUV-III mode (automatic or manual)", ruv_grouping_variable = "RUV grouping variable",
             percentage_min = "Negative-control percentage sweep, minimum", percentage_max = "Negative-control percentage sweep, maximum",
