@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-205 R3: full suite on the merge of kit-205-enrichment-background b7bd3af8 with v0.9-staging 91e3cdcb (head) against staging (base); merge checkpoint; decides A6 and the section 11 rows (ceiling 2,800 job-min)",
+  "label": "KIT-205 R3 full suite merge e1b88862 vs staging 91e3cdcb",
+  "package_commit": "e1b88862aff65674f839f6a96c030fc12aa41318",
+  "base_commit": "91e3cdcb5e3a6fa34712a1575ecbfb855ed02cf2",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
