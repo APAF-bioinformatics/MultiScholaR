@@ -194,3 +194,10 @@ no other missing-value change); later tables of the same shape and identifiers, 
 written under C collation by `guiEntryExpectLane`) are committed to `tests/testdata/gui-entry/` (SHA-256 prefixes
 `prot_tmt` f35ae4853f91, `prot_lfq` 95553da3647a, `prot_lfq_fragpipe` dd1ed8e188d7, equal to the artifact's). Chain:
 this record follows KIT-180's (`kit-180/gui-entry-control.tsv`).
+
+## R3 declared (full suite, base against head, with check)
+
+Binding: head c06568f3 (the fix and the re-frozen files) against base 55710a87, `tests` all, 20 shards per side,
+`sva` on both, `check` true, `test-gui-entry-proteomics.R` 120 minutes. Expected 62.3 core-hours, ceiling 72. Decides
+A3: every difference is a new test, a contract rewrite named in section 6, the re-frozen GUI-entry references (expected
+`fixed` on the three lanes), or a TMT/LFQ stored reference listed for the re-record with its size; check findings equal.
