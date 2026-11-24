@@ -9,18 +9,122 @@ G1D_LIMPA_DIGEST_PREFIX <- "8a4c2dd5"
 
 #' G1(a)'s classes, with `limpa_da_last_digits` only through an explicit admission
 #'
-#' @param admit `NULL`, or `list(ruling, digest)`: the ruling that admits the class (KIT-199's
-#'   merge) and the measured masked digest, which must begin with G1D's `8a4c2dd5`.
+#' D19 (VAL-109): the class is admitted only once KIT-199 (the re-freeze of the DIA-with-limpa
+#' reference) has merged into the commit under test. The admission names that merge commit; it
+#' must be an ancestor of (or equal to) `HEAD` of `pkg_root` and its subject must begin
+#' `Merge KIT-199`, so a ruling's text alone admits nothing.
+#'
+#' @param admit `NULL`, or `list(ruling, digest, merge_commit, pkg_root)`: the ruling, the measured
+#'   masked digest (beginning with G1D's `8a4c2dd5`), KIT-199's merge commit and the checkout.
 #' @return The admitted classes.
 #' @noRd
 valG1aClasses <- function(admit = NULL) {
     if (is.null(admit)) return(G1A_CLASSES)
-    if (!nzchar(admit[["ruling"]] %||% "") ||
-            !startsWith(admit[["digest"]] %||% "", G1D_LIMPA_DIGEST_PREFIX)) {
-        valAbort("limpa_da_last_digits is admitted only with its ruling and G1D's digest",
+    refuse <- function(why) {
+        valAbort(paste("limpa_da_last_digits is not admitted:", why, "(D19, VAL-109)"),
                  "val_spec_invalid")
     }
+    if (!nzchar(admit[["ruling"]] %||% "")) refuse("no ruling")
+    if (!startsWith(admit[["digest"]] %||% "", G1D_LIMPA_DIGEST_PREFIX)) {
+        refuse("the digest is not G1D's 8a4c2dd5")
+    }
+    commit <- admit[["merge_commit"]] %||% ""
+    root <- admit[["pkg_root"]] %||% ""
+    if (!nzchar(commit) || !nzchar(root) || !dir.exists(root)) {
+        refuse("KIT-199's merge commit and the checkout are not named")
+    }
+    git <- function(...) {
+        suppressWarnings(system2("git", c("-C", shQuote(root), ...), stdout = TRUE,
+                                 stderr = FALSE))
+    }
+    subject <- git("log", "-1", "--format=%s", shQuote(commit))
+    if (!identical(attr(subject, "status"), NULL) || length(subject) != 1L ||
+            !startsWith(subject, "Merge KIT-199")) {
+        refuse("the named commit is not KIT-199's merge")
+    }
+    anc <- suppressWarnings(system2("git", c("-C", shQuote(root), "merge-base", "--is-ancestor",
+                                             shQuote(commit), "HEAD"), stdout = FALSE,
+                                    stderr = FALSE))
+    if (!identical(as.integer(anc), 0L)) refuse("KIT-199's merge is not in the commit under test")
     c(G1A_CLASSES, "limpa_da_last_digits")
+}
+
+G1A_LIMPA_ARTIFACT <- "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
+
+#' The lane-range classes of G1(a): lanes and the step each class starts at
+#' @noRd
+G1A_LANE_RANGES <- list(
+    kit128_technical_replicates = list(lanes = "trx_screen", from = "design"),
+    metab_fixture_4 = list(lanes = c("metab_lc", "metab_gc", "metab_combined"), from = "norm"),
+    limpa_da_last_digits = list(lanes = "prot_dia_limpa", from = "da")
+)
+
+#' Class G1(a)'s live differences by the bounds of its pass column (audit I15)
+#'
+#' One row per difference of a lane's live capture from its oracle: `lane`, `step`, `field`
+#' (`artifacts`, `states`, `outputs`, `store_entries`, ...), `key`, `base` and `live` (digests or
+#' counts; `NA` where the key is on one side only). Per step: a lane-range class takes the whole
+#' step (`kit128_technical_replicates` on `trx_screen` from `design` on, `metab_fixture_4` on the three
+#' metabolomics lanes from `norm` on, even where integration names also differ, C08);
+#' `limpa_da_last_digits` only when admitted ([valG1aClasses()]), on `prot_dia_limpa` from `da` on,
+#' for the DA artifact alone with a live digest beginning with the admitted digest and no `states`
+#' or `outputs` difference in the step; `integration_artifacts` when every difference of the step is
+#' an `artifacts` key `integration/<omic>/...` present on one side only or a `store_entries` count;
+#' `platform_rounding` only for a key with a committed reference fingerprint whose comparison found
+#' rounding only (`fingerprints`: `lane`, `step`, `key`, `rounding_only`). Anything else is `NA`:
+#' outside the classes, G1(a) stops on it.
+#'
+#' @param diffs The differences.
+#' @param lane_steps Named list: each lane's steps in order.
+#' @param admit The admission of `limpa_da_last_digits`, or `NULL`.
+#' @param fingerprints Committed reference fingerprints, or `NULL` (an oracle has none).
+#' @return `diffs` with `class` (and `digest`, the live value, for the chain reader).
+#' @export
+valClassifyLiveDiffs <- function(diffs, lane_steps, admit = NULL, fingerprints = NULL) {
+    classes <- valG1aClasses(admit)
+    unknown <- setdiff(unique(diffs$lane), names(lane_steps))
+    if (length(unknown)) {
+        valAbort("lanes without a step list: {paste(unknown, collapse = ', ')}",
+                 "val_spec_invalid")
+    }
+    cls <- rep(NA_character_, nrow(diffs))
+    pos <- function(lane, step) match(step, lane_steps[[lane]])
+    for (g in split(seq_len(nrow(diffs)), paste(diffs$lane, diffs$step, sep = "\r"))) {
+        d <- diffs[g, , drop = FALSE]
+        lane <- d$lane[[1L]]
+        at <- pos(lane, d$step[[1L]])
+        if (is.na(at)) next
+        range_class <- NA_character_
+        for (rc in names(G1A_LANE_RANGES)) {
+            r <- G1A_LANE_RANGES[[rc]]
+            if (rc %in% classes && lane %in% r$lanes && at >= pos(lane, r$from)) range_class <- rc
+        }
+        if (identical(range_class, "limpa_da_last_digits")) {
+            live <- ifelse(is.na(d$live), "", d$live)
+            ok <- all(d$field == "artifacts" & d$key == G1A_LIMPA_ARTIFACT) &&
+                all(startsWith(live, admit[["digest"]]))
+            if (ok) cls[g] <- range_class
+            next
+        }
+        if (!is.na(range_class)) {
+            cls[g] <- range_class
+            next
+        }
+        integ <- (d$field == "artifacts" & startsWith(d$key, "integration/") &
+                      (is.na(d$base) | is.na(d$live))) | d$field == "store_entries"
+        if (all(integ)) {
+            cls[g] <- "integration_artifacts"
+            next
+        }
+        if (!is.null(fingerprints) && "platform_rounding" %in% classes) {
+            fp <- fingerprints[fingerprints$lane == lane & fingerprints$step == d$step[[1L]] &
+                                   fingerprints$rounding_only %in% TRUE, , drop = FALSE]
+            if (all(d$key %in% fp$key)) cls[g] <- "platform_rounding"
+        }
+    }
+    diffs$class <- cls
+    diffs$digest <- diffs$live
+    diffs
 }
 
 #' Every difference of the admitted limpa class carries G1D's digest
