@@ -31,8 +31,13 @@ arguments <- commandArgs(trailingOnly = TRUE)
 suppressMessages(pkgload::load_all(arguments[[1L]], quiet = TRUE, export_all = TRUE, helpers = FALSE))
 options(MultiScholaR.reference_mapping = NULL)
 sha <- function(text) digest::digest(paste(text, collapse = "\\n"), algo = "sha256", serialize = FALSE)
-page <- function(expr) tryCatch(as.character(htmltools::renderTags(expr)$html),
-    error = function(e) paste("error:", conditionMessage(e)))
+# Shiny gives each tabset a random id (`data-tabsetid`, `tab-<n>-<m>`; run 45339028522 found mod_prot_enrich_ui
+# different between two renders of the head): those numbers are masked before hashing.
+page <- function(expr) {
+    html <- tryCatch(as.character(htmltools::renderTags(expr)$html), error = function(e) paste("error:", conditionMessage(e)))
+    html <- gsub("data-tabsetid=.[0-9]+.", "data-tabsetid=ID", html)
+    gsub("tab-[0-9]+-", "tab-ID-", html)
+}
 plain <- function(value, functions) {
     if (is.function(value)) return(if (functions) paste(deparse(value), collapse = "\\n") else "<function>")
     if (is.list(value)) return(lapply(value, plain, functions = functions))
