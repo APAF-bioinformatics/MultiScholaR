@@ -1,0 +1,14 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-integration-enrichment-options.R	0	0	0	0	absent	271	0	0	0	ok	only-on-head		
+test-integration-enrichment-tests.R	178	0	0	2	ok	180	0	0	2	ok	count-changed	counts: KIT-183 T15 (KIT-191 D9 (a)): integrationEnrichmentGsea: formals and value as at base, body but the RNG kinds (passed NA -> 4, skipped NA -> 0); counts: KIT-183 T15: integrationEnrichmentGsea is unchanged: formals, body and value as at base (passed 2 -> NA, skipped 0 -> NA)	
+test-integration-gui.R	395	0	0	0	ok	395	0	0	0	ok	same		
+test-integration-record.R	133	0	0	0	ok	133	0	0	0	ok	same		
+test-integration-workbook-api.R	144	0	0	0	ok	144	0	0	0	ok	same		
+test-integration-enrichment.R	349	0	0	0	ok	349	0	0	0	ok	same		
+test-integration-workbook.R	53	0	0	0	ok	53	0	0	0	ok	same		
+test-integration-enrichment-mofa.R	0	0	0	2	ok	0	0	0	2	ok	same		
+test-integration-input-matrix.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-integration-outputs-mofa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-integration-outputs.R	183	0	0	0	ok	183	0	0	0	ok	same		
+test-workflow-analysis-record.R	307	0	0	0	ok	307	0	0	0	ok	same		
+test-multiomics-enrich-shared.R	108	0	0	0	ok	108	0	0	0	ok	same		

@@ -2,6 +2,19 @@
 
 ## MultiScholaR (unreleased; becomes 0.9.1, the first alpha for testing on real data)
 
+### New features
+
+ * Integration enrichment (KEGG and Reactome, for metabolite and lipid data sets): besides the correlation-adjusted
+   test (the default, unchanged) and the pre-ranked test, two more tests can be chosen: the correlation-adjusted test
+   with negative correlations counted as zero, and a permutation test of the factor's values (PCGSE). The tab and every
+   record show how each test behaved in a check on simulated data of the same kind (false calls and power; no lipid
+   data were simulated), so the choice can be made on those figures. With a permutation result, the tab and the
+   record's Methods state the smallest attainable p-value as an exact fraction (for example 1/1,001) and the smallest
+   number of terms that can be called together at a 5 % false discovery rate, or that none can be called when that
+   p-value is above 0.05 (VAL-115). Results of the default test are unchanged. The
+   pre-ranked test now draws its random numbers with R's default generator whatever the session's setting; results in
+   a session with default settings are unchanged (KIT-191).
+
 ### Fixes
 
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
