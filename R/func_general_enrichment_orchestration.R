@@ -257,8 +257,9 @@ processEnrichments <- function(da_results,
     enrichment_results <- createEnrichmentResults(da_results@contrasts)
 
     # Process each contrast
+    # KIT-208: `imap` hands each contrast's `da_data` name to `perform_enrichment` as its label.
     results <- da_results@da_data |>
-      purrr::map(function(de_data) {
+      purrr::imap(function(de_data, contrast_name) {
         tryCatch({
         if(is.null(de_data)) {
           warning("No DE data found for contrast")
@@ -356,7 +357,9 @@ processEnrichments <- function(da_results,
                 custom_bg = custom_bg,
                 exclude_iea = exclude_iea,
                 protein_id_column = protein_col,
-                correction_method = correction_method
+                correction_method = correction_method,
+                contrast = contrast_name,
+                direction = "up"
               )
               
               up_result
@@ -390,7 +393,9 @@ processEnrichments <- function(da_results,
                 custom_bg = custom_bg,
                 exclude_iea = exclude_iea,
                 protein_id_column = protein_col,
-                correction_method = correction_method
+                correction_method = correction_method,
+                contrast = contrast_name,
+                direction = "down"
               )
               
               down_result

@@ -4,6 +4,19 @@
 
 ### New features
 
+ * Reference mapping for individually sequenced strains (KIT-167; the application's panels and enrichment choice are behind the option
+   `MultiScholaR.reference_mapping`, off by default until the tool's validation passes; the two exported functions can
+   be called but are not yet validated): `mapStrainToReference()` maps a
+   strain's proteins to their orthologues in one well-annotated reference of the same species by reciprocal best hits
+   of DIAMOND v2.2.8 searches in both directions (repeat masking off, full extension, 80 % coverage of both sequences,
+   e-value 1e-5, no identity floor by default; every status reported and counted; a strain protein takes a reference
+   accession only when one-to-one). Four UniProt reference proteomes (release 2026_04, CC BY 4.0) ship with the
+   package: E. coli K-12 MG1655, S. aureus NCTC 8325, K. pneumoniae MGH 78578 and S. pyogenes SF370 (STRING
+   unavailable for SF370). `matchStrainGenesToProteins()` matches the strain's genes (locus tags) to its proteins from
+   the GFF3 or GTF annotation without sequence search. Proteomics enrichment can use the orthologues' accessions, with
+   the reference's own GO table, unmapped groups left out of the query lists and the background, and the counts of
+   changed and unchanged features by mapped and unmapped; the integration features gain the mapping columns.
+
  * Integration enrichment (KEGG and Reactome, for metabolite and lipid data sets): besides the correlation-adjusted
    test (the default, unchanged) and the pre-ranked test, two more tests can be chosen: the correlation-adjusted test
    with negative correlations counted as zero, and a permutation test of the factor's values (PCGSE). The tab and every
@@ -188,6 +201,20 @@
    accession, as the design step already did), so an answer holds exactly the requested entries; a protein UniProt
    has merged into another entry (a secondary accession) still gets no annotation. DA tables written before the
    annotation was retrieved keep their blank gene names until the DA is run again. (KIT-175)
+ * Proteomics: when the protein table built in a script already carries gene names and the protein annotation is
+   also present, the differential analysis tables lost every gene name (the two name columns collided); they now take
+   the annotation's name and fall back to the table's own. In such tables a column that both carry is now named
+   `<name>.input` (the table's) and `<name>` (the annotation's), where it was `<name>.x` and `<name>.y`. On the
+   g:Profiler enrichment route, a run in which a comparison has proteins in its up or down list but none of its
+   proteins has a gene name is now refused with a message instead of being saved as a run with no terms. A direction
+   (up or down) whose proteins all lack gene names is no longer sent empty: it is reported as not tested, by a warning
+   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab still shows
+   such a list like a tested list that found no terms, until KIT-215 changes the tab. The analysis record also states,
+   for each comparison, how many of its proteins have no gene name and were therefore left out of the lists and the
+   background (`enrichment_unnamed_proteins`). An analysis record of a run that is now refused, made before this
+   change, no longer replays; it is refused with the same message. The first change does not affect data imported in
+   the application, whose names come from the annotation; the others change only g:Profiler runs in which some
+   protein has no gene name (KIT-208).
 
 ### Scientific changes
 

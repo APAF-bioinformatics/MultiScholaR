@@ -11,7 +11,8 @@ directUniprotDownload(
   batch_size = 25,
   timeout = 600,
   api_delay = 1,
-  progress_callback = NULL
+  progress_callback = NULL,
+  label = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ directUniprotDownload(
 \item{api_delay}{Sleep time in seconds between API calls}
 
 \item{progress_callback}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{label}{NULL, or a text appended to the \code{query_summary} of every analysis-record row written (KIT-167).}
 }
 \value{
 A data frame containing the raw UniProt results

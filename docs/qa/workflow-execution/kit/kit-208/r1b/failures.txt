@@ -1,0 +1,29 @@
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T6: no DA protein has a gene name (case 5); the run is refused before g:Profiler is asked
+kind: failure
+message:
+  Expected `conditionMessage(project$error)` to be identical to `k208Refusal`.
+  Differences:
+  actual vs expected
+  - "g:Profiler tests gene names, and none of the proteins of comparison B_vs_A has one (0 of 70 proteins named), so nothing would be tested. Check that the protein annotation was retrieved for this organism (save the design again). This happens when the annotation was not retrieved for these proteins, or when their identifiers are not UniProt accessions."
+  + "g:Profiler tests gene names, and none of the tested proteins of comparison B_vs_A has one (0 of 70 tested proteins named), so nothing would be tested. Check that the protein annotation was retrieved for this organism (save the design again). This happens when the annotation was not retrieved for these proteins, or when their identifiers are not UniProt accessions."
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T10: the refusal's n counts the tested proteins only
+kind: failure
+message:
+  Expected `conditionMessage(error)` to be identical to `paste(...)`.
+  Differences:
+  actual vs expected
+  - "g:Profiler tests gene names, and none of the proteins of comparison B_vs_A has one (0 of 6 proteins named), so nothing would be tested. Check that the protein annotation was retrieved for this organism (save the design again). This happens when the annotation was not retrieved for these proteins, or when their identifiers are not UniProt accessions."
+  + "g:Profiler tests gene names, and none of the tested proteins of comparison B_vs_A has one (0 of 4 tested proteins named), so nothing would be tested. Check that the protein annotation was retrieved for this organism (save the design again). This happens when the annotation was not retrieved for these proteins, or when their identifiers are not UniProt accessions."
+
+file: test-kit208-gprofiler-identifiers.R
+test: KIT-208 T11: an untested protein without a name is not counted as unnamed
+kind: failure
+message:
+  Expected `workflowEnrichmentUnnamedProteins(da, da@contrasts, "gene_name")` to be identical to "B_vs_A: 1 of 4".
+  Differences:
+  `actual`:   "B_vs_A: 2 of 5"
+  `expected`: "B_vs_A: 1 of 4"
+

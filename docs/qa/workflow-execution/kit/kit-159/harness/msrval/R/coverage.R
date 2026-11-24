@@ -13,7 +13,10 @@ TARGET_SIMS <- 20000L
 #'
 #' @param confirmatory Also the confirmatory cell DI10K (VAL-163 (3)), after T-COV's cells and
 #'   outside T-COV: C4e at g = 5 on 4,840 features with 40 changed at effect scale 1 and C4e's
-#'   `accuracy` and `threshold_count` statistics (family `c4e:4840acc`), with its own index.
+#'   `accuracy` and `threshold_count` statistics (family `c4e:4840acc`), with its own index; and
+#'   after it the confirmatory cell P1K (VAL-176): the rank statistic on one contrast (group C
+#'   against A, 40 positives of 4,840) at the rank cells' effect rule applied to that contrast
+#'   (family `c4e:4840p1`), with its own index.
 #' @return A data frame of cells with a stable `cell` id.
 #' @export
 valCoverageCells <- function(confirmatory = FALSE) {
@@ -59,6 +62,10 @@ valCoverageCells <- function(confirmatory = FALSE) {
     if (isTRUE(confirmatory)) {
         out <- rbind(out, data.frame(regime = "C4e", family = "c4e:4840acc", n = 5L,
                                      condition = "matrix4840acc_block",
+                                     cell = sprintf("C4e-%03d", nrow(out) + 1L),
+                                     stringsAsFactors = FALSE))
+        out <- rbind(out, data.frame(regime = "C4e", family = "c4e:4840p1", n = 5L,
+                                     condition = "matrix4840p1_block",
                                      cell = sprintf("C4e-%03d", nrow(out) + 1L),
                                      stringsAsFactors = FALSE))
     }
@@ -212,8 +219,9 @@ valCovSpec <- function(cell) {
            newcombe_paired = valSpecNewcombe(cell),
            c3 = valSpecC3(cell, fam),
            c4 = valSpecMatrix(cell, "replicate", as.integer(fam[[2L]])),
-           c4e = valSpecMatrix(cell, "block", as.integer(sub("acc$", "", fam[[2L]])),
-                               rank = identical(fam[[2L]], "4840")),
+           c4e = valSpecMatrix(cell, "block", as.integer(sub("(acc|p1)$", "", fam[[2L]])),
+                               rank = fam[[2L]] %in% c("4840", "4840p1"),
+                               contrast = if (identical(fam[[2L]], "4840p1")) 2L),
            c7 = valSpecBootstrap(cell, fam[[2L]]),
            valAbort("unknown coverage family {cell$family}", "val_spec_invalid"))
 }
@@ -324,13 +332,14 @@ valSpecC3 <- function(cell, fam) {
 
 #' C4 and C4e: jackknife forms (ii) and (iii) on simulated feature matrices; `rank` the rank
 #' statistic at the calibrated scale (the 4,840-feature families), otherwise `accuracy` and
-#' `threshold_count` at scale 1 (DI10K's `c4e:4840acc` too)
+#' `threshold_count` at scale 1 (DI10K's `c4e:4840acc` too); `contrast` a single contrast column
+#' for the rank statistic and its calibration (P1K's `c4e:4840p1`), otherwise all contrasts pooled
 #' @noRd
-valSpecMatrix <- function(cell, form, n_feat, rank = n_feat == 4840L) {
+valSpecMatrix <- function(cell, form, n_feat, rank = n_feat == 4840L, contrast = NULL) {
     g <- cell$n
     lay <- valCovLayout(form, g)
     # r1.13 (VAL-69): the rank cells' effect is calibrated per g into the declared pAUC band
-    scale <- if (rank) valRankEffect(form, g)$effect else 1
+    scale <- if (rank) valRankEffect(form, g, contrast = contrast)$effect else 1
     # I10 diagnostic (VAL-109): `fixed_symmetric` draws the feature baselines once per cell and
     # splits the changed features +1 and -1; `fixed_onedir` (DI10b, VAL-137 (1)) keeps that draw
     # with every change +1, as T2's; `redraw` (T2) draws them in every simulation
@@ -338,7 +347,8 @@ valSpecMatrix <- function(cell, form, n_feat, rank = n_feat == 4840L) {
         valCovFixedFeatures(cell, n_feat)
     }
     statsOf <- function(x, l, truth) {
-        valCovStats(valCovFit(x, l, form), truth, n_feat, form, rank = rank)
+        valCovStats(valCovFit(x, l, form), truth, n_feat, form, rank = rank,
+                    contrast = contrast)
     }
     names_s <- if (rank) {
         "rank.pauc_diff"
@@ -520,13 +530,20 @@ valCombineCoverage <- function(cell, parts, nsim, target_sims) {
         hits <- matrix(hits %in% TRUE, nrow = nsim)
         st <- spec$stats[k, ]
         zero <- matrix((lo[, , k] == hi[, , k]) %in% TRUE, nrow = nsim)
-        valCoverageRows(cell, st$statistic, st$class, hits, st$kind,
-                        achieved = if (st$kind == "exact") matrix(ach[, , k], nrow = nsim),
-                        undefined = undefined[, k], target = target[[k]], zero_width = zero,
-                        target_se = target_se[[k]], range = spec[["range"]],
-                        effect = spec[["effect"]] %||% NA_real_,
-                        half_width = matrix((hi[, , k] - lo[, , k]) / 2, nrow = nsim),
-                        estimate = est[, k])
+        # R-P1 (C66; KIT-162 6.7): misses at the lower bound (the target below the interval) and
+        # at the upper bound (the target above it), as counts of simulations per level
+        low <- matrix((lo[, , k] > target[[k]]) %in% TRUE, nrow = nsim)
+        high <- matrix((hi[, , k] < target[[k]]) %in% TRUE, nrow = nsim)
+        rows <- valCoverageRows(cell, st$statistic, st$class, hits, st$kind,
+                                achieved = if (st$kind == "exact") matrix(ach[, , k], nrow = nsim),
+                                undefined = undefined[, k], target = target[[k]], zero_width = zero,
+                                target_se = target_se[[k]], range = spec[["range"]],
+                                effect = spec[["effect"]] %||% NA_real_,
+                                half_width = matrix((hi[, , k] - lo[, , k]) / 2, nrow = nsim),
+                                estimate = est[, k])
+        rows$miss_low <- as.integer(colSums(low))
+        rows$miss_high <- as.integer(colSums(high))
+        rows
     }))
     out$generator <- cell[["generator"]] %||% "redraw"
     out$seconds_sims <- sum(vapply(parts, `[[`, 0, "seconds_sims"))
@@ -603,15 +620,17 @@ RANK_CACHE <- new.env(parent = emptyenv())
 #' of the plain (moderated) arm, over `nsim` seeded calibration simulations, lies in [0.4, 0.8] and
 #' is nearest 0.6; the grid is walked upwards and stops once the mean passes 0.8. Seeds depend on
 #' the form, g and the simulation index only, so every process finds the same effect. No grid value
-#' in the band is `val_spec_invalid`.
+#' in the band is `val_spec_invalid`. With `contrast` (P1K, VAL-176) the same rule is applied to the
+#' pAUC of that one contrast column, on the same calibration data sets.
 #'
 #' @param form `replicate` (C4) or `block` (C4e).
 #' @param g Unit count.
 #' @param nsim Calibration simulations per grid value.
+#' @param contrast `NULL` (every contrast pooled) or one contrast column.
 #' @return A list: `effect`, `mean_pauc`.
 #' @export
-valRankEffect <- function(form, g, nsim = 50L) {
-    key <- paste(form, g, nsim)
+valRankEffect <- function(form, g, nsim = 50L, contrast = NULL) {
+    key <- paste(c(form, g, nsim, contrast), collapse = " ")
     if (!is.null(RANK_CACHE[[key]])) return(RANK_CACHE[[key]])
     lay <- valCovLayout(form, g)
     base <- 1900000000L + (if (form == "block") 50000L else 0L) + as.integer(g) * 1000L
@@ -622,6 +641,11 @@ valRankEffect <- function(form, g, nsim = 50L) {
                 dat <- valCovMatrixData(lay, 4840L, form, scale)
                 fit <- valCovFit(dat$x, lay, form)
                 truth <- dat$truth
+                if (!is.null(contrast)) {
+                    truth <- truth[, contrast]
+                    fit$est <- fit$est[, contrast]
+                    fit$p <- fit$p[, contrast]
+                }
                 sc <- data.frame(key = seq_along(truth), expected = as.vector(truth),
                                  estimate = as.vector(fit$est), p = as.vector(fit$p),
                                  s_own = as.vector(fit$p), truth_status = "scored",
@@ -729,7 +753,11 @@ valCovFit <- function(x, lay, form) {
 
 #' The statistics of C4 (accuracy, threshold_count on 500 features; rank on 4,840) and C4e
 #' @noRd
-valCovStats <- function(fit, truth, n_feat, form, rank = n_feat == 4840L) {
+valCovStats <- function(fit, truth, n_feat, form, rank = n_feat == 4840L, contrast = NULL) {
+    if (!is.null(contrast)) {
+        truth <- truth[, contrast]
+        fit <- lapply(fit[c("est", "p", "p_ord")], function(m) m[, contrast])
+    }
     bh <- function(p) apply(p, 2L, stats::p.adjust, method = "BH")
     pauc <- function(p) {
         s <- data.frame(key = seq_along(truth), expected = as.vector(truth),
