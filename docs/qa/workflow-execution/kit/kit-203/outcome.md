@@ -13,7 +13,7 @@ Ticket r1.4 (`tickets/kit/KIT-203.md`). Branch `kit-203-enrichment-family-bh`. E
 | 7b35ad65 | R1b records |
 | 31ffbae6 | merge of `origin/v0.9-staging` at f6c86cfb (KIT-175, KIT-199 merged; replaces R2b). Its message names ea93d948, the staging head when the ticket was handed over; the merged head was f6c86cfb |
 | a0e8cac6 | `mutate-k203.R` (X) |
-| ee5b5c34, 3f737844, 198d5827 | R2 records; the correction pass (status text; the R3 A107-03 notice literal); instrument repairs (S1, S2, OD5 and X out dir) |
+| ee5b5c34, 3f737844, 198d5827 | R2 records; the correction pass (status text; the R3 A107-03 notice literal); S1's expectation corrected to the per-row column 5.3 specifies (m = 10 on each of 3 rows), made in the correction pass; S2's stand-in repaired (instrument, VAL-54); OD5 and X out dir (instrument) |
 | c015d1e0, ecb224fe | `omicEnrichW1FrozenUi` re-frozen from R2c's head dump (OD5); R2c and X records |
 | 056a151b | merge of `origin/v0.9-staging` at 6a397776 (KIT-194, KIT-185, KIT-197; no shared code file) |
 
@@ -53,12 +53,14 @@ Ticket r1.4 (`tickets/kit/KIT-203.md`). Branch `kit-203-enrichment-family-bh`. E
     `kernel_gprofiler`, `organism_filter`, `restore` failed on head, passed on base. S10 compared two head outputs and
     could not see it. The R3 A107-03 test asserted the old correction notice, which 5.4 replaces by design (not listed in
     10.2).
-  - Instrument: S1 compared the per-row `family_size` column with a scalar (all three rows were 10); S2's stand-in
+  - S1 compared the per-row `family_size` column with a scalar (all three rows were 10): an expectation corrected in
+    the correction pass (audit K203-I04: under VAL-114 a changed literal is not an instrument repair). Instrument: S2's stand-in
     built a one-row ID from an empty vector (`paste0("GO:", integer(0))` is `"GO:"`) and errored before any assertion;
     OD5's dumps were not written (the out dir stayed relative and `test_file` runs in `tests/testthat`).
 - **Correction pass (3f737844).** The Significance line is joined to the cutoff's line, so the g:Profiler text is
   byte-identical to base; the R3 A107-03 expectation now holds the 5.4 notice (flag sentence, then the correction
-  sentence; type warning). Instrument repairs (198d5827) change no expected value.
+  sentence; type warning). In the same pass (198d5827): S1's expectation corrected to the per-row column 5.3 specifies
+  (m = 10 on each of 3 rows); S2's stand-in, OD5's and X's out dirs repaired (instrument, VAL-54).
 - **R2c (run 45341049018, 198d5827 against f6c86cfb).** New file 191 of 191. Against base, only these differ:
   `(a)` the UI capture (OD5) and the clusterProfiler captures `(b) clusterprofiler`, `kernel_clusterprofiler`, the
   KIT-113 W1 record test and the two W2 core tests, all failing on base since KIT-173 (section 12: not edited). Every
@@ -103,10 +105,28 @@ are `same`. Check: 0 errors, 3 warnings, 3 notes on both sides, identical (`f/ch
 
 ## Recorded divergences
 
-- `addEnrichmentFamilyAdjustment` reads `@geneSets` and `@result` of enrichit's `enrichResult` directly (R-bioinformatics
+- `addEnrichmentFamilyAdjustment` reads `@geneSets` and reads and writes `@result` of enrichit's `enrichResult` directly
+  (the write as `sortEnrichmentGeneIds` already does) (R-bioinformatics
   accessor rule): no accessor returns the size-filtered family (K203-P16).
 - Moved expectation outside 10.2: `test-omic-enrich-module.R` R3 A107-03 (the notice literal), changed in the correction
   pass, not in the tests-only commit.
+- Moved, not named in section 12 (audit K203-I06; `f/compare-failures.txt`): in the five clusterProfiler captures that fail
+  since KIT-173, besides section 12's list, the completed status's "Significance:" line and the download summary's
+  digest also move. Plan section 11's KIT-173 row gains: "and KIT-203's `significance_rule` (declared, kernel argument,
+  outcome, notice, the completed status's Significance line, the download summary's digest, TSV columns)". In the UI
+  capture the table legend moved (5.4's static text; recorded above).
+
+## Hand-offs
+
+**KIT-193** (audit K203-I05; the coordinator sends it):
+
+> KIT-203 merged: the route's flag is `R/func_general_enrichment_orchestration.R:669`; under `significance_rule = "qvalue"` it is exactly `significant = qvalue < q_cutoff` (your `QvalueBh.flag`); under the default `"bh_whole_family"` it is `p_adjust_family < q_cutoff` with `p_adjust_family = p.adjust(p, "BH", n = m)` (your `callsWhole`, strict). (1) Fill row T4's digest on the merged `processEnrichments`. (2) The docstrings `Spec/QvalueBh.lean:15`, `:65`, `:136` change only through your 5.3 item 4 (no statement change): `:544` becomes `:669`, and 'the route's flag' becomes 'the route's flag under `significance_rule = "qvalue"`'. (3) Pair (ii): stored tables made before KIT-203 are q-value runs; a re-run must pass `significance_rule = "qvalue"`. The nesting `p_adjust_family < α ⇒ p.adjust < α ⇒ qvalue < α` is KIT-203 S3's check (optional statement 4e, yours).
+
+## For the owner's wording pass (VAL-41; audit K203-I07; no text changed now)
+
+- The tab notes show post-hoc figures without saying so: 5.8 and 8.8 points, 3.0 % and 82.1 %, 10.7 %. The marking lives in `source`, which no user sees.
+- "On lists of 25 with parent terms the average was 10.7 %" means planted lists (cell 13). Suggested: "On lists of 25 built around one process, with parent terms, the average was 10.7 %".
+- `R/func_general_enrichment_orchestration.R:171` and `man/processEnrichments.Rd:63`: "(in simulations it called terms on up to 42.9 % of random protein lists)". The figure is true. It omits "at a cutoff of 0.05", and 42.9 % is without parent terms; the shipped propagation gives 22.9 %. Suggested: "(in simulations at a cutoff of 0.05 it called terms on up to 42.9 % of random protein lists without parent terms and up to 22.9 % with them)", as NEWS says.
 
 ## Not checked
 
@@ -131,7 +151,8 @@ q_cutoff`); the calls `:443-450`, `:460-467`. Fix 31515bf8 (correction 3f737844)
 (`R/func_general_enrichment_orchestration.R:33`), `addEnrichmentFamilyAdjustment` (`:122`), the argument
 `significance_rule` (`:190`), the call after each `enricher` (`:594`), the flag by rule (`:669`); the plot
 `R/func_general_enrichment_engine_helpers.R:255`; the notice `R/utils_workflow_enrichment.R:914`; replay of older
-records with the q-value `:1219`; declaration `R/utils_workflow_dia_da.R` (`diaEnrichmentDeclaredNames`); tab
+records with the q-value `:1219` (lines at 31515bf8; on the merge 056a151b the notice is `:970` and the replay default
+`:1279`, the other lines unchanged); declaration `R/utils_workflow_dia_da.R` (`diaEnrichmentDeclaredNames`); tab
 `R/mod_omic_enrich.R`, `R/mod_omic_enrich_panels.R`; four report templates; five workbooks.
 
 **What changed in results.** By default a term is significant when its Benjamini-Hochberg adjusted p-value over every
@@ -152,4 +173,5 @@ down lists, correlated real lists, other cutoffs and organisms.
 
 Core-hours (job minutes x 4 / 60): G0 1.47, G0b 0.49, R1 1.84, R1b 0.64, R2 9.00, R2c 8.21, F 77.76; total 99.41
 against 83.33 expected and 235.67 ceiling (the correction pass used 8.21 of its 111.33; F 1,166.3 of 1,200 job-minutes).
-Instrument reruns (VAL-54): G0b (capture), R1b (R1 parse), and in R2c the S1/S2 and OD5 repairs (one each).
+Instrument reruns (VAL-54): G0b (capture), R1b (R1 parse), and in R2c the S2 and OD5 repairs (one each). S1's
+expectation correction rode the single correction pass (R2c), not an instrument rerun.
