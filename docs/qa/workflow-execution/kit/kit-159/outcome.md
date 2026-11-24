@@ -285,6 +285,24 @@ NOT committed as the reference. G1(r)'s own rows are kept as `g1r/g1a-reference-
 KIT-172's 18 keys (correct KIT-172's file, or adopt G1(r)'s rows for those groups); then the
 rows are committed as `g1a-reference.tsv` with no further run. REAUDIT2: 5.26 of 6.
 
+### G1(r) after re-audit 3: the coordinator's ruling, key errata and lints (2026-11-24)
+
+**Ruling (R3.B3).** G1(r)'s own rows are adopted for KIT-172's 18 windowed keys. KIT-172's file is
+not edited. `g1a-reference.tsv` is committed (byte-identical to G1Rf's `g1r/g1a-reference-own-rows.tsv`,
+SHA-256 3228c900...) with `g1a-reference-prov.txt`; the defect is recorded in
+`g1a-reference-errata.md`. Tests first at 0c366ae3 (G1R-ERRATA; G1R-ADOPT and test-g1a's KIT-172
+case now pass `errata = NULL`, whose premise is KIT-172's own key text); code at 2fa3354e
+(`inst/extdata/g1r-key-errata.tsv`, exact-match application in `valReferenceDisagreements`, the two
+lints fixed as the register gives). By the coordinator's instruction one run only (no separate
+failing-first run).
+
+**G1Rg, declared before the send.** Purpose: the errata tests and the lint fixes. Binds the run
+branch `run-k159-g1r` at the merge of 2fa3354e (plus these records) with staging 241914cb (KIT-199's
+files). Scripts: `val-tests.R --files g1r,g1a,chain --lint` (20 min), then `val-g1r.R` (10 min).
+Ceiling: REAUDIT2's remainder, 1.74 of 7. Pass: every test passes, lintr reports no lint in
+`g1r.R` or `gates.R`, and `val-g1r.R` ends `built` with KIT-172's 18 errata applied and no
+disagreement; anything else is recorded and reported, not re-run (VAL-54 for mechanics).
+
 ### Resume here (handed over, 2026-11-24; context of the builder's session too long)
 
 Open, in this order, on `kit-159-validation-harness` in worktree `MultiScholaR-kit-159`:
@@ -376,8 +394,17 @@ DI10c's 1.5. One run, not re-run.
    (VAL-137 (3)).
 2. The C4 and C4e accuracy and threshold rows are conditional: coverage of E[theta-hat | features]
    for one feature draw, the generator named on each row (E7). DI10b extends the C4e g = 5 rows to
-   one-directional changes, at nominal with no margin; the C4 g = 4 and g = 6 rows and the C4e
-   g = 14 rows are shown for balanced changes only.
+   one-directional changes, at nominal with no margin.
+   DI10c (VAL-155; run 45371216508) extends the C4 g = 4 rows to one-directional changes. It used
+   one composition: 20 % of 500 features changed, all +1 log2, one feature draw. By its declared
+   rule it passes: no coverage is below level - 0.02. At 95 % the coverages are `mae` 0.962,
+   `mae_diff` 0.9875, `sens` 0.9885, `sens_diff` 0.934, `fcs` 0.946 and `fcs_diff` 0.958.
+   The interval for the difference in sensitivity (`sens_diff`) is below nominal: it covers
+   0.934 at nominal 95 % (exact interval 0.9222 to 0.9445; 132 misses of 2,000), and the shortfall
+   is systematic, below nominal at all eight levels (0.970, 0.980, 0.9865, 0.989, 0.991, 0.9925,
+   0.9925). The pinned `threshold_count` row's label `conservative` (from D, symmetric changes) does
+   not describe the one-directional case. The C4 g = 6 rows and the C4e g = 14 rows are shown for
+   balanced changes only.
 3. The family bound is the sum of one-sided Clopper-Pearson upper bounds; figures in older notes
    are not comparable.
 4. A zero-miss `conservative` row licenses only its own `interval.statistic`.
