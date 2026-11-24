@@ -100,6 +100,8 @@ for (omic in c("lipidomics", "metabolomics")) local({
         }
         # A legacy design names no new-design field.
         expect_false("ruv_design" %in% names(correction))
+        # KIT-184 K4 (gate G1): each data set's written factors are what its correction removed.
+        for (view in views) expectIntegrationRemovedFactors(run$dir, view, correction$views[[view]]$k, input = input)
         # The design: the samples kept by the correlation filter, the biological sample column named (INT-2).
         expect_identical(manifest$sample_id_column, "Run")
         expect_identical(manifest$group_column, "group")
@@ -139,6 +141,26 @@ for (omic in c("lipidomics", "metabolomics")) local({
         }
         expect_identical(manifest$internal_standards$regex, "^IS_")
     })
+})
+
+test_that("KIT-184 K4: lipidomics with today's RUV at two factors: the written factors are what was removed", {
+    root <- withr::local_tempdir()
+    fixture <- integrationOmicsOwner("lipidomics", file.path(root, "owner"))
+    integrationOmicsQuiet(lipidDeclarationsJourney(fixture, ruv = utils::modifyList(lipidDeclarationsRuvParameters(),
+        list(manual_k = 2L))))
+    run <- integrationOmicsSummarySave("lipidomics", fixture, root)
+    input <- readIntegrationInput(run$dir)
+    features <- 0L
+    rows <- 0L
+    for (view in names(input$views)) {
+        expect_identical(input$manifest$correction$views[[view]]$k, 2L, info = view)
+        expectIntegrationRemovedFactors(run$dir, view, 2L, input = input)
+        entry <- Filter(function(item) identical(item$name, view), input$manifest$views)[[1L]]
+        features <- features + as.integer(entry$removed_factors$features)
+        rows <- rows + input$views[[view]]$rows
+    }
+    # Features with a missing run were corrected one by one and are left out of the factors (gate G2).
+    expect_lt(features, rows)
 })
 
 test_that("KIT-135: lipidomics and metabolomics views do not collide: both LCMS_Pos assays are qualified by the omic (INT-4)", {
@@ -189,6 +211,20 @@ test_that("KIT-135: a new RUV design writes the RUV state's corrected table and 
         expect_equal(unname(as.matrix(written[-1L])), unname(as.matrix(normalised[match(written$feature_id, normalised$feature_id), -1L])),
             tolerance = 0, info = assay)
     }
+    # KIT-184 K4 (gate G1): each assay's written factors are what was removed; the largest principal angle to the
+    # factors the DA keeps (computed on the features observed in every sample) is printed, not asserted.
+    for (assay in c("LCMS_Pos", "LCMS_Neg")) {
+        factors <- expectIntegrationRemovedFactors(run$dir, paste0("lipidomics_", assay), 1L, input = input)
+        stored <- as.matrix(state@args$ruv_factors[[assay]]$W)
+        if (identical(nrow(stored), nrow(factors))) {
+            if (!is.null(rownames(stored)) && all(rownames(factors) %in% rownames(stored))) {
+                stored <- stored[rownames(factors), , drop = FALSE]
+            }
+            basis <- qr.Q(qr(scale(stored, scale = FALSE)))
+            cat(sprintf("KIT-184 G1 lipidomics_%s: largest sine of the principal angle to the DA's stored factors %.3g\n", assay,
+                max(abs(basis - factors %*% crossprod(factors, basis)))))
+        }
+    }
     # The internal-standard step removes the standards it used (`remove_itsd_after_norm`), so the hand-selected one is
     # gone; the selection is recorded, and the regex's standards it did not use stay, marked.
     features <- input$views$lipidomics_LCMS_Pos$features
@@ -204,6 +240,8 @@ test_that("KIT-135: a new RUV design writes the RUV state's corrected table and 
     after <- readIntegrationInput(integrationOmicsSummarySave("lipidomics", none, file.path(root, "none-project"))$dir)$manifest
     expect_identical(after$matrix_role, "normalised")
     expect_null(after$correction)
+    # KIT-184 K4: design none removes nothing: no factors.
+    expect_true(all(vapply(after$views, function(view) is.null(view$removed_factors), logical(1))))
     expect_identical(after$source_state$name, "lipid_ruv_corrected")
 })
 
