@@ -15,10 +15,10 @@ oneAttribution <- function() {
                citation = "synthetic", stringsAsFactors = FALSE)
 }
 
-test_that("R-O8: over independent units nothing is widened at any count; report only, stated", {
+test_that("R-O8, VAL-137 (3): over independent units nothing is widened at any count; the claim's scope is stated", {
     decl <- repairDeclaration()
     decl$metrics[[1L]]$within_run <- list(B = 2000L, seed = 159103L)
-    for (n in c(5L, 8L)) {
+    for (n in c(5L, 8L, 21L)) {
         u <- repairUnits(n)
         v <- 0.1 + 0.001 * seq_len(n)
         metrics <- rbind(repairMetrics("mae", "good", v),
@@ -35,19 +35,25 @@ test_that("R-O8: over independent units nothing is widened at any count; report 
         expect_identical(lengths(regmatches(run$flags[[1L]],
                                             gregexpr("within_run_reported=", run$flags[[1L]]))),
                          n)
-        want <- if (n < 6L) "below_6" else "6_or_more_open"
-        expect_match(run$flags[[1L]], sprintf("within_run_widening=report_only(O8:%s)", want),
+        # VAL-137 (3): one rule at every count, no open case
+        expect_match(run$flags[[1L]], "within_run_widening=never(VAL-137:independent)",
                      fixed = TRUE)
+        expect_false(grepl("O8:", run$flags[[1L]], fixed = TRUE))
+        expect_false(grepl("widened_to_within_run", run$flags[[1L]], fixed = TRUE))
         vr <- attr(cmp, "verdicts")
-        expect_identical(vr$within_note[[1L]], sprintf("report_only(O8:%s)", want))
+        expect_identical(vr$within_note[[1L]], "never(VAL-137:independent)")
+        # the claim's scope is stated even where no within-run rows exist
+        cmp0 <- valRunLevel(decl, metrics, u,
+                            regimes = regimeRows("paired_t", n, class = "accuracy"))
+        expect_identical(attr(cmp0, "verdicts")$within_note[[1L]], "never(VAL-137:independent)")
     }
     path <- withr::local_tempfile(fileext = ".md")
-    valWriteResults(path, oneVerdict(within_note = "report_only(O8:6_or_more_open)"),
+    valWriteResults(path, oneVerdict(within_note = "never(VAL-137:independent)"),
                     oneAttribution())
     txt <- readLines(path)
-    expect_true(any(grepl(paste("within-run intervals reported beside the verdict, not widened:",
-                                "at 6 or more independent units the widening rule is open (O8)"),
-                          txt, fixed = TRUE)))
+    expect_true(any(grepl("claim over repeat runs, for the features scored", txt, fixed = TRUE)))
+    expect_true(any(grepl("never widening it (VAL-137 (3))", txt, fixed = TRUE)))
+    expect_false(any(grepl("widening rule is open", txt, fixed = TRUE)))
 })
 
 test_that("R-O5: T2 rows reading pass under T2's band and conservative under r1.13's; both printed", {

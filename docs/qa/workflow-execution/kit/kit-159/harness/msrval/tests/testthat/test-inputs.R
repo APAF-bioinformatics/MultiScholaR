@@ -174,10 +174,12 @@ test_that("T-PRE-1: phase pre admits listed aggregates only and refuses truth re
                       "  file.path(out_dir, 'counts.tsv'), sep = '\\t', quote = FALSE,",
                       "  row.names = FALSE)"))
     expect_error(valRunPre(extra, spec_path, withr::local_tempdir()),
-                 class = "val_publish_forbidden")
+                 "counts.tsv: columns differ from the declaration", class = "val_publish_forbidden",
+                 fixed = TRUE)
     text <- script("writeLines('report', file.path(out_dir, 'feasibility.md'))")
     expect_error(valRunPre(text, spec_path, withr::local_tempdir()),
-                 class = "val_publish_forbidden")
+                 "wrote an unlisted file feasibility.md", class = "val_publish_forbidden",
+                 fixed = TRUE)
     truth <- script("x <- valInputPath('closed')")
     expect_error(valRunPre(truth, spec_path, withr::local_tempdir()), class = "val_spec_invalid")
 })

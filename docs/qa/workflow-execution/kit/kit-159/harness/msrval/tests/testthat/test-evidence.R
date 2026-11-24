@@ -29,7 +29,12 @@ test_that("the results note prints the measured coverage beside every verdict an
     valWriteResults(path, cmp, att)
     txt <- readLines(path)
     expect_true(any(grepl("legacy.*no_worse.*measured coverage 0.972 \\(Monte Carlo SE 0.0037\\)", txt)))
-    expect_true(any(grepl("ruv_designs: m = 2, nominal family level 0.95, family error bound from measured misses 0.06", txt)))
+    # VAL-137 (2): each component at the one-sided 95 % Clopper-Pearson upper bound of its misses
+    # (56 and 64 of 2,000), not at its point estimate (0.028 + 0.032 = 0.06)
+    bound <- sum(stats::qbeta(0.95, c(56, 64) + 1, 2000 - c(56, 64)))
+    expect_true(any(grepl(paste0("ruv_designs: m = 2, nominal family level 0.95, family error ",
+                                 "bound from measured misses ", format(round(bound, 4))),
+                          txt, fixed = TRUE)))
     expect_true(any(grepl("^## Sources and attribution", txt)))
     expect_true(any(grepl("GSE1, doi:10.0/x", txt)))
 })
@@ -64,39 +69,46 @@ test_that("the hand-off folder: admitted only counted with every data input perm
     root <- handoffDir(ev)
     expect_true(valCheckEvidence(ev, man, outputs = handoffOutputs(), phase = "counted"))
     expect_error(valCheckEvidence(ev, man, outputs = handoffOutputs(), phase = "lifecycle"),
-                 class = "val_publish_forbidden")
+                 "admitted only in the counted stage", class = "val_publish_forbidden",
+                 fixed = TRUE)
     man_closed <- licenceManifest(dir)
     ev2 <- evidenceDir(man_closed)
     handoffDir(ev2)
     expect_error(valCheckEvidence(ev2, man_closed, outputs = handoffOutputs(), phase = "counted"),
-                 class = "val_publish_forbidden")
+                 "a data input of the job is not permitted", class = "val_publish_forbidden",
+                 fixed = TRUE)
     writeLines("changed", file.path(root, "lipid/matrix_lipid.parquet"))
     valWriteHandoffSha(root)
     expect_error(valCheckEvidence(ev, man, outputs = handoffOutputs(), phase = "counted"),
-                 class = "val_publish_forbidden")
+                 "matrix_lipid.parquet differs from its manifest", class = "val_publish_forbidden",
+                 fixed = TRUE)
     ev3 <- evidenceDir(man)
     r3 <- handoffDir(ev3)
     writeLines("x", file.path(r3, "notes.txt"))
     valWriteHandoffSha(r3)
     expect_error(valCheckEvidence(ev3, man, outputs = handoffOutputs(), phase = "counted"),
-                 class = "val_publish_forbidden")
+                 "notes.txt is not a hand-off file", class = "val_publish_forbidden",
+                 fixed = TRUE)
     ev4 <- evidenceDir(man)
     r4 <- handoffDir(ev4)
     unlink(file.path(r4, "lipid/samples.parquet"))
     valWriteHandoffSha(r4)
     expect_error(valCheckEvidence(ev4, man, outputs = handoffOutputs(), phase = "counted"),
-                 class = "val_publish_forbidden")
+                 "samples.parquet named by a manifest is absent", class = "val_publish_forbidden",
+                 fixed = TRUE)
     ev5 <- evidenceDir(man)
     r5 <- handoffDir(ev5)
     writeLines(c("sample\tother", "s1\tL1"), file.path(r5, "sample-match.tsv"))
     valWriteHandoffSha(r5)
     expect_error(valCheckEvidence(ev5, man, outputs = handoffOutputs(), phase = "counted"),
-                 class = "val_publish_forbidden")
+                 "sample-match.tsv has other columns", class = "val_publish_forbidden",
+                 fixed = TRUE)
     ev6 <- evidenceDir(man)
     r6 <- handoffDir(ev6)
     writeLines("late", file.path(r6, "string-requests.tsv"))
     expect_error(valCheckEvidence(ev6, man, outputs = handoffOutputs(), phase = "counted"),
-                 class = "val_publish_forbidden")
+                 "string-requests.tsv differs from handoff.sha256", class = "val_publish_forbidden",
+                 fixed = TRUE)
     two <- c(handoffOutputs(), list(list(path = "ticket/extra.tsv", handoff = TRUE, key = "none",
                                          columns = list(list(name = "n", type = "count")),
                                          labels = list(), max_rows = 1L, lineage = "open")))
@@ -118,7 +130,8 @@ test_that("ticket-coverage.tsv has its fixed columns; ticket-coverage-cells.tsv 
     tc$extra <- 1
     utils::write.table(tc, file.path(ev, "ticket-coverage.tsv"), sep = "\t", quote = FALSE,
                        row.names = FALSE)
-    expect_error(valCheckEvidence(ev, man), class = "val_publish_forbidden")
+    expect_error(valCheckEvidence(ev, man), "ticket-coverage.tsv has other columns",
+                 class = "val_publish_forbidden", fixed = TRUE)
 })
 
 test_that("check-evidence.sh: the pre-push allow-list and hash check without R", {
