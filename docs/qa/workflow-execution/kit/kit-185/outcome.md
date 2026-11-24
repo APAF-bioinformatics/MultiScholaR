@@ -432,3 +432,7 @@ designs, k, normalisers and tests not measured. No remedy is decided (VAL-56).
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-24 from af6bad3f (base 3d4a585d) after the closure audit's re-check 1 (register `AUDIT-KIT-185-close-20261124`): C01 and C03 to C07 closed; R1-01's two phrase edits applied in the merge commit; the ledger row is VAL-140. Nothing ships with this merge: no code, no NEWS entry, no version change. Open with the owner: C02 (how D2 reads P3, M1b and P2; KIT-161 and KIT-166 are not read under that item until it is given) and the remedy (VAL-56).
+
+## Note added 2026-11-24 (coordinator): the D2 ruling
+
+Where this file says D2's reading for P3, M1b and P2 is "awaiting the owner's ruling", the ruling has since been given (methods ledger VAL-143): each study shape is read at the more severe of the mechanisms measured for it. The earlier sentences are left as written; this note supersedes them. KIT-161 (P3, P2) and KIT-166 (M1b) are read under VAL-143. The remedy is not decided here: a separate ticket measures the candidates first (VAL-144).

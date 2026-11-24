@@ -1,0 +1,63 @@
+{
+  "ticket": "KIT-197",
+  "script": "docs/qa/workflow-execution/kit/kit-197/sim-k197.R",
+  "script_sha256": "71001de9b7b1c547e1e27fd92fb1b57a067121e336fa09e134f3317f1fa7c599",
+  "s2_script": "docs/qa/workflow-execution/kit/kit-187/filter-effect.R",
+  "s2_script_sha256": "1147a5aa480861581210f1a088c06731e046b20e15d8cdcbe6775a5f58906c9c",
+  "bound_commit": "4786112c23b8a97628ff1c5fa38545fb3190d724",
+  "s2_head": "e6c42d1d8e18f04d34b3b2a850488ef43ab8d9ab",
+  "s2_base": "604ec4dd49f6eba3c842df09fdd0a057a7c83658",
+  "lifecycle": false,
+  "determinism": true,
+  "cells": ["A", "B", "C", "D"],
+  "cell_index": [201, 202, 203, 204],
+  "masks": ["vd5", "vd10", "vd25", "mcar5", "mcar10", "mcar25"],
+  "old_rule": {
+    "A": {
+      "m": 3,
+      "g": 2
+    },
+    "B": {
+      "m": 3,
+      "g": 2
+    },
+    "C": {
+      "m": 3,
+      "g": 2
+    },
+    "D": {
+      "m": 2,
+      "g": 3
+    }
+  },
+  "replicates": [101, 200],
+  "tasks_this_process": 400,
+  "seed_rule": "set.seed(185000000 + 10000 * idx + r, Mersenne-Twister, Inversion, Rejection); idx = 200 + i, so 187000000 + 10000 i + r",
+  "workers": 4,
+  "seconds_per_cell": {
+    "A": 3252.329,
+    "B": 3760.039,
+    "C": 3802.971,
+    "D": 3479.34399999999
+  },
+  "seconds_per_replicate_mask": 5.95611791666666,
+  "warnings": 0,
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "limma": "3.68.4",
+  "qvalue": "2.44.0",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "started": "2026-11-24T04:46:09+0000",
+  "finished": "2026-11-24T05:47:03+0000",
+  "exit_status": 0,
+  "tables_sha256": {
+    "A.tsv.gz": "1fb961d3d9a4a1e207cecbd08d43416b1d6342ae62bc4ed2ee1aba5f00bd06c6",
+    "B.tsv.gz": "0f5f678a49ddedff78e15cfc87a8fe4ad0768b720a8da11fe040c086b1ebd27d",
+    "C.tsv.gz": "89820ac44022b3f66a2729ec77feb13402c09b0068a0e8ede66c02080c08a716",
+    "D.tsv.gz": "59936ea5caac8290f8df092c6bfd8d96b9239704336d219a0bbbe162615ece84",
+    "determinism.tsv": "211154c5ebe1bb4e362f63d6ac8a6871bb5afc95d6fe59de1d3272a96f8d746e",
+    "s2metrics.tsv": "39ada6f08f47f51ba27c3337c37f430716493ee1311e67bcc139611890e86f0e"
+  }
+}

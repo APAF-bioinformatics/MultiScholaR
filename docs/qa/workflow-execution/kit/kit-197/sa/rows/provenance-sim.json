@@ -1,0 +1,62 @@
+{
+  "ticket": "KIT-197",
+  "script": "docs/qa/workflow-execution/kit/kit-197/sim-k197.R",
+  "script_sha256": "71001de9b7b1c547e1e27fd92fb1b57a067121e336fa09e134f3317f1fa7c599",
+  "s2_script": "docs/qa/workflow-execution/kit/kit-187/filter-effect.R",
+  "s2_script_sha256": "1147a5aa480861581210f1a088c06731e046b20e15d8cdcbe6775a5f58906c9c",
+  "bound_commit": "4786112c23b8a97628ff1c5fa38545fb3190d724",
+  "s2_head": "e6c42d1d8e18f04d34b3b2a850488ef43ab8d9ab",
+  "s2_base": "604ec4dd49f6eba3c842df09fdd0a057a7c83658",
+  "lifecycle": false,
+  "determinism": false,
+  "cells": ["A", "B", "C", "D"],
+  "cell_index": [201, 202, 203, 204],
+  "masks": ["vd5", "vd10", "vd25", "mcar5", "mcar10", "mcar25"],
+  "old_rule": {
+    "A": {
+      "m": 3,
+      "g": 2
+    },
+    "B": {
+      "m": 3,
+      "g": 2
+    },
+    "C": {
+      "m": 3,
+      "g": 2
+    },
+    "D": {
+      "m": 2,
+      "g": 3
+    }
+  },
+  "replicates": [1, 100],
+  "tasks_this_process": 400,
+  "seed_rule": "set.seed(185000000 + 10000 * idx + r, Mersenne-Twister, Inversion, Rejection); idx = 200 + i, so 187000000 + 10000 i + r",
+  "workers": 4,
+  "seconds_per_cell": {
+    "A": 3061.532,
+    "B": 3329.066,
+    "C": 3435.754,
+    "D": 3213.495
+  },
+  "seconds_per_replicate_mask": 5.43326958333333,
+  "warnings": 0,
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "limma": "3.68.4",
+  "qvalue": "2.44.0",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "started": "2026-11-24T03:35:50+0000",
+  "finished": "2026-11-24T04:30:34+0000",
+  "exit_status": 0,
+  "tables_sha256": {
+    "A.tsv.gz": "0dbac04eb9fc2b33aab64825019c1cef501f90ef7b0a0fdbf3506d206327ab34",
+    "B.tsv.gz": "acbd5808851ec95d9f7d8986e68f043562283c84954f799378836dcfdb365dda",
+    "C.tsv.gz": "66a369a4dbf140e4e581126617ed187c7fcaa3b7ac2c08adf9ef900487a56554",
+    "D.tsv.gz": "d4af9e7b595311c6ea7ca7e945ea43010d6f95b194329e03eba3fe0792fb4f13",
+    "s2metrics.tsv": "384777028ffe8a87a06d998919ab6cd63829a81ede568d6df8a4856a61da5be6"
+  }
+}

@@ -127,6 +127,7 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
                                                removeRowsWithMissingValuesPercentFn = removeRowsWithMissingValuesPercent,
                                                logInfoFn = logger::log_info,
                                                nowFn = Sys.time) {
+  assertProtQcHeadNotNormalised(workflowData) # KIT-182 (VAL-91 D1)
   pending <- if (identical(workflowData$state_manager$current_state, "protein_intensity_filtered"))
     resumeDIAProteinAction(workflowData, "protein_intensity_filtered") else NULL
   if (!is.null(pending)) return(pending)
@@ -297,6 +298,7 @@ mod_prot_qc_protein_intensity_server <- function(id, workflow_data, experiment_p
     # Step 3: Protein Intensity Filter (chunks 20+21 combined)
     shiny::observeEvent(input$apply_protein_intensity_filter, {
       if (!is.null(workflowSessionApplication(session))) {
+        if (!protQcManagedApplyAllowed(workflow_data, "protein intensity filter")) return(invisible(NULL)) # KIT-182
         managed_step$apply(list(strict_mode = isTRUE(input$use_strict_mode), min_reps_per_group = input$min_reps_per_group,
           min_groups = input$min_groups, proteins_intensity_cutoff_percentile = input$proteins_intensity_cutoff_percentile))
         return(invisible(NULL))
