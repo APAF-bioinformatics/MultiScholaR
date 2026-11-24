@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-167 tests first at b21337c7: the five new core test files shown failing before the fix (no R/ change); ceiling 30 job-minutes; decides nothing but the failing-first record",
+  "label": "KIT-167 T1 failing first b21337c7",
+  "package_commit": "b21337c7d0621fe95a3718dcce81042dbcea00fd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-reference-mapping-resolve.R",
+    "test-reference-mapping-fasta.R",
+    "test-reference-organisms.R",
+    "test-reference-annotation.R",
+    "test-reference-engine.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 10,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
