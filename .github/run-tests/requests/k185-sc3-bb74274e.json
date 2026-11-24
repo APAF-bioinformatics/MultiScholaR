@@ -1,0 +1,41 @@
+{
+  "requested_by": "KIT-185 re-score with P2 and the part-B proteomics re-run (declaration sections 9 to 11): pinned score-k185.R and summ-k185.R over the committed rows",
+  "label": "KIT-185 SC3 re-score with P2 bb74274e",
+  "package_commit": "bb74274e3d8c34e55457da70754edad2c1a80590",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/score-k185.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-185",
+        "k185-results"
+      ],
+      "env": {},
+      "out": "k185-results",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 40
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/summ-k185.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-185",
+        "k185-summ"
+      ],
+      "env": {},
+      "out": "k185-summ",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
