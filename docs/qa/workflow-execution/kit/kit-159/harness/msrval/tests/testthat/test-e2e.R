@@ -157,7 +157,7 @@ e2eRun <- function(route) {
     # contrast name, read from the cell's standard DA table.
     life <- valRunPhase("lifecycle", decl, "d1", units, "life", code, dir,
                         file.path(dir, "w0"), file.path(dir, "o0"), chunks = 1L, arms = "wf",
-                        manifest = man)
+                        manifest = man, pkg_root = root)
     da <- list.files(file.path(dir, "w0", "cells"), "^da\\.tsv$", recursive = TRUE,
                      full.names = TRUE)
     contrast <- unique(utils::read.delim(da[[1L]], stringsAsFactors = FALSE)$contrast)[[1L]]
@@ -176,7 +176,7 @@ e2eRun <- function(route) {
         o <- valRunPhase("counted", decl, "d1", units, lab, code, dir,
                          file.path(dir, paste0("w", lab)), file.path(dir, paste0("o", lab)),
                          chunks = 4L, unit_ids = ids, manifest = man, regimes = regimes,
-                         ticket_coverage = tc$coverage)
+                         ticket_coverage = tc$coverage, pkg_root = root)
         file.copy(o, file.path(ev, "runs"), recursive = TRUE)
     }
     s <- valScorePhase(decl, "d1", units, ev, c("r1", "r2"), "s1", file.path(dir, "os"), man,
