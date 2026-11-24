@@ -240,6 +240,40 @@ inside the ticket's total (ticket r1.20, section 35). State per item below; runs
   Pass: `check-compare.txt` shows no finding only on head. A finding only on head: stop and report
   (the D13 line is already applied; no further correction).
 
+- **R2f and G10 (observed).** R2f (run 45356371981 at 41239449): 37 tests, 281 expectations, 0
+  failures, no lints; T-REP-4 13 of 13 with the head DA fingerprints non-NA and equal. G10 (run
+  45356446685, head e9660d3e against base fe5c9273): 0 ERRORs, 3 WARNINGs, 3 NOTEs on each side,
+  6 findings identical, **0 only on head**: G10 passes (`g10/`). REAUDIT2: 3.69 of 6 core-hours.
+
+### Resume here (handed over, 2026-11-24; context of the builder's session too long)
+
+Open, in this order, on `kit-159-validation-harness` in worktree `MultiScholaR-kit-159`:
+1. **G1(r)'s `g1a-reference.tsv`** (coordinator: build by the register's method, R2.6 item 1, tests
+   first, no fallback run; a block that fits no class is a STOP, report it). Input:
+   `g1a-reference-source.txt` (69 blocks). Write a reader of the four waldo forms (register R2.6)
+   into `valClassifyLiveDiffs`'s input (`lane, step, field, key, base = expected, live = actual`;
+   NA where a key is on one side only; `artifacts`' `<store entries>` as field `store_entries`);
+   class with each lane's step order (from the GUI-entry oracle JSONs, `tests/testdata/gui-entry/`)
+   and KIT-199's declared rows (`kit-199/declared-keys.tsv`, `g1a-reference-dia-limpa.tsv`); count
+   with `valStepClassCounts`; check 69 blocks give 69 (lane, step) pairs, every block at least one
+   row, totals 4, 30, 22, 13; then `valAdoptReferenceRows` against `kit-172/k156-gui-entry-failures.tsv`
+   and `kit-180/g1a-reference-protein-lanes.tsv` (and KIT-199's rows). Write the rows in KIT-172's
+   columns with `source` and `source_sha256` (1b918062...). Budget: REAUDIT2's remainder (2.31).
+2. **DI10c** (owner, VAL-155; coordinator's line DI10c, 1.5 core-hours): one confirmatory cell
+   C4-143 (C4, g = 4, replicate form) under `fixed_onedir`, 2,000 simulations, same generator and code
+   as DI10b. First commit `t2/di10c-declaration.md` in DI10b's form, with mechanism checks stated
+   before the run (C4's equivalents of N1 and N2, thresholds fixed in the declaration), the pass
+   rule (no statistic below level - 0.02 at any of the 8 levels) and the readings: pass = KIT-160 and
+   KIT-161 may use the pinned C4 rows; fail = they need intervals calibrated to their own
+   composition before they run; checks not met = the run does not test the question. Then one
+   request as DI10b's (`t2/di10b-plan.tsv`, request k159-di10b-647706dd as template) for C4-143.
+   One run, recorded whatever it shows, never re-run; mechanics under VAL-54. Report its table
+   beside the symmetric C4-143 row of the pinned table.
+3. M3 (coordinator, at the merge): the code paths of the suite (a5a084cf), covr (a5a084cf) and
+   G10 (e9660d3e) are named in the report; the R2 fix (815be580) postdates the suite's commit, so
+   tree identity at merge holds for `R/` and `tests/` but not for the harness folder; R2f covers
+   the changed harness files.
+
 ### What a validation verdict now means (the register's point 7, R2.7, as written there)
 
 1. Independent units: the claim is "over repeat runs, for the features scored"; no widening for
