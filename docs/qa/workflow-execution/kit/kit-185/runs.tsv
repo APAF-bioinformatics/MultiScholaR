@@ -67,3 +67,4 @@ SUMM	k185-summ-ff73dbff	45294836442	ff73dbff	VAL-98 (2) reported-only summary (s
 L1p2	k185-l1p2-6779d56e	45314701113	6779d56e901c0e052389327c51c56d45a2820a68	P2 blind lifecycle after KIT-187 (declaration section 11)	pass	E1-neg pass (1.85 to 2.54), G1, E1 (b), E2, E7 pass; realised share at VD 10 % 4.5 %	12.2	0.81	10.67
 S-P2	k185-a-p2-1-6779d56e	45316277536	6779d56e901c0e052389327c51c56d45a2820a68	counted run S for P2 after KIT-187 (declaration section 11)	ok	all replicates written; no unit not ok	141.7	9.45	17.67
 S-P2	k185-a-p2-2-6779d56e	45316280358	6779d56e901c0e052389327c51c56d45a2820a68	counted run S for P2 after KIT-187 (declaration section 11)	ok	all replicates written; no unit not ok	125.8	8.39	17.67
+SC3	k185-sc3-bb74274e	45333019858	bb74274e3d8c34e55457da70754edad2c1a80590	re-score with P2 and the part-B proteomics re-run (score-k185.R, summ-k185.R as pinned)	ok	O3 on 456; non-P2 cells.tsv rows identical to SC2; E2 470, E5, E8 pass	13.4	0.89	3.33

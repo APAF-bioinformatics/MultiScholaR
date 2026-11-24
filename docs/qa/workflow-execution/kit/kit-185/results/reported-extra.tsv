@@ -99,6 +99,16 @@ P1	vd50	lost S filt	400	0.023007939025	0.00123522272481466	6.17611362407328e-05	
 P1	mcar0.5	lost S filt	400	0.0109998707425	0.000597738003567431	2.98869001783715e-05	0.0109411152696489	0.0110586262153511	yes: not classified, decides nothing
 P1	mcar2	lost S filt	400	0.0108478486475	0.000789296683850053	3.94648341925026e-05	0.010770263652732	0.010925433642268	yes: not classified, decides nothing
 P1	mcar10	lost S filt	400	0.0110628739575	0.000821435810685291	4.10717905342646e-05	0.0109821298033963	0.0111436181116037	yes: not classified, decides nothing
+P2	none	lost S filt	400	0.01345509645	0.000941828749130179	4.7091437456509e-05	0.0133625181077001	0.0135476747922999	yes: not classified, decides nothing
+P2	vd0.1	lost S filt	400	0.0136059004	0.000959056912482931	4.79528456241466e-05	0.0135116285918704	0.0137001722081296	yes: not classified, decides nothing
+P2	vd0.5	lost S filt	400	0.014186273175	0.000967394881873144	4.83697440936572e-05	0.0140911817747896	0.0142813645752104	yes: not classified, decides nothing
+P2	vd2	lost S filt	400	0.01568083565	0.00100055118146044	5.0027559073022e-05	0.0155824851060701	0.0157791861939299	yes: not classified, decides nothing
+P2	vd10	lost S filt	400	0.01885738065	0.00126184249614791	6.30921248073955e-05	0.0187333461196835	0.0189814151803165	yes: not classified, decides nothing
+P2	vd25	lost S filt	400	0.0197635368	0.00135315066678745	6.76575333393726e-05	0.0196305270084335	0.0198965465915665	yes: not classified, decides nothing
+P2	vd50	lost S filt	400	0.0195744366	0.00169424677856374	8.47123389281872e-05	0.0194078983005998	0.0197409748994002	yes: not classified, decides nothing
+P2	mcar0.5	lost S filt	400	0.013329048975	0.00101332720701429	5.06663603507147e-05	0.0132294425942016	0.0134286553557984	yes: not classified, decides nothing
+P2	mcar2	lost S filt	400	0.01327797939	0.00100097994230144	5.0048997115072e-05	0.013179586700438	0.013376372079562	yes: not classified, decides nothing
+P2	mcar10	lost S filt	400	0.0138773992525	0.00111293573972969	5.56467869864843e-05	0.013768001715033	0.013986796789967	yes: not classified, decides nothing
 P3	none	lost S filt	400	0.0057391127625	0.00053608830913429	2.68044154567145e-05	0.00568641723050244	0.00579180829449756	yes: not classified, decides nothing
 P3	vd0.1	lost S filt	400	0.0058302793875	0.000562189274552978	2.81094637276489e-05	0.00577501822548412	0.00588554054951588	yes: not classified, decides nothing
 P3	vd0.5	lost S filt	400	0.00622648133	0.000611590897560525	3.05795448780262e-05	0.00616636416802745	0.00628659849197255	yes: not classified, decides nothing
@@ -235,6 +245,16 @@ P1	vd50	lost_planted S filt	400	0.040098326575	0.00726467317994765	0.00036323365
 P1	mcar0.5	lost_planted S filt	400	0.016959819235	0.00350946614724516	0.000175473307362258	0.016614851470351	0.017304786999649	yes: not classified, decides nothing
 P1	mcar2	lost_planted S filt	400	0.0166397938525	0.00351868077736096	0.000175934038868048	0.0162939203232077	0.0169856673817923	yes: not classified, decides nothing
 P1	mcar10	lost_planted S filt	400	0.0166861161325	0.00366192738289055	0.000183096369144528	0.0163261619826148	0.0170460702823852	yes: not classified, decides nothing
+P2	none	lost_planted S filt	400	0.01973377152	0.00540391799271938	0.000270195899635969	0.0192025860256597	0.0202649570143402	yes: not classified, decides nothing
+P2	vd0.1	lost_planted S filt	400	0.020045090045	0.0055287636336039	0.000276438181680195	0.0195016326780002	0.0205885474119998	yes: not classified, decides nothing
+P2	vd0.5	lost_planted S filt	400	0.0207695155525	0.00565396905740249	0.000282698452870124	0.020213750947488	0.021325280157512	yes: not classified, decides nothing
+P2	vd2	lost_planted S filt	400	0.0229025697775	0.00606368285546449	0.000303184142773225	0.0223065317955317	0.0234986077594683	yes: not classified, decides nothing
+P2	vd10	lost_planted S filt	400	0.029665233625	0.0071020723676088	0.00035510361838044	0.0289671257287456	0.0303633415212544	yes: not classified, decides nothing
+P2	vd25	lost_planted S filt	400	0.033338345125	0.00817588847075945	0.000408794423537972	0.0325346850093465	0.0341420052406535	yes: not classified, decides nothing
+P2	vd50	lost_planted S filt	400	0.0344597821325	0.0112914343763107	0.000564571718815535	0.0333498751799756	0.0355696890850244	yes: not classified, decides nothing
+P2	mcar0.5	lost_planted S filt	400	0.0195700293625	0.00522582057667177	0.000261291028833588	0.0190563501967368	0.0200837085282632	yes: not classified, decides nothing
+P2	mcar2	lost_planted S filt	400	0.0194228539725	0.00531118106283795	0.000265559053141897	0.0189007841812494	0.0199449237637506	yes: not classified, decides nothing
+P2	mcar10	lost_planted S filt	400	0.0204291883825	0.00566737845488736	0.000283368922744368	0.0198721056824612	0.0209862710825388	yes: not classified, decides nothing
 P3	none	lost_planted S filt	400	0.005761043407	0.00205551846244456	0.000102775923122228	0.00555899341437055	0.00596309339962945	yes: not classified, decides nothing
 P3	vd0.1	lost_planted S filt	400	0.0058128777125	0.00205101959246357	0.000102550979623178	0.00561126994243537	0.00601448548256463	yes: not classified, decides nothing
 P3	vd0.5	lost_planted S filt	400	0.0063084377925	0.00223961447498679	0.00011198072374934	0.0060882918310642	0.0065285837539358	yes: not classified, decides nothing
@@ -371,6 +391,16 @@ P1	vd50	lost_null S filt	400	0.0189485215	0.00159480117724706	7.97400588623532e-
 P1	mcar0.5	lost_null S filt	400	0.00951978172	0.000771926102090425	3.85963051045213e-05	0.00944390419027333	0.00959565924972667	yes: not classified, decides nothing
 P1	mcar2	lost_null S filt	400	0.0094095018725	0.000858883707118528	4.29441853559264e-05	0.0093250767263077	0.0094939270186923	yes: not classified, decides nothing
 P1	mcar10	lost_null S filt	400	0.009666919725	0.000888986242513175	4.44493121256587e-05	0.00957953560900726	0.00975430384099274	yes: not classified, decides nothing
+P2	none	lost_null S filt	400	0.011898386485	0.00116374006018015	5.81870030090075e-05	0.0117839950675168	0.0120127779024832	yes: not classified, decides nothing
+P2	vd0.1	lost_null S filt	400	0.01200972081	0.00115615665453513	5.78078327267566e-05	0.0118960748137244	0.0121233668062756	yes: not classified, decides nothing
+P2	vd0.5	lost_null S filt	400	0.012556218995	0.00125320519360907	6.26602596804535e-05	0.0124330334801247	0.0126794045098753	yes: not classified, decides nothing
+P2	vd2	lost_null S filt	400	0.0138999134	0.00136455600295056	6.8227800147528e-05	0.0137657825053493	0.0140340442946507	yes: not classified, decides nothing
+P2	vd10	lost_null S filt	400	0.0162242793	0.0015522954058815	7.7614770294075e-05	0.0160716943045122	0.0163768642954878	yes: not classified, decides nothing
+P2	vd25	lost_null S filt	400	0.0165006975	0.00182284663082444	9.11423315412221e-05	0.0163215183026092	0.0166798766973908	yes: not classified, decides nothing
+P2	vd50	lost_null S filt	400	0.016011689395	0.00233496342503974	0.000116748171251987	0.0157821709783869	0.0162412078116131	yes: not classified, decides nothing
+P2	mcar0.5	lost_null S filt	400	0.01178160577	0.00119473246990101	5.97366234950504e-05	0.0116641679113049	0.0118990436286951	yes: not classified, decides nothing
+P2	mcar2	lost_null S filt	400	0.0117546544425	0.00128051041117275	6.40255205586373e-05	0.0116287849239982	0.0118805239610018	yes: not classified, decides nothing
+P2	mcar10	lost_null S filt	400	0.0122531657925	0.0013269504013782	6.63475200689101e-05	0.0121227313917799	0.0123836001932201	yes: not classified, decides nothing
 P3	none	lost_null S filt	400	0.0057336395725	0.000697963042222711	3.48981521111355e-05	0.00566503234268752	0.00580224680231248	yes: not classified, decides nothing
 P3	vd0.1	lost_null S filt	400	0.00583462768	0.000706627904768483	3.53313952384242e-05	0.00576516872569781	0.00590408663430219	yes: not classified, decides nothing
 P3	vd0.5	lost_null S filt	400	0.0062060517125	0.000758841259550768	3.79420629775384e-05	0.00613146037522891	0.00628064304977109	yes: not classified, decides nothing
@@ -507,6 +537,16 @@ P1	vd50	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -643,6 +683,16 @@ P1	vd50	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothi
 P1	mcar0.5	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost_planted S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -779,6 +829,16 @@ P1	vd50	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost_null S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -915,6 +975,16 @@ P1	vd50	lost S rd_eq	400	0.121977460375	0.0144256807140809	0.000721284035704043	
 P1	mcar0.5	lost S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	lost S rd_eq	14	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar10	lost S rd_eq	400	0.006275216975	0.020991902711866	0.0010495951355933	0.00421178924827135	0.00833864470172865	yes: not classified, decides nothing
+P2	none	lost S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost S rd_eq	21	0.285714285714286	0.462910049886276	0.101015254455221	0.0750001573044342	0.496428414124137	yes: not classified, decides nothing
+P2	vd0.5	lost S rd_eq	285	0.271988303157895	0.380588180797231	0.0225440981783614	0.227613578850346	0.316363027465443	yes: not classified, decides nothing
+P2	vd2	lost S rd_eq	400	0.22631203615	0.114531307717959	0.00572656538589795	0.215054024945988	0.237570047354012	yes: not classified, decides nothing
+P2	vd10	lost S rd_eq	400	0.150785617025	0.0285510805199288	0.00142755402599644	0.147979149598892	0.153592084451108	yes: not classified, decides nothing
+P2	vd25	lost S rd_eq	400	0.0982934724	0.0162371101389029	0.000811855506945145	0.0966974234985529	0.0998895213014471	yes: not classified, decides nothing
+P2	vd50	lost S rd_eq	400	0.06527392455	0.0109888132103343	0.000549440660516714	0.0641937641580014	0.0663540849419986	yes: not classified, decides nothing
+P2	mcar0.5	lost S rd_eq	195	0.0153846153846154	0.12339372391779	0.00883640810606447	-0.00204314542762115	0.0328123761968519	yes: not classified, decides nothing
+P2	mcar2	lost S rd_eq	400	0.0101460596	0.0346289067271193	0.00173144533635597	0.00674216395186289	0.0135499552481371	yes: not classified, decides nothing
+P2	mcar10	lost S rd_eq	400	0.0092566215775	0.00735660308190477	0.000367830154095239	0.00853349423730139	0.00997974891769861	yes: not classified, decides nothing
 P3	none	lost S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -1051,6 +1121,16 @@ P1	vd50	lost_planted S rd_eq	400	0.2057375763	0.054644374873667	0.00273221874368
 P1	mcar0.5	lost_planted S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	lost_planted S rd_eq	5	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar10	lost_planted S rd_eq	375	0.0137598845066667	0.0984016200578289	0.00508143780965068	0.00376811521151277	0.0237516538018206	yes: not classified, decides nothing
+P2	none	lost_planted S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost_planted S rd_eq	3	0.333333333333333	0.577350269189626	0.333333333333333	-1.10088424324982	1.76755090991649	yes: not classified, decides nothing
+P2	vd0.5	lost_planted S rd_eq	73	0.23972602739726	0.425812858616512	0.0498376254633404	0.140376536787151	0.339075518007369	yes: not classified, decides nothing
+P2	vd2	lost_planted S rd_eq	356	0.261306177808989	0.328864913988423	0.0174298055818101	0.227027521372803	0.295584834245175	yes: not classified, decides nothing
+P2	vd10	lost_planted S rd_eq	400	0.211415907875	0.0964829461787983	0.00482414730893992	0.201931985000812	0.220899830749188	yes: not classified, decides nothing
+P2	vd25	lost_planted S rd_eq	400	0.159073433825	0.0542068164749441	0.0027103408237472	0.153745100818347	0.164401766831653	yes: not classified, decides nothing
+P2	vd50	lost_planted S rd_eq	400	0.11325906605	0.0500968843714325	0.00250484421857162	0.10833472442868	0.11818340767132	yes: not classified, decides nothing
+P2	mcar0.5	lost_planted S rd_eq	46	0.0434782608695652	0.206184570942362	0.0304002564687	-0.0177509987068904	0.104707520446021	yes: not classified, decides nothing
+P2	mcar2	lost_planted S rd_eq	343	0.0152367064139942	0.088814850769926	0.00479555118094975	0.0058042186075213	0.024669194220467	yes: not classified, decides nothing
+P2	mcar10	lost_planted S rd_eq	400	0.014615509375	0.0226538685967676	0.00113269342983838	0.0123887164433705	0.0168423023066295	yes: not classified, decides nothing
 P3	none	lost_planted S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost_planted S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost_planted S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -1187,6 +1267,16 @@ P1	vd50	lost_null S rd_eq	400	0.105500479075	0.0157197165458722	0.00078598582729
 P1	mcar0.5	lost_null S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	lost_null S rd_eq	9	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar10	lost_null S rd_eq	400	0.00543148795	0.02189744404783	0.0010948722023915	0.00327904880177354	0.00758392709822647	yes: not classified, decides nothing
+P2	none	lost_null S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost_null S rd_eq	18	0.277777777777778	0.460888598962477	0.108632484565978	0.0485832695817397	0.506972285973816	yes: not classified, decides nothing
+P2	vd0.5	lost_null S rd_eq	259	0.284877734362934	0.394293074845177	0.0245001795652441	0.236631946800076	0.333123521925793	yes: not classified, decides nothing
+P2	vd2	lost_null S rd_eq	400	0.217665933	0.123803300848877	0.00619016504244387	0.205496518576804	0.229835347423196	yes: not classified, decides nothing
+P2	vd10	lost_null S rd_eq	400	0.138455076075	0.030960088431388	0.0015480044215694	0.13541181192843	0.141498340221569	yes: not classified, decides nothing
+P2	vd25	lost_null S rd_eq	400	0.08539042445	0.0175875954876336	0.000879379774381681	0.0836616277480623	0.0871192211519377	yes: not classified, decides nothing
+P2	vd50	lost_null S rd_eq	400	0.055015147475	0.0109850569594896	0.00054925284797448	0.0539353563088047	0.0560949386411953	yes: not classified, decides nothing
+P2	mcar0.5	lost_null S rd_eq	165	0.00606060606060606	0.0778498944161523	0.00606060606060606	-0.00590627015671801	0.0180274822779301	yes: not classified, decides nothing
+P2	mcar2	lost_null S rd_eq	400	0.008632901825	0.0351170102485381	0.0017558505124269	0.00518102737506328	0.0120847762749367	yes: not classified, decides nothing
+P2	mcar10	lost_null S rd_eq	400	0.0079799843275	0.00739165485974835	0.000369582742987417	0.00725341152495972	0.00870655713004028	yes: not classified, decides nothing
 P3	none	lost_null S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost_null S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost_null S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -1323,6 +1413,16 @@ P1	vd50	lost S rd_gt	400	0.0116394542225	0.00179650626530145	8.98253132650724e-0
 P1	mcar0.5	lost S rd_gt	400	0.0109998707425	0.000597738003567431	2.98869001783715e-05	0.0109411152696489	0.0110586262153511	yes: not classified, decides nothing
 P1	mcar2	lost S rd_gt	400	0.0108479133425	0.000789315080504303	3.94657540252151e-05	0.0107703265394077	0.0109255001455923	yes: not classified, decides nothing
 P1	mcar10	lost S rd_gt	400	0.011073280545	0.000821609158448013	4.10804579224006e-05	0.0109925193514414	0.0111540417385586	yes: not classified, decides nothing
+P2	none	lost S rd_gt	400	0.01345509645	0.000941828749130179	4.7091437456509e-05	0.0133625181077001	0.0135476747922999	yes: not classified, decides nothing
+P2	vd0.1	lost S rd_gt	400	0.013601088825	0.000957512878475001	4.78756439237501e-05	0.0135069687898005	0.0136952088601995	yes: not classified, decides nothing
+P2	vd0.5	lost S rd_gt	400	0.0140703526	0.000965724572408263	4.82862286204132e-05	0.0139754253851381	0.0141652798148619	yes: not classified, decides nothing
+P2	vd2	lost S rd_gt	400	0.0147114766	0.00104074266691666	5.20371333458328e-05	0.014609175379154	0.014813777820846	yes: not classified, decides nothing
+P2	vd10	lost S rd_gt	400	0.0129670410575	0.00154011930658553	7.70059653292765e-05	0.0128156529283104	0.0131184291866896	yes: not classified, decides nothing
+P2	vd25	lost S rd_gt	400	0.01008821758	0.00187945403722361	9.39727018611805e-05	0.00990347408033967	0.0102729610796603	yes: not classified, decides nothing
+P2	vd50	lost S rd_gt	400	0.00752913159	0.00259416069754267	0.000129708034877134	0.00727413502373479	0.00778412815626521	yes: not classified, decides nothing
+P2	mcar0.5	lost S rd_gt	400	0.013329470925	0.00101488995428972	5.0744497714486e-05	0.0132297109318253	0.0134292309181747	yes: not classified, decides nothing
+P2	mcar2	lost S rd_gt	400	0.0132904427625	0.00101306397660249	5.06531988301246e-05	0.0131908622562942	0.0133900232687059	yes: not classified, decides nothing
+P2	mcar10	lost S rd_gt	400	0.014185293185	0.00119846732486801	5.99233662434005e-05	0.0140674882036386	0.0143030981663614	yes: not classified, decides nothing
 P3	none	lost S rd_gt	400	0.0057391127625	0.00053608830913429	2.68044154567145e-05	0.00568641723050244	0.00579180829449756	yes: not classified, decides nothing
 P3	vd0.1	lost S rd_gt	400	0.0058302793875	0.000562189274552978	2.81094637276489e-05	0.00577501822548412	0.00588554054951588	yes: not classified, decides nothing
 P3	vd0.5	lost S rd_gt	400	0.00622648133	0.000611590897560525	3.05795448780262e-05	0.00616636416802745	0.00628659849197255	yes: not classified, decides nothing
@@ -1459,6 +1559,16 @@ P1	vd50	lost_planted S rd_gt	400	0.0240565532525	0.00683492422997637	0.000341746
 P1	mcar0.5	lost_planted S rd_gt	400	0.016959819235	0.00350946614724516	0.000175473307362258	0.016614851470351	0.017304786999649	yes: not classified, decides nothing
 P1	mcar2	lost_planted S rd_gt	400	0.0166399504525	0.00351864555573108	0.000175932277786554	0.0162940803853659	0.0169858205196341	yes: not classified, decides nothing
 P1	mcar10	lost_planted S rd_gt	400	0.0166993481875	0.00366026288433254	0.000183013144216627	0.0163395576517722	0.0170591387232278	yes: not classified, decides nothing
+P2	none	lost_planted S rd_gt	400	0.01973377152	0.00540391799271938	0.000270195899635969	0.0192025860256597	0.0202649570143402	yes: not classified, decides nothing
+P2	vd0.1	lost_planted S rd_gt	400	0.020041069795	0.00552514828703233	0.000276257414351617	0.0194979678034256	0.0205841717865744	yes: not classified, decides nothing
+P2	vd0.5	lost_planted S rd_gt	400	0.020694971345	0.00566265747988618	0.000283132873994309	0.0201383526996421	0.0212515899903579	yes: not classified, decides nothing
+P2	vd2	lost_planted S rd_gt	400	0.02199524902	0.00594170164992421	0.00029708508249621	0.0214112013471098	0.0225792966928902	yes: not classified, decides nothing
+P2	vd10	lost_planted S rd_gt	400	0.0226319156875	0.00642264926566753	0.000321132463283377	0.0220005926123249	0.0232632387626751	yes: not classified, decides nothing
+P2	vd25	lost_planted S rd_gt	400	0.0195114317025	0.00687176771388788	0.000343588385694394	0.018835961916502	0.020186901488498	yes: not classified, decides nothing
+P2	vd50	lost_planted S rd_gt	400	0.015997111805	0.00944319404909779	0.000472159702454889	0.01506888015791	0.0169253434520899	yes: not classified, decides nothing
+P2	mcar0.5	lost_planted S rd_gt	400	0.01956581166	0.00522128557558848	0.000261064278779424	0.0190525782683576	0.0200790450516424	yes: not classified, decides nothing
+P2	mcar2	lost_planted S rd_gt	400	0.019432424585	0.00531964997546008	0.000265982498773004	0.0189095223304249	0.0199553268395751	yes: not classified, decides nothing
+P2	mcar10	lost_planted S rd_gt	400	0.020841738495	0.00592399238354754	0.000296199619177377	0.0202594315786178	0.0214240454113822	yes: not classified, decides nothing
 P3	none	lost_planted S rd_gt	400	0.005761043407	0.00205551846244456	0.000102775923122228	0.00555899341437055	0.00596309339962945	yes: not classified, decides nothing
 P3	vd0.1	lost_planted S rd_gt	400	0.0058128777125	0.00205101959246357	0.000102550979623178	0.00561126994243537	0.00601448548256463	yes: not classified, decides nothing
 P3	vd0.5	lost_planted S rd_gt	400	0.0063084377925	0.00223961447498679	0.00011198072374934	0.0060882918310642	0.0065285837539358	yes: not classified, decides nothing
@@ -1595,6 +1705,16 @@ P1	vd50	lost_null S rd_gt	400	0.008627644815	0.00175911013323702	8.7955506661850
 P1	mcar0.5	lost_null S rd_gt	400	0.00951978172	0.000771926102090425	3.85963051045213e-05	0.00944390419027333	0.00959565924972667	yes: not classified, decides nothing
 P1	mcar2	lost_null S rd_gt	400	0.0094095488275	0.000858915047534099	4.2945752376705e-05	0.00932512060065878	0.00949397705434122	yes: not classified, decides nothing
 P1	mcar10	lost_null S rd_gt	400	0.0096764772275	0.000891896882494374	4.45948441247187e-05	0.00958880700617788	0.00976414744882212	yes: not classified, decides nothing
+P2	none	lost_null S rd_gt	400	0.011898386485	0.00116374006018015	5.81870030090075e-05	0.0117839950675168	0.0120127779024832	yes: not classified, decides nothing
+P2	vd0.1	lost_null S rd_gt	400	0.012004698785	0.00115545106693244	5.77725533466222e-05	0.0118911221454208	0.0121182754245792	yes: not classified, decides nothing
+P2	vd0.5	lost_null S rd_gt	400	0.0124298456525	0.00123899770102183	6.19498850510916e-05	0.0123080566824989	0.0125516346225011	yes: not classified, decides nothing
+P2	vd2	lost_null S rd_gt	400	0.0129132599875	0.00137648800302719	6.88244001513594e-05	0.0127779562206171	0.0130485637543829	yes: not classified, decides nothing
+P2	vd10	lost_null S rd_gt	400	0.010595891965	0.00164241899716005	8.21209498580025e-05	0.0104344481481072	0.0107573357818928	yes: not classified, decides nothing
+P2	vd25	lost_null S rd_gt	400	0.00778748842975	0.00200443834956127	0.000100221917478063	0.00759045942653034	0.00798451743296965	yes: not classified, decides nothing
+P2	vd50	lost_null S rd_gt	400	0.00544609498	0.00251461258322057	0.000125730629161029	0.00519891770419903	0.00569327225580097	yes: not classified, decides nothing
+P2	mcar0.5	lost_null S rd_gt	400	0.0117831976025	0.00119658722416554	5.9829361208277e-05	0.0116655774282031	0.0119008177767969	yes: not classified, decides nothing
+P2	mcar2	lost_null S rd_gt	400	0.0117673878025	0.00128758748102205	6.43793740511023e-05	0.0116408226337586	0.0118939529712414	yes: not classified, decides nothing
+P2	mcar10	lost_null S rd_gt	400	0.0125356614325	0.00138192091708774	6.90960458543868e-05	0.0123998236299147	0.0126714992350853	yes: not classified, decides nothing
 P3	none	lost_null S rd_gt	400	0.0057336395725	0.000697963042222711	3.48981521111355e-05	0.00566503234268752	0.00580224680231248	yes: not classified, decides nothing
 P3	vd0.1	lost_null S rd_gt	400	0.00583462768	0.000706627904768483	3.53313952384242e-05	0.00576516872569781	0.00590408663430219	yes: not classified, decides nothing
 P3	vd0.5	lost_null S rd_gt	400	0.0062060517125	0.000758841259550768	3.79420629775384e-05	0.00613146037522891	0.00628064304977109	yes: not classified, decides nothing
@@ -1731,6 +1851,16 @@ P1	mcar0.5	lost C filt	400	0.0110683765875	0.000569341427293253	2.84670713646626
 P1	mcar2	lost C filt	400	0.0111993071	0.000593531071294097	2.96765535647049e-05	0.0111409651532983	0.0112576490467017	yes: not classified, decides nothing
 P1	mcar10	lost C filt	400	0.0118985538375	0.000656817275847679	3.2840863792384e-05	0.0118339910869489	0.0119631165880511	yes: not classified, decides nothing
 P1	none	lost C filt	20	0.011210475	0.00042297216654104	9.45794516976127e-05	0.0110125179325441	0.0114084320674559	yes: not classified, decides nothing
+P2	vd0.1	lost C filt	400	0.0136202118	0.000932574033563261	4.66287016781631e-05	0.0135285431625975	0.0137118804374025	yes: not classified, decides nothing
+P2	vd0.5	lost C filt	400	0.01423111025	0.000963924814973524	4.81962407486762e-05	0.0141363599447514	0.0143258605552486	yes: not classified, decides nothing
+P2	vd2	lost C filt	400	0.015836504675	0.00101237208327986	5.0618604163993e-05	0.0157369921793926	0.0159360171706074	yes: not classified, decides nothing
+P2	vd10	lost C filt	400	0.0189240953	0.00127843884381708	6.39219421908542e-05	0.0187984294090387	0.0190497611909613	yes: not classified, decides nothing
+P2	vd25	lost C filt	400	0.0197644468	0.00135250731744068	6.7625365872034e-05	0.0196315002473355	0.0198973933526645	yes: not classified, decides nothing
+P2	vd50	lost C filt	400	0.0195371313	0.001710756301125	8.55378150562502e-05	0.0193689701745475	0.0197052924254525	yes: not classified, decides nothing
+P2	mcar0.5	lost C filt	400	0.01349765785	0.000975402460161497	4.87701230080748e-05	0.013401779333953	0.013593536366047	yes: not classified, decides nothing
+P2	mcar2	lost C filt	400	0.013634751325	0.000973689025343915	4.86844512671957e-05	0.0135390412333669	0.0137304614166331	yes: not classified, decides nothing
+P2	mcar10	lost C filt	400	0.014130547675	0.0009727987635914	4.863993817957e-05	0.0140349250928609	0.0142261702571391	yes: not classified, decides nothing
+P2	none	lost C filt	20	0.0133493215	0.00103707526041305	0.000231897078006687	0.012863955337585	0.013834687662415	yes: not classified, decides nothing
 P3	vd0.1	lost C filt	400	0.00582818468	0.000561498564543734	2.80749282271867e-05	0.00577299141226715	0.00588337794773285	yes: not classified, decides nothing
 P3	vd0.5	lost C filt	400	0.006222289935	0.0006172565133285	3.0862825666425e-05	0.00616161586359313	0.00628296400640687	yes: not classified, decides nothing
 P3	vd2	lost C filt	400	0.0075441701625	0.000688089947998274	3.44044973999137e-05	0.00747653342195907	0.00761180690304093	yes: not classified, decides nothing
@@ -1867,6 +1997,16 @@ P1	mcar0.5	lost_planted C filt	400	0.0171162252975	0.00351269770117734	0.0001756
 P1	mcar2	lost_planted C filt	400	0.01728235811	0.00356216854090422	0.000178108427045211	0.0169322098916383	0.0176325063283617	yes: not classified, decides nothing
 P1	mcar10	lost_planted C filt	400	0.018289240405	0.00362700447569939	0.00018135022378497	0.0179327190499398	0.0186457617600602	yes: not classified, decides nothing
 P1	none	lost_planted C filt	20	0.01744705505	0.00309033125418169	0.000691019075734243	0.0160007355024332	0.0188933745975668	yes: not classified, decides nothing
+P2	vd0.1	lost_planted C filt	400	0.01992204093	0.00552804493827573	0.000276402246913786	0.0193786542081383	0.0204654276518617	yes: not classified, decides nothing
+P2	vd0.5	lost_planted C filt	400	0.0207444876625	0.00561427560043302	0.000280713780021651	0.0201926247800143	0.0212963505449857	yes: not classified, decides nothing
+P2	vd2	lost_planted C filt	400	0.023248104015	0.00592699554868582	0.000296349777434291	0.0226655018984019	0.0238307061315981	yes: not classified, decides nothing
+P2	vd10	lost_planted C filt	400	0.029990358225	0.00711617283840892	0.000355808641920446	0.0292908643037241	0.0306898521462759	yes: not classified, decides nothing
+P2	vd25	lost_planted C filt	400	0.0334564984	0.00806143241011755	0.000403071620505878	0.0326640888990364	0.0342489079009636	yes: not classified, decides nothing
+P2	vd50	lost_planted C filt	400	0.034408209455	0.0112842804777545	0.000564214023887726	0.0332990057046978	0.0355174132053022	yes: not classified, decides nothing
+P2	mcar0.5	lost_planted C filt	400	0.0198377412825	0.00542410216451406	0.000271205108225703	0.0193045717574459	0.0203709108075541	yes: not classified, decides nothing
+P2	mcar2	lost_planted C filt	400	0.0200353830825	0.0053419415489451	0.000267097077447255	0.0195102896472857	0.0205604765177143	yes: not classified, decides nothing
+P2	mcar10	lost_planted C filt	400	0.02107613201	0.00575465156761874	0.000287732578380937	0.0205104706802352	0.0216417933397648	yes: not classified, decides nothing
+P2	none	lost_planted C filt	20	0.0192681887	0.00778428347575131	0.00174061870079083	0.0156250318896919	0.0229113455103081	yes: not classified, decides nothing
 P3	vd0.1	lost_planted C filt	400	0.0058107592125	0.0020658009707224	0.00010329004853612	0.00560769848668585	0.00601381993831415	yes: not classified, decides nothing
 P3	vd0.5	lost_planted C filt	400	0.0063105034325	0.00224271249230407	0.000112135624615204	0.00609005294722383	0.00653095391777617	yes: not classified, decides nothing
 P3	vd2	lost_planted C filt	400	0.0073737721525	0.00248875645251107	0.000124437822625553	0.00712913644035546	0.00761840786464454	yes: not classified, decides nothing
@@ -2003,6 +2143,16 @@ P1	mcar0.5	lost_null C filt	400	0.0095664734275	0.000738807189532629	3.694035947
 P1	mcar2	lost_null C filt	400	0.0096887137875	0.000761304967991628	3.80652483995814e-05	0.00961388027664526	0.00976354729835475	yes: not classified, decides nothing
 P1	mcar10	lost_null C filt	400	0.010312164205	0.000793732117255179	3.96866058627589e-05	0.0102341432232519	0.0103901851867481	yes: not classified, decides nothing
 P1	none	lost_null C filt	20	0.00966155675	0.000686848430646504	0.000153583978116463	0.00934010178943052	0.00998301171056948	yes: not classified, decides nothing
+P2	vd0.1	lost_null C filt	400	0.012058098485	0.00115166336590414	5.7583168295207e-05	0.0119448941626628	0.0121713028073372	yes: not classified, decides nothing
+P2	vd0.5	lost_null C filt	400	0.01261845653	0.00126095470258507	6.30477351292533e-05	0.0124945092665634	0.0127424037934366	yes: not classified, decides nothing
+P2	vd2	lost_null C filt	400	0.0140086447775	0.00139303482123174	6.96517410615869e-05	0.0138717145185386	0.0141455750364614	yes: not classified, decides nothing
+P2	vd10	lost_null C filt	400	0.016228183625	0.00156401876016529	7.82009380082647e-05	0.0160744462664029	0.0163819209835971	yes: not classified, decides nothing
+P2	vd25	lost_null C filt	400	0.016473747725	0.0018333575809695	9.16678790484748e-05	0.0162935353394194	0.0166539601105806	yes: not classified, decides nothing
+P2	vd50	lost_null C filt	400	0.01598204277	0.0023139044855427	0.000115695224277135	0.0157545943705859	0.0162094911694141	yes: not classified, decides nothing
+P2	mcar0.5	lost_null C filt	400	0.0119256696125	0.00114583277114322	5.72916385571609e-05	0.0118130384164324	0.0120383008085676	yes: not classified, decides nothing
+P2	mcar2	lost_null C filt	400	0.01204785715	0.00114428744866172	5.72143724330859e-05	0.0119353778535148	0.0121603364464852	yes: not classified, decides nothing
+P2	mcar10	lost_null C filt	400	0.012408290705	0.00127509051303128	6.37545256515642e-05	0.0122829539427831	0.0125336274672169	yes: not classified, decides nothing
+P2	none	lost_null C filt	20	0.01188387835	0.00127056124529103	0.000284106131404754	0.011289237382965	0.012478519317035	yes: not classified, decides nothing
 P3	vd0.1	lost_null C filt	400	0.0058325380525	0.000706740308917885	3.53370154458943e-05	0.00576306804927854	0.00590200805572146	yes: not classified, decides nothing
 P3	vd0.5	lost_null C filt	400	0.006200289055	0.000757421035930851	3.78710517965425e-05	0.00612583732054794	0.00627474078945206	yes: not classified, decides nothing
 P3	vd2	lost_null C filt	400	0.00758697133	0.000903779874847501	4.5188993742375e-05	0.00749813305372667	0.00767580960627333	yes: not classified, decides nothing
@@ -2139,6 +2289,16 @@ P1	mcar0.5	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	none	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd2	lost C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -2275,6 +2435,16 @@ P1	mcar0.5	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides no
 P1	mcar2	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	none	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd2	lost_planted C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -2411,6 +2581,16 @@ P1	mcar0.5	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothi
 P1	mcar2	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	none	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd2	lost_null C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -2547,6 +2727,16 @@ P1	mcar0.5	lost C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	lost C rd_eq	14	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar10	lost C rd_eq	400	0.006848412175	0.02159975372954	0.001079987686477	0.00472523490289643	0.00897158944710357	yes: not classified, decides nothing
 P1	none	lost C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost C rd_eq	21	0.285714285714286	0.462910049886276	0.101015254455221	0.0750001573044342	0.496428414124137	yes: not classified, decides nothing
+P2	vd0.5	lost C rd_eq	285	0.269649121754386	0.380202403197245	0.0225212466855198	0.225319377232094	0.313978866276678	yes: not classified, decides nothing
+P2	vd2	lost C rd_eq	400	0.229847111975	0.11466394820948	0.005733197410474	0.218576062692846	0.241118161257154	yes: not classified, decides nothing
+P2	vd10	lost C rd_eq	400	0.152994206875	0.0289758012672789	0.00144879006336395	0.150145990943374	0.155842422806626	yes: not classified, decides nothing
+P2	vd25	lost C rd_eq	400	0.099488570425	0.0165783320346798	0.000828916601733989	0.0978589806516092	0.101118160198391	yes: not classified, decides nothing
+P2	vd50	lost C rd_eq	400	0.066238670025	0.0110304530907193	0.000551522654535964	0.065154416584129	0.067322923465871	yes: not classified, decides nothing
+P2	mcar0.5	lost C rd_eq	195	0.0153846153846154	0.12339372391779	0.00883640810606447	-0.00204314542762115	0.0328123761968519	yes: not classified, decides nothing
+P2	mcar2	lost C rd_eq	400	0.0111996311	0.0360761482346312	0.00180380741173156	0.00765347687269253	0.0147457853273075	yes: not classified, decides nothing
+P2	mcar10	lost C rd_eq	400	0.0100098649725	0.00762080218399081	0.00038104010919954	0.00926076782098395	0.010758962124016	yes: not classified, decides nothing
+P2	none	lost C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd2	lost C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -2683,6 +2873,16 @@ P1	mcar0.5	lost_planted C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides no
 P1	mcar2	lost_planted C rd_eq	5	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar10	lost_planted C rd_eq	375	0.0144265511733333	0.099152155443791	0.00512019529032496	0.00435857199037499	0.0244945303562917	yes: not classified, decides nothing
 P1	none	lost_planted C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost_planted C rd_eq	3	0.333333333333333	0.577350269189626	0.333333333333333	-1.10088424324982	1.76755090991649	yes: not classified, decides nothing
+P2	vd0.5	lost_planted C rd_eq	73	0.23972602739726	0.425812858616512	0.0498376254633404	0.140376536787151	0.339075518007369	yes: not classified, decides nothing
+P2	vd2	lost_planted C rd_eq	356	0.26247658988764	0.329327752368605	0.017454335966899	0.228149690306185	0.296803489469096	yes: not classified, decides nothing
+P2	vd10	lost_planted C rd_eq	400	0.21455230635	0.0978518740530952	0.00489259370265476	0.2049338228421	0.2241707898579	yes: not classified, decides nothing
+P2	vd25	lost_planted C rd_eq	400	0.160700071675	0.0543040412594738	0.00271520206297369	0.155362181825459	0.166037961524541	yes: not classified, decides nothing
+P2	vd50	lost_planted C rd_eq	400	0.114463325475	0.0508493461937856	0.00254246730968928	0.109465019591895	0.119461631358105	yes: not classified, decides nothing
+P2	mcar0.5	lost_planted C rd_eq	46	0.0434782608695652	0.206184570942362	0.0304002564687	-0.0177509987068904	0.104707520446021	yes: not classified, decides nothing
+P2	mcar2	lost_planted C rd_eq	343	0.019852838483965	0.10562782538221	0.00570336647938537	0.00863474639345495	0.0310709305744751	yes: not classified, decides nothing
+P2	mcar10	lost_planted C rd_eq	400	0.01576717185	0.0234503362916089	0.00117251681458045	0.0134620890392901	0.0180722546607099	yes: not classified, decides nothing
+P2	none	lost_planted C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost_planted C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost_planted C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd2	lost_planted C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -2819,6 +3019,16 @@ P1	mcar0.5	lost_null C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothi
 P1	mcar2	lost_null C rd_eq	9	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar10	lost_null C rd_eq	400	0.0060842657	0.0230531367500952	0.00115265683750476	0.00381822616031955	0.00835030523968045	yes: not classified, decides nothing
 P1	none	lost_null C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	lost_null C rd_eq	18	0.277777777777778	0.460888598962477	0.108632484565978	0.0485832695817397	0.506972285973816	yes: not classified, decides nothing
+P2	vd0.5	lost_null C rd_eq	259	0.282303731660232	0.393966954286723	0.0244799154197347	0.234097848280801	0.330509615039662	yes: not classified, decides nothing
+P2	vd2	lost_null C rd_eq	400	0.221509177925	0.124078523742991	0.00620392618714957	0.209312710091804	0.233705645758196	yes: not classified, decides nothing
+P2	vd10	lost_null C rd_eq	400	0.1404592246	0.0311128150713429	0.00155564075356714	0.137400947979915	0.143517501220085	yes: not classified, decides nothing
+P2	vd25	lost_null C rd_eq	400	0.0864885435	0.0178151181725825	0.000890755908629123	0.0847373821452232	0.0882397048547768	yes: not classified, decides nothing
+P2	vd50	lost_null C rd_eq	400	0.055927454375	0.0111698924244202	0.000558494621221009	0.0548294945545166	0.0570254141954834	yes: not classified, decides nothing
+P2	mcar0.5	lost_null C rd_eq	165	0.00606060606060606	0.0778498944161523	0.00606060606060606	-0.00590627015671801	0.0180274822779301	yes: not classified, decides nothing
+P2	mcar2	lost_null C rd_eq	400	0.008910679575	0.0354860609799596	0.00177430304899798	0.00542252877973922	0.0123988303702608	yes: not classified, decides nothing
+P2	mcar10	lost_null C rd_eq	400	0.008637752215	0.00776311844083514	0.000388155922041757	0.00787466589278477	0.00940083853721523	yes: not classified, decides nothing
+P2	none	lost_null C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	lost_null C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	lost_null C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd2	lost_null C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -2955,6 +3165,16 @@ P1	mcar0.5	lost C rd_gt	400	0.0110683765875	0.000569341427293253	2.8467071364662
 P1	mcar2	lost C rd_gt	400	0.011199373	0.000593532964490847	2.96766482245424e-05	0.0111410308672039	0.0112577151327961	yes: not classified, decides nothing
 P1	mcar10	lost C rd_gt	400	0.0119092415	0.000661344631613245	3.30672315806623e-05	0.011844233726835	0.011974249273165	yes: not classified, decides nothing
 P1	none	lost C rd_gt	20	0.011210475	0.00042297216654104	9.45794516976127e-05	0.0110125179325441	0.0114084320674559	yes: not classified, decides nothing
+P2	vd0.1	lost C rd_gt	400	0.013615400525	0.000931371779142159	4.65685889571079e-05	0.0135238500648367	0.0137069509851633	yes: not classified, decides nothing
+P2	vd0.5	lost C rd_gt	400	0.0141168806	0.000965393648368849	4.82696824184425e-05	0.0140219859137682	0.0142117752862318	yes: not classified, decides nothing
+P2	vd2	lost C rd_gt	400	0.0148532802	0.00104292931991377	5.21464659956885e-05	0.0147507640391133	0.0149557963608867	yes: not classified, decides nothing
+P2	vd10	lost C rd_gt	400	0.012937776605	0.00159025820382762	7.95129101913811e-05	0.0127814600044767	0.0130940932055233	yes: not classified, decides nothing
+P2	vd25	lost C rd_gt	400	0.0099442525675	0.00189638677169765	9.48193385848824e-05	0.00975784464159482	0.0101306604934052	yes: not classified, decides nothing
+P2	vd50	lost C rd_gt	400	0.007230895005	0.00252476961229658	0.000126238480614829	0.00698271933016373	0.00747907067983627	yes: not classified, decides nothing
+P2	mcar0.5	lost C rd_gt	400	0.0134981315	0.000978257661708806	4.89128830854403e-05	0.0134019723280201	0.0135942906719799	yes: not classified, decides nothing
+P2	mcar2	lost C rd_gt	400	0.01364500015	0.000986383491947449	4.93191745973725e-05	0.0135480422384467	0.0137419580615533	yes: not classified, decides nothing
+P2	mcar10	lost C rd_gt	400	0.014404589075	0.00107205875611732	5.3602937805866e-05	0.0142992095964259	0.0145099685535741	yes: not classified, decides nothing
+P2	none	lost C rd_gt	20	0.0133493215	0.00103707526041305	0.000231897078006687	0.012863955337585	0.013834687662415	yes: not classified, decides nothing
 P3	vd0.1	lost C rd_gt	400	0.00582818468	0.000561498564543734	2.80749282271867e-05	0.00577299141226715	0.00588337794773285	yes: not classified, decides nothing
 P3	vd0.5	lost C rd_gt	400	0.006222289935	0.0006172565133285	3.0862825666425e-05	0.00616161586359313	0.00628296400640687	yes: not classified, decides nothing
 P3	vd2	lost C rd_gt	400	0.0075441701625	0.000688089947998274	3.44044973999137e-05	0.00747653342195907	0.00761180690304093	yes: not classified, decides nothing
@@ -3091,6 +3311,16 @@ P1	mcar0.5	lost_planted C rd_gt	400	0.0171162252975	0.00351269770117734	0.000175
 P1	mcar2	lost_planted C rd_gt	400	0.01728252721	0.00356213152992542	0.000178106576496271	0.016932382629683	0.017632671790317	yes: not classified, decides nothing
 P1	mcar10	lost_planted C rd_gt	400	0.0183041215275	0.00362788529677222	0.000181394264838611	0.0179475135909303	0.0186607294640697	yes: not classified, decides nothing
 P1	none	lost_planted C rd_gt	20	0.01744705505	0.00309033125418169	0.000691019075734243	0.0160007355024332	0.0188933745975668	yes: not classified, decides nothing
+P2	vd0.1	lost_planted C rd_gt	400	0.019918013405	0.00552562139892527	0.000276281069946263	0.0193748649082464	0.0204611619017536	yes: not classified, decides nothing
+P2	vd0.5	lost_planted C rd_gt	400	0.0206698931	0.00562108448936819	0.000281054224468409	0.0201173609284837	0.0212224252715163	yes: not classified, decides nothing
+P2	vd2	lost_planted C rd_gt	400	0.0223372131625	0.00583446919107237	0.000291723459553619	0.0217637060505031	0.0229107202744969	yes: not classified, decides nothing
+P2	vd10	lost_planted C rd_gt	400	0.0228502063575	0.00630599359299053	0.000315299679649526	0.0222303501108819	0.0234700626041181	yes: not classified, decides nothing
+P2	vd25	lost_planted C rd_gt	400	0.0194573965175	0.00674694711619739	0.00033734735580987	0.0187941961425066	0.0201205968924934	yes: not classified, decides nothing
+P2	vd50	lost_planted C rd_gt	400	0.015651189285	0.00910586502045131	0.000455293251022565	0.0147561158551662	0.0165462627148338	yes: not classified, decides nothing
+P2	mcar0.5	lost_planted C rd_gt	400	0.019833638975	0.00542192847667323	0.000271096423833662	0.0193006831155589	0.0203665948344411	yes: not classified, decides nothing
+P2	mcar2	lost_planted C rd_gt	400	0.02003386576	0.00533758016002189	0.000266879008001094	0.0195092010334624	0.0205585304865376	yes: not classified, decides nothing
+P2	mcar10	lost_planted C rd_gt	400	0.0214550584375	0.00606861213374232	0.000303430606687116	0.020858535925396	0.022051580949604	yes: not classified, decides nothing
+P2	none	lost_planted C rd_gt	20	0.0192681887	0.00778428347575131	0.00174061870079083	0.0156250318896919	0.0229113455103081	yes: not classified, decides nothing
 P3	vd0.1	lost_planted C rd_gt	400	0.0058107592125	0.0020658009707224	0.00010329004853612	0.00560769848668585	0.00601381993831415	yes: not classified, decides nothing
 P3	vd0.5	lost_planted C rd_gt	400	0.0063105034325	0.00224271249230407	0.000112135624615204	0.00609005294722383	0.00653095391777617	yes: not classified, decides nothing
 P3	vd2	lost_planted C rd_gt	400	0.0073737721525	0.00248875645251107	0.000124437822625553	0.00712913644035546	0.00761840786464454	yes: not classified, decides nothing
@@ -3227,6 +3457,16 @@ P1	mcar0.5	lost_null C rd_gt	400	0.0095664734275	0.000738807189532629	3.69403594
 P1	mcar2	lost_null C rd_gt	400	0.0096887608525	0.000761326749697028	3.80663374848514e-05	0.0096139252005828	0.00976359650441721	yes: not classified, decides nothing
 P1	mcar10	lost_null C rd_gt	400	0.0103216496075	0.000799239657310172	3.99619828655086e-05	0.0102430872545856	0.0104002119604144	yes: not classified, decides nothing
 P1	none	lost_null C rd_gt	20	0.00966155675	0.000686848430646504	0.000153583978116463	0.00934010178943052	0.00998301171056948	yes: not classified, decides nothing
+P2	vd0.1	lost_null C rd_gt	400	0.012053076085	0.0011519372638191	5.75968631909552e-05	0.0119398448394935	0.0121663073305065	yes: not classified, decides nothing
+P2	vd0.5	lost_null C rd_gt	400	0.012494208885	0.00125031068039703	6.25155340198513e-05	0.0123713078902513	0.0126171098797487	yes: not classified, decides nothing
+P2	vd2	lost_null C rd_gt	400	0.01300551996	0.00137953672926984	6.89768364634922e-05	0.0128699165144102	0.0131411234055898	yes: not classified, decides nothing
+P2	vd10	lost_null C rd_gt	400	0.0105058800875	0.00170855891821872	8.54279459109361e-05	0.0103379349567992	0.0106738252182008	yes: not classified, decides nothing
+P2	vd25	lost_null C rd_gt	400	0.00762176671725	0.00203843128609808	0.000101921564304904	0.00742139633194003	0.00782213710255997	yes: not classified, decides nothing
+P2	vd50	lost_null C rd_gt	400	0.005161329665	0.00238662840400133	0.000119331420200067	0.00492673276876768	0.00539592656123232	yes: not classified, decides nothing
+P2	mcar0.5	lost_null C rd_gt	400	0.0119273077925	0.00114760248209863	5.73801241049315e-05	0.0118145026402788	0.0120401129447212	yes: not classified, decides nothing
+P2	mcar2	lost_null C rd_gt	400	0.0120604913275	0.00115308131559979	5.76540657799896e-05	0.0119471476258623	0.0121738350291377	yes: not classified, decides nothing
+P2	mcar10	lost_null C rd_gt	400	0.0126570770425	0.00135150896741446	6.75754483707231e-05	0.0125242286240139	0.0127899254609861	yes: not classified, decides nothing
+P2	none	lost_null C rd_gt	20	0.01188387835	0.00127056124529103	0.000284106131404754	0.011289237382965	0.012478519317035	yes: not classified, decides nothing
 P3	vd0.1	lost_null C rd_gt	400	0.0058325380525	0.000706740308917885	3.53370154458943e-05	0.00576306804927854	0.00590200805572146	yes: not classified, decides nothing
 P3	vd0.5	lost_null C rd_gt	400	0.006200289055	0.000757421035930851	3.78710517965425e-05	0.00612583732054794	0.00627474078945206	yes: not classified, decides nothing
 P3	vd2	lost_null C rd_gt	400	0.00758697133	0.000903779874847501	4.5188993742375e-05	0.00749813305372667	0.00767580960627333	yes: not classified, decides nothing
@@ -3354,6 +3594,15 @@ P1	vd10	Delta B2 S	400	-0.00568540025	0.0136800710062985	0.000684003550314924	-0
 P1	vd2	Delta B2 S	400	0.01339587175	0.013134450128619	0.000656722506430951	0.0121048030487618	0.0146869404512382	yes: not classified, decides nothing
 P1	vd25	Delta B2 S	400	-0.0401158915	0.0160894826104293	0.000804474130521464	-0.0416974291520544	-0.0385343538479456	yes: not classified, decides nothing
 P1	vd50	Delta B2 S	400	-0.08019694725	0.026176839278255	0.00130884196391275	-0.0827700353929028	-0.0776238591070972	yes: not classified, decides nothing
+P2	mcar0.5	Delta B2 S	400	0.16231475675	0.239253142515377	0.0119626571257688	0.138797042574709	0.185832470925291	yes: not classified, decides nothing
+P2	mcar10	Delta B2 S	400	0.426233355	0.313867260189273	0.0156933630094636	0.3953813442949	0.4570853657051	yes: not classified, decides nothing
+P2	mcar2	Delta B2 S	400	0.392868615	0.354196974868523	0.0177098487434262	0.358052339948668	0.427684890051332	yes: not classified, decides nothing
+P2	vd0.1	Delta B2 S	400	0.005756041	0.00635979597015691	0.000317989798507845	0.00513089617528905	0.00638118582471096	yes: not classified, decides nothing
+P2	vd0.5	Delta B2 S	400	0.028401523	0.0679853513865048	0.00339926756932524	0.0217188100993249	0.0350842359006751	yes: not classified, decides nothing
+P2	vd10	Delta B2 S	400	0.0517453995	0.148318826967033	0.00741594134835167	0.0371661979783271	0.0663246010216729	yes: not classified, decides nothing
+P2	vd2	Delta B2 S	400	0.07453231225	0.142850580279524	0.00714252901397622	0.0604906194995173	0.0885740050004827	yes: not classified, decides nothing
+P2	vd25	Delta B2 S	400	0.01495103575	0.137294385830005	0.00686471929150026	0.00145549671600498	0.028446574783995	yes: not classified, decides nothing
+P2	vd50	Delta B2 S	400	-0.00813143475	0.146125519198878	0.00730627595994392	-0.0224950420911843	0.00623217259118429	yes: not classified, decides nothing
 P3	mcar0.5	Delta B2 S	400	0.00207338899999999	0.00151871512396117	7.59357561980583e-05	0.00192410482415384	0.00222267317584615	yes: not classified, decides nothing
 P3	mcar10	Delta B2 S	400	0.52334855975	0.253753010196936	0.0126876505098468	0.498405561291588	0.548291558208412	yes: not classified, decides nothing
 P3	mcar2	Delta B2 S	400	0.01834973625	0.0146581913681557	0.000732909568407786	0.0169088893240255	0.0197905831759745	yes: not classified, decides nothing
@@ -3477,6 +3726,15 @@ P1	vd10	Delta B2 C	400	-0.028609139	0.00624734253155254	0.000312367126577627	-0.
 P1	vd2	Delta B2 C	400	-0.00632842475	0.00514950762754828	0.000257475381377414	-0.00683460263027749	-0.0058222468697225	yes: not classified, decides nothing
 P1	vd25	Delta B2 C	400	-0.0659538525	0.00882304967520424	0.000441152483760212	-0.0668211262094875	-0.0650865787905125	yes: not classified, decides nothing
 P1	vd50	Delta B2 C	400	-0.1233657925	0.0133331127783197	0.000666655638915985	-0.124676389017525	-0.122055195982475	yes: not classified, decides nothing
+P2	mcar0.5	Delta B2 C	400	-0.003975772	0.00317490860808469	0.000158745430404234	-0.00428785397473439	-0.00366369002526561	yes: not classified, decides nothing
+P2	mcar10	Delta B2 C	400	-0.0708289585	0.00978285773321367	0.000489142886660683	-0.0717905778524918	-0.0698673391475082	yes: not classified, decides nothing
+P2	mcar2	Delta B2 C	400	-0.01488556575	0.0050272727507345	0.000251363637536725	-0.0153797283862354	-0.0143914031137646	yes: not classified, decides nothing
+P2	vd0.1	Delta B2 C	400	-0.000489164500000001	0.0020692323666296	0.00010346161833148	-0.000692562519558006	-0.000285766480441996	yes: not classified, decides nothing
+P2	vd0.5	Delta B2 C	400	-0.00254279325	0.00463227458373067	0.000231613729186533	-0.00299812900231783	-0.00208745749768217	yes: not classified, decides nothing
+P2	vd10	Delta B2 C	400	-0.03663920925	0.0101462165891219	0.000507310829456096	-0.037636545457144	-0.035641873042856	yes: not classified, decides nothing
+P2	vd2	Delta B2 C	400	-0.00903775825	0.00661191428161698	0.000330595714080849	-0.009687685388226	-0.008387831111774	yes: not classified, decides nothing
+P2	vd25	Delta B2 C	400	-0.0732181845	0.0134035150178468	0.000670175750892338	-0.0745357013017435	-0.0719006676982565	yes: not classified, decides nothing
+P2	vd50	Delta B2 C	400	-0.12462582475	0.0221346875094231	0.00110673437547116	-0.126801584068073	-0.122450065431927	yes: not classified, decides nothing
 P3	mcar0.5	Delta B2 C	400	-0.000959574750000006	0.000546610410383198	2.73305205191599e-05	-0.00101330456630035	-0.000905844933699664	yes: not classified, decides nothing
 P3	mcar10	Delta B2 C	400	-0.02201092675	0.00599560911427583	0.000299780455713792	-0.0226002733306713	-0.0214215801693287	yes: not classified, decides nothing
 P3	mcar2	Delta B2 C	400	-0.00387093875	0.00108637426275219	5.43187131376096e-05	-0.00397772539083653	-0.00376415210916348	yes: not classified, decides nothing
@@ -3609,6 +3867,16 @@ P1	vd50	inc_share S	400	0.99204230875	0.00267293036973507	0.000133646518486753	0
 P1	mcar0.5	inc_share S	400	0.99554481425	0.00448683414865267	0.000224341707432634	0.995103774763745	0.995985853736255	yes: not classified, decides nothing
 P1	mcar2	inc_share S	400	0.9800233735	0.0189482791928191	0.000947413959640954	0.978160826536205	0.981885920463795	yes: not classified, decides nothing
 P1	mcar10	inc_share S	400	0.954239284	0.0316196658917399	0.00158098329458699	0.951131185786777	0.957347382213223	yes: not classified, decides nothing
+P2	none	inc_share S	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	inc_share S	400	0.9914640965	0.0103042915282243	0.000515214576411213	0.990451222100977	0.992476970899023	yes: not classified, decides nothing
+P2	vd0.5	inc_share S	400	0.99187117875	0.00528290549481925	0.000264145274740962	0.991351888344298	0.992390469155702	yes: not classified, decides nothing
+P2	vd2	inc_share S	400	0.988901584	0.00884711259949903	0.000442355629974952	0.988031944992528	0.989771223007472	yes: not classified, decides nothing
+P2	vd10	inc_share S	400	0.98828701875	0.00577590924001977	0.000288795462000989	0.987719267868314	0.988854769631686	yes: not classified, decides nothing
+P2	vd25	inc_share S	400	0.98718406825	0.00631489602406118	0.000315744801203059	0.98656333692677	0.98780479957323	yes: not classified, decides nothing
+P2	vd50	inc_share S	400	0.983238108	0.00839439122789756	0.000419719561394878	0.982412969857622	0.984063246142378	yes: not classified, decides nothing
+P2	mcar0.5	inc_share S	400	0.98560005525	0.0118601886063193	0.000593009430315965	0.984434241824203	0.986765868675797	yes: not classified, decides nothing
+P2	mcar2	inc_share S	400	0.97254886025	0.0249355541394803	0.00124677770697401	0.970097785923914	0.974999934576086	yes: not classified, decides nothing
+P2	mcar10	inc_share S	400	0.96196256225	0.0274687982491067	0.00137343991245533	0.959262479236797	0.964662645263203	yes: not classified, decides nothing
 P3	none	inc_share S	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	inc_share S	400	0.999695045	8.4241479939256e-05	4.2120739969628e-06	0.999686764368757	0.999703325631243	yes: not classified, decides nothing
 P3	vd0.5	inc_share S	400	0.99965412	9.42817345176601e-05	4.71408672588301e-06	0.99964485244823	0.99966338755177	yes: not classified, decides nothing
@@ -3745,6 +4013,16 @@ P1	mcar0.5	inc_share C	400	0.9991636085	0.00067532222308334	3.3766111154167e-05	
 P1	mcar2	inc_share C	400	0.999077822	0.000861728558298066	4.30864279149033e-05	0.998993117215278	0.999162526784722	yes: not classified, decides nothing
 P1	mcar10	inc_share C	400	0.998669301	0.000507442582649222	2.53721291324611e-05	0.998619421238783	0.998719180761217	yes: not classified, decides nothing
 P1	none	inc_share C	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	inc_share C	400	0.99302172625	0.00791227195431144	0.000395613597715572	0.992243978679613	0.993799473820386	yes: not classified, decides nothing
+P2	vd0.5	inc_share C	400	0.99499324625	0.00326671510581998	0.000163335755290999	0.994672140030273	0.995314352469726	yes: not classified, decides nothing
+P2	vd2	inc_share C	400	0.99526674275	0.0017157284454405	8.5786422272025e-05	0.995098092880836	0.995435392619164	yes: not classified, decides nothing
+P2	vd10	inc_share C	400	0.9942554195	0.00166704184843417	8.33520924217086e-05	0.994091555346336	0.994419283653664	yes: not classified, decides nothing
+P2	vd25	inc_share C	400	0.993051264	0.0021222551285084	0.00010611275642542	0.992842654035698	0.993259873964302	yes: not classified, decides nothing
+P2	vd50	inc_share C	400	0.99068637375	0.0040592189048053	0.000202960945240265	0.990287367287746	0.991085380212254	yes: not classified, decides nothing
+P2	mcar0.5	inc_share C	400	0.9961037565	0.00162606555559284	8.13032777796422e-05	0.995943920166965	0.996263592833035	yes: not classified, decides nothing
+P2	mcar2	inc_share C	400	0.99607652975	0.00127125146440597	6.35625732202985e-05	0.995951570352307	0.996201489147693	yes: not classified, decides nothing
+P2	mcar10	inc_share C	400	0.99511149525	0.0014541817530073	7.27090876503651e-05	0.994968554469927	0.995254436030073	yes: not classified, decides nothing
+P2	none	inc_share C	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	inc_share C	400	0.99970135225	8.35576099489968e-05	4.17788049744984e-06	0.999693138840691	0.999709565659309	yes: not classified, decides nothing
 P3	vd0.5	inc_share C	400	0.99968758025	8.79614337052659e-05	4.3980716852633e-06	0.999678933960825	0.999696226539176	yes: not classified, decides nothing
 P3	vd2	inc_share C	400	0.999634054	9.8872221703375e-05	4.94361108516875e-06	0.999624335220027	0.999643772779973	yes: not classified, decides nothing
@@ -3881,6 +4159,16 @@ P1	vd50	rho_1 S comp	400	0.99932393155775	0.000497194316894672	2.48597158447336e
 P1	mcar0.5	rho_1 S comp	400	0.999526016417	0.000481115027806397	2.40557513903198e-05	0.999478724558718	0.999573308275282	yes: not classified, decides nothing
 P1	mcar2	rho_1 S comp	400	0.99827661202075	0.00243637148873707	0.000121818574436853	0.998037125560114	0.998516098481386	yes: not classified, decides nothing
 P1	mcar10	rho_1 S comp	400	0.994230913316	0.0135414318952931	0.000677071594764655	0.992899839786559	0.995561986845441	yes: not classified, decides nothing
+P2	none	rho_1 S comp	400	0.99991415626475	8.48536783013897e-05	4.24268391506949e-06	0.999905815456633	0.999922497072867	yes: not classified, decides nothing
+P2	vd0.1	rho_1 S comp	400	0.999849969103	0.000173217548571153	8.66087742855766e-06	0.999832942447657	0.999866995758343	yes: not classified, decides nothing
+P2	vd0.5	rho_1 S comp	400	0.99970518505025	0.000351347687654922	1.75673843827461e-05	0.999670648849774	0.999739721250726	yes: not classified, decides nothing
+P2	vd2	rho_1 S comp	400	0.99948687994075	0.00064119129624935	3.20595648124675e-05	0.99942385316719	0.99954990671431	yes: not classified, decides nothing
+P2	vd10	rho_1 S comp	400	0.999407908444	0.00075895024675635	3.79475123378175e-05	0.999333306393683	0.999482510494317	yes: not classified, decides nothing
+P2	vd25	rho_1 S comp	400	0.9993747294755	0.000674437122853043	3.37218561426522e-05	0.99930843475804	0.99944102419296	yes: not classified, decides nothing
+P2	vd50	rho_1 S comp	400	0.9988027012985	0.00143394741333247	7.16973706666235e-05	0.998661749480461	0.998943653116539	yes: not classified, decides nothing
+P2	mcar0.5	rho_1 S comp	400	0.999153183575	0.00144989225546039	7.24946127730197e-05	0.999010664436942	0.999295702713058	yes: not classified, decides nothing
+P2	mcar2	rho_1 S comp	400	0.9978334215635	0.00394844168164617	0.000197422084082309	0.997445304099585	0.998221539027415	yes: not classified, decides nothing
+P2	mcar10	rho_1 S comp	400	0.99522012444875	0.0118804328172826	0.000594021640864131	0.994052321090607	0.996387927806892	yes: not classified, decides nothing
 P3	none	rho_1 S comp	400	0.99991623535125	3.11298915770417e-05	1.55649457885208e-06	0.999913175396071	0.999919295306428	yes: not classified, decides nothing
 P3	vd0.1	rho_1 S comp	400	0.9999147027	3.07154210915294e-05	1.53577105457647e-06	0.999911683485764	0.999917721914237	yes: not classified, decides nothing
 P3	vd0.5	rho_1 S comp	400	0.99990351750075	3.56750376746298e-05	1.78375188373149e-06	0.999900010774233	0.999907024227267	yes: not classified, decides nothing
@@ -4017,6 +4305,16 @@ P1	vd50	rho_2 S comp	400	0.99754242330775	0.00150520629794207	7.52603148971037e-
 P1	mcar0.5	rho_2 S comp	400	0.99571340833175	0.0173671325380574	0.000868356626902871	0.994006282336328	0.997420534327172	yes: not classified, decides nothing
 P1	mcar2	rho_2 S comp	400	0.936569102046	0.141759064089699	0.00708795320448493	0.922634701369093	0.950503502722907	yes: not classified, decides nothing
 P1	mcar10	rho_2 S comp	400	0.8346025925155	0.226758398233258	0.0113379199116629	0.812313066282197	0.856892118748803	yes: not classified, decides nothing
+P2	none	rho_2 S comp	400	0.9995224856455	0.000368711470136592	1.84355735068296e-05	0.999486242648327	0.999558728642673	yes: not classified, decides nothing
+P2	vd0.1	rho_2 S comp	400	0.999075991219	0.000701640152077345	3.50820076038672e-05	0.999007022542656	0.999144959895344	yes: not classified, decides nothing
+P2	vd0.5	rho_2 S comp	400	0.996200048418	0.0203339758205303	0.00101669879102651	0.994201292512991	0.998198804323009	yes: not classified, decides nothing
+P2	vd2	rho_2 S comp	400	0.98580955550375	0.067261397690877	0.00336306988454385	0.979198004619636	0.992421106387864	yes: not classified, decides nothing
+P2	vd10	rho_2 S comp	400	0.98448598722425	0.0719421118081322	0.00359710559040661	0.97741433915776	0.99155763529074	yes: not classified, decides nothing
+P2	vd25	rho_2 S comp	400	0.980942900062	0.0870841888372519	0.00435420944186259	0.972382840868086	0.989502959255914	yes: not classified, decides nothing
+P2	vd50	rho_2 S comp	400	0.9703896056585	0.101079863176155	0.00505399315880777	0.960453822554202	0.980325388762798	yes: not classified, decides nothing
+P2	mcar0.5	rho_2 S comp	400	0.96553834523225	0.106760362145762	0.00533801810728809	0.955044189729012	0.976032500735488	yes: not classified, decides nothing
+P2	mcar2	rho_2 S comp	400	0.8754787035565	0.221058147053118	0.0110529073526559	0.853749491292629	0.897207915820371	yes: not classified, decides nothing
+P2	mcar10	rho_2 S comp	400	0.8418974922095	0.212262107247058	0.0106131053623529	0.821032898683166	0.862762085735834	yes: not classified, decides nothing
 P3	none	rho_2 S comp	400	0.9998162296155	0.000122244148438487	6.11220742192435e-06	0.999804213460091	0.999828245770909	yes: not classified, decides nothing
 P3	vd0.1	rho_2 S comp	400	0.99982718038175	5.99084830509212e-05	2.99542415254606e-06	0.999821291595646	0.999833069167854	yes: not classified, decides nothing
 P3	vd0.5	rho_2 S comp	400	0.999808298959	6.75784125872558e-05	3.37892062936279e-06	0.999801656246704	0.999814941671296	yes: not classified, decides nothing
@@ -4153,6 +4451,16 @@ P1	vd50	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_3 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -4289,6 +4597,16 @@ P1	vd50	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_4 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -4425,6 +4743,16 @@ P1	vd50	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_5 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -4561,6 +4889,16 @@ P1	vd50	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_6 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -4697,6 +5035,16 @@ P1	vd50	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_7 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -4833,6 +5181,16 @@ P1	vd50	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_8 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -4969,6 +5327,16 @@ P1	vd50	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_9 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -5105,6 +5473,16 @@ P1	vd50	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_10 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -5241,6 +5619,16 @@ P1	vd50	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_11 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -5377,6 +5765,16 @@ P1	vd50	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_12 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -5513,6 +5911,16 @@ P1	vd50	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_13 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -5649,6 +6057,16 @@ P1	vd50	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_14 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -5785,6 +6203,16 @@ P1	vd50	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	rho_15 S comp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -5921,6 +6349,16 @@ P1	vd50	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
 P1	mcar0.5	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
 P1	mcar2	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
 P1	mcar10	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	none	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	vd0.1	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	vd0.5	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	vd2	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	vd10	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	vd25	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	vd50	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	mcar0.5	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	mcar2	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
+P2	mcar10	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
 P3	none	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
 P3	vd0.1	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
 P3	vd0.5	rank S comp	400	2	0	0	2	2	yes: not classified, decides nothing
@@ -6046,6 +6484,15 @@ P1	vd10	Delta B S comp	400	0.0084457615	0.00505112350386982	0.000252556175193491
 P1	vd2	Delta B S comp	400	0.009547759	0.00608605509312151	0.000304302754656076	0.00894952190839771	0.0101459960916023	yes: not classified, decides nothing
 P1	vd25	Delta B S comp	400	0.0071227355	0.00436451891126694	0.000218225945563347	0.00669371915693887	0.00755175184306113	yes: not classified, decides nothing
 P1	vd50	Delta B S comp	400	0.01176268785	0.00841709506596448	0.000420854753298224	0.010935318002873	0.012590057697127	yes: not classified, decides nothing
+P2	mcar0.5	Delta B S comp	400	0.090106983698	0.130756308592006	0.00653781542960031	0.0772541138892561	0.102959853506744	yes: not classified, decides nothing
+P2	mcar10	Delta B S comp	400	0.31113506929	0.206683205305179	0.010334160265259	0.290818861544106	0.331451277035894	yes: not classified, decides nothing
+P2	mcar2	Delta B S comp	400	0.22715773885925	0.200873152913034	0.0100436576456517	0.207412638142779	0.246902839575721	yes: not classified, decides nothing
+P2	vd0.1	Delta B S comp	400	0.00336457625	0.00336479980470239	0.00016823999023512	0.00303382866093132	0.00369532383906869	yes: not classified, decides nothing
+P2	vd0.5	Delta B S comp	400	0.016706210975	0.0378922330819714	0.00189461165409857	0.0129815422090378	0.0204308797409622	yes: not classified, decides nothing
+P2	vd10	Delta B S comp	400	0.0470567632295	0.0876891738267348	0.00438445869133674	0.0384372362103636	0.0556762902486364	yes: not classified, decides nothing
+P2	vd2	Delta B S comp	400	0.04511675143	0.0806501488162763	0.00403250744081381	0.0371891349811001	0.0530443678788999	yes: not classified, decides nothing
+P2	vd25	Delta B S comp	400	0.0494865549325	0.0916525885892985	0.00458262942946492	0.0404774386500246	0.0584956712149754	yes: not classified, decides nothing
+P2	vd50	Delta B S comp	400	0.074760135655	0.113964951536223	0.00569824757681115	0.0635577952048319	0.0859624761051681	yes: not classified, decides nothing
 P3	mcar0.5	Delta B S comp	400	0.0013910915	0.000636030353806056	3.18015176903028e-05	0.00132857202832092	0.00145361097167908	yes: not classified, decides nothing
 P3	mcar10	Delta B S comp	400	0.244523921427975	0.16849528458835	0.00842476422941749	0.227961447467665	0.261086395388285	yes: not classified, decides nothing
 P3	mcar2	Delta B S comp	400	0.00868277785	0.00535017474426226	0.000267508737213113	0.00815687512161541	0.00920868057838459	yes: not classified, decides nothing
@@ -6167,6 +6614,15 @@ P1	vd10	Delta Cstar S comp	400	0.00022747750912875	0.000386760115598565	1.933800
 P1	vd2	Delta Cstar S comp	400	4.3477037024175e-05	0.000141873663644786	7.09368318223931e-06	2.95313716275958e-05	5.74227024207542e-05	yes: not classified, decides nothing
 P1	vd25	Delta Cstar S comp	400	0.000632171741010675	0.000792989788927524	3.96494894463762e-05	0.000554223727438717	0.000710119754582633	yes: not classified, decides nothing
 P1	vd50	Delta Cstar S comp	400	0.00219492647910475	0.00250861280120214	0.000125430640060107	0.00194833896006576	0.00244151399814374	yes: not classified, decides nothing
+P2	mcar0.5	Delta Cstar S comp	400	3.5603743975e-05	0.000323975568964321	1.61987784482161e-05	3.75812326307712e-06	6.74493646869229e-05	yes: not classified, decides nothing
+P2	mcar10	Delta Cstar S comp	400	0.00067042268655	0.00131812681470582	6.59063407352911e-05	0.000540855612324229	0.000799989760775771	yes: not classified, decides nothing
+P2	mcar2	Delta Cstar S comp	400	0.00012137568519325	0.00054542970440353	2.72714852201765e-05	6.77619279986021e-05	0.000174989442387898	yes: not classified, decides nothing
+P2	vd0.1	Delta Cstar S comp	400	-5.32944546149999e-06	0.000150765717832533	7.53828589162667e-06	-2.01491674603041e-05	9.49027653730416e-06	yes: not classified, decides nothing
+P2	vd0.5	Delta Cstar S comp	400	1.66864035075e-05	0.000197118506458252	9.85592532291257e-06	-2.68962911137166e-06	3.60624361263717e-05	yes: not classified, decides nothing
+P2	vd10	Delta Cstar S comp	400	0.00036603402216175	0.000744064610603004	3.72032305301502e-05	0.000292895175766091	0.000439172868557409	yes: not classified, decides nothing
+P2	vd2	Delta Cstar S comp	400	7.692748844125e-05	0.000318465634538433	1.59232817269217e-05	4.56234742536565e-05	0.000108231502628843	yes: not classified, decides nothing
+P2	vd25	Delta Cstar S comp	400	0.001059939629375	0.00143474301018554	7.17371505092772e-05	0.000918909607057227	0.00120096965169277	yes: not classified, decides nothing
+P2	vd50	Delta Cstar S comp	400	0.0038096442776845	0.00469036130437361	0.000234518065218681	0.00334859881188454	0.00427068974348446	yes: not classified, decides nothing
 P3	mcar0.5	Delta Cstar S comp	400	3.623169928575e-05	9.5731253253873e-05	4.78656266269365e-06	2.68216650935248e-05	4.56417334779752e-05	yes: not classified, decides nothing
 P3	mcar10	Delta Cstar S comp	400	0.002352254473953	0.00303490419675248	0.000151745209837624	0.00205393442390797	0.00265057452399803	yes: not classified, decides nothing
 P3	mcar2	Delta Cstar S comp	400	0.000171213292751	0.000280314277601264	1.40157138800632e-05	0.000143659418262367	0.000198767167239633	yes: not classified, decides nothing
@@ -6288,6 +6744,15 @@ P1	vd10	Delta B S inc	400	-0.0271277065	0.0223707597629402	0.00111853798814701	-
 P1	vd2	Delta B S inc	400	-0.00758332275	0.0422340438808837	0.00211170219404419	-0.0117347757341275	-0.00343186976587252	yes: not classified, decides nothing
 P1	vd25	Delta B S inc	400	-0.04551951075	0.0213799343849266	0.00106899671924633	-0.0476210805796162	-0.0434179409203838	yes: not classified, decides nothing
 P1	vd50	Delta B S inc	400	-0.05639423775	0.0243527781205383	0.00121763890602692	-0.0587880273119336	-0.0540004481880664	yes: not classified, decides nothing
+P2	mcar0.5	Delta B S inc	400	0.01716790803	0.0944279609213364	0.00472139804606682	0.00788598273632972	0.0264498333236703	yes: not classified, decides nothing
+P2	mcar10	Delta B S inc	400	0.11793716238005	0.11896254223702	0.005948127111851	0.106243576931255	0.129630747828845	yes: not classified, decides nothing
+P2	mcar2	Delta B S inc	400	0.0840766841665	0.109972593745838	0.00549862968729189	0.073266777974092	0.094886590358908	yes: not classified, decides nothing
+P2	vd0.1	Delta B S inc	400	-0.20249283988	0.939622960028542	0.0469811480014271	-0.294854361129704	-0.110131318630296	yes: not classified, decides nothing
+P2	vd0.5	Delta B S inc	400	-0.0583326271	0.339987909323233	0.0169993954661617	-0.0917522026610809	-0.0249130515389191	yes: not classified, decides nothing
+P2	vd10	Delta B S inc	400	-0.04381862245	0.0511348475894186	0.00255674237947093	-0.0488449920824396	-0.0387922528175604	yes: not classified, decides nothing
+P2	vd2	Delta B S inc	400	-0.0263395296725	0.0942086608148461	0.0047104330407423	-0.0355998985629029	-0.0170791607820971	yes: not classified, decides nothing
+P2	vd25	Delta B S inc	400	-0.05818366905	0.0459636433430082	0.00229818216715041	-0.0627017281033996	-0.0536656099966004	yes: not classified, decides nothing
+P2	vd50	Delta B S inc	400	-0.06262192645	0.0581822017224118	0.00290911008612059	-0.0683410253751432	-0.0569028275248568	yes: not classified, decides nothing
 P3	mcar0.5	Delta B S inc	400	-0.002720392525	0.00265976671886009	0.000132988335943004	-0.00298183792466945	-0.00245894712533055	yes: not classified, decides nothing
 P3	mcar10	Delta B S inc	400	0.25133698203175	0.11421449800392	0.00571072490019601	0.24011011207096	0.26256385199254	yes: not classified, decides nothing
 P3	mcar2	Delta B S inc	400	0.00942944433775	0.0120268796596269	0.000601343982981344	0.00824724578736919	0.0106116428881308	yes: not classified, decides nothing
@@ -6409,6 +6874,15 @@ P1	vd10	Delta Cstar S inc	400	0.0167865216258038	0.00902961248065634	0.000451480
 P1	vd2	Delta Cstar S inc	400	0.0152791442987825	0.0125805352824552	0.000629026764122761	0.0140425234133288	0.0165157651842362	yes: not classified, decides nothing
 P1	vd25	Delta Cstar S inc	400	0.0176953633007217	0.0082407274180485	0.000412036370902425	0.0168853297522525	0.018505396849191	yes: not classified, decides nothing
 P1	vd50	Delta Cstar S inc	400	0.0181109857079975	0.0107742425697302	0.000538712128486509	0.0170519168299622	0.0191700545860328	yes: not classified, decides nothing
+P2	mcar0.5	Delta Cstar S inc	400	2.98097634387501e-05	0.0423922363690475	0.00211961181845237	-0.00413719296721327	0.00419681249409077	yes: not classified, decides nothing
+P2	mcar10	Delta Cstar S inc	400	0.00174530679183875	0.011602842729077	0.00058014213645385	0.00060478953027027	0.00288582405340723	yes: not classified, decides nothing
+P2	mcar2	Delta Cstar S inc	400	0.0012358818968375	0.0213537337471622	0.00106768668735811	-0.000863112505331155	0.00333487629900615	yes: not classified, decides nothing
+P2	vd0.1	Delta Cstar S inc	328	0.0274251881564024	0.131049163733722	0.00723597957097368	0.0131902427592851	0.0416601335535198	yes: not classified, decides nothing
+P2	vd0.5	Delta Cstar S inc	400	0.02776631527815	0.0697669769318438	0.00348834884659219	0.0209084750629403	0.0346241554933597	yes: not classified, decides nothing
+P2	vd10	Delta Cstar S inc	400	0.025360295539625	0.0178250734634862	0.000891253673174308	0.0236081556159419	0.0271124354633081	yes: not classified, decides nothing
+P2	vd2	Delta Cstar S inc	400	0.028503422234115	0.0334486097624297	0.00167243048812148	0.0252155454869867	0.0317912989812433	yes: not classified, decides nothing
+P2	vd25	Delta Cstar S inc	400	0.0220279662302035	0.0154187463846233	0.000770937319231163	0.0205123595108829	0.0235435729495241	yes: not classified, decides nothing
+P2	vd50	Delta Cstar S inc	400	0.02066246619764	0.0197031181266377	0.000985155906331886	0.0187257213106445	0.0225992110846355	yes: not classified, decides nothing
 P3	mcar0.5	Delta Cstar S inc	400	-3.824858603075e-05	0.00259764680938444	0.000129882340469222	-0.000293587824417282	0.000217090652355782	yes: not classified, decides nothing
 P3	mcar10	Delta Cstar S inc	400	0.00171645813380625	0.00305223584883466	0.000152611792441733	0.00141643444536563	0.00201648182224687	yes: not classified, decides nothing
 P3	mcar2	Delta Cstar S inc	400	9.1740110348e-05	0.00194374985490509	9.71874927452545e-05	-9.93234344620085e-05	0.000282803655158009	yes: not classified, decides nothing
@@ -6530,6 +7004,15 @@ P1	vd10	Delta B C comp	400	-6.66000000001041e-07	0.000107130620593143	5.35653102
 P1	vd2	Delta B C comp	400	-1.11542499999993e-05	0.000106921250771791	5.34606253858955e-06	-2.16642202703126e-05	-6.44279729685984e-07	yes: not classified, decides nothing
 P1	vd25	Delta B C comp	400	2.687175e-05	0.000115653385990924	5.78266929954619e-06	1.55034425807385e-05	3.82400574192615e-05	yes: not classified, decides nothing
 P1	vd50	Delta B C comp	400	0.00015637625	0.000200384170533599	1.001920852668e-05	0.000136679214473877	0.000176073285526123	yes: not classified, decides nothing
+P2	mcar0.5	Delta B C comp	400	1.86950000000109e-06	1.30060356048795e-05	6.50301780243973e-07	5.91053979633524e-07	3.14794602036866e-06	yes: not classified, decides nothing
+P2	mcar10	Delta B C comp	400	6.36615000000004e-05	0.000147801911287374	7.39009556436869e-06	4.91331094105442e-05	7.81898905894567e-05	yes: not classified, decides nothing
+P2	mcar2	Delta B C comp	400	9.43500000000028e-06	2.90624619006939e-05	1.4531230950347e-06	6.57826564313853e-06	1.2291734356862e-05	yes: not classified, decides nothing
+P2	vd0.1	Delta B C comp	400	-1.34299999999983e-06	1.39934159598572e-05	6.99670797992858e-07	-2.71850191993274e-06	3.25019199330741e-08	yes: not classified, decides nothing
+P2	vd0.5	Delta B C comp	400	-6.30199999999963e-06	4.66453262627178e-05	2.33226631313589e-06	-1.08870660063502e-05	-1.71693399364902e-06	yes: not classified, decides nothing
+P2	vd10	Delta B C comp	400	8.94499999999965e-06	6.69129481608668e-05	3.34564740804334e-06	2.3677004380003e-06	1.5522299561999e-05	yes: not classified, decides nothing
+P2	vd2	Delta B C comp	400	-4.39074999999983e-06	5.03473378194055e-05	2.51736689097027e-06	-9.33971028480578e-06	5.58210284806116e-07	yes: not classified, decides nothing
+P2	vd25	Delta B C comp	400	5.78944999999994e-05	0.000101503716833807	5.07518584169035e-06	4.79170536219491e-05	6.78719463780496e-05	yes: not classified, decides nothing
+P2	vd50	Delta B C comp	400	0.000270612000000001	0.000295589760007946	1.47794880003973e-05	0.000241556601120285	0.000299667398879717	yes: not classified, decides nothing
 P3	mcar0.5	Delta B C comp	400	1.18454999999995e-06	3.76089012520066e-06	1.88044506260033e-07	8.14868172295384e-07	1.55423182770451e-06	yes: not classified, decides nothing
 P3	mcar10	Delta B C comp	400	0.00023243175	0.00202195675861657	0.000101097837930829	3.36807508531988e-05	0.000431182749146801	yes: not classified, decides nothing
 P3	mcar2	Delta B C comp	400	6.12730000000018e-06	9.75872486483127e-06	4.87936243241564e-07	5.1680528207425e-06	7.08654717925786e-06	yes: not classified, decides nothing
@@ -6651,6 +7134,15 @@ P1	vd10	Delta Cstar C comp	400	0.000220274808014	0.000364701443081568	1.82350721
 P1	vd2	Delta Cstar C comp	400	4.5551371080425e-05	0.000133781593675563	6.68907968377816e-06	3.24011267454957e-05	5.87016154153543e-05	yes: not classified, decides nothing
 P1	vd25	Delta Cstar C comp	400	0.00063650227234525	0.000793480703265489	3.96740351632745e-05	0.000558506003678444	0.000714498541012056	yes: not classified, decides nothing
 P1	vd50	Delta Cstar C comp	400	0.00217752124538775	0.00249157654661735	0.000124578827330868	0.00193260832824418	0.00242243416253132	yes: not classified, decides nothing
+P2	mcar0.5	Delta Cstar C comp	400	2.1421346335e-05	0.000116804309041956	5.84021545209779e-06	9.93990736366203e-06	3.29027853063379e-05	yes: not classified, decides nothing
+P2	mcar10	Delta Cstar C comp	400	0.0006004863643525	0.000945135078657797	4.72567539328898e-05	0.000507583021879215	0.000693389706825785	yes: not classified, decides nothing
+P2	mcar2	Delta Cstar C comp	400	8.29428099725e-05	0.000259833381336668	1.29916690668334e-05	5.74021331344413e-05	0.000108483486810559	yes: not classified, decides nothing
+P2	vd0.1	Delta Cstar C comp	400	-2.589227325e-06	0.000127711589163856	6.38557945819278e-06	-1.51428122821329e-05	9.96435763213286e-06	yes: not classified, decides nothing
+P2	vd0.5	Delta Cstar C comp	400	1.1902578985e-05	0.000154049040233741	7.70245201168705e-06	-3.23988167029628e-06	2.70450396402963e-05	yes: not classified, decides nothing
+P2	vd10	Delta Cstar C comp	400	0.000348308765517	0.000680657154502821	3.4032857725141e-05	0.000281402641556953	0.000415214889477047	yes: not classified, decides nothing
+P2	vd2	Delta Cstar C comp	400	7.60468965455e-05	0.000257370526207948	1.28685263103974e-05	5.07483094136137e-05	0.000101345483677386	yes: not classified, decides nothing
+P2	vd25	Delta Cstar C comp	400	0.0010553969834925	0.00135302213205656	6.76511066028279e-05	0.000922399826422747	0.00118839414056225	yes: not classified, decides nothing
+P2	vd50	Delta Cstar C comp	400	0.003708554769247	0.00449489482382164	0.000224744741191082	0.00326672294792478	0.00415038659056922	yes: not classified, decides nothing
 P3	mcar0.5	Delta Cstar C comp	400	3.8224734800225e-05	9.25366276705625e-05	4.62683138352813e-06	2.91287206897237e-05	4.73207489107263e-05	yes: not classified, decides nothing
 P3	mcar10	Delta Cstar C comp	400	0.00229186598226825	0.002761776755379	0.00013808883776895	0.00202039336683628	0.00256333859770022	yes: not classified, decides nothing
 P3	mcar2	Delta Cstar C comp	400	0.00017013350028075	0.0002599522242421	1.2997611212105e-05	0.000144581141617106	0.000195685858944394	yes: not classified, decides nothing
@@ -6772,6 +7264,15 @@ P1	vd10	Delta B C inc	400	-0.059280706	0.0121662529445858	0.000608312647229291	-
 P1	vd2	Delta B C inc	400	-0.0413713035	0.0310668147433154	0.00155334073716577	-0.04442505845506	-0.03831754854494	yes: not classified, decides nothing
 P1	vd25	Delta B C inc	400	-0.07696866	0.0112710092808796	0.00056355046404398	-0.0780765592398929	-0.0758607607601071	yes: not classified, decides nothing
 P1	vd50	Delta B C inc	400	-0.0979648495	0.0131886984507366	0.000659434922536828	-0.0992612506140986	-0.0966684483859014	yes: not classified, decides nothing
+P2	mcar0.5	Delta B C inc	400	-0.076262873	0.0584321564599208	0.00292160782299604	-0.0820065415672039	-0.0705192044327961	yes: not classified, decides nothing
+P2	mcar10	Delta B C inc	400	-0.08529051175	0.0154720234314486	0.000773601171572431	-0.0868113554093506	-0.0837696680906494	yes: not classified, decides nothing
+P2	mcar2	Delta B C inc	400	-0.0744503975	0.0268834694171493	0.00134417347085746	-0.0770929448168114	-0.0718078501831886	yes: not classified, decides nothing
+P2	vd0.1	Delta B C inc	400	-0.2244807899	0.953463988626551	0.0476731994313275	-0.318202833945927	-0.130758745854073	yes: not classified, decides nothing
+P2	vd0.5	Delta B C inc	400	-0.1018904297	0.354803976201619	0.0177401988100809	-0.136766370775801	-0.0670144886241988	yes: not classified, decides nothing
+P2	vd10	Delta B C inc	400	-0.102568069	0.0301822148714272	0.00150911074357136	-0.105534871003354	-0.0996012669966456	yes: not classified, decides nothing
+P2	vd2	Delta B C inc	400	-0.0914674275	0.0821379259730673	0.00410689629865337	-0.0995412870350391	-0.0833935679649609	yes: not classified, decides nothing
+P2	vd25	Delta B C inc	400	-0.11135690725	0.0242600574320784	0.00121300287160392	-0.113741582705317	-0.108972231794683	yes: not classified, decides nothing
+P2	vd50	Delta B C inc	400	-0.122718398	0.0305724630768927	0.00152862315384463	-0.12572355998332	-0.11971323601668	yes: not classified, decides nothing
 P3	mcar0.5	Delta B C inc	400	-0.004514626275	0.00255433076622343	0.000127716538311171	-0.00476570770380646	-0.00426354484619354	yes: not classified, decides nothing
 P3	mcar10	Delta B C inc	400	-0.01034480075	0.00173060008082669	8.65300040413343e-05	-0.010514912446861	-0.010174689053139	yes: not classified, decides nothing
 P3	mcar2	Delta B C inc	400	-0.0051878166	0.0014196045252182	7.098022626091e-05	-0.00532735856427696	-0.00504827463572304	yes: not classified, decides nothing
@@ -6893,6 +7394,15 @@ P1	vd10	Delta Cstar C inc	400	0.0141656766762763	0.00797441820387606	0.000398720
 P1	vd2	Delta Cstar C inc	400	0.01203392359052	0.011363475489903	0.000568173774495152	0.0109169352584136	0.0131509119226264	yes: not classified, decides nothing
 P1	vd25	Delta Cstar C inc	400	0.0152770076739718	0.00743802334327174	0.000371901167163587	0.01454587701806	0.0160081383298835	yes: not classified, decides nothing
 P1	vd50	Delta Cstar C inc	400	0.0159169502828225	0.00997345809840134	0.000498672904920067	0.014936595607304	0.016897304958341	yes: not classified, decides nothing
+P2	mcar0.5	Delta Cstar C inc	400	1.83701399387501e-05	0.0381448941738229	0.00190724470869114	-0.00373113429287784	0.00376787457275534	yes: not classified, decides nothing
+P2	mcar10	Delta Cstar C inc	400	0.00167962398266375	0.0109220413609135	0.000546102068045677	0.000606027020733911	0.00275322094459359	yes: not classified, decides nothing
+P2	mcar2	Delta Cstar C inc	400	0.0009119193808625	0.0193163960912486	0.000965819804562429	-0.000986812135867751	0.00281065089759275	yes: not classified, decides nothing
+P2	vd0.1	Delta Cstar C inc	328	0.0299931906478659	0.127891370715917	0.00706161961998132	0.0161012540109966	0.0438851272847351	yes: not classified, decides nothing
+P2	vd0.5	Delta Cstar C inc	400	0.025958093158475	0.0665223879611618	0.00332611939805809	0.0194191842443407	0.0324970020726093	yes: not classified, decides nothing
+P2	vd10	Delta Cstar C inc	400	0.0227708836058325	0.0165814944786657	0.000829074723933286	0.021140982975694	0.024400784235971	yes: not classified, decides nothing
+P2	vd2	Delta Cstar C inc	400	0.025323843012615	0.031682738114737	0.00158413690573685	0.0222095450291513	0.0284381409960787	yes: not classified, decides nothing
+P2	vd25	Delta Cstar C inc	400	0.0189667863332535	0.0145034604676066	0.000725173023380328	0.0175411488923246	0.0203924237741824	yes: not classified, decides nothing
+P2	vd50	Delta Cstar C inc	400	0.018387431965715	0.0186957294744794	0.000934786473723969	0.0165497097211634	0.0202251542102666	yes: not classified, decides nothing
 P3	mcar0.5	Delta Cstar C inc	400	-5.29117819575e-06	0.00249175679179627	0.000124587839589814	-0.000250221812785177	0.000239639456393677	yes: not classified, decides nothing
 P3	mcar10	Delta Cstar C inc	400	0.00185792667465625	0.00153667037185601	7.68335185928005e-05	0.00170687756321302	0.00200897578609948	yes: not classified, decides nothing
 P3	mcar2	Delta Cstar C inc	400	0.000109115023958	0.00153527122104535	7.67635610522677e-05	-4.17965560467421e-05	0.000260026603962742	yes: not classified, decides nothing
@@ -7014,6 +7524,15 @@ P1	vd10	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd2	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd25	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd50	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar0.5	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta fdp S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -7135,6 +7654,15 @@ P1	vd10	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothin
 P1	vd2	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd25	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd50	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar0.5	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta power S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -7256,6 +7784,15 @@ P1	vd10	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides no
 P1	vd2	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd25	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd50	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar0.5	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta null_rate S rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -7377,6 +7914,15 @@ P1	vd10	Delta fdp S rd_eq	400	0.3372377792	0.220836926387674	0.0110418463193837	
 P1	vd2	Delta fdp S rd_eq	284	0.0944835679577465	0.386731351036579	0.022948283702937	0.0493125811430893	0.139654554772404	yes: not classified, decides nothing
 P1	vd25	Delta fdp S rd_eq	400	0.431922070375	0.100565682039173	0.00502828410195866	0.422036829407314	0.441807311342686	yes: not classified, decides nothing
 P1	vd50	Delta fdp S rd_eq	400	0.520039457575	0.0689816190149532	0.00344908095074766	0.513258815188084	0.526820099961916	yes: not classified, decides nothing
+P2	mcar0.5	Delta fdp S rd_eq	195	0.124786324615385	0.479339342707998	0.0343262033025483	0.057085868324955	0.192486780905814	yes: not classified, decides nothing
+P2	mcar10	Delta fdp S rd_eq	400	0.220336126625	0.113244240362302	0.00566221201811508	0.209204629463296	0.231467623786704	yes: not classified, decides nothing
+P2	mcar2	Delta fdp S rd_eq	400	0.06438393	0.403365531618009	0.0201682765809004	0.024734564557926	0.104033295442074	yes: not classified, decides nothing
+P2	vd0.1	Delta fdp S rd_eq	21	0.142857142857143	0.358568582800318	0.0782460796435952	-0.0203613191712503	0.306075604885536	yes: not classified, decides nothing
+P2	vd0.5	Delta fdp S rd_eq	285	0.125730994035088	0.521899801758601	0.03091467618744	0.0648800244366895	0.186581963633486	yes: not classified, decides nothing
+P2	vd10	Delta fdp S rd_eq	400	0.264137264025	0.113656069307316	0.0056828034653658	0.252965285575084	0.275309242474916	yes: not classified, decides nothing
+P2	vd2	Delta fdp S rd_eq	400	0.1966563865	0.386794182152255	0.0193397091076128	0.158635924470174	0.234676848529826	yes: not classified, decides nothing
+P2	vd25	Delta fdp S rd_eq	400	0.340043559625	0.0810096770763557	0.00405048385381778	0.332080602855093	0.348006516394907	yes: not classified, decides nothing
+P2	vd50	Delta fdp S rd_eq	400	0.3750364469	0.0765688307022794	0.00382844153511397	0.367510009185282	0.382562884614718	yes: not classified, decides nothing
 P3	mcar0.5	Delta fdp S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta fdp S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta fdp S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -7498,6 +8044,15 @@ P1	vd10	Delta power S rd_eq	400	0.0991846635	0.259275213700342	0.012963760685017
 P1	vd2	Delta power S rd_eq	61	-0.177595629508197	0.688442184581857	0.0881459893280479	-0.353913859980383	-0.0012773990360104	yes: not classified, decides nothing
 P1	vd25	Delta power S rd_eq	400	0.00188418525	0.132256527674142	0.00661282638370709	-0.0111161506409155	0.0148845211409155	yes: not classified, decides nothing
 P1	vd50	Delta power S rd_eq	400	-0.14152650225	0.0980241128561609	0.00490120564280804	-0.151161916206118	-0.131891088293882	yes: not classified, decides nothing
+P2	mcar0.5	Delta power S rd_eq	46	-0.282608695652174	0.554298093819196	0.081726795245633	-0.447214910918774	-0.118002480385573	yes: not classified, decides nothing
+P2	mcar10	Delta power S rd_eq	400	-0.253538843	0.0919310073399642	0.00459655036699821	-0.262575326833557	-0.244502359166443	yes: not classified, decides nothing
+P2	mcar2	Delta power S rd_eq	343	-0.161731222740525	0.432635347444902	0.0233601130145966	-0.207678804750143	-0.115783640730906	yes: not classified, decides nothing
+P2	vd0.1	Delta power S rd_eq	3	0	1	0.577350269189626	-2.48413771175033	2.48413771175033	yes: not classified, decides nothing
+P2	vd0.5	Delta power S rd_eq	73	-0.136986301369863	0.566790880826005	0.066337854912181	-0.269228398227797	-0.00474420451192892	yes: not classified, decides nothing
+P2	vd10	Delta power S rd_eq	400	-0.05343486375	0.159372267491914	0.0079686133745957	-0.0691005782937579	-0.0377691492062421	yes: not classified, decides nothing
+P2	vd2	Delta power S rd_eq	356	-0.0832397	0.477495496102411	0.025307210679057	-0.133010603992808	-0.0334687960071925	yes: not classified, decides nothing
+P2	vd25	Delta power S rd_eq	400	-0.12717795775	0.0992000532593662	0.00496000266296831	-0.13692896237297	-0.11742695312703	yes: not classified, decides nothing
+P2	vd50	Delta power S rd_eq	400	-0.1889883655	0.106086858173063	0.00530434290865316	-0.199416318011046	-0.178560412988954	yes: not classified, decides nothing
 P3	mcar0.5	Delta power S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta power S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta power S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -7619,6 +8174,15 @@ P1	vd10	Delta null_rate S rd_eq	400	0.19606457005	0.0918418584337624	0.004592092
 P1	vd2	Delta null_rate S rd_eq	173	0.217437379768786	0.467661644396421	0.0355556564152439	0.147255770215756	0.287618989321816	yes: not classified, decides nothing
 P1	vd25	Delta null_rate S rd_eq	400	0.2881374015275	0.0537395455404067	0.00268697727702033	0.282854999555087	0.293419803499913	yes: not classified, decides nothing
 P1	vd50	Delta null_rate S rd_eq	400	0.482038127875	0.0401349274648482	0.00200674637324241	0.478093010403852	0.485983245346148	yes: not classified, decides nothing
+P2	mcar0.5	Delta null_rate S rd_eq	164	0.178353658536585	0.539263364101874	0.0421093941102474	0.0952034121525152	0.261503904920656	yes: not classified, decides nothing
+P2	mcar10	Delta null_rate S rd_eq	400	0.329459747495	0.0892245068828798	0.00446122534414399	0.320689302817693	0.338230192172307	yes: not classified, decides nothing
+P2	mcar2	Delta null_rate S rd_eq	400	0.129608475775	0.229410939616145	0.0114705469808073	0.107058214366288	0.152158737183712	yes: not classified, decides nothing
+P2	vd0.1	Delta null_rate S rd_eq	12	0.166666666666667	0.389249472080761	0.112366643743874	-0.0806506487029033	0.413983982036237	yes: not classified, decides nothing
+P2	vd0.5	Delta null_rate S rd_eq	200	0.204166667	0.561958841022499	0.0397364907234742	0.125808034072246	0.282525299927754	yes: not classified, decides nothing
+P2	vd10	Delta null_rate S rd_eq	400	0.34278749732	0.0788718806036574	0.00394359403018287	0.335034678172033	0.350540316467967	yes: not classified, decides nothing
+P2	vd2	Delta null_rate S rd_eq	400	0.21590091705	0.210786679527951	0.0105393339763975	0.195181352704974	0.236620481395026	yes: not classified, decides nothing
+P2	vd25	Delta null_rate S rd_eq	400	0.51004783026	0.0565988271787393	0.00282994135893696	0.50448437129661	0.51561128922339	yes: not classified, decides nothing
+P2	vd50	Delta null_rate S rd_eq	400	0.667189914555	0.0429783728808872	0.00214891864404436	0.66296529673596	0.67141453237404	yes: not classified, decides nothing
 P3	mcar0.5	Delta null_rate S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta null_rate S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta null_rate S rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -7740,6 +8304,15 @@ P1	vd10	Delta fdp S rd_gt	400	0.048388192725	0.0148657428078532	0.00074328714039
 P1	vd2	Delta fdp S rd_gt	400	-0.001658567925	0.00958308529774948	0.000479154264887474	-0.00260055037329919	-0.000716585476700809	yes: not classified, decides nothing
 P1	vd25	Delta fdp S rd_gt	400	0.15413744775	0.0209084663601559	0.0010454233180078	0.152082221513336	0.156192673986664	yes: not classified, decides nothing
 P1	vd50	Delta fdp S rd_gt	400	0.3000277698	0.0281662496659003	0.00140831248329501	0.297259129847904	0.302796409752096	yes: not classified, decides nothing
+P2	mcar0.5	Delta fdp S rd_gt	400	-0.09234540365	0.090232399531248	0.0045116199765624	-0.101214920510746	-0.0834758867892541	yes: not classified, decides nothing
+P2	mcar10	Delta fdp S rd_gt	400	0.00428854403	0.103624502470735	0.00518122512353675	-0.00589736786667194	0.0144744559266719	yes: not classified, decides nothing
+P2	mcar2	Delta fdp S rd_gt	400	-0.156412073725	0.114930331339304	0.0057465165669652	-0.167709307500458	-0.145114839949542	yes: not classified, decides nothing
+P2	vd0.1	Delta fdp S rd_gt	400	-0.0114438651	0.00844530652728826	0.000422265326364413	-0.0122740080312207	-0.0106137221687793	yes: not classified, decides nothing
+P2	vd0.5	Delta fdp S rd_gt	400	-0.0245797011	0.0316891745286258	0.00158445872643129	-0.0276946317595513	-0.0214647704404487	yes: not classified, decides nothing
+P2	vd10	Delta fdp S rd_gt	400	0.071977080075	0.0651910619201257	0.00325955309600628	0.0655690356710578	0.0783851244789422	yes: not classified, decides nothing
+P2	vd2	Delta fdp S rd_gt	400	-0.034636070825	0.0642662969048357	0.00321331484524179	-0.0409532141896486	-0.0283189274603514	yes: not classified, decides nothing
+P2	vd25	Delta fdp S rd_gt	400	0.1815888115	0.049798725495932	0.0024899362747966	0.176693777812274	0.186483845187726	yes: not classified, decides nothing
+P2	vd50	Delta fdp S rd_gt	400	0.251871886355	0.0503049906434445	0.00251524953217223	0.24692708864365	0.25681668406635	yes: not classified, decides nothing
 P3	mcar0.5	Delta fdp S rd_gt	400	-0.00029210605	0.00264545070382455	0.000132272535191228	-0.00055214423743309	-3.20678625669105e-05	yes: not classified, decides nothing
 P3	mcar10	Delta fdp S rd_gt	400	-0.0480446040575	0.0179372782154801	0.000896863910774007	-0.049807773300417	-0.046281434814583	yes: not classified, decides nothing
 P3	mcar2	Delta fdp S rd_gt	400	-0.003152258875	0.00572985342885111	0.000286492671442555	-0.00371548263787021	-0.00258903511212979	yes: not classified, decides nothing
@@ -7861,6 +8434,15 @@ P1	vd10	Delta power S rd_gt	400	0.012798644	0.00895348468997395	0.00044767423449
 P1	vd2	Delta power S rd_gt	400	0.012529341	0.00511642715975922	0.000255821357987961	0.0120264148094519	0.0130322671905481	yes: not classified, decides nothing
 P1	vd25	Delta power S rd_gt	400	-0.01088329725	0.0125752994501551	0.000628764972507753	-0.0121194034721719	-0.00964719102782807	yes: not classified, decides nothing
 P1	vd50	Delta power S rd_gt	400	-0.04655402375	0.0205308042303541	0.0010265402115177	-0.0485721271721831	-0.044535920327817	yes: not classified, decides nothing
+P2	mcar0.5	Delta power S rd_gt	400	0.0454278305	0.100182709879824	0.0050091354939912	0.0355802343033966	0.0552754266966034	yes: not classified, decides nothing
+P2	mcar10	Delta power S rd_gt	400	0.0772769125	0.111057335301049	0.00555286676505246	0.0663603801559715	0.0881934448440285	yes: not classified, decides nothing
+P2	mcar2	Delta power S rd_gt	400	0.1289687075	0.154038299041999	0.00770191495209995	0.113827302664806	0.144110112335194	yes: not classified, decides nothing
+P2	vd0.1	Delta power S rd_gt	400	-0.00215283575	0.00486432075226843	0.000243216037613422	-0.00263098079714994	-0.00167469070285005	yes: not classified, decides nothing
+P2	vd0.5	Delta power S rd_gt	400	0.00588407075	0.0256283471030743	0.00128141735515372	0.00336489739403657	0.00840324410596344	yes: not classified, decides nothing
+P2	vd10	Delta power S rd_gt	400	0.011262468	0.0529990468718735	0.00264995234359367	0.00605285435483968	0.0164720816451603	yes: not classified, decides nothing
+P2	vd2	Delta power S rd_gt	400	0.0262416465	0.0581276752818248	0.00290638376409124	0.0205279073257518	0.0319553856742482	yes: not classified, decides nothing
+P2	vd25	Delta power S rd_gt	400	-0.02523010725	0.0431000269704225	0.00215500134852113	-0.029466683223804	-0.020993531276196	yes: not classified, decides nothing
+P2	vd50	Delta power S rd_gt	400	-0.0604007545	0.0417130535431754	0.00208565267715877	-0.0645009960278369	-0.0563005129721631	yes: not classified, decides nothing
 P3	mcar0.5	Delta power S rd_gt	400	-3.98944999999978e-05	0.00177340335446107	8.86701677230533e-05	-0.000214213603060631	0.000134424603060635	yes: not classified, decides nothing
 P3	mcar10	Delta power S rd_gt	400	0.13788619225	0.0796671564623198	0.00398335782311599	0.130055200376116	0.145717184123884	yes: not classified, decides nothing
 P3	mcar2	Delta power S rd_gt	400	0.00207698075	0.0042419292629574	0.00021209646314787	0.00166001452372932	0.00249394697627067	yes: not classified, decides nothing
@@ -7982,6 +8564,15 @@ P1	vd10	Delta null_rate S rd_gt	400	0.0177001577	0.0052846642474116	0.0002642332
 P1	vd2	Delta null_rate S rd_gt	400	-0.0010340802	0.00355565008591807	0.000177782504295904	-0.00138358767793249	-0.000684572722067512	yes: not classified, decides nothing
 P1	vd25	Delta null_rate S rd_gt	400	0.057296806225	0.00813608810839114	0.000406804405419557	0.0564970583402848	0.0580965541097152	yes: not classified, decides nothing
 P1	vd50	Delta null_rate S rd_gt	400	0.118147640325	0.0130254783209296	0.000651273916046479	0.116867283156323	0.119427997493677	yes: not classified, decides nothing
+P2	mcar0.5	Delta null_rate S rd_gt	400	-0.039340298975	0.0381596213538743	0.00190798106769371	-0.0430912510360793	-0.0355893469139207	yes: not classified, decides nothing
+P2	mcar10	Delta null_rate S rd_gt	400	-0.00360657125	0.0531437983815723	0.00265718991907862	-0.00883041344236245	0.00161727094236245	yes: not classified, decides nothing
+P2	mcar2	Delta null_rate S rd_gt	400	-0.06692918875	0.0479229708426233	0.00239614854213117	-0.0716398425740567	-0.0622185349259433	yes: not classified, decides nothing
+P2	vd0.1	Delta null_rate S rd_gt	400	-0.0050136981	0.00341069995704134	0.000170534997852067	-0.00534895750718719	-0.00467843869281281	yes: not classified, decides nothing
+P2	vd0.5	Delta null_rate S rd_gt	400	-0.010687363225	0.013641245514457	0.00068206227572285	-0.0120282480703615	-0.00934647837963853	yes: not classified, decides nothing
+P2	vd10	Delta null_rate S rd_gt	400	0.03143763565	0.0305324061573373	0.00152662030786686	0.0284364111162574	0.0344388601837426	yes: not classified, decides nothing
+P2	vd2	Delta null_rate S rd_gt	400	-0.015412434	0.0261774972725633	0.00130887486362816	-0.0179855868213513	-0.0128392811786487	yes: not classified, decides nothing
+P2	vd25	Delta null_rate S rd_gt	400	0.09410256265	0.0317938745552024	0.00158969372776012	0.0909773403584422	0.0972277849415578	yes: not classified, decides nothing
+P2	vd50	Delta null_rate S rd_gt	400	0.142993629	0.0372842002363167	0.00186421001181584	0.139328727652442	0.146658530347558	yes: not classified, decides nothing
 P3	mcar0.5	Delta null_rate S rd_gt	400	-0.000152350875	0.00100588080452296	5.02940402261479e-05	-0.000251225301502727	-5.3476448497273e-05	yes: not classified, decides nothing
 P3	mcar10	Delta null_rate S rd_gt	400	-0.027996163275	0.0108108876788142	0.000540544383940709	-0.0290588342340458	-0.0269334923159542	yes: not classified, decides nothing
 P3	mcar2	Delta null_rate S rd_gt	400	-0.00179238345	0.00249553979727394	0.000124776989863697	-0.00203768594027588	-0.00154708095972412	yes: not classified, decides nothing
@@ -8103,6 +8694,15 @@ P1	vd10	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd2	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd25	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd50	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar0.5	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta fdp C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -8224,6 +8824,15 @@ P1	vd10	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothin
 P1	vd2	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd25	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd50	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar0.5	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta power C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -8345,6 +8954,15 @@ P1	vd10	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides no
 P1	vd2	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd25	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	vd50	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar0.5	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta null_rate C rd_lt	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -8466,6 +9084,15 @@ P1	vd10	Delta fdp C rd_eq	400	0.34962239395	0.218784455120795	0.0109392227560397
 P1	vd2	Delta fdp C rd_eq	284	0.104460093661972	0.383508258677519	0.0227570283582172	0.059665570410621	0.149254616913323	yes: not classified, decides nothing
 P1	vd25	Delta fdp C rd_eq	400	0.442888416125	0.0990355380775365	0.00495177690387682	0.433153582746358	0.452623249503642	yes: not classified, decides nothing
 P1	vd50	Delta fdp C rd_eq	400	0.527466699325	0.0687629625883774	0.00343814812941887	0.520707550069956	0.534225848580044	yes: not classified, decides nothing
+P2	mcar0.5	Delta fdp C rd_eq	195	0.196581196410256	0.502957739234199	0.0360175518078856	0.125544948376469	0.267617444444044	yes: not classified, decides nothing
+P2	mcar10	Delta fdp C rd_eq	400	0.336801367875	0.0766057816861711	0.00383028908430855	0.32927129801289	0.34433143773711	yes: not classified, decides nothing
+P2	mcar2	Delta fdp C rd_eq	400	0.2696451165	0.355680849462083	0.0177840424731041	0.234682981970308	0.304607251029692	yes: not classified, decides nothing
+P2	vd0.1	Delta fdp C rd_eq	21	0.142857142857143	0.358568582800318	0.0782460796435952	-0.0203613191712503	0.306075604885536	yes: not classified, decides nothing
+P2	vd0.5	Delta fdp C rd_eq	285	0.147368421052632	0.516850163175492	0.0306155614126606	0.0871062146667662	0.207630627438497	yes: not classified, decides nothing
+P2	vd10	Delta fdp C rd_eq	400	0.289053141025	0.105136626099841	0.00525683130499205	0.278718592872465	0.299387689177535	yes: not classified, decides nothing
+P2	vd2	Delta fdp C rd_eq	400	0.24413825925	0.37731877105666	0.018865938552833	0.20704919568582	0.28122732281418	yes: not classified, decides nothing
+P2	vd25	Delta fdp C rd_eq	400	0.351045489875	0.0800019501385461	0.00400009750692731	0.343181588999787	0.358909390750213	yes: not classified, decides nothing
+P2	vd50	Delta fdp C rd_eq	400	0.3789133239	0.0761068155705264	0.00380534077852632	0.371432300593214	0.386394347206786	yes: not classified, decides nothing
 P3	mcar0.5	Delta fdp C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta fdp C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta fdp C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -8587,6 +9214,15 @@ P1	vd10	Delta power C rd_eq	400	0.095655866	0.261277724485338	0.0130638862242669
 P1	vd2	Delta power C rd_eq	61	-0.144808744262295	0.671837867820446	0.0860200244164993	-0.316874411752232	0.0272569232276418	yes: not classified, decides nothing
 P1	vd25	Delta power C rd_eq	400	0.00070992525	0.131596369986097	0.00657981849930487	-0.0122255195399886	0.0136453700399886	yes: not classified, decides nothing
 P1	vd50	Delta power C rd_eq	400	-0.142878526	0.0979963036764492	0.00489981518382246	-0.152511206414844	-0.133245845585156	yes: not classified, decides nothing
+P2	mcar0.5	Delta power C rd_eq	46	-0.33695652173913	0.516982138377107	0.0762248577794624	-0.490481266109706	-0.183431777368555	yes: not classified, decides nothing
+P2	mcar10	Delta power C rd_eq	400	-0.2792317115	0.0895338732638516	0.00447669366319258	-0.288032565767946	-0.270430857232054	yes: not classified, decides nothing
+P2	mcar2	Delta power C rd_eq	343	-0.261439676676385	0.392505137308161	0.0211932853394419	-0.303125271929232	-0.219754081423537	yes: not classified, decides nothing
+P2	vd0.1	Delta power C rd_eq	3	0	1	0.577350269189626	-2.48413771175033	2.48413771175033	yes: not classified, decides nothing
+P2	vd0.5	Delta power C rd_eq	73	-0.150684931506849	0.575452307047642	0.067351598173516	-0.284947888622204	-0.0164219743914949	yes: not classified, decides nothing
+P2	vd10	Delta power C rd_eq	400	-0.05806948475	0.161382239737593	0.00806911198687966	-0.0739327722588491	-0.0422061972411509	yes: not classified, decides nothing
+P2	vd2	Delta power C rd_eq	356	-0.0938202241573034	0.478901943984542	0.0253817522677269	-0.143737726773729	-0.0439027215408778	yes: not classified, decides nothing
+P2	vd25	Delta power C rd_eq	400	-0.12829979925	0.0985743315375357	0.00492871657687678	-0.13798929770234	-0.11861030079766	yes: not classified, decides nothing
+P2	vd50	Delta power C rd_eq	400	-0.18926710225	0.106048865679324	0.0053024432839662	-0.199691320237022	-0.178842884262979	yes: not classified, decides nothing
 P3	mcar0.5	Delta power C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta power C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta power C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -8708,6 +9344,15 @@ P1	vd10	Delta null_rate C rd_eq	400	0.204442637775	0.0929714046180157	0.00464857
 P1	vd2	Delta null_rate C rd_eq	174	0.223850574712644	0.470177873961336	0.0356440926384177	0.153497286333571	0.294203863091716	yes: not classified, decides nothing
 P1	vd25	Delta null_rate C rd_eq	400	0.3000845967775	0.0526723673181346	0.00263361836590673	0.294907094544925	0.305262099010075	yes: not classified, decides nothing
 P1	vd50	Delta null_rate C rd_eq	400	0.498578024125	0.0398554572472882	0.00199277286236441	0.494660377560307	0.502495670689693	yes: not classified, decides nothing
+P2	mcar0.5	Delta null_rate C rd_eq	164	0.221036585365854	0.540424051622595	0.0422000285784915	0.137707369929281	0.304365800802427	yes: not classified, decides nothing
+P2	mcar10	Delta null_rate C rd_eq	400	0.471957981995	0.050266957502836	0.0025133478751418	0.467016922803114	0.476899041186886	yes: not classified, decides nothing
+P2	mcar2	Delta null_rate C rd_eq	400	0.265470213975	0.223507930223059	0.0111753965111529	0.243500196930985	0.287440231019015	yes: not classified, decides nothing
+P2	vd0.1	Delta null_rate C rd_eq	12	0.166666666666667	0.389249472080761	0.112366643743874	-0.0806506487029033	0.413983982036237	yes: not classified, decides nothing
+P2	vd0.5	Delta null_rate C rd_eq	200	0.206666667	0.55314692857894	0.0391133944190679	0.129536752907419	0.283796581092581	yes: not classified, decides nothing
+P2	vd10	Delta null_rate C rd_eq	400	0.37710062482	0.0675911775367469	0.00337955887683734	0.370456657775854	0.383744591864146	yes: not classified, decides nothing
+P2	vd2	Delta null_rate C rd_eq	400	0.255081463575	0.208829823597544	0.0104414911798772	0.234554251054362	0.275608676095638	yes: not classified, decides nothing
+P2	vd25	Delta null_rate C rd_eq	400	0.53679583751	0.0444537115392149	0.00222268557696075	0.532426199264003	0.541165475755997	yes: not classified, decides nothing
+P2	vd50	Delta null_rate C rd_eq	400	0.685705854305	0.037702324181788	0.0018851162090894	0.681999852893568	0.689411855716432	yes: not classified, decides nothing
 P3	mcar0.5	Delta null_rate C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar10	Delta null_rate C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	mcar2	Delta null_rate C rd_eq	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
@@ -8829,6 +9474,15 @@ P1	vd10	Delta fdp C rd_gt	400	0.062208513475	0.0131576422651631	0.00065788211325
 P1	vd2	Delta fdp C rd_gt	400	0.009514033825	0.00595370670191084	0.000297685335095542	0.00892880609914032	0.0100992615508597	yes: not classified, decides nothing
 P1	vd25	Delta fdp C rd_gt	400	0.170408161	0.0192788065810296	0.000963940329051479	0.168513124395479	0.172303197604521	yes: not classified, decides nothing
 P1	vd50	Delta fdp C rd_gt	400	0.3210606843	0.0255528014026155	0.00127764007013077	0.318548936811768	0.323572431788232	yes: not classified, decides nothing
+P2	mcar0.5	Delta fdp C rd_gt	400	0.00399168115	0.00710173702174328	0.000355086851087164	0.00329360621702515	0.00468975608297485	yes: not classified, decides nothing
+P2	mcar10	Delta fdp C rd_gt	400	0.20060358028	0.0201601196515758	0.00100800598257879	0.198621913804397	0.202585246755603	yes: not classified, decides nothing
+P2	mcar2	Delta fdp C rd_gt	400	0.038663107	0.0112909349318756	0.000564546746593782	0.037553249141048	0.039772964858952	yes: not classified, decides nothing
+P2	vd0.1	Delta fdp C rd_gt	400	-0.0061381301	0.00590867223442413	0.000295433611721206	-0.00671893110141521	-0.00555732909858479	yes: not classified, decides nothing
+P2	vd0.5	Delta fdp C rd_gt	400	-0.000523368174999998	0.0075117389241341	0.000375586946206705	-0.00126174480453933	0.000215008454539331	yes: not classified, decides nothing
+P2	vd10	Delta fdp C rd_gt	400	0.122951611825	0.018775922207788	0.000938796110389402	0.121106006926281	0.124797216723719	yes: not classified, decides nothing
+P2	vd2	Delta fdp C rd_gt	400	0.022096090425	0.0107085094285085	0.000535425471425423	0.0210434828757935	0.0231486979742065	yes: not classified, decides nothing
+P2	vd25	Delta fdp C rd_gt	400	0.2187317675	0.0241267430904561	0.0012063371545228	0.21636019635984	0.22110333864016	yes: not classified, decides nothing
+P2	vd50	Delta fdp C rd_gt	400	0.286267731105	0.0362613915426671	0.00181306957713335	0.28270336813391	0.28983209407609	yes: not classified, decides nothing
 P3	mcar0.5	Delta fdp C rd_gt	400	0.00060909585	0.00243111163401681	0.000121555581700841	0.000370126413962776	0.000848065286037223	yes: not classified, decides nothing
 P3	mcar10	Delta fdp C rd_gt	400	0.01759960345	0.0110554630943807	0.000552773154719035	0.0165128916166856	0.0186863152833144	yes: not classified, decides nothing
 P3	mcar2	Delta fdp C rd_gt	400	0.00294798165	0.00465786332406334	0.000232893166203167	0.00249013061752775	0.00340583268247224	yes: not classified, decides nothing
@@ -8950,6 +9604,15 @@ P1	vd10	Delta power C rd_gt	400	0.00755900275000001	0.00855012004787653	0.000427
 P1	vd2	Delta power C rd_gt	400	0.00919878725	0.00474247699519325	0.000237123849759663	0.00873261900124364	0.00966495549875636	yes: not classified, decides nothing
 P1	vd25	Delta power C rd_gt	400	-0.01762716025	0.0122581663773291	0.000612908318866453	-0.0188320934439565	-0.0164222270560435	yes: not classified, decides nothing
 P1	vd50	Delta power C rd_gt	400	-0.057333663	0.0193005385519373	0.000965026927596865	-0.0592308357782613	-0.0554364902217387	yes: not classified, decides nothing
+P2	mcar0.5	Delta power C rd_gt	400	-0.00759402975	0.00552173057163733	0.000276086528581867	-0.00813679579257514	-0.00705126370742487	yes: not classified, decides nothing
+P2	mcar10	Delta power C rd_gt	400	-0.0649117625	0.0164696479891286	0.000823482399456431	-0.0665306690268018	-0.0632928559731982	yes: not classified, decides nothing
+P2	mcar2	Delta power C rd_gt	400	-0.0178843135	0.00831077128497384	0.000415538564248692	-0.0187012321059643	-0.0170673948940357	yes: not classified, decides nothing
+P2	vd0.1	Delta power C rd_gt	400	-0.00357867475	0.00466189957550758	0.000233094978775379	-0.00403692253131662	-0.00312042696868339	yes: not classified, decides nothing
+P2	vd0.5	Delta power C rd_gt	400	-0.00165634025	0.00596202083964287	0.000298101041982143	-0.00224238522537515	-0.00107029527462485	yes: not classified, decides nothing
+P2	vd10	Delta power C rd_gt	400	-0.0128308975	0.0135511103416333	0.000677555517081666	-0.0141629223855326	-0.0114988726144674	yes: not classified, decides nothing
+P2	vd2	Delta power C rd_gt	400	0.00237605525	0.00890405823077404	0.000445202911538702	0.00150081869398262	0.00325129180601739	yes: not classified, decides nothing
+P2	vd25	Delta power C rd_gt	400	-0.0449590765	0.0212417327611388	0.00106208663805694	-0.047047061612389	-0.042871091387611	yes: not classified, decides nothing
+P2	vd50	Delta power C rd_gt	400	-0.0787487195	0.0345320163857685	0.00172660081928843	-0.0821430911797985	-0.0753543478202015	yes: not classified, decides nothing
 P3	mcar0.5	Delta power C rd_gt	400	-0.000397854249999998	0.00182673615593232	9.13368077966161e-05	-0.000577415773569645	-0.000218292726430352	yes: not classified, decides nothing
 P3	mcar10	Delta power C rd_gt	400	-0.00923476575	0.00671014555094292	0.000335507277547146	-0.00989434866491003	-0.00857518283508996	yes: not classified, decides nothing
 P3	mcar2	Delta power C rd_gt	400	-0.001609646	0.00336334055770476	0.000168167027885238	-0.00194025015039348	-0.00127904184960652	yes: not classified, decides nothing
@@ -9071,6 +9734,15 @@ P1	vd10	Delta null_rate C rd_gt	400	0.02322363395	0.00427222793128122	0.00021361
 P1	vd2	Delta null_rate C rd_gt	400	0.003610772075	0.00189802603575622	9.49013017878109e-05	0.00342420301539692	0.00379734113460308	yes: not classified, decides nothing
 P1	vd25	Delta null_rate C rd_gt	400	0.064293410725	0.00723216377313542	0.000361608188656771	0.0635825153164911	0.0650043061335089	yes: not classified, decides nothing
 P1	vd50	Delta null_rate C rd_gt	400	0.132303768075	0.0110513539701976	0.000552567698509881	0.131217460153655	0.133390075996345	yes: not classified, decides nothing
+P2	mcar0.5	Delta null_rate C rd_gt	400	0.00155606285	0.00274897489432123	0.000137448744716061	0.00128584861097263	0.00182627708902737	yes: not classified, decides nothing
+P2	mcar10	Delta null_rate C rd_gt	400	0.1153563169	0.00937517510102398	0.000468758755051199	0.114434771268243	0.116277862531757	yes: not classified, decides nothing
+P2	mcar2	Delta null_rate C rd_gt	400	0.01748938875	0.00442266720853894	0.000221133360426947	0.017054656640698	0.017924120859302	yes: not classified, decides nothing
+P2	vd0.1	Delta null_rate C rd_gt	400	-0.0025731686	0.00229373723831395	0.000114686861915698	-0.00279863463232358	-0.00234770256767642	yes: not classified, decides nothing
+P2	vd0.5	Delta null_rate C rd_gt	400	-0.000241758724999999	0.00263187262520508	0.000131593631260254	-0.00050046223666388	1.69447866638814e-05	yes: not classified, decides nothing
+P2	vd10	Delta null_rate C rd_gt	400	0.0593193535	0.00762374972575311	0.000381187486287655	0.0585699666158436	0.0600687403841564	yes: not classified, decides nothing
+P2	vd2	Delta null_rate C rd_gt	400	0.00944636445	0.00383267461399014	0.000191633730699507	0.00906962646799869	0.00982310243200131	yes: not classified, decides nothing
+P2	vd25	Delta null_rate C rd_gt	400	0.1244583324	0.0102552251004007	0.000512761255020035	0.123450281052465	0.125466383747535	yes: not classified, decides nothing
+P2	vd50	Delta null_rate C rd_gt	400	0.18529051075	0.0173790535178957	0.000868952675894787	0.183582212965595	0.186998808534405	yes: not classified, decides nothing
 P3	mcar0.5	Delta null_rate C rd_gt	400	0.000306769225	0.0009241982686242	4.620991343121e-05	0.000215923894843443	0.000397614555156557	yes: not classified, decides nothing
 P3	mcar10	Delta null_rate C rd_gt	400	0.0078991968	0.00387208506119553	0.000193604253059777	0.00751858491430341	0.00827980868569659	yes: not classified, decides nothing
 P3	mcar2	Delta null_rate C rd_gt	400	0.001203343525	0.00165299312248866	8.2649656124433e-05	0.0010408603100265	0.0013658267399735	yes: not classified, decides nothing
@@ -9192,6 +9864,15 @@ P1	vd10	oracle change fdp	400	0.000417209425	0.00482806245661506	0.0002414031228
 P1	vd2	oracle change fdp	400	0.000103763475	0.00226018855103446	0.000113009427551723	-0.000118404843320326	0.000325931793320325	yes: not classified, decides nothing
 P1	vd25	oracle change fdp	400	0.0005136072	0.00718152975159033	0.000359076487579517	-0.000192311068255967	0.00121952546825597	yes: not classified, decides nothing
 P1	vd50	oracle change fdp	400	0.0023244901	0.0111136387980653	0.000555681939903263	0.00123205980649391	0.00341692039350609	yes: not classified, decides nothing
+P2	mcar0.5	oracle change fdp	400	-2.264475e-05	0.0024369026191222	0.00012184513095611	-0.000262183418821671	0.000216893918821671	yes: not classified, decides nothing
+P2	mcar10	oracle change fdp	400	-0.00046527108	0.00854292665315803	0.000427146332657901	-0.00130500971472467	0.000374467554724669	yes: not classified, decides nothing
+P2	mcar2	oracle change fdp	400	-5.72517750000002e-05	0.00422122150932506	0.000211061075466253	-0.000472182504365524	0.000357678954365524	yes: not classified, decides nothing
+P2	vd0.1	oracle change fdp	400	0.0001146388	0.00131777868754865	6.58889343774327e-05	-1.48940545917348e-05	0.000244171654591735	yes: not classified, decides nothing
+P2	vd0.5	oracle change fdp	400	0.0001501485	0.00201732142240683	0.000100866071120341	-4.81468624477758e-05	0.000348443862447776	yes: not classified, decides nothing
+P2	vd10	oracle change fdp	400	0.001109665225	0.00659367538329208	0.000329683769164604	0.000461530904177225	0.00175779954582277	yes: not classified, decides nothing
+P2	vd2	oracle change fdp	400	0.00011809545	0.00308137584922112	0.000154068792461056	-0.00018479259454876	0.00042098349454876	yes: not classified, decides nothing
+P2	vd25	oracle change fdp	400	0.000871965625	0.00965641603254336	0.000482820801627168	-7.72249679572509e-05	0.00182115621795725	yes: not classified, decides nothing
+P2	vd50	oracle change fdp	400	0.002621586915	0.0151696625193909	0.000758483125969544	0.00113046423416108	0.00411270959583892	yes: not classified, decides nothing
 P3	mcar0.5	oracle change fdp	400	-0.000155021675	0.00163779285523937	8.18896427619685e-05	-0.000316010758958964	5.96740895896368e-06	yes: not classified, decides nothing
 P3	mcar10	oracle change fdp	400	-1.58192750000002e-05	0.00556233350956163	0.000278116675478082	-0.00056257643877313	0.00053093788877313	yes: not classified, decides nothing
 P3	mcar2	oracle change fdp	400	-0.000116227325	0.00295856874059403	0.000147928437029702	-0.000407043877199603	0.000174589227199604	yes: not classified, decides nothing
@@ -9324,6 +10005,16 @@ P1	vd10	uncorrected departure fdp	400	-0.04385168145	0.0752472538320243	0.003762
 P1	vd2	uncorrected departure fdp	400	-0.0463226952	0.0568020209219577	0.00284010104609788	-0.0519061273696973	-0.0407392630303027	yes: not classified, decides nothing
 P1	vd25	uncorrected departure fdp	400	-0.0397012343	0.099892358705064	0.0049946179352532	-0.0495202900316103	-0.0298821785683897	yes: not classified, decides nothing
 P1	vd50	uncorrected departure fdp	400	-0.04059148385	0.100522784074733	0.00502613920373663	-0.0504725081037239	-0.0307104595962761	yes: not classified, decides nothing
+P2	mcar0.5	uncorrected departure fdp	400	-0.042311543825	0.0868793515856564	0.00434396757928282	-0.0508514682617075	-0.0337716193882925	yes: not classified, decides nothing
+P2	mcar10	uncorrected departure fdp	400	-0.034432718645	0.122396123979899	0.00611980619899493	-0.0464638126973499	-0.0224016245926501	yes: not classified, decides nothing
+P2	mcar2	uncorrected departure fdp	400	-0.04230258595	0.0869883332734566	0.00434941666367283	-0.0508532228904475	-0.0337519490095525	yes: not classified, decides nothing
+P2	none	uncorrected departure fdp	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	uncorrected departure fdp	400	-0.04241417845	0.0868541794706818	0.00434270897353409	-0.0509516285593112	-0.0338767283406888	yes: not classified, decides nothing
+P2	vd0.5	uncorrected departure fdp	400	-0.0399751679	0.100157521045217	0.00500787605226084	-0.0498202881257281	-0.0301300476742719	yes: not classified, decides nothing
+P2	vd10	uncorrected departure fdp	400	-0.0443678399	0.075824384123101	0.00379121920615505	-0.0518211012221997	-0.0369145785778003	yes: not classified, decides nothing
+P2	vd2	uncorrected departure fdp	400	-0.03998040575	0.100433723714074	0.00502168618570368	-0.0498526756940237	-0.0301081358059763	yes: not classified, decides nothing
+P2	vd25	uncorrected departure fdp	400	-0.040312399325	0.0997353663677957	0.00498676831838979	-0.0501160232805559	-0.030508775369444	yes: not classified, decides nothing
+P2	vd50	uncorrected departure fdp	400	-0.04354382974	0.0879087913625042	0.00439543956812521	-0.052184944364548	-0.034902715115452	yes: not classified, decides nothing
 P3	mcar0.5	uncorrected departure fdp	400	-0.048169675475	0.00711715049376089	0.000355857524688045	-0.0488692654962431	-0.0474700854537569	yes: not classified, decides nothing
 P3	mcar10	uncorrected departure fdp	400	-0.0479870804925	0.00768309083777007	0.000384154541888504	-0.0487423003922506	-0.0472318605927494	yes: not classified, decides nothing
 P3	mcar2	uncorrected departure fdp	400	-0.0481411844275	0.00723429867188068	0.000361714933594034	-0.0488522896887947	-0.0474300791662053	yes: not classified, decides nothing
@@ -9449,6 +10140,15 @@ P1	vd10	oracle change power	400	-0.0244179875	0.00662185520763032	0.000331092760
 P1	vd2	oracle change power	400	-0.00531874325	0.00286472957658692	0.000143236478829346	-0.00560033575350221	-0.0050371507464978	yes: not classified, decides nothing
 P1	vd25	oracle change power	400	-0.053786547	0.0105925015461743	0.000529625077308716	-0.0548277513960854	-0.0527453426039146	yes: not classified, decides nothing
 P1	vd50	oracle change power	400	-0.09354845375	0.0196108514271111	0.000980542571355556	-0.0954761291558403	-0.0916207783441597	yes: not classified, decides nothing
+P2	mcar0.5	oracle change power	400	-0.00318546225	0.00454666688204013	0.000227333344102007	-0.00363238307644311	-0.00273854142355689	yes: not classified, decides nothing
+P2	mcar10	oracle change power	400	-0.05763076975	0.0157663269680582	0.00078831634840291	-0.059180542377146	-0.056080997122854	yes: not classified, decides nothing
+P2	mcar2	oracle change power	400	-0.01239702325	0.00758772459932637	0.000379386229966319	-0.0131428689951873	-0.0116511775048127	yes: not classified, decides nothing
+P2	vd0.1	oracle change power	400	-0.000127373750000001	0.00330061759271189	0.000165030879635594	-0.000451812460945449	0.000197064960945448	yes: not classified, decides nothing
+P2	vd0.5	oracle change power	400	-0.0018623345	0.00411610772287065	0.000205805386143533	-0.00226693292626711	-0.00145773607373289	yes: not classified, decides nothing
+P2	vd10	oracle change power	400	-0.02955017525	0.011926770113262	0.000596338505663098	-0.0307225333958918	-0.0283778171041082	yes: not classified, decides nothing
+P2	vd2	oracle change power	400	-0.0071522905	0.00666231093917383	0.000333115546958692	-0.0078071714464617	-0.00649740955353829	yes: not classified, decides nothing
+P2	vd25	oracle change power	400	-0.05827070325	0.0193932818524751	0.000969664092623753	-0.0601769923575634	-0.0563644141424366	yes: not classified, decides nothing
+P2	vd50	oracle change power	400	-0.0932734595	0.0348438927081289	0.00174219463540645	-0.0966984874885525	-0.0898484315114475	yes: not classified, decides nothing
 P3	mcar0.5	oracle change power	400	-0.00121003825	0.00165609037181277	8.28045185906383e-05	-0.00137282591332292	-0.00104725058667708	yes: not classified, decides nothing
 P3	mcar10	oracle change power	400	-0.0291183535	0.00664078750399158	0.000332039375199579	-0.0297711187710254	-0.0284655882289746	yes: not classified, decides nothing
 P3	mcar2	oracle change power	400	-0.00486526975	0.00301772157549831	0.000150886078774916	-0.00516190081083808	-0.00456863868916193	yes: not classified, decides nothing
@@ -9581,6 +10281,16 @@ P1	vd10	uncorrected departure power	400	-0.8646944419875	0.0117699412506856	0.00
 P1	vd2	uncorrected departure power	400	-0.88452022231175	0.0102465248714964	0.000512326243574819	-0.88552741845841	-0.88351302616509	yes: not classified, decides nothing
 P1	vd25	uncorrected departure power	400	-0.8334249334875	0.0153215419650175	0.000766077098250876	-0.834930985365731	-0.831918881609269	yes: not classified, decides nothing
 P1	vd50	uncorrected departure power	400	-0.7907764196475	0.0254680176594614	0.00127340088297307	-0.793279833201986	-0.788273006093014	yes: not classified, decides nothing
+P2	mcar0.5	uncorrected departure power	400	-0.8060082227925	0.0229427475104306	0.00114713737552153	-0.808263411471209	-0.803753034113791	yes: not classified, decides nothing
+P2	mcar10	uncorrected departure power	400	-0.7522241787475	0.0277028984452309	0.00138514492226154	-0.75494727295898	-0.74950108453602	yes: not classified, decides nothing
+P2	mcar2	uncorrected departure power	400	-0.7968275874525	0.0241818401676618	0.00120909200838309	-0.79920457443506	-0.79445060046994	yes: not classified, decides nothing
+P2	none	uncorrected departure power	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	uncorrected departure power	400	-0.808974260605	0.0225358997094644	0.00112679498547322	-0.811189457623849	-0.806759063586151	yes: not classified, decides nothing
+P2	vd0.5	uncorrected departure power	400	-0.8072867620475	0.0229682924461194	0.00114841462230597	-0.809544461700526	-0.805029062394474	yes: not classified, decides nothing
+P2	vd10	uncorrected departure power	400	-0.7784746687925	0.0263811069991592	0.00131905534995796	-0.781067835709813	-0.775881501875187	yes: not classified, decides nothing
+P2	vd2	uncorrected departure power	400	-0.80170667109	0.0235974306114195	0.00117987153057097	-0.804026212737629	-0.799387129442371	yes: not classified, decides nothing
+P2	vd25	uncorrected departure power	400	-0.7473322540575	0.0346281169831923	0.00173140584915962	-0.75073607207668	-0.74392843603832	yes: not classified, decides nothing
+P2	vd50	uncorrected departure power	400	-0.707803830215	0.0497030528219036	0.00248515264109518	-0.712689459626659	-0.702918200803341	yes: not classified, decides nothing
 P3	mcar0.5	uncorrected departure power	400	-0.67742096775	0.0224525682089606	0.00112262841044803	-0.679627973585276	-0.675213961914724	yes: not classified, decides nothing
 P3	mcar10	uncorrected departure power	400	-0.745224368975	0.0266701255541049	0.00133350627770525	-0.747845945365623	-0.742602792584377	yes: not classified, decides nothing
 P3	mcar2	uncorrected departure power	400	-0.68807354025	0.0234033893622046	0.00117016946811023	-0.690374008348211	-0.685773072151789	yes: not classified, decides nothing
@@ -9706,6 +10416,15 @@ P1	vd10	oracle change null_rate	400	0.0002155445	0.00180217834227642	9.010891711
 P1	vd2	oracle change null_rate	400	3.75471250000001e-05	0.000907302149140004	4.53651074570002e-05	-5.16373780321005e-05	0.000126731628032101	yes: not classified, decides nothing
 P1	vd25	oracle change null_rate	400	0.000476690425	0.00252988467154391	0.000126494233577196	0.000228011958433999	0.000725368891566	yes: not classified, decides nothing
 P1	vd50	oracle change null_rate	400	0.00072488765	0.00430473956731554	0.000215236978365777	0.000301747399139187	0.00114802790086081	yes: not classified, decides nothing
+P2	mcar0.5	oracle change null_rate	400	7.68403500000002e-05	0.000865981717545576	4.32990858772788e-05	-8.28250481456453e-06	0.000161963204814565	yes: not classified, decides nothing
+P2	mcar10	oracle change null_rate	400	1.02664000000001e-05	0.00305702644005651	0.000152851322002825	-0.000290228186142946	0.000310760986142946	yes: not classified, decides nothing
+P2	mcar2	oracle change null_rate	400	0.0002150438	0.00155697303375642	7.7848651687821e-05	6.19990106962754e-05	0.000368088589303725	yes: not classified, decides nothing
+P2	vd0.1	oracle change null_rate	400	1.368145e-05	0.000468645668681395	2.34322834340698e-05	-3.23847156087925e-05	5.97476156087924e-05	yes: not classified, decides nothing
+P2	vd0.5	oracle change null_rate	400	6.32160000000003e-06	0.000710725470355446	3.55362735177723e-05	-6.35401301038989e-05	7.6183330103899e-05	yes: not classified, decides nothing
+P2	vd10	oracle change null_rate	400	0.00033326065	0.0022382660117038	0.00011191330058519	0.000113247237602976	0.000553274062397024	yes: not classified, decides nothing
+P2	vd2	oracle change null_rate	400	2.96916250000002e-05	0.00120145285942423	6.00726429712114e-05	-8.8406823555214e-05	0.000147790073555214	yes: not classified, decides nothing
+P2	vd25	oracle change null_rate	400	0.000644934225	0.00358291409623387	0.000179145704811694	0.000292746793963707	0.000997121656036293	yes: not classified, decides nothing
+P2	vd50	oracle change null_rate	400	0.001602494225	0.00604408060186178	0.000302204030093089	0.0010083830733027	0.0021966053766973	yes: not classified, decides nothing
 P3	mcar0.5	oracle change null_rate	400	2.94992500000004e-06	0.000638743839007406	3.19371919503703e-05	-5.98362724102976e-05	6.57361224102977e-05	yes: not classified, decides nothing
 P3	mcar10	oracle change null_rate	400	-1.93831250000002e-05	0.0023495451268271	0.000117477256341355	-0.000250334869891365	0.000211568619891364	yes: not classified, decides nothing
 P3	mcar2	oracle change null_rate	400	3.81448250000002e-05	0.00123557456900663	6.17787284503313e-05	-8.330766356779e-05	0.00015959731356779	yes: not classified, decides nothing
@@ -9838,6 +10557,16 @@ P1	vd10	uncorrected departure null_rate	400	-0.0425112996525	0.00315828542376361
 P1	vd2	uncorrected departure null_rate	400	-0.0440352740425	0.00307273523284518	0.000153636761642259	-0.0443373127458694	-0.0437332353391306	yes: not classified, decides nothing
 P1	vd25	uncorrected departure null_rate	400	-0.0404524638675	0.00345534098867369	0.000172767049433684	-0.0407921113258174	-0.0401128164091826	yes: not classified, decides nothing
 P1	vd50	uncorrected departure null_rate	400	-0.037651406345	0.00490846896528213	0.000245423448264107	-0.0381338910010014	-0.0371689216889986	yes: not classified, decides nothing
+P2	mcar0.5	uncorrected departure null_rate	400	-0.0443842374175	0.00438992969013653	0.000219496484506826	-0.0448157515477506	-0.0439527232872494	yes: not classified, decides nothing
+P2	mcar10	uncorrected departure null_rate	400	-0.04278074489	0.00466573263610643	0.000233286631805322	-0.0432393694472395	-0.0423221203327605	yes: not classified, decides nothing
+P2	mcar2	uncorrected departure null_rate	400	-0.0442909393025	0.00445767409203866	0.000222883704601933	-0.0447291124611929	-0.0438527661438071	yes: not classified, decides nothing
+P2	none	uncorrected departure null_rate	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	uncorrected departure null_rate	400	-0.044435267405	0.00442438116367228	0.000221219058183614	-0.0448701679898611	-0.0440003668201389	yes: not classified, decides nothing
+P2	vd0.5	uncorrected departure null_rate	400	-0.0443709717925	0.00441112095633825	0.000220556047816912	-0.0448045689471837	-0.0439373746378163	yes: not classified, decides nothing
+P2	vd10	uncorrected departure null_rate	400	-0.043433015125	0.00461422878511607	0.000230711439255804	-0.0438865770409142	-0.0429794532090858	yes: not classified, decides nothing
+P2	vd2	uncorrected departure null_rate	400	-0.0441093877225	0.00442366750606881	0.00022118337530344	-0.0445442181574129	-0.0436745572875871	yes: not classified, decides nothing
+P2	vd25	uncorrected departure null_rate	400	-0.04240822278475	0.00509557230332184	0.000254778615166092	-0.0429090990187219	-0.0419073465507781	yes: not classified, decides nothing
+P2	vd50	uncorrected departure null_rate	400	-0.04172122358	0.00713401995920337	0.000356700997960169	-0.0424224718083721	-0.0410199753516279	yes: not classified, decides nothing
 P3	mcar0.5	uncorrected departure null_rate	400	-0.04427759644	0.00293031752412691	0.000146515876206345	-0.0445656360003198	-0.0439895568796802	yes: not classified, decides nothing
 P3	mcar10	uncorrected departure null_rate	400	-0.04233856969	0.00305607034809761	0.000152803517404881	-0.042638970295779	-0.042038169084221	yes: not classified, decides nothing
 P3	mcar2	uncorrected departure null_rate	400	-0.0441139178725	0.00287079174324571	0.000143539587162285	-0.0443961062649475	-0.0438317294800524	yes: not classified, decides nothing
@@ -9976,6 +10705,16 @@ P1	vd50	arm removed	400	3090.215	23.8176820860023	1.19088410430011	3087.87380843
 P1	mcar0.5	arm removed	400	51.2775	3.55204678190647	0.177602339095324	50.9283467137531	51.6266532862469	yes: not classified, decides nothing
 P1	mcar2	arm removed	400	52.96	3.69086116514166	0.184543058257083	52.5972017644997	53.3227982355003	yes: not classified, decides nothing
 P1	mcar10	arm removed	400	103.675	7.63742106350391	0.381871053175195	102.924269273041	104.425730726959	yes: not classified, decides nothing
+P2	none	arm removed	400	33.2825	2.56009354269886	0.128004677134943	33.0308521112149	33.5341478887851	yes: not classified, decides nothing
+P2	vd0.1	arm removed	400	35.2825	2.73887702688913	0.136943851344457	35.0132783446334	35.5517216553666	yes: not classified, decides nothing
+P2	vd0.5	arm removed	400	43.4525	3.18718356825338	0.159359178412669	43.139211441303	43.765788558697	yes: not classified, decides nothing
+P2	vd2	arm removed	400	77.1975	4.96185891170327	0.248092945585163	76.7097673063487	77.6852326936513	yes: not classified, decides nothing
+P2	vd10	arm removed	400	330.6275	11.9484583898818	0.59742291949409	329.453009975358	331.801990024642	yes: not classified, decides nothing
+P2	vd25	arm removed	400	912.53	17.5721669873576	0.878608349367878	910.802719863554	914.257280136446	yes: not classified, decides nothing
+P2	vd50	arm removed	400	1854.37	16.8452517424248	0.842262587121238	1852.71417298965	1856.02582701035	yes: not classified, decides nothing
+P2	mcar0.5	arm removed	400	34.2975	2.71522095086755	0.135761047543377	34.0306036509117	34.5643963490883	yes: not classified, decides nothing
+P2	mcar2	arm removed	400	42.1125	3.88233500134347	0.194116750067174	41.7308805824475	42.4941194175525	yes: not classified, decides nothing
+P2	mcar10	arm removed	400	204.765	12.7379517008754	0.63689758504377	203.512905652856	206.017094347144	yes: not classified, decides nothing
 P3	none	arm removed	400	29.5525	3.31885231695452	0.165942615847726	29.2262688819484	29.8787311180516	yes: not classified, decides nothing
 P3	vd0.1	arm removed	400	31.1325	3.49434828327287	0.174717414163643	30.789018266423	31.475981733577	yes: not classified, decides nothing
 P3	vd0.5	arm removed	400	36.7175	3.60905207668587	0.180452603834293	36.3627433005022	37.0722566994978	yes: not classified, decides nothing
@@ -10114,6 +10853,16 @@ P1	vd50	arm miss_share	400	0.2031612	0.00285564614539675	0.000142782307269837	0.
 P1	mcar0.5	arm miss_share	400	0.0050025673875	0.000332221778792809	1.66110889396404e-05	0.00496991119433859	0.00503522358066141	yes: not classified, decides nothing
 P1	mcar2	arm miss_share	400	0.019994366725	0.000669303895877737	3.34651947938869e-05	0.0199285765850914	0.0200601568649086	yes: not classified, decides nothing
 P1	mcar10	arm miss_share	400	0.097440054325	0.00142040356043319	7.10201780216593e-05	0.0973004338184661	0.0975796748315339	yes: not classified, decides nothing
+P2	none	arm miss_share	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd0.1	arm miss_share	400	0.000610232977	0.00017412285949475	8.70614297473751e-06	0.000593117332883774	0.000627348621116226	yes: not classified, decides nothing
+P2	vd0.5	arm miss_share	400	0.0030782911475	0.000417478307754817	2.08739153877408e-05	0.0030372545474665	0.0031193277475335	yes: not classified, decides nothing
+P2	vd2	arm miss_share	400	0.0118583723725	0.000887119020619155	4.43559510309578e-05	0.0117711717976317	0.0119455729473683	yes: not classified, decides nothing
+P2	vd10	arm miss_share	400	0.046048459025	0.00166867626176957	8.34338130884787e-05	0.0458844342144466	0.0462124838355534	yes: not classified, decides nothing
+P2	vd25	arm miss_share	400	0.086187264725	0.00236945806520274	0.000118472903260137	0.0859543556106539	0.0864201738393461	yes: not classified, decides nothing
+P2	vd50	arm miss_share	400	0.13242792125	0.0037688429588329	0.000188442147941645	0.13205745768766	0.13279838481234	yes: not classified, decides nothing
+P2	mcar0.5	arm miss_share	400	0.0049250714925	0.000500204517644538	2.50102258822269e-05	0.00487590320676098	0.00497423977823902	yes: not classified, decides nothing
+P2	mcar2	arm miss_share	400	0.019185864925	0.000935659756466083	4.67829878233042e-05	0.0190938929722534	0.0192778368777466	yes: not classified, decides nothing
+P2	mcar10	arm miss_share	400	0.0830180686	0.00191702023866956	9.58510119334782e-05	0.0828296324792983	0.0832065047207017	yes: not classified, decides nothing
 P3	none	arm miss_share	400	0	0	0	0	0	yes: not classified, decides nothing
 P3	vd0.1	arm miss_share	400	0.00074514580375	8.73777256823773e-05	4.36888628411886e-06	0.000736556890951276	0.000753734716548724	yes: not classified, decides nothing
 P3	vd0.5	arm miss_share	400	0.0039112897825	0.000221525286156088	1.10762643078044e-05	0.00388951465216045	0.00393306491283955	yes: not classified, decides nothing
@@ -10252,6 +11001,16 @@ P1	vd50	arm miss_run_min	400	0.1909007225	0.00506012788739927	0.0002530063943699
 P1	mcar0.5	arm miss_run_min	400	0.0037583577525	0.000498798283623391	2.49399141811695e-05	0.00370932769445331	0.00380738781054669	yes: not classified, decides nothing
 P1	mcar2	arm miss_run_min	400	0.0174091227	0.00110736304671539	5.53681523357694e-05	0.0173002729379984	0.0175179724620016	yes: not classified, decides nothing
 P1	mcar10	arm miss_run_min	400	0.091905205675	0.00243272609802719	0.00012163630490136	0.0916660775430195	0.0921443338069805	yes: not classified, decides nothing
+P2	none	arm miss_run_min	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd0.1	arm miss_run_min	400	0.00011467522275	0.000173652998759402	8.6826499379701e-06	9.76057642360188e-05	0.000131744681263981	yes: not classified, decides nothing
+P2	vd0.5	arm miss_run_min	400	0.00183912466425	0.000556063283488533	2.78031641744266e-05	0.00178446566488653	0.00189378366361347	yes: not classified, decides nothing
+P2	vd2	arm miss_run_min	400	0.0092176720675	0.00123564324737706	6.17821623688529e-05	0.00909621282809806	0.00933913130690194	yes: not classified, decides nothing
+P2	vd10	arm miss_run_min	400	0.040018342025	0.00268551768939506	0.000134275884469753	0.039754365398537	0.040282318651463	yes: not classified, decides nothing
+P2	vd25	arm miss_run_min	400	0.076780373375	0.00429439748151834	0.000214719874075917	0.0763582497135775	0.0772024970364225	yes: not classified, decides nothing
+P2	vd50	arm miss_run_min	400	0.117601336	0.00684915260045246	0.000342457630022623	0.116928089197442	0.118274582802558	yes: not classified, decides nothing
+P2	mcar0.5	arm miss_run_min	400	0.00333732542	0.000718396015625871	3.59198007812935e-05	0.00326670970318001	0.00340794113681999	yes: not classified, decides nothing
+P2	mcar2	arm miss_run_min	400	0.0159921166	0.00147380927570865	7.36904637854325e-05	0.0158472465057952	0.0161369866942049	yes: not classified, decides nothing
+P2	mcar10	arm miss_run_min	400	0.076351228275	0.00325297241864382	0.000162648620932191	0.0760314729114655	0.0766709836385345	yes: not classified, decides nothing
 P3	none	arm miss_run_min	400	0	0	0	0	0	yes: not classified, decides nothing
 P3	vd0.1	arm miss_run_min	400	0.00017297296475	0.00012111869483252	6.05593474162601e-06	0.000161067437339122	0.000184878492160878	yes: not classified, decides nothing
 P3	vd0.5	arm miss_run_min	400	0.00239000255	0.000392765043867339	1.9638252193367e-05	0.00235139517396888	0.00242860992603112	yes: not classified, decides nothing
@@ -10390,6 +11149,16 @@ P1	vd50	arm miss_run_med	400	0.20281381375	0.00344447959661029	0.000172223979830
 P1	mcar0.5	arm miss_run_med	400	0.0049677004025	0.000386914902852732	1.93457451426366e-05	0.00492966807406416	0.00500573273093584	yes: not classified, decides nothing
 P1	mcar2	arm miss_run_med	400	0.019975697125	0.00073011099370768	3.6505549685384e-05	0.0199039298684209	0.0200474643815791	yes: not classified, decides nothing
 P1	mcar10	arm miss_run_med	400	0.097379719875	0.00168504367380219	8.42521836901096e-05	0.0972140862073427	0.0975453535426573	yes: not classified, decides nothing
+P2	none	arm miss_run_med	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd0.1	arm miss_run_med	400	0.00056034032725	0.000197550385910051	9.87751929550257e-06	0.000540921842450986	0.000579758812049014	yes: not classified, decides nothing
+P2	vd0.5	arm miss_run_med	400	0.003003476825	0.000477480174626206	2.38740087313103e-05	0.00295654225957206	0.00305041139042794	yes: not classified, decides nothing
+P2	vd2	arm miss_run_med	400	0.0117837187275	0.00100721105532865	5.03605527664323e-05	0.0116847135421788	0.0118827239128212	yes: not classified, decides nothing
+P2	vd10	arm miss_run_med	400	0.046004750775	0.00196103601548562	9.80518007742812e-05	0.0458119880634436	0.0461975134865564	yes: not classified, decides nothing
+P2	vd25	arm miss_run_med	400	0.086210247975	0.00288790675420904	0.000144395337710452	0.0859263772391913	0.0864941187108087	yes: not classified, decides nothing
+P2	vd50	arm miss_run_med	400	0.13232054875	0.00471489013865088	0.000235744506932544	0.131857092188958	0.132784005311042	yes: not classified, decides nothing
+P2	mcar0.5	arm miss_run_med	400	0.0049023031775	0.000566921373452854	2.83460686726427e-05	0.0048465768673644	0.0049580294876356	yes: not classified, decides nothing
+P2	mcar2	arm miss_run_med	400	0.019123504975	0.00108752674301759	5.43763371508795e-05	0.0190166050495429	0.0192304049004571	yes: not classified, decides nothing
+P2	mcar10	arm miss_run_med	400	0.082946994075	0.00220294597688682	0.000110147298844341	0.08273045249363	0.0831635356563701	yes: not classified, decides nothing
 P3	none	arm miss_run_med	400	0	0	0	0	0	yes: not classified, decides nothing
 P3	vd0.1	arm miss_run_med	400	0.00071662484875	0.000105750656371813	5.28753281859067e-06	0.000706229943653855	0.000727019753846145	yes: not classified, decides nothing
 P3	vd0.5	arm miss_run_med	400	0.0038677734775	0.000252100736489664	1.26050368244832e-05	0.00384299289154066	0.00389255406345934	yes: not classified, decides nothing
@@ -10528,6 +11297,16 @@ P1	vd50	arm miss_run_max	400	0.21650961875	0.0054096922998282	0.0002704846149914
 P1	mcar0.5	arm miss_run_max	400	0.0063404337475	0.000630118752993321	3.15059376496661e-05	0.00627849536469094	0.00640237213030906	yes: not classified, decides nothing
 P1	mcar2	arm miss_run_max	400	0.0226184193	0.00125210910145817	6.26054550729087e-05	0.0224953415269986	0.0227414970730014	yes: not classified, decides nothing
 P1	mcar10	arm miss_run_max	400	0.103106764375	0.00244166093825168	0.000122083046912584	0.102866757980705	0.103346770769295	yes: not classified, decides nothing
+P2	none	arm miss_run_max	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd0.1	arm miss_run_max	400	0.001260654484	0.000426980627949055	2.13490313974527e-05	0.00121868384043428	0.00130262512756572	yes: not classified, decides nothing
+P2	vd0.5	arm miss_run_max	400	0.0044713352725	0.000817918861705262	4.08959430852631e-05	0.00439093682169625	0.00455173372330375	yes: not classified, decides nothing
+P2	vd2	arm miss_run_max	400	0.0146959701	0.00146664687435289	7.33323437176447e-05	0.0145518040438116	0.0148401361561884	yes: not classified, decides nothing
+P2	vd10	arm miss_run_max	400	0.052198003175	0.00295961211009801	0.0001479806055049	0.051907084063371	0.052488922286629	yes: not classified, decides nothing
+P2	vd25	arm miss_run_max	400	0.09549354125	0.00435101232696518	0.000217550616348259	0.0950658525550765	0.0959212299449234	yes: not classified, decides nothing
+P2	vd50	arm miss_run_max	400	0.14707878225	0.00691459622750189	0.000345729811375095	0.146399102576804	0.147758461923196	yes: not classified, decides nothing
+P2	mcar0.5	arm miss_run_max	400	0.006576936305	0.00087735984978143	4.38679924890715e-05	0.00649069502114848	0.00666317758885152	yes: not classified, decides nothing
+P2	mcar2	arm miss_run_max	400	0.022479221825	0.00162154044644423	8.10770223222115e-05	0.0223198302937448	0.0226386133562552	yes: not classified, decides nothing
+P2	mcar10	arm miss_run_max	400	0.089897941725	0.00343804611818832	0.000171902305909416	0.0895599942895809	0.0902358891604191	yes: not classified, decides nothing
 P3	none	arm miss_run_max	400	0	0	0	0	0	yes: not classified, decides nothing
 P3	vd0.1	arm miss_run_max	400	0.0015224622725	0.000257821229800705	1.28910614900353e-05	0.00149711938284335	0.00154780516215665	yes: not classified, decides nothing
 P3	vd0.5	arm miss_run_max	400	0.0057233050025	0.000586847388739456	2.93423694369728e-05	0.00566562003749686	0.00578098996750314	yes: not classified, decides nothing
@@ -10666,6 +11445,16 @@ P1	vd50	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar0.5	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar2	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar10	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	none	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd0.1	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd0.5	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd2	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd10	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd25	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd50	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	mcar0.5	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	mcar2	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	mcar10	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
 P3	none	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
 P3	vd0.1	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
 P3	vd0.5	arm n_rd_lt	400	0	0	0	0	0	yes: not classified, decides nothing
@@ -10804,6 +11593,16 @@ P1	vd50	arm n_rd_eq	400	300.1675	16.9754191668343	0.848770958341714	298.49887800
 P1	mcar0.5	arm n_rd_eq	400	0	0	0	0	0	yes: not classified, decides nothing
 P1	mcar2	arm n_rd_eq	400	0.035	0.184009915827401	0.00920049579137002	0.0169124941877405	0.0530875058122595	yes: not classified, decides nothing
 P1	mcar10	arm n_rd_eq	400	14.1025	3.71031127729684	0.185515563864842	13.73778988918	14.46721011082	yes: not classified, decides nothing
+P2	none	arm n_rd_eq	400	0	0	0	0	0	yes: not classified, decides nothing
+P2	vd0.1	arm n_rd_eq	400	0.055	0.238993293810131	0.0119496646905065	0.0315078280078312	0.0784921719921688	yes: not classified, decides nothing
+P2	vd0.5	arm n_rd_eq	400	1.235	1.08753474867424	0.0543767374337118	1.12809928761594	1.34190071238406	yes: not classified, decides nothing
+P2	vd2	arm n_rd_eq	400	13.5975	3.83304373974221	0.19165218698711	13.2207257342791	13.9742742657209	yes: not classified, decides nothing
+P2	vd10	arm n_rd_eq	400	114.2875	10.6866906544008	0.534334532720039	113.237037156973	115.337962843027	yes: not classified, decides nothing
+P2	vd25	arm n_rd_eq	400	229.0575	14.0194706620511	0.700973533102553	227.679436997556	230.435563002444	yes: not classified, decides nothing
+P2	vd50	arm n_rd_eq	400	239.1775	15.7257509154456	0.786287545772278	237.631715851324	240.723284148676	yes: not classified, decides nothing
+P2	mcar0.5	arm n_rd_eq	400	0.6575	0.810454094689513	0.0405227047344756	0.577835308657952	0.737164691342048	yes: not classified, decides nothing
+P2	mcar2	arm n_rd_eq	400	9.9175	3.03045423694296	0.151522711847148	9.61961736482774	10.2153826351723	yes: not classified, decides nothing
+P2	mcar10	arm n_rd_eq	400	174.18	13.4538140607768	0.672690703038839	172.857538985184	175.502461014816	yes: not classified, decides nothing
 P3	none	arm n_rd_eq	400	0	0	0	0	0	yes: not classified, decides nothing
 P3	vd0.1	arm n_rd_eq	400	0	0	0	0	0	yes: not classified, decides nothing
 P3	vd0.5	arm n_rd_eq	400	0	0	0	0	0	yes: not classified, decides nothing
@@ -10942,6 +11741,16 @@ P1	vd50	arm n_rd_gt	400	2609.6175	23.8629376488538	1.19314688244269	2607.2718599
 P1	mcar0.5	arm n_rd_gt	400	5948.7225	3.55204678190647	0.177602339095324	5948.37334671375	5949.07165328625	yes: not classified, decides nothing
 P1	mcar2	arm n_rd_gt	400	5947.005	3.71138936620357	0.185569468310178	5946.64018391696	5947.36981608304	yes: not classified, decides nothing
 P1	mcar10	arm n_rd_gt	400	5882.2225	8.70876571338479	0.43543828566924	5881.36645998851	5883.07854001149	yes: not classified, decides nothing
+P2	none	arm n_rd_gt	400	2966.7175	2.56009354269886	0.128004677134943	2966.46585211122	2966.96914788879	yes: not classified, decides nothing
+P2	vd0.1	arm n_rd_gt	400	2964.6625	2.74178540700127	0.137089270350063	2964.39299246144	2964.93200753856	yes: not classified, decides nothing
+P2	vd0.5	arm n_rd_gt	400	2955.3125	3.38429866347653	0.169214933173826	2954.979835744	2955.645164256	yes: not classified, decides nothing
+P2	vd2	arm n_rd_gt	400	2909.205	6.00108386200335	0.300054193100167	2908.61511527153	2909.79488472847	yes: not classified, decides nothing
+P2	vd10	arm n_rd_gt	400	2555.085	13.622654542782	0.681132727139102	2553.74594257957	2556.42405742043	yes: not classified, decides nothing
+P2	vd25	arm n_rd_gt	400	1858.4125	17.2373187196154	0.861865935980771	1856.71813423103	1860.10686576897	yes: not classified, decides nothing
+P2	vd50	arm n_rd_gt	400	906.4525	17.6455705248617	0.882278526243087	904.718004562654	908.186995437346	yes: not classified, decides nothing
+P2	mcar0.5	arm n_rd_gt	400	2965.045	2.88509695870917	0.144254847935458	2964.76140545687	2965.32859454313	yes: not classified, decides nothing
+P2	mcar2	arm n_rd_gt	400	2947.97	5.13615129501783	0.256807564750891	2947.46513499866	2948.47486500134	yes: not classified, decides nothing
+P2	mcar10	arm n_rd_gt	400	2621.055	18.0846512692068	0.904232563460339	2619.27734452163	2622.83265547837	yes: not classified, decides nothing
 P3	none	arm n_rd_gt	400	5970.4475	3.31885231695452	0.165942615847726	5970.12126888195	5970.77373111805	yes: not classified, decides nothing
 P3	vd0.1	arm n_rd_gt	400	5968.8675	3.49434828327287	0.174717414163643	5968.52401826642	5969.21098173358	yes: not classified, decides nothing
 P3	vd0.5	arm n_rd_gt	400	5963.2825	3.60905207668587	0.180452603834293	5962.9277433005	5963.6372566995	yes: not classified, decides nothing
@@ -11080,6 +11889,16 @@ P1	vd50	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar0.5	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar2	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P1	mcar10	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	none	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.1	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd0.5	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd2	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd10	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd25	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	vd50	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar0.5	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar2	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
+P2	mcar10	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	none	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.1	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing
 P3	vd0.5	arm block_share	0	NA	NA	NA	NA	NA	yes: not classified, decides nothing

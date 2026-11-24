@@ -71,6 +71,14 @@ P1	mcar	B	0.02	0.1	0.019994366725
 P1	mcar	Cstar	NA	NA	NA
 P1	mcar	fdp	NA	NA	NA
 P1	mcar	power	0.02	0.1	0.019994366725
+P2	vd	B	NA	NA	NA
+P2	vd	Cstar	NA	NA	NA
+P2	vd	fdp	0.1	0.1	0.046048459025
+P2	vd	power	NA	NA	NA
+P2	mcar	B	0.005	NA	0.0049250714925
+P2	mcar	Cstar	NA	NA	NA
+P2	mcar	fdp	0.1	NA	0.0830180686
+P2	mcar	power	0.005	NA	0.0049250714925
 P3	vd	B	NA	NA	NA
 P3	vd	Cstar	NA	NA	NA
 P3	vd	fdp	0.1	0.25	0.08065641885
