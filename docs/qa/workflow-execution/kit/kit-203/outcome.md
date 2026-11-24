@@ -74,6 +74,9 @@ Ticket r1.4 (`tickets/kit/KIT-203.md`). Branch `kit-203-enrichment-family-bh`. E
   - X (`x/`): S3 fails under (m1) (4) and (m3) (2), S1 under (m3) (3), S4 under (m4) (15), S14 under (m2) (1); the
     unmutated control passes every test.
 - **F**: see section "F" below.
+- **Audit repairs (run 45362501898, 27d9e5cd).** K203-I02: `test-general-enrichment-shared.R` on head, 139 passed, 0
+  failed (the default run's two conversions asserted again). X2: S7, S8 and S9 each fail under m5, m6, m7; the control
+  passes. 31.5 job-minutes, slightly above the declared "about 30", within X's row ceiling of 45.
 
 ## Acceptance criteria
 
@@ -86,7 +89,7 @@ Ticket r1.4 (`tickets/kit/KIT-203.md`). Branch `kit-203-enrichment-family-bh`. E
 | A5 | met | S5 11 of 11; T7(b) 12 of 12 |
 | A6 | met | S7 to S12 pass in R2c; g:Profiler status byte-identical to base after the correction |
 | A7 | met | S13 21 of 21 |
-| A8 | met with a caveat | R1b: every new test fails on the tests-only commit; S7, S8, S9 fail at an absent object or argument before their stated comparison (above). X: every guard fails under its mutation |
+| A8 | met | R1b: every new test fails on the tests-only commit; S7, S8, S9 fail there at an absent object or argument before their stated comparison (above). X: every guard fails under its mutation. X2 (run 45362501898, audit K203-I03): S7 fails under m5 (base's notice), S8 under m6 (the plot never draws the family value), S9 under m7 (the LFQ template never states the family rule); so each reader test is shown able to fail at its comparison |
 | A9 | met | F: differences only in the files of 10.2 and the section 12 captures; check identical |
 | A10 | met | `dumps/`, the re-freeze commit |
 | A11 | met | ledger `VAL-<merge>`, NEWS (no version change), KIT-173 `results.md`, `wording.md` |
@@ -132,7 +135,7 @@ are `same`. Check: 0 errors, 3 warnings, 3 notes on both sides, identical (`f/ch
 
 - Down lists, real (correlated) lists, cutoffs other than 0.05, organisms other than E. coli and yeast (stated limits).
 - The g:Profiler service's own `fdr` family (no service call).
-- S7, S8 and S9 failing at their stated values on the tests-only commit (they failed earlier, see R1b).
+- S7, S8 and S9 failing at their stated values on the tests-only commit itself (they failed earlier, see R1b); X2 shows each fails at its comparison under a mutation restoring base's behaviour of that reader.
 - That KIT-193's row T4 digest follows the new `processEnrichments` body (KIT-193 not merged; handed off, ticket 8 item 6 (b)).
 
 ## For the change report
@@ -171,7 +174,7 @@ down lists, correlated real lists, other cutoffs and organisms.
 
 ## Budget
 
-Core-hours (job minutes x 4 / 60): G0 1.47, G0b 0.49, R1 1.84, R1b 0.64, R2 9.00, R2c 8.21, F 77.76; total 99.41
+Core-hours (job minutes x 4 / 60): G0 1.47, G0b 0.49, R1 1.84, R1b 0.64, R2 9.00, R2c 8.21, F 77.76, X2 2.10; total 101.51
 against 83.33 expected and 235.67 ceiling (the correction pass used 8.21 of its 111.33; F 1,166.3 of 1,200 job-minutes).
 Instrument reruns (VAL-54): G0b (capture), R1b (R1 parse), and in R2c the S2 and OD5 repairs (one each). S1's
 expectation correction rode the single correction pass (R2c), not an instrument rerun.
