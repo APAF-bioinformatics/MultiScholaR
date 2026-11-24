@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-191 F: full suite base (147adde8) against head (677fb251) with R CMD check both sides, the merge checkpoint; ceiling 1,200 job-minutes, not repeated or split",
+  "label": "KIT-191 F full suite 677fb251 vs 147adde8",
+  "package_commit": "677fb251fc37f53bfcdeb641a7c21c93cc3a4753",
+  "base_commit": "147adde8346beb1df165dd5cbcba94697b7e79a7",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
