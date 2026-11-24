@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-208 R1: tests-only commit; each failing-first test (T1, T2, T5, T6, T7, T9) must fail at its base value, guards T3, T4, T8 pass; decides stop rule 1",
+  "label": "KIT-208 R1 tests only at 0a524465 (ceiling 60 job-minutes, 1 job)",
+  "package_commit": "0a524465591b21a555aff688d5cd8e2de7a33057",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit208-gprofiler-identifiers.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
