@@ -147,8 +147,10 @@ After the simulation the owner decided it ships off by default. Changed, tests f
   set, the correlation `camera` estimates and the common shift, written out; the dependence on how strongly the
   unwanted factor follows the groups and on the loadings; a candidate remedy evaluated before any claim. To know: the
   existing overlap warning (adjusted share of the factor explained by the removed factors at least 0.5) would not
-  fire in the simulation's confounded cell (median share 0.25 to 0.29). The simulation script would need its arm 3 to
-  ask for the adjustment by name (above). The per-replicate tables of run 45353248796 exist only as its artifacts
+  fire in the simulation's confounded cell (median share 0.25 to 0.29). At a build whose default is off,
+  `simulate-k184.R` line 977 `designTests("3", adjusted, NULL, TRUE)` must read
+  `designTests("3", adjusted, TRUE, TRUE)`; a run so changed is a new declared run with a new script hash, not a
+  reproduction of S, which is reproduced at package 81ee3052. The per-replicate tables of run 45353248796 exist only as its artifacts
   (about 86 MB compressed, kept 90 days from 2026-11-24).
 - **KIT-193's pair R-I1** (the removed factors' span) waits for this ticket's merge. It binds to
   `integrationInputRemovedFactors()` (`R/utils_workflow_integration_input.R`) and
@@ -164,7 +166,8 @@ After the simulation the owner decided it ships off by default. Changed, tests f
   the label and the sentences of KIT-184 (`kit-184/wording.md`). The permutation and the pre-ranked test refuse `TRUE`.
   Whichever of KIT-181 and KIT-184 merges second adds the test: on a model trained on RUV-corrected values a Gene
   Ontology run of `camera` has `intercept, factor` and the label 'no' when the setting is absent, and `ruv_W` columns
-  only when the request set it to `TRUE`; an entry replays in the form it was saved in."
+  only when the request set it to `TRUE`; an entry replays in the form it was saved in. A Gene Ontology entry with the
+  adjustment brings the record's clause `methods_enrich_limits_ruv` as KEGG and Reactome entries do."
 - **The Manuscripts deliverable is not written by me.** It needs: the Methods fragment and the limits clause
   (`methods_enrich_limits_ruv` and the fragments of `wording.md`, after the owner's wording pass); the simulation's
   summary figures from `s/` (the deciding rates with their intervals, `ke1-checks.tsv`; the limit per data set and
@@ -173,9 +176,10 @@ After the simulation the owner decided it ships off by default. Changed, tests f
   restated in its 26.5; the lifecycle disclosure sentence; "one simulated design, no real data".
 - **The owner's wording pass**: every user-facing text of this ticket is a draft, verbatim in `wording.md` (32 keys,
   the setting's line, the documentation of `integrationEnrichFactor()`, the starter workbook's paragraph, NEWS).
-- **The stored reference** `tests/testdata/gui-entry/prot_dia_limpa.json`: to re-freeze on merge (above). The captures
-  `trx_main` and `trx_managed` of the summary-module tests fail on staging already; when they are re-frozen they will
-  list `removed_transcriptomics.parquet`.
+- **The stored reference** `tests/testdata/gui-entry/prot_dia_limpa.json`: re-frozen by this ticket after its control
+  (VAL-178 (2); below). Three references that fail on staging already will list `removed_transcriptomics.parquet`
+  when they are re-frozen under their own tickets: `tests/testdata/gui-entry/trx_screen.json` (13 expectations fail on
+  staging) and the captures `trx_main` and `trx_managed` of the summary-module tests (`f/moved-references.txt`).
 
 ## Where the tests are (differs from ticket section 10 in location only)
 
@@ -195,7 +199,9 @@ expects `not_determined`).
 K4, not built as the ticket words it: the lipidomics declared design "with and without a missing value in the
 fixture" has one fixture only (without), and the principal angle to the DA's stored factors is printed for it; the
 transcriptomics test prints no angle to the state's RUVSeq factors and asserts instead that the written factors span
-RUV-III's own W.
+RUV-III's own W; **classic proteomics with a declared design and metabolomics with a declared design have no K4
+fixture and were not run** (G1 holds on every RUV route that has a writer fixture; the writer is route-agnostic and
+both use RUV-III-C as G2 showed, so exactness on those two is inferred, not shown; implementation audit K184-I07).
 
 Other departures recorded in the ticket (20.1): 6.6's "residual degrees of freedom are 16" is 15 on
 metabolomics_GCMS; the workbook does not send the setting with `test = "gsea"` or `"permutation"` (a refusal listed

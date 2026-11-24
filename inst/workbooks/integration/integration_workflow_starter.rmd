@@ -227,10 +227,13 @@ unwanted factors that an omic's RUV correction removed from a data set into thei
 it shares with the factor beyond those unwanted factors: `enrichment_overrides <- list(adjust_ruv_factors = TRUE)`.
 For a model trained on RUV-corrected values (`input_matrix <- "ruv_corrected"` above) and features measured in every
 run, that is the same as fitting the test's model to the corrected values. In a check on simulated data the adjusted
-test kept false calls within the checked limit for sets with no link to what was tested (at most 5.4 %) and found
-more true terms. It does not protect pathways whose features share unwanted variation that follows the groups: such
-sets were called in 8.1 to 29.6 % of cases with the adjustment and in 2.0 to 11.2 % without it. Each result says
-whether it was adjusted. Without the setting every model is tested on the values before RUV without those factors. An
+test kept false calls within the checked limit (at most 5.4 %) for the kinds of sets with no link to what was tested
+that the check decided on; sets made only of the most variable features were called more often (up to 9.4 %, 6.8 %
+without it), and so were sets in which half the features truly followed the main factor, tested against an unrelated
+covariate (up to 8.6 %, up to 7.0 % without it); it found more true terms (with as many factors removed as were
+planted; with four removed where two were planted it found fewer). In that check it did not protect pathways whose
+features share unwanted variation that follows the groups: such sets were called in 8.1 to 29.6 % of cases with the
+adjustment and in 2.0 to 11.2 % without it. Each result says whether it was adjusted. Without the setting every model is tested on the values before RUV without those factors. An
 omic saved before this version must be saved again at its Summary step before the adjusted test can run. The pre-ranked
 test, the permutation test and STRING do not use the setting.
 

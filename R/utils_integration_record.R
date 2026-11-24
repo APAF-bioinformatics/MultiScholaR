@@ -369,14 +369,14 @@ integrationRecordTexts <- function() {
             "(features measured in all of them: %d); permutation test of the factor's values (PCGSE)"),
         # KIT-184 (VAL-53 (1), VAL-62; proposed wording, VAL-41): a test with the removed RUV factors in its design.
         # %d: the removed factors, biological samples, residual degrees of freedom, features used.
-        enrich_ranking_value_camera_ruv = paste("regression of each feature on the factor and %d removed unwanted factors",
+        enrich_ranking_value_camera_ruv = paste("regression of each feature on the factor and %d removed unwanted factor(s)",
             "over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
             "correlation-adjusted test (camera, correlation estimated)"),
         enrich_ranking_value_camera_pr_ruv = paste("regression of each feature on the factor and %d removed unwanted",
-            "factors over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
+            "factor(s) over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
             "pre-ranked test with an assumed correlation of 0.01 (cameraPR)"),
         enrich_ranking_value_camera_floor_ruv = paste("regression of each feature on the factor and %d removed unwanted",
-            "factors over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
+            "factor(s) over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
             "correlation-adjusted test, negative correlations counted as zero (camera, correlation estimated,",
             "allow.neg.cor = FALSE)"),
         # The words that stand for "an intercept and no other covariate" in a test's settings fragment. %d: the removed
@@ -386,6 +386,10 @@ integrationRecordTexts <- function() {
             "measured in every run, averaged per biological sample; SHA-256 %s; %d residual degrees of freedom)"),
         methods_test_covariates_ruv_off = paste("an intercept and no other covariate (without the adjustment for the",
             "removed RUV factors, which is optional: variation the correction removed stays in the values tested)"),
+        # An approximate set of factors (VAL-58 (6); implementation audit K184-I03), after the fragment above. %s: the
+        # share of what the correction removed that lies within the factors, as the tab prints it.
+        methods_test_covariates_ruv_approximate = paste0("; approximate: %s of what the correction removed lies within",
+            " these factors (runs were removed after the correction), so they do not match the corrected values exactly"),
         methods_test_covariates_model_uncorrected = paste0("; the model was trained on the values before RUV, and the",
             " adjustment was switched on for this result"),
         # The inputs sheet's correction cell, for a model trained on RUV-corrected values, per data set in the model.
@@ -454,31 +458,42 @@ integrationRecordTexts <- function() {
             "every biological sample, which favours abundant features and leaves out features that fall below detection",
             "in some samples, often those that change most. The tests used read each data set's normalised values before",
             "RUV correction, the values the model is trained on by default."),
-        # A DRAFT for the owner's wording pass (VAL-41; verbatim in kit-184/wording.md). The adjustment is optional and off
-        # unless chosen (VAL-160). The numbers are the counted simulation's (run 45353248796; kit-184/results.md), in the
-        # form the results audit proposed (K184-R12): the largest rate over the checks that decided, with the interval of
-        # that largest figure; the limit with its condition, per data set (genes, proteins, metabolites), with and
-        # without the adjustment, and with the planted factors. Printed whatever the declared checks gave.
-        methods_enrich_limits_ruv = paste("For a model trained on RUV-corrected values the correlation-adjusted tests can",
-            "add to their model the unwanted factors the correction removed from each data set (the adjustment for removed",
-            "RUV factors, a setting that is off unless chosen), which for features measured in every run is identical to",
-            "fitting that model (the factor and the removed factors) to the corrected values; those factors were estimated",
-            "from the same data and are treated as known. Each result names the form used: a result without the adjustment",
-            "tests the values before RUV as they are (its degrees of freedom are counted correctly; variation the",
-            "correction removed stays in the values tested), and a result with it on a model trained on the values before",
-            "RUV counts a feature for what it shares with the factor beyond the removed factors. The pre-ranked and",
-            "permutation tests do not use them: variation the correction removed stays in the values they rank. In a check",
-            "on simulated data with 12 biological samples and 2 removed factors, with the removed factors in the model,",
-            "sets with no link to what was tested (any set against a covariate drawn independently of the data; sets of",
-            "features without unwanted variation against the model's main factor) were called at the 5 % level in at most",
-            "5.4 % (95 % interval of that largest figure 4.5 to 6.4 %) of cases, and true terms were found more often than",
-            "without the adjustment. Sets of features that share unwanted variation and have no link to the simulated",
-            "biology were called on the model's main factor in at most 4.1 % of cases with the adjustment when that",
-            "variation was unrelated to the groups, and, when it followed the groups (correlation 0.6), in 8.1 to 29.6 %",
-            "with the adjustment (genes 29.6 %, 95 % interval 27.8 to 31.3 %; proteins 11.2 to 13.3 %; metabolites 8.1 %;",
-            "more often for larger sets), 2.0 to 11.2 % without it (genes 2.0 %; proteins 7.3 to 11.2 %, 95 % interval of",
-            "the larger figure 9.8 to 12.6 %; metabolites 10.1 %), and 1.6 to 2.8 % had the true unwanted factors been",
-            "known."),
+        # A DRAFT for the owner's wording pass (VAL-41; verbatim in kit-184/wording.md). Printed when the model was trained on
+        # RUV-corrected values or any KEGG or Reactome entry has the adjustment (implementation audit K184-I02). The
+        # adjustment is optional and off unless chosen (VAL-160). The numbers are the counted simulation's (run
+        # 45353248796; kit-184/results.md). The claim is for the kinds of sets the check decided on, with the other null
+        # sets of the same simulation printed beside it (VAL-178 (1); K184-I01); the limit with its condition, per data
+        # set (genes, proteins in their two compositions, metabolites), with and without the adjustment and with the
+        # planted factors (the results audit's K184-R12); identity only where no run was removed after the correction
+        # (K184-I03); the correction that was simulated (K184-I06 (b)).
+        methods_enrich_limits_ruv = paste("The correlation-adjusted tests can add to their model the unwanted factors the",
+            "RUV correction removed from each data set (the adjustment for removed RUV factors, a setting that is off",
+            "unless chosen); for a model trained on RUV-corrected values and features measured in every run where no run",
+            "was removed after the correction, this is identical to fitting that model (the factor and the removed",
+            "factors) to the corrected values; those factors were estimated from the same data and are treated as known.",
+            "Each result names the form used: a result without the adjustment tests the values before RUV as they are (its",
+            "degrees of freedom are counted correctly; variation the correction removed stays in the values tested), and a",
+            "result with it on a model trained on the values before RUV counts a feature for what it shares with the",
+            "factor beyond the removed factors. The pre-ranked and permutation tests do not use them: variation the",
+            "correction removed stays in the values they rank. In a check on simulated data with 12 biological samples and",
+            "2 removed factors (RUV-III with the groups as replicate sets and every feature a control; the legacy routes'",
+            "choice of controls and of the number of factors was not simulated), with the removed factors in the model,",
+            "sets with no link to what was tested, of the kinds the check decided on (random sets, correlated blocks of",
+            "features, sets of low-abundance features and sets of features sharing unwanted variation, against a covariate",
+            "drawn independently of the data; the first three also against the model's main factor), were called at the",
+            "5 % level in at most 5.4 % (95 % interval of that largest figure 4.5 to 6.4 %) of cases; against such a",
+            "covariate, sets made only of the most variable features, those the model selects, were called in up to 9.4 %",
+            "(6.8 % without the adjustment, 9.8 % had the true unwanted factors been known), a property of the",
+            "correlation-adjusted test on such sets, and sets in which half the features truly followed the main factor in",
+            "up to 8.6 % (up to 7.0 % without the adjustment, up to 8.5 % had the true unwanted factors been known); true",
+            "terms were found more often than without the adjustment. Sets of features that share unwanted variation and",
+            "have no link to the simulated biology were called on the model's main factor in at most 4.1 % of cases with",
+            "the adjustment when that variation was unrelated to the groups, and, when it followed the groups (correlation",
+            "0.6), in 8.1 to 29.6 % with the adjustment (genes 29.6 %, 95 % interval 27.8 to 31.3 %; proteins 11.2 % (sets",
+            "of 10 and 30 features) and 13.3 % (sets of 100 included); metabolites 8.1 %; more often for larger sets), 2.0",
+            "to 11.2 % without it (genes 2.0 %; proteins 7.3 % (sets of 10 and 30 features) and 11.2 % (sets of 100",
+            "included), 95 % interval of the larger figure 9.8 to 12.6 %; metabolites 10.1 %), and 1.6 to 2.8 % had the",
+            "true unwanted factors been known."),
         methods_enrich_limits_family = paste("P-values were adjusted within each factor, data set and database (and Gene",
             "Ontology aspect), not across them."),
         # VAL-115 (3): the permutation's floor in its Methods sentence (%s: the exact fraction (1 + d)/(1 + B); %d: the

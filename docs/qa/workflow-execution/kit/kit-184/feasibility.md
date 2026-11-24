@@ -29,7 +29,11 @@ integration input whose `matrix_role` is `corrected` (the four manifests of `tes
 (`R/utils_workflow_integration_input.R`, "saved by an earlier development version"). The refusal of ticket 7.4's
 seventh row (a store made before KIT-153 whose `views` are corrected matrices) is therefore not implemented.
 
-## G1 (run R1, 45325536775, head 939a9d10, the head side's logs): holds on every route's fixture
+## G1 (run R1, 45325536775, head 939a9d10, the head side's logs): holds on every RUV route that has a writer fixture
+
+Not run: classic proteomics and metabolomics with a declared design; the writer is route-agnostic and both use
+RUV-III-C as G2 showed, so exactness is inferred, not shown (implementation audit K184-I07). "Every route" below
+means every route that has a writer fixture.
 
 The figures are those `expectIntegrationRemovedFactors()` printed (`r1/g1-lines.txt`; one line per data set written by
 a test, the count of identical lines first). Each is computed in the test from the two Parquet matrices read back.

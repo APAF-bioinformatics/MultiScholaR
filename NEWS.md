@@ -29,18 +29,22 @@
    removed factors), so a feature counts for what it shares with the factor beyond those factors; for a model trained
    on RUV-corrected values and features measured in every run this is identical to fitting that model to the corrected
    values. In a check on simulated data (12 biological samples, 2 removed factors) the adjusted test called sets with
-   no link to what was tested in at most 5.4 % of cases (95 % interval of that largest figure 4.5 to 6.4 %) and found
-   more true terms than the test without it. It does not protect sets of features that share unwanted variation when
-   that variation follows the groups: such sets were called on the model's main factor in 8.1 to 29.6 % of cases with
-   the adjustment, against 2.0 to 11.2 % without it and 1.6 to 2.8 % had the true unwanted factors been known. No
+   no link to what was tested, of the kinds the check decided on, in at most 5.4 % of cases (95 % interval of that
+   largest figure 4.5 to 6.4 %; sets made only of the most variable features: up to 9.4 %, against 6.8 % without the
+   adjustment; sets in which half the features truly followed the main factor, tested against an unrelated covariate:
+   up to 8.6 %, against up to 7.0 %) and found more true terms than the test without it. In that check it did not
+   protect sets of features that share unwanted variation when that variation follows the groups: such sets were called
+   on the model's main factor in 8.1 to 29.6 % of cases with the adjustment, against 2.0 to 11.2 % without it and 1.6
+   to 2.8 % had the true unwanted factors been known. No
    result changes unless the setting is switched on: every model, one trained on RUV-corrected values included, is
    tested as before on the values before RUV without the factors. Every result of a correlation-adjusted test now
-   carries the line "Adjusted for removed RUV factors: yes (n factors)." or "... no." in the tab, in
+   carries the line "Adjusted for removed RUV factors: yes (n factor(s))." or "... no." in the tab, in
    `integrationEnrichFactor()`'s summaries and in records. The adjusted test is refused when fewer than max(4, the
    smallest number of samples per feature) biological samples are left after one per removed factor, when the factor is
    a combination of the removed factors, and for a data set without usable removed factors. The pre-ranked test, the
    permutation test and STRING do not use the removed factors. A recorded result replays in the form it was saved in; a
-   result recorded before this version replays without the adjustment (VAL-53, VAL-58, VAL-62, VAL-160; KIT-184).
+   result recorded before this version replays without the adjustment (VAL-53, VAL-58, VAL-62, VAL-160, VAL-178;
+   KIT-184).
 
 ### Fixes
 

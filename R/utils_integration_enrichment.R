@@ -118,7 +118,7 @@ INTEGRATION_ENRICHMENT_REFUSALS <- c(
     ),
     # %d: the removed factors in the design, the biological samples needed, those the data set has.
     integration_enrichment_too_few_samples_for_test_covariates = paste(
-        "With %d removed unwanted factors in its model, the correlation-adjusted test needs at least %d biological",
+        "With %d removed unwanted factor(s) in its model, the correlation-adjusted test needs at least %d biological",
         "samples in this data set; it has %d."
     ),
     # %s: the data set.
@@ -2629,16 +2629,18 @@ integrationMethodsEnrichment <- function(block, texts = integrationRecordTexts()
     sentences <- c(sentences, integrationMethodsSeveralTests(entries, texts))
     # KIT-183: the limits, once, when the record holds a KEGG or Reactome entry; KIT-191: one clause per test used and
     # kind of data set. KIT-184: with the clause on the removed RUV factors when the model was trained on RUV-corrected
-    # values (each entry keeps the values its model was trained on).
-    trained_corrected <- any(vapply(entries, function(entry) identical(as.character(s(entry$input_matrix)),
-        "ruv_corrected"), logical(1)))
-    c(sentences, if (pathways) integrationMethodsEnrichmentLimits(entries, texts, trained_corrected),
+    # values (each entry keeps the values its model was trained on) or any KEGG or Reactome entry has the adjustment,
+    # whatever the model was trained on (implementation audit K184-I02: the limit is stated wherever it applies).
+    ruv_clause <- any(vapply(entries, function(entry) identical(as.character(s(entry$input_matrix)), "ruv_corrected") ||
+        (!identical(s(entry$database), "string") && integrationEnrichmentEntryForm(entry)$adjusted), logical(1)))
+    c(sentences, if (pathways) integrationMethodsEnrichmentLimits(entries, texts, ruv_clause),
         texts[["methods_enrich_family"]])
 }
 
 #' KIT-184 (5.5): the settings fragment of a test that has a design, with what stands beside the intercept in its
 #' model. With the removed RUV factors in the design, the words "an intercept and no other covariate" give way to
-#' `methods_test_covariates_ruv` (followed, for a model trained on the values before RUV, by
+#' `methods_test_covariates_ruv` (followed, for an approximate set of factors, by
+#' `methods_test_covariates_ruv_approximate` with the share, and, for a model trained on the values before RUV, by
 #' `methods_test_covariates_model_uncorrected`); without them on a model trained on RUV-corrected values, to
 #' `methods_test_covariates_ruv_off`; otherwise the fragment is as it was.
 #' @param settings The formatted `methods_test_settings_<test>` fragment.
@@ -2653,6 +2655,11 @@ integrationMethodsCovariates <- function(settings, entry, texts = integrationRec
         detail <- entry$design_detail
         fragment <- sprintf(texts[["methods_test_covariates_ruv"]], form$factors, as.integer(s(detail$features)),
             as.character(s(detail$input_sha256)), as.integer(s(detail$residual_df)))
+        # VAL-58 (6): an approximate set of factors is said so, with the share as the tab prints it.
+        if (identical(as.character(s(detail$status)), "approximate")) {
+            fragment <- paste0(fragment, sprintf(texts[["methods_test_covariates_ruv_approximate"]],
+                integrationEnrichmentPercent(100 * as.numeric(s(detail$share)))))
+        }
         if (!trained_corrected) fragment <- paste0(fragment, texts[["methods_test_covariates_model_uncorrected"]])
         return(sub(plain, fragment, settings, fixed = TRUE))
     }
@@ -2697,10 +2704,11 @@ integrationEnrichmentFloorFraction <- function(identity_draws, permutations) {
 #' KEGG, Reactome (and Gene Ontology) entries: the opening, one clause per test and kind with its rows A, B and E of
 #' the evidence table, the closing.
 #' @param entries The record's complete enrichment entries.
-#' @param trained_corrected KIT-184: TRUE when the record's model was trained on RUV-corrected values: the closing then
-#'   holds the clause on the removed RUV factors (`methods_enrich_limits_ruv`) before its last sentence.
+#' @param ruv_clause KIT-184: TRUE when the record's model was trained on RUV-corrected values or an entry has the
+#'   adjustment for removed RUV factors: the closing then holds the clause on the removed RUV factors
+#'   (`methods_enrich_limits_ruv`) before its last sentence.
 #' @noRd
-integrationMethodsEnrichmentLimits <- function(entries, texts = integrationRecordTexts(), trained_corrected = FALSE) {
+integrationMethodsEnrichmentLimits <- function(entries, texts = integrationRecordTexts(), ruv_clause = FALSE) {
     s <- integrationRecordScalar
     pathway <- Filter(function(entry) !identical(s(entry$database), "string"), entries)
     pathway <- Filter(function(entry) !is.na(integrationEnrichmentEntryTest(entry)), pathway)
@@ -2721,7 +2729,7 @@ integrationMethodsEnrichmentLimits <- function(entries, texts = integrationRecor
             texts[[paste0("enrich_strength_terms_", kind)]], figure("E"))
     }, character(1))
     paste0(texts[["methods_enrich_limits_tests"]], " ", paste(clauses, collapse = "; "), ". ",
-        texts[["methods_enrich_limits_end"]], " ", if (trained_corrected) paste0(texts[["methods_enrich_limits_ruv"]], " "),
+        texts[["methods_enrich_limits_end"]], " ", if (ruv_clause) paste0(texts[["methods_enrich_limits_ruv"]], " "),
         texts[["methods_enrich_limits_family"]])
 }
 

@@ -93,3 +93,10 @@ Extract of the full suite's compare-failures.txt (run 45402062487): the rows in 
   - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
   - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
   - integration/transcriptomics/samples.parquet"<present>"
+
+== test-gui-entry-transcriptomics.R | message-changed | KIT-101 entry lane trx_screen: the KIT-040 count corpus, 12 samples, 300 genes
+(added 2026-11-25, implementation audit K184-I08; from the same compare-failures.txt)
+The stored reference tests/testdata/gui-entry/trx_screen.json fails on staging already (13 expectations, the old TSV
+form of the integration input). On the head its messages also list, among the artifacts present and not expected,
+  "integration/transcriptomics/removed_transcriptomics.parquet"
+When that reference is re-frozen under its own ticket it will list the file. It is not re-frozen by KIT-184.

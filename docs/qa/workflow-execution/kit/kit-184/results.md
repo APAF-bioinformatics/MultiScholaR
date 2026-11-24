@@ -13,6 +13,9 @@ The results were audited (`tickets/kit/audits/AUDIT-KIT-184-declaration-20261124
 was recomputed independently from the workers' per-replicate rows and equals the scorer's within 7e-15; the outcome is
 R1 with R7. The audit's text repairs K184-R09 to R11 are applied below.
 
+**VAL-178 (4), 2026-11-25:** VAL-160 governs this ticket's proteomics and metabolomics figures; VAL-98's bar on
+RUV-based claims on the RUV-III-C routes with missing values stays in force for everything else.
+
 **The owner's decisions on these results (methods ledger VAL-160, 2026-11-24).** (1) The adjustment ships with
 corrected claims and a stated limit, and it is off by default: the user opts in. Claimed: the error rate within the
 limit on every deciding class (largest 5.4 %, upper limit 6.4 %, against 7.5 %), exact regression equivalence with
@@ -36,7 +39,10 @@ ticket 6.2 defined them ("the product's default"), and the script stopped unless
 arm states (`design_covariates` not `none` for arm 3, `none` for D0); a stop there is recorded as a replicate that did
 not complete, and all 2,000 completed. So those rows are the adjusted form (arm 3) and the form without it (D0),
 whatever the default was called. The frozen script would stop at
-that check on a build whose default is off; it is evidence of the frozen commit and is not changed.
+that check on a build whose default is off; it is evidence of the frozen commit and is not changed. At a build whose
+default is off, `simulate-k184.R` line 977 `designTests("3", adjusted, NULL, TRUE)` must read
+`designTests("3", adjusted, TRUE, TRUE)`; a run so changed is a new declared run with a new script hash, not a
+reproduction of S, which is reproduced at package 81ee3052.
 
 **The per-replicate tables are not in the repository.** They exist only as run 45353248796's artifacts (the 17 evidence
 jobs' `k184-*`, about 86 MB compressed, kept 90 days from 2026-11-24) and are what a recomputation of the criteria
