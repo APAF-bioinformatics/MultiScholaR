@@ -226,8 +226,8 @@ rest on about 750 of the 800 replicates of a cell, those in which at least five 
 - Determinism: replicates 6 to 15 of cell A run again in a separate job; twelve tables must be identical to the same
   replicates in S: `errors`, `power`, `formed`, `counts`, `feature`, `identity`, `floor`, `exact`, `caught`, `factors`,
   `orientation`, and `status` without its seconds columns. A difference is reported with its size and cause (plan
-  section 4); a difference in a table that a criterion reads is a defect, handled as R3 within S' (305 job-minutes
-  less the score job's timeout); one that needs more is a stop to the owner.
+  section 4); a difference in a table that a criterion reads is a defect, handled as R3 within S' (275 job-minutes);
+  one that needs more is a stop to the owner.
 
 ### Criteria, outcomes and the numbers in the texts (as ticket 6.4 and 6.5; nothing added, no threshold changed)
 
@@ -266,13 +266,14 @@ independent of the data, and decides nothing. (The owner's decision O1, methods 
 ### Attempts
 
 One counted run S. One correction S' only for a failure of S's instrumentation, limited to re-running the affected
-jobs within what the ceiling leaves (305 job-minutes less the score job's timeout); if a whole repeat were needed,
+jobs within what the ceiling leaves (305 job-minutes less the score job's timeout: 275); if a whole repeat were needed,
 stop, to the owner (ticket 11, revisions 1.5 and 1.7). An unfavourable valid result is recorded and its outcome
 applied.
 
-The scorer runs once, in the lane's `score` job after every evidence job, with a timeout of [three times L1b's
-measured seconds, at least 30 and at most 90] minutes, on the artifacts, which are kept 90 days. Its minutes count in
-row S: expected [L1b's measurement], ceiling its timeout, taken from S', which becomes 305 minus that timeout. A score
+The scorer runs once, in the lane's `score` job after every evidence job, with a timeout of 30 minutes (three times
+L1b's measured 119 seconds is 6 minutes, below the floor of 30), on the artifacts, which are kept 90 days. Its minutes
+count in row S: expected about 3, ceiling its timeout, taken from S', which becomes 305 minus that timeout, 275
+job-minutes. A score
 job that fails or times out has produced no result: the scorer's mechanics are fixed without changing any estimand,
 check, limit or composition, and the same artifacts are scored again (VAL-54, at most three). S is never re-run for it.
 
@@ -281,9 +282,13 @@ check, limit or composition, and the same artifacts are scored again (VAL-54, at
 - Lifecycle: run 45333818847 (15 of 15 replicates completed; parity with KIT-183's cell identical; 110 to 133 s per
   replicate under four workers). The stop rule of ticket 11 fired at 70 s; the coordinator accepted the re-split above
   and kept the ceiling (ticket 11, revision 1.5). The first push (45333717225) ran no job. L1 was not scored blind
-  (section 2). The lifecycle extension L1b ([run id]; [its outcome against the list of section 5]) was blind (section 5).
-- Frozen with: the SHA-256 of `simulate-k184.R` and `score-k184.R` at the package commit of L1b, the lane commit and
-  the SHA-256 of `k184-evidence.yml`, the score job's timeout.
+  (section 2). The lifecycle extension L1b (run 45348572248; every item of the list of section 5 held, `lifecycle.md`;
+  to be confirmed by the auditor before the freeze) was blind (section 5).
+- Frozen with: `simulate-k184.R` SHA-256 58333b1ef1b479a65f30089dd0307aad5ebab2495c1fb060621a8738a873a75b and
+  `score-k184.R` 282b844e1c3427e8c99f296aa486c313957776bda8067d782a9a4511b43fa8b2 (package commit 9e525fd9, the commit
+  L1b ran); lane commit ef6ce13d2b965a8cbaf7c0280ba941498c3a4273, `k184-evidence.yml` SHA-256
+  ae0dc5a52c2735d5b6092fca60455c4f1e9093a7de08b3a7b86c98f04e03eea7 (the workflow L1b ran, 2b680757..., with the score
+  job's timeout set to 30 minutes and nothing else changed); the score job's timeout 30 minutes.
 - After L1's formation counts (section 4): proteomics C5 read in two compositions, both of which must hold (VAL-150);
   the reported C4 rate without the sizes that did not form; the feature-level rate on F_main not defined for
   metabolomics. All in the scorer; the sets drawn and tested are the ticket's. K-E1 keeps 33 checks per cell and its

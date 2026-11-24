@@ -1,6 +1,6 @@
 # KIT-184: outcome (running record; stopped at L1's stop rule)
 
-Ticket `tickets/kit/KIT-184.md` revision 1.6. Branch `kit-184-ruv-factors-in-integration`, from `v0.9-staging`
+Ticket `tickets/kit/KIT-184.md` revision 1.7. Branch `kit-184-ruv-factors-in-integration`, from `v0.9-staging`
 67d38df3 (KIT-183, KIT-187 and KIT-191 merged). All computation on GitHub-hosted runners; no R on the laptop.
 
 **State: stopped at a stop rule of ticket section 11.** The package part is built and passes its targeted runs. The
@@ -22,6 +22,12 @@ per set size (nothing drawn or tested changes); `score-k184.R` sums the sizes, m
 proteomics C5 in both compositions and compares the determinism job. The blind lifecycle extension L1b is specified
 (draft section 5) and not sent. Still no declaration, no counted run. The scorer change has run nowhere yet: L1b is
 its first exercise. Ticket revision 1.6, section 22, has a row per finding.
+
+**After re-check 1 and L1b (2026-11-24).** The re-check's five findings (K184-R01 to R05) are applied (ticket revision
+1.7, section 23): the simulation writes its package versions in every replicate, L1b is one blind job, the scorer's
+own run has a limit and a budget line. L1b ran once (45348572248, 18.7 job-minutes) and every item of the re-check's
+list holds, judged from its staged files alone (`lifecycle.md`, `l1b/`). The `score` job's timeout is 30 minutes.
+Stopped here, before the freeze: the auditor confirms L1b first. No `declaration.md`, no counted run.
 
 ## What was run, at which commit, what was observed
 
@@ -124,6 +130,6 @@ under `skipped` would be the stricter reading).
 - The distance between the DA's stored factors and the removed ones on a declared design with missing values.
 - That the CRAN archive's ruv 0.9.7.1 tarball is the one the lock's library was installed from (G0).
 - The scorer's criteria tables on real counts: L1 exercised `score-k184.R` on 5 replicates per cell only.
-- The determinism comparison and the rest of the scorer change of 2026-11-24 (sizes summed in the scorer, the two
-  proteomics C5 compositions): written, not run; L1b (blind) is what first runs them.
+- What the changed scorer computes on real counts: L1b ran it blind, so its mechanics are shown (row counts, the
+  determinism comparison, equality with L1 for cell A) and none of its results has been looked at.
 - Cell C (not run: KIT-183's outcome is O1).

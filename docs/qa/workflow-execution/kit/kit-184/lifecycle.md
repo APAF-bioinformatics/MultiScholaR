@@ -153,3 +153,46 @@ downloaded or printed.
 | `determinism.tsv` 12 of 12 TRUE; the altered copy FALSE | `determinism.tsv`, `determinism-selftest.tsv` |
 | `l1-reference-check` TRUE | `l1-reference-check.tsv` (with its counts if FALSE) |
 | the scale test ends within 25 minutes and below 12 GiB | `scale-test.txt` |
+
+## L1b: what came back (mechanics and counts only)
+
+Run 45348572248 (lane commit 5f75281c, which changed only `k184-params.json`; the workflow as at 41013a46; package
+9e525fd9). The parameters job took 5 seconds and the one evidence job 18.6 minutes: 18.7 job-minutes, 1.25 core-hours;
+L1's row has now used 41.4 of its 75 job-minutes. The `score` job was skipped. The run has one artifact,
+`k184-lifeb-staged`; I downloaded that and nothing else, and did not open the job's log. Its files, without the
+workers' logs, are in `l1b/`. First send; no failure; nothing re-sent.
+
+| Item of the re-check's list | Value | From |
+|---|---|---|
+| every cell A replicate completed | 5 of 5 | `l1b/status.tsv`, `l1b/completion.tsv` |
+| at least one cell D replicate `not_started`, and counted | replicate 5 (`job deadline`); cell D: 4 completed, 1 not started, 0 failed | `l1b/status.tsv`, `l1b/completion.tsv`, `l1b/not-completed.tsv` |
+| `ke1-checks`, `ke5-checks`: 34 rows per deciding cell | 68 rows each: A 34, B 34 | `l1b/tables.tsv` |
+| `ke4-checks`: 4 rows per deciding cell | 8 rows: A 4, B 4 | `l1b/tables.tsv` |
+| `error-rates-by-size` exists | 10,995 rows (A 5,556; D 5,439), with a `nominal` and a `replicates` column | `l1b/tables.tsv` |
+| `versions.tsv` has four rows | ruv 0.9.7.1, RUVIIIC 1.0.19, limma 3.68.4, MOFA2 1.22.0; every worker wrote four rows per replicate | `l1b/versions.tsv`, `l1b/tables.tsv` |
+| `determinism.tsv` 12 of 12 TRUE | 12 of 12 (errors 10,652 rows on each side, power 1,272, formed 760, counts 30, feature 72, identity 18, floor 30, exact 6, caught 6, factors 10, orientation 2, status 2) | `l1b/determinism.tsv` |
+| the altered copy FALSE | FALSE | `l1b/determinism-selftest.tsv` |
+| `l1-reference-check` TRUE | TRUE: 2,237 rows here, 2,237 in L1, 2,237 matched; sets equal, replicates equal, 0 rows with a different T | `l1b/l1-reference-check.tsv` |
+| the scale test within 25 minutes and below 12 GiB | 250 copies, 2,250 completed replicates, 11,933,250 error-table lines: 119 seconds, peak 5,347,588 KiB (5.1 GiB), exit status 0 | `l1b/scale-test.txt` |
+
+Also in the staged files: the scripts' SHA-256 as the job read them (`simulate-k184.R` 58333b1e..., `score-k184.R`
+282b844e..., the workflow 2b680757...: those of the pre-send record); set-up 616 seconds; the replicates took 84 to 99
+seconds in cell A and 100 to 110 in cell D under four workers (73 for the one that ran with fewer); the runner was
+another processor than L1's (Intel Xeon Platinum 8573C; L1 ran on an AMD EPYC 7763), and cell A's rates still equal
+L1's in every row. Because this runner was faster, cell D replicate 4 started before the deadline and completed; the
+acceptance asks for at least one replicate not started, which replicate 5 is.
+
+One word for the auditor: `operating-characteristic.tsv` has one row per deciding cell (2 rows), whose `checks`
+column counts the rows that entered; the declaration's sentence says the file "counts the proteomics C5 check twice
+(34 rows per cell)", which is true of what it counts and not of how many rows the file has.
+
+**The scorer's limit and budget line (re-check K184-R03), set from the scale test.** Three times 119 seconds is 6
+minutes, below the floor, so the `score` job's timeout is 30 minutes (lane commit ef6ce13d; `k184-evidence.yml` SHA-256
+ae0dc5a52c2735d5b6092fca60455c4f1e9093a7de08b3a7b86c98f04e03eea7). Expected about 3 job-minutes (2 of scoring; L1's
+score job took 0.9 minutes in all with its set-up), ceiling 30, taken from S', which becomes 305 - 30 = 275
+job-minutes (18.33 core-hours): at most three of S's jobs at their 85-minute timeout, or two and the determinism job.
+The scale test had two cells where S has three, and the same nine replicates copied, so the counted run's scorer may
+take somewhat longer than 119 seconds; the limit leaves fifteen times that.
+
+**Not checked by L1b:** any result (by design); the counted run's own job list (it has not run); the `score` job as a
+separate job on downloaded artifacts (L1b ran the scorer inside its job).
