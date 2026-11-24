@@ -280,8 +280,9 @@ if (identical(part, "journeys")) evalq({
     cat(notes, sep = "\n")
 }, env)
 
+# Outside evalq: inside it `env` resolves to an imported function of that name (G0 run 45471271185, instrument rerun 1).
+if (identical(part, "w1")) k213Defs("test-omic-summary-module.R", env)
 if (identical(part, "w1")) evalq({
-    k213Defs("test-omic-summary-module.R", env)
     real <- get("createWorkflowArgsFromConfig", envir = asNamespace("MultiScholaR"))
     w1Case <- function(case) {
         saved <- list()
