@@ -1,0 +1,2 @@
+startup_seconds	setup_B1	setup_B2	setup_B3	replicates	written	parallel_wall	sum_rep_wall	speedup	workers	cell2_rep_wall_median
+3.093	24.008	11.37	30.207	120	120	1027.202	4014.55	3.90823810701303	4	30.174

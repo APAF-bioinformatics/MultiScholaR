@@ -1,0 +1,5 @@
+evidence_rows	120
+evidence_package_rows	120
+evidence_equal	120
+text_figures	58
+text_figures_found	58

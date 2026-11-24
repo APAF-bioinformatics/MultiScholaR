@@ -370,8 +370,12 @@ integrationExportResults <- function(project, model, results) {
 #' @param overrides A named list of enrichment settings and their values (see `integrationSettings()$enrichment`).
 #'   `test` chooses the test for KEGG and Reactome: `"camera"`, the test of record and the default (limma's camera
 #'   on each feature's regression on the factor, allowing for the correlation measured between a pathway's features,
-#'   on the features measured in every biological sample), or `"gsea"`, the pre-ranked test used before (each
-#'   feature's correlation with the factor, tested as if features were independent). STRING ignores it.
+#'   on the features measured in every biological sample); `"camera_floor"`, the same with negative estimated
+#'   correlations counted as zero (it never calls a pathway `"camera"` does not call); `"permutation"`, PCGSE's
+#'   permutation test of the factor's values (each feature's correlation with the factor against `permutations`
+#'   random reorderings of the factor's values across the biological samples, 1000 or 10000, with `seed`; a message
+#'   gives the predicted time first); or `"gsea"`, the pre-ranked test used before (each feature's correlation with
+#'   the factor, tested as if features were independent). STRING ignores it.
 #' @return A list: `enrichments`, a list named `"<data set> <database>"` of the enrichments made, each a list with
 #'   `summary` (sentences) and `terms` (a data frame of the terms found); and `skipped`, sentences naming each data
 #'   set and database skipped or refused, and why.
@@ -382,6 +386,9 @@ integrationExportResults <- function(project, model, results) {
 #' # The pre-ranked test used before KIT-183, for KEGG and Reactome:
 #' earlier <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
 #'     overrides = list(test = "gsea"))
+#' # The permutation test of the factor's values (PCGSE), with its seed:
+#' permuted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+#'     overrides = list(test = "permutation", seed = 1L))
 #' names(enriched$enrichments)
 #' }
 #' @export

@@ -89,11 +89,14 @@ runProtDesignBuilderSaveFlow <- function(
     )
 
     workflowType <- shiny::isolate(workflowData$state_manager$workflow_type)
+    workflowData$prot_design_log2_counts <- NULL
     buildProtDesignStateCheckpoint(
       workflowData = workflowData,
       workflowType = workflowType,
       actionLabel = "Save Design"
     )
+    # KIT-177: the values the design step set to missing, named and counted.
+    notifyProtDesignLog2Counts(workflowData)
     completeProtDesignPostCheckpoint(
       workflowData = workflowData,
       experimentPaths = experimentPaths,
