@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-182 R2 repeated (VAL-138; audit O6): full suite on the merge 1644014f vs staging f6c86cfb, check false (R1b repeat 45334768790 holds it on the same R/); ceiling 1080 job-min (72.0 core-h)",
+  "label": "KIT-182 R2 repeat full suite 1644014f vs f6c86cfb",
+  "package_commit": "1644014ffd135449fc4140095e71bf41e9c2db8d",
+  "base_commit": "f6c86cfb58fb58dcf73c66671601ad2ed6376618",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
