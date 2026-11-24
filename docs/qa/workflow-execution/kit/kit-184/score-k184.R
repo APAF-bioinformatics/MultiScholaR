@@ -226,14 +226,36 @@ scoreSimulation <- function(jobs_dir, out, criteria = CRITERIA) {
 # is KIT-183's score-k183.R at its declared commit, unchanged but for its last line (the call), which is made below
 # unless K184_SCORE=ruv. With K184_SCORE=ruv the jobs of KIT-184's cells are scored: Rscript score-k184.R <jobs dir>
 # <out dir>, <jobs dir> holding the evidence jobs' artifacts (k184-*), each with w*/<table>.tsv.
+# Environment, for the blind lifecycle extension L1b only: K184_BLIND (the summary is not printed),
+# K184_DETERMINISM_SELFTEST (the determinism comparison repeated with one value altered), K184_L1_REFERENCE (the path of
+# L1's error-rates.tsv: cell A's rates with every size summed are compared with it, TRUE or FALSE).
 # ======================================================================================================================
 
 CRITERIA184 <- list(criterion = 0.075, declared = c(A = 800L, B = 800L, D = 400L), deciding_cells = c("A", "B"),
     views = c("transcriptomics", "proteomics", "metabolomics_LCMS"), rhos = c("0.1", "0.3", "0.6"),
-    test_of_record = "camera", direction_accuracy = 0.99, minimum_called = 50L, canonical_stop = 0.9, pool_share = 0.9)
+    test_of_record = "camera", direction_accuracy = 0.99, minimum_called = 50L, canonical_stop = 0.9, pool_share = 0.9,
+    # Redefinitions after the lifecycle run L1 (declaration, "Changes forced by L1"), made in this scorer only: the
+    # simulation draws and tests every set as the scripts committed before L1 do (declaration audit K184-D03).
+    # Sizes left out of the reported rate of a reported class (C4), per data set and model:
+    left_out = data.frame(view = c(rep("transcriptomics", 4L), rep("metabolomics_LCMS", 2L)), class = "C4",
+        model = c("corrected", "default", "default", "default", "corrected", "default"),
+        size = c(100L, 10L, 30L, 100L, 20L, 20L), stringsAsFactors = FALSE),
+    # Decision O1 (the owner's, 2026-11-24, methods ledger VAL-150): every check, number and outcome that reads
+    # proteomics C5 reads it in two compositions, sizes 10 and 30 only, and every size formed in the replicate (as the
+    # ticket declared and as the scorer committed before L1 computes). Each entry names the sizes left out; a check holds
+    # only when it holds in every composition listed, and a printed number takes the larger T. Size 100 alone is in
+    # error-rates-by-size.tsv and decides nothing. (The options not taken: sizes 10 and 30 only,
+    # `list(sizes_10_30 = 100L)`; as declared only, `list(declared = integer())`.)
+    c5_proteomics = list(sizes_10_30 = 100L, declared = integer()),
+    # The feature-level rate on the main factor is not defined where the model keeps every feature of the data set.
+    feature_rate_undefined = c(view = "metabolomics_LCMS", kind = "F_main"),
+    # The worker tables the determinism job must reproduce (`status` without its seconds).
+    determinism_tables = c("errors", "power", "formed", "counts", "feature", "identity", "floor", "exact", "caught",
+        "factors", "orientation", "status"))
 
 scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
     limit <- criteria$criterion
+    # The counted jobs' tables. The determinism job's files (`k184-det`) enter no rate; they are read again below.
     readTable <- function(name) {
         files <- Sys.glob(file.path(jobs_dir, "k184-*", "w*", paste0(name, ".tsv")))
         files <- files[!grepl("k184-det", files, fixed = TRUE)]
@@ -285,12 +307,54 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
     write(status[status$status != "completed", , drop = FALSE], "not-completed")
 
     # --- Error rates (6.3): the share of a replicate's class sets with p <= 0.05, averaged over replicates ---
-    errors$s <- errors$sig / errors$sets
+    # The simulation writes one row per replicate, data set, factor, arm, test, class, rho_block and set size (`nominal`).
+    # Every declared estimand is over a replicate's sets of the class, all sizes together, so the sizes are summed first.
+    # A size in `criteria$left_out` is left out of the reported rate of its class, and proteomics C5 is read in every
+    # composition of `criteria$c5_proteomics`; `composition` is "single" for every other row.
+    if (!"nominal" %in% names(errors)) stop("the errors table has no set size (`nominal`): written by an older simulation script")
     key <- c("cell", "view", "kind", "arm", "test", "class", "rho_key")
-    rate <- bind(lapply(split(errors, errors[key], drop = TRUE), function(d) cbind(d[1L, key], sets = sum(d$sets),
-        interval(d$s))))
-    rate <- rate[do.call(order, rate[key]), ]
+    perReplicate <- function(d) {
+        if (!nrow(d)) return(NULL)
+        group <- paste(d$cell, d$r, d$view, d$kind, d$arm, d$test, d$class, d$rho_key, sep = "\r")
+        sums <- rowsum(cbind(sets = d$sets, sig = d$sig), group, reorder = FALSE)
+        per <- d[!duplicated(group), c("cell", "r", key[-1L]), drop = FALSE]
+        per$sets <- unname(sums[, "sets"])
+        per$sig <- unname(sums[, "sig"])
+        per$s <- per$sig / per$sets
+        rownames(per) <- NULL
+        per
+    }
+    rateOf <- function(per) {
+        if (is.null(per)) return(NULL)
+        bind(lapply(split(per, per[key], drop = TRUE), function(d) cbind(d[1L, key], sets = sum(d$sets), interval(d$s))))
+    }
+    left <- rep(FALSE, nrow(errors))
+    for (i in seq_len(nrow(criteria$left_out))) {
+        rule <- criteria$left_out[i, ]
+        left <- left | (errors$view == rule$view & errors$class == rule$class &
+            ifelse(errors$arm %in% c("D0", "D1"), "default", "corrected") == rule$model & errors$nominal == rule$size)
+    }
+    is_c5p <- errors$view == "proteomics" & errors$class == "C5"
+    compositions <- c(list(single = NULL), criteria$c5_proteomics)
+    scored <- lapply(names(compositions), function(name) {
+        rows <- if (name == "single") !left & !is_c5p else is_c5p & !(errors$nominal %in% compositions[[name]])
+        per <- perReplicate(errors[rows, , drop = FALSE])
+        if (is.null(per)) return(NULL)
+        per$composition <- name
+        rate <- rateOf(per)
+        rate$composition <- name
+        list(per = per, rate = rate)
+    })
+    scored <- Filter(Negate(is.null), scored)
+    per_replicate <- bind(lapply(scored, `[[`, "per"))
+    rate <- bind(lapply(scored, `[[`, "rate"))
+    rate <- rate[do.call(order, rate[c(key, "composition")]), ]
     write(rate, "error-rates")
+    # Per set size, over the replicates in which the size formed (their number is `replicates`): reported, decides nothing.
+    # A size that does not form in every replicate is conditional on its pool.
+    by_size <- bind(lapply(split(errors, errors[c(key, "nominal")], drop = TRUE), function(d) cbind(d[1L, c(key, "nominal")],
+        sets = sum(d$sets), interval(d$sig / d$sets))))
+    write(by_size[do.call(order, by_size[c(key, "nominal")]), ], "error-rates-by-size")
     # The checks of a criterion: the test of record under one arm; C0, C1 (each rho) and C2 on the main factor and on the
     # independent covariate, and C5 on the independent covariate, in every data set (thirty-three per cell).
     wanted <- bind(lapply(criteria$views, function(view) rbind(
@@ -303,6 +367,8 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
         d$pass <- !is.na(d$upper) & d$upper <= limit
         d
     }))
+    # A check holds when it holds in every composition it is read in (one for every class but proteomics C5).
+    held <- function(d) stats::aggregate(d["pass"], d[c("cell", "view", "kind", "class", "rho_key")], all)
     ke1 <- checks("3")
     ke5 <- checks("2")
     ke4 <- checks("3", data.frame(view = criteria$views, kind = "F_main", class = "C5", rho_key = "", stringsAsFactors = FALSE))
@@ -311,7 +377,8 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
     write(ke1, "ke1-checks")
     write(ke5, "ke5-checks")
     write(ke4, "ke4-checks")
-    # Operating characteristic of the thirty-three checks of a cell from the measured standard errors (6.3).
+    # Operating characteristic of the thirty-three checks of a cell from the measured standard errors (6.3). Every row
+    # counts: a check read in two compositions enters twice, which can only understate the probability.
     oc <- function(d, true) prod(stats::pnorm((limit - stats::qt(0.975, d$replicates - 1L) * d$mc_se - true) / d$mc_se))
     operating <- bind(lapply(split(ke1, ke1$cell), function(d) data.frame(cell = d$cell[[1L]], checks = nrow(d),
         pass_at_0.050 = oc(d, 0.050), pass_at_0.055 = oc(d, 0.055), pass_at_0.060 = oc(d, 0.060))))
@@ -345,15 +412,16 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
     }
 
     # --- Paired differences on the same replicates and sets (6.3): arm 1 minus arm 3, arm 2 minus arm 3 ---
-    own <- errors[errors$arm %in% c("1", "2", "3", "3o") & errors$test == criteria$test_of_record, , drop = FALSE]
-    wide <- stats::reshape(own[c("cell", "r", "view", "kind", "class", "rho_key", "arm", "s")], idvar = c("cell", "r", "view",
-        "kind", "class", "rho_key"), timevar = "arm", direction = "wide")
+    own <- per_replicate[per_replicate$arm %in% c("1", "2", "3", "3o") & per_replicate$test == criteria$test_of_record, ,
+        drop = FALSE]
+    wide <- stats::reshape(own[c("cell", "r", "view", "kind", "class", "rho_key", "composition", "arm", "s")],
+        idvar = c("cell", "r", "view", "kind", "class", "rho_key", "composition"), timevar = "arm", direction = "wide")
     paired <- bind(lapply(c("1", "2", "3o"), function(arm) {
         column <- paste0("s.", arm)
         if (!column %in% names(wide) || !"s.3" %in% names(wide)) return(NULL)
         wide$difference <- wide[[column]] - wide[["s.3"]]
         d <- wide[!is.na(wide$difference), , drop = FALSE]
-        pkey <- c("cell", "view", "kind", "class", "rho_key")
+        pkey <- c("cell", "view", "kind", "class", "rho_key", "composition")
         bind(lapply(split(d, d[pkey], drop = TRUE), function(x) cbind(x[1L, pkey], comparison = paste0("arm ", arm,
             " minus arm 3"), interval(x$difference))))
     }))
@@ -366,6 +434,11 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
         fkey <- c("cell", "view", "kind", "arm")
         feature_rates <- bind(lapply(split(feature, feature[fkey], drop = TRUE), function(d) cbind(d[1L, fkey],
             features = sum(d$features), interval(d$s[is.finite(d$s)]))))
+        # Not defined where the model keeps every feature (no feature is left that it did not select): stated, not NaN.
+        undefined <- feature_rates$view == criteria$feature_rate_undefined[["view"]] &
+            feature_rates$kind == criteria$feature_rate_undefined[["kind"]]
+        feature_rates[undefined, c("replicates", "T", "mc_se", "lower", "upper")] <- NA
+        feature_rates$defined <- !undefined
         write(feature_rates[do.call(order, feature_rates[fkey]), ], "feature-rates")
     }
 
@@ -403,16 +476,87 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
     write(floor_table, "floor")
     write(unique(versions[c("package", "version")]), "versions")
 
+    # --- Determinism (6.3; declaration audit K184-D04): the determinism job against the same replicates of the counted
+    # jobs. Read as text, so that what is compared is what the workers wrote; ordered by every column; `identical()`. ---
+    readText <- function(name, det, keep = NULL) {
+        files <- Sys.glob(file.path(jobs_dir, "k184-*", "w*", paste0(name, ".tsv")))
+        files <- files[grepl("k184-det", files, fixed = TRUE) == det]
+        if (!length(files)) return(NULL)
+        table <- do.call(rbind, lapply(files, function(f) {
+            t <- utils::read.delim(f, colClasses = "character", check.names = FALSE, quote = "", na.strings = character())
+            if (!is.null(keep)) t <- t[paste(t$cell, t$r) %in% keep, , drop = FALSE]
+            t
+        }))
+        rownames(table) <- NULL
+        table
+    }
+    sorted <- function(d) {
+        d <- d[do.call(order, unname(as.list(d))), , drop = FALSE]
+        rownames(d) <- NULL
+        d
+    }
+    determinism <- NULL
+    det_status <- readText("status", det = TRUE)
+    if (!is.null(det_status)) {
+        again <- paste(det_status$cell, det_status$r)
+        pairOf <- function(name) {
+            a <- readText(name, det = TRUE)
+            b <- readText(name, det = FALSE, keep = again)
+            if (name == "status") {
+                seconds <- c("train_seconds", "total_seconds")
+                if (!is.null(a)) a <- a[setdiff(names(a), seconds)]
+                if (!is.null(b)) b <- b[setdiff(names(b), seconds)]
+            }
+            list(a = a, b = b)
+        }
+        compare <- function(label, p) data.frame(table = label, rows_determinism = if (is.null(p$a)) 0L else nrow(p$a),
+            rows_counted = if (is.null(p$b)) 0L else nrow(p$b), identical = !is.null(p$a) && !is.null(p$b) &&
+                identical(names(p$a), names(p$b)) && identical(sorted(p$a), sorted(p$b)), stringsAsFactors = FALSE)
+        determinism <- bind(lapply(criteria$determinism_tables, function(name) compare(name, pairOf(name))))
+        write(determinism, "determinism")
+        # The comparison shown to bite (asked of the lifecycle extension L1b): the same comparison with one value of one
+        # table altered must read FALSE.
+        if (nzchar(Sys.getenv("K184_DETERMINISM_SELFTEST", unset = ""))) {
+            p <- pairOf("errors")
+            if (!is.null(p$a) && nrow(p$a)) p$a$sig[[1L]] <- paste0(p$a$sig[[1L]], "0")
+            write(compare("errors, one value altered", p), "determinism-selftest")
+        }
+    }
+
+    # --- The lifecycle extension's check that writing the set size moved no p-value (declaration audit K184-D03, D05):
+    # the rates of cell A with every size summed and nothing left out, against the table L1's scorer wrote. ---
+    reference_path <- Sys.getenv("K184_L1_REFERENCE", unset = "")
+    if (nzchar(reference_path)) {
+        reference <- utils::read.delim(reference_path, stringsAsFactors = FALSE,
+            colClasses = c(cell = "character", arm = "character", rho_key = "character"))
+        reference$rho_key[is.na(reference$rho_key)] <- ""
+        reference <- reference[reference$cell == "A", , drop = FALSE]
+        drawn <- rateOf(perReplicate(errors[errors$cell == "A", , drop = FALSE]))
+        equal <- FALSE
+        if (!is.null(drawn)) {
+            both <- merge(drawn, reference, by = key, suffixes = c("_here", "_l1"))
+            close <- function(a, b) isTRUE(all.equal(a, b, tolerance = 1e-12, check.attributes = FALSE))
+            equal <- nrow(drawn) == nrow(reference) && nrow(both) == nrow(reference) &&
+                all(both$sets_here == both$sets_l1) && all(both$replicates_here == both$replicates_l1) &&
+                close(both$T_here, both$T_l1) && close(both$mc_se_here, both$mc_se_l1) &&
+                close(both$lower_here, both$lower_l1) && close(both$upper_here, both$upper_l1)
+        }
+        write(data.frame(check = "cell A, every size summed and nothing left out, against L1's error rates",
+            rows_here = if (is.null(drawn)) 0L else nrow(drawn), rows_l1 = nrow(reference), equal = equal,
+            stringsAsFactors = FALSE), "l1-reference-check")
+    }
+
     # --- The numbers of the texts (6.4) ---
     worst <- function(d) d[which.max(d$T), , drop = FALSE]
     r3 <- worst(ke1[!is.na(ke1$T), , drop = FALSE])
     r5 <- worst(ke4[!is.na(ke4$T), , drop = FALSE])
     r6 <- worst(c5_arm2[!is.na(c5_arm2$T), , drop = FALSE])
-    r5m <- ke4[ke4$cell == r6$cell & ke4$view == r6$view, , drop = FALSE]
+    r5m <- ke4[which(ke4$cell == r6$cell & ke4$view == r6$view & ke4$composition == r6$composition), , drop = FALSE]
     fmt <- function(d) if (nrow(d)) sprintf("%.1f %%", 100 * d$T) else NA_character_
     ival <- function(d) if (nrow(d)) sprintf("%.1f to %.1f %%", 100 * d$lower, 100 * d$upper) else NA_character_
-    where <- function(d) if (nrow(d)) sprintf("cell %s, %s, %s, %s%s", d$cell, d$view, d$kind, d$class, ifelse(nzchar(d$rho_key),
-        paste0(" rho ", d$rho_key), "")) else NA_character_
+    where <- function(d) if (nrow(d)) sprintf("cell %s, %s, %s, %s%s%s", d$cell, d$view, d$kind, d$class, ifelse(nzchar(d$rho_key),
+        paste0(" rho ", d$rho_key), ""), ifelse(d$composition == "single", "", paste0(", composition ", d$composition))) else
+        NA_character_
     powerRange <- function(test) {
         if (is.null(power_table)) return(NA_character_)
         d <- power_table[power_table$arm == "3" & power_table$test == test & power_table$kind == "F_main" &
@@ -433,21 +577,22 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
     cells_decided <- all(completion$decided[completion$cell %in% criteria$deciding_cells])
     ke3 <- if (is.null(direction)) NULL else direction[direction$arm == "3" & direction$test == criteria$test_of_record &
         direction$cell %in% criteria$deciding_cells, , drop = FALSE]
+    countLine <- function(d) paste(vapply(split(d, d$cell), function(x) {
+        h <- held(x)
+        sprintf("cell %s %d of %d hold, largest upper limit %.4f", x$cell[[1L]], sum(h$pass), nrow(h), max(x$upper, na.rm = TRUE))
+    }, character(1)), collapse = "; ")
     lines <- c("# KIT-184 simulation: the scorer's summary", "",
         sprintf("- Cells decided (at least 95 %% of the declared replicates completed): %s", paste(sprintf("%s %s (%d of %d)",
             completion$cell, completion$decided, completion$completed, completion$declared), collapse = "; ")),
         sprintf("- K-E1 (arm 3, %s; 33 checks per cell, upper limit at most %.3f): %s", criteria$test_of_record, limit,
-            paste(vapply(split(ke1, ke1$cell), function(d) sprintf("cell %s %d of %d pass, largest upper limit %.4f",
-                d$cell[[1L]], sum(d$pass), nrow(d), max(d$upper, na.rm = TRUE)), character(1)), collapse = "; ")),
+            countLine(ke1)),
         sprintf("- K-E3 (direction accuracy of arm 3 on the main factor, at least %.2f when at least %d planted sets were called): %s",
             criteria$direction_accuracy, criteria$minimum_called, if (is.null(ke3)) "no planted set scored" else
                 paste(sprintf("cell %s %d called, %d correct, pass %s", ke3$cell, ke3$called, ke3$correct, ke3$pass),
                     collapse = "; ")),
-        sprintf("- K-E4 (declared; arm 3, C5 on the main factor): %s", paste(sprintf("cell %s %s T %.4f upper %.4f pass %s",
-            ke4$cell, ke4$view, ke4$T, ke4$upper, ke4$pass), collapse = "; ")),
-        sprintf("- K-E5 (arm 2, the form without the adjustment; the same 33 checks): %s", paste(vapply(split(ke5, ke5$cell),
-            function(d) sprintf("cell %s %d of %d pass, largest upper limit %.4f", d$cell[[1L]], sum(d$pass), nrow(d),
-                max(d$upper, na.rm = TRUE)), character(1)), collapse = "; ")),
+        sprintf("- K-E4 (declared; arm 3, C5 on the main factor): %s", paste(sprintf("cell %s %s (%s) T %.4f upper %.4f pass %s",
+            ke4$cell, ke4$view, ke4$composition, ke4$T, ke4$upper, ke4$pass), collapse = "; ")),
+        sprintf("- K-E5 (arm 2, the form without the adjustment; the same 33 checks): %s", countLine(ke5)),
         sprintf("- Written factors exact: %s", paste(sprintf("cell %s %s %d of %d", exact_table$cell, exact_table$view,
             exact_table$exact, exact_table$replicates), collapse = "; ")),
         sprintf("- Identity check (largest difference of arm 3's correlation from the same model on the corrected values): %s",
@@ -460,10 +605,17 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
             nrow(pools), 100 * criteria$pool_share),
         sprintf("- Seconds per replicate (median; largest): %s", paste(sprintf("cell %s %.0f; %.0f", completion$cell,
             completion$median_total_seconds, completion$largest_total_seconds), collapse = "; ")),
+        sprintf("- Determinism (the determinism job against the same replicates of the counted jobs, %d tables): %s",
+            length(criteria$determinism_tables), if (is.null(determinism)) "no determinism job among the artifacts" else
+                sprintf("%d of %d identical%s", sum(determinism$identical), nrow(determinism), if (all(determinism$identical)) "" else
+                    paste0("; different: ", paste(determinism$table[!determinism$identical], collapse = ", ")))),
         sprintf("- Outcome rows of 6.5: R1 holds (K-E1 in A and B, K-E3, cells decided) %s; R7 (K-E4 fails in a data set) %s; R8 (K-E5 fails in a cell) %s",
-            cells_decided && all(ke1$pass) && (is.null(ke3) || all(ke3$pass)), any(!ke4$pass), any(!ke5$pass)))
+            cells_decided && all(ke1$pass) && (is.null(ke3) || all(ke3$pass)), any(!ke4$pass), any(!ke5$pass)),
+        sprintf("- Outcome row R6, read from completion.tsv, exactness.tsv and identity.tsv: a cell not decided %s; the written factors not exact in more than 1 %% of a data set's replicates %s; the identity check above 1e-8 in any replicate %s",
+            !all(completion$decided), any(exact_table$share_exact < 0.99), any(identity_table$replicates_above_1e_8 > 0)))
     writeLines(lines, file.path(out, "results-summary.md"))
-    cat(lines, sep = "\n")
+    # A blind lifecycle run (K184_BLIND set) prints nothing of the result; its job decides which files leave it.
+    if (nzchar(Sys.getenv("K184_BLIND", unset = ""))) cat("scored blind: the summary is not printed\n") else cat(lines, sep = "\n")
 }
 
 if (identical(Sys.getenv("K184_SCORE", unset = ""), "ruv")) scoreRuv(jobs_dir, out) else scoreSimulation(jobs_dir, out)
