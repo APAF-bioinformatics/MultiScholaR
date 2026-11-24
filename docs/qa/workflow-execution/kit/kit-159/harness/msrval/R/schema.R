@@ -104,8 +104,14 @@ valCheckDeclarationSchema <- function(decl, units = NULL) {
             bad(paste("family", f, "m must be <= 4 and count its members"))
         }
         lvl <- 1 - 0.05 / m_decl
+        # Re-audit 2 R2-02: every metric a member names (all_of, worse_when) is held to the level,
+        # whether or not it declares primary_family.
+        named <- unique(sub(":.*$", "", unlist(lapply(mem, function(x) {
+            c(unlist(x[["all_of"]]), unlist(x[["worse_when"]]))
+        }))))
         for (m in metrics) {
-            if (identical(m[["primary_family"]], f) && abs((m[["conf"]] %||% 0.95) - lvl) > 1e-6) {
+            in_family <- identical(m[["primary_family"]], f) || isTRUE(m[["id"]] %in% named)
+            if (in_family && abs((m[["conf"]] %||% 0.95) - lvl) > 1e-6) {
                 bad(paste("family", f, "metric", m[["id"]], "is not at 1 - 0.05/m"))
             }
         }

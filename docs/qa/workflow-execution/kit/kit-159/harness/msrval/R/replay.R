@@ -100,15 +100,24 @@ valReplayInputs <- function(record, roots) {
 #' @param kit From [valReplayKit()] (or a list with `mismatches`).
 #' @param origin,replay `fingerprint()` results of the two stores.
 #' @param origin_da,replay_da The head DA result fingerprints.
-#' @return A list: `status` (`identical`, `differs`), `identical`, `da_identical`, `differences`.
+#' @return A list: `status` (`identical`, `differs`, or `unsupported` with class
+#'   `val_replay_no_da_result` when neither head holds a DA result: a missing result on both sides
+#'   is not agreement, re-audit 2 R2-01), `class`, `identical`, `da_identical`, `differences`,
+#'   `da_fingerprint_origin`, `da_fingerprint_replay`.
 #' @export
 valReplayCompare <- function(kit, origin, replay, origin_da, replay_da) {
+    fps <- list(da_fingerprint_origin = as.character(origin_da),
+                da_fingerprint_replay = as.character(replay_da))
+    if (is.na(origin_da) && is.na(replay_da)) {
+        return(c(list(status = "unsupported", class = "val_replay_no_da_result",
+                      identical = FALSE, da_identical = NA, differences = character()), fps))
+    }
     diffs <- kit$mismatches(origin, replay)
     da_same <- identical(origin_da, replay_da)
     if (!da_same) diffs <- c(diffs, "da_results")
     same <- !length(diffs)
-    list(status = if (same) "identical" else "differs", identical = same,
-         da_identical = da_same, differences = utils::head(as.character(diffs), 50L))
+    c(list(status = if (same) "identical" else "differs", identical = same,
+           da_identical = da_same, differences = utils::head(as.character(diffs), 50L)), fps)
 }
 
 #' Replay a record on a pruned copy of the origin store and compare (G5)
@@ -228,5 +237,7 @@ valReplayBlock <- function(replay, declared, completed) {
     list(status = replay$status, class = replay$class, identical = isTRUE(replay$identical),
          da_identical = replay$da_identical, preconditions = as.list(replay$preconditions),
          prepared_states = as.list(replay$prepared_states),
-         differences = as.list(replay$differences))
+         differences = as.list(replay$differences),
+         da_fingerprint_origin = replay$da_fingerprint_origin %||% NA_character_,
+         da_fingerprint_replay = replay$da_fingerprint_replay %||% NA_character_)
 }
