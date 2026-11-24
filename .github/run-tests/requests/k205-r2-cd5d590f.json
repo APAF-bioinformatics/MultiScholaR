@@ -1,0 +1,105 @@
+{
+  "requested_by": "KIT-205 R2: fix (R/ = 325f9522) vs branch point 241914cb; 10.3 scope 3 shards/side, check; scripts control C, W113 cause, A3 (ii) replay, UI dumps, X, KIT-203 G1; ceiling 690 job-min; decides stop rules 2-5",
+  "label": "KIT-205 R2 cd5d590f vs 241914cb",
+  "package_commit": "cd5d590f9d269a4e7973bda3e0a1195525aaa435",
+  "base_commit": "241914cb4461128efdd453002a17ab3744cad2ba",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-core.R",
+    "test-prot-missing-value-counts.R",
+    "test-gui-entry-proteomics.R",
+    "test-kit205-enrichment-background.R",
+    "test-omic-enrich-module.R",
+    "test-kit129-run-path.R",
+    "test-integration-model.R",
+    "test-prot-annotation-uniprot-empty.R",
+    "test-workflow-analysis-record.R",
+    "test-go-propagation.R",
+    "test-omics-enrich-core.R",
+    "test-workflow-trx-declarations.R",
+    "test-enrichment-significance.R",
+    "test-workflow-dia-products.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-lipid-declarations.R",
+    "test-integration-mofa-model.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-omic-gui-config.R",
+    "test-general-enrichment-shared.R",
+    "test-kit172-log2-rule.R",
+    "test-workflow-operation-registry.R",
+    "test-module-ci-prot-da.R",
+    "test-prot-11-enrichment-module-contracts.R",
+    "test-module-ci-prot-enrich.R",
+    "test-prot-11a-enrichment-module-characterization.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-205/control-c.R",
+      "args": [
+        "kit205-out/control-c",
+        "241914cb4461128efdd453002a17ab3744cad2ba"
+      ],
+      "out": "kit205-out/control-c",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 25
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-205/w113-cause.R",
+      "args": [
+        "kit205-out/w113",
+        "241914cb4461128efdd453002a17ab3744cad2ba"
+      ],
+      "out": "kit205-out/w113",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 25
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-205/replay-k205.R",
+      "args": [
+        "kit205-out/replay",
+        "241914cb4461128efdd453002a17ab3744cad2ba"
+      ],
+      "out": "kit205-out/replay",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 25
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/od5-k203.R",
+      "args": [
+        "kit205-out/dumps",
+        "241914cb4461128efdd453002a17ab3744cad2ba"
+      ],
+      "out": "kit205-out/dumps",
+      "out_pattern": "\\.(tsv|txt|R)$",
+      "timeout_minutes": 10
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-205/mutate-k205.R",
+      "args": [
+        "kit205-out/x"
+      ],
+      "out": "kit205-out/x",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 40
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/gate-k203.R",
+      "args": [
+        "g1",
+        "kit205-out/g1"
+      ],
+      "out": "kit205-out/g1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
