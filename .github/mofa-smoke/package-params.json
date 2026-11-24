@@ -1,6 +1,6 @@
 {
-  "label": "k184-covariates-mofa",
-  "package_commit": "621a32b5bebc46586960e653c43dd77405f9325d",
+  "label": "k184-covariates-mofa-val160",
+  "package_commit": "5ba85c1fd5f6082c9e392ef54410377313afd0bf",
   "tests": [
     "test-integration-enrichment-mofa.R"
   ],
