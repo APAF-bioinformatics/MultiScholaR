@@ -1,0 +1,7 @@
+run_id	lane_commit	purpose	runner_minutes	result
+45351008182	bcc936f8	G0a-1 (declaration f6b21504)	32.6	instrument defect: lipid/metab QC sub-tab inputs empty (E3 at intensity, both builds); protein fixtures' skip mapped to the wrong state; reset control held; B3 base: U3, U4, U5 completed
+45351244978	6166ef34	G0i (integration lifecycle, KIT-150 lane, row RC)	18.0	held: S pipeline on RC and C completed; induced memory failure killed after the baseline
+45356238103	d817f572	G0a-2 = G0a instrument run 1 (VAL-54)	52.3	items 1 (lifecycle, memory, time), 2, 3 held; injected package error did not fire (unknown method falls back silently); build facts not recorded
+45364337214	efa3d105	G0a instrument run 2, first send	0.8	cancelled before any journey (to add the build-facts fix)
+45364573916	1307446f	G0a-3 = G0a instrument run 2 (VAL-54): package-error item, S1 on both builds	9.5	held: package error raised in a package frame; item 5 recorded
+45366618275	d4b6dd9e	G0p1 (U10, U9) and G0p2 (U7, U11, U12) on C, two jobs	155.9	U10, U9, U7 completed (42.8, 41.2, 22.4 min); U11 and U12 refused at normalisation_ruv (manual RUV, k 3: too few complete control proteins), class package error
