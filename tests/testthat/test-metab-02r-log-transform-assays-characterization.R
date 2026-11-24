@@ -77,7 +77,7 @@ if (!methods::isClass("MetaboliteAssayData")) {
 if (!methods::isGeneric("logTransformAssays")) {
   methods::setGeneric(
     "logTransformAssays",
-    function(theObject, offset = 1, ...) {
+    function(theObject, offset = 0, ...) {
       standardGeneric("logTransformAssays")
     }
   )
@@ -134,30 +134,25 @@ test_that("metabolomics S4 log-transform method preserves current assay transfor
   expect_identical(transformed@args$log_transform_offset, 2)
 })
 
-test_that("metabolomics S4 log-transform method rejects non-positive offsets", {
+test_that("metabolomics S4 log-transform method accepts offset 0 and rejects negative offsets", {
+  # KIT-172: offset 0 (plain log2) is the default; below 0 is refused with its class.
+  expect_s4_class(suppressWarnings(suppressMessages(logTransformAssays(newMetabLogTransformObject(), offset = 0))),
+    "MetaboliteAssayData")
   expect_error(
-    logTransformAssays(newMetabLogTransformObject(), offset = 0),
-    "`offset` must be a single positive numeric value.",
-    fixed = TRUE
+    logTransformAssays(newMetabLogTransformObject(), offset = -1),
+    class = "omics_log2_offset_invalid"
   )
 })
 
-test_that("metabolomics S4 log-transform source retains the current negative-value clamp and args updates", {
-  target_expr <- findSelectedExpression(
-    paths = target_paths,
-    matcher = function(expr) {
-      isTargetSetMethod(expr, "logTransformAssays")
-    }
-  )
-
-  expect_false(is.null(target_expr))
-
-  target_text <- paste(deparse(target_expr), collapse = "\n")
-
-  expect_match(
-    target_text,
-    "ifelse\\(!is\\.na\\(.x\\)\\s*&\\s*\\.x\\s*<\\s*0,\\s*0,\\s*\\.x\\)"
-  )
-  expect_match(target_text, "theObject@args\\$log_transformed <- TRUE")
-  expect_match(target_text, "theObject@args\\$log_transform_offset <- offset")
+test_that("metabolomics S4 log-transform method keeps the negative-value clamp above offset 0 and reads non-positive values as missing at 0", {
+  # KIT-172: above offset 0 the clamp of earlier releases (a negative value becomes 0, then log2(x + offset)); at
+  # offset 0 a value of 0 or below becomes missing. The args record the offset either way.
+  clamped <- logTransformAssays(newMetabLogTransformObject(), offset = 1)
+  expect_equal(clamped@metabolite_data$LCMS_Pos$Sample_1, c(0, 0))
+  expect_true(clamped@args$log_transformed)
+  expect_identical(clamped@args$log_transform_offset, 1)
+  plain <- suppressWarnings(logTransformAssays(newMetabLogTransformObject(), offset = 0))
+  expect_true(all(is.na(plain@metabolite_data$LCMS_Pos$Sample_1)))
+  expect_equal(plain@metabolite_data$LCMS_Pos$Sample_2, log2(c(6, 14)))
+  expect_identical(plain@args$log_transform_offset, 0)
 })

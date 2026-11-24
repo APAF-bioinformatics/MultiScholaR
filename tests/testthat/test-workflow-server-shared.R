@@ -252,60 +252,97 @@ test_that("proteomics workflow server wires modules and advances workflow state"
   )
 })
 
-test_that("proteomics workflow server bypasses QC for TMT workflows", {
+test_that("VAL-26: TMT and LFQ open the QC tab after the design", {
+  # KIT-180: the label-free and TMT routes are guided to the protein-level QC as the DIA route is (VAL-26); entering
+  # Normalisation before QC warns and is not refused (VAL-44). DIA is the control: its behaviour does not change.
   package_ns <- asNamespace("MultiScholaR")
-  captured <- new.env(parent = emptyenv())
-  captured$calls <- list()
+  check_route <- function(route) {
+    captured <- new.env(parent = emptyenv())
+    captured$calls <- list()
 
-  fixture_dir <- tempfile("prot-workflow-tmt-")
-  dir.create(file.path(fixture_dir, "source"), recursive = TRUE)
-  withr::defer(unlink(fixture_dir, recursive = TRUE, force = TRUE))
+    fixture_dir <- tempfile(paste0("prot-workflow-", tolower(route), "-"))
+    dir.create(file.path(fixture_dir, "source"), recursive = TRUE)
+    withr::defer(unlink(fixture_dir, recursive = TRUE, force = TRUE))
 
-  localNamespaceBindings(
-    package_ns,
-    list(
-      createDIASessionOwner = function(workflow_data, experiment_paths, session, ...) makeWorkflowStateStub("TMT")$new(FALSE), # KIT-048: the owner is created at session start
-      mod_prot_import_server = makeRecordingServerStub(captured, "import"),
-      mod_prot_design_server = makeRecordingServerStub(captured, "design"),
-      mod_prot_qc_server = makeRecordingServerStub(captured, "qc"),
-      mod_prot_norm_server = makeRecordingServerStub(captured, "norm"),
-      mod_prot_da_server = makeRecordingServerStub(captured, "da"),
-      mod_prot_enrich_server = makeRecordingServerStub(captured, "enrich"),
-      mod_prot_summary_server = makeRecordingServerStub(captured, "summary"),
-      render_workflow_stepper = makeWorkflowStepperStub
+    localNamespaceBindings(
+      package_ns,
+      list(
+        createDIASessionOwner = function(workflow_data, experiment_paths, session, ...) {
+          c(makeWorkflowStateStub(route)$new(FALSE), list(current_state = "protein_s4_initial"))
+        },
+        mod_prot_import_server = makeRecordingServerStub(captured, "import"),
+        mod_prot_design_server = makeRecordingServerStub(captured, "design"),
+        mod_prot_qc_server = makeRecordingServerStub(captured, "qc"),
+        mod_prot_norm_server = makeRecordingServerStub(captured, "norm"),
+        mod_prot_da_server = makeRecordingServerStub(captured, "da"),
+        mod_prot_enrich_server = makeRecordingServerStub(captured, "enrich"),
+        mod_prot_summary_server = makeRecordingServerStub(captured, "summary"),
+        render_workflow_stepper = makeWorkflowStepperStub
+      )
     )
-  )
 
-  local_mocked_bindings(
-    log_info = function(...) invisible(NULL),
-    log_warn = function(...) invisible(NULL),
-    log_error = function(...) invisible(NULL),
-    .package = "logger"
-  )
+    local_mocked_bindings(
+      log_info = function(...) invisible(NULL),
+      log_warn = function(...) invisible(NULL),
+      log_error = function(...) invisible(NULL),
+      .package = "logger"
+    )
 
-  testServer(
-    mod_proteomics_server,
-    args = list(
-      project_dirs = list(
-        proteomics = list(
-          base_dir = fixture_dir,
-          source_dir = file.path(fixture_dir, "source"),
-          results_dir = file.path(fixture_dir, "results")
-        )
+    testServer(
+      mod_proteomics_server,
+      args = list(
+        project_dirs = list(
+          proteomics = list(
+            base_dir = fixture_dir,
+            source_dir = file.path(fixture_dir, "source"),
+            results_dir = file.path(fixture_dir, "results")
+          )
+        ),
+        omic_type = "proteomics",
+        experiment_label = "workflow-demo"
       ),
-      omic_type = "proteomics",
-      experiment_label = "workflow-demo"
-    ),
-    {
-      updated_tabs <- workflow_data$tab_status
-      updated_tabs$design_matrix <- "complete"
-      workflow_data$tab_status <- updated_tabs
-      session$flushReact()
+      {
+        set_status <- function(key, value) {
+          updated_tabs <- workflow_data$tab_status
+          updated_tabs[[key]] <- value
+          workflow_data$tab_status <- updated_tabs
+          session$flushReact()
+        }
 
-      expect_equal(workflow_data$tab_status$quality_control, "complete")
-      expect_equal(workflow_data$tab_status$normalization, "pending")
-    }
-  )
+        set_status("design_matrix", "complete")
+        expect_equal(workflow_data$tab_status$quality_control, "pending", info = route)
+        expect_equal(workflow_data$tab_status$normalization, "disabled", info = route)
+
+        # VAL-44: entering Normalisation before QC has run shows the existing warning once; nothing is generated.
+        calls <- new.env(parent = emptyenv())
+        calls$warned <- character()
+        calls$generated <- 0L
+        runProtNormTabEntryWorkflow(
+          "normalization",
+          list(state_manager = workflow_data$state_manager, tab_status = workflow_data$tab_status),
+          list(pre_norm_qc_generated = FALSE),
+          generatePreNormalizationQcFn = function() calls$generated <- calls$generated + 1L,
+          notifyInvalidStateFn = function(currentState) {
+            calls$warned <- c(calls$warned, currentState)
+            invisible(FALSE)
+          },
+          messageFn = function(...) invisible(NULL)
+        )
+        expect_identical(calls$warned, "protein_s4_initial", info = route)
+        expect_identical(calls$generated, 0L, info = route)
+
+        set_status("quality_control", "complete")
+        expect_equal(workflow_data$tab_status$normalization, "pending", info = route)
+        set_status("normalization", "complete")
+        expect_equal(workflow_data$tab_status$differential_expression, "pending", info = route)
+        set_status("differential_expression", "complete")
+        expect_equal(workflow_data$tab_status$enrichment_analysis, "pending", info = route)
+        set_status("enrichment_analysis", "complete")
+        expect_equal(workflow_data$tab_status$session_summary, "pending", info = route)
+      }
+    )
+  }
+  for (route in c("TMT", "LFQ", "DIA")) check_route(route)
 })
 
 test_that("lipidomics workflow server wires modules, status progression, and launcher shell", {

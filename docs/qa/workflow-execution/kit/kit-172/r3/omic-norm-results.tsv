@@ -1,0 +1,28 @@
+test	nb	failed	skipped	error	warning
+(a) the lipid, metab and trx-profile norm UIs keep their HTML, ids, test ids and tab titles	16	6	FALSE	FALSE	0
+(b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset	116	25	FALSE	FALSE	0
+(b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset	116	25	FALSE	FALSE	0
+(b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset	52	12	FALSE	FALSE	0
+(b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset	52	12	FALSE	FALSE	0
+(b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing	52	11	FALSE	FALSE	0
+(b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing	52	11	FALSE	FALSE	0
+F105-01: each metab QC image slot and assay label shows its own assay, stage and kind	13	0	FALSE	FALSE	0
+F105-01: each lipid QC image slot and assay label shows its own assay, stage and kind (fails before)	13	0	FALSE	FALSE	0
+W4: the lipid norm wrappers are thin wrappers over the shared frame, defined in mod_omic_norm*.R	16	0	FALSE	FALSE	0
+F105-02: lipid skip-correlation with the store commit refused notifies and keeps the session and the state (fails before)	7	0	FALSE	FALSE	0
+W5: the metab norm wrappers are thin wrappers over the shared frame, and the metab helper files are gone (fails before)	7	0	FALSE	FALSE	0
+F105-02: metab skip-correlation with the store commit refused notifies and keeps the session and the state (fails before)	7	0	FALSE	FALSE	0
+W5 (D7): the export's progress and summary time are each omic's	4	0	FALSE	FALSE	0
+W5 (D7): a failed managed correlation is notified on metab's tab only	4	0	FALSE	FALSE	0
+KIT-110 W3 (D2): trx's norm UI from the frame and its configuration equals W1 (a)'s trx digest and ids (fails before)	5	0	FALSE	FALSE	0
+KIT-110 W3 (D3): the frame registers each omic's outputs: lipid's and metab's as W1, trx's as W1 (b-trx) (fails before)	3	2	FALSE	FALSE	0
+KIT-110 W3 (D4): the frame calls an omic's own run and reset handlers with its settings and callbacks (fails before)	9	0	FALSE	FALSE	0
+KIT-110 W3: the trx norm module file's functions and the six norm_* profile entries are gone (fails before)	3	0	FALSE	FALSE	0
+KIT-120 W3: the frame's UI under a group with its own texts, S4 download, Post-Normalisation QC tab and slot (fails before)	32	0	FALSE	FALSE	0
+KIT-120 W3: with its own server, the frame registers the state and the stage grid and leaves the actions to the omic (fails before)	13	0	FALSE	FALSE	0
+KIT-120 W2: proteomics' server on the frame sets the tab's state and registers its outputs and route panel (fails before)	11	0	FALSE	FALSE	0
+KIT-120 W4: the proteomics norm wrappers are thin wrappers over the shared frame (fails before)	11	0	FALSE	FALSE	0
+KIT-122 (audit F5): the RUV tab's single-result content is a library entry of static outputs (fails before)	13	0	FALSE	FALSE	0
+KIT-122 (audit F6): the tab's state has no field that only uncalled code gave a value (fails before)	3	0	FALSE	FALSE	0
+KIT-122 (audit F7): the module's start line names the tab's omic (fails before)	2	0	FALSE	FALSE	0
+KIT-122 (audit F10): after a reset a later run's filtering and RUV summaries show again (fails before)	7	0	FALSE	FALSE	0

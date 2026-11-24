@@ -1,0 +1,13 @@
+variant	test	passed	failed	skipped	error
+head	KIT-183 T5: 	5	0	FALSE	FALSE
+head	KIT-183 T8: 	0	3	FALSE	FALSE
+head	KIT-183 T15:	3	0	FALSE	FALSE
+m1_no_restore	KIT-183 T5: 	3	2	FALSE	FALSE
+m1_no_restore	KIT-183 T8: 	0	3	FALSE	FALSE
+m1_no_restore	KIT-183 T15:	3	0	FALSE	FALSE
+m2_test_declared	KIT-183 T5: 	5	0	FALSE	FALSE
+m2_test_declared	KIT-183 T8: 	0	3	FALSE	FALSE
+m2_test_declared	KIT-183 T15:	3	0	FALSE	FALSE
+m3_gsea_default	KIT-183 T5: 	5	0	FALSE	FALSE
+m3_gsea_default	KIT-183 T8: 	0	3	FALSE	FALSE
+m3_gsea_default	KIT-183 T15:	1	2	FALSE	FALSE

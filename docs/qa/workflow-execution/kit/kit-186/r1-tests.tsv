@@ -1,0 +1,5 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-trx-da-without-ruv.R	35	22	0	0	0	83.6	failed
+test-omic-gui-config.R	1905	1	0	0	0	29.2	failed
+test-omic-da-module.R	1343	26	0	0	0	408.3	failed
+test-module-ci-trx-summary.R	72	7	0	0	0	126	failed

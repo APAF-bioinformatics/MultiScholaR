@@ -57,7 +57,8 @@ calculateLipidFilteringAssayMetrics <- function(current_assay_data,
                                                 sample_id_col,
                                                 lipid_id_col,
                                                 is_pattern = NULL,
-                                                sample_columns = NULL) {
+                                                sample_columns = NULL,
+                                                logged = FALSE) {
     if (!is.data.frame(current_assay_data)) {
         warning("Assay ", current_assay_name, " is not a data frame. Skipping metrics calculation.")
         return(list(
@@ -81,7 +82,7 @@ calculateLipidFilteringAssayMetrics <- function(current_assay_data,
 
     det_per_sample <- tryCatch(
         {
-            countLipidsPerSample(current_assay_data, sample_id_col, lipid_id_col, sample_columns = sample_columns)
+            countLipidsPerSample(current_assay_data, sample_id_col, lipid_id_col, sample_columns = sample_columns, logged = logged)
         },
         error = function(e) {
             stop(e)
@@ -90,7 +91,7 @@ calculateLipidFilteringAssayMetrics <- function(current_assay_data,
 
     miss <- tryCatch(
         {
-            calculateLipidMissingness(current_assay_data, sample_id_col, sample_columns = sample_columns)
+            calculateLipidMissingness(current_assay_data, sample_id_col, sample_columns = sample_columns, logged = logged)
         },
         error = function(e) {
             stop(e)

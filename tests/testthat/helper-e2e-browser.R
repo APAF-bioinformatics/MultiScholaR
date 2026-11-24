@@ -1282,19 +1282,9 @@ e2e_run_prot_dia_qc <- function(
     })
   )
 
-  protein_steps <- list(
-    list(tab = "IQ Protein Rollup", action = "protein_qc-rollup-apply_iq_rollup", state = "protein_s4_created"),
-    list(tab = "Accession Cleanup", action = "protein_qc-cleanup-apply_accession_cleanup", state = "protein_accession_cleaned"),
-    list(tab = "Protein Intensity Filter", action = "protein_qc-intensity_filter-apply_protein_intensity_filter", state = "protein_intensity_filtered", configure = function() {
-      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-use_strict_mode"), FALSE, timeout = timeout)
-      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-min_reps_per_group"), 1, timeout = timeout)
-      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-min_groups"), 1, timeout = timeout)
-      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-proteins_intensity_cutoff_percentile"), 0.1, timeout = timeout)
-    }),
-    list(tab = "Duplicate Removal", action = "protein_qc-duplicate_removal-apply_duplicate_removal", state = "duplicates_removed"),
-    list(tab = "Protein Replicate Filter", action = "protein_qc-replicate_filter-apply_protein_replicate_filter", state = "protein_replicate_filtered", configure = function() {
-      e2e_set_input_and_idle(driver, qc("protein_qc-replicate_filter-parallel_cores"), 1, timeout = timeout)
-    })
+  protein_steps <- c(
+    list(list(tab = "IQ Protein Rollup", action = "protein_qc-rollup-apply_iq_rollup", state = "protein_s4_created")),
+    e2e_prot_protein_qc_steps(driver, timeout)
   )
 
   e2e_switch_workflow_tab(driver, "proteomics", "quality_control")
@@ -1310,7 +1300,35 @@ e2e_run_prot_dia_qc <- function(
   }
 
   e2e_set_input_and_idle(driver, qc("qc_tabs_lfq"), "Protein QC", timeout = timeout)
-  for (step in protein_steps) {
+  e2e_run_prot_protein_qc_steps(driver, protein_steps, timeout)
+
+  invisible(driver)
+}
+
+# KIT-180 (VAL-26): the four protein QC steps the DIA route (after its IQ rollup) and the TMT and LFQ routes share, in
+# tab order, with the e2e lanes' permissive intensity settings and one core (the browser lanes prove the route, not the
+# defaults). One list both helpers read, so the routes cannot drift.
+e2e_prot_protein_qc_steps <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+  qc <- function(input) e2e_input_id("proteomics", "qc", input)
+  list(
+    list(tab = "Accession Cleanup", action = "protein_qc-cleanup-apply_accession_cleanup", state = "protein_accession_cleaned"),
+    list(tab = "Protein Intensity Filter", action = "protein_qc-intensity_filter-apply_protein_intensity_filter", state = "protein_intensity_filtered", configure = function() {
+      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-use_strict_mode"), FALSE, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-min_reps_per_group"), 1, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-min_groups"), 1, timeout = timeout)
+      e2e_set_input_and_idle(driver, qc("protein_qc-intensity_filter-proteins_intensity_cutoff_percentile"), 0.1, timeout = timeout)
+    }),
+    list(tab = "Duplicate Removal", action = "protein_qc-duplicate_removal-apply_duplicate_removal", state = "duplicates_removed"),
+    list(tab = "Protein Replicate Filter", action = "protein_qc-replicate_filter-apply_protein_replicate_filter", state = "protein_replicate_filtered", configure = function() {
+      e2e_set_input_and_idle(driver, qc("protein_qc-replicate_filter-parallel_cores"), 1, timeout = timeout)
+    })
+  )
+}
+
+# Each protein QC step: its sub-tab, its settings, its Apply, then a wait for its R6 state.
+e2e_run_prot_protein_qc_steps <- function(driver, steps, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+  qc <- function(input) e2e_input_id("proteomics", "qc", input)
+  for (step in steps) {
     e2e_set_input_and_idle(driver, qc("protein_qc-protein_filter_tabs"), step$tab, timeout = timeout)
     if (is.function(step$configure)) {
       step$configure()
@@ -1323,8 +1341,17 @@ e2e_run_prot_dia_qc <- function(
     click_fn(driver, qc(step$action), timeout = timeout)
     e2e_wait_for_r6_state(driver, "proteomics", step$state, timeout = timeout)
   }
-
   invisible(driver)
+}
+
+# KIT-180 (VAL-26): the TMT and LFQ routes' protein-level QC: the one "Protein QC" group of `qc_tabs_tmt` and its four
+# steps.
+e2e_run_prot_protein_qc <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+  qc <- function(input) e2e_input_id("proteomics", "qc", input)
+  e2e_switch_workflow_tab(driver, "proteomics", "quality_control")
+  e2e_wait_for_selector(driver, "prot-tab-qc", timeout = timeout)
+  e2e_set_input_and_idle(driver, qc("qc_tabs_tmt"), "Protein QC", timeout = timeout)
+  e2e_run_prot_protein_qc_steps(driver, e2e_prot_protein_qc_steps(driver, timeout), timeout)
 }
 
 e2e_run_prot_dia_limpa_qc <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {

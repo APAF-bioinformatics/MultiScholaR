@@ -3,7 +3,8 @@
 E2E-005 covers the protein-level proteomics branches that intentionally diverge
 from the DIA peptide-to-protein path. The matrix proves that TMT and LFQ can be
 loaded through the GUI, assigned to a design, advanced through the protein-level
-bypass semantics, normalized, exported as a filtered session, reloaded in DA,
+QC (Accession Cleanup, Protein Intensity Filter, Duplicate Removal, Protein
+Replicate Filter), normalized, exported as a filtered session, reloaded in DA,
 analyzed, rendered through the correct report template, and exported as a summary
 session without falling back to the DIA report route.
 

@@ -1,0 +1,10 @@
+step	lane	outcome
+start		head 9931beeaddd0a751e2a4e03844a2f832e64a9060, base a60c4e9a0ec8b7db47edddaa53926a61e2b60299, cpu AMD EPYC 7763 64-Core Processor, base records none
+fixtures	lipid_canonical	pass
+fixtures	metab_lc	pass
+fixtures	metab_gc	pass
+fixtures	metab_combined	pass
+compile	kit172-base	pass
+compile	pkg	pass
+mechanism		base child source sha a60c4e9a0ec8b7db47edddaa53926a61e2b60299
+mechanism	lipid_canonical	mechanism: head1 exit 1; head1 wrote no record

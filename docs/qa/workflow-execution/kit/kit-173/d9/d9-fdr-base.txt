@@ -1,0 +1,28 @@
+
+GO ENRICHMENT ANALYSIS
+
+Gene Ontology (GO) enrichment analysis was performed on the differentially 
+expressed proteins to identify significantly enriched biological processes, 
+molecular functions, and cellular components. The analysis was conducted using the 
+following parameters:
+• No fold change cutoff was applied to filter differentially expressed proteins.
+• An adjusted FDR cutoff of 0.05 was used to identify significantly enriched GO terms
+• The background protein set consisted of all identified proteins from the species under study (NCBI Taxonomy ID: 9606) that passed the quality control filtering steps.
+
+The enrichment analysis was performed using the clusterProfiler R package (Yu et al., 2012). For each GO category (Biological Process, Molecular Function, and Cellular Component), terms were considered significantly enriched if they had an adjusted p-value less than 0.05 after multiple testing correction using the Benjamini-Hochberg method.
+
+Key findings from the GO enrichment analysis are summarised below for each 
+comparison:
+
+Biological Process:
+
+
+Molecular Function:
+
+
+Cellular Component:
+
+
+The complete list of enriched GO terms with statistics is provided in the 
+supplementary file 'Pathway_enrichment_results.xlsx' within the Publication_tables 
+folder.

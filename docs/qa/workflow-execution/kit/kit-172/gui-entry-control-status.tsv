@@ -1,0 +1,11 @@
+step	lane	outcome
+start		head 8fb3c2159ecfb268935fff693b9fa5343fccd7be, base a60c4e9a0ec8b7db47edddaa53926a61e2b60299, cpu AMD EPYC 9V45 96-Core Processor, base records none
+fixtures	lipid_canonical	pass
+fixtures	metab_lc	pass
+fixtures	metab_gc	pass
+fixtures	metab_combined	pass
+compile	kit172-base	pass
+compile	pkg	pass
+mechanism		base child source sha a60c4e9a0ec8b7db47edddaa53926a61e2b60299
+mechanism	lipid_canonical	pass
+control		pass: steps 1 to 3

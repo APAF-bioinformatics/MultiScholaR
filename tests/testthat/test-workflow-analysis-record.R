@@ -496,6 +496,54 @@ test_that("KIT-043: study_parameters.txt on a protein-only owner is rendered fro
     expect_true(any(grepl("proteins_intensity_cutoff_percentile [user_set] = 2", text, fixed = TRUE)))
 })
 
+test_that("KIT-180 T5 (VAL-26): an LFQ record made without the protein QC steps replays its own steps and inserts none", {
+    # A record made under the removed QC bypass (design, normalisation with RUV skipped, correlation filter) replays
+    # exactly its steps: the replay reads the record, not the shell's chain or the tab statuses.
+    root <- withr::local_tempdir()
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "kit180-lfq-replay", "LFQ"), WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    manager$setWorkflowType("LFQ")
+    protein <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    setDIAStepProvenance(manager, "design_builder", fixed = list(pivot = "protein x run", transform = "log2(x + 1)"))
+    manager$saveState("protein_s4_initial", protein, list(), "design")
+    parameters <- list(norm_method = "quantile", ruv_mode = "skip", auto_percentage_min = NULL, auto_percentage_max = NULL,
+        separation_metric = NULL, k_penalty_weight = NULL, adaptive_k_penalty = NULL, ruv_percentage = NULL, ruv_k = NULL,
+        grouping = "group")
+    utils::capture.output(suppressWarnings(suppressMessages(withDIAStateScope(manager, function() {
+        run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
+        commit <- diaNormalizationCommit(manager, parameters, run)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        correlation <- computeDIAReferenceCorrelation(manager, run$value$final, "group", 0.5)
+        commit <- diaCorrelationCommit(manager, correlation$final, 0.5, FALSE)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+    }))))
+    expect_identical(manager$current_state, "correlation_filtered")
+    json <- file.path(root, "analysis_record.json")
+    writeWorkflowAnalysisRecord(manager, json)
+    record <- jsonlite::read_json(json, simplifyVector = FALSE)
+    expect_true(validateWorkflowAnalysisRecord(record)$valid)
+    expect_identical(record$workflow, "LFQ")
+    states <- vapply(record$steps, function(step) step$state, "")
+    expect_identical(states, c("initial", "protein_s4_initial", "normalized", "correlation_filtered"))
+    later <- stats::setNames(states[-(1:2)], states[-(1:2)])
+    origin <- withDIAStateScope(manager, function() lapply(later, function(state) manager$getState(state)))
+    copy <- withr::local_tempdir()
+    stopifnot(system2("cp", c("-a", file.path(root, "."), copy)) == 0L)
+    h <- new.env(parent = globalenv())
+    sys.source(file.path(testthat::test_path("..", ".."), "tools", "profiling", "workflow_kit.R"), h)
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    prepared <- h$kitPrepareReplayProject(copy, c("initial", "protein_s4_initial"), api)
+    replayed <- list()
+    utils::capture.output(replay <- suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(record, prepared,
+        character(), list(), withr::local_tempdir(), on_step = function(step, replay_manager) {
+            replayed[[step$state]] <<- withDIAStateScope(replay_manager, function() replay_manager$getState(step$state))
+        }))))
+    expect_identical(replay$states, states)
+    expect_identical(names(replayed), unname(later))
+    for (state in later) expect_identical(replayed[[state]], origin[[state]], info = state)
+})
+
 test_that("KIT-038: fixed constants are listed for every registered step, a legacy step alone dumps its arguments", {
     fixture <- analysisRecordFixture(withr::local_tempdir())
     manager <- fixture$manager
@@ -998,7 +1046,8 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
             replayed_filter$provenance <<- manager$.context$snapshot$step_provenance$enrichment_completed
             replayed_filter$config <<- readComponentMetadata(manager, manager$.context$snapshot$states$enrichment_completed)$config
         }))))
-    expect_identical(replayed_filter$provenance$parameter_names, diaEnrichmentOperation()$parameters)
+    expect_identical(replayed_filter$provenance$parameter_names,
+        setdiff(diaEnrichmentOperation()$parameters, "go_propagation")) # KIT-173: clusterProfiler route only
     expect_identical(replayed_filter$provenance$values[c("organism_filter_enabled", "organism_filter_taxon")],
         list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
     # KIT-119 (A107-06): the outcomes also hold the input identities (the three filter outcomes are as before).

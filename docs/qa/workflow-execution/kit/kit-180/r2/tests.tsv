@@ -1,0 +1,15 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-gui-entry-proteomics.R	156	37	0	0	0	1073.7	failed
+test-workflow-server-shared.R	226	0	0	0	0	10.2	ok
+test-omic-gui-config.R	1911	0	0	0	0	32.6	ok
+test-omic-qc-module.R	160	0	0	0	0	65.4	ok
+test-app-shell-shared.R	29	0	0	0	0	8.6	ok
+test-prot-qc-coordinator-direct-shared.R	4	0	0	3	0	6	ok
+test-prot-05b-norm-module-contracts.R	439	0	0	22	0	9.2	ok
+test-prot-02c-qc-protein-module-contracts.R	407	0	0	23	0	13.1	ok
+test-workflow-ui-shared.R	178	0	0	0	0	8.1	ok
+test-e2e-proteomics-tmt-lfq.R	0	0	0	3	0	6.6	ok
+test-e2e-proteomics-dia.R	0	0	0	1	0	6.9	ok
+test-e2e-proteomics-enrichment.R	0	0	0	2	0	6	ok
+test-e2e-browser-harness.R	126	0	0	1	0	7.3	ok
+test-workflow-analysis-record.R	307	0	0	0	4	182.1	ok

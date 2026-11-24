@@ -1,0 +1,3 @@
+variant	process	collation	package_has_propagateGoAnnotations
+headhead	capture (base)	C.UTF-8	TRUE
+headhead	replay (head)	C.UTF-8	TRUE

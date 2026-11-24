@@ -52,8 +52,10 @@ omicNormOptionSections <- function(ns, norm) {
                 shiny::selectInput(ns("itsd_aggregation"), "ITSD Aggregation:", choices = panels$itsd$aggregation,
                     selected = unname(panels$itsd$aggregation[[1L]]), width = "100%"),
                 shiny::helpText("Method to combine multiple internal standards per sample. Select standards in ITSD Selection tab."))),
+        # KIT-172: plain log2, no offset offered; a project whose record used one says so (the server's output).
         log2 = list(shiny::hr(), shiny::h4("Log2 Transform"),
-            shiny::numericInput(ns("log_offset"), "Offset for zeros:", value = panels$log2$offset, min = 0, step = 0.1, width = "100%"),
+            shiny::helpText(omicGuiLog2Texts()[["help"]]),
+            shiny::uiOutput(ns("log2_recorded_offset")),
             shiny::helpText("Applied after ITSD normalization")),
         between_sample = list(shiny::hr(), shiny::h4("Between-Sample Normalization"),
             testid(shiny::selectInput(ns("norm_method"), "Normalization Method:", choices = panels$between_sample$methods,
