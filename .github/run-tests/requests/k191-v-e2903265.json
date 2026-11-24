@@ -1,0 +1,81 @@
+{
+  "requested_by": "KIT-191 V (VAL-115): the one verification run of the audit repairs and VAL-115 on the merge with staging; 13 files base against head, check, scripts U3, U14, base-head, gate-off, X; ceiling 420 job-minutes",
+  "label": "KIT-191 V e2903265 vs 7d90a4c8",
+  "package_commit": "e29032654839e155b7c020a4eeee1c7693f1e6ee",
+  "base_commit": "7d90a4c8cdac2db94ee9a9a201fef2714ea62f1e",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment-options.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-gui.R",
+    "test-integration-record.R",
+    "test-integration-workbook-api.R",
+    "test-integration-enrichment.R",
+    "test-integration-workbook.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-input-matrix.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-outputs.R",
+    "test-workflow-analysis-record.R",
+    "test-multiomics-enrich-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-191/instrument-identity.R",
+      "args": [
+        "k191-out/u3"
+      ],
+      "out": "k191-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-191/evidence-k191.R",
+      "args": [
+        "k191-out/u14"
+      ],
+      "out": "k191-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 15
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-191/base-head.R",
+      "args": [
+        "7d90a4c8cdac2db94ee9a9a201fef2714ea62f1e",
+        "k191-out/u7b"
+      ],
+      "out": "k191-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 50
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "7d90a4c8cdac2db94ee9a9a201fef2714ea62f1e",
+        "k191-out/gate-off"
+      ],
+      "out": "k191-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-191/mutations-k191.R",
+      "args": [
+        "k191-out/x",
+        "7d90a4c8cdac2db94ee9a9a201fef2714ea62f1e"
+      ],
+      "out": "k191-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
