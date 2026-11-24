@@ -12,3 +12,4 @@ record-job-L0-and-paired-tests	2026-11-24T11:35	2026-11-24T12:06	0.40	L0 done; T
 T4-bh_sorted_eq	2026-11-24T12:12	2026-11-24T12:22	0.17	stopped: statement false as frozen (counterexample proved); back to the gate
 T4-4a-4c-4d-i	2026-11-24T12:23	2026-11-24T12:37	0.23	proved (12 statements, 4 witnesses); 4d-ii and bh_sorted_eq pending
 T5-floors-and-bh-floor	2026-11-24T12:37	2026-11-24T12:40	0.05	proved (7 statements, 2 witnesses); 5a, 5b open
+T5-5a-finite-core	2026-11-24T12:42	2026-11-24T12:48	0.10	proved (perm_finite_core and perm_witness)

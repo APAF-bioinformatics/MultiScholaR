@@ -158,6 +158,8 @@ example : Permutation.bh_floor_strict_stmt := Permutation.bh_floor_strict
 example : Permutation.bh_floor_sentence_counterexample_stmt := Permutation.bh_floor_sentence_counterexample
 example : Permutation.perm_floor_reflect_witness_stmt := Permutation.perm_floor_reflect_witness
 example : Permutation.bh_floor_witness_stmt := Permutation.bh_floor_witness
+example : Permutation.perm_finite_core_stmt := Permutation.perm_finite_core
+example : Permutation.perm_witness_stmt := Permutation.perm_witness
 
 #print axioms Permutation.identity_clause
 #print axioms Permutation.perm_tolerance_mono
@@ -168,3 +170,5 @@ example : Permutation.bh_floor_witness_stmt := Permutation.bh_floor_witness
 #print axioms Permutation.bh_floor_sentence_counterexample
 #print axioms Permutation.perm_floor_reflect_witness
 #print axioms Permutation.bh_floor_witness
+#print axioms Permutation.perm_finite_core
+#print axioms Permutation.perm_witness

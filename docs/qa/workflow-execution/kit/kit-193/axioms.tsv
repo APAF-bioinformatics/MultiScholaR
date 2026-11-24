@@ -67,3 +67,5 @@ Permutation.bh_floor_strict	Permutation.bh_floor_strict_stmt	propext, Classical.
 Permutation.bh_floor_sentence_counterexample	Permutation.bh_floor_sentence_counterexample_stmt	propext, Classical.choice, Quot.sound
 Permutation.perm_floor_reflect_witness	Permutation.perm_floor_reflect_witness_stmt	propext, Classical.choice, Quot.sound
 Permutation.bh_floor_witness	Permutation.bh_floor_witness_stmt	propext, Classical.choice, Quot.sound
+Permutation.perm_finite_core	Permutation.perm_finite_core_stmt	propext, Classical.choice, Quot.sound
+Permutation.perm_witness	Permutation.perm_witness_stmt	propext, Classical.choice, Quot.sound

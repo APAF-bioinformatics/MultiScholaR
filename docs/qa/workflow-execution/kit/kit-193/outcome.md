@@ -194,17 +194,34 @@ coordinator's rule ("stop and report at any statement problem"). Laptop time for
   corrected `bh_sorted_eq_stmt` with its witness.
 - Laptop time for target 4 so far: 156.2 CPU-seconds over 24 Lean calls, 103.5 s of Lean wall time (labels `t4-*`, the counterexample's included).
 
-## Target 5 (permutation p-value): the floors and the BH floor proved; 5a and 5b open
+## Target 5 (permutation p-value): 5a, 5a', 5c, 5c' proved; 5b open
 
 - **Proved** (`Proof/Permutation.lean`, each on `propext`, `Classical.choice`, `Quot.sound`): 5a' `identity_clause`;
   `perm_tolerance_mono`; 5c `perm_floor`, `perm_floor_reflect`, `bh_floor`, `bh_floor_strict`; 5c'
   `bh_floor_sentence_counterexample`; witnesses `perm_floor_reflect_witness`, `bh_floor_witness`.
-- **Not yet:** 5a `perm_finite_core_stmt` (the exchangeability count) with its witness `perm_witness_stmt`, and 5b
-  `perm_measure_stmt` with `perm_measure_witness_stmt`. Planned proof of 5a: the map `(τ, π) ↦ (τ, τπ_1, …, τπ_B)` is
-  a bijection of `Perm^(B+1)`; for any tuple, the indices `j` with at most `k - 1` others counted against them number
-  at most `k` (take the one of least statistic among them: every other is counted against it); summing over the `B + 1`
-  index swaps gives the bound.
+- **5a proved** (`perm_finite_core`, witness `perm_witness`; each on `propext`, `Classical.choice`, `Quot.sound`), as
+  planned: the stacking map `(τ, π) ↦ (τ, τπ_1, …, τπ_B)` is injective into `Perm^(B+1)` (`stack_injective`; only the
+  injection is needed for the bound); the count against index 0 of the stacked tuple (others with a statistic at least
+  as large, ties counted) is at most the p-value's count at any `ε ≥ 0` (`cntGe_stack_le`); swapping coordinates 0 and
+  `i` shows every index has as many tuples with `1 + count ≤ α(1 + B)` as index 0 (`card_smallAt`); within one tuple at
+  most `α(1 + B)` indices have that property (`card_small_count`: the one of least statistic among them has every other
+  counted against it); double counting over the `(n!)^(B+1)` tuples gives `(B + 1) #E_0 ≤ (n!)^(B+1) α (B + 1)`.
+  Witness: `g = (0, 1)`, `T h = -h 0`, one draw (the swap), `α = 1/2`, `ε = 10⁻⁹`: the draw is not counted, `p = 1/2`.
+  Laptop: 7 Lean calls, 29.7 CPU-seconds (24.8 user + 4.9 system), 19.9 s wall (labels `t5a-*`). Agent time 0.10 h
+  (12:42 to 12:48), against 20 expected and 30 ceiling (5a and 5a' together).
+- **Not yet:** 5b `perm_measure_stmt` with `perm_measure_witness_stmt`. Plan: `Measure.prod_apply` (the event is
+  measurable: `pval` is measurable in the factor for each draw tuple, and the draws are a countable discrete space);
+  invariance of `μ` under each relabelling moves the inner count to `f ∘ τ`; summing over the `n!` relabellings and 5a
+  pointwise in `f` gives the bound.
 - Laptop time for target 5 so far: 31.1 CPU-seconds over 8 Lean calls, 23.5 s of Lean wall time (labels `t5-*`).
+
+## Resume here
+
+Order (coordinator, 2026-11-24): 5b `perm_measure_stmt` with `perm_measure_witness_stmt`; then the corrected
+`bh_sorted_eq_stmt` with `bh_sorted_eq_witness_stmt` (the auditor confirmed 5474e512); then group R priority 1
+(R-A1, R-A2, R-A3, R-C1, R-F1, R-G0, R-G2, R-H1); then stop for the proofs audit (not priority 2, 4d-ii or
+`kept_family_witness`). Lean calls go through `taskset -c 0-3` with `LEAN_NUM_THREADS=4`, one at a time, each logged in
+`cpu-time.tsv`.
 
 ## Not checked
 
