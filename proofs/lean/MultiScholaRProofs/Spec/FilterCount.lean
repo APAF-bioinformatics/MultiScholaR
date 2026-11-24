@@ -3,7 +3,7 @@ module
 public import Mathlib.Algebra.Order.Field.Rat
 
 /-!
-# Target 1: the missing-value filter's integer rule (KIT-193 section 6.1)
+# Target 1; the missing-value filter's integer rule (KIT-193 section 6.1)
 
 Source: KIT-187 r1.3 sections 5.1 and 7.1, AUDIT-KIT-187 A09. Code (KIT-187's branch
 `kit-187-filter-by-count` at e6c42d1d):

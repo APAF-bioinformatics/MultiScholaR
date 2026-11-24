@@ -10,7 +10,9 @@ namespace MultiScholaRProofs.Lifecycle
 
 theorem l0_trivial : (1 : Nat) + 1 = 2 := rfl
 
-/-- L0 push 2: a planted gap; the build must fail under `--wfail`. -/
-theorem l0_planted_gap : (1 : Nat) = 2 := sorry
+/-- L0 push 3: a planted new axiom; the axiom audit must fail. -/
+axiom l0_planted_axiom : (1 : Nat) = 2
+
+theorem l0_uses_planted_axiom : (1 : Nat) = 2 := l0_planted_axiom
 
 end MultiScholaRProofs.Lifecycle

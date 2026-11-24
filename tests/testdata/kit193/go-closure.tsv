@@ -15,7 +15,7 @@ chain	pair	GO:9100001	GO:9100003
 chain	pair	GO:9100001	GO:9100004	
 chain	pair	GO:9100003	GO:9100003	
 chain	pair	GO:9100003	GO:9100004	
-chain	prop	GO:9100001	g1	
+chain	prop	GO:9100001	g9	
 chain	prop	GO:9100002	g1	
 chain	prop	GO:9100003	g1	
 chain	prop	GO:9100003	g2	
