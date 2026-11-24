@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-167 gate F2, instrument run 3 of at most 3 further (VAL-54): run 45335506224 found PXD016672's folder without the FASTA, no result; same purpose and ceiling (30 min); decides the ranking key and pins",
+  "label": "KIT-167 F2 c67490b5 instrument 3",
+  "package_commit": "c67490b507bf14430a26fd48b3486c99202e6e2a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-167/gate-f2.R",
+      "args": [],
+      "out": "capture-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
