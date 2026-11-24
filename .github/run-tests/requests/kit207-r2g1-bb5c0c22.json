@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-207 R2-G1 instrument run (VAL-54): R2 45350537647's G1 params digest varied between two runs of one commit; G1 now prints its masked study parameters; new test file only, base vs head (ceiling 60 job-min)",
+  "label": "KIT-207 R2-G1 head bb5c0c22 vs base a88c8fde (tests-only + the same print)",
+  "package_commit": "bb5c0c22a37701f9eea6e413b95239d1946e484d",
+  "base_commit": "a88c8fded3ab25b0983ba2bb95a403402e51cca2",
+  "tools_ref": "",
+  "tests": [
+    "test-kit207-summary-head-guard.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
