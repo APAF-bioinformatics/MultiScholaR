@@ -118,13 +118,14 @@ valCompareParityDa <- function(da, l1) {
 #' (VAL-133; KIT-199 implementation audit O4): the DIA-with-limpa DA table is written with one
 #' value in another notation under OpenBLAS, so these six steps stay red on the bundle permanently
 #' @noRd
-PARITY_INSTALLER_EXCLUDED <- data.frame(
-    lane = "prot_dia_limpa",
-    step = c("da", "summary_refusal", "summary_save", "summary_copy", "summary_report",
-             "summary_export"),
-    reason = paste("VAL-133: the bundle's DIA-with-limpa DA table differs in one value's",
-                   "notation (OpenBLAS); excluded by name from installer acceptance"),
-    stringsAsFactors = FALSE)
+PARITY_EXCLUDED_STEPS <- c("da", "summary_refusal", "summary_save", "summary_copy",
+                           "summary_report", "summary_export")
+PARITY_EXCLUDED_REASON <- paste("VAL-133: the bundle's DIA-with-limpa DA table differs in one",
+                                "value's notation (OpenBLAS); excluded by name from installer",
+                                "acceptance")
+PARITY_INSTALLER_EXCLUDED <- data.frame(lane = "prot_dia_limpa", step = PARITY_EXCLUDED_STEPS,
+                                        reason = PARITY_EXCLUDED_REASON,
+                                        stringsAsFactors = FALSE)
 
 #' Rows of a bundle GUI-entry lane summary that an installer acceptance may read (VAL-133)
 #'

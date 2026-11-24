@@ -382,7 +382,8 @@ valTopLevelFunctions <- function(files) {
     defs <- list()
     for (f in files) {
         for (e in parse(f, keep.source = FALSE)) {
-            if (is.call(e) && as.character(e[[1L]]) %in% c("<-", "=") && is.name(e[[2L]]) &&
+            if (is.call(e) && is.name(e[[1L]]) && as.character(e[[1L]]) %in% c("<-", "=") &&
+                    is.name(e[[2L]]) &&
                     is.call(e[[3L]]) && identical(e[[3L]][[1L]], as.name("function"))) {
                 nm <- as.character(e[[2L]])
                 defs[[nm]] <- list(expr = e[[3L]], file = basename(f),

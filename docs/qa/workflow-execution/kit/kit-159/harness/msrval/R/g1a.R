@@ -42,11 +42,27 @@ valLinesOf <- function(x) {
 valReadTextTable <- function(x) {
     lines <- valLinesOf(x)
     comments <- grep("^#", lines, value = TRUE)
-    lines <- lines[!grepl("^#", lines) & nzchar(lines)]
+    lines <- lines[!grepl("^#", lines)]
+    lines <- lines[cumsum(nzchar(lines)) > 0L]
     if (length(lines) == 0L) valAbort("an empty table", "val_spec_invalid")
-    fields <- lapply(strsplit(paste0(lines, "\tEND"), "\t", fixed = TRUE),
-                     function(row) row[-length(row)])
-    header <- fields[[1L]]
+    split_row <- function(l) {
+        f <- strsplit(paste0(l, "\tEND"), "\t", fixed = TRUE)[[1L]]
+        f[-length(f)]
+    }
+    header <- split_row(lines[[1L]])
+    # A cell may hold line breaks written raw (KIT-172's `declared-keys.tsv`, DA summary texts):
+    # a line with fewer fields than the header continues on the next line.
+    rows <- character()
+    buf <- NULL
+    for (l in lines[-1L]) {
+        buf <- if (is.null(buf)) l else paste(buf, l, sep = "\n")
+        if (length(split_row(buf)) >= length(header)) {
+            rows <- c(rows, buf)
+            buf <- NULL
+        }
+    }
+    if (!is.null(buf) && nzchar(buf)) rows <- c(rows, buf)
+    fields <- c(list(header), lapply(rows, split_row))
     if (any(lengths(fields) != length(header))) {
         valAbort("a table row with another field count than its header", "val_spec_invalid")
     }
@@ -593,9 +609,9 @@ valG1aPart2 <- function(repo, at, lanes, live, reference, compare_lane, since = 
                     return(NULL)
                 }
                 tickets <<- c(tickets, ticket)
-                valReadControlLink(ctl, declared = valGitShow(repo, ln$commit,
-                                                               file.path(dir, "declared-keys.tsv")),
-                                   ticket = ticket, lane = lane, lane_steps = names(frozen))
+                keys <- valGitShow(repo, ln$commit, file.path(dir, "declared-keys.tsv"))
+                valReadControlLink(ctl, declared = keys, ticket = ticket, lane = lane,
+                                   lane_steps = names(frozen))
             })
             res <- valReadChain(lane, links, reference)
             status <- res$status

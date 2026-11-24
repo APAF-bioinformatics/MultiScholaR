@@ -214,7 +214,9 @@ valAdoptReferenceRows <- function(own, earlier) {
         if (is.null(x$keyset)) {
             x$keyset <- lapply(seq_len(nrow(x)), function(i) valReferenceKeys(x[i, , drop = FALSE]))
         }
-        x$truncated <- x$truncated %||% (x$names_list_truncated %||% rep("", nrow(x))) %in% "yes"
+        if (is.null(x$truncated)) {
+            x$truncated <- (x$names_list_truncated %||% rep("", nrow(x))) %in% "yes"
+        }
         g <- paste(x$lane, x$step, x$class, sep = "\r")
         list(keys = lapply(split(x$keyset, g), function(k) sort(unique(unlist(k)))),
              truncated = vapply(split(x$truncated, g), any, logical(1)))
