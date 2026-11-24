@@ -2,3 +2,9 @@ run_id	request	commit	purpose	job_minutes	core_hours	result
 45273944113	k188-l1-l-049c51b4	049c51b445398433b3778dcef86260e06788db79	L1 blind lifecycle, L12 and L64, data sets 401-403 (deciding, reported, munit, ba); ceiling 10.67	115.5	7.70	completed; 15 of 18 units; the 3 L12 reported units stopped on a script defect (no result; VAL-54 rerun); E9 150 of 150 pass
 45273948106	k188-l1-m-049c51b4	049c51b445398433b3778dcef86260e06788db79	L1 blind lifecycle, M12 and M168, data sets 401-403; ceiling 10.67	127.9	8.53	completed; 18 of 18 units; E9 176 of 176 pass
 45293899542	k188-l1-l12r-ef66c8f8	ef66c8f8bc912ef9b9735a6bf5c0d5b8178635f0	L1 VAL-54 instrument rerun 1 of 3: L12 reported units (M-df subscript fix); timeout 60	35.2	2.35	completed; 3 of 3 units; E1, E3, E4, E6, E7 (refusal and crash), E9 59 of 59 pass
+45293904875	k188-l1p-p0-ef66c8f8	ef66c8f8bc912ef9b9735a6bf5c0d5b8178635f0	L1p blind lifecycle and timing, P0 (401-403); timeout 105	62.3	4.15	completed; 90 of 90 units; E9 54 of 54 pass; E2 differs (finding); E7 crash and refusal pass
+45293908230	k188-l1p-p1-ef66c8f8	ef66c8f8bc912ef9b9735a6bf5c0d5b8178635f0	L1p, P1 (401); timeout 45	46.2	3.08	completed; 24 of 24 units; E9 12 of 12 pass; E2 differs (finding)
+45293913457	k188-l1p-p16-ef66c8f8	ef66c8f8bc912ef9b9735a6bf5c0d5b8178635f0	L1p, P16 (401); timeout 70	53.0	3.53	completed; 24 of 24 units; E9 12 of 12 pass; E2 differs (finding)
+45293917829	k188-l1p-p2-ef66c8f8	ef66c8f8bc912ef9b9735a6bf5c0d5b8178635f0	L1p, P2 (401-403; mechanics only, before KIT-187); timeout 60	42.1	2.81	completed; 72 of 72 units; E9 36 of 36 pass; E2 differs (finding)
+45293923917	k188-l1p-p3-ef66c8f8	ef66c8f8bc912ef9b9735a6bf5c0d5b8178635f0	L1p, P3 (401); timeout 85	60.0	4.00	completed; 24 of 24 units; E9 12 of 12 pass; E2 differs (finding)
+45293928956	k188-l1p-p4b-ef66c8f8	ef66c8f8bc912ef9b9735a6bf5c0d5b8178635f0	L1p, P4b (401); timeout 165	52.5	3.50	completed; 28 of 28 units; E9 16 of 16 pass; E2 differs (finding)

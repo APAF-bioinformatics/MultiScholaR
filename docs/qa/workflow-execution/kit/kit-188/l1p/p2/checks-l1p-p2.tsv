@@ -1,0 +1,163 @@
+check	cell	rep	condition	value	threshold	pass	note
+E4	constructed	0	family	NA	exact	TRUE	differ: ; s5 without the feature 0; oracle s5 1
+E3	prot	0	defaults	NA	equal to 2.1 and 18.4	TRUE	differ: ; labelled names matching an ITSD pattern:  | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; ruv_mode=automatic; manual_pct=5; manual_k=NULL; min_reps=2; min_groups=2; percentile=1; strict=FALSE
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+E7_refusal	P2	401	N0 none	147	prot_ruv_insufficient_controls	TRUE	k 147: status refused, class prot_ruv_insufficient_controls, step normalisation
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+E6	P2	402	N0	3.553e-15	1e-12	TRUE	
+E6	P2	402	N0	3.553e-15	1e-12	TRUE	
+E6	P2	402	N0	3.553e-15	1e-12	TRUE	
+E6	P2	402	N1	7.105e-15	1e-12	TRUE	
+E6	P2	402	N1	7.105e-15	1e-12	TRUE	
+E6	P2	402	N1	7.105e-15	1e-12	TRUE	
+E6	P2	402	E0	7.105e-15	1e-12	TRUE	
+E6	P2	402	E0	7.105e-15	1e-12	TRUE	
+E6	P2	402	E0	7.105e-15	1e-12	TRUE	
+E6	P2	402	E1	3.553e-15	1e-12	TRUE	
+E6	P2	402	E1	3.553e-15	1e-12	TRUE	
+E6	P2	402	E1	3.553e-15	1e-12	TRUE	
+E6	P2	403	N0	3.553e-15	1e-12	TRUE	
+E6	P2	403	N0	3.553e-15	1e-12	TRUE	
+E6	P2	403	N0	3.553e-15	1e-12	TRUE	
+E6	P2	403	N1	5.329e-15	1e-12	TRUE	
+E6	P2	403	N1	5.329e-15	1e-12	TRUE	
+E6	P2	403	N1	5.329e-15	1e-12	TRUE	
+E6	P2	403	E0	3.553e-15	1e-12	TRUE	
+E6	P2	403	E0	3.553e-15	1e-12	TRUE	
+E6	P2	403	E0	3.553e-15	1e-12	TRUE	
+E6	P2	403	E1	3.553e-15	1e-12	TRUE	
+E6	P2	403	E1	3.553e-15	1e-12	TRUE	
+E6	P2	403	E1	3.553e-15	1e-12	TRUE	
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+E9	P2	401	N0 none	29	same set as the rule with qvalue	TRUE	pct 1: 29 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	N0 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	401	N0 none proteins	8.074e-13	1e-08	TRUE	k 2, controls 29 (reported, never re-run)
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+E9	P2	401	N0 vd5	24	same set as the rule with qvalue	TRUE	pct 1: 24 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	N0 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+E9	P2	401	N0 vd20	59	same set as the rule with qvalue	TRUE	pct 4: 59 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	N0 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+E9	P2	401	N1 none	29	same set as the rule with qvalue	TRUE	pct 1: 29 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	N1 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	401	N1 none proteins	1.117e-12	1e-08	TRUE	k 2, controls 29 (reported, never re-run)
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+E9	P2	401	N1 vd5	193	same set as the rule with qvalue	TRUE	pct 8: 193 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	N1 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+E9	P2	401	N1 vd20	99	same set as the rule with qvalue	TRUE	pct 7: 99 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	N1 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+E9	P2	401	E0 none	29	same set as the rule with qvalue	TRUE	pct 1: 29 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	E0 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	401	E0 none proteins	2.451e-12	1e-08	TRUE	k 2, controls 29 (reported, never re-run)
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+E9	P2	401	E0 vd5	49	same set as the rule with qvalue	TRUE	pct 2: 49 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	E0 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+E9	P2	401	E0 vd20	29	same set as the rule with qvalue	TRUE	pct 2: 29 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	E0 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+E9	P2	401	E1 none	175	same set as the rule with qvalue	TRUE	pct 6: 175 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	E1 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	401	E1 none proteins	1.928e-12	1e-08	TRUE	k 1, controls 175 (reported, never re-run)
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+E9	P2	401	E1 vd5	459	same set as the rule with qvalue	TRUE	pct 19: 459 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	E1 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+E9	P2	401	E1 vd20	86	same set as the rule with qvalue	TRUE	pct 6: 86 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	401	E1 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E2	P2	401	E1 vd20	0.3909	identical	FALSE	rows 1428 and 1428
+E6	P2	402	N0	3.553e-15	1e-12	TRUE	
+E9	P2	402	N0 none	59	same set as the rule with qvalue	TRUE	pct 2: 59 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	N0 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	402	N0 none proteins	5.375e-13	1e-08	TRUE	k 2, controls 59 (reported, never re-run)
+E6	P2	402	N0	3.553e-15	1e-12	TRUE	
+E9	P2	402	N0 vd5	73	same set as the rule with qvalue	TRUE	pct 3: 73 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	N0 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	402	N0	3.553e-15	1e-12	TRUE	
+E9	P2	402	N0 vd20	15	same set as the rule with qvalue	TRUE	pct 1: 15 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	N0 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	402	N1	7.105e-15	1e-12	TRUE	
+E9	P2	402	N1 none	176	same set as the rule with qvalue	TRUE	pct 6: 176 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	N1 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	402	N1 none proteins	2.927e-13	1e-08	TRUE	k 1, controls 176 (reported, never re-run)
+E6	P2	402	N1	7.105e-15	1e-12	TRUE	
+E9	P2	402	N1 vd5	170	same set as the rule with qvalue	TRUE	pct 7: 170 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	N1 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	402	N1	7.105e-15	1e-12	TRUE	
+E9	P2	402	N1 vd20	163	same set as the rule with qvalue	TRUE	pct 11: 163 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	N1 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	402	E0	7.105e-15	1e-12	TRUE	
+E9	P2	402	E0 none	29	same set as the rule with qvalue	TRUE	pct 1: 29 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	E0 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	402	E0 none proteins	7.175e-13	1e-08	TRUE	k 2, controls 29 (reported, never re-run)
+E6	P2	402	E0	7.105e-15	1e-12	TRUE	
+E9	P2	402	E0 vd5	24	same set as the rule with qvalue	TRUE	pct 1: 24 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	E0 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	402	E0	7.105e-15	1e-12	TRUE	
+E9	P2	402	E0 vd20	43	same set as the rule with qvalue	TRUE	pct 3: 43 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	E0 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	402	E1	3.553e-15	1e-12	TRUE	
+E9	P2	402	E1 none	29	same set as the rule with qvalue	TRUE	pct 1: 29 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	E1 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	402	E1 none proteins	2.323e-12	1e-08	TRUE	k 1, controls 29 (reported, never re-run)
+E6	P2	402	E1	3.553e-15	1e-12	TRUE	
+E9	P2	402	E1 vd5	24	same set as the rule with qvalue	TRUE	pct 1: 24 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	E1 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	402	E1	3.553e-15	1e-12	TRUE	
+E9	P2	402	E1 vd20	14	same set as the rule with qvalue	TRUE	pct 1: 14 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	402	E1 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E2	P2	402	E1 vd20	0.19	identical	FALSE	rows 1413 and 1413
+E6	P2	403	N0	3.553e-15	1e-12	TRUE	
+E9	P2	403	N0 none	588	same set as the rule with qvalue	TRUE	pct 20: 588 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	N0 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	403	N0 none proteins	1.877e-12	1e-08	TRUE	k 1, controls 588 (reported, never re-run)
+E6	P2	403	N0	3.553e-15	1e-12	TRUE	
+E9	P2	403	N0 vd5	73	same set as the rule with qvalue	TRUE	pct 3: 73 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	N0 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	403	N0	3.553e-15	1e-12	TRUE	
+E9	P2	403	N0 vd20	59	same set as the rule with qvalue	TRUE	pct 4: 59 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	N0 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	403	N1	5.329e-15	1e-12	TRUE	
+E9	P2	403	N1 none	349	same set as the rule with qvalue	TRUE	pct 12: 349 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	N1 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	403	N1 none proteins	1.6e-12	1e-08	TRUE	k 1, controls 349 (reported, never re-run)
+E6	P2	403	N1	5.329e-15	1e-12	TRUE	
+E9	P2	403	N1 vd5	72	same set as the rule with qvalue	TRUE	pct 3: 72 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	N1 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	403	N1	5.329e-15	1e-12	TRUE	
+E9	P2	403	N1 vd20	43	same set as the rule with qvalue	TRUE	pct 3: 43 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	N1 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	403	E0	3.553e-15	1e-12	TRUE	
+E9	P2	403	E0 none	29	same set as the rule with qvalue	TRUE	pct 1: 29 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	E0 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	403	E0 none proteins	9.037e-13	1e-08	TRUE	k 2, controls 29 (reported, never re-run)
+E6	P2	403	E0	3.553e-15	1e-12	TRUE	
+E9	P2	403	E0 vd5	24	same set as the rule with qvalue	TRUE	pct 1: 24 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	E0 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	403	E0	3.553e-15	1e-12	TRUE	
+E9	P2	403	E0 vd20	14	same set as the rule with qvalue	TRUE	pct 1: 14 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	E0 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	403	E1	3.553e-15	1e-12	TRUE	
+E9	P2	403	E1 none	175	same set as the rule with qvalue	TRUE	pct 6: 175 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	E1 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	403	E1 none proteins	3.69e-13	1e-08	TRUE	k 1, controls 175 (reported, never re-run)
+E6	P2	403	E1	3.553e-15	1e-12	TRUE	
+E9	P2	403	E1 vd5	121	same set as the rule with qvalue	TRUE	pct 5: 121 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	E1 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	403	E1	3.553e-15	1e-12	TRUE	
+E9	P2	403	E1 vd20	168	same set as the rule with qvalue	TRUE	pct 12: 168 controls; equal to the rule with qvalue TRUE, with BH TRUE
+E1	P2	403	E1 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E2	P2	403	E1 vd20	0.3757	identical	FALSE	rows 1398 and 1398

@@ -1,0 +1,2 @@
+KIT-188 l1p-p0: 90 units, 4 workers, lifecycle TRUE, jobs deciding,reported,ba
+KIT-188 l1p-p0 finished: 90 units (0 with an error), wall 54.6 min
