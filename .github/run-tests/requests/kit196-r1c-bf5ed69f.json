@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-196 R1 instrument run 1 of 3: T7 driver repaired; failing-first tests on the tests-only commit bf5ed69f",
+  "label": "KIT-196 R1c tests-only bf5ed69f (T7 instrument repair)",
+  "package_commit": "bf5ed69f212d21503409971c2c2107cc362c3487",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit196-da-no-value-features.R",
+    "test-kit128-da-assay-failure.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
