@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-189 SC: scoring once (score-k189.R as declared, sha 0764541f) over the committed S rows at 8039b4e4; outcome and option texts",
+  "label": "KIT-189 SC scoring 8039b4e4",
+  "package_commit": "8039b4e48d87ef36ecbb07f43353d893151c51f6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-189/score-k189.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-189/rows", "k189-sc"],
+      "env": {"OMP_NUM_THREADS": "1"},
+      "out": "k189-sc",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
