@@ -182,8 +182,8 @@ valReplayCell <- function(work_dir, route, omic, pkg_root, kit = NULL) {
              differences = character())
     }
     if (!file.exists(rec_path)) {
-        return(none(if (file.exists(err_path)) readLines(err_path)[[1L]] else
-            "val_replay_no_record"))
+        cls <- if (file.exists(err_path)) readLines(err_path)[[1L]] else "val_replay_no_record"
+        return(none(cls))
     }
     kit <- tryCatch(kit %||% valReplayKit(pkg_root), error = function(e) e)
     if (inherits(kit, "error")) return(none(class(kit)[[1L]]))
@@ -196,9 +196,11 @@ valReplayCell <- function(work_dir, route, omic, pkg_root, kit = NULL) {
     inputs <- valReplayInputs(record, c(file.path(work_dir, "inputs"), project))
     scratch <- file.path(work_dir, "replay")
     ns <- asNamespace("MultiScholaR")
-    paths <- suppressMessages(ns$setupDirectories(
-        base_dir = file.path(scratch, "project"), omic_types = omic, label = NULL, force = TRUE,
-        reuse_existing = TRUE))[[omic]]
+    dirs <- suppressMessages(
+        ns$setupDirectories(base_dir = file.path(scratch, "project"), omic_types = omic,
+                            label = NULL, force = TRUE, reuse_existing = TRUE)
+    )
+    paths <- dirs[[omic]]
     valReplayStore(record, origin_root, inputs, paths, scratch, kit)
 }
 
