@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-216 gate G0 (preparation): inventory of the proteomics Summary calls in the R2 scope on staging f93dfd85 plus the script; no assertion; ceiling 110 job-minutes",
+  "label": "KIT-216 G0 inventory at f4a94eb0 (staging f93dfd85 + script)",
+  "package_commit": "f4a94eb01015f09ae945b9301b62f5dbb77484f4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-216/g0-inventory.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-216/g0-out",
+      "out_pattern": "\\.(tsv|log)$",
+      "timeout_minutes": 100
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
