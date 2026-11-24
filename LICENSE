@@ -1,2 +1,6 @@
 This package is licensed under the GNU Lesser General Public License version 3.0 (LGPL v3.0).
 See the COPYING file for the GPL v3.0 terms, and COPYING.LESSER for the LGPL v3.0 terms.
+
+The files of inst/extdata/reference_mapping/ (UniProt reference proteomes and their cross-reference and GO tables) are
+under the Creative Commons Attribution 4.0 International licence (CC BY 4.0; see ATTRIBUTION.txt there), not the
+package licence.

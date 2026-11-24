@@ -1,3 +1,7 @@
+# Captured UniProt reference files (KIT-167) are stored byte for byte; their SHA-256 is recorded in kit-167/capture/hashes.tsv
+inst/extdata/reference_mapping/** -text
+# Captured UniParc proteomes (KIT-167) are stored byte for byte; their SHA-256 is recorded in kit-167/capture/hashes.tsv
+docs/qa/workflow-execution/kit/kit-167/references-authors/** -text
 tests/testdata/**/*.rds filter=lfs diff=lfs merge=lfs -text
 *.rds filter=lfs diff=lfs merge=lfs -text
 tests/testdata/integration/** -text

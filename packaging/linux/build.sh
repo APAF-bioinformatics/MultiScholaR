@@ -100,13 +100,28 @@ pandoc)
     install -m 0755 "$RUNNER_TEMP/pandoc/pandoc-${PANDOC_VERSION}/bin/pandoc" "$BUNDLE/pandoc/pandoc"
     "$BUNDLE/pandoc/pandoc" --version | head -n 1
     ;;
+diamond)
+    # KIT-167: DIAMOND from the pin file (inst/extdata/diamond-pin.tsv): bytes and SHA-256 of the release asset, then
+    # the executable's SHA-256; a mismatch stops the build.
+    pin_row="$(awk -F'\t' '$1 == "linux"' inst/extdata/diamond-pin.tsv)"
+    pin_url="$(printf '%s' "$pin_row" | cut -f3)"; pin_bytes="$(printf '%s' "$pin_row" | cut -f4)"
+    pin_sha="$(printf '%s' "$pin_row" | cut -f5)"; pin_exe_sha="$(printf '%s' "$pin_row" | cut -f7)"
+    curl -fsSL -o "$RUNNER_TEMP/diamond.tar.gz" "$pin_url"
+    [ "$(stat -c %s "$RUNNER_TEMP/diamond.tar.gz")" = "$pin_bytes" ] || { echo "DIAMOND archive size differs from the pin" >&2; exit 1; }
+    echo "$pin_sha  $RUNNER_TEMP/diamond.tar.gz" | sha256sum -c - || { echo "DIAMOND archive SHA-256 differs from the pin" >&2; exit 1; }
+    mkdir -p "$RUNNER_TEMP/diamond" "$BUNDLE/diamond"
+    tar -xzf "$RUNNER_TEMP/diamond.tar.gz" -C "$RUNNER_TEMP/diamond"
+    install -m 0755 "$RUNNER_TEMP/diamond/diamond" "$BUNDLE/diamond/diamond"
+    echo "$pin_exe_sha  $BUNDLE/diamond/diamond" | sha256sum -c - || { echo "DIAMOND executable SHA-256 differs from the pin" >&2; exit 1; }
+    "$BUNDLE/diamond/diamond" version
+    ;;
 assemble)
     MSR_LDPATHS_ORIGINAL="$OUT/ldpaths.original" bash packaging/linux/assemble.sh "$r_prefix/lib/R" "$BUNDLE" 2>&1 | tee "$OUT/assemble.log"
     sudo rm -rf "$r_prefix"
     {
         echo "### Linux bundle, size (MiB)"
         echo '```'
-        for part in "" /R /R/library /python /syslib /pandoc; do du -sm "$BUNDLE$part"; done
+        for part in "" /R /R/library /python /syslib /pandoc /diamond; do du -sm "$BUNDLE$part"; done
         echo "files: $(find "$BUNDLE" -type f | wc -l)"
         echo "largest R packages:"; du -sm "$BUNDLE"/R/library/* | sort -rn | sed -n 1,12p
         echo '```'
