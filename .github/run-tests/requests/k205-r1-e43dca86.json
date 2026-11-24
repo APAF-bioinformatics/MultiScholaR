@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-205 R1: tests-only commit; new tests B1-B9 fail at stated values, guards pass, 10.2's moved expectations fail at old values; ceiling 60 job-minutes; decides stop rule 1",
+  "label": "KIT-205 R1 tests-only e43dca86",
+  "package_commit": "e43dca8684d63356714c8b1da63336bae5765614",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-omic-enrich-module.R",
+    "test-kit205-enrichment-background.R",
+    "test-workflow-analysis-record.R",
+    "test-go-propagation.R",
+    "test-enrichment-significance.R",
+    "test-omics-enrich-core.R",
+    "test-workflow-omics-binding-steps.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
