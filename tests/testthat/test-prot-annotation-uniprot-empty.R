@@ -394,13 +394,18 @@ test_that("KIT-175 T2b (i)-(v): an answer is cut short only when a requested acc
     expect_identical(nrow(out$value), 124L)
     expect_true(file.exists(k175CacheFile(cache_dir)))
 
-    # (iv) An isoform requested, its canonical entry returned, with a next link: complete.
+    # (iv) An isoform requested: the query asks for its canonical accession (no isoform term, which would make
+    # UniProt return isoform entries for the whole request), and the canonical entry annotates it.
     cache_dir <- withr::local_tempdir()
     isoforms <- accessions
     isoforms[[60L]] <- paste0(accessions[[60L]], "-2")
-    k175Mock(k175Answer(headers = function(i, n) list(`X-Total-Results` = "27", Link = next_link)))
+    log <- k175Mock(k175Answer())
     out <- k175Annotate(manager, isoforms, cache_dir)
+    queries <- vapply(log$requests, function(req) httr2::url_parse(req$url)$query$query, "")
+    expect_false(any(grepl("accession:[A-Z0-9]+-[0-9]+", queries)))
+    expect_true(any(grepl(paste0("accession:", accessions[[60L]], "\\b"), queries)))
     expect_length(out$conditions, 0L)
+    expect_true(accessions[[60L]] %in% out$value$Entry)
     expect_true(file.exists(k175CacheFile(cache_dir)))
 
     # (v) A realistic absence under the field-qualified query: 2 of 25 absent, the total equal to the rows, no link.
@@ -470,6 +475,16 @@ test_that("KIT-175 T3: the record holds one row per outcome, written once the ou
     expect_identical(out$last$reason, "request_failed")
     rows <- k175UniprotRows(manager)
     expect_identical(vapply(rows, function(row) row$release_kind, ""), "failed")
+
+    # Not attempted (no protein column): release NA, not_queried, the reason in the summary (implementation audit I04).
+    manager <- k175Manager("k175-t3-notattempted")
+    source <- saveDIATableComponent(manager$.context, k175DesignTable("P10001"))
+    out <- k175Capture(withDIAStateScope(manager, function() retrieveProtDesignUniprotAnnotations(
+        manager, source, NULL, 9606)))
+    expect_identical(out$error$reason, "not_attempted")
+    expect_identical(last_row(manager)[c("release", "release_kind", "query_summary")],
+        list(release = NA_character_, release_kind = "not_queried",
+            query_summary = "not queried: annotation was not attempted (no protein identifier column is selected)"))
 
     # GO processing fails after a three-row answer: a header row, then a failed row.
     manager <- k175Manager("k175-t3-processing")
@@ -812,7 +827,10 @@ test_that("KIT-175 T5 (d): with the organism filter on, an incomplete annotation
     incomplete <- k175Incomplete(k175ProjectAnnotations(withr::local_tempdir()))
     project <- k175Project(withr::local_tempdir(), annotations = incomplete, organism_filter = TRUE)
     expect_null(project$error)
-    expect_true(is.logical(project$outcomes$organism_filter_applied))
+    expect_identical(project$outcomes$organism_filter_applied, FALSE)
+    texts <- vapply(project$notes, function(note) note$text, "")
+    expect_true(paste("Multi-species filtering enabled but no organism mapping available.",
+        "Proceeding without filtering.") %in% texts)
 })
 
 test_that("KIT-175 T5 (f): the enrichment step's own retrieval on its real path (zero identifiers)", {
@@ -995,7 +1013,15 @@ k175Replay <- function(project_root, record, scratch, drop_annotation = FALSE) {
     prepared <- h$kitPrepareReplayProject(copy, c("initial", "correlation_filtered"), api)
     out <- file.path(scratch, "replay")
     dir.create(out)
-    k175Capture(replayWorkflowAnalysisRecord(record, prepared, character(), goPropPaths(copy), out))
+    seen <- new.env(parent = emptyenv())
+    captured <- k175Capture(replayWorkflowAnalysisRecord(record, prepared, character(), goPropPaths(copy), out,
+        on_step = function(step, manager) {
+            if (identical(step$operation, "enrichment")) {
+                reference <- manager$.context$snapshot$states$enrichment_completed
+                seen$outcomes <- readComponentMetadata(manager, reference)$config$outcomes
+            }
+        }))
+    c(captured, list(outcomes = seen$outcomes))
 }
 
 test_that("KIT-175 T7: replaying an enrichment with no annotation is refused; one with annotation replays unchanged", {
@@ -1011,6 +1037,10 @@ test_that("KIT-175 T7: replaying an enrichment with no annotation is refused; on
     expect_identical(log$calls, 0L)
     with <- k175Replay(root, record, withr::local_tempdir())
     expect_null(with$error)
+    step <- Filter(function(s) identical(s$operation, "enrichment"), record$steps)[[1L]]
+    expect_identical(as.character(unlist(with$outcomes$annotation_sha256)),
+        as.character(unlist(step$outcomes$annotation_sha256)))
+    expect_false(is.na(as.character(unlist(step$outcomes$annotation_sha256))))
 })
 
 # --- T8 the request's retry policy -----------------------------------------------------------------------------------
