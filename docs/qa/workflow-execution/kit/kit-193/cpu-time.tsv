@@ -121,3 +121,5 @@ rP1-build-root	2026-11-24T13:02:45+11:00	9.665	1.417	7.205	0	taskset -c 0-3 time
 rP1-audit	2026-11-24T13:03:00+11:00	2.678	1.105	3.582	0	taskset -c 0-3 timeout 900 lake env lean Audit.lean
 p08-build-root	2026-11-24T13:16:16+11:00	13.332	0.998	7.704	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake build --wfail
 p08-audit	2026-11-24T13:16:29+11:00	1.422	0.572	1.861	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean Audit.lean
+p03-spec-build	2026-11-24T13:17:36+11:00	2.141	0.639	2.300	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake build --wfail MultiScholaRProofs.Spec.SharperWitnesses
+p03-spec-build-2	2026-11-24T13:17:54+11:00	2.152	0.616	2.279	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake build --wfail MultiScholaRProofs.Spec.SharperWitnesses
