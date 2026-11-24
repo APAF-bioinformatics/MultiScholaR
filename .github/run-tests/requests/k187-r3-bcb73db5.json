@@ -1,0 +1,40 @@
+{
+  "requested_by": "KIT-187 R3: full suite, head bcb73db5 (merge of staging 64cc0fff) vs branch point 64cc0fff, R CMD check (coordinator), and provenance-cause.R (VAL-104). Ceiling 40 x 70, 2 x 90, 60 min",
+  "label": "KIT-187 R3 bcb73db5 vs 64cc0fff: full suite, check, provenance cause",
+  "package_commit": "bcb73db5a8ecaac312ad811637dd6738bb386afe",
+  "base_commit": "64cc0fff6ded931fef78a573215199b098592c74",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-187/provenance-cause.R",
+      "args": [
+        "64cc0fff6ded931fef78a573215199b098592c74",
+        "docs/qa/workflow-execution/kit/kit-187/r3-prov"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-187/r3-prov",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
