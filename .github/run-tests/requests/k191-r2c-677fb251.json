@@ -1,0 +1,71 @@
+{
+  "requested_by": "KIT-191 R2 correction pass (one, ticket 11): T10's new failure fixed (record block's test read exactly); U3 and base-head instrument fixes (VAL-54, first further run each); same scope; ceiling 420 job-minutes",
+  "label": "KIT-191 R2c 677fb251 vs 147adde8",
+  "package_commit": "677fb251fc37f53bfcdeb641a7c21c93cc3a4753",
+  "base_commit": "147adde8346beb1df165dd5cbcba94697b7e79a7",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-enrichment-options.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-gui.R",
+    "test-integration-record.R",
+    "test-integration-workbook-api.R",
+    "test-integration-enrichment.R",
+    "test-integration-workbook.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-input-matrix.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-outputs.R",
+    "test-workflow-analysis-record.R",
+    "test-multiomics-enrich-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-191/instrument-identity.R",
+      "args": [
+        "k191-out/u3"
+      ],
+      "out": "k191-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-191/evidence-k191.R",
+      "args": [
+        "k191-out/u14"
+      ],
+      "out": "k191-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 15
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-191/base-head.R",
+      "args": [
+        "147adde8346beb1df165dd5cbcba94697b7e79a7",
+        "k191-out/u7b"
+      ],
+      "out": "k191-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 50
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "147adde8346beb1df165dd5cbcba94697b7e79a7",
+        "k191-out/gate-off"
+      ],
+      "out": "k191-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
