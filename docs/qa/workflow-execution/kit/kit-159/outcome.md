@@ -59,13 +59,52 @@ did not hold; the gate stopped S0 before any route, as designed. i2 (df71922f): 
 (rerunning only invalid parts). The 9 cells of the first send were not rerun: the fix changes only
 the pre-RUV read of classic proteomics routes, a path none of them takes.
 
-**Core-hours, S0 line (ceiling 16, expected 6): 7.72** = S0t0 0.70 + S0 3.55 + i1 0.92 + i2 2.55.
-Other lines unchanged: T0 5.95 of 6; T1 19.09 of 21; T2 26.93 of 54; R1 2.78 of 4.
+**Coordinator's rulings of 2026-11-24 (engineering, recorded):**
+1. The whole msrval suite with `--lint` once at the head, charged to T1. **Sent as run 45294023250
+   at 788903bb: no result.** The script reached its 17-minute limit (exit 124) inside T-TAB's
+   metabolomics routes; no test table, no lint. The limit was set so the job stayed inside T1's
+   1.91, on an estimate of 1.55 taken from the fastest earlier whole-suite job (19.6 min); earlier
+   whole-suite jobs ran 22 to 31.5 min, so the estimate was wrong. Cost 1.84; T1 has 0.07 left, so
+   it was not resent. **The suite's verdict at the head is open**; a resend needs about 2.4
+   core-hours (a 32-minute script limit) from a line the coordinator names.
+2. The coverage table's half-width ratio is NOT built now: the register's premise was wrong (the
+   detail tables do not hold the simulated statistics), and it would need coverage cells re-run,
+   which is evidence. Ticket 4.4 keeps the text, T2's rows `not_recorded`. **Candidate for the
+   harness auditor and the owner:** keep each simulation's half-width and statistic in
+   `valCoverageRegime`, print the column, and decide whether any T-COV cell (first C4e g = 14,
+   offered `conservative` at coverage 1.000) is re-run for it.
 
-**Next (not started; bound to the release commit):** G1(a), G1(r), L1a and later, P1. Open for the
-coordinator: the coverage table's half-width ratio (ticket r1.14 4.4: code not built; T2 rows
-`not_recorded` without a re-run); whether to run the whole msrval suite once (T-TAB's fixture path
-is unchanged by the fix but the suite was not rerun at df71922f).
+**Core-hours by line:** T0 5.95 of 6; T1 20.93 of 21 (19.09 + 1.84, the suite run); T2 26.93 of 54;
+G1D 1.1 of 12; R1 2.78 of 4; **S0 7.72 of 16** (expected 6) = S0t0 0.70 + S0 3.55 + i1 0.92 + i2
+2.55. G1R, L1a, L1b, L2, L3, P1, M1: nothing used.
+
+**Bound to the release commit (not started; stop here):** G1(a) and its reference table G1(r)
+(with G1R only if needed); `prot_dia_limpa` still awaits D19; L1a (proteomics lifecycle with the
+two-species route, the G1(b) alternatives at the release commit, G6 third run); L1b (other omics,
+guard, failures, chunks, G14 (b) and (c), phase `score`); L2 (determinism twin, G8); L3 (check,
+base against head); the parity stage's first real run (P1, `distributable.yml` stage `parity`,
+Linux and Windows, 7.9); the MOFA lane (Part B, M1) with KIT-170; R1's live incomplete-answer
+refusal with KIT-175's merge.
+
+**Open points for the harness's pre-release implementation audit:**
+1. The whole-suite regression check at the head (run 45294023250 gave no result; above).
+2. The half-width ratio column (candidate, above).
+3. The fix of df71922f (`valProtRuvInput`: the classic proteomics pre-RUV matrix read from the
+   `ruv_corrected` state's normalisation product) changes what `matrix_pre_ruv.tsv` holds on DIA,
+   LFQ and TMT with RUV applied; it follows the product's own integration-input reader. T-TAB-RUV
+   checks columns and that it differs from the corrected matrix, not its values.
+4. Divergences from the ticket text: corpus writer in msrval, not `lifecycle/`; FragPipe from the
+   e2e generator's writer, not `lifecycle/corpus-fragpipe.R`; DIA from the e2e DIA-NN writer, not
+   `workflow_perf107_synthetic.R`; metabolomics generated inputs are MS-DIAL (`msdial`), the e2e
+   fixtures `custom`; ticket 1.2's "no FragPipe generator exists" is out of date.
+5. Generated input sizes are declared, not tuned; the annotation rule on generated inputs uses the
+   corpus's own synthetic UniProt cache (min share 1), never the network (ruling 4).
+6. S0's ledgers are in the runs' artifacts only (30-day retention), not committed; G12's census
+   reads L1a's.
+7. The 9 cells of the first S0 send ran at a29a43c0, the 6 rerun cells at df71922f (the fix does
+   not reach the 9 cells' paths: inferred from the code, not re-run).
+8. The register's budget misreading (T0 "5.95 left" for 5.95 used) and the 4.4/10.2 placement are
+   recorded in ticket section 29.
 
 ### S0 build record (2026-11-24)
 
