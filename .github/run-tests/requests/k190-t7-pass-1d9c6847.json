@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-190 T7 after 7.4: the new file and the lipid and metab journey files on head 1d9c6847 (targeted, inside R2's line)",
+  "label": "KIT-190 T7 passing 1d9c6847",
+  "package_commit": "1d9c68470b7018e3bfee4b86619c11fcb5575544",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-ruv-control-anova-grouping.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 20,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
