@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-213 R3 (second request; the first, run 45490116767, was cancelled by me within a minute because it lacked the per-file timeouts every full suite uses): full suite base against head on the merge with staging e6791275, 20 shards per side; decides A5; ceiling 2,800 job-minutes",
+  "label": "KIT-213 R3 full suite 36a8eccc vs e6791275",
+  "package_commit": "36a8eccc89773e131470f75a93d7917115837194",
+  "base_commit": "e6791275d2121a1ce2d00cf0be79b4b52395c8a6",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
