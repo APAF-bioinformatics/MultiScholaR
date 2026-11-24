@@ -312,7 +312,12 @@ applyProtDaContrastModel <- function(base_fit_artifact, contrast_matrix,
   }
   without_values <- character()
   if (any(empty)) {
-    without_values <- rownames(contrasted_fit$coefficients)[empty] %||% as.character(which(empty))
+    # A matrix without row names is named by position first, so topTable labels every row by its input position
+    # (KIT-200 audit I05).
+    if (is.null(rownames(contrasted_fit$coefficients))) {
+      rownames(contrasted_fit$coefficients) <- as.character(seq_along(empty))
+    }
+    without_values <- rownames(contrasted_fit$coefficients)[empty]
     messageFn(sprintf("   runTestsContrasts: %d protein(s) with no value in any sample are not tested", sum(empty)))
     contrasted_fit <- contrasted_fit[!empty, ]
   }
