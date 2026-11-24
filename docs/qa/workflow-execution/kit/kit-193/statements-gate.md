@@ -8,7 +8,7 @@ Ticket section 12 (the approved commit and `SPEC.sha256`); section 5.3. Register
 | Amendment (5.3 item 4) | 5474e512 | `QvalueBh` (one line replaced: `bh_sorted_eq_stmt` gains `0 ≤ p j`; two statements added) | statements gate re-review 1 (same register); the auditor confirmed the commit |
 | New file (P03) | b8a62ed3 | `SharperWitnesses` (one line added) | `AUDIT-KIT-193-proofs-20261124.md` P03, adopted by the coordinator; confirmed in `AUDIT-KIT-193-proofs2-20261124.md` A.1 row 1a |
 | Drafts for review | b32c94ca | `RemovedFactors`, `RuvIIICPattern`, `RuvControlRules` (three lines added, not approved) | none: reviewed in `AUDIT-KIT-193-proofs2-20261124.md` section B |
-| Freeze of R-I1, R-J3, R-N1 (Q09) | 2ab4c189 | the three drafts after the edits Q06 to Q08 (the optional statements included); their three lines replaced | **awaiting** the auditor's confirmation by reading (Q09) |
+| Freeze of R-I1, R-J3, R-N1 (Q09) | 2ab4c189 | the three drafts after the edits Q06 to Q08 (the optional statements included); their three lines replaced | `AUDIT-KIT-193-proofs2-20261124.md` ("Freeze confirmed", by reading; Q09) |
 
 `SPEC.sha256` at 2ab4c189 (`sha256sum -c`: twelve OK):
 
@@ -28,4 +28,4 @@ a67a6d26ccb8acab328b4a342ab537efec11da00337b18d1b9dfe28bb3700538  MultiScholaRPr
 ```
 
 The last three lines replace `f8b60b8c…`, `3b6b8e8c…` and `8383aac4…` (the drafts at b32c94ca). The first nine are
-unchanged since their approval. No proof of R-I1, R-J3 or R-N1 starts before the confirmation of 2ab4c189.
+unchanged since their approval. Proofs of R-I1, R-J3 and R-N1 started after the confirmation of 2ab4c189.

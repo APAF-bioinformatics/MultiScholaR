@@ -27,6 +27,7 @@ public import MultiScholaRProofs.Proof.RuvAlgebra2
 public import MultiScholaRProofs.Proof.RuvDownstream2
 public import MultiScholaRProofs.Proof.RuvIIIC
 public import MultiScholaRProofs.Proof.KeptFamily
+public import MultiScholaRProofs.Proof.RemovedFactors
 
 /-!
 # KIT-193: machine-checked statements about exact models of parts of MultiScholaR's methods

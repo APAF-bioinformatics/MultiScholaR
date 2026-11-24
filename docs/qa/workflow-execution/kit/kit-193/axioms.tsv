@@ -123,3 +123,12 @@ QvalueBh.kept_family_unit_a_counterexample	QvalueBh.kept_family_unit_a_counterex
 QvalueBh.kept_family_formula	QvalueBh.kept_family_formula_stmt	propext, Classical.choice, Quot.sound
 QvalueBh.kept_family_instance	QvalueBh.kept_family_instance_stmt	propext, Classical.choice, Quot.sound
 QvalueBh.kept_family_witness	QvalueBh.kept_family_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.I1_UtWc	Ruv.I1_UtWc_stmt	propext, Classical.choice, Quot.sound
+Ruv.I1_centred_diff	Ruv.I1_centred_diff_stmt	propext, Classical.choice, Quot.sound
+Ruv.I1_centred_diff_rows	Ruv.I1_centred_diff_rows_stmt	propext, Classical.choice, Quot.sound
+Ruv.I1_span	Ruv.I1_span_stmt	propext, Classical.choice, Quot.sound
+Ruv.I1_rank	Ruv.I1_rank_stmt	propext, Classical.choice, Quot.sound
+Ruv.I1_ctl_rank	Ruv.I1_ctl_rank_stmt	propext, Classical.choice, Quot.sound
+Ruv.I1_average	Ruv.I1_average_stmt	propext, Classical.choice, Quot.sound
+Ruv.I1_witness	Ruv.I1_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.I1_average_witness	Ruv.I1_average_witness_stmt	propext, Classical.choice, Quot.sound

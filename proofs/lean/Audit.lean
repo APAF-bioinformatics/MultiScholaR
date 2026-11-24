@@ -310,3 +310,25 @@ example : QvalueBh.kept_family_witness_stmt := QvalueBh.kept_family_witness
 #print axioms QvalueBh.kept_family_formula
 #print axioms QvalueBh.kept_family_instance
 #print axioms QvalueBh.kept_family_witness
+
+/-! ## Group R, R-I1 (`Proof/RemovedFactors.lean`) -/
+
+example : Ruv.I1_UtWc_stmt := Ruv.I1_UtWc
+example : Ruv.I1_centred_diff_stmt := Ruv.I1_centred_diff
+example : Ruv.I1_centred_diff_rows_stmt := Ruv.I1_centred_diff_rows
+example : Ruv.I1_span_stmt := Ruv.I1_span
+example : Ruv.I1_rank_stmt := Ruv.I1_rank
+example : Ruv.I1_ctl_rank_stmt := Ruv.I1_ctl_rank
+example : Ruv.I1_average_stmt := Ruv.I1_average
+example : Ruv.I1_witness_stmt := Ruv.I1_witness
+example : Ruv.I1_average_witness_stmt := Ruv.I1_average_witness
+
+#print axioms Ruv.I1_UtWc
+#print axioms Ruv.I1_centred_diff
+#print axioms Ruv.I1_centred_diff_rows
+#print axioms Ruv.I1_span
+#print axioms Ruv.I1_rank
+#print axioms Ruv.I1_ctl_rank
+#print axioms Ruv.I1_average
+#print axioms Ruv.I1_witness
+#print axioms Ruv.I1_average_witness

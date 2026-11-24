@@ -447,18 +447,32 @@ to wait, each frozen after one edit pass (B); target 1's pair holds (C). Applied
   then those rows stay `pending` and the P is not recorded.
 - Laptop: 5 Lean calls, 17.8 CPU-seconds (13.2 user + 4.6 system), 13.4 s wall (labels `freeze-*`).
 
+## R-I1, R-J3, R-N1 proved (statements frozen at 2ab4c189, confirmed by the auditor)
+
+- **R-I1 proved** (`Proof/RemovedFactors.lean`: `Ruv.I1_UtWc`, `I1_centred_diff`, `I1_centred_diff_rows`, `I1_span`,
+  `I1_rank`, `I1_ctl_rank`, `I1_average`; witnesses `I1_witness`, `I1_average_witness`; each on `propext`,
+  `Classical.choice`, `Quot.sound`). How: centring commutes with multiplication on the right (`centre_mul`, from
+  `colMean_mul`), so `W_c = centre W`, `centre(Wα) = W_c α` and `centre(W_c α) = W_c α`; on a selection of runs the
+  rows of `W_c` are those of `W` less one constant row, which centring removes (`centre_sub_rows`). `U'1 = 0`
+  (`Ut_one`) gives `U' centre(Y_c) = a_c`, hence `U'W_c = I` and rank `k` (Sylvester's bound through
+  `rank_mul_le_right`); the same left inverse gives `rank(W_c α_F) = rank α_F`. The spans: `mulVecLin` of a product is
+  a composition, and `rank α_F = k` makes `α_F` onto. (c''): `a_c = α_F S` for a selection matrix `S` when
+  `ctl ⊆ F`, and `rank(a_c a_c') = k`. (d): `W = W_c + 1 m'`, so `A` sends a removed column to
+  `(A W_c) α_j + t 1` (`fromCols_mulVec_sumElim`). Witness: `witnessE2` with `F = {0}` (`W = e_1`,
+  `W_c = e_1 - 1/4`; the rank clause is `I1_ctl_rank` at `F = ctl`); the averaging map `(1/2, 1/2)`. Laptop: 5 Lean
+  calls, 32.9 CPU-seconds (labels `rI1-*`). Agent time 0.10 h, against 10 expected and 16 ceiling.
+
 ## Resume here
 
 State after the second proofs audit (2026-11-24, third implementer session): every frozen statement of targets 1 to
 5 and of group R priorities 1 to 4 is proved with its witnesses (124 theorems listed in `axioms.tsv`, standard axioms
-only; audited sound). R-I1, R-J3, R-N1: edited and committed for the freeze at 2ab4c189 (`statements-gate.md`),
-waiting for the auditor's confirmation by reading; nothing about them is proved. Target 1's paired test passed (run
+only; audited sound). R-I1, R-J3, R-N1: frozen at 2ab4c189 (`statements-gate.md`; confirmed by the auditor by
+reading); R-I1 proved (9 theorems), R-J3 and R-N1 not yet. Target 1's paired test passed (run
 45323167019, after one VAL-54 instrument re-run).
 
 Next:
-1. After the auditor confirms 2ab4c189: prove R-I1 (7 statements, 2 witnesses), R-J3 (2, 1), R-N1 (5, 1) (R-I1's
-   algebra reuses `Ut_one`, `colMean_mul`, `centre_eq_self`; R-J3 is definitional; R-N1 needs the rank/order counts
-   to be a bijection onto 1..F; `N1_ties` from `List.sorted_mergeSort` and its stability).
+1. The auditor confirmed 2ab4c189. R-I1 proved (above). Next R-J3 (2 statements, 1 witness; definitional), then R-N1
+   (5, 1; the rank/order counts a bijection onto 1..F; `N1_ties` from the sortedness and stability of `mergeSort`).
 2. Target 2's pair waits for KIT-190; P0 (targets 4, group R), P2 (target 5) and P3 as ticket 8.1; the record job L1
    at the final commit. The next R run carries `scripts/bindings-t3.R` (T3 digests, T1's helper, the P at (320, 137)).
 Lean calls: `scratchpad lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900

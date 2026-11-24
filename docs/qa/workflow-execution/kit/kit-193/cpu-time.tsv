@@ -173,3 +173,8 @@ freeze-spec-RuvIIICPattern	2026-11-24T16:00:24+11:00	1.426	0.654	2.036	0	LEAN_NU
 freeze-spec-RuvControlRules	2026-11-24T16:00:26+11:00	1.325	0.636	1.821	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean MultiScholaRProofs/Spec/RuvControlRules.lean
 freeze-build-root	2026-11-24T16:00:32+11:00	5.782	1.592	4.335	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake build --wfail
 freeze-build-root-2	2026-11-24T16:01:17+11:00	3.230	1.064	3.233	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake build --wfail
+rI1-1	2026-11-24T16:08:36+11:00	15.065	0.780	14.874	1	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean MultiScholaRProofs/Proof/RemovedFactors.lean
+rI1-2	2026-11-24T16:09:57+11:00	2.995	0.765	2.753	1	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean MultiScholaRProofs/Proof/RemovedFactors.lean
+rI1-3	2026-11-24T16:10:07+11:00	2.980	0.790	2.776	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean MultiScholaRProofs/Proof/RemovedFactors.lean
+rI1-build-root	2026-11-24T16:10:18+11:00	5.317	1.274	4.906	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake build --wfail
+rI1-audit	2026-11-24T16:10:23+11:00	2.081	0.864	2.643	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean Audit.lean
