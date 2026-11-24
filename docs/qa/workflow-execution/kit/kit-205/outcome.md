@@ -147,11 +147,30 @@ merged, VAL-157). Every run is listed in `runs.tsv`.
   (`enrichment_background`, option `MultiScholaR.enrichment_background`, current `"tested"`, earlier `"all_rows"`);
   the record replay has a second wrapper site, the enrichment step at `R/utils_workflow_analysis_record.R:922` (the
   loop's at `:788`); `processEnrichments` (row T4) changed (the reduction; KIT-203's flag line moved from `:669` to
-  `:706`); the docstrings by KIT-193's 5.3 item 4.
+  `:706`); the docstrings by KIT-193's 5.3 item 4. (Audit K205-I05:) Row T4 is filled on `kit-193-lean-proofs`
+  (cd26bb37, digest of `processEnrichments` at KIT-203's merge). KIT-205 changes `processEnrichments`
+  (`enrichmentTestedRows` at :279, :574), so the T4 digest is re-computed with `bindings-t4.R` on the merged code and
+  pair (ii) is re-run there. The tripwire `test-kit193-bindings.R` fails until then. The statement `QvalueBh.flag` does
+  not change: the reduction precedes `enricher`, and q and BH are formed from enricher's own p-values. The citations
+  `:669` become `:706`.
 - **KIT-208** (E-6): whichever of KIT-205 and KIT-208 merges second runs R2b on the merge. The clause of E-7 is in the
-  four templates (KIT-208 need not edit them).
-- **KIT-200** (8): if this ticket merges first, KIT-200's interim NEWS sentence is deleted and its ledger clause
-  replaced as ticket 8 says.
+  four templates (KIT-208 need not edit them); after audit K205-I02 it reads "(the first gene name of each protein,
+  from the protein annotation or, where the annotation gives none, from the identifier table; proteins without a gene
+  name were left out of the lists and the background)". (Audit K205-I04:) If KIT-205 merges first, KIT-208's R2b aligns
+  two counts with the tested background: `workflowEnrichmentUnnamedProteins` and `diaEnrichmentNoIdentifiers`' refusal
+  count over `enrichmentTestedRows(table)$rows` (which also honours the replay option), and the refusal says 'tested
+  proteins' (wording for the owner). Add one case with named untested and unnamed tested rows (refused; n = tested rows)
+  and one with an unnamed untested row (not counted). T5, T7 ('25 of 70', (10, 45)) and T8 are unchanged: every protein
+  of its fixture is tested. KIT-205's `test-kit205-enrichment-background.R` is in KIT-208's R2 grep scope; B2's recorder
+  takes `...`, so KIT-208's two new `perform_enrichment` arguments pass.
+- **KIT-200** (8; audit K205-I06): if this ticket merges first, KIT-200's actual interim texts on its branch are the
+  ones to remove or replace (the ticket quoted older ones): its NEWS sentence (`NEWS.md:41-42` on the branch) "Until the
+  enrichment background is changed in its own update, such a protein is still counted in that comparison's enrichment
+  background, as proteins without a p-value are today." is deleted, and its ledger clause "Untested proteins remain in
+  the enrichment background until the D-B ticket (VAL-129)" becomes "Untested proteins are not in the enrichment
+  background (KIT-205, VAL-<KIT-205's row>)".
+- **Plan** (audit K205-I06): section 2 row (ticket 12; 106.28 used of 469.33), order step 4 text (ticket 12), section
+  13 rows SD-2 (pool X129, open), SD-3 (X129), SD-4, F2 (ticket 12's table); and the section 11 rows above.
 - **KIT-168, KIT-179**: the revision-row text of ticket 12.
 
 ## For the owner's wording pass (VAL-41; drafts, nothing final)
@@ -181,10 +200,9 @@ Every changed user-facing text, old and new, verbatim (also in `wording.md`):
    p-value, with at least one Gene Ontology annotation{background_clause}." (old: "The background was the measured
    proteins with at least one Gene Ontology annotation{background_clause}.").
 8. Reports, g:Profiler bullet: with the rule "• The background was the identifiers of the proteins tested in each
-   comparison (those with a p-value in its differential-abundance table; the first gene name of each protein in the
-   protein annotation; proteins without a gene name were left out of the lists and the background) that g:Profiler
+   comparison (those with a p-value in its differential-abundance table; the first gene name of each protein, from the protein annotation or, where the annotation gives none, from the identifier table; proteins without a gene name were left out of the lists and the background) that g:Profiler
    recognises (a custom background)."; earlier records "• The background was the identifiers of each comparison's
-   differential-abundance table (the first gene name of each protein in the protein annotation; proteins without a gene
+   differential-abundance table (the first gene name of each protein, from the protein annotation or, where the annotation gives none, from the identifier table; proteins without a gene
    name were left out of the lists and the background) that g:Profiler recognises (a custom background)." (old: "•
    The background was the identifiers of each comparison's differential-abundance table (gene names where the table
    has them, otherwise protein accessions) that g:Profiler recognises (a custom background).").
@@ -201,6 +219,16 @@ Every changed user-facing text, old and new, verbatim (also in `wording.md`):
 - The g:Profiler service with a custom background (no service call; the route is checked through the arguments sent).
 - A non-numeric p or q column (ticket 13).
 - That KIT-193's row T2/T4 digests follow (KIT-193 not merged; handed off).
+- (Audit K205-I08) Per-comparison masking on the clusterProfiler route is shown once, by control C (b)
+  (`b_cluster_none` runs two comparisons with different untested sets in one call); no suite test or mutation covers it
+  (X (m1) mutates the g:Profiler site only).
+- (Audit K205-I09) B2's failure on base was observed with the per-comparison helper only (R1); with the helper of
+  04c466b4 it is INFERRED to fail too (base sends every row either way); X (m1) shows the new helper detects pooling.
+- (Audit K205-I10) Two of R2's 26 scope files run 0 tests (Q-163 quarantine: `test-prot-11-enrichment-module-contracts.R`,
+  `test-prot-11a-enrichment-module-characterization.R`), so 24 files are informative.
+- (Audit K205-I11) Ticket 3 item 1's "every background row could enter a list" holds only where `log2FC` is finite on
+  tested rows: true of package tables (limma gives a finite logFC wherever p is finite), not of every scripted table; a
+  tested row with an NA `log2FC` stays in the background and in no list.
 
 ## For the change report
 
@@ -236,6 +264,16 @@ row, byte for byte, and their reports describe that background; new records carr
 regression scope with check), R3 45383752326 (full suite on the merge). Fixtures only: KIT-173's committed E. coli
 UniProt annotation (2026_04) and T7 project; no real data, no g:Profiler call (its route is checked through the
 arguments sent to the service). The size figures are exact hypergeometric computations, not simulations.
+
+**Exact sizes (audit K205-I07).** Exact sizes of the old test (lists of 150, 10 % untested, none in the term, nominal
+5 %): 5.6 % for a term of 50, 8.4 % for 200, 10.8 % for 400; at 5 % untested 4.5 %, 5.7 %, 6.4 % (exact hypergeometric,
+stdlib; audit K205-I07). At 2 % untested there is no inflation (3.96 %, 4.53 %, 4.56 %). These are exact computations for
+those settings (lists drawn at random from the tested proteins, the old test with N = 3,000), not simulations; under the
+tested universe each is at most 5 %.
+
+**Remaining limit.** On g:Profiler the domain is `custom`, so tested proteins that g:Profiler recognises but that carry
+no annotation in a source still count in that source's background; the GO route counts annotated proteins only (SD-2,
+pool X129, open).
 
 ## Budget
 
