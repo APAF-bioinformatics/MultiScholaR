@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-167 tests first at 378271b2: the workflow and enrichment test files shown failing before their fix (no R/ change); ceiling 40 job-minutes; decides nothing but the failing-first record",
+  "label": "KIT-167 T3 failing first 378271b2",
+  "package_commit": "378271b2c311ee9605510f8af1555b3f3d0bc497",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-reference-mapping-workflow.R",
+    "test-reference-mapping-enrichment.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
