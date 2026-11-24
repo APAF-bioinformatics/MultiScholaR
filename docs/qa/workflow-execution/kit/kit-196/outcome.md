@@ -105,6 +105,19 @@ halves without its zero-df features. No computation failed (1,020 rows).
 `count-changed`, timeout or crash (`r3-compare.tsv`). R CMD check: findings identical on both sides, none only on head
 (`r3-check-compare.txt`). 35 files fail identically on both sides (stored references, as in R2). 42 jobs, 1,205 job-minutes.
 
+### R2b on the merge with staging 241914cb (audit C3), declared before sending
+
+- Purpose: 6.4's merger rule (staging gained code after R2: KIT-203 and others; no 7.3, lipid/metab DA, filter,
+  correlation or declaration file, so S1 is not repeated).
+- Binds: head = the merge 51b62ca7 plus this records commit; base = staging 241914cb.
+- Content: R2's 38 files (`r2-compare.tsv`'s list) and R CMD check, 3 shards per side, `file_timeouts` 120 for the two
+  GUI-entry files.
+- Ceiling: 6 x 60 + 2 x 90 = 540 job-minutes = 36.0 core-hours.
+- Expected: every file `same`, test-kit196 `only-on-head`, check findings identical. A difference is a result: recorded and
+  reported, not corrected in the same pass.
+
+RESULT PENDING
+
 ## Core-hours (job minutes x 4 / 60)
 
 | Row | Used | Ceiling |
