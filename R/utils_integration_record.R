@@ -367,6 +367,31 @@ integrationRecordTexts <- function() {
             "(camera, correlation estimated, allow.neg.cor = FALSE)"),
         enrich_ranking_value_permutation = paste("correlation of each feature with the factor over %d biological samples",
             "(features measured in all of them: %d); permutation test of the factor's values (PCGSE)"),
+        # KIT-184 (VAL-53 (1), VAL-62; proposed wording, VAL-41): a test with the removed RUV factors in its design.
+        # %d: the removed factors, biological samples, residual degrees of freedom, features used.
+        enrich_ranking_value_camera_ruv = paste("regression of each feature on the factor and %d removed unwanted factors",
+            "over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
+            "correlation-adjusted test (camera, correlation estimated)"),
+        enrich_ranking_value_camera_pr_ruv = paste("regression of each feature on the factor and %d removed unwanted",
+            "factors over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
+            "pre-ranked test with an assumed correlation of 0.01 (cameraPR)"),
+        enrich_ranking_value_camera_floor_ruv = paste("regression of each feature on the factor and %d removed unwanted",
+            "factors over %d biological samples (%d residual degrees of freedom; features measured in all samples: %d);",
+            "correlation-adjusted test, negative correlations counted as zero (camera, correlation estimated,",
+            "allow.neg.cor = FALSE)"),
+        # The words that stand for "an intercept and no other covariate" in a test's settings fragment. %d: the removed
+        # factors, the features they were computed on; %s: the SHA-256 of their file; %d: the residual degrees of freedom.
+        methods_test_covariates_ruv = paste("an intercept and the %d unwanted factors that the RUV correction removed from",
+            "this data set (a basis of the difference between the normalised and the corrected values over the %d features",
+            "measured in every run, averaged per biological sample; SHA-256 %s; %d residual degrees of freedom)"),
+        methods_test_covariates_ruv_off = paste("an intercept and no other covariate (the adjustment for the removed RUV",
+            "factors switched off: a sensitivity analysis, in which variation the correction removed stays in the values",
+            "tested)"),
+        methods_test_covariates_model_uncorrected = paste0("; the model was trained on the values before RUV, and the",
+            " adjustment was switched on for this result"),
+        # The inputs sheet's correction cell, for a model trained on RUV-corrected values, per data set in the model.
+        # %d: the factors written; %s: the data set, their status, the SHA-256 of their file.
+        input_removed_factors = "; %d unwanted factors recorded as removed from %s (%s; SHA-256 %s)",
         methods_test_name_camera_floor = paste("a competitive gene-set test that allows for the correlation between a",
             "term's features, negative estimates counted as zero (limma camera with allow.neg.cor = FALSE; Wu and Smyth",
             "2012), applied to the regression of each feature's values on the oriented factor"),
@@ -424,12 +449,30 @@ integrationRecordTexts <- function() {
         methods_enrich_limits_clause = paste("the %s, on %s, called terms with no link to the factor in %s of cases",
             "against values unrelated to the data, terms made only of the most variable features, those the model",
             "selects, in %s, and, on factors weaker than the main effect, %s in up to %s"),
+        # KIT-184: the closing in three parts: the values the tests read; for a record whose model was trained on
+        # RUV-corrected values, the clause on the removed RUV factors; the adjustment of p-values.
         methods_enrich_limits_end = paste("The correlation-adjusted and permutation tests use only features measured in",
             "every biological sample, which favours abundant features and leaves out features that fall below detection",
             "in some samples, often those that change most. The tests used read each data set's normalised values before",
-            "RUV correction, the values the model is trained on by default; for a model trained on RUV-corrected values,",
-            "variation the correction removed stays in the values tested. P-values were adjusted within each factor, data",
-            "set and database (and Gene Ontology aspect), not across them."),
+            "RUV correction, the values the model is trained on by default."),
+        # [R3], [I3], [R5], [I5], [R6], [I6]: written in after the counted simulation (ticket 6.4); the sentences are
+        # printed whatever the declared checks K-E4 and K-E5 gave.
+        methods_enrich_limits_ruv = paste("For a model trained on RUV-corrected values the correlation-adjusted tests by",
+            "default add to their model the unwanted factors the correction removed from each data set, which for",
+            "features measured in every run is identical to fitting that model (the factor and the removed factors) to the",
+            "corrected values; those factors were estimated from the same data and are treated as known. The adjustment is",
+            "a setting, and each result names the form used: a result without it on such a model is a sensitivity analysis",
+            "(its degrees of freedom are counted correctly; variation the correction removed stays in the values tested),",
+            "and a result with it on a model trained on the values before RUV counts a feature for what it shares with the",
+            "factor beyond the removed factors. The pre-ranked and permutation tests do not use them: variation the",
+            "correction removed stays in the values they rank. In a check on simulated data with 12 biological samples and",
+            "2 removed factors, with the removed factors in the model, sets with no link to what was tested (any set",
+            "against a covariate drawn independently of the data; sets of features without unwanted variation against the",
+            "model's main factor) were called at the 5 % level in [R3] (95 % interval [I3]) of cases. Sets of features that",
+            "share unwanted variation and have no link to the simulated biology were called in [R5] ([I5]) of cases on the",
+            "model's main factor, and in [R6] ([I6]) of cases without the adjustment."),
+        methods_enrich_limits_family = paste("P-values were adjusted within each factor, data set and database (and Gene",
+            "Ontology aspect), not across them."),
         # VAL-115 (3): the permutation's floor in its Methods sentence (%s: the exact fraction (1 + d)/(1 + B); %d: the
         # pathways tested, the smallest number BH can call together); the _none form when the floor is above 0.05.
         methods_enrich_permutation_floor = paste("The smallest attainable p-value was %s ((1 + d)/(1 + B), d the",
@@ -679,7 +722,11 @@ integrationRecordAnalysis <- function(manager, analysis, export) {
             scale = integrationGuiScalar(manifest$scale), source_state = integrationGuiScalar(manifest$source_state$name),
             biological_sample_column = entry$biological_sample_column, correction = manifest$correction,
             correction_text = integrationCorrectionText(manifest, gui),
-            group_corrected = any(corrected[intersect(as.character(entry$views), views)]))
+            group_corrected = any(corrected[intersect(as.character(entry$views), views)]),
+            # KIT-184: the removed unwanted factors of each of the omic's data sets in the model (their number, status,
+            # share, features and the SHA-256 of their file; never the factors themselves).
+            removed_factors = lapply(entry$removed_factors[intersect(names(entry$removed_factors), views)],
+                function(removed) removed[c("k", "status", "share", "features", "sha256")]))
     })
     match <- parameters$sample_match_table
     iterations <- as.integer(value$elbo$iterations)
@@ -751,10 +798,18 @@ integrationRecordTables <- function(record, texts = integrationRecordTexts()) {
     word <- function(value) if (isTRUE(as.logical(s(value)))) texts[["yes"]] else texts[["no"]]
     text <- function(value) { value <- s(value); if (is.na(value)) texts[["not_recorded"]] else as.character(value) }
     framed <- function(names, rows) stats::setNames(as.data.frame(rows, stringsAsFactors = FALSE), names)
+    # KIT-184: for a model trained on RUV-corrected values the correction cell names each data set's removed factors.
+    removed_text <- function(input) {
+        if (!identical(integrationRecordValuesKey(input), "values_corrected")) return("")
+        removed <- input$removed_factors %||% list()
+        paste(vapply(names(removed), function(view) sprintf(texts[["input_removed_factors"]], as.integer(s(removed[[view]]$k)),
+            view, as.character(s(removed[[view]]$status)), as.character(s(removed[[view]]$sha256))), character(1)),
+            collapse = "")
+    }
     inputs <- lapply(block$inputs, function(input) data.frame(omic = s(input$omic),
         views = paste(unlist(input$views_in_model), collapse = ", "),
         values = texts[[integrationRecordValuesKey(input)]],
-        correction = text(input$correction_text), group_corrected = word(input$group_corrected),
+        correction = paste0(text(input$correction_text), removed_text(input)), group_corrected = word(input$group_corrected),
         checksum = text(input$manifest_sha256), stringsAsFactors = FALSE))
     inputs <- do.call(rbind, inputs)
     names(inputs) <- unname(texts[c("col_omic", "col_datasets_in_model", "col_values", "col_correction",

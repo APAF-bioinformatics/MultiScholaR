@@ -375,7 +375,14 @@ integrationExportResults <- function(project, model, results) {
 #'   permutation test of the factor's values (each feature's correlation with the factor against `permutations`
 #'   random reorderings of the factor's values across the biological samples, 1000 or 10000, with `seed`; a message
 #'   gives the predicted time first); or `"gsea"`, the pre-ranked test used before (each feature's correlation with
-#'   the factor, tested as if features were independent). STRING ignores it.
+#'   the factor, tested as if features were independent). STRING ignores it. `adjust_ruv_factors` (`TRUE` or `FALSE`),
+#'   "Adjust for removed RUV factors", applies to `"camera"` and `"camera_floor"`: with `TRUE` the test puts the unwanted
+#'   factors that the omic's RUV correction removed from the data set into its model, so a feature counts for what it
+#'   shares with the factor beyond them. Left out, it is `TRUE` for a model trained on RUV-corrected values
+#'   (`input_matrix = "ruv_corrected"`) and `FALSE` otherwise. `FALSE` on a model trained on RUV-corrected values is a
+#'   sensitivity analysis (the values before RUV, without those factors); `TRUE` needs a data set to which the omic
+#'   applied RUV, saved by this version or later. Every result says which form it is. The pre-ranked test, the
+#'   permutation test and STRING do not use the setting.
 #' @return A list: `enrichments`, a list named `"<data set> <database>"` of the enrichments made, each a list with
 #'   `summary` (sentences) and `terms` (a data frame of the terms found); and `skipped`, sentences naming each data
 #'   set and database skipped or refused, and why.
@@ -389,6 +396,9 @@ integrationExportResults <- function(project, model, results) {
 #' # The permutation test of the factor's values (PCGSE), with its seed:
 #' permuted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
 #'     overrides = list(test = "permutation", seed = 1L))
+#' # For a model trained on RUV-corrected values, the sensitivity form without the removed RUV factors:
+#' unadjusted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+#'     overrides = list(adjust_ruv_factors = FALSE))
 #' names(enriched$enrichments)
 #' }
 #' @export
@@ -413,6 +423,13 @@ integrationEnrichFactor <- function(project, results, factor = NULL, api_key = N
     # KIT-183: the test is sent only when named in `overrides` (absent, the test of record for the data set), and
     # never for STRING.
     if (is.null(overrides[["test"]])) enrichment_settings$test <- NULL
+    # KIT-184 (VAL-62): the adjustment for removed RUV factors is sent only when named in `overrides` (absent, it
+    # follows the model's input), only with a test that has a design (an absent test is the test of record, which has
+    # one) and never for STRING.
+    if (is.null(overrides[["adjust_ruv_factors"]]) || !(is.null(overrides[["test"]]) ||
+        isTRUE(overrides[["test"]] %in% INTEGRATION_ENRICHMENT_DESIGN_TESTS))) {
+        enrichment_settings$adjust_ruv_factors <- NULL
+    }
     manager <- project$manager
     view_omics <- integrationViewOmics(integrationImportedObject(manager, "inputs"))
     enrichments <- list()
@@ -430,7 +447,10 @@ integrationEnrichFactor <- function(project, results, factor = NULL, api_key = N
                 next
             }
             request <- c(list(factor = factor, view = view, database = database), enrichment_settings)
-            if (database == "string") request$test <- NULL
+            if (database == "string") {
+                request$test <- NULL
+                request$adjust_ruv_factors <- NULL
+            }
             mapping <- NULL
             if (database != "string") {
                 request$id_column <- id_columns[[view]]

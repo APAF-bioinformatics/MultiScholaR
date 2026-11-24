@@ -15,6 +15,13 @@
    pre-ranked test now draws its random numbers with R's default generator whatever the session's setting; results in
    a session with default settings are unchanged (KIT-191).
 
+ * Integration inputs record the unwanted factors a correction for unwanted variation (RUV) removed: where an omic
+   applied RUV to a data set, saving its Summary writes one more file, `removed_<data set>.parquet`, beside the
+   normalised and the corrected matrix (a basis of the difference between the two over the features measured in every
+   run, checked against the correction's number of factors; contract v2, an addition that earlier versions read as
+   before). An input saved earlier must be saved again at the omic's Summary step before the correlation-adjusted
+   enrichment test can run with the adjustment on a model trained on RUV-corrected values (KIT-184).
+
 ### Fixes
 
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
@@ -37,6 +44,24 @@
    the RUV grid are unchanged. The RUV design panel is off by default.
 
 ### Scientific changes
+
+ * Integration enrichment for a model trained on RUV-corrected values (`input_matrix = "ruv_corrected"`; the default
+   input is unchanged): the correlation-adjusted tests (the default test and the form with negative correlations counted
+   as zero) now read the values before RUV with the unwanted factors the correction removed from the data set in their
+   model (intercept, factor, removed factors), so a feature counts for what it shares with the factor beyond those
+   factors. For features measured in every run this is identical to fitting that model to the corrected values. Results
+   of such models differ from those of the version before, which tested the values before RUV without the factors. The
+   adjustment is a setting, "Adjust for removed RUV factors" (`adjust_ruv_factors`), in the Enrichment tab and in
+   `integrationEnrichFactor(overrides = )`: switched off, such a model is tested as the version before tested it,
+   labelled as a sensitivity analysis with its limitation; switched on, a model trained on the values before RUV is
+   adjusted too, where the omic applied RUV to the data set. Every result names the form used: every result of a
+   correlation-adjusted test, on any model, now carries the line "Adjusted for removed RUV factors: yes (n factors)." or
+   "... no." in the tab, in `integrationEnrichFactor()`'s summaries and in records; no number of a model trained on the
+   values before RUV changes. The test is refused when fewer than max(4, the smallest number of samples per feature)
+   biological samples are left after one per removed factor, and when the factor is a combination of the removed
+   factors. The pre-ranked test, the permutation test and STRING do not use the removed factors, and say so for such a
+   model. A recorded result replays in the form it was saved in; a result recorded before this version replays without
+   the adjustment (VAL-53, VAL-58, VAL-62; KIT-184).
 
  * Proteomics (DIA, label-free, TMT): the protein missing-value filter ('Protein Intensity Filter', and the clean-up
    after RUV) now decides by counting missing values. Before, it compared each group's share of missing values with a
