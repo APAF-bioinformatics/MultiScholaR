@@ -236,3 +236,16 @@ base). Inferred: T7 is a consequence of the unbounded k under either rule (audit
 ## Next: the bounded-k measurement (VAL-182)
 
 Declared in `bound-declaration.md`, to be audited before the lifecycle run is sent. Nothing of it has run.
+
+## Bounded-k measurement: lifecycle (run 45495259308, commit abbe4525, declaration revision 8; not counted)
+
+Observed: every item as declared (`runs.tsv`, row `bound-lc`; outputs in `bound-lc/`). Blinding item (ix): both
+stage-1 runs (plain and planted, the plant acting on the rows before any summary) uploaded only `reestimate.tsv` and
+`provenance.json` under `out`; the two `reestimate.tsv` are byte-identical, the consoles identical apart from the
+`seconds:` line, the provenance identical apart from the two seconds fields. One limit of this lifecycle: at R = 2 the
+null cells' discordant share was 0, so the planted swap in N-r could not change it whatever the code did; the swap's
+invariance is shown by `reestimate.R selftest` (item (viii)). (xi-b): a stage-2 job on N-w and E-w alone passed the
+stage-1 check. 3.15 core-hours.
+
+Declaration revision 9 (e344c691, SHA-256 4ca0913e...288a) cites the owner's acceptance of R4-01 (VAL-192). Stage 1
+waits for the coordinator's word.
