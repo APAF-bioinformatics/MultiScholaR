@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-220 gate G0 (stop rule 2) and R1 (failing-first, stop rule 1) on the tests-only commit 0804ed93 (base code); ceiling G 90 + R1 60 job-minutes",
+  "label": "KIT-220 G0 + R1 at 0804ed93 (tests-only, base code)",
+  "package_commit": "0804ed932468351cb116cda6cade6fe585fe53af",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit220-da-threshold-consumers.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 55,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-220/g0.R",
+      "args": [
+        "kit220-g0"
+      ],
+      "out": "kit220-g0",
+      "timeout_minutes": 80
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
