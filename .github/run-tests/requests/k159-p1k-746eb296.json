@@ -1,0 +1,41 @@
+{
+  "requested_by": "KIT-159 line P1K (VAL-176): confirmatory rank cell C4e-171 under fixed_onedir, 2000 sims; declaration t2/p1k-declaration.md committed alone at 746eb296, confirmed by the auditor; one run; ceiling 4.13 core-hours",
+  "label": "KIT-159 P1K confirmatory rank cell C4e-171 at 746eb296",
+  "package_commit": "746eb296e7ec85fa7546eb97c07280a0229bae96",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/p1k-out",
+        "--files",
+        "metrics",
+        "--coverage-plan",
+        "docs/qa/workflow-execution/kit/kit-159/t2/p1k-plan.tsv",
+        "--request",
+        "PK",
+        "--nsim",
+        "2000",
+        "--target-sims",
+        "20000",
+        "--chunks",
+        "4"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/p1k-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
