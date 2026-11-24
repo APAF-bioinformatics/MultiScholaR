@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-184 R3 part c (VAL-178 (2), (3)): the lane prot_dia_limpa on the re-frozen reference, after the control held in run 45474665699; test-gui-entry-proteomics.R, head 0c73ee7c against staging 32766889; ceiling 180 job-minutes (kit-184/outcome.md)",
+  "label": "KIT-184 R3c re-frozen prot_dia_limpa 0c73ee7c vs staging 32766889",
+  "package_commit": "0c73ee7cce1143970cb6056cf2779cccd3366e85",
+  "base_commit": "32766889bdc9fda739ac9671011bfb46eb620642",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
