@@ -11,7 +11,13 @@ provFixture <- function() {
                     harness = list(commit = strrep("b", 40), tree = strrep("c", 40)),
                     declaration = list(stage = "lifecycle", commit = strrep("d", 40),
                                        sha256_md = strrep("e", 64), sha256_json = strrep("f", 64)),
-                    code_files = list(), helpers_extracted = list())
+                    code_files = list(), helpers_extracted = list()),
+        inputs = list(universe = list(sha256 = strrep("1", 64), rows = 20L)),
+        truth = list(primary = list(sha256 = strrep("2", 64), rows = 20L),
+                     blind = list(seed = 159101L, applied = TRUE)),
+        cells = list(list(unit = "u01", arm = "shipped", exit = "completed", seed = 1L)),
+        scoring = list(metrics_sha256 = strrep("3", 64), comparisons_sha256 = strrep("4", 64)),
+        outputs = list(list(path = "metrics.tsv", sha256 = strrep("3", 64)))
     )
 }
 
