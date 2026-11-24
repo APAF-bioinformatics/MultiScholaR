@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-210 step A (A1 source hashes, A2 installed RUVIIIC zero-fill checks with negative control); ceiling 40 min + set-up x 4 cores = 3.33 core-hours; decides GA1, GA2",
+  "label": "KIT-210 step A A1/A2 e8a43097",
+  "package_commit": "e8a43097204f46e5eb1742b15ab5125b1cc7f2bd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-210/step-a/a1a2.R",
+      "args": ["k210-step-a"],
+      "env": {"OMP_NUM_THREADS": "1"},
+      "out": "k210-step-a",
+      "out_pattern": "\\.(tsv|txt|md)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
