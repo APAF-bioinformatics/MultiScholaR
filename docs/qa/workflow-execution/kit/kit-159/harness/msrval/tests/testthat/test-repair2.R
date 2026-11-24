@@ -50,14 +50,15 @@ test_that("R-O8: over independent units nothing is widened at any count; report 
                           txt, fixed = TRUE)))
 })
 
-test_that("R-O5: the 117 T2 rows read pass under T2's band and conservative under r1.13's; both printed", {
+test_that("R-O5: T2 rows reading pass under T2's band and conservative under r1.13's; both printed", {
     reg <- msrval:::valHarnessRegimes()
     expect_true("status_r113" %in% names(reg))
     two <- reg$status == "pass" & reg$status_r113 == "conservative"
-    expect_identical(sum(two %in% TRUE), 117L)
+    # 117 in T2; the 19 C4 rows among them were re-pinned by the I10 diagnostic (VAL-109 (2)),
+    # classified under r1.13's rule, so 98 remain
+    expect_identical(sum(two %in% TRUE), 98L)
     tab <- table(paste(reg$regime[two %in% TRUE], reg$class[two %in% TRUE]))
-    expect_identical(as.integer(tab[c("C3 accuracy", "C3 threshold_count", "C4 accuracy",
-                                      "C4 threshold_count")]), c(45L, 53L, 8L, 11L))
+    expect_identical(as.integer(tab[c("C3 accuracy", "C3 threshold_count")]), c(45L, 53L))
     same <- !(two %in% TRUE)
     expect_identical(reg$status_r113[same], reg$status[same])
     path <- withr::local_tempfile(fileext = ".md")
