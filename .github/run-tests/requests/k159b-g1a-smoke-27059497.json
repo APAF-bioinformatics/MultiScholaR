@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-159 builder B, REPAIR line (VAL-109; builder B's share): G1(a) one-lane smoke at 27059497: val-g1a.R part (1) on lipid_canonical, installed and load_all, each in the real child process, plus the job-environment recorder and gates.md; ceiling 40 min, about 0.4 core-hours; decides whether the part (1) runner and the entry script run on a real lane before G1(a) relies on them (no gate verdict)",
+  "label": "KIT-159 builder B G1(a) smoke at 27059497",
+  "package_commit": "270594974e5a50c50691b299fd2da1b1754c4c03",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-g1a.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-159/g1a-smoke-out", "--lanes", "lipid_canonical", "--parts", "1"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/g1a-smoke-out",
+      "out_pattern": "\\.(tsv|txt|log|md|json)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
