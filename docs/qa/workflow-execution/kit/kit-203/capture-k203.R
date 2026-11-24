@@ -15,6 +15,7 @@
 #   s6-identity.rds              the T7 project (helper goPropRunProject, real kernel, the tab's default propagation):
 #                                the product identity, declared names and values, the outcome names
 #   capture.tsv                  commit, versions, checks, and every file's SHA-256
+# The S3 and T7 captures run with the kernel's plot files stubbed (no assertion reads them); the project capture without.
 
 args <- commandArgs(TRUE)
 stopifnot(length(args) == 2L)
@@ -102,6 +103,10 @@ testthat::test_that("KIT-203 G0 capture: T7 fixture, both propagation values", {
 
 testthat::test_that("KIT-203 G0 capture: the T7 project's identity (S6)", {
     testthat::local_test_context()
+    # The project publishes the DA's interactive volcano before the enrichment: the plot-file stubs of the two captures
+    # above are lifted first (VAL-54 instrument repair of run 45326277295: they made the publication refuse).
+    restore_widget()
+    restore_ggsave()
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "false")
     work <- withr::local_tempdir()
     annotations <- h$goPropAnnotate(h$goPropT7Raw(), file.path(work, "cache"))
