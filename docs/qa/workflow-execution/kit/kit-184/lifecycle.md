@@ -326,3 +326,17 @@ Declared in `outcome.md` ("After the implementation audit") in commit c1ba2e0e, 
 - **Cost**: 12.6 + 339.2 + 49.2 = 401.0 job-minutes (26.73 core-hours) against the declared 435 expected and 825
   ceiling. Ticket total 3,478.4 job-minutes = 231.89 core-hours of 303.33.
 - No request was refused and no script failed; nothing was sent twice. This was the ticket's last run.
+
+## The merge-condition check on the merge with staging d048898d (2026-11-25)
+
+By the coordinator's ruling after the auditor's re-check 1: a check of the merged tree, not a correction pass (no code
+and no expected value of this ticket changes). Reason: KIT-208's change to the DA annotation join, merged into
+staging since, reaches the `da` step of lane `prot_dia_limpa`, and the re-frozen reference had never run with it.
+
+- Merge 3b9aa035 (staging d048898d; one conflict, the methods ledger: staging's rows to VAL-192 first, then this
+  ticket's three `VAL-<merge>` rows). Staging changed no GUI-entry reference since 32766889.
+- Declared in `runs.tsv` in commit e589b9f9 before sending. Queue: no run queued, 24 in progress. Sent once: run
+  45497130643, `test-gui-entry-proteomics.R` and `test-integration-removed-factors.R`, 3b9aa035 against d048898d.
+- Result: the GUI-entry file is `same` as staging (189 passed, 4 failed on both sides, the 4 in lane `prot_dia`); lane
+  `prot_dia_limpa` passes; the new file 526 passed, 0 failed. 65.0 job-minutes (4.33 core-hours).
+- Ticket total 3,543.4 job-minutes = 236.23 core-hours of 303.33.

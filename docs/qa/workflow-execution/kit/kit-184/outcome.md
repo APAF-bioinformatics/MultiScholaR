@@ -5,7 +5,11 @@ Ticket `tickets/kit/KIT-184.md` revision 2.0. Branch `kit-184-ruv-factors-in-int
 laptop. Owner's decisions: methods ledger VAL-53, VAL-58, VAL-62 (the design), VAL-150 (the declaration), VAL-160 (the
 results: the adjustment ships off by default with a stated limit).
 
-**State (2026-11-25): ready for the auditor's re-check. The implementation audit's repairs are made, the control
+**State (2026-11-25, last): the auditor's re-check 1 closed I01 to I12 and asked for one check on the merge with
+current staging; it ran and passed (run 45497130643 at merge 3b9aa035 against staging d048898d: the re-frozen lane
+passes with KIT-208's DA join; the new file passes). Ticket total 236.23 of 303.33 core-hours.**
+
+**State before that (2026-11-25): ready for the auditor's re-check. The implementation audit's repairs are made, the control
 held, `tests/testdata/gui-entry/prot_dia_limpa.json` is re-frozen, and the one further run the owner allowed has
 returned as declared (VAL-178; results at the end).** The audit (`tickets/kit/audits/AUDIT-KIT-184-impl-20261125.md`) confirmed the method and
 the shipped path and found three majors in the texts and the record (K184-I01 to I03), minors (I04 to I09) and one
