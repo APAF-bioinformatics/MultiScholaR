@@ -1,0 +1,16 @@
+image: ubuntu22 20261116.365.1
+6.8.0-1070-azure
+4
+MemTotal:       16372448 kB
+SwapTotal:       3145724 kB
+CPU(s):                                  4
+Model name:                              AMD EPYC 9V74 80-Core Processor
+Thread(s) per core:                      2
+Core(s) per socket:                      2
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/root       146G   60G   86G  41% /
+/dev/root       146G   60G   86G  41% /
+cgroup: cgroup2fs controllers: cpuset cpu io memory pids
+candidate checkout: c03cb02a1fc6e3c122b39a6d424b4996971e20e1
+lock: 483c964b44a13f81e7c68030d2a9a58df2981ee96e8ae99db1da3fec38a1f1d7  packaging/multischolar.lock.json
+pandoc 3.11

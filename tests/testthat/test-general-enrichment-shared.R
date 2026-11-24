@@ -614,7 +614,9 @@ test_that("processEnrichments supported-organism branch preserves contrast remap
                                     custom_bg,
                                     exclude_iea,
                                     protein_id_column,
-                                    correction_method) {
+                                    correction_method,
+                                    contrast = NA_character_,
+                                    direction = NA_character_) {
         captured$perform[[length(captured$perform) + 1L]] <- list(
           ids = data_subset[[protein_id_column]],
           species = species,

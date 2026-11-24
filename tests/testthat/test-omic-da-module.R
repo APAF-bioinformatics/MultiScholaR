@@ -3340,7 +3340,7 @@ omicDaW1Frozen[["prot_load"]] <- list(
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-state-<ID>` = "21",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-table-<ID>` = "8",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-volcano-html-<ID>` = "1",
-            `da_output/da_proteins_groupB-groupA_long_annot.tsv` = "180c330673a89c3d58f1e830639d9011ddfc16f96aa8ee5ebdcbfc489d85c7c0",
+            `da_output/da_proteins_groupB-groupA_long_annot.tsv` = "fbe4b6a921c2abe20abdb68f3fae2a34f3a45e70062415d3da8acebed58e73c6",
             `da_output/da_proteins_groupB-groupA_long_annot.xlsx` = "<present>",
             `publication_graphs/Interactive_Volcano_Plots/B_vs_A.html` = "<present>",
             `publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf` = "<present>",
