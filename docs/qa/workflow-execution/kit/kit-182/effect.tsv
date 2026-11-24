@@ -1,0 +1,13 @@
+route	path	commit	source	proteins_normalised	k	note
+DIA	in_process	af0b5772 (tests-only; R/ = base)	PRF1	64	6	stale re-run (S2): the QC change ignored
+DIA	in_process	e0974603 (fix)	current QC result	58	6	64 - k
+LFQ	in_process	af0b5772	PRF1	64	6	DIA fixture run as LFQ (F3)
+LFQ	in_process	e0974603	current QC result	58	6	
+TMT	in_process	af0b5772	PRF1	64	6	DIA fixture run as TMT (F3)
+TMT	in_process	e0974603	current QC result	58	6	
+DIA	managed	af0b5772	PRF1	NA	6	normalization-ruv action input entity
+DIA	managed	e0974603	current QC result	NA	6	
+LFQ	managed	af0b5772	PRF1	NA	6	
+LFQ	managed	e0974603	current QC result	NA	6	
+TMT	managed	af0b5772	PRF1	NA	6	
+TMT	managed	e0974603	current QC result	NA	6	

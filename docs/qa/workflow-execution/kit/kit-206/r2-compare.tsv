@@ -1,0 +1,27 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-prot-norm-input-current.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		
+test-kit129-run-path.R	687	6	0	1	failed	687	6	0	1	failed	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-kit206-prot-norm-export-guard.R	55	28	0	0	failed	88	1	0	0	failed	message-changed	fixed: KIT-206 E1: after a Revert past normalisation (S1) the export is refused and nothing is written (fails before); fixed: KIT-206 E2: after a Revert and a QC step applied again (S2) the export is refused (fails before); fixed: KIT-206 E2b: S2, then a second normalisation without the correlation filter: the export is refused (fails before); fixed: KIT-206 E3: after RUV and two Reverts (head `normalized`, before RUV) the export is refused (fails before); fixed: KIT-206 E7: the S4 compatibility download is refused after S1, before the export, with a notice (fails before); fixed: KIT-206 E9: an exported project reopened into a new owner exports again; after a Revert there it is refused (second part fails before); message-changed: KIT-206 E11: the Summary's archive refresh is refused after a Revert past normalisation; without it, it writes (fails before); fixed: KIT-206 E12: S3, the DA, then an enrichment result on the head: the export judges the table it was made from (fails before); fixed: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before); counts: KIT-206 E1: after a Revert past normalisation (S1) the export is refused and nothing is written (fails before) (passed 2 -> 5, skipped 0 -> 0); counts: KIT-206 E11: the Summary's archive refresh is refused after a Revert past normalisation; without it, it writes (fails before) (passed 4 -> 7, skipped 0 -> 0); counts: KIT-206 E12: S3, the DA, then an enrichment result on the head: the export judges the table it was made from (fails before) (passed 3 -> 5, skipped 0 -> 0); counts: KIT-206 E13: the export takes its results file and RUV statement from the run; a missing file is refused with nothing pending (fails before) (passed 3 -> 13, skipped 0 -> 0); counts: KIT-206 E2: after a Revert and a QC step applied again (S2) the export is refused (fails before) (passed 2 -> 5, skipped 0 -> 0); counts: KIT-206 E2b: S2, then a second normalisation without the correlation filter: the export is refused (fails before) (passed 3 -> 6, skipped 0 -> 0); counts: KIT-206 E3: after RUV and two Reverts (head `normalized`, before RUV) the export is refused (fails before) (passed 2 -> 5, skipped 0 -> 0); counts: KIT-206 E7: the S4 compatibility download is refused after S1, before the export, with a notice (fails before) (passed 0 -> 3, skipped 0 -> 0); counts: KIT-206 E9: an exported project reopened into a new owner exports again; after a Revert there it is refused (second part fails before) (passed 9 -> 12, skipped 0 -> 0)	
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-omics-summary-core.R	676	25	0	2	failed	676	25	0	2	failed	same		
+test-omic-norm-module.R	639	0	0	0	ok	639	0	0	0	ok	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-integration-input-lipid-metab.R	131	0	0	0	ok	131	0	0	0	ok	same		
+test-kit172-downstream.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-workflow-integration-input.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-integration-input-transcriptomics.R	45	3	0	0	failed	45	3	0	0	failed	same		
+test-workflow-figure-paths.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-workflow-saved-exports.R	271	0	1	4	failed	271	0	1	4	failed	same		
+test-workflow-checkpoint-dia-state.R	174	0	0	4	ok	174	0	0	4	ok	same		
+test-perf107-audit.R	191	0	0	1	ok	191	0	0	1	ok	same		
+test-perf-103.R	85	0	0	0	ok	85	0	0	0	ok	same		
+test-workflow-ruv-pearson-diagnostic.R	301	0	2	5	failed	301	0	2	5	failed	same		
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-prot-05b-norm-module-contracts.R	439	0	0	22	ok	439	0	0	22	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-e2e-browser-harness.R	126	0	0	1	ok	126	0	0	1	ok	same		

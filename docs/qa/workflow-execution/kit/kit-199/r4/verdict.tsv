@@ -1,0 +1,5 @@
+check	value	holds
+measure_lane_passed	TRUE	TRUE
+measure_copy_digest_equals_record_at_da	TRUE	TRUE
+da_runner_written	TRUE	TRUE
+environment_complete	TRUE	TRUE

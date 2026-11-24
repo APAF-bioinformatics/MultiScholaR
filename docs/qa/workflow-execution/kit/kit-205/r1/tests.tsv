@@ -1,0 +1,8 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-omic-enrich-module.R	1049	21	0	0	0	460.5	failed
+test-kit205-enrichment-background.R	103	125	0	0	0	127.2	failed
+test-workflow-analysis-record.R	349	2	0	0	4	248.5	failed
+test-go-propagation.R	314	17	0	1	0	108	failed
+test-enrichment-significance.R	183	8	0	0	0	124.9	failed
+test-omics-enrich-core.R	228	13	0	1	0	100.5	failed
+test-workflow-omics-binding-steps.R	57	2	0	0	0	61	failed

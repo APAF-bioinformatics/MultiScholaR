@@ -1,0 +1,43 @@
+== test-g13.R :: G13-SWD083: the measured DIA-with-limpa difference passes under the rule (1 not passed)
+Error in `valReadTextTable(testthat::test_path("g1a", name))`: could not find function "valReadTextTable"
+
+== test-g13.R :: G13-O4: the bundle lane's six DIA-with-limpa DA steps are excluded by name (1 not passed)
+Error in `eval(code, test_env)`: object 'PARITY_INSTALLER_EXCLUDED' not found
+
+== test-g1a.R :: G1A-LOAD: KIT-199's real record is one certified link of prot_dia_limpa (1 not passed)
+Error in `valReadControlLink(g1aFx(paste0(n, "-ctl.tsv")), declared = if (keys) g1aFx(paste0(n, "-keys.tsv")) else NULL, ticket = ticket, lane = lane, lane_steps = g1aLaneSteps()[[lane]])`: could not find function "valReadControlLink"
+
+== test-g1a.R :: G1A-VAL: link (i) checks each declared row's stored and live digest values (1 not passed)
+Error in `valReadReferenceRows(g1aFx("k199-ref.tsv"))`: could not find function "valReadReferenceRows"
+
+== test-g1a.R :: G1A-LOAD: KIT-172's real record certifies each of its four lanes (1 not passed)
+Error in `valReadReferenceRows(g1aFx("k172-ref.tsv"))`: could not find function "valReadReferenceRows"
+
+== test-g1a.R :: G1A-LOAD: KIT-180 then KIT-177 on the proteomics lanes, in merge order (1 not passed)
+Error in `valReadReferenceRows(g1aFx("k180-ref.tsv"))`: could not find function "valReadReferenceRows"
+
+== test-g1a.R :: G1A-ADOPT: reference rows are adopted by (lane, step, class) and key sets (1 not passed)
+Error in `valReadReferenceRows(g1aFx("k180-ref.tsv"))`: could not find function "valReadReferenceRows"
+
+== test-g1a.R :: G1A-D7: the release-commit DA values against the link's da-runner table (1 not passed)
+Error in `valReadTextTable(g1aFx("k199-da-r1.tsv"))`: could not find function "valReadTextTable"
+
+== test-g1a.R :: G1A-D7: exact only on the link's CPU models with its whole recorded environment (1 not passed)
+Error in `valReadDaLink(g1aFx("k199-da-r1.tsv"), envs = c(g1aFx("k199-env1.tsv"), g1aFx("k199-env2.tsv")), controls = c(g1aFx("k199-da-r1.tsv"), g1aFx("k199-da-r1.tsv")))`: could not find function "valReadDaLink"
+
+== test-g1a.R :: G1A-REL: VAL-133 (2): identical captures first, else values; certified with the difference (1 not passed)
+Error in `valReadTextTable(g1aFx("k199-da-r1.tsv"))`: could not find function "valReadTextTable"
+
+== test-g1a.R :: G1A-P1: part (1) compares installed against load_all; prot_dia stops at da (1 not passed)
+Error in `valG1aCompareModes("prot_dia", s, t)`: could not find function "valG1aCompareModes"
+
+== test-g1a.R :: G1A-P2: part (2) reads each lane's chain from the history and judges the live run (1 not passed)
+Error in `valLaneComparator(root)`: could not find function "valLaneComparator"
+
+== test-parity.R :: the bundle DA table against L1's: digest, then the values under SWD-083 (VAL-133 (1)) (2 not passed)
+Expected `valCompareParityDa(near, l1)$status` to be identical to "within_tolerance".
+Differences:
+`actual`:   "within_rounding" 
+`expected`: "within_tolerance"
+
+

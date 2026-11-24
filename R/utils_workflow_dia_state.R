@@ -3005,7 +3005,8 @@ recordDIAWorkflowInputs <- recordWorkflowInputs
 #' @param manager Current DIA owner; other owners are unchanged.
 #' @param service Service name (`gprofiler2`, `clusterProfiler`, `string-db`, `uniprot`).
 #' @param release Release the service reported or the client queried; NA when unknown.
-#' @param release_kind `database_version`, `package_version`, `api_version` or `header`.
+#' @param release_kind `database_version`, `package_version`, `api_version`, `header`, `failed` (the retrieval failed;
+#'   release NA) or `not_queried` (no request was made; release NA) (KIT-175, amending REC-031).
 #' @param query_date Time of the query, recorded as ISO 8601.
 #' @param query_summary Short description of the query.
 #' @return NULL invisibly.

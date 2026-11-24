@@ -75,6 +75,7 @@ runProteinDuplicateRemovalStep <- function(workflowData,
                                           aggregationMethod,
                                           aggregationResolverFn = base::get,
                                           logInfoFn = logger::log_info) {
+  assertProtQcHeadNotNormalised(workflowData) # KIT-182 (VAL-91 D1)
   pending <- if (identical(workflowData$state_manager$current_state, "duplicates_removed"))
     resumeDIAProteinAction(workflowData, "duplicates_removed") else NULL
   if (!is.null(pending)) return(pending)
@@ -241,6 +242,7 @@ mod_prot_qc_protein_dedup_server <- function(id, workflow_data, experiment_paths
     # Step 4: Duplicate Protein Removal (chunk 22)
     shiny::observeEvent(input$apply_duplicate_removal, {
       if (!is.null(workflowSessionApplication(session))) {
+        if (!protQcManagedApplyAllowed(workflow_data, "duplicate protein removal")) return(invisible(NULL)) # KIT-182
         managed_step$apply(list(aggregation_method = input$duplicate_aggregation_method))
         return(invisible(NULL))
       }

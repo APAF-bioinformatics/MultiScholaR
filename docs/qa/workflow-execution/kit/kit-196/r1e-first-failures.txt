@@ -1,0 +1,431 @@
+KIT-196 R1e (run 45329105038, tests-only commit 52343cca): per failing test, the number of failing expectations and the first two messages
+
+== KIT-196 T1: lipid a feature without values (equal df) is not tested and the others equal the DA without it
+failing expectations: 47
+--- 1
+Expected `run$result$failed_assays$pos %||% "<none>"` to be identical to "<none>".
+  Differences:
+  `actual`:   "covariate contains NA or infinite values"
+  `expected`: "<none>"                                  
+  
+  T1
+--- 2
+Expected `run$result$failed_assays` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  T1
+
+== KIT-196 T2: lipid a feature without values (unequal df, KIT-188's message) is not tested and the others equal the DA without it
+failing expectations: 42
+--- 1
+Expected `run$result$failed_assays$pos %||% "<none>"` to be identical to "<none>".
+  Differences:
+  `actual`:   "prior.weights contain NA values"
+  `expected`: "<none>"                         
+  
+  T2
+--- 2
+Expected `run$result$failed_assays` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  T2
+
+== KIT-196 T5: lipid an assay in which no feature has a value is refused with a classed message; the other assay is analysed
+failing expectations: 2
+--- 1
+Expected `run$result$failed_assays$pos %||% "<none>"` to be identical to "no feature has a value in any sample, so nothing can be tested".
+  Differences:
+  `actual`:   "No residual degrees of freedom in linear model fits"           
+  `expected`: "no feature has a value in any sample, so nothing can be tested"
+--- 2
+Expected `e` to inherit from "omics_da_no_observed_features".
+  Actual class: "simpleError"/"error"/"condition".
+
+== KIT-196 T6: lipid the DA tab path in process completes and reports the feature without values as not tested
+failing expectations: 27
+--- 1
+Expected `unlist(errors) %||% character()` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('groupB-groupA.pos', 'groupC-groupA.pos', 'groupC-groupB.pos')
+  `names(expected)` is absent
+  
+      actual                            | expected 
+  [1] "prior.weights contain NA values" -          
+  [2] "prior.weights contain NA values" -          
+  [3] "prior.weights contain NA values" -          
+  
+  T6
+--- 2
+Expected `errors` to be identical to `stats::setNames(rep(list(list()), length(contrasts)), contrasts)`.
+  Differences:
+  `actual$groupB-groupA` is length 1
+  `expected$groupB-groupA` is length 0
+  
+  `names(actual$groupB-groupA)` is a character vector ('pos')
+  `names(expected$groupB-groupA)` is absent
+  
+  `actual$groupB-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupB-groupA$pos` is absent
+  
+  `actual$groupC-groupA` is length 1
+  `expected$groupC-groupA` is length 0
+  
+  `names(actual$groupC-groupA)` is a character vector ('pos')
+  `names(expected$groupC-groupA)` is absent
+  
+  `actual$groupC-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupA$pos` is absent
+  
+  `actual$groupC-groupB` is length 1
+  `expected$groupC-groupB` is length 0
+  
+  `names(actual$groupC-groupB)` is a character vector ('pos')
+  `names(expected$groupC-groupB)` is absent
+  
+  `actual$groupC-groupB$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupB$pos` is absent
+  
+  T6
+
+== KIT-196 T6 (b): lipid the declared DA without RUV factors (design none) completes and reports the feature as not tested
+failing expectations: 27
+--- 1
+Expected `unlist(errors) %||% character()` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('groupB-groupA.pos', 'groupC-groupA.pos', 'groupC-groupB.pos')
+  `names(expected)` is absent
+  
+      actual                            | expected 
+  [1] "prior.weights contain NA values" -          
+  [2] "prior.weights contain NA values" -          
+  [3] "prior.weights contain NA values" -          
+  
+  T6 (b)
+--- 2
+Expected `errors` to be identical to `stats::setNames(rep(list(list()), length(contrasts)), contrasts)`.
+  Differences:
+  `actual$groupB-groupA` is length 1
+  `expected$groupB-groupA` is length 0
+  
+  `names(actual$groupB-groupA)` is a character vector ('pos')
+  `names(expected$groupB-groupA)` is absent
+  
+  `actual$groupB-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupB-groupA$pos` is absent
+  
+  `actual$groupC-groupA` is length 1
+  `expected$groupC-groupA` is length 0
+  
+  `names(actual$groupC-groupA)` is a character vector ('pos')
+  `names(expected$groupC-groupA)` is absent
+  
+  `actual$groupC-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupA$pos` is absent
+  
+  `actual$groupC-groupB` is length 1
+  `expected$groupC-groupB` is length 0
+  
+  `names(actual$groupC-groupB)` is a character vector ('pos')
+  `names(expected$groupC-groupB)` is absent
+  
+  `actual$groupC-groupB$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupB$pos` is absent
+  
+  T6 (b)
+
+== KIT-196 T7: lipid the DA tab path managed (worker) completes and reports the feature as not tested
+failing expectations: 27
+--- 1
+Expected `unlist(errors) %||% character()` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('groupB-groupA.pos', 'groupC-groupA.pos', 'groupC-groupB.pos')
+  `names(expected)` is absent
+  
+      actual                            | expected 
+  [1] "prior.weights contain NA values" -          
+  [2] "prior.weights contain NA values" -          
+  [3] "prior.weights contain NA values" -          
+  
+  T7
+--- 2
+Expected `errors` to be identical to `stats::setNames(rep(list(list()), length(contrasts)), contrasts)`.
+  Differences:
+  `actual$groupB-groupA` is length 1
+  `expected$groupB-groupA` is length 0
+  
+  `names(actual$groupB-groupA)` is a character vector ('pos')
+  `names(expected$groupB-groupA)` is absent
+  
+  `actual$groupB-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupB-groupA$pos` is absent
+  
+  `actual$groupC-groupA` is length 1
+  `expected$groupC-groupA` is length 0
+  
+  `names(actual$groupC-groupA)` is a character vector ('pos')
+  `names(expected$groupC-groupA)` is absent
+  
+  `actual$groupC-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupA$pos` is absent
+  
+  `actual$groupC-groupB` is length 1
+  `expected$groupC-groupB` is length 0
+  
+  `names(actual$groupC-groupB)` is a character vector ('pos')
+  `names(expected$groupC-groupB)` is absent
+  
+  `actual$groupC-groupB$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupB$pos` is absent
+  
+  T7
+
+== KIT-196 T1: metab a feature without values (equal df) is not tested and the others equal the DA without it
+failing expectations: 47
+--- 1
+Expected `run$result$failed_assays$pos %||% "<none>"` to be identical to "<none>".
+  Differences:
+  `actual`:   "covariate contains NA or infinite values"
+  `expected`: "<none>"                                  
+  
+  T1
+--- 2
+Expected `run$result$failed_assays` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  T1
+
+== KIT-196 T2: metab a feature without values (unequal df, KIT-188's message) is not tested and the others equal the DA without it
+failing expectations: 42
+--- 1
+Expected `run$result$failed_assays$pos %||% "<none>"` to be identical to "<none>".
+  Differences:
+  `actual`:   "prior.weights contain NA values"
+  `expected`: "<none>"                         
+  
+  T2
+--- 2
+Expected `run$result$failed_assays` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  T2
+
+== KIT-196 T5: metab an assay in which no feature has a value is refused with a classed message; the other assay is analysed
+failing expectations: 2
+--- 1
+Expected `run$result$failed_assays$pos %||% "<none>"` to be identical to "no feature has a value in any sample, so nothing can be tested".
+  Differences:
+  `actual`:   "No residual degrees of freedom in linear model fits"           
+  `expected`: "no feature has a value in any sample, so nothing can be tested"
+--- 2
+Expected `e` to inherit from "omics_da_no_observed_features".
+  Actual class: "simpleError"/"error"/"condition".
+
+== KIT-196 T6: metab the DA tab path in process completes and reports the feature without values as not tested
+failing expectations: 27
+--- 1
+Expected `unlist(errors) %||% character()` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('groupB-groupA.pos', 'groupC-groupA.pos', 'groupC-groupB.pos')
+  `names(expected)` is absent
+  
+      actual                            | expected 
+  [1] "prior.weights contain NA values" -          
+  [2] "prior.weights contain NA values" -          
+  [3] "prior.weights contain NA values" -          
+  
+  T6
+--- 2
+Expected `errors` to be identical to `stats::setNames(rep(list(list()), length(contrasts)), contrasts)`.
+  Differences:
+  `actual$groupB-groupA` is length 1
+  `expected$groupB-groupA` is length 0
+  
+  `names(actual$groupB-groupA)` is a character vector ('pos')
+  `names(expected$groupB-groupA)` is absent
+  
+  `actual$groupB-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupB-groupA$pos` is absent
+  
+  `actual$groupC-groupA` is length 1
+  `expected$groupC-groupA` is length 0
+  
+  `names(actual$groupC-groupA)` is a character vector ('pos')
+  `names(expected$groupC-groupA)` is absent
+  
+  `actual$groupC-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupA$pos` is absent
+  
+  `actual$groupC-groupB` is length 1
+  `expected$groupC-groupB` is length 0
+  
+  `names(actual$groupC-groupB)` is a character vector ('pos')
+  `names(expected$groupC-groupB)` is absent
+  
+  `actual$groupC-groupB$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupB$pos` is absent
+  
+  T6
+
+== KIT-196 T6 (b): metab the declared DA without RUV factors (design none) completes and reports the feature as not tested
+failing expectations: 27
+--- 1
+Expected `unlist(errors) %||% character()` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('groupB-groupA.pos', 'groupC-groupA.pos', 'groupC-groupB.pos')
+  `names(expected)` is absent
+  
+      actual                            | expected 
+  [1] "prior.weights contain NA values" -          
+  [2] "prior.weights contain NA values" -          
+  [3] "prior.weights contain NA values" -          
+  
+  T6 (b)
+--- 2
+Expected `errors` to be identical to `stats::setNames(rep(list(list()), length(contrasts)), contrasts)`.
+  Differences:
+  `actual$groupB-groupA` is length 1
+  `expected$groupB-groupA` is length 0
+  
+  `names(actual$groupB-groupA)` is a character vector ('pos')
+  `names(expected$groupB-groupA)` is absent
+  
+  `actual$groupB-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupB-groupA$pos` is absent
+  
+  `actual$groupC-groupA` is length 1
+  `expected$groupC-groupA` is length 0
+  
+  `names(actual$groupC-groupA)` is a character vector ('pos')
+  `names(expected$groupC-groupA)` is absent
+  
+  `actual$groupC-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupA$pos` is absent
+  
+  `actual$groupC-groupB` is length 1
+  `expected$groupC-groupB` is length 0
+  
+  `names(actual$groupC-groupB)` is a character vector ('pos')
+  `names(expected$groupC-groupB)` is absent
+  
+  `actual$groupC-groupB$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupB$pos` is absent
+  
+  T6 (b)
+
+== KIT-196 T7: metab the DA tab path managed (worker) completes and reports the feature as not tested
+failing expectations: 27
+--- 1
+Expected `unlist(errors) %||% character()` to be identical to `character()`.
+  Differences:
+  `names(actual)` is a character vector ('groupB-groupA.pos', 'groupC-groupA.pos', 'groupC-groupB.pos')
+  `names(expected)` is absent
+  
+      actual                            | expected 
+  [1] "prior.weights contain NA values" -          
+  [2] "prior.weights contain NA values" -          
+  [3] "prior.weights contain NA values" -          
+  
+  T7
+--- 2
+Expected `errors` to be identical to `stats::setNames(rep(list(list()), length(contrasts)), contrasts)`.
+  Differences:
+  `actual$groupB-groupA` is length 1
+  `expected$groupB-groupA` is length 0
+  
+  `names(actual$groupB-groupA)` is a character vector ('pos')
+  `names(expected$groupB-groupA)` is absent
+  
+  `actual$groupB-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupB-groupA$pos` is absent
+  
+  `actual$groupC-groupA` is length 1
+  `expected$groupC-groupA` is length 0
+  
+  `names(actual$groupC-groupA)` is a character vector ('pos')
+  `names(expected$groupC-groupA)` is absent
+  
+  `actual$groupC-groupA$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupA$pos` is absent
+  
+  `actual$groupC-groupB` is length 1
+  `expected$groupC-groupB` is length 0
+  
+  `names(actual$groupC-groupB)` is a character vector ('pos')
+  `names(expected$groupC-groupB)` is absent
+  
+  `actual$groupC-groupB$pos` is a character vector ('prior.weights contain NA values')
+  `expected$groupC-groupB$pos` is absent
+  
+  T7
+
+== KIT-196 T8: seeded sparse data (KIT-188's M12 cell, VD 20 %) complete; the tested rows equal the DA without the features without values
+failing expectations: 3
+--- 1
+Expected `message %||% "<none>"` to be identical to "<none>".
+  Differences:
+      lines(actual)                                   | lines(expected)    
+  [1] "differential abundance failed for every assay" - "<none>"        [1]
+  [2] "x LCMS_Pos: prior.weights contain NA values"   -
+--- 2
+Expected `run$result$features_without_values` to be identical to `list(LCMS_Pos = without)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+== KIT-196 T9: with the trend off, the tested rows equal the DA without the feature without values (D2)
+failing expectations: 2
+--- 1
+Expected `got` to be identical to `want`.
+  Differences:
+  actual vs expected
+                              t      P.Value  fdr_qvalue fdr_value_bh   raw_pvalue
+  - actual[1, ]      2.93993281 3.424473e-03 0.051367099  0.051367099 3.424473e-03
+  + expected[1, ]    2.93999769 3.423768e-03 0.051356516  0.051356516 3.423768e-03
+  - actual[2, ]      2.33808592 1.974964e-02 0.148122305  0.148122305 1.974964e-02
+  + expected[2, ]    2.33809919 1.974895e-02 0.148117101  0.148117101 1.974895e-02
+    actual[3, ]     -1.08924486 2.765354e-01 0.685297913  0.685297913 2.765354e-01
+    actual[4, ]      0.62731322 5.307211e-01 0.845728829  0.845728829 5.307211e-01
+    actual[5, ]     -0.93397429 3.507377e-01 0.701475407  0.701475407 3.507377e-01
+    actual[6, ]      0.99381490 3.207614e-01 0.687345900  0.687345900 3.207614e-01
+  - actual[7, ]      0.39018168 6.965572e-01 0.870696519  0.870696519 6.965572e-01
+  + expected[7, ]    0.39018452 6.965551e-01 0.870693893  0.870693893 6.965551e-01
+  - actual[8, ]      1.52161262 1.286959e-01 0.439668166  0.439668166 1.286959e-01
+  + expected[8, ]    1.52161262 1.286959e-01 0.439665691  0.439665691 1.286959e-01
+  - actual[9, ]     -0.89112577 3.732615e-01 0.708736140  0.708736140 3.732615e-01
+  + expected[9, ]   -0.89113199 3.732582e-01 0.708736140  0.708736140 3.732582e-01
+    actual[10, ]     0.30777569 7.583726e-01 0.928619479  0.928619479 7.583726e-01
+    actual[11, ]    -0.83543170 4.038469e-01 0.712671039  0.712671039 4.038469e-01
+  - actua
+[... cut ...]
+
+--- 2
+Expected `got` to be identical to `want`.
+  Differences:
+  actual vs expected
+                              t      P.Value  fdr_qvalue fdr_value_bh   raw_pvalue
+  - actual[1, ]      2.93993281 3.424473e-03 0.051367099  0.051367099 3.424473e-03
+  + expected[1, ]    2.93999769 3.423768e-03 0.051356516  0.051356516 3.423768e-03
+  - actual[2, ]      2.33808592 1.974964e-02 0.148122305  0.148122305 1.974964e-02
+  + expected[2, ]    2.33809919 1.974895e-02 0.148117101  0.148117101 1.974895e-02
+    actual[3, ]     -1.08924486 2.765354e-01 0.685297913  0.685297913 2.765354e-01
+    actual[4, ]      0.62731322 5.307211e-01 0.845728829  0.845728829 5.307211e-01
+    actual[5, ]     -0.93397429 3.507377e-01 0.701475407  0.701475407 3.507377e-01
+    actual[6, ]      0.99381490 3.207614e-01 0.687345900  0.687345900 3.207614e-01
+  - actual[7, ]      0.39018168 6.965572e-01 0.870696519  0.870696519 6.965572e-01
+  + expected[7, ]    0.39018452 6.965551e-01 0.870693893  0.870693893 6.965551e-01
+  - actual[8, ]      1.52161262 1.286959e-01 0.439668166  0.439668166 1.286959e-01
+  + expected[8, ]    1.52161262 1.286959e-01 0.439665691  0.439665691 1.286959e-01
+  - actual[9, ]     -0.89112577 3.732615e-01 0.708736140  0.708736140 3.732615e-01
+  + expected[9, ]   -0.89113199 3.732582e-01 0.708736140  0.708736140 3.732582e-01
+    actual[10, ]     0.30777569 7.583726e-01 0.928619479  0.928619479 7.583726e-01
+    actual[11, ]    -0.83543170 4.038469e-01 0.712671039  0.712671039 4.038469e-01
+  - actua
+[... cut ...]

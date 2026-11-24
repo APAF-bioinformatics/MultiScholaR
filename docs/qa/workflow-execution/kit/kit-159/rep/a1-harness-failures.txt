@@ -1,0 +1,52 @@
+== test-evidence.R :: the results note prints the measured coverage beside every verdict and the attribution (1 not passed)
+Expected `any(...)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+== test-repair.R :: R-I05, I07, I08: a counted phase writes the run folder of 5.7, results.md with coverage, and passes both checks (1 not passed)
+Expected `any(grepl("3/simulations", txt, fixed = TRUE))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+== test-repair2.R :: R-O8, VAL-137 (3): over independent units nothing is widened at any count; the claim's scope is stated (14 not passed)
+Expected `run$flags[[1L]]` to match string "within_run_widening=never(VAL-137:independent)".
+Actual text:
+x | within_run_widening=report_only(O8:below_6),within_run_reported=u01:[-0.5,0.5],within_run_reported=u02:[-0.5,0.5],within_run_reported=u03:[-0.5,0.5],within_run_reported=u04:[-0.5,0.5],within_run_reported=u05:[-0.5,0.5]
+
+== test-repair4.R :: R-V137-2: the family bound sums each component's one-sided 95 % Clopper-Pearson upper bound (4 not passed)
+Expected `line` to have length 1.
+Actual length: 0.
+
+== test-repair4.R :: R-V137-3: the jackknife widens only in forms (ii) and (iii); form (i) reports only (6 not passed)
+Expected `run$ci_high[[1L]]` < 0.5.
+Actual comparison: 0.5 >= 0.5
+Difference: 0.0 >= 0
+
+== test-repair4.R :: R-E8: the SE inflation is the half-width ratio with the t factor removed (4 not passed)
+Expected `rows$se_inflation` to equal `rep(1, length(lv))`.
+Differences:
+`actual` is NULL
+`expected` is a double vector (1, 1, 1, 1, 1, ...)
+
+
+== test-repair4.R :: R-E7: the pinned table names each row's generator; the classifier and results.md carry it (6 not passed)
+Expected `"generator" %in% names(reg)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+== test-repair4.R :: R-E4: per-unit truths are hashed into provenance (1 not passed)
+Error in `expect_setequal(names(pu), sprintf("u%02d", 1:5))`: `object` must be a vector, not `NULL`.
+
+== test-repair4.R :: R-DI10b: the one-directional fixed generator keeps the fixed draw and moves every changed feature up (2 not passed)
+Expected `all(f$sign[seq_len(100L)] == 1)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+

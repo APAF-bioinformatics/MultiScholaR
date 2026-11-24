@@ -1,0 +1,41 @@
+case	test	passed	failed	errors	skipped
+none	KIT-205 B1: the clusterProfiler universe excludes the untested proteins; the family counts tested proteins	6	0	0	0
+none	KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays	13	0	0	0
+none	KIT-205 B3: a table with no untested row gives the same universe, background, TSV and results under both rules	13	0	0	0
+none	KIT-205 B4: the lists lie inside the background; a row with a q-value but no p-value is in neither	8	0	0	0
+none	KIT-205 B5: a table without raw_pvalue (KIT-189's form) is reduced by its q-value alone	4	0	0	0
+none	KIT-205 B6 (a): under the earlier rule the background is every row	2	0	0	0
+none	KIT-205 B6 (b, c): the record replay runs the enrichment step under its own background rule; a fresh run records it	11	0	0	0
+none	KIT-205 B7: the report reads the marker; each template states the background and family of its rule	159	0	0	0
+none	KIT-205 B8: the organism filter commutes with the reduction to tested rows	2	0	0	0
+none	KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output	10	0	0	0
+m1	KIT-205 B1: the clusterProfiler universe excludes the untested proteins; the family counts tested proteins	6	0	0	0
+m1	KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays	8	5	0	0
+m1	KIT-205 B3: a table with no untested row gives the same universe, background, TSV and results under both rules	13	0	0	0
+m1	KIT-205 B4: the lists lie inside the background; a row with a q-value but no p-value is in neither	8	0	0	0
+m1	KIT-205 B5: a table without raw_pvalue (KIT-189's form) is reduced by its q-value alone	4	0	0	0
+m1	KIT-205 B6 (a): under the earlier rule the background is every row	2	0	0	0
+m1	KIT-205 B6 (b, c): the record replay runs the enrichment step under its own background rule; a fresh run records it	11	0	0	0
+m1	KIT-205 B7: the report reads the marker; each template states the background and family of its rule	159	0	0	0
+m1	KIT-205 B8: the organism filter commutes with the reduction to tested rows	2	0	0	0
+m1	KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output	10	0	0	0
+m2	KIT-205 B1: the clusterProfiler universe excludes the untested proteins; the family counts tested proteins	6	0	0	0
+m2	KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays	13	0	0	0
+m2	KIT-205 B3: a table with no untested row gives the same universe, background, TSV and results under both rules	13	0	0	0
+m2	KIT-205 B4: the lists lie inside the background; a row with a q-value but no p-value is in neither	8	0	0	0
+m2	KIT-205 B5: a table without raw_pvalue (KIT-189's form) is reduced by its q-value alone	4	0	0	0
+m2	KIT-205 B6 (a): under the earlier rule the background is every row	2	0	0	0
+m2	KIT-205 B6 (b, c): the record replay runs the enrichment step under its own background rule; a fresh run records it	9	2	0	0
+m2	KIT-205 B7: the report reads the marker; each template states the background and family of its rule	159	0	0	0
+m2	KIT-205 B8: the organism filter commutes with the reduction to tested rows	2	0	0	0
+m2	KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output	10	0	0	0
+m3	KIT-205 B1: the clusterProfiler universe excludes the untested proteins; the family counts tested proteins	6	0	0	0
+m3	KIT-205 B2: the g:Profiler background is each comparison's tested ids, for up and down; a shared name stays	13	0	0	0
+m3	KIT-205 B3: a table with no untested row gives the same universe, background, TSV and results under both rules	13	0	0	0
+m3	KIT-205 B4: the lists lie inside the background; a row with a q-value but no p-value is in neither	4	4	0	0
+m3	KIT-205 B5: a table without raw_pvalue (KIT-189's form) is reduced by its q-value alone	2	2	0	0
+m3	KIT-205 B6 (a): under the earlier rule the background is every row	2	0	0	0
+m3	KIT-205 B6 (b, c): the record replay runs the enrichment step under its own background rule; a fresh run records it	11	0	0	0
+m3	KIT-205 B7: the report reads the marker; each template states the background and family of its rule	159	0	0	0
+m3	KIT-205 B8: the organism filter commutes with the reduction to tested rows	2	0	0	0
+m3	KIT-205 B9: KIT-203's label, note, notice and legend say tested proteins; the module adds no output	10	0	0	0

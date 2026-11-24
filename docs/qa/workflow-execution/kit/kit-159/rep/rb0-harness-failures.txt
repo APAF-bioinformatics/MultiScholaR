@@ -1,0 +1,46 @@
+== test-g1a-entry.R :: T-G1A-ENV-1: the job environment holds the CPU model, the D7 keys and the lockfile digest (1 not passed)
+Error in `valJobEnvironment(root, cpuinfo = file.path(root, "cpuinfo"), command = fakeCommand)`: could not find function "valJobEnvironment"
+
+== test-g1a-entry.R :: T-G1A-ENV-2: the lockfile is compared between the link's commit and the job's (1 not passed)
+Error in `valLockfileUnchanged(repo, a, b)`: could not find function "valLockfileUnchanged"
+
+== test-g1a-entry.R :: T-G1A-GATES: gates.md carries the environment, part (1), part (2) and the D7 mode (1 not passed)
+Error in `valG1aGatesMd(path, strrep("d", 40), env, p1, p2, da)`: could not find function "valG1aGatesMd"
+
+== test-g1a-entry.R :: T-G1A-ENTRY: val-g1a.R refuses part (2) without a reference table, with its class (4 not passed)
+Expected `file.exists(script)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+== test-g1a-entry.R :: T-PAR-5: L1's committed DA tables are read for G13 and checked against their hash (1 not passed)
+Error in `valParityL1Tables(req, repo, at = commit)`: could not find function "valParityL1Tables"
+
+== test-records.R :: T-PROV-2: every cell carries a replay status of G5; per-unit truths are hashed (I07, E4, E5) (6 not passed)
+Expected `valCheckProvenance(s)` to throw a error with class <val_provenance_invalid>.
+not_built
+
+== test-replay.R :: T-REP-1: the store comparison names a differing state and a differing DA result (1 not passed)
+Error in `valReplayKit(root)`: could not find function "valReplayKit"
+
+== test-replay.R :: T-REP-2: a refused replay is unsupported with its class; a differing one is not swallowed (1 not passed)
+Error in `valReplayStore(replayRecord(), origin, character(), list(), withr::local_tempdir(), fakeKit(), api = function(name) NULL, replay = refusing)`: could not find function "valReplayStore"
+
+== test-replay.R :: T-REP-3: the replay block of a cell: declared, not declared, not run (1 not passed)
+Error in `valReplayDeclared(decl, "u01", "wf")`: could not find function "valReplayDeclared"
+
+== test-replay.R :: T-REP-4: a declared replay cell runs on metab_combined; its result is written and checked (4 not passed)
+Expected `identical(rp$status, "not_built")` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+== test-valrun.R :: T-RUN-E2: val-run.R runs lifecycle, counted and score, and refuses with its class (4 not passed)
+Expected `miss$status` to be identical to 3L.
+Differences:
+  `actual`: 1
+`expected`: 3
+
+

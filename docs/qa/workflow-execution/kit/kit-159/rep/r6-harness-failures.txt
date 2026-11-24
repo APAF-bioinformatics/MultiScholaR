@@ -1,0 +1,59 @@
+== test-records.R :: T-PROV-1: a complete provenance passes; a missing field fails (5 not passed)
+Expected `valCheckProvenance(s)` to throw a error with class <val_provenance_invalid>.
+inputs.universe
+
+== test-repair.R :: R-I01: featureKey(feature_id, arm) is called per arm; unmapped is excluded for all arms and counted (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I02: the universe is the input role's features with their assays; BH per assay; outside rows stop (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I03: ticket coverage regimes run, are pinned by hash and reach the classifier (1 not passed)
+Error in `valTicketCoverage(decl, dir)`: could not find function "valTicketCoverage"
+
+== test-repair.R :: R-I04: refusals are recorded per 4.7 and O7 (b); nothing aborts the scoring (1 not passed)
+Error in `valRunLevel(decl, metrics, units21, cells = cells)`: unused argument (cells = cells)
+
+== test-repair.R :: R-I05, I07, I08: a counted phase writes the run folder of 5.7, results.md with coverage, and passes both checks (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I08: the guard in production: a universe key as a label, a lifecycle call count, a stray file (1 not passed)
+Error in `file.exists(files)`: invalid 'file' argument
+
+== test-repair.R :: R-I06: phase score reads the requests' within-run rows; jackknife widens to the full unit's same view (1 not passed)
+Error in `valWidenFromRequests(run, within, "legacy", "baseline", "mae", view = "intersection(legacy+baseline)", unit = "f1")`: unused arguments (view = "intersection(legacy+baseline)", unit = "f1")
+
+== test-repair.R :: R-I09, I18: declared states follow the arm's RUV run; a diagnostic step that changes state is not ok (2 not passed)
+Expected `o$outcome` to be identical to "did_not_complete".
+Differences:
+`actual`:   "ok"              
+`expected`: "did_not_complete"
+
+
+== test-repair.R :: R-I11: the declaration's statistical schema is refused before any cell (1 not passed)
+Error in `valCheckDeclarationSchema(ok, repairUnits())`: could not find function "valCheckDeclarationSchema"
+
+== test-repair.R :: R-I16: a member without a verdict is not_evaluable; worse_when never names a guard (4 not passed)
+Expected `res$outcome` to be identical to "not_evaluable".
+Differences:
+`actual`:   "inconclusive" 
+`expected`: "not_evaluable"
+
+
+== test-repair.R :: R-I15: G1(a) does not admit limpa_da_last_digits without its ruling and G1D's digest (3 not passed)
+Expected `"limpa_da_last_digits" %in% msrval:::G1A_CLASSES` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+
+== test-repair.R :: R-I17: the chunk backstop ends a cell blocked outside R as did_not_complete (timeout) (1 not passed)
+Error in `eval_bare(expr, quo_get_env(quo))`: object 'valChunkMinutes' not found
+
+== test-repair.R :: R-I20: anchor refusal at step anchor; within-run seed required; confusion-table metrics (2 not passed)
+Expected `err$step` to be identical to "anchor".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('anchor')
+
+

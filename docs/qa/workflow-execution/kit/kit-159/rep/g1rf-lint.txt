@@ -1,0 +1,3 @@
+filename	line_number	linter	message
+g1r.R	63	object_usage_linter	local variable 'where' assigned but may not be used
+g1r.R	75	assignment_linter	Replace <<- by assigning to a specific environment (with assign() or <-) to avoid hard-to-predict behavior.

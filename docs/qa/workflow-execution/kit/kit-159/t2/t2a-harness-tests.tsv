@@ -1,0 +1,8 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-coverage.R	pass bands: approximate run-level, within-run, exact and Clopper-Pearson	9	9	0	0	0	0	0.07
+test-coverage.R	the summary flags a paired t count passing on normal and failing on skewed data	3	3	0	0	0	0	0.054
+test-coverage.R	the catalogue has unique cells and every regime of 10.2	2	2	0	0	0	0	0.08
+test-coverage.R	small runs of a C1 and a C3 cell return one row per level	5	5	0	0	0	0	0.147
+test-coverage.R	a coverage cell run as ranges equals the cell run whole; a dropped or repeated range is refused	15	15	0	0	0	0	0.682
+test-coverage.R	seeds depend on the cell and the index only	3	3	0	0	0	0	0.06
+test-coverage.R	a coverage plan splits each cell into fixed consecutive ranges	3	3	0	0	0	0	0.061

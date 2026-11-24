@@ -1,0 +1,16 @@
+== test-coverage-table.R :: T-COV-ENDS: both ends and the failing condition and side are in the regime row (8 not passed)
+Expected `tab$coverage_min` to equal 0.9765.
+Differences:
+`actual` is NULL
+`expected` is a double vector (0.9765)
+
+
+== test-parity-stage.R :: T-PAR-4: the request's copied L1 values must equal L1's committed evidence (5 (e)) (1 not passed)
+Error in `valCheckParityL1(req, repo, at = commit)`: could not find function "valCheckParityL1"
+
+== test-phases.R :: T-PH-8: within-run bootstrap rows per unit, widening, clopper_pearson and a within-run verdict (1 not passed)
+Error in `valWithinRunRows(decl, "u01", da, prep$truth, prep$universe, env, blind_seed = NULL)`: could not find function "valWithinRunRows"
+
+== test-phases.R :: T-PH-9: test mode cannot be forced (r1.12, 7.3) (1 not passed)
+Error in `file(filename, "r")`: cannot open the connection
+

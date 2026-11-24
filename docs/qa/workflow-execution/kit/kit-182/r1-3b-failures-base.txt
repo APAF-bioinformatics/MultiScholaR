@@ -1,0 +1,2163 @@
+file: test-prot-norm-worker-figures.R
+test: KIT-182 T8 (managed): after a QC change the run's actions start with the QC result's figures, and the pre-normalisation PCA is redrawn, byte-identical to the unmanaged tab's (fails before)
+kind: failure
+message:
+  Expected `managed$actions$normalization_again` to be identical to `c(figures, "normalization-ruv", figures, figures)`.
+  Differences:
+      actual                     | expected                      
+  [2] "normalization-qc-figures" | "normalization-qc-figures" [1]
+                                 - "normalization-ruv"        [2]
+                                 - "normalization-qc-figures" [3]
+  [3] "normalization-qc-figures" | "normalization-qc-figures" [4]
+
+file: test-prot-norm-worker-figures.R
+test: KIT-182 T8 (managed): after a QC change the run's actions start with the QC result's figures, and the pre-normalisation PCA is redrawn, byte-identical to the unmanaged tab's (fails before)
+kind: failure
+message:
+  Expected `unname(managed$inputs$normalization_again[1:2])` to be identical to `rep(managed_seen$q, 2L)`.
+  Differences:
+  actual vs expected
+  - "05d6adeec8b37c8f35136e1e03ddec517a2abe7804058ff44af3acc6170f6c91"
+  + "b5b8c0656ea07a2dfc275436b00c52ba3b04886a33a0845728dc6aaa32260b5d"
+  - "e760aa1a9050331b14163b05c66e1b25c0197db768c7a0918c5d30001a133af7"
+  + "b5b8c0656ea07a2dfc275436b00c52ba3b04886a33a0845728dc6aaa32260b5d"
+
+file: test-prot-norm-worker-figures.R
+test: KIT-182 T8 (managed): after a QC change the run's actions start with the QC result's figures, and the pre-normalisation PCA is redrawn, byte-identical to the unmanaged tab's (fails before)
+kind: failure
+message:
+  Expected `identical(unmanaged$images$normalization_again[[pca]], unmanaged$images$tab_entry[[pca]])` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-prot-norm-worker-figures.R
+test: KIT-182 T8 (managed): after a QC change the run's actions start with the QC result's figures, and the pre-normalisation PCA is redrawn, byte-identical to the unmanaged tab's (fails before)
+kind: failure
+message:
+  Expected `identical(managed$images$normalization_again[[pca]], managed$images$tab_entry[[pca]])` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+kind: failure
+message:
+  Expected `input` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "fad35a79e8d478a0a3b6403f4428ea91a02f22c8dddc7f55ecb2fd228f011f1c"
+  `expected`: "90998876d0db37a643d88acfbea996d56f246a77dbcb6e2bf024c94345df0692"
+  
+  DIA
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "fad35a79e8d478a0a3b6403f4428ea91a02f22c8dddc7f55ecb2fd228f011f1c"
+  `expected`: "90998876d0db37a643d88acfbea996d56f246a77dbcb6e2bf024c94345df0692"
+  
+  DIA
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+kind: failure
+message:
+  Expected `rows` to be identical to `64L - k`.
+  Differences:
+    `actual`: 64
+  `expected`: 58
+  
+  DIA
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+kind: failure
+message:
+  Expected `input` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "923f00e1555f435b4ba6c6628ee1a662dcb80945ffc4ba75aa99b6e493779540"
+  `expected`: "7711be8103f5a1bf37659a61b55f1430ffe4f26e20b4e67ea89260d11825925b"
+  
+  LFQ
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "923f00e1555f435b4ba6c6628ee1a662dcb80945ffc4ba75aa99b6e493779540"
+  `expected`: "7711be8103f5a1bf37659a61b55f1430ffe4f26e20b4e67ea89260d11825925b"
+  
+  LFQ
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+kind: failure
+message:
+  Expected `rows` to be identical to `64L - k`.
+  Differences:
+    `actual`: 64
+  `expected`: 58
+  
+  LFQ
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+kind: failure
+message:
+  Expected `input` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "7815c3cc324b9c0e76304e023bb7ea26a68c143f8faac7282634cfa5d07d6bb0"
+  `expected`: "bc6ce1a9c94fc805b4f56c85714a02f5eca9d06e65fea9e007cfab4c570dadc3"
+  
+  TMT
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "7815c3cc324b9c0e76304e023bb7ea26a68c143f8faac7282634cfa5d07d6bb0"
+  `expected`: "bc6ce1a9c94fc805b4f56c85714a02f5eca9d06e65fea9e007cfab4c570dadc3"
+  
+  TMT
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before)
+kind: failure
+message:
+  Expected `rows` to be identical to `64L - k`.
+  Differences:
+    `actual`: 64
+  `expected`: 58
+  
+  TMT
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T1 (e) (S9): after the design is saved again, a QC change and a click read the QC result (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "5c7a0b6638255775f6144ef475d10c7049c34339eb3c9aa51dcb46225d17e4cd"
+  `expected`: "cf177785305429d27c4e30d13f5113bc56aad39b3a63b993799e948ce0448827"
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T3 (S4, S5): a first run after a QC change reads the QC result, with and without tab entry (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "c8aeef70e18e730ef99d87b4609d6cf443abef8b3fdc67ea514d2a108a6c0f21"
+  `expected`: "fd432d2ee2f0cd341d10c1f8828cd414f34eff71cb6ea4eaaa0a6b4b658d92fc"
+  
+  tab entry TRUE
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T3 (S4, S5): a first run after a QC change reads the QC result, with and without tab entry (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "2a538f32e1a295c00a5d4bbe3608783d3022b06c5df3fa53f2b3ee26ee375f59"
+  `expected`: "687e681b92bb44c4d7688d2ad7920949be58810e16360615d70954f0d626ae66"
+  
+  tab entry FALSE
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb149995c42/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb17f5b88ab/payload.rds"
+  
+    `actual$payload$bytes`: 13592.0
+  `expected$payload$bytes`: 20935.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "e01451c15af43da94c60c5411eb95fb92331324aa516cb968396457b33ec5f57"
+  + "d54f4d53ca37aad5dff58491a67a462ba4a3a8a3aba945dec52737de2fcbd1b7"
+  
+  actual$entity_id vs expected$entity_id
+  - "b9461d56a8233e4a968586b6a110b373af9d5c47dd80b294c109552ea0b8ed4d"
+  + "16df09baeffced396f4ef5fe2d5528c6e9d655f20d42247e0850608da13db18c"
+  
+  a
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `actions` to have length 0.
+  Actual length: 1.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `tab$errors` to have length 1.
+  Actual length: 0.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  a
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb149995c42/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb17f5b88ab/payload.rds"
+  
+    `actual$payload$bytes`: 13592.0
+  `expected$payload$bytes`: 20935.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "e01451c15af43da94c60c5411eb95fb92331324aa516cb968396457b33ec5f57"
+  + "d54f4d53ca37aad5dff58491a67a462ba4a3a8a3aba945dec52737de2fcbd1b7"
+  
+  actual$entity_id vs expected$entity_id
+  - "b9461d56a8233e4a968586b6a110b373af9d5c47dd80b294c109552ea0b8ed4d"
+  + "16df09baeffced396f4ef5fe2d5528c6e9d655f20d42247e0850608da13db18c"
+  
+  a
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1134f5d3f/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb1453bc458/payload.rds"
+  
+    `actual$payload$bytes`: 13592.0
+  `expected$payload$bytes`: 25216.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "2edf88b99b014f8bb3e9112b94d258e7c7e7c953ea03b87e82bda0a324f26dfa"
+  + "3898c40c7abc4f8889ea4f3bce3d7acbe4c1323d28ad34eecc3581e5fae11ee6"
+  
+  actual$entity_id vs expected$entity_id
+  - "b9963620dc0a01fa4631f25e2400872865f569e05f36b4d755fc122232716a54"
+  + "840e9bb33690580d4e9833d0d146c57ea0367aa4a4c3acd38af222b5922c3446"
+  
+  b
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "ruv_corrected"              | "ruv_corrected"              [3]
+  [4] "protein_intensity_filtered" | "protein_intensity_filtered" [4]
+  [5] "normalized"                 -                                 
+  
+  b
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `names(fixture$manager$.context$snapshot$states)` to be identical to `states`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "ruv_corrected"              | "ruv_corrected"              [3]
+  [4] "protein_intensity_filtered" | "protein_intensity_filtered" [4]
+  [5] "normalized"                 -                                 
+  
+  b
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `actions` to have length 0.
+  Actual length: 1.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `tab$errors` to have length 1.
+  Actual length: 0.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  b
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1134f5d3f/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb1453bc458/payload.rds"
+  
+    `actual$payload$bytes`: 13592.0
+  `expected$payload$bytes`: 25216.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "2edf88b99b014f8bb3e9112b94d258e7c7e7c953ea03b87e82bda0a324f26dfa"
+  + "3898c40c7abc4f8889ea4f3bce3d7acbe4c1323d28ad34eecc3581e5fae11ee6"
+  
+  actual$entity_id vs expected$entity_id
+  - "b9963620dc0a01fa4631f25e2400872865f569e05f36b4d755fc122232716a54"
+  + "840e9bb33690580d4e9833d0d146c57ea0367aa4a4c3acd38af222b5922c3446"
+  
+  b
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_replicate_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1542f8b5/payload.rds" 
+  `expected$payload$relative_path`: "entities/dia-state-4cb17276f3e1/payload.rds"
+  
+    `actual$payload$bytes`: 13593.0
+  `expected$payload$bytes`: 19571.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "c53b0dfe60b2b7725fc540493e9492b09699e78dbd32daefefabe5e2e079988b"
+  + "548d9c04e95cc6918a154ded3263d900c492aee4753132aa246d54e71ab34f39"
+  
+  actual$entity_id vs expected$entity_id
+  - "d059e53a6ec24523229a5475a0cd3a187a582f0c2392cf03670389e5a9ddca5a"
+  + "715a8cabdfc375881fc512b4cd905b936c0752ae4665f08f287ba30bf1c19774"
+  
+  c
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `actions` to have length 0.
+  Actual length: 1.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `tab$errors` to have length 1.
+  Actual length: 0.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  c
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_replicate_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1542f8b5/payload.rds" 
+  `expected$payload$relative_path`: "entities/dia-state-4cb17276f3e1/payload.rds"
+  
+    `actual$payload$bytes`: 13593.0
+  `expected$payload$bytes`: 19571.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "c53b0dfe60b2b7725fc540493e9492b09699e78dbd32daefefabe5e2e079988b"
+  + "548d9c04e95cc6918a154ded3263d900c492aee4753132aa246d54e71ab34f39"
+  
+  actual$entity_id vs expected$entity_id
+  - "d059e53a6ec24523229a5475a0cd3a187a582f0c2392cf03670389e5a9ddca5a"
+  + "715a8cabdfc375881fc512b4cd905b936c0752ae4665f08f287ba30bf1c19774"
+  
+  c
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb114d664b4/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb115a441ee/payload.rds"
+  
+    `actual$payload$bytes`: 13593.0
+  `expected$payload$bytes`: 26492.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "623df1bde0c57cee4581de4a05f10acd1f4b16b2ec9df1936a7887dfb21a8077"
+  + "e54e88f3d9a454cc938a96c311cdc1eeaaf72df2685c94c8faeab0d185d1cec7"
+  
+  actual$entity_id vs expected$entity_id
+  - "e61902d154af9aefaea910f365d4394fb469f1c7951d6f394ece5cad9701e595"
+  + "3d3ded1db61fd1e945be85cf304412e77757d3d855deac3a2311adbc08708fbe"
+  
+  d_apply
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [3] "ruv_corrected"              | "ruv_corrected"              [3]
+  [4] "correlation_filtered"       | "correlation_filtered"       [4]
+  [5] "protein_intensity_filtered" | "protein_intensity_filtered" [5]
+  [6] "normalized"                 -                                 
+  
+  d_apply
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `names(fixture$manager$.context$snapshot$states)` to be identical to `states`.
+  Differences:
+      actual                       | expected                        
+  [3] "ruv_corrected"              | "ruv_corrected"              [3]
+  [4] "correlation_filtered"       | "correlation_filtered"       [4]
+  [5] "protein_intensity_filtered" | "protein_intensity_filtered" [5]
+  [6] "normalized"                 -                                 
+  
+  d_apply
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `actions` to have length 0.
+  Actual length: 1.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `tab$errors` to have length 1.
+  Actual length: 0.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  d_apply
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb114d664b4/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb115a441ee/payload.rds"
+  
+    `actual$payload$bytes`: 13593.0
+  `expected$payload$bytes`: 26492.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "623df1bde0c57cee4581de4a05f10acd1f4b16b2ec9df1936a7887dfb21a8077"
+  + "e54e88f3d9a454cc938a96c311cdc1eeaaf72df2685c94c8faeab0d185d1cec7"
+  
+  actual$entity_id vs expected$entity_id
+  - "e61902d154af9aefaea910f365d4394fb469f1c7951d6f394ece5cad9701e595"
+  + "3d3ded1db61fd1e945be85cf304412e77757d3d855deac3a2311adbc08708fbe"
+  
+  d_apply
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb17f03ec9b/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb132601520/payload.rds"
+  
+    `actual$payload$bytes`: 13593.0
+  `expected$payload$bytes`: 22234.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "e41a731539fd3edf5c8d23fd22a4aebc76a4253956cc71cbcd2e3f35cb605a5d"
+  + "4ed4b63c6ab5edd8f782cb25b8314e4373af81dd100c656a22d6393ce0c50233"
+  
+  actual$entity_id vs expected$entity_id
+  - "bab2126c3b0b85457cb94cf1580213d8353854ea353df5a155eb26ba6be329cb"
+  + "37df54710436b4724fefdc9fb29d7ecb15ac007169ec414b517dc54d90851248"
+  
+  d_skip
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [3] "ruv_corrected"              | "ruv_corrected"              [3]
+  [4] "correlation_filtered"       | "correlation_filtered"       [4]
+  [5] "protein_intensity_filtered" | "protein_intensity_filtered" [5]
+  [6] "normalized"                 -                                 
+  
+  d_skip
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `names(fixture$manager$.context$snapshot$states)` to be identical to `states`.
+  Differences:
+      actual                       | expected                        
+  [3] "ruv_corrected"              | "ruv_corrected"              [3]
+  [4] "correlation_filtered"       | "correlation_filtered"       [4]
+  [5] "protein_intensity_filtered" | "protein_intensity_filtered" [5]
+  [6] "normalized"                 -                                 
+  
+  d_skip
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `actions` to have length 0.
+  Actual length: 1.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `tab$errors` to have length 1.
+  Actual length: 0.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  d_skip
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "normalized"                
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb17f03ec9b/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb132601520/payload.rds"
+  
+    `actual$payload$bytes`: 13593.0
+  `expected$payload$bytes`: 22234.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "e41a731539fd3edf5c8d23fd22a4aebc76a4253956cc71cbcd2e3f35cb605a5d"
+  + "4ed4b63c6ab5edd8f782cb25b8314e4373af81dd100c656a22d6393ce0c50233"
+  
+  actual$entity_id vs expected$entity_id
+  - "bab2126c3b0b85457cb94cf1580213d8353854ea353df5a155eb26ba6be329cb"
+  + "37df54710436b4724fefdc9fb29d7ecb15ac007169ec414b517dc54d90851248"
+  
+  d_skip
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (e): a remembered or QC-source table that is itself normalised is refused (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (e): a remembered or QC-source table that is itself normalised is refused (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1ffc306b/payload.rds" 
+  `expected$payload$relative_path`: "entities/dia-state-4cb126901a8f/payload.rds"
+  
+    `actual$payload$bytes`: 19153.0
+  `expected$payload$bytes`: 13592.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "84dabb71466b0b8426166a88eb1ddf88704b76c00e00988ae859d76367cc447e"
+  + "849bb76728d1832d04c2b4934ebfa12d602b8f2ca420154924737ce6ade2ce26"
+  
+  actual$entity_id vs expected$entity_id
+  - "8553d628c2c57dda981a7904549882702ec75102b857fa67b053ae7db4552a89"
+  + "f9856441853690c719647daca468da0b91a5bc2805c5f07a88e6c4f64708a6ec"
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (f): on DIA_LIMPA, a table to which QC was applied after the RUV correction is not designated (fails before)
+kind: failure
+message:
+  Expected `tab$errors` to have length 1.
+  Actual length: 0.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (f): on DIA_LIMPA, a table to which QC was applied after the RUV correction is not designated (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference` to be identical to `designated`.
+  Differences:
+  `actual$identity$parameters`:   "protein_normalised"    
+  `expected$identity$parameters`: "peptide_count_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1573692e1/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb165bbe943/payload.rds"
+  
+    `actual$payload$bytes`: 41440.0
+  `expected$payload$bytes`: 24499.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "54b13818fa96fa743b7fcd4b938d3471dc60ba7e4e28e7c81321594188fe1fb5"
+  + "56ccc67603f031f520806de37e136fe9ef7f5db1cb61d77d8cab06088a90d293"
+  
+  actual$entity_id vs expected$entity_id
+  - "bc68cca4b37e6e8ba5f7ae80794e9696c68d8eec5c11f0e84c6c2596f8fef6f6"
+  + "b3fcd621846924aa326620092cd0ea9c7c77fa3f18b55bc779e28a08f8b85c7b"
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T4 (g): an adopted legacy head after RUV is refused (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T5: Reset then run reads PRF1 (as before); after Reset, a QC change and a run read the QC result (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "02de9c282669ecf8b3af58adc628b548de30cb1df18949aed204f4b766d17d02"
+  `expected`: "99f71b679fb0bf15d992707c7bcb603d5da0d3a4e30d679ec41cd1f770a69d8b"
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T6: a restored session re-runs from its own state as before, and from a QC change reads the QC result (fails before)
+kind: failure
+message:
+  Expected `norm$normalization_input_reference$entity_id` to be identical to `q$entity_id`.
+  Differences:
+  `actual`:   "a7f4cc9f8300a9b6437f248bee668f525079240c9d2e113bb79a1c325c439441"
+  `expected`: "4ba1913297c64bb429dda9f869968592e46f2117a146b30a1021e1eaa4d68f14"
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T7 (a): the tab says when the run reads another table than the previous run, and only then (fails before)
+kind: failure
+message:
+  Expected `k182Tab(fixture, norm, "skip")$notes` to be identical to `c(paste0("[message 10] ", k182NoticeText), completion)`.
+  Differences:
+  actual vs expected
+  - "[message 10] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step."
+  + "[message 10] This normalisation uses your current quality-control result. The previous normalisation used an earlier table, from before your latest quality-control changes."
+  + "[message 10] Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step."
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T8 (in process): the pre-normalisation figures are redrawn from the table normalised, before the publication (fails before)
+kind: failure
+message:
+  Expected `sum(calls == "pre_qc")` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  S2
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T8 (in process): the pre-normalisation figures are redrawn from the table normalised, before the publication (fails before)
+kind: failure
+message:
+  Expected `isTRUE(match("pre_qc", calls) < match("publish", calls))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  S2
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T8 (in process): the pre-normalisation figures are redrawn from the table normalised, before the publication (fails before)
+kind: failure
+message:
+  Expected `identical(unname(tools::md5sum(image)), drawn)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  S2
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T8 (in process): the pre-normalisation figures are redrawn from the table normalised, before the publication (fails before)
+kind: failure
+message:
+  Expected `sum(calls == "pre_qc")` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  S4
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T8 (in process): the pre-normalisation figures are redrawn from the table normalised, before the publication (fails before)
+kind: failure
+message:
+  Expected `isTRUE(match("pre_qc", calls) < match("publish", calls))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  S4
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T8 (in process): the pre-normalisation figures are redrawn from the table normalised, before the publication (fails before)
+kind: failure
+message:
+  Expected `identical(unname(tools::md5sum(image)), drawn)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  S4
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_accession_cleaned"
+  `expected$identity$parameters`: "normalized"               
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1780d1907/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb13455c60/payload.rds" 
+  
+    `actual$payload$bytes`: 19170.0
+  `expected$payload$bytes`: 13592.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "03e839c7f5110cc1482cc937014596e7619ac3282e5f0a4593334946bb81542b"
+  + "adbefc056cca8abc564c862eda165c1b4b269b88dd72f12a3a32c408c260238c"
+  
+  actual$entity_id vs expected$entity_id
+  - "a6ce83606a1491d7e8a7f267c82c636a5471e15b94cd90844a6c1df687d20649"
+  + "b66f665a4bc37aa72be66213f22fd75fb799ffeb81c3a51f2afb925f4f8bfed8"
+  
+  normalized cleanup
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [1] "initial"                    | "initial"                    [1]
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_accession_cleaned"  -                                 
+  
+  normalized cleanup
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_intensity_filtered"
+  `expected$identity$parameters`: "protein_accession_cleaned" 
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb179a1c63b/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb1780d1907/payload.rds"
+  
+    `actual$payload$bytes`: 22243.0
+  `expected$payload$bytes`: 19170.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "201a104e2ce377f20f32b82d87392ef4a73992fb80462de7ad333ab11cf2fa8e"
+  + "03e839c7f5110cc1482cc937014596e7619ac3282e5f0a4593334946bb81542b"
+  
+  actual$entity_id vs expected$entity_id
+  - "c91ebf2d6a400d492ad0961501494b86929e47dfd8e4d34f1f2857324a59444e"
+  + "a6ce83606a1491d7e8a7f267c82c636a5471e15b94cd90844a6c1df687d20649"
+  
+  normalized intensity
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_accession_cleaned"  | "protein_accession_cleaned"  [4]
+  [5] "protein_intensity_filtered" -                                 
+  
+  normalized intensity
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "duplicates_removed"        
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb15efbe5c7/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb179a1c63b/payload.rds"
+  
+    `actual$payload$bytes`: 24804.0
+  `expected$payload$bytes`: 22243.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "81aba48fa6e6a850076c52dd3069ec66a7e9da00bef35df5774b6b4beb55c29a"
+  + "201a104e2ce377f20f32b82d87392ef4a73992fb80462de7ad333ab11cf2fa8e"
+  
+  actual$entity_id vs expected$entity_id
+  - "e19b86a719f1eee617b12fd8ca61471af42a9a3c974931bcb5b6162fd80bcd9a"
+  + "c91ebf2d6a400d492ad0961501494b86929e47dfd8e4d34f1f2857324a59444e"
+  
+  normalized duplicates
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_accession_cleaned"  | "protein_accession_cleaned"  [4]
+  [5] "protein_intensity_filtered" | "protein_intensity_filtered" [5]
+  [6] "duplicates_removed"         -                                 
+  
+  normalized duplicates
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_replicate_filtered"
+  `expected$identity$parameters`: "duplicates_removed"        
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb16950115a/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb15efbe5c7/payload.rds"
+  
+    `actual$payload$bytes`: 27995.0
+  `expected$payload$bytes`: 24804.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "2a54e942e12753dc21875a60d24e4d24ed76b9b358c6de5821126588a01b4a56"
+  + "81aba48fa6e6a850076c52dd3069ec66a7e9da00bef35df5774b6b4beb55c29a"
+  
+  actual$entity_id vs expected$entity_id
+  - "ec6125107f339f17e70ede1a8b6ef5ca592719c72a3518b66832078dcdd16aba"
+  + "e19b86a719f1eee617b12fd8ca61471af42a9a3c974931bcb5b6162fd80bcd9a"
+  
+  normalized replicate
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_accession_cleaned"
+  `expected$identity$parameters`: "correlation_filtered"     
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb16b9be4d0/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb16dceb1e2/payload.rds"
+  
+    `actual$payload$bytes`: 20459.0
+  `expected$payload$bytes`: 17625.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "ce9e97dbe118bbd3ce08a5e1a1defcbbda616185060070f58ff5b8e5e58dc2e1"
+  + "a5e87fd731d4fcd463cefd77dfbb81732341ce631dd3719fe59c2fb3871a9748"
+  
+  actual$entity_id vs expected$entity_id
+  - "1640fe4248121627de1fed7ce766d8acd774003fb56dbf08136c3eead68a6260"
+  + "667297ce9b46e9affccbe80e7981d4af1d04d97159014e30904d1ad26aeb492b"
+  
+  correlation_filtered cleanup
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "correlation_filtered"       | "correlation_filtered"       [4]
+  [5] "protein_accession_cleaned"  -                                 
+  
+  correlation_filtered cleanup
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_intensity_filtered"
+  `expected$identity$parameters`: "protein_accession_cleaned" 
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1324de2c7/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb16b9be4d0/payload.rds"
+  
+    `actual$payload$bytes`: 23520.0
+  `expected$payload$bytes`: 20459.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "0de765fe21bc569dfa220307ad2096381b6f1bcb3c38419fff1eae5a9d4a0d41"
+  + "ce9e97dbe118bbd3ce08a5e1a1defcbbda616185060070f58ff5b8e5e58dc2e1"
+  
+  actual$entity_id vs expected$entity_id
+  - "8ad4b26bdb540c212e03f5582388c2311f873ab9e4759f9a5bc0ae428b46f3a6"
+  + "1640fe4248121627de1fed7ce766d8acd774003fb56dbf08136c3eead68a6260"
+  
+  correlation_filtered intensity
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                       
+  [3] "normalized"                 | "normalized"                [3]
+  [4] "correlation_filtered"       | "correlation_filtered"      [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned" [5]
+  [6] "protein_intensity_filtered" -                                
+  
+  correlation_filtered intensity
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "duplicates_removed"        
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb175e134ed/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb1324de2c7/payload.rds"
+  
+    `actual$payload$bytes`: 26082.0
+  `expected$payload$bytes`: 23520.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "1d0df4aac560bb59d72c5fba764ec643c6813821f1902239be20a63b2573ba5a"
+  + "0de765fe21bc569dfa220307ad2096381b6f1bcb3c38419fff1eae5a9d4a0d41"
+  
+  actual$entity_id vs expected$entity_id
+  - "c3f988b78bf96be5e5ea7c597bd23bdbdebbe2cc75bee5a200f36aa987315206"
+  + "8ad4b26bdb540c212e03f5582388c2311f873ab9e4759f9a5bc0ae428b46f3a6"
+  
+  correlation_filtered duplicates
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [4] "correlation_filtered"       | "correlation_filtered"       [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned"  [5]
+  [6] "protein_intensity_filtered" | "protein_intensity_filtered" [6]
+  [7] "duplicates_removed"         -                                 
+  
+  correlation_filtered duplicates
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_replicate_filtered"
+  `expected$identity$parameters`: "duplicates_removed"        
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb137e966e7/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb175e134ed/payload.rds"
+  
+    `actual$payload$bytes`: 29273.0
+  `expected$payload$bytes`: 26082.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "e799b45c7a94b21b90dc233f1bdc9a7dbb9a2d878634edafb332fa5a98657e54"
+  + "1d0df4aac560bb59d72c5fba764ec643c6813821f1902239be20a63b2573ba5a"
+  
+  actual$entity_id vs expected$entity_id
+  - "a343a8c5b5bfe26f576e6393a956d66881012a6ff1a396374b0f98964c426fd4"
+  + "c3f988b78bf96be5e5ea7c597bd23bdbdebbe2cc75bee5a200f36aa987315206"
+  
+  correlation_filtered replicate
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_accession_cleaned" 
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1208e2faa/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb11d85b453/payload.rds"
+  
+    `actual$payload$bytes`: 22162.0
+  `expected$payload$bytes`: 20936.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "8ecdb7f629037d0c5308002187c6673cc3ea5d9c4d572d915f630252c8d7f11e"
+  + "43150c354314a9f2e5a4a78627d79c83c40b4988f896a40306415769bd94f14f"
+  
+  actual$entity_id vs expected$entity_id
+  - "7589872e92cc6187a934b801930bec1802d5ae9d416e8b7913f4c68c2d3bdeb5"
+  + "d588ee4a2244c2a678ddba0494a03a0e9e7bb3eff7ffae9a760a4e9265dd6be6"
+  
+  qc_on_normalised cleanup
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_intensity_filtered" | "protein_intensity_filtered" [4]
+  [5] "protein_accession_cleaned"  -                                 
+  
+  qc_on_normalised cleanup
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_intensity_filtered"
+  `expected$identity$parameters`: "protein_accession_cleaned" 
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb118f7df99/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb1208e2faa/payload.rds"
+  
+    `actual$payload$bytes`: 24936.0
+  `expected$payload$bytes`: 22162.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "8339c49bb7dff262cd35137434136957d9d1e68c851d4be68b2a8ff28216c292"
+  + "8ecdb7f629037d0c5308002187c6673cc3ea5d9c4d572d915f630252c8d7f11e"
+  
+  actual$entity_id vs expected$entity_id
+  - "f863b0806cd1ebe838d4dc48852f1d2002c89e568b2b75d3a7fc8dfbd574a8a7"
+  + "7589872e92cc6187a934b801930bec1802d5ae9d416e8b7913f4c68c2d3bdeb5"
+  
+  qc_on_normalised intensity
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "duplicates_removed"        
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb125eaccf7/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb118f7df99/payload.rds"
+  
+    `actual$payload$bytes`: 27497.0
+  `expected$payload$bytes`: 24936.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "413ead4fa9e9d6dbd0a46d3ead119ae5d703b6a198b1d92b72cca856a3f2cf5e"
+  + "8339c49bb7dff262cd35137434136957d9d1e68c851d4be68b2a8ff28216c292"
+  
+  actual$entity_id vs expected$entity_id
+  - "640bb5ca82914f87dfe99f077174ebc52634399989afecf26d268550cf579ce5"
+  + "f863b0806cd1ebe838d4dc48852f1d2002c89e568b2b75d3a7fc8dfbd574a8a7"
+  
+  qc_on_normalised duplicates
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "protein_intensity_filtered" | "protein_intensity_filtered" [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned"  [5]
+  [6] "duplicates_removed"         -                                 
+  
+  qc_on_normalised duplicates
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_replicate_filtered"
+  `expected$identity$parameters`: "duplicates_removed"        
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb12df0408f/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb125eaccf7/payload.rds"
+  
+    `actual$payload$bytes`: 30686.0
+  `expected$payload$bytes`: 27497.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "31d6feb8c751ed3163f4f1f68ed792b26fc3f4e3c7014c2ce7cdb58b28ac2499"
+  + "413ead4fa9e9d6dbd0a46d3ead119ae5d703b6a198b1d92b72cca856a3f2cf5e"
+  
+  actual$entity_id vs expected$entity_id
+  - "7f1ccc627f134e5d77155dddea086fd79fe9be644a1f563c319e6bab075fb8cf"
+  + "640bb5ca82914f87dfe99f077174ebc52634399989afecf26d268550cf579ce5"
+  
+  qc_on_normalised replicate
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_accession_cleaned"
+  `expected$identity$parameters`: "enrichment_completed"     
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb12b872583/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb16f2ba58c/payload.rds"
+  
+    `actual$payload$bytes`: 19193.0
+  `expected$payload$bytes`: 13532.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "71a34f3772e5f3819e790b379d7836e5745debab1ead53ffd71268e808a1122c"
+  + "f555b0abf6148a64b582319bf82cdd8edb050cce37f411d9794915de15e05d26"
+  
+  actual$entity_id vs expected$entity_id
+  - "e351171085f1348df9615cdb5bc211362da3e4392bcd1850e1d74b681de36dde"
+  + "6518e5efd70b96b07edf3aa5f1cd0fd35e2f089d793fad09cd5eea7eb883bd9f"
+  
+  enrichment_completed cleanup
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "normalized"                 | "normalized"                 [3]
+  [4] "enrichment_completed"       | "enrichment_completed"       [4]
+  [5] "protein_accession_cleaned"  -                                 
+  
+  enrichment_completed cleanup
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_intensity_filtered"
+  `expected$identity$parameters`: "protein_accession_cleaned" 
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1377c6bce/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb12b872583/payload.rds"
+  
+    `actual$payload$bytes`: 22256.0
+  `expected$payload$bytes`: 19193.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "77615db7f1b463e97ce803d160681801e4a1d03cd495fb7595f8d4b7ad2d18f7"
+  + "71a34f3772e5f3819e790b379d7836e5745debab1ead53ffd71268e808a1122c"
+  
+  actual$entity_id vs expected$entity_id
+  - "cc09c5ad7add16fb9fe0c2614161443a08aebf269a30bf4f4c366574e5e1046b"
+  + "e351171085f1348df9615cdb5bc211362da3e4392bcd1850e1d74b681de36dde"
+  
+  enrichment_completed intensity
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                       
+  [3] "normalized"                 | "normalized"                [3]
+  [4] "enrichment_completed"       | "enrichment_completed"      [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned" [5]
+  [6] "protein_intensity_filtered" -                                
+  
+  enrichment_completed intensity
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "duplicates_removed"        
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb171a2d559/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb1377c6bce/payload.rds"
+  
+    `actual$payload$bytes`: 24817.0
+  `expected$payload$bytes`: 22256.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "143fe82416768228e673f0e3ead7ed24f3604ce9032d7dd4f343806efbfdd96e"
+  + "77615db7f1b463e97ce803d160681801e4a1d03cd495fb7595f8d4b7ad2d18f7"
+  
+  actual$entity_id vs expected$entity_id
+  - "6f5db98b4db76e35b5c0e4770b99572c407e96ff53cacfd7a0660328e0bef951"
+  + "cc09c5ad7add16fb9fe0c2614161443a08aebf269a30bf4f4c366574e5e1046b"
+  
+  enrichment_completed duplicates
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [4] "enrichment_completed"       | "enrichment_completed"       [4]
+  [5] "protein_accession_cleaned"  | "protein_accession_cleaned"  [5]
+  [6] "protein_intensity_filtered" | "protein_intensity_filtered" [6]
+  [7] "duplicates_removed"         -                                 
+  
+  enrichment_completed duplicates
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:631:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_replicate_filtered"
+  `expected$identity$parameters`: "duplicates_removed"        
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb179d7c727/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb171a2d559/payload.rds"
+  
+    `actual$payload$bytes`: 28008.0
+  `expected$payload$bytes`: 24817.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "b41d49018d2c9960e85a174272df86d6b6c3c72d03736cb534fefc73dcd0a5aa"
+  + "143fe82416768228e673f0e3ead7ed24f3604ce9032d7dd4f343806efbfdd96e"
+  
+  actual$entity_id vs expected$entity_id
+  - "89485bf4759d6fc9e5d47467a852fa965fa0bef0d348d80491f739fe56a60c1d"
+  + "6f5db98b4db76e35b5c0e4770b99572c407e96ff53cacfd7a0660328e0bef951"
+  
+  enrichment_completed replicate
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(fixture, steps[[name]], name, case, "Protein Replicate Filter") at test-prot-norm-input-current.R:658:9
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (b): DIA_LIMPA's between-sample normalisation and peptide count filter refuse a normalised head (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(...) at test-prot-norm-input-current.R:678:5
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (b): DIA_LIMPA's between-sample normalisation and peptide count filter refuse a normalised head (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_normalised"
+  `expected$identity$parameters`: "ruv_covariates"    
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb125f9bf81/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb177d920cb/payload.rds"
+  
+    `actual$payload$bytes`: 36057.0
+  `expected$payload$bytes`: 32458.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "dad99640e8475e4927c73edc9fe2104a4589bb50c8e45569442d2dad63e6e1d5"
+  + "0813efc4073e9b7f4208176289e5ef98d85987e4024883af0991897372d13852"
+  
+  actual$entity_id vs expected$entity_id
+  - "de18e37a0757324c5a46401342fb76cd8bbcd776b8756f8aa4a44da091b63b05"
+  + "4dd0452ac44d2f0ba09d48e1aed24de99f69b917f58b5d96bb48cfcbba2b03a6"
+  
+  ruv_covariates normalisation
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(...) at test-prot-norm-input-current.R:678:5
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (b): DIA_LIMPA's between-sample normalisation and peptide count filter refuse a normalised head (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(...) at test-prot-norm-input-current.R:678:5
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (b): DIA_LIMPA's between-sample normalisation and peptide count filter refuse a normalised head (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "peptide_count_filtered"
+  `expected$identity$parameters`: "protein_normalised"    
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1b50c496/payload.rds" 
+  `expected$payload$relative_path`: "entities/dia-state-4cb125f9bf81/payload.rds"
+  
+    `actual$payload$bytes`: 37508.0
+  `expected$payload$bytes`: 36057.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "fb21eae38c2ad56dd35b5dff3fe44fbdf3276dd4d6bf03e8a3faa4b2dcaaa198"
+  + "dad99640e8475e4927c73edc9fe2104a4589bb50c8e45569442d2dad63e6e1d5"
+  
+  actual$entity_id vs expected$entity_id
+  - "782a6deee031f752064642618c058e462eb2ce663bf8b72b92fd734ae4ab2d51"
+  + "de18e37a0757324c5a46401342fb76cd8bbcd776b8756f8aa4a44da091b63b05"
+  
+  ruv_covariates peptide_count
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(...) at test-prot-norm-input-current.R:678:5
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (b): DIA_LIMPA's between-sample normalisation and peptide count filter refuse a normalised head (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(...) at test-prot-norm-input-current.R:680:5
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (b): DIA_LIMPA's between-sample normalisation and peptide count filter refuse a normalised head (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "protein_normalised"  
+  `expected$identity$parameters`: "correlation_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb16d42838/payload.rds" 
+  `expected$payload$relative_path`: "entities/dia-state-4cb1139e567b/payload.rds"
+  
+    `actual$payload$bytes`: 29872.0
+  `expected$payload$bytes`: 26908.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "0bd9e37b4eb205d9a601c21e511cf2d58a05a4c05347e1f9d60ac20588105dd6"
+  + "33921dbabe217a9458009d6a0eaaf8dba4dbecc838048fa1aeb39fb2634c8adf"
+  
+  actual$entity_id vs expected$entity_id
+  - "6e449a01232388483a613c573e0fbcc27f7085e87e54b0826c7d51c76228a308"
+  + "ab98e5b94a9cca00bf91bb6f58b35d718e4e4ec088ea2293d901e982672b90c4"
+  
+  correlation_filtered normalisation
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(...) at test-prot-norm-input-current.R:680:5
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (b): DIA_LIMPA's between-sample normalisation and peptide count filter refuse a normalised head (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(...) at test-prot-norm-input-current.R:680:5
+   2.   └─testthat::expect_s3_class(error, "prot_qc_input_normalised") at test-prot-norm-input-current.R:627:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (b): DIA_LIMPA's between-sample normalisation and peptide count filter refuse a normalised head (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "peptide_count_filtered"
+  `expected$identity$parameters`: "protein_normalised"    
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb13f531e2d/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb16d42838/payload.rds" 
+  
+    `actual$payload$bytes`: 31316.0
+  `expected$payload$bytes`: 29872.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "d2dfc06427ded8f5c19a8b78bfb1166397297da8923f26c073a9007eb9380285"
+  + "0bd9e37b4eb205d9a601c21e511cf2d58a05a4c05347e1f9d60ac20588105dd6"
+  
+  actual$entity_id vs expected$entity_id
+  - "d4e707d2dbd8ebcde2689f337eaf26e73d8601c9df1008d8dc80c098852f8e45"
+  + "6e449a01232388483a613c573e0fbcc27f7085e87e54b0826c7d51c76228a308"
+  
+  correlation_filtered peptide_count
+trace (first lines):
+      ▆
+   1. └─k182ExpectQcRefused(...) at test-prot-norm-input-current.R:680:5
+   2.   └─testthat::expect_identical(...) at test-prot-norm-input-current.R:630:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (c): managed, the protein intensity filter refuses before apply with the step's prefix, and applies on an unnormalised head (fails before)
+kind: failure
+message:
+  Expected `refused$applied` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (c): managed, the protein intensity filter refuses before apply with the step's prefix, and applies on an unnormalised head (fails before)
+kind: failure
+message:
+  Expected `refused$errors` to be identical to `paste0("Error applying protein intensity filter: ", k182QcText("Protein Replicate Filter"))`.
+  Differences:
+  actual vs expected
+  + "Error applying protein intensity filter: quality-control steps cannot be applied to a table that has already been normalised. To change quality control, press Revert in this tab until the current step is \"Protein Replicate Filter\", the last quality-control result before normalisation, then apply the steps again and press \"Run Normalization & RUV\" again."
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (c): managed, DIA_LIMPA's peptide count filter refuses before apply and applies after a Revert (fails before)
+kind: failure
+message:
+  Expected `refused$applied` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T9 (c): managed, DIA_LIMPA's peptide count filter refuses before apply and applies after a Revert (fails before)
+kind: failure
+message:
+  Expected `refused$errors` to be identical to `paste0("Error applying peptide count filter: ", k182QcText("Peptide Count Filter"))`.
+  Differences:
+  actual vs expected
+  + "Error applying peptide count filter: quality-control steps cannot be applied to a table that has already been normalised. To change quality control, press Revert in this tab until the current step is \"Peptide Count Filter\", the last quality-control result before normalisation, then apply the steps again and press \"Run Normalization & RUV\" again."
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectCorrelationRefused(...) at test-prot-norm-input-current.R:796:9
+   2.   └─testthat::expect_s3_class(error, "prot_norm_correlation_input_stale") at test-prot-norm-input-current.R:784:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"      
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb13d74e16e/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb112a99222/payload.rds"
+  
+    `actual$payload$bytes`: 17643.0
+  `expected$payload$bytes`: 15168.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "2f9688548802a54d5662dfc187719e6c7e3a9635f8eafc2d87071d248c05a0c0"
+  + "c2d2eb41ba1369d9354677bf8e8f29982ff786b516944f400e9bcf2afb3bb5f4"
+  
+  actual$entity_id vs expected$entity_id
+  - "5ce8cddc226ac20379706713296b495f1e1f00181e7acadaa7fa2fe0fed02509"
+  + "6055c53f4b93c812d0e8946291999b6bb4ec39405115c90987d86e7f4c5cf444"
+  
+  apply
+trace (first lines):
+      ▆
+   1. └─k182ExpectCorrelationRefused(...) at test-prot-norm-input-current.R:796:9
+   2.   └─testthat::expect_identical(k182Head(fixture), head, info = case) at test-prot-norm-input-current.R:787:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [1] "initial"                    | "initial"                    [1]
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "protein_intensity_filtered" | "protein_intensity_filtered" [3]
+  [4] "correlation_filtered"       -                                 
+  
+  apply
+trace (first lines):
+      ▆
+   1. └─k182ExpectCorrelationRefused(...) at test-prot-norm-input-current.R:796:9
+   2.   └─testthat::expect_identical(k182History(fixture), history, info = case) at test-prot-norm-input-current.R:788:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `getDIAStateReference(fixture$manager, "correlation_filtered")` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  apply
+trace (first lines):
+      ▆
+   1. └─k182ExpectCorrelationRefused(...) at test-prot-norm-input-current.R:796:9
+   2.   └─testthat::expect_null(...) at test-prot-norm-input-current.R:789:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+trace (first lines):
+      ▆
+   1. └─k182ExpectCorrelationRefused(...) at test-prot-norm-input-current.R:796:9
+   2.   └─testthat::expect_s3_class(error, "prot_norm_correlation_input_stale") at test-prot-norm-input-current.R:784:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"      
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb129001a4/payload.rds" 
+  `expected$payload$relative_path`: "entities/dia-state-4cb137cca9a4/payload.rds"
+  
+    `actual$payload$bytes`: 11999.0
+  `expected$payload$bytes`: 15167.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "48831c67bf69d360c68a66ca259af84e6b23d7b2a5be459724566b6c50795ded"
+  + "2434c683c979134c22d31cf912618b12e0ee84bae9ea79bdcdbbd325824de575"
+  
+  actual$entity_id vs expected$entity_id
+  - "d11d0b840e08fac86804db98a6eac5844e4aed4956278a8b4ee2d2fd79dfd966"
+  + "286ee58178bd2f966a082743c6113a9e1b48a4a69527a1fed45f299057e8a38c"
+  
+  skip
+trace (first lines):
+      ▆
+   1. └─k182ExpectCorrelationRefused(...) at test-prot-norm-input-current.R:796:9
+   2.   └─testthat::expect_identical(k182Head(fixture), head, info = case) at test-prot-norm-input-current.R:787:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `k182History(fixture)` to be identical to `history`.
+  Differences:
+      actual                       | expected                        
+  [1] "initial"                    | "initial"                    [1]
+  [2] "protein_replicate_filtered" | "protein_replicate_filtered" [2]
+  [3] "protein_intensity_filtered" | "protein_intensity_filtered" [3]
+  [4] "correlation_filtered"       -                                 
+  
+  skip
+trace (first lines):
+      ▆
+   1. └─k182ExpectCorrelationRefused(...) at test-prot-norm-input-current.R:796:9
+   2.   └─testthat::expect_identical(k182History(fixture), history, info = case) at test-prot-norm-input-current.R:788:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `getDIAStateReference(fixture$manager, "correlation_filtered")` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  skip
+trace (first lines):
+      ▆
+   1. └─k182ExpectCorrelationRefused(...) at test-prot-norm-input-current.R:796:9
+   2.   └─testthat::expect_null(...) at test-prot-norm-input-current.R:789:5
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `seen$failed` to have length 1.
+  Actual length: 0.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (a) to (c): Apply, Skip and the managed Apply refuse after a QC change (fails before)
+kind: failure
+message:
+  Expected `seen$actions` to have length 0.
+  Actual length: 1.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (d): the tab's Apply and Skip show the refusal through the correlation error handler (fails before)
+kind: failure
+message:
+  Expected `seen$completed` to be identical to 0L.
+  Differences:
+    `actual`: 2
+  `expected`: 0
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (d): the tab's Apply and Skip show the refusal through the correlation error handler (fails before)
+kind: failure
+message:
+  Expected `seen$notes` to be identical to `rep(...)`.
+  Differences:
+  actual vs expected
+  + "Error in correlation filtering: the table in the Quality Control tab has changed since normalisation was last run (a step was applied or reverted), so the correlation filter would use a table that does not match it. Press \"Run Normalization & RUV\" again, then apply or skip the correlation filter."
+  + "Error in correlation filtering: the table in the Quality Control tab has changed since normalisation was last run (a step was applied or reverted), so the correlation filter would use a table that does not match it. Press \"Run Normalization & RUV\" again, then apply or skip the correlation filter."
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (e): the correlation at the tab's own states commits as before; at a QC-on-normalised head it is refused
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (e): the correlation at the tab's own states commits as before; at a QC-on-normalised head it is refused
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"      
+  `expected$identity$parameters`: "protein_intensity_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb11d6262cf/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb15f1ce423/payload.rds"
+  
+    `actual$payload$bytes`: 17641.0
+  `expected$payload$bytes`: 17956.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "89e263863ab55557984426c9a75d27fdb69ecf566645325512a81789ae0a7999"
+  + "fac6e3ee82161174a0b1623bf4cbdeb3f455f24cf8fafeba609f0868b42c5b5a"
+  
+  actual$entity_id vs expected$entity_id
+  - "3c206e29a84468a4737dc5a5065f265aff54d09457e2ed0def7c28788d994736"
+  + "8be904e7c2ce7919f9d4070381516fe5034084a982a38d8af15398c88efddd44"
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (f): on DIA_LIMPA the correlation follows the designated table; after a QC change it waits for the pass-through (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (f): on DIA_LIMPA the correlation follows the designated table; after a QC change it waits for the pass-through (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `p2`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"  
+  `expected$identity$parameters`: "peptide_count_filtered"
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb1164d08eb/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb128fd564f/payload.rds"
+  
+    `actual$payload$bytes`: 26904.0
+  `expected$payload$bytes`: 24497.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "2578511f36a4bdb9d2370bd649c3bff14965d79ade7d07c610fdb593020aba5b"
+  + "e69e333bc9de2ee1ad70bd84a1bec2b5f6bb142912be68886d668d6df5b76191"
+  
+  actual$entity_id vs expected$entity_id
+  - "300284964887bac0d0ba81c7d5f986616feb331be3ec168ad08ef1e5eb6b3444"
+  + "8d02b6d878cd7bef82090fc2f5427be9fef64f148f2e9eceb405aa83026d95b9"
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (g) (VAL-99 (4)): after two runs and a Revert to the first, the correlation is refused (fails before)
+kind: failure
+message:
+  Expected `error` to be an S3 object.
+  Actual OO type: none.
+
+file: test-prot-norm-input-current.R
+test: KIT-182 T10 (g) (VAL-99 (4)): after two runs and a Revert to the first, the correlation is refused (fails before)
+kind: failure
+message:
+  Expected `k182Head(fixture)` to be identical to `head`.
+  Differences:
+  `actual$identity$parameters`:   "correlation_filtered"
+  `expected$identity$parameters`: "normalized"          
+  
+  `actual$payload$relative_path`:   "entities/dia-state-4cb175264fe9/payload.rds"
+  `expected$payload$relative_path`: "entities/dia-state-4cb1668fad76/payload.rds"
+  
+    `actual$payload$bytes`: 22178.0
+  `expected$payload$bytes`: 13592.0
+  
+  actual$payload$sha256 vs expected$payload$sha256
+  - "83c51367adc62044807d135c6b23a5cbd9acffe312f60eb2e4dd456413a59ecf"
+  + "d132683a5e6b06a186a7b8e54157818d74c74c087375ab116fb4bdd7c9b378a5"
+  
+  actual$entity_id vs expected$entity_id
+  - "e6e74fde22be5ea5aecf5611f544ae2d5d38f7916fbc6efda590496f8031082c"
+  + "2f22b3c96d1f820357c105e9d20c526d41240e42271ca014554c804bd5e88142"
+

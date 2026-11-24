@@ -1,0 +1,16 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-repair.R	R-I01: featureKey(feature_id, arm) is called per arm; unmapped is excluded for all arms and counted	0	0	0	0	1	0	0.025
+test-repair.R	R-I02: the universe is the input role's features with their assays; BH per assay; outside rows stop	0	0	0	0	1	0	0.126
+test-repair.R	R-I03: ticket coverage regimes run, are pinned by hash and reach the classifier	14	14	0	0	0	0	0.248
+test-repair.R	R-I04: refusals are recorded per 4.7 and O7 (b); nothing aborts the scoring	15	15	0	0	0	0	0.103
+test-repair.R	R-I05, I07, I08: a counted phase writes the run folder of 5.7, results.md with coverage, and passes both checks	0	0	0	0	1	0	0.012
+test-repair.R	R-I08: the guard in production: a universe key as a label, a lifecycle call count, a stray file	0	0	0	0	1	0	0.01
+test-repair.R	R-I06: phase score reads the requests' within-run rows; jackknife widens to the full unit's same view	2	2	0	0	1	0	0.015
+test-repair.R	R-I09, I18: declared states follow the arm's RUV run; a diagnostic step that changes state is not ok	11	11	0	0	0	0	2.99
+test-repair.R	R-I11: the declaration's statistical schema is refused before any cell	17	17	0	0	0	0	0.239
+test-repair.R	R-I16: a member without a verdict is not_evaluable; worse_when never names a guard	4	4	0	0	0	0	0.024
+test-repair.R	R-I15: G1(a) does not admit limpa_da_last_digits without its ruling and G1D's digest	4	3	1	0	0	0	0.026
+test-repair.R	R-I17: the chunk backstop ends a cell blocked outside R as did_not_complete (timeout)	4	4	0	0	0	0	6.079
+test-repair.R	R-I20: anchor refusal at step anchor; within-run seed required; confusion-table metrics	2	2	0	0	1	0	0.017
+test-repair3.R	R-I15b: live differences are classed by G1(a)'s bounds, or left outside the classes	0	0	0	0	1	0	0.011
+test-repair3.R	R-D19: limpa_da_last_digits is admitted only once KIT-199's merge is in the commit under test	4	2	2	0	1	0	0.088
