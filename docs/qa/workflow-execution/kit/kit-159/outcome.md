@@ -44,7 +44,7 @@ recorder) and merges into this branch at its end; E4's `helpers_extracted` is B'
 | E7 | `generator` in the pinned table (`fixed_symmetric` for the 64 re-pinned rows, `redraw` elsewhere), in `valClassify`, the verdict table and `results.md` with its estimand |
 | E4 | per-unit truths hashed into provenance (`truth.per_unit`, checked where recorded); `helpers_extracted`: left to builder B (`val-run.R`) |
 | E6 | the licence guard's refusal tests assert the rule's message (R-I08, T-LIC-1 to 11, the hand-off and ticket-coverage cases, result tables, phase pre); no code change: the messages already name the rule; these tests pass on the old code by design (strengthening, not a fault demonstration) |
-| DI10b | declared before the request in `t2/di10b-declaration.md` (what it measures, N1/N2 mechanism checks, which result means the symmetric split was needed); generator `fixed_onedir`; result below when in |
+| DI10b | declared before the request in `t2/di10b-declaration.md` (what it measures, N1/N2 mechanism checks, which result means the symmetric split was needed); generator `fixed_onedir`; result (run 45336507597): valid, "conditioning suffices" by the declared reading; reported, decides nothing (table below) |
 | Coordinator's confirmations | (1) under VAL-133 (2) the value path is taken only when the DA artifact is the only differing capture, any other difference `not_certified`; (2) a link's change classes default to the record's classes whose every part carries the ticket's tag: both in `USAGE.md` and the ticket |
 
 **Failing-first at the audited fault, per finding (re-audit section 1; this replaces "every new test
@@ -58,9 +58,35 @@ DI10b generator are shown in run A1 (below); E6 is a strengthening of passing te
 **Runs of builder A** (REPAIR line unless stated):
 - A1 (k159-rep-a1-d1c8d4e6, run 45334780977, tests only at d1c8d4e6): sent; purpose: show each new
   test failing at its fault; ceiling 25 min; decides nothing else.
-- A2 (fix at 647706dd, same files with `--lint`): to send after A1.
-- A2 (45336510695 at 647706dd): 49 of 50 pass, lint 0; R-V137-2 failed on a fixture defect (corrected in the test at 820f3207; re-run owed). 0.71 core-hours.
+- A2 (45336510695 at 647706dd): 49 of 50 pass, lint 0; R-V137-2 failed on a fixture defect, not
+  the fix (r4Verdict() already has a `family` column; `family = "fam"` through `...` became
+  `family.1`, so no family line was written): corrected in the test only at 820f3207 (the item's
+  one correction); its one re-run is carried by builder B's merge request (run-tests 64ff2960).
+  R-DI10b passed, so DI10b below is valid. 0.71 core-hours.
 - DI10b (45336507597 at 647706dd, line DI10b; sent with A2): **valid; by its declared reading, conditioning suffices for C4e g = 5.** N1 (bias target -0.234) and N2 (rejection target 0.428) hold, so the one-directional shift is present; every statistic passes at every level (95 %: mae 0.9575, bias 0.960, rej 0.9485; no zero-width intervals). Compared with D (fixed_symmetric) coverage is lower but within the band (rej at 95 %: 0.9485 against 0.9835). Reported to the owner; it decides nothing by itself. 1.10 core-hours of 1.5. Tables `t2/di10b-*`.
+
+  DI10b, C4e-147 (`fixed_onedir`, 2,000 simulations, targets from 20,000), coverage by statistic
+  and level beside D's `fixed_symmetric` C4e-147 row; declared rule: a statistic fails at a level
+  when coverage < level - 0.02 (no `degenerate` statistic; zero-width 0 in every row).
+
+  | level | mae | bias | rej | fail below | D mae | D bias | D rej | result |
+  |---|---|---|---|---|---|---|---|---|
+  | 0.95 | 0.9575 | 0.9600 | 0.9485 | 0.930 | 0.989 | 0.9605 | 0.9835 | pass, pass, pass |
+  | 0.975 | 0.9815 | 0.9830 | 0.9750 | 0.955 | 0.9955 | 0.9785 | 0.993 | pass, pass, pass |
+  | 0.98333 | 0.9885 | 0.9885 | 0.9840 | 0.96333 | 0.998 | 0.986 | 0.996 | pass, pass, pass |
+  | 0.9875 | 0.9900 | 0.9910 | 0.9875 | 0.9675 | 0.999 | 0.9885 | 0.997 | pass, pass, pass |
+  | 0.99167 | 0.9940 | 0.9925 | 0.9905 | 0.97167 | 0.9995 | 0.991 | 0.998 | pass, pass, pass |
+  | 0.99375 | 0.9965 | 0.9950 | 0.9920 | 0.97375 | 0.9995 | 0.9925 | 0.9985 | pass, pass, pass |
+  | 0.99583 | 0.9965 | 0.9965 | 0.9950 | 0.97583 | 1 | 0.994 | 0.999 | pass, pass, pass |
+  | 0.99667 | 0.9980 | 0.9975 | 0.9955 | 0.97667 | 1 | 0.9965 | 0.999 | pass, pass, pass |
+
+  Mechanism checks: N1 holds (bias target -0.2339, declared at or below -0.10); N2 holds (rej
+  target 0.4278, declared at least 0.20). Outcome in the declaration's words: **"Conditioning
+  suffices (the symmetric split was not needed for C4e g = 5's coverage): N1 and N2 hold and no
+  statistic fails at any of the 8 levels."** Under the declared band every row passes; against the
+  nominal level itself `rej` sits slightly below at 0.95 (0.9485), 0.99167, 0.99375, 0.99583 and
+  0.99667 (by at most 0.0018, within the band). No pinned row, offered regime or `USAGE.md` status
+  changed on its strength (VAL-137 (1)).
 
 
 Ticket r1.16 (main checkout; section 31). Rulings: VAL-109; KIT-199 plan audit ruling C1 (a); KIT-199
@@ -182,9 +208,10 @@ Done by the second builder (observed; tables `rep/r11-*`, `rep/r12-*`, `rep/r13-
 Owed after KIT-202 merges (not now): S0's three metabolomics routes and `metab_lc` export-then-load
 re-run (about 1 core-hour). Do not repeat R1 for later product merges until the coordinator says.
 
-**Lines:** REPAIR 14.81 of 25 (R0 0.86, R1 2.21, R3 0.70, R4 0.20 cancelled, R5 0.90, R6
+**Lines:** REPAIR 16.33 of 25 (R0 0.86, R1 2.21, R3 0.70, R4 0.20 cancelled, R5 0.90, R6
 0.68, R7 0.57, R8 0.78, R4b 0.87, R9 0.81, R4c 0.88, R4d 2.27, R10 0.77, R11 0.76, R12 0.77, R13
-0.78); T2 29.00 of 39 (DI10 2.07); DI10b 0 of 1.5 (new line, coordinator 2026-11-24).
+0.78; builder A after the re-audit 1.52 of its 4: A1 0.81 (12.1 job-minutes), A2 0.71 (10.7));
+T2 29.00 of 39 (DI10 2.07); DI10b 1.10 of 1.5 (16.5 job-minutes on 4 cores; coordinator 2026-11-24).
 VAL-54 instrument runs per item: R0 item 1 (R6), R3 item 1 (R7), E2E item 1 (R4d). Item 1 (G1(a)
 remainder): one correction used (R12 -> R13).
 Inferred, not run: the whole suite at the final head (R1 ran at 4a57cbdb).
