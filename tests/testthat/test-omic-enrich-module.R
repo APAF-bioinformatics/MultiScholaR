@@ -4259,8 +4259,11 @@ test_that("(R3, P-28) a filtered run declares the organism filter, records what 
     seen <- omicEnrichR3FilterDrive(list(record = omicEnrichR3Record))
     r3 <- seen$record$r3
     # KIT-173: `go_propagation` is appended after the filter's two and is declared on the clusterProfiler route only.
-    expect_identical(utils::tail(setdiff(diaEnrichmentOperation()$parameters, "go_propagation"), 2L), omicEnrichR3FilterNames)
-    expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters, "go_propagation"))
+    # KIT-203: `significance_rule` after it, likewise.
+    expect_identical(utils::tail(setdiff(diaEnrichmentOperation()$parameters, c("go_propagation", "significance_rule")), 2L),
+        omicEnrichR3FilterNames)
+    expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters,
+        c("go_propagation", "significance_rule")))
     expect_identical(r3$provenance$values[omicEnrichR3FilterNames],
         list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
     expect_identical(omicEnrichR3Parameters(r3$step)[omicEnrichR3FilterNames],
@@ -4294,7 +4297,7 @@ test_that("(R3, P-28) an unfiltered run keeps its nine declared names, its recor
     seen <- omicEnrichW3Drive("gprofiler", list(record = omicEnrichR3Record))
     r3 <- seen$record$r3
     expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters,
-        c(omicEnrichR3FilterNames, "go_propagation"))) # KIT-173
+        c(omicEnrichR3FilterNames, "go_propagation", "significance_rule"))) # KIT-173, KIT-203
     expect_length(r3$provenance$parameter_names, 9L)
     expect_identical(names(omicEnrichR3Parameters(r3$step)), r3$provenance$parameter_names)
     # KIT-119 (2), A107-06: every run records its inputs' identities beside the outcomes every step has (it recorded
