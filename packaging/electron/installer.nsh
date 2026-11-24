@@ -5,10 +5,12 @@
 ; saved mappings and the demo tables still work. The registry is read in the 64-bit view. No runtime DLL is shipped
 ; (FSF GPL FAQ, "WindowsRuntimeAndGPL").
 ;
-; MSR_VC_MIN_BLD: the oldest runtime build with which F1's search ran; 0 until F1 has recorded it (then only
-; `Installed = 1` is checked).
+; MSR_VC_MIN_BLD: the oldest runtime build with which gate F1's search ran (run 45353725258, Server Core ltsc2025):
+; without a runtime and with the oldest one Microsoft serves (14.0.24215) the program stops with 0xC0000135 (DLL not
+; found: it imports MSVCP140_1.dll and VCRUNTIME140_1.dll, which that runtime lacks); with the current one (build 35211)
+; it runs. No build between the two was tried, so the check asks for 35211 or later.
 !ifndef MSR_VC_MIN_BLD
-  !define MSR_VC_MIN_BLD 0
+  !define MSR_VC_MIN_BLD 35211
 !endif
 
 !macro customInit

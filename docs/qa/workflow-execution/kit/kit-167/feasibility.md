@@ -161,3 +161,39 @@ searches at about 20 s each are far inside its ceiling, so no job split.
 ### Not checked
 
 - Run-to-run timing variation (one run); the `score` type under another strain or reference.
+
+## Gate F1: the Windows engine (ticket revision 1.11, section 11)
+
+Job `kit167_engine` of `distributable.yml` (dispatch input `stage = kit167-engine`, windows-2025, no build, no token,
+nothing uploaded; results as `KIT167` log lines read with `gh run view <id> --log`).
+
+| Run | Commit | Outcome |
+|---|---|---|
+| 45353194826 | (packaging commit before the fix) | instrument defect: the container steps could not reach the Docker engine; the executable's SHA-256 and imports were read |
+| 45353725258 | (after the fix: the engine started and waited for) | complete |
+
+### Observed (run 45353725258)
+
+- `diamond-windows.zip` 3,366,672 B, SHA-256 `8035ece1…cd288ce1` (as 2.2); `diamond.exe` SHA-256
+  `c8bd6efa915af1a09b13c7de53aec6b75e96196da6df0509646d8f83e9605eb1` (committed in `inst/extdata/diamond-pin.tsv`;
+  the same value in both runs).
+- `dumpbin /dependents`: KERNEL32.dll, MSVCP140.dll, MSVCP140_1.dll, VCRUNTIME140.dll, VCRUNTIME140_1.dll and the
+  `api-ms-win-crt-*` set; linker version 14.51.
+- Server Core ltsc2025 container (host 10.0.26100), a 100-protein search of the shipped SF370 reference against itself:
+  no runtime: registry absent, `diamond version` and the search exit 0xC0000135; the oldest x64 redistributable Microsoft
+  serves (14.0.24215, installed with status 0): registry `Installed = 1`, `Bld = 24215`, both still exit 0xC0000135;
+  Microsoft's current redistributable (status 0): `Bld = 35211`, both exit 0, 113 hit rows.
+
+### Outcome
+
+The program fails for a missing DLL without the runtime, so the installer check and the refusal ship (decided, pool S6);
+the refusal's status 0xC0000135 is the one `checkDiamond()` classifies. `Bld` for the installer check is set to 35211,
+the oldest build observed to work (`packaging/electron/installer.nsh`); no build between 24215 and 35211 was tried.
+Step (4) of F1 (the installer's registry check against both states) was run as the same 64-bit registry read in
+PowerShell in each container state; the NSIS script itself was not executed in the container (it runs only inside the
+installer).
+
+### Not checked
+
+- Status 0xC0000139 (an entry point missing) was not produced by any state tried.
+- A runtime build between 24215 and 35211; Windows client editions.
