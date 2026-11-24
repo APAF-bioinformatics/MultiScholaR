@@ -1,0 +1,9 @@
+run_id	commit	purpose	minutes	result
+45321064526	ceff82fe	R1 (G0) failing-first, tests-only commit	11.7	instrument defect: 7 chain tests (T6, T6 b, T6 c, T7, T9, T10) stopped in the fixture (row names); the others at their stated values
+45323531564	bd907fa2	R1-2, instrument re-run 1 of 3 (VAL-54), fixture fixed	10.0	every test at its stated value; guards pass
+45385950606	5952c874	R1b (R03): R1 repeated on the merge with staging 0a4008a6 (R/ changed beyond KIT-196)	11.6	identical to R1-2: every test at its stated value
+45388517096	9779f827 vs 0a4008a6	R2 (instrument defect: the request carried another list of 65 test files, read from a shared scratch file another session had overwritten); its R CMD check is valid for A4	328.7 (tests 301.4, two shards over 60: 66.6 and 70.1; check 27.3)	tests: 65 same (not this ticket's scope); check: nothing only on head
+45400832062	9779f827 vs 0a4008a6	R2-2, instrument re-run 1 of 3: section 9's 44 files	243.6 (two shards over 60: 74.3 and 80.0)	43 same; the new file only-on-head with 8 failures and 1 error, all in its fixture (no protein id table; a state saved across stores; the wrapper given no full_format)
+45463691826	b8d9377c	R2-3, instrument re-run 2 of 3: the new file only, fixture fixed	16.9	509 passed, 1 failed: T9 (the wrapper stops after runTestsContrasts, in getSignificantData, on a list nesting independent of the data)
+45471995943	817b026a	R2-4, instrument re-run 3 of 3: the new file only, T9 changed by the owner (VAL-180)	11.5	516 passed, 0 failed: A1 met on head
+45474317181	149ab856 vs 2a1543db	R3: full suite, 20 shards per side, no check	1263.3 (longest job 67.3)	467 same, the new file only-on-head and ok; no new-failure, no message-changed

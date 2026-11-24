@@ -63,6 +63,20 @@
    assay in which no feature has any value is now refused with 'no feature has a value in any sample, so nothing can be
    tested'. `runLipidsDA()` and `runMetabolitesDA()` return `features_without_values` (per assay, the ids) when there
    are such features (KIT-196).
+ * Proteomics: the differential analysis no longer stops with 'prior.weights contain NA values' (or 'covariate contains NA
+   or infinite values') when a protein has no value in any of the analysed samples, for example a protein measured only
+   in samples the correlation filter removed. As for lipidomics and metabolomics, such a protein is not tested: it
+   appears in each comparison's table without a fold change or p-value and does not change any other protein's
+   differential-abundance result. Like every row without a p-value, it is left out of that comparison's enrichment
+   background (KIT-205). This applies to every
+   proteomics analysis route except DIA with limpa, which was not affected, and to the older
+   `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects. Results of analyses that completed before
+   with the default settings are unchanged, except for data of only one or two proteins, one of them without values,
+   where the B statistic changes. When the trend option is off (possible only in scripted calls) on data that contain
+   such proteins, their rows move to the end of each table without an average intensity; with the robust option on,
+   the other proteins' results change to those of the same data without them. Data in which no protein has any value is
+   refused with 'no feature has a value in any sample, so nothing can be tested'. `runTestsContrasts()` returns
+   `features_without_values` (the ids) when there are such proteins (KIT-200).
  * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
    Pre-Normalization', 'Apply Correlation Filter', 'Skip Filtering & Proceed to DE', 'Export Normalized Data' and the
    differential analysis could run on data that had not been normalised (no internal-standard step, no log2, no
