@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-215 G0 instrument re-run 1 (VAL-54; run 45493249015 stopped in the script's module-fixture family: absent GO columns); engine conditions already passed there",
+  "label": "KIT-215 G0b at 6d002423 (base code; ceiling 60 job-minutes)",
+  "package_commit": "6d0024235c57606c26df59ca89d39352b9fbaf2b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-215/g0.R",
+      "args": [
+        "kit215-g0"
+      ],
+      "out": "kit215-g0",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

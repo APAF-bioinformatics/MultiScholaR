@@ -1,0 +1,58 @@
+{
+  "requested_by": "KIT-215 R2: fix c9219652 (head) vs tests-only 6d002423 (base): section 10 regression scope (25 files + GUI-entry lanes) and check, decides stop rule 2; plus G2 (KIT-203 gate g1 on head); ceiling 540 + 60 job-min",
+  "label": "KIT-215 R2 fix c9219652 vs tests-only 6d002423, with G2",
+  "package_commit": "c92196520ed1bd395e9b2afa089e65adc544b47f",
+  "base_commit": "6d0024235c57606c26df59ca89d39352b9fbaf2b",
+  "tools_ref": "",
+  "tests": [
+    "test-e2e-enrichment-doubles.R",
+    "test-enrichment-significance.R",
+    "test-general-enrichment-shared.R",
+    "test-go-propagation.R",
+    "test-integration-enrichment.R",
+    "test-kit172-log2-rule.R",
+    "test-kit205-enrichment-background.R",
+    "test-kit208-gprofiler-identifiers.R",
+    "test-kit215-not-tested-lists.R",
+    "test-module-ci-prot-enrich.R",
+    "test-multiomics-enrich-shared.R",
+    "test-omic-enrich-module.R",
+    "test-omic-gui-config.R",
+    "test-omics-enrich-core.R",
+    "test-prot-11a-enrichment-module-characterization.R",
+    "test-prot-11-enrichment-module-contracts.R",
+    "test-prot-annotation-uniprot-empty.R",
+    "test-reference-mapping-enrichment.R",
+    "test-workflow-analysis-record.R",
+    "test-workflow-class-declarations.R",
+    "test-workflow-dia-products.R",
+    "test-workflow-lipid-declarations.R",
+    "test-workflow-metab-declarations.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-workflow-trx-declarations.R",
+    "test-gui-entry-proteomics.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/gate-k203.R",
+      "args": [
+        "g1",
+        "kit215-g2"
+      ],
+      "out": "kit215-g2",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
