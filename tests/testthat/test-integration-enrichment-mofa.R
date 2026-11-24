@@ -274,8 +274,9 @@ test_that("KIT-184 K13: with MOFA2 trained on corrected values, camera with the 
         downloaded_at = "2026-11-24T00:00:00+0000",
         table = data.frame(pathway = rep(pathway, lengths(sets)), compound = paste0("cpd:", unlist(sets, use.names = FALSE)),
             name = rep(names(sets), lengths(sets)), stringsAsFactors = FALSE))
+    # The adjustment is off unless chosen (VAL-160): the request switches it on.
     out <- runIntegrationEnrichment(manager, list(factor = "Factor1", view = "metabolomics_GCMS", database = "kegg",
-        id_column = "kegg_id"), mapping = mapping)
+        id_column = "kegg_id", adjust_ruv_factors = TRUE), mapping = mapping)
     value <- out$run$value
     expect_identical(value$test, "camera")
     expect_identical(value$design_columns, c("intercept", "factor", "ruv_W1", "ruv_W2"))
@@ -283,7 +284,7 @@ test_that("KIT-184 K13: with MOFA2 trained on corrected values, camera with the 
     expect_identical(value$design_detail$residual_df, value$test_counts$samples - 4L)
     expect_true(out$entry$settings$adjust_ruv_factors)
     export <- manager$.context$snapshot$exports$integration_mofa_model
-    expect_identical(names(export$enrichment), "Factor1|metabolomics_GCMS|kegg|camera")
+    expect_identical(names(export$enrichment), "Factor1|metabolomics_GCMS|kegg|camera|adjusted")
     record <- buildWorkflowAnalysisRecord(manager)
     expect_true(grepl("unwanted factors that the RUV correction removed from this data set", integrationMethodsText(record),
         fixed = TRUE))
@@ -294,7 +295,7 @@ test_that("KIT-184 K13: with MOFA2 trained on corrected values, camera with the 
     replay <- suppressWarnings(replayIntegrationProject(store_root, file.path(root, "replay"), enrichment_query = offline,
         enrichment_download = offline))
     comparison <- replay$enrichment_comparison
-    expect_identical(comparison$enrichment, "Factor1|metabolomics_GCMS|kegg|camera")
+    expect_identical(comparison$enrichment, "Factor1|metabolomics_GCMS|kegg|camera|adjusted")
     expect_identical(comparison$note, "")
     expect_true(comparison$ranking_equal)
     expect_true(comparison$terms_equal)
