@@ -32,6 +32,18 @@ test_that("T-PROV-1: a complete provenance passes; a missing field fails", {
     r <- p
     r$status <- 3
     expect_error(valCheckProvenance(r), class = "val_provenance_invalid")
+    # I07: 5.6's nested fields of a cell phase are checked (R0 showed the fixture alone passing
+    # on the tests-only commit, so each nested field gets its own case)
+    for (drop in list(c("inputs", "universe"), c("truth", "blind"), c("scoring", "metrics_sha256"),
+                      c("code", "product_tree_identical"))) {
+        s <- p
+        s[[drop[[1L]]]][[drop[[2L]]]] <- NULL
+        expect_error(valCheckProvenance(s), class = "val_provenance_invalid",
+                     info = paste(drop, collapse = "."))
+    }
+    s <- p
+    s$cells[[1L]]$seed <- NULL
+    expect_error(valCheckProvenance(s), class = "val_provenance_invalid")
     path <- tempfile(fileext = ".json")
     valWriteProvenance(p, path)
     expect_true(valCheckProvenance(path))

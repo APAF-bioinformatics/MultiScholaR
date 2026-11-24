@@ -386,6 +386,23 @@ test_that("R-I17: the chunk backstop ends a cell blocked outside R as did_not_co
     expect_identical(res$exit, "did_not_complete")
     expect_identical(res$stop_reason, "timeout")
     expect_identical(msrval:::valChunkMinutes(n_runs = 9L, chunks = 4L, cell_minutes = 30), 100)
+    # The fault (I17) is valRunPhase calling valRunCells without the backstop; R0 showed the
+    # expectations above passing on the tests-only commit (valRunCells already had it), so the
+    # call valRunPhase makes is captured.
+    got <- NULL
+    testthat::local_mocked_bindings(valRunCells = function(...) {
+        got <<- list(...)
+        stop("captured")
+    }, .package = "msrval")
+    d2 <- withr::local_tempdir()
+    code <- writeRepairTicket(d2)
+    try(valRunPhase(phase = "counted", decl = repairDeclaration(), dataset = "d1",
+                    units = repairUnits(), label = "t", code_files = code, data_dir = d2,
+                    work_dir = file.path(d2, "w"), out_dir = file.path(d2, "o"), chunks = 2L,
+                    manifest = repairManifest()), silent = TRUE)
+    expect_false(is.null(got[["chunk_minutes"]]))
+    n_runs <- length(unique(got[[1L]]$run))
+    expect_identical(got[["chunk_minutes"]], msrval:::valChunkMinutes(n_runs, 2L, 5))
 })
 
 test_that("R-I20: anchor refusal at step anchor; within-run seed required; confusion-table metrics", {
