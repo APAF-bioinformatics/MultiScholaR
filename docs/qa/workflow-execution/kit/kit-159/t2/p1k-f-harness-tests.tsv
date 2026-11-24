@@ -1,0 +1,38 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-coverage-rank.R	T-RANK-1: the rank effect is calibrated into the declared pAUC band and recorded	4	4	0	0	0	0	8.699
+test-coverage-rank.R	T-RANK-2: a cell with zero-width intervals or a target at a bound is degenerate	5	5	0	0	0	0	0.022
+test-coverage-rank.R	T-RANK-3: run-level conservative is read on the miss rate	4	4	0	0	0	0	0.01
+test-coverage-rank.R	T-RANK-4: a degenerate condition makes the regime row degenerate (not offered)	1	1	0	0	0	0	0.021
+test-coverage-table.R	T-COV-ENDS: both ends and the failing condition and side are in the regime row	9	9	0	0	0	0	0.03
+test-coverage-table.R	T-COV-ENDS-2: the committed T2 table is what the summary gives on the committed detail	7	7	0	0	0	0	0.746
+test-coverage.R	pass bands: approximate run-level, within-run, exact and Clopper-Pearson	9	9	0	0	0	0	0.029
+test-coverage.R	the summary flags a paired t count passing on normal and failing on skewed data	3	3	0	0	0	0	0.015
+test-coverage.R	the catalogue has unique cells and every regime of 10.2	2	2	0	0	0	0	0.054
+test-coverage.R	small runs of a C1 and a C3 cell return one row per level	5	5	0	0	0	0	0.102
+test-coverage.R	a coverage cell run as ranges equals the cell run whole; a dropped or repeated range is refused	15	15	0	0	0	0	0.491
+test-coverage.R	seeds depend on the cell and the index only	3	3	0	0	0	0	0.058
+test-coverage.R	a coverage plan splits each cell into fixed consecutive ranges	3	3	0	0	0	0	0.057
+test-di10k.R	DI10K: T-COV's catalogue, its seeds and the pinned coverage table are unchanged	5	5	0	0	0	0	0.088
+test-di10k.R	DI10K: the confirmatory cell has its own index; T-COV's catalogue does not hold it	8	5	3	0	0	0	0.265
+test-di10k.R	DI10K: 4,840 features, exactly 40 changed, all up at scale 1, C4e's g = 5 layout	9	9	0	0	0	0	0.721
+test-di10k.R	DI10K: the cell computes C4e's mae, bias and rej on the simulated matrix	8	8	0	0	0	0	0.938
+test-di10k.R	DI10K: a plan naming the cell runs it with the plan's generator, in tasks and runs	5	5	0	0	0	0	3.059
+test-p1k.R	P1K: the 170 earlier cells, their seeds and the pinned coverage table are unchanged	5	5	0	0	0	0	0.111
+test-p1k.R	P1K: the P1 cell has its own index after DI10K's; T-COV's catalogue does not hold it	7	7	0	0	0	0	0.102
+test-p1k.R	P1K: the effect is the rank cells' rule on the one contrast; the pooled rule unchanged	4	4	0	0	0	0	145.657
+test-p1k.R	P1K: 40 positives of 4,840 on one contrast at the one-contrast scale; pauc_diff on it	10	10	0	0	0	0	0.781
+test-p1k.R	P1K: the existing rank and C4e cells dispatch as before	8	8	0	0	0	0	1.429
+test-p1k.R	P1K: a plan naming the cell runs it with the plan's generator in the chunk tasks	6	6	0	0	0	0	2.731
+test-repair2.R	R-O8, VAL-137 (3): over independent units nothing is widened at any count; the claim's scope is stated	24	24	0	0	0	0	0.08
+test-repair2.R	R-O5: T2 rows reading pass under T2's band and conservative under r1.13's; both printed	5	5	0	0	0	0	0.017
+test-repair2.R	R-O4: a conservative row with no observed miss licenses only the statistic it simulated	5	5	0	0	0	0	0.062
+test-repair2.R	R-O4: the half-width ratio is mean half-width over the statistic's SD times z	6	6	0	0	0	0	0.139
+test-repair2.R	R-I10: the redraw generator is unchanged; the fixed generator draws features once per cell	11	11	0	0	0	0	0.19
+test-repair2.R	R-I10: under the fixed symmetric generator the plain arm's null rejection share is near 0.05	2	2	0	0	0	0	1.403
+test-repair2.R	R-I10: a plan's generator column reaches the cell in the chunk tasks and the detail	4	4	0	0	0	0	0.18
+test-repair4.R	R-V137-2: the family bound sums each component's one-sided 95 % Clopper-Pearson upper bound	5	5	0	0	0	0	0.013
+test-repair4.R	R-V137-3: the jackknife widens only in forms (ii) and (iii); form (i) reports only	13	13	0	0	0	0	0.044
+test-repair4.R	R-E8: the SE inflation is the half-width ratio with the t factor removed	8	8	0	0	0	0	0.151
+test-repair4.R	R-E7: the pinned table names each row's generator; the classifier and results.md carry it	9	9	0	0	0	0	0.035
+test-repair4.R	R-E4: per-unit truths are hashed into provenance	12	12	0	0	0	0	0.612
+test-repair4.R	R-DI10b: the one-directional fixed generator keeps the fixed draw and moves every changed feature up	5	5	0	0	0	0	0.357

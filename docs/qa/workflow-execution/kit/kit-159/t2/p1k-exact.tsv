@@ -1,0 +1,9 @@
+stat	level	coverage	misses	nominal_misses	P(X>=misses)	cp_lo	cp_hi	se_infl	target	status
+pauc_diff	0.9500	0.9925	15	100.0	1	0.9877	0.9958	1.509	0.04775	conservative
+pauc_diff	0.9750	0.9985	3	50.0	1	0.9956	0.9997	1.509	0.04775	conservative
+pauc_diff	0.9833	0.9985	3	33.3	1	0.9956	0.9997	1.509	0.04775	conservative
+pauc_diff	0.9875	0.9995	1	25.0	1	0.9972	1.0000	1.509	0.04775	conservative
+pauc_diff	0.9917	0.9995	1	16.7	1	0.9972	1.0000	1.509	0.04775	conservative
+pauc_diff	0.9938	0.9995	1	12.5	1	0.9972	1.0000	1.509	0.04775	conservative
+pauc_diff	0.9958	1.0	0	8.3	1	0.9982	1.0000	1.509	0.04775	conservative
+pauc_diff	0.9967	1.0	0	6.7	1	0.9982	1.0000	1.509	0.04775	conservative
