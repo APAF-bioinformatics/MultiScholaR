@@ -389,6 +389,8 @@ for (class in c("lipid", "metab")) {
     test_that(paste("KIT-207 E1, E2, E3:", class, "a Save after a Revert to QC complete, into the normalisation, or earlier is refused"), {
         skip_if_not(workflowOwnerCapable())
         root <- withr::local_tempdir()
+        # The run, Apply and Revert notify and show progress (KIT-194's doubles).
+        seen <- k194Notes()
         omic <- k194Omic(class)
         binding <- kit172Binding(class)
         prefix <- binding$prefix
@@ -420,6 +422,8 @@ for (class in c("lipid", "metab")) {
     test_that(paste("KIT-207 E4, E5:", class, "a Save after Reset, and on a session loaded under a QC state's name, is refused"), {
         skip_if_not(workflowOwnerCapable())
         root <- withr::local_tempdir()
+        # The run, Apply and Revert notify and show progress (KIT-194's doubles).
+        seen <- k194Notes()
         omic <- k194Omic(class)
         binding <- kit172Binding(class)
         prefix <- binding$prefix
@@ -446,6 +450,8 @@ for (class in c("lipid", "metab")) {
     test_that(paste("KIT-207 E7:", class, "a managed Save after a Revert to QC complete queues nothing"), {
         skip_if_not(workflowOwnerCapable())
         root <- withr::local_tempdir()
+        # The run, Apply and Revert notify and show progress (KIT-194's doubles).
+        seen <- k194Notes()
         omic <- k194Omic(class)
         binding <- kit172Binding(class)
         prefix <- binding$prefix
@@ -465,6 +471,8 @@ for (class in c("lipid", "metab")) {
     test_that(paste("KIT-207 E8:", class, "Generate Report and Export Session State refuse after a Revert to QC complete"), {
         skip_if_not(workflowOwnerCapable())
         root <- withr::local_tempdir()
+        # The run, Apply and Revert notify and show progress (KIT-194's doubles).
+        seen <- k194Notes()
         omic <- k194Omic(class)
         prefix <- kit172Binding(class)$prefix
         config <- omicGuiConfig(omic)$summary
@@ -605,6 +613,8 @@ for (class in c("lipid", "metab")) {
     test_that(paste("KIT-207 G1, G2, G9:", class, "the default path, Skip, and Reset then one Revert save as before"), {
         skip_if_not(workflowOwnerCapable())
         root <- withr::local_tempdir()
+        # The run, Apply and Revert notify and show progress (KIT-194's doubles).
+        seen <- k194Notes()
         omic <- k194Omic(class)
         binding <- kit172Binding(class)
         prefix <- binding$prefix
@@ -655,6 +665,8 @@ for (class in c("lipid", "metab")) {
     test_that(paste("KIT-207 G3, G4, G6:", class, "one Revert inside the run, loaded normalised files and the managed path save as before"), {
         skip_if_not(workflowOwnerCapable())
         root <- withr::local_tempdir()
+        # The run, Apply and Revert notify and show progress (KIT-194's doubles).
+        seen <- k194Notes()
         omic <- k194Omic(class)
         prefix <- kit172Binding(class)$prefix
         # G3 (lipid; KIT-194 runs RUV on F172 for lipidomics only): run with RUV, Apply, one Revert to `_ruv_corrected`.
