@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-206 correction pass, tests first: the new file on 1f69c248 (current head + E14, E12's second enrichment, E11b); purpose: E14 and E11b fail at an assertion before the repair; ceiling 60 job-minutes from the correction row",
+  "label": "KIT-206 correction tests-first 1f69c248",
+  "package_commit": "1f69c2487825f1d74a5349db0d2f0bcdde4dbe1c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit206-prot-norm-export-guard.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
