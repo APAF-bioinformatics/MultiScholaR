@@ -47,7 +47,7 @@ k209_cgroup_procs <- function() {
 k209_common <- function() {
     list(id = k209_args$id, route = k209_args$route, corpus = k209_args$corpus, build = k209_args$build,
         commit = k209_args$commit, unit = k209_args$unit, rep = k209_args$rep, order = k209_args$order,
-        inject = k209_args$inject)
+        inject = k209_args$inject, settings_mode = k209_args$settings_mode, stop_after = k209_args$stop_after)
 }
 
 # --- Load: the build's library first ------------------------------------------------------------------------------
@@ -89,7 +89,9 @@ K209_SETTINGS <- list(
         ruv_percentage = 5L, ruv_k = NA, correlation_threshold = 0.5))
 K209_SETTINGS$metabolomics <- K209_SETTINGS$lipidomics
 # The protein fixtures (S1, S2) bind RUV skip (bindings corpora lfq_fixture, tmt_fixture: 5 proteins).
-K209_CORPUS_OVERRIDES <- list(lfq_fixture = list(ruv_mode = "skip"), tmt_fixture = list(ruv_mode = "skip"))
+K209_CORPUS_OVERRIDES <- list(lfq_fixture = list(ruv_mode = "skip"), tmt_fixture = list(ruv_mode = "skip"),
+    # Coordinator's ruling 2 (addendum A2): U11 and U12 are measured with RUV skipped on both builds.
+    lfq_300 = list(ruv_mode = "skip"), tmt_300 = list(ruv_mode = "skip"))
 
 k209_settings <- function() {
     route <- k209_args$route
@@ -101,6 +103,38 @@ k209_settings <- function() {
     # showed the between-sample kernel falls back to unnormalised data on an unknown method (no error), so the setting
     # is the intensity filter's percentile, left undefined (the omics journey clears it after the tab's defaults).
     if (identical(k209_args$inject, "package_error")) settings$intensity_percentile_injected <- "undefined (NULL)"
+    # Addendum A2: the base's manual-RUV probe binds the manual mode back for that journey only.
+    if (!is.null(k209_args$ruv_override)) settings$ruv_mode <- k209_args$ruv_override
+    # Addendum A6: X10 binds the other DPC engine.
+    if (!is.null(k209_args$engine_override)) settings$engine <- k209_args$engine_override
+    # Addendum A6: a D run takes the candidate's shipped defaults, read from the normalisation tab's own UI.
+    if (identical(k209_args$settings_mode, "shipped")) settings <- k209_shipped(settings, route)
+    settings
+}
+
+# The shipped defaults of the protein routes' normalisation: the tab's UI as it renders (mod_prot_norm_ui under the
+# proteomics configuration; on DIA_LIMPA the protein normalisation tab's method, and the covariates mode the tab selects
+# for that route). The omics routes take their defaults inside the module journey. Recorded per field.
+k209_shipped <- function(settings, route) {
+    settings$settings_mode <- "shipped"
+    if (route %in% c("lipidomics", "metabolomics", "transcriptomics")) return(settings)
+    if (identical(route, "DIA_LIMPA")) {
+        ui <- k209_ui_defaults(mod_prot_qc_protein_normalisation_ui("n"))
+        settings$norm_method <- ui[["n-norm_method"]] %||% settings$norm_method
+        settings$ruv_mode <- "covariates"
+        settings$shipped_from_ui <- list(norm_method = ui[["n-norm_method"]])
+        return(settings)
+    }
+    ui <- k209_ui_defaults(mod_prot_norm_ui("norm"))
+    taken <- list()
+    for (field in c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max", "separation_metric",
+        "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k")) {
+        value <- ui[[paste0("norm-", field)]]
+        if (!is.null(value)) { settings[[field]] <- value; taken[[field]] <- value }
+    }
+    # A slider read as a pair (data-from, data-to) is the range of the automatic sweep.
+    if (length(settings$auto_percentage_min) == 2L) settings$auto_percentage_min <- settings$auto_percentage_min[[1L]]
+    settings$shipped_from_ui <- taken
     settings
 }
 
@@ -185,6 +219,7 @@ k209_ui_defaults <- function(ui) {
 k209_omics_journey <- function(lane, corpus, settings) {
     omic <- k209_args$route
     trx <- identical(omic, "transcriptomics")
+    shipped <- identical(k209_args$settings_mode, "shipped")
     short <- switch(omic, lipidomics = "lipid", metabolomics = "metab", transcriptomics = "trx")
     module_id <- paste0(omic, "_workflow")
     k209_project(lane, omic, K209_OMICS_LABEL, keyed = FALSE)
@@ -282,14 +317,14 @@ k209_omics_journey <- function(lane, corpus, settings) {
             list(id = "qc_finalize", fn = function() { defaults("qc-s4_finalize"); click("qc-s4_finalize-finalize_qc") }),
             list(id = "normalisation", fn = function() {
                 tab("norm"); defaults("norm")
-                set(list(`norm-ruv_mode` = settings$ruv_mode, `norm-auto_percentage_min` = settings$auto_percentage_min,
+                if (!shipped) set(list(`norm-ruv_mode` = settings$ruv_mode, `norm-auto_percentage_min` = settings$auto_percentage_min,
                     `norm-auto_percentage_max` = settings$auto_percentage_max, `norm-auto_percentage_step` = settings$auto_percentage_step,
                     `norm-k_penalty_weight` = settings$k_penalty_weight))
                 click("norm-run_normalization")
             }),
             list(id = "da", fn = function() {
                 tab("de"); defaults("de")
-                set(list(`de-da_q_val_thresh` = settings$da_q_value, `de-treat_lfc_cutoff` = settings$da_treat_lfc))
+                if (!shipped) set(list(`de-da_q_val_thresh` = settings$da_q_value, `de-treat_lfc_cutoff` = settings$da_treat_lfc))
                 click("de-run_da_analysis")
             }),
             list(id = "ruviii_export", fn = function() {
@@ -316,21 +351,21 @@ k209_omics_journey <- function(lane, corpus, settings) {
             }),
             list(id = "normalisation", fn = function() {
                 tab("norm"); defaults("norm")
-                set(list(`norm-apply_itsd` = isTRUE(settings$apply_itsd), `norm-norm_method` = settings$norm_method,
+                if (!shipped) set(list(`norm-apply_itsd` = isTRUE(settings$apply_itsd), `norm-norm_method` = settings$norm_method,
                     `norm-ruv_mode` = settings$ruv_mode, `norm-auto_percentage_min` = 1, `norm-auto_percentage_max` = 20,
                     `norm-separation_metric` = "max_difference", `norm-k_penalty_weight` = 0.5, `norm-adaptive_k_penalty` = TRUE,
                     `norm-ruv_grouping_variable` = "group"))
                 click("norm-run_normalization")
             }),
             list(id = "correlation", fn = function() {
-                set(list(`norm-min_pearson_correlation_threshold` = settings$correlation_threshold))
+                if (!shipped) set(list(`norm-min_pearson_correlation_threshold` = settings$correlation_threshold))
                 click("norm-apply_correlation_filter")
             }),
             list(id = "session_export", fn = function() click("norm-export_session")),
             list(id = "da", fn = function() {
                 tab("de"); defaults("de")
                 click("de-load_filtered_session")
-                set(list(`de-formula_string` = K209_DA$formula_string, `de-da_q_val_thresh` = K209_DA$da_q_val_thresh,
+                if (!shipped) set(list(`de-formula_string` = K209_DA$formula_string, `de-da_q_val_thresh` = K209_DA$da_q_val_thresh,
                     `de-treat_lfc_cutoff` = K209_DA$treat_lfc_cutoff))
                 click("de-run_da_analysis")
             }),
@@ -640,7 +675,7 @@ k209_head <- function(lane) {
         store_bytes = sum(as.numeric(file.size(files)), na.rm = TRUE), history_length = length(head$history), store_dir = store)
 }
 
-for (name in c("k209_settings", "k209_quiet", "k209_project", "k209_fake_session", "k209_report", "k209_ui_defaults",
+for (name in c("k209_settings", "k209_shipped", "k209_quiet", "k209_project", "k209_fake_session", "k209_report", "k209_ui_defaults",
     "k209_omics_journey", "k209_prot_import", "k209_prot_design", "k209_mirror_progress", "k209_publish_peptide",
     "k209_publish_protein", "k209_scoped", "k209_protein_qc", "k209_aesthetics", "k209_prot_tail", "k209_prot_da",
     "k209_route_dia", "k209_route_limpa", "k209_route_protein", "k209_route_calibration", "k209_corpus", "k209_route_steps",
@@ -772,6 +807,10 @@ k209_measure <- function(steps, lane) {
             failed <- list(class = "k209_state_not_committed", message = sprintf("the step left state %s, the map names %s%s",
                 mark$state %||% NA, mark$expected_state, if (is.null(k209_rec$signal)) "" else
                     paste0("; last error signalled: ", k209_rec$signal$message)))
+        if (is.null(failed) && identical(step$id, k209_args$stop_after)) {
+            k209_rec$stopped_after <- step$id
+            break
+        }
         if (!is.null(failed)) {
             k209_rec$error <- c(failed, list(step = step$id, signalled_class = k209_rec$signal$class %||% NA_character_,
                 frames = k209_rec$signal$frames %||% k209_rec$last_raise,
@@ -819,7 +858,8 @@ if (identical(k209_status, "completed") && isTRUE(k209_args$fingerprint)) {
 k209_holdings <- list(lane = sort(ls(k209_lane)), workflow = if (is.environment(k209_lane$workflow)) sort(ls(k209_lane$workflow)) else NULL)
 k209_record <- c(k209_common(), list(status = k209_status, error = k209_error, baseline = k209_baseline, final = k209_final,
     marks = k209_rec$marks, settings = k209_bound, environment = k209_env, build_facts = k209_build_facts,
-    report = k209_rec$report, fingerprints = k209_fingerprints, holdings = k209_holdings))
+    report = k209_rec$report, fingerprints = k209_fingerprints, holdings = k209_holdings,
+    stopped_after = k209_rec$stopped_after %||% NA_character_))
 k209_write(paste0(k209_args$out, ".json"), k209_record)
 cat(sprintf("k209 journey %s: %s; %.1f s\n", k209_args$id, k209_status, k209_final$wall_s))
 if (!is.null(k209_error)) cat("k209 error at", k209_error$step, ":", k209_error$message, "\n")

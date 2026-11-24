@@ -1,8 +1,8 @@
 {
-  "label": "g0p-1",
-  "attempt": "g0p",
+  "label": "probes-1",
+  "attempt": "probe",
   "jobs": [
-    {"name": "g0p1", "plan": "g0p1", "timeout": 240},
-    {"name": "g0p2", "plan": "g0p2", "timeout": 240}
+    {"name": "probe-ruv-base", "plan": "probe-ruv-base", "timeout": 120},
+    {"name": "g0p3", "plan": "g0p3", "timeout": 150}
   ]
 }
