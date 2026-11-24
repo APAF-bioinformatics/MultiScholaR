@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R4d, VAL-54 instrument 1 of 3 for the E2E item (pkg_root now passed): the three end-to-end cell-to-verdict tests on the merged product; ceiling 90 min, about 3 core-hours",
+  "label": "KIT-159 repair R4d: end-to-end at 89094e2a",
+  "package_commit": "89094e2aad5afcbdcdbd1aa6fd7b30fa716e8829",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r4d-out",
+        "--files",
+        "e2e"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r4d-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
