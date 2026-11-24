@@ -1325,17 +1325,17 @@ integrationEnrichmentRemovedFactors <- function(object, value, model_parameters,
     trained_corrected <- identical(model_parameters$input_matrix, "ruv_corrected")
     entry <- Filter(function(item) identical(item$name, view), input$manifest$views)
     entry <- if (length(entry)) entry[[1L]]
-    missing <- function(form, values) integrationEnrichmentRefuse("integration_enrichment_removed_factors_missing",
+    refuseMissing <- function(form, values) integrationEnrichmentRefuse("integration_enrichment_removed_factors_missing",
         values = values, form = form, view = view, omic = omic)
-    if (is.null(entry$corrected_matrix_file)) missing("no_ruv", list(view, omic))
+    if (is.null(entry$corrected_matrix_file)) refuseMissing("no_ruv", list(view, omic))
     held <- input$removed_factors[[view]]
     if (is.null(held)) {
         record <- entry$removed_factors
         if (is.list(record) && identical(record$status, "not_determined")) {
-            missing(if (trained_corrected) "undetermined" else "default_undetermined",
+            refuseMissing(if (trained_corrected) "undetermined" else "default_undetermined",
                 list(view, as.character(record$reason %||% "no reason was recorded")))
         }
-        missing(if (!trained_corrected) "default", list(view, omic, omic))
+        refuseMissing(if (!trained_corrected) "default", list(view, omic, omic))
     }
     factors <- held$factors
     design <- integrationApplySampleMatch(object@design_matrix, model_parameters$sample_match_table)
