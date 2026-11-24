@@ -108,8 +108,8 @@ kit200Contrasts <- function() data.frame(contrasts = c("B.vs.A", "C.vs.A"),
 
 kit200Object <- function(x, design) {
     rownames(design) <- NULL
-    ProteinQuantitativeData(protein_quant_table = data.frame(Protein.Ids = rownames(x), x, check.names = FALSE,
-        stringsAsFactors = FALSE), design_matrix = design, sample_id = "Run", group_id = "group",
+    ProteinQuantitativeData(protein_quant_table = data.frame(Protein.Ids = rownames(x), x, row.names = NULL,
+        check.names = FALSE, stringsAsFactors = FALSE), design_matrix = design, sample_id = "Run", group_id = "group",
         technical_replicate_id = "replicates", protein_id_column = "Protein.Ids", args = list())
 }
 
