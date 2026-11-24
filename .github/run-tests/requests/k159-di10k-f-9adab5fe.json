@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 line DI10K (VAL-163 (3)): the generator change at 9adab5fe; expected: test-di10k all pass, the coverage, coverage-rank, coverage-table, repair2, repair4 files unchanged (pass), no lints; no coverage simulation; ceiling 40 job-minutes",
+  "label": "KIT-159 DI10K generator change at 9adab5fe with lint",
+  "package_commit": "9adab5fe4a849610451cbd06228ab2b879b03b3b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/di10k-f-out",
+        "--files",
+        "di10k,coverage,coverage-rank,coverage-table,repair2,repair4",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/di10k-f-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
