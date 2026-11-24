@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-222 R1: tests-only commit e9309b9d on base cf8af245; each E row must fail at its stated base value (stop rule 1); ceiling 60 min",
+  "label": "KIT-222 R1 tests-first e9309b9d",
+  "package_commit": "e9309b9db85b7f615b2ce865c6c359309d5de59a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit222-replicate-keys.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 50,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
