@@ -85,13 +85,21 @@ Ticket r1.4 (`tickets/kit/KIT-203.md`). Branch `kit-203-enrichment-family-bh`. E
 | A6 | met | S7 to S12 pass in R2c; g:Profiler status byte-identical to base after the correction |
 | A7 | met | S13 21 of 21 |
 | A8 | met with a caveat | R1b: every new test fails on the tests-only commit; S7, S8, S9 fail at an absent object or argument before their stated comparison (above). X: every guard fails under its mutation |
-| A9 | see F | |
+| A9 | met | F: differences only in the files of 10.2 and the section 12 captures; check identical |
 | A10 | met | `dumps/`, the re-freeze commit |
 | A11 | met | ledger `VAL-<merge>`, NEWS (no version change), KIT-173 `results.md`, `wording.md` |
 
 ## F
 
-(filled when the run returns)
+Run 45347178521, head 056a151b (the fix merged with staging 6a397776) against base 6a397776, every test file one
+process each, 20 shards per side, R CMD check both sides; 1,166.3 job-minutes (ceiling 1,200). Observed
+(`f/compare.tsv`): 456 files `same`; 3 `count-changed` with no failure (`test-go-propagation.R` 319 to 331,
+`test-general-enrichment-shared.R` 136 to 139, `test-workflow-operation-registry.R` 1,093 to 1,095 passing
+expectations); `test-enrichment-significance.R` only on head, 191 of 191; 2 `message-changed`
+(`test-omic-enrich-module.R`, `test-omics-enrich-core.R`): only the five clusterProfiler captures that fail on base since
+KIT-173 (`(b) clusterprofiler`, `kernel_clusterprofiler`, the KIT-113 W1 record test, the two W2 core tests; section 12:
+not edited). No new failure, no timeout, no crash. The re-frozen UI capture `(a)` passes on head. The GUI-entry files
+are `same`. Check: 0 errors, 3 warnings, 3 notes on both sides, identical (`f/check-compare.txt`).
 
 ## Recorded divergences
 
