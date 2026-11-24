@@ -141,8 +141,10 @@ runProtEnrichDeterministicProcessEnrichments <- function(da_results,
                                                         protein_id_column = "Protein.IDs",
                                                         contrast_names = NULL,
                                                         correction_method = "gSCS",
-                                                        go_propagation = "none") {
+                                                        go_propagation = "none",
+                                                        significance_rule = "qvalue") {
   # KIT-173: `go_propagation` is taken (the clusterProfiler route passes it) and ignored; the tables are fixed.
+  # KIT-203: so is `significance_rule`.
   supportedOrganisms <- buildProtEnrichSupportedOrganisms()
   backend <- if (as.character(taxon_id) %in% supportedOrganisms$taxid) {
     "gprofiler2"

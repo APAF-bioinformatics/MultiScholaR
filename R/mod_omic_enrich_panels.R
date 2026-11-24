@@ -23,6 +23,14 @@
 # file holds *ProtEnrich* names). The restore's body calls the core (`restoreWorkflowEnrichment`,
 # utils_workflow_enrichment.R), and its guard treats an empty holder as nothing restored (F107-02).
 
+#' The label of a significance rule of the clusterProfiler route (KIT-203); NULL (a run made before the rule) is the
+#' q-value's.
+#' @noRd
+enrichmentSignificanceLabel <- function(significance_rule) {
+  rules <- ENRICHMENT_SIGNIFICANCE_RULES
+  rules$label[match(significance_rule %||% "qvalue", rules$rule)]
+}
+
 formatProtEnrichStatusText <- function(analysisComplete,
                                        methodInfo = NULL,
                                        selectedContrast = NULL,
@@ -31,7 +39,8 @@ formatProtEnrichStatusText <- function(analysisComplete,
                                        qCutoff = NULL,
                                        gprofilerResults = NULL,
                                        clusterprofilerResults = NULL,
-                                       stringdbResults = NULL) {
+                                       stringdbResults = NULL,
+                                       significanceRule = NULL) {
   if (isTRUE(analysisComplete)) {
     gprofilerCount <- if (!is.null(gprofilerResults)) nrow(gprofilerResults) else 0
     clusterprofilerCount <- if (!is.null(clusterprofilerResults)) nrow(clusterprofilerResults) else 0
@@ -44,6 +53,9 @@ formatProtEnrichStatusText <- function(analysisComplete,
       sprintf("Up log2FC cutoff: %.1f\n", upCutoff),
       sprintf("Down log2FC cutoff: %.1f\n", downCutoff),
       sprintf("Q-value cutoff: %.3f\n", qCutoff),
+      # KIT-203: the run's significance rule, on the clusterProfiler route only (the g:Profiler text is unchanged)
+      if (identical(methodInfo$method, "clusterprofiler"))
+        sprintf("Significance: %s\n", enrichmentSignificanceLabel(significanceRule)),
       sprintf("Organism: %s\n", methodInfo$species_name),
       "",
       "Results Available:",
@@ -447,7 +459,7 @@ renderProtEnrichClusterProfilerResultsTable <- function(clusterprofilerResults,
         rownames = FALSE
       ) |>
         formatRoundFn(
-          columns = intersect(c("pvalue", "p.adjust", "qvalue"), names(currentResults)),
+          columns = intersect(c("pvalue", "p.adjust", "qvalue", "p_adjust_family"), names(currentResults)),
           digits = 4
         )
     }, error = function(e) {
@@ -543,7 +555,8 @@ writeProtEnrichResultsDownloadArchive <- function(file,
                                                   writeTsvFn = readr::write_tsv,
                                                   writeLinesFn = writeLines,
                                                   zipFn = utils::zip,
-                                                  sysTimeFn = Sys.time) {
+                                                  sysTimeFn = Sys.time,
+                                                  significanceRule = NULL) {
   tryCatch({
     filesToZip <- character()
 
@@ -577,7 +590,10 @@ writeProtEnrichResultsDownloadArchive <- function(file,
       "## Analysis Parameters:",
       paste("Up log2FC Cutoff:", upCutoff),
       paste("Down log2FC Cutoff:", downCutoff),
-      paste("Q-value Cutoff:", qCutoff),
+      # KIT-203 (OD9): on the clusterProfiler method the cutoff is named for both its uses, and the run's rule is
+      # given; the g:Profiler summary is unchanged.
+      if (identical(methodInfo$method, "clusterprofiler")) paste0("Significance cutoff: ", qCutoff, "\nSignificance: ",
+        enrichmentSignificanceLabel(significanceRule)) else paste("Q-value Cutoff:", qCutoff),
       "",
       "## Results Summary:",
       paste("gprofiler2 terms:", if (!is.null(gprofilerResults)) nrow(gprofilerResults) else 0),
