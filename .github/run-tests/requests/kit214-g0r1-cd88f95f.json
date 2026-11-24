@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-214 G0 (base values; tests-only commit, R/ identical to base 74b1caee; ceiling 60 job-min) and R1 (new tests fail first at the stated values, A1/A2; ceiling 45 job-min; decides stop rule 1)",
+  "label": "KIT-214 G0 and R1 on tests-only cd88f95f",
+  "package_commit": "cd88f95f8ea0c7d6257e6e021c3780a272364f11",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit214-sample-columns.R"],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-214/g0-base-values.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-214/g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
