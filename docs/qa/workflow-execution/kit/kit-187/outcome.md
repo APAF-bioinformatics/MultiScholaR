@@ -1,4 +1,17 @@
-# KIT-187 outcome: stopped at R2 (a stored reference moves)
+# KIT-187 outcome
+
+## Owner ruling after the stop (VAL-104) and R3, declared before it is sent
+
+R2 stopped the ticket (below). The owner ruled (VAL-104): the eight KIT-111 frozen `provenance` values are not re-frozen; they wait for the end-of-project re-record; the ticket (revision 1.4) restates 2.5, 6.2, A3 and A6 to admit exactly those 34 expectations of `tests/testthat/test-prot-norm-core.R`, caused only by the normalisation step's marker.
+
+Branch state for R3: c7ce0be6 plus the records/NEWS/ledger commit, a merge of `v0.9-staging` at 64cc0fff (incoming code: integration enrichment only, `R/*integration*`; none in 7.6's files or on S2's path, so no S2b; R3 runs the full suite with R CMD check on this merge, which covers R2b). KIT-177 had not merged.
+
+**R3 (declared).** Purpose: A6 and the VAL-104 cause. Binds the head commit named in `runs.tsv`, base 64cc0fff (the branch point). Request as section 10 states (tests `all`, 20 shards per side, `file_timeout_minutes` 45, 120 for the four `test-gui-entry-*.R` and `test-prot-norm-core.R`, `extra_packages` sva, env `MULTISCHOLAR_TRX_MANIFEST_NOTE=1`, reference BLAS, ubuntu-22.04) with `check: true` (the coordinator's direction). Ceiling 40 x 70 min test jobs + 2 x 90 min check + one 60-min script = 186.7 + 12.0 + 4.0 core-hours; expected 61.0 + about 4.7 + about 1.5.
+- Script `provenance-cause.R` (scripts job, `out` `docs/qa/workflow-execution/kit/kit-187/r3-prov`): base and head each run the three KIT-111 tests by description with the eight cases' provenance kept unhashed (a temporary copy of the test file with two substitutions), then compare every leaf. **Expected:** every leaf `same` except leaves `<state>/fixed/missing_value_comparison` present only on head with value "counts" (`marker_on_head`); all 17 expected cases present (8 in W1 (a), 8 in W2, 1 in R7); verdict "only the marker differs". **Decision:** anything else (an `UNEXPLAINED` leaf, a missing case, no marker) stops the ticket and is reported; a script-mechanics failure with no comparison produced is an instrument defect under VAL-54.
+- **Predicted verdicts:** as 6.2 (revision 1.4): the two new files `only-on-head`; `test-prot-summary-report-templates.R` `count-changed` (12 added, passing); `test-prot-norm-core.R` `message-changed` with exactly the 34 provenance expectations added to the base's failures; files enumerating record parameters may be `count-changed` with passing expectations only; everything else `same`; check: no finding only on head. Any other `new-failure`, `message-changed` or `compare-error` stops the ticket.
+
+## R2 stop (as recorded before the ruling)
+
 
 State: **stopped before merge at R2**, by section 6.2 ("A `new-failure`, `message-changed` or `compare-error`
 anywhere stops the ticket") and 6.2's stored-reference rule. R3 was not run. NEWS and the ledger row are not yet
