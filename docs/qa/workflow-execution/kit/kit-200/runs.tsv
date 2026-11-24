@@ -6,3 +6,4 @@ run_id	commit	purpose	minutes	result
 45400832062	9779f827 vs 0a4008a6	R2-2, instrument re-run 1 of 3: section 9's 44 files	243.6 (two shards over 60: 74.3 and 80.0)	43 same; the new file only-on-head with 8 failures and 1 error, all in its fixture (no protein id table; a state saved across stores; the wrapper given no full_format)
 45463691826	b8d9377c	R2-3, instrument re-run 2 of 3: the new file only, fixture fixed	16.9	509 passed, 1 failed: T9 (the wrapper stops after runTestsContrasts, in getSignificantData, on a list nesting independent of the data)
 45471995943	817b026a	R2-4, instrument re-run 3 of 3: the new file only, T9 changed by the owner (VAL-180)	11.5	516 passed, 0 failed: A1 met on head
+45474317181	149ab856 vs 2a1543db	R3: full suite, 20 shards per side, no check	1263.3 (longest job 67.3)	467 same, the new file only-on-head and ok; no new-failure, no message-changed

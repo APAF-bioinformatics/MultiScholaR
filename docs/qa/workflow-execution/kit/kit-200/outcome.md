@@ -1,4 +1,4 @@
-# KIT-200 outcome (R2 green after the owner's T9 decision; R3 running)
+# KIT-200 outcome (done; ready for the implementation audit)
 
 Ticket r1.2. Branch `kit-200-prot-da-proteins-without-values` from `v0.9-staging` 67d38df3.
 
@@ -105,9 +105,27 @@ The artifact field, like the return fields, exists only when there are such prot
   stops on any data (read; not run here). Not caused by this change, and no test runs the wrapper to the end otherwise.
   Changing T9's assertion would change a declared comparison (VAL-54 (i)), so the ticket stops here for a decision.
 
+## R3 (A5)
+
+Run 45474317181, 149ab856 against staging 2a1543db, 20 shards per side: 467 files `same` (identical failure lists where
+laptop-recorded references fail on both), the new file `only-on-head` and `ok`; no `new-failure`, `message-changed`,
+`count-changed` or `compare-error`. 1,263.3 job-minutes (84.2 core-hours), longest job 67.3 minutes. **A5 met**; no stored
+reference moved (6.2's verdict).
+
+## Acceptance criteria
+
+- A1 met (R1-2 and R1b on base; R2-4 on head, 516 passed, T9 as the owner changed it, VAL-180).
+- A2 met (every route reproduced on base). A3 met (R2-2: 43 `same`; the new file passes, R2-4). A4 met (R2's check).
+- A5 met (R3). A6: NEWS under the unreleased heading, ledger `VAL-<merge>` after staging's rows; `DESCRIPTION`, lock
+  files, `packaging/electron/package.json` and `NAMESPACE` unchanged; `man/runTestsContrasts.Rd` only.
+- A7: 2.3 and 2.4's citations were re-read at each merge (ticket revisions 1.4 and 1.5 list each moved line); limma 3.68.4
+  on the runner.
+
+**Core-hours:** 126.4 of 449.4 (expected 85.8): R1 0.78, R1-2 0.67, R1b 0.77, R2 21.9, R2-2 16.2, R2-3 1.13, R2-4 0.77,
+R3 84.2. R2's row (36.0) was exceeded across its instrument runs (40.0); four R2 jobs overran 60 minutes.
+
 ## Not checked (yet)
 
-- R3 (A5); A1 for T9; A6 and A7 at the end.
 - The tab's displayed text after "Error in DA analysis: " (in-process wrapping only observed at the runner).
 - 2.3 and 2.4's citations re-read at the branch point (A7): pending with the fix commit.
 
