@@ -30,6 +30,14 @@
 
 ### Fixes
 
+ * Proteomics: 'Reset to Pre-Normalization' now returns to the table the normalisation started from. Before, it
+   returned to the newest of a fixed list of step names: on label-free (MaxQuant, FragPipe, Spectronaut) and TMT data,
+   when the normalisation had started before the Protein Replicate Filter, the design table (so the next normalisation
+   ran without the quality-control filters); on DIA with iq, a peptide table (undoing the protein roll-up and protein
+   Quality Control; the next normalisation then failed); and on DIA with limpa, the precursor roll-up (undoing the
+   limpa quantification, normalisation and peptide-count filter). When that table can no longer be found, Reset now
+   changes nothing and says so; when no normalisation result is current, it leaves Quality Control as it is (KIT-225).
+
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
    example after a quality-control step was reverted or applied again following normalisation. Before, the session
