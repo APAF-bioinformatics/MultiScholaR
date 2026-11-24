@@ -1,0 +1,4 @@
+== test-tab-ruv.R :: T-TAB-RUV: prot_lfq on its generated input with the shipped arm writes every standard table (1 not passed)
+<val_spec_invalid/val_error/rlang_error/error/condition>
+Error in `operation()`: the state object is missing
+

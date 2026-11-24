@@ -1,0 +1,21 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-chain.R	T-CHAIN-1: a first link absorbing an unintended difference is refused at link one	2	2	0	0	0	0	0.053
+test-chain.R	T-CHAIN-1: a correct chain is accepted; a later link's base is compared with zero	3	3	0	0	0	0	0.051
+test-chain.R	T-CHAIN-1: a re-frozen file without a record; a lane not re-frozen against the counts	4	4	0	0	0	0	0.013
+test-chain.R	T-CHAIN-1: declared keys before the changed step, and unclassed differences after it	4	4	0	0	0	0	0.017
+test-chain.R	T-CHAIN-1: rows a re-freezing ticket committed earlier are adopted when they agree	2	2	0	0	0	0	0.041
+test-g1a.R	G1A-LOAD: KIT-199's real record is one certified link of prot_dia_limpa	8	8	0	0	0	0	0.026
+test-g1a.R	G1A-VAL: link (i) checks each declared row's stored and live digest values	4	4	0	0	0	0	0.016
+test-g1a.R	G1A-LOAD: KIT-172's real record certifies each of its four lanes	18	18	0	0	0	0	0.193
+test-g1a.R	G1A-LOAD: KIT-180 then KIT-177 on the proteomics lanes, in merge order	14	14	0	0	0	0	0.091
+test-g1a.R	G1A-ADOPT: reference rows are adopted by (lane, step, class) and key sets	5	5	0	0	0	0	0.06
+test-g1a.R	G1A-D7: the release-commit DA values against the link's da-runner table	9	9	0	0	0	0	0.082
+test-g1a.R	G1A-D7: exact only on the link's CPU models with its whole recorded environment	7	7	0	0	0	0	0.02
+test-g1a.R	G1A-REL: VAL-133 (2): identical captures first, else values; certified with the difference	8	8	0	0	0	0	0.064
+test-g1a.R	G1A-P1: part (1) compares installed against load_all; prot_dia stops at da	6	6	0	0	0	0	0.028
+test-g1a.R	G1A-P2: part (2) reads each lane's chain from the history and judges the live run	6	6	0	0	0	0	0.263
+test-g1r.R	G1R-READ: the 69 committed blocks name 69 (lane, step) pairs, 4, 30, 22, 13 per file	9	9	0	0	0	0	0.43
+test-g1r.R	G1R-FORMS: each waldo form gives (field, key, base = expected, live = actual)	10	10	0	0	0	0	0.027
+test-g1r.R	G1R-UNREADABLE: a line outside the four forms, or no lane and step, is unreadable	4	4	0	0	0	0	0.05
+test-g1r.R	G1R-CLASS: every step has a class of G1(a); 73 rows, two per prot_dia_limpa summary step	20	20	0	0	0	0	0.499
+test-g1r.R	G1R-ADOPT: KIT-180's and KIT-199's rows agree; KIT-172's disagree in 18 groups	11	11	0	0	0	0	0.544

@@ -1,0 +1,4 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-repair3.R	R-I15b: live differences are classed by G1(a)'s bounds, or left outside the classes	8	8	0	0	0	0	0.305
+test-repair3.R	R-K199: no admission path; the DIA-with-limpa link is a declared change; two classes in a step	8	8	0	0	0	0	0.046
+test-repair3.R	R-K199b: counts are per (step, class), not per difference row: several keys in one step	3	1	2	0	0	0	0.181

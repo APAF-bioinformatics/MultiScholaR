@@ -1,0 +1,11 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-parity-stage.R	T-PAR-1: a parity request is read and checked	0	0	0	0	1	0	0.015
+test-parity-stage.R	T-PAR-2: the bundle's commit is the release commit, or equal over PKG_PATHS	0	0	0	0	1	0	0.128
+test-parity-stage.R	T-PAR-3: distributable.yml has stage parity and one guarded upload per platform job	0	0	0	0	1	0	0.005
+test-phases.R	T-PH-1: the cell table crosses units and arms, one run per (run, arm), fixed seeds	0	0	0	0	1	0	0.006
+test-phases.R	T-PH-2: prepare.R runs in an isolated environment; universe and prepared hashes	0	0	0	0	1	0	0.005
+test-phases.R	T-PH-3: the cell runner by kind writes da.tsv; a refusal is val_arm_refused	0	0	0	0	1	0	0.005
+test-phases.R	T-PH-4: kernel arms pass the identity gate before their cells, or are all refused	0	0	0	0	1	0	0.005
+test-phases.R	T-PH-5: per-unit metric rows carry the fixed columns; blinded in the lifecycle	0	0	0	0	1	0	0.006
+test-phases.R	T-PH-6: run-level intervals over units, refusals, and blinded outcomes	0	0	0	0	1	0	0.015
+test-phases.R	T-PH-7: a phase writes its run folder (cells, metrics, comparisons, provenance)	0	0	0	0	1	0	0.008
