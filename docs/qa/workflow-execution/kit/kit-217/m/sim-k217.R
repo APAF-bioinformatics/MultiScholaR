@@ -592,6 +592,18 @@ checkE6 <- function() {
     }
 }
 
+# the rows of one job, one gzipped table per cell: <prefix>-rows-<cell>-<first>-<last>.tsv.gz
+writeRows <- function(all_rows, dir, prefix, cells, first, last) {
+    dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+    for (cellname in cells) {
+        table <- all_rows[all_rows$cell == cellname, , drop = FALSE]
+        table <- table[order(table$rep, match(table$mask, masksOf217(cellname)), match(table$arm, c("mask", armsOf(cellname)))), ]
+        connection <- gzfile(file.path(dir, sprintf("%s-rows-%s-%d-%d.tsv.gz", prefix, cellname, first, last)), "w")
+        utils::write.table(table, connection, sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+        close(connection)
+    }
+}
+
 # ---- the job ---------------------------------------------------------------------------------------------------------
 units <- expand.grid(rep = seq(first_rep, last_rep), cell = cells_wanted, stringsAsFactors = FALSE)
 job <- sprintf("%s-%s-%d-%d%s", job_prefix, paste(cells_wanted, collapse = "_"), first_rep, last_rep, if (lifecycle) "-l1" else "")
@@ -681,14 +693,18 @@ if (lifecycle) {
     completion <- arm_rows[, c("cell", "rep", "mask", "arm", "status", "class")]
     utils::write.table(completion, file.path(out_dir, sprintf("completion-%s.tsv", job)), sep = "\t", quote = FALSE,
         row.names = FALSE, na = "NA")
-} else {
-    for (cellname in cells_wanted) {
-        table <- all_rows[all_rows$cell == cellname, , drop = FALSE]
-        table <- table[order(table$rep, match(table$mask, masksOf217(cellname)), match(table$arm, c("mask", armsOf(cellname)))), ]
-        connection <- gzfile(file.path(out_dir, sprintf("%s-rows-%s-%d-%d.tsv.gz", job_prefix, cellname, first_rep, last_rep)), "w")
-        utils::write.table(table, connection, sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
-        close(connection)
+    # D-02: the counted writing path, run on the lifecycle's rows, to $RUNNER_TEMP only (never under the uploaded out
+    # dir); and L2's first replicate run a second time as a determinism file, for E7 (score-k217.R e7)
+    temp <- Sys.getenv("RUNNER_TEMP")
+    if (!nzchar(temp)) temp <- tempdir()
+    ml_rows <- file.path(temp, "k217-ml-rows")
+    writeRows(all_rows, ml_rows, "m", cells_wanted, first_rep, last_rep)
+    if ("L2" %in% cells_wanted) {
+        again <- runOne(which(units$cell == "L2" & units$rep == first_rep))
+        writeRows(again$rows, ml_rows, "det", "L2", first_rep, first_rep)
     }
+} else {
+    writeRows(all_rows, out_dir, job_prefix, cells_wanted, first_rep, last_rep)
 }
 checks <- do.call(rbind, checks_rows)
 utils::write.table(checks, file.path(out_dir, sprintf("checks-%s.tsv", job)), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")

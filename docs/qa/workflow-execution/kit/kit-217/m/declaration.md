@@ -3,8 +3,19 @@
 Committed with its two scripts, alone, before the lifecycle ML and before any counted run (plan section 3 rule 1). The
 design is ticket KIT-217 revision 1.3, section 4.1 (`tickets/kit/KIT-217.md`), with the owner's SD-10 (methods ledger
 VAL-184, 2026-11-25). Nothing below changes after a result is seen; a later change is a dated section labelled as made
-after the results, and any change to a script after ML goes through ML again. Status: **declared; waiting for the plan
-auditor's confirmation before ML is sent.**
+after the results, and any change to a script after ML goes through ML again. Status: **revision 2 (repairs D-01 to
+D-03 of the declaration audit); waiting for the auditor's diff-check before ML is sent.**
+
+**Revision 2 (2026-11-25, before any run).** The declaration audit (`tickets/kit/audits/AUDIT-KIT-217-plan-20261125.md`,
+"Declaration audit") found three gaps in what the lifecycle checks and in the completeness rules; revision 1 is commit
+fc644ffb. Changed: (D-01) the decision script's self-test now plants the audit's scenarios (a) to (f) with their
+expected labels, including every outcome row through `score()`; (D-02) the lifecycle writes its rows through the
+counted writing code to `$RUNNER_TEMP`, re-runs L2's first replicate as a determinism file, and scores them blind
+(E7, added to G-M); the determinism range is read from the det file's name; (D-03) a unit whose DA failed for an assay
+is not complete, the 5 % rule is applied per mask over the masks a statistic uses, paired statistics print the units
+they used and dropped (the guard and Q2 read "not determined" above 5 % dropped), and a non-finite bootstrap value
+makes a classification "not determined". These are instrument and completeness rules only: no estimand, margin, level,
+cell, mask, arm, seed or outcome consequence changed.
 
 ## 1. Bound code and scripts
 
@@ -13,8 +24,9 @@ auditor's confirmation before ML is sent.**
   `docs/qa/workflow-execution/kit/kit-217/`; nothing under `R/` changes). KIT-202 is not in it and need not be
   (KIT-185's tables have text ids; E1 shows the package's S set equals the oracle).
 - Scripts (SHA-256 of the committed files):
-  - `m/sim-k217.R` 18db75514607e6a8feae507b08da1dbd06e63b21bc9071e57d4e932526b08ef6 (generator and measurement)
-  - `m/score-k217.R` d6f59789f6cf13c686860c649e74defb473b4b5831915f433642127194f3528f (decision script)
+  - `m/sim-k217.R` e80b7d5d597299f43c76be8663a6ee47a4ba675549d5d9e7bc35855aa44db1b3 (generator and measurement)
+  - `m/score-k217.R` c3b97ebd9bb7697ef4a753ee23886ab73abda3c269bf88fc72165178a2386d89 (decision script)
+  - (revision 1, fc644ffb: 18db7551…8ef6 and d6f59789…528f)
 - Generator source: `docs/qa/workflow-execution/kit/kit-185/sim-k185.R` at 735c2ea5 (the KIT-185 merge; unchanged at
   e6791275, SHA-256 5ffc96049efbcba0c7c465c78201465aa7a6cc13490b20afa6e705524aa234ce), copied by line range under
   "verbatim" headers: 43-52 (`warning_count`, `quiet`), 71-76 (`GROUPS`, `cell`), 90-91, 101-102 (`maskMech`,
@@ -149,7 +161,14 @@ no class changes."
   kept out of the rows) must be byte-identical to the counted L2 job's. A difference: Stop.
 - **Did not complete:** a unit (cell, mask, replicate, arm) that errors is "did not complete", listed with its error
   class, never a denominator. Above 5 % of a cell's units for an arm (over all the cell's masks), that arm's cell is
-  "no result" and counts as not determined, the cell named.
+  "no result" and counts as not determined, the cell named. Revision 2 (D-03): (i) a unit whose DA failed for one
+  assay (`da_failed > 0`) is not complete (KIT-188 r1.9's rule); (ii) the share is computed over the masks the
+  statistic uses (the exchangeable masks for Q1, the guard and F2; vdg10 and vdg25 for Q2), and any single mask above
+  5 % also makes that arm's cell "no result"; (iii) every paired statistic (excess, guard, Q2, O2's power tie-break,
+  large effects) prints the (replicate, mask) units it used and, per arm, the units it completed that were dropped
+  because the other arm did not; the guard and Q2 read "not determined" when more than 5 % of their units are dropped;
+  (iv) every interval prints its count of non-finite bootstrap values, and any such value makes the classification
+  "not determined" (an F2 setting not determined counts as firing: the arm gets no label).
 
 ## 9. Outcomes (the first row that holds applies) and their consequence
 
@@ -178,12 +197,23 @@ One request, two scripts in one job:
    p = S's to 1e-12; reported), **E4** (the fault is "did not complete", every other row present), **E5** (the
    counted jobs' plan from these seconds), **E6** (the rules reproduce 2.4's ten-feature table in every column, T3 and
    T4; `trxFilterMinSampleSize` gives the declared k; the in-script fold change equals the DA's logFC to 1e-10).
-2. `score-k217.R selftest docs/qa/workflow-execution/kit/kit-217/m/ml`: the decision script on planted rows (four
-   deciding cells x 200 replicates; NF, S and the family at 0.05 except a planted calibrated arm D at 0.05 and a
-   planted 2-fold arm Dk at 0.10; PC at 0.10; replicate-level noise exp(N(0, 0.15^2))): D must read calibrated, Dk
-   fails in every cell, NF meets, the PC gate passes, every resample draws n replicates.
+   Revision 2 (D-02): it also writes every cell's rows through the counted jobs' writing function to
+   `$RUNNER_TEMP/k217-ml-rows` (never under `out`) and runs L2's replicate 401 a second time as
+   `det-rows-L2-401-401.tsv.gz` (the fault fires identically, so the rows must match).
+2. `score-k217.R selftest docs/qa/workflow-execution/kit/kit-217/m/ml`: (a) to (f) of the self-test, each with its
+   expected label, as listed in `score-k217.R` (the declaration audit's D-01: a planted calibrated arm, a 2-fold arm
+   failing every cell, NF meeting, the PC gate; a failure in one cell only; an arm at the band reading not determined;
+   NF failing in one cell, with the excess basis, meets and fails there; the guard's no material cost, costs power and
+   raised; and `score()` on planted directories giving Stop, N0, O0 then O1, O1, O2 for A-obs-any, O2 for D-k and O3
+   for B); any mismatch fails G-M.
+3. `score-k217.R e7 docs/qa/workflow-execution/kit/kit-217/m/ml`: runs `score()` on `$RUNNER_TEMP/k217-ml-rows` into
+   `$RUNNER_TEMP/k217-ml-score` with its console discarded, computing every table even where an earlier outcome row
+   holds. **E7** passes when it completes, `stops.tsv`, `outcome.tsv`, `q1-cells.tsv`, `classes.tsv`, `q2.tsv`,
+   `f2.tsv`, `beside.tsv` and `per-setting.tsv` exist, and `stops.tsv` shows 0 determinism failures. Only E7's pass or
+   fail is written (`e7.tsv`); nothing under `$RUNNER_TEMP` is kept. (The audit wrote this step as a shell line; the
+   run-tests runner passes arguments without a shell, so the script resolves `$RUNNER_TEMP` itself.)
 
-Gate G-M: E1, E2, E4, E6 and the selftest pass; otherwise an instrument defect under VAL-54 (at most three further
+Gate G-M: E1, E2, E4, E6, E7 and the selftest pass; otherwise an instrument defect under VAL-54 (at most three further
 instrument runs, each recorded). Timing rule: a counted job whose plan exceeds 150 minutes is split at the same R; R is
 never reduced; if the total ceiling would be exceeded, stop: the coordinator decides.
 
@@ -209,13 +239,13 @@ minutes of set-up per job), to be replaced by ML's seconds:
 
 | Step | Expected (min) | Ceiling (min, ticket section 7) |
 |---|---|---|
-| ML (lifecycle and selftest) | 20 | 197 |
+| ML (lifecycle, selftest with seven planted `score()` runs, E7) | 40 | 197 |
 | MC: L2 25, L1 27, M2 16, M1 19, reported 17, determinism 12 | 116 | 967 |
 | MS | 25 | 88 |
 | Instrument reruns (VAL-54) | 0 | 450 |
-| **M** | **161 = 10.7 core-hours** | **1,702 = 113.47 core-hours** |
+| **M** | **181 = 12.1 core-hours** | **1,702 = 113.47 core-hours** |
 
-The ticket's expected 33.47 core-hours (502 min) was scaled from r1.0's table; this plan's 10.7 is lower because
+The ticket's expected 33.47 core-hours (502 min) was scaled from r1.0's table; this plan's 12.1 is lower because
 KIT-185's per-call seconds are smaller than r1.0 assumed. The ceiling is the ticket's and does not change. Stop rules:
 a counted run that would take the total past 1,702 job-minutes is not sent (the coordinator decides); a script or
 mechanics failure with no result is an instrument defect (VAL-54, at most three further runs per item); anything else
