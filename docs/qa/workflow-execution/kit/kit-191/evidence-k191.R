@@ -148,6 +148,8 @@ found$text_present <- found$key %in% names(texts)
 found$found <- vapply(seq_len(nrow(found)), function(i) {
     text <- texts[[found$key[[i]]]]
     if (grepl("^enrich_test_few_samples_", found$key[[i]])) text <- sprintf(text, 6L)
+    # VAL-115 (4): the permutation notes take the number of reorderings chosen.
+    if (grepl("^enrich_test_permutation_note_", found$key[[i]])) text <- sprintf(text, "1,000")
     grepl(found$figure[[i]], text, fixed = TRUE)
 }, logical(1))
 utils::write.table(found, file.path(out_dir, "texts.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)

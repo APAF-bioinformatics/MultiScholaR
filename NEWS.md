@@ -8,9 +8,19 @@
    test (the default, unchanged) and the pre-ranked test, two more tests can be chosen: the correlation-adjusted test
    with negative correlations counted as zero, and a permutation test of the factor's values (PCGSE). The tab and every
    record show how each test behaved in a check on simulated data of the same kind (false calls and power; no lipid
-   data were simulated), so the choice can be made on those figures. Results of the default test are unchanged. The
+   data were simulated), so the choice can be made on those figures. With a permutation result, the tab and the
+   record's Methods state the smallest attainable p-value as an exact fraction (for example 1/1,001) and the smallest
+   number of terms that can be called together at a 5 % false discovery rate, or that none can be called when that
+   p-value is above 0.05 (VAL-115). Results of the default test are unchanged. The
    pre-ranked test now draws its random numbers with R's default generator whatever the session's setting; results in
    a session with default settings are unchanged (KIT-191).
+
+ * Integration inputs record the unwanted factors a correction for unwanted variation (RUV) removed: where an omic
+   applied RUV to a data set, saving its Summary writes one more file, `removed_<data set>.parquet`, beside the
+   normalised and the corrected matrix (a basis of the difference between the two over the features measured in every
+   run, checked against the correction's number of factors; contract v2, an addition that earlier versions read as
+   before). An input saved earlier must be saved again at the omic's Summary step before the correlation-adjusted
+   enrichment test can run with the adjustment on a model trained on RUV-corrected values (KIT-184).
 
 ### Fixes
 
@@ -22,11 +32,60 @@
    when the Differential Analysis tab is pressed before the normalisation now reads 'Run the normalisation first: the
    differential analysis runs on the normalised data.', and the tab's model help says that the RUV factors enter the
    model only when the normalisation added them. The report then states that no correction for unwanted variation was
-   applied. On these runs the tab still reports that the results could not be saved to disk, although the result tables
-   and figures are written; this is fixed separately (KIT-192).
+   applied.
+
+ * Transcriptomics: on runs of the RUV design panel (the option 'No removal of unwanted variation', an RUV design whose
+   rule finds no unwanted factor, or any RUV design that adds factors), the Differential Analysis tab no longer reports
+   'Could not save results to disk: non-numeric argument to mathematical function' after writing the result tables and
+   figures. The RUV grid summary (`ruv_optimization_summary.txt`) is written only for runs that used the RUV grid
+   search; the other runs have no grid to summarise, and their RUV choices are in the analysis record and the report.
+   Files written by an earlier run of the same project that used the RUV grid search (this summary, the
+   canonical-correlation panels and the grid workbook) are not removed, and describe that earlier run. Runs that used
+   the RUV grid are unchanged. The RUV design panel is off by default.
 
 ### Scientific changes
 
+ * Integration enrichment for a model trained on RUV-corrected values (`input_matrix = "ruv_corrected"`; the default
+   input is unchanged): the correlation-adjusted tests (the default test and the form with negative correlations counted
+   as zero) now read the values before RUV with the unwanted factors the correction removed from the data set in their
+   model (intercept, factor, removed factors), so a feature counts for what it shares with the factor beyond those
+   factors. For features measured in every run this is identical to fitting that model to the corrected values. Results
+   of such models differ from those of the version before, which tested the values before RUV without the factors. The
+   adjustment is a setting, "Adjust for removed RUV factors" (`adjust_ruv_factors`), in the Enrichment tab and in
+   `integrationEnrichFactor(overrides = )`: switched off, such a model is tested as the version before tested it,
+   labelled as a sensitivity analysis with its limitation; switched on, a model trained on the values before RUV is
+   adjusted too, where the omic applied RUV to the data set. Every result names the form used: every result of a
+   correlation-adjusted test, on any model, now carries the line "Adjusted for removed RUV factors: yes (n factors)." or
+   "... no." in the tab, in `integrationEnrichFactor()`'s summaries and in records; no number of a model trained on the
+   values before RUV changes. The test is refused when fewer than max(4, the smallest number of samples per feature)
+   biological samples are left after one per removed factor, and when the factor is a combination of the removed
+   factors. The pre-ranked test, the permutation test and STRING do not use the removed factors, and say so for such a
+   model. A recorded result replays in the form it was saved in; a result recorded before this version replays without
+   the adjustment (VAL-53, VAL-58, VAL-62; KIT-184).
+
+ * Proteomics (DIA, label-free, TMT): the protein missing-value filter ('Protein Intensity Filter', and the clean-up
+   after RUV) now decides by counting missing values. Before, it compared each group's share of missing values with a
+   percentage rounded to three decimals. With three samples per group and 'Min Replicates per Group' 2, one missing
+   value of three (33.3333 %) exceeded the rounded 33.333 %, so at the tab's defaults only proteins measured in every
+   sample were kept. The same happened for some other group sizes (for example 6, 7 or 11 samples with 1 required; 11
+   to 14 with 2) and for three groups with 'Min Groups Required' 2. Group sizes whose allowed share is exact or rounds
+   up (for example 2, 4, 5, 6, 7, 8, 9 or 10 samples with 2 required) give the same results as before. In simulated
+   data (KIT-185's generator with no unwanted variation and no RUV, 2 groups of 3, 3,000 proteins, R = 100 draws per
+   condition) the filter now keeps, at 5 %, 10 % and 25 % value-dependent missingness, 2,838, 2,668 and 2,086 proteins
+   instead of 2,442, 2,060 and 1,261; the differential analysis finds 53, 81 and 110 more proteins (the share of truly
+   changed proteins found rises from 0.65 to 0.73, 0.55 to 0.68 and 0.33 to 0.51), with the false discovery proportion
+   unchanged at about 0.05 for the whole list (among the newly kept proteins about 6 to 8 % of the proteins called
+   were false); these are simulated figures, and the size on real data is not yet measured. Designs with unequal group
+   sizes keep the rule of the largest group, as before, so a smaller group can pass with fewer values than 'Min
+   Replicates per Group' (for example one of three when the largest group has six). Analysis records made before this
+   version replay with the earlier rule; each step of a record replays with the rule it was made with. In an analysis
+   record, the protein intensity filter and normalisation steps made with this version list the fixed parameter
+   'missing_value_comparison = counts'; a step without it was made with the earlier rule. A session saved before this
+   version and continued after it applies the new rule from its next missing-value step. The peptide intensity
+   filter's percentage-only call (deprecated) reads its percentages the same way. The proteomics reports now say that
+   a protein failed a group when its share of missing values exceeded the allowed share, and was kept when the share
+   of groups it failed did not exceed the allowed share; they said 'or more' and 'at most' of the rounded percentages.
+   (KIT-187, VAL-71)
  * Integration enrichment of a factor against KEGG and Reactome pathways now uses a correlation-adjusted test by
    default (limma's camera on each feature's regression on the factor, allowing for the correlation measured between
    a pathway's features, on the features measured in every biological sample; of several features on one compound

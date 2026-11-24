@@ -2,14 +2,16 @@
 # to its own copy of the head tree (a git worktree), loaded in a fresh process, and the guards U5, U7 and U8 of
 # tests/testthat/test-integration-enrichment-options.R run: (m1) camera's canonical text changed: U7 must fail; (m2)
 # the replay drops the recorded test: U8 (in "U5, U8") must fail; (m3) the permutation's text without the seed: U5 (in
-# "U5, U8") must fail. The unmutated head is the control (all pass).
+# "U5, U8") must fail. The unmutated head is the control (all pass). AUDIT-KIT-191-impl I07: with a base commit given,
+# m2 also replays the branch-point store's old entries (base-head.R run from the m2 tree), which must then fail.
 #
-# Usage (from the head package root, full git history): Rscript mutations-k191.R <out dir>
+# Usage (from the head package root, full git history): Rscript mutations-k191.R <out dir> [<base commit>]
 # Writes <out dir>/guards.tsv, verdict.txt and each variant's log.
 
 arguments <- commandArgs(trailingOnly = TRUE)
-stopifnot(length(arguments) == 1L)
+stopifnot(length(arguments) %in% 1:2)
 out_dir <- arguments[[1L]]
+base <- if (length(arguments) == 2L) arguments[[2L]] else NA_character_
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 out_dir <- normalizePath(out_dir)
 head <- normalizePath(".")
@@ -55,7 +57,23 @@ mutate <- function(name, m) {
 }
 
 rows <- list(runGuards(head, "head"))
-for (name in names(mutations)) rows[[length(rows) + 1L]] <- runGuards(mutate(name, mutations[[name]]), name)
+trees <- list()
+for (name in names(mutations)) {
+    trees[[name]] <- mutate(name, mutations[[name]])
+    rows[[length(rows) + 1L]] <- runGuards(trees[[name]], name)
+}
+# The old entries under m2: the branch-point store replayed by the mutated code (its own process tree, as base-head.R).
+old_entries <- NA
+if (!is.na(base)) {
+    old_out <- file.path(out_dir, "m2-old-entries")
+    tree <- trees[["m2_replay_drops_test"]]
+    withr::with_dir(tree, system2(rscript, c("--vanilla", "docs/qa/workflow-execution/kit/kit-191/base-head.R", base,
+        old_out), stdout = file.path(out_dir, "m2-old-entries.log"), stderr = file.path(out_dir, "m2-old-entries.log")))
+    verdict <- file.path(old_out, "verdict.txt")
+    replay_ok <- file.exists(verdict) && any(grepl("^replay_terms_identical\tTRUE$", readLines(verdict))) &&
+        any(grepl("^replay_tests_kept\tTRUE$", readLines(verdict)))
+    old_entries <- !replay_ok
+}
 guards <- do.call(rbind, rows)
 utils::write.table(guards, file.path(out_dir, "guards.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 failing <- function(variant, pattern) {
@@ -66,8 +84,9 @@ control <- guards[guards$variant == "head", , drop = FALSE]
 checks <- c(head_passes = nrow(control) >= 2L && all(control$failed == 0L & !control$error),
     m1_fails_U7 = failing("m1_camera_text", "U7"),
     m2_fails_U8 = failing("m2_replay_drops_test", "U5, U8"),
-    m3_fails_U5 = failing("m3_permutation_text_no_seed", "U5, U8"))
+    m3_fails_U5 = failing("m3_permutation_text_no_seed", "U5, U8"),
+    m2_fails_old_entries = if (is.na(base)) NA else old_entries)
 writeLines(sprintf("%s\t%s", names(checks), checks), file.path(out_dir, "verdict.txt"))
 print(guards)
 print(checks)
-stopifnot(all(checks))
+stopifnot(all(checks, na.rm = TRUE))

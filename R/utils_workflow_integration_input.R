@@ -44,6 +44,20 @@
 # matrix. A v2 reader (KIT-147) reads such a folder as what it is: a normalised matrix per data set, the corrected file
 # one more file with its sha256. A v2 folder of the earlier build has no `matrix_stage`: it held one matrix per data set,
 # the RUV-corrected one where the omic applied RUV, so it is refused in plain words (`integration_input_outdated`).
+#
+# KIT-184 (VAL-53 (1), VAL-58; an addition inside contract v2): where a data set has a corrected matrix, the unwanted
+# factors the correction removed are written beside it as
+#
+#   removed_<view>.parquet      `feature_id` (`ruv_W1` to `ruv_Wk`), then one double column per run in the samples
+#                               table's order: an orthonormal basis, orthogonal to the constant, of the row space of
+#                               (normalised minus corrected) over the features measured in every run
+#
+# with, in the data set's manifest entry, `removed_factors_file` and `removed_factors` (`method`, `k_declared`, `rank`,
+# `k`, `share`, `features`, `tolerance`, `status`, `reason`; `integrationInputRemovedFactors()`). No stored W of any RUV
+# step is read: the factors are taken from what was removed. A data set without a corrected matrix has neither; one
+# whose factors cannot be determined has the record with its reason and no file. An earlier build reads such a folder as
+# before (one more listed file, two fields it does not name); this build reads a folder saved before it as a data set
+# without removed factors.
 
 INTEGRATION_INPUT_SCHEMA <- "multischolar.integration_input.v2"
 INTEGRATION_INPUT_SCHEMA_V1 <- "multischolar.integration_input.v1"
@@ -55,6 +69,9 @@ INTEGRATION_INPUT_MATRIX_STAGE <- "normalised"
 # The Parquet layout every v2 file follows, recorded in the manifest as `parquet` and required as written.
 INTEGRATION_INPUT_PARQUET <- list(format_version = "2.6", compression = "snappy", row_group_rows = 10000L,
     column_types = list(feature_id = "string", runs = "double", samples = "string", features = "string"))
+# KIT-184: the relative bound below which a singular value of the removed part, and the removed part itself, count as
+# zero: far above double-precision rounding and far below any variation in data (ticket 5.4).
+INTEGRATION_INPUT_REMOVED_TOLERANCE <- 1e-8
 
 #' Refuse an integration input with the contract's classed error.
 #' @param message What failed, lower case.
@@ -65,12 +82,82 @@ abortIntegrationInput <- function(message, class = NULL) {
 }
 
 #' A view's file names (fixed by the view name). KIT-153: `corrected`, the RUV-corrected matrix where the omic has one.
+#' KIT-184: `removed`, the unwanted factors the correction removed.
 #' @param view The view name.
-#' @return `list(matrix, features, corrected)`.
+#' @return `list(matrix, features, corrected, removed)`.
 #' @noRd
 integrationInputViewFiles <- function(view) {
     list(matrix = sprintf("matrix_%s.parquet", view), features = sprintf("features_%s.parquet", view),
-        corrected = sprintf("corrected_%s.parquet", view))
+        corrected = sprintf("corrected_%s.parquet", view), removed = sprintf("removed_%s.parquet", view))
+}
+
+#' The number of factors a correction declares for a data set (KIT-184 5.4): `correction$views[[view]]$k` where the
+#' correction lists data sets (lipidomics, metabolomics), else `correction$k`.
+#' @param correction The manifest's `correction`, or NULL.
+#' @param view The data set's name.
+#' @return One whole number of at least 1, or `NA_integer_` when the correction declares none.
+#' @noRd
+integrationInputDeclaredK <- function(correction, view) {
+    k <- if (is.list(correction)) {
+        per_view <- if (is.list(correction$views)) correction$views[[view]]
+        if (is.list(per_view) && !is.null(per_view$k)) per_view$k else correction$k
+    }
+    if (!is.numeric(k) || length(k) != 1L || is.na(k) || k != round(k) || k < 1) return(NA_integer_)
+    as.integer(k)
+}
+
+#' The unwanted factors a correction removed from one data set (KIT-184 5.4; VAL-53 (1), VAL-58): an orthonormal basis
+#' of the row space of (normalised minus corrected), each row centred on its mean, over the features with a finite
+#' value in every run of both matrices. On every RUV route the correction of such a feature subtracts a vector in the
+#' span of one k-column W per data set (plus a constant where the feature's level is restored), so that row space is the
+#' centred W's span and has dimension k or less. The numerical rank r counts the singular values above
+#' `INTEGRATION_INPUT_REMOVED_TOLERANCE` times the largest; min(k, r) factors are written, each with its entry of
+#' largest absolute value positive. `exact`: r is at most k (everything removed from those features lies in the
+#' factors). `approximate`: r is above k (a run removed after RUV left features that were corrected one by one among the
+#' complete ones); `share` is then the part of the removed sum of squares the factors hold. `not_determined`: no
+#' declared k, fewer than k + 1 complete features, or a difference that is zero or a constant per feature.
+#' @param uncorrected,corrected The normalised and the corrected matrix: `feature_id`, then one column per run (any
+#'   column order; the same features in the same order).
+#' @param k The correction's declared number of factors (`integrationInputDeclaredK()`).
+#' @param sample_ids The samples table's run ids, in its order.
+#' @return `list(table, record)`: `table` the factors in the contract's matrix layout (`feature_id` `ruv_W1` to
+#'   `ruv_Wk`, then the runs in `sample_ids`' order), NULL when not determined; `record` `list(method, k_declared, rank,
+#'   k, share, features, tolerance, status, reason)`.
+#' @noRd
+integrationInputRemovedFactors <- function(uncorrected, corrected, k, sample_ids) {
+    tolerance <- INTEGRATION_INPUT_REMOVED_TOLERANCE
+    declared <- if (is.numeric(k) && length(k) == 1L && !is.na(k) && k == round(k) && k >= 1) as.integer(k) else NA_integer_
+    u <- as.matrix(as.data.frame(uncorrected, optional = TRUE)[sample_ids])
+    v <- as.matrix(as.data.frame(corrected, optional = TRUE)[sample_ids])
+    storage.mode(u) <- "double"
+    storage.mode(v) <- "double"
+    complete <- rowSums(!is.finite(u)) == 0L & rowSums(!is.finite(v)) == 0L
+    features <- sum(complete)
+    undetermined <- function(reason) list(table = NULL, record = list(method = "difference_svd", k_declared = declared,
+        rank = NA_integer_, k = 0L, share = NA_real_, features = features, tolerance = tolerance, status = "not_determined",
+        reason = reason))
+    if (is.na(declared)) return(undetermined("the correction records no number of removed factors"))
+    if (features < declared + 1L) {
+        return(undetermined(sprintf("%d features are measured in every run, fewer than the %d needed for %d factors",
+            features, declared + 1L, declared)))
+    }
+    difference <- u[complete, , drop = FALSE] - v[complete, , drop = FALSE]
+    difference <- difference - rowMeans(difference)
+    if (max(abs(difference)) <= tolerance * max(abs(u[complete, , drop = FALSE]))) {
+        return(undetermined(paste("the normalised and the corrected values are equal or differ by a constant per feature,",
+            "so the correction removed no direction across the runs")))
+    }
+    decomposition <- svd(difference, nu = 0L)
+    d <- decomposition$d
+    rank <- sum(d > tolerance * d[[1L]])
+    kept <- min(declared, rank)
+    factors <- decomposition$v[, seq_len(kept), drop = FALSE]
+    for (j in seq_len(kept)) if (factors[which.max(abs(factors[, j])), j] < 0) factors[, j] <- -factors[, j]
+    table <- data.frame(feature_id = paste0("ruv_W", seq_len(kept)), t(factors), stringsAsFactors = FALSE)
+    names(table) <- c("feature_id", sample_ids)
+    list(table = table, record = list(method = "difference_svd", k_declared = declared, rank = as.integer(rank),
+        k = as.integer(kept), share = sum(d[seq_len(kept)]^2) / sum(d^2), features = features, tolerance = tolerance,
+        status = if (rank <= declared) "exact" else "approximate", reason = NULL))
 }
 
 #' The normalised matrix that entered RUV, on the corrected matrix's features and samples (KIT-153): its rows of the
@@ -342,16 +429,19 @@ readIntegrationInputMatrix <- function(path, name, columns) {
 #' @param sample_ids The samples table's ids, in its order.
 #' @param file,row_groups KIT-153: the matrix file and its row-group count (the view's `matrix_file` and `row_groups`, or
 #'   its `corrected_matrix_file` and `corrected_row_groups`).
+#' @param rows KIT-184: the rows the file must have (the view's features; for the removed factors' file their number).
 #' @return The feature ids, in file order.
 #' @noRd
 checkIntegrationInputMatrix <- function(dir, view, feature_column, sample_ids, file = view$matrix_file,
-    row_groups = view$row_groups) {
+    row_groups = view$row_groups, rows = view$rows) {
     name <- file
+    expected_rows <- rows
     withIntegrationInputParquet(file.path(dir, name), name, function(reader) {
         schema <- integrationInputSchema(reader)
         rows <- as.integer(reader$num_rows)
-        if (!identical(rows, as.integer(view$rows)) || !identical(length(schema$names) - 1L, as.integer(view$columns))) {
-            abortIntegrationInput(sprintf("the matrix %s of view %s is not %s x %s", name, view$name, view$rows, view$columns))
+        if (!identical(rows, as.integer(expected_rows)) || !identical(length(schema$names) - 1L, as.integer(view$columns))) {
+            abortIntegrationInput(sprintf("the matrix %s of view %s is not %s x %s", name, view$name, expected_rows,
+                view$columns))
         }
         if (!identical(schema$names[[1L]], feature_column) || !identical(schema$types[[1L]], "string")) {
             abortIntegrationInput(sprintf("the matrix of view %s must start with the text column %s", view$name, feature_column))
@@ -450,6 +540,18 @@ writeIntegrationInput <- function(dir, manifest, samples, matrices, features, no
             manifest$views[[i]]$corrected_matrix_file <- files$corrected
             manifest$views[[i]]$corrected_row_groups <- withIntegrationInputParquet(file.path(staging, files$corrected),
                 files$corrected, function(reader) as.integer(reader$num_row_groups))
+            # KIT-184: the unwanted factors the correction removed, from the two matrices themselves.
+            removed <- integrationInputRemovedFactors(matrices[[views[[i]]]], corrected[[views[[i]]]],
+                integrationInputDeclaredK(manifest$correction, views[[i]]), sample_ids)
+            manifest$views[[i]]$removed_factors <- removed$record
+            if (is.null(removed$table)) {
+                cli::cli_warn(sprintf(paste("the unwanted factors removed from data set %s could not be determined (%s);",
+                    "the integration input is written without them"), views[[i]], removed$record$reason),
+                    class = "integration_input_removed_factors_undetermined")
+            } else {
+                written <- c(written, write(removed$table, files$removed))
+                manifest$views[[i]]$removed_factors_file <- files$removed
+            }
         }
     }
     manifest$samples_file <- INTEGRATION_INPUT_SAMPLES
@@ -556,6 +658,12 @@ readIntegrationInput <- function(dir) {
         if (!is.null(view$corrected_matrix_file) && !identical(view$corrected_matrix_file, fixed$corrected)) {
             abortIntegrationInput(sprintf("the corrected matrix of view %s must be %s", view$name, fixed$corrected))
         }
+        # KIT-184: the removed factors' file has its fixed name and belongs to a data set with a corrected matrix.
+        if (!is.null(view$removed_factors_file) && (!identical(view$removed_factors_file, fixed$removed) ||
+            is.null(view$corrected_matrix_file))) {
+            abortIntegrationInput(sprintf("the removed factors of view %s must be %s, beside its corrected matrix", view$name,
+                fixed$removed))
+        }
     }
     corrected_views <- Filter(function(view) !is.null(view$corrected_matrix_file), manifest$views)
     if (!identical(manifest$samples_file, INTEGRATION_INPUT_SAMPLES)) {
@@ -584,7 +692,7 @@ readIntegrationInput <- function(dir) {
         }
     }
     listed <- c(manifest$samples_file, unlist(lapply(manifest$views, function(view) c(view$matrix_file, view$features_file,
-        view$corrected_matrix_file))))
+        view$corrected_matrix_file, view$removed_factors_file))))
     if (!all(listed %in% names(files))) abortIntegrationInput("every table must be listed with its sha256")
     sample_column <- manifest$sample_id_column
     samples <- readIntegrationInputTextTable(file.path(dir, manifest$samples_file), manifest$samples_file)
@@ -616,8 +724,61 @@ readIntegrationInput <- function(dir) {
         views[[view$name]] <- list(features = annotation, rows = length(ids), columns = length(sample_ids),
             row_groups = as.integer(view$row_groups), corrected = corrected,
             corrected_row_groups = if (corrected) as.integer(view$corrected_row_groups) else NA_integer_)
+        # KIT-184: the removed factors, where the data set has their file: checked here, kept with the file's sha256.
+        # A data set without the file adds nothing (its entry is the one the build before KIT-184 gave).
+        if (!is.null(view$removed_factors_file)) {
+            checkIntegrationInputRemovedFactors(dir, view, feature_column, sample_ids)
+            views[[view$name]]$removed <- c(view$removed_factors, list(sha256 = files[[view$removed_factors_file]]))
+        }
     }
     list(manifest = manifest, samples = samples, views = views)
+}
+
+#' Check a data set's removed-factors file against its manifest entry (KIT-184 7.1): the record names a whole number
+#' of factors of at least 1; the file has that many rows named `ruv_W1` to `ruv_Wk`, the runs as double columns in the
+#' samples table's order, one row group and no missing value.
+#' @param dir The omic's folder.
+#' @param view The manifest's view entry (with `removed_factors_file` and `removed_factors`).
+#' @param feature_column The manifest's feature id column.
+#' @param sample_ids The samples table's ids, in its order.
+#' @return TRUE invisibly, or an `integration_input_invalid` error.
+#' @noRd
+checkIntegrationInputRemovedFactors <- function(dir, view, feature_column, sample_ids) {
+    k <- if (is.list(view$removed_factors)) view$removed_factors$k
+    if (!is.numeric(k) || length(k) != 1L || is.na(k) || k != round(k) || k < 1) {
+        abortIntegrationInput(sprintf("the removed factors of view %s must state their number", view$name))
+    }
+    ids <- checkIntegrationInputMatrix(dir, view, feature_column, sample_ids, view$removed_factors_file, 1L, as.integer(k))
+    if (!identical(ids, paste0("ruv_W", seq_len(k)))) {
+        abortIntegrationInput(sprintf("the removed factors of view %s must be named ruv_W1 to ruv_W%d", view$name, as.integer(k)))
+    }
+    values <- readIntegrationInputMatrix(file.path(dir, view$removed_factors_file), view$removed_factors_file,
+        c(feature_column, sample_ids))
+    if (!all(vapply(values[sample_ids], function(column) all(is.finite(column)), logical(1)))) {
+        abortIntegrationInput(sprintf("the removed factors of view %s must have a value in every run", view$name))
+    }
+    invisible(TRUE)
+}
+
+#' The removed factors of one data set of a validated integration input (KIT-184 8.3).
+#' @param dir The omic's folder.
+#' @param view The data set's name.
+#' @param input `readIntegrationInput(dir)`'s value, or NULL to read and validate the folder here.
+#' @return A numeric matrix, runs (in the samples table's order) by factors (`ruv_W1` to `ruv_Wk`), with dimnames;
+#'   refused (`integration_input_invalid`) when the data set has no removed factors.
+#' @noRd
+readIntegrationInputRemovedFactors <- function(dir, view, input = NULL) {
+    if (is.null(input)) input <- readIntegrationInput(dir)
+    entry <- Filter(function(item) identical(item$name, view), input$manifest$views)
+    if (length(entry) != 1L || is.null(entry[[1L]]$removed_factors_file)) {
+        abortIntegrationInput(sprintf("the integration input in %s has no removed factors for data set %s", dir, view))
+    }
+    name <- entry[[1L]]$removed_factors_file
+    sample_ids <- input$samples[[input$manifest$sample_id_column]]
+    table <- readIntegrationInputMatrix(file.path(dir, name), name, c(input$manifest$feature_id_column, sample_ids))
+    factors <- t(as.matrix(table[sample_ids]))
+    dimnames(factors) <- list(sample_ids, as.character(table[[1L]]))
+    factors
 }
 
 #' A reader over one data set of a validated integration input (KIT-147): its size, its zero-row prototype and its

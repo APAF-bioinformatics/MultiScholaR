@@ -492,16 +492,19 @@ test_that("KIT-183 T3, T9, T10: camera through the store: U_cam from the views, 
     tables <- integrationRecordEnrichmentTables(block, texts)
     ranking <- tables$summary[[texts[["col_enrich_ranking"]]]]
     counts <- camera$run$value$test_counts
-    expect_setequal(ranking, c(sprintf(texts[["enrich_ranking_value_camera"]], counts$samples, counts$universe),
-        sprintf(texts[["enrich_ranking_value"]], "pearson", 5L)))
+    # KIT-184 (D04): every result of a test that has a design names its form in its row.
+    expect_setequal(ranking, c(paste0(sprintf(texts[["enrich_ranking_value_camera"]], counts$samples, counts$universe),
+        ". Adjusted for removed RUV factors: no."), sprintf(texts[["enrich_ranking_value"]], "pearson", 5L)))
     strength <- integrationEnrichmentFactorStrength(value, "Factor1", view)
     # KIT-191: each entry's own test's figure (metabolites: camera 6.7 %, gsea 34.4 %).
     strengthOf <- function(figure, phrase) sprintf(texts[["enrich_factor_strength"]],
         integrationEnrichmentPercent(strength$factor_r2_percent), integrationEnrichmentPercent(strength$largest_r2_percent),
-        "metabolite", texts[["enrich_strength_terms_metabolites"]], figure, phrase)
+        "metabolite data", texts[["enrich_strength_terms_metabolites"]], figure, phrase)
     expect_setequal(unique(tables$summary[[texts[["col_enrich_strength"]]]]),
         c(strengthOf("6.7 %", "correlation-adjusted test"), strengthOf("34.4 %", "pre-ranked test")))
-    expect_true(startsWith(texts[["col_enrich_score"]], "Enrichment score (NES), or effect"))
+    expect_identical(texts[["col_enrich_score"]], paste("Enrichment score (NES), or effect: the difference in mean z-score",
+        "(correlation-adjusted tests) or in mean Fisher-transformed correlation (permutation) between the term and the other",
+        "features"))
     methods <- integrationMethodsEnrichment(block, texts)
     camera_sentence <- sprintf(texts[["methods_enrich_camera"]], "Factor1", view, "KEGG", texts[["methods_test_name_camera"]],
         sprintf(texts[["methods_test_settings_camera"]], counts$samples, counts$universe,
@@ -828,7 +831,7 @@ test_that("KIT-183 T11: the tab: the test selector, its default, notes, counts, 
         strength <- integrationEnrichmentFactorStrength(fixture$run$value, "Factor1", "metabolomics_GCMS")
         expect_match(result, escaped(sprintf(texts[["enrich_factor_strength"]],
             integrationEnrichmentPercent(strength$factor_r2_percent),
-            integrationEnrichmentPercent(strength$largest_r2_percent), "metabolite",
+            integrationEnrichmentPercent(strength$largest_r2_percent), "metabolite data",
             texts[["enrich_strength_terms_metabolites"]], "6.7 %", "correlation-adjusted test")), fixed = TRUE)
         expect_false(grepl("Terms at the top of the list", result, fixed = TRUE))
         # STRING: no selector, no note.
@@ -845,10 +848,15 @@ test_that("KIT-183 T11: the tab: the test selector, its default, notes, counts, 
         largest_r2_percent = 20))
     expect_false(texts[["enrich_caution"]] %in% summary)
     expect_false(any(grepl("this factor explains", summary, fixed = TRUE)))
-    # The notes: the few-samples sentence below 11 samples, the RUV note for a model trained on RUV-corrected values.
+    # The notes: the few-samples sentence below 11 samples. KIT-184: the RUV note for a model trained on RUV-corrected
+    # values stays with the tests that have no design (the pre-ranked and permutation tests); camera has the setting
+    # "Adjust for removed RUV factors" and its own sentences with each result.
     notes <- integrationEnrichmentTestNotes("camera", 8L, "ruv_corrected", "metabolomics", texts)
     expect_identical(notes, c(texts[["enrich_test_camera_note_metabolites"]],
-        sprintf(texts[["enrich_test_few_samples_camera_metabolites"]], 8L), texts[["enrich_values_ruv_note"]]))
+        sprintf(texts[["enrich_test_few_samples_camera_metabolites"]], 8L)))
+    expect_identical(integrationEnrichmentTestNotes("gsea", 8L, "ruv_corrected", "metabolomics", texts),
+        c(texts[["enrich_test_gsea_note_metabolites"]], sprintf(texts[["enrich_test_few_samples_gsea_metabolites"]], 8L),
+            texts[["enrich_values_ruv_note"]]))
     expect_identical(integrationEnrichmentTestNotes("gsea", 12L, "uncorrected", "metabolomics", texts),
         texts[["enrich_test_gsea_note_metabolites"]])
     expect_identical(integrationEnrichmentPercent(0.04), "less than 0.1 %")

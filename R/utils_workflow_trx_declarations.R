@@ -883,7 +883,7 @@ computeWorkflowTrxCompositeFigureAction <- function(manager, request, variant) {
 
 #' The DE publication (rmd:558-583, 597-664, 755-775) from the accepted manifest: per contrast the DE CSV, the volcano and
 #' the significance bar; the top genes of every contrast; the summary text of the first contrast, the dataset line the
-#' project's (`parameters$dataset`).
+#' project's (`parameters$dataset`): the grid summary only for a run of the legacy grid (KIT-192).
 #' @noRd
 computeWorkflowTrxDaPublicationAction <- function(manager, request, variant) {
     trxPublicationResult(manager, request, function(source) {
@@ -908,8 +908,12 @@ computeWorkflowTrxDaPublicationAction <- function(manager, request, variant) {
         if (!length(annotated)) cli::cli_abort("no contrast has a result", class = "workflow_execution_invalid")
         vroom::vroom_write(dplyr::bind_rows(lapply(annotated, `[[`, "top_de")), file.path(da_dir, "top_de_genes.tsv"))
         grid <- trxProductValue(manager, trxStateRuvs(manager, manifest$source)$grid)
-        trxWriteSummaryText(trxSummaryText(grid$best, length(grid$prelim_order), manifest$parameters$formula, names(annotated)[[1L]],
-            annotated[[1L]]$de_annotated, grid$grid_summary), request$parameters$dataset, file.path(da_dir, "ruv_optimization_summary.txt"))
+        # KIT-192: a declared RUV design (none, a k of 0, or factors) ran no grid search, so there is no grid summary to
+        # write (as the RUV publication, above); its choices are in the analysis record and the report.
+        if (is.null(grid[["ruv_design", exact = TRUE]])) {
+            trxWriteSummaryText(trxSummaryText(grid$best, length(grid$prelim_order), manifest$parameters$formula, names(annotated)[[1L]],
+                annotated[[1L]]$de_annotated, grid$grid_summary), request$parameters$dataset, file.path(da_dir, "ruv_optimization_summary.txt"))
+        }
         list(saved = TRUE)
     })
 }

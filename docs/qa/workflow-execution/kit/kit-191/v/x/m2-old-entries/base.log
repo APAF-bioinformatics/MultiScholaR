@@ -1,0 +1,101 @@
+
+$reference
+$reference$schema
+[1] 1
+
+$reference$owner
+$reference$owner$schema
+[1] 1
+
+$reference$owner$project_id
+[1] "integration"
+
+$reference$owner$workflow_id
+[1] "INTEGRATION"
+
+$reference$owner$incarnation
+[1] "5dbfde3c7b3a775860b8b042979652e341537c0417a26044bad4ced417fb44d8"
+
+
+$reference$kind
+[1] "checkpoint"
+
+$reference$identity
+$reference$identity$input
+[1] "5dbfde3c7b3a775860b8b042979652e341537c0417a26044bad4ced417fb44d8"
+
+$reference$identity$design
+[1] "record-owned"
+
+$reference$identity$parameters
+[1] "integration_inputs"
+
+$reference$identity$selectors
+[1] "complete-record"
+
+$reference$identity$software
+[1] "0.9.0"
+
+
+$reference$payload
+$reference$payload$relative_path
+[1] "entities/dia-state-12fd2ba6366a/payload.rds"
+
+$reference$payload$bytes
+[1] 23592
+
+$reference$payload$sha256
+[1] "8b8823c6511e7c13ebaf9b3c4ca1d5fc9afad2f1d238ba9bcde6ccb358424a45"
+
+$reference$payload$codec
+[1] "rds"
+
+
+$reference$metadata
+$reference$metadata$class
+[1] "list"
+
+$reference$metadata$shape
+integer(0)
+
+$reference$metadata$factors
+list()
+
+
+$reference$parent_id
+[1] NA
+
+$reference$revision
+[1] 0
+
+$reference$entity_id
+[1] "d80e3babbdc19cf1d88f13fcca26d8ce9b3c6b27c57471d16463f01fa4f4684c"
+
+
+$omics
+[1] "lipidomics"      "metabolomics"    "proteomics"      "transcriptomics"
+
+$views
+[1] "lipidomics_LCMS_Pos"   "lipidomics_LCMS_Neg"   "metabolomics_LCMS_Pos"
+[4] "metabolomics_GCMS"     "proteomics"            "transcriptomics"      
+
+$manifests
+                                                        lipidomics 
+"0516b57573ed2a89378be5508420a4fbcc90adf86e6f74669c9cb944d9099a2d" 
+                                                      metabolomics 
+"d66dd1b6c6f014ec96966621fe0e7a469b4d553c81aec6057a055f9a18e92232" 
+                                                        proteomics 
+"5a19bac5319d86d0f5a9ae66ea2e81eae941adcac643a49ea38ba44d2b5e83a6" 
+                                                   transcriptomics 
+"015046fd417b40fa9dca2976d8c308348f6e551867f5be42d60fee53c140f99d" 
+
+$runs
+[1] 138
+
+$biological_samples
+[1] 20
+
+$committed_at
+[1] "2026-11-24 02:44:45 UTC"
+
+Ran 1/1 deferred expressions
