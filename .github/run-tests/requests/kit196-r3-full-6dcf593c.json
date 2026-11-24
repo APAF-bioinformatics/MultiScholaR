@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-196 R3: full suite base against head on the merge 6dcf593c vs staging fe5c9273, with check (covers R2b: staging gained proteomics code after R2); ceiling 2,800 job-min + check",
+  "label": "KIT-196 R3 full suite 6dcf593c vs fe5c9273",
+  "package_commit": "6dcf593c1d1bf7ca4232f67bab3634631e233200",
+  "base_commit": "fe5c9273b5ddbd8905073859af15a546e7560b41",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
