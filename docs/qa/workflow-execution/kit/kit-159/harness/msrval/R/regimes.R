@@ -85,7 +85,8 @@ valTicketRegimeTable <- function(regime, nsim, seed) {
                 g = as.integer(regime$g), level = lv, simulations = n,
                 bound = c("two_sided", "lower", "upper"), coverage = c(cov, 1 - lo, 1 - hi),
                 mc_se = c(se(cov), se(lo), se(hi)), miss = c(1 - cov, lo, hi), critical = crit,
-                pass = ok, stringsAsFactors = FALSE)
+                pass = ok, stringsAsFactors = FALSE
+            )
         }
     }
     cells_tab <- cells_attr %||% data.frame(cell = "all", parameter = "simulations", value = nsim)
@@ -205,11 +206,13 @@ valScorePhase <- function(decl, dataset, units, evidence_dir, labels, label, out
         scoring = list(
             comparisons_sha256 = valSha256(file.path(out, "comparisons.tsv")),
             combined_runs = lapply(labels, function(l) {
-                list(label = l, outputs_sha256 = valSha256(file.path(evidence_dir, "runs", l,
-                                                                     "outputs.sha256")))
+                sha <- valSha256(file.path(evidence_dir, "runs", l, "outputs.sha256"))
+                list(label = l, outputs_sha256 = sha)
             }),
             intervals = verdicts %||% list(),
-            ticket_coverage = attr(regimes, "ticket_coverage") %||% list()))
+            ticket_coverage = attr(regimes, "ticket_coverage") %||% list()
+        )
+    )
     valWriteProvenance(prov, file.path(out, "provenance.json"))
     valCheckProvenance(file.path(out, "provenance.json"))
     valCheckEvidence(out, manifest, phase = stage)

@@ -157,13 +157,16 @@ valWriteResults <- function(path, comparisons, attribution) {
         miss <- 1 - k[["coverage"]]
         zero <- miss <= 0
         miss[zero] <- 3 / nsim[zero]
+        zero_note <- ""
+        if (any(zero)) {
+            zero_note <- sprintf(
+                " (%d component(s) with no observed miss entered at 3/simulations)", sum(zero)
+            )
+        }
         lines <- c(lines, sprintf(
             "- %s: m = %d, nominal family level %s, family error bound from measured misses %s%s",
-            f, as.integer(m), format(round(nominal, 6)), format(round(sum(miss), 4)),
-            if (any(zero)) {
-                sprintf(" (%d component(s) with no observed miss entered at 3/simulations)",
-                        sum(zero))
-            } else ""))
+            f, as.integer(m), format(round(nominal, 6)), format(round(sum(miss), 4)), zero_note
+        ))
     }
     lines <- c(lines, "", "## Verdicts", "")
     for (i in seq_len(nrow(cmp))) {
@@ -172,19 +175,21 @@ valWriteResults <- function(path, comparisons, attribution) {
         st <- if (is.null(r[["regime_status"]])) NA_character_ else r[["regime_status"]]
         st2 <- if (is.null(r[["regime_status_r113"]])) NA_character_ else r[["regime_status_r113"]]
         # O5 (VAL-109): both labels where T2's band and r1.13's miss-rate rule differ
-        label <- if (!is.na(st) && !is.na(st2) && st != st2) {
-            sprintf(" [%s under T2's band; %s under r1.13's miss-rate rule]", st, st2)
+        label <- ""
+        if (!is.na(st) && !is.na(st2) && st != st2) {
+            label <- sprintf(" [%s under T2's band; %s under r1.13's miss-rate rule]", st, st2)
         } else if (!is.na(st)) {
-            sprintf(" [%s]", st)
-        } else ""
+            label <- sprintf(" [%s]", st)
+        }
         note <- if (is.null(r[["within_note"]])) NA_character_ else r[["within_note"]]
-        note_txt <- if (is.na(note)) "" else if (grepl("6_or_more_open", note, fixed = TRUE)) {
-            paste("; within-run intervals reported beside the verdict, not widened: at 6 or more",
-                  "independent units the widening rule is open (O8)")
-        } else if (grepl("below_6", note, fixed = TRUE)) {
-            paste("; within-run intervals reported beside the verdict, not widened: independent",
-                  "units below 6 (O8, VAL-109)")
-        } else ""
+        note_txt <- ""
+        if (!is.na(note) && grepl("6_or_more_open", note, fixed = TRUE)) {
+            note_txt <- paste("; within-run intervals reported beside the verdict, not widened:",
+                              "at 6 or more independent units the widening rule is open (O8)")
+        } else if (!is.na(note) && grepl("below_6", note, fixed = TRUE)) {
+            note_txt <- paste("; within-run intervals reported beside the verdict, not widened:",
+                              "independent units below 6 (O8, VAL-109)")
+        }
         lines <- c(lines, sprintf(
             paste("- %s (%s: %s - %s): %s; regime %s%s, measured coverage %s (Monte Carlo SE %s)",
                   "at level %s, simulated on %s%s%s"),

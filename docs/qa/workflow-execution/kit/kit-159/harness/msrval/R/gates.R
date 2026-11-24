@@ -95,6 +95,17 @@ valClassCounts <- function(cls) {
     stats::setNames(as.integer(t), names(t))
 }
 
+#' Counts per class of (step, class) units: G1(a)'s reference table has one row per lane and
+#' differing step with its class, so a step with several differing keys of one class is one unit
+#' (KIT-199 re-check 1, Q01); rows without a step count one each
+#' @noRd
+valStepClassCounts <- function(d) {
+    if (is.null(d) || nrow(d) == 0L) return(valClassCounts(character()))
+    if (is.null(d$step)) return(valClassCounts(d$class))
+    u <- unique(data.frame(step = d$step, class = d$class, stringsAsFactors = FALSE))
+    valClassCounts(u$class)
+}
+
 #' Equal counts per class
 #' @noRd
 valSameCounts <- function(a, b) {
@@ -122,10 +133,10 @@ valSameCounts <- function(a, b) {
 #' @export
 valReadChain <- function(lane, links, reference, live_diffs = NULL) {
     classes <- G1A_CLASSES
-    ref_counts <- valClassCounts(reference$class[reference$lane == lane])
+    ref_counts <- valStepClassCounts(reference[reference$lane == lane, , drop = FALSE])
     if (length(links) == 0L) {
         ok <- !is.null(live_diffs) && all(live_diffs$class %in% classes) &&
-            valSameCounts(valClassCounts(live_diffs$class), ref_counts)
+            valSameCounts(valStepClassCounts(live_diffs), ref_counts)
         return(list(status = if (ok) "certified" else "stop", failed_link = NA_integer_,
                     reason = if (ok) "" else "differences outside the classes or other counts"))
     }
@@ -146,7 +157,7 @@ valReadChain <- function(lane, links, reference, live_diffs = NULL) {
         base_counts <- ref_counts[!startsWith(names(ref_counts), "declared_change")]
         ok_base <- all(listed[own]) && if (i == 1L) {
             all(rest$class %in% classes) &&
-                valSameCounts(valClassCounts(rest$class), base_counts)
+                valSameCounts(valStepClassCounts(rest), base_counts)
         } else {
             all(rest$class %in% "platform_rounding")
         }

@@ -1130,7 +1130,8 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
         }
         if (identical(acc$exit, "completed") && identical(omic, "proteomics")) {
             acc$qvalue_fallback <- valQvalueFallbacks(
-                shiny::isolate(workflow_data$da_analysis_results_list))
+                shiny::isolate(workflow_data$da_analysis_results_list)
+            )
         }
         # I14: the hook runs only for a completed cell; its error is recorded, the exit kept.
         if (!is.null(on_complete) && identical(acc$exit, "completed")) {

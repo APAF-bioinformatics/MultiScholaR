@@ -124,13 +124,13 @@ valWriteCalls <- function(res, values, cell_root, run_dir) {
             rows[[length(rows) + 1L]] <- data.frame(
                 unit = res$unit[[i]], arm = res$arm[[i]], contrast = ct, call_statistic = cs,
                 fallback_count = if (is.null(fb)) NA_integer_ else length(fb),
-                stringsAsFactors = FALSE)
+                stringsAsFactors = FALSE
+            )
         }
     }
-    out <- if (length(rows)) do.call(rbind, rows) else {
-        as.data.frame(stats::setNames(replicate(5L, character(), simplify = FALSE),
-                                      EVIDENCE_COLUMNS[["calls.tsv"]]))
-    }
+    out <- as.data.frame(stats::setNames(replicate(5L, character(), simplify = FALSE),
+                                         EVIDENCE_COLUMNS[["calls.tsv"]]))
+    if (length(rows)) out <- do.call(rbind, rows)
     utils::write.table(out, file.path(run_dir, "calls.tsv"), sep = "\t", quote = FALSE,
                        row.names = FALSE, na = "NA")
     invisible(out)
@@ -163,17 +163,16 @@ valWriteCoverageTable <- function(decl, done, cell_root, truths, universe, env, 
                         cv$called_own <- NA_integer_
                         cv$called_bh <- NA_integer_
                     }
-                    rows[[length(rows) + 1L]] <- cbind(
-                        data.frame(truth_id = tid, unit = u, arm = a, contrast = ct,
-                                   stringsAsFactors = FALSE), cv)
+                    id <- data.frame(truth_id = tid, unit = u, arm = a, contrast = ct,
+                                     stringsAsFactors = FALSE)
+                    rows[[length(rows) + 1L]] <- cbind(id, cv)
                 }
             }
         }
     }
-    out <- if (length(rows)) do.call(rbind, rows) else {
-        as.data.frame(stats::setNames(replicate(11L, character(), simplify = FALSE),
-                                      EVIDENCE_COLUMNS[["coverage.tsv"]]))
-    }
+    out <- as.data.frame(stats::setNames(replicate(11L, character(), simplify = FALSE),
+                                         EVIDENCE_COLUMNS[["coverage.tsv"]]))
+    if (length(rows)) out <- do.call(rbind, rows)
     utils::write.table(out[, EVIDENCE_COLUMNS[["coverage.tsv"]]],
                        file.path(run_dir, "coverage.tsv"), sep = "\t", quote = FALSE,
                        row.names = FALSE, na = "NA")
@@ -240,13 +239,15 @@ valWriteTableHashes <- function(res, values, run_dir, withheld, prepared) {
             if (!file.exists(p)) next
             rows[[length(rows) + 1L]] <- data.frame(
                 run = r, name = nm, sha256 = valSha256(p),
-                rows = max(0L, length(readLines(p, warn = FALSE)) - 1L), stringsAsFactors = FALSE)
+                rows = max(0L, length(readLines(p, warn = FALSE)) - 1L), stringsAsFactors = FALSE
+            )
         }
     }
     tab <- if (length(rows)) do.call(rbind, rows) else NULL
-    lines <- if (is.null(tab)) character() else {
-        sprintf("%s  %s/%s.tsv  rows=%d", tab$sha256, gsub("[^A-Za-z0-9._@-]", "_", tab$run),
-                tab$name, tab$rows)
+    lines <- character()
+    if (!is.null(tab)) {
+        lines <- sprintf("%s  %s/%s.tsv  rows=%d", tab$sha256,
+                         gsub("[^A-Za-z0-9._@-]", "_", tab$run), tab$name, tab$rows)
     }
     writeLines(lines, file.path(run_dir, "tables.sha256"))
     nc <- c(withheld, if (!is.null(prepared) && nrow(prepared)) {
@@ -281,8 +282,8 @@ valCellsProvenance <- function(res, cells, values, run_dir, cell_root, hook_decl
         led <- file.path(valCellDir(cell_root, res$run[[i]]), "work",
                          paste0("ledger-", cells$route[[i]], ".tsv"))
         tabs <- v$tables %||% (if (!is.null(v$da)) c(da = v$da))
-        hook <- v$hook %||% list(status = if (hook_declared && res$exit[[i]] == "completed")
-            "not_run" else "none")
+        hook_none <- if (hook_declared && res$exit[[i]] == "completed") "not_run" else "none"
+        hook <- v$hook %||% list(status = hook_none)
         list(unit = res$unit[[i]], arm = res$arm[[i]], kind = cells$kind[[i]],
              chunk = res$chunk[[i]], seed = as.integer(cells$seed[[i]]),
              rng_kind = "Mersenne-Twister/Inversion/Rejection",
@@ -295,8 +296,8 @@ valCellsProvenance <- function(res, cells, values, run_dir, cell_root, hook_decl
              ruv = list(k = res$ruv_k[[i]], controls = res$ruv_controls[[i]]),
              ledger_sha256 = if (file.exists(led)) valSha256(led) else NA_character_,
              tables = lapply(names(tabs), function(nm) {
-                 list(name = nm, sha256 = if (file.exists(tabs[[nm]])) valSha256(tabs[[nm]]) else
-                     NA_character_)
+                 sha <- if (file.exists(tabs[[nm]])) valSha256(tabs[[nm]]) else NA_character_
+                 list(name = nm, sha256 = sha)
              }),
              # TODO(KIT-159 audit I07, G5): the declared `replay` cells are not replayed yet;
              # replayWorkflowAnalysisRecord needs the project inputs G5 records.

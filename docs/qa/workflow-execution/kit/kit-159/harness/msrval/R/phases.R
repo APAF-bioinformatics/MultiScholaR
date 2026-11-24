@@ -645,7 +645,8 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted",
                 verdicts[[length(verdicts) + 1L]] <- valVerdictRow(
                     component, NA_character_, m[["id"]], cmp_arms, vk, cl, conf,
                     fam$family[component] %||% NA_character_, decl,
-                    within_note = if (length(note)) note[[1L]] else NA_character_)
+                    within_note = if (length(note)) note[[1L]] else NA_character_
+                )
             }
         }
     }
@@ -674,7 +675,8 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted",
                     stringsAsFactors = FALSE)
                 verdicts[[length(verdicts) + 1L]] <- valVerdictRow(
                     NA_character_, nm, NA_character_, character(), NA_character_,
-                    list(outcome = res$outcome), NA_real_, fam_name, decl)
+                    list(outcome = res$outcome), NA_real_, fam_name, decl
+                )
             }
         }
     }
@@ -815,11 +817,13 @@ valLevelOne <- function(decl, m, cmp_arms, v, vk, metrics, units, cells, regimes
         dd[refused_u[keep]] <- NA_real_
         n_ref <- sum(refused_u[keep])
         if (!blind && n_ref > 0L) {
-            rf <- valRefusalFill(dd, tolerance = as.integer(
-                decl[["refusal_tolerance"]][[m[["id"]]]] %||% 0L),  # nolint
+            tol <- as.integer(decl[["refusal_tolerance"]][[m[["id"]]]] %||% 0L)
+            rf <- valRefusalFill(
+                dd, tolerance = tol,
                 higher_is_better = hib, margin = m[["margin"]], method = method, conf = conf,
                 regimes = regimes, accept_flagged = iv_spec[["accept_flagged"]],
-                fixed = m[["fixed"]], unit_role = unit_role, class = cls, view = v)
+                fixed = m[["fixed"]], unit_role = unit_role, class = cls, view = v
+            )
             iv <- rf$interval_dropped %||%
                 valNewInterval(NA_real_, NA_real_, method, length(dd) - n_ref, conf,
                                status = rf$status)
@@ -1222,7 +1226,8 @@ valRunPhase <- function(phase, decl, dataset, units, label, code_files, data_dir
                                refused = sum(res$exit == "refused")),
             kernel_gates = lapply(gates, function(g) {
                 list(passed = isTRUE(g$passed), units = g$units, note = g$note)
-            })),
+            })
+        ),
         outputs = lapply(sort(list.files(run_dir, recursive = TRUE)), function(f) {
             list(path = f, sha256 = valSha256(file.path(run_dir, f)))
         })

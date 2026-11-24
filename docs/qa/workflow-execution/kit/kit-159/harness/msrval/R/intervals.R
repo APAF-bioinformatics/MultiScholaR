@@ -607,20 +607,20 @@ valRefusalFill <- function(d, tolerance, higher_is_better, margin, method = "pai
     if (n_ref > limit) return(result)
     classify <- function(v) {
         iv <- valLevelInterval(v, method, conf, unit_role, class)
+        refusedRegime <- function(e) {
+            why <- if (n_ref > 0L) "not_evaluable: " else "refused: "
+            after <- ""
+            if (n_ref > 0L) {
+                after <- paste0(" (after ", n_ref, " refused units the interval rests on ",
+                                length(v), " units; no regime is registered for that count;",
+                                " O7 (b), VAL-109)")
+            }
+            list(outcome = NA_character_, no_worse = NA, refused = TRUE,
+                 regime = paste0(why, conditionMessage(e), after))
+        }
         cl <- tryCatch(valClassify(iv, margin, higher_is_better, fixed = fixed, view = view,
                                    regimes = regimes, accept_flagged = accept_flagged),
-                       val_spec_invalid = function(e) {
-                           list(outcome = NA_character_, no_worse = NA, refused = TRUE,
-                                regime = paste0(
-                                    if (n_ref > 0L) "not_evaluable: " else "refused: ",
-                                    conditionMessage(e),
-                                    if (n_ref > 0L) {
-                                        paste0(" (after ", n_ref, " refused units the interval",
-                                               " rests on ", length(v),
-                                               " units; no regime is registered for that count;",
-                                               " O7 (b), VAL-109)")
-                                    }))
-                       })
+                       val_spec_invalid = refusedRegime)
         list(iv = iv, cl = cl)
     }
     kept <- d[!refused]

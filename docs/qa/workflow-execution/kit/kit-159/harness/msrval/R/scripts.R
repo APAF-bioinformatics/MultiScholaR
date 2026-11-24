@@ -241,15 +241,19 @@ valProtScript <- function(r, tool, summary, alternative = NULL, ruv = "either") 
     covariates <- if (limpa && !identical(alternative, "no_covariates")) {
         # I09: with mode skip the product records the skip and commits no state (the head stays
         # `correlation_filtered`).
+        cov_head <- if (identical(ruv, "skip")) "correlation_filtered" else "ruv_covariates"
         valStep("ruv_covariates", "normalization",
-                list(head = if (identical(ruv, "skip")) "correlation_filtered" else
-                    "ruv_covariates"),
+                list(head = cov_head),
                 module = "normalization", press = "normalization-apply_ruv_covariates",
                 run = function(api) api$press("normalization-apply_ruv_covariates"))
     }
     export_load <- if (identical(alternative, "export_load")) {
-        valExportLoadSteps(if (is.null(covariates) || identical(ruv, "skip"))
-            "correlation_filtered" else "ruv_covariates",
+        load_head <- if (is.null(covariates) || identical(ruv, "skip")) {
+            "correlation_filtered"
+        } else {
+            "ruv_covariates"
+        }
+        valExportLoadSteps(load_head,
                            "normalization", "normalization",
                            "normalization-export_filtered_session", "da",
                            "differential_expression", ns$mod_prot_da_ui)

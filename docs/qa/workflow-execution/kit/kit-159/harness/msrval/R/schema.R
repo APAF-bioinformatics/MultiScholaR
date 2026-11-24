@@ -36,8 +36,9 @@ valCheckDeclarationSchema <- function(decl, units = NULL) {
         id <- m[["id"]] %||% "?"
         cmps <- m[["comparisons"]] %||% list()
         method <- (m[["interval"]] %||% list())[["method"]] %||% "paired_t"
-        for (cmp in cmps) components <- c(components, paste0(id, ":", paste(unlist(cmp),
-                                                                              collapse = "-")))
+        for (cmp in cmps) {
+            components <- c(components, paste0(id, ":", paste(unlist(cmp), collapse = "-")))
+        }
         if (isTRUE(m[["primary"]])) {
             primaries <- primaries + 1L
             if (length(cmps) != 1L || length(unlist(m[["contrast"]])) != 1L) {
