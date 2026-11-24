@@ -293,6 +293,15 @@ proofs register writes them; the auditor confirms the file at the next statement
 One style linter (`linter.unusedSimpArgs`) is off in that file (simp arguments not needed in every `fin_cases`
 branch); no bearing on what is proved. Laptop: 7 Lean calls (labels `p03-*`). Agent time 0.15 h.
 
+## Group R priority 2
+
+- **R-F2 proved** (`Ruv.F2`, witness `Ruv.F_witness`; standard axioms). The Spec's one hypothesis, `[X1, X2]` of full
+  column rank, gives both invertibility lemmas, proved, not assumed: an invertible Gram matrix makes `mulVec` injective
+  and conversely (`mulVec_inj_of_gram`, `gram_unit`), so `X2` and `R_2 X1` (`R_2 = residop X2`) are injective, the
+  latter because `R_2 X1 v = 0` puts `X1 v` in `col(X2)` and `[X1, X2]` is injective. Then `y = X1 β1 + X2 β2 + r` with
+  `X1'r = X2'r = 0`, so `R_2 y - R_2 X1 β1 = r` and `(R_2 X1)'r = X1'r = 0`: `β1` solves the normal equations of the
+  second fit (`betaHat_of_normal`), and its residual is `r`. Agent time 0.08 h (labels `rF2-*`).
+
 ## Resume here
 
 Coordinator's order after the proofs audit (2026-11-24): P03's two witness statements (new Spec file, committed

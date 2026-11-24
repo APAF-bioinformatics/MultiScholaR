@@ -222,3 +222,9 @@ example : Ruv.G0_interior_witness_stmt := Ruv.G0_interior_witness
 
 #print axioms Permutation.perm_measure_moving_witness
 #print axioms Ruv.G0_interior_witness
+
+/-! ## Group R priority 2 -/
+
+example : Ruv.F2_stmt := Ruv.F2
+
+#print axioms Ruv.F2

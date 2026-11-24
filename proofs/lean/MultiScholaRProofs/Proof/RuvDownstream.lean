@@ -407,4 +407,105 @@ theorem H1_witness : H1_witness_stmt := by
     fin_cases j <;> simp
   · simp [w]
 
+/-! ## R-F2 (Frisch-Waugh-Lovell) -/
+
+section F2
+
+variable {n : ℕ} {m : Type} [Fintype m] [DecidableEq m]
+
+/-- A Gram matrix of a matrix with injective `mulVec` is invertible. -/
+theorem gram_unit (A : Matrix (Fin n) m ℝ) (h : Function.Injective A.mulVec) : IsUnit (Aᵀ * A).det := by
+  rw [← Matrix.isUnit_iff_isUnit_det, ← Matrix.mulVec_injective_iff_isUnit]
+  intro v w hvw
+  have h0 : (Aᵀ * A) *ᵥ (v - w) = 0 := by
+    rw [Matrix.mulVec_sub, hvw, sub_self]
+  have h1 : (A *ᵥ (v - w)) ⬝ᵥ (A *ᵥ (v - w)) = 0 := by
+    rw [Matrix.dotProduct_mulVec, ← Matrix.mulVec_transpose, Matrix.mulVec_mulVec, h0, zero_dotProduct]
+  have h2 : A *ᵥ (v - w) = 0 := dotProduct_self_eq_zero.1 h1
+  rw [Matrix.mulVec_sub, sub_eq_zero] at h2
+  exact h h2
+
+/-- An invertible Gram matrix makes `mulVec` injective. -/
+theorem mulVec_inj_of_gram (A : Matrix (Fin n) m ℝ) (h : IsUnit (Aᵀ * A).det) : Function.Injective A.mulVec := by
+  intro v w hvw
+  have h1 : (Aᵀ * A) *ᵥ v = (Aᵀ * A) *ᵥ w := by
+    rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec]
+    exact congrArg (Aᵀ *ᵥ ·) hvw
+  have h2 := congrArg ((Aᵀ * A)⁻¹ *ᵥ ·) h1
+  simp only [Matrix.mulVec_mulVec, Matrix.nonsing_inv_mul _ h, Matrix.one_mulVec] at h2
+  exact h2
+
+/-- The least-squares coefficient is the unique solution of the normal equations. -/
+theorem betaHat_of_normal (A : Matrix (Fin n) m ℝ) (z : Fin n → ℝ) (b : m → ℝ) (h : IsUnit (Aᵀ * A).det)
+    (hn : Aᵀ *ᵥ (z - A *ᵥ b) = 0) : betaHat A z = b := by
+  have h1 : Aᵀ *ᵥ z = (Aᵀ * A) *ᵥ b := by
+    rw [Matrix.mulVec_sub, sub_eq_zero] at hn
+    rw [hn, Matrix.mulVec_mulVec]
+  unfold betaHat
+  rw [h1, Matrix.mulVec_mulVec, Matrix.nonsing_inv_mul _ h, Matrix.one_mulVec]
+
+end F2
+
+/-- R-F2: Frisch-Waugh-Lovell. -/
+theorem F2 : F2_stmt := by
+  intro n a b X1 X2 y hQ
+  set Q := fromCols X1 X2 with hQdef
+  have hQinj := mulVec_inj_of_gram Q hQ
+  have h2inj : Function.Injective X2.mulVec := by
+    intro v w hvw
+    have : Q *ᵥ Sum.elim 0 v = Q *ᵥ Sum.elim 0 w := by
+      rw [hQdef, fromCols_mulVec_sumElim, fromCols_mulVec_sumElim, hvw]
+    have h := hQinj this
+    funext i
+    exact congrFun h (Sum.inr i)
+  have h2 : IsUnit (X2ᵀ * X2).det := gram_unit X2 h2inj
+  set R := residop X2 with hR
+  have hRX2 : R * X2 = 0 := residop_X X2 h2
+  have hRt : Rᵀ = R := residop_transpose X2
+  have h1inj : Function.Injective (R * X1).mulVec := by
+    intro v w hvw
+    have hd : (R * X1) *ᵥ (v - w) = 0 := by rw [Matrix.mulVec_sub, hvw, sub_self]
+    set u := (X2ᵀ * X2)⁻¹ *ᵥ (X2ᵀ *ᵥ (X1 *ᵥ (v - w))) with hu
+    have hX1 : X1 *ᵥ (v - w) = X2 *ᵥ u := by
+      rw [← Matrix.mulVec_mulVec, hR, residop, Matrix.sub_mulVec, Matrix.one_mulVec, sub_eq_zero] at hd
+      rw [hd, hu]
+      simp only [Matrix.mulVec_mulVec, Matrix.mul_assoc]
+    have hz : Q *ᵥ Sum.elim (v - w) (-u) = Q *ᵥ Sum.elim 0 0 := by
+      rw [hQdef, fromCols_mulVec_sumElim, fromCols_mulVec_sumElim, hX1, Matrix.mulVec_neg, Matrix.mulVec_zero,
+        Matrix.mulVec_zero, add_zero, add_neg_cancel]
+    have h := hQinj hz
+    funext i
+    have := congrFun h (Sum.inl i)
+    simp only [Sum.elim_inl, Pi.sub_apply, Pi.zero_apply, sub_eq_zero] at this
+    exact this
+  have h1 : IsUnit ((R * X1)ᵀ * (R * X1)).det := gram_unit (R * X1) h1inj
+  set β := betaHat Q y with hβ
+  set r := resid Q y with hr
+  have hnorm : Qᵀ *ᵥ r = 0 := normal_eq Q y hQ
+  rw [hQdef, transpose_fromCols, fromRows_mulVec] at hnorm
+  have hX1r : X1ᵀ *ᵥ r = 0 := by
+    funext i
+    exact congrFun hnorm (Sum.inl i)
+  have hX2r : X2ᵀ *ᵥ r = 0 := by
+    funext i
+    exact congrFun hnorm (Sum.inr i)
+  have hRr : R *ᵥ r = r := by
+    rw [hR, residop, Matrix.sub_mulVec, Matrix.one_mulVec, ← Matrix.mulVec_mulVec, hX2r, Matrix.mulVec_zero,
+      sub_zero]
+  have hy : y = X1 *ᵥ (β ∘ Sum.inl) + X2 *ᵥ (β ∘ Sum.inr) + r := by
+    rw [hr, resid, ← hβ, hQdef, fromCols_mulVec]
+    abel
+  have hRy : R *ᵥ y - (R * X1) *ᵥ (β ∘ Sum.inl) = r := by
+    rw [hy, Matrix.mulVec_add, Matrix.mulVec_add]
+    simp only [Matrix.mulVec_mulVec, hRX2, Matrix.zero_mulVec, hRr, add_zero]
+    abel
+  have hn1 : (R * X1)ᵀ *ᵥ (R *ᵥ y - (R * X1) *ᵥ (β ∘ Sum.inl)) = 0 := by
+    rw [hRy, transpose_mul, hRt, ← Matrix.mulVec_mulVec, hRr, hX1r]
+  have hb := betaHat_of_normal (R * X1) (R *ᵥ y) (β ∘ Sum.inl) h1 hn1
+  refine ⟨?_, ?_⟩
+  · rw [hb]
+    rfl
+  · unfold resid
+    rw [hb, hRy]
+
 end MultiScholaRProofs.Ruv
