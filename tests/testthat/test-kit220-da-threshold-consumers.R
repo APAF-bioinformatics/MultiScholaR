@@ -21,6 +21,7 @@ kit220ProtObject <- function(seed = 20261125L, proteins = 400L, per_group = 4L) 
     samples <- sprintf("run_%02d", seq_len(n))
     dimnames(x) <- list(ids, samples)
     quant <- data.frame(Protein.Group = ids, as.data.frame(x), check.names = FALSE, stringsAsFactors = FALSE)
+    rownames(quant) <- NULL # the DA kernel moves the identifier column to row names (instrument fix, run 45498530109)
     design <- data.frame(Run = samples, group = groups, replicates = seq_len(n),
         tech_rep_group = paste0("u", seq_len(n)), stringsAsFactors = FALSE)
     methods::new("ProteinQuantitativeData", protein_quant_table = quant, protein_id_column = "Protein.Group",

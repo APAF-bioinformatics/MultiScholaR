@@ -32,8 +32,10 @@ suppressPackageStartupMessages(library(MultiScholaR))
 library(testthat)
 ns <- asNamespace("MultiScholaR")
 h <- new.env(parent = ns)
-for (helper in c("helper-workflow-trx-declarations.R", "helper-workflow-checkpoint-fixtures.R"))
-    sys.source(file.path("tests", "testthat", helper), envir = h)
+# Every helper, as testthat loads them (instrument fix, run 45498530109: the trx owner needs omicsOwnerSession).
+for (helper in sort(list.files(file.path("tests", "testthat"), pattern = "^helper-.*[.]R$", full.names = TRUE)))
+    tryCatch(sys.source(helper, envir = h), error = function(e) message(sprintf("helper %s not loaded: %s", helper,
+        conditionMessage(e))))
 # The test file's kit220* functions only (its test_that blocks are not run).
 for (e in parse(file.path("tests", "testthat", "test-kit220-da-threshold-consumers.R"), keep.source = FALSE)) {
     if (is.call(e) && identical(e[[1L]], as.name("<-")) && startsWith(as.character(e[[2L]]), "kit220")) eval(e, h)
