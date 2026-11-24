@@ -1,4 +1,4 @@
-# KIT-202 outcome (stopped at 6.2's rule after R2: one unpredicted stored-reference move)
+# KIT-202 outcome (R2 judged; the unpredicted move decided by VAL-189; R3 next)
 
 Ticket `tickets/kit/KIT-202.md` r1.2 (owner decisions VAL-130). Branch `kit-202-intensity-filter-samples` from
 `v0.9-staging` 9453e79b.
@@ -52,7 +52,11 @@ Commits: 2622fcff (true merge with `v0.9-staging` 9f3b7c49; no 7.3 file changed 
   failing expectation (KIT-094's characterisation against `fixtures/kit094-characterisation.rds`) fails on base for input
   sha256 values only; on head it also shows `steps[[3]]$parameters` of length 3 against 2, both omics: the intensity
   filter step's record carries the marker entry (`r2/moved-binding-steps.txt`). 6.2 predicted no record snapshot moves;
-  this one does. By 6.2's rule the ticket stops before merge; the owner decides.
+  this one does. By 6.2's rule the ticket stopped before merge. Base message: the four `inputs[[i]]$sha256` differences
+  (both omics), then `records`. Head message: the same four, plus `actual$<omic>$steps[[3]]$parameters` length 3 against
+  2 and `parameters[[3]]` a list against absent, both omics. Predicted by the ticket: no. Decided: VAL-189 (the owner,
+  2026-11-25): the fixture is not edited and is deferred to the end-of-project re-record, as VAL-181; it does not stop
+  the ticket.
 - Check: findings identical on both sides (0 errors, 3 warnings, 3 notes each); none only on head (`r2/check-compare.txt`).
 - S1 died in R2 (instrument defect: the child's loop overwrote its output-directory variable; no rows written, no
   result). Repaired in 5d322d9c (VAL-54 instrument run 1 of 3; no expected value, comparison or stop rule changed).
@@ -63,17 +67,21 @@ design-sample oracle 228/228 and base = numeric-column oracle 228/228 (3 affecte
 partitioned 42/42 on head and on base, unaffected base = head 33/33 per variant; (iv) head under the earlier option =
 base 228/228.
 
-Stored references deferred to the end-of-project re-record (VAL-181): `tests/testthat/fixtures/kit073-omics-declarations-frozen.rds`.
-Awaiting the owner: `tests/testthat/fixtures/kit094-characterisation.rds` (`test-workflow-omics-binding-steps.R`).
+Stored references deferred to the end-of-project re-record: `tests/testthat/fixtures/kit073-omics-declarations-frozen.rds`
+(`test-workflow-omics-declarations.R`, VAL-181) and `tests/testthat/fixtures/kit094-characterisation.rds`
+(`test-workflow-omics-binding-steps.R`, VAL-189).
 
 ## Acceptance criteria
 
 - A1: met. Base side R1; head side R2: every new test passes (163), T8's file passes.
 - A2: met (S1, run 45482129676).
-- A3: not met as written: one unpredicted verdict (`test-workflow-omics-binding-steps.R` `message-changed`); the
-  declarations file's move is decided (VAL-181). No `compare-error`, no `new-failure`.
+- A3: met with two declared, decided differences: `test-workflow-omics-declarations.R` (predicted by the ticket: no;
+  decided: VAL-181) and `test-workflow-omics-binding-steps.R` (predicted by the ticket: no; decided: VAL-189), both
+  `message-changed` by the marker and declaration text only. Every other verdict as 6.2. No `compare-error`, no
+  `new-failure`.
 - A4: met (check findings identical).
-- A5: not run (R3 waits for the owner's decision).
+- A5: pending (R3 on the merge with staging 393ebb85, d593e351; R1b not needed: the merge changes no 7.3 file and no
+  lipid or metabolite filter, import or design-save file).
 - A6: met (`git diff 9f3b7c49..6e02de15 -- R/` touches only 7.3's files; the comparison lines unchanged).
 - A7: met (NEWS, ledger row `VAL-<merge>`; `DESCRIPTION`, `NAMESPACE`, lock files unchanged; `man/` as 7.3).
 
