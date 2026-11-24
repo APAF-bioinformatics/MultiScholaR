@@ -1,0 +1,34 @@
+{
+  "job": "s-1-1-1000",
+  "part": "s",
+  "cells": 1,
+  "first": 1,
+  "last": 1000,
+  "replicate_list": {},
+  "replicates_run": 1000,
+  "seeds": "189000000 + 100000 c + r (Mersenne-Twister, Inversion, Rejection); B2 189000001",
+  "commit": "8deb16494d2bcb8cb65ecf3f577bfd124271985f",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "versions": {
+    "MultiScholaR": "0.9.5",
+    "clusterProfiler": "4.20.0",
+    "enrichit": "0.2.0",
+    "qvalue": "2.44.0",
+    "GO.db": "3.23.1",
+    "AnnotationDbi": "1.74.0"
+  },
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "workers": 4,
+  "start": "2026-11-23T23:56:10+0000",
+  "end": "2026-11-24T01:19:51+0000",
+  "replicates_written": 1000,
+  "replicate_failures": 0,
+  "exit_status": 0,
+  "script_sha256": "2fc0b3397c2250529a8a664cf4b457d71a33d7e2077d24f62140482684e3008a",
+  "tables": {
+    "s-1-1-1000.tsv.gz": "bf75d9c095ffd2a9bd6eaef2a5d40e5eaf9eafbcefd62c4e0ffa7c14535017c3"
+  }
+}

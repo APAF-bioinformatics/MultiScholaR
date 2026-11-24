@@ -1,0 +1,2 @@
+outcome	reading	default	rule_f	material_power_gain	large_event_condition	q_fails	bh_fails	bhf_fails	q_controls	bh_controls	bhf_controls	classifications	controls	fails_n	not_determined
+O1	the q-value fails; BH by default over the whole size-filtered family (rule F); the q-value offered with its measured failure	BHf	BHf	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	TRUE	108	95	9	4

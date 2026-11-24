@@ -1,0 +1,8 @@
+id	pass	detail
+E0	TRUE	list of 126; status ok; tested 156, q-value calls 120, BH calls 0 (expected 156, 120, 0); pi0_hat 0.0716453; stage 1 (chain pi0 0.0716453; earlier stages: )
+E1	TRUE	archives hash ok; files enrichit/R/ora_gson.R=TRUE, enrichit/R/utilities.R=TRUE, enrichit/src/enrichit.cpp=TRUE, qvalue/R/qvalue.R=TRUE, qvalue/R/pi0est.R=TRUE; deparse identical: enrichit::ora_gson=TRUE, enrichit::calculate_qvalue=TRUE, qvalue::qvalue=TRUE, qvalue::pi0est=TRUE, qvalue::lfdr=TRUE, c
+E2	TRUE	240 ok calls checked (of 240 calls); failing calls 0; by check: none
+pairing	TRUE	120 replicates; one list per replicate in 120
+E3	TRUE	B1/none identical (160 terms); B1/is_a_part_of_regulates identical (738 terms); B2/none identical (101 terms); B2/is_a_part_of_regulates identical (622 terms); B3/none identical (323 terms); B3/is_a_part_of_regulates identical (1277 terms)
+E4	TRUE	BHf 0.0100000000000000,0.0500000000000000,0.6666666666666667; Qf 0.0100000000000000,0.0500000000000000,0.6666666666666666; hand 0.0100000000000000,0.0500000000000000,0.6666666666666666 (Qf = pi0 x BHf with pi0 = 1: every pi0(lambda) at lambda >= 0.5 exceeds 1); Qf stage 1, pi0 1
+E6	TRUE	planted case ER of T 2.5 (hand 2.5), of a disjoint term 0.625 (hand 0.625); constructed null ER 1,1,1; largest |ER - 1| over the L1 null calls 0

@@ -2,6 +2,19 @@
 
 ## MultiScholaR (unreleased; becomes 0.9.1, the first alpha for testing on real data)
 
+### New features
+
+ * Integration enrichment (KEGG and Reactome, for metabolite and lipid data sets): besides the correlation-adjusted
+   test (the default, unchanged) and the pre-ranked test, two more tests can be chosen: the correlation-adjusted test
+   with negative correlations counted as zero, and a permutation test of the factor's values (PCGSE). The tab and every
+   record show how each test behaved in a check on simulated data of the same kind (false calls and power; no lipid
+   data were simulated), so the choice can be made on those figures. With a permutation result, the tab and the
+   record's Methods state the smallest attainable p-value as an exact fraction (for example 1/1,001) and the smallest
+   number of terms that can be called together at a 5 % false discovery rate, or that none can be called when that
+   p-value is above 0.05 (VAL-115). Results of the default test are unchanged. The
+   pre-ranked test now draws its random numbers with R's default generator whatever the session's setting; results in
+   a session with default settings are unchanged (KIT-191).
+
 ### Fixes
 
  * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
@@ -44,10 +57,41 @@
    when the Differential Analysis tab is pressed before the normalisation now reads 'Run the normalisation first: the
    differential analysis runs on the normalised data.', and the tab's model help says that the RUV factors enter the
    model only when the normalisation added them. The report then states that no correction for unwanted variation was
-   applied. On these runs the tab still reports that the results could not be saved to disk, although the result tables
-   and figures are written; this is fixed separately (KIT-192).
+   applied.
+
+ * Transcriptomics: on runs of the RUV design panel (the option 'No removal of unwanted variation', an RUV design whose
+   rule finds no unwanted factor, or any RUV design that adds factors), the Differential Analysis tab no longer reports
+   'Could not save results to disk: non-numeric argument to mathematical function' after writing the result tables and
+   figures. The RUV grid summary (`ruv_optimization_summary.txt`) is written only for runs that used the RUV grid
+   search; the other runs have no grid to summarise, and their RUV choices are in the analysis record and the report.
+   Files written by an earlier run of the same project that used the RUV grid search (this summary, the
+   canonical-correlation panels and the grid workbook) are not removed, and describe that earlier run. Runs that used
+   the RUV grid are unchanged. The RUV design panel is off by default.
 
 ### Scientific changes
+
+ * Proteomics, MaxQuant, FragPipe, Spectronaut and Proteome Discoverer TMT: protein quantities are now
+   log2-transformed without first adding 1. Adding 1 changed each value v by log2(1 + 1/v): 0.00014 at 10,000, 0.0014
+   at 1,000, 0.14 at 10; a fold change of 10 against 80 was reported as 2.88 instead of 3. Measured on simulated data
+   (2,000 proteins, two groups of five, 10 % of proteins changed by a factor of 2; 20 simulated data sets per setting):
+   where typical values are near 10, fold changes were shrunk to 0.81 of their true size with the offset and 0.94
+   without it; near 40, 0.96 and 1.00; from about 150 on the two agree. Low-abundance calls stay unreliable either
+   way: in the lowest third of abundance, with values near 10, 14.5 % of the true changes were found with the offset
+   and 8.4 % without it with RUV Automatic (5.2 % and 3.1 % with RUV skipped), and 65 % against 71 % of the calls
+   there were false with RUV Automatic (50 % against 42 % with RUV skipped; the whole list's false share was 0.19
+   against 0.17, and 0.05 against 0.04). The Benjamini-Hochberg procedure controls the false discovery rate of the
+   whole list, not of an abundance stratum. The test used by default does not model the larger variance of log values
+   at low abundance. On the package's five test data sets (values of 500 and above) no call changed (fold changes
+   moved by at most 0.0001). Some Proteome Discoverer exports report signal-to-noise values, which are small; there
+   the change is largest. A value of 0 is read as not measured (missing) and counted; for Spectronaut tables and for
+   designs re-imported from files saved before 7 November 2026 this changes which values are tested. A negative or
+   infinite value now stops the design step with a message naming the run. Saved projects keep their results; saving
+   the design again applies the new transform, and a project whose design was saved by an earlier version says so
+   once when it is opened. Sessions from versions before the session owner (filtered sessions adopted for DA) are not
+   told. Scale normalisation (limma's two-colour M-value scaling) multiplies each sample's log2 values by a factor, so
+   its result depends on the unit of the table on any data; on log2 values below 0 (values below 1) it also treats -2
+   like +2, and a warning now says so when the data hold such values. Cyclic Loess and Quantile do not depend on the
+   unit.
 
  * Proteomics (DIA, label-free, TMT): the protein missing-value filter ('Protein Intensity Filter', and the clean-up
    after RUV) now decides by counting missing values. Before, it compared each group's share of missing values with a

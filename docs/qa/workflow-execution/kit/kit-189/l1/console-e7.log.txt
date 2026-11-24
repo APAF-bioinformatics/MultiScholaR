@@ -1,0 +1,4 @@
+Error: unexpected ',' in:
+"        limit, killed$status, killed$seconds, length(complete_k), length(tmp_k), length(gz_k), length(missing), cont$status,
+        cont$seconds, whole$status, whole$seconds, all(per_rep == 1L), nrow(union_rows), identical(a, b))),"
+Execution halted
