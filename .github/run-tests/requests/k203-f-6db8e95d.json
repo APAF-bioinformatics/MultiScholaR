@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-203 F: full suite base (staging 6a397776) against head (6db8e95d) with R CMD check both sides, the merge checkpoint; ceiling 1,200 job-minutes, not repeated or split",
+  "label": "KIT-203 F full suite 6db8e95d vs 6a397776",
+  "package_commit": "6db8e95d8a26219ce8bbb1fd86d4e15f04d4806f",
+  "base_commit": "6a3977767f98cfe55a1e9b22136eed5d6248e744",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
