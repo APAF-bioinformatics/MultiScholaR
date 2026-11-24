@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-208 R3: full suite on the merge 57aecb31 (kit-208 with staging a1b397b1) vs staging a1b397b1, check both sides; decides A3 (ceiling 2,800 job-min; expected about 1,100)",
+  "label": "KIT-208 R3 full suite merge 57aecb31 vs staging a1b397b1",
+  "package_commit": "57aecb311357cecd4a49cc088041c579cc16a5b6",
+  "base_commit": "a1b397b19a32062597d91ceda9e937034a4d1485",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
