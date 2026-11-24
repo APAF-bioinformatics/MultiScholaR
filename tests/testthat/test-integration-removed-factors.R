@@ -684,7 +684,7 @@ test_that("KIT-184 K8: too few samples for the design, a factor that is a combin
     unit <- intRfUnit(six, factors = between)
     condition <- expect_error(intRfUnitProduct(unit, adjust_ruv_factors = TRUE),
         class = "integration_enrichment_too_few_samples_for_test")
-    expect_match(conditionMessage(condition), "With 2 removed unwanted factors in its model", fixed = TRUE)
+    expect_match(conditionMessage(condition), "With 2 removed unwanted factor(s) in its model", fixed = TRUE)
     expect_match(conditionMessage(condition), "at least 7 biological samples in this data set; it has 6", fixed = TRUE)
     expect_s3_class(condition, "integration_refused")
     seven <- c(six[1:10], "s6", "s7")
@@ -785,7 +785,7 @@ test_that("KIT-184 K15: the test of record is asked with the samples left after 
     texts <- integrationGuiTexts()
     entry <- list(database = "kegg", input_matrix = "ruv_corrected")
     few <- sprintf(texts[["enrich_test_few_df"]], 4L, 6L, 7L)
-    expect_match(few, "With 4 removed factors in the model this test has 6 residual degrees of freedom", fixed = TRUE)
+    expect_match(few, "With 4 removed factor(s) in the model this test has 6 residual degrees of freedom", fixed = TRUE)
     expect_match(few, "(7)", fixed = TRUE)
     expect_true(few %in% integrationEnrichmentSummary(intRfUnitProduct(four, adjust_ruv_factors = TRUE), texts, entry))
     expect_false(any(grepl("residual degrees of freedom, fewer than", integrationEnrichmentSummary(intRfUnitProduct(two,
@@ -804,10 +804,15 @@ test_that("KIT-184 K11: a result's sentences: the form's label, the note for the
     summary <- integrationEnrichmentSummary(product, texts, trained)
     percent <- function(x) integrationEnrichmentPercent(100 * x)
     expect_true(sprintf(texts[["enrich_adjust_label_yes"]], 2L) %in% summary)
-    expect_identical(sprintf(texts[["enrich_adjust_label_yes"]], 2L), "Adjusted for removed RUV factors: yes (2 factors).")
+    expect_identical(sprintf(texts[["enrich_adjust_label_yes"]], 2L), "Adjusted for removed RUV factors: yes (2 factor(s)).")
+    expect_match(sprintf(texts[["enrich_test_covariates_design"]], 1L, 12L, 9L),
+        "Design: intercept, factor and 1 removed unwanted factor(s); 12 biological samples", fixed = TRUE)
     expect_true(sprintf(texts[["enrich_values_ruv_covariates_note"]], 2L, 2L, 8L) %in% summary)
-    expect_match(sprintf(texts[["enrich_values_ruv_covariates_note"]], 2L, 2L, 8L),
-        "For features measured in every run this gives exactly the result of fitting the same model", fixed = TRUE)
+    expect_match(sprintf(texts[["enrich_values_ruv_covariates_note"]], 2L, 2L, 8L), paste("For features measured in every",
+        "run the regression is exactly that of the same model (the factor and these 2 unwanted factors) fitted to the",
+        "corrected values, with 8 residual degrees of freedom; the test's variance trend reads each feature's average before",
+        "the correction, so its p-values can differ where the correction moved a feature's level."), fixed = TRUE)
+    expect_false(grepl("this gives exactly the result", texts[["enrich_values_ruv_covariates_note"]], fixed = TRUE))
     counts <- sprintf(texts[["enrich_test_covariates_counts"]], 2L, 12L, 8L, detail$run_complete,
         product$test_counts$universe, percent(detail$factor_r2), percent(2 / 11))
     expect_true(counts %in% summary)
@@ -836,6 +841,7 @@ test_that("KIT-184 K11: a result's sentences: the form's label, the note for the
         "so the match with the corrected values is approximate for every feature", fixed = TRUE)
     expect_true(any(grepl("The model has 8 residual degrees of freedom.", summary, fixed = TRUE)))
     expect_false(any(grepl("this gives exactly", summary, fixed = TRUE)))
+    expect_false(any(grepl("the regression is exactly that of the same model", summary, fixed = TRUE)))
     expect_false(any(grepl("were measured in every run", summary, fixed = TRUE)))
     # The adjustment switched on for a model trained on the values before RUV.
     summary <- integrationEnrichmentSummary(product, texts, default)
@@ -855,18 +861,31 @@ test_that("KIT-184 K11: a result's sentences: the form's label, the note for the
     expect_match(unadjusted_note, "which is the default (the adjustment is optional)", fixed = TRUE)
     expect_match(unadjusted_note, paste("were called on the model's main factor in 2.0 to 11.2 % of cases in this form and in",
         "8.1 to 29.6 % with the adjustment"), fixed = TRUE)
-    # The limit of the adjustment, with every result that has it and beside the control (results audit K184-R12 (d)).
+    # The limit of the adjustment, with every result that has it and beside the control (results audit K184-R12 (d)),
+    # with its numbers there, since the tab has no Methods to point to (implementation audit K184-I06 (f)).
     limit <- paste("Because the unwanted factors are estimated, sets of features that share them can still be called when",
-        "that variation follows the factor (see Methods).")
-    for (key in c("enrich_values_ruv_covariates_note", "enrich_values_ruv_covariates_note_approximate",
-        "enrich_values_adjusted_default_note", "enrich_adjust_ruv_help")) {
-        expect_match(texts[[key]], limit, fixed = TRUE, info = key)
-    }
+        "that variation follows the factor: in a check on simulated data where it followed the groups, such sets were",
+        "called on the model's main factor in 8.1 to 29.6 % of cases with the adjustment and in 2.0 to 11.2 % without it.")
+    # As shown: the three notes are filled with their numbers (their per cent signs are written doubled in the texts).
+    stated <- list(enrich_values_ruv_covariates_note = sprintf(texts[["enrich_values_ruv_covariates_note"]], 2L, 2L, 8L),
+        enrich_values_ruv_covariates_note_approximate = sprintf(texts[["enrich_values_ruv_covariates_note_approximate"]],
+            2L, 8L),
+        enrich_values_adjusted_default_note = sprintf(texts[["enrich_values_adjusted_default_note"]], 2L),
+        enrich_adjust_ruv_help = texts[["enrich_adjust_ruv_help"]])
+    for (key in names(stated)) expect_match(stated[[key]], limit, fixed = TRUE, info = key)
     help <- texts[["enrich_adjust_ruv_help"]]
     expect_match(help, "Off unless you switch it on.", fixed = TRUE)
     expect_false(grepl("This is the default for a model trained on", help, fixed = TRUE))
     expect_false(grepl("sensitivity analysis", help, fixed = TRUE))
-    expect_match(help, "at most 5.4 %", fixed = TRUE)
+    # What was checked, no wider (K184-I01), and where it found more true terms (K184-I05).
+    expect_match(help, paste("this kept false calls within the checked limit (at most 5.4 %) for the kinds of sets with no",
+        "link to what was tested that the check decided on; sets made only of the most variable features were called more",
+        "often (up to 9.4 %, 6.8 % without it)"), fixed = TRUE)
+    expect_match(help, paste("and so were sets in which half the features truly followed the main factor, tested against an",
+        "unrelated covariate (up to 8.6 %, up to 7.0 % without it)"), fixed = TRUE)
+    expect_match(help, paste("found more true terms than off (with as many factors removed as were planted; with four",
+        "removed where two were planted it found fewer)"), fixed = TRUE)
+    expect_false(grepl("(see Methods)", paste(unlist(texts), collapse = " "), fixed = TRUE))
     summary <- integrationEnrichmentSummary(off, texts, default)
     expect_true(texts[["enrich_adjust_label_no"]] %in% summary)
     expect_false(any(grepl("RUV-corrected values", summary, fixed = TRUE)))
@@ -1263,7 +1282,7 @@ test_that("KIT-184 K10: the record and its Methods name each entry's form; the i
     ranking <- tables$summary[[texts[["col_enrich_ranking"]]]]
     detail <- adjusted$run$value$design_detail
     counts <- adjusted$run$value$test_counts
-    yes <- "Adjusted for removed RUV factors: yes (2 factors)."
+    yes <- "Adjusted for removed RUV factors: yes (2 factor(s))."
     no <- "Adjusted for removed RUV factors: no."
     expect_setequal(ranking, c(
         paste0(sprintf(texts[["enrich_ranking_value_camera_ruv"]], 2L, counts$samples, detail$residual_df, counts$universe),
@@ -1271,7 +1290,7 @@ test_that("KIT-184 K10: the record and its Methods name each entry's form; the i
         paste0(sprintf(texts[["enrich_ranking_value_camera"]], counts$samples, counts$universe), ". ", no),
         sprintf(texts[["enrich_ranking_value"]], "pearson", 5L)))
     expect_match(sprintf(texts[["enrich_ranking_value_camera_ruv"]], 2L, 19L, 15L, 100L),
-        "regression of each feature on the factor and 2 removed unwanted factors over 19 biological samples (15 residual",
+        "regression of each feature on the factor and 2 removed unwanted factor(s) over 19 biological samples (15 residual",
         fixed = TRUE)
     expect_identical(ncol(tables$summary), 11L)
     methods <- integrationMethodsEnrichment(block, texts)
@@ -1296,10 +1315,31 @@ test_that("KIT-184 K10: the record and its Methods name each entry's form; the i
         "in at most 5.4 % (95 % interval of that largest figure 4.5 to 6.4 %) of cases",
         "in at most 4.1 % of cases with the adjustment when that variation was unrelated to the groups",
         "when it followed the groups (correlation 0.6), in 8.1 to 29.6 % with the adjustment",
-        "29.6 %, 95 % interval 27.8 to 31.3 %", "11.2 to 13.3 %", "2.0 to 11.2 % without it", "9.8 to 12.6 %",
-        "1.6 to 2.8 % had the true unwanted factors been known")) {
+        "29.6 %, 95 % interval 27.8 to 31.3 %", "2.0 to 11.2 % without it", "9.8 to 12.6 %",
+        "1.6 to 2.8 % had the true unwanted factors been known",
+        # K184-I01: the claim is for the kinds of sets the check decided on; the most variable features' sets beside it.
+        "sets with no link to what was tested, of the kinds the check decided on (random sets, correlated blocks of features,",
+        "the first three also against the model's main factor), were called at the 5 % level in at most 5.4 %",
+        paste("sets made only of the most variable features, those the model selects, were called in up to 9.4 % (6.8 %",
+            "without the adjustment, 9.8 % had the true unwanted factors been known), a property of the correlation-adjusted",
+            "test on such sets"),
+        paste("and sets in which half the features truly followed the main factor in up to 8.6 % (up to 7.0 % without the",
+            "adjustment, up to 8.5 % had the true unwanted factors been known)"),
+        # K184-I06 (a), (b): two compositions, not a range; the correction that was simulated.
+        "proteins 11.2 % (sets of 10 and 30 features) and 13.3 % (sets of 100 included)",
+        "proteins 7.3 % (sets of 10 and 30 features) and 11.2 % (sets of 100 included)",
+        paste("(RUV-III with the groups as replicate sets and every feature a control; the legacy routes' choice of controls",
+            "and of the number of factors was not simulated)"),
+        # K184-I03: identity only where no run was removed after the correction.
+        paste("for a model trained on RUV-corrected values and features measured in every run where no run was removed after",
+            "the correction, this is identical to fitting that model"))) {
         expect_match(clause, phrase, fixed = TRUE, info = phrase)
     }
+    expect_false(grepl("any set against a covariate", clause, fixed = TRUE))
+    expect_false(grepl("11.2 to 13.3 %", clause, fixed = TRUE))
+    # K184-I02: the clause opens with the adjustment, not with the model, since it is printed for either model.
+    expect_true(startsWith(clause, paste("The correlation-adjusted tests can add to their model the unwanted factors the RUV",
+        "correction removed from each data set")))
     expect_false(grepl("sensitivity analysis", texts[["methods_test_covariates_ruv_off"]], fixed = TRUE))
     expect_false(grepl("variation the correction removed stays in the values tested. P-values", limits, fixed = TRUE))
     # The inputs sheet: six columns; the correction cell of a data set in the model names its removed factors.
@@ -1325,9 +1365,23 @@ test_that("KIT-184 K10: the record and its Methods name each entry's form; the i
     expect_true(gui[["enrich_values_ruv_note"]] %in% shown[["Factor1|metabolomics_GCMS|kegg"]])
     expect_false(gui[["enrich_values_ruv_note"]] %in% shown[["Factor1|metabolomics_GCMS|kegg|camera|adjusted"]])
     expect_length(entries, 3L)
-    # A model trained on the values before RUV: the adjustment switched on is said so; without it, no RUV clause.
+    # A model trained on the values before RUV. Without an adjusted entry: no RUV clause, Methods as before this ticket.
     default <- intRfModel(paths)
     plain <- run(default)
+    block <- buildWorkflowAnalysisRecord(default$manager)$analyses$integration_mofa_model$integration
+    methods <- integrationMethodsEnrichment(block, texts)
+    plain_counts <- plain$run$value$test_counts
+    expect_true(sprintf(texts[["methods_enrich_camera"]], "Factor1", view, "KEGG", texts[["methods_test_name_camera"]],
+        sprintf(texts[["methods_test_settings_camera"]], plain_counts$samples, plain_counts$universe,
+            plain$run$value$mapping_counts$mapped), "KEGG Release fixture", "hsa", 5L, 500L,
+        plain$run$value$service$pathways_testable) %in% methods)
+    limits <- methods[startsWith(methods, texts[["methods_enrich_limits_tests"]])]
+    expect_length(limits, 1L)
+    expect_false(grepl("RUV-corrected values", limits, fixed = TRUE))
+    expect_false(grepl(texts[["methods_enrich_limits_ruv"]], limits, fixed = TRUE))
+    expect_match(limits, "the values the model is trained on by default. P-values were adjusted", fixed = TRUE)
+    # With the adjustment switched on for one entry: said so in its sentence, and the record carries the limit with its
+    # numbers (K184-I02: the tab's note of such a result and the manual point to it).
     on <- run(default, adjust_ruv_factors = TRUE)
     block <- buildWorkflowAnalysisRecord(default$manager)$analyses$integration_mofa_model$integration
     methods <- integrationMethodsEnrichment(block, texts)
@@ -1335,20 +1389,45 @@ test_that("KIT-184 K10: the record and its Methods name each entry's form; the i
     expect_identical(sum(grepl(paste0(sprintf(texts[["methods_test_covariates_ruv"]], 2L, on_detail$features,
         on_detail$input_sha256, on_detail$residual_df), texts[["methods_test_covariates_model_uncorrected"]]), methods,
         fixed = TRUE)), 1L)
-    plain_counts <- plain$run$value$test_counts
-    expect_true(sprintf(texts[["methods_enrich_camera"]], "Factor1", view, "KEGG", texts[["methods_test_name_camera"]],
-        sprintf(texts[["methods_test_settings_camera"]], plain_counts$samples, plain_counts$universe,
-            plain$run$value$mapping_counts$mapped), "KEGG Release fixture", "hsa", 5L, 500L,
-        plain$run$value$service$pathways_testable) %in% methods)
     limits <- methods[startsWith(methods, texts[["methods_enrich_limits_tests"]])]
-    expect_false(grepl("RUV-corrected values", limits, fixed = TRUE))
-    expect_match(limits, "the values the model is trained on by default. P-values were adjusted", fixed = TRUE)
+    expect_length(limits, 1L)
+    expect_match(limits, texts[["methods_enrich_limits_ruv"]], fixed = TRUE)
+    expect_match(limits, "in 8.1 to 29.6 % with the adjustment", fixed = TRUE)
+    expect_false(any(grepl("approximate:", methods, fixed = TRUE)))
     ranking <- integrationRecordEnrichmentTables(block, texts)$summary[[texts[["col_enrich_ranking"]]]]
     expect_true(paste0(sprintf(texts[["enrich_ranking_value_camera"]], plain_counts$samples, plain_counts$universe), ". ",
         no) %in% ranking)
     cell <- integrationRecordTables(buildWorkflowAnalysisRecord(default$manager), texts)$integration_inputs[[
         texts[["col_correction"]]]]
     expect_false(any(grepl("recorded as removed", cell, fixed = TRUE)))
+})
+
+test_that("KIT-184 K10 (K184-I03): the Methods sentence of an entry with an approximate set of factors says so, with the share", {
+    texts <- integrationRecordTexts()
+    record <- list(method = "difference_svd", k_declared = 2L, rank = 5L, k = 2L, share = 0.9, features = 30L,
+        tolerance = 1e-8, status = "approximate", reason = NULL)
+    entryOf <- function(product, input_matrix) list(design_covariates = product$design_covariates,
+        design_detail = product$design_detail, input_matrix = input_matrix)
+    settings <- sprintf(texts[["methods_test_settings_camera"]], 12L, 30L, 30L)
+    approximate <- intRfUnitProduct(intRfUnit(factors = intRfUnitFactors(), record = record), adjust_ruv_factors = TRUE)
+    expect_identical(approximate$design_detail[c("status", "share")], list(status = "approximate", share = 0.9))
+    said <- paste("; approximate: 90.0 % of what the correction removed lies within these factors (runs were removed after",
+        "the correction), so they do not match the corrected values exactly")
+    trained <- integrationMethodsCovariates(settings, entryOf(approximate, "ruv_corrected"), texts)
+    expect_match(trained, "an intercept and the 2 unwanted factors that the RUV correction removed from this data set",
+        fixed = TRUE)
+    expect_match(trained, said, fixed = TRUE)
+    expect_match(trained, paste0("8 residual degrees of freedom)", said, ", features measured in"), fixed = TRUE)
+    # On a model trained on the values before RUV: the same, before the words for that model.
+    before <- integrationMethodsCovariates(settings, entryOf(approximate, "uncorrected"), texts)
+    expect_match(before, paste0(said, texts[["methods_test_covariates_model_uncorrected"]]), fixed = TRUE)
+    # An exact set of factors, and a result without the adjustment: nothing of it.
+    exact <- intRfUnitProduct(intRfUnit(factors = intRfUnitFactors()), adjust_ruv_factors = TRUE)
+    expect_false(grepl("approximate", integrationMethodsCovariates(settings, entryOf(exact, "ruv_corrected"), texts),
+        fixed = TRUE))
+    off <- intRfUnitProduct(intRfUnit(factors = intRfUnitFactors(), record = record))
+    expect_false(grepl("approximate", integrationMethodsCovariates(settings, entryOf(off, "ruv_corrected"), texts),
+        fixed = TRUE))
 })
 
 test_that("KIT-184 K12: the workbook: the default is without the adjustment; the override switches it on; STRING takes none", {
@@ -1529,6 +1608,17 @@ test_that("KIT-184: no placeholder of the simulation's numbers is left in a ship
     starter <- system.file("workbooks", "integration", "integration_workflow_starter.rmd", package = "MultiScholaR")
     expect_true(nzchar(starter))
     expect_identical(grep(placeholder, readLines(starter, warn = FALSE), value = TRUE), character())
+    # The starter's paragraph on the adjustment: what was checked, no wider; the limit as a finding of that check.
+    paragraph <- gsub("[[:space:]]+", " ", paste(readLines(starter, warn = FALSE), collapse = " "))
+    for (phrase in c(paste("kept false calls within the checked limit (at most 5.4 %) for the kinds of sets with no link to",
+        "what was tested that the check decided on; sets made only of the most variable features were called more often",
+        "(up to 9.4 %, 6.8 % without it)"),
+        paste("and so were sets in which half the features truly followed the main factor, tested against an unrelated",
+            "covariate (up to 8.6 %, up to 7.0 % without it)"),
+        "(with as many factors removed as were planted; with four removed where two were planted it found fewer)",
+        "In that check it did not protect pathways whose features share unwanted variation that follows the groups")) {
+        expect_true(grepl(phrase, paragraph, fixed = TRUE), info = phrase)
+    }
 })
 
 # --- The cross-platform record (ticket 7.5): the removed factors of K1's fixture and the terms of K6's ---
