@@ -119,6 +119,12 @@
 
 ### Scientific changes
 
+ * Gene Ontology enrichment for organisms outside g:Profiler's set now calls a term significant by its
+   Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins, including terms with none of the
+   listed proteins. The earlier flag, Storey's q-value over the terms with at least one listed protein, is still
+   offered; in simulations at a cutoff of 0.05 it called terms on up to 42.9 % of random protein lists without parent
+   terms and up to 22.9 % with them. Analyses recorded before this change replay with the q-value, unchanged (KIT-203).
+
  * Proteomics, MaxQuant, FragPipe, Spectronaut and Proteome Discoverer TMT: protein quantities are now
    log2-transformed without first adding 1. Adding 1 changed each value v by log2(1 + 1/v): 0.00014 at 10,000, 0.0014
    at 1,000, 0.14 at 10; a fold change of 10 against 80 was reported as 2.88 instead of 3. Measured on simulated data

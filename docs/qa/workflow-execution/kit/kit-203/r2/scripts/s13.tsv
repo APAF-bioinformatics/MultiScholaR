@@ -1,0 +1,22 @@
+figure	expected	text	found
+default note: random lists with any call	1.0 % to 2.5 %	note bh_whole_family	TRUE
+default note: planted mean FDP	0.1 % to 1.7 %	note bh_whole_family	TRUE
+default note: pooled share, worst setting (post hoc)	at most 3.0 %	note bh_whole_family	TRUE
+default note: planted term called where tested	74.8 % to 100.0 %	note bh_whole_family	TRUE
+default note: paired, with parent terms (post hoc)	up to 5.8 percentage points less	note bh_whole_family	TRUE
+default note: paired, without parent terms (post hoc)	up to 8.8 points less often without	note bh_whole_family	TRUE
+default note: never more often (lists where only the default called the planted term)	never more often	note bh_whole_family	TRUE
+q-value note: random lists with any call	1.7 % to 42.9 %	note qvalue	TRUE
+q-value note: settings failing 7.5 %	in 6 of 18 settings and above it without certainty in 2 more	note qvalue	TRUE
+q-value note: failing with parent terms	(E. coli full proteome 22.9 %, its 2,000-protein subset 16.7 %)	note qvalue	TRUE
+q-value note: 10 or more calls	Up to 23.6 %	note qvalue	TRUE
+q-value note: planted mean FDP	was up to 35.7 %, clearly above 7.5 % in 3 of 18 settings, all without parent terms	note qvalue	TRUE
+q-value note: pooled share, worst setting (post hoc)	it was up to 82.1 %	note qvalue	TRUE
+q-value note: lists of 25 with parent terms (post hoc)	the average was 10.7 %	note qvalue	TRUE
+q-value note: paired (post hoc)	up to 5.8 percentage points more often than the default with parent terms and up to 8.8 points more often without	note qvalue	TRUE
+default report: random lists with any call	1.0 % to 2.5 % of random lists	methods bh_whole_family	TRUE
+default report: planted mean FDP	at most 1.7 %	methods bh_whole_family	TRUE
+q-value report: random lists with any call	1.7 % to 42.9 %	methods qvalue	TRUE
+q-value report: settings failing	in 6 of 18 settings, two of them with parent terms, both with lists of 25	methods qvalue	TRUE
+q-value report: BH over the kept terms	1.6 % to 8.2 % for Benjamini-Hochberg	methods qvalue	TRUE
+NEWS: q-value without and with parent terms	up to 42.9 % of random protein lists without parent terms and up to 22.9 % with them	news 	TRUE
