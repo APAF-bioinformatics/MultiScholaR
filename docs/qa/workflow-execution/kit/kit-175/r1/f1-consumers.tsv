@@ -1,0 +1,12 @@
+case	route	annotation_rows	organism_filter	da_rows	da_blank_gene_name	outcome	service_calls	identifiers_sent	background	notices	message
+cp-complete	clusterProfiler	70	FALSE	70	70	completed	2	25;10	70;70	[warning] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used.	
+gp-complete	g:Profiler	70	FALSE	70	70	completed	10	0;0;0;0;0;0;0;0;0;0	0;0;0;0;0;0;0;0;0;0		
+cp-empty	clusterProfiler	0	FALSE	70	0	error (rlang_error,error,condition)	0			[warning] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used.	ℹ In argument: `!is.na(.data[["go_id_go_biological_process"]])`. Caused by error in `.data[["go_id_go_biological_process"]]`: ! Column `go_id_go_biological_process` not found in `.data`.
+gp-empty	g:Profiler	0	FALSE	70	0	completed	10	25;25;25;25;25;10;10;10;10;10	70;70;70;70;70;70;70;70;70;70		
+cp-lacks25	clusterProfiler	45	FALSE	70	70	completed	2	25;10	70;70	[warning] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used.	
+gp-lacks25	g:Profiler	45	FALSE	70	70	completed	10	0;0;0;0;0;0;0;0;0;0	0;0;0;0;0;0;0;0;0;0		
+cp-empty-filter	clusterProfiler	0	TRUE	70	0	error (rlang_error,error,condition)	0			[warning] Multi-species filtering enabled but no organism mapping available. Proceeding without filtering. | [warning] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used.	ℹ In argument: `!is.na(.data[["go_id_go_biological_process"]])`. Caused by error in `.data[["go_id_go_biological_process"]]`: ! Column `go_id_go_biological_process` not found in `.data`.
+cp-complete-filter	clusterProfiler	70	TRUE	70	70	completed	2	25;10	70;70	[warning] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used.	
+integration-complete	integration input	70	FALSE	70	NA	completed	0	0	0		identifiers_sent = features with NA gene_names; background = display names that are the id
+integration-empty	integration input	0	FALSE	70	NA	completed	0	70	70		identifiers_sent = features with NA gene_names; background = display names that are the id
+integration-lacks25	integration input	45	FALSE	70	NA	completed	0	25	25		identifiers_sent = features with NA gene_names; background = display names that are the id

@@ -1,0 +1,10 @@
+
+job l1: part l1, cells 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24, replicates 9001 to 9005 (5 to run), 4 workers; set-up 68.7 s
+job l1: 120 of 120 replicates written in 1027.2 s
+check E0: TRUE
+check E1: TRUE
+check E2: TRUE
+check pairing: TRUE
+check E3: TRUE
+check E4: TRUE
+check E6: TRUE

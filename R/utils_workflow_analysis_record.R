@@ -1023,7 +1023,8 @@ workflowAnalysisRecordTables <- function(record) {
 writeWorkflowAnalysisRecordWorkbook <- function(record, path) {
     tables <- workflowAnalysisRecordTables(record)
     openxlsx::write.xlsx(tables[intersect(c("software", "inputs", "design", "parameters", "external_resources", "steps", "analyses",
-        "packages", "ruv_design", INTEGRATION_RECORD_SHEETS), names(tables))], path, overwrite = TRUE)
+        "packages", "ruv_design", INTEGRATION_RECORD_SHEETS, INTEGRATION_RECORD_EVIDENCE_SHEET), names(tables))], path,
+        overwrite = TRUE)
     invisible(path)
 }
 

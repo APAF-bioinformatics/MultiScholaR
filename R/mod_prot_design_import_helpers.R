@@ -378,12 +378,15 @@ runProtDesignImportConfirmationFlow <- function(
   recordDIAWorkflowInputs(workflowData$state_manager, c(design_file = importArtifacts$designFile,
     fasta = importArtifacts$fastaPath))
 
+  workflowData$prot_design_log2_counts <- NULL
   stateName <- buildStateCheckpointFn(
     workflowData = workflowData,
     workflowType = workflowType,
     actionLabel = "Import",
     validateColumnMapping = TRUE
   )
+  # KIT-177: the values the design step set to missing, named and counted.
+  notifyProtDesignLog2Counts(workflowData)
 
   logger::log_info(sprintf("Import: S4 object saved to R6 state manager as '%s'", stateName))
   logger::log_info("Import: This state is now ACTIVE - QC modules will read from it")

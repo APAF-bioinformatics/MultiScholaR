@@ -1,0 +1,9 @@
+lane	state	occurrence	rows	cols	cells	max_abs_difference	design_rule_violations	zero_to_missing	other_missing_changes	class
+prot_lfq	correlation_filtered	1	400	11	4000	0	NA	0	0	identical
+prot_lfq	correlation_filtered	2	400	11	4000	0	NA	0	0	identical
+prot_lfq	duplicates_removed	1	400	11	4000	0	NA	0	0	identical
+prot_lfq	normalized	1	400	11	4000	0	NA	0	0	identical
+prot_lfq	protein_accession_cleaned	1	400	11	4000	0	NA	0	0	identical
+prot_lfq	protein_intensity_filtered	1	400	11	4000	0	NA	0	0	identical
+prot_lfq	protein_replicate_filtered	1	400	11	4000	0	NA	0	0	identical
+prot_lfq	protein_s4_initial	1	400	11	4000	0	3675	0	0	unexplained (design rule)
