@@ -82,8 +82,21 @@ theorem whose type is the frozen statement (`Audit.lean`'s `example` lines compi
   (pairs not yet seen, plus one while the frontier is not empty) that falls by at least one on every pass that does not
   stop; so the pass budget never binds and the end state is exactly the closure.
 
+## Target 2 (replay rule): proved
+
+Proof file `MultiScholaRProofs/Proof/ReplayRule.lean`; every statement of `Spec/ReplayRule.lean` (8) and every
+witness (4) proved, each on `propext`, `Classical.choice`, `Quot.sound` or fewer (`axioms.tsv`). The round trip (2c)
+is proved from faithfulness (2b) under the option state the replay sets, whose value at a fixed marker is that
+marker's recorded rule (a lookup lemma that needs the table's distinct options). The witnesses use the table after
+KIT-190 (`missing_value_comparison`, `ruv_control_grouping`, with their tokens). One style linter
+(`linter.unusedSectionVars`, an unused instance argument) is off in the file's lemma section; it does not bear on
+what is proved.
+
+- Laptop CPU time for target 2: 14.3 CPU-seconds (11.0 user + 3.2 system) over 6 Lean calls, 11.8 s of Lean wall
+  time (labels `t2-*`). Agent time 0.05 h (11:48 to 11:51), against 10 expected and 18 ceiling.
+
 ## Not checked
 
-- Targets other than 3 are not proved yet; nothing was run in R.
+- Targets other than 3 and 2 are not proved yet; nothing was run in R.
 - The gate's own reads (RUVIIIC at c534151f, `ruv` 0.9.7.1 as locked, RUVSeq) were not done.
 - The CI workflow (4.4) and the lifecycle L0 are not written.

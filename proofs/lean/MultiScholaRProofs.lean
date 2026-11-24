@@ -10,6 +10,7 @@ public import MultiScholaRProofs.Spec.RuvDownstream
 public import MultiScholaRProofs.Spec.RuvIIIC
 public import MultiScholaRProofs.Oracle.GoClosure
 public import MultiScholaRProofs.Proof.GoClosure
+public import MultiScholaRProofs.Proof.ReplayRule
 
 /-!
 # KIT-193: machine-checked statements about exact models of parts of MultiScholaR's methods

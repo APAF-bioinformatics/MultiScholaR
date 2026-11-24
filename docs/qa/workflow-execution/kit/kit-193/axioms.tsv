@@ -15,3 +15,15 @@ GoClosure.monotone_witness	GoClosure.monotone_witness_stmt	propext, Classical.ch
 GoClosure.labels_mono_witness	GoClosure.labels_mono_witness_stmt	propext, Classical.choice, Quot.sound
 GoClosure.all_absent_witness	GoClosure.all_absent_witness_stmt	propext, Classical.choice, Quot.sound
 GoClosure.aspect_closed_witness	GoClosure.aspect_closed_witness_stmt	propext, Classical.choice, Quot.sound
+ReplayRule.rule_first_match	ReplayRule.rule_first_match_stmt	propext, Quot.sound
+ReplayRule.totality	ReplayRule.totality_stmt	propext, Classical.choice, Quot.sound
+ReplayRule.faithful	ReplayRule.faithful_stmt	propext, Quot.sound
+ReplayRule.without_marker	ReplayRule.without_marker_stmt	propext, Quot.sound
+ReplayRule.managed_new_design	ReplayRule.managed_new_design_stmt	propext, Quot.sound
+ReplayRule.round_trip	ReplayRule.round_trip_stmt	propext, Classical.choice, Quot.sound
+ReplayRule.locality	ReplayRule.locality_stmt	propext
+ReplayRule.unfixed_default	ReplayRule.unfixed_default_stmt	propext, Classical.choice, Quot.sound
+ReplayRule.faithful_witness	ReplayRule.faithful_witness_stmt	propext, Classical.choice, Quot.sound
+ReplayRule.without_marker_witness	ReplayRule.without_marker_witness_stmt	propext, Classical.choice, Quot.sound
+ReplayRule.managed_new_design_witness	ReplayRule.managed_new_design_witness_stmt	propext, Classical.choice, Quot.sound
+ReplayRule.unfixed_default_witness	ReplayRule.unfixed_default_witness_stmt	propext, Classical.choice, Quot.sound

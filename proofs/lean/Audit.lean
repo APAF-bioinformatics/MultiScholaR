@@ -46,3 +46,31 @@ example : GoClosure.aspect_closed_witness_stmt := GoClosure.aspect_closed_witnes
 #print axioms GoClosure.labels_mono_witness
 #print axioms GoClosure.all_absent_witness
 #print axioms GoClosure.aspect_closed_witness
+
+/-! ## Target 2: replay-rule selection (`Spec/ReplayRule.lean`) -/
+
+example : ReplayRule.rule_first_match_stmt := ReplayRule.rule_first_match
+example : ReplayRule.totality_stmt := ReplayRule.totality
+example : ReplayRule.faithful_stmt := ReplayRule.faithful
+example : ReplayRule.without_marker_stmt := ReplayRule.without_marker
+example : ReplayRule.managed_new_design_stmt := ReplayRule.managed_new_design
+example : ReplayRule.round_trip_stmt := ReplayRule.round_trip
+example : ReplayRule.locality_stmt := ReplayRule.locality
+example : ReplayRule.unfixed_default_stmt := ReplayRule.unfixed_default
+example : ReplayRule.faithful_witness_stmt := ReplayRule.faithful_witness
+example : ReplayRule.without_marker_witness_stmt := ReplayRule.without_marker_witness
+example : ReplayRule.managed_new_design_witness_stmt := ReplayRule.managed_new_design_witness
+example : ReplayRule.unfixed_default_witness_stmt := ReplayRule.unfixed_default_witness
+
+#print axioms ReplayRule.rule_first_match
+#print axioms ReplayRule.totality
+#print axioms ReplayRule.faithful
+#print axioms ReplayRule.without_marker
+#print axioms ReplayRule.managed_new_design
+#print axioms ReplayRule.round_trip
+#print axioms ReplayRule.locality
+#print axioms ReplayRule.unfixed_default
+#print axioms ReplayRule.faithful_witness
+#print axioms ReplayRule.without_marker_witness
+#print axioms ReplayRule.managed_new_design_witness
+#print axioms ReplayRule.unfixed_default_witness
