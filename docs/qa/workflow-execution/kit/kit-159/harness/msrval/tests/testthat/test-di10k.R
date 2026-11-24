@@ -31,9 +31,10 @@ test_that("DI10K: T-COV's catalogue, its seeds and the pinned coverage table are
 test_that("DI10K: the confirmatory cell has its own index; T-COV's catalogue does not hold it", {
     cells <- valCoverageCells()
     conf <- valCoverageCells(confirmatory = TRUE)
-    expect_identical(nrow(conf), nrow(cells) + 1L)
+    # P1K (VAL-176) appends C4e-171 after this cell: DI10K's cell is the first after T-COV's
+    expect_identical(nrow(conf), nrow(cells) + 2L)
     expect_identical(as.list(conf[seq_len(nrow(cells)), ]), as.list(cells))
-    k <- conf[nrow(conf), ]
+    k <- conf[nrow(cells) + 1L, ]
     expect_identical(k$cell, "C4e-170")
     expect_identical(k$regime, "C4e")
     expect_identical(k$family, "c4e:4840acc")
