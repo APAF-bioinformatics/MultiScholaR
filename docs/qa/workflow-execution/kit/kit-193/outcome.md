@@ -293,7 +293,7 @@ the standard axioms). P03: the coordinator adopted the auditor's two sharper wit
 P05 and P06 concern the paired tests.
 
 **Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
-system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system). After R-F3, R-L2, R-M1: 152 calls, 923.3 CPU-seconds (734.8 user + 188.4 system). After 4d-ii: 164 calls, 975.4 CPU-seconds (780.6 user + 194.8 system).
+system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system). After R-F3, R-L2, R-M1: 152 calls, 923.3 CPU-seconds (734.8 user + 188.4 system). After 4d-ii: 164 calls, 975.4 CPU-seconds (780.6 user + 194.8 system). After the R-I1, R-J3, R-N1 drafts: 169 calls, 986.0 CPU-seconds (this session: 35 calls, 150.4 CPU-seconds, 88.4 s of Lean wall time).
 
 ## P03: two sharper witnesses (new Spec file; proved)
 
@@ -358,6 +358,19 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   22.9 CPU-seconds (labels `rP3-*`, `rP34-*`). Agent time 0.05 h (13:35 to 13:38), against R-F3 6/10, R-L2 8/14,
   R-M1 4/6.
 
+## Notes for the auditor (second implementer session)
+
+- Hypotheses in frozen statements that the proofs do not use (nothing is weakened; each conclusion holds without
+  them): `Hset` and `Hac` in R-B1, R-B2, R-E1 (the shift argument needs only `HU` and `Hone`); `Hac` in R-D1 (only
+  `Q` invertible is used); `Hset` in R-K1 (i); `0 < m` in `kept_family_formula` (at `m = 0` both sides are 0).
+- R-K1 (ii) uses all five of its hypotheses as stated; `IsUnit (M'S⁻¹M).det` and `Hac` are not derived (the Spec
+  allows either).
+- `Proof/KeptFamily.lean` proves Simes' equality on a grid for any finite index type (`simes_grid`), more general than
+  4d-ii needs; it is a lemma, not a frozen statement.
+- One unrelated reading, left alone: `getNegCtrlProtAnovaHelper` takes `sort(…)[1:list_size]`
+  (`R/func_prot_norm_optimization_helpers.R:582`); at `list_size = 0` R's `1:0` is `c(1, 0)`, which selects one
+  control. R-N1's draft models it (`rHead`); whether it is reachable is for the owner (not checked).
+
 ## Target 1's paired test (run P1a: P1 split, target 1 only; target 2's pair waits for KIT-190)
 
 - **Ticket 8.2's diff before the first run:** `git diff e6c42d1d d84b6dfd -- R/func_prot_qc_filtering_helpers.R
@@ -388,33 +401,27 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
 
 ## Resume here
 
-Handed over at b404e62e+1 (context length; no stop rule, no statement problem). Done since the proofs audit: P01, P02,
-P04, P07 (ticket r1.4), P08; P03's Spec file (b8a62ed3, alone) and both witnesses proved; R-F2 proved.
+State at 55c5c2fa (2026-11-24, second implementer session): every frozen statement of targets 1 to 5 and of group R
+priorities 1 to 4 is proved with its witnesses (124 theorems listed in `axioms.tsv`, standard axioms only); 4d-ii
+proved (`Proof/KeptFamily.lean`). R-I1, R-J3, R-N1: statements drafted in three new Spec files (b32c94ca, each with
+its own `SPEC.sha256` line, no proof), waiting for their statements review; nothing about them is proved. Target 1's
+paired test sent as run P1a (`kit193-p1a-filter-pair-55c5c2fa`).
 
-Next, in the coordinator's order (2026-11-24):
-1. Group R priority 2, after R-F2: R-B1, R-B2, R-D1, R-D2, R-E1, R-E2 (`Spec/RuvAlgebra.lean`; witnesses `B1_witness`,
-   `D_witness`), R-G1 (`Spec/RuvDownstream.lean`, witness `G1_witness`), R-J1, R-J2 (`J2`, `J2_contribution`)
-   (`Spec/RuvIIIC.lean`), R-K1 (`K1`, `K1_gls`; witnesses `K1_witness`, `K1_gls_witness`), R-L1 (`L1`, `L1_invariance`).
-   Useful lemmas already proved: `residop_transpose`, `Ut_Yc`, `UtW`, `Ut_Ystar`, `colMean_*`, `centre_eq_self`
-   (`Proof/RuvAlgebra.lean`); `betaHat_shift`, `normal_eq`, `rss_le`, `gram_unit`, `mulVec_inj_of_gram`,
-   `betaHat_of_normal`, `Ut_X_zero`, `Xt_residop`, `residop_X`, `Ut_residop`, `residop_U`, `rank_bound`
-   (`Proof/RuvDownstream.lean`). Concrete witnesses: see `witnessG0i` in `Proof/SharperWitnesses.lean` for how
-   `(M'M)⁻¹`, `residop` and sums over the control subtype are computed (`Matrix.inv_eq_left_inv`, `Finset.sum_eq_single`).
-2. Priority 3: R-F3 (`F3_span`, `F3_fwl`, witness `F3_fwl_witness`), R-L2. Priority 4: R-M1 (witness `M1_witness`).
-3. 4d-ii: `kept_family_unit_a_counterexample` first (a closed sum, 4d-i's lemmas), then `kept_family_formula`,
-   `kept_family_instance`, `kept_family_witness`.
-4. R-I1, R-J3, R-N1: draft the statements per ticket 7.2 and 5.3 item 1 (new Spec files `Spec/RemovedFactors.lean` and
-   one each for R-J3 and R-N1), commit the drafts alone (with `SPEC.sha256` lines only after the gate), and stop them for
-   the statements gate.
-5. Target 1's paired test on a runner through run-tests (KIT-187 merged on staging 6416dbd6+; record ticket 8.2's empty
-   diff first): move `pending/test-kit193-pairs-filter.R` to `tests/testthat/`, cover AUDIT-KIT-187-impl I10's five gaps
-   and the proofs audit's P05 notes as the coordinator listed them. Target 2's pair waits for KIT-190.
+Next:
+1. Record P1a's result (`runs.tsv`, the `p1a/` result files, `bindings.tsv` rows T1 from `scripts/bindings-t1.R`'s
+   output) and judge it as declared in "Target 1's paired test".
+2. After the statements review of R-I1, R-J3, R-N1: prove them (R-I1's algebra reuses `Ut_one`, `colMean_mul`,
+   `centre_eq_self`; R-J3 is definitional; R-N1 needs the rank/order counts to be a bijection onto 1..F).
+3. Target 2's pair waits for KIT-190; P0 (targets 4, group R), P2 (target 5) and P3 as ticket 8.1; the record job L1
+   at the final commit.
 Lean calls: `scratchpad lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
-/home/doktersmol/.elan/bin/lake …` per call in `cpu-time.tsv`; one at a time.
+/home/doktersmol/.elan/bin/lake …` per call in `cpu-time.tsv`; one at a time. New Proof modules in this session:
+`Proof/RuvAlgebra2.lean`, `Proof/RuvDownstream2.lean`, `Proof/RuvIIIC.lean`, `Proof/KeptFamily.lean` (defs used in
+public statements are `@[expose]`).
 
 ## Not checked
 
-- 4d-ii and group R priorities 2 to 4 are not proved yet; nothing was run in R.
+- R-I1, R-J3 and R-N1 are drafted, not reviewed and not proved; R was run only on GitHub runners (P0a, P1a).
 - The proofs are checked on the laptop only (`lake build --wfail`, `Audit.lean`); the record job L1 runs once, at the
   final commit. (Two earlier lines here, on the gate's reads and on the CI workflow, were stale: the statements register
   records the gate's reads, and the workflow and L0 are above.)
