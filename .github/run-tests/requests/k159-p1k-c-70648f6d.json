@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 line P1K (VAL-176): the one correction pass at 70648f6d (test-di10k's catalogue count after C4e-171 is appended); expected: di10k and p1k all pass, no lints; no coverage simulation; ceiling 30 job-minutes",
+  "label": "KIT-159 P1K correction pass at 70648f6d with lint",
+  "package_commit": "70648f6d6c8535950cf9d6486f3a62ab17f84efa",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/p1k-c-out",
+        "--files",
+        "di10k,p1k",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/p1k-c-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
