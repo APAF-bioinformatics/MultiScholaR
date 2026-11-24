@@ -22,3 +22,6 @@ run_id	commit	purpose	minutes	result
 45386641894	3c4c5c90	bundle lane, distributable.yml stage full, both platforms	243	DIAMOND verified at build on Linux and Windows; bare-container check passes (SHA-256 d3d72578); NSIS installer built with installer.nsh; GUI-entry lanes fail as in earlier full runs (Linux prot_dia, prot_dia_limpa, trx_screen; Windows metab, lipid, trx_screen); no base run on this image
 45464121489	577af610	audit I02 test first (no R/ change)	11	failing first: the caller's scratch folder and its file are deleted (dir.exists FALSE, file.exists FALSE)
 45464241902	a260f14c vs 577af610	audit repairs I01, I02, I03: I02 test, dependents, R CMD check	69	workflow file fixed (64 passed, 0 failed); four dependents same; check identical on both sides
+45468789157	a88fd562	audit I09 test first (no R/ change)	12	failing first: untested and groups counts wrong (6 failures)
+45468794955	8044b332 vs 9f3b7c49	after the merge with staging (KIT-205, KIT-206) and the I09 repair: KIT-167 enrichment, GUI and workflow tests and the enrichment dependents	218	KIT-167 files pass (173); 11 dependents same (failures identical on base and head, KIT-205's known ones included)
+45468732885	merge 0581bd97 line	distributable.yml stage kit167-engine on the merged tree (I04)	7	plan guard passed; F1 job complete with the same results as run 45353725258
