@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-187 R3c (VAL-104): provenance and record of the 17 KIT-111 case runs, base 64cc0fff vs head 108635c9, leaf by leaf; scripts only. Ceiling 40 job-minutes",
+  "label": "KIT-187 R3c 108635c9: provenance and record cause, scripts only",
+  "package_commit": "108635c932ea0ca16ec26631c4c3bc545a38d064",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-187/provenance-cause.R",
+      "args": [
+        "64cc0fff6ded931fef78a573215199b098592c74",
+        "docs/qa/workflow-execution/kit/kit-187/r3c-prov"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-187/r3c-prov",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
