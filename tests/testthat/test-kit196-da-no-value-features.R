@@ -166,23 +166,23 @@ kit196ManagedDa <- function(omic, object, env) {
         experiment_paths = paths, env = env)
     probe <- new.env()
     omicsManagedChainMocks(list(owner = bus$state_manager, workflow = bus, paths = paths, source_dir = paths$source_dir), probe, env = env)
-    server_fn <- if (identical(omic, "lipid")) mod_lipid_da_server else mod_metab_da_server
-    ui_fn <- if (identical(omic, "lipid")) mod_lipid_da_ui else mod_metab_da_ui
+    # The DA tab's run (mod_omic_da.R executeOmicDaRun, what the module's run button calls) on the head, as the helper
+    # omicsTabServer drives it (helper-workflow-omics-worker.R; R1's module driver set no state selection).
     errors <- character()
     server <- function(input, output, session) {
         runner <- installWorkflowOmicsActions(session, bus, omic_type, "kit196", paths)
         runner$progress <- function(message) list(inc = function(...) invisible(NULL), close = function() invisible(NULL))
-        session$userData$da <- server_fn("de", bus, paths, omic_type, "kit196")
+        tab <- list2env(list(current_state_name = NULL, analysis_complete = FALSE))
+        shiny::observeEvent(input$run_da, {
+            tab$current_state_name <- bus$state_manager$current_state
+            outcome <- executeOmicDaRun(tab, bus, session, paths, kit196Settings(), bus$contrasts_tbl, omicGuiConfig(omic_type)$da,
+                kit196Binding(omic))
+            if (identical(outcome$status, "error")) errors <<- c(errors, outcome$errorMessage)
+        })
     }
     suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(server, {
-        defaults <- omicsUiInputDefaults(ui_fn("x"))
-        names(defaults) <- sub("^x-", "de-", names(defaults))
-        tryCatch({
-            do.call(session$setInputs, defaults)
-            session$setInputs(`de-formula_string` = "~ 0 + group", `de-da_q_val_thresh` = 0.05, `de-treat_lfc_cutoff` = 0)
-            session$setInputs(`de-run_da_analysis` = 1L)
-            session$flushReact()
-        }, error = function(e) errors <<- c(errors, conditionMessage(e)))
+        session$setInputs(run_da = 1L)
+        for (i in seq_len(3L)) session$flushReact()
     }))))
     list(manager = bus$state_manager, probe = probe, errors = errors)
 }
@@ -283,6 +283,8 @@ for (omic in c("lipid", "metab")) {
     # The DA tab's paths: their results, the manifest's errors per contrast and the saved contrast fits.
     kit196ExpectTab <- function(errors, results, ref_results, label) {
         contrasts <- omicsDaContrastsTable()$contrasts
+        # The manifest's error messages, shown as text (the same claim as the next line: no error).
+        expect_identical(unlist(errors) %||% character(), character(), info = label)
         expect_identical(errors, stats::setNames(rep(list(list()), length(contrasts)), contrasts), info = label)
         expect_length(results$failed_contrasts, 0L)
         long <- results[[long_table]] %||% data.frame()
@@ -353,9 +355,10 @@ for (omic in c("lipid", "metab")) {
         }
         out <- managed(kit196Object(omic, scatter = TRUE))
         ref <- managed(kit196Object(omic, empty = FALSE, scatter = TRUE))
-        # The precondition (an instrument check): the DA ran on the worker.
+        # The precondition (an instrument check): the DA ran on the worker and the reference has its manifest.
         expect_true(paste0(kit196Binding(omic)$prefix, "_da_contrast") %in% ref$operations)
-        expect_false(is.null(out$manifest))
+        expect_false(is.null(ref$manifest), info = paste(ref$errors, collapse = "; "))
+        expect_false(is.null(out$manifest), info = paste(out$errors, collapse = "; "))
         kit196ExpectTab(kit196Errors(out$manifest), out$results, ref$results, "T7")
     })
 }
