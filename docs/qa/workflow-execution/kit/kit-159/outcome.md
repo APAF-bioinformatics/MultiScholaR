@@ -1578,6 +1578,48 @@ limit 50 minutes.
 **Spend on P1K:** 0.94 + 0.97 + 0.93 + 1.12 + 1.00 = **4.96 of 9**; 4.04 left, which is 0.09 below
 the run's 4.13 ceiling. The coordinator decides whether the 4.13 ceiling stands.
 
+### P1K: result (run 45482122988 at 746eb296)
+
+Sent after the auditor confirmed the final declaration. Budget: ticket r1.28 raised P1K to 9.5
+core-hours; the frozen declaration's figure of 9 is stale and was not edited.
+
+**Outcome by the declared reading: PASS.**
+- K1 holds: every row has `effect` 0.40.
+- K2 holds: the `pauc_diff` target is 0.04775, inside [0.025, 0.075].
+- Not `degenerate`: the zero-width share is 0, and the target is far from ±1.
+- No coverage below level - 0.02 at any of the 8 levels.
+
+Therefore, as the declaration reads it: the C4e g = 5 delete-one-block jackknife covers P1's form
+(a paired pAUC difference to FPR 0.01 on one contrast, 40 positives of 4,840, one direction, fixed
+draw) at the decision levels, under the listed differences. KIT-162 quotes this cell's coverage and
+one-sided misses at 97.5 % and 98.33 %, not the pooled rows' coverage or label. It does not license
+heterogeneous or compressed fold changes, untested UPS keys counted as misses, the package's
+normalisation route, KIT-162's arm-versus-baseline rankings, or a P1 near its ceiling in real data.
+
+**Observed.** Script exit 0, 1,344 s. Chunks exit 0,0,0,0, no cell missing, wall 1,298 s. Process
+4,899 s: 1,748 s of simulations and 3,152 s of targets. `metrics` tests: 0 failed.
+
+| level | coverage | misses | exact 95 % | miss_low | miss_high | label |
+|---|---|---|---|---|---|---|
+| 0.95 | 0.9925 | 15 | 0.9877 to 0.9958 | 7 | 8 | conservative |
+| 0.975 | 0.9985 | 3 | 0.9956 to 0.9997 | 2 | 1 | conservative |
+| 0.9833 | 0.9985 | 3 | 0.9956 to 0.9997 | 2 | 1 | conservative |
+| 0.9875 | 0.9995 | 1 | 0.9972 to 1 | 1 | 0 | conservative |
+| 0.9917 | 0.9995 | 1 | 0.9972 to 1 | 1 | 0 | conservative |
+| 0.9938 | 0.9995 | 1 | 0.9972 to 1 | 1 | 0 | conservative |
+| 0.9958 | 1 | 0 | 0.9982 to 1 | 0 | 0 | conservative |
+| 0.9967 | 1 | 0 | 0.9982 to 1 | 0 | 0 | conservative |
+
+- **One-sided miss rates at the decision levels** (exact 95 % intervals): 2 of 2,000 at the lower
+  bound (0.00012 to 0.00361) and 1 of 2,000 at the upper bound (0.00001 to 0.00278), at both
+  97.5 % and 98.33 %.
+- No level is below nominal, so no tail probability is significant.
+- `se_inflation` 1.509; `half_width_ratio` 2.14 at 95 % and 2.35 at 97.5 %.
+- Beside the pooled C4e g = 5 rank rows: 0.99, 0.9935, 0.996 and so on (`t2/p1k-exact.tsv`).
+- 40 positives per simulation; the target is 0.0477 (the population model gave 0.049).
+
+**Spend:** 32.2 job-minutes, 2.14 core-hours. Line P1K: 4.96 + 2.14 = **7.10 of 9.5**.
+
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-25 from 12282273 (a records-only commit on the merge a4e002a6 of the ticket branch with staging a1b397b1, which holds KIT-182, KIT-203, KIT-207 and KIT-196), after the re-audits 2 and 3 and the closure check (register `AUDIT-KIT-159-impl-recheck-20261124`). The ledger row is VAL-165. The whole harness suite passed on a4e002a6 (run 45386625659: 45 files, 274 tests, 2,342 expectations, 0 failed, 0 skipped, no lints), and one `snapshot`-stage dispatch of `distributable.yml` passed on the same commit (run 45386409115). **Merged is not accepted:** acceptance criterion A1 is OPEN. Not done: the lifecycle runs L1a, L1b, L2 and L3; gate G13 in P1; G5 (replay) on every route (only `metab_combined` has been replayed); the confirmatory cell in KIT-162's composition (VAL-163 (3)); the suite and G1(a) repeated after the last product merge (KIT-190, 200, 201, 202, 204, 205, 206, 208 and the tickets after them are pending). By the plan's rule, no validation ticket (KIT-160 to KIT-170) sends a lifecycle or counted request until A1 is recorded as met at a commit that contains every product merge that ticket's runs will use. Ticket total at merge: about 116.2 of 276 core-hours (110.78 before the merge run, plus 5.44).
