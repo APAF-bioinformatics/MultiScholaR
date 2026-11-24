@@ -197,8 +197,9 @@ childMain <- function(side, out) {
             for (rule in rules) {
                 options <- if (identical(rule, "earlier_option")) list(MultiScholaR.intensity_filter_samples = "numeric_columns") else list()
                 withr::with_options(options, for (percentile in percentiles) for (proportion in proportions) {
-                    out <- s4(object, percentile, proportion)
-                    record_object(input, object, out$filtered, out$thresholds, "s4", "", percentile, proportion, rule)
+                    # (Named `res`: `out` is this side's output directory; R2's run 45469464049 overwrote it here.)
+                    res <- s4(object, percentile, proportion)
+                    record_object(input, object, res$filtered, res$thresholds, "s4", "", percentile, proportion, rule)
                 })
             }
             if (identical(side, "head") && input %in% affected) {
@@ -277,6 +278,8 @@ same_threshold <- function(a, b, numeric_threshold) {
 }
 compare <- function(criterion, a, b, fields, numeric_threshold = FALSE) {
     keys <- union(key(a), key(b))
+    if (!length(keys)) return(data.frame(criterion = criterion, input = "<no rows>", assay = "", setting = "", equal = FALSE,
+        stringsAsFactors = FALSE))
     a <- a[match(keys, key(a)), , drop = FALSE]
     b <- b[match(keys, key(b)), , drop = FALSE]
     equal <- !is.na(a$input) & !is.na(b$input)
