@@ -87,8 +87,10 @@ k205Cluster <- function(tables, env = parent.frame()) {
     list(results = results, dir = dir)
 }
 
-#' The g:Profiler route (taxon 9606) on `tables` with `perform_enrichment` recording each call: per contrast and
-#' direction the ids sent and the custom background. Returns the calls, keyed "<contrast>/<direction>".
+#' The g:Profiler route (taxon 9606) on `tables`, all comparisons in one call (so a mask pooled over comparisons would
+#' show), with `perform_enrichment` recording each call: the ids sent and the custom background. The route takes the
+#' comparisons in order, up then down, and every table here has both lists. Returns the calls keyed
+#' "<contrast>/<direction>".
 k205Gprofiler <- function(tables, id_column = "Protein.IDs") {
     acc <- new.env()
     acc$calls <- list()
@@ -98,15 +100,13 @@ k205Gprofiler <- function(tables, id_column = "Protein.IDs") {
             ids = as.character(data_subset[[protein_id_column]]), custom_bg = custom_bg)
         NULL
     })
-    calls <- list()
-    for (contrast in names(tables)) {
-        acc$calls <- list()
-        utils::capture.output(suppressMessages(suppressWarnings(processEnrichments(k205Da(tables[contrast]), "9606",
-            q_cutoff = 0.05, pathway_dir = withr::local_tempdir(), exclude_iea = FALSE, protein_id_column = id_column,
-            contrast_names = contrast))))
-        for (call in acc$calls) calls[[paste0(contrast, "/", call$direction)]] <- call
-    }
-    calls
+    utils::capture.output(suppressMessages(suppressWarnings(processEnrichments(k205Da(tables), "9606",
+        q_cutoff = 0.05, pathway_dir = withr::local_tempdir(), exclude_iea = FALSE, protein_id_column = id_column,
+        contrast_names = names(tables)))))
+    stopifnot(length(acc$calls) == 2L * length(tables))
+    contrasts <- rep(names(tables), each = 2L)
+    stats::setNames(acc$calls, vapply(seq_along(acc$calls), function(i) paste0(contrasts[[i]], "/",
+        acc$calls[[i]]$direction), ""))
 }
 
 #' The tested rows of a table by the rule's definition (VAL-129 (2)), for the expectations
