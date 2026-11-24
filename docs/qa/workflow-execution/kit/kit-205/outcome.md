@@ -105,6 +105,17 @@ merged, VAL-157). Every run is listed in `runs.tsv`.
   and SD-1's words in the clusterProfiler captures failing since KIT-173. The four GUI-entry files are `same` (the
   proteomics and transcriptomics lanes fail on both sides as before). No new failure elsewhere, no timeout, no crash.
 
+- **R2b (run 45404531700; audit K205-I01; head db09ddfa = the merge with staging 8cb536cc plus the I02/I03 text
+  repairs; base 8cb536cc; 326.1 job-minutes, 21.74 core-hours of 36.00).** R2b 45404531700 on the merge with staging
+  8cb536cc (KIT-196, KIT-159 merged; only the ledger hand-resolved): 6.3's verdicts only; check identical. R3 stands
+  (section 8). In detail (`r2b/`): 23 files same; the new file only on head, 228 of 228 (with I02's clause);
+  `test-omic-enrich-module.R` `new-failure` and `test-omics-enrich-core.R` `message-changed` with failure texts byte-equal
+  to R2's (`compare-failures.txt` differs by 0 lines); check 0/3/3 on both sides, identical. Dump control
+  (`dumps/r2b/comparison.md`; nothing re-frozen, with the owner): for the UI block and the five W113 cases `gprofiler`,
+  `kernel_gprofiler`, `restore`, `organism_filter/no_mapping`, `organism_filter/mapped`, the base dump equals the stored
+  block, the two head dumps are byte-identical, and the only leaves that differ are SD-1's words (UI: `html`, `help`,
+  the selector's default label) and the marker (W113: `provenance/rest`, `record/parameters$enrichment_background`).
+
 ## Acceptance criteria
 
 | # | Met? | Evidence |
@@ -213,8 +224,7 @@ Every changed user-facing text, old and new, verbatim (also in `wording.md`):
 
 ## Not checked
 
-- R CMD check on the merge with staging 91e3cdcb (R3 has no check; R2's check was on the branch point, and KIT-207, the only
-  code merged since, shares no file with this ticket).
+- R CMD check on the merge with 91e3cdcb itself (R2b checked the later merge with 8cb536cc, which contains it).
 - Real data and the incidence of untested rows on it (KIT-160 to KIT-162); Windows.
 - The g:Profiler service with a custom background (no service call; the route is checked through the arguments sent).
 - A non-numeric p or q column (ticket 13).
@@ -277,7 +287,7 @@ pool X129, open).
 
 ## Budget
 
-Core-hours (job minutes x 4 / 60): R1 2.04 (30.6 min), R2 23.21 (348.1 min), R3 81.03 (1,215.4 min, of which the
-instrument rerun of two base shards and the results job 60.1 min); total 106.28 against 88.43 expected and 469.33
-ceiling (R3's row ceiling 186.67; R2's 46.00). Instrument reruns (VAL-54): R3's two base shards, 1 of 3. No correction
+Core-hours (job minutes x 4 / 60): R1 2.04 (30.6 min), R2 23.21 (348.1 min), R2b 21.74 (326.1 min; outside the 469.33 ceiling, as ticket 11 allows; its own ceiling 36.00), R3 81.03 (1,215.4 min, of which the
+instrument rerun of two base shards and the results job 60.1 min); total 106.28 within the 469.33 ceiling (128.02 with R2b) against 88.43 expected
+(R3's row ceiling 186.67; R2's 46.00). Instrument reruns (VAL-54): R3's two base shards, 1 of 3. No correction
 pass was used.
