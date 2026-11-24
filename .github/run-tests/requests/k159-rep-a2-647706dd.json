@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109, VAL-137): A2, builder A's fix at 647706dd: the A1 files (repair4, repair2, repair, evidence, licence, arms, inputs) passing, with --lint; ceiling 25 min, about 0.8 core-hours",
+  "label": "KIT-159 repair A2: fix at 647706dd",
+  "package_commit": "647706dd8ec406656cb6527dc82a9cf9d5239609",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-a2-out",
+        "--files",
+        "repair4,repair2,repair,evidence,licence,arms,inputs",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-a2-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
