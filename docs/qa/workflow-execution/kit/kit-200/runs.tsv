@@ -1,0 +1,3 @@
+run_id	commit	purpose	minutes	result
+45321064526	ceff82fe	R1 (G0) failing-first, tests-only commit	11.7	instrument defect: 7 chain tests (T6, T6 b, T6 c, T7, T9, T10) stopped in the fixture (row names); the others at their stated values
+45323531564	bd907fa2	R1-2, instrument re-run 1 of 3 (VAL-54), fixture fixed	10.0	every test at its stated value; guards pass
