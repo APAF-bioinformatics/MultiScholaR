@@ -200,16 +200,23 @@ E1 under (d): T1b (42 journeys) k 1.95 -> 5.21, FDP 0.226 -> 0.239, power 0.621 
 base 16 false calls, k 2; first repair 209, k 7; (d) **218, k 7** (12 %, 62 controls). T11 F172 (no planted effect):
 base 37 false calls; first repair 0; (d) **330, k 8** (18 %, 93 controls).
 
-Inferred, not examined: rule (d) chooses the features least associated with the groups, which also carry the least
-unwanted variation relative to their noise; the canonical-correlation elbow then picks a large k (5 to 8 of 12 samples),
-and RUV-III with that k on 12 samples inflates false calls. The rule meets its selection goals (planted controls under
+~~Inferred, not examined: rule (d) chooses the features least associated with the groups, which also carry the least
+unwanted variation relative to their noise.~~ **Withdrawn** (audit `tickets/kit/audits/AUDIT-KIT-190-rule-d-20261125.md`,
+K190-M07): in this generator (d)'s controls carry more of the planted factor, not less (inferred by the audit's model;
+(d)'s fold-change errors are smaller than base's, shown). The audit's account (K190-M05, M06; inferred from code, the k
+shift shown): (d) chooses controls on the same group factor the k diagnostic uses, so the diagnostic's control curve is
+forced down and the elbow returns k of 5 to 10 on 12 samples; the test on corrected values then keeps 10 residual df
+less nothing for k, and false calls rise with k (shown: at equal k, (d) is no worse than base). The rule meets its selection goals (planted controls under
 1 %, no one-group controls, no row-order dependence) and fails the error-rate one in every cell measured.
 
 ## R2 (run 45329435006; head 4baddb58 = rule (d) + 7.4 + staging d2179e3b; base d2179e3b)
 
 Observed: 70 files `same`; the new file `only-on-head`; check 0 findings only on head. Not as predicted:
-- `test-kit172-downstream.R` new failure (T7, lipid and metab): "unobserved >= 1" is 0 (no control unobserved somewhere:
-  a consequence of (d)'s one-group exclusion, inferred).
+- `test-kit172-downstream.R` new failure (T7, lipid and metab): "unobserved >= 1" is 0. ~~Attributed to (d)'s one-group
+  exclusion.~~ **Corrected** (audit K190-M12, inferred from code and E1's k): on this fixture (d) chose k = 7; the five
+  features with no group-A value leave 5 residual dimensions < 7, RUV-III-C returns them all NA and the method removes
+  them, so no unobserved feature reaches the test. The exclusion only decides whether they are controls. The first repair
+  also chose k = 7 here; T7 on the first repair is checked by run k190-split-check-c68c2975.
 - `test-workflow-omics-ruv-cancor-once.R` new failure (lipid, metab, sweep with missing values): not every assay
   succeeds (inferred: a larger k exceeds the complete controls at every percentage).
 - `test-workflow-omics-binding-steps.R` message-changed: the record snapshot gains one fixed parameter (the marker),
@@ -217,3 +224,15 @@ Observed: 70 files `same`; the new file `only-on-head`; check 0 findings only on
 - `test-prot-norm-core.R` message-changed: the lipid and metab RUV pinned digests (failing on base too).
 - `test-omic-norm-module.R` new failure: the provenance digests (D5, predicted). The D5 control script failed reading
   the dumps (instrument defect; not re-run).
+
+## Observation: T7 and cancor-once on the first repair (run 45471764300)
+
+Observed: on 1ea2e784 merged with staging e305fab3, `test-kit172-downstream.R` T7 fails for lipid and metab exactly as
+under (d) ("unobserved >= 1" gives 0); the test prints no k (E1's committed rows record k = 7 for this fixture under the
+first repair, `e/a/fixtures.tsv`). `test-workflow-omics-ruv-cancor-once.R` passes on the first repair (16 of 16, as on
+base). Inferred: T7 is a consequence of the unbounded k under either rule (audit K190-M12); cancor-once is specific to
+(d)'s higher k on that fixture.
+
+## Next: the bounded-k measurement (VAL-182)
+
+Declared in `bound-declaration.md`, to be audited before the lifecycle run is sent. Nothing of it has run.
