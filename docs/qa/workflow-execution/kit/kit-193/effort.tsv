@@ -10,3 +10,4 @@ T2-proofs	2026-11-24T11:48	2026-11-24T11:51	0.05	proved (8 statements, 4 witness
 T1-proofs	2026-11-24T11:51	2026-11-24T11:53	0.04	proved (8 statements, 6 witnesses)
 record-job-L0-and-paired-tests	2026-11-24T11:35	2026-11-24T12:06	0.40	L0 done; T3 pair written; T1, T2 pairs prepared
 T4-bh_sorted_eq	2026-11-24T12:12	2026-11-24T12:22	0.17	stopped: statement false as frozen (counterexample proved); back to the gate
+T4-4a-4c-4d-i	2026-11-24T12:40	2026-11-24T13:05	0.42	proved (12 statements, 4 witnesses); 4d-ii and bh_sorted_eq pending

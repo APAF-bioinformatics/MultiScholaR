@@ -174,6 +174,26 @@ the range 4c states. **The item stops here and goes back to the statements gate 
 statement uses it (4a to 4c and 4d are stated on the closed form `bh`); work on target 4 stopped at this point by the
 coordinator's rule ("stop and report at any statement problem"). Laptop time for this attempt: 11.0 CPU-seconds over 5 Lean calls, 10.2 s of Lean wall time (labels `t4-*`).
 
+## Target 4 (q-value and BH): 4a to 4c and 4d-i proved; freeze amended
+
+- **Freeze amended (5474e512, alone):** statements gate re-review 1 confirmed the counterexample, added `∀ j, 0 ≤ p j`
+  to `bh_sorted_eq_stmt`, and froze `bh_sorted_neg_ties_counterexample_stmt` and `bh_sorted_eq_witness_stmt`; one line of
+  `SPEC.sha256` replaced. Counts: 83 statements, 39 witnesses. The counterexample statement is proved
+  (`bh_sorted_neg_ties_counterexample`). The proof of the corrected `bh_sorted_eq_stmt` waits for the auditor's
+  confirmation of 5474e512 (coordinator's rule).
+- **Proved** (`Proof/QvalueBh.lean`, each on `propext`, `Classical.choice`, `Quot.sound`): 4a `qflag_contains_bh`,
+  `flag_none`; 4b `qflag_extra`; 4c `bh_ge_p`, `bh_mono`, `bh_ties`, `bh_stepup`; 4d-i `grid_mass`,
+  `grid_superuniform`, `fdr_n20` (3/40 and 1/20), `fdr_n20_strict` (41/1600), `fdr_n25` (3/50 and 1/25, both
+  comparisons); witnesses `qflag_contains_bh_witness`, `qflag_extra_witness`, `bh_unit_witness`, `grid_witness`.
+- How 4d-i is proved (as the ticket asks, not by brute force over the outcomes): BH's calls on one and on two values
+  are characterised (`callsL_one`, `calls_two`: some value at most `q/2`, or both at most `q`; strictly for the route's
+  flag); the sum over the `(N + 1)²` outcomes splits by which p-values are 1 (`fdr2_split`); each grid value's condition
+  becomes a whole-number condition on its index (`cond_grid`); the remaining sums are expanded and evaluated by `simp`
+  and `norm_num` (each value compiles in under ten seconds).
+- Not yet: 4d-ii (`kept_family_formula`, `kept_family_instance`, `kept_family_witness`; second to last by D4) and the
+  corrected `bh_sorted_eq_stmt` with its witness.
+- Laptop time for target 4 so far: 156.2 CPU-seconds over 24 Lean calls, 103.5 s of Lean wall time (labels `t4-*`, the counterexample's included).
+
 ## Not checked
 
 - Targets 4, 5 and group R are not proved yet; nothing was run in R.

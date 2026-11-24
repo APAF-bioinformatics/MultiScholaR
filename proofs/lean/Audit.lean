@@ -112,3 +112,37 @@ example : FilterCount.counterexample_any_rounding_witness_stmt := FilterCount.co
 example : QvalueBh.bh_sorted_neg_ties_counterexample_stmt := QvalueBh.bh_sorted_neg_ties_counterexample
 
 #print axioms QvalueBh.bh_sorted_neg_ties_counterexample
+
+example : QvalueBh.qflag_contains_bh_stmt := QvalueBh.qflag_contains_bh
+example : QvalueBh.flag_none_stmt := QvalueBh.flag_none
+example : QvalueBh.qflag_extra_stmt := QvalueBh.qflag_extra
+example : QvalueBh.bh_ge_p_stmt := QvalueBh.bh_ge_p
+example : QvalueBh.bh_mono_stmt := QvalueBh.bh_mono
+example : QvalueBh.bh_ties_stmt := QvalueBh.bh_ties
+example : QvalueBh.bh_stepup_stmt := QvalueBh.bh_stepup
+example : QvalueBh.grid_mass_stmt := QvalueBh.grid_mass
+example : QvalueBh.grid_superuniform_stmt := QvalueBh.grid_superuniform
+example : QvalueBh.fdr_n20_stmt := QvalueBh.fdr_n20
+example : QvalueBh.fdr_n20_strict_stmt := QvalueBh.fdr_n20_strict
+example : QvalueBh.fdr_n25_stmt := QvalueBh.fdr_n25
+example : QvalueBh.qflag_contains_bh_witness_stmt := QvalueBh.qflag_contains_bh_witness
+example : QvalueBh.qflag_extra_witness_stmt := QvalueBh.qflag_extra_witness
+example : QvalueBh.bh_unit_witness_stmt := QvalueBh.bh_unit_witness
+example : QvalueBh.grid_witness_stmt := QvalueBh.grid_witness
+
+#print axioms QvalueBh.qflag_contains_bh
+#print axioms QvalueBh.flag_none
+#print axioms QvalueBh.qflag_extra
+#print axioms QvalueBh.bh_ge_p
+#print axioms QvalueBh.bh_mono
+#print axioms QvalueBh.bh_ties
+#print axioms QvalueBh.bh_stepup
+#print axioms QvalueBh.grid_mass
+#print axioms QvalueBh.grid_superuniform
+#print axioms QvalueBh.fdr_n20
+#print axioms QvalueBh.fdr_n20_strict
+#print axioms QvalueBh.fdr_n25
+#print axioms QvalueBh.qflag_contains_bh_witness
+#print axioms QvalueBh.qflag_extra_witness
+#print axioms QvalueBh.bh_unit_witness
+#print axioms QvalueBh.grid_witness
