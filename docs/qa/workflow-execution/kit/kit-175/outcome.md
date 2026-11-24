@@ -91,3 +91,27 @@ The R2 diagnosis runs (45289730439, 45289724427; 1.56 core-hours by the API) are
   absence); in the direct test replace `expect_true(grepl("Q8N158-2", ...))` with
   `expect_true(grepl("accession:Q8N158)", request_log$query, fixed = TRUE))` and
   `expect_false(grepl("Q8N158-2", request_log$query, fixed = TRUE))`. Then R2 and R3 again.
+
+## Second correction pass (allowed by the owner, VAL-114; the last without the owner)
+
+Done as the auditor's "Correction pass, reading 1" states, nothing more.
+- Merged `v0.9-staging` e962775d (true merge 655366a0; ledger conflict resolved by keeping staging's rows, this
+  ticket's row stays `VAL-<merge>` after VAL-114).
+- Tests-only commit 6ebf3618: T5 (d) pins `organism_filter_applied` TRUE and no "no organism mapping" notice; the
+  direct UniProt test asserts `accession:Q8N158)` and no `Q8N158-2` term.
+- d6f35889: the canonical-accession line moved below the skipped-ID count, so the console line "Filtered out N IDs
+  that do not match UniProt accession pattern" no longer counts an isoform; NEWS inner parentheses replaced; the
+  `directUniprotDownload` details sentence reflowed (Rd by hand). Counts, record and notices unchanged: the move only
+  reorders the line after two console messages, and the expectations on request counts, `accessions_*` fields,
+  record rows and notice texts (T1, T2, T2b including (iv), T3, T4) pass unchanged on head in R2d and R3d.
+- **R2d** (45310861475, d6f35889 vs staging e962775d, the 29 files and check; 16.37 core-hours, correction row): new
+  file only-on-head 327 passed, 0 failed; the direct test count-changed (20 to 21 passed, 0 failed); 27 same; check
+  identical (0 findings only on head).
+- **R3d** (45315053703, d6f35889 vs e962775d, full suite, full-suite template, check; 71.56 core-hours, longest job
+  48.4 minutes): 455 same, 1 only-on-head (new file 327/0), 1 count-changed (the direct test, 21/0), 1 fixed:
+  `test-omic-enrich-module.R` failed one more expectation on **base** (organism_filter no_mapping/select,
+  `gprofiler_plot` placeholder digest 70d6422b... against the frozen d4fb7d73...), passing on head. This is the same
+  test-mask flake as I03 (here on the base side, where KIT-175 has no code), not a behaviour change. 0 new-failure;
+  35 files fail identically on both sides; check identical.
+
+Correction row use: 1.56 (diagnosis) + 15.39 (R2c) + 16.37 (R2d) + 71.56 (R3d) = 104.9 core-hours of 230.
