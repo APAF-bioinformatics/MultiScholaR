@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-174 R2a-panel (A3): proteomics normalisation options column rendered with base 0cf0e440's and head 9f9a16b1's configuration, diff; ceiling 60 job-minutes",
+  "label": "KIT-174 R2a-panel 9f9a16b1 vs 0cf0e440",
+  "package_commit": "9f9a16b1346f34125f459c79415d8c18b6ebcf80",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-174/norm-panel.R",
+      "args": [
+        "0cf0e4409330ce82ca638572a7e9440d2041155d",
+        "kit174-panel"
+      ],
+      "env": {},
+      "out": "kit174-panel",
+      "out_pattern": "",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

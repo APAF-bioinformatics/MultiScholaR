@@ -1,0 +1,47 @@
+{
+  "requested_by": "KIT-174 R2a: part (a) fix 9f9a16b1 against the branch point 0cf0e440: targeted files and the dependents of the three run sites (grep), 3 shards per side, R CMD check base vs head; ceiling 34.0 core-hours",
+  "label": "KIT-174 R2a fix 9f9a16b1 vs 0cf0e440",
+  "package_commit": "9f9a16b1346f34125f459c79415d8c18b6ebcf80",
+  "base_commit": "0cf0e4409330ce82ca638572a7e9440d2041155d",
+  "tools_ref": "",
+  "tests": [
+    "test-kit174-ruv-grouping.R",
+    "test-omic-norm-module.R",
+    "test-module-ci-prot-norm.R",
+    "test-prot-norm-core.R",
+    "test-omic-gui-config.R",
+    "test-module-ci-prot-da.R",
+    "test-gui-entry-proteomics.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R",
+    "test-module-ci-lipid-norm.R",
+    "test-module-ci-metab-norm.R",
+    "test-kit207-summary-head-guard.R",
+    "test-module-ci-prot-dia-limpa.R",
+    "test-omics-norm-state-guards.R",
+    "test-omic-norm-ruv-design.R",
+    "test-prot-05d-norm-module-characterization.R",
+    "test-prot-05b-norm-module-contracts.R",
+    "test-prot-norm-input-current.R",
+    "test-prot-design-log2.R",
+    "test-workflow-gui-memory-lifetimes.R",
+    "test-workflow-saved-qc.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-proteomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
