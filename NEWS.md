@@ -12,15 +12,18 @@
    Reset normalised the already normalised table (log2 applied twice), and in transcriptomics could keep factors of the
    earlier run in the model; it now runs again from the table the first run started from, and it is refused on a table
    loaded from a session file and while a step is still running. Quality-control steps can no longer be applied to a
-   normalised table; the message names the step to Revert to. The differential analysis no longer runs on a session file
-   named after a quality-control, reset, internal-standard or log2 state (such a file was exported after Quality Control
-   was reverted past the normalisation). Results change only for sessions that took these routes; analysis records are
-   not changed, and replaying one repeats the steps it recorded. To check an earlier lipidomics or metabolomics result:
-   open its analysis record (analysis_record.xlsx, exported with the results). If no log2 and no normalisation step
-   stands before the differential analysis, the analysis tested values that were not normalised. If a log2 step's input
-   was already a normalised table, or the normalisation steps were run twice without Reset, the data were normalised
-   twice. Run the analysis again with this version. A session file exported after Quality Control was reverted past the
-   normalisation holds data that were not normalised and should not be loaded for differential analysis (KIT-194).
+   normalised table; the message names the step to Revert to. A table that carries the name of a normalisation step is
+   treated as normalised even when it was made by a script rather than by the tab: quality control and the normalisation
+   refuse it, and the message asks to Revert to the last quality-control step (or, when none is left, to import the data
+   again). The differential analysis no longer runs on a session file named after a quality-control, reset,
+   internal-standard or log2 state (such a file was exported after Quality Control was reverted past the normalisation).
+   Results change only for sessions that took these routes; analysis records are not changed, and replaying one repeats
+   the steps it recorded. To check an earlier lipidomics or metabolomics result: open its analysis record
+   (analysis_record.xlsx, exported with the results). If no log2 and no normalisation step stands before the
+   differential analysis, the analysis tested values that were not normalised. If a log2 step's input was already a
+   normalised table, or the normalisation steps were run twice without Reset, the data were normalised twice. Run the
+   analysis again with this version. A session file exported after Quality Control was reverted past the normalisation
+   holds data that were not normalised and should not be loaded for differential analysis (KIT-194).
 
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
