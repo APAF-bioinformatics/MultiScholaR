@@ -20,3 +20,5 @@ run_id	commit	purpose	minutes	result
 45387203510	3c4c5c90 vs a1b397b1	pass 2 targeted after the merge with staging	244	every KIT-167 file passes; 13 dependents same
 45392214469	2893bfed vs a1b397b1	pass 2 full suite, R CMD check, gate-off script	1080 (72.0 core-hours)	465 same, 10 only-on-head (KIT-167 files pass), 0 new failures; check identical; gate-off values identical, deterministic, 0 errors
 45386641894	3c4c5c90	bundle lane, distributable.yml stage full, both platforms	243	DIAMOND verified at build on Linux and Windows; bare-container check passes (SHA-256 d3d72578); NSIS installer built with installer.nsh; GUI-entry lanes fail as in earlier full runs (Linux prot_dia, prot_dia_limpa, trx_screen; Windows metab, lipid, trx_screen); no base run on this image
+45464121489	577af610	audit I02 test first (no R/ change)	11	failing first: the caller's scratch folder and its file are deleted (dir.exists FALSE, file.exists FALSE)
+45464241902	a260f14c vs 577af610	audit repairs I01, I02, I03: I02 test, dependents, R CMD check	69	workflow file fixed (64 passed, 0 failed); four dependents same; check identical on both sides
