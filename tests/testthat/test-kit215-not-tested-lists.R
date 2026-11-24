@@ -431,8 +431,10 @@ test_that("KIT-215 T7b: an error in a g:Profiler comparison's processing refuses
     testthat::local_mocked_bindings(stripEnrichmentIdSuffix = function(ids) stop("k215 forced strip error"))
     project <- k215Project(withr::local_tempdir(), k215Annotations(), taxon = "9606", id_gene_names = TRUE)
     expect_true(inherits(project$error, "workflow_enrichment_test_error")) # base: completed, the contrast NULL
-    expect_identical(conditionMessage(project$error), paste("The enrichment test of comparison B_vs_A stopped with an",
-        "error, so the run was not completed: k215 forced strip error."))
+    # Correction pass (R2 run 45495673217): the ticket states the class only; the message ends with the caught error's
+    # message, which dplyr's `mutate()` replaces by its own header ("In argument: ..."), so only the sentence is asserted.
+    expect_true(startsWith(conditionMessage(project$error), paste("The enrichment test of comparison B_vs_A stopped",
+        "with an error, so the run was not completed: ")))
     expect_null(project$config)
 })
 
