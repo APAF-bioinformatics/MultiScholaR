@@ -120,12 +120,12 @@ differential-abundance step (`runTestsContrasts`, captured inside `daAnalysisWra
 ## Unrelated findings
 
 **`daAnalysisWrapperFunction` stops after its DA step on any data (not fixed here; its own ticket, VAL-180).**
-- Read (`R/func_prot_da_model_wrapper.R`): `contrasts_results_table <- contrasts_results$results` (around `:234`) is a
+- Read (`R/func_prot_da_model_wrapper.R`): `contrasts_results_table <- contrasts_results$results` (`:223`, `:232`) is a
   named list of tables, one per contrast. At `:272-275` it is wrapped again, `nested_list <- list(contrasts_results_table)`,
   and passed as `getSignificantData(list_of_da_tables = list(nested_list), ...)`. `getSignificantData`'s inner map
   (`R/func_prot_da_results_summary.R:250-266`) expects each element of `nested_list` to be a table; it receives the list
   of tables and stops in `rownames_to_column()`: "is.data.frame(df) is not TRUE" (observed in R2-3, run 45463691826,
-  after `runTestsContrasts` had returned). The same nesting feeds `printCountDaGenesTable` at about `:306-308`.
+  after `runTestsContrasts` had returned). The same nesting feeds `printCountDaGenesTable` at `:306-308`.
 - Not run on base data without empty proteins; the reading says it stops on any data. No test runs the wrapper to its end.
 - A failing test for it: `daAnalysisWrapperFunction(obj, contrasts_tbl = data.frame(contrasts = "groupB-groupA",
   full_format = "B_vs_A=groupB-groupA"), formula_string = "~ 0 + group", treat_lfc_cutoff = 0, args_row_id = <id column>)`
