@@ -17,7 +17,10 @@ r4Attribution <- function() {
 }
 
 test_that("R-V137-2: the family bound sums each component's one-sided 95 % Clopper-Pearson upper bound", {
-    cmp <- r4Verdict(family = "fam")[rep(1L, 3L), ]
+    # the family is set after construction: r4Verdict() already has a `family` column, and a
+    # second one through `...` became `family.1` (A2's failure: a fixture defect)
+    cmp <- r4Verdict()[rep(1L, 3L), ]
+    cmp$family <- "fam"
     cmp$metric <- c("a", "b", "c")
     cmp$m <- 3L
     cmp$conf <- 0.975
