@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 line P1K (VAL-176): the generator change at 3939ffe2; expected: test-p1k all pass (incl. the one-contrast calibration, printed to the console), di10k, coverage, coverage-rank, coverage-table, repair2, repair4 unchanged, no lints; no coverage simulation; ceiling 40 job-minutes",
+  "label": "KIT-159 P1K generator change at 3939ffe2 with lint",
+  "package_commit": "3939ffe25f3acb7f012991c6e6d65e965f6b0efb",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/p1k-f-out",
+        "--files",
+        "p1k,di10k,coverage,coverage-rank,coverage-table,repair2,repair4",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/p1k-f-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
