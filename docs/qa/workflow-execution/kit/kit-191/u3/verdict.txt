@@ -1,0 +1,7 @@
+t_within_1e10	TRUE
+every_difference_explained	TRUE
+p_identical_where_no_listed_draw	TRUE
+unchanged_counted_by_product	TRUE
+unchanged_only_at_6	TRUE
+listed draws	0
+sets with p not identical	0
