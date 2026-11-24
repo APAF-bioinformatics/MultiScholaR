@@ -893,16 +893,21 @@ computeWorkflowTrxDaPublicationAction <- function(manager, request, variant) {
         object <- readWorkflowOmicsState(transcriptomicsDeclarationBinding, manager, manifest$source)
         da_dir <- omicsStagedPublicationDir(request, "da_output_dir")
         graphs <- omicsStagedPublicationDir(request, "publication_graphs_dir")
+        # KIT-220 (VAL-191 (1)): the figures, the top genes and the summary line at the run's threshold.
+        qvalue <- manifest$parameters$qvalue
         annotated <- list()
         for (contrast in names(manifest$results)) {
             entry <- manifest$results[[contrast]]
             if (is.null(entry$products$da_contrast)) next
             results <- hydrateSavedWorkflowEntity(context$store, entry$products$da_contrast)$value$assays[[1L]]$results
             name <- entry$comparison
-            de <- trxAnnotateDe(results$top_table, object@count_data[[1L]], name, object@gene_id_column, object@annotation_id_column)
+            de <- trxAnnotateDe(results$top_table, object@count_data[[1L]], name, object@gene_id_column, object@annotation_id_column,
+                fdr_thresh = qvalue)
             utils::write.csv(de$de_annotated, file.path(da_dir, paste0("de_results_", name, ".csv")), row.names = FALSE)
-            trxSaveFigure(trxVolcano(de$de_annotated, name)$plot, file.path(graphs, "Volcano_Plots"), paste0("volcano_plot_", name), 8, 7)
-            trxSaveFigure(trxSignificanceBar(de$de_annotated, name)$plot, file.path(graphs, "NumSigDeMolecules"), paste0("summary_barplot_", name), 7, 5)
+            trxSaveFigure(trxVolcano(de$de_annotated, name, fdr_thresh = qvalue)$plot, file.path(graphs, "Volcano_Plots"),
+                paste0("volcano_plot_", name), 8, 7)
+            trxSaveFigure(trxSignificanceBar(de$de_annotated, name, fdr_thresh = qvalue)$plot, file.path(graphs, "NumSigDeMolecules"),
+                paste0("summary_barplot_", name), 7, 5)
             annotated[[contrast]] <- de
         }
         if (!length(annotated)) cli::cli_abort("no contrast has a result", class = "workflow_execution_invalid")
@@ -912,7 +917,8 @@ computeWorkflowTrxDaPublicationAction <- function(manager, request, variant) {
         # write (as the RUV publication, above); its choices are in the analysis record and the report.
         if (is.null(grid[["ruv_design", exact = TRUE]])) {
             trxWriteSummaryText(trxSummaryText(grid$best, length(grid$prelim_order), manifest$parameters$formula, names(annotated)[[1L]],
-                annotated[[1L]]$de_annotated, grid$grid_summary), request$parameters$dataset, file.path(da_dir, "ruv_optimization_summary.txt"))
+                annotated[[1L]]$de_annotated, grid$grid_summary, fdr_thresh = qvalue), request$parameters$dataset,
+                file.path(da_dir, "ruv_optimization_summary.txt"))
         }
         list(saved = TRUE)
     })
@@ -1089,15 +1095,19 @@ trxIntegrationInputCorrection <- function(manager, state, export, samples, techn
 
 #' The interactive volcano of one contrast (rmd:673-693; the binding's `volcano_widget`): Glimma on the contrast's DGELRT
 #' with the annotation aligned to its order. A failure is the page action's recorded message.
+#' KIT-220 (VAL-191 (1)): the status is Glimma's documented default (`edgeR::decideTests.DGEExact`, BH) at the given
+#' threshold, not at its fixed 0.05.
 #' @noRd
 trxVolcanoWidget <- function(da_results_list, selected_contrast, selected_assay, da_q_val_thresh = 0.05) {
     entry <- da_results_list$contrasts_results[[selected_assay]]$results[[selected_contrast]]
     if (is.null(entry)) return(NULL)
     name <- trxParseContrastEntry(selected_contrast)$name
     object <- da_results_list$theObject
-    de <- trxAnnotateDe(entry$top_table, object@count_data[[1L]], name, object@gene_id_column, object@annotation_id_column)$de_annotated
+    de <- trxAnnotateDe(entry$top_table, object@count_data[[1L]], name, object@gene_id_column, object@annotation_id_column,
+        fdr_thresh = da_q_val_thresh)$de_annotated
     inputs <- trxGlimmaInputs(de, entry$qlf, name)
-    Glimma::glimmaVolcano(entry$qlf, main = inputs$main, anno = inputs$anno, display.columns = inputs$display_columns)
+    Glimma::glimmaVolcano(entry$qlf, main = inputs$main, anno = inputs$anno, display.columns = inputs$display_columns,
+        status = edgeR::decideTests.DGEExact(entry$qlf, adjust.method = "BH", p.value = da_q_val_thresh))
 }
 
 #' The tab's final PCA (the binding's `final_pca`) on the RUVs display matrix.

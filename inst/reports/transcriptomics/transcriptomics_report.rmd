@@ -149,7 +149,8 @@ top_path <- summary_file("Publication_tables", "top_de_genes.tsv")
 if (file.exists(top_path)) {
   top <- utils::read.delim(top_path, check.names = FALSE)
   keep <- intersect(c("comparison", "regulation", "GeneID", "DisplaySymbol", "logFC", "FDR"), names(top))
-  knitr::kable(top[, keep, drop = FALSE], digits = 4, caption = "Top up- and down-regulated genes per contrast (FDR (BH) < 0.05).")
+  knitr::kable(top[, keep, drop = FALSE], digits = 4, caption = paste0("Top up- and down-regulated genes per contrast (FDR (BH) < ",
+    value(fdr_threshold), ")."))
 }
 ```
 

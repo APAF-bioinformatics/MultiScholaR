@@ -1027,7 +1027,11 @@ FormatDESummaryTable <- function(filepath) {
       dplyr::pull(text) %>%
       paste(collapse = " ")
       
-    return(paste("The number of significant differentially expressed proteins is summarised in Figure 2.", summary_text))
+    # KIT-220 (VAL-191 (7)): the sentence states the threshold its counts were made at; a table written before the
+    # q_threshold column existed was counted at 0.05.
+    q_threshold <- if ("q_threshold" %in% names(data)) paste(unique(data$q_threshold), collapse = ", ") else "0.05"
+    return(paste0("The number of significant differentially expressed proteins is summarised in Figure 2 (q-value < ",
+      q_threshold, "). ", summary_text))
   }, error = function(e) {
     return(paste("Error reading DE summary table:", e$message))
   })

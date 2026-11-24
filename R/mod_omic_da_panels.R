@@ -277,17 +277,24 @@ omicDaFilterRows <- function(results, selectedContrast, selectedAssay, tableFilt
 #' noun and significance label.
 #' @param summary The group's `summary` (`noun`, `significance_label`; KIT-172: with `not_tested`, also the count of
 #'   result rows limma could not test because a compared group has no observed value, whose fold change is missing).
+#' @param runQValThresh KIT-220 E-7: the threshold the analysis ran at (the counts' `significant` column was made at it);
+#'   the label states it, and a box that differs from it is said beside the summary. NULL: the box's value, as before.
 #' @noRd
-omicDaSummaryText <- function(daResults, selectedContrast, selectedAssay, daQValThresh, summary, tableFilter = "all_only") {
+omicDaSummaryText <- function(daResults, selectedContrast, selectedAssay, daQValThresh, summary, tableFilter = "all_only",
+    runQValThresh = NULL) {
     if (is.null(daResults) || nrow(daResults) == 0) return("No results available.")
     results <- omicDaFilterRows(daResults, selectedContrast, selectedAssay, tableFilter)
     total <- nrow(results)
     sig <- sum(results$significant != "NS", na.rm = TRUE)
+    counted_at <- as.numeric(runQValThresh %||% daQValThresh)
     paste(c(sprintf("Total %s: %d", summary$noun, total),
-        sprintf("Significant (%s < %.3f): %d (%.1f%%)", summary$significance_label, daQValThresh, sig, 100 * sig / max(total, 1)),
+        sprintf("Significant (%s < %.3f): %d (%.1f%%)", summary$significance_label, counted_at, sig, 100 * sig / max(total, 1)),
         sprintf("  Up-regulated: %d", sum(results$significant == "Up", na.rm = TRUE)),
         sprintf("  Down-regulated: %d", sum(results$significant == "Down", na.rm = TRUE)),
-        if (isTRUE(summary$not_tested)) sprintf("Not tested (no value in a compared group): %d", sum(is.na(results$logFC)))),
+        if (isTRUE(summary$not_tested)) sprintf("Not tested (no value in a compared group): %d", sum(is.na(results$logFC))),
+        if (!isTRUE(all.equal(counted_at, as.numeric(daQValThresh)))) sprintf(paste("The threshold box (%s < %.3f) differs",
+            "from the threshold the analysis ran at (%s < %.3f); the table filter and the static volcano plot use the box."),
+            summary$significance_label, daQValThresh, summary$significance_label, counted_at)),
         collapse = "\n")
 }
 
