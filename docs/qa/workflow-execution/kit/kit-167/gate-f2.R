@@ -106,13 +106,17 @@ pride_url <- function(accession, name) {
         files <- sub("^href=\"(.*)\"$", "\\1", files)
         cat(sprintf("PRIDE folder %s: %d entries\n", folder, length(files)))
         hit <- files[tolower(basename(files)) == tolower(name)]
+        cat("PRIDE folder FASTA entries:", paste(grep("\\.fasta", basename(files), value = TRUE,
+            ignore.case = TRUE), collapse = " "), "\n")
         if (length(hit)) return(paste0(folder, basename(hit[[1]])))
-        cat("PRIDE folder entries:", paste(utils::head(basename(files), 40), collapse = " "), "\n")
     }
     NA_character_
 }
 strain_name <- "BPA_SEP_KPC2_Contaminants.fasta"
+# Instrument run 3: run 45335506224 found PXD016672's folder (2021/07) without the file; the research note places the
+# search FASTA in the DDA project of the same strains (PXD020839, K. pneumoniae species complex), tried second.
 strain_url <- pride_url("PXD016672", strain_name)
+if (is.na(strain_url)) strain_url <- pride_url("PXD020839", strain_name)
 put("strain_url", strain_url)
 strain_raw <- file.path(scratch, "strain-raw.fasta")
 if (is.na(strain_url) || !fetch(strain_url, strain_raw)) {
