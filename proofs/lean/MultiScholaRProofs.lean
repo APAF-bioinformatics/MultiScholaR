@@ -9,6 +9,9 @@ public import MultiScholaRProofs.Spec.RuvAlgebra
 public import MultiScholaRProofs.Spec.RuvDownstream
 public import MultiScholaRProofs.Spec.RuvIIIC
 public import MultiScholaRProofs.Spec.SharperWitnesses
+public import MultiScholaRProofs.Spec.RemovedFactors
+public import MultiScholaRProofs.Spec.RuvIIICPattern
+public import MultiScholaRProofs.Spec.RuvControlRules
 public import MultiScholaRProofs.Oracle.GoClosure
 public import MultiScholaRProofs.Oracle.FilterCount
 public import MultiScholaRProofs.Oracle.ReplayRule

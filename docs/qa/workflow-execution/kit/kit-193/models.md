@@ -82,14 +82,15 @@ Notes on hypotheses and witnesses (proofs audit P04):
 
 ## 3. Statements not yet frozen (departure from ticket 5.3 item 1, recorded in r1.3)
 
-Each gets its own new Spec file and its own statements review before its proof; the files frozen now keep their
-hashes. None is listed as proved anywhere until then.
+Each has its own new Spec file and its own statements review before its proof; the files frozen at the gate keep
+their hashes. Drafted on 2026-11-24 (each file with its own `SPEC.sha256` line, committed without any proof); none is
+listed as proved anywhere until its review approves it.
 
-| Item | Why not in this pass |
-|---|---|
-| R-I1 (priority 3, last of the ticket) | KIT-184's removed factors (5.4) are not written; the model (`D_c`, the rank rule at `1e-8 · s_1`, the averaging map) is stated from KIT-184's merged code, before its proof starts |
-| R-J3 (priority 3) | not written in this pass; the gate read the branch conditions at c534151f: all missing when `min(residual dimensions, controls complete on the target's runs) < k` (`:168-171`), when fewer than k eigenvalues converge (`:252-263`), and on any exception in the eigen step (`:304` onward); otherwise finite exactly on the target's observed runs (`:186-198`, `:286-301`) |
-| R-N1 (priority 4) | needs R's `rank(…, ties = "first")` and `order()` semantics on the three first-pass functions read and transcribed; not cheap in this pass |
+| Item | Draft (Spec file, statements) | What it transcribes | Pair: kind | Planted defect (proposed) |
+|---|---|---|---|---|
+| R-I1 | `Spec/RemovedFactors.lean`: `I1_UtWc`, `I1_centred_diff`, `I1_span`, `I1_average` (witnesses `I1_witness`, `I1_average_witness`) | KIT-184 r1.3 5.2-5.4's algebra over the RUV-III model: `D` (uncorrected minus corrected, each feature centred over the runs) is `W_c α`; its span lies in `col(W_c)`, equal when `rank α_F = k`; averaging runs (`integrationAverageRuns()`, `R/utils_workflow_integration_model.R:647`) keeps each feature's removed part in `span[1, A W_c]`. The writer's numerical rank rule (`1e-8 · s_1`, status) is not stated: it waits for KIT-184's merged code | package: `integrationInputRemovedFactors()`, `integrationAverageRuns()` (after KIT-184 merges) | proposed: the difference not centred per feature; the span check must fail |
+| R-J3 | `Spec/RuvIIICPattern.lean`: `RuvIIICBr` (residual dimension, eigen-step flag, closed-form values abstract), `J3_pattern`, `J3_counts` (witness `J3_witness`) | RUVIIIC at c534151f: all missing when `min(d_j, #C_j) < k` (`:168-171`), closed form at `d_j = k` (`:173-184`), general branch otherwise, all missing when fewer than `k` eigenvalues converge (`:252-263`) or the eigen step throws (`:304`); values on the observed runs only (`:186-198`, `:286-301`); callers drop all-missing features (`R/func_prot_s4_norm_methods.R:264-265`, `R/func_lipid_s4_ruv_methods.R:713-715`) | library: `RUVIIIC::RUVIII_C_Varying` on the missing-value fixture; package: the clean-up's counts | proposed: a corrected value written at a missing run; the pattern check must fail |
+| R-N1 | `Spec/RuvControlRules.lean`: `sweepControls`, `rankFirst`, `firstPassControls`, `orderPos`, `trxFirstPassControls`; `N1_stable`, `N1_first_pass`, `N1_trx`, `N1_rules_differ` (witness `N1_stable_witness`) | `getNegCtrlProtAnovaHelper` (`R/func_prot_norm_optimization_helpers.R:565-582`), `protRuvFirstPassControls` (`:1380`), `omicsRuvFirstPassControls` (`R/func_omics_ruv_factors.R:54`), `trxRuvDesignControls` (`R/func_trx_ruv.R:296-297`), read on `v0.9-staging` at 19997323; R's `rank(ties = "first", na.last = "keep")`, `order()` and `x[1:n]` as stated assumptions | package: the three functions on an oracle table `first-pass.tsv` | proposed: `ties.method = "last"`; the table must differ |
 
 ## 4. The gate's own reads (ticket 2.3 and 14): done at the gate
 
