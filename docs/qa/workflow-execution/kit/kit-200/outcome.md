@@ -110,3 +110,34 @@ The artifact field, like the return fields, exists only when there are such prot
 - R3 (A5); A1 for T9; A6 and A7 at the end.
 - The tab's displayed text after "Error in DA analysis: " (in-process wrapping only observed at the runner).
 - 2.3 and 2.4's citations re-read at the branch point (A7): pending with the fix commit.
+
+## T9 changed by the owner (VAL-180, option (a))
+
+The owner changed T9's declared expectation (not the implementer): T9 now asserts only that the wrapper's
+differential-abundance step (`runTestsContrasts`, captured inside `daAnalysisWrapperFunction`) completes and reports
+`P_empty` as not tested (`features_without_values`, one untested row per table). Commit 817b026a; run R2-4.
+
+## Unrelated findings
+
+**`daAnalysisWrapperFunction` stops after its DA step on any data (not fixed here; its own ticket, VAL-180).**
+- Read (`R/func_prot_da_model_wrapper.R`): `contrasts_results_table <- contrasts_results$results` (around `:234`) is a
+  named list of tables, one per contrast. At `:272-275` it is wrapped again, `nested_list <- list(contrasts_results_table)`,
+  and passed as `getSignificantData(list_of_da_tables = list(nested_list), ...)`. `getSignificantData`'s inner map
+  (`R/func_prot_da_results_summary.R:250-266`) expects each element of `nested_list` to be a table; it receives the list
+  of tables and stops in `rownames_to_column()`: "is.data.frame(df) is not TRUE" (observed in R2-3, run 45463691826,
+  after `runTestsContrasts` had returned). The same nesting feeds `printCountDaGenesTable` at about `:306-308`.
+- Not run on base data without empty proteins; the reading says it stops on any data. No test runs the wrapper to its end.
+- A failing test for it: `daAnalysisWrapperFunction(obj, contrasts_tbl = data.frame(contrasts = "groupB-groupA",
+  full_format = "B_vs_A=groupB-groupA"), formula_string = "~ 0 + group", treat_lfc_cutoff = 0, args_row_id = <id column>)`
+  on any complete two-group `ProteinQuantitativeData` (with a `protein_id_table`; RLE, PCA and value-count plots may be
+  replaced) completes, and its `significant_rows` holds one row per protein with `log2FC` equal to
+  `contrasts_results$results[[1]]$logFC`. Today it fails at the error above.
+- Second, smaller: when `contrasts_tbl` has no `full_format` column the wrapper builds the contrast strings with `sapply`,
+  which names them by the raw contrast; `makeContrasts` then names the contrast column by that name, and `topTreat`'s
+  `coef` (the full string) is out of bounds (observed in R2-2, run 45400832062).
+
+### For the change report
+
+The exported scripted wrapper `daAnalysisWrapperFunction` cannot complete: it nests its per-contrast result tables one
+level too deep before drawing the significance table (`R/func_prot_da_model_wrapper.R:272-275`). KIT-200 only made its
+DA step complete on data with proteins without values; the wrapper's own defect is left to a separate ticket (VAL-180).
