@@ -277,3 +277,43 @@ referenceAnnotationTable <- function(mapping, record, project_dir = NULL,
         NA_character_
     list(table = table, go_table_sha256 = sha, source = "fetched")
 }
+
+#' Store the transcriptomics gene table on the head (section 7): `matchStrainGenesToProteins()`'s genes as an owned
+#' table (label `reference_mapping_genes`), the annotation file by role
+#' @param manager The session owner.
+#' @param genes `matchStrainGenesToProteins()`'s list.
+#' @param inputs Named character vector, role to file.
+#' @return The saved reference.
+#' @noRd
+storeReferenceGenes <- function(manager, genes, inputs = character()) {
+    withWorkflowStateScope(manager, function() {
+        reference <- saveWorkflowOwnedValue(genes$genes, "reference_mapping_genes", manager)
+        if (length(inputs)) recordWorkflowInputs(manager, inputs)
+        reference
+    })
+}
+
+#' The gene table stored on the head, or NULL
+#' @noRd
+readReferenceGenes <- function(manager) {
+    if (!usesWorkflowReferenceStates(manager)) return(NULL)
+    reference <- manager$.context$snapshot$gui_references$reference_mapping_genes
+    if (is.null(reference)) return(NULL)
+    resolveWorkflowOwnedValue(reference, manager)
+}
+
+#' The transcriptomics integration features with the gene-level mapping columns (8.1): matched on the feature id
+#' (the count table's gene identifier, exactly); without a gene table the features are returned unchanged
+#' @param features The writer's feature table (`feature_id` first).
+#' @param genes NULL or the stored gene table.
+#' @return The features, with `reference_accession_used`, `locus_tag`, `map_status`, `gene_length` when genes exist.
+#' @noRd
+trxReferenceMappingFeatures <- function(features, genes) {
+    if (is.null(genes)) return(features)
+    at <- match(as.character(features$feature_id), genes$gene_id)
+    features$reference_accession_used <- genes$reference_accession_used[at]
+    features$locus_tag <- genes$locus_tag[at]
+    features$map_status <- genes$map_status[at]
+    features$gene_length <- genes$gene_length[at]
+    features
+}

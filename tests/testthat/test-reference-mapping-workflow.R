@@ -95,3 +95,17 @@ test_that("the gate is off by default", {
     withr::local_options(MultiScholaR.reference_mapping = NULL)
     expect_false(referenceMappingEnabled())
 })
+
+test_that("the transcriptomics features are unchanged without a gene table and gain the gene columns with one", {
+    features <- data.frame(feature_id = c("T_0001", "T_0002", "X_9"), display_name = c("thrL", "T_0002", "X_9"),
+        stringsAsFactors = FALSE)
+    expect_identical(trxReferenceMappingFeatures(features, NULL), features)
+    genes <- data.frame(gene_id = c("T_0001", "T_0002"), locus_tag = c("T_0001", "T_0002"),
+        reference_accession_used = c("P1", NA), map_status = c("one_to_one", "no_protein"), gene_length = c(300, 401),
+        stringsAsFactors = FALSE)
+    with <- trxReferenceMappingFeatures(features, genes)
+    expect_identical(with[names(features)], features)
+    expect_identical(with$reference_accession_used, c("P1", NA, NA))
+    expect_identical(with$map_status, c("one_to_one", "no_protein", NA))
+    expect_identical(with$gene_length, c(300, 401, NA))
+})
