@@ -1,0 +1,27 @@
+                                                      check pass
+1                weights: every resample draws n replicates TRUE
+2             (a) planted calibrated arm D reads calibrated TRUE
+3             (a) planted 2-fold arm Dk fails in every cell TRUE
+4                                (a) NF meets in every cell TRUE
+5                      (a) the positive-control gate passes TRUE
+6   (b) Atau_g2 at 0.10 in M2 only reads miscalibrated (M2) TRUE
+7  (c) Aobs_any at 0.075 reads not determined in every cell TRUE
+8                (e) Aobs_g2 at S's power: no material cost TRUE
+9            (e) Aobs_any 0.03 below S's power: costs power TRUE
+10     (e) Dk FDP 0.06 against S's 0.05: false share raised TRUE
+11                     (d) M2 is read on the excess over NF TRUE
+12                      (d) an arm at NF's rate meets in M2 TRUE
+13                      (d) an arm at NF + 0.06 fails in M2 TRUE
+14                  (d) the other cells are read absolutely TRUE
+15                                   (f) stop: outcome Stop TRUE
+16                                       (f) n0: outcome N0 TRUE
+17                             (f) o0o1: outcome O0 then O1 TRUE
+18                             (f) o0o1: recommends Aobs_g2 TRUE
+19                                       (f) o1: outcome O1 TRUE
+20                               (f) o1: recommends Aobs_g2 TRUE
+21                                    (f) o2any: outcome O2 TRUE
+22       (f) o2any: recommends Aobs_any (the owner chooses) TRUE
+23                                     (f) o2dk: outcome O2 TRUE
+24              (f) o2dk: recommends Dk (the owner chooses) TRUE
+25                                       (f) o3: outcome O3 TRUE
+26                                     (f) o3: recommends B TRUE

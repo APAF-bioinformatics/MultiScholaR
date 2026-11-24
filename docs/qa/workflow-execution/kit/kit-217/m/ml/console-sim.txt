@@ -1,0 +1,3 @@
+KIT-217 m-L2_L1_M2_M1_Lv_Le_Me-401-403-l1: 21 replicate units, 4 workers, lifecycle TRUE, fault TRUE
+KIT-217 m-L2_L1_M2_M1_Lv_Le_Me-401-403-l1 gate G-M (E1, E2, E4, E6): pass
+KIT-217 m-L2_L1_M2_M1_Lv_Le_Me-401-403-l1 finished: 21 replicate units, wall 73.5 s

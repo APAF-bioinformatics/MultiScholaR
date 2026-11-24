@@ -1,0 +1,63 @@
+check	cell	pass	n	note
+E6_table24	S	TRUE	8	
+E6_table24	B	TRUE	7	
+E6_table24	D	TRUE	2	
+E6_table24	Dk	TRUE	5	
+E6_table24	Atau_any	TRUE	7	
+E6_table24	Atau_g2	TRUE	3	
+E6_table24	Atau_all	TRUE	3	
+E6_table24	Aobs_any	TRUE	6	
+E6_table24	Aobs_g2	TRUE	4	
+E6_table24	Aobs_all	TRUE	4	
+E6_T3	g2	TRUE	NA	
+E6_T3	g1	TRUE	NA	
+E6_T3	g4	TRUE	NA	
+E6_T4	g2	TRUE	NA	
+E6_k	L2	TRUE	NA	trxFilterMinSampleSize
+E6_k	L1	TRUE	NA	trxFilterMinSampleSize
+E6_k	M2	TRUE	NA	trxFilterMinSampleSize
+E6_k	M1	TRUE	NA	trxFilterMinSampleSize
+E6_k	Lv	TRUE	NA	trxFilterMinSampleSize
+E6_k	Le	TRUE	NA	trxFilterMinSampleSize
+E6_k	Me	TRUE	NA	trxFilterMinSampleSize
+E1	L2	TRUE	21	package S set equals the oracle
+F1	L2	TRUE	21	subset identities (and none: equal to S)
+E2	L2	TRUE	3	mask none: B, D, Dk, Aobs equal S
+E3	L2	TRUE	21	B's tested rows and raw p equal S's (1e-12)
+E6_fc	L2	TRUE	3	in-script fold change equals the DA's logFC (1e-10)
+units	L2	TRUE	231	did not complete: 1 of 231 rows
+E1	L1	TRUE	21	package S set equals the oracle
+F1	L1	TRUE	21	subset identities (and none: equal to S)
+E2	L1	TRUE	3	mask none: B, D, Dk, Aobs equal S
+E3	L1	TRUE	21	B's tested rows and raw p equal S's (1e-12)
+E6_fc	L1	TRUE	3	in-script fold change equals the DA's logFC (1e-10)
+units	L1	TRUE	231	did not complete: 0 of 231 rows
+E1	M2	TRUE	21	package S set equals the oracle
+F1	M2	TRUE	21	subset identities (and none: equal to S)
+E2	M2	TRUE	3	mask none: B, D, Dk, Aobs equal S
+E3	M2	TRUE	21	B's tested rows and raw p equal S's (1e-12)
+E6_fc	M2	TRUE	3	in-script fold change equals the DA's logFC (1e-10)
+units	M2	TRUE	273	did not complete: 0 of 273 rows
+E1	M1	TRUE	21	package S set equals the oracle
+F1	M1	TRUE	21	subset identities (and none: equal to S)
+E2	M1	TRUE	3	mask none: B, D, Dk, Aobs equal S
+E3	M1	TRUE	21	B's tested rows and raw p equal S's (1e-12)
+E6_fc	M1	TRUE	3	in-script fold change equals the DA's logFC (1e-10)
+units	M1	TRUE	273	did not complete: 0 of 273 rows
+E1	Lv	TRUE	6	package S set equals the oracle
+F1	Lv	TRUE	6	subset identities (and none: equal to S)
+E3	Lv	TRUE	6	B's tested rows and raw p equal S's (1e-12)
+E6_fc	Lv	TRUE	3	in-script fold change equals the DA's logFC (1e-10)
+units	Lv	TRUE	66	did not complete: 0 of 66 rows
+E1	Le	TRUE	9	package S set equals the oracle
+F1	Le	TRUE	9	subset identities (and none: equal to S)
+E3	Le	TRUE	9	B's tested rows and raw p equal S's (1e-12)
+E6_fc	Le	TRUE	3	in-script fold change equals the DA's logFC (1e-10)
+units	Le	TRUE	99	did not complete: 0 of 99 rows
+E1	Me	TRUE	9	package S set equals the oracle
+F1	Me	TRUE	9	subset identities (and none: equal to S)
+E3	Me	TRUE	9	B's tested rows and raw p equal S's (1e-12)
+E6_fc	Me	TRUE	3	in-script fold change equals the DA's logFC (1e-10)
+units	Me	TRUE	117	did not complete: 0 of 117 rows
+E4	L2	TRUE	1182	arm rows 1182 of 1182; other rows not completed 0
+E5	all	TRUE	6	planned job minutes, the largest 27.5 (timing rule: a job above 150 is split at the same R)

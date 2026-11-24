@@ -1,0 +1,37 @@
+{
+  "job": "m-L2_L1_M2_M1_Lv_Le_Me-401-403-l1",
+  "cells": ["L2", "L1", "M2", "M1", "Lv", "Le", "Me"],
+  "replicates": [401, 403],
+  "lifecycle": true,
+  "fault": true,
+  "workers": 4,
+  "commit": "9e15166ae4a4cba1cb682370c87b6ad025084ec8",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "seed_rule": "set.seed(185000000 + 10000 * (3200 + i) + r, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection') = 217000000 + 10000 i + r",
+  "cell_index": [3201, 3202, 3203, 3204, 3205, 3206, 3207],
+  "key_packages": {
+    "MultiScholaR": "0.9.0",
+    "limma": "3.68.4",
+    "qvalue": "2.44.0",
+    "edgeR": "4.10.1",
+    "dplyr": "1.2.1",
+    "tidyr": "1.3.2",
+    "tibble": "3.3.1"
+  },
+  "script_sha256": "e80b7d5d597299f43c76be8663a6ee47a4ba675549d5d9e7bc35855aa44db1b3",
+  "started": "2026-11-24T22:01:36+0000",
+  "finished": "2026-11-24T22:02:49+0000",
+  "replicate_units": 21,
+  "rows_not_completed": 1,
+  "tables_sha256": {
+    "checks-m-L2_L1_M2_M1_Lv_Le_Me-401-403-l1.tsv": "91e3332572986e7a45d47f7127d400f050cc1bf6841ea98890fe61890b208b74",
+    "completion-m-L2_L1_M2_M1_Lv_Le_Me-401-403-l1.tsv": "65dd1e3cb5180b3633821345d2c486cb9121f2babd123b4baa67c9649c3e9410",
+    "job-plan-m-L2_L1_M2_M1_Lv_Le_Me-401-403-l1.tsv": "62be853457e57c1a72a27f18fc5154dc8e13dd3d8d9580083cb4d81166ef8042",
+    "timing-m-L2_L1_M2_M1_Lv_Le_Me-401-403-l1.tsv": "83ba11b065dadc897b6cb420c208904260ae7e202e1bc8b7ef314167ad3d1950",
+    "timing-plan-m-L2_L1_M2_M1_Lv_Le_Me-401-403-l1.tsv": "6030f769a75c3a0d568e16c358a8a236de7c3ffa6c0dee52a2fee8ef30fc79d7"
+  }
+}
