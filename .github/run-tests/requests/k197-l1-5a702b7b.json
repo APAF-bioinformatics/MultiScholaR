@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-197 L1: blind lifecycle (E1 to E6, determinism and G1 mechanics) on the scripts as they will be declared; ceiling 40 job-minutes; decides whether the declaration may be committed",
+  "label": "KIT-197 L1 lifecycle at 5a702b7b",
+  "package_commit": "5a702b7b6484e97e03ac515b2dd2c8b0b130c80e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-197/l1-k197.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-197/l1"
+      ],
+      "env": {
+        "K197_BASE": "604ec4dd49f6eba3c842df09fdd0a057a7c83658"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-197/l1",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
