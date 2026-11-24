@@ -1477,6 +1477,65 @@ Coverage at the 8 levels: DI10K (`fixed_onedir`, 40 of 4,840) beside DI10b (`fix
 
 **Spend:** 21.1 job-minutes, 1.40 core-hours. Line DI10K: 0.77 + 0.84 + 1.40 = **3.01 of 6**.
 
+## P1K: the confirmatory rank cell in the form of KIT-162's primary endpoint (VAL-176; branch `kit-159-p1cell`)
+
+**Generator change: needed, and made.** The owner's cell (one contrast, 40 positives of 4,840,
+effect off the pAUC ceiling, fixed one-directional draw, C4e g = 5) could not be expressed by
+parameters. The rank family pools every contrast in both the statistic and its calibration
+(`valCovStats` and `valRankEffect` at 9f3b7c49). C4e-170 runs at scale 1, where a one-contrast
+pAUC is at its ceiling (re-audit 4 (2)). Coordinator's ruling of 2026-11-25; budget line P1K,
+6 core-hours (ticket r1.26).
+
+**The change** (`harness/msrval/R/coverage.R`, 9f3b7c49 to 3939ffe2):
+- l.16-19: doc lines.
+- l.67-70: `valCoverageCells(confirmatory = TRUE)` appends C4e-171 (regime C4e, family
+  `c4e:4840p1`, n 5, condition `matrix4840p1_block`) after C4e-170. Its own index gives seeds
+  1,017,100,000 + s and 1,517,100,000 + t, and baseline seed 2,100,000,171.
+- l.222-224: `valCovSpec`'s C4e branch reads `4840p1` as 4,840 features, `rank = TRUE`,
+  `contrast = 2L`. The other families evaluate as before.
+- l.335-350: `valSpecMatrix(..., contrast = NULL)` passes `contrast` to `valRankEffect` and
+  `valCovStats`.
+- l.616-641: `valRankEffect(form, g, nsim = 50L, contrast = NULL)` applies the existing rule (the
+  grid value with mean plain-arm pAUC in [0.4, 0.8] nearest 0.6) to one contrast column on the same
+  calibration data sets. The cache key is unchanged when `contrast` is NULL.
+- l.749-753: `valCovStats(..., contrast = NULL)` restricts truth, estimates and p to the column.
+
+**Observed.**
+- **P1K-t** (run 45465782349 at f8cd5df8, tests only): four tests failed because the cell did not
+  exist (`nrow(conf)` 170 against 171; `valRankEffect` has no `contrast` argument; no such
+  family). Two tests passed on the old code: the 170 earlier cells, their seeds and the pinned
+  table's SHA-256; and the dispatch of C4e-148 (`pauc_diff`, 160 positives), C4e-147 and C4e-170
+  with `valRankEffect` mocked. The pooled calibration was reproduced at 0.35.
+- **P1K-f** (run 45468618081 at 3939ffe2): `test-p1k.R` 6 of 6; `coverage`, `coverage-rank`,
+  `coverage-table`, `repair2` and `repair4` pass; no lints. **One existing test failed:**
+  `test-di10k.R`'s catalogue test assumed DI10K's cell was the last confirmatory row and counted
+  one (171 against 170). C4e-170's own row and behaviour were unchanged.
+- **P1K-c** (run 45471561697 at 70648f6d, the item's one correction pass, test file only): that
+  test now counts two confirmatory cells and reads C4e-170 at row `nrow(cells) + 1`, with its
+  asserted content unchanged. `di10k` 5 of 5, `p1k` 6 of 6, no lints.
+- **The effect rule's value, before any coverage run** (`t2/p1k-calibration.txt`): one-contrast
+  effect **0.40**, mean plain-arm pAUC **0.5932**; pooled 0.35, 0.6017 (the pinned rows' effect).
+  Predicted before the run from normal theory: 0.40 (0.621).
+
+**Draft declaration:** `t2/p1k-declaration-draft.md`. It contains:
+- the cell beside C4e-148 and KIT-162's P1;
+- the effect rule and its value;
+- configuration checks K1 (effect 0.40) and K2 (`pauc_diff` target in [0.025, 0.075]: a
+  model-based 0.044, scaled by the model's error on C4e-148, about 0.050);
+- the pass rule and readings;
+- exact intervals, tail probabilities and the statistic's discreteness;
+- the cost estimate.
+
+Not frozen; for the harness auditor.
+
+**Not checked.** No coverage simulation of C4e-171. The K2 model is approximate (Hill's t-to-z,
+moderated t taken as known variance). The plan `t2/p1k-plan.tsv` is not written yet; it is
+committed with the final declaration.
+
+**Spend on P1K:** 0.94 + 0.97 + 0.93 = **2.84 of 6** core-hours; 3.16 left. The draft's proposed
+ceiling (4.13) does not fit, and a fitting one (3.13) has a 35-minute script limit against an
+upper per-chunk estimate of 45 minutes. That is the coordinator's choice.
+
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-25 from 12282273 (a records-only commit on the merge a4e002a6 of the ticket branch with staging a1b397b1, which holds KIT-182, KIT-203, KIT-207 and KIT-196), after the re-audits 2 and 3 and the closure check (register `AUDIT-KIT-159-impl-recheck-20261124`). The ledger row is VAL-165. The whole harness suite passed on a4e002a6 (run 45386625659: 45 files, 274 tests, 2,342 expectations, 0 failed, 0 skipped, no lints), and one `snapshot`-stage dispatch of `distributable.yml` passed on the same commit (run 45386409115). **Merged is not accepted:** acceptance criterion A1 is OPEN. Not done: the lifecycle runs L1a, L1b, L2 and L3; gate G13 in P1; G5 (replay) on every route (only `metab_combined` has been replayed); the confirmatory cell in KIT-162's composition (VAL-163 (3)); the suite and G1(a) repeated after the last product merge (KIT-190, 200, 201, 202, 204, 205, 206, 208 and the tickets after them are pending). By the plan's rule, no validation ticket (KIT-160 to KIT-170) sends a lifecycle or counted request until A1 is recorded as met at a commit that contains every product merge that ticket's runs will use. Ticket total at merge: about 116.2 of 276 core-hours (110.78 before the merge run, plus 5.44).

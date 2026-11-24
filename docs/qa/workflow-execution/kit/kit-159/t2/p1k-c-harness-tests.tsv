@@ -1,0 +1,12 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-di10k.R	DI10K: T-COV's catalogue, its seeds and the pinned coverage table are unchanged	5	5	0	0	0	0	0.167
+test-di10k.R	DI10K: the confirmatory cell has its own index; T-COV's catalogue does not hold it	8	8	0	0	0	0	0.107
+test-di10k.R	DI10K: 4,840 features, exactly 40 changed, all up at scale 1, C4e's g = 5 layout	9	9	0	0	0	0	0.733
+test-di10k.R	DI10K: the cell computes C4e's mae, bias and rej on the simulated matrix	8	8	0	0	0	0	0.728
+test-di10k.R	DI10K: a plan naming the cell runs it with the plan's generator, in tasks and runs	5	5	0	0	0	0	2.93
+test-p1k.R	P1K: the 170 earlier cells, their seeds and the pinned coverage table are unchanged	5	5	0	0	0	0	0.121
+test-p1k.R	P1K: the P1 cell has its own index after DI10K's; T-COV's catalogue does not hold it	7	7	0	0	0	0	0.098
+test-p1k.R	P1K: the effect is the rank cells' rule on the one contrast; the pooled rule unchanged	4	4	0	0	0	0	139.876
+test-p1k.R	P1K: 40 positives of 4,840 on one contrast at the one-contrast scale; pauc_diff on it	10	10	0	0	0	0	0.851
+test-p1k.R	P1K: the existing rank and C4e cells dispatch as before	8	8	0	0	0	0	1.46
+test-p1k.R	P1K: a plan naming the cell runs it with the plan's generator in the chunk tasks	6	6	0	0	0	0	2.539
