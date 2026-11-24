@@ -36,7 +36,7 @@ leanchecker-filtercount-stack	2026-11-24T11:45:16+11:00	1.621	2.798	4.448	0	task
 leanchecker-Spec.ReplayRule	2026-11-24T11:45:27+11:00	1.657	2.760	4.448	0	taskset -c 0-3 lake env leanchecker MultiScholaRProofs.Spec.ReplayRule
 leanchecker-Spec.GoClosure	2026-11-24T11:45:32+11:00	1.601	2.768	4.379	0	taskset -c 0-3 lake env leanchecker MultiScholaRProofs.Spec.GoClosure
 leanchecker-Spec.QvalueBh	2026-11-24T11:45:36+11:00	1.606	2.858	4.476	0	taskset -c 0-3 lake env leanchecker MultiScholaRProofs.Spec.QvalueBh
-leanchecker-Spec.Permutation	2026-11-24T11:45:41+11:00	0.:00	1.432	2.455	0	taskset -c 0-3 lake env leanchecker MultiScholaRProofs.Spec.Permutation
+leanchecker-Spec.Permutation	2026-11-24T11:45:41+11:00	NA (user time not recorded: the logged value was malformed and the session output is gone)	1.432	2.455	0	taskset -c 0-3 lake env leanchecker MultiScholaRProofs.Spec.Permutation
 leanchecker-Spec.RuvAlgebra	2026-11-24T11:45:43+11:00	0.904	1.332	2.249	0	taskset -c 0-3 lake env leanchecker MultiScholaRProofs.Spec.RuvAlgebra
 leanchecker-Spec.RuvDownstream	2026-11-24T11:45:45+11:00	0.901	1.328	2.246	0	taskset -c 0-3 lake env leanchecker MultiScholaRProofs.Spec.RuvDownstream
 leanchecker-Spec.RuvIIIC	2026-11-24T11:45:48+11:00	0.912	1.296	2.224	0	taskset -c 0-3 lake env leanchecker MultiScholaRProofs.Spec.RuvIIIC
@@ -119,3 +119,5 @@ rP1-down-2	2026-11-24T13:02:04+11:00	8.953	0.891	6.165	1	taskset -c 0-3 timeout 
 rP1-down-3	2026-11-24T13:02:32+11:00	6.656	0.849	4.384	0	taskset -c 0-3 timeout 900 lake env lean MultiScholaRProofs/Proof/RuvDownstream.lean
 rP1-build-root	2026-11-24T13:02:45+11:00	9.665	1.417	7.205	0	taskset -c 0-3 timeout 900 lake build --wfail
 rP1-audit	2026-11-24T13:03:00+11:00	2.678	1.105	3.582	0	taskset -c 0-3 timeout 900 lake env lean Audit.lean
+p08-build-root	2026-11-24T13:16:16+11:00	13.332	0.998	7.704	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake build --wfail
+p08-audit	2026-11-24T13:16:29+11:00	1.422	0.572	1.861	0	LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900 /home/doktersmol/.elan/bin/lake env lean Audit.lean

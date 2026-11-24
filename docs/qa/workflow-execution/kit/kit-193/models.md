@@ -73,6 +73,13 @@ the ticket are marked (ticket); the others are proposals for the gate.
 | R-L1, R-L2 | `L1`, `L1_invariance` (witness), `L2` (witness) | same | library: `RUVIIIC::RUVIII_C_Varying`; package: the shipped corrected values | proposed: `e_j` compared with the change of a contrast whose weights do not sum to 0 |
 | R-M1 | `M1` (witness) | same | library: `edgeR::glmQLFit` | proposed: `W Q` replaced by a non-invertible `Q` (rank 1); equal fitted values must fail |
 
+Notes on hypotheses and witnesses (proofs audit P04):
+- R-C1: the conclusion also holds without `Hac` (with Lean's junk inverse both `W` and `W_c` are 0); `Hac` is the
+  code's refusal (`solve()` fails on a singular matrix), kept by ticket 5.1.
+- R-G2: `IsUnit (Xᵀ * X).det` is implied by the full-rank `[X, C]` and is not used; `G2_sign` is the instance with a
+  non-zero γ (γ = 1; ratios 4/3 and 2/3).
+
+
 ## 3. Statements not yet frozen (departure from ticket 5.3 item 1, recorded in r1.3)
 
 Each gets its own new Spec file and its own statements review before its proof; the files frozen now keep their

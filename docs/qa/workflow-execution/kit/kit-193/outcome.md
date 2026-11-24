@@ -58,7 +58,7 @@ at a = 1 (`kept_family_unit_a_counterexample_stmt`; the formula is now stated fo
 **Statement not yet frozen:** R-I1, R-J3, R-N1. Each gets its own Spec file and statements review before its proof.
 
 `models.md` holds the model-to-code table and each pair's kind and planted defect. `tests/testdata/kit193/bindings.tsv` lists the bound objects; every digest is `pending` until
-its pair first runs on merged code (8.2). `SPEC.sha256` is not written: it follows the gate.
+its pair first runs on merged code (8.2).
 
 ## Freeze
 
@@ -161,7 +161,7 @@ per project module because the bundled `leanchecker` of v4.36.0 crashes (exit 13
 
 ## Target 4: `bh_sorted_eq_stmt` is false as frozen (a result; ticket 5.4)
 
-Observed (Lean-checked, `Proof/QvalueBh.lean`, `bh_sorted_eq_counterexample : ¬ bh_sorted_eq_stmt`, on `propext`,
+Observed (Lean-checked, `Proof/QvalueBh.lean`, `bh_sorted_eq_counterexample : ¬ bh_sorted_eq_stmt` (superseded by `bh_sorted_neg_ties_counterexample`, below), on `propext`,
 `Classical.choice`, `Quot.sound`): the statement equates R's transcription `bhSorted` with the closed form `bh` for
 every `p` over any linearly ordered field, with no hypothesis on the sign of `p`. With negative tied values the later
 member of a tie group gets a smaller cumulative minimum (`m/(m - r)` times a negative value grows more negative with
@@ -176,7 +176,7 @@ coordinator's rule ("stop and report at any statement problem"). Laptop time for
 
 ## Target 4 (q-value and BH): 4a to 4c, 4d-i and the corrected bh_sorted_eq proved; freeze amended
 
-- **Freeze amended (5474e512, alone):** statements gate re-review 1 confirmed the counterexample, added `∀ j, 0 ≤ p j`
+- **Freeze amended (5474e512, with the counter-instance's proof):** statements gate re-review 1 confirmed the counterexample, added `∀ j, 0 ≤ p j`
   to `bh_sorted_eq_stmt`, and froze `bh_sorted_neg_ties_counterexample_stmt` and `bh_sorted_eq_witness_stmt`; one line of
   `SPEC.sha256` replaced. Counts: 83 statements, 39 witnesses. The counterexample statement is proved
   (`bh_sorted_neg_ties_counterexample`). The proof of the corrected `bh_sorted_eq_stmt` waits for the auditor's
@@ -264,12 +264,30 @@ has no bearing on what is proved.
 - Laptop: 11 Lean calls, 67.4 CPU-seconds (57.1 user + 10.3 system), 47.2 s wall (labels `rP1-*`). Agent time 0.13 h
   (12:56 to 13:04) for the eight items together, against 38 expected and 62 ceiling (priority 1); not timed per item.
 
+## Proofs audit (first part) and its minors
+
+`tickets/kit/audits/AUDIT-KIT-193-proofs-20261124.md`: no blocker, no major, eight minors. Applied in one records
+commit: P01 (`cpu-time.tsv` row 39's malformed user time marked not recorded; the laptop total below; from row 121 on
+the command column shows the command as run: `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
+/home/doktersmol/.elan/bin/lake …`), P02 (four stale lines), P04 (`models.md`, notes under the item table), P07 (ticket
+r1.4, in the main checkout: interpreter-written oracle tables, `leanchecker` once per module, `nanoda` not run), P08
+(the Proof modules' three global instances, `uniformDraws_finite` and the two `Decidable` instances of the grid
+section, are now `local instance`; the root rebuilt with `--wfail` and `Audit.lean` re-run, 88 theorems unchanged on
+the standard axioms). P03: the coordinator adopted the auditor's two sharper witness statements (a new Spec file, below).
+P05 and P06 concern the paired tests.
+
+**Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
+system, row 39's user time not recorded) at the P01 commit; updated at each later commit below.
+
 ## Resume here
 
-Stopped for the proofs audit (coordinator's order, 2026-11-24): target 5, the corrected `bh_sorted_eq_stmt` and group
-R priority 1 are complete. Not started, by that order: group R priority 2 (R-F2 first), 4d-ii, `kept_family_witness`,
-priorities 3 and 4, and the three statements not yet frozen (R-I1, R-J3, R-N1). Lean calls go through `taskset -c 0-3` with `LEAN_NUM_THREADS=4`, one at a time, each logged in
-`cpu-time.tsv`.
+Coordinator's order after the proofs audit (2026-11-24): P03's two witness statements (new Spec file, committed
+alone, then proved); group R priority 2 (R-F2 first, then R-B1, R-B2, R-D1, R-D2, R-E1, R-E2, R-G1, R-J1, R-J2,
+R-K1, R-L1); priority 3 (R-F3, R-L2); priority 4 (R-M1); 4d-ii and `kept_family_witness`
+(`kept_family_unit_a_counterexample` can come first, from 4d-i's lemmas). R-I1, R-J3, R-N1: draft the statements per
+the ticket, commit the drafts alone, and stop them for the statements gate. Target 1's paired test runs on a runner
+through run-tests (KIT-187 is merged), with the gaps of AUDIT-KIT-187-impl I10 and the proofs audit's P05. Target 2's
+pair waits for KIT-190. Lean calls: `taskset -c 0-3`, `LEAN_NUM_THREADS=4`, one at a time, each logged.
 
 ## Not checked
 

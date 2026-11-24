@@ -579,10 +579,10 @@ theorem fdr2_split (N : ℕ) (strict : Bool) (q : ℚ) (keptOnly : Bool) :
   simp only [Fin.sum_univ_succ, gridWt_zero, gridWt_succ]
   rfl
 
-instance (strict : Bool) (q v : ℚ) : Decidable (callCond strict q v) :=
+local instance (strict : Bool) (q v : ℚ) : Decidable (callCond strict q v) :=
   inferInstanceAs (Decidable (if strict then v < q else v ≤ q))
 
-instance (strict : Bool) (q x y : ℚ) : Decidable (twoCond strict q x y) :=
+local instance (strict : Bool) (q x y : ℚ) : Decidable (twoCond strict q x y) :=
   inferInstanceAs (Decidable (callCond strict q (2 * x) ∨ callCond strict q (2 * y) ∨
     (callCond strict q x ∧ callCond strict q y)))
 

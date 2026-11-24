@@ -332,7 +332,7 @@ theorem measurableSet_permEvent {n B : ℕ} (T : (Fin n → ℝ) → ℝ) (hT : 
     MeasurableSet (permEvent n B T ε α) :=
   measurableSet_le (measurable_from_prod_countable_left fun π => measurable_pval_left T hT ε π) measurable_const
 
-instance uniformDraws_finite (n B : ℕ) : IsFiniteMeasure (uniformDraws n B) :=
+local instance uniformDraws_finite (n B : ℕ) : IsFiniteMeasure (uniformDraws n B) :=
   ⟨by
     rw [uniformDraws, Measure.uniformOfFinset_apply]
     exact ENNReal.div_lt_top (by simp) (by simp)⟩
