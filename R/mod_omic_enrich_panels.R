@@ -108,10 +108,49 @@ formatProtEnrichContrastsText <- function(contrastsAvailable) {
   "No contrasts available.\nComplete differential expression\nanalysis first."
 }
 
+#' The reason a list was not tested (KIT-215, VAL-170): each route has one.
+#' @param route `"gprofiler2"` or `"clusterprofiler"`.
+#' @param proteins The list's size.
+#' @noRd
+enrichmentNotTestedReason <- function(route, proteins) {
+  ifelse(route == "clusterprofiler",
+    sprintf("none of its %d proteins has a Gene Ontology annotation that this analysis tests", proteins),
+    sprintf("none of its %d proteins has a gene name, and g:Profiler tests gene names", proteins))
+}
+
+#' The summary's lines for the selected comparison's directions that were not tested or had no list (KIT-215): one
+#' line per such direction, in the form of the summary's direction lines; none when there are none.
+#' @param notTested,noList The tab's `enrichment_not_tested`, `enrichment_no_list` (NULL when absent).
+#' @param selectedContrast The selected comparison (display name).
+#' @param label `"Up-regulated"` and `"Down-regulated"`, or the g:Profiler summary's `"... pathways"` labels.
+#' @return Named character vector (`up`, `down`), only the directions concerned.
+#' @noRd
+protEnrichDirectionNotes <- function(notTested, noList, selectedContrast, label) {
+  notes <- character()
+  for (direction in c("up", "down")) {
+    hit <- if (NROW(notTested)) notTested[notTested$comparison %in% selectedContrast &
+      notTested$direction == direction, , drop = FALSE]
+    empty <- NROW(noList) && any(noList$comparison %in% selectedContrast & noList$direction == direction)
+    if (NROW(hit)) {
+      notes[[direction]] <- sprintf("%s: not tested (%s)", label[[direction]],
+        enrichmentNotTestedReason(hit$route[[1L]], hit$proteins[[1L]]))
+    } else if (isTRUE(empty)) {
+      notes[[direction]] <- sprintf("%s: no list (no protein passed the cutoffs)", label[[direction]])
+    }
+  }
+  notes
+}
+
 formatProtEnrichGprofilerSummaryText <- function(gprofilerResults,
-                                                 directionFilter = "all") {
+                                                 directionFilter = "all",
+                                                 notTested = NULL,
+                                                 noList = NULL,
+                                                 selectedContrast = NULL) {
+  # KIT-215: the selected comparison's directions not tested or with no list replace their counts.
+  notes <- protEnrichDirectionNotes(notTested, noList, selectedContrast,
+    c(up = "Up-regulated pathways", down = "Down-regulated pathways"))
   if (is.null(gprofilerResults) || nrow(gprofilerResults) == 0) {
-    return("No gprofiler2 results available.")
+    return(paste(c("No gprofiler2 results available.", notes), collapse = "\n"))
   }
 
   tryCatch({
@@ -133,8 +172,8 @@ formatProtEnrichGprofilerSummaryText <- function(gprofilerResults,
 
       messageText <- paste(
         sprintf("Total enrichment terms: %d", totalTerms),
-        sprintf("Up-regulated pathways: %d", positiveTerms),
-        sprintf("Down-regulated pathways: %d", negativeTerms),
+        if (is.na(notes["up"])) sprintf("Up-regulated pathways: %d", positiveTerms) else notes[["up"]],
+        if (is.na(notes["down"])) sprintf("Down-regulated pathways: %d", negativeTerms) else notes[["down"]],
         sep = "\n"
       )
     }
@@ -151,9 +190,15 @@ formatProtEnrichGprofilerSummaryText <- function(gprofilerResults,
 }
 
 formatProtEnrichClusterProfilerSummaryText <- function(clusterprofilerResults,
-                                                       directionFilter = "all") {
+                                                       directionFilter = "all",
+                                                       notTested = NULL,
+                                                       noList = NULL,
+                                                       selectedContrast = NULL) {
+  # KIT-215: the selected comparison's directions not tested or with no list replace their counts.
+  notes <- protEnrichDirectionNotes(notTested, noList, selectedContrast,
+    c(up = "Up-regulated", down = "Down-regulated"))
   if (is.null(clusterprofilerResults) || nrow(clusterprofilerResults) == 0) {
-    return("No clusterProfileR results available.")
+    return(paste(c("No clusterProfileR results available.", notes), collapse = "\n"))
   }
 
   tryCatch({
@@ -175,8 +220,8 @@ formatProtEnrichClusterProfilerSummaryText <- function(clusterprofilerResults,
 
       messageText <- paste(
         sprintf("Total GO terms: %d", totalTerms),
-        sprintf("Up-regulated: %d", upTerms),
-        sprintf("Down-regulated: %d", downTerms),
+        if (is.na(notes["up"])) sprintf("Up-regulated: %d", upTerms) else notes[["up"]],
+        if (is.na(notes["down"])) sprintf("Down-regulated: %d", downTerms) else notes[["down"]],
         sep = "\n"
       )
     }
@@ -291,7 +336,8 @@ renderProtEnrichGprofilerPlot <- function(analysisComplete,
                                           directionFilter = "all",
                                           renderPlotlyFn = plotly::renderPlotly,
                                           plotLyFn = plotly::plot_ly,
-                                          addTextFn = plotly::add_text) {
+                                          addTextFn = plotly::add_text,
+                                          notTested = NULL) {
   renderPlotlyFn({
     # KIT-064 (roar BUG-08): the arguments may be zero-argument accessors of reactive values; they are read here,
     # inside the render expression, so every render re-evaluates them (a value read in the enclosing frame would be
@@ -330,6 +376,17 @@ renderProtEnrichGprofilerPlot <- function(analysisComplete,
         }
       }
 
+      # KIT-215 (VAL-170): a direction that was not tested says so, with its reason.
+      notTestedNow <- protEnrichRenderValue(notTested)
+      if (NROW(notTestedNow) && isTRUE(directionFilterNow %in% c("up", "down"))) {
+        hit <- notTestedNow[notTestedNow$contrast %in% rawContrastNow & notTestedNow$direction == directionFilterNow, ,
+          drop = FALSE]
+        if (NROW(hit)) {
+          return(buildPlaceholderPlot(paste0("Not tested: ", enrichmentNotTestedReason(hit$route[[1L]],
+            hit$proteins[[1L]]), ". An empty result here does not mean that no term is enriched.")))
+        }
+      }
+
       if (identical(directionFilterNow, "up")) {
         return(buildPlaceholderPlot("No up-regulated enrichment data"))
       }
@@ -351,7 +408,8 @@ renderProtEnrichClusterProfilerPlot <- function(analysisComplete,
                                                 directionFilter = "all",
                                                 renderPlotlyFn = plotly::renderPlotly,
                                                 plotLyFn = plotly::plot_ly,
-                                                addTextFn = plotly::add_text) {
+                                                addTextFn = plotly::add_text,
+                                                notTested = NULL) {
   renderPlotlyFn({
     # KIT-064 (roar BUG-08): the arguments may be zero-argument accessors of reactive values; they are read here,
     # inside the render expression, so every render re-evaluates them (a value read in the enclosing frame would be
@@ -387,6 +445,17 @@ renderProtEnrichClusterProfilerPlot <- function(analysisComplete,
         plot <- resolveEnrichmentPlotly(enrichmentResultsFullNow, rawContrastNow, direction)
         if (!is.null(plot)) {
           return(plot)
+        }
+      }
+
+      # KIT-215 (VAL-170): a direction that was not tested says so, with its reason.
+      notTestedNow <- protEnrichRenderValue(notTested)
+      if (NROW(notTestedNow) && isTRUE(directionFilterNow %in% c("up", "down"))) {
+        hit <- notTestedNow[notTestedNow$contrast %in% rawContrastNow & notTestedNow$direction == directionFilterNow, ,
+          drop = FALSE]
+        if (NROW(hit)) {
+          return(buildPlaceholderPlot(paste0("Not tested: ", enrichmentNotTestedReason(hit$route[[1L]],
+            hit$proteins[[1L]]), ". An empty result here does not mean that no term is enriched.")))
         }
       }
 
@@ -541,6 +610,24 @@ buildProtEnrichResultsDownloadFilename <- function(selectedContrast,
   paste0(prefix, "_", contrastSafe, "_", date, ".zip")
 }
 
+#' The download summary's lines for the selected comparison's directions not tested or with no list (KIT-215): the
+#' no-list lines, then a section "## Not tested:"; NULL when there are none (the summary is then as before).
+#' @noRd
+protEnrichDownloadNotes <- function(notTested, noList, selectedContrast) {
+  shown <- c(up = "up-regulated", down = "down-regulated")
+  empty <- if (NROW(noList)) noList[noList$comparison %in% selectedContrast, , drop = FALSE]
+  hit <- if (NROW(notTested)) notTested[notTested$comparison %in% selectedContrast, , drop = FALSE]
+  lines <- character()
+  if (NROW(empty)) {
+    lines <- sprintf("%s, %s: no list (no protein passed the cutoffs)", empty$comparison, shown[empty$direction])
+  }
+  if (NROW(hit)) {
+    lines <- c(lines, "", "## Not tested:", sprintf("%s, %s: %s", hit$comparison, shown[hit$direction],
+      enrichmentNotTestedReason(hit$route, hit$proteins)))
+  }
+  if (length(lines)) paste(lines, collapse = "\n")
+}
+
 writeProtEnrichResultsDownloadArchive <- function(file,
                                                   selectedContrast,
                                                   methodInfo,
@@ -556,7 +643,9 @@ writeProtEnrichResultsDownloadArchive <- function(file,
                                                   writeLinesFn = writeLines,
                                                   zipFn = utils::zip,
                                                   sysTimeFn = Sys.time,
-                                                  significanceRule = NULL) {
+                                                  significanceRule = NULL,
+                                                  notTested = NULL,
+                                                  noList = NULL) {
   tryCatch({
     filesToZip <- character()
 
@@ -579,6 +668,10 @@ writeProtEnrichResultsDownloadArchive <- function(file,
     }
 
     summaryFile <- file.path(tempDir, "enrichment_analysis_summary.txt")
+    stringdbLine <- paste("STRING-DB networks:", if (!is.null(stringdbResults)) nrow(stringdbResults) else 0)
+    # KIT-215: the selected comparison's directions with no list, then the lists not tested, after the term counts.
+    downloadNotes <- protEnrichDownloadNotes(notTested, noList, selectedContrast)
+    if (!is.null(downloadNotes)) stringdbLine <- paste(stringdbLine, downloadNotes, sep = "\n")
     summaryContent <- paste(
       "# MultiScholaR Enrichment Analysis Results",
       paste("Date:", sysTimeFn()),
@@ -598,7 +691,7 @@ writeProtEnrichResultsDownloadArchive <- function(file,
       "## Results Summary:",
       paste("gprofiler2 terms:", if (!is.null(gprofilerResults)) nrow(gprofilerResults) else 0),
       paste("clusterProfileR terms:", if (!is.null(clusterprofilerResults)) nrow(clusterprofilerResults) else 0),
-      paste("STRING-DB networks:", if (!is.null(stringdbResults)) nrow(stringdbResults) else 0),
+      stringdbLine,
       "",
       "## Files Included:",
       if (length(filesToZip) > 0) paste("*", basename(filesToZip), collapse = "\n") else "* No result files (analysis may have failed)",
@@ -694,6 +787,7 @@ restoreProtEnrichResultsFromState <- function(enrichmentData, workflowData,
   if (is.null(restored)) return(FALSE)
   enrichmentData$all_enrichment_results <- restored$all_enrichment_results
   enrichmentData$enrichment_results_full <- restored$enrichment_results_full
+  holdOmicEnrichOptionalFields(enrichmentData, restored) # KIT-215
   enrichmentData$analysis_complete <- TRUE
   TRUE
 }

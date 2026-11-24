@@ -1166,7 +1166,10 @@ workflowRecordReportSources <- list(
     enrichment_significance_rule = list(record = list(c("enrichment", "significance_rule"),
         c("outcomes", "enrichment", "significance_rule"))),
     # KIT-205: the enrichment background rule, a fixed constant of the step; a record without it was made with every row.
-    enrichment_background = list(record = c("enrichment", "enrichment_background")))
+    enrichment_background = list(record = c("enrichment", "enrichment_background")),
+    # KIT-215 (VAL-170): the lists not tested, on both routes ("<comparison>: <direction>", joined by "; "); a record
+    # without it ("not recorded") was made with every list tested or before KIT-215.
+    enrichment_lists_not_tested = list(record = c("outcomes", "enrichment", "enrichment_lists_not_tested")))
 
 #' Overlay a report's parameters with the analysis record (KIT-033). Without a record the parameters are
 #' returned unchanged. With one, every report variable the record carries takes the record's value, and the
