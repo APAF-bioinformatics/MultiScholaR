@@ -1,0 +1,121 @@
+name: KIT-193 Lean record
+
+# KIT-193 (machine-checked proofs, ticket section 4.4). Re-checks proofs/lean from a clean checkout: the build with
+# warnings as errors (a `sorry` fails it), the axiom audit (only propext, Classical.choice, Quot.sound), the kernel
+# replay of the project's modules (leanchecker) and a second checker (nanoda, D7), the frozen Spec files' SHA-256
+# (SPEC.sha256), the Spec import closure, the printed axioms of Audit.lean, the oracle tables regenerated and compared
+# byte for byte, and a search for forbidden words. Branches kit-193-lean-proofs and kit-193-lean-lifecycle only (the
+# file reaches v0.9-staging at the merge, D6). Budget: ticket section 11.2 (L0 three runs, L1 one, one correction).
+
+on:
+  push:
+    branches:
+      - kit-193-lean-proofs
+      - kit-193-lean-lifecycle
+    paths:
+      - "proofs/lean/**"
+      - "tests/testdata/kit193/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    name: lean record
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      LEAN_NUM_THREADS: "1"
+    defaults:
+      run:
+        shell: bash
+        working-directory: proofs/lean
+    steps:
+      - name: checkout (clean)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: lean-action (build --wfail, axiom audit, leanchecker, nanoda)
+        uses: leanprover/lean-action@ba3fdfe5c4476c925da13bf11a005ddb47e47aee # v1.7.1
+        with:
+          lake-package-directory: proofs/lean
+          auto-config: "false"
+          use-mathlib-cache: "true"
+          use-github-cache: "false"
+          build: "true"
+          build-args: "--wfail"
+          test: "false"
+          lint: "false"
+          axiom-audit: "true"
+          axiom-audit-allow: "propext,Classical.choice,Quot.sound"
+          axiom-audit-root: "MultiScholaRProofs"
+          leanchecker: "true"
+          leanchecker-args: "MultiScholaRProofs"
+          nanoda: "true"
+          nanoda-allow-sorry: "false"
+
+      - name: spec (frozen hashes, import closure)
+        if: ${{ !cancelled() }}
+        run: |
+          set +e
+          rec="$RUNNER_TEMP/record"; mkdir -p "$rec"
+          echo "## sha256sum -c SPEC.sha256" > "$rec/spec-check.txt"
+          sha256sum -c SPEC.sha256 >> "$rec/spec-check.txt" 2>&1
+          hashes=$?
+          echo "## Spec files importing Proof or Oracle modules (must be none)" >> "$rec/spec-check.txt"
+          grep -nE '^[[:space:]]*(public[[:space:]]+)?import[[:space:]]+MultiScholaRProofs\.(Proof|Oracle)' \
+            MultiScholaRProofs/Spec/*.lean >> "$rec/spec-check.txt" 2>&1
+          imports=$?
+          cat "$rec/spec-check.txt"
+          if [ "$hashes" -ne 0 ]; then echo "::error::a Spec file differs from SPEC.sha256"; exit 1; fi
+          if [ "$imports" -eq 0 ]; then echo "::error::a Spec file imports a Proof or Oracle module"; exit 1; fi
+          echo "spec check passed"
+
+      - name: axioms (Audit.lean)
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/record"
+          lake env lean Audit.lean 2>&1 | tee "$RUNNER_TEMP/record/axioms.txt"
+          # every printed axiom list, whatever its line breaks, must name only the three standard axioms
+          tr '\n' ' ' < "$RUNNER_TEMP/record/axioms.txt" | grep -o 'depends on axioms: \[[^]]*\]' \
+            | sed 's/.*\[\(.*\)\]/\1/' | tr ',' '\n' | sed 's/^ *//; s/ *$//' | sort -u > "$RUNNER_TEMP/axiom-names.txt" || true
+          echo "## axioms named"; cat "$RUNNER_TEMP/axiom-names.txt"
+          if grep -vxE 'propext|Classical\.choice|Quot\.sound' "$RUNNER_TEMP/axiom-names.txt"; then
+            echo "::error::an axiom outside propext, Classical.choice, Quot.sound"; exit 1
+          fi
+          if grep -q 'sorryAx' "$RUNNER_TEMP/record/axioms.txt"; then echo "::error::sorryAx"; exit 1; fi
+
+      - name: oracles (regenerate and compare bytes)
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/record"
+          out="$RUNNER_TEMP/oracles"
+          lake env lean --run Kit193Oracles.lean "$out"
+          status=0
+          {
+            for f in "$out"/*.tsv; do
+              name=$(basename "$f")
+              if cmp "$f" "../../tests/testdata/kit193/$name"; then echo "same $name"; else echo "DIFFERS $name"; status=1; fi
+            done
+            echo "## SHA256SUMS of the committed tables"
+            (cd ../../tests/testdata/kit193 && sha256sum -c SHA256SUMS) || status=1
+          } 2>&1 | tee "$RUNNER_TEMP/record/oracle-compare.txt"
+          exit $status
+
+      - name: forbidden words (second line; the axiom audit is the authority)
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/record"
+          if grep -rnE 'sorry|admit|axiom |native_decide|implemented_by|extern' MultiScholaRProofs Audit.lean Kit193Oracles.lean \
+              | tee "$RUNNER_TEMP/record/forbidden-words.txt"; then
+            echo "::error::a forbidden word"; exit 1
+          fi
+          echo "none" | tee "$RUNNER_TEMP/record/forbidden-words.txt"
+
+      - name: upload the record
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kit193-lean-record
+          path: ${{ runner.temp }}/record
+          if-no-files-found: warn
