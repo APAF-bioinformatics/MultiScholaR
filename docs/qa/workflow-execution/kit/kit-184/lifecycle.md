@@ -302,3 +302,27 @@ characters; no job ran.
   staging for other reasons; when they are re-frozen they will list `removed_transcriptomics.parquet`.
 - **The same file on ubuntu-24.04** (45401782250): 493 passed, 0 failed. **Gate off at the final head** (45463933843):
   pages identical to staging's.
+
+## The one further run after the implementation audit (VAL-178 (3)), 2026-11-25
+
+Declared in `outcome.md` ("After the implementation audit") in commit c1ba2e0e, before anything was sent.
+
+- **Queue before parts a and b** (`gh run list`): 18 runs of other tickets not completed, 123 jobs in progress, none
+  queued (one full suite of another ticket among them, running, not waiting). Parts a and b were sent together (11
+  jobs); both started at once.
+- **Part a** (45474659283, the tests-only commit 5352a498): 36 expectations fail in 6 blocks, none errors; the fix
+  makes them pass (part b: 526 passed, 0 failed).
+- **Part b** (45474665699, the merge d7928ac9 against staging 32766889): as declared; the one file worse than staging
+  is `test-gui-entry-proteomics.R`, lane `prot_dia_limpa`, by the four expectations known beforehand.
+- **The control** (script 1 of part b, 619 s; `r3/control/`): `base_equals_stored` TRUE (the base dump's steps and the
+  stored file's steps both ed5f2b87...); `head_dumps_identical` TRUE (both c0171584...); `head_differs_in_four_only`
+  TRUE (`differences.tsv`: the artifact `integration/proteomics/removed_proteomics.parquet` = "<present>" in
+  `summary_save`, `summary_copy`, `summary_report`, `summary_export`, absent in the stored file; nothing else). I
+  checked the returned files myself: the hashes agree with `sha256.tsv`, and the frozen file differs from the stored
+  one in its `source_sha` line and those four added lines only (`diff`).
+- **The re-freeze** (commit 0c73ee7c, that file alone): the runner's head dump as written (SHA-256 cf4e13c9...).
+- **Queue before part c**: no run queued. **Part c** (45490115851, 0c73ee7c against staging): the file is `same` as
+  staging, 189 passed and 4 failed on both sides; the 4 are lane `prot_dia`, failing on staging already.
+- **Cost**: 12.6 + 339.2 + 49.2 = 401.0 job-minutes (26.73 core-hours) against the declared 435 expected and 825
+  ceiling. Ticket total 3,478.4 job-minutes = 231.89 core-hours of 303.33.
+- No request was refused and no script failed; nothing was sent twice. This was the ticket's last run.

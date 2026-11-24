@@ -5,8 +5,9 @@ Ticket `tickets/kit/KIT-184.md` revision 2.0. Branch `kit-184-ruv-factors-in-int
 laptop. Owner's decisions: methods ledger VAL-53, VAL-58, VAL-62 (the design), VAL-150 (the declaration), VAL-160 (the
 results: the adjustment ships off by default with a stated limit).
 
-**State (2026-11-25): the implementation audit's repairs are made and the one further run the owner allowed is
-declared below (VAL-178).** The audit (`tickets/kit/audits/AUDIT-KIT-184-impl-20261125.md`) confirmed the method and
+**State (2026-11-25): ready for the auditor's re-check. The implementation audit's repairs are made, the control
+held, `tests/testdata/gui-entry/prot_dia_limpa.json` is re-frozen, and the one further run the owner allowed has
+returned as declared (VAL-178; results at the end).** The audit (`tickets/kit/audits/AUDIT-KIT-184-impl-20261125.md`) confirmed the method and
 the shipped path and found three majors in the texts and the record (K184-I01 to I03), minors (I04 to I09) and one
 stored reference that moves (I10). The sections from "What was built" to "Not checked" are the record as it stood at
 the audit, with the audit's record repairs applied; "After the implementation audit" at the end has what was done
@@ -160,8 +161,9 @@ After the simulation the owner decided it ships off by default. Changed, tests f
   `tests/testthat/test-integration-removed-factors.R` hold the cases. The default being off does not touch it.
 - **The text owed to KIT-181** (`tickets/kit/audits/OWED-TEXT-KIT-181-from-KIT-184-20261123.md`) **is stale after
   VAL-160**: it says the resolver's default follows the model's input and names the suffixes of both forms. I do not
-  edit that file. What it should say now: "A Gene Ontology run of a test that has a design (`camera`, `camera_floor`)
-  follows KIT-184's setting `adjust_ruv_factors` exactly as KEGG and Reactome do (VAL-62, VAL-160): the request carries
+  edit that file. What it should say now: "A Gene Ontology run of a test that has a design
+  (`INTEGRATION_ENRICHMENT_DESIGN_TESTS`: `camera`, `camera_floor`, `camera_pr`; `camera_pr` is in the constant but is
+  not offered, so in practice `camera` and `camera_floor`) follows KIT-184's setting `adjust_ruv_factors` exactly as KEGG and Reactome do (VAL-62, VAL-160): the request carries
   it; absent, it is off whatever the model was trained on; `values` is built with the covariates
   `integrationEnrichmentRemovedFactors()` returns when it is on and with `covariates = NULL` otherwise; the entry keeps
   the resolved setting; the head key gains `|adjusted` for the adjusted form and nothing otherwise; the result carries
@@ -170,6 +172,13 @@ After the simulation the owner decided it ships off by default. Changed, tests f
   Ontology run of `camera` has `intercept, factor` and the label 'no' when the setting is absent, and `ruv_W` columns
   only when the request set it to `TRUE`; an entry replays in the form it was saved in. A Gene Ontology entry with the
   adjustment brings the record's clause `methods_enrich_limits_ruv` as KEGG and Reactome entries do."
+  Checked against the code at the merge with staging (d7928ac9, `R/utils_integration_enrichment.R`): line 862 is
+  `INTEGRATION_ENRICHMENT_DESIGN_TESTS <- c("camera", "camera_floor", "camera_pr")`; line 853,
+  `INTEGRATION_ENRICHMENT_TESTS_OFFERED`, is `camera`, `camera_floor`, `permutation`, `gsea`, without `camera_pr`; a
+  request that names `camera_pr` is refused with `integration_enrichment_test_not_offered` (line 1236) before the
+  setting is read, so no `camera_pr` result can be made with or without the adjustment. The constant, the key's suffix
+  rule and the record's texts cover it should it ever be offered. An earlier version of this hand-off named only
+  `camera` and `camera_floor`; the text above now agrees with the one in `tickets/kit/KIT-181.md` r1.5.
 - **The Manuscripts deliverable is not written by me.** It needs: the Methods fragment and the limits clause
   (`methods_enrich_limits_ruv` and the fragments of `wording.md`, after the owner's wording pass); the simulation's
   summary figures from `s/` (the deciding rates with their intervals, `ke1-checks.tsv`; the limit per data set and
@@ -313,3 +322,49 @@ helper's own writer, by SHA-256, as KIT-199's control did. The whole-file hashes
   8cb536cc stands for the rest, staging's code since being disjoint from this ticket's, audit section 8).
 - **Mechanics.** A request refused before a job runs, or a script that cannot run (no verdict written), is an
   instrument failure (VAL-54): fixed and sent again inside the ceiling. A verdict or a test result is a result.
+
+### The run's results (2026-11-25; `runs.tsv`, `lifecycle.md`, `r3/`)
+
+| Part | Run | Result |
+|---|---|---|
+| a, tests first | 45474659283 at 5352a498 | 36 expectations fail in 6 blocks, 0 errors, as declared (K10 15, K11 12, the starter's paragraph 4, the new I03 block 3, K8 1, K15 1) |
+| b, the merge | 45474665699, d7928ac9 against staging 32766889 | the new file 526 passed, 0 failed, 3 skipped (the base-store blocks, which pass in the base-store job); 19 files `same`, 6 `count-changed` (this ticket's, all passing), 2 `message-changed` (the transcriptomics captures failing on staging already); `test-gui-entry-proteomics.R` worse by the four expectations of lane `prot_dia_limpa`, as declared; check identical on both sides; the four mutations caught |
+| the control | script 1 of part b | **base dump equal to the stored file: TRUE. Two head dumps identical: TRUE. Head differing from the stored file in exactly the four added entries: TRUE** (`r3/control/verdict.tsv`, `differences.tsv`, `sha256.tsv`) |
+| the re-freeze | commit 0c73ee7c | `tests/testdata/gui-entry/prot_dia_limpa.json` alone: the runner's head dump as written |
+| c, the re-frozen lane | 45490115851, 0c73ee7c against staging | `same` as staging: 189 passed, 4 failed on both sides (lane `prot_dia`, failing on staging already); lane `prot_dia_limpa` passes |
+
+Cost: 401.0 job-minutes (26.73 core-hours); declared 435 expected, 825 ceiling. Ticket total 3,478.4 job-minutes =
+231.89 core-hours of 303.33.
+
+### The audit's findings
+
+| Finding | State | Evidence |
+|---|---|---|
+| I01 (major): the claim wider than what was checked | closed (VAL-178 (1)); the words are drafts for the owner | 33facbb5; parts a and b; `wording.md` |
+| I02 (major): the limit missing from the record of a model trained before RUV with an adjusted entry | closed | 33facbb5; K10 fails in part a and passes in part b |
+| I03 (major): an approximate set of factors not stated in the record | closed | 33facbb5; the new block fails in part a and passes in part b |
+| I04, I05 (minor): "exactly the result"; "more true terms" without scope | closed; drafts for the owner | 33facbb5; `wording.md` |
+| I06 (minor): wording items | applied as recommended, each listed in `wording.md` as "owner sets final wording"; (c) only in the label and the count phrases (the running sentences still read "the 1 unwanted factors" at one factor) | `wording.md` |
+| I07 (minor): records | closed for ledger rows 1 and 2, `feasibility.md` and this file; VAL-93's superseded clause is the coordinator's to note at the merge | 33facbb5 |
+| I08 (minor): `trx_screen.json` left out | closed | `f/moved-references.txt`; Hand-offs above |
+| I09 (minor): the line of the frozen script | closed | `results.md`; Hand-offs above |
+| I10 (owner): the re-freeze | decided (VAL-178 (2)) and done after the control | 0c73ee7c; `r3/control/`; part c |
+| I11 (owner): VAL-98 against VAL-160 | decided (VAL-178 (4)): VAL-160 governs this ticket's figures; recorded in `results.md` | VAL-178 |
+| I12 (record): F over its row's ceiling | recorded; the times are with the owner | "Core-hours" above |
+
+### Acceptance after this run
+
+A1 to A16 and A18 as in the table above, now at the merge with staging 32766889 (part b) for the criteria the repairs
+touch (A8 to A10). **A17** (the full suite, no new failure): F (45402062487, at staging 8cb536cc) found one new
+failure, the reference that the owner has had re-frozen; part c shows it closed. F was not repeated: the audit's
+regression scope at the newer staging head ran in part b, and staging's code since F is disjoint from this ticket's
+(audit section 8).
+
+### Not checked by this run
+
+- The MOFA2 lane and the bundle lane (three platforms) at the final head: last run at 5ba85c1f and its lane commits,
+  before these text repairs. K13 and the cross-platform block read nothing the repairs change (inferred, not run).
+- A full suite on the final head.
+- A record of a real run with an approximate set of factors (the test builds the entry from a unit fixture).
+- The control script was written for this run and ran once; nothing but its own checks (the frozen file's steps equal
+  the head dump's; the checkout's reference untouched) and my reading of its outputs vouches for it.
