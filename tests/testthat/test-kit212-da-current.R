@@ -1212,3 +1212,58 @@ test_that("KIT-212 G7, G15: the W1 fixtures' status and unmade files; the in-mem
     k212Line("G15", "prot", rec, sprintf("\tcopies=%d", rec$copies))
     expect_identical(rec$copies, 1L, info = paste("G15", paste(rec$notes, collapse = " | ")))
 })
+
+# ------------------------------------------------------------------------------------------------
+# E17 (implementation audit K212-I02, the coordinator's ruling; failing first): the Report after a later DA.
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-212 E17: lipid, the Summary tab mounted: after Copy, a second DA, then Report asks for Copy again", {
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    seen <- k194Notes()
+    q <- k207Normalised(file.path(root, "e17"), "lipid", da = TRUE)
+    fx <- q$fx
+    fx$workflow$design_matrix <- kit172Design()
+    withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
+    invisible(utils::capture.output(project_dirs <- suppressMessages(setupDirectories(base_dir = file.path(root, "project", "kit212"),
+        omic_types = "lipidomics", label = NULL, force = TRUE, reuse_existing = TRUE))))
+    k212KeepGlobal()
+    assign("project_dirs", project_dirs, envir = .GlobalEnv)
+    template <- omicGuiConfig("lipidomics")$summary$report$template
+    scripts <- file.path(project_dirs$lipidomics$base_dir, "scripts", "lipidomics")
+    dir.create(scripts, recursive = TRUE, showWarnings = FALSE)
+    writeLines("KIT-212 template", file.path(scripts, template))
+    calls <- new.env(parent = emptyenv())
+    calls$copy <- 0L
+    calls$render <- 0L
+    report <- file.path(root, "e17-report.html")
+    testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) NULL,
+        copyToResultsSummary = function(...) {
+            calls$copy <- calls$copy + 1L
+            list()
+        }, RenderReport = function(...) {
+            calls$render <- calls$render + 1L
+            writeLines("KIT-212 report", report)
+            report
+        }, exportWorkflowAnalysisRecordBundle = function(...) invisible(NULL), .package = "MultiScholaR")
+    both <- data.frame(contrasts = c("groupB-groupA", "groupA-groupB"), friendly_names = c("B_vs_A", "A_vs_B"),
+        full_format = c("B_vs_A=groupB-groupA", "A_vs_B=groupA-groupB"), stringsAsFactors = FALSE)
+    kit172Quiet(utils::capture.output(shiny::testServer(mod_lipid_summary_server, args = list(project_dirs = project_dirs,
+        omic_type = "lipidomics", experiment_label = NULL, workflow_data = fx$workflow), {
+        session$setInputs(experiment_label = "k212", description = "d")
+        session$setInputs(save_workflow_args = 1L)
+        session$setInputs(copy_to_publication = 1L)
+        calls$copied_notes <- seen$notes
+        # The DA run again, with another contrast (same table).
+        kit172Quiet(runWorkflowOmicsReferenceDaAnalysis(fx$binding, k194Owner(fx), k194Ref(fx), k212Settings, both))
+        seen$notes <- character()
+        session$setInputs(generate_report = 1L)
+    })))
+    cat(sprintf("KIT-212 E17 lipid\tcopies=%d\trender=%d\tnotes_after_second_da=%s\n", calls$copy, calls$render,
+        paste(seen$notes, collapse = " | ")))
+    expect_identical(calls$copy, 1L, info = paste("E17 precondition: Copy ran", paste(calls$copied_notes, collapse = " | ")))
+    info <- paste("E17", paste(seen$notes, collapse = " | "))
+    expect_identical(calls$render, 0L, info = info)
+    expect_true(k194Noted(seen, paste("[warning] Please copy the results to the publication directory before generating the report",
+        "(Copy to Publication Directory).")), info = info)
+})
