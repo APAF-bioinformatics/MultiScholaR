@@ -1,0 +1,3 @@
+run_id	commit	purpose	minutes	result
+45506521161	a7600526	R1 tests-only commit: each E row fails on base, G1 passes (stop rule 1)	11	66 passed, 100 failed: every E row fails at its base value; G1 passes; stop rule 1 not met
+45508506125	f9324d39 vs cf8af245	R2: 27 affected files base vs head (3 shards per side) and R CMD check	130 (8 jobs)	new file 166 passed 0 failed; 26 files same; check findings identical (0 E, 3 W, 3 N both sides); trx summary ran, 0 skips
