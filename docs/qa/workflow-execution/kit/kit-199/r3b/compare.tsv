@@ -1,0 +1,2 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-gui-entry-proteomics.R	183	10	0	0	failed	189	4	0	0	failed	fixed	fixed: KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route; counts: KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route (passed 32 -> 38, skipped 0 -> 0)	

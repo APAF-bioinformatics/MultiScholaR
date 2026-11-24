@@ -1,0 +1,19 @@
+key	value
+mode	measure
+commit_measure	ef38bf2b557f303a72110e2742e377e12a663f36
+cpu_model	AMD EPYC 7763 64-Core Processor
+cpu_count	4
+image_os	ubuntu22
+image_version	20261116.365.1
+c_library_version	2.35
+libblas3_package	3.10.0-2ubuntu1
+liblapack3_package	3.10.0-2ubuntu1
+blas_library	libblas.so.3
+lapack_library	libopenblasp-r0.3.20.so
+lapack_version	3.10.0
+r_version	R version 4.6.1 (2026-06-24)
+rust_toolchain_version	1.100.0
+pin_fastduckdb	e724f90bdbdf1073635b7112c80f8dd406f2c79b
+pin_fastlimpadpc	0ad8c5271da97605af3a1c8048d7b10fdfc0745b
+openblas_num_threads	<unset>
+omp_num_threads	<unset>
