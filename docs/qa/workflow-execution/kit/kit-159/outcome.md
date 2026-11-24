@@ -26,7 +26,48 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, S0 sent; read this first)
+## Resume here (state 2026-11-24, S0 done; stopped before the release commit; read this first)
+
+**S0 done: all 15 route runs valid, every step `ok`.** Evidence `s0/s0r1/` (run 45277101451 at
+a29a43c0: the 9 non-classic-proteomics cells) and `s0/s0i2/` (run 45288286009 at df71922f: the 6
+classic proteomics cells), each with `routes.tsv`, `steps.tsv` (head after every step: G1(b)'s
+expected states), `alternatives.tsv`, `modal.tsv`, `corpus.tsv` (generator, arguments, bytes,
+SHA-256 of every generated file), `run.tsv`, `outputs.sha256`; the ledgers stay in the runs'
+artifacts (1.7 MB). Shown to the owner; gates nothing (VAL-41).
+
+Observed (synthetic inputs at default QC, shipped arm):
+- Every route reaches a DA table: prot_dia 659 rows / 44 called; prot_dia_limpa 794 / 36; prot_lfq
+  787 / 61; prot_lfq_fragpipe 787 / 34; prot_tmt 789 / 49; trx_screen 1,668 / 129; lipid_canonical
+  366 / 29; metab_lc 293 / 38; metab_gc 292 / 56; metab_combined 585 / 94. Classic proteomics
+  normalisation reaches `ruv_corrected`; no refusal anywhere (the ITSD diagnostic step is `ok`).
+- Export-then-load: identical DA table (masked digest) to the accepted script on `prot_dia`,
+  `lipid_canonical` and `metab_lc`.
+- DIA_LIMPA without "Compute RUV-III Covariates": DA runs from `correlation_filtered`; the same
+  794 keys and 36 calls, 0 calls changed, largest difference of log2fc, p or q 0.153 (digest differs).
+- Two-species `prot_dia`: the organism modal is raised and confirmed at its rendered values
+  (`selected_organism` 9606, `filter_to_organism` FALSE, `mixed_species_fasta` TRUE forced); DA
+  table identical to `prot_dia` on the same report.
+
+Inferred (not tested): with the filter off, the mixed-species box changes nothing downstream on
+this input; the covariates button moves values but not calls here, on one synthetic input only.
+
+**Instrument runs (VAL-54), S0 item, 2 of 3 used:** the first S0 send stopped 6 cells after DA in
+the harness's table reader (`valPreRuvState` reads `normalized`, which a run with RUV applied never
+commits: T-TAB had only run those routes with RUV off). i1 (8fea7419, 45285928330): lineage-walk fix
+did not hold; the gate stopped S0 before any route, as designed. i2 (df71922f): the
+`ruv_corrected` state's record read directly; new test T-TAB-RUV passes; the 6 cells rerun
+(rerunning only invalid parts). The 9 cells of the first send were not rerun: the fix changes only
+the pre-RUV read of classic proteomics routes, a path none of them takes.
+
+**Core-hours, S0 line (ceiling 16, expected 6): 7.72** = S0t0 0.70 + S0 3.55 + i1 0.92 + i2 2.55.
+Other lines unchanged: T0 5.95 of 6; T1 19.09 of 21; T2 26.93 of 54; R1 2.78 of 4.
+
+**Next (not started; bound to the release commit):** G1(a), G1(r), L1a and later, P1. Open for the
+coordinator: the coverage table's half-width ratio (ticket r1.14 4.4: code not built; T2 rows
+`not_recorded` without a re-run); whether to run the whole msrval suite once (T-TAB's fixture path
+is unchanged by the fix but the suite was not rerun at df71922f).
+
+### S0 build record (2026-11-24)
 
 **Ticket r1.14** (main checkout; register `AUDIT-KIT-159-build-points3-20261124.md` applied as
 written, with two corrections recorded in its section 29: the failing-first run is charged to S0's
@@ -565,6 +606,11 @@ Former plan for T1a: the group (a) implementation (`utils.R`, `score.R`, `metric
 family (T2 is sized on these).
 
 ## Not checked
+
+- (S0, 2026-11-24) The whole msrval suite at df71922f (only test-corpus, test-alternatives and
+  test-tab-ruv ran there; T-TAB's RUV-off fixture path does not reach the changed branch). The
+  S0 ledgers against G12's census (L1a's job). Determinism of S0's DA tables across jobs (G8).
+- (S0) Generated sizes are declared, not tuned: whether a larger input changes any S0 observation.
 
 - Groups (c) and (d) (driver parts and core, arms, parity comparisons, Part B runner), `val-run.R`,
   `check-evidence.sh`: written, never run. T-TAB (the route column maps) not run.
