@@ -180,6 +180,11 @@ test_that("R-I10: a plan's generator column reaches the cell in the chunk tasks 
     cell <- as.list(cells[cells$cell == "C4-143", ])
     cell$generator <- "fixed_symmetric"
     expect_identical(got$lo, valCoverageRange(cell, 1L, 1L)$lo)
+    # R3 showed the two lines above passing on the tests-only commit (both sides ignored the
+    # generator), so the task must also differ from the redraw generator's and name it
+    redraw <- valCoverageRange(cells[cells$cell == "C4-143", ], 1L, 1L)
+    expect_false(identical(got$lo, redraw$lo))
     det <- valCombineCoverage(cell, list(got), 1L, 1L)
+    expect_true("generator" %in% names(det))
     expect_true(all(det$generator == "fixed_symmetric"))
 })
