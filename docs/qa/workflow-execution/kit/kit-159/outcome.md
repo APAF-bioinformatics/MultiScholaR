@@ -1328,6 +1328,66 @@ family (T2 is sized on these).
 - The 1.8 additions marked "not yet" above.
 
 
+## DI10K: the confirmatory cell in KIT-162's composition (VAL-163 (3); branch `kit-159-di10d`)
+
+**Why a generator change.** By parameters alone the harness could not run C4e g = 5 at 4,840
+features with 40 changed for the statistics DI10b licensed. A plan selects a catalogue cell by id
+and overrides only `generator`. The feature count comes from the family string. And
+`n_feat == 4840L` set three things at once in `coverage.R` at 8cb536cc: the number changed (40,
+l.651 and l.678), the statistic (the rank statistic only, l.329-336 and l.726) and the effect scale
+(rank-calibrated, l.321). The coordinator's ruling of 2026-11-25: build the smallest change, with
+tests first. KIT-162's level structure, `Norm` group and pairwise contrasts are not built.
+Budget line DI10K, 6 core-hours (ticket r1.24, section 39).
+
+**The change** (`harness/msrval/R/coverage.R`, 58a6f598 to 9adab5fe; T-COV unchanged):
+- `valCoverageCells(confirmatory = FALSE)`: by default the 169 cells of T-COV, as before. With
+  `TRUE` it adds one cell after them: C4e-170, regime C4e, family `c4e:4840acc`, n = 5, condition
+  `matrix4840acc_block`. That is its own index (seeds 1,017,000,000 + s, 1,517,000,000 + t, and
+  baseline seed 2,100,000,170).
+- `valCovSpec`'s C4e branch reads `4840acc` as 4,840 features with `rank = FALSE`.
+  `valSpecMatrix(..., rank = n_feat == 4840L)` and `valCovStats(..., rank = n_feat == 4840L)`: the
+  default reproduces the old test exactly for every existing family (c4:500, c4:4840, c4e:500,
+  c4e:4840).
+- `valCoverageTasks` and `valRunCoverage` look plan cells up in the catalogue with the
+  confirmatory cell. `valTimeRegime`, T-COV's plan and the pinned table do not use it.
+
+**Observed.**
+- DI10K-t (run 45400680535 at 58a6f598, tests only): the unchanged-catalogue test passed (5
+  expectations: the 169 cells equal `tests/testthat/cov-cells-base.tsv`, their simulation and target
+  seeds, and the pinned table's SHA-256 894e42e5...). The four new-cell tests errored with `unused
+  argument (confirmatory = TRUE)`: the cell did not exist.
+- DI10K-f (run 45403024967 at 9adab5fe): `test-di10k.R` 5 of 5 (35 expectations).
+  `test-coverage`, `test-coverage-rank`, `test-coverage-table`, `test-repair2` and `test-repair4`
+  all pass (31 tests, 214 expectations in all, 0 failed, 0 skipped). `lintr`: no lints.
+- The cell's path, as the tests check it: 4,840 features; exactly 40 changed, all +1 at scale 1
+  (truth 0.5, 1, 1.5, 2 for groups B to E against A); 50 samples, 2 per group per block over 5
+  blocks; statistics `mae`, `bias`, `rej`, computed as C4e's on 19,200 null contrasts; a plan's
+  `fixed_onedir` reaches the tasks and `valRunCoverage`'s detail (one simulation, one target: a
+  wiring test, not a coverage simulation).
+- Timing from the tests: one simulation plus one target plus one fit took 0.995 s in one process.
+
+**Inferred.** The likely cost of the declared run is 1.1 to 2.2 process-hours, or 1.9 to 3.0
+core-hours on 4 chunks (derivation in `t2/di10k-declaration-draft.md`).
+
+**Draft declaration:** `t2/di10k-declaration-draft.md`, not frozen, for the harness auditor with
+the change. It contains:
+- the cell beside DI10b and KIT-162, with where it differs (levels, `Norm` group, contrasts,
+  feature-wise variance, normalisation, statistics);
+- mechanism checks N1k (`bias` target <= -0.0035) and N2k (`rej` target in [0.045, 0.060]), with
+  their normal-theory derivation, which reproduces T2's g = 5 values at 20 %, and what each check
+  can and cannot show;
+- the pass rule, the readings, and what is reported beside the rule.
+
+The probe plan `t2/di10k-probe-plan.tsv` is not sent; the draft recommends no separate probe.
+
+**Not checked.** No coverage simulation of C4e-170 has been run. The cell's three statistics do not
+count true positives, so the coverage of intervals over the 40 changed features (what KIT-162
+scores on the spiked proteins) is not addressed by this cell. That is for the auditor and the
+owner. The ticket-level arithmetic: DI10K's 6 core-hours exceed the 0.72 left unallocated at r1.23
+(ticket section 39).
+
+Spend on line DI10K: 0.77 + 0.84 = **1.61 of 6** core-hours.
+
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-25 from 12282273 (a records-only commit on the merge a4e002a6 of the ticket branch with staging a1b397b1, which holds KIT-182, KIT-203, KIT-207 and KIT-196), after the re-audits 2 and 3 and the closure check (register `AUDIT-KIT-159-impl-recheck-20261124`). The ledger row is VAL-165. The whole harness suite passed on a4e002a6 (run 45386625659: 45 files, 274 tests, 2,342 expectations, 0 failed, 0 skipped, no lints), and one `snapshot`-stage dispatch of `distributable.yml` passed on the same commit (run 45386409115). **Merged is not accepted:** acceptance criterion A1 is OPEN. Not done: the lifecycle runs L1a, L1b, L2 and L3; gate G13 in P1; G5 (replay) on every route (only `metab_combined` has been replayed); the confirmatory cell in KIT-162's composition (VAL-163 (3)); the suite and G1(a) repeated after the last product merge (KIT-190, 200, 201, 202, 204, 205, 206, 208 and the tickets after them are pending). By the plan's rule, no validation ticket (KIT-160 to KIT-170) sends a lifecycle or counted request until A1 is recorded as met at a commit that contains every product merge that ticket's runs will use. Ticket total at merge: about 116.2 of 276 core-hours (110.78 before the merge run, plus 5.44).
