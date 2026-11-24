@@ -263,3 +263,13 @@ ledger row with the fold-change sizes and the failed advance inference (I02); th
 arms, the Benjamini-Hochberg sentence, "no call changed" (I04); records (I06); sessions adopted from earlier versions
 not told (I07, NEWS); F1(a)'s scope completed (I11, `feasibility.md`). Commit messages: 9c8cb8ca added the ledger row,
 a17c61d1 added NEWS (I12).
+
+## R2b declared (on the merge with current staging; AUDIT-KIT-177-impl I05)
+
+Binding: head = the merge 88892e21 (staging 17365cb0 merged into the branch; conflicts only in `NEWS.md` and the
+ledger) against base 17365cb0; R2's 26 files plus KIT-187's `test-prot-missing-value-counts.R`; 4 shards per side;
+`sva`; `check` true; `test-gui-entry-proteomics.R` 120 minutes. Ceiling: the ticket's R2 row, 24 core-hours (expected
+16). Verdicts that pass: `test-prot-design-log2.R` `only-on-head`; `test-workflow-analysis-record.R` `count-changed` (T5);
+`test-gui-entry-proteomics.R` `same` at 183/10 on both (the three re-frozen lanes pass on the merged tree with KIT-183,
+KIT-186 and KIT-187 under them); `test-prot-missing-value-counts.R` `same`; every other file `same`; check findings
+equal. Any other verdict is a result: stop and report.
