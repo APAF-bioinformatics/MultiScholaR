@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-202 R2b check only (audit I02): R CMD check on the merge b20af066 against staging 393ebb85; ceiling 180 job-minutes; decides A4 on the merge",
+  "label": "KIT-202 R2b check b20af066 vs 393ebb85",
+  "package_commit": "b20af0663ac3e267785171bcf9c18625d46a40e7",
+  "base_commit": "393ebb85837a3831ec0943450e7986315bd299a8",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
