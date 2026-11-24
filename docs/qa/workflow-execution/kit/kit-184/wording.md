@@ -1,9 +1,12 @@
 # KIT-184 wording list (VAL-41: implemented as proposed; the owner edits before release)
 
 **State.** The package's texts still hold the placeholders [R3], [I3], [R5], [I5], [R5m], [R6], [I6], and
-`enrich_floor_covariates_note` still says its power "has not been measured yet". They are written into the code, with
-the tests that read them, only after the coordinator's word (the result was reported first; the full suite has not
-been run). No build may be released or merged with the placeholders in place. Below: the keys, the numbers, the three
+`enrich_floor_covariates_note` still says its power "has not been measured yet". No number is written into the code,
+and the full suite is not run, until the owner has answered O3 of the results audit
+(`tickets/kit/audits/AUDIT-KIT-184-declaration-20261124.md`, "Results audit": what the adjustment may be claimed to
+do, whether it stays, and its default). That audit's K184-R12 proposes other wordings for the sentences below ("in at
+most [R3]", the last sentence of the limits clause with its condition, the note on the form without the adjustment,
+one sentence more in two notes). They are the owner's to choose (VAL-41) and are not applied or decided here. No build may be released or merged with the placeholders in place. Below: the keys, the numbers, the three
 sentences as they would read with the numbers in, and what the result means for two of them.
 
 ## The keys

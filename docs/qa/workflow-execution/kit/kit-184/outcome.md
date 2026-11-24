@@ -37,7 +37,8 @@ deciding criterion K-E1 holds in cells A and B (33 of 33 checks each; largest up
 unwanted variation called on the main factor in 8.1 to 29.6 % with the adjustment, 2.0 to 11.2 % without it, 1.6 to
 2.8 % with the planted factors). By ticket 6.5 that is outcome R1 with R7. The determinism check as declared is not
 met (7 of 12 tables identical as text; the others differ in the last digits of real numbers between two processors):
-reported, not ruled on by me. **Not done:** the numbers are not yet written into the package's texts (`wording.md`
+ruling awaited (the owner's O4). The results were audited and recomputed independently (results audit; its text repairs
+K184-R09 to R11 and R13 are applied; R12, O3 and O4 are the owner's). **Not done:** the numbers are not yet written into the package's texts (`wording.md`
 has them and what they mean for two sentences); the full suite (A17) has not been run; nothing is merged.
 
 ## What was run, at which commit, what was observed

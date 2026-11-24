@@ -9,7 +9,17 @@ ledger VAL-150). Every table of the scorer is in `s/`. The run's jobs read the d
 A and B 800 each, replicates 6 to 805; cell D 400, replicates 6 to 405); none failed, none was left unstarted. All 17
 evidence jobs succeeded at the first attempt, so there was no S' and no re-score. Nothing below comes from L1 or L1b.
 
-## Outcome: R1, with R7; determinism not met as declared (to be ruled on, below)
+The results were audited (`tickets/kit/audits/AUDIT-KIT-184-declaration-20261124.md`, "Results audit"): every criterion
+was recomputed independently from the workers' per-replicate rows and equals the scorer's within 7e-15; the outcome is
+R1 with R7. The audit's text repairs K184-R09 to R11 are applied below. Its R12 (the wording of the sentences) and the
+decisions O3 (what the adjustment may be claimed to do, whether it stays, its default) and O4 (how the determinism
+check is recorded) are the owner's and are not decided here.
+
+**The per-replicate tables are not in the repository.** They exist only as run 45353248796's artifacts (the 17 evidence
+jobs' `k184-*`, about 86 MB compressed, kept 90 days from 2026-11-24) and are what a recomputation of the criteria
+needs; `s/` holds the scorer's tables only.
+
+## Outcome: R1, with R7; determinism not met as declared (ruling awaited, below)
 
 | Check | Result |
 |---|---|
@@ -39,8 +49,9 @@ evidence jobs succeeded at the first attempt, so there was no S' and no re-score
 - **R5** ("arm 2 shows no loss of power against arm 3, or no excess on C5 in cell B": reported as measured, the Methods
   sentence on that form worded from the numbers). Arm 2 does lose power (below). On C5 on the main factor in cell B it
   is above 5 % in two data sets (proteomics 0.112, metabolomics 0.101) and below in transcriptomics (0.020); in two of
-  the three data sets it is not above arm 3. I report the numbers and do not decide which half of R5's sentence that
-  is; what it means for the two sentences that compare the forms is in `wording.md`.
+  the three data sets it is not above arm 3. R5's condition holds through its second part in transcriptomics (no excess, 0.020), so R5 applies: no
+  consequence for the design; the Methods sentence on the form without the adjustment is worded from these numbers.
+  What that means for the two sentences that compare the forms is in `wording.md`.
 
 ## K-E4 in cell B: what the ticket asks to be reported with it (R7)
 
@@ -73,10 +84,16 @@ factor, `camera`, T (Monte Carlo SE). Proteomics: sizes 10 and 30 / every size f
   cells A, B, D; proteomics 0.917 (0.001), **0.846** (0.010), 0.984 (0.456); metabolomics 0.977 (0.022), 0.957 (0.003),
   0.985 (0.647). The share of the main factor that lies in the removed factors (R2, median): about 0.03 to 0.05 in
   cell A, 0.25 to 0.29 in cell B, 0.06 to 0.11 in cell D (`s/caught.tsv`).
-- Inferred, not shown: the removed factors describe the planted ones well on the whole (medians above), so what is
-  left is the part of the unwanted factor that runs with the groups, which a correction that takes the groups as its
-  replicate sets cannot tell from the group difference and leaves in the corrected values the model was trained on.
-  The simulation was not built to separate that from other causes.
+- Shown, on the same replicates and sets: with the planted factors in the design the same model, factor and values
+  give 0.021 (transcriptomics), against 0.296 with the removed factors (paired difference -0.274, -0.292 to -0.257), so
+  the excess comes from the removed factors being estimated; a model trained on the values before RUV with the
+  adjustment switched on (D1) shows the same rise with set size (0.119, 0.252, 0.390), so it does not need a model
+  trained on corrected values; it needs the unwanted factor to follow the groups (cell A 0.041). Inferred, not shown:
+  the small part of the unwanted factor the estimated factors miss shifts every feature of such a set the same way
+  along the factor, which is collinear with the removed factors, and once the shared variation is removed camera
+  estimates little correlation among the set's features, so the common shift accumulates with set size.
+  (This replaces the explanation first written here, which put the cause in the corrected values the model was
+  trained on: the oracle arm, on the same model, and arm D1, on another model, contradict it. Results audit, K184-R09.)
 
 ## The numbers written into the texts (ticket 5.5 and 6.4; `s/numbers.tsv`)
 
@@ -109,12 +126,11 @@ The determinism job (cell A replicates 6 to 15 again) against the same replicate
 - **What reads those tables.** Every rate of K-E1, K-E4 and K-E5 is computed from `errors`, and K-E3's counts from
   `power`: both identical. K-E3 also reads the sign of two columns of `orientation` (identical signs; the correlation
   differs in its 15th digit). Outcome R6 reads `exact` (statuses identical) and `identity` (both far below 1e-8).
-- **What the declaration says.** "Twelve tables must be identical ... A difference is reported with its size and
-  cause; a difference in a table that a criterion reads is a defect, handled as R3 within S'; one that needs more is
-  a stop to the owner." By its letter `orientation` is a table a criterion reads. I have not re-read the rule, not
-  re-run anything and not changed the comparison: this is reported for the coordinator's and the auditor's ruling.
-  A re-run of the determinism job would land on whichever processor the runner has, so S' cannot make the tables
-  identical on purpose.
+- **As observed, and no more:** 7 of 12 tables identical as text; five differ only in real-number columns, by at most
+  6.4e-13 absolute, between an AMD EPYC 7763 and an Intel Xeon Platinum 8573C; no count, label, status or sign
+  differs; no deciding quantity depends on the differing digits. The declaration asks for twelve identical tables, so
+  the check is not met as declared. **Ruling awaited** (the owner's decision O4 in the results audit). Nothing was
+  re-run and the comparison was not changed.
 
 ## Reported, not decided (`s/error-rates.tsv` holds every rate with its interval)
 
@@ -162,10 +178,13 @@ The determinism job (cell A replicates 6 to 15 again) against the same replicate
 
 ## Against the expectation stated before the run (ticket 6.4, last paragraph)
 
-- As expected: arm 3 at or below 5.5 % on F_ind in every class, C5 included, and at or below 4.5 % on F_main in the
-  clean classes; arm 1 above arm 3 on F_ret at the feature level (about 7 % against about 4 %, about 13 % in cell D;
+- As expected: arm 3 at or below 5.5 % on F_ind in every deciding class, C5 included, and at or below 4.5 % on F_main
+  in the clean classes; arm 1 above arm 3 on F_ret at the feature level (about 7 % against about 4 %, about 13 % in cell D;
   the ticket expected about 8, 5 and 13.5); arm 2 at or below 5.4 % on K-E5's checks and with less power than arm 3
   in cells A and B; the default model's unwanted-looking factor calling C5 sets (D0 on F_unw).
+- On F_ind, C4, C4b and the planted sets (null against an independent covariate) were called in up to 9.4, 7.3 and
+  8.6 % under arm 3 and up to 9.8, 8.1 and 8.5 % under the oracle arm (arm 2: up to 6.8, 6.0 and 7.0 %): a property of
+  camera on sets of high-variance features (KIT-183's C4 finding, VAL-94), not of the removed factors.
 - **Contradicted:** "for transcriptomics the written factors should be close to the planted ones, arm 3 near nominal
   on C5 on F_main in cell B and arm 2 well above". Measured: arm 3 0.296, arm 2 0.020. The written factors are close
   to the planted ones (median 0.985) and the adjusted test still calls these sets.
@@ -177,7 +196,8 @@ The determinism job (cell A replicates 6 to 15 again) against the same replicate
 
 - Anything outside this one generator, its two unwanted factors and RUV-III with the groups as replicate sets (ticket
   6.7); real data.
-- Why the adjusted test calls C5 sets on the main factor in cell B (the explanation above is inferred).
+- The mechanism behind K-E4's failure beyond what the paired arms show (the last sentence of that explanation is
+  inferred; the output has no per-set estimated correlation or shift).
 - Whether the five tables that differ between processors would be identical on the same processor in S (they were in
   L1b).
-- The scorer's tables were not recomputed by a second implementation.
+- (The scorer's tables were recomputed by a second implementation, from the workers' rows: results audit, section 2.)

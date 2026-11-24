@@ -240,3 +240,8 @@ Run 45353248796, sent by lane commit 008852f8 (only `k184-params.json`: `run = c
   worker tables of cell A replicates 6 to 15 column by column and read `runner.txt` and the first lines of `plan.txt`.
 - **Results**: `results.md`. **The texts**: `wording.md`. The full suite (A17) has not been run; the package's texts
   still hold the placeholders.
+- **Where the per-replicate tables are** (results audit, for the coordinator): only in run 45353248796's artifacts
+  (`k184-s01` to `k184-s16`, `k184-det`, `score`; about 86 MB compressed; kept 90 days from 2026-11-24). They are needed
+  to recompute the criteria; the branch holds the scorer's tables (`s/`) and not the workers'. Whether a durable copy
+  is kept is the coordinator's decision.
+- **Determinism**: stated in `results.md` as observed, ruling awaited (O4). R3 and S' are not invoked for it.
