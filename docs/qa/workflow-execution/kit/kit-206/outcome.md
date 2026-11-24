@@ -1,6 +1,6 @@
 # KIT-206 outcome: proteomics session exports refuse a stale table; the native export follows the run
 
-Ticket `tickets/kit/KIT-206.md` revision 1.2 (the plan audit's re-check minors R01 to R06 applied at step 0; the changes
+Ticket `tickets/kit/KIT-206.md` revision 1.3 (the implementation audit's correction pass); revision 1.2 applied the plan audit's re-check minors R01 to R06 applied at step 0; the changes
 since the audit in its section 19). Authority VAL-134 (1), parity with VAL-105 (2); the coordinator's SD-1 to SD-4 and E-1
 to E-5 of 2026-11-24. Branch `kit-206-prot-export-summary` from `v0.9-staging` fe5c9273 (contains KIT-182's merge 3c7fa371).
 
@@ -92,6 +92,53 @@ commit 75360c69 (KIT-207 merged first): KIT-207's refusal block, then the KIT-05
 condition. Since KIT-207, a proteomics Save refused for `integration_input_invalid` also names its reason (KIT-207 I02); no test of this
 branch drives a proteomics Save to that refusal.
 
+## Correction pass (implementation audit `AUDIT-KIT-206-impl-20261125.md`; the ticket's one correction)
+
+- **I01.** The guard's result-class block now judges, when the result's `previous_state` names the head itself (a second
+  enrichment run), the state before it in the active history (`R/mod_prot_norm_session_helpers.R`). Tests first (run
+  45404409911 on 1f69c248 = the branch head plus the tests): E14 fails 5 expectations (the export with a recorder is refused,
+  the Summary's refresh raises `prot_norm_correlation_input_stale` and writes no archive, the limpa export is refused; the head's
+  `previous_state` is `enrichment_completed`, as the audit read); E12's second enrichment is refused before and after (the
+  fallback still judges `normalized`).
+- **I02** (coordinator's ruling: fail closed, by parity with VAL-148 SD-5 (b)). `summaryFailed` removes the omic's earlier
+  integration input on `prot_norm_correlation_input_stale`. Test first: E11b fails before (after a valid Save the input exists;
+  after the Revert the refused Save shows "The session could not be saved: <text>", calls `failed` once, and leaves
+  `integration/proteomics/` in place).
+- **Run on the merge with staging** (45408209789; head 70dc30fe = the repair commit merged with 8cb536cc; base 8cb536cc; R2's 26
+  files, `test-kit207-summary-head-guard.R`, `test-omic-summary-module.R`, with check): as declared. 27 files `same`, the new file
+  `only-on-head` with 116 passed and 0 failed (E14 core: `previous_state` `enrichment_completed`, the export proceeds, the refresh
+  writes one archive; E14 limpa: the export proceeds; E11b: the valid Save writes `integration_input.json`, the refused Save shows
+  "The session could not be saved: <text>", calls `failed` once and removes `integration/proteomics/`; E12's second enrichment is
+  refused); R CMD check 0 ERROR, 3 WARNING, 3 NOTE on both sides, nothing only on head (`c2-compare.tsv`, `c2-check-compare.txt`,
+  `c2-evidence-head.txt`). Tests-first evidence: `c1-failures.txt`, `c1-evidence.txt`.
+- **Module CI on the push of 70dc30fe** (45408115507) failed in "module-ci impacted (transcriptomics)": 10 transcriptomics module-CI
+  tests (`test-module-ci-trx-da/design/norm/qc/summary.R`). The same job fails with the same 10 tests on staging 8cb536cc's own push
+  (45399571768): pre-existing, not caused by this branch (its `R/` changes are proteomics and the `summaryFailed` classes).
+
+## Hand-offs (not in this ticket; the coordinator opens a ticket; texts from the implementation audit)
+
+- **I04.** The archive's `normalization_method` (and its summary's "Normalization:" line) still come from the tab's selector
+  (`R/utils_workflow_dia_sessions.R`, `normalization_method = input$norm_method`), and on reopen `restoreProtNormTabState` sets the
+  selector from it. Same class as part (b); the run's method is in the normalisation state's config (`norm_method`). The normalisation
+  method is still recorded from the selector.
+- **I05.** DIA with limpa: if the RUV covariates step is re-run in another mode after an export, the Summary's refresh passes (the
+  limpa rule is by name) and re-uses the earlier export's metadata, so the refreshed archive states the earlier RUV mode. The register's
+  five-line repair (re-read `resolveDIARuvRunDescription(manager)` in `refreshDIANativeSummaryArchive`) is not applied: no native
+  limpa fixture exists to test it.
+- **I09 / F4.** The owned (non-native) and in-memory export routes still record `ruv_mode`, `ruv_applied` and `normalization_method`
+  from the tab's inputs (`R/mod_prot_norm_session_helpers.R:136-138`); by reading neither is reached in the shipped application.
+- **I10.** At a stale proteomics head the Save still writes `study_parameters.txt` and `analysis_record.json` before the refusal and
+  marks the arguments saved (`R/mod_omic_summary.R:263`); "Generate Report" and "Export Session State" are unguarded for proteomics.
+  KIT-207 refuses all three in the other omics. A parity decision.
+- **D1.** The native export refuses an `enrichment_completed` head with "native export needs component metadata; explicitly convert
+  the legacy session first", which is untrue (`R/utils_workflow_dia_sessions.R:1881-1885`; E12's base). The proteomics Summary
+  therefore cannot be saved after enrichment unless an export was made earlier in the same application session, and by reading the
+  "latest" archive the Summary writes after enrichment cannot be opened by "Load Filtered Session" (adoption reads the head as an
+  assay). Owner decision O2 (what a session file's current state may be after enrichment).
+- **D2.** Same root cause as I01, pre-existing: after a second enrichment run `protIntegrationInputLineage` stops at the repeated
+  name, so the proteomics Save removes the integration input and writes none; the analysis record's `input` for that step names the
+  step itself.
+
 ## Acceptance criteria
 
 | # | Status | Evidence |
@@ -157,6 +204,7 @@ branch drives a proteomics Save to that refusal.
 ## Budget
 
 Core-hours (job minutes x 4 / 60): R1 0.96, R1-2 0.93, R2 23.25, R2-2 1.91, R2-3 1.75, R3 79.24 (attempt 1 1,148.2 job-minutes with the
-lost shard's 8 minutes, attempt 2 40.4). Total 108.04 against the ticket's expected 86.8 and ceiling 449.4. Rows: R1 with its instrument
+lost shard's 8 minutes, attempt 2 40.4). Total 108.04 before the correction pass; the correction pass added the tests-first run 1.17 and the correction run 20.34 (from the
+correction row, 222.7): total 129.55 against the ticket's expected 86.8 and ceiling 449.4. Rows: R1 with its instrument
 run 1.89 of 4.0; R2 with its two instrument runs 26.91 of 36.0; R3 79.24 of 186.7. Instrument runs used: one of three on R1's item,
 two of three on R2's item (VAL-54).
