@@ -1,5 +1,5 @@
 {
   "run": "lifecycle",
   "package_commit": "2105395723930e3d70bbc72c63b2c6dce4a05471",
-  "note": "KIT-184 L1: lifecycle (5 replicates of each of cells A, B and D; parity with KIT-183's cell; a declared invalid argument); ceiling 75 job-minutes; decides the stop rules of ticket section 11 (seconds per replicate, pools, parity, what the removed factors caught)"
+  "note": "KIT-184 L1: lifecycle (5 replicates of each of cells A, B and D; parity with KIT-183 cell 12; a declared invalid argument); ceiling 75 job-minutes; decides the stop rules of ticket section 11; first push refused as an invalid workflow file, no job ran"
 }
