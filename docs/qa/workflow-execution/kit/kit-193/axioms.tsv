@@ -1,0 +1,17 @@
+theorem	spec_name	axioms
+GoClosure.bfs_terminates	GoClosure.bfs_terminates_stmt	propext, Classical.choice, Quot.sound
+GoClosure.bfs_correct	GoClosure.bfs_correct_stmt	propext, Classical.choice, Quot.sound
+GoClosure.propagate_fin	GoClosure.propagate_fin_stmt	propext, Classical.choice, Quot.sound
+GoClosure.idempotent	GoClosure.idempotent_stmt	propext, Classical.choice, Quot.sound
+GoClosure.monotone	GoClosure.monotone_stmt	propext, Classical.choice, Quot.sound
+GoClosure.extensive_kept	GoClosure.extensive_kept_stmt	propext, Classical.choice, Quot.sound
+GoClosure.not_extensive	GoClosure.not_extensive_stmt	propext, Classical.choice, Quot.sound
+GoClosure.labels_mono	GoClosure.labels_mono_stmt	propext, Classical.choice, Quot.sound
+GoClosure.root_removed	GoClosure.root_removed_stmt	propext, Classical.choice, Quot.sound
+GoClosure.all_absent	GoClosure.all_absent_stmt	propext, Classical.choice, Quot.sound
+GoClosure.bfs_all	GoClosure.bfs_all_stmt	propext, Classical.choice, Quot.sound
+GoClosure.aspect_closed	GoClosure.aspect_closed_stmt	propext, Classical.choice, Quot.sound
+GoClosure.monotone_witness	GoClosure.monotone_witness_stmt	propext, Classical.choice, Quot.sound
+GoClosure.labels_mono_witness	GoClosure.labels_mono_witness_stmt	propext, Classical.choice, Quot.sound
+GoClosure.all_absent_witness	GoClosure.all_absent_witness_stmt	propext, Classical.choice, Quot.sound
+GoClosure.aspect_closed_witness	GoClosure.aspect_closed_witness_stmt	propext, Classical.choice, Quot.sound

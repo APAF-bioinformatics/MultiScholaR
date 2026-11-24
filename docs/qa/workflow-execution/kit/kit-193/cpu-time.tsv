@@ -45,3 +45,5 @@ leanchecker-prefix-spec	2026-11-24T11:46:03+11:00	1.991	3.632	13.411	139	taskset
 leanchecker-two-modules	2026-11-24T11:46:16+11:00	1.267	3.489	8.685	139	taskset -c 0-3 lake env leanchecker MultiScholaRProofs.Spec.FilterCount MultiScholaRProofs.Oracle.GoClosure
 t3-build-proof	2026-11-24T11:46:40+11:00	2.967	0.732	2.655	0	taskset -c 0-3 lake build --wfail MultiScholaRProofs.Proof.GoClosure
 leanchecker-proof-goclosure	2026-11-24T11:46:46+11:00	1.253	1.514	3.067	0	taskset -c 0-3 lake env leanchecker -v MultiScholaRProofs.Proof.GoClosure
+t3-build-root	2026-11-24T11:47:56+11:00	2.287	0.628	2.361	0	taskset -c 0-3 lake build --wfail
+t3-audit	2026-11-24T11:47:59+11:00	1.195	0.538	1.719	0	taskset -c 0-3 lake env lean Audit.lean

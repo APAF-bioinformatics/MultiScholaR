@@ -60,8 +60,30 @@ at a = 1 (`kept_family_unit_a_counterexample_stmt`; the formula is now stated fo
 `models.md` holds the model-to-code table and each pair's kind and planted defect. `tests/testdata/kit193/bindings.tsv` lists the bound objects; every digest is `pending` until
 its pair first runs on merged code (8.2). `SPEC.sha256` is not written: it follows the gate.
 
+## Freeze
+
+`proofs/lean/SPEC.sha256` written from the Spec files at 4183eb10, equal byte for byte to the values in the
+statements register's closure check; committed alone (c783e1ae). From here a Spec file changes only through 5.3 item 4.
+
+## Target 3 (GO closure): proved
+
+Observed on the laptop, 2026-11-24 (four cores, one Lean process at a time). Proof file
+`MultiScholaRProofs/Proof/GoClosure.lean`; every statement of `Spec/GoClosure.lean` (12) and every witness (4) has a
+theorem whose type is the frozen statement (`Audit.lean`'s `example` lines compile), and each depends on
+`propext`, `Classical.choice` and `Quot.sound` only (`#print axioms`; `axioms.tsv`).
+
+- **Laptop CPU time for target 3: 39.8 CPU-seconds** (30.5 s user + 9.3 s system) over 11 Lean calls (the oracle
+  module's build and run, six compiles of the proof file, the module build, the root build, the audit), **32.5 s of
+  Lean wall time**; labels `t3-*` in `cpu-time.tsv`.
+- Agent time: 0.12 h for the proofs (11:41 to 11:48), against 14 expected and 24 ceiling; the oracle table
+  (`go-closure.tsv`) 0.07 h before it (`effort.tsv`).
+- How the search is proved: a loop invariant (every seen pair is a (term, ancestor) pair; every start pair is seen;
+  every seen pair off the frontier has all its successors seen; every seen pair is in terms × nodes) and a potential
+  (pairs not yet seen, plus one while the frontier is not empty) that falls by at least one on every pass that does not
+  stop; so the pass budget never binds and the end state is exactly the closure.
+
 ## Not checked
 
-- No statement is proved; no witness is proved; nothing was run in R.
+- Targets other than 3 are not proved yet; nothing was run in R.
 - The gate's own reads (RUVIIIC at c534151f, `ruv` 0.9.7.1 as locked, RUVSeq) were not done.
 - The CI workflow (4.4) and the lifecycle L0 are not written.
