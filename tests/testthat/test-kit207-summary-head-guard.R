@@ -471,6 +471,30 @@ for (class in c("lipid", "metab")) {
         k207ExpectRefused(rec, dirs, omic, k207Texts$summary, paste("E7", class))
     })
 
+    test_that(paste("KIT-207 E12:", class, "a valid save, a Revert to QC complete, a refused save: the earlier input is removed"), {
+        # Implementation audit K207-I03 (b): SD-5 (b)'s main case, an earlier valid save of the same session.
+        skip_if_not(workflowOwnerCapable())
+        root <- withr::local_tempdir()
+        seen <- k194Notes()
+        omic <- k194Omic(class)
+        binding <- kit172Binding(class)
+        prefix <- binding$prefix
+        q <- k207Normalised(file.path(root, "e12"), class, da = TRUE)
+        dirs <- k207Dirs(file.path(root, "e12-project"), omic)
+        input <- file.path(k207IntegrationDir(dirs[[omic]]), omic)
+        rec <- k207Save(q$fx$workflow, omic, dirs)
+        expect_identical(rec$done, 1L, info = paste("E12 valid save precondition", class, paste(rec$notes, collapse = " | ")))
+        expect_true(dir.exists(input), info = paste("E12 valid save precondition", class))
+        expect_identical(k194Revert(q$fx, paste0(prefix, "_qc_complete")), paste0(prefix, "_qc_complete"), info = "E12 precondition")
+        again <- dirs
+        again[[omic]]$source_dir <- file.path(root, "e12-second", "scripts", omic)
+        dir.create(again[[omic]]$source_dir, recursive = TRUE, showWarnings = FALSE)
+        rec <- k207Save(q$fx$workflow, omic, again)
+        k207Line("E12", class, k194Head(q$fx), rec, binding, sprintf("\tinput_left=%s", dir.exists(input)))
+        k207ExpectRefused(rec, again, omic, k207Texts$summary, paste("E12", class), binding)
+        expect_false(dir.exists(input), info = paste("E12", class, "the earlier input"))
+    })
+
     test_that(paste("KIT-207 E8:", class, "Generate Report and Export Session State refuse after a Revert to QC complete"), {
         skip_if_not(workflowOwnerCapable())
         root <- withr::local_tempdir()

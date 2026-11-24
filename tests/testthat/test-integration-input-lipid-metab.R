@@ -226,7 +226,8 @@ test_that("KIT-135: without RUV the normalised matrix is written; with no final 
     writeLines("{}", file.path(stale, INTEGRATION_INPUT_MANIFEST))
     # A save at a head that is not the normalisation's result is refused and writes nothing; the earlier input is removed
     # (K061-3; KIT-207 SD-5 (b))
-    expect_error(integrationOmicsSummarySave("metabolomics", empty, project), class = "omic_norm_correlation_input_stale")
+    expect_error(integrationOmicsSummarySave("metabolomics", empty, project), class = "omic_norm_correlation_input_stale",
+        regexp = "No normalisation has been run in this session", fixed = TRUE)
     expect_false(file.exists(file.path(project, "integration", "metabolomics_kit135_final_s4.RDS")))
     expect_false(dir.exists(stale))
 })
