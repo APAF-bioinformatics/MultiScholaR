@@ -50,6 +50,31 @@
    step's input, is the result (result_entity_id) of a normalisation, RUV or correlation step. The data were then
    normalised twice, or filtered after normalisation. Run such analyses again with this version (KIT-194).
 
+ * Lipidomics, metabolomics and transcriptomics: the Summary tab's 'Save Workflow Arguments', 'Generate Report' and
+   'Export Session State' now refuse with a message when the current table is not the result of the last
+   normalisation, for example after Quality Control was reverted or the normalisation was reset after it ran. Before,
+   the saved final object (<omic>_<label>_final_s4.RDS), the study parameters and the analysis record could describe
+   the quality-control table (not normalised), an empty object, or an earlier normalisation, while the differential
+   analysis shown came from the normalised data. A refused save writes nothing and removes the omic's integration
+   input folder (integration/<omic>/), as a save without a final table already did, so the Integration tab does not
+   read an earlier input after a refused save. This includes an input saved earlier in the same session: after a
+   Revert and a refused save, run the normalisation again and save before integrating. 'Generate Report' and 'Export
+   Session State' refuse without removing anything. After a Reset, press Revert once in a Quality Control sub-tab (or
+   run the normalisation again) before saving; after one Revert to the RUV-corrected table that table is saved; a save
+   right after a run, before the correlation step, is allowed; the Summary does not check that the differential
+   analysis shown was run on the table it saves. Transcriptomics no longer writes an earlier normalisation's RUVIII
+   matrix as the integration file: after a second normalisation without a new RUVIII export the save says so. In every
+   omic, proteomics included, a save whose integration input is refused for another reason now names the reason. Saves
+   at the end of the normalisation, after its correlation step or Skip, and after the differential analysis are
+   unchanged. To check an earlier save: open analysis_record.json in the folder of study_parameters.txt (the same save
+   wrote both). If the last step it lists is not a normalisation result (a state ending in _normalized,
+   _ruv_corrected, _correlation_filtered or _norm_complete, or loaded_for_de; for transcriptomics trx_ruvs), for
+   example a quality-control, Reset, internal-standard or log2 state, that save's final object, study parameters and
+   (transcriptomics) integration file do not describe the normalised analysis: save again with this version. A
+   transcriptomics save that showed 'Study parameters saved with warnings' after a second normalisation may have
+   written the earlier RUVIII export as transcriptomics_normalized_data.tsv: run the RUVIII export and save again
+   (KIT-207).
+
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
    model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
