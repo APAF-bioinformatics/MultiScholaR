@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-167 pass 2, tests first at 644aa7df: download, GUI and replay tests shown failing before their fix (no R/ change); ceiling 45 job-minutes; decides the failing-first record",
+  "label": "KIT-167 P2 T1 failing first 644aa7df",
+  "package_commit": "644aa7dfda4100aaa8534a1d731ac3688b793cb7",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-reference-download.R",
+    "test-reference-mapping-gui.R",
+    "test-reference-mapping-enrichment.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
