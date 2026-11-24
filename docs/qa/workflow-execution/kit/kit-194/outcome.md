@@ -1,15 +1,18 @@
 # KIT-194 outcome: lipidomics, metabolomics and transcriptomics normalisation state guards
 
-Ticket revision 1.2 (B01 to B05 applied at step 0; D1 to D4 answered, VAL-105). Branch
-`kit-194-omics-normalisation-guards` from `v0.9-staging` 447ba678. Every run on `run-tests` (R 4.6.1, reference BLAS,
-ubuntu-22.04); ids, commits and job minutes in `runs.tsv`. **State: stopped after R1 at acceptance criterion A3** (one
-regression-scope file changed; owner decision needed, below). R2 (the full suite) has not run.
+Ticket revision 1.3 (r1.2: B01 to B05 applied at step 0, D1 to D4 answered, VAL-105; r1.3: the correction pass after
+R1 stopped at A3, coordinator's ruling option 1). Branch `kit-194-omics-normalisation-guards` from `v0.9-staging`
+447ba678, with `v0.9-staging` 19997323 merged in (8290ddb8). Every run on `run-tests` (R 4.6.1, reference BLAS,
+ubuntu-22.04); ids, commits and job minutes in `runs.tsv`. **State: done; ready for the implementation audit.**
 
 | Commit | Content |
 |---|---|
 | 5c727c10 | tests first: `tests/testthat/test-omics-norm-state-guards.R` (F1, T1 to T10, the classes block) and `fj-confirm.R`; `R/` equal to base |
 | c846908d | tests first, three instrument repairs after G0 (feasibility.md); `R/` equal to base |
 | 09f05774 | the fix: `R/mod_omic_norm.R`, `R/utils_workflow_trx_norm.R`, `R/utils_workflow_omics_actions.R`, `R/mod_omic_qc_tabs.R`, `R/mod_trx_qc_filter.R`, `R/mod_omic_da.R`; NEWS; ledger row `VAL-<merge>` |
+| cc3adec4 | records of G0 and R1 (the A3 stop) |
+| 43fffa9c | the correction pass: `test-metab-03d-norm-module-characterization.R` lines 320 and 327 only (start state `metab_norm_complete` to `metab_qc_complete`; no expectation changed); the NEWS and ledger sentence on lineage-free normalisation-named states |
+| 8290ddb8 | true merge of `v0.9-staging` 19997323 (carries KIT-187); ledger conflict resolved with staging's rows VAL-106 to VAL-121 kept and this ticket's `VAL-<merge>` after them; NEWS merged without conflict; no file under `R/` this ticket edits changed on staging |
 
 ## Observed
 
@@ -32,51 +35,79 @@ run: an error, `W_2` kept) and F3 (lipid/metab second run with ITSD by pattern: 
   export prereq and success behavior": the export's files are not written on head (`r1-compare.tsv`).
 - R CMD check: 0 ERROR, 3 WARNING, 3 NOTE on each side; findings only on head: none (`r1-check-compare.txt`).
 
-## Inferred (read in the code, not run)
+**The A3 stop (read in the code).** The new failure's harness committed a plain object as `metab_norm_complete` and
+pressed "Run Normalization Pipeline" in a fresh tab (`test-metab-03d-norm-module-characterization.R:320-352`); by 7.3's R3
+branch and VAL-105 (1) that press is refused, so no run, no Skip and no export followed. The ticket's 6.2 had misread
+the harness's start state. Coordinator's ruling (option 1, as the ticket's one correction pass): the decided rule stands;
+the fixture's start state becomes `metab_qc_complete` (two lines; every expectation unchanged); ticket r1.3 records it
+(6.2, 7.8 row 6b, 12.2).
 
-The new failure's harness commits a plain object as `metab_norm_complete` and presses "Run Normalization Pipeline" in a
-fresh tab (`tests/testthat/test-metab-03d-norm-module-characterization.R:320-352`). By 7.3 (R3) and VAL-105 (1), a run
-pressed at a normalisation state with no remembered start is refused ("this tab does not know which table the earlier
-normalisation started from"); the run therefore does not happen, Skip finds no completed run, and the export is
-refused as before the run. This is the behaviour T3 (d) asks for; the ticket's 6.2 expected the file to stay `same`
-because it read the harness as "one run per harness", not its start state. Two ways forward, both outside what the
-ticket authorises, so the work stops here (one correction pass is left):
-1. Edit the existing test's start state to `metab_qc_complete` (two lines, 320 and 327): its export expectations are kept
-   and run on a table the run may normalise. Not in 7.8's file list.
-2. Narrow R3: refuse at a normalisation state only when the head has normalised lineage or was adopted; a state with a
-   normalisation's name but no such lineage (made only by scripts or fixtures) runs on the head as R1. F1 shows every
-   state a run commits carries lineage, so T3 (d) still refuses. A change of 7.3's decided rule.
+**R1c, the correction pass (run 45313963471), merged head 8290ddb8 against `v0.9-staging` 19997323 plus the ticket's
+tests (branch `run-k194-r1c-base`, bfd0bae1; `R/` equal to staging).** New file base 358 passed, 280 failed, 0 errors;
+head 647 passed, 0 failed (`fixed`). All 45 other files `same`; `test-metab-03d-norm-module-characterization.R` 13
+passed on both. R CMD check: findings identical, none only on head (`r1c-check-compare.txt`). Effect lines on head as R1
+(second run maximum 20.11, started from `<prefix>_qc_complete`).
+
+**R2 (run 45319721518), full suite, 8290ddb8 against 19997323.** 457 files `same`, 1 `only-on-head`
+(`test-omics-norm-state-guards.R`, 647 passed, 0 failed); no new failure, no changed message; 36 files fail identically on
+base and head (known laptop-recorded references); no timeout or crash; longest job 50.5 minutes (`r2-compare.tsv`).
+
+**Fixtures building a lineage-free normalisation-named start (surveyed for the ruling; none changed).** Each passes
+because it does not press Run (or QC) at that state:
+- `test-lipid-12a-norm-module-characterization.R:118` (owner at `lipid_normalized`): the lipid twin; its live blocks
+  start the module without pressing Run; the blocks that pressed Run (`:640` on) are quarantined (Q-96).
+- `test-lipid-12-norm-module-contracts.R:2605`, `:2662`, `:2738` (`lipid_normalized`, `lipid_ruv_corrected`): Skip,
+  correlation and Reset contracts on mocked handlers; the file is skipped (0 tests run on base and head).
+- `helper-module-ci-lipid-da.R:165`, `helper-module-ci-metab-da.R:161`, `test-metab-02aa-da-display-filter-characterization.R:2084`,
+  `test-omic-da-module.R` lipid/metab fixtures (`omicsTestOwner(..., "<prefix>_correlation_filtered")`): DA tab only; the
+  fallback cases are accepted by the name list (divergence 2), the load cases name their state.
 
 ## Acceptance criteria
 
 | # | Status | Evidence |
 |---|---|---|
-| A0 | met | ticket r1.2: decisions answered (VAL-105), D1 (a) text removed, closure section 18 |
+| A0 | met | ticket r1.2: decisions answered (VAL-105), D1 (a) text removed, closure section 18; r1.3 the correction pass |
 | A1 | met | `feasibility.md`, `fj-confirm.tsv`: G0 all routes reproduced; F1 passes; F2, F3 recorded |
-| A2 | met | R1: base 280 failures, 0 errors, head 0 failures (`fixed`); T9, T10 pass on both |
-| A3 | **not met** | `test-metab-03d-norm-module-characterization.R` `new-failure` (above); all other files `same` |
-| A4 | met | `r1-check-compare.txt`: nothing only on head |
-| A5 | not run | R2 waits for the decision on A3 |
+| A2 | met | R1 and R1c: base 280 failures, 0 errors, head 0 failures (`fixed`); T9, T10 pass on both |
+| A3 | met after the correction pass | R1 (run 45307575111) showed `test-metab-03d` `new-failure` (A3 stop); R1c (run 45313963471): every other file `same` |
+| A4 | met | `r1-check-compare.txt`, `r1c-check-compare.txt`: nothing only on head |
+| A5 | met | R2 (run 45319721518): 457 `same`, the new file `only-on-head` |
 | A6 | met | `effect.tsv` |
 | A7 | met on the branch | NEWS under the unreleased heading; ledger row `VAL-<merge>`; `DESCRIPTION`, `NAMESPACE`, `man/`, `packaging/`, lock files unchanged |
 | A8 | met | this file, `runs.tsv` |
 
-## Divergences recorded
+## Divergences recorded (for the implementation audit)
 
-- 7.3: the remembered start is found as the active-history state whose current reference has the start's entity id,
-  not by its save label; the same condition (name in the history, entity unchanged), without depending on the label.
-- 7.5: the A01 derivation check on the DA fallback applies when the owner holds a `<prefix>_normalized`; an owner with
-  none (a fixture's single state, `test-omic-da-module.R`'s no-contrasts and preflight cases) is judged by the name list,
-  as proteomics. Without this those regression-scope cases would change (read before R1; R1 shows them `same`).
-- B02, B03: the managed `failed` callbacks show a notification only for the QC guard's refusal; a worker's own failure is
-  already reported by the step, so it is not shown twice (the sub-tabs' and trx's visible behaviour on other failures
-  unchanged).
-- The trx run's refusal is also written to the tab's log (as lipid/metab's).
+1. **7.3, how the remembered start is found** (`omicNormRunStart`, `R/mod_omic_norm.R`). The ticket's pseudocode takes
+   the start's save label (`start$identity$parameters`) as its state name, then checks that the name is in the active
+   history and that its current reference has the start's entity id. The code looks for the active-history state whose
+   current reference has the start's entity id. Why it is needed: the two are the same condition only while the label
+   equals the state name, which the ticket left for F1 to confirm ("its save label = its state name") and which a
+   recommit or a content-addressed save could break; matching by entity id needs no assumption about labels and cannot
+   select a state whose table differs from the one the previous run read. Tested by T3 (a) to (c) and T4.
+2. **7.5, the DA fallback's A01 check only when the owner holds a `<prefix>_normalized`**
+   (`omicDaFallbackHeadNormalised`, `R/mod_omic_da.R`). The ticket applies the derivation check to every
+   `_ruv_corrected`, `_correlation_filtered`, `_norm_complete` head; with no `_normalized` in the owner the check is FALSE
+   and the DA would be refused. Why it is needed: the hazard A01 closes (an earlier run's state made current by a Revert
+   after Reset and a second run) needs a second run, which always commits `_normalized`, so an owner without one has no
+   earlier run to confuse; without the condition the lipid and metab no-contrasts and invalid-preflight cases of
+   `test-omic-da-module.R` (owner fixtures holding only `<prefix>_correlation_filtered`, regression scope) would show the
+   DA refusal in place of their recorded messages (read before R1; R1 shows the file `same`). Proteomics' name list
+   still applies there.
+3. **B02, B03, the managed `failed` callbacks** (`omicQcManagedFailed`, `R/mod_omic_qc_tabs.R`; trx's in
+   `R/mod_trx_qc_filter.R`). The register's texts show every error passed to `failed`; the code shows a notification
+   only for the QC guard's refusal (class `omic_qc_input_normalised`) and otherwise does what it did before (removes the
+   working notice; trx had no callback). Why it is needed: a managed step's own failure is already reported by the step
+   (`installWorkflowOmicsActions`, its step's `failed`, `R/utils_workflow_omics_actions.R:57-66`), so showing it again
+   would duplicate every worker error on managed sessions, a visible change beyond this ticket; the only failure that
+   reaches `failed` unreported is a refusal made when a queued action starts (A02), which is what B02 and B03 address.
+   Tested by T1 A02 and T2 managed.
+- Also: the trx run's refusal is written to the tab's log as well as notified (as lipid/metab's).
 
 ## Not checked
 
 - The real worker's busy refusal and start-time QC check under a press that actually waits (stubs only; the worker
   journey presses at idle and stayed `same`).
-- R2, the full suite base against head.
+- Staging moved after the merge (to 67d38df3: KIT-192, KIT-189, KIT-191 merged); R2 is against 19997323. The merger's rule (6.3) applies.
 - Enrichment downstream of an affected DA; the report text of an affected record; F-m, F-p, F-q, F-r (candidates).
 - Lipid's recorded log2 argument (D4 (b2)) and the state names older builds wrote.
