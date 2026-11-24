@@ -1,0 +1,41 @@
+{
+  "requested_by": "KIT-188 small lifecycle check of the owed script changes on staging ea93d948: L12 401 deciding and the named case K172c, crash and per-assay no_da faults; timeout 45; charged to L1r's line",
+  "label": "KIT-188 lc2-l aee81861",
+  "package_commit": "aee8186163ba495100e3547da52d3459b18c7f84",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12,K172c",
+        "401",
+        "401",
+        "k188-lc2-l"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_JOBS": "deciding,k172c",
+        "K188_FAULT": "1",
+        "K188_JOB": "lc2-l"
+      },
+      "out": "k188-lc2-l",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
