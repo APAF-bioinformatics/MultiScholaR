@@ -30,7 +30,8 @@
    table that carries the name of a normalisation step is treated as normalised even when it was made by a script, or
    loaded from a session file, rather than by the tab: quality control and the normalisation refuse it, and the message
    asks to Revert to the last quality-control step (or, when none is left, to import the data again). Scripts that call
-   the package's step functions directly are not guarded, as in proteomics; a script decides which table it passes. The
+   the package's step functions directly are not guarded (in proteomics the exported quality-control step functions
+   refuse a normalised table, the internal computations do not); a script decides which table it passes. The
    differential analysis no longer runs on a session file named after a design, quality-control, reset,
    internal-standard or log2 state (such a file was exported after Quality Control was reverted past the normalisation).
    Results change only for sessions that took these routes; analysis records are not changed, and replaying one repeats
@@ -67,6 +68,24 @@
    Files written by an earlier run of the same project that used the RUV grid search (this summary, the
    canonical-correlation panels and the grid workbook) are not removed, and describe that earlier run. Runs that used
    the RUV grid are unchanged. The RUV design panel is off by default.
+ * Proteomics normalisation run again after changes in Quality Control now uses the current quality-control result.
+   Before, once normalisation had run, every later run reused the protein table the first run had read until Reset was
+   pressed, and in some cases even the first run used a table from before the latest quality-control changes, so
+   filters changed or completed afterwards were silently ignored (DIA, label-free and TMT; DIA with limpa was not
+   affected). Results of such a run change: normalisation, RUV, the correlation filter and the differential analysis are
+   now computed from the filtered table the Quality Control tab shows, the pre-normalisation figures and the
+   pre-normalisation column of the composite QC figure are redrawn from that same table, and a notice says that the
+   table differs from the previous run's. A run with no quality-control change in between gives the same results as
+   before. The protein quality-control steps can no longer be applied to a normalised table; press Revert in the Quality
+   Control tab to change quality control after normalisation. If a project saved earlier already holds quality-control
+   steps applied to a normalised table, normalisation now stops with a message naming the step to go back to, instead
+   of normalising an earlier table or normalising the data twice. "Apply Correlation Filter" and "Skip Filtering &
+   Proceed to DE" now stop with a message when quality control has changed since normalisation, instead of filtering
+   the earlier normalisation's result. Saved projects and analysis records are not changed; in a project saved before this release in which
+   normalisation was run again after a quality-control step was reverted or applied again, that run used the earlier
+   table, and its analysis record names the quality-control result as the step's input; to recompute such a project,
+   press Revert in the Quality Control tab back to the step you changed, apply the steps again and press "Run
+   Normalization & RUV"; replaying a record repeats the steps it recorded (KIT-182).
 
  * Proteomics: when protein annotation from UniProt is empty or incomplete the app now says why, keeps the notice
    until it is closed, writes the fact into the analysis record, and no longer keeps an empty or incomplete answer
