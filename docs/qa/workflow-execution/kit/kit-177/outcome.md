@@ -273,3 +273,11 @@ ledger) against base 17365cb0; R2's 26 files plus KIT-187's `test-prot-missing-v
 `test-gui-entry-proteomics.R` `same` at 183/10 on both (the three re-frozen lanes pass on the merged tree with KIT-183,
 KIT-186 and KIT-187 under them); `test-prot-missing-value-counts.R` `same`; every other file `same`; check findings
 equal. Any other verdict is a result: stop and report.
+
+**R2b, run 45313880809** (`r2b/`; 292.8 job-minutes = 19.52 core-hours, ceiling 24): every verdict as predicted. 25
+`same`, among them `test-gui-entry-proteomics.R` 183/10 on both (the three re-frozen lanes pass on the merged tree with
+KIT-183, KIT-186 and KIT-187 under them; the 10 are `prot_dia` and `prot_dia_limpa`) and `test-prot-missing-value-counts.R`
+67/0 on both; `test-prot-design-log2.R` `only-on-head` 226/0; `test-workflow-analysis-record.R` `count-changed` 351/0.
+R CMD check 0/3/3 on both, none only on head. The merged `R/`, `tests/`, `inst/`, `DESCRIPTION` and `NAMESPACE` are
+staging's plus this branch's tested changes (the only hand-resolved conflicts were `NEWS.md` and the ledger). Core-hours
+in all: 129.39 (109.87 + R2b 19.52) against the ceiling of 245.4.
