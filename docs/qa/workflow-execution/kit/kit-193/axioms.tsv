@@ -27,3 +27,17 @@ ReplayRule.faithful_witness	ReplayRule.faithful_witness_stmt	propext, Classical.
 ReplayRule.without_marker_witness	ReplayRule.without_marker_witness_stmt	propext, Classical.choice, Quot.sound
 ReplayRule.managed_new_design_witness	ReplayRule.managed_new_design_witness_stmt	propext, Classical.choice, Quot.sound
 ReplayRule.unfixed_default_witness	ReplayRule.unfixed_default_witness_stmt	propext, Classical.choice, Quot.sound
+FilterCount.never_stricter	FilterCount.never_stricter_stmt	propext, Classical.choice, Quot.sound
+FilterCount.exact_lcm	FilterCount.exact_lcm_stmt	propext, Classical.choice, Quot.sound
+FilterCount.exact_316	FilterCount.exact_316_stmt	propext, Classical.choice, Quot.sound
+FilterCount.balanced	FilterCount.balanced_stmt	propext, Classical.choice, Quot.sound
+FilterCount.share_mono	FilterCount.share_mono_stmt	propext, Classical.choice, Quot.sound
+FilterCount.peptide_floor	FilterCount.peptide_floor_stmt	propext, Classical.choice, Quot.sound
+FilterCount.counterexample	FilterCount.counterexample_stmt	propext, Classical.choice, Quot.sound
+FilterCount.counterexample_any_rounding	FilterCount.counterexample_any_rounding_stmt	propext, Classical.choice, Quot.sound
+FilterCount.never_stricter_witness	FilterCount.never_stricter_witness_stmt	propext, Classical.choice, Quot.sound
+FilterCount.exact_lcm_witness	FilterCount.exact_lcm_witness_stmt	propext, Classical.choice, Quot.sound
+FilterCount.exact_316_witness	FilterCount.exact_316_witness_stmt	propext, Classical.choice, Quot.sound
+FilterCount.balanced_witness	FilterCount.balanced_witness_stmt	propext, Classical.choice, Quot.sound
+FilterCount.share_mono_witness	FilterCount.share_mono_witness_stmt	propext, Classical.choice, Quot.sound
+FilterCount.counterexample_any_rounding_witness	FilterCount.counterexample_any_rounding_witness_stmt	propext, Classical.choice, Quot.sound

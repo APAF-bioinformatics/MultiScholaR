@@ -95,8 +95,20 @@ what is proved.
 - Laptop CPU time for target 2: 14.3 CPU-seconds (11.0 user + 3.2 system) over 6 Lean calls, 11.8 s of Lean wall
   time (labels `t2-*`). Agent time 0.05 h (11:48 to 11:51), against 10 expected and 18 ceiling.
 
+## Target 1 (filter count rule): proved
+
+Proof file `MultiScholaRProofs/Proof/FilterCount.lean`; every statement of `Spec/FilterCount.lean` (8) and every
+witness (6) proved, each on `propext`, `Classical.choice`, `Quot.sound` (`axioms.tsv`). The exactness within the
+lcm bound rests on one integer fact: when `k/n > a/n*`, `k n* - a n` is a positive multiple of `gcd(n, n*)`, hence at
+least `gcd(n, n*)`, and `gcd · lcm = n n*` with `lcm < 100000` gives `2 n n* < 200000 (k n* - a n)`, which absorbs the
+half-unit rounding slack of `P`. The counterexample "whatever the rounding" forces `P = 312` from `RoundedOK` and
+checks the rule at it.
+
+- Laptop CPU time for target 1: 4 calls, 14.2 CPU-seconds (11.9 user + 2.3 system), 10.8 s of Lean wall time (labels `t1-*`). Agent time 0.04 h (11:51 to 11:53), against 10 expected and
+  18 ceiling.
+
 ## Not checked
 
-- Targets other than 3 and 2 are not proved yet; nothing was run in R.
+- Targets 4, 5 and group R are not proved yet; nothing was run in R.
 - The gate's own reads (RUVIIIC at c534151f, `ruv` 0.9.7.1 as locked, RUVSeq) were not done.
 - The CI workflow (4.4) and the lifecycle L0 are not written.

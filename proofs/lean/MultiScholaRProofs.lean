@@ -11,6 +11,7 @@ public import MultiScholaRProofs.Spec.RuvIIIC
 public import MultiScholaRProofs.Oracle.GoClosure
 public import MultiScholaRProofs.Proof.GoClosure
 public import MultiScholaRProofs.Proof.ReplayRule
+public import MultiScholaRProofs.Proof.FilterCount
 
 /-!
 # KIT-193: machine-checked statements about exact models of parts of MultiScholaR's methods

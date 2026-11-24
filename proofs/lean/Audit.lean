@@ -74,3 +74,35 @@ example : ReplayRule.unfixed_default_witness_stmt := ReplayRule.unfixed_default_
 #print axioms ReplayRule.without_marker_witness
 #print axioms ReplayRule.managed_new_design_witness
 #print axioms ReplayRule.unfixed_default_witness
+
+/-! ## Target 1: the missing-value filter's integer rule (`Spec/FilterCount.lean`) -/
+
+example : FilterCount.never_stricter_stmt := FilterCount.never_stricter
+example : FilterCount.exact_lcm_stmt := FilterCount.exact_lcm
+example : FilterCount.exact_316_stmt := FilterCount.exact_316
+example : FilterCount.balanced_stmt := FilterCount.balanced
+example : FilterCount.share_mono_stmt := FilterCount.share_mono
+example : FilterCount.peptide_floor_stmt := FilterCount.peptide_floor
+example : FilterCount.counterexample_stmt := FilterCount.counterexample
+example : FilterCount.counterexample_any_rounding_stmt := FilterCount.counterexample_any_rounding
+example : FilterCount.never_stricter_witness_stmt := FilterCount.never_stricter_witness
+example : FilterCount.exact_lcm_witness_stmt := FilterCount.exact_lcm_witness
+example : FilterCount.exact_316_witness_stmt := FilterCount.exact_316_witness
+example : FilterCount.balanced_witness_stmt := FilterCount.balanced_witness
+example : FilterCount.share_mono_witness_stmt := FilterCount.share_mono_witness
+example : FilterCount.counterexample_any_rounding_witness_stmt := FilterCount.counterexample_any_rounding_witness
+
+#print axioms FilterCount.never_stricter
+#print axioms FilterCount.exact_lcm
+#print axioms FilterCount.exact_316
+#print axioms FilterCount.balanced
+#print axioms FilterCount.share_mono
+#print axioms FilterCount.peptide_floor
+#print axioms FilterCount.counterexample
+#print axioms FilterCount.counterexample_any_rounding
+#print axioms FilterCount.never_stricter_witness
+#print axioms FilterCount.exact_lcm_witness
+#print axioms FilterCount.exact_316_witness
+#print axioms FilterCount.balanced_witness
+#print axioms FilterCount.share_mono_witness
+#print axioms FilterCount.counterexample_any_rounding_witness
