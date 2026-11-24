@@ -1,0 +1,40 @@
+{
+  "requested_by": "KIT-199 R4 (D6, VAL-120): the prot_dia_limpa route under OpenBLAS, measured against the reference-BLAS r1/da-runner.tsv; reported, decides nothing",
+  "label": "KIT-199 R4 OpenBLAS measurement at records commit ef38bf2b",
+  "package_commit": "ef38bf2b557f303a72110e2742e377e12a663f36",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-199/control.R",
+      "args": [
+        "measure",
+        "docs/qa/workflow-execution/kit/kit-199/r4"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-199/r4",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 50
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-199/compare-da.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-199/r4/da-runner.tsv",
+        "docs/qa/workflow-execution/kit/kit-199/r1/da-runner.tsv",
+        "docs/qa/workflow-execution/kit/kit-199/r4"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-199/r4",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 5
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "openblas",
+  "os": "ubuntu-22.04"
+}
