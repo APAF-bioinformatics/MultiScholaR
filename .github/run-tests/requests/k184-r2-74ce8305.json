@@ -1,0 +1,56 @@
+{
+  "requested_by": "KIT-184 R2 (the one correction pass, after the owner's decision VAL-160): the adjustment off by default and the simulation's numbers in the texts; base = the tests-only commit a613b9cb (its side shows the restated expectations failing on the code before the change), head = the change; targeted files and dependents, check on both sides; script: the base-store job with the four mutations (two restated); ceiling 450 job-minutes (row R2) + 45 (row X); decides A2 to A12, A14, A16 for the changed behaviour",
+  "label": "KIT-184 R2 74ce8305 vs a613b9cb (tests-only, VAL-160)",
+  "package_commit": "74ce8305372ad457cfbce42c1eeb2ed088274209",
+  "base_commit": "a613b9cb66c1bcd542ef3fbb31334716a4928c36",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-removed-factors.R",
+    "test-workflow-integration-input.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-input-matrix.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-enrichment-options.R",
+    "test-integration-record.R",
+    "test-integration-gui.R",
+    "test-integration-workbook-api.R",
+    "test-integration-workbook.R",
+    "test-integration-enrichment.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-corpus.R",
+    "test-integration-feature-selection.R",
+    "test-integration-model.R",
+    "test-integration-outputs.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-record-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-integration-sample-match.R",
+    "test-kit129-run-path.R",
+    "test-kit172-downstream.R",
+    "test-workflow-analysis-record.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-184/base-store-job.R",
+      "args": [
+        "a5229552e1e487da222b002f098d6a16f724354c",
+        "k184-out/x",
+        "mutations"
+      ],
+      "out": "k184-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
