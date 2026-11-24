@@ -178,3 +178,42 @@ Manual 22.7 s and 86.8 s. Projected Automatic step at 50,000 features: 989 s, un
   the control shares, per cell, and on E1's fixtures (T1b's 42 journeys, T11 concentration, T11 F172). The figures are
   reported; the ticket states no threshold, so no verdict is drawn from them. The head's `share_tie_decided` is computed
   on q ties and does not describe rule (d).
+
+## Rule (d) measured (observed; runs 45329292905, 45329295530; `ed/`, `ed/three-way.tsv`)
+
+The base side reproduced the first E run's base figures exactly in every cell, so base, the first repair and rule (d)
+are comparable journey for journey. Means over R = 50 (95 % Monte Carlo intervals in `ed/three-way.tsv`):
+
+| Cell | k: base / first / (d) | FDP: base / first / (d) | power: base / first / (d) | calls per data set (d) | planted controls (d) |
+|---|---|---|---|---|---|
+| N-r | 2.00 / 2.26 / 5.46 | 0.160 / 0.200 / **0.680** | - | 96.5 (34 of 50 with any call) | 0 |
+| N-s | 2.22 / 2.16 / 5.22 | 0.240 / 0.220 / **0.640** | - | 87.7 (32 of 50) | 0 |
+| E-r | 1.72 / 2.48 / 5.32 | 0.156 / 0.180 / 0.444 | 0.502 / 0.561 / 0.800 | 127.8 | 0.007 |
+| E-s | 1.46 / 2.46 / 5.78 | 0.129 / 0.188 / 0.526 | 0.565 / 0.620 / 0.786 | 146.9 | 0.008 |
+| E-p | 1.28 / 2.34 / 5.60 | 0.280 / 0.276 / 0.506 | 0.481 / 0.552 / 0.720 | 134.8 | 0.008 |
+| E-g | 2.12 / 2.48 / 6.02 | 0.194 / 0.200 / 0.580 | 0.530 / 0.523 / 0.802 | 164.1 | 0.006 (one-group 0) |
+
+Head-minus-base (d): k +3.0 to +4.3, FDP +0.23 to +0.52, power +0.22 to +0.30; every interval excludes 0.
+
+E1 under (d): T1b (42 journeys) k 1.95 -> 5.21, FDP 0.226 -> 0.239, power 0.621 -> 0.516, false calls in all 1,166 ->
+1,748; the largest |change in log2 FC| per journey median 5.95 (23 of 42 above 5), maximum 1,066. T11 concentration:
+base 16 false calls, k 2; first repair 209, k 7; (d) **218, k 7** (12 %, 62 controls). T11 F172 (no planted effect):
+base 37 false calls; first repair 0; (d) **330, k 8** (18 %, 93 controls).
+
+Inferred, not examined: rule (d) chooses the features least associated with the groups, which also carry the least
+unwanted variation relative to their noise; the canonical-correlation elbow then picks a large k (5 to 8 of 12 samples),
+and RUV-III with that k on 12 samples inflates false calls. The rule meets its selection goals (planted controls under
+1 %, no one-group controls, no row-order dependence) and fails the error-rate one in every cell measured.
+
+## R2 (run 45329435006; head 4baddb58 = rule (d) + 7.4 + staging d2179e3b; base d2179e3b)
+
+Observed: 70 files `same`; the new file `only-on-head`; check 0 findings only on head. Not as predicted:
+- `test-kit172-downstream.R` new failure (T7, lipid and metab): "unobserved >= 1" is 0 (no control unobserved somewhere:
+  a consequence of (d)'s one-group exclusion, inferred).
+- `test-workflow-omics-ruv-cancor-once.R` new failure (lipid, metab, sweep with missing values): not every assay
+  succeeds (inferred: a larger k exceeds the complete controls at every percentage).
+- `test-workflow-omics-binding-steps.R` message-changed: the record snapshot gains one fixed parameter (the marker),
+  expected from 7.4; its stored snapshot was not in 6.2's list.
+- `test-prot-norm-core.R` message-changed: the lipid and metab RUV pinned digests (failing on base too).
+- `test-omic-norm-module.R` new failure: the provenance digests (D5, predicted). The D5 control script failed reading
+  the dumps (instrument defect; not re-run).
