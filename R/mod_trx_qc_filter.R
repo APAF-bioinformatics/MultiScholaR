@@ -56,6 +56,18 @@ runTrxQcExpressionFilter <- function(workflowData, shown, output) {
         output$filter_results <- shiny::renderText(trxQcFilterText(counts))
         shiny::showNotification(sprintf("Expression filter applied: %d genes retained", counts$after_zero_variance), type = "message")
     }
+    # KIT-194: no QC step on a normalised table (7.2); the refusal's text alone (trxConditionText would append its class).
+    refused <- tryCatch({
+        assertOmicQcHeadNotNormalised(transcriptomicsDeclarationBinding, manager)
+        FALSE
+    }, error = function(error) {
+        message <- if (inherits(error, "omic_qc_input_normalised")) conditionMessage(error) else
+            paste("Error applying the expression filter:", trxConditionText(error))
+        logger::log_error(message)
+        shiny::showNotification(message, type = "error", duration = 15)
+        TRUE
+    })
+    if (refused) return(invisible(NULL))
     tryCatch({
         if (!identical(readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, manager)$class, "TranscriptomicsAssayData")) {
             stop("Current state is not a TranscriptomicsAssayData object")
@@ -63,12 +75,24 @@ runTrxQcExpressionFilter <- function(workflowData, shown, output) {
         runner <- workflowOmicsManagedActions("transcriptomics")
         if (!is.null(runner)) {
             held <- new.env(parent = emptyenv())
-            runner$run(list(omicsManagedCommit(trxExpressionFilterStep(), workflowData$config_list, function(result) {
+            actions <- list(omicsManagedCommit(trxExpressionFilterStep(), workflowData$config_list, function(result) {
                 held$counts <- result$value$counts
                 held$metrics <- readWorkflowOmicsFilteringMetrics(manager, result)
             }), omicsManagedProduct("trx_qc_figures", list(stage = "raw"), function(result) {
                 if (!is.null(result$display$stats)) held$stats <- resolveWorkflowStateValue(manager$.context, result$display$stats)
-            })), done = function() finish(held$counts, held$metrics, held$stats))
+            }))
+            # KIT-194 (A02, B01, B02): on a session owner a press queued behind a running action is judged when it starts;
+            # a refusal then is shown (the step reports its own failures, so only the refusal is).
+            if (inherits(manager, "DIAStateAdapter")) {
+                queued <- actions
+                actions <- function() {
+                    assertOmicQcHeadNotNormalised(transcriptomicsDeclarationBinding, manager)
+                    queued
+                }
+            }
+            runner$run(actions, done = function() finish(held$counts, held$metrics, held$stats), failed = function(error) {
+                if (inherits(error, "omic_qc_input_normalised")) shiny::showNotification(conditionMessage(error), type = "error", duration = 15)
+            })
             return(invisible(NULL))
         }
         run <- runTrxReferenceExpressionFilter(manager, workflowData$config_list)

@@ -288,6 +288,36 @@ omicDaHeadFallbackAllowed <- function(workflowData, binding) {
     identical(as.character(workflowData$tab_status$normalization %||% ""), "complete")
 }
 
+#' KIT-194 (D2, 7.5): whether the head the lipidomics or metabolomics DA falls back to is the normalisation's result. As
+#' proteomics' DA (`R/mod_prot_da_handlers_init.R:19`), only `<prefix>_normalized`, `_ruv_corrected`,
+#' `_correlation_filtered` and `_norm_complete`; the last three only when made from the last run (A01: a Revert after
+#' Reset and a second run can make an earlier run's state current). An owner that holds no `<prefix>_normalized` has no
+#' run to tell them apart by, so the name decides there (a fixture's or an older project's single state). TRUE for every
+#' other omic and for a manager that is not a session owner (as before).
+#' @return TRUE when the DA may run on the head.
+#' @noRd
+omicDaFallbackHeadNormalised <- function(workflowData, binding) {
+    manager <- workflowData$state_manager
+    if (!isTRUE(binding$omic_type %in% c("lipidomics", "metabolomics")) || !inherits(manager, "DIAStateAdapter")) return(TRUE)
+    normalized <- paste0(binding$prefix, "_normalized")
+    head <- manager$current_state
+    if (!isTRUE(head %in% c(normalized, paste0(binding$prefix, c("_ruv_corrected", "_correlation_filtered", "_norm_complete"))))) {
+        return(FALSE)
+    }
+    if (identical(head, normalized) || is.null(getWorkflowStateReference(manager, normalized))) return(TRUE)
+    omicNormDerivesFromCurrentRun(binding, manager, getWorkflowStateReference(manager))
+}
+
+#' KIT-194 (D4 (b1)): whether a loaded lipidomics or metabolomics session is named after a state before normalisation (a
+#' design, QC, reset, ITSD or log2 state); such a name in an exported file comes only from an export after a Revert past the
+#' normalisation (routes J5, J6). A deny list: other names (`loaded_for_de`, the normalisation's) load as before.
+#' @noRd
+omicDaLoadedStateRefused <- function(binding, state) {
+    isTRUE(binding$omic_type %in% c("lipidomics", "metabolomics")) && is.character(state) && length(state) == 1L &&
+        state %in% paste0(binding$prefix, c("_raw_data_s4", "_intensity_filtered", "_duplicates_resolved", "_qc_complete", "_reset",
+            "_itsd_norm", "_log2"))
+}
+
 # ------------------------------------------------------------------------------------------------
 # The run.
 # ------------------------------------------------------------------------------------------------
@@ -300,10 +330,18 @@ runOmicDaAnalysis <- function(input, session, workflowData, tab, experimentPaths
     settings <- list(formula_string = if (isTRUE(da$model$editable)) input$formula_string,
         da_q_val_thresh = input$da_q_val_thresh, treat_lfc_cutoff = input$treat_lfc_cutoff)
     logger::log_info("=== RUN DA ANALYSIS BUTTON CLICKED ===")
-    current <- omicDaLoadedMetadata(tab, workflowData, binding) %||%
-        (if (omicDaHeadFallbackAllowed(workflowData, binding)) omicDaReadSource(workflowData, da$source))
+    loaded <- omicDaLoadedMetadata(tab, workflowData, binding)
+    current <- loaded %||% (if (omicDaHeadFallbackAllowed(workflowData, binding)) omicDaReadSource(workflowData, da$source))
     if (!is.list(current) || !identical(current$class, da$source$class)) {
         shiny::showNotification(da$source$no_data, type = "error", duration = 5)
+        return(invisible(NULL))
+    }
+    # KIT-194 (D2, D3, D4 (b1)): the head fallback takes only the normalisation's states made by its last run, and a loaded
+    # session named after a state before normalisation is refused.
+    normalised <- if (is.null(loaded)) omicDaFallbackHeadNormalised(workflowData, binding) else
+        !omicDaLoadedStateRefused(binding, tab$current_state_name)
+    if (!normalised) {
+        shiny::showNotification(omicNormGuardTexts()$da, type = "error", duration = 10)
         return(invisible(NULL))
     }
     contrasts <- workflowData$contrasts_tbl
