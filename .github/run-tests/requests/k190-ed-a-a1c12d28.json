@@ -1,0 +1,37 @@
+{
+  "requested_by": "KIT-190 rule (d) measurement (VAL-110): base d4e2eb2c against head a1c12d28, cells E1,N-r,N-s,E-r, R = 50, same seeds as runs 45296793520/45296797285; reported, no threshold",
+  "label": "KIT-190 E under rule d part A a1c12d28",
+  "package_commit": "a1c12d28bfd6e8291f3e360ab75b6875458d8c88",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "e",
+        "d4e2eb2cff0302c27f98b78f90bfb51dab6aee04",
+        "k190-ed/a"
+      ],
+      "env": {
+        "K190_CELLS": "E1,N-r,N-s,E-r",
+        "K190_WORKERS": "2",
+        "K190_RULE": "d"
+      },
+      "out": "k190-ed",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 150
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
