@@ -252,9 +252,10 @@ k194Load <- function(fixture, dir) {
     tab
 }
 
-#' A legacy session of `fixture`'s QC-complete table loaded under `state`.
+#' A legacy session of F172's table loaded under `state`.
 k194LoadLegacy <- function(fixture, state, root) {
-    object <- readWorkflowOmicsState(fixture$binding, k194Owner(fixture), paste0(fixture$prefix, "_qc_complete"))
+    # A self-contained object, as an older build's file holds one (a state read from the owner is reference-backed).
+    object <- kit172Object(kit172Values(172001L)$values, fixture$class)
     k194Load(fixture, k194LegacySession(fixture, object, state, file.path(root, paste0("legacy-", state))))
 }
 
@@ -541,8 +542,8 @@ for (class in c("lipid", "metab")) {
             k194ExpectRun(fx, nd, paste("T1", route))
             k194Apply(fx, nd)
             k194Skip(fx, nd)
-            heads <- paste0(prefix, c("_norm_complete", "_correlation_filtered", if (!is.null(ruv)) "_ruv_corrected", "_normalized", "_log2"))
-            expect_true(all(heads %in% k194History(fx)), info = paste("T1 precondition:", paste(k194History(fx), collapse = " ")))
+            heads <- paste0(prefix, c("_norm_complete", "_correlation_filtered", if (!is.null(ruv)) "_ruv_corrected", "_normalized"))
+            expect_true(all(c(heads, paste0(prefix, "_log2")) %in% k194History(fx)), info = paste("T1 precondition:", paste(k194History(fx), collapse = " ")))
             refused <- function(head, label) {
                 for (button in c("apply", "resolve", "finalize")) {
                     if (!is.null(head)) selectWorkflowStateReference(k194Owner(fx), head)
@@ -561,6 +562,8 @@ for (class in c("lipid", "metab")) {
             selectWorkflowStateReference(k194Owner(fx), paste0(prefix, "_normalized"))
             kit172Quiet(runWorkflowOmicsReferenceIntensityFilter(fx$binding, k194Owner(fx), 1, 0.5, fx$workflow$config_list))
             refused(NULL, "intensity filter on the normalised table")
+            # A head inside the normalisation (one Revert there): `<prefix>_log2`, which precedes the states above.
+            refused(paste0(prefix, "_log2"), paste0(prefix, "_log2"))
             # A QC table: the steps run (both commits).
             selectWorkflowStateReference(k194Owner(fx), paste0(prefix, "_qc_complete"))
             qc_reference <- k194Ref(fx)
@@ -1201,7 +1204,10 @@ for (class in c("lipid", "metab")) {
             operations <- vapply(out$record$steps, function(step) as.character(step$operation %||% ""), "")
             info <- paste("T10", class, journey, paste(operations, collapse = " "))
             expect_identical(out$replay$states, out$history, info = info)
-            expect_identical(as.character(out$replay$mismatches), character(), info = info)
+            # The store also holds states a Revert left out of the active history (J1's log2 and normalised states); the
+            # record and the replay are compared on the active history's states.
+            mismatches <- as.character(out$replay$mismatches)
+            expect_identical(mismatches[sub("/.*$", "", mismatches) %in% out$history], character(), info = paste(info, paste(mismatches, collapse = " ")))
             expect_true(any(vapply(out$replay$per_step, function(x) identical(x$operation, paste0(prefix, "_da_contrast")), NA)), info = info)
             # J1's record shows no log2 or normalisation step: the DA tested the QC table, as recorded.
             expect_identical(any(paste0(prefix, c("_log2", "_between_sample_normalisation")) %in% operations), identical(journey, "default"), info = info)
