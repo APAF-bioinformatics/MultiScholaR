@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-159 builder B, REPAIR (VAL-109): one run on the merge of A's 69bb2e4f into kit-159-replay (7467b5d1): the test files either builder changed, with --lint; also R-V137-2's owed re-run; ceiling 45 min; decides the merge",
+  "label": "KIT-159 merge run at 7467b5d1",
+  "package_commit": "7467b5d13e607830b23711260373b3453d6bf146",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-rm-out",
+        "--files",
+        "arms,evidence,g1a-entry,inputs,licence,records,repair,repair2,repair4,replay,valrun,phases",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-rm-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
