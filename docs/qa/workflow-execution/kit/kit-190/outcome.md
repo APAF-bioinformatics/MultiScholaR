@@ -1,4 +1,4 @@
-# KIT-190 outcome (in progress; stopped before T7, the replay row and E)
+# KIT-190 outcome (in progress; E and E3 done; T7, the replay row, R2 tests and R3 wait for KIT-187)
 
 Ticket `tickets/kit/KIT-190.md` r1.2 (C01 to C04 of the closure check applied at step 0). Branch
 `kit-190-ruv-control-selection` from `v0.9-staging` d4e2eb2c (the branch point). Run table: `runs.tsv`.
@@ -59,6 +59,76 @@ row, the D5 re-dump. They wait for KIT-187 to merge into `v0.9-staging` (task in
   expected-value change, which VAL-54 does not allow as an instrument repair; it needs the coordinator's or owner's
   ruling (see the report).
 
+## After VAL-100 (owner's ruling on the lifecycle)
+
+- Ticket text amended (revision 1.2, amendment row citing VAL-100): F2's positive control applies to the planted cells
+  and E1; N-r and N-s are reported as "designed selection equals row order". `effect.R` (798066fc, d6d67efe) states
+  the counts in a `stated` column, keys the fault on the E2 journey, and records what D2's candidate rules would select
+  (reported only).
+- Lifecycle re-run (run 45291710599): the fault run stopped as required (oracle check 0); the main run failed in the
+  controller's new stated-count code (instrument defect, no table). Repaired (d6d67efe) and re-run under VAL-54 (run
+  45294460862): **every count as stated** (`falsifier_counts_as_stated: true`).
+- Commits: 798066fc (effect.R after VAL-100), d6d67efe (stated-count repair). Run branch `run-k190-lc2` holds the
+  tests-only tree 4ec3e7c8 with each effect.R, for the lifecycle runs.
+
+## E and E3 (observed; base d4e2eb2c against head d6d67efe)
+
+Runs 45296793520 (E1, N-r, N-s, E-r), 45296797285 (E-s, E-p, E-g), 45296800839 (E3). No falsifier triggered. Tables:
+`e/a/`, `e/b/` (`cells.tsv`, `journeys.tsv`, `falsifiers.tsv`, `fixtures.tsv`, `provenance.json`), `e3/times.tsv`.
+`e/d2-summary.tsv` is a reported-only extract of `cells.tsv` for D2 (made from the committed rows, no new run).
+
+**Lipid and metab give identical figures in every cell**: the same generated values go through the two bindings, and
+the two code paths compute the same numbers. They are one measurement, not two.
+
+E2, means over R = 50 (95 % Monte Carlo interval in the tables), base -> head:
+
+| Cell | controls planted | head: controls decided by ties | head: one-group controls (features) | k | FDP | power |
+|---|---|---|---|---|---|---|
+| N-r | 0 -> 0 | 0.933 | 0 | 2.00 -> 2.26 | 0.160 -> 0.200 | - |
+| N-s | 0 -> 0 | 0.955 | 0 | 2.22 -> 2.16 | 0.240 -> 0.220 | - |
+| E-r | 0.103 -> 0.032 | 0.867 | 0 | 1.72 -> 2.48 | 0.156 -> 0.180 | 0.502 -> 0.561 |
+| E-s | 0.100 -> 0.019 | 0.869 | 0 | 1.46 -> 2.46 | 0.129 -> 0.188 | 0.565 -> 0.620 |
+| E-p | 0.868 -> 0.422 | 0.847 | 0 | 1.28 -> 2.34 | 0.280 -> 0.276 | 0.481 -> 0.552 |
+| E-g | 0.086 -> 0.024 | 1.000 | 0.052 (0.050 of features; all 26 survive the filter) | 2.12 -> 2.48 | 0.194 -> 0.200 | 0.530 -> 0.523 |
+
+Under the null, 93 % (N-r) and 96 % (N-s) of head's controls are still the first rows. The FDP and power differences
+have intervals that include 0 in every cell (largest: E-s FDP +0.059 [-0.007, 0.126]); k rises by 0.3 to 1.1.
+
+Candidate rules for D2, head, at the percentage the shipped sweep chose (selection only; k, FDP and power under them
+not measured):
+
+| Cell | (b) by p, id tie-break: overlap with shipped / planted / one-group / complete | (c) no one-group candidates: overlap / planted | (d) both: overlap / planted / one-group / complete |
+|---|---|---|---|
+| N-r | 0.092 / 0 / 0 / 0.371 | 1.000 / 0 | as (b) |
+| E-r | 0.146 / 0.006 / 0 / 0.358 | 1.000 / 0.032 | as (b) |
+| E-s | 0.140 / 0.007 / 0 / 0.349 | 1.000 / 0.019 | as (b) |
+| E-p | 0.176 / 0.007 / 0 / 0.372 | 1.000 / 0.422 | as (b) |
+| E-g | 0.048 / 0.002 / **0.724** / 0.088 | 0.904 / 0.025 | 0.047 / 0.005 / 0 / 0.353 |
+
+Shipped rule, for comparison: planted 0.032 (E-r), 0.019 (E-s), 0.422 (E-p), 0.024 (E-g); complete 0.30 to 0.31.
+
+E1 (KIT-172 fixtures): T1b, 42 journeys: k 1.95 -> 2.86, calls 60.1 -> 61.4, FDP 0.226 -> 0.219, power 0.621 ->
+0.630, planted controls 0.118 -> 0.031, control overlap (Jaccard) 0.505. T11 concentration fixture (no planted
+effect): base 1 %, 5 controls, k 2, 16 calls; head 14 %, 72 controls, k 7, **209 calls** (all false by construction).
+T11 F172 (no planted effect): base 37 calls; head 0. The largest |change in log2 FC| per fixture is large (median 3.5
+over T1b, up to 1,066; 31 and 195 in T11), which points at unstable fits at some k; not examined further here.
+
+E3: head Automatic RUV step 201.7 s at 5,000 features x 2 assays and 791.1 s at 20,000 x 2 (base 22.2 s there);
+Manual 22.7 s and 86.8 s. Projected Automatic step at 50,000 features: 989 s, under the 1,800 s worker deadline.
+
+## Inferred from E
+
+- The repair changes the selection (planted share of controls falls 3 to 5 fold in E-r, E-s, E-g) but, because the
+  q-value ties are wide, 85 to 100 % of head's controls are still chosen by row order inside the top tie block, and
+  under the null the selection hardly moves.
+- With planted features placed first (E-p), the repaired rule still takes 42 % of its controls from them: the top tie
+  block includes truly changed features, taken in table order. Rules (b) and (d) cut that to 0.7 %.
+- One-group features were not over-represented after the repair in E-g (5.2 % of controls against 5.0 % of features):
+  the table's order inside the all-1 tie block decided. Rule (b) alone would make them 72 % of the controls; (c) and
+  (d) exclude them.
+- On the T11 concentration fixture the repaired route chose 14 % and k = 7 and called 209 features with no planted
+  effect, against 16 on base. One fixture, one draw; a result to put before the owner with KIT-188.
+
 ## Acceptance criteria (state at this stop)
 
 | # | State | Evidence |
@@ -66,12 +136,13 @@ row, the D5 re-dump. They wait for KIT-187 to merge into `v0.9-staging` (task in
 | A1 | T1 confirmed on base with instrument checks; T2 to T6, T7 (ii) as stated on base; all pass on head. T7 (i), (iii) to (vi) not yet written | R1a, R1a-2, fix run |
 | A2 | base side met (R1a-2); head side met for the targeted run | R1a-2; fix run |
 | A3, A4, A6 | not run (R2, R3 after KIT-187 merges) | |
-| A5 | lifecycle not passed as stated (F2 in N cells); E, E3 not run | R1-lc |
+| A5 | met: lifecycle as stated after VAL-100 (R1-lc3); E: F1 to F3 not triggered; `cells.tsv`, `fixtures.tsv` hold the quantities of 5.3; E3's `times.tsv` with the projection (989 s < 1,800 s) | R1-lc3, E-a, E-b, E3 |
 | A7 | NEWS, ledger: not written; `DESCRIPTION`, `NAMESPACE`, versions unchanged | diff |
 | A8 | not written | |
 
 ## Not checked
 
-- T7 and 7.4 (need KIT-187's table); R2, R3, E, E3 at 5,000 and 20,000 features.
+- T7 and 7.4 (need KIT-187's table); R2's tests and check, R3.
+- k, FDP and power under candidate rules (b) to (d) (only their selections were recorded).
+- Why the T11 concentration fixture's head journey reached k = 7 and 209 calls.
 - The pool refusal's text as the tab and the worker show it (only its class and words, by test).
-- The E3 cost of the ANOVA (the lifecycle ran on a tree without it).
