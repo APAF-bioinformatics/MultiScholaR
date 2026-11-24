@@ -247,6 +247,15 @@ tree; the last measurement is T1cov's 86.52 % at 26f71dce (an older tree). Neede
 for one covr request (`extra_packages: ["covr", "lintr"]`), expected about 5 to 6 core-hours at the
 suite's present length.
 
+**E1cov, declared before the send (2026-11-24; owner's VAL-153, one coverage run beyond the REPAIR
+line).** A VAL-54 instrument run (2 of 3 for this item) of E1 with only the mechanics fixed:
+`extra_packages: ["covr", "lintr"]`, nothing else changed (`val-tests.R` with `--lint --covr`, so the
+suite runs again before covr). Commit a5a084cf on `run-k159-e1`, the tree the suite ran on: the
+ticket head has moved since only by records (1d173256, 5ca00c2b, 1aa397e5; no change under
+`harness/`, `R/` or `tests/`). Ceiling 240 minutes (16 core-hours); expected about 9 to 11. Decides
+A2's covr criterion: `msrval` line coverage at least 80 %. The figure is a result, recorded whatever
+it is; no tests are added to move it. A further mechanics failure: stop, no third send.
+
 ## Builder B (branch `kit-159-replay`): replay, `val-run.R` driven, G1(a)'s job pieces, E4
 
 Branch `kit-159-replay` from `kit-159-validation-harness` at b8683b3d, worktree
