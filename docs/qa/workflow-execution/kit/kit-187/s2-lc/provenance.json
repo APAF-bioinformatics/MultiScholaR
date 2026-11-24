@@ -1,0 +1,68 @@
+{
+  "ticket": "KIT-187 S2",
+  "head_commit": "4a58a3be8635322c86593a8df8782436bae8474a",
+  "base_commit": "4a58a3be8635322c86593a8df8782436bae8474a",
+  "base_arg": "self",
+  "kit185_source": {
+    "commit": "432f703b",
+    "file": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+    "lines": ["43-52", "71", "72-76", "90-91", "101-108", "109-199", "202-234", "237-244", "429-465"]
+  },
+  "lifecycle": true,
+  "fault": false,
+  "stop_rule": false,
+  "cells": ["A", "B", "C", "D", "E", "K"],
+  "masks": ["vd5", "vd10", "vd25"],
+  "replicates": 2,
+  "minimums": [2, 2],
+  "percentile": 1,
+  "strength": 0,
+  "cell_index": [201, 202, 203, 204, 205, 206],
+  "seed_rule": "set.seed(185000000 + 10000 * idx + r, Mersenne-Twister, Inversion, Rejection); idx = 200 + i, so 187000000 + 10000 i + r",
+  "workers_per_side": 2,
+  "side_exit_status": {
+    "base": 0,
+    "head": 0
+  },
+  "side_warnings": {
+    "base": 0,
+    "head": 0
+  },
+  "seconds_per_cell": {
+    "A": {
+      "base": 30.011,
+      "head": 29.916
+    },
+    "B": {
+      "base": 34.064,
+      "head": 34.353
+    },
+    "C": {
+      "base": 35.464,
+      "head": 35.281
+    },
+    "D": {
+      "base": 32.573,
+      "head": 33.194
+    },
+    "E": {
+      "base": 31.152,
+      "head": 31.997
+    },
+    "K": {
+      "base": 31.607,
+      "head": 31.243
+    }
+  },
+  "wall_seconds_sides": 110.439478158951,
+  "wall_seconds": 110.754734277725,
+  "stopped_at": {},
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "script_sha256": "1147a5aa480861581210f1a088c06731e046b20e15d8cdcbe6775a5f58906c9c",
+  "started": "2026-11-23T21:57:30+0000",
+  "finished": "2026-11-23T21:59:21+0000"
+}

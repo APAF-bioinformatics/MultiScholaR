@@ -516,7 +516,10 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
                 value$ruv_model <- c(list(ruv_design = protRuvModelDesign(ruv_model)), ruv_model)
             }
             value
-        })
+        },
+        # KIT-187 (VAL-71, D2): the clean-up after RUV decides by counts; a recorded step without this marker replays
+        # with the earlier rounded-percentage comparison (`workflowReplayRuleMarkers`).
+        fixed = list(missing_value_comparison = "counts"))
 }
 
 #' Today's normalisation declaration takes none of the new design's parameters (KIT-126 audit F-06, KIT-129 B1): its

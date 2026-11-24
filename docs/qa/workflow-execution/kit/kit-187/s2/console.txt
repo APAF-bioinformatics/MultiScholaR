@@ -1,0 +1,16 @@
+KIT-187 S2: head e6c42d1d8e18f04d34b3b2a850488ef43ab8d9ab base 604ec4dd49f6eba3c842df09fdd0a057a7c83658 lifecycle FALSE fault FALSE cells A,B,C,D,E,K R 100 out /home/runner/work/MultiScholaR/MultiScholaR/pkg/docs/qa/workflow-execution/kit/kit-187/s2 
+[base] side base finished: 600 replicates, 0 warnings
+[base] Warning message:
+[base] ── Conflicts ───────────────────────────────────────── MultiScholaR conflicts
+[base] ──
+[base] ✖ `%||%` masks `MultiScholaR::%||%()`.
+[base] ℹ Did you accidentally source a file rather than using `load_all()`?
+[base]   Run `rm(list = c("%||%"))` to remove the conflicts. 
+[head] side head finished: 600 replicates, 0 warnings
+[head] Warning message:
+[head] ── Conflicts ───────────────────────────────────────── MultiScholaR conflicts
+[head] ──
+[head] ✖ `%||%` masks `MultiScholaR::%||%()`.
+[head] ℹ Did you accidentally source a file rather than using `load_all()`?
+[head]   Run `rm(list = c("%||%"))` to remove the conflicts. 
+KIT-187 S2 written: 327 cell rows, 27 falsifier rows, wall 4540.4 s
