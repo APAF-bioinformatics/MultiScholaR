@@ -1064,8 +1064,7 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     list(results = results, method = method, contrasts = contrast_results, selected = shown,
         raw_contrast = selection$rawContrastName, contrasts_tbl = contrasts_tbl, pathway_dir = directories$pathwayDir,
         annotation_match = matching$annotationMatchResults, organism_filter = organism_filter, service = declared$service,
-        reference = declared$reference, parameters = declared$parameters, saved = saved,
-        reference_mapping = if (!is.null(reference)) reference$counts)
+        reference = declared$reference, parameters = declared$parameters, saved = saved)
 }
 
 #' The GO parent-term outcomes of a propagated clusterProfiler run (KIT-173)
