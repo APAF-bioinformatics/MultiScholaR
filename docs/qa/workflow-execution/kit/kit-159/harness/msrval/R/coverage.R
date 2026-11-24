@@ -530,13 +530,20 @@ valCombineCoverage <- function(cell, parts, nsim, target_sims) {
         hits <- matrix(hits %in% TRUE, nrow = nsim)
         st <- spec$stats[k, ]
         zero <- matrix((lo[, , k] == hi[, , k]) %in% TRUE, nrow = nsim)
-        valCoverageRows(cell, st$statistic, st$class, hits, st$kind,
-                        achieved = if (st$kind == "exact") matrix(ach[, , k], nrow = nsim),
-                        undefined = undefined[, k], target = target[[k]], zero_width = zero,
-                        target_se = target_se[[k]], range = spec[["range"]],
-                        effect = spec[["effect"]] %||% NA_real_,
-                        half_width = matrix((hi[, , k] - lo[, , k]) / 2, nrow = nsim),
-                        estimate = est[, k])
+        # R-P1 (C66; KIT-162 6.7): misses at the lower bound (the target below the interval) and
+        # at the upper bound (the target above it), as counts of simulations per level
+        low <- matrix((lo[, , k] > target[[k]]) %in% TRUE, nrow = nsim)
+        high <- matrix((hi[, , k] < target[[k]]) %in% TRUE, nrow = nsim)
+        rows <- valCoverageRows(cell, st$statistic, st$class, hits, st$kind,
+                                achieved = if (st$kind == "exact") matrix(ach[, , k], nrow = nsim),
+                                undefined = undefined[, k], target = target[[k]], zero_width = zero,
+                                target_se = target_se[[k]], range = spec[["range"]],
+                                effect = spec[["effect"]] %||% NA_real_,
+                                half_width = matrix((hi[, , k] - lo[, , k]) / 2, nrow = nsim),
+                                estimate = est[, k])
+        rows$miss_low <- as.integer(colSums(low))
+        rows$miss_high <- as.integer(colSums(high))
+        rows
     }))
     out$generator <- cell[["generator"]] %||% "redraw"
     out$seconds_sims <- sum(vapply(parts, `[[`, 0, "seconds_sims"))
