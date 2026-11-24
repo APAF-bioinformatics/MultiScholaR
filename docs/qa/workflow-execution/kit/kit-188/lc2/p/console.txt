@@ -1,0 +1,2 @@
+KIT-188 lc2-p: 24 units, 4 workers, lifecycle TRUE, jobs deciding,reported
+KIT-188 lc2-p finished: 24 units (0 with an error), wall 17.5 min

@@ -1,0 +1,55 @@
+check	cell	rep	condition	value	threshold	pass	note
+E4	constructed	0	family	NA	exact	TRUE	differ: ; s5 without the feature 0; oracle s5 1
+E4b	constructed	0	ties	NA	exact	TRUE	share 1 block 3 jaccard 0.333333333333333; no-tie share 0
+E3	lipid	0	defaults	NA	equal to 2.1 and 18.4	TRUE	differ: ; labelled names matching an ITSD pattern:  | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k=2; percentile=10; proportion=0.5
+E6	L12	401	N0	3.553e-15	1e-12	TRUE	
+E1	L12	401	N0 none GA	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_ruv,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E1	L12	401	N0 none NO	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole
+E9	L12	401	N0 vd5	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 2: 5 controls, positions among valid rows 1-5, expected 1..5: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 
+G1_crash	L12	401	N0 vd20 LA	NA	recorded, counted (G1)	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+G1_crash	L12	401	N0 vd20 GA	NA	recorded, counted (G1)	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+G1_crash	L12	401	N0 vd20 NO	NA	recorded, counted (G1)	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	L12	401	N1	7.105e-15	1e-12	TRUE	
+E9	L12	401	N1 none	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 2: 5 controls, positions among valid rows 1-5, expected 1..5: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 
+E8	L12	401	N1 none LCMS_Neg	2.136e-12	1e-08	TRUE	k 1, controls 5 (reported, never re-run)
+E8	L12	401	N1 none LCMS_Pos	4.884e-12	1e-08	TRUE	k 4, controls 17 (reported, never re-run)
+E9	L12	401	N1 vd5	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 3: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: cou
+E9	L12	401	N1 vd20	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	L12	401	E0	3.553e-15	1e-12	TRUE	
+E9	L12	401	E0 none	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 2: 5 controls, positions among valid rows 1-5, expected 1..5: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 
+E8	L12	401	E0 none LCMS_Neg	6.368e-12	1e-08	TRUE	k 2, controls 5 (reported, never re-run)
+E8	L12	401	E0 none LCMS_Pos	2.973e-12	1e-08	TRUE	k 2, controls 26 (reported, never re-run)
+E9	L12	401	E0 vd5	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 2: 5 controls, positions among valid rows 1-5, expected 1..5: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 
+G1_crash	L12	401	E0 vd20 LA	NA	recorded, counted (G1)	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+G1_crash	L12	401	E0 vd20 GA	NA	recorded, counted (G1)	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+G1_crash	L12	401	E0 vd20 NO	NA	recorded, counted (G1)	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	L12	401	E1	7.105e-15	1e-12	TRUE	
+E9	L12	401	E1 none	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 3: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 
+E8	L12	401	E1 none LCMS_Neg	2.992e-11	1e-08	TRUE	k 4, controls 7 (reported, never re-run)
+E8	L12	401	E1 none LCMS_Pos	1.119e-11	1e-08	TRUE	k 4, controls 12 (reported, never re-run)
+E9	L12	401	E1 vd5	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 12: 29 controls, positions among valid rows 1-29, expected 1..29: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos 
+E9	L12	401	E1 vd20	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E2	L12	401	E1 vd20	0	identical	TRUE	rows 513 and 513
+E6	L12	401	N2	7.105e-15	1e-12	TRUE	
+E9	L12	401	N2 none	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 20: 47 controls, positions among valid rows 1-47, expected 1..47: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos 
+E8	L12	401	N2 none LCMS_Neg	7.272e-15	1e-08	TRUE	k 1, controls 47 (reported, never re-run)
+E8	L12	401	N2 none LCMS_Pos	1.089e-12	1e-08	TRUE	k 5, controls 5 (reported, never re-run)
+E9	L12	401	N2 vd5	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 20: 48 controls, positions among valid rows 1-48, expected 1..48: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos 
+G1_crash	L12	401	N2 vd20 LA	NA	recorded, counted (G1)	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+G1_crash	L12	401	N2 vd20 NO	NA	recorded, counted (G1)	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	L12	401	E2	7.105e-15	1e-12	TRUE	
+E9	L12	401	E2 none	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 14: 33 controls, positions among valid rows 1-33, expected 1..33: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos 
+E8	L12	401	E2 none LCMS_Neg	2.239e-12	1e-08	TRUE	k 4, controls 33 (reported, never re-run)
+E8	L12	401	E2 none LCMS_Pos	9.073e-12	1e-08	TRUE	k 4, controls 10 (reported, never re-run)
+E9	L12	401	E2 vd5	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg pct 14: 34 controls, positions among valid rows 1-34, expected 1..34: TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos 
+E9	L12	401	E2 vd20	NA	same sets	TRUE	LA LCMS_Neg: RUV input rows in the written order TRUE; LA LCMS_Neg: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE; LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	K172c-lipid	0	N0 none LA	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_ruv,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E1	K172c-lipid	0	N0 none LM	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_ruv,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E1	K172c-lipid	0	N0 none GA	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_ruv,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E1	K172c-lipid	0	N0 none NO	NA	every step as declared	TRUE	ops lipid_intensity_filter,lipid_duplicate_resolution,lipid_qc_finalize,lipid_itsd_normalisation,lipid_log2,lipid_between_sample_normalisation,lipid_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole
+E1	K172c-metab	0	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_itsd_normalisation,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E1	K172c-metab	0	N0 none LM	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_itsd_normalisation,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E1	K172c-metab	0	N0 none GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_itsd_normalisation,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole,whole
+E1	K172c-metab	0	N0 none NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_itsd_normalisation,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,whole,partitioned,whole,whole
+E7_crash	L12	401	first unit	1	>= 1 rows	TRUE	units completed 2 of 2
+E7_noda	L12	401	first unit	1	>= 1 journeys	TRUE	families of the failed assay scored no_da

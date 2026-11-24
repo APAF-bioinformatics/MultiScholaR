@@ -1,0 +1,94 @@
+check	cell	rep	condition	value	threshold	pass	note
+E4	constructed	0	family	NA	exact	TRUE	differ: ; s5 without the feature 0; oracle s5 1
+E4b	constructed	0	ties	NA	exact	TRUE	share 1 block 3 jaccard 0.333333333333333; no-tie share 0
+E3	prot	0	defaults	NA	equal to 2.1 and 18.4	TRUE	differ: ; labelled names matching an ITSD pattern:  | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; ruv_mode=automatic; manual_pct=5; manual_k=NULL; min_reps=2; min_groups=2; percentile=1; strict=FALSE
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+E7_refusal	P2	401	N0 none	149	prot_ruv_insufficient_controls	TRUE	k 149: status refused, class prot_ruv_insufficient_controls, step normalisation
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+TIE	P2	401	N0 vd5 LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+TIE	P2	401	N0 vd20 LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+TIE	P2	401	N1 none LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+TIE	P2	401	N1 vd5 LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+TIE	P2	401	N1 vd20 LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+TIE	P2	401	E0 none LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+TIE	P2	401	E0 vd5 LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+TIE	P2	401	E0 vd20 LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+TIE	P2	401	E1 none LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+TIE	P2	401	E1 vd5 LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+TIE	P2	401	E1 vd20 LM	NA	computed; replica equals the selection	TRUE	values blinded
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+TIE	P2	401	N0 none LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	N0 none	NA	same set as the rule with qvalue	TRUE	pct 2: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	N0 none	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	N0 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	401	N0 none proteins	1.029e-12	1e-08	TRUE	k 2, controls 59 (reported, never re-run)
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+TIE	P2	401	N0 vd5 LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	N0 vd5	NA	same set as the rule with qvalue	TRUE	pct 1: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	N0 vd5	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	N0 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	N0	7.105e-15	1e-12	TRUE	
+TIE	P2	401	N0 vd20 LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	N0 vd20	NA	same set as the rule with qvalue	TRUE	pct 20: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	N0 vd20	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	N0 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+TIE	P2	401	N1 none LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	N1 none	NA	same set as the rule with qvalue	TRUE	pct 8: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	N1 none	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	N1 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	401	N1 none proteins	2.49e-13	1e-08	TRUE	k 2, controls 237 (reported, never re-run)
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+TIE	P2	401	N1 vd5 LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	N1 vd5	NA	same set as the rule with qvalue	TRUE	pct 7: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	N1 vd5	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	N1 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	N1	3.553e-15	1e-12	TRUE	
+TIE	P2	401	N1 vd20 LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	N1 vd20	NA	same set as the rule with qvalue	TRUE	pct 9: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	N1 vd20	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	N1 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+TIE	P2	401	E0 none LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	E0 none	NA	same set as the rule with qvalue	TRUE	pct 1: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	E0 none	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	E0 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	401	E0 none proteins	1.217e-12	1e-08	TRUE	k 2, controls 30 (reported, never re-run)
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+TIE	P2	401	E0 vd5 LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	E0 vd5	NA	same set as the rule with qvalue	TRUE	pct 8: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	E0 vd5	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	E0 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	E0	3.553e-15	1e-12	TRUE	
+TIE	P2	401	E0 vd20 LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	E0 vd20	NA	same set as the rule with qvalue	TRUE	pct 10: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	E0 vd20	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	E0 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+TIE	P2	401	E1 none LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	E1 none	NA	same set as the rule with qvalue	TRUE	pct 8: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	E1 none	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	E1 none LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E8	P2	401	E1 none proteins	5.665e-12	1e-08	TRUE	k 1, controls 238 (reported, never re-run)
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+TIE	P2	401	E1 vd5 LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	E1 vd5	NA	same set as the rule with qvalue	TRUE	pct 10: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	E1 vd5	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	E1 vd5 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+E6	P2	401	E1	5.329e-15	1e-12	TRUE	
+TIE	P2	401	E1 vd20 LA	NA	computed; replica equals the selection	TRUE	values blinded
+E9	P2	401	E1 vd20	NA	same set as the rule with qvalue	TRUE	pct 19: equal to the rule with qvalue TRUE, with BH TRUE
+TRANSFORM	P2	401	E1 vd20	log2(x); 0 missing	the bound commit's design step	TRUE	
+E1	P2	401	E1 vd20 LA	NA	every step as declared	TRUE	ops protein_accession_cleanup,protein_intensity_filter,protein_duplicate_removal,protein_replicate_filter,normalization-ruv,pearson-selection
+GATE_skip_none	P2	401	E1 vd20	0.2012	identical or at most 1e-10	FALSE	rows 2283 and 2283; identical FALSE; if it fails anywhere NOn runs in full (K188_NON=1)
+E7_crash	P2	401	first unit	1	>= 1 rows	TRUE	units completed 24 of 24
