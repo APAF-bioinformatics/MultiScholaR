@@ -383,9 +383,9 @@ readReferenceProteome <- function(path) {
 #' DIAMOND v2.2.8 searches the strain against the reference and the reference against the strain at the shipped
 #' settings (`--ultra-sensitive --masking none --ext full --comp-based-stats 1 -k0 --max-hsps 1`), and reciprocal
 #' best hits are resolved in R. A strain protein is paired with a reference protein (`one_to_one`) only when each is
-#' the other's best candidate; only those pairs carry `reference_accession_used`. Validated for a strain mapped to a
-#' reference of the same species; for any other reference the mapping is reported but is not covered by the
-#' validation.
+#' the other's best candidate; only those pairs carry `reference_accession_used`. Not yet validated: the checks of
+#' KIT-167 (planted truth, self-mapping, negative controls, platform identity) have not run; when they pass, the claim
+#' will cover a strain mapped to a reference of the same species.
 #'
 #' @param strain_fasta Path to the strain's protein FASTA (RefSeq `>ref|WP_...|`, NCBI translated CDS, plain or
 #'   UniProt headers; MaxQuant contaminants and other organisms' UniProt entries are left out).
@@ -398,7 +398,8 @@ readReferenceProteome <- function(path) {
 #' @param strain_taxon The strain's NCBI taxon, needed only when UniProt-style entries of several organisms are given.
 #' @param min_identity NULL (default, no identity floor) or a percent identity both directions must reach.
 #' @param threads DIAMOND threads, or NULL for its default (results do not depend on it).
-#' @param scratch A folder for the search files, or NULL for a temporary one; removed after the run.
+#' @param scratch A folder in which a new, uniquely named search folder is made, or NULL for the session's temporary
+#'   folder; only that new folder is removed after the run.
 #' @return `list(mapping, counts, identity_summary, provenance)`: `mapping` has one row per strain protein (columns
 #'   of the ticket's section 8.2); `counts` per status (summing to the strain proteins); `identity_summary` over the
 #'   one-to-one pairs; `provenance` the mapping's identity (inputs' SHA-256, engine, every argument, settings).
@@ -418,7 +419,8 @@ mapStrainToReference <- function(strain_fasta, reference, coverage = 80, evalue 
     xref <- parseReferenceCrossReferences(readReferenceCrossReferenceTable(ref$xref), ref$kegg_code,
         ref$string_species, ref$locus_pattern)
     engine <- checkDiamond()
-    folder <- scratch %||% tempfile("reference-mapping-")
+    # Audit K167-I02: a new, uniquely named folder inside `scratch`; only that folder is removed, never the caller's.
+    folder <- tempfile("reference-mapping-", tmpdir = scratch %||% tempdir())
     dir.create(file.path(folder, "tmp"), recursive = TRUE, showWarnings = FALSE)
     on.exit(unlink(folder, recursive = TRUE), add = TRUE)
     strain_ids <- sprintf("s%07d", seq_len(nrow(strain$entities)))

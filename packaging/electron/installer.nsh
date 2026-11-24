@@ -1,3 +1,7 @@
+; Not included in the installer yet (audit K167-I01): `packaging/electron/package.json` gains `"include":
+; "installer.nsh"` in the release that switches `MultiScholaR.reference_mapping` on; until then the in-app refusal
+; `reference_mapping_engine_runtime_missing` is the only runtime check.
+;
 ; KIT-167 (section 8.6, pool S6): the Microsoft Visual C++ x64 runtime ("Visual C++ v14") the bundled DIAMOND needs on
 ; Windows. The per-user installer does not elevate, so it does not install the runtime: when the runtime is absent or
 ; older than the build gate F1 recorded, it says so in words and offers Microsoft's download page, and the installation

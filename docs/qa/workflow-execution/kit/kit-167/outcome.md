@@ -33,7 +33,7 @@ the returned list is unchanged.
 | 45353194826, 45353725258 | packaging | gate F1 (`feasibility.md`): the first an instrument defect (Docker engine not reached), the second complete |
 | 45352823145, 45372182412, 45386584323 | e5a258d2 to the last fix | the inputs script: F3 and F6 in the first; the second timed out (instrument); the third complete: FASTA locations, F4, the GEO cut, the demo tables and the real-engine lane |
 | 45387203510 | 3c4c5c90 vs a1b397b1 (merged with staging) | every KIT-167 file passes (369 expectations); the 13 dependents `same` |
-| 45392214469 | 2893bfed vs a1b397b1 | the pass's one full suite: 475 files, 465 `same`, 10 `only-on-head` (KIT-167 files, 443 expectations, 0 failures), no new failure (the GUI-entry mask flake did not occur this time; recorded as unchanged); R CMD check identical both sides; gate-off: pages and configuration values identical, head deterministic, no item failing to render |
+| 45392214469 | 2893bfed vs a1b397b1 | the pass's one full suite: 475 files, 465 `same`, 10 `only-on-head` (KIT-167 files, 384 expectations, 0 failures), no new failure (the GUI-entry mask flake did not occur this time; recorded as unchanged); R CMD check identical both sides; gate-off: pages and configuration values identical, head deterministic, no item failing to render |
 | 45386641894 | 3c4c5c90, bundle lane (`distributable.yml`, stage full, both platforms) | DIAMOND fetched and verified against the pin in both builds; the bare-container check finds it through the launcher's `MSR_DIAMOND` and the package's check accepts it (Linux); the Windows NSIS installer builds with `installer.nsh`; the GUI-entry lanes fail as in earlier full runs on other branches (Linux: prot_dia 4 steps, prot_dia_limpa 6, trx_screen 13; Windows: metab and lipid 8, trx_screen an error), with no base run on this image, so not judged; trx_screen's discrete differences 83 against 82 in run 45151293709 (23 November, another tree) are not attributed |
 
 Built in pass 2: `downloadReferenceProteome()` and its refusals; the import panels (proteomics mapping, transcriptomics
@@ -52,8 +52,8 @@ its checks, the installer's runtime check, the notices; gates F1, F3, F4, F6; th
 | A10 | met: every refusal of 8.4 tested, the download's two in pass 2 | `test-reference-mapping-fasta.R`, `test-reference-annotation.R`, `test-reference-engine.R`, `test-reference-download.R` |
 | A11 | met (pages and configuration values; deparsed functions reported; ruling (b), ticket revision 1.11) | `gate-off-identity.R`, runs 45347302450 and 45392214469 (`gate-off-verdict.txt`) |
 | A12 | met for KIT-167's parts: archive and executable SHA-256 verified at build (both), `diamond version` and the package's check in the Linux bare container, the installer check compiled into the Windows installer, F1's container result; the notices' DIAMOND and UniProt rows are written by `notices.R` (not read back from the build); the lanes' failures are pre-existing patterns, not judged without a base run | F1 run 45353725258; bundle lane 45386641894 |
-| A13 | met: with the stub engine in tests; the real engine gives identical mapping and decision-table SHA-256 at threads 1 and 4 (run 45386584323) | `test-reference-mapping-workflow.R`: replay offline equals the stored table; compute-again refused in words without the engine and equal with it |
-| A14 | met | `test-reference-mapping-workflow.R`: record sheet fields; Methods text with the applicability sentence, UPID and release |
+| A13 | met with the stub engine (replay offline; compute-again refused without the engine and equal with the stub); compute-again with the real engine not run; real-engine determinism threads 1 = 4 shown separately for KPC2 | `test-reference-mapping-workflow.R`; run 45386584323 |
+| A14 | not met: the record sheet and the Methods paragraph are built and unit-tested but not written into the analysis record or report (audit K167-I06) | `test-reference-mapping-workflow.R` |
 | A15 | met | `test-reference-mapping-enrichment.R`: identifier choice, join rule counts, NA removed from query and background, declared names only with the choice; unchanged identity without it (the dependents `same` in run 45336550337 and the full suite) |
 | A16 | met: shipped references checked against their SHA-256; no network call for a curated mapping or annotation (mocked to fail); demo tables committed and loaded by a test | `test-reference-organisms.R`, `test-reference-mapping-workflow.R`, `test-reference-mapping-enrichment.R` |
 | A17 | met | `test-reference-mapping-enrichment.R`: a strain project with an empty project annotation runs with the reference identifiers on the shipped K-12 GO table (terms found), the project's annotation slot unchanged, and refuses with "as imported" (`workflow_enrichment_annotation`); the organism filter not applied or declared |
@@ -80,7 +80,7 @@ its checks, the installer's runtime check, the notices; gates F1, F3, F4, F6; th
 - The organism filter and the identifier choice in the tab behave as the core does: the tab passes `id_source` only when
   the gate is on (no module test of the server was written).
 - The 2 x 2 table counts a feature as changed by the fdr q-value and the fold-change cutoffs; KIT-203's significance
-  rule (merged since) is not applied to it (the counts describe the table, not the test).
+  rule (merged since) is not applied to it (the counts should use the rule that forms the lists: audit K167-I09, open).
 
 ## Not built (needs no harness)
 
@@ -145,9 +145,9 @@ KIT-159.
 
 ## Not checked
 
-- DIAMOND itself inside `mapStrainToReference()` (the tests use a stub engine; F2 ran DIAMOND outside the package).
+- Compute-again with the real engine (the tests use a stub; run 45386584323 called `mapStrainToReference()` with the real engine for the demo tables).
 - Windows; any GUI rendering with the gate on; session export and re-open of the stored tables.
-- A replay of an enrichment run made with the reference identifiers.
+- The end-to-end record replay of an enrichment run made with the reference identifiers (the replay rule is unit-tested).
 
 ## For the change report
 
@@ -157,3 +157,37 @@ reads `parameters$id_source` (absent), the resolver takes an optional `reference
 `getUniprotAnnotations()` and `directUniprotDownload()` take an optional `label` (default NULL keeps every record
 text). Evidence that existing results are unchanged: the dependents `same` in run 45336550337 after the correction and
 the full suite base against head (run 45339028522; its one new failure is the GUI-entry mask flake, which run 45347302450 shows on base).
+
+## Implementation audit (AUDIT-KIT-167-impl-20261125): repairs and what stays open
+
+Repaired now (Major-M):
+- K167-I01: `"include": "installer.nsh"` removed from `packaging/electron/package.json`; the file is kept. The Visual
+  C++ runtime check returns with the gate (ticket 8.6); until then the in-app refusal
+  `reference_mapping_engine_runtime_missing` is the only runtime check.
+- K167-I02: `mapStrainToReference(scratch = <folder>)` makes a new folder inside `scratch` (`tempfile(tmpdir = scratch
+  %||% tempdir())`) and removes only that; test "a caller's scratch folder and the files in it survive the mapping"
+  (failing first and passing: runs in `runs.tsv`).
+- K167-I03: the man page and roxygen say "Not yet validated …"; NEWS says the panels and the enrichment choice are
+  gated and the two exported functions are callable but not yet validated.
+- K167-I05: the four record corrections above.
+
+Open, to close before the gate opens (Major-G and minors):
+- K167-I06: the record sheet and Methods paragraph never reach the analysis record or report
+  (`referenceMappingMethodsText()` has no caller); A14 not met.
+- K167-I07: the panels take files through `fileInput` and nothing raises Shiny's 5 MB upload limit, while the demo
+  FASTAs are 14 to 16 MB (inferred; to be shown by a test).
+- K167-I08: the identifier choice defaults to "reference" without a mapping; the organism filter stays enabled.
+- K167-I09: the 2 x 2 "changed" rule should use the lists' strict `>` and `<`, and after KIT-205 count only tested rows.
+- K167-I10 to I14, I17, I18: wiring of the download and demo reader and of a saved mapping table's identity; installer
+  details (`SetRegView 64`, wording); replay integrity (`mapping_sha256` from the joined table); accessions on several
+  groups; licence and attribution wording; robustness; the ledger row's text.
+
+For the owner's review, as the register states it: reciprocal best hits at 80 % coverage of both proteins and
+e <= 1e-5 with NO identity floor; in the shipped demo tables 4 to 25 one-to-one pairs per strain (0.25 to 0.56 %) are
+below 50 % identity (e.g. a pair at 28.6 %).
+
+Budget overruns, as the register states them (K167-I15): test lanes 217.1 against 177.6 (+39.5; the targeted runs,
+51.9 core-hours, have no row; the full suites 149.0 against 144); F3 to F6 15.3 against 2.0 (+13.3; the job also
+carried the PRIDE listing, the GEO cut and the demo tables, which have no row). Whole ticket 238.2 used of 262.27,
+leaving 24.07, not enough for the remaining validation rows (decision C2). No validation request is sent until the
+ceiling is raised.

@@ -4,8 +4,9 @@
 
 ### New features
 
- * Reference mapping for individually sequenced strains (KIT-167; behind the option
-   `MultiScholaR.reference_mapping`, off by default until its validation passes): `mapStrainToReference()` maps a
+ * Reference mapping for individually sequenced strains (KIT-167; the application's panels and enrichment choice are behind the option
+   `MultiScholaR.reference_mapping`, off by default until the tool's validation passes; the two exported functions can
+   be called but are not yet validated): `mapStrainToReference()` maps a
    strain's proteins to their orthologues in one well-annotated reference of the same species by reciprocal best hits
    of DIAMOND v2.2.8 searches in both directions (repeat masking off, full extension, 80 % coverage of both sequences,
    e-value 1e-5, no identity floor by default; every status reported and counted; a strain protein takes a reference
