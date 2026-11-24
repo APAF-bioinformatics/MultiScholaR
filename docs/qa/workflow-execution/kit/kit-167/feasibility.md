@@ -85,3 +85,34 @@ UP000008816_xref.tsv	175632	75264a9ae2a555e91786c99df5fe6af7d0a7c6b550f808b65742
 
 - The `LICENSE` sentence of A0 and 8.1 is not added in this step (outside the step-1 file list given to the implementer).
 - The record phase of KIT-159 (`repo://` rows hashing the committed copies) is not run.
+
+## Gate F5: attachment point per route (code reading, ticket revision 1.10, 8.5)
+
+Read on `kit-167-reference-mapping` after the merge d3909a30 (`v0.9-staging` at ea93d948).
+
+### Observed (code)
+
+- Every route has one session owner per omic, a `DIAStateAdapter` made at session start by
+  `createWorkflowSessionOwner()` (`R/utils_workflow_dia_sessions.R:885-905`) with `reference_states = TRUE`
+  (`:902`); the legacy-session adoption sets the same (`:1473`). DIA, DIA with limpa, LFQ and TMT share the proteomics
+  owner (`omic_type = "proteomics"`); transcriptomics has its own (`omic_type = "transcriptomics"`).
+- An import-time table attaches to the head through `saveWorkflowOwnedValue(table, label, manager)`
+  (`R/utils_workflow_dia_state.R:2219`): a data frame becomes an owned table component and
+  `snapshot$gui_references[[label]]` on the published head; it is read back with `resolveWorkflowOwnedValue()`
+  (`:2272`). Input files attach by role with `recordWorkflowInputs()` (`:2984`), as the imports register theirs
+  (`completeDIAInputFiles()`, `:3044`).
+- `recordWorkflowExternalResource()` (`:3014`) records on every route whose owner uses reference states, except inside
+  a worker (`MULTISCHOLAR_WORKFLOW_WORKER = 1`), where nothing is recorded; the mapping runs in the controller at
+  import, so it records.
+
+### Outcome
+
+Pass on all five routes (DIA, DIA_LIMPA, LFQ, TMT, transcriptomics): the mapping table, its record sheet and the
+transcriptomics gene table attach as owned tables under the labels `reference_mapping`,
+`reference_mapping_record` and `reference_mapping_genes` (`R/utils_workflow_reference_mapping.R`), and the input files
+by role. No route lacks an owner at import, so no route's panel waits.
+
+### Not checked
+
+- That the owned tables survive a session export and re-open on every route (no run; the gui-reference path is the
+  one the imports already use).
