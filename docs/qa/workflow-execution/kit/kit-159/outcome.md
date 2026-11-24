@@ -216,6 +216,24 @@ VAL-54 instrument runs per item: R0 item 1 (R6), R3 item 1 (R7), E2E item 1 (R4d
 remainder): one correction used (R12 -> R13).
 Inferred, not run: the whole suite at the final head (R1 ran at 4a57cbdb).
 
+## E1 and covr: the whole harness suite once (declared before the send, 2026-11-24)
+
+On the coordinator's word, the last step of the repair: one `run-tests` scripts request,
+`val-tests.R` with no `--files` (every harness test file, T-TAB included), `--lint` and `--covr`.
+- **Commit:** a5a084cf on the run branch `run-k159-e1` = the ticket head 5aab46a2 merged with
+  `v0.9-staging` 735c2ea5 (the register's E1: "at one commit merged with current staging"; the only
+  conflict was the methods ledger, both sides' rows kept). The ticket branch itself is not changed
+  by that merge.
+- **Ceiling:** 75 minutes (`timeout_minutes`), 4 cores = 5.0 core-hours, inside the REPAIR line's
+  5.02 remaining (19.98 of 25 used). The register's figure is about 2.2 (E1, as R1's 33.2 minutes)
+  plus about 2 (covr): about 4.2.
+- **Decides:** E1 (a whole-suite pass at one commit after the repair) and A2 / I19 (4) (`covr` line
+  coverage of `msrval` at least 80 %; `lintr` nothing). A failing test is a result for its item:
+  the replay-lint item and R-V137-2 have used their one correction (recorded, not corrected again);
+  mechanics under VAL-54. If the job's time runs out during covr, the suite and lint results stand
+  (written first) and covr is recorded as not measured within the line; no re-send without a new
+  budget word.
+
 ## Builder B (branch `kit-159-replay`): replay, `val-run.R` driven, G1(a)'s job pieces, E4
 
 Branch `kit-159-replay` from `kit-159-validation-harness` at b8683b3d, worktree
