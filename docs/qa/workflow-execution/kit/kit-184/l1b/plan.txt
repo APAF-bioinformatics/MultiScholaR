@@ -1,0 +1,17 @@
+setup took 616 s; deadline 07:44:51Z
+workers: ruv:A:1:1 ruv:A:2:2 ruv:A:3:3 ruv:A:4:5 ruv:D:1:1 ruv:D:2:2 ruv:D:3:3 ruv:D:4:5
+worker 2 (ruv:A:2:2) exit 0
+worker 3 (ruv:A:3:3) exit 0
+worker 1 (ruv:A:1:1) exit 0
+worker 4 (ruv:A:4:5) exit 0
+worker 7 (ruv:D:3:3) exit 0
+worker 6 (ruv:D:2:2) exit 0
+worker 5 (ruv:D:1:1) exit 0
+worker 8 (ruv:D:4:5) exit 0
+simulation done after 885 s
+not_started 1
+completed 9
+determinism worker 2 (ruv:A:2:2) exit 0
+determinism worker 1 (ruv:A:1:1) exit 0
+scorer exit 0
+L1b steps done after 1111 s

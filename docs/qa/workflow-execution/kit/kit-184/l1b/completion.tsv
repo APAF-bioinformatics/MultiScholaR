@@ -1,0 +1,3 @@
+cell	replicates	completed	did_not_complete	not_started	median_total_seconds	largest_total_seconds	median_train_seconds	declared	decided
+A	5	5	0	0	95.2625019550323	98.6899008750916	40.8406460285187	800	FALSE
+D	5	4	0	1	103.904674530029	110.114687919617	49.7967541217804	400	FALSE

@@ -1,0 +1,4 @@
+file	test	passed	failed	error	skipped	seconds
+test-integration-enrichment-mofa.R	KIT-141: with MOFA2, a factor is enriched through the tab, recorded, reported and repeated offline	17	0	FALSE	FALSE	135.15
+test-integration-enrichment-mofa.R	KIT-183 T14: with MOFA2, camera through the store, recorded and repeated offline	9	0	FALSE	FALSE	83.12
+test-integration-enrichment-mofa.R	KIT-184 K13: with MOFA2 trained on corrected values, camera with the removed factors, recorded and repeated offline	14	0	FALSE	FALSE	81.9

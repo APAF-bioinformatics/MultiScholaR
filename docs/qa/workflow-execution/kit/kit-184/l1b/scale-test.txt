@@ -1,0 +1,1 @@
+scale test: 250 copies; completed replicates 2250; error-table lines 11933250; wall seconds 119; peak resident KiB 5347588; exit status 0 (124 = stopped at 25 minutes)
