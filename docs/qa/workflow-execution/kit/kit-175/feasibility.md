@@ -109,3 +109,14 @@ table, on 0 of 70 with the empty table. Summary report: not run (Not checked).
 Section 2.2 says the gene-set service is asked about nothing without annotation. F1 shows that this holds only when
 the data carry no gene names of their own: with a protein identifier table that names genes, the g:Profiler route ran
 without UniProt annotation. The refusal of item 5a (D1, VAL-30) is implemented as decided and also refuses that case.
+
+## Live observation by the implementation auditor (2026-11-24; implementation audit I01)
+
+Release 2026_04, read by the auditor, not on a runner:
+1. `(accession:P05067-4 OR accession:P04637) AND organism_id:9606`: status 200, `x-total-results: 10`, no `link`;
+   rows `P05067-4`, `P04637`, `P04637-2` to `-9`. The canonical `P05067` is not returned.
+2. `(accession:P05067 OR accession:P04637) AND organism_id:9606`: 2 rows, `P04637` and `P05067`, total 2 (F4's shape).
+3. The bare query as base sent it, `(P05067-4 OR P04637) AND organism_id:9606`: total 510 and a next link; page one
+   starts `P04637`, `P05067` (the isoform term brought back its canonical entry).
+F3 and F4 measured canonical accessions only. Consequence: since the correction pass, `directUniprotDownload` removes
+isoform suffixes before the query.

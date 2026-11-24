@@ -1,0 +1,30 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-annotation-uniprot-empty.R	324	3	0	0	failed	325	2	0	0	failed	fixed	fixed: KIT-175 T2b (i)-(v): an answer is cut short only when a requested accession is missing and a next page exists; counts: KIT-175 T2b (i)-(v): an answer is cut short only when a requested accession is missing and a next page exists (passed 29 -> 30, skipped 0 -> 0)	
+test-prot-annotation-uniprot-direct-shared.R	20	0	0	0	ok	19	1	0	0	failed	new-failure	new-failure: UniProt annotation helpers preserve cache, download, and empty-table behavior; counts: UniProt annotation helpers preserve cache, download, and empty-table behavior (passed 20 -> 19, skipped 0 -> 0)	
+test-prot-annotation-ensembl-full-direct-shared.R	38	0	0	0	ok	38	0	0	0	ok	same		
+test-prot-design-core.R	37	0	0	0	ok	37	0	0	0	ok	same		
+test-prot-04a-design-module-characterization.R	109	0	0	18	ok	109	0	0	18	ok	same		
+test-omic-design-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-gui-entry-proteomics.R	183	10	0	0	failed	183	10	0	0	failed	same		
+test-module-ci-prot-enrich.R	79	0	0	2	ok	79	0	0	2	ok	same		
+test-e2e-proteomics-enrichment.R	0	0	0	2	ok	0	0	0	2	ok	same		
+test-omic-enrich-module.R	1059	11	0	0	failed	1059	11	0	0	failed	same		identical message without the actual digest value: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+test-omics-enrich-core.R	234	7	0	1	failed	234	7	0	1	failed	same		
+test-workflow-analysis-record.R	307	0	0	0	ok	307	0	0	0	ok	same		
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-multiomics-enrich-shared.R	108	0	0	0	ok	108	0	0	0	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-e2e-browser-harness.R	126	0	0	1	ok	126	0	0	1	ok	same		
+test-go-propagation.R	319	0	0	1	ok	319	0	0	1	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-prot-11a-enrichment-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-11-enrichment-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-omic-da-module.R	1316	53	0	0	failed	1316	53	0	0	failed	same		
+test-prot-07b-da-handlers-compat.R	35	0	0	2	ok	35	0	0	2	ok	same		
+test-workflow-saved-da.R	780	171	0	0	failed	780	171	0	0	failed	same		
+test-workflow-integration-input.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-module-ci-prot-norm.R	60	0	0	4	ok	60	0	0	4	ok	same		
+test-prot-01c-import-module-contracts.R	437	0	0	0	ok	437	0	0	0	ok	same		
+test-prot-01d-import-module-characterization.R	79	0	0	0	ok	79	0	0	0	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
