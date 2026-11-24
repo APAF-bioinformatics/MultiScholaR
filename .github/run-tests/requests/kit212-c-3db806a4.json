@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-212 control C: the nine W1 cases dumped on base e150fd65 once and head 3db806a4 twice (ceiling 60 job-minutes; decides A2 and the re-freeze)",
+  "label": "KIT-212 control C head 3db806a4 base e150fd65",
+  "package_commit": "3db806a414857fc5caa06991b3692322dd84fc23",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-212/control-w1.R",
+      "args": [
+        "kit212-control",
+        "e150fd6508de3e090f5d329a6ad4ff5deb22d548"
+      ],
+      "out": "kit212-control",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
