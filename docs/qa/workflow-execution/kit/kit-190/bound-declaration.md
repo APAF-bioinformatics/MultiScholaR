@@ -1,4 +1,8 @@
-# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 8
+# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 9
+
+**Revision 9 (2026-11-25): text only.** The owner accepted R4-01 (methods ledger VAL-192): section 5's "owner's word
+pending" mark is replaced by that citation. No script changes; every script hash is revision 8's.
+
 
 **Revision 8 (2026-11-25): the diff check of revision 7 applied, and nothing else.** `reestimate.R`'s `writeEstimate`
 prints each value with `sprintf("%.10g")`, unpadded, so a stage-2 job covering some cells writes exactly the lines
@@ -184,7 +188,7 @@ Per cell c, pairs are the same data set under D+B and F+B.
   Carlo error of p is reported. The paired t bound is reported beside it. **E1-T1b:** the unit is the seed (21 seeds); e
   is the mean of a seed's two journeys. (Margin 0.05, VAL-185.) E1-T1b is
   reported with this test, not deciding (VAL-185).
-  **Skewness check, fixed now (owner's word pending: R4-01; the run is not sent until it is given).** In each effect
+  **Skewness check, fixed now (R4-01; accepted by the owner, methods ledger VAL-192).** In each effect
   cell, on all R_c pairs, the sample skewness g of e is computed (third central moment over the cubed SD, both with
   divisor n). If |g| ≤ 1, the cell is decided as above. If |g| > 1, it is decided by Johnson's skewness-corrected
   statistic (Johnson 1978, JASA 73:536), t_J = [ē + μ̂₃/(6s²n) + μ̂₃ē²/(3s⁴)] / (s/√n), with μ̂₃ the third central moment
