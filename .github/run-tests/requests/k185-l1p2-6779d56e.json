@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-185 P2 blind lifecycle (reps 401-403) after KIT-187: E1-neg and G1 (declaration section 11); ceiling 10.67 core-hours",
+  "label": "KIT-185 P2 lifecycle 6779d56e",
+  "package_commit": "6779d56e901c0e052389327c51c56d45a2820a68",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/sim-k185.R",
+      "args": [
+        "A",
+        "P2",
+        "401",
+        "403",
+        "k185-l1p2"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K185_LIFECYCLE": "1",
+        "K185_JOB": "l1p2"
+      },
+      "out": "k185-l1p2",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
