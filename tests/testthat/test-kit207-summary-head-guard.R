@@ -378,6 +378,9 @@ k207ParamsSha <- function(file, root) {
     lines <- readLines(file, warn = FALSE)
     lines <- lines[!grepl("Timestamp:|^(Repository|Branch|Commit|Package Version|Source):", lines)]
     for (prefix in unique(c(normalizePath(root, mustWork = FALSE), root))) lines <- gsub(prefix, "<root>", lines, fixed = TRUE)
+    # The masked text itself, so that base and head can be compared line by line from the logs (R2 showed the digest
+    # varying between two runs of one commit).
+    cat(paste0("KIT-207 G1-params ", seq_along(lines), " | ", lines, "\n"), sep = "")
     digest::digest(paste(lines, collapse = "\n"), algo = "sha256", serialize = FALSE)
 }
 
