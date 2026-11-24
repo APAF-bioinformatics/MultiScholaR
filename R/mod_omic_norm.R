@@ -337,6 +337,100 @@ omicNormReadRuvDesign <- function(input, omic, addLog, route = NULL) {
         })
 }
 
+#' The values of the RUV grouping column whose samples belong to more than one group
+#' (KIT-174 (a), VAL-29). NA is counted as a value.
+#' @param design_matrix The design table.
+#' @param column The RUV grouping column, or NULL (an omic without the selector).
+#' @param group_column The design's group column.
+#' @return The spanning values (character; NA for the missing value), empty when none or when
+#'   `column` is NULL.
+#' @noRd
+omicNormRuvGroupingSpansGroups <- function(design_matrix, column, group_column = "group") {
+    if (is.null(column) || !is.data.frame(design_matrix) ||
+        !all(c(column, group_column) %in% names(design_matrix))) {
+        return(character())
+    }
+    values <- factor(as.character(design_matrix[[column]]), exclude = NULL)
+    groups <- as.character(design_matrix[[group_column]])
+    spans <- vapply(split(groups, values), \(group) length(unique(group)) > 1L, logical(1))
+    levels(values)[spans]
+}
+
+#' The RUV grouping warning's text (KIT-174 (a), VAL-29; proposed wording, implemented as
+#' proposed, the owner edits before release, VAL-41): the column, the number of its values that
+#' span groups, the number of its values.
+#' @noRd
+omicNormRuvGroupingWarningText <- function() {
+    paste(
+        "The RUV grouping column '%s' puts samples of different groups together (%d of its %d",
+        "values contain samples of more than one group). RUV-III treats samples with the same",
+        "value as replicates, so the correction would be built from the differences between your",
+        "groups. Choose 'group' unless each value of the column lies inside one group."
+    )
+}
+
+#' Whether the RUV grouping column gives RUV-III's replicate sets in this run (KIT-174 (a),
+#' 3 item 2): the mode is not `skip`; under the RUV design gate the design is not `none` or
+#' `technical_replicates`; on proteomics, declared technical replicates do not take the column's
+#' place (they do on DIA with limpa under every design, and on the classic routes except under
+#' `groups_all_features` and `supplied_controls`, which withdraw the declaration for the RUV
+#' step, `protRuvGroupReplicateObject`).
+#' @param mode The run's RUV mode.
+#' @param design The gate's design id, or NULL with the gate off.
+#' @param technical Whether the head state's design declares technical replicates (proteomics).
+#' @param classic TRUE on the classic proteomics routes.
+#' @return One logical.
+#' @noRd
+omicNormRuvGroupingIsReplicateSets <- function(mode, design = NULL, technical = FALSE,
+                                               classic = FALSE) {
+    if (is.null(mode) || identical(mode, "skip")) return(FALSE)
+    if (isTRUE(design %in% c("none", "technical_replicates"))) return(FALSE)
+    withdrawn <- classic && isTRUE(design %in% c("groups_all_features", "supplied_controls"))
+    !(isTRUE(technical) && !withdrawn)
+}
+
+#' The head state's design table and group column (KIT-174 (a)): the table the run reads, from
+#' the state's metadata (as `omicNormRuvHeadTechnicalReplicates`); NULL without a session state
+#' or when it cannot be read.
+#' @noRd
+omicNormRuvHeadDesign <- function(manager) {
+    if (!inherits(manager, "DIAStateAdapter")) return(NULL)
+    tryCatch(withWorkflowStateScope(manager, function() {
+        reference <- getWorkflowStateReference(manager)
+        if (is.null(reference)) return(NULL)
+        spec <- readWorkflowStateMetadata(manager, reference)$data
+        design <- materializeWorkflowTable(manager$.context, spec$components$design_matrix)
+        list(design = as.data.frame(design), group_id = spec$slots$group_id %||% "group")
+    }), error = function(error) NULL)
+}
+
+#' The RUV grouping warning at a run action (KIT-174 (a), VAL-29): when the column gives
+#' RUV-III's replicate sets (`omicNormRuvGroupingIsReplicateSets`) and one of its values holds
+#' samples of more than one group, one warning notification and one log line with the same text
+#' (and a line in the tab's log where the tab has one). The run proceeds; RUV is unchanged. The
+#' design is the head state's, else the session's design table.
+#' @param column The RUV grouping column (NULL: no warning).
+#' @param addLog The tab's log, or NULL.
+#' @return The spanning values, invisibly.
+#' @noRd
+omicNormWarnRuvGrouping <- function(workflowData, column, mode, design = NULL, technical = FALSE,
+                                    classic = FALSE, showNotificationFn = shiny::showNotification,
+                                    addLog = NULL) {
+    if (is.null(column) || !omicNormRuvGroupingIsReplicateSets(mode, design, technical, classic)) {
+        return(invisible(character()))
+    }
+    head <- omicNormRuvHeadDesign(shiny::isolate(workflowData$state_manager))
+    table <- head$design %||% shiny::isolate(workflowData$design_matrix)
+    spans <- omicNormRuvGroupingSpansGroups(table, column, head$group_id %||% "group")
+    if (!length(spans)) return(invisible(spans))
+    text <- sprintf(omicNormRuvGroupingWarningText(), column, length(spans),
+        length(unique(as.character(table[[column]]))))
+    showNotificationFn(text, type = "warning", duration = NULL)
+    logger::log_warn(text)
+    if (is.function(addLog)) addLog(paste("WARNING:", text))
+    invisible(spans)
+}
+
 #' The normalisation pipeline: the managed sequence with a runner (KIT-078), else the in-process twin under the progress
 #' display (KIT-105 D6, D9); then the tab's completion.
 #' @noRd
@@ -358,6 +452,13 @@ runOmicNormPipeline <- function(input, workflowData, experimentPaths, normData, 
         shiny::showNotification(conditionMessage(started), type = "error", duration = 15)
         return(invisible(FALSE))
     }
+    # KIT-174 (a), VAL-29: the RUV grouping warning (a new design's mode is its id; a legacy
+    # design keeps the tab's mode).
+    choice <- ruv_design$choice
+    new_design <- !is.null(choice) && !isTRUE(choice$legacy)
+    ruv_mode <- if (new_design) choice$ruv_design else input$ruv_mode
+    omicNormWarnRuvGrouping(workflowData, input$ruv_grouping_variable, ruv_mode, choice$ruv_design,
+        addLog = addLog)
     runner <- workflowOmicsManagedActions(binding$omic_type)
     if (!is.null(runner)) {
         aesthetics <- getPlotAesthetics()
