@@ -268,10 +268,12 @@ test_that("KIT-135: without RUV the normalised matrix is written; with no final 
     stale <- file.path(project, "integration", "metabolomics")
     dir.create(stale, recursive = TRUE)
     writeLines("{}", file.path(stale, INTEGRATION_INPUT_MANIFEST))
-    run <- integrationOmicsSummarySave("metabolomics", empty, project)
-    # Today's RDS is written as before (here of no state); the input is not, and the earlier one is gone.
-    expect_true(file.exists(run$rds))
-    expect_false(dir.exists(run$dir))
+    # A save at a head that is not the normalisation's result is refused and writes nothing; the earlier input is removed
+    # (K061-3; KIT-207 SD-5 (b))
+    expect_error(integrationOmicsSummarySave("metabolomics", empty, project), class = "omic_norm_correlation_input_stale",
+        regexp = "No normalisation has been run in this session", fixed = TRUE)
+    expect_false(file.exists(file.path(project, "integration", "metabolomics_kit135_final_s4.RDS")))
+    expect_false(dir.exists(stale))
 })
 
 test_that("KIT-135: the worker's integration export writes the same input beside its RDS", {

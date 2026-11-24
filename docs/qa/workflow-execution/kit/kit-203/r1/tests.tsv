@@ -1,0 +1,9 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-enrichment-significance.R	0	0	1	0	0	6.6	failed
+test-go-propagation.R	318	13	0	1	0	124.3	failed
+test-general-enrichment-shared.R	121	3	2	2	0	17.5	failed
+test-workflow-analysis-record.R	351	0	0	0	4	246.6	ok
+test-workflow-omics-binding-steps.R	57	2	0	0	0	59.6	failed
+test-module-ci-prot-enrich.R	78	1	0	2	2	8.1	failed
+test-e2e-enrichment-doubles.R	34	0	0	0	0	9.7	ok
+test-omic-enrich-module.R	1059	11	0	0	0	524.3	failed

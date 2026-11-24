@@ -1,0 +1,18 @@
+KIT-196 S1 L: head a1e46859ad359277c28b7e63aeb119449e1331a0, base 3d4a585dbeb19b281ec8bc640d4d35a892bd7988, base only TRUE, copy SHA-256 c0fbc4ab34925dbbbfee90169dee3e7af60f24b3d29c1ba94aa83175b52a1c22
+KIT-196 S1 L: git diff --name-only 98df468b 3d4a585dbeb19b281ec8bc640d4d35a892bd7988 -- R/: R/func_general_parameter_helpers.R R/func_prot_annotation_uniprot_full_helpers.R R/func_prot_annotation_uniprot_helpers.R R/func_prot_qc_filtering_helpers.R R/func_prot_qc_peptide_group_filters.R R/mod_integration_enrichment.R R/mod_omic_da.R R/mod_omic_norm.R R/mod_omic_qc_tabs.R R/mod_prot_da_handlers_load_session.R R/mod_prot_design.R R/mod_prot_design_builder_helpers.R R/mod_prot_design_import_helpers.R R/mod_prot_design_state_helpers.R R/mod_prot_norm_workflow_helpers.R R/mod_trx_qc_filter.R R/utils_integration_enrichment.R R/utils_integration_gui.R R/utils_integration_record.R R/utils_integration_workbook.R R/utils_omic_gui_config.R R/utils_workflow_analysis_record.R R/utils_workflow_dia_enrichment.R R/utils_workflow_dia_products.R R/utils_workflow_dia_state.R R/utils_workflow_enrichment.R R/utils_workflow_omics_actions.R R/utils_workflow_prot_declarations.R R/utils_workflow_trx_da.R R/utils_workflow_trx_declarations.R R/utils_workflow_trx_norm.R
+KIT-196 S1 L: base: 204 journeys (9 units, 0 failed to return) in 63.8 min; full stops 20; journeys with an assay error 46
+KIT-196 S1 L: A2 (i): OR full stops KIT-188 10, S1 base 10, list equal TRUE; n_T equal 204 of 204; miss_share equal 204 of 204; verdict HOLDS
+KIT-196 S1 L: A2 (i) S1 OR full stop: L12|deciding|E0|vd20|401
+KIT-196 S1 L: A2 (i) S1 OR full stop: L12|deciding|E1|vd20|402
+KIT-196 S1 L: A2 (i) S1 OR full stop: L12|deciding|E2|vd20|403
+KIT-196 S1 L: A2 (i) S1 OR full stop: L12|deciding|N0|vd20|401
+KIT-196 S1 L: A2 (i) S1 OR full stop: L12|deciding|N0|vd20|402
+KIT-196 S1 L: A2 (i) S1 OR full stop: L12|deciding|N0|vd20|403
+KIT-196 S1 L: A2 (i) S1 OR full stop: L12|deciding|N1|vd20|402
+KIT-196 S1 L: A2 (i) S1 OR full stop: L12|deciding|N2|vd20|401
+KIT-196 S1 L: A2 (i) S1 OR full stop: L12|deciding|N2|vd20|402
+KIT-196 S1 L: A2 (i) S1 OR full stop: L64|ba|N1|ba|402
+KIT-196 S1 L: base partial failures (an assay's error in a journey that completed): 26 journeys, 26 assays
+KIT-196 S1 L: A2 (iv) base: 66 assays with an error, 66 with a feature without values (counts 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,4,4,4,4), direct message as its df case 66; verdict HOLDS
+KIT-196 S1 L: direct messages on base: prior.weights contain NA values x66
+KIT-196 S1 L: R R version 4.6.1 (2026-06-24), limma 3.68.4, BLAS /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0; wall 63.8 min; exit 0

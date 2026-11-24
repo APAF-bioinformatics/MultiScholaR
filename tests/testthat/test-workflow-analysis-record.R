@@ -544,6 +544,111 @@ test_that("KIT-180 T5 (VAL-26): an LFQ record made without the protein QC steps 
     for (state in later) expect_identical(replayed[[state]], origin[[state]], info = state)
 })
 
+test_that("KIT-177 T5: an LFQ record made with log2(x + 1) replays state by state and still reads log2(x + 1)", {
+    # VAL-79: states compared on their data slots, `@args` without the DA settings' timestamp, and the DA table by
+    # column name (rows aligned by protein); the stored DA settings carry the time they were committed.
+    # The design state made the old way here (the wide table, log2(x + 1), ProteinQuantitativeData, the old provenance),
+    # then the route's later steps as declared operations (the four protein QC steps, normalisation with RUV skipped,
+    # correlation filter, DA), the record, and a replay into a copy holding only the preconditions. An in-process record,
+    # not a GUI-made one: no claim about GUI-made records follows from it (KIT-177 F3; KIT-180 R0d).
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "kit177-lfq-replay", "LFQ"), WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    manager$setWorkflowType("LFQ")
+    paths <- list(source_dir = file.path(root, "src"), protein_qc_dir = file.path(root, "pqc"), da_output_dir = file.path(root, "da"),
+        publication_graphs_dir = file.path(root, "pub"), time_dir = file.path(root, "time"))
+    for (p in paths) dir.create(p, recursive = TRUE, showWarnings = FALSE)
+    manager$.context$experiment_paths <- paths
+    imported <- suppressMessages(importMaxQuantData(testthat::test_path("..", "testdata", "e2e", "prot_lfq_maxquant", "proteinGroups.txt")))
+    wide <- tidyr::pivot_wider(imported$data, id_cols = "Protein.Ids", names_from = "Run", values_from = "Intensity")
+    runs <- setdiff(names(wide), "Protein.Ids")
+    for (run in runs) wide[[run]] <- log2(wide[[run]] + 1)
+    design <- data.frame(Run = runs, group = sub("_[0-9]+$", "", runs), replicates = as.integer(sub("^.*_", "", runs)),
+        stringsAsFactors = FALSE)
+    design$tech_rep_group <- paste(design$group, design$replicates, sep = "_")
+    object <- ProteinQuantitativeData(protein_quant_table = wide, protein_id_column = "Protein.Ids",
+        protein_id_table = dplyr::distinct(wide, Protein.Ids), design_matrix = design, sample_id = "Run", group_id = "group",
+        technical_replicate_id = "tech_rep_group", args = list())
+    setDIAStepProvenance(manager, "design_builder", fixed = list(pivot = "protein x run", transform = "log2(x + 1)"))
+    manager$saveState("protein_s4_initial", object, list(), "design")
+    workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list()), config_list = list()))
+    contrasts <- data.frame(contrasts = "KO.vs.WT", full_format = "KO.vs.WT=groupKO-groupWT", friendly_names = "KO.vs.WT",
+        stringsAsFactors = FALSE)
+    utils::capture.output(suppressWarnings(suppressMessages(withDIAStateScope(manager, function() {
+        finish <- function(value) finishDIAReferenceProteinStep(workflow, value, publish = FALSE)
+        finish(computeDIAReferenceAccessionCleanup(manager, getDIAStateReference(manager), list(delimiter = ";", aggregation_method = "mean")))
+        finish(computeDIAReferenceProteinIntensityFilter(manager, getDIAStateReference(manager), list(strict_mode = FALSE,
+            min_reps_per_group = 2, min_groups = 2, proteins_intensity_cutoff_percentile = 1)))
+        finish(computeDIAReferenceProteinDuplicateRemoval(manager, getDIAStateReference(manager), list(aggregation_method = "mean")))
+        completeDIAProteinAction(workflow, computeDIAReferenceProteinReplicateFilter(manager, getDIAStateReference(manager),
+            list(grouping_variable = "group", parallel_cores = 1L), variant = "rows"), publish = FALSE)
+        parameters <- list(norm_method = "cyclicloess", ruv_mode = "skip", auto_percentage_min = NULL, auto_percentage_max = NULL,
+            separation_metric = NULL, k_penalty_weight = NULL, adaptive_k_penalty = NULL, ruv_percentage = NULL, ruv_k = NULL,
+            grouping = "group")
+        run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
+        commit <- diaNormalizationCommit(manager, parameters, run)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        correlation <- computeDIAReferenceCorrelation(manager, run$value$final, "group", 0.5)
+        commit <- diaCorrelationCommit(manager, correlation$final, 0.5, FALSE)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        da_data <- new.env(parent = emptyenv())
+        da_data$current_s4_object <- getDIAStateReference(manager)
+        da_data$contrasts_available <- contrasts$contrasts
+        workflow$contrasts_tbl <- contrasts
+        runDIAReferenceDaAnalysis(list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), da_data,
+            workflow, paths, contrasts = contrasts, publish = FALSE)
+    }))))
+    json <- file.path(root, "analysis_record.json")
+    writeWorkflowAnalysisRecord(manager, json)
+    record <- jsonlite::read_json(json, simplifyVector = FALSE)
+    expect_true(validateWorkflowAnalysisRecord(record)$valid)
+    states <- vapply(record$steps, function(step) step$state, "")
+    expect_identical(states, c("initial", "protein_s4_initial", "protein_accession_cleaned", "protein_intensity_filtered",
+        "duplicates_removed", "protein_replicate_filtered", "normalized", "correlation_filtered"))
+    later <- stats::setNames(states[-(1:2)], states[-(1:2)])
+    origin <- withDIAStateScope(manager, function() lapply(later, function(state) manager$getState(state)))
+    copy <- withr::local_tempdir()
+    stopifnot(system2("cp", c("-a", file.path(root, "."), copy)) == 0L)
+    h <- new.env(parent = globalenv())
+    sys.source(file.path(testthat::test_path("..", ".."), "tools", "profiling", "workflow_kit.R"), h)
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    prepared <- h$kitPrepareReplayProject(copy, c("initial", "protein_s4_initial"), api)
+    readDa <- function(owner) withDIAStateScope(owner, function() {
+        manifest <- resolveWorkflowStateValue(owner$.context, owner$.context$snapshot$da_results)
+        as.data.frame(readDIAContrastOutput(manifest$results[[1L]], "da_proteins_long")$da_proteins_long)
+    })
+    da_origin <- readDa(manager)
+    replay_paths <- lapply(paths, function(p) sub(root, copy, p, fixed = TRUE))
+    utils::capture.output(replay <- suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(record, prepared,
+        character(), replay_paths, withr::local_tempdir()))))
+    expect_identical(replay$states, states)
+    reopened <- newDIAStateAdapter(newWorkflowEntityStore(prepared, "kit177-lfq-replay", "LFQ"), reopen = TRUE)
+    withr::defer(closeDIAStateAdapter(reopened))
+    replayed <- withDIAStateScope(reopened, function() lapply(later, function(state) reopened$getState(state)))
+    withoutTimestamp <- function(args) {
+        if (!is.null(args$daAnalysisUI)) args$daAnalysisUI$timestamp <- NULL
+        args
+    }
+    for (state in later) {
+        slots <- setdiff(methods::slotNames(origin[[state]]), "args")
+        differing <- Filter(function(slot) !identical(methods::slot(replayed[[state]], slot), methods::slot(origin[[state]], slot)), slots)
+        expect_identical(differing, character(), info = state)
+        expect_identical(withoutTimestamp(replayed[[state]]@args), withoutTimestamp(origin[[state]]@args), info = paste(state, "args"))
+    }
+    da_replayed <- readDa(reopened)
+    expect_true(setequal(names(da_replayed), names(da_origin)))
+    key <- function(table) order(table$Protein.Ids, table$comparison)
+    a <- da_origin[key(da_origin), , drop = FALSE]
+    b <- da_replayed[key(da_replayed), , drop = FALSE]
+    for (column in names(da_origin)) expect_identical(unname(b[[column]]), unname(a[[column]]), info = paste("DA", column))
+    again <- buildWorkflowAnalysisRecord(reopened)
+    design_step <- Filter(function(step) identical(step$state, "protein_s4_initial"), again$steps)[[1L]]
+    transform <- Filter(function(p) identical(p$name, "transform"), design_step$parameters)[[1L]]
+    expect_identical(transform$value$value, "log2(x + 1)")
+})
+
 test_that("KIT-038: fixed constants are listed for every registered step, a legacy step alone dumps its arguments", {
     fixture <- analysisRecordFixture(withr::local_tempdir())
     manager <- fixture$manager
@@ -1047,7 +1152,7 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
             replayed_filter$config <<- readComponentMetadata(manager, manager$.context$snapshot$states$enrichment_completed)$config
         }))))
     expect_identical(replayed_filter$provenance$parameter_names,
-        setdiff(diaEnrichmentOperation()$parameters, "go_propagation")) # KIT-173: clusterProfiler route only
+        setdiff(diaEnrichmentOperation()$parameters, c("go_propagation", "significance_rule"))) # KIT-173, KIT-203: clusterProfiler route only
     expect_identical(replayed_filter$provenance$values[c("organism_filter_enabled", "organism_filter_taxon")],
         list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
     # KIT-119 (A107-06): the outcomes also hold the input identities (the three filter outcomes are as before).

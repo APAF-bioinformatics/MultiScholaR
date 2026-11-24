@@ -1,0 +1,624 @@
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T1: a request error is a classed empty warning with its reason and detail, recorded, not cached
+-- base:
+  Error in `uniprotAnnotationNotice(attr(out$value, "annotation_outcome"))`: could not find function "uniprotAnnotationNotice"
+  Expected `attr(out$value, "annotation_outcome")$reason` to be identical to "request_failed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('request_failed')
+  Expected `inherits(out$last, "prot_annotation_uniprot_empty")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `out$last$detail` to be identical to "Could not resolve host: rest.uniprot.org".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('Could not resolve host: rest.uniprot.org')
+  Expected `out$last$reason` to be identical to "request_failed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('request_failed')
+  Expected `out$last$requested` to be identical to 3L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (3)
+  Expected `rows[[1L]]$query_summary` to be identical to "annotation failed: UniProt could not be reached; 0 of 3 accessions annotated".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('annotation failed: UniProt could not be reached; 0 of 3 accessions annotated')
+  Expected `rows[[1L]]$release_kind` to be identical to "failed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('failed')
+  Expected `rows` to have length 1.
+  Actual length: 0.
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T2: every way of ending with no rows has its reason, and none is cached
+-- base:
+  Expected `file.exists(k175CacheFile(cache_dir))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `file.exists(k175CacheFile(cache_dir))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `file.exists(k175CacheFile(cache_dir))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `file.exists(k175CacheFile(cache_dir))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `inherits(out$last, "prot_annotation_uniprot_empty")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `log$calls` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  Expected `log$calls` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  Expected `log$calls` to be identical to 3L.
+  Differences:
+    `actual`: 0
+  `expected`: 3
+  Expected `nrow(out$value)` to be identical to 175L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (175)
+  Expected `nrow(out$value)` to be identical to 3L.
+  Differences:
+    `actual`: 0
+  `expected`: 3
+  Expected `nrow(readRDS(k175CacheFile(cache_dir)))` to be identical to 3L.
+  Differences:
+    `actual`: 0
+  `expected`: 3
+  Expected `out$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <simpleError/error/condition>, a list
+  `expected` is NULL
+  Expected `out$last$reason` to be identical to "no_uniprot_accessions".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('no_uniprot_accessions')
+  Expected `out$last$reason` to be identical to "service_status".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('service_status')
+  Expected `out$last$reason` to be identical to "service_status".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('service_status')
+  Expected `out$last$requested` to be identical to 2L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (2)
+  Expected `out$last$requests_failed` to be identical to 1L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (1)
+  Expected `out$last$requests_failed` to be identical to 7L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (7)
+  Expected `out$last$requests_not_sent` to be identical to 4L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (4)
+  Expected `out$last$requests_total` to be identical to 5L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (5)
+  Expected 429 to be identical to `case$reason`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('service_status')
+  Expected 429 to be identical to `case$statuses`.
+  Differences:
+    `actual`:    
+  `expected`: 429
+  Expected 429 to be identical to 0L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (0)
+  Expected 429 to be NULL.
+  Differences:
+  `actual` is an S3 object of class <purrr_error_indexed/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected 429 to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected 503 to be identical to `case$reason`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('service_status')
+  Expected 503 to be identical to `case$statuses`.
+  Differences:
+    `actual`:    
+  `expected`: 503
+  Expected 503 to be identical to 0L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (0)
+  Expected 503 to be NULL.
+  Differences:
+  `actual` is an S3 object of class <purrr_error_indexed/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected 503 to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected empty body to be identical to `case$reason`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('invalid_response')
+  Expected empty body to be identical to 0L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (0)
+  Expected empty body to be NULL.
+  Differences:
+  `actual` is an S3 object of class <purrr_error_indexed/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected empty body to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected header only to be identical to `case$reason`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('no_rows')
+  Expected header only to be identical to 0L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (0)
+  Expected header only to be NULL.
+  Differences:
+  `actual` is an S3 object of class <purrr_error_indexed/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected header only to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected html body to be identical to `case$reason`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('invalid_response')
+  Expected html body to be identical to 0L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (0)
+  Expected html body to be NULL.
+  Differences:
+  `actual` is an S3 object of class <purrr_error_indexed/rlang_error/error/condition>, a list
+  `expected` is NULL
+  Expected html body to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T2: Ensembl identifiers whose conversion fails give id_conversion_failed, recorded after not_queried
+-- base:
+  Expected `out$last$detail` to be identical to "the conversion service is closed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('the conversion service is closed')
+  Expected `reasons` to be identical to "id_conversion_failed".
+  Differences:
+  `actual`:                         
+  `expected`: "id_conversion_failed"
+  Expected `rows[[2L]]$query_summary` to be identical to "not queried: the Ensembl identifiers could not be converted to UniProt accessions".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('not queried: the Ensembl identifiers could not be converted to UniProt accessions')
+  Expected `vapply(rows, function(row) row$release_kind, "")` to be identical to `c("not_queried", "not_queried")`.
+  Differences:
+  `actual`:                              
+  `expected`: "not_queried" "not_queried"
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T2b: a failed request among answered ones is incomplete, flagged and not cached
+-- base:
+  Error in `gzfile(file, "rb")`: cannot open the connection
+  Expected `file.exists(k175CacheFile(cache_dir))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `inherits(out$last, "prot_annotation_uniprot_incomplete")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `nrow(out$value)` to be identical to 100L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (100)
+  Expected `nrow(out$value)` to be identical to 125L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (125)
+  Expected `out$last$accessions_not_looked_up` to be identical to 25L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (25)
+  Expected `out$last$accessions_requested` to be identical to 125L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (125)
+  Expected `out$last$requests_failed` to be identical to 1L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (1)
+  Expected `outcome` to have type "list".
+  Actual type: "NULL"
+  Expected `outcome$accessions_not_looked_up` to be identical to 25L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (25)
+  Expected `outcome$class` to be identical to "prot_annotation_uniprot_incomplete".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('prot_annotation_uniprot_incomplete')
+  Expected `rows[[length(rows)]]$query_summary` to be identical to "1 of 5 requests failed (status 503); 25 of 125 accessions not looked up".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('1 of 5 requests failed (status 503); 25 of 125 accessions not looked up')
+  Expected `rows[[length(rows)]]$release_kind` to be identical to "header".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('header')
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T2b (i)-(v): an answer is cut short only when a requested accession is missing and a next page exists
+-- base:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `log$requests[[1L]]`: subscript out of bounds
+  Expected `file.exists(k175CacheFile(cache_dir))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `nrow(out$value)` to be identical to 125L.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (125)
+  Expected `rows[[length(rows)]]$query_summary` to be identical to "uniprotkb search, organism_id 9606".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('uniprotkb search, organism_id 9606')
+  Expected `rows[[length(rows)]]$release_kind` to be identical to "header".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('header')
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T3: the record holds one row per outcome, written once the outcome is known
+-- base:
+  Expected `last_row(manager)[c("release", "release_kind", "query_summary")]` to be identical to `list(...)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+  Expected `last_row(manager)[c("release", "release_kind", "query_summary")]` to be identical to `list(release = "2026_04", release_kind = "header", query_summary = "no entry found for 3 accessions under organism 9606")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+  Expected `last_row(manager)[c("release", "release_kind", "query_summary")]` to be identical to `list(release = NA_character_, release_kind = "not_queried", query_summary = "not queried: none of 1 identifiers is a UniProt accession")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+  Expected `out$last$reason` to be identical to "processing_failed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('processing_failed')
+  Expected `out$last$reason` to be identical to "request_failed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('request_failed')
+  Expected `rows[[2L]]$query_summary` to be identical to "annotation failed after retrieval: the answer could not be processed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('annotation failed after retrieval: the answer could not be processed')
+  Expected `vapply(rows, function(row) row$release_kind, "")` to be identical to "failed".
+  Differences:
+  `actual`:           
+  `expected`: "failed"
+  Expected `vapply(rows, function(row) row$release_kind, "")` to be identical to `c("header", "failed")`.
+  Differences:
+  `actual`:                    
+  `expected`: "header" "failed"
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T3: the merge-back, the raw-results write and the scripts copy failing each record once
+-- base:
+  Error in `expect_match(k175UniprotRows(manager)[[2L]]$query_summary, "^annotation retrieved but not saved to the project file")`: `object` must be a character vector, not `NULL`.
+  Expected `inherits(out$error, "prot_annotation_uniprot_recorded")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `kinds(manager)` to be identical to "failed".
+  Differences:
+  `actual`:           
+  `expected`: "failed"
+  Expected `kinds(manager)` to be identical to `c("header", "failed")`.
+  Differences:
+  `actual`:                    
+  `expected`: "header" "failed"
+  Expected `kinds(manager)` to be identical to `c("header", "failed")`.
+  Differences:
+  `actual`:                    
+  `expected`: "header" "failed"
+  Expected `out$error$reason` to be identical to "processing_failed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('processing_failed')
+  Expected `out$last$reason` to be identical to "processing_failed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('processing_failed')
+  Expected `out$last$reason` to be identical to "processing_failed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('processing_failed')
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T4: the design step's notice names the reason, stays until closed, and is replaced or removed
+-- base:
+  Expected `"prot_uniprot_annotation" %in% log$removed` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `last$duration` to be NULL.
+  Differences:
+  `actual` is a double vector (8)
+  `expected` is NULL
+  Expected `last$id` to be identical to "prot_uniprot_annotation".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('prot_uniprot_annotation')
+  Expected `last$text` to be identical to `paste(...)`.
+  Differences:
+  actual vs expected
+  - "Warning: Could not retrieve UniProt annotations: Protein column not found in column_mapping. Cannot get annotations."
+  + "Protein annotation was not attempted: no protein identifier column is selected. The analysis can continue. Without annotation the results tables have no gene names, plots are labelled with accessions, and enrichment cannot be run."
+  Expected `log$shown[[length(log$shown) - 1L]]$text` to be identical to "UniProt annotations retrieved successfully.".
+  Differences:
+  actual vs expected
+  - "No UniProt annotations were retrieved (the UniProt service may be unavailable). Accession IDs will be used as gene names. Save the design again to retry."
+  + "UniProt annotations retrieved successfully."
+  Expected `note$duration` to be NULL.
+  Differences:
+  `actual` is a double vector (8)
+  `expected` is NULL
+  Expected `note$duration` to be NULL.
+  Differences:
+  `actual` is a double vector (8)
+  `expected` is NULL
+  Expected `note$id` to be identical to "prot_uniprot_annotation".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('prot_uniprot_annotation')
+  Expected `note$id` to be identical to "prot_uniprot_annotation".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('prot_uniprot_annotation')
+  Expected `notices[[1L]]$text` to be identical to `paste(...)`.
+  Differences:
+  actual vs expected
+  - "No UniProt annotations were retrieved (the UniProt service may be unavailable). Accession IDs will be used as gene names. Save the design again to retry."
+  + "Protein annotation was not retrieved: UniProt answered with an error (status 503) for 1 of 1 requests. The analysis can continue. Without annotation the results tables have no gene names, plots are labelled with accessions, and enrichment cannot be run. To try again, save the design again."
+  Expected `notices[[length(notices)]]$text` to be identical to `paste(...)`.
+  Differences:
+  actual vs expected
+  - "No UniProt annotations were retrieved (the UniProt service may be unavailable). Accession IDs will be used as gene names. Save the design again to retry."
+  + "Protein annotation is incomplete: 1 of 2 requests to UniProt failed (status 503), so 25 of 50 proteins were not looked up. The analysis can continue. The proteins not looked up have no gene names and are left out of enrichment. To try again, save the design again."
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T3: a record with a failed row validates and reads back with release NA
+-- base:
+  Expected `is.na(failed$release)` to be TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+  Expected `nrow(failed)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  Expected `project$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <purrr_error_indexed/rlang_error/error/condition>, a list
+  `expected` is NULL
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T5 (b): enrichment refuses on an empty or missing annotation before any service or GO step
+-- base:
+  Expected `conditionMessage(empty$error)` to be identical to `k175Refusal`.
+  Differences:
+  lines(actual) vs lines(expected)
+  - "i In argument: `!is.na(.data[[\"go_id_go_biological_process\"]])`."
+  - "Caused by error in `.data[[\"go_id_go_biological_process\"]]`:"
+  - "! Column `go_id_go_biological_process` not found in `.data`."
+  + "Enrichment needs protein annotation and this project has none. Save the design again to retrieve it, then run the later steps again."
+  Expected `inherits(empty$error, "workflow_enrichment_annotation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `inherits(missing$error, "workflow_enrichment_annotation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `missing$notes[[1L]]$text` to be identical to "Protein annotation was retrieved but could not be processed (the cache directory cannot be read).".
+  Differences:
+  actual vs expected
+  - "clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "Protein annotation was retrieved but could not be processed (the cache directory cannot be read)."
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T5 (c): an incomplete table is reported on the bus, from the project file and after a session round trip
+-- base:
+  Expected `k175IncompleteNotice %in% texts` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `k175IncompleteNotice %in% texts` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `k175IncompleteNotice %in% texts` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `project$outcomes$annotation_error` to be identical to "1 of 3 requests failed (status 503); 25 of 70 accessions not looked up".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('1 of 3 requests failed (status 503); 25 of 70 accessions not looked up')
+  Expected `project$outcomes$annotation_error` to be identical to "1 of 3 requests failed (status 503); 25 of 70 accessions not looked up".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('1 of 3 requests failed (status 503); 25 of 70 accessions not looked up')
+  Expected `project$outcomes$annotation_error` to be identical to "1 of 3 requests failed (status 503); 25 of 70 accessions not looked up".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('1 of 3 requests failed (status 503); 25 of 70 accessions not looked up')
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T5 (f): the enrichment step's own retrieval on its real path (zero identifiers)
+-- base:
+  Expected `file.exists(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `file.exists(cache_file)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `inherits(project$error, "workflow_enrichment_annotation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `inherits(project$error, "workflow_enrichment_annotation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `project$notes[[1L]]$text` to be identical to `paste(...)`.
+  Differences:
+  actual vs expected
+  - "clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used."
+  + "Protein annotation could not be requested at this step: it has no protein identifiers to look up. Save the design again to retrieve the annotation."
+  Expected `project$uniprot_rows[[1L]]$query_summary` to be identical to "not queried: this step had no protein identifiers (annotation is retrieved at the design step)".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('not queried: this step had no protein identifiers (annotation is retrieved at the design step)')
+  Expected `project$uniprot_rows[[1L]]$release_kind` to be identical to "not_queried".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('not_queried')
+  Expected `project$uniprot_rows` to have length 1.
+  Actual length: 0.
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T5 (f): the resolver keeps the reason and the redacted detail of its own retrieval's error
+-- base:
+  Expected `resolved$creationDetail` to be identical to "Could not resolve host: rest.uniprot.org".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('Could not resolve host: rest.uniprot.org')
+  Expected `resolved$creationReason` to be identical to "request_failed".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('request_failed')
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T5 (g): a load error followed by a retrieval from the cache completes with the notice and outcome
+-- base:
+  Error in `expect_match(project$outcomes$annotation_error, "^annotation file could not be read \\(")`: `object` must be a character vector, not `NULL`.
+  Expected `any(startsWith(texts, "The saved protein annotation could not be read ("))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T5 (h): a session saved with an empty annotation reopens with it, and enrichment refuses
+-- base:
+  Expected `inherits(project$error, "workflow_enrichment_annotation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T7: replaying an enrichment with no annotation is refused; one with annotation replays unchanged
+-- base:
+  Expected `inherits(without$error, "workflow_enrichment_annotation")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T8: each request has a 30 s time-out, three attempts, five transient statuses and a capped wait
+-- base:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `log$requests[[1L]]`: subscript out of bounds
+  Expected `log$calls` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-prot-design-core.R | fixed | (KIT-115 A101-09) a failed UniProt retrieval writes no annotation file and is not reported as a success
+-- base:
+  Expected `notes[[1L]]` to be identical to `paste(...)`.
+  Differences:
+  actual vs expected
+  - "[warning] No UniProt annotations were retrieved (the UniProt service may be unavailable). Accession IDs will be used as gene names. Save the design again to retry."
+  + "[warning] Protein annotation is empty. The analysis can continue. Without annotation the results tables have no gene names, plots are labelled with accessions, and enrichment cannot be run."
+-- head:
+  <passes>
+
+== test-omic-enrich-module.R | new-failure | (b) in process: refusals
+-- base:
+  <passes>
+-- head:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 9a37c0806ac9cbb89764b5125b6e91d9edb117e0f300658eb1927771ac9c29bd"
+  + "<text> d4fb7d7310ead9d16c488b464913a0e5924d14ef0038fdaef46b4caa5cd76332"
+  
+  refusals pre_da/da values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 9a37c0806ac9cbb89764b5125b6e91d9edb117e0f300658eb1927771ac9c29bd"
+  + "<text> d4fb7d7310ead9d16c488b464913a0e5924d14ef0038fdaef46b4caa5cd76332"
+  
+  refusals pre_da/open values
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[8]]) vs lines(expected[[8]])
+  - "<text> 9a37c0806ac9cbb89764b5125b6e91d9edb117e0f300658eb1927771ac9c29bd"
+  + "<text> d4fb7d7310ead9d16c488b464913a0e5924d14ef0038fdaef46b4caa5cd76332"
+  
+  refusals pre_da/run_before_da values
+

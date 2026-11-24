@@ -1,0 +1,91 @@
+Test passed with 1 success 😀.
+Test passed with 4 successes 🥳.
+::notice title=INFO::--- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+::notice title=INFO::   selected_contrast = B_vs_A
+::notice title=INFO::   Glimma: Available contrasts in data: B_vs_A
+::notice title=INFO::   Glimma: Target contrast: B_vs_A
+::notice title=INFO::   Glimma: Grouping expression plot by 'group' with 6 samples
+::notice title=INFO::   Glimma: Unique groups detected: A, B
+::notice title=INFO::   Glimma: Synchronized 70 proteins with expression data
+::notice title=INFO::   Glimma: Calling glimmaXY with 70 proteins and 6 samples
+::notice title=INFO::   Glimma: Highlighting 35 significant genes (25 up, 10 down)
+::notice title=INFO::--- Exiting generateProtDAVolcanoPlotGlimma ---
+::notice title=INFO::=== Starting protein annotation matching ===
+::notice title=INFO::Using protein ID column: uniprot_acc
+::notice title=INFO::UniProt annotations: 70 entries
+::notice title=INFO::UniProt ID column: Entry
+::notice title=INFO::Gene names column: gene_names
+::notice title=INFO::Detected da_results_for_enrichment S4 object
+::notice title=INFO::Available DE contrasts: groupB-groupA
+::notice title=INFO::Extracted protein IDs from DE contrast: groupB-groupA
+::notice title=INFO::Found 70 unique protein IDs in DE results
+::notice title=INFO::Performing exact matching...
+::notice title=INFO::Exact matches found: 70
+::notice title=INFO::Proteins requiring fuzzy matching: 0
+::notice title=INFO::=== Annotation matching completed ===
+::notice title=INFO::Total proteins: 70
+::notice title=INFO::Matched proteins: 70 (100.0%)
+::notice title=INFO::Exact matches: 70 (100.0%)
+::notice title=INFO::Fuzzy matches: 0 (0.0%)
+::notice title=INFO::Unmatched proteins: 0 (0.0%)
+Test passed with 1 success 🥇.
+                                                                                                                         commit 
+                                                                                     "63b95f90c754a80c7195812f2d0d540137cd450f" 
+                                                                                                                              r 
+                                                                                                 "R version 4.6.1 (2026-06-24)" 
+                                                                                                                   MultiScholaR 
+                                                                                                                        "0.9.0" 
+                                                                                                                clusterProfiler 
+                                                                                                                       "4.20.0" 
+                                                                                                                       enrichit 
+                                                                                                                        "0.2.0" 
+                                                                                                                         qvalue 
+                                                                                                                       "2.44.0" 
+                                                                                                                          GO.db 
+                                                                                                                       "3.23.1" 
+                                                                                                                       testthat 
+                                                                                                                        "3.3.2" 
+                                                                                                                   s3_list_size 
+                                                                                                                          "126" 
+                                                                                                                      s3_tested 
+                                                                                                                          "156" 
+                                                                                                                 s3_significant 
+                                                                                                                          "120" 
+                                                                                                                           s3_m 
+                                                                                                                          "314" 
+                                                                                                                t7_none_up_rows 
+                                                                                                                            "5" 
+                                                                                                              t7_none_down_rows 
+                                                                                                                            "6" 
+                                                                                                               t7_iapor_up_rows 
+                                                                                                                           "75" 
+                                                                                                             t7_iapor_down_rows 
+                                                                                                                           "53" 
+                                                                                                              s6_declared_names 
+"taxon_id,up_cutoff,down_cutoff,q_cutoff,exclude_iea,correction_method,protein_id_column,contrast_names,results,go_propagation" 
+                                                                                                       sha256_e0-accessions.tsv 
+                                                             "d5ae6b2572f77d31fee4e2ae48e018dc25520f8f4a84313d125b8a0a0417ecbe" 
+                                                                                                          sha256_s3-none-up.rds 
+                                                             "4eff27bf4a9eb38efbe34f9dbe3242a8efa68f7b22eae8d0eef9fc760cc9a6ca" 
+                                                                                                          sha256_s3-none-up.tsv 
+                                                             "89a382359bacb9942bfe2092a9ada1faeebb0802f0885da44285f76b8f8008cc" 
+                                                                                                         sha256_s6-identity.rds 
+                                                             "1805791905a8179cee1a3a4172574992e15ed546ef6e65af54550e45ba3f5db6" 
+                                                                                                       sha256_t7-iapor-down.rds 
+                                                             "703f305739fe6e5a2bedd2b27f426fed77150066bb8f3d1dc5b220f685839502" 
+                                                                                                       sha256_t7-iapor-down.tsv 
+                                                             "71d0f08c76fdfa3691838843ca2d8a45322667f1259c03884545fdd2c9eb6cda" 
+                                                                                                         sha256_t7-iapor-up.rds 
+                                                             "f6683cb13f5ac409557809f1ad1a56dd3505404ad9fcf197d9b412119631b14e" 
+                                                                                                         sha256_t7-iapor-up.tsv 
+                                                             "c1e2269eb9a3efca201eb82b63baaeb3d290b16186b87606759a09b81ca94a2a" 
+                                                                                                        sha256_t7-none-down.rds 
+                                                             "91f9d030fe3f1905dd98f169e832988db63412e119c3a1c7ee44a7f7ce06d49a" 
+                                                                                                        sha256_t7-none-down.tsv 
+                                                             "57ea14bfaf446f2bfcfd2f8ae1a8eaa43cbe0b3c771a9e5e9a2f8a84c5b7aa7f" 
+                                                                                                          sha256_t7-none-up.rds 
+                                                             "00d84ec56cace7a85e091934c2775f59c6ca13818aebb06d16fef3d0a7064bbd" 
+                                                                                                          sha256_t7-none-up.tsv 
+                                                             "e3fd1a05684d486cdda737a7a7fab1a76448be5acba286d6526b319074be784c" 
+Error in deferred_run(env) : could not find function "deferred_run"
+Calls: <Anonymous>
