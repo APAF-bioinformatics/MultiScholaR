@@ -1,0 +1,15 @@
+run_id	commit	purpose	minutes	result
+45316123488	8d095b41	R1a: failing-first tests (2 files) and S1 part L base side (gate G0)	88 (2 jobs)	S1 L: A2 (i) holds (10 = 10 OR stops; n_T, miss_share 204/204); A2 (iv) base holds (66 assays, all with features without values, all 'prior.weights contain NA values'). Tests: T1, T2, T5, T6, T6 (b), T8 fail at stated values; T3, T4, T9 (a), T10 pass; T7 instrument defect (no manifest either side)
+45316126666	8d095b41	R1b: S1 part M base side (gate G0)	69	S1 M: A2 (i) holds (27 = 27; 102/102); A2 (iv) base holds (54 assays)
+45325563956	bf5ed69f	R1c: instrument run 1 of 3 (T7 driver: executeOmicDaRun)	8	T7 still no manifest on either side (actions not all dispatched); other tests as R1a; T6, T6 (b) messages now shown as text
+45327425477	648a44f0	R1d: instrument run 2 of 3 (T7 advances the poll)	9	all T7 actions delivered; manifest read with the wrong reader (instrument defect)
+45329105038	52343cca	R1e: instrument run 3 of 3 (T7 reads the manifest as a state value)	12	T7 fails at its stated value (errors pos = 'prior.weights contain NA values' per contrast); A1 met on the tests-only commit
+45330948439	1b8fa4f2	R2 S1 part M on the merge with staging ea93d948 (base records of R1)	44	cancelled by me when KIT-194 merged (coordinator: S1 repeats on its base); no result
+45330952540	1b8fa4f2	R2 tests, check and S1 part L on the merge with staging ea93d948	274 (9 jobs)	cancelled as above; no result
+45336286628	a1e46859	R2 tests (38 files incl. test-omics-norm-state-guards.R) and R CMD check, base 3d4a585d (KIT-194 merged)	279 (8 jobs)	every file same; test-kit196 only-on-head 540 passed, 0 failed; check findings identical (6 on both, 0 only on head)
+45336278801	a1e46859	R2 S1 part L base side repeated on base 3d4a585d	74	A2 (i) holds (10 = 10; 204/204); A2 (iv) base holds (66)
+45336282667	a1e46859	R2 S1 part M base side repeated on base 3d4a585d	54	A2 (i) holds (27 = 27; 102/102); A2 (iv) base holds (54)
+45346222323	fef003c6	R2 S1 part L head side against the 3d4a585d base records	79	A2 (ii) 316/316, (iii) 46 journeys complete, 92/92 assay comparisons identical, (iv) 204/204; D6 408 rows
+45346224846	fef003c6	R2 S1 part M head side against the 3d4a585d base records	75	A2 (ii) 300/300, (iii) 54 complete, 54/54 identical, (iv) 204/204; D6 612 rows
+45358036892	6dcf593c	R3: full suite base fe5c9273 against head 6dcf593c, 20 shards per side, with check (covers R2b)	1205 (42 jobs)	463 files: 462 same, test-kit196 only-on-head ok; check findings identical, none only on head
+45376398677	73cd9ee9	R2b (6.4; audit C3): R2's 38 files and check on the merge with staging 241914cb	266 (8 jobs)	37 same, test-kit196 only-on-head ok; check findings identical

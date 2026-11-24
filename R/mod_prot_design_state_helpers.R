@@ -52,30 +52,27 @@ completeProtDesignPostCheckpoint <- function(
 
     workflowData$uniprot_dat_cln <- uniprotDatCln
     shiny::removeModal()
-    if (nrow(uniprotDatCln) > 0) {
+    # KIT-175: a complete retrieval removes an earlier annotation notice; an empty or incomplete one shows the notice
+    # of its outcome until it is closed, under a fixed id so that a new attempt replaces it.
+    outcome <- attr(uniprotDatCln, "annotation_outcome")
+    if (nrow(uniprotDatCln) > 0 && is.null(outcome)) {
       log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprotDatCln)))
+      shiny::removeNotification("prot_uniprot_annotation")
       shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")
     } else {
-      # KIT-115 (A101-09): a failed retrieval returns an empty table without an error (F-28).
-      log_warn("No UniProt annotations were retrieved.")
-      shiny::showNotification(
-        paste("No UniProt annotations were retrieved (the UniProt service may be unavailable).",
-          "Accession IDs will be used as gene names. Save the design again to retry."),
-        type = "warning",
-        duration = 8
-      )
+      notice <- uniprotAnnotationNotice(outcome)
+      log_warn(gsub("[{}]", "", notice))
+      shiny::showNotification(notice, type = "warning", duration = NULL, id = "prot_uniprot_annotation")
     }
   }, error = function(e) {
     log_warn(paste("Error getting UniProt annotations:", e$message))
     workflowData$uniprot_dat_cln <- NULL
     shiny::removeModal()
-    shiny::showNotification(
-      paste("Warning: Could not retrieve UniProt annotations:", e$message),
-      type = "warning",
-      duration = 8
-    )
+    outcome <- list(reason = e$reason %||% "not_attempted", stage = e$stage,
+      detail = e$detail %||% redactUniprotDetail(conditionMessage(e)))
+    shiny::showNotification(uniprotAnnotationNotice(outcome), type = "warning", duration = NULL,
+      id = "prot_uniprot_annotation")
   })
-
 
   if (!is.null(qcTrigger)) {
     qcTrigger(TRUE)

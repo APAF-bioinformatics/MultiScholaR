@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-general-enrichment-shared.R	139	0	0	2	0	19.1	ok

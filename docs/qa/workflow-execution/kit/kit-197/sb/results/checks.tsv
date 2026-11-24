@@ -1,0 +1,7 @@
+check	value	pass	detail
+complete	2400	TRUE	2400 replicate-masks of 2400 expected
+F1	0	TRUE	proteins in O and not in H, summed
+t_r_monotone	0	TRUE	replicate-masks where the count of tested p <= t_r differs from the calls
+bh_fallback	0	TRUE	replicate-masks whose q-values fell back to BH (counted, not a stop)
+determinism	5	TRUE	cell A, first five replicates run twice
+F4	0	TRUE	settings whose Bonferroni (24) interval of m6_NA excludes 0

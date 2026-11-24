@@ -1,0 +1,124 @@
+check	cell	rep	mask	value	threshold	pass	note
+E4_B	constructed	0	none	0.25	0.25 +- 1e-12	TRUE	
+E4_rho	constructed	0	none	1	1 +- 1e-12	TRUE	
+E4_Cstar	constructed	0	none	0.1	0.10 +- 1e-12	TRUE	
+E1a_raw	P0	401	none	1.22924e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 29.33 max 29.33; pattern errors 0
+E1a_post	P0	401	none	1.7053e-13	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd2	1.25056e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 5.746 max 26.4; pattern errors 0
+E1a_post	P0	401	vd2	2.66454e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd10	2.27729e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 7.115 max 121.6; pattern errors 0
+E1a_post	P0	401	vd10	3.55271e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	mcar2	1.47082e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 21.7 max 53.09; pattern errors 0
+E1a_post	P0	401	mcar2	4.61853e-14	1e-08	TRUE	share>1e-8 0
+E2	P0	401	none	1.7053e-13	1e-08	TRUE	k1
+G1	P0	401	none	0	0.9	FALSE	B(S, none) on F^comp 0.4442; variant k1
+DA_errors	P0	401	all	0	0	TRUE	variant k1; failed assays 0; DA calls that stopped 0
+E1neg	P0	401	masked	3.06569	1e-06	TRUE	k1
+E1a_raw	P0	401	none	1.99059e-11	1e-08	TRUE	share>1e-8 0; gap ratio median 27.06 max 27.06; pattern errors 0
+E1a_post	P0	401	none	6.39488e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd2	1.2939e-11	1e-08	TRUE	share>1e-8 0; gap ratio median 17.83 max 78.63; pattern errors 0
+E1a_post	P0	401	vd2	4.26326e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd10	2.60059e-11	1e-08	TRUE	share>1e-8 0; gap ratio median 22.76 max 427.7; pattern errors 0
+E1a_post	P0	401	vd10	1.17097e-11	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	mcar2	7.22267e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 26.51 max 312.6; pattern errors 0
+E1a_post	P0	401	mcar2	9.9476e-14	1e-08	TRUE	share>1e-8 0
+E2	P0	401	none	6.39488e-14	1e-08	TRUE	k4
+G1	P0	401	none	0.999721	0.9	TRUE	B(S, none) on F^comp -0.0954; variant k4
+DA_errors	P0	401	all	0	0	TRUE	variant k4; failed assays 0; DA calls that stopped 0
+E1neg	P0	401	masked	3.19566	1e-06	TRUE	k4
+E1a_raw	P0	401	none	4.35918e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 1.366 max 1.366; pattern errors 0
+E1a_post	P0	401	none	3.55271e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd2	5.69145e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 14.45 max 37.87; pattern errors 0
+E1a_post	P0	401	vd2	4.61853e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd10	1.34932e-11	1e-08	TRUE	share>1e-8 0; gap ratio median 29.85 max 405.8; pattern errors 0
+E1a_post	P0	401	vd10	2.94165e-12	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	mcar2	4.59011e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 18.4 max 286.4; pattern errors 0
+E1a_post	P0	401	mcar2	1.1724e-13	1e-08	TRUE	share>1e-8 0
+E2	P0	401	none	3.55271e-14	1e-08	TRUE	s1
+G1	P0	401	none	0.998568	0.9	TRUE	B(S, none) on F^comp -0.2862; variant s1
+DA_errors	P0	401	all	0	0	TRUE	variant s1; failed assays 0; DA calls that stopped 0
+E1neg	P0	401	masked	2.75037	1e-06	TRUE	s1
+E1a_raw	P0	401	none	9.05942e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 1.035 max 1.035; pattern errors 0
+E1a_post	P0	401	none	2.4869e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd2	1.75504e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 2.449 max 12.18; pattern errors 0
+E1a_post	P0	401	vd2	4.61853e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd10	6.22435e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 4.02 max 54.84; pattern errors 0
+E1a_post	P0	401	vd10	1.47082e-12	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	mcar2	1.48148e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 9.455 max 83.93; pattern errors 0
+E1a_post	P0	401	mcar2	4.26326e-14	1e-08	TRUE	share>1e-8 0
+E2	P0	401	none	2.4869e-14	1e-08	TRUE	s10
+G1	P0	401	none	0.999923	0.9	TRUE	B(S, none) on F^comp -0.0285; variant s10
+DA_errors	P0	401	all	0	0	TRUE	variant s10; failed assays 0; DA calls that stopped 0
+E1neg	P0	401	masked	1.26511	1e-06	TRUE	s10
+E1a_raw	P0	401	none	7.24754e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 1.118 max 1.118; pattern errors 0
+E1a_post	P0	401	none	1.42109e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd2	1.87939e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 5.964 max 76.37; pattern errors 0
+E1a_post	P0	401	vd2	3.19744e-14	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	vd10	1.63745e-11	1e-08	TRUE	share>1e-8 0; gap ratio median 12.86 max 196.1; pattern errors 0
+E1a_post	P0	401	vd10	5.79092e-12	1e-08	TRUE	share>1e-8 0
+E1a_raw	P0	401	mcar2	4.59011e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 19.37 max 148.7; pattern errors 0
+E1a_post	P0	401	mcar2	6.03961e-14	1e-08	TRUE	share>1e-8 0
+E2	P0	401	none	1.42109e-14	1e-08	TRUE	loess
+G1	P0	401	none	0.999718	0.9	TRUE	B(S, none) on F^comp -0.0990; variant loess
+DA_errors	P0	401	all	0	0	TRUE	variant loess; failed assays 0; DA calls that stopped 0
+E1neg	P0	401	masked	2.43929	1e-06	TRUE	loess
+E1a_raw	M2	401	none	3.30402e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 5.402 max 5.402; pattern errors 0
+E1a_post	M2	401	none	3.30402e-13	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd2	7.0699e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 7.319 max 20.95; pattern errors 0
+E1a_post	M2	401	vd2	7.0699e-13	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd10	1.24487e-11	1e-08	TRUE	share>1e-8 0; gap ratio median 4.79 max 11.02; pattern errors 0
+E1a_post	M2	401	vd10	1.24487e-11	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	mcar2	5.18696e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 16.83 max 39.44; pattern errors 0
+E1a_post	M2	401	mcar2	5.18696e-13	1e-08	TRUE	share>1e-8 0
+E2	M2	401	none	3.30402e-13	1e-08	TRUE	k1
+G1	M2	401	none	0	0.9	FALSE	B(S, none) on F^comp 0.4146; variant k1
+G2	M2	401	all	0	0	TRUE	variant k1; failed assays 0; DA calls that stopped 0
+E1neg	M2	401	masked	7.27035	1e-06	TRUE	k1
+E1a_raw	M2	401	none	4.97202e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 21.35 max 21.35; pattern errors 0
+E1a_post	M2	401	none	4.97202e-12	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd2	2.80487e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 2.007 max 11.5; pattern errors 0
+E1a_post	M2	401	vd2	2.80487e-12	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd10	2.27267e-11	1e-08	TRUE	share>1e-8 0; gap ratio median 6.917 max 44.95; pattern errors 0
+E1a_post	M2	401	vd10	2.27267e-11	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	mcar2	2.46558e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 4.999 max 94.27; pattern errors 0
+E1a_post	M2	401	mcar2	2.46558e-12	1e-08	TRUE	share>1e-8 0
+E2	M2	401	none	4.97202e-12	1e-08	TRUE	k4
+G1	M2	401	none	0.996132	0.9	TRUE	B(S, none) on F^comp -0.0602; variant k4
+G2	M2	401	all	0	0	TRUE	variant k4; failed assays 0; DA calls that stopped 0
+E1neg	M2	401	masked	16.1649	1e-06	TRUE	k4
+E1a_raw	M2	401	none	1.36779e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 1.284 max 1.284; pattern errors 0
+E1a_post	M2	401	none	1.36779e-12	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd2	6.88871e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 5.885 max 18.04; pattern errors 0
+E1a_post	M2	401	vd2	6.88871e-12	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd10	1.46798e-11	1e-08	TRUE	share>1e-8 0; gap ratio median 6.181 max 24.63; pattern errors 0
+E1a_post	M2	401	vd10	1.46798e-11	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	mcar2	1.2772e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 4.744 max 8.041; pattern errors 0
+E1a_post	M2	401	mcar2	1.2772e-12	1e-08	TRUE	share>1e-8 0
+E2	M2	401	none	1.36779e-12	1e-08	TRUE	s1
+G1	M2	401	none	0.98544	0.9	TRUE	B(S, none) on F^comp -0.1795; variant s1
+G2	M2	401	all	0	0	TRUE	variant s1; failed assays 0; DA calls that stopped 0
+E1neg	M2	401	masked	15.5034	1e-06	TRUE	s1
+E1a_raw	M2	401	none	1.06581e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 1.025 max 1.025; pattern errors 0
+E1a_post	M2	401	none	1.06581e-13	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd2	5.71987e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 1.458 max 2.152; pattern errors 0
+E1a_post	M2	401	vd2	5.71987e-13	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd10	8.08065e-12	1e-08	TRUE	share>1e-8 0; gap ratio median 1.944 max 10.21; pattern errors 0
+E1a_post	M2	401	vd10	8.08065e-12	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	mcar2	4.47642e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 3.013 max 7.158; pattern errors 0
+E1a_post	M2	401	mcar2	4.47642e-13	1e-08	TRUE	share>1e-8 0
+E2	M2	401	none	1.06581e-13	1e-08	TRUE	s10
+G1	M2	401	none	0.998696	0.9	TRUE	B(S, none) on F^comp -0.0177; variant s10
+G2	M2	401	all	0	0	TRUE	variant s10; failed assays 0; DA calls that stopped 0
+E1neg	M2	401	masked	5.8351	1e-06	TRUE	s10
+E1a_raw	M2	401	none	4.12115e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 1.091 max 1.091; pattern errors 0
+E1a_post	M2	401	none	4.12115e-13	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd2	6.11067e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 3.538 max 10.95; pattern errors 0
+E1a_post	M2	401	vd2	6.11067e-13	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	vd10	1.36566e-11	1e-08	TRUE	share>1e-8 0; gap ratio median 3.648 max 16.93; pattern errors 0
+E1a_post	M2	401	vd10	1.36566e-11	1e-08	TRUE	share>1e-8 0
+E1a_raw	M2	401	mcar2	9.73444e-13	1e-08	TRUE	share>1e-8 0; gap ratio median 5.248 max 7.48; pattern errors 0
+E1a_post	M2	401	mcar2	9.73444e-13	1e-08	TRUE	share>1e-8 0
+E2	M2	401	none	4.12115e-13	1e-08	TRUE	loess
+G1	M2	401	none	0.995173	0.9	TRUE	B(S, none) on F^comp -0.0772; variant loess
+G2	M2	401	all	0	0	TRUE	variant loess; failed assays 0; DA calls that stopped 0
+E1neg	M2	401	masked	5.48828	1e-06	TRUE	loess

@@ -2076,7 +2076,9 @@ enrichment_results <- processEnrichments(
   , exclude_iea = FALSE,
   protein_id_column = ruv_normalised_for_da_analysis_obj@protein_id_column,
   contrast_names = (names(da_analysis_results_list)),
-  go_propagation = "is_a_part_of_regulates"
+  go_propagation = "is_a_part_of_regulates",
+  # "bh_whole_family": BH over every term of 10 to 500 measured proteins; "qvalue": the earlier Storey q-value flag
+  significance_rule = "bh_whole_family"
 )
 ```
 

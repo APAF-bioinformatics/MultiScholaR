@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-prot-annotation-uniprot-empty.R	153	124	6	0	3	182	failed
+test-prot-design-core.R	36	1	0	0	0	11.6	failed
+test-prot-annotation-uniprot-direct-shared.R	20	0	0	0	0	10.1	ok

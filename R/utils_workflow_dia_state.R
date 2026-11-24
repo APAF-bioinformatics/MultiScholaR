@@ -725,6 +725,8 @@ setWorkflowStepProvenance <- function(manager, operation, variant = NA_character
     values = NULL) {
     if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
     previous <- manager$.context$pending_provenance
+    # KIT-187: a step computed under an earlier rule (a replay of a step made before the change) records no marker.
+    fixed <- workflowFixedInForce(fixed)
     pending <- list(operation = operation, variant = variant, parameter_names = as.character(parameter_names), fixed = fixed,
         values = boundDIAProvenanceValues(values, parameter_names))
     # KIT-027 audit PH-02: a second operation before the same commit (correlation's pairs, then its selection) keeps
@@ -1334,6 +1336,83 @@ applyProtDesignSingleRenameUpdate <- function(
     )
 }
 
+#' Plain log2 of the protein design step (KIT-177, ticket section 3): a negative or infinite quantity is refused with
+#' class `prot_design_quantity_invalid` naming the run column and up to three of its values; a 0 and a NaN become
+#' missing, counted apart (`nonpositive_set_to_na`, `nonfinite_set_to_na`); then `log2()`. A missing value stays missing.
+#' @param table Wide protein table (one identifier column, one column per run).
+#' @param id_column The identifier column.
+#' @return `list(table, counts)`; `counts` is an integer vector named `nonpositive_set_to_na`, `nonfinite_set_to_na`.
+#' @noRd
+protDesignPlainLog2 <- function(table, id_column) {
+  runs <- setdiff(names(table), id_column)
+  for (run in runs) {
+    x <- table[[run]]
+    bad <- !is.na(x) & (x < 0 | is.infinite(x))
+    if (any(bad)) {
+      values <- utils::head(x[bad], 3L)
+      rlang::abort(sprintf(omicGuiProtLog2Texts()[["refusal"]], run, paste(format(values), collapse = ", ")),
+        class = "prot_design_quantity_invalid", run = run, values = values)
+    }
+  }
+  # KIT-172's shared plain-log2 kernel (ENG-25): after the refusal above only 0 and NaN remain to be set to missing,
+  # so its `nonpositive` count is the zeros and its `nonfinite` count the NaN cells.
+  log2ed <- omicsLog2SampleColumns(table, runs, 0, "protein design")
+  table <- log2ed$assay
+  counts <- c(nonpositive_set_to_na = as.integer(log2ed$counts[["nonpositive"]]),
+    nonfinite_set_to_na = as.integer(log2ed$counts[["nonfinite"]]))
+  list(table = table, counts = counts)
+}
+
+#' The design step's log lines for the counts above 0 (KIT-177, wording VAL-41).
+#' @noRd
+protDesignLog2LogLines <- function(counts) {
+  texts <- omicGuiProtLog2Texts()
+  c(if (counts[["nonpositive_set_to_na"]] > 0L) sprintf(texts[["log_zero"]], counts[["nonpositive_set_to_na"]]),
+    if (counts[["nonfinite_set_to_na"]] > 0L) sprintf(texts[["log_nan"]], counts[["nonfinite_set_to_na"]]))
+}
+
+#' The notification text for the counts above 0, or NULL when both are 0 (KIT-177, wording VAL-41).
+#' @noRd
+protDesignLog2NotificationText <- function(counts) {
+  if (is.null(counts) || all(counts == 0L)) return(NULL)
+  texts <- omicGuiProtLog2Texts()
+  zeros <- counts[["nonpositive_set_to_na"]]
+  nans <- counts[["nonfinite_set_to_na"]]
+  subject <- if (zeros > 0L && nans > 0L) sprintf(texts[["notice_both"]], zeros, nans) else
+    if (zeros > 0L) sprintf(texts[["notice_zero"]], zeros) else sprintf(texts[["notice_nan"]], nans)
+  paste(subject, texts[["notice_tail"]])
+}
+
+#' Notify the design step's counts, when any is above 0 (KIT-177 outcome 2; both callers).
+#' @param workflowData The workflow bus the step wrote `prot_design_log2_counts` to.
+#' @noRd
+notifyProtDesignLog2Counts <- function(workflowData, showNotificationFn = shiny::showNotification) {
+  counts <- shiny::isolate(workflowData$prot_design_log2_counts)
+  text <- protDesignLog2NotificationText(counts)
+  if (!is.null(text)) showNotificationFn(text, type = "warning", duration = NULL)
+  invisible(text)
+}
+
+#' Tell the user once that a label-free or TMT design state in use was made by an earlier version (KIT-177 outcome 4):
+#' its design step records `log2(x + 1)` or no transform. Never for DIA states or any other recorded string.
+#' @param manager The session's state owner.
+#' @return TRUE when the notification was shown.
+#' @noRd
+notifyProtDesignEarlierTransform <- function(manager, showNotificationFn = shiny::showNotification) {
+  if (!inherits(manager, "DIAStateAdapter")) return(invisible(FALSE))
+  context <- manager$.context
+  if (isTRUE(context$prot_design_transform_notified)) return(invisible(FALSE))
+  type <- tryCatch(manager$workflow_type, error = function(e) NULL)
+  if (!(is.character(type) && length(type) == 1L && type %in% c("TMT", "LFQ"))) return(invisible(FALSE))
+  provenance <- context$snapshot$step_provenance$protein_s4_initial
+  if (is.null(provenance) || !identical(provenance$operation, "design_builder")) return(invisible(FALSE))
+  transform <- provenance$fixed$transform
+  if (!(is.null(transform) || identical(transform, "log2(x + 1)"))) return(invisible(FALSE))
+  context$prot_design_transform_notified <- TRUE
+  showNotificationFn(omicGuiProtLog2Texts()[["reopen"]], type = "message", duration = NULL)
+  invisible(TRUE)
+}
+
 buildProtDesignStateCheckpoint <- function(
     workflowData,
     workflowType,
@@ -1402,14 +1481,14 @@ buildProtDesignStateCheckpoint <- function(
 
     logger::log_info(sprintf("%s %s: Applying log2 transformation to abundance values...", workflowType, actionLabel))
 
+    # KIT-177 (VAL-25, VAL-27): plain log2. A negative or infinite quantity is refused before anything is committed;
+    # 0 and NaN become missing and are counted apart; then log2 (KIT-172's shared kernel).
     proteinIdCol <- workflowData$column_mapping$protein_col
-    proteinQuantTableWide <- proteinQuantTableWide |>
-      dplyr::mutate(
-        dplyr::across(
-          -!!sym(proteinIdCol),
-          ~ log2(.x + 1)
-        )
-      )
+    log2Result <- protDesignPlainLog2(proteinQuantTableWide, proteinIdCol)
+    proteinQuantTableWide <- log2Result$table
+    for (line in protDesignLog2LogLines(log2Result$counts)) logger::log_info(sprintf("%s %s: %s", workflowType, actionLabel, line))
+    # The callers notify the counts (builder save, "Import existing design").
+    workflowData$prot_design_log2_counts <- log2Result$counts
 
     logger::log_info(sprintf("%s %s: Log2 transformation completed", workflowType, actionLabel))
 
@@ -1430,9 +1509,10 @@ buildProtDesignStateCheckpoint <- function(
   }
 
   logger::log_info(paste("Saving S4 object to R6 state manager as:", stateName))
-  # KIT-038: on an owner (KIT-020) the protein-level design step records its fixed transform.
+  # KIT-038: on an owner (KIT-020) the protein-level design step records its fixed transform; KIT-177: plain log2 and
+  # the counts of values set to missing.
   setDIAStepProvenance(workflowData$state_manager, "design_builder",
-    fixed = list(pivot = "protein x run", transform = "log2(x + 1)"))
+    fixed = c(list(pivot = "protein x run", transform = "log2(x); 0 missing"), as.list(log2Result$counts)))
   saveDIAOwnerState(workflowData$state_manager, 
     state_name = stateName,
     s4_data_object = s4Object,
@@ -2925,7 +3005,8 @@ recordDIAWorkflowInputs <- recordWorkflowInputs
 #' @param manager Current DIA owner; other owners are unchanged.
 #' @param service Service name (`gprofiler2`, `clusterProfiler`, `string-db`, `uniprot`).
 #' @param release Release the service reported or the client queried; NA when unknown.
-#' @param release_kind `database_version`, `package_version`, `api_version` or `header`.
+#' @param release_kind `database_version`, `package_version`, `api_version`, `header`, `failed` (the retrieval failed;
+#'   release NA) or `not_queried` (no request was made; release NA) (KIT-175, amending REC-031).
 #' @param query_date Time of the query, recorded as ISO 8601.
 #' @param query_summary Short description of the query.
 #' @return NULL invisibly.

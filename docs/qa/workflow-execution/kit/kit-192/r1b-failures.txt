@@ -1,0 +1,24 @@
+file: test-module-ci-trx-summary.R
+test: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report
+kind: failure
+message:
+  Expected `trxDeclSha(products[[name]])` to be identical to `prints$sha256[prints$product == name]`.
+  Differences:
+  `actual`:   "1c02bfdd2b6e93ee7a2d9b03e7c037da24d8cbc04fbbb82bb3002a00392fbfb8"
+  `expected`: "a1f43e2db82b39ad738e2308d8483abd5c9e406da7a7bbfb38d3049bbd03093e"
+  
+  trx_edge_12 the summary tab's RUVIII export ruviii_newY
+trace (first lines):
+      ▆
+   1. └─expectTrxDeclProducts(...) at test-module-ci-trx-summary.R:52:3
+   2.   └─testthat::expect_identical(...) at ./helper-workflow-trx-declarations.R:67:5
+
+file: test-module-ci-trx-summary.R
+test: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report
+kind: failure
+message:
+  Expected `digest::digest(file = tsv, algo = "sha256")` to be identical to `stable$sha256[stable$path == "results/transcriptomics/transcriptomics_normalized_data.tsv"]`.
+  Differences:
+  `actual`:   "be38d28699cfc9c3be07755b999b07ba41ab17facb0c3d225b887e806f4f7272"
+  `expected`: "a704598297e348d2c05c8741a043e92223c1d5eb625d0cf54a7b685fd7be636c"
+
