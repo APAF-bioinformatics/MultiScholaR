@@ -58,7 +58,9 @@ valScoreRuns <- function(dir, labels, expected_cells) {
     }
     cells <- do.call(rbind, lapply(labels, function(l) cbind(read(l, "cells.tsv"), request = l)))
     cmp <- do.call(rbind, lapply(labels, function(l) {
-        cbind(read(l, "comparisons.tsv"), request = l)
+        x <- read(l, "comparisons.tsv")
+        x$request <- rep(l, nrow(x))
+        x
     }))
     within <- cmp[cmp$scope == "within_run", , drop = FALSE]
     for (col in c("diff", "ci_low", "ci_high", "conf", "margin")) {

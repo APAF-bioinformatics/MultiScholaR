@@ -724,7 +724,8 @@ valVerdictRow <- function(component, member, metric, cmp_arms, view, cl, conf, f
                statistic = as.character(cl$statistic %||% NA_character_),
                coverage_min = as.numeric(cl$coverage_min %||% NA_real_),
                miss_twice_nominal = isTRUE(cl$miss_twice_nominal),
-               family = family, m = fm, within_note = within_note, stringsAsFactors = FALSE)
+               family = unname(family), m = fm, within_note = within_note,
+               stringsAsFactors = FALSE)
 }
 
 #' Units refused for a comparison: a cell of one of its arms on the unit is not `completed`
@@ -838,12 +839,13 @@ valLevelOne <- function(decl, m, cmp_arms, v, vk, metrics, units, cells, regimes
                 # unit's within-run interval is reported beside the verdict. Below 6 units this is
                 # the owner's ruling; at 6 or more the register leaves the rule open, so the
                 # harness reports only and says so (`widen_to_within_run` has no effect here).
-                flags <- c(flags, sprintf("within_run_widening=report_only(O8:%s)",
-                                          if (length(keep) < 6L) "below_6" else "6_or_more_open"),
-                           sprintf("within_run_reported=%s:[%s,%s]",
-                                          sub("^.*unit=([^;]+);.*$", "\\1", wr$flags),
-                                          signif(as.numeric(wr$ci_low), 6),
-                                          signif(as.numeric(wr$ci_high), 6)))
+                count <- if (length(keep) < 6L) "below_6" else "6_or_more_open"
+                reported <- sprintf("within_run_reported=%s:[%s,%s]",
+                                    sub("^.*unit=([^;]+);.*$", "\\1", wr$flags),
+                                    signif(as.numeric(wr$ci_low), 6),
+                                    signif(as.numeric(wr$ci_high), 6))
+                flags <- c(flags, sprintf("within_run_widening=report_only(O8:%s)", count),
+                           reported)
             }
         }
     }

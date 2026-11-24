@@ -379,9 +379,11 @@ valFindRegime <- function(interval, regimes, accept_flagged) {
         refused_zero <- good[zero %in% TRUE & !own, , drop = FALSE]
         good <- good[!(zero %in% TRUE) | own, , drop = FALSE]
         if (nrow(good) == 0L) {
-            valAbort(paste("regime {refused_zero$regime[1]} has no observed miss: it licenses",
-                           "only the statistic it simulated ({refused_zero$statistic[1]}),",
-                           "declare interval$statistic (O4, VAL-109)"), "val_spec_invalid")
+            why <- paste0("regime ", refused_zero$regime[[1L]], " has no observed miss: it ",
+                          "licenses only the statistic it simulated (",
+                          refused_zero$statistic[[1L]], "); declare interval$statistic (O4, ",
+                          "VAL-109)")
+            valAbort(why, "val_spec_invalid")
         }
     }
     if (nrow(good) > 0L) return(good[1L, ])
