@@ -14,6 +14,7 @@ public import MultiScholaRProofs.Oracle.ReplayRule
 public import MultiScholaRProofs.Proof.GoClosure
 public import MultiScholaRProofs.Proof.ReplayRule
 public import MultiScholaRProofs.Proof.FilterCount
+public import MultiScholaRProofs.Proof.QvalueBh
 
 /-!
 # KIT-193: machine-checked statements about exact models of parts of MultiScholaR's methods

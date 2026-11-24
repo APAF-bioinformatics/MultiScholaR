@@ -147,6 +147,30 @@ final commit.
   only on those branches). Still to write at merge: target 2's builder comparison through `buildWorkflowAnalysisRecord`
   on KIT-187 T8 (iii)'s minimal store.
 
+## D7 ruling (coordinator, 2026-11-24, under VAL-103)
+
+The owner's decision was "a second independent checker if it fits the record job, else axiom audit plus
+leanchecker". As built, nanoda does not fit: lean-action's nanoda step reads the package name from a `[package]` table
+this `lakefile.toml` does not have, and it would export the whole environment under the package, Mathlib included
+(L0 run 45300025617). **nanoda was not run; D7 (a) is final:** the axiom audit plus `leanchecker`, the latter one call
+per project module because the bundled `leanchecker` of v4.36.0 crashes (exit 139) on two or more modules (L0 run
+45298959712; reproduced on the laptop: one module exit 0, any two exit 139).
+
+## Target 4: `bh_sorted_eq_stmt` is false as frozen (a result; ticket 5.4)
+
+Observed (Lean-checked, `Proof/QvalueBh.lean`, `bh_sorted_eq_counterexample : ¬ bh_sorted_eq_stmt`, on `propext`,
+`Classical.choice`, `Quot.sound`): the statement equates R's transcription `bhSorted` with the closed form `bh` for
+every `p` over any linearly ordered field, with no hypothesis on the sign of `p`. With negative tied values the later
+member of a tie group gets a smaller cumulative minimum (`m/(m - r)` times a negative value grows more negative with
+`r`) than the closed form. Instance: `K = ℚ`, `m = 2`, `p = (-1, -1)`: whatever order the sort gives the two tied
+indices, the second has `bhSorted = -2` against `bh = -1`.
+
+Inferred (not proved): with `∀ j, 0 ≤ p j` the equality holds (the head of a tie group carries the smallest term).
+p-values are never negative, so the route is not affected; the gap is in the statement, written at the gate without
+the range 4c states. **The item stops here and goes back to the statements gate (5.3 item 4).** No other target-4
+statement uses it (4a to 4c and 4d are stated on the closed form `bh`); work on target 4 stopped at this point by the
+coordinator's rule ("stop and report at any statement problem"). Laptop time for this attempt: 11.0 CPU-seconds over 5 Lean calls, 10.2 s of Lean wall time (labels `t4-*`).
+
 ## Not checked
 
 - Targets 4, 5 and group R are not proved yet; nothing was run in R.

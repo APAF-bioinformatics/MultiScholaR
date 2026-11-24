@@ -41,3 +41,4 @@ FilterCount.exact_316_witness	FilterCount.exact_316_witness_stmt	propext, Classi
 FilterCount.balanced_witness	FilterCount.balanced_witness_stmt	propext, Classical.choice, Quot.sound
 FilterCount.share_mono_witness	FilterCount.share_mono_witness_stmt	propext, Classical.choice, Quot.sound
 FilterCount.counterexample_any_rounding_witness	FilterCount.counterexample_any_rounding_witness_stmt	propext, Classical.choice, Quot.sound
+QvalueBh.bh_sorted_eq_counterexample	(not QvalueBh.bh_sorted_eq_stmt: its negation)	propext, Classical.choice, Quot.sound

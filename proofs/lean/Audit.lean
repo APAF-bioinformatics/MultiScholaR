@@ -106,3 +106,9 @@ example : FilterCount.counterexample_any_rounding_witness_stmt := FilterCount.co
 #print axioms FilterCount.balanced_witness
 #print axioms FilterCount.share_mono_witness
 #print axioms FilterCount.counterexample_any_rounding_witness
+
+/-! ## Target 4: a frozen statement shown false (ticket 5.4; back to the statements gate) -/
+
+example : ¬ QvalueBh.bh_sorted_eq_stmt := QvalueBh.bh_sorted_eq_counterexample
+
+#print axioms QvalueBh.bh_sorted_eq_counterexample

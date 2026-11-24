@@ -59,3 +59,8 @@ t1-build-root	2026-11-24T11:53:45+11:00	4.817	0.794	4.111	0	taskset -c 0-3 lake 
 t1-audit	2026-11-24T11:53:49+11:00	1.226	0.534	1.713	0	taskset -c 0-3 lake env lean Audit.lean
 t12-oracle-build	2026-11-24T11:56:59+11:00	5.513	1.585	4.870	0	taskset -c 0-3 lake build --wfail
 t12-oracle-run	2026-11-24T11:57:10+11:00	2.870	1.072	3.999	0	taskset -c 0-3 lake env lean --run Kit193Oracles.lean /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/k193/oracle2
+t4-counterexample-1	2026-11-24T12:09:06+11:00	1.180	0.472	1.617	1	taskset -c 0-3 lake env lean MultiScholaRProofs/Proof/QvalueBh.lean
+t4-counterexample-2	2026-11-24T12:09:13+11:00	1.173	0.461	1.579	1	taskset -c 0-3 lake env lean MultiScholaRProofs/Proof/QvalueBh.lean
+t4-counterexample-3	2026-11-24T12:09:43+11:00	1.280	0.487	1.700	0	taskset -c 0-3 lake env lean MultiScholaRProofs/Proof/QvalueBh.lean
+t4-build-root	2026-11-24T12:09:53+11:00	3.219	0.817	3.478	0	taskset -c 0-3 lake build --wfail
+t4-audit	2026-11-24T12:09:57+11:00	1.277	0.595	1.797	0	taskset -c 0-3 lake env lean Audit.lean
