@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-199 R3: the re-frozen prot_dia_limpa reference at F2 against base 19997323 (failing-first on base; head passes every step expected); check on both",
+  "label": "KIT-199 R3 freeze commit bf2b04d7 against 19997323",
+  "package_commit": "bf2b04d788c651fd4d875994129d552586511bc2",
+  "base_commit": "19997323dd9a0efac5830696c7d3ac617560dae6",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R",
+    "test-e2e-proteomics-dia-limpa.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 60
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
