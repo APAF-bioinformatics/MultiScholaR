@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-205 re-freeze closure (VAL-174): test-omic-enrich-module.R before (staging 9f3b7c49) vs after (60ebb21f); expected (a) :209, W113 :4201 five cases, :4321 go failing to passing; ceiling 120 job-min",
+  "label": "KIT-205 re-freeze closure 60ebb21f vs 9f3b7c49",
+  "package_commit": "60ebb21fa597c7608a9eb5c4979945b88a5aae84",
+  "base_commit": "9f3b7c49d21f8c9d9511aa56c6617b517202ebff",
+  "tools_ref": "",
+  "tests": [
+    "test-omic-enrich-module.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
