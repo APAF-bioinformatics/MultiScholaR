@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-213 gate G0 (ticket 10): two projects per omic and the W1 cases' study parameters on the base's package code; decides stop rules 4 and 5 before R1; ceiling 90 job-minutes",
+  "label": "KIT-213 G0 at c0369d5f (R/ = e305fab3)",
+  "package_commit": "c0369d5fa55989e7955c495d84b39c20c86fd25a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-213/g0.R", "args": ["docs/qa/workflow-execution/kit/kit-213/g0-out", "journeys"], "env": {}, "out": "docs/qa/workflow-execution/kit/kit-213/g0-out", "out_pattern": "\\.(tsv|txt)$", "timeout_minutes": 35},
+    {"path": "docs/qa/workflow-execution/kit/kit-213/g0.R", "args": ["docs/qa/workflow-execution/kit/kit-213/g0-w1", "w1"], "env": {}, "out": "docs/qa/workflow-execution/kit/kit-213/g0-w1", "out_pattern": "\\.(tsv|txt)$", "timeout_minutes": 45}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
