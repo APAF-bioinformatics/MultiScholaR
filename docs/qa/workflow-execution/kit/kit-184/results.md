@@ -11,15 +11,38 @@ evidence jobs succeeded at the first attempt, so there was no S' and no re-score
 
 The results were audited (`tickets/kit/audits/AUDIT-KIT-184-declaration-20261124.md`, "Results audit"): every criterion
 was recomputed independently from the workers' per-replicate rows and equals the scorer's within 7e-15; the outcome is
-R1 with R7. The audit's text repairs K184-R09 to R11 are applied below. Its R12 (the wording of the sentences) and the
-decisions O3 (what the adjustment may be claimed to do, whether it stays, its default) and O4 (how the determinism
-check is recorded) are the owner's and are not decided here.
+R1 with R7. The audit's text repairs K184-R09 to R11 are applied below.
+
+**The owner's decisions on these results (methods ledger VAL-160, 2026-11-24).** (1) The adjustment ships with
+corrected claims and a stated limit, and it is off by default: the user opts in. Claimed: the error rate within the
+limit on every deciding class (largest 5.4 %, upper limit 6.4 %, against 7.5 %), exact regression equivalence with
+honest degrees of freedom, more power than with it off. Not claimed, and stated as a limit with its numbers:
+protection for sets of features that share unwanted variation when that variation follows the groups. (2) A follow-up
+measurement of the mechanism and of a remedy is a declared candidate. (3) The determinism check is recorded as not met
+as declared, with its size and cause; no tolerance is adopted after the fact and nothing is re-run.
+
+**What the arms are now, in the product.** With the default off, arm 2 (the values before RUV, intercept and factor)
+is what the product computes for a model trained on corrected values unless the user switches the adjustment on, and
+arm 3 is the product with the adjustment switched on; D0 and D1 are the same two forms on a model trained on the
+values before RUV. The numbers of each arm are unchanged by that: they are per form, and the default decides only
+which form a user gets without asking.
+
+**The evidence does not depend on the default, with one thing to know about how arm 3 was asked for.** Read in
+`simulate-k184.R` at the frozen commit (58333b1e...): arm 2 was requested with `adjust_ruv_factors = FALSE` and arm D1
+with `TRUE`, explicitly; on a covariate (F_ind, F_ret) and for transcriptomics and proteomics every arm is computed
+through the kernel on values the script builds with or without the covariates, where no default exists. For
+metabolomics on a learned factor, arm 3 and arm D0 went through `runIntegrationEnrichment()` with the setting absent, as
+ticket 6.2 defined them ("the product's default"), and the script stopped unless the product then declared the form the
+arm states (`design_covariates` not `none` for arm 3, `none` for D0); a stop there is recorded as a replicate that did
+not complete, and all 2,000 completed. So those rows are the adjusted form (arm 3) and the form without it (D0),
+whatever the default was called. The frozen script would stop at
+that check on a build whose default is off; it is evidence of the frozen commit and is not changed.
 
 **The per-replicate tables are not in the repository.** They exist only as run 45353248796's artifacts (the 17 evidence
 jobs' `k184-*`, about 86 MB compressed, kept 90 days from 2026-11-24) and are what a recomputation of the criteria
 needs; `s/` holds the scorer's tables only.
 
-## Outcome: R1, with R7; determinism not met as declared (ruling awaited, below)
+## Outcome: R1, with R7; determinism not met as declared (recorded so by the owner's decision, VAL-160)
 
 | Check | Result |
 |---|---|
@@ -126,11 +149,11 @@ The determinism job (cell A replicates 6 to 15 again) against the same replicate
 - **What reads those tables.** Every rate of K-E1, K-E4 and K-E5 is computed from `errors`, and K-E3's counts from
   `power`: both identical. K-E3 also reads the sign of two columns of `orientation` (identical signs; the correlation
   differs in its 15th digit). Outcome R6 reads `exact` (statuses identical) and `identity` (both far below 1e-8).
-- **As observed, and no more:** 7 of 12 tables identical as text; five differ only in real-number columns, by at most
-  6.4e-13 absolute, between an AMD EPYC 7763 and an Intel Xeon Platinum 8573C; no count, label, status or sign
-  differs; no deciding quantity depends on the differing digits. The declaration asks for twelve identical tables, so
-  the check is not met as declared. **Ruling awaited** (the owner's decision O4 in the results audit). Nothing was
-  re-run and the comparison was not changed.
+- **Recorded as decided (VAL-160 (3)): not met as declared.** 7 of 12 tables identical as text; five differ only in
+  real-number columns, by at most 6.4e-13 absolute, between an AMD EPYC 7763 and an Intel Xeon Platinum 8573C; no
+  count, label, status or sign differs, and no deciding quantity depends on the differing digits. The declaration asked
+  for twelve identical tables. No tolerance is adopted after the fact, nothing is re-run, and the declaration's clause
+  on a defect (R3, S') is not invoked.
 
 ## Reported, not decided (`s/error-rates.tsv` holds every rate with its interval)
 

@@ -244,4 +244,5 @@ Run 45353248796, sent by lane commit 008852f8 (only `k184-params.json`: `run = c
   (`k184-s01` to `k184-s16`, `k184-det`, `score`; about 86 MB compressed; kept 90 days from 2026-11-24). They are needed
   to recompute the criteria; the branch holds the scorer's tables (`s/`) and not the workers'. Whether a durable copy
   is kept is the coordinator's decision.
-- **Determinism**: stated in `results.md` as observed, ruling awaited (O4). R3 and S' are not invoked for it.
+- **Determinism**: recorded in `results.md` as not met as declared, with its size and cause (the owner's decision,
+  VAL-160 (3)); no tolerance adopted after the fact, nothing re-run, R3 and S' not invoked.
