@@ -1,7 +1,9 @@
 {
-  "label": "k183-camera-mofa",
-  "package_commit": "d53a5dd1d74de6328dc6a280e824dc790a9f1cd0",
-  "tests": ["test-integration-enrichment-mofa.R"],
+  "label": "k184-covariates-mofa",
+  "package_commit": "621a32b5bebc46586960e653c43dd77405f9325d",
+  "tests": [
+    "test-integration-enrichment-mofa.R"
+  ],
   "record": false,
   "runs": 1
 }
