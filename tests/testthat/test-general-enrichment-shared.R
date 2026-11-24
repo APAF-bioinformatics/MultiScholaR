@@ -825,6 +825,13 @@ test_that("processEnrichments unsupported-organism branch preserves GO annotatio
     go_terms = data.frame(ID = "GO:1001", source = "GO:BP", term = "Cell cycle term", stringsAsFactors = FALSE),
     q_cutoff = 0.05, significance_rule = "bh_whole_family"
   ))
+  expect_s4_class(enrichment_results, "EnrichmentResults")
+  expect_true(any(grepl("short_gamma_up_enrichment_plot.html$", captured$save_widget)))
+  expect_true(any(grepl("short_gamma_down_enrichment_plot.png$", captured$save_png)))
+  expect_equal(captured$plotly, c("text", "text"))
+  # The exported accessor rebuilds the plot from the stored result.
+  expect_equal(getEnrichmentPlotly(enrichment_results, "short_gamma", "down")$kind, "plotly")
+  expect_equal(captured$plotly, c("text", "text", "text"))
   # Under "qvalue" the kernel's own table and today's plot inputs.
   qvalue_results <- processEnrichments(da_results = da_results, taxon_id = "999999", q_cutoff = 0.05,
     pathway_dir = pathway_dir, go_annotations = go_annotations, exclude_iea = FALSE,
@@ -836,14 +843,6 @@ test_that("processEnrichments unsupported-organism branch preserves GO annotatio
     go_terms = data.frame(ID = "GO:1001", source = "GO:BP", term = "Cell cycle term", stringsAsFactors = FALSE),
     q_cutoff = 0.05
   ))
-  captured$plotly <- c("text", "text") # the q-value run's two conversions set aside
-  expect_s4_class(enrichment_results, "EnrichmentResults")
-  expect_true(any(grepl("short_gamma_up_enrichment_plot.html$", captured$save_widget)))
-  expect_true(any(grepl("short_gamma_down_enrichment_plot.png$", captured$save_png)))
-  expect_equal(captured$plotly, c("text", "text"))
-  # The exported accessor rebuilds the plot from the stored result.
-  expect_equal(getEnrichmentPlotly(enrichment_results, "short_gamma", "down")$kind, "plotly")
-  expect_equal(captured$plotly, c("text", "text", "text"))
 })
 
 # ---- KIT-119: the enrichment plots are rebuilt from the stored result ------------------------------------
