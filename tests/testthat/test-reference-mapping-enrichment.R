@@ -194,7 +194,13 @@ k167EnrichProject <- function(root, id_source, enable_organism_filter = FALSE) {
                 NULL
             })
     })
-    list(run = run, error = error, workflow = workflow)
+    record <- NULL
+    if (!is.null(run)) {
+        path <- file.path(root, "analysis_record.json")
+        writeWorkflowAnalysisRecord(manager, path)
+        record <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+    }
+    list(run = run, error = error, workflow = workflow, record = record)
 }
 
 test_that("a strain whose project annotation is empty runs with the reference identifiers and refuses as imported", {
@@ -208,7 +214,9 @@ test_that("a strain whose project annotation is empty runs with the reference id
     tables <- unlist(lapply(project$run$results@enrichment_data, function(contrast) lapply(contrast, function(result)
         if (is.null(result)) 0L else nrow(result@result))))
     expect_gt(sum(tables), 0L)
+    expect_gt(project$workflow$enrichment_reference_mapping$B_vs_A$mapped, 0L)
     imported <- k167EnrichProject(tempfile("k167-run-"), "imported")
+    expect_null(imported$workflow$enrichment_reference_mapping)
     expect_s3_class(imported$error, "workflow_enrichment_annotation")
 })
 
@@ -219,4 +227,54 @@ test_that("with the reference identifiers the organism filter is not applied and
     expect_false(isTRUE(project$run$organism_filter$filter_applied))
     expect_false(isTRUE(project$run$organism_filter$enabled))
     expect_false(any(c("organism_filter_enabled", "organism_filter_taxon") %in% names(project$run$parameters)))
+})
+
+test_that("the analysis record of a reference-identifier run names the three reference values for its replay", {
+    skip_if_not_installed("clusterProfiler")
+    project <- k167EnrichProject(tempfile("k167-run-"), "reference")
+    step <- Filter(function(step) identical(step$operation, "enrichment"), project$record$steps)[[1L]]
+    names <- vapply(step$parameters, function(p) p$name, "")
+    expect_true(all(c("id_source", "reference_mapping_sha256", "go_table_sha256") %in% names))
+    value <- function(name) decodeWorkflowRecordValue(step$parameters[[match(name, names)]]$value)
+    expect_identical(value("id_source"), "reference")
+    expect_identical(value("go_table_sha256"), readReferenceOrganisms()$go_sha256[1])
+})
+
+test_that("the replay passes the recorded identifier choice with the gate on and checks the reference values", {
+    captured <- NULL
+    recorded <- list(taxon_id = "999999", up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "gSCS",
+        id_source = "reference", reference_mapping_sha256 = strrep("a", 64), go_table_sha256 = strrep("b", 64))
+    produced <- recorded
+    local_mocked_bindings(produceDIADaPublication = function(...) invisible(NULL),
+        runWorkflowEnrichment = function(workflow, config, manifest, parameters, paths, ...) {
+            captured <<- list(parameters = parameters, gate = referenceMappingEnabled())
+            list(parameters = produced, service = character(), organism_filter = list())
+        })
+    withr::local_options(MultiScholaR.reference_mapping = NULL)
+    contrasts <- data.frame(friendly_names = "B_vs_A", stringsAsFactors = FALSE)
+    replayWorkflowEnrichmentStep(NULL, list(state = "enrichment_completed", outcomes = list()), recorded,
+        list(parameters = list(qvalue = 0.05)), contrasts, list(source_dir = NULL), tempfile("k167-replay-"))
+    expect_identical(captured$parameters$id_source, "reference")
+    expect_true(captured$gate)
+    expect_false(referenceMappingEnabled())
+    produced$go_table_sha256 <- strrep("c", 64)
+    expect_error(replayWorkflowEnrichmentStep(NULL, list(state = "enrichment_completed", outcomes = list()), recorded,
+        list(parameters = list(qvalue = 0.05)), contrasts, list(source_dir = NULL), tempfile("k167-replay-")),
+        class = "workflow_replay_invalid")
+})
+
+test_that("a run without the reference identifiers replays without the choice and the gate untouched", {
+    captured <- NULL
+    recorded <- list(taxon_id = "999999", up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "gSCS")
+    local_mocked_bindings(produceDIADaPublication = function(...) invisible(NULL),
+        runWorkflowEnrichment = function(workflow, config, manifest, parameters, paths, ...) {
+            captured <<- list(parameters = parameters, gate = referenceMappingEnabled())
+            list(parameters = recorded, service = character(), organism_filter = list())
+        })
+    withr::local_options(MultiScholaR.reference_mapping = NULL)
+    replayWorkflowEnrichmentStep(NULL, list(state = "enrichment_completed", outcomes = list()), recorded,
+        list(parameters = list(qvalue = 0.05)), data.frame(friendly_names = "B_vs_A"), list(source_dir = NULL),
+        tempfile("k167-replay-"))
+    expect_false("id_source" %in% names(captured$parameters))
+    expect_false(captured$gate)
 })
