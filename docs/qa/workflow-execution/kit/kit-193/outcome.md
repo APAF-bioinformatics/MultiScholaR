@@ -1,6 +1,6 @@
-# KIT-193 outcome (in progress: targets 1, 2, 3, 5, target 4 except 4d-ii, and group R priority 1 proved; at the proofs audit)
+# KIT-193 outcome (in progress: 124 theorems proved and audited; R-I1, R-J3, R-N1 committed for their freeze, not proved)
 
-Ticket `tickets/kit/KIT-193.md` r1.2. Branch `kit-193-lean-proofs` from `v0.9-staging` at 51959495. Lean runs on the
+Ticket `tickets/kit/KIT-193.md` r1.5. Branch `kit-193-lean-proofs` from `v0.9-staging` at 51959495. Lean runs on the
 laptop by the owner's exception (VAL-95, VAL-103); no R was run anywhere for this stage.
 
 ## S0: toolchain and Mathlib (acceptance criterion A1)
@@ -55,7 +55,9 @@ Statements gate: `tickets/kit/audits/AUDIT-KIT-193-statements-20261124.md` (Fabl
 are applied as written (82 statements, 38 witnesses after them). One is a result: the ticket's 4d-ii formula is false
 at a = 1 (`kept_family_unit_a_counterexample_stmt`; the formula is now stated for 0 < a < 1).
 
-**Statement not yet frozen:** R-I1, R-J3, R-N1. Each gets its own Spec file and statements review before its proof.
+**Statement not yet frozen:** R-I1, R-J3, R-N1. Each has its own Spec file; reviewed in
+`AUDIT-KIT-193-proofs2-20261124.md` section B, edited as its Q06 to Q08 write and committed for the freeze at 2ab4c189
+(Q09); frozen when the auditor confirms that commit by reading (`statements-gate.md`).
 
 `models.md` holds the model-to-code table and each pair's kind and planted defect. `tests/testdata/kit193/bindings.tsv` lists the bound objects; every digest is `pending` until
 its pair first runs on merged code (8.2).
@@ -145,10 +147,11 @@ final commit.
   shipped `goAncestorPairs`, `propagateGoAnnotations` and `buildUniprotGoGeneSets` equal the Lean model on every case,
   and the planted defect is caught. Acceptance criterion A8 for target 3 (base comparison and `R CMD check` stay with
   P0/P3).
-- Targets 1 and 2: the oracle tables are committed (`filter-thresholds.tsv`, `replay-*.tsv`); the test files are
-  prepared under `pending/` and move to `tests/testthat/` when KIT-187 and KIT-190 merge (they call functions that exist
-  only on those branches). Still to write at merge: target 2's builder comparison through `buildWorkflowAnalysisRecord`
-  on KIT-187 T8 (iii)'s minimal store.
+- Target 1: moved from `pending/` after KIT-187 merged and run (P1a, below): `test-kit193-pairs-filter.R` and
+  `test-kit193-pairs-filter-table.R` with `helper-kit193-filter.R`; passed (run 45323167019).
+- Target 2: the oracle tables are committed (`replay-*.tsv`); the test file waits under `pending/` and moves to
+  `tests/testthat/` when KIT-190 merges (it calls functions that exist only on that branch). Still to write at merge:
+  target 2's builder comparison through `buildWorkflowAnalysisRecord` on KIT-187 T8 (iii)'s minimal store.
 
 ## D7 ruling (coordinator, 2026-11-24, under VAL-103)
 
@@ -293,7 +296,7 @@ the standard axioms). P03: the coordinator adopted the auditor's two sharper wit
 P05 and P06 concern the paired tests.
 
 **Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
-system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system). After R-F3, R-L2, R-M1: 152 calls, 923.3 CPU-seconds (734.8 user + 188.4 system). After 4d-ii: 164 calls, 975.4 CPU-seconds (780.6 user + 194.8 system). After the R-I1, R-J3, R-N1 drafts: 169 calls, 986.0 CPU-seconds (this session: 35 calls, 150.4 CPU-seconds, 88.4 s of Lean wall time).
+system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system). After R-F3, R-L2, R-M1: 152 calls, 923.3 CPU-seconds (734.8 user + 188.4 system). After 4d-ii: 164 calls, 975.4 CPU-seconds (780.6 user + 194.8 system). After the R-I1, R-J3, R-N1 drafts: 169 calls, 986.0 CPU-seconds (this session: 35 calls, 150.4 CPU-seconds, 88.4 s of Lean wall time). After the freeze edit pass: 174 calls, 1,003.8 CPU-seconds (801.6 user + 202.2 system).
 
 ## P03: two sharper witnesses (new Spec file; proved)
 
@@ -366,7 +369,7 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   test file's run time, not in a comparison. Fix, with no expected value, comparison or limit changed: the file split
   in two (`test-kit193-pairs-filter.R`: gap 1, 6.1 (i), (iii), (iv), the planted defect; `test-kit193-pairs-filter-table.R`:
   6.1 (ii), (v), gaps 2 to 5), each within the ticket's 15 minutes; 6.1 (ii) and (v) checked per (n*, m) over all its
-  rows at once (the same comparisons, 1,830 expectations in place of 221,430); the shared helpers in
+  rows at once (the same comparisons, 5,490 expectations in place of 221,430: three for each of 1,830 groups); the shared helpers in
   `tests/testthat/helper-kit193-filter.R`.
 
 - **P1a re-run, run 45323167019 at c8123f09 (observed): passed.** `test-kit193-pairs-filter.R` 50,942 expectations
@@ -400,7 +403,7 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   11.1's P1 row says ("the branch merged with staging first").
 - **The test** `tests/testthat/test-kit193-pairs-filter.R` (moved from `pending/`): 6.1 (i) to (v) and the five gaps
   of AUDIT-KIT-187-impl I10: (1) the marker's option `MultiScholaR.missing_filter_rule` unset by
-  `withr::local_options` in every test and asserted unset; (2) `removeRowsWithMissingValuesPercentHelper` driven on 52
+  `withr::local_options` in every test and asserted unset; (2) `removeRowsWithMissingValuesPercentHelper` driven on 57
   oracle rows (n* in {3, 7, 20, 33, 60}, m in {1, ⌈n*/2⌉, n*}, n in {1, ⌈n*/3⌉, n* - 1, n*}; two groups, the larger
   sets the cutoff, min_groups 2), each with rows k = 0..n missing in the group under test, kept set equal to
   `k0..kmax`; (3) two-group designs a < b ≤ 60 (a in {1, b %/% 2, b - 1}, every m): the stored cutoff's P equals the
@@ -418,19 +421,46 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   shipped code → a result: target 1's item stops, the owner and KIT-187's coordinator are told (5.5); the planted case
   not caught, a timeout or a crash with no comparison judged → an instrument defect (VAL-54, at most three re-runs).
 
+## Second proofs audit and the statements review of R-I1, R-J3, R-N1
+
+`tickets/kit/audits/AUDIT-KIT-193-proofs2-20261124.md`: the 124 theorems sound (A); the three drafts true and none
+to wait, each frozen after one edit pass (B); target 1's pair holds (C). Applied:
+- **Edit pass and freeze (Q06 to Q09), commit 2ab4c189**, holding only the three Spec files and their three replaced
+  `SPEC.sha256` lines (the nine frozen files and lines unchanged; `sha256sum -c` twelve OK). Q06: R-I1's header (runs
+  removed after RUV; KIT-184 r1.4), `I1_UtWc`'s `Hset` sentence, `I1_witness` away from the corners, `I1_rank` added;
+  the two optional statements `I1_ctl_rank` and `I1_centred_diff_rows` included (the register's texts are complete),
+  so the header's last clause reads as the register gives it for (b'). Q07: `J3_counts`' docstring (the missing-value
+  part of the clean-up's count only), the two header sentences, `J3_witness` with `0 < k` and a general-branch feature.
+  Q08: the line-580 quotation, which rule is modelled (`q_table_order`; KIT-190's other rule not modelled), the
+  row-name and missing-q sentence, the two-part `N1_rules_differ`; the optional `N1_ties` included. The header of each
+  file lost its "Not frozen" paragraph and the title its "draft for its statements review". One departure from the
+  register's text, layout only: in R-I1's header the paragraph after the inserted sentence is re-wrapped to the file's
+  line width. Every file compiled alone (`lake env lean`) and the root built with `lake build --wfail` (7,374 jobs,
+  no warning). The auditor confirms 2ab4c189 by reading; no proof of the three is written before that.
+- **Records (Q02, Q03, Q05, Q10 (a)):** `models.md` (the unused hypotheses and the corner witnesses; what 4d-ii may be
+  cited for; the stale run sentence; T1's two pair files and fifth bound object; section 3 for the frozen texts and
+  R-N1's pair; section 4's digest line); `bindings.tsv` (T1 rows name both pair files; a fifth T1 row,
+  `removeRowsWithMissingValuesPercentHelper`, digest `pending`); `statements-gate.md` written; the stale lines here.
+- **Needs a runner job, not run (Q03 item 7, Q10):** the digests of target 3's five bound objects and of T1's helper,
+  and **the shipped P at (320, 137)** (ticket 6.1 (iii): the test asserts only that it is 57187 or 57188). The script
+  `scripts/bindings-t3.R` writes both (`bindings-t3.tsv`, `p-320-137.tsv`); it is to go with the next R run. Until
+  then those rows stay `pending` and the P is not recorded.
+- Laptop: 5 Lean calls, 17.8 CPU-seconds (13.2 user + 4.6 system), 13.4 s wall (labels `freeze-*`).
+
 ## Resume here
 
-State at 55c5c2fa (2026-11-24, second implementer session): every frozen statement of targets 1 to 5 and of group R
-priorities 1 to 4 is proved with its witnesses (124 theorems listed in `axioms.tsv`, standard axioms only); 4d-ii
-proved (`Proof/KeptFamily.lean`). R-I1, R-J3, R-N1: statements drafted in three new Spec files (b32c94ca, each with
-its own `SPEC.sha256` line, no proof), waiting for their statements review; nothing about them is proved. Target 1's
-paired test passed (run 45323167019, after one VAL-54 instrument re-run).
+State after the second proofs audit (2026-11-24, third implementer session): every frozen statement of targets 1 to
+5 and of group R priorities 1 to 4 is proved with its witnesses (124 theorems listed in `axioms.tsv`, standard axioms
+only; audited sound). R-I1, R-J3, R-N1: edited and committed for the freeze at 2ab4c189 (`statements-gate.md`),
+waiting for the auditor's confirmation by reading; nothing about them is proved. Target 1's paired test passed (run
+45323167019, after one VAL-54 instrument re-run).
 
 Next:
-1. After the statements review of R-I1, R-J3, R-N1: prove them (R-I1's algebra reuses `Ut_one`, `colMean_mul`,
-   `centre_eq_self`; R-J3 is definitional; R-N1 needs the rank/order counts to be a bijection onto 1..F).
+1. After the auditor confirms 2ab4c189: prove R-I1 (7 statements, 2 witnesses), R-J3 (2, 1), R-N1 (5, 1) (R-I1's
+   algebra reuses `Ut_one`, `colMean_mul`, `centre_eq_self`; R-J3 is definitional; R-N1 needs the rank/order counts
+   to be a bijection onto 1..F; `N1_ties` from `List.sorted_mergeSort` and its stability).
 2. Target 2's pair waits for KIT-190; P0 (targets 4, group R), P2 (target 5) and P3 as ticket 8.1; the record job L1
-   at the final commit.
+   at the final commit. The next R run carries `scripts/bindings-t3.R` (T3 digests, T1's helper, the P at (320, 137)).
 Lean calls: `scratchpad lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
 /home/doktersmol/.elan/bin/lake …` per call in `cpu-time.tsv`; one at a time. New Proof modules in this session:
 `Proof/RuvAlgebra2.lean`, `Proof/RuvDownstream2.lean`, `Proof/RuvIIIC.lean`, `Proof/KeptFamily.lean` (defs used in
@@ -438,7 +468,10 @@ public statements are `@[expose]`).
 
 ## Not checked
 
-- R-I1, R-J3 and R-N1 are drafted, not reviewed and not proved; R was run only on GitHub runners (P0a, P1a).
+- R-I1, R-J3 and R-N1 are reviewed and committed for the freeze (2ab4c189), not yet confirmed and not proved; R was
+  run only on GitHub runners (P0a, P1a).
+- The digests of target 3's bound objects and of T1's helper, and the shipped P at (320, 137): not computed (no R run
+  since; `scripts/bindings-t3.R` is written, not run).
 - The proofs are checked on the laptop only (`lake build --wfail`, `Audit.lean`); the record job L1 runs once, at the
   final commit. (Two earlier lines here, on the gate's reads and on the CI workflow, were stale: the statements register
   records the gate's reads, and the workflow and L0 are above.)

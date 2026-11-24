@@ -1,8 +1,9 @@
 item	spec_name	kind	name	file	digest_or_version	paired_test
-T1	FilterCount.failsRule	package function	exceedsRoundedPercent	R/func_prot_qc_filtering_helpers.R	096b86b8e7c1f7ca66ea578de3282c4bf95f140e2d3b90296018ae50c8e067c4	test-kit193-pairs-filter.R
-T1	FilterCount.failsRule	package function	roundedPercentNumerator	R/func_prot_qc_filtering_helpers.R	ae6590c76c3f462e82a8488d4a75d3082ef01b8861d51757707ffbd0e6b154c3	test-kit193-pairs-filter.R
-T1	FilterCount.peptide_floor_stmt	package function	allowedByRoundedPercent	R/func_prot_qc_filtering_helpers.R	abbe1f20a85a9e8c6bcd3820962256175bd1a10d6a5f38a5c72b968439cf9521	test-kit193-pairs-filter.R
-T1	FilterCount.allowedShare	package function	updateMissingValueParameters	R/func_general_parameter_helpers.R	e23ffd4c8cd48da0ba87469b266e834773148694bf4f4ee4ca05dde2ac6e3510	test-kit193-pairs-filter.R
+T1	FilterCount.failsRule	package function	exceedsRoundedPercent	R/func_prot_qc_filtering_helpers.R	096b86b8e7c1f7ca66ea578de3282c4bf95f140e2d3b90296018ae50c8e067c4	test-kit193-pairs-filter.R;test-kit193-pairs-filter-table.R
+T1	FilterCount.failsRule	package function	roundedPercentNumerator	R/func_prot_qc_filtering_helpers.R	ae6590c76c3f462e82a8488d4a75d3082ef01b8861d51757707ffbd0e6b154c3	test-kit193-pairs-filter.R;test-kit193-pairs-filter-table.R
+T1	FilterCount.peptide_floor_stmt	package function	allowedByRoundedPercent	R/func_prot_qc_filtering_helpers.R	abbe1f20a85a9e8c6bcd3820962256175bd1a10d6a5f38a5c72b968439cf9521	test-kit193-pairs-filter.R;test-kit193-pairs-filter-table.R
+T1	FilterCount.allowedShare	package function	updateMissingValueParameters	R/func_general_parameter_helpers.R	e23ffd4c8cd48da0ba87469b266e834773148694bf4f4ee4ca05dde2ac6e3510	test-kit193-pairs-filter.R;test-kit193-pairs-filter-table.R
+T1	FilterCount.failsRule	package function	removeRowsWithMissingValuesPercentHelper	R/func_prot_qc_filtering_helpers.R	pending	test-kit193-pairs-filter.R;test-kit193-pairs-filter-table.R
 T2	ReplayRule.TableOK	package constant	workflowReplayRuleMarkers	R/utils_workflow_analysis_record.R	pending	test-kit193-pairs-replay.R
 T2	ReplayRule.ruleLoop	package function	workflowReplayRule	R/utils_workflow_analysis_record.R	pending	test-kit193-pairs-replay.R
 T2	ReplayRule.inForce	package function	workflowFixedInForce	R/utils_workflow_analysis_record.R	pending	test-kit193-pairs-replay.R

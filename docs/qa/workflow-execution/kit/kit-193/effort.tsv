@@ -25,3 +25,4 @@ T4d-ii (kept_family_unit_a_counterexample, kept_family_formula, kept_family_inst
 R-I1, R-J3, R-N1 statement drafts	2026-11-24T13:52	2026-11-24T13:58	0.10	drafted in three new Spec files (b32c94ca); waiting for their statements review
 T1 paired test (P1a preparation: 8.2 diff, staging merge, test, request)	2026-11-24T13:58	2026-11-24T14:04	0.10	sent (run 45316817535)
 T1 paired test (P1a result, instrument fix, re-run)	2026-11-24T14:04	2026-11-24T15:29	1.42	passed (run 45323167019); mostly runner waiting time
+R-I1, R-J3, R-N1 freeze edit pass (Q06-Q09) and records (Q02-Q05, Q10)	2026-11-24T15:52	2026-11-24T16:04	0.20	frozen texts committed (2ab4c189), awaiting the auditor; no proof
