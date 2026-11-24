@@ -18,6 +18,7 @@ and Part B, the lanes of sections 7.9 and 7.10).
 | `val-run.R` phases that run cells (`lifecycle`, `counted`, `score`, `determinism`, `correction`, `amended`), `val-parity.R`, the `distributable.yml` stage `parity` | yes (2b18b1e3) | no; the cell-to-verdict path is repaired after the 2026-11-24 audit (I01 to I20, at 8f37e3e1) and its end-to-end tests (`test-e2e.R`) are not yet run |
 | Ticket coverage regimes (`val-tests.R --ticket <dir> --declaration <json>`, pinned in the declaration as `ticket_coverage: {path, sha256}`) | yes (8f37e3e1) | no |
 | Replay of declared cells (`replay`) inside a cell phase | no (recorded `not_built` in provenance) | no |
+| Known pending change: KIT-202 (lipid and metabolite intensity filter counts the design's samples only) | the five metabolomics corpora are MS-DIAL tables whose integer `Alignment ID` is counted as a sample by today's filter, so every stored metabolomics value after the filter step moves when KIT-202 merges: S0's committed `s0/s0r1/` metabolomics rows (`routes.tsv`, `steps.tsv`, `alternatives.tsv`, ledgers of `metab_lc`, `metab_gc`, `metab_combined`, `metab_lc-export_load`) (the ledgers hold the settings each step saw, so they move only where a default is read from the data; the row counts in `routes.tsv` and `steps.tsv` move); the harness stores no `bindings.json` (the `bindings.json` files under `docs/qa/workflow-execution/` belong to other tickets); lipidomics (LipidSearch) is unaffected unless its tables carry a numeric id. No gate compares a new run against them (S0 gates nothing; G1(a) compares against the product's GUI-entry oracles, not these; parity and the lifecycle run fresh); no test reads them. After KIT-202 merges: re-run S0's three metabolomics routes and the `metab_lc` export-then-load alternative (S0 run 1 took 2,425 s for nine routes; about 1 core-hour) and the T-TAB metabolomics cases in the next whole-suite run | no |
 
 ## A ticket's evidence folder
 
@@ -63,12 +64,12 @@ unless the consumer registers a passing ticket coverage regime (section 4.4).
 Cell legend: `Y` offered (pass); `Yc` offered, reported `conservative` (T2's rows: a run-level
 method above min(level + 0.04, 1), the band as run at 266d9dc8; the rank rows of T2R: r1.13's rule
 on the miss rate); `Y/Yc` offered, `pass` under T2's band as run and `conservative` under r1.13's
-miss-rate rule (O5 of VAL-109: both labels printed; 117 cells: C3 accuracy 45, C3 threshold 53, C4
-accuracy 8, C4 threshold 11; `valHarnessRegimes()` carries the second label as `status_r113`, and
+miss-rate rule (O5 of VAL-109: both labels printed; 117 cells in T2, of which the 19 C4 cells were
+re-pinned by the I10 diagnostic, leaving 98: C3 accuracy 45, C3 threshold 53; `valHarnessRegimes()` carries the second label as `status_r113`, and
 `results.md` prints both beside a verdict on such a row). A `conservative` row with no observed miss
 (C4e g = 14 rank, coverage 1.000) licenses only the statistic it simulated (`pauc_diff`): declare
 it as `interval.statistic`, or the interval is refused (O4). `Yb` `clopper_pearson`: offered (conservative by construction; its expected
-status, not a flag); `N` not offered (fails
+status, not a flag); `Dg` `degenerate`, not offered (more than 1 % zero-width intervals; r1.13); `N` not offered (fails
 its band); `Fl` `flagged`, not offered unless the declaration sets `accept_flagged` naming the
 owner's ledger row; `-` no interval at that count and level (`exact_median` below its smallest n).
 The numbers are the simulated coverage, the lowest and highest over the row's data conditions and
@@ -141,17 +142,17 @@ rule (no cell degenerate: zero-width share 0, targets 0.27, 0.18, 0.024, 0.049) 
 | C8 | clopper_pearson |  |  |  |  | 250 | Yb 0.9440-0.9770 | Yb 0.9745-0.9885 | Yb 0.9805-0.9885 | Yb 0.9860-0.9915 | Yb 0.9900-0.9955 | Yb 0.9930-0.9975 | Yb 0.9955-0.9975 | Yb 0.9965-0.9975 |
 | C4e | jackknife | rank | block |  |  | 14 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 |
 | C7 | bootstrap_within_run | threshold_count |  |  |  | 200 | Y 0.9485 | Y 0.9735 | Y 0.9830 | Y 0.9875 | Y 0.9915 | Y 0.9925 | Y 0.9940 | Y 0.9950 |
-| C4 | jackknife | accuracy | replicate |  |  | 4 | N 0.9180-0.9775 | N 0.9535-0.9875 | Y 0.9695-0.9940 | Y 0.9765-0.9955 | Y/Yc 0.9855-0.9980 | Y/Yc 0.9880-0.9985 | Y/Yc 0.9920-0.9990 | Y/Yc 0.9935-1.0000 |
-| C4 | jackknife | accuracy | replicate |  |  | 6 | N 0.8980-0.9905 | N 0.9395-0.9960 | N 0.9560-0.9975 | N 0.9655-0.9985 | Y/Yc 0.9765-0.9990 | Y/Yc 0.9830-0.9990 | Y/Yc 0.9865-0.9995 | Y/Yc 0.9890-1.0000 |
+| C4 | jackknife | accuracy | replicate |  |  | 4 | Y 0.9810-0.9825 | Y 0.9895-0.9900 | Y 0.9915-0.9930 | Y 0.9945-0.9950 | Y 0.9965-0.9970 | Y 0.9970-0.9980 | Yc 0.9980-0.9995 | Yc 0.9980-0.9995 |
+| C4 | jackknife | accuracy | replicate |  |  | 6 | Yc 0.9950-0.9960 | Yc 0.9980-0.9985 | Yc 0.9990-0.9995 | Yc 0.9995 | Yc 0.9995-1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 |
 | C4 | jackknife | rank | replicate |  |  | 4 | Y 0.9685 | Y 0.9885 | Y 0.9925 | Y 0.9945 | Y 0.9960 | Y 0.9965 | Y 0.9980 | Y 0.9985 |
 | C4 | jackknife | rank | replicate |  |  | 6 | Y 0.9855 | Yc 0.9950 | Yc 0.9975 | Yc 0.9985 | Yc 0.9985 | Yc 0.9985 | Yc 0.9995 | Yc 0.9995 |
-| C4 | jackknife | threshold_count | replicate |  |  | 4 | N 0.9080-0.9855 | N 0.9490-0.9950 | Y/Yc 0.9640-0.9975 | Y/Yc 0.9735-0.9980 | Y/Yc 0.9815-0.9980 | Y/Yc 0.9865-0.9985 | Y/Yc 0.9885-0.9995 | Y/Yc 0.9925-0.9995 |
-| C4 | jackknife | threshold_count | replicate |  |  | 6 | N 0.8995-0.9990 | N 0.9405-1.0000 | N 0.9575-1.0000 | Y/Yc 0.9675-1.0000 | Y/Yc 0.9780-1.0000 | Y/Yc 0.9845-1.0000 | Y/Yc 0.9870-1.0000 | Y/Yc 0.9900-1.0000 |
-| C4e | jackknife | accuracy | block |  |  | 5 | N 0.7450-0.7565 | N 0.8230-0.8370 | N 0.8685-0.8815 | N 0.8925-0.9015 | N 0.9170-0.9310 | N 0.9350-0.9445 | N 0.9515-0.9610 | N 0.9575-0.9630 |
-| C4e | jackknife | accuracy | block |  |  | 14 | N 0.7065-0.7070 | N 0.7810-0.7820 | N 0.8145 | N 0.8330 | N 0.8555 | N 0.8720 | N 0.8880-0.8885 | N 0.8960-0.8965 |
+| C4 | jackknife | threshold_count | replicate |  |  | 4 | Yc 0.9685-0.9975 | Yc 0.9815-0.9975 | Yc 0.9875-0.9980 | Yc 0.9910-0.9980 | Yc 0.9920-0.9990 | Yc 0.9935-0.9990 | Yc 0.9940-0.9990 | Y 0.9940-0.9990 |
+| C4 | jackknife | threshold_count | replicate |  |  | 6 | Dg 0.7265-0.9990 | Dg 0.7265-0.9990 | Dg 0.7265-0.9995 | Dg 0.7265-0.9995 | Dg 0.7265-0.9995 | Dg 0.7265-1.0000 | Dg 0.7265-1.0000 | Dg 0.7265-1.0000 |
+| C4e | jackknife | accuracy | block |  |  | 5 | Yc 0.9605-0.9890 | Yc 0.9785-0.9955 | Yc 0.9860-0.9980 | Yc 0.9885-0.9990 | Yc 0.9910-0.9995 | Yc 0.9925-0.9995 | Yc 0.9940-1.0000 | Yc 0.9965-1.0000 |
+| C4e | jackknife | accuracy | block |  |  | 14 | Yc 0.9825-1.0000 | Yc 0.9905-1.0000 | Yc 0.9960-1.0000 | Yc 0.9965-1.0000 | Yc 0.9970-1.0000 | Yc 0.9985-1.0000 | Yc 0.9990-1.0000 | Yc 0.9990-1.0000 |
 | C4e | jackknife | rank | block |  |  | 5 | Yc 0.9900 | Y 0.9935 | Yc 0.9960 | Yc 0.9970 | Yc 0.9980 | Yc 0.9985 | Yc 0.9995 | Yc 0.9995 |
-| C4e | jackknife | threshold_count | block |  |  | 5 | N 0.7065 | N 0.8005 | N 0.8385 | N 0.8660 | N 0.8950 | N 0.9130 | N 0.9325 | N 0.9445 |
-| C4e | jackknife | threshold_count | block |  |  | 14 | N 0.7260 | N 0.7895 | N 0.8235 | N 0.8460 | N 0.8750 | N 0.8865 | N 0.9035 | N 0.9160 |
+| C4e | jackknife | threshold_count | block |  |  | 5 | Y 0.9835 | Y 0.9930 | Yc 0.9960 | Yc 0.9970 | Yc 0.9980 | Yc 0.9985 | Yc 0.9990 | Y 0.9990 |
+| C4e | jackknife | threshold_count | block |  |  | 14 | Yc 0.9995 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 | Yc 1.0000 |
 
 What the table means for the consumers (read off it; nothing decided here):
 
@@ -202,6 +203,19 @@ After KIT-192 merges, the transcriptomics RUV grid summary file is written only 
 ran (VAL-102 D1 (a)); it does not appear on declared-design arms (calibrated, off,
 `valArmRuvDesign`). The harness reads the trx DA tables from `de_results_*.csv` and expects no
 summary file on any arm.
+
+**I10 re-pin (2026-11-24, VAL-109 (2)).** The C4 and C4e `accuracy` and `threshold_count` rows
+(C4 g = 4, 6; C4e g = 5, 14) come from the I10 diagnostic (run in `t2/di10d-*`, request D at
+169aee9f): T2's generator drew the feature baselines anew in every simulation with one-directional
+changes, so median normalisation shifted every estimate by a feature-level amount the unit
+jackknife cannot see; the fixed per-cell feature draw with changes split +1/-1 (`fixed_symmetric`,
+ticket 10.2 r1.16) removes it (C4e targets: bias 0.0008 and -0.0091, null rejection 0.051 and
+0.051, against -0.21/-0.19 and 0.37/0.63 in T2). Every one of the 11 rows that failed at 95 % now
+covers at or above 0.9605; no row fails. C4 g = 6 `threshold_count` is `degenerate` (its
+sensitivity statistic gives zero-width intervals in more than 1 % of simulations): not offered.
+`half_width_ratio` is printed for these rows (about 1.4 to 5.3: the jackknife intervals are
+conservative) and for the two consumer-used rank rows in `t2/di10h-*` (200 simulations: C4 g = 6
+rank 2.0 to 2.7, C4e g = 5 rank 2.1 to 3.2; not in the pinned table, which keeps T2R's rank rows).
 
 ## Within-run intervals beside a run-level verdict (4.4; O8 of VAL-109)
 
