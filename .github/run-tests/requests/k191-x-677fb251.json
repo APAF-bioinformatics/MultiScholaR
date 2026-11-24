@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-191 X: mutations m1 (camera's text), m2 (replay drops the test), m3 (permutation's text without the seed); U7, U8, U5 must fail on them and pass on head; ceiling 45 job-minutes",
+  "label": "KIT-191 X mutations at 677fb251",
+  "package_commit": "677fb251fc37f53bfcdeb641a7c21c93cc3a4753",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-191/mutations-k191.R", "args": ["k191-out/x"], "out": "k191-out", "out_pattern": "\\.(tsv|txt|log)$", "timeout_minutes": 35}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
