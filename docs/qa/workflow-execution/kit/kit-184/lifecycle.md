@@ -246,3 +246,35 @@ Run 45353248796, sent by lane commit 008852f8 (only `k184-params.json`: `run = c
   is kept is the coordinator's decision.
 - **Determinism**: recorded in `results.md` as not met as declared, with its size and cause (the owner's decision,
   VAL-160 (3)); no tolerance adopted after the fact, nothing re-run, R3 and S' not invoked.
+
+## After the owner's decision VAL-160: the regression runs, and F declared before it is sent (2026-11-24)
+
+The owner decided that the adjustment ships off by default with a stated limit (VAL-160). The change and its texts
+are commits a613b9cb (tests first), 74ce8305 (the change) and 5ba85c1f (one test call). Runs so far (`runs.tsv`):
+R2 (45388084875: the restated expectations fail on the tests-only commit, 79 in 10 blocks, and pass on the change;
+check identical; the four mutations caught; `r2/`), M2 (45398052678: K13 on real MOFA2), B2 (45398091058: the changed
+file on the installed bundle, ubuntu-22.04 and windows-2025), and the same file on ubuntu-24.04 (45401782250,
+running when this was written). The first R2 request (45387864719) was refused at `plan` for a requester line over 300
+characters; no job ran.
+
+**F, the one full suite base against head (acceptance criterion A17), declared before sending.**
+
+- Purpose: the merge checkpoint. Every test file on the head against the same on the base, with R CMD check on both
+  sides. It decides A17: no file may be worse on the head than on the base.
+- Bindings: head = 0a51179569e2cf1d9c0774af038497a963b05f0d, the merge of this branch (5ba85c1f and the records after
+  it) with `v0.9-staging` at 8cb536cc3bc09591ec1bfb6fef0cb15437a5ad4a (staging moved from a1b397b1 while the lanes
+  ran; merged twice; the one conflict both times was the methods ledger, resolved as staging's rows followed by this
+  ticket's three `VAL-<merge>` rows). Base = that staging commit. Relative to the base the head changes seven files
+  under `R/`, the starter workbook, one manual page, NEWS, the ledger, ten test files, one reference table, and this
+  ticket's records folder.
+- Request: `tests = "all"`, 20 shards per side, `check: true`, the five long files at 120 minutes, as the recent full
+  suites of other tickets were requested.
+- Ceiling: row F of ticket section 11: expected 985.3 job-minutes (65.69 core-hours), ceiling 1,080 job-minutes (72
+  core-hours). **The row's ceiling may be exceeded**: the coordinator's figure for recent full suites is 67 to 80
+  core-hours (1,005 to 1,200 job-minutes), so up to 120 job-minutes (8 core-hours) above the row. The ticket's rule for
+  that case stands (section 11): F beyond 1,080 job-minutes is not repeated or split; its times go to the owner. The
+  ticket's ceiling is not at risk: 118 of 303.33 core-hours used before F.
+- Attempts: one. A failure in the mechanics of a shard (runner lost, time) is a re-run of the failed shards only
+  (VAL-54); a file worse on the head is a result and is reported, not re-run.
+- The account before sending (`gh run list`): 13 runs not completed, 51 jobs in progress, none queued; two full
+  suites of other tickets were finishing (7 jobs left between them) and none was queued.
