@@ -1,0 +1,19 @@
+entry
+txt/
+txt/allPeptides.txt
+txt/Deamidation (NQ)Sites.txt
+txt/evidence.txt
+txt/libraryMatch.txt
+txt/matchedFeatures.txt
+txt/modificationSpecificPeptides.txt
+txt/ms3Scans.txt
+txt/msms.txt
+txt/msmsScans.txt
+txt/msScans.txt
+txt/mzRange.txt
+txt/Oxidation (M)Sites.txt
+txt/parameters.txt
+txt/peptides.txt
+txt/proteinGroups.txt
+txt/summary.txt
+txt/tables.pdf

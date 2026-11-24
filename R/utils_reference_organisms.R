@@ -226,3 +226,19 @@ downloadReferenceProteome <- function(upid, dest_dir, name = NULL, string_specie
         xref_sha256 = digest::digest(file = files$xref, algo = "sha256"),
         go_sha256 = digest::digest(file = files$go, algo = "sha256"), query = query, entries = nrow(proteome))
 }
+
+#' A shipped demo mapping table (KIT-167 item 7): the mapping of one Mu et al. strain against its shipped reference,
+#' made once with the pinned engine, so the demo, the tests and KIT-170 run without the engine
+#' @param strain `B36`, `KPC2`, `BPH2900` or `HKU419`.
+#' @return The mapping table.
+#' @noRd
+readReferenceMappingDemo <- function(strain) {
+    path <- system.file("extdata", "reference_mapping", "demo", paste0(strain, ".tsv.gz"), package = "MultiScholaR")
+    if (!nzchar(path)) {
+        referenceMappingRefuse("reference_mapping_reference_invalid", sprintf("there is no demo table for %s", strain))
+    }
+    table <- utils::read.delim(gzfile(path), sep = "\t", quote = "", stringsAsFactors = FALSE, na.strings = "NA",
+        colClasses = c(strain_accession = "character", entity_id = "character", reference_accession = "character",
+            reference_accession_used = "character"))
+    table
+}

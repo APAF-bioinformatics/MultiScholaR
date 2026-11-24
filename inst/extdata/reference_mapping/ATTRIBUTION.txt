@@ -26,3 +26,11 @@ Changes: unmodified apart from decompression (FASTA) and the order of rows
 SHA-256 and sizes: docs/qa/workflow-execution/kit/kit-167/capture/hashes.tsv
 
 Please cite: The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in 2025. Nucleic Acids Res 53:D609-D617 (2025). doi:10.1093/nar/gkae1010; UniProtKB release 2026_04, reference proteomes UP000000625, UP000008816, UP000000265, UP000000750
+
+Demo tables (demo/<strain>.tsv.gz): derived. Each is the mapping table of mapStrainToReference() for one strain of
+Mu et al. 2023 (Nat Commun, doi:10.1038/s41467-023-37200-w) against its shipped reference above, made with DIAMOND
+v2.2.8 at the shipped settings (docs/qa/workflow-execution/kit/kit-167/pass2-inputs.R, run 45386584323). Inputs: the
+strains' search FASTAs from PRIDE (CC0): KPC2 PXD020839, BPH2900 PXD020791, HKU419 PXD020863; B36's protein FASTA
+built from the RefSeq accessions of its GEO annotation (GSE152966) with NCBI efetch (public), as
+docs/qa/workflow-execution/kit/kit-167/inputs/B36-efetch.fasta. The reference columns are UniProt's (CC BY 4.0); cite
+as above.

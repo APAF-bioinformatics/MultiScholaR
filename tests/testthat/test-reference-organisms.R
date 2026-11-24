@@ -78,3 +78,13 @@ test_that("the rows of the shipped capture parse as the hand-written rows do", {
         organisms$locus_pattern[organisms$uniprot_upid == "UP000000265"])
     expect_identical(parsed$reference_locus, c("KPN_01663", "KPN_04230"))
 })
+
+test_that("the four demo tables load without the engine, one row per strain protein, every status known", {
+    expected <- c(B36 = 4922L, KPC2 = 5454L, BPH2900 = 2711L, HKU419 = 1861L)
+    for (strain in names(expected)) {
+        demo <- readReferenceMappingDemo(strain)
+        expect_identical(nrow(demo), expected[[strain]], info = strain)
+        expect_true(all(demo$map_status %in% referenceMappingStatuses), info = strain)
+        expect_identical(is.na(demo$reference_accession_used), demo$map_status != "one_to_one", info = strain)
+    }
+})
