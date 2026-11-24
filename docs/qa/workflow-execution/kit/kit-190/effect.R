@@ -536,11 +536,11 @@ writeRows(cell_rows, "cells.tsv")
 # block holds every control). Outside the lifecycle every falsifier's stated count is 0.
 if (length(falsifier_rows)) {
   falsifier_rows <- lapply(falsifier_rows, function(row) {
-    row$stated <- if (lifecycle && !fault && row$falsifier == "F2" && !row$cell %in% c("N-r", "N-s")) row$evaluated else 0L
+    row$stated <- ifelse(lifecycle & !fault & row$falsifier == "F2" & !row$cell %in% c("N-r", "N-s"), row$evaluated, 0L)
     row
   })
 }
-lifecycle_counts_as_stated <- if (length(falsifier_rows)) all(vapply(falsifier_rows, function(row) row$count == row$stated,
+lifecycle_counts_as_stated <- if (length(falsifier_rows)) all(vapply(falsifier_rows, function(row) all(row$count == row$stated),
   logical(1L))) else NA
 writeRows(falsifier_rows, "falsifiers.tsv")
 writeRows(fixture_rows, "fixtures.tsv")
