@@ -1,0 +1,24 @@
+== test-reaudit2.R :: R2-01: no DA result on either side is unsupported, never identical (5 not passed)
+Expected `none$status` to be identical to "unsupported".
+Differences:
+`actual`:   "identical"  
+`expected`: "unsupported"
+
+
+== test-reaudit2.R :: R2-01: through the store replay and into the cell's replay block (4 not passed)
+Expected `res$status` to be identical to "unsupported".
+Differences:
+`actual`:   "identical"  
+`expected`: "unsupported"
+
+
+== test-reaudit2.R :: R2-02: a metric a family member names is at 1 - 0.05/m even without primary_family (1 not passed)
+Expected `valCheckDeclarationSchema(d, repairUnits())` to throw a error with class <val_spec_invalid>.
+
+== test-replay.R :: T-REP-4: a declared replay cell runs on metab_combined; its result is written and checked (1 not passed)
+Expected `... && nzchar(rp$da_fingerprint_origin)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+

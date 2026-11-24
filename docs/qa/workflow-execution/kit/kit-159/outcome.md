@@ -226,6 +226,20 @@ inside the ticket's total (ticket r1.20, section 35). State per item below; runs
   `rep/rb0-harness-tests.tsv` (18 tests, 11 failing at their faults), `rep/rb0-harness-failures.txt`,
   `rep/rb0-code-hashes.tsv`.
 
+- **R2-01, R2-02.** Tests only at 2fabffd9 (R2t, run 45353694083): every new test failed at its
+  fault (NA against NA reported `identical`; the schema accepted a 0.95 metric a member names; T-REP-4
+  found no DA fingerprint); `rep/r2t-*`. Fix 815be580; fix run R2f at 41239449 (files reaudit2,
+  replay, repair, phases, records with `--lint`); e2e left out: its declaration's one member names
+  `mae_nw`, which already carries `primary_family`, so R2-02 changes nothing there.
+- **M2 / G10, declared before the send.** `.Rbuildignore` line `^docs/qa/workflow-execution/kit/
+  kit-159/harness$` (D13) at 41239449. One `run-tests` request, `check: true`, no tests:
+  `package_commit` e9660d3e (run branch `run-k159-g10` = ticket head 41239449 merged with
+  `v0.9-staging` fe5c9273; ledger rows of both sides kept), `base_commit` fe5c9273 (staging, without
+  the harness). Head differs from base under `R tests DESCRIPTION NAMESPACE inst .Rbuildignore` by
+  the one `.Rbuildignore` line only. Ceiling: the REAUDIT2 line's remainder (about 3 core-hours).
+  Pass: `check-compare.txt` shows no finding only on head. A finding only on head: stop and report
+  (the D13 line is already applied; no further correction).
+
 ### What a validation verdict now means (the register's point 7, R2.7, as written there)
 
 1. Independent units: the claim is "over repeat runs, for the features scored"; no widening for
