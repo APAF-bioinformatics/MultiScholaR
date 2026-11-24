@@ -1,0 +1,7 @@
+case	guard	must_fail	failed_or_errored	pass
+m1	KIT-203 S3	TRUE	4	TRUE
+m3	KIT-203 S3	TRUE	2	TRUE
+m3	KIT-203 S1	TRUE	3	TRUE
+m4	KIT-203 S4	TRUE	15	TRUE
+m2	KIT-203 S14	TRUE	1	TRUE
+none	every test	FALSE	0	TRUE
