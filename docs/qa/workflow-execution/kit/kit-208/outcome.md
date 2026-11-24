@@ -25,7 +25,7 @@ cut from `v0.9-staging` 241914cb (KIT-203 merged), merged with staging a1b397b1 
   effect on head. Stop rule 1 not met (`r1/`).
 - **R2 (run 45370085901, 9dc2bd64 against 0a524465, 44 files, check both sides).** `r2/compare.tsv`:
   - the new file: 26 passed / 20 failed / 1 error on base, 49 / 0 / 0 on head (`fixed`);
-  - 41 files `same`, including the proteomics GUI-entry lanes (`test-gui-entry-proteomics.R`, 4 failures identical
+  - 42 files `same`, including the proteomics GUI-entry lanes (`test-gui-entry-proteomics.R`, 4 failures identical
     on both sides) and `test-general-enrichment-shared.R` (the D2 stub);
   - check: 0 errors, 3 warnings, 3 notes on both sides, identical;
   - **one `new-failure`: `test-omic-da-module.R`, "(b) in process: prot_load"** (passed 28 to 27): the stored SHA-256
@@ -104,7 +104,7 @@ changed. The branch was then merged with staging a1b397b1 (189df0d7; no shared c
 | # | Met? | Evidence |
 |---|---|---|
 | A1 | met | R1: every failing-first test fails at its stated base value, guards pass; R2, R2c, R3: the new file 49 / 0 on head |
-| A2 | met after the correction pass | R2: one stored capture moved (stop rule 2), re-frozen on the owner's word (VAL-161, control C1); R2c: every file `same` but the new one, which alone asserts the outcomes `enrichment_lists_not_tested` and `enrichment_unnamed_proteins` (no other file's result changed, so no other run's recorded outcomes moved where a test reads them); check identical, nothing only on head |
+| A2 | met where instrumented, after the correction pass | R2: one stored capture moved (stop rule 2), re-frozen on the owner's word (VAL-161, control C1); R2c every file `same` but the new one; the outcomes `enrichment_lists_not_tested` and `enrichment_unnamed_proteins` are asserted absent in T3, T4, T5 and T8 and present only in T7, and the W1/W113 g:Profiler cases, which digest the step's `config$outcomes`, pass on both sides; for runs whose outcomes no test reads, absence is inferred (their fixtures name every protein), not shown; check identical, nothing only on head |
 | A3 | met | R3: 465 `same`, the new file only on head; check identical |
 | A4 | met | NEWS (one Fixes entry), ledger row `VAL-<merge>` citing VAL-147 and VAL-161; no version, `NAMESPACE` or `man/` change; this file with "For the change report" |
 
@@ -115,6 +115,7 @@ changed. The branch was then merged with staging a1b397b1 (189df0d7; no shared c
 - D2: the `perform_enrichment` stub in `tests/testthat/test-general-enrichment-shared.R:609` gains the two optional
   arguments; its fixed signature would have errored on the labels. No expected value changed (R2: `same`).
 - D3: the refusal's `<n>` is the comparison's DA row count, read in the kernel from `da_results`.
+- D4: the refusal fires when a comparison's background has no named protein **and** at least one of its two lists has proteins: the check is in `perform_enrichment`, which `processEnrichments` calls only for a list with rows (`R/func_general_enrichment_orchestration.R:310`, `:346`; `R/func_general_enrichment_engine_helpers.R:26-28`). A comparison with no protein past the cutoffs and no named protein completes as before (no list in either direction, nothing could be tested), and its record carries `enrichment_unnamed_proteins` "<comparison>: <n> of <n>". VAL-147 (1) states the refusal without that condition; for the owner's confirmation (KIT-215's plan audit P06 takes this form as the g:Profiler rule).
 
 ## Wording for the owner's pass (VAL-41; drafts)
 
@@ -131,18 +132,24 @@ Notice (case 6), one per run, one sentence per list:
 Signal message (for callers): "g:Profiler was given no gene names to test: <list_size> proteins in the list,
 <background_ids> named proteins in the background".
 
+Points for the owner's pass (implementation audit):
+- K208-I03: the refusal's remedy should also say to run the differential analysis again (the gene names come from the DA step's tables); proposed: "Check that the protein annotation was retrieved for this organism (save the design again, then run the differential analysis and this step again)." T6's literal follows the adopted text.
+- K208-I11 (for KIT-215): after a not-tested warning the tab still says "Enrichment analysis completed successfully for contrast: ...".
+
 ## Budget
 
-R1 0.78, R2 15.43, C1 0.85, R2c 14.14, R3 80.56: 111.76 core-hours used, against 91.1 expected and the 449.33 ceiling
+R1 0.79, R2 15.43, C1 0.85, R2c 14.14, R3 80.56: 111.77 core-hours used, against 91.1 expected and the 449.33 ceiling
 (the correction row, 222.67, holds C1, R2c and R3's re-run share). R3 alone 80.56 against its row ceiling 186.67.
 
 ## Not checked
 
 - Real g:Profiler and real data; how often case 5 or case 6 occurs in the application (VAL-147 (4), hand-off:
   DIA-NN multi-accession group keys).
-- C1 compared masked text (as the test digests it), not unmasked numbers.
+- C1 compared the masked text the test digests. The mask (`tests/testthat/helper-gui-entry.R:60`) replaces every run of 10 or more characters from 0-9 and a-f, so `fdr_qvalue`, `raw_pvalue` and `log2FC` were compared by integer part, sign and exponent only (the dumps show `0.<HEX>`, `8.<HEX>-4`); that these columns did not move rests on the diff, which edits only the join's suffix and the gene-name columns (`R/func_prot_da_results_methods.R:72-80`), not on C1. The stored digest has the same limit.
+- A name filled from the identifier table that holds several names ("A;B", DIA-NN `Genes` style) stays one token under the writer's rule (split on space and colon) and counts as named, so it is neither refused, nor reported as not tested, nor counted as unnamed, and g:Profiler will not recognise it (scripts only; plan F4). Isoform rows take the canonical entry's name (the join key is unchanged); not tested.
+- The fill from the identifier table where the annotation's entry matches but its `gene_names` is empty (`""`) is not tested (T2 exercises only NA); guard T13 at the second merge.
 - Replay of a case-5 record made before this change (refused by reading; no test).
-- KIT-205's background: T7 and T8 are not aligned to it; whichever of KIT-205 and KIT-208 merges second runs R2b.
+- KIT-205 (tested-rows background). Whichever of KIT-205 and KIT-208 merges second aligns two counts with the background in force: `workflowEnrichmentUnnamedProteins` (`R/utils_workflow_enrichment.R:830`) and the refusal's `<n>` in `diaEnrichmentNoIdentifiers` (`R/utils_workflow_dia_da.R:740`) count over `enrichmentTestedRows(table)$rows`, which also honours the replay marker, and the refusal says "tested proteins" (a draft for the owner's wording pass). A clean textual merge would leave both over every row, and the refusal could say that no protein is named while an untested one is. Added with it: a comparison with named untested rows and unnamed tested rows (refused; `<n>` = tested rows) and an unnamed untested row (not counted). T5, T6's numbers, T7 ("25 of 70"; (10, 45)) and T8 do not move: every protein of `k208Project` has a p-value (INFERRED). KIT-205 merges first (coordinator, 2026-11-25); KIT-208 does this at its merge.
 - `gost` 0.2.4's behaviour on an empty query is from source (plan audit 1.3), not run.
 
 ## For the change report

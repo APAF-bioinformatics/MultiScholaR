@@ -141,14 +141,20 @@
    accession, as the design step already did), so an answer holds exactly the requested entries; a protein UniProt
    has merged into another entry (a secondary accession) still gets no annotation. DA tables written before the
    annotation was retrieved keep their blank gene names until the DA is run again. (KIT-175)
- * Proteomics: when the protein table built in a script already carries gene names and the protein annotation is also
-   present, the differential analysis tables lost every gene name (the two name columns collided); they now take the
-   annotation's name and fall back to the table's own. On the g:Profiler enrichment route, a comparison in which no
-   protein has a gene name is now refused with a message instead of being saved as a run with no terms, and a
-   direction (up or down) whose proteins all lack gene names is reported as not tested instead of being sent empty.
-   An analysis record of such a run made before this change no longer replays; it is refused with the same message.
-   The first change does not affect data imported in the application, whose names come from the annotation; the
-   second changes only runs in which a comparison, or one direction of it, has no protein with a gene name (KIT-208).
+ * Proteomics: when the protein table built in a script already carries gene names and the protein annotation is
+   also present, the differential analysis tables lost every gene name (the two name columns collided); they now take
+   the annotation's name and fall back to the table's own. In such tables a column that both carry is now named
+   `<name>.input` (the table's) and `<name>` (the annotation's), where it was `<name>.x` and `<name>.y`. On the
+   g:Profiler enrichment route, a run in which a comparison has proteins in its up or down list but none of its
+   proteins has a gene name is now refused with a message instead of being saved as a run with no terms. A direction
+   (up or down) whose proteins all lack gene names is no longer sent empty: it is reported as not tested, by a warning
+   when the run finishes and in the analysis record (`enrichment_lists_not_tested`); the enrichment tab still shows
+   such a list like a tested list that found no terms, until KIT-215 changes the tab. The analysis record also states,
+   for each comparison, how many of its proteins have no gene name and were therefore left out of the lists and the
+   background (`enrichment_unnamed_proteins`). An analysis record of a run that is now refused, made before this
+   change, no longer replays; it is refused with the same message. The first change does not affect data imported in
+   the application, whose names come from the annotation; the others change only g:Profiler runs in which some
+   protein has no gene name (KIT-208).
 
 ### Scientific changes
 
