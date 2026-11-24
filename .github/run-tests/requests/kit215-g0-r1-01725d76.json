@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-215 gate G0 (engine conditions, fixture families; stop rule 3) and R1 failing-first rows on the tests-only commit (stop rule 1)",
+  "label": "KIT-215 G0 + R1 at 01725d76 (tests only; ceiling 120 job-minutes)",
+  "package_commit": "01725d764675bef5f7357e216c93c3196755eddd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit215-not-tested-lists.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 50,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-215/g0.R",
+      "args": [
+        "kit215-g0"
+      ],
+      "out": "kit215-g0",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
