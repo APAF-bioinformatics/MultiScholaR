@@ -1,0 +1,5 @@
+run_id	commit	purpose	job_minutes	result
+45498530109	0804ed93	G0 + R1 (tests-only, base code)	23.4	instrument defect: fixture row names (proteomics rows errored), G0 helper not sourced, trx manifest note env missing; other rows failed at base values
+45501071657	bb092685	G0b + R1b, instrument re-run 1 (VAL-54)	23.7	R1 valid: every failing-first row fails at its base value; G0 proteomics section: unexported call (instrument)
+45503391942	19b9a4dc	G0c, instrument re-run 2 (VAL-54; G0 only)	13.3	G0 complete (g0.tsv, g0-w1.tsv, g0-feature.tsv)
+45503395846	c788f04a vs 19b9a4dc	R2: 64 files and check, base against head; G0 on head	345.6	60 same, 1 fixed (new file), 2 new-failure and 1 message-changed, all stored references (see outcome); check identical; stop rule 3 fires on dia_refused leaves
