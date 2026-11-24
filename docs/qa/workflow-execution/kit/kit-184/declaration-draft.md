@@ -1,17 +1,18 @@
-# KIT-184 simulation: declaration, DRAFT (second version)
+# KIT-184 simulation: declaration, DRAFT (third version)
 
 **This is a draft. It is not the declaration, it fixes nothing, and nothing may be counted against it.** The counted
-run S has not started and does not start from this file, and the lifecycle extension L1b of section 5 has not been
-sent. This version applies the declaration audit (`tickets/kit/audits/AUDIT-KIT-184-declaration-20261124.md`, findings
-K184-D01 to D12) and the owner's decisions O1 and O2 (methods ledger VAL-150, 2026-11-24). It goes back to the same
-auditor for a re-check before anything is frozen or sent. The declaration itself is then `declaration.md`, committed
-alone, before S. The first version of this draft is at commit e9738ade.
+run S has not started and does not start from this file. This version applies the declaration audit
+(`tickets/kit/audits/AUDIT-KIT-184-declaration-20261124.md`, findings K184-D01 to D12), the owner's decisions O1 and
+O2 (methods ledger VAL-150, 2026-11-24) and the audit's re-check 1 (K184-R01 to R05, with its "order before the
+freeze"). The declaration itself is then `declaration.md`, committed alone, before S, after the auditor has confirmed
+the blind lifecycle extension L1b. Earlier versions of this draft: e9738ade (first), fc35c308 (second).
 
-Ticket `tickets/kit/KIT-184.md` revision 1.6, sections 6.2 to 6.5 and 11; ledger VAL-11, VAL-53, VAL-58, VAL-62, VAL-94
+Ticket `tickets/kit/KIT-184.md` revision 1.7, sections 6.2 to 6.5 and 11; ledger VAL-11, VAL-53, VAL-58, VAL-62, VAL-94
 (KIT-183's outcome O1), VAL-97 (3), VAL-150.
 
-Where a paragraph below is the audit register's text it is used as the register gives it; the three places where I
-had to depart from a register text are listed in section 6.
+Where a paragraph below is the audit register's text it is used as the register gives it. Section 6 lists the points
+on which the register's first texts and the code disagreed, how re-check 1 settled them, and two small additions I
+made to L1b's fixed output list.
 
 ## 1. What I had seen of L1 when I proposed the changes
 
@@ -83,7 +84,8 @@ at five replicates per cell before this declaration; what was seen and what was 
   `.github/mofa-smoke/k184.R` is a byte copy of `simulate-k184.R`, checked by the job): R 4.6.1, the KIT-134 snapshot
   library, MultiScholaR at the package commit named in the lane's `k184-params.json`, MOFA2 1.22.0, ruv 0.9.7.1,
   RUVIIIC 1.0.19, limma 3.68.4 (as L1 found them, `l1/versions.tsv`), one thread per worker
-  (`OPENBLAS_NUM_THREADS = OMP_NUM_THREADS = MKL_NUM_THREADS = 1`), four workers at a time per job.
+  (`OPENBLAS_NUM_THREADS = OMP_NUM_THREADS = MKL_NUM_THREADS = 1`), four workers at a time per job. Every replicate
+  writes the versions of ruv, RUVIIIC, limma and MOFA2 it ran with; S's `versions.tsv` holds their unique rows.
 - Scripts: `simulate-k184.R` and `score-k184.R` at that commit, their SHA-256 written here at the freeze, after L1b.
   KIT-183's two files are not edited.
 
@@ -100,13 +102,11 @@ Cell C is not run: KIT-183's counted outcome is O1 (`camera` is the test of reco
   205); jobs s09 to s16 each hold 100 replicates of cell B (same ranges) and then 25 of cell D (206 to 230, ..., 381 to
   405). Timeout 85 minutes each; no replicate starts in the last 6 minutes (recorded `not_started`). Determinism job:
   cell A replicates 6 to 15 again, timeout 25 minutes.
-- In every job each worker runs its cell A or B replicates before its cell D replicates, so a job that runs short
-  loses replicates of cell D (reported only) first. At L1's largest times a worker's last replicate starts at about 62
+- In every job the lane starts its four cell A or B processes (25 replicates each) at once and a cell D process (6
+  or 7 replicates) only when one of them has finished, at most four at a time, so a job that runs short loses
+  replicates of cell D (reported only) first. At L1's largest times a worker's last replicate starts at about 62
   minutes against 68; on a runner about 10 % slower than L1's, the last cell D replicate of each worker would not start
-  (up to 64 of 400; cell D 'not decided', R6). Each job records its runner image and processor model. (How the lane
-  does it: a job's replicates of A or B are dealt to four worker processes, 25 each; its 25 of D to four more, 6 or 7
-  each; at most four processes run at a time, in that order, so a D process starts only when an A or B process has
-  finished. `runner.txt` in every artifact holds the image and the processor, as in L1.)
+  (up to 64 of 400; cell D 'not decided', R6). Each job records its runner image and processor model.
 - A replicate in which MOFA2, the correction or a test fails is `did_not_complete`. A cell with more than 5 % of its
   declared replicates not completed (failed or not started) is "not decided".
 
@@ -223,10 +223,11 @@ rest on about 750 of the 800 replicates of a cell, those in which at least five 
 - Exactness per data set: the status of the written factors, the largest s_(k+1)/s_1, the largest relative residual.
   The identity check per replicate, data set and factor (arm 3's `correlation` against the same model on the corrected
   values; below 1e-8). What the removed factors caught (smallest canonical correlation with the planted factors).
-- Determinism: replicates 6 to 15 of cell A run again in a separate job; the eleven tables named in `score-k184.R`
-  must be identical to the same replicates in S. A difference is reported with its size and cause (plan section 4); a
-  difference in a table that a criterion reads is a defect, handled as R3 within S' (305 job-minutes); one that needs
-  more is a stop to the owner. (The scorer also compares a twelfth, the status table without its seconds.)
+- Determinism: replicates 6 to 15 of cell A run again in a separate job; twelve tables must be identical to the same
+  replicates in S: `errors`, `power`, `formed`, `counts`, `feature`, `identity`, `floor`, `exact`, `caught`, `factors`,
+  `orientation`, and `status` without its seconds columns. A difference is reported with its size and cause (plan
+  section 4); a difference in a table that a criterion reads is a defect, handled as R3 within S' (305 job-minutes
+  less the score job's timeout); one that needs more is a stop to the owner.
 
 ### Criteria, outcomes and the numbers in the texts (as ticket 6.4 and 6.5; nothing added, no threshold changed)
 
@@ -256,7 +257,8 @@ independent of the data, and decides nothing. (The owner's decision O1, methods 
 - Reported, deciding nothing: arms 1, 2, 3o, D0, D1 on every class; C4, C4b, C1-out, C3; the rates per set size
   (`error-rates-by-size.tsv`, each with the number of replicates in which the size formed); the paired differences; the
   feature-level rates; power; cell D; `camera_floor` and `permutation`; the exactness measures; the operating
-  characteristic from the measured standard errors.
+  characteristic from the measured standard errors. `operating-characteristic.tsv` counts the proteomics C5 check
+  twice (34 rows per cell), which can only understate the probability of passing.
 - C4, C4b and C1-out are defined by the model's selection, so which features and which replicates enter them depends
   on how much unwanted variance the correction left; their rates are conditional on that and are not calibration
   evidence (KIT-183 measured C4 at about 10 % on an independent covariate, VAL-94).
@@ -264,15 +266,24 @@ independent of the data, and decides nothing. (The owner's decision O1, methods 
 ### Attempts
 
 One counted run S. One correction S' only for a failure of S's instrumentation, limited to re-running the affected
-jobs within 305 job-minutes (20.33 core-hours); if a whole repeat were needed, stop, to the owner (ticket 11, revision
-1.5). An unfavourable valid result is recorded and its outcome applied.
+jobs within what the ceiling leaves (305 job-minutes less the score job's timeout); if a whole repeat were needed,
+stop, to the owner (ticket 11, revisions 1.5 and 1.7). An unfavourable valid result is recorded and its outcome
+applied.
+
+The scorer runs once, in the lane's `score` job after every evidence job, with a timeout of [three times L1b's
+measured seconds, at least 30 and at most 90] minutes, on the artifacts, which are kept 90 days. Its minutes count in
+row S: expected [L1b's measurement], ceiling its timeout, taken from S', which becomes 305 minus that timeout. A score
+job that fails or times out has produced no result: the scorer's mechanics are fixed without changing any estimand,
+check, limit or composition, and the same artifacts are scored again (VAL-54, at most three). S is never re-run for it.
 
 ### Dated section (after L1, before S), as it would read
 
 - Lifecycle: run 45333818847 (15 of 15 replicates completed; parity with KIT-183's cell identical; 110 to 133 s per
   replicate under four workers). The stop rule of ticket 11 fired at 70 s; the coordinator accepted the re-split above
   and kept the ceiling (ticket 11, revision 1.5). The first push (45333717225) ran no job. L1 was not scored blind
-  (section 2). The lifecycle extension L1b ([run id]) was blind (section 5).
+  (section 2). The lifecycle extension L1b ([run id]; [its outcome against the list of section 5]) was blind (section 5).
+- Frozen with: the SHA-256 of `simulate-k184.R` and `score-k184.R` at the package commit of L1b, the lane commit and
+  the SHA-256 of `k184-evidence.yml`, the score job's timeout.
 - After L1's formation counts (section 4): proteomics C5 read in two compositions, both of which must hold (VAL-150);
   the reported C4 rate without the sizes that did not form; the feature-level rate on F_main not defined for
   metabolomics. All in the scorer; the sets drawn and tested are the ticket's. K-E1 keeps 33 checks per cell and its
@@ -403,59 +414,77 @@ simulation script is that its error table now has one row per set size.
 
 ## 5. The scripts before a freeze, and the lifecycle extension L1b
 
-**Done on the branch, not run** (no R on the laptop; a scorer cannot be tested first without a run, so L1b below is
-what exercises this code before S):
+**On the package branch, not run before L1b** (no R on the laptop; a scorer cannot be tested first without a run, so
+L1b is what exercises this code before S; after the commit that carries this version the two scripts are not touched
+again before S, or L1b is repeated):
 
-1. `simulate-k184.R`: the error table has one row per set size (`nominal` added to its aggregation; one statement).
-   Nothing drawn or tested depends on it.
+1. `simulate-k184.R`: the error table has one row per set size (`nominal` added to its aggregation); every replicate
+   writes its four package versions (K184-R01; before, only replicate 1 did, and S starts at 6). Nothing drawn or
+   tested depends on either.
 2. `score-k184.R`, the KIT-184 part: the sizes summed before every estimand; the scorer-side redefinitions of section
-   4 as data (`left_out`, `c5_proteomics`, `feature_rate_undefined`); a check read in two compositions holds when both
-   hold; `error-rates-by-size.tsv`; the determinism comparison (register K184-D04: the determinism job's tables read as
-   text, the counted jobs' rows of the same cell and replicate, both ordered by every column, `identical()`,
-   `determinism.tsv` with the rows on each side, one summary line); a summary line for R6; and three switches for L1b
-   only (`K184_BLIND`: the summary is not printed; `K184_DETERMINISM_SELFTEST`: the comparison again with one value of
-   one table altered, which must read FALSE; `K184_L1_REFERENCE`: cell A's rates with every size summed and nothing left
-   out, against `l1/error-rates.tsv`, TRUE or FALSE).
+   4 as data (`left_out`, `c5_proteomics`, `feature_rate_undefined`); every check carries the composition it is read
+   in, and one read in two compositions holds when both hold; `error-rates-by-size.tsv`; the determinism comparison
+   (twelve tables, read as text, the counted jobs' rows of the same cell and replicate, both ordered by every column,
+   `identical()`, `determinism.tsv`, one summary line); a summary line for R6; and three switches for L1b only
+   (`K184_BLIND`: the summary is not printed; `K184_DETERMINISM_SELFTEST`: the comparison again with one value of one
+   table altered, which must read FALSE; `K184_L1_REFERENCE`: cell A's rates with every size summed and nothing left
+   out, against `l1/error-rates.tsv`: TRUE or FALSE, and, counts only, whether the numbers of sets and of replicates
+   agree in every row and in how many rows T differs).
 
-**Not done, and waiting for the re-check and the coordinator's word:** the lane (`k184-evidence.yml`: S's job list of
-section 3, L1b's two jobs with its fixed output list, the byte copy of the simulation script) and `k184-params.json`.
-The lane branch is not touched, because a push to it starts a run.
+**On the lane branch** (`k184-evidence.yml`, `k184.R`): the blind L1b as one job, S's job list of section 3, the
+`score` job's timeout and 90-day retention. `K184_BLIND` alone would not make L1b blind, because the scorer still
+writes its rate tables into its output folder: the blindness is the lane's, which uploads one staging folder filled by
+name, runs no `score` job and writes nothing to the step summary.
 
-**L1b (lifecycle extension, blind; authorised by the coordinator inside L1's ceiling of 75 job-minutes, 52.3 left;
-not a VAL-54 re-run).** Scripts at the commit to be frozen. One job in S's layout: cell A replicates 1 to 5, then cell
-D replicates 1 and 2, A before D in every worker, the deadline set so that one D replicate is recorded `not_started`;
-one determinism job on cell A replicates 1 and 2; timeouts 25 and 20 minutes. The scorer runs inside the job. Leaving
-the job (artifact or log): `status`, `completion`, `formed`; for every worker and scorer table its row count, column
-names and SHA-256; `determinism.tsv`, and the same comparison run against a copy of one table with one value altered,
-which must read FALSE; one TRUE/FALSE that the per-size error rows summed over size equal L1's cell A rows of
-`l1/error-rates.tsv`; seconds. Not leaving the job and not printed: error rates, checks, power, paired differences,
-feature-level rates, text numbers, the results summary. Each run in `runs.tsv` with its minutes.
+**L1b (lifecycle extension, blind; inside L1's ceiling, 52.3 job-minutes left; not a VAL-54 re-run).** One job on the
+evidence lane, timeout 50 minutes, the scripts at the commit to be frozen and the lane's `k184.R` their byte copy. (1)
+Cell A replicates 1 to 5, then cell D replicates 1 to 5, dealt as in S, with `K184_DEADLINE` at the start of the
+simulate step plus 210 seconds. (2) Then, in the same job and without a deadline, cell A replicates 1 and 2 again into
+a folder whose path contains `k184-det`. (3) Then `score-k184.R` in the same job with `K184_SCORE=ruv`,
+`K184_BLIND=1`, `K184_DETERMINISM_SELFTEST=1` and `K184_L1_REFERENCE` set to the branch's `l1/error-rates.tsv`. (4)
+Then the scale test: the worker tables copied with replicate numbers shifted until they hold about 2,000 replicates,
+scored with `K184_BLIND=1` under `timeout 25m`, its output folder deleted; kept are its wall seconds, peak resident
+memory and exit status. (5) Uploaded is only a staging folder filled by name: `plan.txt`, `runner.txt`,
+`script-sha256.txt`, `status.tsv`, `completion.tsv`, `not-completed.tsv`, `formed.tsv`, `pools.tsv`, `versions.tsv`,
+`determinism.tsv`, `determinism-selftest.tsv`, `l1-reference-check.tsv`, the scale test's line, the workers' logs, and
+`tables.tsv` (for every worker and scorer table: name, rows, column names, SHA-256); the step prints the staged file
+names. No `score` job runs and nothing is written to the step summary. Passes when: every cell A replicate completed;
+at least one cell D replicate is `not_started` and counted; `ke1-checks` and `ke5-checks` have 34 rows and
+`ke4-checks` 4 rows per deciding cell (cell B present with missing values); `error-rates-by-size` exists;
+`versions.tsv` has four rows; `determinism.tsv` 12 of 12 TRUE and the altered copy FALSE; `l1-reference-check` TRUE;
+the scale test ends within 25 minutes and below 12 GiB. A mechanical failure is fixed and L1b sent again under VAL-54
+(at most three, inside L1's ceiling).
 
-What L1b shows, by its fixed outputs alone: that the changed simulation and scorer run to completion (row counts and
-column names of every table, among them `error-rates-by-size`, and `ke1-checks`, `ke4-checks` and `ke5-checks` holding
-both proteomics C5 rows); that writing the set size moved no p-value (the TRUE/FALSE against L1); that the determinism
-comparison reads TRUE on equal tables and FALSE on an altered one; that a replicate past the deadline is recorded
-`not_started` and counted. It is sent only when the coordinator says so; this draft does not send it.
+L1b is judged from its staged files alone, against that list. Nothing else of it is opened, downloaded or printed.
 
-## 6. Where I departed from a register text, and what is left
+## 6. Register texts against the code, and two additions to L1b's output list
 
-1. **L1b's "cell D replicates 1 and 2 ... the deadline set so that one D replicate is recorded `not_started`"
-   cannot happen in the lane as it is.** The lane deals a segment of two replicates to two worker processes, which
-   start together, so a deadline lets both start or neither. A worker runs replicates one after another only when its
-   range holds more than one, which the lane's dealing gives from five replicates up (1, 2, 3, 4 to 5). Two ways to keep
-   the register's intent: cell D replicates 1 to 5 (the deadline placed while replicate 4 runs, so that replicate 5 is
-   `not_started`; three more replicates L1 has already seen, about 2 more minutes), or a one-line option in the lane
-   that puts a segment in a single worker. For the auditor's re-check; the text above is the register's, unchanged.
-2. **"The eleven tables named in `score-k184.R`"**: the register's repair lists those eleven and the status table
-   without its seconds. The scorer compares all twelve; the declaration's sentence keeps "eleven" and adds the twelfth.
-3. **"In every job each worker runs its cell A or B replicates before its cell D replicates"**: in the lane a worker
-   process holds one range of one cell. The effect is the one the text wants (no cell D process starts before a cell A
-   or B process has finished, and every A or B process starts at once); the mechanism is stated beside the text.
+Settled by re-check 1 (its section (c)):
+
+1. L1b's `not_started` replicate: the first text asked for two cell D replicates, which the lane would start together.
+   Now five cell D replicates, dealt as in S (1, 2, 3, 4 to 5), with the deadline 210 seconds after the simulate step
+   starts; the acceptance is at least one cell D replicate not started and counted, and every cell A replicate
+   completed.
+2. "Eleven tables" is twelve (R04's wording, used above).
+3. "Each worker runs A or B before D" is R05's sentence about the lane's processes (used above).
+4. The first L1b text could not be blind (the determinism replicates in a second job, the scorer's folder and the
+   workers' error tables uploaded whole, a `score` job writing the summary): R02's one-job text replaces it.
+
+Two additions of mine to R02's fixed list, both counts or failure text only, stated here before L1b is sent:
+
+- `tables.tsv` has one more column, the rows per cell (for example `A=34;B=34`), for the tables whose first column is
+  the cell. R02's pass list asks for row counts "per deciding cell", which a total alone does not show.
+- If the scorer exits with an error (in its first run or in the scale test), the job prints the lines of the scorer's
+  standard error from `Error` on (at most twelve): R's error message and call. Without it a failure of code that has
+  never run could not be diagnosed inside the ceiling. The scorer prints no result on standard error; in a run that
+  succeeds nothing of it is printed.
+
+One change of mine to the scorer beyond R02's refinement, needed for R02's pass list: the check tables now list every
+check with its composition whether or not the data filled it, so a deciding cell without data (cell B in L1b) shows 34
+rows with missing values instead of 33.
 
 Not contradicted, checked against the code: the register's seed formulas, the 33 checks, the order in which classes
-are drawn (C0, C1, C2, C3, C4, P, then C5), one BH family per call, and that `scoreRuv()` before this change dropped
-the determinism job's files and never read them again.
+are drawn (C0, C1, C2, C3, C4, P, then C5), one BH family per call.
 
-Left for the re-check: the scorer change has not run anywhere; the auditor's formation figures (metabolomics C5 at
-93 %, the candidate-share window) are not recomputed by me; whether S's runners match L1's processor is recorded per
-job and not controlled.
+Left open: the auditor's formation figures (metabolomics C5 at 93 %, the candidate-share window) are not recomputed by
+me; whether S's runners match L1's processor is recorded per job and not controlled.

@@ -361,9 +361,21 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
         expand.grid(view = view, kind = c("F_main", "F_ind"), class = c("C0", "C2"), rho_key = "", stringsAsFactors = FALSE),
         expand.grid(view = view, kind = c("F_main", "F_ind"), class = "C1", rho_key = criteria$rhos, stringsAsFactors = FALSE),
         data.frame(view = view, kind = "F_ind", class = "C5", rho_key = "", stringsAsFactors = FALSE))))
+    # Every check with the composition it is read in: "single", and for proteomics C5 one row per composition of
+    # `criteria$c5_proteomics`. A row the data cannot fill stays in the table with missing values and does not pass.
+    withCompositions <- function(table) {
+        c5p <- table$view == "proteomics" & table$class == "C5"
+        single <- table[!c5p, , drop = FALSE]
+        single$composition <- rep("single", nrow(single))
+        rbind(single, bind(lapply(names(criteria$c5_proteomics), function(name) {
+            d <- table[c5p, , drop = FALSE]
+            d$composition <- rep(name, nrow(d))
+            d
+        })))
+    }
     checks <- function(arm, table = wanted) bind(lapply(criteria$deciding_cells, function(cell) {
-        d <- merge(cbind(cell = cell, table), rate[rate$arm == arm & rate$test == criteria$test_of_record, ],
-            by = c("cell", "view", "kind", "class", "rho_key"), all.x = TRUE)
+        d <- merge(cbind(cell = cell, withCompositions(table)), rate[rate$arm == arm & rate$test == criteria$test_of_record, ],
+            by = c("cell", "view", "kind", "class", "rho_key", "composition"), all.x = TRUE)
         d$pass <- !is.na(d$upper) & d$upper <= limit
         d
     }))
@@ -532,17 +544,30 @@ scoreRuv <- function(jobs_dir, out, criteria = CRITERIA184) {
         reference$rho_key[is.na(reference$rho_key)] <- ""
         reference <- reference[reference$cell == "A", , drop = FALSE]
         drawn <- rateOf(perReplicate(errors[errors$cell == "A", , drop = FALSE]))
+        # Counts only, so that a FALSE can be read without opening a rate (declaration audit K184-R02): whether the
+        # number of sets and of replicates agrees in every row, and in how many rows T differs. Equal sets with a few
+        # differing T would point at a p-value on the other side of 0.05 on another processor, not at the summing.
         equal <- FALSE
+        matched <- 0L
+        sets_equal <- FALSE
+        replicates_equal <- FALSE
+        t_differing <- NA_integer_
         if (!is.null(drawn)) {
             both <- merge(drawn, reference, by = key, suffixes = c("_here", "_l1"))
             close <- function(a, b) isTRUE(all.equal(a, b, tolerance = 1e-12, check.attributes = FALSE))
-            equal <- nrow(drawn) == nrow(reference) && nrow(both) == nrow(reference) &&
-                all(both$sets_here == both$sets_l1) && all(both$replicates_here == both$replicates_l1) &&
+            matched <- nrow(both)
+            all_matched <- nrow(drawn) == nrow(reference) && matched == nrow(reference)
+            sets_equal <- all_matched && all(both$sets_here == both$sets_l1)
+            replicates_equal <- all_matched && all(both$replicates_here == both$replicates_l1)
+            t_differing <- sum(xor(is.na(both$T_here), is.na(both$T_l1)) |
+                (!is.na(both$T_here) & !is.na(both$T_l1) & abs(both$T_here - both$T_l1) > 1e-12))
+            equal <- sets_equal && replicates_equal && t_differing == 0L &&
                 close(both$T_here, both$T_l1) && close(both$mc_se_here, both$mc_se_l1) &&
                 close(both$lower_here, both$lower_l1) && close(both$upper_here, both$upper_l1)
         }
         write(data.frame(check = "cell A, every size summed and nothing left out, against L1's error rates",
-            rows_here = if (is.null(drawn)) 0L else nrow(drawn), rows_l1 = nrow(reference), equal = equal,
+            rows_here = if (is.null(drawn)) 0L else nrow(drawn), rows_l1 = nrow(reference), rows_matched = matched,
+            sets_equal = sets_equal, replicates_equal = replicates_equal, rows_with_T_differing = t_differing, equal = equal,
             stringsAsFactors = FALSE), "l1-reference-check")
     }
 

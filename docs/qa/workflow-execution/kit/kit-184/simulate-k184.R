@@ -1151,7 +1151,9 @@ runReplicate184 <- function(cell_label, r) {
         raw_cor_main_z1 = stats::cor(scores[[f_main]], sim$z1[match(scores$biological_sample, sim$samples)]),
         warnings = gsub("[\t\r\n]+", " ", paste(unique(unlist(lapply(fits, `[[`, "warnings"))), collapse = " | ")),
         stringsAsFactors = FALSE)), "orientation")
-    if (r == 1L) append(data.frame(cell = cell_label, package = c("ruv", "RUVIIIC", "limma", "MOFA2"),
+    # Every replicate writes the versions it ran with (declaration audit K184-R01: the counted run starts at replicate
+    # 6); the scorer keeps the unique rows, so more than one row for a package would show a mixed library. Output only.
+    append(data.frame(cell = cell_label, package = c("ruv", "RUVIIIC", "limma", "MOFA2"),
         version = vapply(c("ruv", "RUVIIIC", "limma", "MOFA2"), function(p) as.character(utils::packageVersion(p)),
             character(1)), stringsAsFactors = FALSE), "versions")
     data.frame(train_seconds = train_seconds, total_seconds = as.numeric(difftime(Sys.time(), started, units = "secs")))
