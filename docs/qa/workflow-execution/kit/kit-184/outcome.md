@@ -1,6 +1,6 @@
 # KIT-184: outcome (running record; stopped at L1's stop rule)
 
-Ticket `tickets/kit/KIT-184.md` revision 1.5. Branch `kit-184-ruv-factors-in-integration`, from `v0.9-staging`
+Ticket `tickets/kit/KIT-184.md` revision 1.6. Branch `kit-184-ruv-factors-in-integration`, from `v0.9-staging`
 67d38df3 (KIT-183, KIT-187 and KIT-191 merged). All computation on GitHub-hosted runners; no R on the laptop.
 
 **State: stopped at a stop rule of ticket section 11.** The package part is built and passes its targeted runs. The
@@ -12,6 +12,16 @@ declared and not counted, the texts still hold its placeholders, and the full su
 ceiling at 303.33 core-hours and limited the one correction S' to the affected jobs within 20.33 core-hours (ticket
 section 11, revision 1.5). The declaration is still not committed and S not started: `declaration-draft.md` holds the
 declaration as it would be frozen and the four changes L1's formation counts force, and waits for an independent audit.
+
+**After the declaration audit (2026-11-24).** The audit (`tickets/kit/audits/AUDIT-KIT-184-declaration-20261124.md`,
+K184-D01 to D12) found the first draft not fit to freeze, and that L1 had not been scored blind as the programme asks
+(VAL-11). The owner decided (methods ledger VAL-150): the deciding proteomics C5 check must hold in both compositions
+(sizes 10 and 30; and every size formed, as declared), and the non-blind lifecycle run is disclosed and not re-run.
+Applied on the branch, nothing run: `declaration-draft.md` (second version); `simulate-k184.R` writes its error table
+per set size (nothing drawn or tested changes); `score-k184.R` sums the sizes, makes every redefinition, reads
+proteomics C5 in both compositions and compares the determinism job. The blind lifecycle extension L1b is specified
+(draft section 5) and not sent. Still no declaration, no counted run. The scorer change has run nowhere yet: L1b is
+its first exercise. Ticket revision 1.6, section 22, has a row per finding.
 
 ## What was run, at which commit, what was observed
 
@@ -114,6 +124,6 @@ under `skipped` would be the stricter reading).
 - The distance between the DA's stored factors and the removed ones on a declared design with missing values.
 - That the CRAN archive's ruv 0.9.7.1 tarball is the one the lock's library was installed from (G0).
 - The scorer's criteria tables on real counts: L1 exercised `score-k184.R` on 5 replicates per cell only.
-- The determinism comparison: the KIT-184 part of `score-k184.R` does not make it yet (found 2026-11-24; an instrument
-  gap to close before S, `declaration-draft.md` section 5).
+- The determinism comparison and the rest of the scorer change of 2026-11-24 (sizes summed in the scorer, the two
+  proteomics C5 compositions): written, not run; L1b (blind) is what first runs them.
 - Cell C (not run: KIT-183's outcome is O1).
