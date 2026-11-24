@@ -193,6 +193,12 @@ jobs:
           Write-Output ("KIT167 host_build {0}" -f [Environment]::OSVersion.Version)
       - name: Server Core container, three runtime states
         run: |
+          # Run 45353194826: the Docker engine was not running on the image; start it and wait for its pipe.
+          $service = Get-Service -Name docker -ErrorAction SilentlyContinue
+          Write-Output ("KIT167 docker_service {0}" -f $(if ($service) { $service.Status } else { 'absent' }))
+          if ($service -and $service.Status -ne 'Running') { Start-Service docker }
+          foreach ($i in 1..30) { docker version *> $null; if ($LASTEXITCODE -eq 0) { break }; Start-Sleep -Seconds 5 }
+          docker version --format '{{.Server.Version}}' | ForEach-Object { "KIT167 docker_server $_" }
           $image = 'mcr.microsoft.com/windows/servercore:ltsc2025'
           docker pull $image | Select-Object -Last 1
           $current = 'https://aka.ms/vs/17/release/vc_redist.x64.exe'
