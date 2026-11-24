@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 line P1K (r1.27): R-P1 change at a303bf3f; expected: p1k pass, di10k, coverage, coverage-rank, coverage-table, repair2, repair4 unchanged, no lints; no coverage simulation; ceiling 40 job-minutes (re-request: the first was refused at plan, requested_by too long)",
+  "label": "KIT-159 P1K R-P1 change at a303bf3f with lint",
+  "package_commit": "a303bf3fed77d9872b5c4334ca429081720f850b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/p1k-rp1f-out",
+        "--files",
+        "p1k,di10k,coverage,coverage-rank,coverage-table,repair2,repair4",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/p1k-rp1f-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
