@@ -1,4 +1,4 @@
-# KIT-200 outcome (in progress: R1 done; the fix waits for KIT-196's merge, R03)
+# KIT-200 outcome (stopped before R3: T9 does not pass on head, for a reason outside this change)
 
 Ticket r1.2. Branch `kit-200-prot-da-proteins-without-values` from `v0.9-staging` 67d38df3.
 
@@ -75,8 +75,38 @@ simulation records, KIT-128 records, `parked-20261113.md`, `test-kit127-omics-ru
 `test-kit128-da-assay-failure.R` (lipid and metabolomics files; not proteomics references). No proteomics stored
 reference names these messages.
 
+## After KIT-196's merge
+
+**Merge and R1b.** The branch merged staging 0a4008a6 (KIT-196 48bfe085 and nine other tickets) at 5952c874; `git diff
+--name-only 67d38df3 0a4008a6 -- R/` lists 38 files beyond KIT-196's three, so R1 repeated (R1b, 45385950606, 11.6
+job-minutes): identical to R1-2, every test at its stated value.
+
+**The fix (9779f827).** `applyProtDaContrastModel`: proteins whose `Amean` is NA (a logical index, KIT-196 audit I06)
+leave between `contrasts.fit` and `eBayes`; all-empty input is refused with KIT-196's class and text. The ids are carried
+as `features_without_values` (only when present) and appended as rows of NA (`appendProtDaUntestedRows`) after the
+q-values and BH in `buildProtDaResultTables` and in both branches of `runTestsContrasts`, so the multiple-testing family
+is the tested proteins only. Deviation from ticket 7.1, on the coordinator's instruction (KIT-196 hand-off): the rows are
+appended after the adjustment, not before it with the mask excluding them; the family is the same either way.
+The artifact field, like the return fields, exists only when there are such proteins (7.1's "no field" identity).
+
+**R2 (A3, A4).**
+- 45388517096 is an instrument defect: its request carried 65 files of another ticket's list, read from a scratch file
+  another session had overwritten. Its tests are not this ticket's scope (all 65 `same`). Its R CMD check binds the right
+  commits and is valid: **A4 met**, nothing only on head (3 WARNINGs and 3 NOTEs on both).
+- 45400832062 (R2-2, section 9's 44 files): **43 `same`**, no `new-failure`, no `message-changed`, no
+  `compare-error`. The new file (`only-on-head`) failed 8 tests and erred in 1, each in the fixture: no protein id table
+  (the DA's annotation join), a state read from one store saved in another, the wrapper given contrasts without
+  `full_format`. Fixed at b8d9377c; no expected value changed.
+- 45463691826 (R2-3, the new file only, at b8d9377c): **509 passed, 1 failed**. Passing on head: T1 to T8 (with T5's
+  equality to the lipidomics kernel's refusal text), T10 (the replayed DA tables identical), T11, T12 (a) and (b).
+- **T9 fails on head**: `daAnalysisWrapperFunction` now passes `runTestsContrasts` and stops later, in
+  `getSignificantData` ("rownames_to_column(): is.data.frame(df) is not TRUE"). The wrapper nests
+  `contrasts_results$results` (a list of tables) one level too deep (`R/func_prot_da_model_wrapper.R:272-275`), so it
+  stops on any data (read; not run here). Not caused by this change, and no test runs the wrapper to the end otherwise.
+  Changing T9's assertion would change a declared comparison (VAL-54 (i)), so the ticket stops here for a decision.
+
 ## Not checked (yet)
 
-- The fix, R2, R3 and A3 to A7: after KIT-196's merge (R03).
+- R3 (A5); A1 for T9; A6 and A7 at the end.
 - The tab's displayed text after "Error in DA analysis: " (in-process wrapping only observed at the runner).
 - 2.3 and 2.4's citations re-read at the branch point (A7): pending with the fix commit.
