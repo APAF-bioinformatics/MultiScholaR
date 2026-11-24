@@ -1,0 +1,2 @@
+run_id	commit	purpose	minutes	result
+45472096981	cd88f95f8ea0c7d6257e6e021c3780a272364f11	G0 (scripts job; ceiling 60) and R1 (one test job; ceiling 45) on the tests-only commit, whose R/ equals base 74b1caee	20.7 (tests 11.6, scripts 9.1)	as stated: G0 exit 0, 23 fixtures built; kit214 file 122 pass 44 fail 0 error; every failing assertion is an E row, T6 (i) (iii) (iv) (v) or G7 (a), at its stated base value; G1, G2, G3, G7 (b), T6 (ii) pass
