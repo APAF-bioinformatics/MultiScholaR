@@ -26,7 +26,7 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, S0 done, suite check without result; stopped before the release commit; read this first)
+## Resume here (state 2026-11-24, S0 done, whole suite passes; stopped before the release commit; read this first)
 
 **S0 done: all 15 route runs valid, every step `ok`.** Evidence `s0/s0r1/` (run 45277101451 at
 a29a43c0: the 9 non-classic-proteomics cells) and `s0/s0i2/` (run 45288286009 at df71922f: the 6
@@ -64,9 +64,12 @@ the pre-RUV read of classic proteomics routes, a path none of them takes.
    at 788903bb: no result.** The script reached its 17-minute limit (exit 124) inside T-TAB's
    metabolomics routes; no test table, no lint. The limit was set so the job stayed inside T1's
    1.91, on an estimate of 1.55 taken from the fastest earlier whole-suite job (19.6 min); earlier
-   whole-suite jobs ran 22 to 31.5 min, so the estimate was wrong. Cost 1.84; T1 has 0.07 left, so
-   it was not resent. **The suite's verdict at the head is open**; a resend needs about 2.4
-   core-hours (a 32-minute script limit) from a line the coordinator names.
+   whole-suite jobs ran 22 to 31.5 min, so the estimate was wrong. Cost 1.84 (T1). The coordinator
+   then ruled it an instrument defect (VAL-54) and had it resent with a 35-minute limit, charged
+   to S0's line (which carries the tests of its instrument fix df71922f). **Resend: run
+   45298108528 at 4e76758d (harness code as 788903bb): 204 tests, 1,617 expectations, all pass (0
+   failed, 0 errors, 0 skipped); lintr no lints; script 1,126 s; 1.93 core-hours.** Evidence
+   `suite/suite-*`.
 2. The coverage table's half-width ratio is NOT built now: the register's premise was wrong (the
    detail tables do not hold the simulated statistics), and it would need coverage cells re-run,
    which is evidence. Ticket 4.4 keeps the text, T2's rows `not_recorded`. **Candidate for the
@@ -75,8 +78,8 @@ the pre-RUV read of classic proteomics routes, a path none of them takes.
    offered `conservative` at coverage 1.000) is re-run for it.
 
 **Core-hours by line:** T0 5.95 of 6; T1 20.93 of 21 (19.09 + 1.84, the suite run); T2 26.93 of 54;
-G1D 1.1 of 12; R1 2.78 of 4; **S0 7.72 of 16** (expected 6) = S0t0 0.70 + S0 3.55 + i1 0.92 + i2
-2.55. G1R, L1a, L1b, L2, L3, P1, M1: nothing used.
+G1D 1.1 of 12; R1 2.78 of 4; **S0 9.65 of 16** (expected 6) = S0t0 0.70 + S0 3.55 + i1 0.92 + i2
+2.55 + whole suite 1.93. G1R, L1a, L1b, L2, L3, P1, M1: nothing used.
 
 **Bound to the release commit (not started; stop here):** G1(a) and its reference table G1(r)
 (with G1R only if needed); `prot_dia_limpa` still awaits D19; L1a (proteomics lifecycle with the
@@ -87,7 +90,7 @@ Linux and Windows, 7.9); the MOFA lane (Part B, M1) with KIT-170; R1's live inco
 refusal with KIT-175's merge.
 
 **Open points for the harness's pre-release implementation audit:**
-1. The whole-suite regression check at the head (run 45294023250 gave no result; above).
+1. (Closed) The whole-suite regression check: run 45298108528, all 204 tests pass, no lints.
 2. The half-width ratio column (candidate, above).
 3. The fix of df71922f (`valProtRuvInput`: the classic proteomics pre-RUV matrix read from the
    `ruv_corrected` state's normalisation product) changes what `matrix_pre_ruv.tsv` holds on DIA,
@@ -646,8 +649,7 @@ family (T2 is sized on these).
 
 ## Not checked
 
-- (S0, 2026-11-24) The whole msrval suite at df71922f (only test-corpus, test-alternatives and
-  test-tab-ruv ran there; T-TAB's RUV-off fixture path does not reach the changed branch). The
+- (S0, 2026-11-24) The whole msrval suite: checked later, run 45298108528, all 204 pass. The
   S0 ledgers against G12's census (L1a's job). Determinism of S0's DA tables across jobs (G8).
 - (S0) Generated sizes are declared, not tuned: whether a larger input changes any S0 observation.
 
