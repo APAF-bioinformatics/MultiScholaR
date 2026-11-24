@@ -26,6 +26,60 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
+## Merge with `v0.9-staging` (closure check of 2026-11-24; MERGE line, ticket r1.23)
+
+**The merge.** a4e002a6 = ticket head 7c553651 merged with `v0.9-staging` a1b397b1 (KIT-182, KIT-203,
+KIT-207, KIT-196; ledger to VAL-164), a true merge. The only conflict was
+`docs/methods-decision-ledger.md`: every staging row kept, KIT-159's row placed after VAL-164 as
+`VAL-<merge>` and rewritten to the merge-time state (closure check CC5). Outside `kit-159/` the merge
+differs from a1b397b1 only in `.Rbuildignore` (+1), `.github/workflows/distributable.yml`
+(+107/-15) and that ledger row. Run branch `run-k159-merge` = a4e002a6.
+
+**MERGE-suite, declared before the send** (request `k159-merge-a4e002a6`): the whole harness suite
+(`val-tests.R`, no `--files`, `--lint`, no covr; CC2 (1)) at a4e002a6; ceiling 100 script minutes,
+inside MERGE's 7.5 core-hours; decides M3 (a whole-suite pass at the merge commit itself). A failing
+test would be a result, read with CC2's table and not corrected. The request's push started no
+dispatcher run; it was dispatched by hand (`gh workflow run run-tests.yml -f request=...`, as the
+run-tests README allows); not a re-send.
+
+**Result (run 45386625659; observed).** Script exit 0, 3,859 s. **45 files, 274 tests, 2,342
+expectations: 2,342 passed, 0 failed, 0 skipped, 0 errors** (5 warnings); **lintr: no lints**
+(`rep/merge-harness-tests.tsv`, `rep/merge-harness-failures.txt` empty, `rep/merge-lint.txt`,
+`rep/merge-code-hashes.tsv`). M3 is met: the suite passes at the exact merge commit, with KIT-182's,
+KIT-207's and KIT-196's package code and the harness's later changes (`replay.R`, `schema.R`,
+`gates.R`, `g1r.R`) in one run, including `test-e2e`, `test-valrun`, `test-tab*` and
+`test-alternatives`. No row of CC2's table (which harness tests drive which ticket's code) is
+needed: nothing failed. Charge: plan 0.25 + scripts 75.83 + results 0.55 = 76.6 job-minutes,
+**5.11 core-hours**.
+
+**MERGE-snapshot (CC2 (4); observed).** `distributable.yml` dispatched by hand on `run-k159-merge`
+(a4e002a6), stage `snapshot`, run 45386409115: success. The workflow was read first: stage
+`snapshot` uses no token, builds nothing, and uploads only `snapshot-date` (the text scores), the
+one snapshot upload the plan job's self-check lists; the build jobs are skipped at that stage.
+GitHub parsed the merged file; the plan job's self-check printed "no cache, no artifact passed
+between jobs, no upload from a build job except the guarded parity-results"; the snapshot job
+succeeded (4 min 46 s); Linux and Windows jobs skipped; one artifact, `snapshot-date` (17,403
+bytes). 4.9 job-minutes, **0.33 core-hours**. The stage `parity` path itself is not exercised.
+
+**MERGE line:** 5.11 + 0.33 = **5.44 of 7.5** core-hours.
+
+**A2 departure (G1R-ERRATA; recorded as the closure check CC1 words it).** A2 asks that every test
+be "shown failing before its implementation". G1R-ERRATA had no failing-first run. Accepted:
+the fault the positive test targets, "stops on exactly the 18", is shown in G1Rf's committed
+outputs (`g1r/g1r-disagreements.tsv`, status `stop`); G1R-ADOPT with `errata = NULL` keeps showing
+that fault, and G1Rg shows it fixed; the negative tests assert that the earlier behaviour persists,
+so they cannot fail first by construction (they are aimed at the two plausible over-permissive
+implementations: stripping any window, and ignoring class). Matching on key alone, ignoring lane
+and step, is untested; it would behave identically on these files, since the 18 strings occur only
+in those 18 groups. No planted-defect run.
+
+**Not checked at the merge.** covr and G10 not re-run (CC2 (2), (3)). The ledger row's figures
+were read from the committed tables, not recomputed by R. The lifecycle runs L1a, L1b, L2, L3,
+G13 in P1, G5 on every route (only `metab_combined` replayed), the confirmatory cell in KIT-162's
+composition (VAL-163 (3)) and the repeat of the suite and G1(a) after the last product merge
+(REPEAT line): not run. `earlier_sha256` of the errata is still reported, not enforced (CC1,
+optional). A1 is not met: merged is not accepted.
+
 ## Resume here (state 2026-11-24, builder A after the re-audit; builder B on `kit-159-replay`)
 
 **Builder A (this branch; register `AUDIT-KIT-159-impl-recheck-20261124.md`, rulings VAL-137 and the
