@@ -431,7 +431,15 @@ resolveProtEnrichUniprotAnnotations <- function(workflowData,
                                                 dirExistsFn = dir.exists,
                                                 dirCreateFn = dir.create,
                                                 getUniprotAnnotationsFn = getUniprotAnnotations,
-                                                catFn = cat) {
+                                                catFn = cat,
+                                                referenceAnnotation = NULL) {
+  # KIT-167 (8.3 item 3): with the reference identifiers chosen, the reference's annotation table comes first and
+  # is returned as is; the project's own annotation (the workflow slot, the environment, the RDS) is neither read nor
+  # written, so a later run with the accessions as imported reads the project's table.
+  if (!is.null(referenceAnnotation)) {
+    return(list(uniprotDatCln = referenceAnnotation, source = "reference_mapping", sourcePath = NULL, cacheDir = NULL,
+      cacheDirCreated = FALSE, loadError = NULL, creationError = NULL, creationReason = NULL, creationDetail = NULL))
+  }
   uniprotDatCln <- NULL
   annotationSource <- NULL
   sourcePath <- NULL

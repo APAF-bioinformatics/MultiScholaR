@@ -664,7 +664,7 @@ diaEnrichmentOperation <- function() {
         factors = list(cacheable = FALSE, service = "enrichment"),
         parameters = c("taxon_id", "up_cutoff", "down_cutoff", "q_cutoff", "exclude_iea", "correction_method",
             "protein_id_column", "contrast_names", "results", "organism_filter_enabled", "organism_filter_taxon",
-            "go_propagation"),
+            "go_propagation", "reference_mapping_sha256", "id_source", "go_table_sha256"),
         global_statistics = c(per_contrast_da_table =
             "the background universe and the significant set are the complete DA table of each contrast"),
         kernel = function(object, parameters, store) {
@@ -702,6 +702,9 @@ diaEnrichmentOperation <- function() {
 diaEnrichmentDeclaredNames <- function(declared, arguments) {
     filter <- c("organism_filter_enabled", "organism_filter_taxon")
     if (!isTRUE(arguments$organism_filter_enabled)) declared <- setdiff(declared, filter)
+    # KIT-167 (8.3 item 5): the reference identifiers' three names only when they are used.
+    if (!identical(arguments$id_source, "reference"))
+        declared <- setdiff(declared, c("reference_mapping_sha256", "id_source", "go_table_sha256"))
     if (is.null(arguments$go_propagation) || identical(arguments$go_propagation, "none"))
         declared <- setdiff(declared, "go_propagation")
     declared

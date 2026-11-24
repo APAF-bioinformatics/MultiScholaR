@@ -2148,7 +2148,9 @@ omicGuiProteomicsEnrichment <- function() {
         operation = diaEnrichmentOperation, run = runDIAReferenceEnrichment,
         da_source = list(manifest = isDIAResultManifest, components = c("design_matrix", "protein_id_table"),
             read = createDAResultsForEnrichment),
-        id_column = list(slot = "protein_id_column", default = "uniprot_acc", gprofiler_override = "gene_name"),
+        # KIT-167 (8.3 item 3): the reference identifiers' column, offered only with the gate on.
+        id_column = c(list(slot = "protein_id_column", default = "uniprot_acc", gprofiler_override = "gene_name"),
+            if (referenceMappingEnabled()) list(mapped = "reference_accession_used")),
         cutoffs = list(up = cutoff(0, 0, 5, 0.1), down = cutoff(0, 0, 5, 0.1), q = cutoff(0.05, 0.001, 0.2, 0.005)),
         correction = list(choices = c(`g:SCS (Conservative)` = "gSCS", `FDR (Less Conservative)` = "fdr"),
             selected = "gSCS"),

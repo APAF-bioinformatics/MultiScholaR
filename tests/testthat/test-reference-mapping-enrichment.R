@@ -216,6 +216,7 @@ test_that("with the reference identifiers the organism filter is not applied and
     skip_if_not_installed("clusterProfiler")
     project <- k167EnrichProject(tempfile("k167-run-"), "reference", enable_organism_filter = TRUE)
     expect_null(project$error)
-    expect_false(isTRUE(project$run$organism_filter$filterApplied))
+    expect_false(isTRUE(project$run$organism_filter$filter_applied))
+    expect_false(isTRUE(project$run$organism_filter$enabled))
     expect_false(any(c("organism_filter_enabled", "organism_filter_taxon") %in% names(project$run$parameters)))
 })
