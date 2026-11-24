@@ -183,6 +183,33 @@ example : Permutation.perm_measure_witness_stmt := Permutation.perm_measure_witn
 #print axioms Permutation.perm_measure
 #print axioms Permutation.perm_measure_witness
 
+/-! ## Target 5's oracle against the Spec (`Proof/PermutationOracle.lean`; ticket 5.5)
+
+`Oracle/Permutation.lean` counts over lists of rationals; these theorems state, with their types written out here,
+that its counts are the Spec's `unchangedDraws` and `reflectedDraws`, and that its 24 orderings are exactly the
+permutations of `Fin 4`, each once. -/
+
+example : ∀ {n B : ℕ} (f : Fin n → ℚ) (π : Fin B → Equiv.Perm (Fin n)),
+    Oracle.Permutation.unchanged (List.ofFn f) (Permutation.encDraws π) = Permutation.unchangedDraws f π :=
+  Permutation.unchanged_eq_unchangedDraws
+example : ∀ {n B : ℕ} (f : Fin n → ℚ) (π : Fin B → Equiv.Perm (Fin n)),
+    Oracle.Permutation.reflected (List.ofFn f) (Permutation.encDraws π) =
+      Permutation.reflectedDraws (fun i => (f i : ℝ)) π :=
+  Permutation.reflected_eq_reflectedDraws
+example : ∀ l ∈ Oracle.Permutation.orderings, ∃ σ : Equiv.Perm (Fin 4), Permutation.encPerm σ = l :=
+  Permutation.orderings_sound
+example : ∀ σ : Equiv.Perm (Fin 4), Permutation.encPerm σ ∈ Oracle.Permutation.orderings :=
+  Permutation.orderings_complete
+example : Oracle.Permutation.orderings.Nodup ∧ Oracle.Permutation.orderings.length = 24 :=
+  Permutation.orderings_nodup
+
+#print axioms Permutation.unchanged_eq_unchangedDraws
+#print axioms Permutation.reflected_eq_reflectedDraws
+#print axioms Permutation.row_counts
+#print axioms Permutation.orderings_sound
+#print axioms Permutation.orderings_complete
+#print axioms Permutation.orderings_nodup
+
 /-! ## Group R priority 1 (`Spec/RuvAlgebra.lean`, `Spec/RuvDownstream.lean`) -/
 
 example : Ruv.A1_stmt := Ruv.A1

@@ -565,10 +565,43 @@ directly. Laptop: 3 Lean calls, 15.5 CPU-seconds (labels `p2-oracle-*`).
 
 Core-hours: 40.8 job minutes, about 2.72 (job minutes x 4 / 60; set-up included in the job time).
 
+## Target 5's oracle bridge (ticket 5.5)
+
+Fifth session, 2026-11-24, Lean only. `Proof/PermutationOracle.lean`, listed in `Audit.lean` (each main type written
+out in an `example`, and `#print axioms`). Observed: `lake build --wfail` passes (7,388 jobs); `Audit.lean` prints
+148 axiom lists, every one `propext, Classical.choice, Quot.sound` (142 frozen theorems as before, plus the six
+below; `axioms.tsv` rows marked `bridge (5.5)`); `sha256sum -c SPEC.sha256` twelve OK (no Spec file changed); the
+nine oracle tables regenerated with `lake env lean --run Kit193Oracles.lean` are byte-identical to
+`tests/testdata/kit193/` and `SHA256SUMS` checks. The oracle's arithmetic is unchanged; only its header comment's
+"not in the Proof files yet" sentence was replaced by the lemma names. Laptop: 8 Lean calls, 31.7 CPU-seconds
+(labels `bridge-*`; four failed compiles while writing the proof).
+
+What the lemmas state, in plain words (encoding as the oracle's: a permutation σ of n samples is the list
+σ(0), …, σ(n−1) of 0-based positions, the draws are the list of those lists, a factor f is its list of values):
+- `unchanged_eq_unchangedDraws`: for every n, B, every rational factor f and every B draws, the oracle's `d` (its
+  `unchanged`, a list filter with decidable equality of rationals) is the Spec's `unchangedDraws f π` (a `Finset`
+  filter with classical decidability).
+- `reflected_eq_reflectedDraws`: the same for the oracle's `r` and the Spec's `reflectedDraws`, the Spec taken at the
+  real factor i ↦ (f i : ℝ): the oracle's reflection about the rational mean, cast to ℝ, is the Spec's `reflect`.
+- `row_counts`: for one row as the oracle's `row` builds it (f = g ∘ τ, draws π₁, π₂), `d` and `r` are the Spec's
+  counts for the factor g ∘ τ and the draws ![π₁, π₂], and the printed `(1 + d)/3` is `perm_floor_stmt`'s
+  (1 + d)/(1 + B) at B = 2.
+- `orderings_sound`, `orderings_complete`, `orderings_nodup`: the oracle's 24 orderings (`List.permutations
+  [0, 1, 2, 3]`) are each the encoding of a permutation of 4 samples, every permutation's encoding is among them,
+  and none is repeated; so each fixture's 13,824 rows are exactly the cases (τ, π₁, π₂), once each.
+
+Not covered: that each fixture's literal list is `List.ofFn` of its four values (true by `List.ofFn_get`, not stated
+as a lemma); the one-based labels and the text of each row (string formatting); Lean's interpreter that evaluates
+the oracle (trusted for the tables, 9.1). The two other oracles of f3170c03 need no bridge: `Oracle/QvalueBh.lean`
+evaluates the Spec's own `callsKept` and `callsWhole` on `[gridVal N j₁, gridVal N j₂]`, and
+`Oracle/RuvControlRules.lean` the Spec's own `firstPassControls` and `trxFirstPassControls`; both Spec modules define
+these computably (no classical instance; the interpreter evaluates them), which is 5.5's first kind of oracle. Their
+remaining code builds the cases and formats the rows (p-values in eighths, the generator), as in the earlier oracles.
+
 ## Resume here
 
 State after the fourth implementer session (2026-11-24): all 142 frozen statements proved; 142 theorems listed in
-`axioms.tsv`; audited sound (proofs audit 3; the last three Proof modules were `Proof/RemovedFactors.lean`,
+`axioms.tsv` (and, since the fifth session, the six bridge lemmas of target 5's oracle); audited sound (proofs audit 3; the last three Proof modules were `Proof/RemovedFactors.lean`,
 `Proof/RuvIIICPattern.lean`, `Proof/RuvControlRules.lean`). Pairs passed: target 3 (P0a), target 1 (P1a), and in run
 45335802998 target 5 (P2), target 4's library parts and group R on merged code (P0b), each with its planted defect
 caught. The owed digests job is done: `bindings.tsv` has 6 rows `pending` (target 2's five, KIT-190; T4
@@ -582,7 +615,8 @@ Next, each waiting on what is named:
    `getNegCtrlProtAnovaHelper`'s binding row; O1 (a statement for the lipid and metabolite rule) is the
    coordinator's call.
 3. After KIT-184 merges: R-I1's pair and its bindings (P3), with ticket 8.2's diff of the merged writer.
-4. The Permutation oracle's bridge lemma (above) into `Proof/` and `Audit.lean`, by a session allowed to write proofs.
+4. Done (fifth session): the Permutation oracle's bridge, `Proof/PermutationOracle.lean` (section above); it awaits
+   the proofs auditor.
 5. The tripwire `test-kit193-bindings.R` (not written); R CMD check base against head (A7) at P3; the record job L1 at
    the final commit.
 Lean calls: `lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
@@ -595,5 +629,6 @@ Lean calls: `lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 tim
   final commit. (Two earlier lines here, on the gate's reads and on the CI workflow, were stale: the statements register
   records the gate's reads, and the workflow and L0 are above.)
 - Target 2's pair, target 4 (ii), the L1 cases, R-N1's sweep cases and R-I1's pair have not run (they wait for
-  KIT-190, KIT-203 and KIT-184). R CMD check (A7) has not run on this branch. The Permutation oracle's equality to
-  the Spec's counts is argued, not yet a Lean theorem.
+  KIT-190, KIT-203 and KIT-184). R CMD check (A7) has not run on this branch. The Permutation oracle's bridge
+  (`Proof/PermutationOracle.lean`) is checked on the laptop only and not yet audited; it does not cover the
+  fixtures' literal lists or the row text (section "Target 5's oracle bridge").

@@ -33,6 +33,7 @@ public import MultiScholaRProofs.Proof.KeptFamily
 public import MultiScholaRProofs.Proof.RemovedFactors
 public import MultiScholaRProofs.Proof.RuvIIICPattern
 public import MultiScholaRProofs.Proof.RuvControlRules
+public import MultiScholaRProofs.Proof.PermutationOracle
 
 /-!
 # KIT-193: machine-checked statements about exact models of parts of MultiScholaR's methods

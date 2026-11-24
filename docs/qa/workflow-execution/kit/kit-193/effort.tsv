@@ -29,3 +29,4 @@ R-I1, R-J3, R-N1 freeze edit pass (Q06-Q09) and records (Q02-Q05, Q10)	2026-11-2
 R-I1 proofs (7 statements, 2 witnesses; Proof/RemovedFactors.lean)	2026-11-24T16:05	2026-11-24T16:11	0.10	proved, standard axioms (expected 10, ceiling 16)
 R-J3 proofs (2 statements, 1 witness; Proof/RuvIIICPattern.lean)	2026-11-24T16:11	2026-11-24T16:13	0.03	proved, standard axioms (expected 2, ceiling 3)
 R-N1 proofs (5 statements, 1 witness; Proof/RuvControlRules.lean)	2026-11-24T16:13	2026-11-24T16:17	0.07	proved, standard axioms (expected 2, ceiling 4); all 142 statements proved
+Permutation oracle bridge (6 lemmas; Proof/PermutationOracle.lean; ticket 5.5)	2026-11-24T17:05	2026-11-24T17:14	0.15	proved, standard axioms; tables byte-identical

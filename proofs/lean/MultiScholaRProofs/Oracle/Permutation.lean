@@ -16,7 +16,9 @@ The Spec's `unchangedDraws` and `reflectedDraws` count with classical decidabili
 values), so they cannot be evaluated; the counts below are the same filters written over lists of rationals with
 their decidable equality. That the two agree (a filter does not depend on the decidability instance,
 `Finset.filter_congr_decidable`, and a function on `Fin 4` is its list of values) is the bridge lemma ticket 5.5
-asks of a separate executable function; it is not in the Proof files yet (recorded in `outcome.md`).
+asks of a separate executable function: `Proof/PermutationOracle.lean` (`unchanged_eq_unchangedDraws`,
+`reflected_eq_reflectedDraws`, `row_counts`, and `orderings_sound`, `orderings_complete`, `orderings_nodup` for the
+24 orderings), listed in `Audit.lean`.
 
 Orderings are written one-based as R indexes them: `τ = "2143"` is `f = g[c(2, 1, 4, 3)]`, `π = "4321"` is the draw
 `f[c(4, 3, 2, 1)]` (`perms[, b]` of the shipped code). They are listed in the order of `List.permutations`.

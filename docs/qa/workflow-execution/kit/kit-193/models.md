@@ -111,8 +111,17 @@ Every planted defect above was built and caught, except as follows (mechanics; n
 rank-1 map is one column `W q` (a two-column rank-1 design is refused by edgeR); 4 (i) adds a planted
 `qvalue::qvalue` ignoring pi0 (4 (ii), with `processEnrichments`, waits for KIT-203); R-N1's first-pass planted
 defect is `protRuvFirstPassControls` with `ties.method = "last"`. The target 5 oracle (`Oracle/Permutation.lean`)
-counts over lists with decidable equality; its bridge lemma to the Spec's classical `unchangedDraws` and
-`reflectedDraws` is owed to the Proof files (ticket 5.5).
+counts over lists with decidable equality; its bridge to the Spec's classical `unchangedDraws` and
+`reflectedDraws` is `Proof/PermutationOracle.lean` (ticket 5.5; fifth session, listed in `Audit.lean`). In plain
+words: for any rational factor and any draws, written as the oracle writes them (a permutation as its list of
+0-based positions), the oracle's `d` is the Spec's `unchangedDraws` (`unchanged_eq_unchangedDraws`) and its `r` is
+the Spec's `reflectedDraws` of the same factor cast to ℝ (`reflected_eq_reflectedDraws`); a table row's `d`, `r`
+and `(1 + d)/3` are those counts and `perm_floor_stmt`'s floor at B = 2 (`row_counts`); the oracle's 24 orderings
+are exactly the permutations of 4 samples, once each (`orderings_sound`, `orderings_complete`,
+`orderings_nodup`). It does not cover the fixtures' literal lists being `List.ofFn` of their values (true by
+definition, not stated), the row text, or the interpreter. The `bh-counterexample.tsv` and `first-pass.tsv`
+oracles evaluate the Spec's own computable definitions (`callsKept`, `callsWhole`; `firstPassControls`,
+`trxFirstPassControls`) and need no bridge.
 
 ## 4. The gate's own reads (ticket 2.3 and 14): done at the gate
 

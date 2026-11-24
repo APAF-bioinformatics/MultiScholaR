@@ -141,3 +141,9 @@ RuvControls.N1_first_pass	RuvControls.N1_first_pass_stmt	propext, Classical.choi
 RuvControls.N1_trx	RuvControls.N1_trx_stmt	propext, Classical.choice, Quot.sound
 RuvControls.N1_rules_differ	RuvControls.N1_rules_differ_stmt	propext, Classical.choice, Quot.sound
 RuvControls.N1_stable_witness	RuvControls.N1_stable_witness_stmt	propext, Classical.choice, Quot.sound
+Permutation.unchanged_eq_unchangedDraws	bridge (5.5): Oracle.Permutation.unchanged = unchangedDraws	propext, Classical.choice, Quot.sound
+Permutation.reflected_eq_reflectedDraws	bridge (5.5): Oracle.Permutation.reflected = reflectedDraws	propext, Classical.choice, Quot.sound
+Permutation.row_counts	bridge (5.5): one perm-floor.tsv row	propext, Classical.choice, Quot.sound
+Permutation.orderings_sound	bridge (5.5): each ordering is a permutation	propext, Classical.choice, Quot.sound
+Permutation.orderings_complete	bridge (5.5): each permutation is an ordering	propext, Classical.choice, Quot.sound
+Permutation.orderings_nodup	bridge (5.5): 24 orderings, no repeat	propext, Classical.choice, Quot.sound
