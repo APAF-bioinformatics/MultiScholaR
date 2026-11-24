@@ -183,6 +183,23 @@ partm(c("k", "n_controls", "mamp_cf_n", "mamp_cf_singular", "mamp_cf_log10kappa"
     "partm-closed-form.tsv")
 partm(c("mu_itsd_dev", "mu_log2_dev", "mu_loess_dev", "mu_ctl_same", "mu_k_same", "mu_pct_same", "mu_ruv_dev", "mu_logfc_dev", "mu_t_dev",
     "mu_call_changes", "mu_t_dev_notrend"), rows$job == "munit", "partm-unit.tsv")
+# 18.4a (VAL-126): proteomics ties and row order per legacy journey, with their distribution (reported, no threshold)
+ties <- rows[rows$part == "P" & rows$arm %in% c("LA", "LP", "LM") & !is.na(num(rows$tie_share)) & rows$scoreset %in% "T",
+    c("cell", "job", "scenario", "mask", "rep", "arm", "tie_share", "tie_block", "tie_block_onegroup", "perm_jaccard", "tie_rule_match")]
+ties <- unique(ties)
+utils::write.table(ties, file.path(out_dir, "partp-ties.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+if (nrow(ties)) {
+    tie_summary <- do.call(rbind, lapply(split(ties, ties[c("cell", "arm")], drop = TRUE), function(x) data.frame(cell = x$cell[[1L]],
+        arm = x$arm[[1L]], journeys = nrow(x), share_median = stats::median(num(x$tie_share)), share_p90 = stats::quantile(num(x$tie_share), 0.9, names = FALSE),
+        share_above_0 = mean(num(x$tie_share) > 0), jaccard_median = stats::median(num(x$perm_jaccard)),
+        jaccard_p10 = stats::quantile(num(x$perm_jaccard), 0.1, names = FALSE), jaccard_below_1 = mean(num(x$perm_jaccard) < 1),
+        replica_matches = mean(as.logical(x$tie_rule_match)), stringsAsFactors = FALSE)))
+    utils::write.table(tie_summary, file.path(out_dir, "partp-ties-summary.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+}
+# 5.8b: the named case K172c (reported)
+k172c <- rows[rows$job %in% "k172c", c("cell", "arm", "assay", "contrast", "status", "class", "n_T", "n_tested", "lost", "calls",
+    "false_calls", "null_p05", "any_call", "k", "pct", "n_controls", "complete_controls", "err_max")]
+utils::write.table(k172c, file.path(out_dir, "partl-k172c.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
 repair <- conditions[conditions$arm %in% c("LA", "LP") & conditions$job %in% c("deciding", "lp") & conditions$scenario %in% c("N0", "N1", "E0", "E1"), ]
 utils::write.table(repair, file.path(out_dir, "partm-repair.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
 cat(sprintf("KIT-188 scoring: %d rows, %d data-set rows, %d conditions\n", nrow(rows), nrow(dataset), nrow(conditions)))

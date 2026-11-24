@@ -40,7 +40,8 @@ started_at <- Sys.time()
 
 suppressPackageStartupMessages(library(MultiScholaR))
 attach(asNamespace("MultiScholaR"), name = "MultiScholaR:namespace", warn.conflicts = FALSE)
-for (helper in c("helper-workflow-omics-owner.R", "helper-workflow-lipid-declarations.R", "helper-workflow-metab-declarations.R")) {
+for (helper in c("helper-workflow-omics-owner.R", "helper-workflow-lipid-declarations.R", "helper-workflow-metab-declarations.R",
+    "helper-kit172.R")) {
     sys.source(file.path("tests", "testthat", helper), envir = globalenv())
 }
 logger::log_threshold(logger::FATAL)
@@ -66,7 +67,9 @@ CELLS <- list(
     P16 = cellDef(7L, "P", "prot", "proteins", 6000L, 4L, 4L, 20, 2, "drift_factor"),
     P2 = cellDef(8L, "P", "prot", "proteins", 3000L, 2L, 3L, 20, 2, "drift_factor"),
     P3 = cellDef(9L, "P", "prot", "proteins", 6000L, 5L, 4L, 20, 2, "drift_factor"),
-    P4b = cellDef(10L, "P", "prot", "proteins", 5000L, 5L, 10L, 20, 2, "batch_drift", blocks = 5L))
+    P4b = cellDef(10L, "P", "prot", "proteins", 5000L, 5L, 10L, 20, 2, "batch_drift", blocks = 5L),
+    # 5.8b: KIT-172's concentration fixture, both classes, one fixed data set (reported; job k172c only)
+    K172c = cellDef(0L, "L", "lipid", "LCMS_Pos", 515L, 2L, 6L, NA, NA, "none"))
 scenariosOf <- function(cellname) if (isTRUE(CELLS[[cellname]]$n2)) SCENARIOS else SCENARIOS[1:4]
 MASKS <- c("none", "vd5", "vd20")
 REFUSALS <- c("omics_ruv_insufficient_controls", "prot_ruv_insufficient_controls", "prot_ruv_empty_result",
@@ -77,7 +80,7 @@ BLIND <- c("n_null", "null_p05", "null_p01", "calls", "false_calls", "true_calls
     "bh_calls", "bh_false", "bh_any", "bh_fdp", "bh_power", "err_med", "err_p99", "err_rmse", "err_max", "gross1", "slope",
     "n_common", "s5", "or_s5", "gross1_common", "or_gross1_common", "ctl_planted_share", "ctl_labelled", "mdf_null05",
     "mdf_null05_reduced", "mdf_df_le_k", "mdf_tested", "mamp_sigma_min", "mamp_e_max", "mamp_planted_share",
-    "mamp_cf_n", "mamp_cf_singular", "mamp_cf_log10kappa",
+    "mamp_cf_n", "mamp_cf_singular", "mamp_cf_log10kappa", "tie_share", "tie_block", "tie_block_onegroup", "perm_jaccard",
     "mu_itsd_dev", "mu_log2_dev", "mu_loess_dev", "mu_ctl_same", "mu_k_same", "mu_pct_same", "mu_ruv_dev", "mu_logfc_dev",
     "mu_t_dev", "mu_call_changes", "mu_t_dev_notrend")
 
@@ -390,7 +393,7 @@ expectedOperations <- function(binding, itsd, ruv, correlation, filter = TRUE) {
 }
 
 #' One journey on its own session owner. Returns the statuses, the RUV choice, the matrices the checks need and the DA.
-journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, itsd = identical(sim$p$omic, "lipid"),
+journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, itsd = isTRUE(sim$itsd) || identical(sim$p$omic, "lipid"),
     method = d$method, correlation = TRUE, ids = NULL, scale = 1, keep_states = FALSE, fault = FALSE) {
     t0 <- proc.time()[[3L]]
     warning_count$n <- 0L
@@ -456,6 +459,20 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
         out$da <- data.frame(assay = as.character(long$assay), comparison = as.character(long$comparison),
             feature = as.character(long[[id]]), logFC = column("logFC"), t = column("t"), p = column(c("P.Value", "raw_pvalue")),
             q = column("fdr_qvalue"), bh = column("fdr_value_bh"), stringsAsFactors = FALSE)
+        # 5.4 (r1.9): a contrast's per-assay DA failure, from the manifest's errors channel (KIT-128), is `no_da` for that family
+        errs <- lapply(da$manifest$results, function(e) if (length(e$errors)) data.frame(group = groupOfComparison(e$comparison %||% e$contrast %||% ""),
+            assay = names(e$errors), error = vapply(e$errors, function(x) oneLine(paste(as.character(unlist(x)), collapse = " ")), ""),
+            stringsAsFactors = FALSE))
+        out$da_errors <- do.call(rbind, errs)
+        # E7 (no_da): a deliberate per-assay failure in the first journey of the fault unit that reaches the DA with two assays
+        if (isTRUE(getOption("k188.fault_noda", FALSE)) && length(unique(out$da$assay)) >= 2L) {
+            options(k188.fault_noda = FALSE)
+            a2 <- sort(unique(out$da$assay))[[2L]]
+            g1 <- groupOfComparison(out$da$comparison)[[1L]]
+            out$da <- out$da[!(out$da$assay == a2 & groupOfComparison(out$da$comparison) == g1), , drop = FALSE]
+            out$da_errors <- rbind(out$da_errors, data.frame(group = g1, assay = a2, error = "K188 deliberate per-assay DA failure (E7)",
+                stringsAsFactors = FALSE))
+        }
         # E1: the provenance of every committed state names the declared operation and the binding's default variant
         snapshot <- owner$.context$snapshot
         history <- unlist(snapshot$state_history)
@@ -558,16 +575,26 @@ journeyP <- function(sim, log2_values, arm, request, d, root, config, filter = T
         rows <- sim$order_of[[1L]]
         if (!is.null(ids)) rows <- rows[rows %in% ids]
         values <- 2^log2_values[rows, sim$runs, drop = FALSE]
-        # the design step's transform on this base (KIT-177 not merged): log2(x + 1) on every cell, as kit-177/route.R `old`
-        transformed <- log2(values + 1)
-        wide <- tibble::as_tibble(cbind(data.frame(Protein.Ids = rows, stringsAsFactors = FALSE),
-            stats::setNames(as.data.frame(unname(transformed)), sim$runs)))
+        # 18.4 (r1.10): the bound commit's own design-step transform (KIT-177: `protDesignPlainLog2`, plain log2), else the
+        # base's log2(x + 1)
+        raw <- tibble::as_tibble(cbind(data.frame(Protein.Ids = rows, stringsAsFactors = FALSE),
+            stats::setNames(as.data.frame(unname(values)), sim$runs)))
+        if (exists("protDesignPlainLog2", mode = "function")) {
+            made <- protDesignPlainLog2(raw, "Protein.Ids")
+            wide <- tibble::as_tibble(made$table)
+            fixed <- c(list(pivot = "protein x run", transform = "log2(x); 0 missing"), as.list(made$counts))
+        } else {
+            wide <- raw
+            for (run in sim$runs) wide[[run]] <- log2(wide[[run]] + 1)
+            fixed <- list(pivot = "protein x run", transform = "log2(x + 1)")
+        }
+        out$transform <- fixed$transform
         design <- sim$design[, c("Run", "group", "batch", "replicates")]
         design$tech_rep_group <- paste(design$group, design$replicates, sep = "_")
         s4 <- ProteinQuantitativeData(protein_quant_table = wide, protein_id_column = "Protein.Ids",
             protein_id_table = dplyr::distinct(wide, Protein.Ids), design_matrix = design, sample_id = "Run", group_id = "group",
             technical_replicate_id = "tech_rep_group", args = config)
-        setDIAStepProvenance(manager, "design_builder", fixed = list(pivot = "protein x run", transform = "log2(x + 1)"))
+        setDIAStepProvenance(manager, "design_builder", fixed = fixed)
         manager$saveState("protein_s4_initial", s4, config, "Initial Protein S4 object created in the KIT-188 script")
         workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list()), config_list = list()))
         contrasts <- data.frame(contrasts = sprintf("%s.vs.A", sim$groups[-1L]),
@@ -718,7 +745,7 @@ scoreFamily <- function(da, T_ids, theta, or_err = NULL) {
 }
 ROW_COLUMNS <- c("part", "cell", "job", "scenario", "mask", "rep", "arm", "arm_scale", "scoreset", "assay", "contrast", "status", "class", "step",
     "seconds", "warnings", "samples_removed", "k", "pct", "n_controls", "complete_controls", "k_estimate", "e1_pass",
-    "n_T", "n_tested", "lost", BLIND, "q_method", "miss_share", "miss_after")
+    "n_T", "n_tested", "lost", BLIND, "q_method", "miss_share", "miss_after", "tie_rule_match")
 newRow <- function(...) {
     row <- stats::setNames(as.list(rep(NA, length(ROW_COLUMNS))), ROW_COLUMNS)
     given <- list(...)
@@ -738,7 +765,11 @@ armRows <- function(sim, journey, T_ids, common, choice, or_errs = NULL, extra_s
     for (set in names(sets)) for (a in assays) for (g in contrasts) {
         ids <- sets[[set]][sim$assay_of[sets[[set]]] == a]
         ch <- choice[[a]]
-        base <- c(common, list(arm = journey$arm, scoreset = set, assay = a, contrast = g, status = journey$status, class = journey$class,
+        failed <- journey$da_errors
+        failed <- if (!is.null(failed)) failed[failed$assay == a & failed$group %in% g, , drop = FALSE]
+        family_status <- if (!is.null(failed) && nrow(failed)) "no_da" else journey$status
+        family_class <- if (!is.null(failed) && nrow(failed)) failed$error[[1L]] else journey$class
+        base <- c(common, list(arm = journey$arm, scoreset = set, assay = a, contrast = g, status = family_status, class = family_class,
             step = journey$step, seconds = journey$seconds, warnings = journey$warnings,
             samples_removed = if (is.null(journey$runs_final)) NA_integer_ else length(sim$runs) - length(journey$runs_final),
             k = ch$k %||% NA_integer_, pct = ch$pct %||% NA_real_, n_controls = length(ch$controls %||% character()),
@@ -854,6 +885,53 @@ omicObjectFromMatrices <- function(sim, mats) {
     }
 }
 #' E9 (Part P): the LA controls are the top proteins by the helper's rule on `group` with `qvalue` (18.1).
+#' The helper's per-protein p (`:555-565`, zero-df proteins dropped by `unlist`), and which were observed in one group.
+anovaP <- function(m, group) {
+    grps <- group
+    ps <- apply(m, 1L, function(x) {
+        if (length(unique(grps[!is.na(x)])) > 1L) summary(stats::aov(as.numeric(x) ~ grps))[[1L]][["Pr(>F)"]][1L] else NA_real_
+    })
+    if (is.list(ps)) ps <- unlist(ps)
+    one <- names(ps)[is.na(ps)]
+    ps[is.na(ps)] <- 1
+    list(p = ps, one_group = one)
+}
+#' The helper's selection (`:569-582`) on candidates q in table order: the first n of q > 0.05 sorted by q decreasing,
+#' ties in table order; and 18.4a (a): the share of the selection decided by table order inside the boundary tie block.
+selectByQ <- function(q, n_rows, pct) {
+    filtered <- q[q > 0.05]
+    n <- min(round(n_rows * pct / 100, 0), length(filtered))
+    sorted <- sort(filtered, decreasing = TRUE)
+    selected <- names(sorted[seq_len(n)])
+    if (n == 0L) return(list(selected = character(), share = NA_real_, block = NA_integer_, block_ids = character()))
+    qb <- sorted[[n]]
+    block_ids <- names(filtered)[filtered == qb]
+    in_selection <- sum(sorted[seq_len(n)] == qb)
+    list(selected = selected, share = if (length(block_ids) > in_selection) in_selection / n else 0, block = length(block_ids),
+        block_ids = block_ids)
+}
+jaccard <- function(a, b) if (!length(union(a, b))) NA_real_ else length(intersect(a, b)) / length(union(a, b))
+#' 18.4a for one proteomics legacy journey: the shipped rule replicated, (a) the tie share, (b) the Jaccard overlap with the
+#' selection on rows in the seeded second order; and whether the replica equals the package's selection.
+tieCount <- function(sim, journey, pct, method) {
+    m <- journey$m_in$proteins
+    if (is.null(m) || !is.finite(pct)) return(NULL)
+    group <- sim$design$group[match(colnames(m), sim$design$Run)]
+    a <- anovaP(m, group)
+    q <- if (identical(method, "qvalue")) qvalue::qvalue(a$p)$qvalues else qvalue::qvalue(a$p, pi0 = 1)$qvalues
+    names(q) <- names(a$p)
+    shipped <- selectByQ(q, nrow(m), pct)
+    set.seed(288000000 + 100000 * sim$p$idx + 10000 * match(sim$scenario, SCENARIOS) + sim$r, kind = "Mersenne-Twister",
+        normal.kind = "Inversion", sample.kind = "Rejection")
+    order2 <- rownames(m)[sample.int(nrow(m))]
+    permuted <- selectByQ(q[order2[order2 %in% names(q)]], nrow(m), pct)
+    v <- journey$ruv_value
+    got <- if (is.logical(v$controls)) names(v$controls)[which(v$controls)] else character()
+    list(tie_share = shipped$share, tie_block = shipped$block, tie_block_onegroup = sum(shipped$block_ids %in% a$one_group),
+        perm_jaccard = jaccard(shipped$selected, permuted$selected), tie_rule_match = setequal(got, shipped$selected),
+        selected_bh = if (identical(method, "qvalue")) setequal(got, selectByQ(stats::setNames(qvalue::qvalue(a$p, pi0 = 1)$qvalues, names(a$p)),
+            nrow(m), pct)$selected) else NA)
+}
 anovaControls <- function(m, group, pct) {
     grps <- group
     ps <- apply(m, 1L, function(x) {
@@ -871,7 +949,9 @@ anovaControls <- function(m, group, pct) {
     }
     list(qvalue = pick(qvalue::qvalue(unlist(ps))$qvalues), BH = pick(qvalue::qvalue(unlist(ps), pi0 = 1)$qvalues))
 }
-checkE9P <- function(sim, journey, condition) {
+checkE9P <- function(sim, journey, condition, tie = NULL) {
+    if (!is.null(tie)) return(addCheck("E9", sim$cell, sim$r, condition, NA, "same set as the rule with qvalue", isTRUE(tie$tie_rule_match),
+        sprintf("pct %s: equal to the rule with qvalue %s, with BH %s", journey$ruv_value$percentage, tie$tie_rule_match, tie$selected_bh)))
     v <- journey$ruv_value
     if (is.null(v) || is.null(journey$m_in)) return(addCheck("E9", sim$cell, sim$r, condition, NA, "same sets", FALSE,
         sprintf("LA: no RUV choice (status %s)", journey$status)))
@@ -1004,11 +1084,21 @@ checkE4 <- function() {
     pass <- pass && identical(none$lost, 10L) && identical(none$fdp, 0) && identical(none$any_call, 0L)
     addCheck("E4", "constructed", 0L, "family", NA, "exact", pass, sprintf("differ: %s; s5 without the feature %s; oracle s5 %s",
         paste(bad, collapse = ","), b$s5, o$or_s5))
+    # E4b (18.4a): five candidates, three tied at the boundary, two selected: share 1, block 3; a second order c, b, ...
+    # selects c, b: Jaccard 1/3; no tie at the boundary: share 0
+    q <- c(a = 0.9, b = 0.9, c = 0.9, d = 0.5, e = 0.3)
+    one <- selectByQ(q, 40, 5)
+    two <- selectByQ(q[c("c", "b", "a", "d", "e")], 40, 5)
+    three <- selectByQ(c(a = 0.9, b = 0.8, c = 0.7), 40, 5)
+    pass_b <- identical(one$selected, c("a", "b")) && identical(one$share, 1) && identical(one$block, 3L) &&
+        identical(jaccard(one$selected, two$selected), 1 / 3) && identical(three$share, 0) && identical(three$selected, c("a", "b"))
+    addCheck("E4b", "constructed", 0L, "ties", NA, "exact", pass_b, sprintf("share %s block %s jaccard %s; no-tie share %s", one$share,
+        one$block, jaccard(one$selected, two$selected), three$share))
 }
 
 # ---- one unit ------------------------------------------------------------------------------------------------------
 ARMS_OF <- list(L = list(deciding = c("LA", "GA", "NO", "OR"), reported = c("LA", "OR", "LM", "FP", "SC", "LCm"),
-    munit = c("LA", "LM", "GA", "NO"), ba = c("LA", "GA", "NO", "OR"), lp = c("LP", "OR")),
+    munit = c("LA", "LM", "GA", "NO"), ba = c("LA", "GA", "NO", "OR"), lp = c("LP", "OR"), k172c = c("LA", "LM", "GA", "NO", "OR")),
     P = list(deciding = c("LA", "GA", "NO", "OR"), reported = c("LM", "OR"), ba = c("LA", "GA", "NO", "OR")))
 conditionsOf <- function(part, cellname, job) {
     scen <- scenariosOf(cellname)
@@ -1016,9 +1106,11 @@ conditionsOf <- function(part, cellname, job) {
         deciding = expand.grid(mask = MASKS, scenario = scen, stringsAsFactors = FALSE),
         reported = , lp = expand.grid(mask = MASKS, scenario = SCENARIOS[1:4], stringsAsFactors = FALSE),
         munit = expand.grid(mask = c("none", "vd20"), scenario = c("N0", "E1"), stringsAsFactors = FALSE),
-        ba = expand.grid(mask = "ba", scenario = SCENARIOS[1:4], stringsAsFactors = FALSE))
+        ba = expand.grid(mask = "ba", scenario = SCENARIOS[1:4], stringsAsFactors = FALSE),
+        k172c = data.frame(mask = "none", scenario = "N0", stringsAsFactors = FALSE))
 }
 jobApplies <- function(cellname, job) {
+    if (identical(cellname, "K172c") || identical(job, "k172c")) return(identical(cellname, "K172c") && identical(job, "k172c"))
     switch(job, munit = cellname %in% c("L12", "M12"), ba = cellname %in% c("L64", "M168", "P4b"), TRUE)
 }
 
@@ -1228,8 +1320,11 @@ runConditionP <- function(sim, mask, job, d, lifecycle, fault_now, config) {
     T_ids <- NULL
     or_errs <- NULL
     condition <- paste(sim$scenario, mask)
-    for (arm in ARMS_OF$P[[job]]) {
-        fault <- isTRUE(fault_now) && identical(arm, ARMS_OF$P[[job]][[1L]])
+    arms <- ARMS_OF$P[[job]]
+    # VAL-132 (2): NOn (the design none) runs in full only when the Skip/none gate failed on the bound commit
+    if (identical(job, "deciding") && identical(Sys.getenv("K188_NON"), "1")) arms <- c(setdiff(arms, "OR"), "NOn", "OR")
+    for (arm in arms) {
+        fault <- isTRUE(fault_now) && identical(arm, arms[[1L]])
         if (identical(arm, "OR")) {
             if (is.null(T_ids)) next
             j <- journeyP(sim, maskedValues(sim, mask, oracle = TRUE), "OR", list(gate = FALSE, norm = c(requests$NO$norm[setdiff(names(requests$NO$norm),
@@ -1240,7 +1335,7 @@ runConditionP <- function(sim, mask, job, d, lifecycle, fault_now, config) {
             journeys$OR <- j
             next
         }
-        j <- journeyP(sim, values, arm, requests[[arm]], d, tempfile("k188-p-"), config, fault = fault)
+        j <- journeyP(sim, values, arm, requests[[if (identical(arm, "NOn")) "NOnone" else arm]], d, tempfile("k188-p-"), config, fault = fault)
         v <- j$ruv_value
         ch <- list(proteins = list(k = suppressWarnings(as.integer(v$best_k %||% NA)), pct = suppressWarnings(as.numeric(v$percentage %||% NA)),
             controls = if (is.logical(v$controls)) names(v$controls)[which(v$controls)] else character()))
@@ -1250,8 +1345,24 @@ runConditionP <- function(sim, mask, job, d, lifecycle, fault_now, config) {
         }
         if (is.null(T_ids) && !is.null(j$kept)) T_ids <- j$kept
         journeys[[arm]] <- j
-        rows <- c(rows, armRows(sim, j, T_ids %||% character(), common, ch)$rows)
-        if (lifecycle && identical(arm, "LA") && identical(j$status, "ok")) checkE9P(sim, j, condition)
+        new_rows <- armRows(sim, j, T_ids %||% character(), common, ch)$rows
+        # 18.4a (VAL-126): ties and row order, per legacy journey (LA with qvalue, LM with BH)
+        tie <- NULL
+        if (arm %in% c("LA", "LP", "LM") && identical(j$status, "ok")) {
+            tie <- tryCatch(tieCount(sim, j, suppressWarnings(as.numeric(v$percentage %||% d$manual_pct)), if (arm == "LM") "BH" else "qvalue"),
+                error = function(e) list(error = oneLine(conditionMessage(e))))
+            if (!is.null(tie$error)) {
+                addCheck("TIE", sim$cell, sim$r, paste(condition, arm), NA, "computed", FALSE, tie$error)
+                tie <- NULL
+            } else for (i in seq_along(new_rows)) new_rows[[i]][c("tie_share", "tie_block", "tie_block_onegroup", "perm_jaccard", "tie_rule_match")] <-
+                tie[c("tie_share", "tie_block", "tie_block_onegroup", "perm_jaccard", "tie_rule_match")]
+            if (lifecycle && !is.null(tie)) addCheck("TIE", sim$cell, sim$r, paste(condition, arm), NA, "computed; replica equals the selection",
+                isTRUE(tie$tie_rule_match), "values blinded")
+        }
+        rows <- c(rows, new_rows)
+        if (lifecycle && identical(arm, "LA") && identical(j$status, "ok")) checkE9P(sim, j, condition, tie)
+        if (lifecycle && !is.null(j$transform) && identical(arm, "LA")) addCheck("TRANSFORM", sim$cell, sim$r, condition, j$transform,
+            "the bound commit's design step", TRUE)
         if (lifecycle && !is.null(j$e1) && (!isTRUE(j$e1$pass) || identical(arm, "LA"))) {
             addCheck("E1", sim$cell, sim$r, paste(condition, arm), NA, "every step as declared", j$e1$pass, j$e1$note)
         }
@@ -1278,17 +1389,40 @@ runConditionP <- function(sim, mask, job, d, lifecycle, fault_now, config) {
     if (lifecycle && identical(job, "deciding") && identical(sim$scenario, "E1") && identical(mask, "vd20") && !is.null(journeys$NO$da)) {
         j2 <- journeyP(sim, values, "NOnone", requests$NOnone, d, tempfile("k188-p-"), config)
         if (is.null(j2$da)) {
-            addCheck("E2", sim$cell, sim$r, condition, NA, "identical", FALSE, sprintf("design none: %s at %s: %s", j2$status, j2$step, j2$class))
+            addCheck("GATE_skip_none", sim$cell, sim$r, condition, NA, "identical or at most 1e-10", FALSE, sprintf("design none: %s at %s: %s",
+                j2$status, j2$step, j2$class))
         } else {
             key <- function(x) x[order(x$comparison, x$feature), c("comparison", "feature", "logFC", "t", "p", "q")]
             a <- key(journeys$NO$da)
             b <- key(j2$da)
             rownames(a) <- rownames(b) <- NULL
             diff <- if (nrow(a) == nrow(b)) max(abs(as.matrix(a[, 3:6]) - as.matrix(b[, 3:6])), na.rm = TRUE) else NA
-            addCheck("E2", sim$cell, sim$r, condition, signif(diff, 4), "identical", identical(a, b), sprintf("rows %d and %d", nrow(a), nrow(b)))
+            # VAL-132 (2): the pre-declared gate of the declaration (identical, or within 1e-10)
+            addCheck("GATE_skip_none", sim$cell, sim$r, condition, signif(diff, 4), "identical or at most 1e-10",
+                identical(a, b) || isTRUE(nrow(a) == nrow(b) && identical(a[, 1:2], b[, 1:2]) && diff <= 1e-10),
+                sprintf("rows %d and %d; identical %s; if it fails anywhere NOn runs in full (K188_NON=1)", nrow(a), nrow(b), identical(a, b)))
         }
     }
     list(rows = rows, journeys = journeys)
+}
+
+#' 5.8b: KIT-172's concentration fixture (`kit172ConcentrationValues()`) as a data set of one class: every feature a true
+#' null, no unwanted part, the oracle the same values without ITSD, normalisation or RUV; ITSD on its `IS_` standards in
+#' both classes (as T11 and KIT-190 ran it).
+k172cSim <- function(class) {
+    values <- kit172ConcentrationValues()
+    design <- kit172Design()
+    ids <- rownames(values)
+    is_ids <- ids[startsWith(ids, "IS_")]
+    feat <- setdiff(ids, is_ids)
+    y <- log2(values)
+    p <- list(idx = 0L, part = "L", omic = class, assays = "LCMS_Pos", per_assay = length(feat), groups = 2L, per = 6L, blocks = 0L)
+    list(cell = paste0("K172c-", class), scenario = "N0", r = 0L, p = p, itsd = TRUE, groups = c("A", "B"), group = design$group,
+        block = rep(1L, nrow(design)), runs = design$Run, design = design, feat_ids = feat, lbl_ids = character(), is_ids = is_ids,
+        assay_of = stats::setNames(rep("LCMS_Pos", length(ids)), ids), y = y, oracle = y[feat, , drop = FALSE],
+        unwanted = 0 * y[feat, , drop = FALSE], l = rep(0, nrow(design)),
+        theta = matrix(0, length(feat), 1L, dimnames = list(feat, "B")), planted = stats::setNames(rep(FALSE, length(feat)), feat),
+        U = matrix(1, length(feat), nrow(design), dimnames = list(feat, design$Run)), order_of = list(LCMS_Pos = ids), C = 0L)
 }
 
 #' E7 (refusal): the manual legacy journey with k one above its controls observed in every sample.
@@ -1327,6 +1461,15 @@ runUnit <- function(part, cellname, r, job, scenario, mask, lifecycle, fault_now
     conditions <- conditionsOf(part, cellname, job)
     if (!identical(scenario, "all")) conditions <- conditions[conditions$scenario == scenario & conditions$mask == mask, , drop = FALSE]
     rows <- list()
+    if (identical(cellname, "K172c")) {
+        if (fault_now) options(k188.fault_noda = TRUE)
+        for (class in c("lipid", "metab")) {
+            sim <- k172cSim(class)
+            rows <- c(rows, runConditionL(sim, "none", job, routeDefaults(class), lifecycle, FALSE, TRUE)$rows)
+        }
+        conditions <- conditions[0, , drop = FALSE]
+    }
+    if (fault_now && identical(part, "L")) options(k188.fault_noda = TRUE)
     for (s in unique(conditions$scenario)) {
         sim <- generate(cellname, s, r)
         if (lifecycle) {
@@ -1495,6 +1638,13 @@ if (lifecycle && fault) {
             all(nzchar(timing$error) == FALSE), note = sprintf("units completed %d of %d", sum(!nzchar(timing$error)), nrow(units)),
         stringsAsFactors = FALSE))
 }
+# E7 (no_da): the deliberate per-assay DA failure was scored `no_da` for its family and the journey went on
+if (lifecycle && fault && identical(part, "L")) {
+    noda <- statuses[statuses$status == "no_da" & grepl("deliberate per-assay", statuses$class, fixed = TRUE), , drop = FALSE]
+    checks <- rbind(checks, data.frame(check = "E7_noda", cell = units$cell[[1L]], rep = units$r[[1L]], condition = "first unit",
+        value = as.character(sum(noda$n)), threshold = ">= 1 journeys", pass = nrow(noda) > 0L, note = "families of the failed assay scored no_da",
+        stringsAsFactors = FALSE))
+}
 # E5 (reported jobs' LA and OR rows equal the deciding jobs', seconds removed): compared by their unblinded hashes per row
 if (lifecycle && all(c("deciding", "reported") %in% jobs) && identical(part, "L")) {
     read_unit <- function(cellname, job, r) utils::read.delim(file.path(out_dir, "rows", sprintf("part-%s-%s-%d-all-all.tsv", cellname, job, r)),
@@ -1542,6 +1692,7 @@ provenance <- list(job = job_name, part = part, cells = cells_wanted, data_sets 
     runner_image = paste(Sys.getenv("ImageOS"), Sys.getenv("ImageVersion")),
     processor = tryCatch(sub("^model name\\s*:\\s*", "", grep("^model name", readLines("/proc/cpuinfo"), value = TRUE)[[1L]]), error = function(e) NA),
     cores = parallel::detectCores(),
+    prot_design_transform = if (exists("protDesignPlainLog2", mode = "function")) "log2(x); 0 missing" else "log2(x + 1)",
     seed_rule = "set.seed(188000000 + 100000 c + 10000 s + r, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection')",
     key_packages = as.list(stats::setNames(library_table[match(key_packages, library_table[, "Package"]), "Version"], key_packages)),
     script_sha256 = sha(script_file), started = format(started_at, "%Y-%m-%dT%H:%M:%S%z"), finished = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
