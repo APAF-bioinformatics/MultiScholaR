@@ -258,8 +258,8 @@ updateMissingValueParameters <- function(theObject,
             missing_percent = round((max_missing / n_reps) * 100, 3)
         )
     
-    # Use a consistent percentage threshold across all groups
-    # Take the maximum percentage to ensure all groups meet minimum requirements
+    # Use a consistent percentage threshold across all groups: the largest group's allowed share is applied to every
+    # group, so smaller groups may pass with fewer values than min_reps_per_group (plan section 13 candidate; KIT-187)
     groupwise_cutoff <- max(group_thresholds$missing_percent)
     
     # Calculate maximum failing groups allowed

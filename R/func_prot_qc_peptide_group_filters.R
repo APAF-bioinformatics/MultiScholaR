@@ -382,12 +382,11 @@ peptideIntensityFilteringHelper <- function(input_table = NULL,
       ),
       call. = FALSE
     )
-    group_sizes$required_observed_runs <- ceiling(
-      group_sizes$design_run_count * (1 - groupwise_percentage_cutoff / 100) - 1e-12
-    )
-    allowed_failed_groups <- floor(
-      total_groups * max_groups_percentage_cutoff / 100 + 1e-12
-    )
+    # KIT-187 (VAL-71): each percentage read as the three-decimal rounding of an exact share, as the protein filter
+    # reads it (`exceedsRoundedPercent`), so that a rounded 33.333 with three runs allows one missing run.
+    group_sizes$required_observed_runs <- group_sizes$design_run_count -
+      allowedByRoundedPercent(group_sizes$design_run_count, groupwise_percentage_cutoff)
+    allowed_failed_groups <- allowedByRoundedPercent(total_groups, max_groups_percentage_cutoff)
     min_groups <- total_groups - allowed_failed_groups
     min_reps_per_group <- NA_integer_
     rule_mode <- if (strict_mode) "strict_all_design_runs" else "legacy_percentage_adapter"
