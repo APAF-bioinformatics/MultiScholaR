@@ -483,7 +483,10 @@ test_that("KIT-190 T7 (vi): a managed legacy RUV step records the marker; a mana
   testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
     assertWorkflowController = function(...) invisible(TRUE), .package = "MultiScholaR")
   managed <- function(parameters, env = parent.frame()) {
-    fixture <- lipidDeclarationsOwner(withr::local_tempdir(.local_envir = env))
+    # F172 on the log2 scale: unique feature ids (the declarations fixture's default object holds duplicates, which the
+    # declared designs refuse before the duplicate step).
+    fixture <- lipidDeclarationsOwner(withr::local_tempdir(.local_envir = env),
+      object = kit172Object(log2(kit172Values(172001L)$values), "lipid"))
     withr::defer(closeDIAStateAdapter(fixture$owner), envir = env)
     worker <- omicsWorkerRun(fixture, "lipid_ruv", parameters)
     expect_identical(worker$status, "complete", info = worker$error)
