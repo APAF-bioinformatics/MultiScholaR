@@ -212,7 +212,7 @@ the attributable share): `results/cells.tsv`, `results/attribution.tsv`.
   follows the run with most zeros); 0.02 to 0.03 in L2, M2; power loss 0.04 to 0.13.
 - **Part B** (`results/partb.tsv`, R = 100). The declared designs' DA contrasts were measured for lipidomics and
   metabolomics only: on L2 and M2, FDP moved by at most +0.006 and power by at most 0.026 up to VD 10 % (n = 100 each);
-  at VD 50 % L2's power loss is 0.17 on 62 of 100 replicates, and M2 has no value. **For proteomics the part-B DA
+  at VD 50 % L2's power loss is 0.17 on 62 of 100 replicates, conditional on the analysis completing (see the note below), and M2 has no value. **For proteomics the part-B DA
   contrasts were not measured** (instrument defect, see Instrument events). The reference arm (the route's DA on the
   `none` state restricted to F_filt, `sim-k185.R:993-995`) returned no table in most replicates and the error was not
   recorded, so `partb.tsv` holds P0 declared n = 20, 0, 0 (VD 2, 10, 50 %), P0 legacy 11, 0, 0, P1 legacy 0, 0 and P4b
@@ -223,6 +223,15 @@ the attributable share): `results/cells.tsv`, `results/attribution.tsv`.
   returns an assay uncorrected (with a log warning; the user sees no refusal) at L2 VD 2, 10 and 50 % in 6, 78 and 100 %
   of replicates, M2 VD 10 and 50 % in 42 and 100 %, L1b VD 10 % in 11 %, and M1b VD 2 and 10 % in 2 and 34 %.
   `sim-k185.R:856-864` records this as `refused: assay_not_corrected`; section 7.3 would count it as `not_applied`.
+- **Part B, declared lipid and metabolomics DA at VD 50 % (observed; owner VAL-116 (6)).** Counted from the part-B rows
+  (`rows/b-*.tsv.gz`; every part-B cell and route checked for `da_failed`): only the declared route at VD 50 % is
+  affected. L2: in 52 of 100 replicates one assay's DA stopped (`da_failed` = 1), and in 38 more no DA table was returned
+  at all; M2: no DA table in 100 of 100. In the rows the message of a whole-table failure was not recorded (the
+  `tryCatch` around the route's DA kept none); KIT-196's diagnosis gives the stop as `prior.weights contain NA values`,
+  caused by a feature with no value in any sample of an assay. No other part-B cell (legacy or declared, L2, M2, L1b,
+  M1b, any mask) has a failed assay. The L2 and M2 VD 50 % declared figures are therefore conditional on the analysis
+  completing (L2: 62 replicates, 52 of them on one assay only; M2: none). These cells are re-run after KIT-196 merges
+  only if their figures are cited. Part A is not affected (G2; no deciding DA failed).
 - **Sensitivity** (`results/sensitivity.tsv`, P0 and M2, R = 200): with strength 1 (weaker factors) B at VD 2 % rises
   to 0.33 to 0.39 and MCAR 2 % to 0.48 to 0.62 (larger than any deciding value; the material edge is crossed at VD 2 %
   where part A is "no material effect"); strength 10 leaves B near 0. Against part A's MCAR 2 % B (P0 0.16, M2 0.19),
