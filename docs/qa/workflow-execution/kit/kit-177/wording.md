@@ -11,10 +11,19 @@
 - Step log: "Values equal to 0 set to missing: n"; "Values that were not a number set to missing: k".
 - Refusal (`prot_design_quantity_invalid`): "Run '{run}' contains negative or infinite values (for example {values}).
   Quantities must be zero or positive; correct the file and import it again."
-- `scale` warning (type "warning"): "Scale normalisation divides each sample by the median of its absolute log2
-  values. In this data, [n] values are below 1, so their log2 values are negative, and taking absolute values treats a
-  log2 value of −2 like +2. The result then depends on the unit of your table. Cyclic Loess and Quantile do not have
-  this problem." Step log: "Scale normalisation: log2 values below 0 in the input: n".
+- `scale` warning (type "warning"), as shipped on this branch, **a known false sentence, to be corrected
+  (AUDIT-KIT-177-impl I01)** in the owner's VAL-41 wording pass: "Scale normalisation divides each sample by the median
+  of its absolute log2 values. In this data, [n] values are below 1, so their log2 values are negative, and taking
+  absolute values treats a log2 value of −2 like +2. The result then depends on the unit of your table. Cyclic Loess
+  and Quantile do not have this problem." It implies that `scale` depends on the unit only when values below 1 are
+  present; `limma::normalizeMedianAbsValues` multiplies log values, so it depends on the unit on any data. Corrected
+  proposal (the register's text): "Scale normalisation rescales each sample so that the median of its absolute log2
+  values is the same in every sample. Because it divides log2 values instead of shifting them, its result depends on
+  the unit of your table (for example signal-to-noise against intensity). In this data, %d values are below 1, so
+  their log2 values are negative, and taking absolute values treats a log2 value of −2 like +2. Cyclic Loess and
+  Quantile do not depend on the unit." The roxygen of `warnProtNormScaleNegativeLogs` becomes: "`scale` rescales each
+  sample's log2 values by a factor, so its result depends on the table's unit on any data; on log2 values below 0 the
+  absolute value also treats -2 like +2." Step log: "Scale normalisation: log2 values below 0 in the input: n".
 
 ## Methods (for the manuscript; drafts go to ~/Projects/APAF/Manuscripts)
 
@@ -27,8 +36,8 @@
   protein's variance is moderated toward one prior variance shared by all proteins; no abundance-dependent trend is
   fitted, so the larger variance of log values at low abundance is not modelled. In simulations with typical
   intensities near 10, fold changes in the lowest third of abundance were shrunk to 0.75 of their size (0.55 with
-  log2(x + 1)), 8.4 % of true changes there were detected (14.5 % with log2(x + 1)) and 71 % of the calls there were
-  false (65 %), with RUV at its automatic setting; from typical intensities of about 150 on, the two transforms gave
+  log2(x + 1)), 8.4 % of true changes there were detected (14.5 % with log2(x + 1)) and 71 % of the calls there were false (65 %) with RUV at its automatic setting, 42 % (50 %) with RUV skipped; the
+  Benjamini-Hochberg procedure controls the false discovery rate of the whole list, not of an abundance stratum; from typical intensities of about 150 on, the two transforms gave
   the same results."
 - The test is described as run (TREAT statistics without trend or robust; `R/func_prot_da_model_stats.R:306-313`), not
   as configured (`eBayes_trend`, `eBayes_robust`, `inst/config/config.ini`).

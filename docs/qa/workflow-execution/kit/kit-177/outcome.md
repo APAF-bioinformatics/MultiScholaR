@@ -7,6 +7,8 @@ Ticket revision 1.6 (step 0 applied 2026-11-24 in the main checkout). Branch `ki
 `v0.9-staging` fc48b6ec (KIT-180 merged). Runs on `run-tests` (R 4.6.1, reference BLAS, ubuntu-22.04); ids, commits and
 job minutes in `runs.tsv`.
 
+(Superseded; the record at the F3 stop.)
+
 | Commit | Content |
 |---|---|
 | 025c9542 | R0 scripts only (`route.R`, `effect.R`, `replay-check.R`, `gui-entry-control.R`); `R/` and `tests/` equal to fc48b6ec |
@@ -15,7 +17,7 @@ job minutes in `runs.tsv`.
 
 ## Observed
 
-**R0 (run 45222712083, 122.9 job-minutes = 8.19 core-hours; expected 8.9, ceiling 18).** Three scripts, all `ok`.
+(Superseded in part; the record at the F3 stop.) **R0 (run 45222712083, 122.9 job-minutes = 8.19 core-hours; expected 8.9, ceiling 18).** Three scripts, all `ok`.
 
 - **F4** (S2 on `prot_lfq`, head 025c9542 against base fc48b6ec): the mechanism works from a script; every comparison
   empty, as expected with equal code (`feasibility.md`, `r0/f4-*.tsv`). R4f is not needed.
@@ -65,6 +67,8 @@ for both transforms (the legacy RUV route's own behaviour, not this ticket's).
 | A8 | not reached (R4 not run) | |
 | A9 | not reached | |
 
+(Superseded; the record at the F3 stop.)
+
 ## State of the branch
 
 Prepared on the branch and not run (no runner has seen them): the tests commit (`tests/testthat/test-prot-design-log2.R`
@@ -72,6 +76,8 @@ with T1a, T2, T3, T3b, T4, T6, T7, T8, T9; the two contract rewrites in `test-wo
 written, because it depends on F3), then the fix commit (`R/`: the design step's rule, the counts and the refusal, the
 notifications, the reopen notice, the `scale` warning, the texts) and the T1b script `t1b.R`. They wait for the owner's
 answer on F3.
+
+(Superseded; the record at the F3 stop.)
 
 ## Not checked
 
@@ -120,7 +126,7 @@ records (KIT-180 R0d).
 
 ## R1 declared (tests failing first)
 
-Binding: `run-k177-r1` 8f7b4c6e = v0.9-staging 55710a87 (R/ as shipped) plus the two tests-only commits (2cb0a7f1,
+Binding: `run-k177-r1` 8f7b4c6e = v0.9-staging 98df468b (differs from 55710a87 only in the methods ledger; R/ as shipped) plus the two tests-only commits (2cb0a7f1,
 a9822043; nothing under R/). Files: `test-prot-design-log2.R`, `test-workflow-native-session.R`,
 `test-workflow-analysis-record.R`; 3 shards, no base. Ceiling 4 core-hours (expected 1). Decides: T1a, T2, T3, T3b, T4,
 T8, T9 and the two contract rewrites fail at the stated values; T5 and T7 pass (regression); T6 fails on its cell
@@ -128,7 +134,7 @@ rule (base: no change). A failure for another reason is recorded and, if it is t
 VAL-54 before the fix's run.
 
 **R1, run 45270608493** (`r1/tests.tsv`, `r1/failures.txt`, `r1/kit177-lines.txt`; 3 jobs, 21.0 job-minutes longest,
-about 1.4 core-hours). As stated: T1a fails at (1), (2) and (3) for every shape, configuration and factor (e.g. TMT
+48.1 job-minutes in all, 3.21 core-hours). As stated: T1a fails at (1), (2) and (3) for every shape, configuration and factor (e.g. TMT
 `none`, s = 1000: design-step shift off by 1.73); T2 reports 2.88; T3 (0 not missing, NaN kept, log2(200 + 1)) and T4
 (`log2(x + 1)`, no counts) fail; the contract rewrites fail (`log2(x + 1)`; 9.9955 against 9.9941); T6 fails its cell
 rule (base: no change); T8 and T9 stop on the absent text function (no notification and no warning exist on base); T5
@@ -151,7 +157,7 @@ no count in the record); T7 passes on base, as a regression; every other result 
 
 **R2, run 45274649782** (head c8fc140e against base 55710a87; `r2/compare.tsv`, `r2/check-compare.txt`, `t6.tsv`,
 `r2/t1b.tsv`, `r2/t1b-seeds.tsv`). Tests: every new test passes on head (`test-prot-design-log2.R` 226 passed, 0
-failed; T5 in `test-workflow-analysis-record.R` 351/0, count-changed by its 44 expectations); 22 files `same` (base
+failed; T5 in `test-workflow-analysis-record.R` 351/0, count-changed by its 44 expectations); 23 files `same` (22 plus `test-workflow-native-session.R`) (base
 failures in `test-prot-norm-core.R` 272 and `test-workflow-kit-harness.R` 1 identical on both); the contract rewrites
 pass (`test-workflow-native-session.R` same, 734/0); `test-gui-entry-proteomics.R` 10 -> 64 failing: the 10 of base
 (`prot_dia` 4, `prot_dia_limpa` 6) unchanged, and the three lanes `prot_tmt`, `prot_lfq`, `prot_lfq_fragpipe` differ
@@ -160,8 +166,8 @@ at every step from `design` on (18 steps each), none before it: the change the r
 fixture the largest change equals its bound log2(1 + 1/min v); no call changes; largest fold-change change 8.5e-5 to
 3.7e-4. R CMD check: 0 ERROR, 3 WARNING, 3 NOTE on both; none only on head.
 
-**T1b** (scripts job, 96.5 minutes): `scale`: 14 of 20 seeds change a call (largest change in t 6.15) -> its own
-ticket under the rule (D6); legacy RUV `automatic` 20 of 20 (t 10.5) and `manual` 20 of 20 (t 8.9) -> their own
+**T1b** (scripts job, 96.5 minutes): `scale`: 14 of 20 seeds change a call (largest change in t 6.15) (in a fold change 1.27 log2 units) -> its own
+ticket under the rule (D6); legacy RUV `automatic` 20 of 20 (t 10.5) (19 with a call change; fold changes moved by up to 971.6 log2 units, more than 5 in 46 of 80 seed and factor rows) and `manual` 20 of 20 (t 8.9) (fold changes up to 62.4 log2 units, more than 5 in 57 of 80) -> their own
 ticket under KIT-172 D8's rule (compare VAL-81, KIT-188 widened to proteomics legacy RUV Automatic). TMT and LFQ shapes
 give the same table. The new designs' rows did not run: every one stopped at s = 1 with "operation normalization-ruv is
 missing parameter ruv_k_seed", a script mechanics defect (the tab sends the seed). Instrument run 1 of 3 (VAL-54): the
@@ -229,8 +235,8 @@ section 11 beyond the ticket's own (the two contract rewrites; the three GUI-ent
 | A9 | met: T9 (in process and through the finishing function the managed path uses): one warning and one log line with the count when `scale` runs on log2 values below 0; none for cyclic loess or for `prot_lfq_maxquant`; the result identical to a run without the warning code | R2, R3 |
 
 **Core-hours** (`runs.tsv`): 109.87 used: R0 8.19, F3 diagnostic 0.78 and its mechanics rerun 0.83, R1 3.21, R1b 1.55,
-R2 21.85, T1b instrument run 6.23, R4 1.40, R3 65.83. Expected 100.2 (revision 1.6), ceiling 245.4; every row inside
-its ceiling (targeted 15.35 of 24; T1b 12.66 of 14; R4 1.40 of 8.7; R3 65.83 of 72).
+R2 21.85, T1b instrument run 6.23, R4 1.40, R3 65.83. Expected 100.2 (revision 1.6), ceiling 245.4; every row inside its ceiling except R1, whose row (ceiling 4) holds R1 3.21 and its VAL-54 instrument run R1b 1.55,
+4.76 in all, inside the ticket's total as VAL-54 (iii) requires (targeted 15.35 of 24; T1b 12.66 of 14; R4 1.40 of 8.7; R3 65.83 of 72) (main jobs only; with the plan and results jobs about 0.2 core-hours more).
 
 **T1b's rules** (for the owner): `scale` changes a call in 14 of 20 seeds, so by D6's rule it is its own ticket
 (removal or repair of the option); legacy RUV `automatic` (20 of 20) and `manual` (20 of 20) reach their own ticket by
@@ -248,3 +254,12 @@ path") and no bundle-lane run; neither was run.
   through, not through a worker.
 - Proteome Discoverer's default "Reporter Abundance Based On" setting (F2: not found in the pages read).
 - Windows and the installed application: not run (no bundle lane in this ticket).
+
+## Audit text repairs (AUDIT-KIT-177-impl-20261124, I01, I02, I04, I06, I07, I11), no code change
+
+NEWS, the ledger row and `wording.md`: `scale`'s unit dependence on any data (I01; the in-app string is recorded in
+`wording.md` as a known false sentence with the corrected proposal, for the owner's wording pass); T1b and T6 in the
+ledger row with the fold-change sizes and the failed advance inference (I02); the low-abundance figures for both RUV
+arms, the Benjamini-Hochberg sentence, "no call changed" (I04); records (I06); sessions adopted from earlier versions
+not told (I07, NEWS); F1(a)'s scope completed (I11, `feasibility.md`). Commit messages: 9c8cb8ca added the ledger row,
+a17c61d1 added NEWS (I12).

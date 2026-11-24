@@ -84,3 +84,7 @@ identical. The one table classed `unexplained (design rule)` is `protein_s4_init
 design-rule check (base minus head = log2(1 + 1/v)) cannot hold; on the fix commit it is the check intended.
 **Answer: yes**, the state tables can be exported without editing `helper-gui-entry.R` and S2's mechanism works from a
 script (R4f not needed).
+
+Scope completed by the implementation audit (AUDIT-KIT-177-impl I11): `R/mod_prot_*`, `R/utils_workflow_dia_*`, the
+other `R/func_general_*`, `R/utils_workflow_saved_exports.R`, the integration writers, the two report templates and the
+proteomics workbooks scanned for the same patterns; nothing further on the label-free and TMT routes.
