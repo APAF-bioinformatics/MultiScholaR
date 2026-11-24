@@ -16,6 +16,29 @@ Not repaired: I08 to I13 (notes); the O3 wording items, below, wait for the owne
 The one run needed: R2's 13 files, base against head with check and its scripts, on the merge with `v0.9-staging`;
 ceiling 420 job-minutes; plus X's repaired script if the owner wants m2's old-entry guard observed.
 
+### V: the one verification run allowed by VAL-115 (declared before sending)
+
+- Purpose: verify the implementation audit's repairs (I01 to I07) and VAL-115's changes (O1 to O3) on the merge with
+  staging. Commit 8fa64739 (merge of 7d90a4c8 into the branch at 67da0230); base 7d90a4c8 (the staging head merged).
+  Scope: R2's 13 files base against head, one shard per side, R CMD check both sides; scripts U3, U14, base-head (U7 (b)
+  and U8's store, base 7d90a4c8), gate-off, and X's repaired mutations script with the base (m2 on the old entries).
+  Ceiling 420 job-minutes; no further correction without the owner (VAL-115 (1)); VAL-54 for mechanics only.
+- What each new or changed test must show:
+  - U10: the floor as "1/1,001", "9/1,001", "1/10,001" (k_min 4), "2/1,001" (k_min 4), "11/1,001" with k_min exactly 60
+    at m = 273, and the `_none` sentence with "51/1,001"; the permutation note names "10,000" when chosen and "1,000" by
+    default; every offered test's note carries the paired-samples caution; the lipid strength sentence reads "simulated
+    metabolite data (no lipid data were simulated), on factors".
+  - U9: the permutation's Methods sentence followed by its floor clause with "1/1,001"; the `_none` clause with
+    "51/1,001"; the limits clause for a gene-and-protein gsea entry names "features that vary together with them in up to
+    60.1 %"; a KIT-183-made block entry (test = 12, declared gsea) prints 34.4 % and an unknown test prints nothing;
+    the power rows' `applies_to` carries "(expected, not measured".
+  - U6: both refusals name the permutation test; a pre-ranked product's summary is not read as correlated.
+  - U12: the refusal reads "about 121 seconds" and "longer than the 120 seconds allowed".
+  - T10: the score column's exact text; T10/T11 strength with "metabolite data".
+  - Unchanged tests: same as base or as R2c; U14 120/120 and 58/58 (permutation notes read with "1,000"); U3, U7 (b),
+    gate-off pass; X: head passes, m1 fails U7, m2 fails U8 and the old entries' replay, m3 fails U5.
+- A failure that is a result stops the ticket and goes to the owner.
+
 ### O3 wording items, held for the owner (file:line at the repair commit; the auditor's proposed text)
 
 | Item | Where | Proposed |
