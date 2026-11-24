@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-159 MERGE line (7.5): closure check CC2 (1): whole harness suite (45 files) with --lint at the merge a4e002a6 (ticket 7c553651 + staging a1b397b1); ceiling 100 script min; decides M3 (merge identity)",
+  "label": "KIT-159 whole harness suite + lint at merge a4e002a6",
+  "package_commit": "a4e002a633ef320d7fbb1eb53730d18e77bf28eb",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/merge-suite-out",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/merge-suite-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 100
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
