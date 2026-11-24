@@ -98,7 +98,14 @@ c854590b; records b004b4db. Runs (ids, minutes, core-hours) in `runs.tsv`.
   leaves (the Save steps' `calls`, `files`, `integration` of six cases) left untouched.
 - **Re-freeze** c854590b: exactly the 152 changed leaves, each field's text replaced by the head dump's (`git diff
   e150fd65..c854590b -- tests/testthat/test-omic-summary-module.R`; VAL-172 (5) for the seven, VAL-186 for the two).
-- **R3**: see `runs.tsv` (the merge with staging 9a0bf9f0 on branch `run-kit212-r3`, 6d23dd52).
+- **R3** (45494383196, merge 6d23dd52 against staging 9a0bf9f0; `r3-compare.tsv`): 477 files `same`; the new file only on
+  head; `test-omic-summary-module.R` `same` (the re-freeze holds); check identical. **One residual, not declared:**
+  `test-omics-summary-core.R` 668/33 against 676/25, 8 new failures, each `<case> <report step> notes` of the eight of the
+  nine cases the core file runs. The core side drives the Report entry directly (no frame gate,
+  `tests/testthat/test-omics-summary-core.R:207-238`) and compares with W1's capture (`omicsSummaryCoreExpected`); on head the
+  core's Report shows KIT-212's files refusal, while the re-frozen W1 capture holds the frame's F-11 notice (the tab's Copy
+  was refused, so its Report never reaches the core). Not a re-freezable leaf of the core file (it reads the W1 object).
+  Stopped for the coordinator (stop rule 2).
 
 **G7 (head, R1h):** status and unmade-file count per W1 fixture: lipid complete none 3, optional_missing none 2, none none 0;
 metab complete none 2, optional_missing none 2, none none 0; proteomics in-memory manager none 0 (not checked); proteomics
@@ -115,7 +122,7 @@ other stored capture moved (R2).
 | A1 | R1: every E row fails at its base value, G rows pass; R1h/R2: all pass on the fix | met |
 | A2 | control C (45491596893): (i) to (iii) hold; the re-freeze commit c854590b edits exactly the 152 changed leaves | met |
 | A3 | R2: every file `same` except the new file and the two W1 files at the nine cases; KIT-207's file `same` with E14; no unexpected `new-failure` or `message-changed`; check nothing only on head | met |
-| A4 | R3 | see runs.tsv |
+| A4 | R3: no difference except A3's, other than the 8 core-side Report notes above | not met: stopped for a ruling |
 | A5 | NEWS (Fixes), ledger VAL-<merge>; no version, NAMESPACE or man/ change (all new functions @noRd); this file with "For the change report" | met |
 
 Declared edits of other tickets' files: E14 only (`tests/testthat/test-kit207-summary-head-guard.R:631`, in the fix
