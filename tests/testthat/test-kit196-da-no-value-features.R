@@ -182,7 +182,12 @@ kit196ManagedDa <- function(omic, object, env) {
     }
     suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(server, {
         session$setInputs(run_da = 1L)
-        for (i in seq_len(3L)) session$flushReact()
+        # The managed contrasts are dispatched one after another on the runner's poll (as test-prot-norm-worker-figures.R
+        # advances it).
+        for (i in seq_len(30L)) {
+            session$elapse(200)
+            session$flushReact()
+        }
     }))))
     list(manager = bus$state_manager, probe = probe, errors = errors)
 }
@@ -351,7 +356,8 @@ for (omic in c("lipid", "metab")) {
             reference <- manager$.context$snapshot$da_results
             manifest <- if (!is.null(reference)) hydrateSavedWorkflowEntity(manager$.context$store, reference)$value
             list(manifest = manifest, results = if (!is.null(manifest)) readWorkflowOmicsDaResults(kit196Binding(omic), manager, manifest),
-                operations = run$probe$operations, errors = run$errors)
+                operations = run$probe$operations, errors = c(run$errors, paste("operations:", paste(run$probe$operations, collapse = ","),
+                    "statuses:", paste(run$probe$statuses, collapse = ","))))
         }
         out <- managed(kit196Object(omic, scatter = TRUE))
         ref <- managed(kit196Object(omic, empty = FALSE, scatter = TRUE))
