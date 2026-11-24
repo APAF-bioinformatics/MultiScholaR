@@ -42,8 +42,7 @@
    that failed this way now completes when it is replayed. With the default settings every result produced before is
    unchanged, except in an assay of only one or two features, one of them without values, where the B statistic changes;
    an assay that failed this way while the other assays completed now has results too, also when the saved analysis is
-   replayed. The older S4 method `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects is not
-   changed. With the trend option off (available only when calling the functions directly), on data that contain such
+   replayed. The older S4 method `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects runs the proteomics test and is repaired with it (see the proteomics entry below, KIT-200). With the trend option off (available only when calling the functions directly), on data that contain such
    features the result tables change: those features move to the end of each table without an average intensity. With
    the robust option also on, the other features' results change, to those of the same data without them. With RUV
    factors in the model these features were already left out of the tables and listed separately; that is unchanged. An
@@ -60,8 +59,7 @@
    `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects. Results of analyses that completed before
    with the default settings are unchanged, except for data of only one or two proteins, one of them without values,
    where the B statistic changes. When the trend option is off (possible only in scripted calls) on data that contain
-   such proteins, their rows move to the end of each table without an average intensity; with the robust option on,
-   the other proteins' results change to those of the same data without them. Data in which no protein has any value is
+   such proteins, their rows move to the end of each table without an average intensity and are no longer in `fit.eb`; with the robust option also on and unequal residual degrees of freedom, the other proteins' results can change slightly, to those of the same data without them. Data in which no protein has any value is
    refused with 'no feature has a value in any sample, so nothing can be tested'. `runTestsContrasts()` returns
    `features_without_values` (the ids) when there are such proteins (KIT-200).
  * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
