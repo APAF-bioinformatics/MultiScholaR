@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-167 correction pass and checkpoint at af7a4843 against the merge base d3909a30: full suite base against head, R CMD check both sides, and the gate-off identity script; ceiling 72 core-hours (plan per-run ceiling); decides the regression verdict",
+  "label": "KIT-167 full suite, check, gate-off af7a4843 vs d3909a30",
+  "package_commit": "af7a48435bb33c16760c26f94bc621e847719488",
+  "base_commit": "d3909a3041667e7b0ce1eddb0e8c9e1514ea4100",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-167/gate-off-identity.R",
+      "args": [
+        "d3909a3041667e7b0ce1eddb0e8c9e1514ea4100",
+        "gate-off-out"
+      ],
+      "out": "gate-off-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
