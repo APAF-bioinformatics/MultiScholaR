@@ -277,7 +277,7 @@ the standard axioms). P03: the coordinator adopted the auditor's two sharper wit
 P05 and P06 concern the paired tests.
 
 **Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
-system, row 39's user time not recorded) at the P01 commit; updated at each later commit below.
+system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system).
 
 ## P03: two sharper witnesses (new Spec file; proved)
 
@@ -291,7 +291,7 @@ proofs register writes them; the auditor confirms the file at the next statement
   the only control; `n = 3 > g + k = 2`; the corrected second feature is `(0, 0, 1)` and its residual on `X` is
   `(-1/3, -1/3, 2/3) ≠ 0`.
 One style linter (`linter.unusedSimpArgs`) is off in that file (simp arguments not needed in every `fin_cases`
-branch); no bearing on what is proved. Laptop: 7 Lean calls (labels `p03-*`). Agent time 0.15 h.
+branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (labels `p03-*`). Agent time 0.13 h.
 
 ## Group R priority 2
 
@@ -300,17 +300,33 @@ branch); no bearing on what is proved. Laptop: 7 Lean calls (labels `p03-*`). Ag
   and conversely (`mulVec_inj_of_gram`, `gram_unit`), so `X2` and `R_2 X1` (`R_2 = residop X2`) are injective, the
   latter because `R_2 X1 v = 0` puts `X1 v` in `col(X2)` and `[X1, X2]` is injective. Then `y = X1 β1 + X2 β2 + r` with
   `X1'r = X2'r = 0`, so `R_2 y - R_2 X1 β1 = r` and `(R_2 X1)'r = X1'r = 0`: `β1` solves the normal equations of the
-  second fit (`betaHat_of_normal`), and its residual is `r`. Agent time 0.08 h (labels `rF2-*`).
+  second fit (`betaHat_of_normal`), and its residual is `r`. Agent time 0.03 h (13:20 to 13:22; labels `rF2-*`).
 
 ## Resume here
 
-Coordinator's order after the proofs audit (2026-11-24): P03's two witness statements (new Spec file, committed
-alone, then proved); group R priority 2 (R-F2 first, then R-B1, R-B2, R-D1, R-D2, R-E1, R-E2, R-G1, R-J1, R-J2,
-R-K1, R-L1); priority 3 (R-F3, R-L2); priority 4 (R-M1); 4d-ii and `kept_family_witness`
-(`kept_family_unit_a_counterexample` can come first, from 4d-i's lemmas). R-I1, R-J3, R-N1: draft the statements per
-the ticket, commit the drafts alone, and stop them for the statements gate. Target 1's paired test runs on a runner
-through run-tests (KIT-187 is merged), with the gaps of AUDIT-KIT-187-impl I10 and the proofs audit's P05. Target 2's
-pair waits for KIT-190. Lean calls: `taskset -c 0-3`, `LEAN_NUM_THREADS=4`, one at a time, each logged.
+Handed over at b404e62e+1 (context length; no stop rule, no statement problem). Done since the proofs audit: P01, P02,
+P04, P07 (ticket r1.4), P08; P03's Spec file (b8a62ed3, alone) and both witnesses proved; R-F2 proved.
+
+Next, in the coordinator's order (2026-11-24):
+1. Group R priority 2, after R-F2: R-B1, R-B2, R-D1, R-D2, R-E1, R-E2 (`Spec/RuvAlgebra.lean`; witnesses `B1_witness`,
+   `D_witness`), R-G1 (`Spec/RuvDownstream.lean`, witness `G1_witness`), R-J1, R-J2 (`J2`, `J2_contribution`)
+   (`Spec/RuvIIIC.lean`), R-K1 (`K1`, `K1_gls`; witnesses `K1_witness`, `K1_gls_witness`), R-L1 (`L1`, `L1_invariance`).
+   Useful lemmas already proved: `residop_transpose`, `Ut_Yc`, `UtW`, `Ut_Ystar`, `colMean_*`, `centre_eq_self`
+   (`Proof/RuvAlgebra.lean`); `betaHat_shift`, `normal_eq`, `rss_le`, `gram_unit`, `mulVec_inj_of_gram`,
+   `betaHat_of_normal`, `Ut_X_zero`, `Xt_residop`, `residop_X`, `Ut_residop`, `residop_U`, `rank_bound`
+   (`Proof/RuvDownstream.lean`). Concrete witnesses: see `witnessG0i` in `Proof/SharperWitnesses.lean` for how
+   `(M'M)⁻¹`, `residop` and sums over the control subtype are computed (`Matrix.inv_eq_left_inv`, `Finset.sum_eq_single`).
+2. Priority 3: R-F3 (`F3_span`, `F3_fwl`, witness `F3_fwl_witness`), R-L2. Priority 4: R-M1 (witness `M1_witness`).
+3. 4d-ii: `kept_family_unit_a_counterexample` first (a closed sum, 4d-i's lemmas), then `kept_family_formula`,
+   `kept_family_instance`, `kept_family_witness`.
+4. R-I1, R-J3, R-N1: draft the statements per ticket 7.2 and 5.3 item 1 (new Spec files `Spec/RemovedFactors.lean` and
+   one each for R-J3 and R-N1), commit the drafts alone (with `SPEC.sha256` lines only after the gate), and stop them for
+   the statements gate.
+5. Target 1's paired test on a runner through run-tests (KIT-187 merged on staging 6416dbd6+; record ticket 8.2's empty
+   diff first): move `pending/test-kit193-pairs-filter.R` to `tests/testthat/`, cover AUDIT-KIT-187-impl I10's five gaps
+   and the proofs audit's P05 notes as the coordinator listed them. Target 2's pair waits for KIT-190.
+Lean calls: `scratchpad lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
+/home/doktersmol/.elan/bin/lake …` per call in `cpu-time.tsv`; one at a time.
 
 ## Not checked
 

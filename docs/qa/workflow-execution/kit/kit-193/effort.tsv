@@ -16,5 +16,5 @@ T5-5b-measure	2026-11-24T12:48	2026-11-24T12:52	0.07	proved (perm_measure and pe
 T4-bh_sorted_eq-corrected	2026-11-24T12:52	2026-11-24T12:56	0.07	proved (bh_sorted_eq and bh_sorted_eq_witness; amendment 5474e512 confirmed by the auditor)
 R-P1 (R-A1, R-A2, R-A3, R-C1, R-F1, R-G0, R-G2, R-H1)	2026-11-24T12:56	2026-11-24T13:04	0.13	proved (12 statements, 3 witnesses; written in one sitting, not timed per item)
 proofs-audit-minors-P01-P02-P04-P07-P08	2026-11-24T13:05	2026-11-24T13:12	0.12	done (records; ticket r1.4; instances local)
-P03-sharper-witnesses	2026-11-24T13:12	2026-11-24T13:21	0.15	Spec file committed alone (b8a62ed3); both proved
-R-F2	2026-11-24T13:21	2026-11-24T13:26	0.08	proved (F2; witness F_witness)
+P03-sharper-witnesses	2026-11-24T13:12	2026-11-24T13:20	0.13	Spec file committed alone (b8a62ed3); both proved
+R-F2	2026-11-24T13:20	2026-11-24T13:22	0.03	proved (F2; witness F_witness)
