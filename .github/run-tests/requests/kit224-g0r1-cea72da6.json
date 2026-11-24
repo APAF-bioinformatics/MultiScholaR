@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-224 G0 (base values of E1 to E6; scripts, ceiling 60 min) and R1 (new test file failing first; ceiling 45 min) on the tests-only commit cea72da6, whose R/ equals base cf8af245",
+  "label": "KIT-224 G0 and R1 on tests-only cea72da6",
+  "package_commit": "cea72da6fefde36e1d7ff52537cf0e289fb61d8d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit224-ruv-feature-levels.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-224/g0-base-values.R", "args": ["docs/qa/workflow-execution/kit/kit-224/g0"], "out": "docs/qa/workflow-execution/kit/kit-224/g0", "timeout_minutes": 60}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
