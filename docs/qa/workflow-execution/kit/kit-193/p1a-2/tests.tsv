@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit193-pairs-filter.R	50942	0	0	0	0	452.5	ok
+test-kit193-pairs-filter-table.R	11533	0	0	0	0	667.8	ok

@@ -369,6 +369,14 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   rows at once (the same comparisons, 1,830 expectations in place of 221,430); the shared helpers in
   `tests/testthat/helper-kit193-filter.R`.
 
+- **P1a re-run, run 45323167019 at c8123f09 (observed): passed.** `test-kit193-pairs-filter.R` 50,942 expectations
+  in 452.5 s, `test-kit193-pairs-filter-table.R` 11,533 in 667.8 s, 0 failed, 0 errors (`p1a-2/`). Every shipped cutoff
+  satisfies `RoundedOK` (groups 1 to 316; G up to 40); the decision, the floor form and `allowedByRoundedPercent` equal
+  the oracle on all 73,810 rows; two-group designs store the larger group's P; the full helper keeps exactly the
+  oracle's rows at the group and the protein level; the counterexample rows behave as the model says; the planted
+  defect is caught in `exceedsRoundedPercent` and through the helper. Target 1's pair holds (A8 for target 1). P1a in
+  all: about 6.0 core-hours (3.45 + 2.58) against P1's 4.67 ceiling for one job (the ticket's R total is 63.34).
+
 ## Notes for the auditor (second implementer session)
 
 - Hypotheses in frozen statements that the proofs do not use (nothing is weakened; each conclusion holds without
@@ -416,14 +424,12 @@ State at 55c5c2fa (2026-11-24, second implementer session): every frozen stateme
 priorities 1 to 4 is proved with its witnesses (124 theorems listed in `axioms.tsv`, standard axioms only); 4d-ii
 proved (`Proof/KeptFamily.lean`). R-I1, R-J3, R-N1: statements drafted in three new Spec files (b32c94ca, each with
 its own `SPEC.sha256` line, no proof), waiting for their statements review; nothing about them is proved. Target 1's
-paired test sent as run P1a (`kit193-p1a-filter-pair-55c5c2fa`).
+paired test passed (run 45323167019, after one VAL-54 instrument re-run).
 
 Next:
-1. Record P1a's result (`runs.tsv`, the `p1a/` result files, `bindings.tsv` rows T1 from `scripts/bindings-t1.R`'s
-   output) and judge it as declared in "Target 1's paired test".
-2. After the statements review of R-I1, R-J3, R-N1: prove them (R-I1's algebra reuses `Ut_one`, `colMean_mul`,
+1. After the statements review of R-I1, R-J3, R-N1: prove them (R-I1's algebra reuses `Ut_one`, `colMean_mul`,
    `centre_eq_self`; R-J3 is definitional; R-N1 needs the rank/order counts to be a bijection onto 1..F).
-3. Target 2's pair waits for KIT-190; P0 (targets 4, group R), P2 (target 5) and P3 as ticket 8.1; the record job L1
+2. Target 2's pair waits for KIT-190; P0 (targets 4, group R), P2 (target 5) and P3 as ticket 8.1; the record job L1
    at the final commit.
 Lean calls: `scratchpad lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
 /home/doktersmol/.elan/bin/lake …` per call in `cpu-time.tsv`; one at a time. New Proof modules in this session:
