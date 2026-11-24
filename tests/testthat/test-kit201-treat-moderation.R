@@ -342,3 +342,56 @@ test_that("T-A7: the in-app Legacy row is restated from KIT-124 S1 arm 28, with 
     expect_match(legacy$note, "For comparison with the approach of earlier versions; analyses saved with earlier versions replay unchanged.",
         fixed = TRUE)
 })
+
+# ---- T-196: TREAT with features without values (KIT-196 audit K196-I04) ---------------------------------------------
+
+# KIT-196's fixture (`kit196Object` of test-kit196-da-no-value-features.R at 48bfe085, copied): the shared contrasts
+# fixture with, in assay `pos`, the scatter (NA at F1_2 S1, F1_3 S5 and S9, F1_4 S12) and optionally the empty feature
+# F1_empty (NA in every sample).
+kit201Kit196Object <- function(omic, empty = TRUE) {
+    object <- omicsDaContrastsFixture(omic)
+    slot_name <- if (identical(omic, "lipid")) "lipid_data" else "metabolite_data"
+    id <- if (identical(omic, "lipid")) "lipid_id" else "metabolite_id"
+    tables <- methods::slot(object, slot_name)
+    pos <- tables$pos
+    samples <- object@design_matrix$Run
+    pos[pos[[id]] == "F1_2", "S1"] <- NA_real_
+    pos[pos[[id]] == "F1_3", c("S5", "S9")] <- NA_real_
+    pos[pos[[id]] == "F1_4", "S12"] <- NA_real_
+    if (empty) {
+        row <- pos[1L, , drop = FALSE]
+        row[[id]] <- "F1_empty"
+        row[[setdiff(names(pos), c(id, samples))[[1L]]]] <- "Name empty"
+        row[, samples] <- NA_real_
+        pos <- rbind(pos, row)
+        rownames(pos) <- NULL
+    }
+    tables$pos <- pos
+    methods::slot(object, slot_name) <- tables
+    object
+}
+
+kit201Kit196Long <- function(omic, object) {
+    result <- kit201Quiet(omicsDaKernel(omic)(theObject = object, contrasts_tbl = omicsDaContrastsTable(),
+        formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0.5, eBayes_trend = TRUE,
+        eBayes_robust = TRUE))
+    expect_null(result$failed_assays)
+    long <- as.data.frame(result[[if (identical(omic, "lipid")) "da_lipids_long" else "da_metabolites_long"]])
+    id <- if (identical(omic, "lipid")) "lipid_id" else "metabolite_id"
+    long[order(long$assay, long$comparison, long[[id]]), , drop = FALSE]
+}
+
+test_that("T-196 (guard): TREAT above 0 with a feature without values completes, leaves it untested and tests the rest as without it", {
+    for (omic in c("lipid", "metab")) {
+        id <- if (identical(omic, "lipid")) "lipid_id" else "metabolite_id"
+        long <- kit201Kit196Long(omic, kit201Kit196Object(omic))
+        reference <- kit201Kit196Long(omic, kit201Kit196Object(omic, empty = FALSE))
+        empty <- long[long[[id]] %in% "F1_empty", , drop = FALSE]
+        expect_identical(sort(as.character(empty$comparison)), sort(omicsDaContrastsTable()$contrasts), label = paste(omic, "F1_empty once per contrast"))
+        statistics <- intersect(c("logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "fdr_qvalue", "fdr_value_bh", "raw_pvalue"), names(long))
+        for (column in statistics) expect_true(all(is.na(empty[[column]])), label = paste(omic, column, "NA for F1_empty"))
+        tested <- long[!long[[id]] %in% "F1_empty", , drop = FALSE]
+        rownames(tested) <- rownames(reference) <- NULL
+        expect_identical(tested, reference, label = paste(omic, "tested rows"))
+    }
+})
