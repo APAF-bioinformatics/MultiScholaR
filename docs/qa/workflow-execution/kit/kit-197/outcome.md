@@ -80,6 +80,18 @@ total **10.54** against 10.67 expected and 25.33 ceiling (`runs.tsv`).
 - The template's "more | not more" unchanged proteins is decided by the 95 % interval of π0_Δ − π0_O (declared); it
   reads "more" (0.804 against 0.802) while the null-share part is −0.0008 (`results.md`).
 
+## Post-hoc aggregate by ℓ (implementation audit R1-01; the owner's ruling of 2026-11-24)
+
+- Purpose: put the intervals of the ℓ = 1 and ℓ = 0 aggregates (over the declared R7 strata, weights = tested
+  unchanged proteins per stratum) in a committed table, computed by this ticket's own script `ell-aggregate-k197.R`
+  from the committed rows, with the declared resampling (the scoring script's own definitions, evaluated unchanged).
+- Post hoc: written after the results were seen. Reported, not deciding: no label, outcome or threshold depends on it,
+  and the script asserts no expected value except its self-check (the committed pooled ρ_O estimate, limits and
+  jackknife SE re-derived to a relative 1e-9, else it stops).
+- Run: one request on the runner, binding the commit that adds the script and this paragraph; ceiling 30 job-minutes
+  (each script 15 minutes); outputs `audit/ell-aggregate-sb.tsv`, `audit/ell-aggregate-sa.tsv`. A failure in the
+  mechanics follows VAL-54; a self-check failure is a result and is reported, not re-run.
+
 ## Not checked
 
 - Real data; mean-variance trends, other missingness mechanisms, correlated proteins (5.8).
