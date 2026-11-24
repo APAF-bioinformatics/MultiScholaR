@@ -26,7 +26,64 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, S0 done, whole suite passes; stopped before the release commit; read this first)
+## Resume here (state 2026-11-24, pre-release repair written, UNRUN; read this first)
+
+The pre-release implementation audit (`tickets/kit/audits/AUDIT-KIT-159-impl-prerelease-20261124.md`)
+found the cell-to-verdict path unfit (I01 to I20). The owner answered every waiting point in methods
+ledger VAL-109 (staging 701458be). This section is the state of the repair; the next section is the
+state before it.
+
+**Commits (branch `kit-159-validation-harness`), every one UNRUN:**
+
+| Commit | What | Runs it needs |
+|---|---|---|
+| e1a607a1 | merge of `v0.9-staging` e16ddbae (I12; KIT-180, 172, 173, 186, 183, VAL-90); one conflict, `docs/methods-decision-ledger.md` (staging's VAL-63 to VAL-107 kept in order, the branch's `VAL-<merge>` row after the last VAL row) | in R1 |
+| 05d300b2 | tests first: `test-repair.R`, `test-e2e.R`, `test-tab-repair.R`, `helper-repair.R`; `test-phases.R` and `test-records.R` to the new contracts | R0 (shown failing) |
+| 4b4e4355 | tests first: T-PH-8 to the O8 ruling | R0 |
+| 8f37e3e1 | the fix (I01 to I09, I11, I13 to I18, I20; O1 flag, O7 (b), O8, D19) | R1 (passing), R2 (covr) |
+| (records) | S0 ledgers committed (I19 (1)); `outcome.md` and `USAGE.md` corrected (I19 (2), (3)); `runs.tsv`: T1cov and T1lint relabelled as results (O6 (b)), the REPAIR line (VAL-109) | none |
+
+**Runs needed, on the REPAIR line (15 core-hours, VAL-109), estimates from S0 and the suite run
+(a classic proteomics corpus route run about 230 s; the suite before the repair 1,126 s on 4 cores):**
+
+| Run | Binds | Purpose and what it decides | Estimate |
+|---|---|---|---|
+| R0 | 4b4e4355 | the new and changed test files only (`--files repair,e2e,tab-repair,phases,records`), shown failing where the audit's faults are; decides nothing else | 15 to 25 min, about 1.5 core-hours |
+| R1 | the records head (harness = 8f37e3e1) | the whole msrval suite with `--lint` on the merged product: the fixes' tests and the I12 re-tests (T-TAB on LFQ and TMT after KIT-180, lipid and metab after KIT-172, DIA_LIMPA and trx RUV off, the end-to-end tests of three omic families); a failure in the mechanics of a test is VAL-54, a failing expectation is a result | 80 to 100 min, about 6 core-hours (`timeout_minutes` 150) |
+| R2 | as R1 | covr per file at the merged head (I19 (4)) | about 2 core-hours |
+| D-I10 | a commit with the generator change (not written) | the I10 diagnostic, four 500-feature cells at 2,000 simulations, on T2's line | about 2 core-hours (T2) |
+
+Repair line: about 9.5 of 15 core-hours if nothing is resent. A re-run after the last pre-release
+product merge (KIT-177, 182, 187, 190, 192, 194; I12) is a further R1, about 6.
+
+**Waiting / not built (with the register's reference):**
+- I10: the diagnostic generator (fixed per-cell feature draw, changes split +1/-1) and its tests are
+  NOT written; the ruling (VAL-109 (2)) asks for its confirm/refute rule to be declared before the
+  send. Nothing about C4/C4e changes until it runs.
+- O4: the half-width ratio for consumer-used `conservative` rows: not built. The zero-miss rule is
+  written in `USAGE.md`.
+- O5: printing both labels on the 117 T2 rows: not built (`USAGE.md` states the mix); needs r1.13's
+  rule applied to T2's detail rows to produce the second label.
+- O9: ticket text of 1.2, 7.2 and G1(b) to amend (ticket, not code).
+- I07 replay of declared cells: not built (provenance says `not_built`); needs G5's knowledge of
+  `replayWorkflowAnalysisRecord`'s inputs.
+- I15 G1(a) part (1)/(2) runners and the live-difference classifier: still to be written, not only
+  run; `limpa_da_last_digits` is out of the default classes until KIT-199 merges (D19, VAL-109).
+- Ticket 5.7 needs `ledger-<route>-<arm>-<unit>.tsv` as the ledger name (I07).
+
+**Rulings applied in code (VAL-109):** O7 (b): after a refused unit a verdict only where a regime is
+registered for n - k units, else `not_evaluable` with the reason in `regime`. O8: jackknife widened
+by the `full` unit's within-run interval (same view); independent units report each unit's
+within-run interval in `flags`, no widening. O1: bands as run; results.md prints measured coverage,
+the family bound (3/simulations for zero misses) and a FLAG where the worst-condition miss rate is at
+least twice nominal; `fail` is not read on the miss rate. I16 as the register recommends.
+
+**Divergences to record:** per-unit truths are built in the scoring process, not as the unit's
+first cell inside the chunk (I20); `results` off proteomics stays NULL (documented, I14); within-run
+component outcome across units: the units' common outcome, else none (I16; O8 ruled only the
+widening).
+
+## Earlier resume record (state 2026-11-24, S0 done, whole suite passes; before the audit)
 
 **S0 done: all 15 route runs valid, every step `ok`.** Evidence `s0/s0r1/` (run 45277101451 at
 a29a43c0: the 9 non-classic-proteomics cells) and `s0/s0i2/` (run 45288286009 at df71922f: the 6
@@ -102,8 +159,10 @@ refusal with KIT-175's merge.
    fixtures `custom`; ticket 1.2's "no FragPipe generator exists" is out of date.
 5. Generated input sizes are declared, not tuned; the annotation rule on generated inputs uses the
    corpus's own synthetic UniProt cache (min share 1), never the network (ruling 4).
-6. S0's ledgers are in the runs' artifacts only (30-day retention), not committed; G12's census
-   reads L1a's.
+6. (Closed 2026-11-24, audit I19 (1)) S0's 15 ledgers are committed under `s0/s0r1/ledgers/` and
+   `s0/s0i2/ledgers/` from the artifacts of runs 45277101451 and 45288286009; both folders now
+   pass `sha256sum -c outputs.sha256` (the script-1 files `tests-harness-tests.tsv` and
+   `tests-lint.txt` sit beside them, outside that list, as before).
 7. The 9 cells of the first S0 send ran at a29a43c0, the 6 rerun cells at df71922f (the fix does
    not reach the 9 cells' paths: inferred from the code, not re-run).
 8. The register's budget misreading (T0 "5.95 left" for 5.95 used) and the 4.4/10.2 placement are
@@ -115,8 +174,8 @@ refusal with KIT-175's merge.
 written, with two corrections recorded in its section 29: the failing-first run is charged to S0's
 line, not T0's, by the coordinator's ruling, since T0 had 0.05 core-hours left; the half-width ratio
 of point 4 sits in 4.4, where the "share of zero-width intervals" sentence is, and cannot be computed
-from T2's detail tables, which hold per-row coverage, Monte Carlo SE, target and zero-width share but
-no per-simulation half-widths or statistics: those rows print `not_recorded`; its code and any re-run
+from T2's detail tables, which hold per-row coverage, Monte Carlo SE and target (and, for T2R only,
+the zero-width share; corrected 2026-11-24, audit I19 (2)) but no per-simulation half-widths or statistics: those rows print `not_recorded`; its code and any re-run
 are the coordinator's decision, not built).
 
 **S0's three pieces (r1.14), built tests first:**

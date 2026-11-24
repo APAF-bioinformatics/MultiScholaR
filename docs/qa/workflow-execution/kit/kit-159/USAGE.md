@@ -15,7 +15,9 @@ and Part B, the lanes of sections 7.9 and 7.10).
 | Driver core: action scripts, `valRunWorkflow`, arm builders, standard tables, replay, custom arms, parity comparisons, Part B runner (group d) | yes | yes (T1w3, 168 of 169; T-TAB in the VAL-60 run) |
 | `val-run.R` phases `record`, `pre`, `check` | yes | no |
 | Coverage regimes T-COV (T2) | yes | yes (offered regimes below) |
-| `val-run.R` phases that run cells (`lifecycle`, `counted`, `score`, `determinism`, `correction`, `amended`), `val-parity.R`, the `distributable.yml` stage `parity` | no | no |
+| `val-run.R` phases that run cells (`lifecycle`, `counted`, `score`, `determinism`, `correction`, `amended`), `val-parity.R`, the `distributable.yml` stage `parity` | yes (2b18b1e3) | no; the cell-to-verdict path is repaired after the 2026-11-24 audit (I01 to I20, at 8f37e3e1) and its end-to-end tests (`test-e2e.R`) are not yet run |
+| Ticket coverage regimes (`val-tests.R --ticket <dir> --declaration <json>`, pinned in the declaration as `ticket_coverage: {path, sha256}`) | yes (8f37e3e1) | no |
+| Replay of declared cells (`replay`) inside a cell phase | no (recorded `not_built` in provenance) | no |
 
 ## A ticket's evidence folder
 
@@ -58,8 +60,11 @@ offered there. A regime is method x statistic class x unit form (and design and 
 unit count x level; `valClassify` refuses an interval with no offered regime (`val_spec_invalid`)
 unless the consumer registers a passing ticket coverage regime (section 4.4).
 
-Cell legend: `Y` offered (pass); `Yc` offered, reported `conservative` (a run-level method above
-min(level + 0.04, 1)); `Yb` `clopper_pearson`: offered (conservative by construction; its expected
+Cell legend: `Y` offered (pass); `Yc` offered, reported `conservative` (T2's rows: a run-level
+method above min(level + 0.04, 1), the band as run at 266d9dc8; the rank rows of T2R: r1.13's rule
+on the miss rate. The table mixes the two definitions; VAL-109 (O5) has both labels printed on the
+117 T2 rows that read `pass` under the first and `conservative` under the second; a `conservative`
+row with no observed miss licenses only the statistic it simulated, O4); `Yb` `clopper_pearson`: offered (conservative by construction; its expected
 status, not a flag); `N` not offered (fails
 its band); `Fl` `flagged`, not offered unless the declaration sets `accept_flagged` naming the
 owner's ledger row; `-` no interval at that count and level (`exact_median` below its smallest n).
@@ -168,7 +173,18 @@ What the table means for the consumers (read off it; nothing decided here):
 
 ## Not yet usable
 
-- Cells cannot yet be run through `val-run.R` (its cell phases are not written); S0 and the
-  lifecycle need them.
+- The cell phases are built but have not run end to end on a runner (the repair's runs are listed
+  in `outcome.md`, "Resume here"). A request's `out` for a cell phase is `val-out` and its
+  `out_pattern` must admit the run folder's files: `\\.(tsv|txt|md|json|sha256|gz)$` (the files of
+  5.7 and `allowed-paths.txt`; ledgers are `ledger-<route>-<arm>-<unit>.tsv`).
+- The ticket's `prepareInputs()` returns `features` (`assay`, `feature_id`: every feature of the
+  declared input role) beside `units`; `featureKey(feature_id, arm)` returns `key`, `status`
+  (`ok`, `unmapped`, `ambiguous`) and `reason`. The post-cell hook gets the proteomics DA results
+  object as `results` and `NULL` on lipidomics, metabolomics and transcriptomics, and writes only
+  under `out_dir` (`runs/<label>/ticket/`).
+- After a refused unit a verdict needs a regime for n - k units (O7 (b), VAL-109), else
+  `not_evaluable`.
+- The I10 diagnostic of the C4 and C4e 500-feature cells is not yet run; until it is, the C4 and
+  C4e `accuracy` and `threshold_count` rows marked fail are not evidence about the method.
 - Parity (G13) needs `val-parity.R` and the `distributable.yml` stage on top of KIT-176's merged
   workflow.
