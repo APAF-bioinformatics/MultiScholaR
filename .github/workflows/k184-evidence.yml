@@ -387,9 +387,11 @@ jobs:
     # Not for a blind run: its scorer ran inside the job and nothing of its result may leave it.
     if: ${{ !cancelled() && needs.plan.outputs.run != 'blind' }}
     runs-on: ubuntu-22.04
-    # PLACEHOLDER (re-check K184-R03): three times the scale test's measured time, at least 30 and at most 90 minutes;
-    # set from L1b before the declaration is frozen.
-    timeout-minutes: 90
+    # Re-check K184-R03: three times the scale test's measured time, at least 30 and at most 90 minutes. L1b (run
+    # 45348572248) scored about 2,250 replicates (11.9 million error-table lines) in 119 seconds with a peak of 5.1 GiB,
+    # so the limit is the floor, 30 minutes. A score job that fails or stops here has produced no result: the scorer's
+    # mechanics are fixed and the same artifacts scored again; the counted run is never repeated for it.
+    timeout-minutes: 30
     steps:
       - name: This lane (R's installer)
         uses: actions/checkout@v4
