@@ -1,0 +1,59 @@
+file	chunk	line	kind	symbols	eval_false
+DIA_workflow_starter.rmd	14 Filter Samples on Peptide Number	599	variable read, not assigned by an earlier chunk, not on the search path	peptidoform_count, Protein.Ids, Run, Stripped.Sequence	FALSE
+DIA_workflow_starter.rmd	16 Missing Value Imputation	693	variable read, not assigned by an earlier chunk, not on the search path	Peptide.Imputed	FALSE
+DIA_workflow_starter.rmd	18 Protein Data S4 Object Creation	784	function called, not assigned by an earlier chunk, not on the search path	ProteinQuantitativeData	FALSE
+DIA_workflow_starter.rmd	19 Most Likely Protein Accession Rollup	821	variable read, not assigned by an earlier chunk, not on the search path	database_id	FALSE
+DIA_workflow_starter.rmd	22 Remove Duplicate Proteins	941	variable read, not assigned by an earlier chunk, not on the search path	Protein.Ids	FALSE
+DIA_workflow_starter.rmd	24 Pre-normalisation QC	1029	variable read, not assigned by an earlier chunk, not on the search path	pearson	FALSE
+DIA_workflow_starter.rmd	29 Output Files For Audit Trail	1516	variable read, not assigned by an earlier chunk, not on the search path	group, Log2.Protein.Imputed, Protein.Ids, Protein.Imputed, replicates	FALSE
+DIA_workflow_limpa.rmd	4 Data Management	136	variable read, not assigned by an earlier chunk, not on the search path	data_tbl, PrecursorID	FALSE
+DIA_workflow_limpa.rmd		182	variable read, not assigned by an earlier chunk, not on the search path	Averagine, CScore, Evidence, File.Name, First.Protein.Description, Fragment.Correlations, Fragment.Quant.Raw, Genes, Genes.MaxLFQ, Genes.MaxLFQ.Unique, Genes.Normalised, Genes.Quantity, GG.Q.Value, Global.PG.Q.Value, Global.Q.Value, iIM, IM, iRT, Lib.PG.Q.Value, Lib.Q.Value, Log2Intensity, Mass.Evidence, Modified.Sequence, Ms1.Area, Ms1.Normalised, Ms1.Profile.Corr, MS2.Scan, Normalisation.Factor, PEP, PG.MaxLFQ, PG.Normalised, PG.Q.Value, PG.Quantity, Precursor.Charge, Precursor.Id, Precursor.Normalised, Precursor.Quantity, Predicted.iIM, Predicted.IM, Predicted.iRT, Predicted.RT, Protein.Group, Protein.Ids, Protein.Names, Protein.Q.Value, Proteotypic, Q.Value, Quantity.Quality, RT, RT.Start, RT.Stop, Run, Spectrum.Similarity, Stripped.Sequence, Translated.Q.Value	FALSE
+DIA_workflow_limpa.rmd		294	variable read, not assigned by an earlier chunk, not on the search path	DIANN_filename	FALSE
+DIA_workflow_limpa.rmd	14 Filter Samples on Peptide Number	722	variable read, not assigned by an earlier chunk, not on the search path	peptidoform_count, Protein.Ids, Run, Stripped.Sequence	FALSE
+DIA_workflow_limpa.rmd	15 RUV normalisation on peptides	762	variable read, not assigned by an earlier chunk, not on the search path	composite_qc_plot	FALSE
+DIA_workflow_limpa.rmd	16 Impute missing values with limpa	874	variable read, not assigned by an earlier chunk, not on the search path	composite_qc_plot_with_imputation, Intensity, Missing, Missing_Count, Sample, Stage	FALSE
+DIA_workflow_limpa.rmd	17 Peptide to Protein Rollup	1137	variable read, not assigned by an earlier chunk, not on the search path	peptide_values_imputed, peptide_values_imputed_file	FALSE
+DIA_workflow_limpa.rmd	18 Protein Data S4 Object Creation	1177	variable read, not assigned by an earlier chunk, not on the search path	peptide_values_imputed	FALSE
+DIA_workflow_limpa.rmd	18 Protein Data S4 Object Creation	1177	function called, not assigned by an earlier chunk, not on the search path	ProteinQuantitativeData	FALSE
+DIA_workflow_limpa.rmd	19 Most Likely Protein Accession Rollup	1214	variable read, not assigned by an earlier chunk, not on the search path	database_id	FALSE
+DIA_workflow_limpa.rmd	22 Remove Duplicate Proteins	1334	variable read, not assigned by an earlier chunk, not on the search path	Protein.Ids	FALSE
+DIA_workflow_limpa.rmd	24 Pre-normalisation QC	1422	variable read, not assigned by an earlier chunk, not on the search path	pearson	FALSE
+DIA_workflow_limpa.rmd	29 Output Files For Audit Trail	1813	variable read, not assigned by an earlier chunk, not on the search path	group, Log2.Protein.Imputed, Protein.Ids, Protein.Imputed, replicates	FALSE
+DIA_workflow_limpa.rmd	38 Copy Output to Github	2139	variable read, not assigned by an earlier chunk, not on the search path	base_dir	FALSE
+DIA_workflow_limpa_starter.rmd	1b Deal with conflicted function names	94	function called, not assigned by an earlier chunk, not on the search path	conflict_prefer, conflicts_prefer	FALSE
+DIA_workflow_limpa_starter.rmd	13 Annotation Rollup	828	variable read, not assigned by an earlier chunk, not on the search path	peptide_ruv_normalised_imputed_obj	FALSE
+DIA_workflow_limpa_starter.rmd	14 Limpa imputation and protein rollup	884	variable read, not assigned by an earlier chunk, not on the search path	pearson	FALSE
+DIA_workflow_limpa_starter.rmd	16 Sample Pearson Correlation Filtering	1042	variable read, not assigned by an earlier chunk, not on the search path	pearson	FALSE
+DIA_workflow_limpa_starter.rmd	17 Output Files For Audit Trail	1151	variable read, not assigned by an earlier chunk, not on the search path	group, Log2.Protein.Imputed, Protein.Ids, Protein.Imputed, replicates	FALSE
+DIA_workflow_limpa_starter.rmd	24 Copy Output to Github	1456	variable read, not assigned by an earlier chunk, not on the search path	base_dir	FALSE
+DIA_workflow_limpa_experienced.rmd	1 MultiScholaR FIRST INSTALL	38	function called, not assigned by an earlier chunk, not on the search path	conflict_prefer, conflicts_prefer	FALSE
+DIA_workflow_limpa_experienced.rmd	13 Annotation Rollup	875	variable read, not assigned by an earlier chunk, not on the search path	peptide_ruv_normalised_imputed_obj	FALSE
+DIA_workflow_limpa_experienced.rmd	17 Output Files For Audit Trail	1279	variable read, not assigned by an earlier chunk, not on the search path	group, Log2.Protein.Imputed, Protein.Ids, Protein.Imputed, replicates	FALSE
+DIA_workflow_limpa_experienced.rmd	19 DE Analysis Generation	1394	variable read, not assigned by an earlier chunk, not on the search path	factor1, group, temp_group	FALSE
+DIA_workflow_experienced.rmd	Raw Data QC	223	variable read, not assigned by an earlier chunk, not on the search path	publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Filter Peptides on q Value and Proteotypic Peptide Match	237	variable read, not assigned by an earlier chunk, not on the search path	publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Roll-up Precursor to Peptide	260	variable read, not assigned by an earlier chunk, not on the search path	publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Filter Peptides on Intensity Threshold	282	variable read, not assigned by an earlier chunk, not on the search path	publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Filter Proteins on Peptide Number	326	variable read, not assigned by an earlier chunk, not on the search path	publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Filter Samples on Peptide Number	364	variable read, not assigned by an earlier chunk, not on the search path	peptidoform_count, Protein.Ids, publication_graphs_dir, Run, Stripped.Sequence	FALSE
+DIA_workflow_experienced.rmd	Filter Peptides on Replicate Number	408	variable read, not assigned by an earlier chunk, not on the search path	publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Missing Value Imputation	443	variable read, not assigned by an earlier chunk, not on the search path	Peptide.Imputed, results_dir	FALSE
+DIA_workflow_experienced.rmd	Peptide to Protein Rollup	485	variable read, not assigned by an earlier chunk, not on the search path	results_dir	FALSE
+DIA_workflow_experienced.rmd	Protein Data S4 Object Creation	513	function called, not assigned by an earlier chunk, not on the search path	ProteinQuantitativeData	FALSE
+DIA_workflow_experienced.rmd	Most Likely Protein Accession Rollup	537	variable read, not assigned by an earlier chunk, not on the search path	database_id, publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Filter Proteins on Intensity Threshold	585	variable read, not assigned by an earlier chunk, not on the search path	publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Remove Duplicate Proteins	631	variable read, not assigned by an earlier chunk, not on the search path	Protein.Ids	FALSE
+DIA_workflow_experienced.rmd	Filter Proteins on Replicate Number	660	variable read, not assigned by an earlier chunk, not on the search path	publication_graphs_dir, results_dir	FALSE
+DIA_workflow_experienced.rmd	Pre-normalisation QC	690	variable read, not assigned by an earlier chunk, not on the search path	pearson, protein_qc_dir	FALSE
+DIA_workflow_experienced.rmd	Cyclic Loess Normalisation and QC	763	variable read, not assigned by an earlier chunk, not on the search path	protein_qc_dir	FALSE
+DIA_workflow_experienced.rmd	RUVIII-C Canonical Correlation Plot	824	variable read, not assigned by an earlier chunk, not on the search path	protein_qc_dir	FALSE
+DIA_workflow_experienced.rmd	RUVIII-C Normalisation and QC	867	variable read, not assigned by an earlier chunk, not on the search path	protein_qc_dir, publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Sample Pearson Correlation Filtering	958	variable read, not assigned by an earlier chunk, not on the search path	publication_graphs_dir, results_dir	FALSE
+DIA_workflow_experienced.rmd	Output Files For Audit Trail	1007	variable read, not assigned by an earlier chunk, not on the search path	group, Log2.Protein.Imputed, Protein.Ids, Protein.Imputed, replicates, results_dir	FALSE
+DIA_workflow_experienced.rmd	Composite QC Figure Generation	1051	variable read, not assigned by an earlier chunk, not on the search path	results_dir	FALSE
+DIA_workflow_experienced.rmd	Uniprot Data Annotation	1069	variable read, not assigned by an earlier chunk, not on the search path	results_dir	FALSE
+DIA_workflow_experienced.rmd	Output DE Analysis Results	1129	variable read, not assigned by an earlier chunk, not on the search path	de_output_dir, publication_graphs_dir	FALSE
+DIA_workflow_experienced.rmd	Enrichment Analysis	1171	variable read, not assigned by an earlier chunk, not on the search path	de_output_dir, pathway_dir	FALSE
+DIA_workflow_experienced.rmd	Copy Output to Github	1223	variable read, not assigned by an earlier chunk, not on the search path	omic_type	FALSE
+metabolomics_workflow_experienced.rmd	Metabolite Annotation	267	variable read, not assigned by an earlier chunk, not on the search path	data_cln, feature_metadata_cln	FALSE
+metabolomics_workflow_experienced.rmd	Pre-Normalisation QC	397	variable read, not assigned by an earlier chunk, not on the search path	protein_qc_dir	FALSE

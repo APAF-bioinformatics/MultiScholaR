@@ -1,0 +1,200 @@
+file	line	chunk	expression	key_present	element_present	value	eval_false
+DIA_workflow_starter.rmd	179	4 Data Management	project_dirs$proteomics$base_dir	TRUE	TRUE	<project>	FALSE
+DIA_workflow_starter.rmd	197	4 Data Management	project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir	TRUE	TRUE	<project>/data/proteomics	FALSE
+DIA_workflow_starter.rmd	198	4 Data Management	project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_starter.rmd	206	4 Data Management	project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_starter.rmd	209	4 Data Management	project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_starter.rmd	269	6 Design Matrix Read In (optional)	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_your_analysis	FALSE
+DIA_workflow_starter.rmd	276	6 Design Matrix Read In (optional)	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_your_analysis	FALSE
+DIA_workflow_starter.rmd	712	16 Missing Value Imputation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/peptide_qc	FALSE
+DIA_workflow_starter.rmd	750	17 Peptide to Protein Rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	762	17 Peptide to Protein Rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	994	23 Filter Proteins on Replicate Number	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1064	24 Pre-normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1069	24 Pre-normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1074	24 Pre-normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1079	24 Pre-normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1154	25 Cyclic Loess Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1159	25 Cyclic Loess Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1164	25 Cyclic Loess Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1169	25 Cyclic Loess Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1260	26A Automated Optimization of Negative Control Percentage	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1409	27 RUVIII-C Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1414	27 RUVIII-C Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1419	27 RUVIII-C Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1424	27 RUVIII-C Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1477	28 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1485	28 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1493	28 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1535	29 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1541	29 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1548	29 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1582	30 Composite QC Figure Generation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/protein_qc	FALSE
+DIA_workflow_starter.rmd	1609	31 Uniprot Data Annotation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_starter.rmd	1630	32 Read in Previously Assigned Contrasts (optional)	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_your_analysis	FALSE
+DIA_workflow_starter.rmd	1725	34 Output DE Analysis Results	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	TRUE	FALSE	NULL	FALSE
+DIA_workflow_starter.rmd	1726	34 Output DE Analysis Results	project_dirs[[paste0(omic_type, "_", experiment_label)]]$publication_graphs_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/publication_graphs	FALSE
+DIA_workflow_starter.rmd	1768	35 Enrichment Analysis	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	TRUE	FALSE	NULL	FALSE
+DIA_workflow_starter.rmd	1778	35 Enrichment Analysis	project_dirs[[paste0(omic_type, "_", experiment_label)]]$pathway_dir	TRUE	TRUE	<project>/results/proteomics_your_analysis/pathway_enrichment	FALSE
+DIA_workflow_starter.rmd	1806	36 Save Workflow Arguments and Study SUmmary	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_your_analysis	FALSE
+DIA_workflow_limpa.rmd	142	4 Data Management	project_dirs$proteomics$base_dir	TRUE	TRUE	<project>	FALSE
+DIA_workflow_limpa.rmd	158	4 Data Management	project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir	TRUE	TRUE	<project>/data/proteomics	FALSE
+DIA_workflow_limpa.rmd	304		project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa.rmd	312		project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa.rmd	315		project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa.rmd	375	6 Design Matrix Read In (optional)	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_TESTING	FALSE
+DIA_workflow_limpa.rmd	382	6 Design Matrix Read In (optional)	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_TESTING	FALSE
+DIA_workflow_limpa.rmd	840	15 RUV normalisation on peptides	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	845	15 RUV normalisation on peptides	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	850	15 RUV normalisation on peptides	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	855	15 RUV normalisation on peptides	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	914	16 Impute missing values with limpa	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	920	16 Impute missing values with limpa	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	926	16 Impute missing values with limpa	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	932	16 Impute missing values with limpa	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	969	16 Impute missing values with limpa	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	1081	16 Impute missing values with limpa	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	1087	16 Impute missing values with limpa	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	1093	16 Impute missing values with limpa	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/peptide_qc	FALSE
+DIA_workflow_limpa.rmd	1143	17 Peptide to Protein Rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1155	17 Peptide to Protein Rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1387	23 Filter Proteins on Replicate Number	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1457	24 Pre-normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1462	24 Pre-normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1467	24 Pre-normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1472	24 Pre-normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1547	25 Cyclic Loess Normalisation and QC	project_dirs[[paste0(omic_type, "_", ... = experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1552	25 Cyclic Loess Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1557	25 Cyclic Loess Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1562	25 Cyclic Loess Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1621	26 RUVIII-C Canonical Correlation Plot	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1706	27 RUVIII-C Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1711	27 RUVIII-C Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1716	27 RUVIII-C Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1721	27 RUVIII-C Normalisation and QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1774	28 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1782	28 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1790	28 Sample Pearson Correlation Filtering	project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir	TRUE	TRUE	<project>/results/integration_TESTING/multiomic_inputs	FALSE
+DIA_workflow_limpa.rmd	1832	29 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1838	29 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1845	29 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1879	30 Composite QC Figure Generation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/protein_qc	FALSE
+DIA_workflow_limpa.rmd	1906	31 Uniprot Data Annotation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa.rmd	1926	32 Read in Previously Assigned Contrasts (optional)	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_TESTING	FALSE
+DIA_workflow_limpa.rmd	2021	34 Output DE Analysis Results	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	TRUE	FALSE	NULL	FALSE
+DIA_workflow_limpa.rmd	2022	34 Output DE Analysis Results	project_dirs[[paste0(omic_type, "_", experiment_label)]]$publication_graphs_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/publication_graphs	FALSE
+DIA_workflow_limpa.rmd	2064	35 Enrichment Analysis	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	TRUE	FALSE	NULL	FALSE
+DIA_workflow_limpa.rmd	2074	35 Enrichment Analysis	project_dirs[[paste0(omic_type, "_", experiment_label)]]$pathway_dir	TRUE	TRUE	<project>/results/proteomics_TESTING/pathway_enrichment	FALSE
+DIA_workflow_limpa.rmd	2102	36 Save Workflow Arguments and Study SUmmary	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_TESTING	FALSE
+DIA_workflow_limpa_starter.rmd	178	3 Data Management	project_dirs$proteomics$base_dir	TRUE	TRUE	<project>	FALSE
+DIA_workflow_limpa_starter.rmd	181	3 Data Management	project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir	TRUE	TRUE	<project>/data/proteomics	FALSE
+DIA_workflow_limpa_starter.rmd	198	3 Data Management	project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_starter.rmd	206	3 Data Management	project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_starter.rmd	209	3 Data Management	project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_starter.rmd	263	4 Protein ID Conversion and Uniprot Lookup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_starter.rmd	273	4 Protein ID Conversion and Uniprot Lookup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_starter.rmd	333	5a Design Matrix Output Read In - optional	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_your_experiment	FALSE
+DIA_workflow_limpa_starter.rmd	340	5a Design Matrix Output Read In - optional	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_your_experiment	FALSE
+DIA_workflow_limpa_starter.rmd	346	5a Design Matrix Output Read In - optional	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_your_experiment	FALSE
+DIA_workflow_limpa_starter.rmd	550	10 QC of peptide matrix	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	565	10 QC of peptide matrix	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	575	10 QC of peptide matrix	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	586	10 QC of peptide matrix	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	638	11 Cyclic loess normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	653	11 Cyclic loess normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	663	11 Cyclic loess normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	674	11 Cyclic loess normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	776	12 RUV-III-c paramater tuning and normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	781	12 RUV-III-c paramater tuning and normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	786	12 RUV-III-c paramater tuning and normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	791	12 RUV-III-c paramater tuning and normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/peptide_qc	FALSE
+DIA_workflow_limpa_starter.rmd	895	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	905	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	919	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	929	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	944	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1073	16 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1087	16 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1097	16 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1111	16 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1154	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1162	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1170	17 Output Files For Audit Trail	project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir	FALSE	FALSE	NULL	FALSE
+DIA_workflow_limpa_starter.rmd	1196	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1202	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1209	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1241	18 Composite QC Figure Generation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/protein_qc	FALSE
+DIA_workflow_limpa_starter.rmd	1333	20 Output DE Analysis Results	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	TRUE	FALSE	NULL	FALSE
+DIA_workflow_limpa_starter.rmd	1334	20 Output DE Analysis Results	project_dirs[[paste0(omic_type, "_", experiment_label)]]$publication_graphs_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/publication_graphs	FALSE
+DIA_workflow_limpa_starter.rmd	1378	21 Enrichment Analysis	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	TRUE	FALSE	NULL	FALSE
+DIA_workflow_limpa_starter.rmd	1388	21 Enrichment Analysis	project_dirs[[paste0(omic_type, "_", experiment_label)]]$pathway_dir	TRUE	TRUE	<project>/results/proteomics_your_experiment/pathway_enrichment	FALSE
+DIA_workflow_limpa_starter.rmd	1417	22 Save Workflow Arguments and Study SUmmary	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_your_experiment	FALSE
+DIA_workflow_limpa_experienced.rmd	186	3 Data Management	project_dirs$proteomics$base_dir	TRUE	TRUE	<project>	FALSE
+DIA_workflow_limpa_experienced.rmd	189	3 Data Management	project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir	TRUE	TRUE	<project>/data/proteomics	FALSE
+DIA_workflow_limpa_experienced.rmd	206	3 Data Management	project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_experienced.rmd	214	3 Data Management	project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_experienced.rmd	217	3 Data Management	project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_experienced.rmd	271	4 Protein ID Conversion and Uniprot Lookup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_experienced.rmd	281	4 Protein ID Conversion and Uniprot Lookup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_limpa_experienced.rmd	341	5a Design Matrix Output Read In - optional	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_iMNS_bookchapter_analysis	FALSE
+DIA_workflow_limpa_experienced.rmd	351	5a Design Matrix Output Read In - optional	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_iMNS_bookchapter_analysis	FALSE
+DIA_workflow_limpa_experienced.rmd	362	5a Design Matrix Output Read In - optional	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_iMNS_bookchapter_analysis	FALSE
+DIA_workflow_limpa_experienced.rmd	593	10 QC of peptide matrix	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	607	10 QC of peptide matrix	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	616	10 QC of peptide matrix	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	626	10 QC of peptide matrix	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	678	11 Cyclic loess normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	696	11 Cyclic loess normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	706	11 Cyclic loess normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	717	11 Cyclic loess normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	822	12 RUV-III-c paramater tuning and normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	827	12 RUV-III-c paramater tuning and normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	832	12 RUV-III-c paramater tuning and normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	837	12 RUV-III-c paramater tuning and normalisation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$peptide_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/peptide_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	961	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	971	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	990	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1000	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1015	14 Limpa imputation and protein rollup	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1143	16 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1158	16 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1168	16 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1182	16 Sample Pearson Correlation Filtering	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1260		project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1282	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1290	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1324	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1330	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1337	17 Output Files For Audit Trail	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1368	18 Composite QC Figure Generation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$protein_qc_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/protein_qc	FALSE
+DIA_workflow_limpa_experienced.rmd	1470	20 Output DE Analysis Results	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	TRUE	FALSE	NULL	FALSE
+DIA_workflow_limpa_experienced.rmd	1471	20 Output DE Analysis Results	project_dirs[[paste0(omic_type, "_", experiment_label)]]$publication_graphs_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/publication_graphs	FALSE
+DIA_workflow_limpa_experienced.rmd	1563	extract-top-de-genes	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	TRUE	FALSE	NULL	FALSE
+DIA_workflow_limpa_experienced.rmd	1663	21 Enrichment Analysis	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	TRUE	FALSE	NULL	FALSE
+DIA_workflow_limpa_experienced.rmd	1673	21 Enrichment Analysis	project_dirs[[paste0(omic_type, "_", experiment_label)]]$pathway_dir	TRUE	TRUE	<project>/results/proteomics_iMNS_bookchapter_analysis/pathway_enrichment	FALSE
+DIA_workflow_limpa_experienced.rmd	1702	22 Save Workflow Arguments and Study SUmmary	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/proteomics_iMNS_bookchapter_analysis	FALSE
+DIA_workflow_experienced.rmd	88	Data Management	project_dirs$proteomics$base_dir	TRUE	TRUE	<project>	FALSE
+DIA_workflow_experienced.rmd	106	Data Management	project_dirs$proteomics$data_dir	TRUE	TRUE	<project>/data/proteomics	FALSE
+DIA_workflow_experienced.rmd	107	Data Management	project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_experienced.rmd	115	Data Management	project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+DIA_workflow_experienced.rmd	118	Data Management	project_dirs$proteomics$uniprot_annotation_dir	TRUE	TRUE	<project>/data/UniProt	FALSE
+metabolomics_workflow_starter.rmd	87	Data Management and Parameters	project_dirs$metabolomics$base_dir	TRUE	TRUE	<project>	FALSE
+metabolomics_workflow_starter.rmd	103	Data Management and Parameters	project_dirs[[paste0(omic_type, "_", experiment_label)]]$data_dir	TRUE	TRUE	<project>/data/metabolomics	FALSE
+metabolomics_workflow_starter.rmd	180	Design Matrix Read In (optional)	project_dirs[[paste0(omic_type, "_", experiment_label)]]$source_dir	TRUE	TRUE	<project>/scripts/metabolomics_your_analysis	TRUE
+metabolomics_workflow_starter.rmd	394	Pre-Normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	399	Pre-Normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	404	Pre-Normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	409	Pre-Normalisation QC	project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	471	Cyclic Loess Normaliation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	476	Cyclic Loess Normaliation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	481	Cyclic Loess Normaliation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	486	Cyclic Loess Normaliation	project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	567		project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	568		project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	573		project_dirs[[paste0(omic_type, "_", experiment_label)]]$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	650		project_dirs$metabolomics$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_your_analysis/metabolite_qc	FALSE
+metabolomics_workflow_starter.rmd	659		project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir	TRUE	TRUE	<project>/results/integration_your_analysis/multiomic_inputs	FALSE
+metabolomics_workflow_experienced.rmd	87	Data Management and Parameters	project_dirs$metabolomics$base_dir	TRUE	TRUE	<project>	FALSE
+metabolomics_workflow_experienced.rmd	103	Data Management and Parameters	project_dirs$metabolomics$data_dir	TRUE	TRUE	<project>/data/metabolomics	FALSE
+metabolomics_workflow_experienced.rmd	180	Design Matrix Read In (optional)	project_dirs$metabolomics$source_dir	TRUE	TRUE	<project>/scripts/metabolomics_workshop_data	TRUE
+metabolomics_workflow_experienced.rmd	748		project_dirs$metabolomics$metabolite_qc_dir	TRUE	TRUE	<project>/results/metabolomics_workshop_data/metabolite_qc	FALSE

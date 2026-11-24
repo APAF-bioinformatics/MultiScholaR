@@ -1,0 +1,79 @@
+file	line	chunk	kind	name	detail	eval_false
+DIA_workflow_starter.rmd	71	1 MultiScholaR FIRST INSTALL	package_not_installed	devtools::install_github	package 'devtools' is not installed on the runner	FALSE
+DIA_workflow_starter.rmd	785	18 Protein Data S4 Object Creation	not_found_in_namespace	dplyr::any_of	no object 'any_of' in namespace dplyr	FALSE
+DIA_workflow_starter.rmd	789	18 Protein Data S4 Object Creation	function_not_found	ProteinQuantitativeData	no function 'ProteinQuantitativeData' on the search path after library(MultiScholaR) and the dependencies; it exists as an unexported MultiScholaR object	FALSE
+DIA_workflow_starter.rmd	1669	33 DE Analysis Generation	not_found_in_namespace	purrr::set_names	no object 'set_names' in namespace purrr	FALSE
+DIA_workflow_starter.rmd	1725	34 Output DE Analysis Results	directory_element_missing	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	element is NULL	FALSE
+DIA_workflow_starter.rmd	1765	35 Enrichment Analysis	unused_argument	createDAResultsForEnrichment	unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir))	FALSE
+DIA_workflow_starter.rmd	1768	35 Enrichment Analysis	directory_element_missing	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	element is NULL	FALSE
+DIA_workflow_limpa.rmd	42	1 MultiScholaR FIRST INSTALL	package_not_installed	devtools::load_all	package 'devtools' is not installed on the runner	FALSE
+DIA_workflow_limpa.rmd	876	16 Impute missing values with limpa	unused_argument	peptideMissingValueImputationLimpa	unused argument (dpc_method = "eb")	FALSE
+DIA_workflow_limpa.rmd	1178	18 Protein Data S4 Object Creation	not_found_in_namespace	dplyr::any_of	no object 'any_of' in namespace dplyr	FALSE
+DIA_workflow_limpa.rmd	1182	18 Protein Data S4 Object Creation	function_not_found	ProteinQuantitativeData	no function 'ProteinQuantitativeData' on the search path after library(MultiScholaR) and the dependencies; it exists as an unexported MultiScholaR object	FALSE
+DIA_workflow_limpa.rmd	1965	33 DE Analysis Generation	not_found_in_namespace	purrr::set_names	no object 'set_names' in namespace purrr	FALSE
+DIA_workflow_limpa.rmd	2021	34 Output DE Analysis Results	directory_element_missing	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	element is NULL	FALSE
+DIA_workflow_limpa.rmd	2061	35 Enrichment Analysis	unused_argument	createDAResultsForEnrichment	unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir))	FALSE
+DIA_workflow_limpa.rmd	2064	35 Enrichment Analysis	directory_element_missing	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	element is NULL	FALSE
+DIA_workflow_limpa_starter.rmd	54	1 MultiScholaR FIRST INSTALL	package_not_installed	devtools::install_github	package 'devtools' is not installed on the runner	FALSE
+DIA_workflow_limpa_starter.rmd	94	1b Deal with conflicted function names	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	95	1b Deal with conflicted function names	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	96	1b Deal with conflicted function names	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	97	1b Deal with conflicted function names	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	98	1b Deal with conflicted function names	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	99	1b Deal with conflicted function names	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	100	1b Deal with conflicted function names	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	101	1b Deal with conflicted function names	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	102	1b Deal with conflicted function names	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	103	1b Deal with conflicted function names	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	104	1b Deal with conflicted function names	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	105	1b Deal with conflicted function names	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	106	1b Deal with conflicted function names	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_starter.rmd	1170	17 Output Files For Audit Trail	directory_key_missing	project_dirs[[paste0("integration_", experiment_label)]]$multiomic_inputs_dir	key project_dirs[[paste0("integration_", experiment_label)]] is NULL for this workbook's set-up	FALSE
+DIA_workflow_limpa_starter.rmd	1278	19 DE Analysis Generation	not_found_in_namespace	purrr::set_names	no object 'set_names' in namespace purrr	FALSE
+DIA_workflow_limpa_starter.rmd	1333	20 Output DE Analysis Results	directory_element_missing	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	element is NULL	FALSE
+DIA_workflow_limpa_starter.rmd	1375	21 Enrichment Analysis	unused_argument	createDAResultsForEnrichment	unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir))	FALSE
+DIA_workflow_limpa_starter.rmd	1378	21 Enrichment Analysis	directory_element_missing	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	element is NULL	FALSE
+DIA_workflow_limpa_experienced.rmd	53	1 MultiScholaR FIRST INSTALL	package_not_installed	devtools::install_github	package 'devtools' is not installed on the runner	FALSE
+DIA_workflow_limpa_experienced.rmd	69	1 MultiScholaR FIRST INSTALL	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	70	1 MultiScholaR FIRST INSTALL	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	71	1 MultiScholaR FIRST INSTALL	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	72	1 MultiScholaR FIRST INSTALL	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	73	1 MultiScholaR FIRST INSTALL	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	74	1 MultiScholaR FIRST INSTALL	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	75	1 MultiScholaR FIRST INSTALL	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	76	1 MultiScholaR FIRST INSTALL	function_not_found	conflict_prefer	no function 'conflict_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	77	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	78	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	79	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	80	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	81	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	82	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	83	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	84	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	85	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	86	1 MultiScholaR FIRST INSTALL	function_not_found	conflicts_prefer	no function 'conflicts_prefer' on the search path after library(MultiScholaR) and the dependencies	FALSE
+DIA_workflow_limpa_experienced.rmd	1415	19 DE Analysis Generation	not_found_in_namespace	purrr::set_names	no object 'set_names' in namespace purrr	FALSE
+DIA_workflow_limpa_experienced.rmd	1470	20 Output DE Analysis Results	directory_element_missing	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	element is NULL	FALSE
+DIA_workflow_limpa_experienced.rmd	1563	extract-top-de-genes	directory_element_missing	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	element is NULL	FALSE
+DIA_workflow_limpa_experienced.rmd	1660	21 Enrichment Analysis	unused_argument	createDAResultsForEnrichment	unused argument (de_output_dir = file.path(project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir))	FALSE
+DIA_workflow_limpa_experienced.rmd	1663	21 Enrichment Analysis	directory_element_missing	project_dirs[[paste0(omic_type, "_", experiment_label)]]$de_output_dir	element is NULL	FALSE
+DIA_workflow_experienced.rmd	35	MultiScholaR FIRST INSTALL	package_not_installed	devtools::install_github	package 'devtools' is not installed on the runner	FALSE
+DIA_workflow_experienced.rmd	223	Raw Data QC	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	247	Filter Peptides on q Value and Proteotypic Peptide Match	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	266	Roll-up Precursor to Peptide	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	311	Filter Peptides on Intensity Threshold	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	349	Filter Proteins on Peptide Number	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	393	Filter Samples on Peptide Number	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	427	Filter Peptides on Replicate Number	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	514	Protein Data S4 Object Creation	not_found_in_namespace	dplyr::any_of	no object 'any_of' in namespace dplyr	FALSE
+DIA_workflow_experienced.rmd	518	Protein Data S4 Object Creation	function_not_found	ProteinQuantitativeData	no function 'ProteinQuantitativeData' on the search path after library(MultiScholaR) and the dependencies; it exists as an unexported MultiScholaR object	FALSE
+DIA_workflow_experienced.rmd	554	Most Likely Protein Accession Rollup	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	615	Filter Proteins on Intensity Threshold	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	675	Filter Proteins on Replicate Number	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	892	RUVIII-C Normalisation and QC	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	974	Sample Pearson Correlation Filtering	unused_argument	updateProteinFiltering	unused argument (publication_graphs_dir = publication_graphs_dir)	FALSE
+DIA_workflow_experienced.rmd	1105	DE Analysis Generation	not_found_in_namespace	purrr::set_names	no object 'set_names' in namespace purrr	FALSE
+DIA_workflow_experienced.rmd	1172	Enrichment Analysis	unused_argument	createDAResultsForEnrichment	unused argument (de_output_dir = de_output_dir)	FALSE
+DIA_workflow_experienced.rmd	1239	Render Report	unused_argument	RenderReport	unused argument (suffix = experiment_label)	FALSE
+metabolomics_workflow_starter.rmd	33	MultiScholaR FIRST INSTALL	package_not_installed	devtools::install_github	package 'devtools' is not installed on the runner	TRUE
+metabolomics_workflow_experienced.rmd	33	MultiScholaR FIRST INSTALL	package_not_installed	devtools::install_github	package 'devtools' is not installed on the runner	TRUE
