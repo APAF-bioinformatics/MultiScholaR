@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-199 confirmation after merge: staging bc3045b7 (with KIT-175) against 9453e79b; prot_dia_limpa must pass every step",
+  "label": "KIT-199 confirmation staging bc3045b7 against 9453e79b",
+  "package_commit": "bc3045b7df00f88c4c72f6e5a9292bbb5f36acdf",
+  "base_commit": "9453e79b7e6f2faf9cfd64593a84ca68efc5bb73",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 60
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
