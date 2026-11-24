@@ -194,9 +194,17 @@ referenceMappingTaxon <- function(manager) {
 referenceMappingContrastTable <- function(counts) {
     changed <- c(counts$changed_mapped, counts$changed_unmapped)
     unchanged <- c(counts$unchanged_mapped, counts$unchanged_unmapped)
-    data.frame(features = c("mapped", "unmapped"), changed = as.integer(changed), unchanged = as.integer(unchanged),
-        share_of_changed = changed / max(1, sum(changed)), share_of_unchanged = unchanged / max(1, sum(unchanged)),
-        stringsAsFactors = FALSE)
+    table <- data.frame(features = c("mapped", "unmapped"), changed = as.integer(changed),
+        unchanged = as.integer(unchanged), share_of_changed = changed / max(1, sum(changed)),
+        share_of_unchanged = unchanged / max(1, sum(unchanged)), stringsAsFactors = FALSE)
+    # Audit K167-I09 (KIT-205): rows without a p-value in the comparison are in neither list nor the background.
+    untested <- counts$untested %||% 0L
+    if (untested > 0L) {
+        table <- rbind(table, data.frame(features = "untested (no p-value in this comparison)", changed = NA_integer_,
+            unchanged = as.integer(untested), share_of_changed = NA_real_, share_of_unchanged = NA_real_,
+            stringsAsFactors = FALSE))
+    }
+    table
 }
 
 #' The unmapped changed features of one contrast, for download

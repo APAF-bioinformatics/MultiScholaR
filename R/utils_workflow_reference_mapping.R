@@ -203,8 +203,8 @@ referenceAccessionForGroups <- function(groups, mapping) {
 #' @param da_results The `da_results_for_enrichment` object the run read.
 #' @param mapping The mapping table.
 #' @param id_column The tables' protein-group column.
-#' @param q_cutoff,up_cutoff,down_cutoff The run's cutoffs, for the 2 x 2 counts (changed: q below the cutoff and
-#'   log2 fold change at or beyond a cutoff).
+#' @param q_cutoff,up_cutoff,down_cutoff The run's cutoffs, for the 2 x 2 counts (changed: the lists' rule,
+#'   `referenceMappingChanged`); untested rows (KIT-205) are left out and counted as `untested`.
 #' @return `list(da_results, counts)`: counts per contrast (groups by class; the 2 x 2 changed/unchanged by
 #'   mapped/unmapped) and the unmapped changed groups.
 #' @noRd
@@ -213,11 +213,14 @@ attachReferenceMapping <- function(da_results, mapping, id_column, q_cutoff = 0.
     for (contrast in names(da_results@da_data)) {
         table <- da_results@da_data[[contrast]]
         if (!is.data.frame(table) || !id_column %in% names(table)) next
+        # Audit K167-I09 (KIT-205): only the rows the comparison tested form the lists and the background.
+        tested <- enrichmentTestedRows(table)
+        table <- tested$rows
         joined <- referenceAccessionForGroups(table[[id_column]], mapping)
         changed <- referenceMappingChanged(table, q_cutoff, up_cutoff, down_cutoff)
         mapped <- joined$group_class == "mapped"
         counts[[contrast]] <- list(
-            groups = nrow(table), mapped = sum(mapped), ambiguous_group = sum(joined$group_class == "ambiguous_group"),
+            groups = nrow(table), untested = as.integer(tested$left_out), mapped = sum(mapped), ambiguous_group = sum(joined$group_class == "ambiguous_group"),
             unmapped = sum(joined$group_class == "unmapped"),
             changed_mapped = sum(changed & mapped), changed_unmapped = sum(changed & !mapped),
             unchanged_mapped = sum(!changed & mapped), unchanged_unmapped = sum(!changed & !mapped),
@@ -228,12 +231,13 @@ attachReferenceMapping <- function(da_results, mapping, id_column, q_cutoff = 0.
     list(da_results = da_results, counts = counts)
 }
 
-#' Which rows of a DA table are changed (q below the cutoff and log2 fold change at or beyond the up or down cutoff)
+#' Which rows of a DA table are changed, by the rule that forms the lists (`processEnrichments`): q below the cutoff
+#' and log2 fold change strictly above the up cutoff or strictly below minus the down cutoff (audit K167-I09)
 #' @noRd
 referenceMappingChanged <- function(table, q_cutoff, up_cutoff, down_cutoff) {
     q <- table[["fdr_qvalue"]] %||% rep(NA_real_, nrow(table))
     fc <- table[["log2FC"]] %||% rep(NA_real_, nrow(table))
-    !is.na(q) & !is.na(fc) & q < q_cutoff & (fc >= up_cutoff | fc <= -down_cutoff)
+    !is.na(q) & !is.na(fc) & q < q_cutoff & (fc > up_cutoff | fc < -down_cutoff)
 }
 
 #' The shipped GO capture of a curated reference, converted as `getUniprotAnnotations` converts a download (8.3 item 3)

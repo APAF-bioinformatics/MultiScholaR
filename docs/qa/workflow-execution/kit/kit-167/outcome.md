@@ -80,7 +80,7 @@ its checks, the installer's runtime check, the notices; gates F1, F3, F4, F6; th
 - The organism filter and the identifier choice in the tab behave as the core does: the tab passes `id_source` only when
   the gate is on (no module test of the server was written).
 - The 2 x 2 table counts a feature as changed by the fdr q-value and the fold-change cutoffs; KIT-203's significance
-  rule (merged since) is not applied to it (the counts should use the rule that forms the lists: audit K167-I09, open).
+  rule (merged since) is not applied to it (the counts use the rule that forms the lists and only tested rows: audit K167-I09, repaired).
 
 ## Not built (needs no harness)
 
@@ -170,6 +170,7 @@ Repaired now (Major-M):
 - K167-I03: the man page and roxygen say "Not yet validated …"; NEWS says the panels and the enrichment choice are
   gated and the two exported functions are callable but not yet validated.
 - K167-I05: the four record corrections above.
+- K167-I09 (after KIT-205 merged): the 2 x 2 counts use the lists' rule (`>` and `<`) and only the comparison's tested rows (`enrichmentTestedRows`); untested rows are counted and shown as their own row. Test first.
 
 Open, to close before the gate opens (Major-G and minors):
 - K167-I06: the record sheet and Methods paragraph never reach the analysis record or report
@@ -177,7 +178,6 @@ Open, to close before the gate opens (Major-G and minors):
 - K167-I07: the panels take files through `fileInput` and nothing raises Shiny's 5 MB upload limit, while the demo
   FASTAs are 14 to 16 MB (inferred; to be shown by a test).
 - K167-I08: the identifier choice defaults to "reference" without a mapping; the organism filter stays enabled.
-- K167-I09: the 2 x 2 "changed" rule should use the lists' strict `>` and `<`, and after KIT-205 count only tested rows.
 - K167-I10 to I14, I17, I18: wiring of the download and demo reader and of a saved mapping table's identity; installer
   details (`SetRegView 64`, wording); replay integrity (`mapping_sha256` from the joined table); accessions on several
   groups; licence and attribution wording; robustness; the ledger row's text.
