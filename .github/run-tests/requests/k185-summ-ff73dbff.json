@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-185 VAL-98 (2): reported-only summary (summ-k185.R, declaration section 10) over the committed part-A rows",
+  "label": "KIT-185 reported-only summary ff73dbff",
+  "package_commit": "ff73dbff17c0a1332cea7fa1f11c6bd734f72e17",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-185/summ-k185.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-185",
+        "k185-summ"
+      ],
+      "env": {},
+      "out": "k185-summ",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
