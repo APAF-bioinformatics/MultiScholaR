@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-196 R1 instrument run 2 of 3: T7 managed driver advances the poll; failing-first tests on tests-only commit 648a44f0",
+  "label": "KIT-196 R1d tests-only 648a44f0 (T7 instrument repair 2)",
+  "package_commit": "648a44f0d0e03cb1e8007e6ec098dff7224ad1c4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit196-da-no-value-features.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
