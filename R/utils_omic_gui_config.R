@@ -1346,6 +1346,30 @@ omicGuiLog2Texts <- function() {
             "and Quantile do not depend on the unit."))
 }
 
+#' The proteomics label-free and TMT log2 texts (KIT-177; proposed wording, implemented as proposed, the owner edits
+#' before release, VAL-41): the reopen sentence of a design saved by an earlier version, the notification and step-log
+#' lines of the values set to missing at the design step (`%d` the counts), the refusal of a negative or infinite
+#' quantity (`%s` the run and the values), and the warning shown when `scale` runs on log2 values below 0 (`%d` the count).
+#' @noRd
+omicGuiProtLog2Texts <- function() {
+    c(reopen = paste("This design was saved by an earlier version, which added 1 to every value before taking log2.",
+            "Your saved results are unchanged. If you save the design again, values are log2-transformed without adding 1,",
+            "and later results will differ slightly, most for small values."),
+        notice_zero = "%d values of 0",
+        notice_nan = "%d values that were not a number",
+        notice_both = "%d values of 0 and %d values that were not a number",
+        notice_tail = "were read as not measured (missing). They are not used in the analysis.",
+        log_zero = "Values equal to 0 set to missing: %d",
+        log_nan = "Values that were not a number set to missing: %d",
+        refusal = paste("Run '%s' contains negative or infinite values (for example %s). Quantities must be zero or",
+            "positive; correct the file and import it again."),
+        scale_warning = paste("Scale normalisation divides each sample by the median of its absolute log2 values. In this",
+            "data, %d values are below 1, so their log2 values are negative, and taking absolute values treats a log2",
+            "value of \u22122 like +2. The result then depends on the unit of your table. Cyclic Loess and Quantile do not",
+            "have this problem."),
+        scale_log = "Scale normalisation: log2 values below 0 in the input: %d")
+}
+
 #' An omic's RUV design group: the gate, the tier labels, the k rules and its tables.
 #' @param prefix The omic's test-id prefix.
 #' @param tables The preset tables, named; the first is the one the tab opens with.

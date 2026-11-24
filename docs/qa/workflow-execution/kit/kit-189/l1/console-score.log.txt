@@ -1,0 +1,1 @@
+score: completed blind on 1680 rows from 24 files; 108 classifications

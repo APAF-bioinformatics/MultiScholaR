@@ -1,0 +1,266 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-action-scripts.R	every route has a script whose steps carry an id, a declared state and a run function	328	328	0	0	0	0	3.081
+test-action-scripts.R	no script presses revert, skip, export, load, report, enrichment or Cancel (7.4, A17)	12	12	0	0	0	0	0.207
+test-action-scripts.R	the common skeleton per route: import, design, QC, normalisation, correlation, DA	15	15	0	0	0	0	0.306
+test-action-scripts.R	the QC sub-tabs are the product's spec tables, in order (DIA, DIA_LIMPA, LFQ, TMT)	8	8	0	0	0	0	0.362
+test-action-scripts.R	each QC step declares the state its sub-tab commits; DA declares its tab complete	7	7	0	0	0	0	0.076
+test-action-scripts.R	action-scripts.md lists exactly each route's step ids (the accepted scripts, VAL-41)	12	12	0	0	0	0	0.153
+test-alternatives.R	T-ALT-1: export-then-load: export after the last normalisation step, load before DA	14	14	0	0	0	0	0.286
+test-alternatives.R	T-ALT-2: every button the alternative adds is rendered by the product's tab UI	9	9	0	0	0	0	0.712
+test-alternatives.R	T-ALT-3: DIA_LIMPA without the covariates button drops only that step	4	4	0	0	0	0	0.177
+test-alternatives.R	T-ALT-4: valCompareAlternative reports digest, largest difference and changed calls	12	12	0	0	0	0	0.026
+test-alternatives.R	T-S0-1: the S0 plan: ten accepted routes, four alternatives, the two-species route	9	9	0	0	0	0	0.096
+test-alternatives.R	T-S0-2: S0 ends before any route unless every named test file ran and passed	9	9	0	0	0	0	0.032
+test-arm-builders.R	shipped: no option and no override on any route	22	22	0	0	0	0	0.015
+test-arm-builders.R	legacy: the gate off and the shipped mode and parameters written explicitly	5	5	0	0	0	0	0.011
+test-arm-builders.R	calibrated: the gate on; the design the server selects, recorded as expected	5	5	0	0	0	0	0.01
+test-arm-builders.R	off: skip with the gate off; transcriptomics design none with the gate on	4	4	0	0	0	0	0.016
+test-arm-builders.R	design and supplied controls: the gate on, the design and k rule; the list one per line	7	7	0	0	0	0	0.03
+test-arm-builders.R	the matrix stage of a cell follows its route and arm (7.3; A12, revision 1.8)	9	9	0	0	0	0	0.018
+test-arm-tables.R	proteomics: da.tsv's columns and values, the matrices by stage, features	17	17	0	0	0	0	0.038
+test-arm-tables.R	a fold-change threshold enters called_own; a missing DA file is refused	2	2	0	0	0	0	0.025
+test-arm-tables.R	lipidomics with factors in the model: matrix.tsv uncorrected, W, a labelled display	11	11	0	0	0	0	0.031
+test-arm-tables.R	lipidomics with RUV correcting the matrix: matrix.tsv is the corrected one, no display	2	2	0	0	0	0	0.104
+test-arm-tables.R	transcriptomics: da.tsv from the edgeR table, log-CPM matrices	6	6	0	0	0	0	0.068
+test-arms.R	T-KER-1: a kernel equal to the workflow arm passes on seeded identity units and a refusal unit	6	6	0	0	0	0	0.015
+test-arms.R	T-KER-2: a deliberately different kernel is refused	2	2	0	0	0	0	0.02
+test-arms.R	the hook receives the named arguments only through formals that name them (C22)	5	5	0	0	0	0	0.009
+test-arms.R	prepareInputs' result tables are copied, checked, and an undeclared one refused	4	4	0	0	0	0	0.035
+test-baseline.R	T-BASE: median and no normalisation; t equals a direct limma fit; zeros become NA	5	5	0	0	0	0	0.048
+test-baseline.R	T-BASE-filter: a key enters a contrast by that contrast's two groups only	4	4	0	0	0	0	0.014
+test-baseline.R	T-BASE-batch: a balanced batch term leaves the fold changes unchanged	2	2	0	0	0	0	0.01
+test-baseline.R	the baseline refuses a contrast group below min_per_group	1	1	0	0	0	0	0.012
+test-baseline.R	the counts baseline runs voom-limma after filterByExpr and TMM	2	2	0	0	0	0	0.024
+test-chain.R	T-CHAIN-1: a first link absorbing an unintended difference is refused at link one	2	2	0	0	0	0	0.008
+test-chain.R	T-CHAIN-1: a correct chain is accepted; a later link's base is compared with zero	3	3	0	0	0	0	0.01
+test-chain.R	T-CHAIN-1: a re-frozen file without a record; a lane not re-frozen against the counts	4	4	0	0	0	0	0.01
+test-chain.R	T-CHAIN-1: declared keys before the changed step, and unclassed differences after it	4	4	0	0	0	0	0.012
+test-chain.R	T-CHAIN-1: rows a re-freezing ticket committed earlier are adopted when they agree	2	2	0	0	0	0	0.015
+test-classify.R	T-CLS: the four outcomes, no_worse and inclusive ends	10	10	0	0	0	0	0.022
+test-classify.R	T-CLS: refusals and a one-arm comparison against a fixed value	5	5	0	0	0	0	0.047
+test-classify.R	T-CLS: a within-run interval decides only when declared on that comparison	2	2	0	0	0	0	0.004
+test-classify.R	T-CLS-regime: no regime, no harness regime for the class, flagged without consent	6	6	0	0	0	0	0.04
+test-classify.R	T-CLS-compound: conjunctions, worse_when, controls and guards	11	11	0	0	0	0	0.025
+test-classify.R	T-CLS-compound: a guard requiring match, and a contradicted guard	4	4	0	0	0	0	0.011
+test-corpus.R	T-CORP-1: each corpus declares its generator, arguments and the routes it serves	24	24	0	0	0	0	0.093
+test-corpus.R	T-CORP-2: each corpus is written with its manifest, twice byte-identically; generators untouched	103	103	0	0	0	0	3.824
+test-corpus.R	T-CORP-3: a route's cell on its corpus: files, format, design and contrast agree with the data	85	85	0	0	0	0	1.74
+test-corpus.R	T-CORP-4: a proteomics corpus carries a UniProt cache covering its FASTA; the rule passes	5	5	0	0	0	0	0.267
+test-corpus.R	T-CORP-5: the two-species input: the prot_dia report, a FASTA of two organisms, the box forced	10	10	0	0	0	0	1.693
+test-corpus.R	T-CORP-6: on the two-species input the driver confirms the organism modal at its rendered values	6	6	0	0	0	0	5.771
+test-coverage-rank.R	T-RANK-1: the rank effect is calibrated into the declared pAUC band and recorded	4	4	0	0	0	0	9.13
+test-coverage-rank.R	T-RANK-2: a cell with zero-width intervals or a target at a bound is degenerate	5	5	0	0	0	0	0.013
+test-coverage-rank.R	T-RANK-3: run-level conservative is read on the miss rate	4	4	0	0	0	0	0.007
+test-coverage-rank.R	T-RANK-4: a degenerate condition makes the regime row degenerate (not offered)	1	1	0	0	0	0	0.005
+test-coverage-table.R	T-COV-ENDS: both ends and the failing condition and side are in the regime row	9	9	0	0	0	0	0.024
+test-coverage-table.R	T-COV-ENDS-2: the committed T2 table is what the summary gives on the committed detail	7	7	0	0	0	0	0.6
+test-coverage.R	pass bands: approximate run-level, within-run, exact and Clopper-Pearson	9	9	0	0	0	0	0.016
+test-coverage.R	the summary flags a paired t count passing on normal and failing on skewed data	3	3	0	0	0	0	0.012
+test-coverage.R	the catalogue has unique cells and every regime of 10.2	2	2	0	0	0	0	0.04
+test-coverage.R	small runs of a C1 and a C3 cell return one row per level	5	5	0	0	0	0	0.08
+test-coverage.R	a coverage cell run as ranges equals the cell run whole; a dropped or repeated range is refused	15	15	0	0	0	0	0.371
+test-coverage.R	seeds depend on the cell and the index only	3	3	0	0	0	0	0.043
+test-coverage.R	a coverage plan splits each cell into fixed consecutive ranges	3	3	0	0	0	0	0.043
+test-custom-arm.R	a custom arm is labelled 'not the harness baseline'	3	3	0	0	0	0	0.044
+test-custom-arm.R	a published arm: anchor reproduced, stopped, or kept as context	7	7	0	0	0	0	0.026
+test-custom-arm.R	a ticket function that refuses is recorded as refused with its class and digest	5	5	0	0	0	0	0.029
+test-declaration.R	T-DECL-1, T-DECL-2: a missing declaration; a declaration committed with another file	2	2	0	0	0	0	0.28
+test-declaration.R	T-DECL-3, T-DECL-4: a changed design file or scoring file is refused	3	3	0	0	0	0	1.229
+test-declaration.R	T-DECL-5 to T-DECL-7: evidence beside the harness is accepted; harness and product changes are refused	3	3	0	0	0	0	1.671
+test-declaration.R	T-DECL-8 and T-ENV-1: the library table against the declared hash and extras	6	6	0	0	0	0	2.195
+test-declaration.R	T-DECL-9 to T-DECL-11 and T-DECL-16: the two-stage order and the listed changes	6	6	0	0	0	0	3.285
+test-declaration.R	T-DECL-12: a correction at another commit than the counted run's is refused	2	2	0	0	0	0	0.165
+test-declaration.R	T-DECL-13: an amended run with its listed replacements is accepted and stamped	2	2	0	0	0	0	0.98
+test-declaration.R	T-DECL-14: a changed preparation file is refused	2	2	0	0	0	0	1.095
+test-declaration.R	T-DECL-15: annotation 'none' on identifiers more than 1 % UniProt-like is refused	2	2	0	0	0	0	0.021
+test-declaration.R	T-DECL-17: the evidence check refuses two corrections of one counted run	2	2	0	0	0	0	0.017
+test-driver.R	T-DRV-1: the defaults reader reads every tag type as a browser sends it	15	15	0	0	0	0	0.065
+test-driver.R	T-DRV-2 and T-DRV-3: a choices-only update selects the first choice; a server value is not overwritten	4	4	0	0	0	0	0.023
+test-driver.R	T-DRV-4: a script may set only structural inputs, forced settings and overrides	5	5	0	0	0	0	0.026
+test-driver.R	T-DRV-5: a modal's inputs at their rendered values; Cancel is refused	4	4	0	0	0	0	0.031
+test-driver.R	T-DRV-6: a re-rendered uiOutput resets its inputs to the new rendered values	2	2	0	0	0	0	0.006
+test-driver.R	T-DRV-7 and T-DRV-8: step outcomes; a refused diagnostic step lets the cell continue	11	11	0	0	0	0	0.069
+test-driver.R	T-DRV-9: forced options are scoped to the cell, recorded, and refused when already set	5	5	0	0	0	0	0.024
+test-driver.R	enrichment buttons are refused in an action script	2	2	0	0	0	0	0.016
+test-driver.R	the matrix stage rule: factors in the model test the uncorrected matrix; display is labelled	8	8	0	0	0	0	0.019
+test-e2e.R	E2E-prot: prot_dia from cells to verdicts	56	56	0	0	0	1	666.126
+test-e2e.R	E2E-metab: metab_combined (two assays, shared ids) from cells to verdicts	59	59	0	0	0	1	287.237
+test-e2e.R	E2E-trx: trx_screen from cells to verdicts	56	56	0	0	0	1	149.325
+test-evidence.R	T-SCORE-2: phase score widens a run-level interval bound by bound to the requests' within-run rows	5	5	0	0	0	0	0.023
+test-evidence.R	the results note prints the measured coverage beside every verdict and the attribution	4	4	0	0	0	0	0.012
+test-evidence.R	the hand-off folder: admitted only counted with every data input permitted, and checked	9	9	0	0	0	0	0.161
+test-evidence.R	ticket-coverage.tsv has its fixed columns; ticket-coverage-cells.tsv is admitted	2	2	0	0	0	0	0.025
+test-evidence.R	check-evidence.sh: the pre-push allow-list and hash check without R	5	5	0	0	0	0	0.067
+test-g13.R	G13-SWD083: the measured DIA-with-limpa difference passes under the rule	5	5	0	0	0	0	0.061
+test-g13.R	G13-O4: the bundle lane's six DIA-with-limpa DA steps are excluded by name	6	6	0	0	0	0	0.01
+test-g1a-entry.R	T-G1A-ENV-1: the job environment holds the CPU model, the D7 keys and the lockfile digest	12	12	0	0	0	0	0.027
+test-g1a-entry.R	T-G1A-ENV-2: the lockfile is compared between the link's commit and the job's	2	2	0	0	0	0	0.12
+test-g1a-entry.R	T-G1A-GATES: gates.md carries the environment, part (1), part (2) and the D7 mode	7	7	0	0	0	0	0.02
+test-g1a-entry.R	T-G1A-ENTRY: val-g1a.R refuses part (2) without a reference table, with its class	4	4	0	0	0	0	0.301
+test-g1a-entry.R	T-PAR-5: L1's committed DA tables are read for G13 and checked against their hash	4	4	0	0	0	0	0.32
+test-g1a.R	G1A-LOAD: KIT-199's real record is one certified link of prot_dia_limpa	8	8	0	0	0	0	0.029
+test-g1a.R	G1A-VAL: link (i) checks each declared row's stored and live digest values	4	4	0	0	0	0	0.041
+test-g1a.R	G1A-LOAD: KIT-172's real record certifies each of its four lanes	18	18	0	0	0	0	0.215
+test-g1a.R	G1A-LOAD: KIT-180 then KIT-177 on the proteomics lanes, in merge order	14	14	0	0	0	0	0.101
+test-g1a.R	G1A-ADOPT: reference rows are adopted by (lane, step, class) and key sets	5	5	0	0	0	0	0.053
+test-g1a.R	G1A-D7: the release-commit DA values against the link's da-runner table	9	9	0	0	0	0	0.084
+test-g1a.R	G1A-D7: exact only on the link's CPU models with its whole recorded environment	7	7	0	0	0	0	0.033
+test-g1a.R	G1A-REL: VAL-133 (2): identical captures first, else values; certified with the difference	8	8	0	0	0	0	0.049
+test-g1a.R	G1A-P1: part (1) compares installed against load_all; prot_dia stops at da	6	6	0	0	0	0	0.014
+test-g1a.R	G1A-P2: part (2) reads each lane's chain from the history and judges the live run	6	6	0	0	0	0	0.606
+test-helpers.R	T-HELP-1: extraction runs no top-level code	2	2	0	0	0	0	0.01
+test-helpers.R	T-HELP-2: the closure is extracted and hashed; a call to nothing defined is refused	6	6	0	0	0	0	0.044
+test-inputs.R	T-IN-1 to T-IN-3: a missing column, a bad URL and a bad hash format are refused	5	5	0	0	0	0	0.069
+test-inputs.R	T-IN-4 and T-IN-5: size and hash mismatches are refused and the file deleted	4	4	0	0	0	0	0.046
+test-inputs.R	T-IN-6: a verified input is reached by role; an undeclared role is refused	3	3	0	0	0	0	0.025
+test-inputs.R	T-IN-7: 2.5 times the bytes to fetch above the free space is refused	1	1	0	0	0	0	0.016
+test-inputs.R	T-IN-8: three members of one archive from one download, each verified	4	4	0	0	0	0	0.039
+test-inputs.R	T-IN-9: an optional role that cannot be fetched is recorded, a required one refused	3	3	0	0	0	0	0.03
+test-inputs.R	the record phase hashes inputs and members; two equal records compare equal	3	3	0	0	0	0	0.04
+test-inputs.R	T-ANN-1: an incomplete or empty UniProt answer refuses the record	7	7	0	0	0	2	0.048
+test-inputs.R	T-PRE-1: phase pre admits listed aggregates only and refuses truth reads	4	4	0	0	0	0	0.063
+test-integration.R	the workbook functions run in a user's order with every setting recorded	9	9	0	0	0	0	0.023
+test-integration.R	a departure from a setting that does not exist is refused; the hook gets the results	5	5	0	0	0	0	0.047
+test-intervals.R	T-ORD: order-statistic intervals and their achieved levels	7	7	0	0	0	0	0.016
+test-intervals.R	T-PT: paired t on eight per-unit differences	5	5	0	0	0	0	0.01
+test-intervals.R	T-JK-1: the delete-one jackknife of the mean has SE sd / sqrt(n)	2	2	0	0	0	0	0.006
+test-intervals.R	T-JK-2: jackknife from full and deletion values	3	3	0	0	0	0	0.006
+test-intervals.R	T-JK-2-bias: the bias estimate and its flag against half the margin	3	3	0	0	0	0	0.007
+test-intervals.R	T-JK-log: the log transform and an undefined deletion	4	4	0	0	0	0	0.008
+test-intervals.R	T-JK-crit: a declared critical value may be larger than t, never smaller	3	3	0	0	0	0	0.015
+test-intervals.R	T-JK-3: the jackknife of a median is refused	2	2	0	0	0	0	0.017
+test-intervals.R	the jackknife needs four deletions; dependent units are refused	2	2	0	0	0	0	0.011
+test-intervals.R	T-CP: Clopper-Pearson intervals	3	3	0	0	0	0	0.006
+test-intervals.R	T-ONE: the one-sample paired t against a fixed value	2	2	0	0	0	0	0.005
+test-intervals.R	T-WIL: Wilson intervals without an event floor	3	3	0	0	0	0	0.006
+test-intervals.R	T-NEW: Newcombe's paired interval, method 10	3	3	0	0	0	0	0.006
+test-intervals.R	T-BOOT-1: the same seed and B give identical intervals	2	2	0	0	0	0	0.659
+test-intervals.R	T-BOOT-2: a constant paired shift gives a zero-width interval at the shift	1	1	0	0	0	0	0.293
+test-intervals.R	T-BOOT-3: strata keep their sizes; clusters are resampled whole	2	2	0	0	0	0	4.667
+test-intervals.R	T-BOOT-4: B below 50 / tail probability is refused	3	3	0	0	0	0	0.018
+test-intervals.R	T-REF-FILL: the least favourable fill decides whether the verdict stands	8	8	0	0	0	0	0.018
+test-intervals.R	refusals under 30 units: one is dropped with a substitute required, two are not evaluable	3	3	0	0	0	0	0.007
+test-licence.R	T-LIC-1 to T-LIC-4: unlisted file, extra column, per-feature class, too many rows	6	6	0	0	0	0	0.072
+test-licence.R	T-LIC-5 to T-LIC-8: copies, archives and the size of scored.tsv.gz	5	5	0	0	0	0	2.348
+test-licence.R	T-LIC-9: declared outputs, keyed lineage, and path placeholders	8	8	0	0	0	0	0.09
+test-licence.R	T-LIC-10: the lifecycle keeps scored.tsv.gz and primary call counts private	3	3	0	0	0	0	0.069
+test-licence.R	T-LIC-11: result tables of a not-permitted input, label keys, attribution	6	6	0	0	0	0	0.043
+test-licence.R	T-LOG-1 and T-LOG-2: a child's text, system2 output and fd 2 reach only the private log	8	8	0	0	0	0	0.182
+test-metrics.R	T-M1/M2: bias and median absolute error with one missing estimate	10	10	0	0	0	0	0.028
+test-metrics.R	T-M2-pooled: pooled median and the mean of per-class medians	4	4	0	0	0	0	0.013
+test-metrics.R	T-M3: linear and geometric CV; a group with one finite value is skipped	3	3	0	0	0	0	0.012
+test-metrics.R	T-M4/M5/M6: confusion, FDP and sensitivity in the own and union views	10	10	0	0	0	0	0.027
+test-metrics.R	T-M4-sign: a wrong-sign call is a false discovery and its key stays a miss	8	8	0	0	0	0	0.021
+test-metrics.R	T-M4-nostat: a finite estimate without p is quantified, not testable, and a union miss	5	5	0	0	0	0	0.014
+test-metrics.R	T-M5-zero: no call gives FDP 0; an all-null truth with one call gives FDP 1	4	4	0	0	0	0	0.014
+test-metrics.R	T-M7: partial AUC from the origin, normalised by fpr_max, and the null floor	5	5	0	0	0	0	0.028
+test-metrics.R	T-M7-ties: a tied block is one straight segment	2	2	0	0	0	0	0.007
+test-metrics.R	T-M7-sign: a wrong-sign positive ranks by its one-sided p near the end	5	5	0	0	0	0	0.014
+test-metrics.R	T-M7-prev: 5 nulls in the region are refused at the default floor	1	1	0	0	0	0	0.041
+test-metrics.R	T-M8: Pearson and Spearman correlations	3	3	0	0	0	0	0.011
+test-metrics.R	T-M9: Quartet SNR from scores	1	1	0	0	0	0	0.005
+test-metrics.R	T-M9-pca: the matrix form equals the score form with prcomp's weights	2	2	0	0	0	0	0.012
+test-metrics.R	T-M10: Matthews correlation from the confusion table	2	2	0	0	0	0	0.009
+test-metrics.R	T-M10-sign: a wrong-sign key counts in FP and FN	3	3	0	0	0	0	0.011
+test-metrics.R	M11: coverage counts quantified, testable and called keys per class	4	4	0	0	0	0	0.013
+test-parity-stage.R	T-PAR-1: a parity request is read and checked	7	7	0	0	0	0	0.051
+test-parity-stage.R	T-PAR-2: the bundle's commit is the release commit, or equal over PKG_PATHS	3	3	0	0	0	0	0.121
+test-parity-stage.R	T-PAR-3: distributable.yml has stage parity and one guarded upload per platform job	3	3	0	0	0	0	0.071
+test-parity-stage.R	T-PAR-4: the request's copied L1 values must equal L1's committed evidence (5 (e))	2	2	0	0	0	0	0.106
+test-parity.R	the browser's inputValues lose their type suffixes	1	1	0	0	0	0	0.005
+test-parity.R	the ledgers are compared per action and input, with excluded client-state inputs	5	5	0	0	0	0	0.04
+test-parity.R	the browser replays the driver's actions in order and records its values before each	4	4	0	0	0	0	0.013
+test-parity.R	the bundle DA table against L1's: digest, then the values under SWD-083 (VAL-133 (1))	4	4	0	0	0	0	0.032
+test-phases.R	T-PH-1: the cell table crosses units and arms, one run per (run, arm), fixed seeds	7	7	0	0	0	0	0.029
+test-phases.R	T-PH-2: prepare.R runs in an isolated environment; universe and prepared hashes	7	7	0	0	0	0	0.059
+test-phases.R	T-PH-3: the cell runner by kind writes da.tsv; a refusal is val_arm_refused	8	8	0	0	0	0	0.044
+test-phases.R	T-PH-4: kernel arms pass the identity gate before their cells, or are all refused	5	5	0	0	0	0	0.083
+test-phases.R	T-PH-5: per-unit metric rows carry the fixed columns; blinded in the lifecycle	5	5	0	0	0	0	0.059
+test-phases.R	T-PH-6: run-level intervals over units, refusals, and blinded outcomes	5	5	0	0	0	0	0.026
+test-phases.R	T-PH-7: a phase writes its run folder (cells, metrics, comparisons, provenance)	12	12	0	0	0	0	0.532
+test-phases.R	T-PH-8: within-run bootstrap rows per unit, widening, clopper_pearson and a within-run verdict	10	10	0	0	0	0	2.71
+test-phases.R	T-PH-9: test mode cannot be forced (r1.12, 7.3)	1	1	0	0	0	0	0.019
+test-record-uniprot.R	T-R1-1: the record writes uniprot.tsv with the release and hash; the cache stays private	7	7	0	0	0	0	0.015
+test-record-uniprot.R	T-R1-2: uniprot.tsv is on the allow-list with its columns; an extra column is refused	2	2	0	0	0	0	0.021
+test-record-uniprot.R	T-R1-3: an incomplete UniProt answer refuses the record and writes nothing	2	2	0	0	0	0	0.012
+test-records.R	T-PROV-1: a complete provenance passes; a missing field fails	11	11	0	0	0	0	0.076
+test-records.R	T-PROV-2: every cell carries a replay status of G5; per-unit truths are hashed (I07, E4, E5)	8	8	0	0	0	0	0.067
+test-records.R	T-DET-1: identical, within rounding, and different tables	4	4	0	0	0	0	0.017
+test-records.R	T-DET-2: fingerprints tell a real change from a rounding one	4	4	0	0	0	0	0.011
+test-records.R	T-SCORE-1: phase score combines requests; a missing cell or another commit is refused	5	5	0	0	0	0	0.083
+test-repair.R	R-I01: featureKey(feature_id, arm) is called per arm; unmapped is excluded for all arms and counted	8	8	0	0	0	0	0.047
+test-repair.R	R-I02: the universe is the input role's features with their assays; BH per assay; outside rows stop	10	10	0	0	0	0	0.076
+test-repair.R	R-I03: ticket coverage regimes run, are pinned by hash and reach the classifier	14	14	0	0	0	0	0.112
+test-repair.R	R-I04: refusals are recorded per 4.7 and O7 (b); nothing aborts the scoring	15	15	0	0	0	0	0.083
+test-repair.R	R-I05, I07, I08: a counted phase writes the run folder of 5.7, results.md with coverage, and passes both checks	29	29	0	0	0	0	0.667
+test-repair.R	R-I08: the guard in production: a universe key as a label, a lifecycle call count, a stray file	3	3	0	0	0	0	0.479
+test-repair.R	R-I06: phase score reads the requests' within-run rows; jackknife widens to the full unit's same view	6	6	0	0	0	0	13.692
+test-repair.R	R-I09, I18: declared states follow the arm's RUV run; a diagnostic step that changes state is not ok	11	11	0	0	0	0	0.106
+test-repair.R	R-I11: the declaration's statistical schema is refused before any cell	17	17	0	0	0	0	0.142
+test-repair.R	R-I16: a member without a verdict is not_evaluable; worse_when never names a guard	4	4	0	0	0	0	0.014
+test-repair.R	R-I15: G1(a) has no limpa_da_last_digits class and no admission path (VAL-109 (5))	3	3	0	0	0	0	0.007
+test-repair.R	R-I17: the chunk backstop ends a cell blocked outside R as did_not_complete (timeout)	6	6	0	0	0	0	6.067
+test-repair.R	R-I20: anchor refusal at step anchor; within-run seed required; confusion-table metrics	4	4	0	0	0	0	0.05
+test-repair2.R	R-O8, VAL-137 (3): over independent units nothing is widened at any count; the claim's scope is stated	24	24	0	0	0	0	0.098
+test-repair2.R	R-O5: T2 rows reading pass under T2's band and conservative under r1.13's; both printed	5	5	0	0	0	0	0.018
+test-repair2.R	R-O4: a conservative row with no observed miss licenses only the statistic it simulated	5	5	0	0	0	0	0.049
+test-repair2.R	R-O4: the half-width ratio is mean half-width over the statistic's SD times z	6	6	0	0	0	0	0.156
+test-repair2.R	R-I10: the redraw generator is unchanged; the fixed generator draws features once per cell	11	11	0	0	0	0	0.182
+test-repair2.R	R-I10: under the fixed symmetric generator the plain arm's null rejection share is near 0.05	2	2	0	0	0	0	1.316
+test-repair2.R	R-I10: a plan's generator column reaches the cell in the chunk tasks and the detail	4	4	0	0	0	0	0.141
+test-repair3.R	R-I15b: live differences are classed by G1(a)'s bounds, or left outside the classes	8	8	0	0	0	0	0.031
+test-repair3.R	R-K199: no admission path; the DIA-with-limpa link is a declared change; two classes in a step	8	8	0	0	0	0	0.018
+test-repair3.R	R-K199b: counts are per (step, class), not per difference row: several keys in one step	3	3	0	0	0	0	0.011
+test-repair4.R	R-V137-2: the family bound sums each component's one-sided 95 % Clopper-Pearson upper bound	5	5	0	0	0	0	0.01
+test-repair4.R	R-V137-3: the jackknife widens only in forms (ii) and (iii); form (i) reports only	13	13	0	0	0	0	0.03
+test-repair4.R	R-E8: the SE inflation is the half-width ratio with the t factor removed	8	8	0	0	0	0	0.135
+test-repair4.R	R-E7: the pinned table names each row's generator; the classifier and results.md carry it	9	9	0	0	0	0	0.028
+test-repair4.R	R-E4: per-unit truths are hashed into provenance	12	12	0	0	0	0	0.512
+test-repair4.R	R-DI10b: the one-directional fixed generator keeps the fixed draw and moves every changed feature up	5	5	0	0	0	0	0.371
+test-replay.R	a replay giving the same DA table is identical	2	2	0	0	0	0	0.006
+test-replay.R	a replay giving other values differs, with the largest difference	3	3	0	0	0	0	0.009
+test-replay.R	a replay the package refuses is unsupported, with its class	2	2	0	0	0	0	0.013
+test-replay.R	T-REP-1: the store comparison names a differing state and a differing DA result	7	7	0	0	0	0	0.082
+test-replay.R	T-REP-2: a refused replay is unsupported with its class; a differing one is not swallowed	8	8	0	0	0	0	0.028
+test-replay.R	T-REP-3: the replay block of a cell: declared, not declared, not run	9	9	0	0	0	0	0.016
+test-replay.R	T-REP-4: a declared replay cell runs on metab_combined; its result is written and checked	11	11	0	0	0	0	137.166
+test-score.R	T-BH: the matched rule is Benjamini-Hochberg of the raw p	3	3	0	0	0	0	0.013
+test-score.R	T-BH-assay: one family per assay; the same key in two assays is two rows	4	4	0	0	0	0	0.014
+test-score.R	T-VIEW: intersection, union, and union metrics unchanged by a third arm	3	3	0	0	0	0	0.022
+test-score.R	T-KEY: a duplicate in one arm and an unmapped key in another leave the comparison	4	4	0	0	0	0	0.015
+test-score.R	T-VIEW: an own-view comparison between arms is refused by the classifier	1	1	0	0	0	0	0.014
+test-score.R	T-BLIND-1: two truths with one key set and label multiset blind identically	4	4	0	0	0	0	0.017
+test-tab-repair.R	T-TAB-OFF: prot_dia_limpa with RUV off completes and writes no RUV factors	4	4	0	0	0	0	103.05
+test-tab-repair.R	T-TAB-OFF: trx_screen with RUV off completes and writes no RUV factors	3	3	0	0	0	0	20.904
+test-tab-repair.R	T-PRE-RUV: prot_dia matrix_pre_ruv.tsv is the product's record of the RUV input	3	3	0	0	0	0	272.532
+test-tab-repair.R	T-PRE-RUV: prot_lfq matrix_pre_ruv.tsv is the product's record of the RUV input	3	3	0	0	0	0	162.518
+test-tab-repair.R	T-PRE-RUV: prot_tmt matrix_pre_ruv.tsv is the product's record of the RUV input	3	3	0	0	0	0	161.314
+test-tab-repair.R	T-PRE-RUV: prot_dia_limpa matrix_pre_ruv.tsv is the product's record of the RUV input	3	3	0	0	0	0	167.556
+test-tab-ruv.R	T-TAB-RUV: prot_lfq on its generated input with the shipped arm writes every standard table	8	8	0	0	0	0	167.24
+test-tab.R	T-TAB: prot_dia writes the standard tables with their columns	12	12	0	0	0	0	214.432
+test-tab.R	T-TAB: prot_dia_limpa writes the standard tables with their columns	16	16	0	0	0	0	149.666
+test-tab.R	T-TAB: prot_lfq writes the standard tables with their columns	12	12	0	0	0	0	110.132
+test-tab.R	T-TAB: prot_lfq_fragpipe writes the standard tables with their columns	12	12	0	0	0	0	112.007
+test-tab.R	T-TAB: prot_tmt writes the standard tables with their columns	12	12	0	0	0	0	111.241
+test-tab.R	T-TAB: trx_screen writes the standard tables with their columns	16	16	0	0	0	0	24.477
+test-tab.R	T-TAB: lipid_canonical writes the standard tables with their columns	13	13	0	0	0	0	71.559
+test-tab.R	T-TAB: metab_lc writes the standard tables with their columns	13	13	0	0	0	0	66.883
+test-tab.R	T-TAB: metab_gc writes the standard tables with their columns	13	13	0	0	0	0	49.099
+test-tab.R	T-TAB: metab_combined writes the standard tables with their columns	13	13	0	0	0	0	64.18
+test-units.R	T-CHUNK-1 and T-CHUNK-2: an erroring cell and a refusing cell keep the others	4	4	0	0	0	0	0.262
+test-units.R	T-CHUNK-3 and T-CHUNK-5: a cell over its own limit times out and later cells complete	2	2	0	0	0	0	3.339
+test-units.R	T-CHUNK-4 and T-CHUNK-6: a killed chunk; its unstarted cells complete in a fresh chunk	4	4	0	0	0	0	0.504
+test-units.R	T-CHUNK-7: four chunks run at the same time	3	3	0	0	0	0	2.538
+test-units.R	T-RUN-1: two unit rows naming one run execute it once and are scored twice	3	3	0	0	0	0	0.229
+test-units.R	T-RNG-1: a cell that draws random numbers is flagged	2	2	0	0	0	0	0.249
+test-units.R	valUnitsDropReplicate deletes replicate r from every group; a group without it stays whole	4	4	0	0	0	0	0.018
+test-valrun.R	T-RUN-E2: val-run.R runs lifecycle, counted and score, and refuses with its class	21	21	0	0	0	0	4.473
+test-workflow.R	a toy cell runs to its end: outcomes per step, the diagnostic refusal recorded	5	5	0	0	0	0	0.156
+test-workflow.R	the ledger: rendered defaults, a choices-only server update, modal inputs, a re-render	17	17	0	0	0	0	0.201
+test-workflow.R	a refused step ends the cell; later steps do not run	3	3	0	0	0	0	0.074
+test-workflow.R	an R error is did_not_complete (error); a wrong state is (unexpected_state)	4	4	0	0	0	0	0.112
+test-workflow.R	a script setting a non-structural input is refused; an enrichment press is refused	2	2	0	0	0	0	0.09
+test-workflow.R	forced options and inputs are scoped to the cell and recorded (KIT-163 N9)	6	6	0	0	0	0	0.153
+test-workflow.R	an arm's overrides are set with source override; one not rendered is refused	2	2	0	0	0	0	0.208
+test-workflow.R	the hook-side callback runs inside the session after the steps, with the cell's context	3	3	0	0	0	0	0.13
+test-workflow.R	a not_permitted ledger masks the listed inputs' identifiers by SHA-256 (5.2)	2	2	0	0	0	0	0.006

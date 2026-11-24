@@ -1,0 +1,7 @@
+figure	value
+random-list settings with a q-value estimate above 0.075	8
+their cells and parent terms	1 none; 1 is_a_part_of_regulates; 2 none; 4 none; 4 is_a_part_of_regulates; 7 none; 8 none; 8 is_a_part_of_regulates
+planted lists tested without parent terms (deciding cells)	88,90,78,59,53,42,90,125,137
+q-value pooled share, lists of 25 with parent terms (cell 13)	25.2
+q-value mean FDP among lists with a call, worst	46.5
+default mean FDP among lists with a call, worst	3.3

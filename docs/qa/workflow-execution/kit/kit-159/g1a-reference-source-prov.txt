@@ -1,0 +1,10 @@
+file	g1a-reference-source.txt
+sha256	167f90528aff832da5033abcc9c2c515ed7e5936268b51a34d7da55d0e4a0f73
+source	run 44953187101, artifact results, failures.txt (preserved at tickets/kit/evidence-run-44953187101/failures.txt; byte-identical to the base side's failures-base.txt)
+source_sha256	1b918062f8c94a3c10859a965f5f1120ea3c692ae70181039846c66a43730bde
+source_lines	79093
+run_base	12d68ca7 (load_all, reference BLAS)
+extraction	every block (from a line "file: <name>" to the next such line) whose name matches ^test-gui-entry-.*[.]R$, bytes unchanged, in source order
+blocks	69 (all kind: failure; each ends in helper-gui-entry.R:414)
+per_file	test-gui-entry-lipidomics.R 4; test-gui-entry-metabolomics.R 30; test-gui-entry-proteomics.R 22; test-gui-entry-transcriptomics.R 13 (equal to the KIT-156 record, rc-run-declaration.md:86-88)
+committed	2026-11-24, KIT-159 (coordinator's ruling (3)), before the artifact expires (about 2026-12-21)

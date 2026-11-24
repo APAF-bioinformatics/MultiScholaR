@@ -89,6 +89,7 @@ runProteinReplicateFilterApplyStep <- function(workflowData,
                                                newClusterFn = if (exists("new_cluster")) get("new_cluster") else NULL,
                                                isTestModeFn = is_test_mode,
                                                nowFn = Sys.time) {
+  assertProtQcHeadNotNormalised(workflowData) # KIT-182 (VAL-91 D1)
   pending <- if (identical(workflowData$state_manager$current_state, "protein_replicate_filtered"))
     resumeDIAProteinAction(workflowData, "protein_replicate_filtered") else NULL
   if (!is.null(pending)) return(pending)
@@ -282,6 +283,7 @@ mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_p
       read_result = readManagedProteinResult)
     runApplyObserver <- function(groupingVariable, parallelCores) {
       if (!is.null(workflowSessionApplication(session))) {
+        if (!protQcManagedApplyAllowed(workflow_data, "protein replicate filter")) return(invisible(NULL)) # KIT-182
         managed_step$apply(list(grouping_variable = groupingVariable %||% "group", parallel_cores = parallelCores %||% 4))
         return(invisible(NULL))
       }

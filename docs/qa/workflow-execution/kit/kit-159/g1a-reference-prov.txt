@@ -1,0 +1,10 @@
+file	g1a-reference.tsv
+sha256	3228c90063a294dd7697eb70396528a539f24effe85c05a7915aff5ad0dad174
+rows	73 (declared_change (KIT-199) 6; integration_artifacts 24; kit128_technical_replicates 13; metab_fixture_4 30)
+built_by	val-g1r.R, run 45374320806 (G1Rf) at c9f6f4bf (ticket 712c16f0 merged with staging 241914cb); byte-identical to g1r/g1a-reference-own-rows.tsv
+source	g1a-reference-source.txt (sha256 167f90528aff832da5033abcc9c2c515ed7e5936268b51a34d7da55d0e4a0f73), the 69 GUI-entry blocks of run 44953187101 failures.txt
+source_sha256	1b918062f8c94a3c10859a965f5f1120ea3c692ae70181039846c66a43730bde
+step_order	tests/testdata/gui-entry/<lane>.json at 12d68ca7
+declared	docs/qa/workflow-execution/kit/kit-199/declared-keys.tsv (staging 241914cb)
+adopted	KIT-180 g1a-reference-protein-lanes.tsv (12 groups) and KIT-199 g1a-reference-dia-limpa.tsv (10 groups) agree; KIT-172 k156-gui-entry-failures.tsv (34 groups) agrees except 18 keys, adopted with G1(r) own rows by the coordinator ruling on re-audit 3 R3.B3 (2026-11-24); KIT-172 file not edited
+errata	harness/msrval/inst/extdata/g1r-key-errata.tsv; defect record g1a-reference-errata.md

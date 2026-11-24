@@ -1,0 +1,26 @@
+check	value	holds
+anchor_lane_passed	TRUE	TRUE
+anchor_copy_digest_equals_record_at_da	TRUE	TRUE
+base_lane_passed	TRUE	TRUE
+base_copy_digest_equals_record_at_da	TRUE	TRUE
+head_lane_passed	TRUE	TRUE
+head_copy_digest_equals_record_at_da	TRUE	TRUE
+steps_anchor_base_bytes_identical	TRUE	TRUE
+steps_anchor_base_parsed_identical	TRUE	TRUE
+steps_base_head_bytes_identical	TRUE	TRUE
+steps_base_head_parsed_identical	TRUE	TRUE
+steps_head_frozen_bytes_identical	TRUE	TRUE
+steps_head_frozen_parsed_identical	TRUE	TRUE
+raw_da_anchor_base_head_identical	007dea033dab,007dea033dab,007dea033dab	TRUE
+frozen_vs_base_rows	34 observed, 34 expected	TRUE
+frozen_vs_base_absent_sides_as_reference	0	TRUE
+frozen_vs_base_outside_rows	0	TRUE
+frozen_vs_base_steps_per_class	declared_change (KIT-199): 6 steps; integration_artifacts: 4 steps	TRUE
+base_da_digest_at_six_steps	8a4c2dd50ad521daf9b407f9d3beb2ba5bff2b3bd393b3a48fdf13e7bcd112b9	TRUE
+stored_da_digest_at_six_steps	80cfedaae858a2e93b87185583156c17b106b157ac02e3eacfc068edf7679b47	TRUE
+anchor_vs_base_rows	0	TRUE
+base_vs_head_rows	0	TRUE
+head_vs_frozen_new_rows	0	TRUE
+negative_control_two_planted_rows_outside	TRUE	TRUE
+da_runner_written	393 x 22	TRUE
+environment_complete	TRUE	TRUE

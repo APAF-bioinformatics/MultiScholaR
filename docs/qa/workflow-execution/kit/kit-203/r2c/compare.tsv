@@ -1,0 +1,19 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-enrichment-significance.R	0	0	0	0	absent	191	0	0	0	ok	only-on-head		
+test-go-propagation.R	319	0	0	1	ok	331	0	0	1	ok	count-changed	counts: KIT-173 T11(a, b, c): the clusterProfiler paragraph states the record's sets, family, q-value and background (passed 49 -> 61, skipped 0 -> 0)	
+test-general-enrichment-shared.R	136	0	0	2	ok	139	0	0	2	ok	count-changed	counts: processEnrichments unsupported-organism branch preserves GO annotation enrichment and plot assembly (passed 11 -> 13, skipped 0 -> 0); counts: the tab's plot is the run's saved plot, and a stored plot is shown as stored (KIT-119) (passed 14 -> 15, skipped 0 -> 0)	
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-workflow-omics-binding-steps.R	58	1	0	0	failed	58	1	0	0	failed	same		
+test-module-ci-prot-enrich.R	79	0	0	2	ok	79	0	0	2	ok	same		
+test-e2e-enrichment-doubles.R	34	0	0	0	ok	34	0	0	0	ok	same		
+test-e2e-fixture-integrity.R	1	0	0	0	ok	1	0	0	0	ok	same		
+test-e2e-transcriptomics-screen.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-omic-enrich-module.R	1059	11	0	0	failed	1045	25	0	0	failed	new-failure	new-failure: (a) the enrichment UI keeps its HTML, ids, test ids, tab titles, labels, help texts, choices and defaults; message-changed: (b) in process: clusterprofiler; message-changed: (b) in process: kernel_clusterprofiler; message-changed: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step; counts: (a) the enrichment UI keeps its HTML, ids, test ids, tab titles, labels, help texts, choices and defaults (passed 10 -> 4, skipped 0 -> 0); counts: (b) in process: clusterprofiler (passed 155 -> 148, skipped 0 -> 0); counts: (b) in process: kernel_clusterprofiler (passed 62 -> 61, skipped 0 -> 0)	
+test-omics-enrich-core.R	234	7	0	1	failed	232	9	0	1	failed	message-changed	message-changed: (W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step; message-changed: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step; counts: (W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step (passed 23 -> 22, skipped 0 -> 0); counts: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step (passed 17 -> 16, skipped 0 -> 0)	
+test-prot-11-enrichment-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-11a-enrichment-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-workflow-class-declarations.R	188	0	0	0	ok	188	0	0	0	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-prot-annotation-uniprot-empty.R	327	0	0	0	ok	327	0	0	0	ok	same		
+test-prot-annotation-uniprot-direct-shared.R	21	0	0	0	ok	21	0	0	0	ok	same		

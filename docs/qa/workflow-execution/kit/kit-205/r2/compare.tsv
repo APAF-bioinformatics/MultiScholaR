@@ -1,0 +1,27 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-prot-missing-value-counts.R	67	0	0	0	ok	67	0	0	0	ok	same		
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		
+test-kit205-enrichment-background.R	0	0	0	0	absent	228	0	0	0	ok	only-on-head		
+test-omic-enrich-module.R	1051	19	0	0	failed	1042	28	0	0	failed	new-failure	new-failure: (a) the enrichment UI keeps its HTML, ids, test ids, tab titles, labels, help texts, choices and defaults; message-changed: (b) in process: clusterprofiler; message-changed: (b) in process: kernel_clusterprofiler; message-changed: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step; new-failure: (R3, P-28) an unfiltered run keeps its nine declared names, its record, its product and its identity; counts: (a) the enrichment UI keeps its HTML, ids, test ids, tab titles, labels, help texts, choices and defaults (passed 10 -> 7, skipped 0 -> 0); counts: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step (passed 20 -> 15, skipped 0 -> 0); counts: (R3, P-28) an unfiltered run keeps its nine declared names, its record, its product and its identity (passed 5 -> 4, skipped 0 -> 0)	
+test-kit129-run-path.R	687	6	0	1	failed	687	6	0	1	failed	same		
+test-integration-model.R	263	0	0	0	ok	263	0	0	0	ok	same		
+test-prot-annotation-uniprot-empty.R	327	0	0	0	ok	327	0	0	0	ok	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-go-propagation.R	331	0	0	1	ok	331	0	0	1	ok	same		
+test-omics-enrich-core.R	232	9	0	1	failed	232	9	0	1	failed	message-changed	message-changed: (W2, core side) runWorkflowEnrichment gives W1 (b)'s clusterprofiler run step; message-changed: (W2, core side) runWorkflowEnrichment gives W1 (b)'s kernel_clusterprofiler run step	
+test-workflow-trx-declarations.R	285	39	0	0	failed	285	39	0	0	failed	same		
+test-enrichment-significance.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-workflow-metab-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-lipid-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-integration-mofa-model.R	0	0	0	4	ok	0	0	0	4	ok	same		
+test-workflow-omics-binding-steps.R	58	1	0	0	failed	58	1	0	0	failed	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-general-enrichment-shared.R	139	0	0	2	ok	139	0	0	2	ok	same		
+test-kit172-log2-rule.R	212	0	0	0	ok	212	0	0	0	ok	same		
+test-workflow-operation-registry.R	1095	2	0	0	failed	1095	2	0	0	failed	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-prot-11-enrichment-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-module-ci-prot-enrich.R	79	0	0	2	ok	79	0	0	2	ok	same		
+test-prot-11a-enrichment-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		

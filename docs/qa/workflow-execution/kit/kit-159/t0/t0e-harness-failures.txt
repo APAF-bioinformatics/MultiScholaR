@@ -1,0 +1,30 @@
+== test-parity-stage.R :: T-PAR-1: a parity request is read and checked (1 not passed)
+Error in `valParityRequest(parityRequest(dir))`: could not find function "valParityRequest"
+
+== test-parity-stage.R :: T-PAR-2: the bundle's commit is the release commit, or equal over PKG_PATHS (1 not passed)
+Error in `valCheckBundleCommit(list(package_commit = first), first, "R", repo)`: could not find function "valCheckBundleCommit"
+
+== test-parity-stage.R :: T-PAR-3: distributable.yml has stage parity and one guarded upload per platform job (1 not passed)
+Error in `valCheckParityWorkflow(wf)`: could not find function "valCheckParityWorkflow"
+
+== test-phases.R :: T-PH-1: the cell table crosses units and arms, one run per (run, arm), fixed seeds (1 not passed)
+Error in `valPhaseCells(decl, "d1", units, phase = "counted")`: could not find function "valPhaseCells"
+
+== test-phases.R :: T-PH-2: prepare.R runs in an isolated environment; universe and prepared hashes (1 not passed)
+Error in `valTicketEnv(toyTicket(dir))`: could not find function "valTicketEnv"
+
+== test-phases.R :: T-PH-3: the cell runner by kind writes da.tsv; a refusal is val_arm_refused (1 not passed)
+Error in `valTicketEnv(toyTicket(dir))`: could not find function "valTicketEnv"
+
+== test-phases.R :: T-PH-4: kernel arms pass the identity gate before their cells, or are all refused (1 not passed)
+Error in `valTicketEnv(toyTicket(dir))`: could not find function "valTicketEnv"
+
+== test-phases.R :: T-PH-5: per-unit metric rows carry the fixed columns; blinded in the lifecycle (1 not passed)
+Error in `valTicketEnv(toyTicket(dir))`: could not find function "valTicketEnv"
+
+== test-phases.R :: T-PH-6: run-level intervals over units, refusals, and blinded outcomes (1 not passed)
+Error in `valRunLevel(decl, metrics, toyUnits(), regimes = regimes, phase = "counted")`: could not find function "valRunLevel"
+
+== test-phases.R :: T-PH-7: a phase writes its run folder (cells, metrics, comparisons, provenance) (1 not passed)
+Error in `valRunPhase(phase = "lifecycle", decl = decl, dataset = "d1", units = toyUnits(), label = "toy", code_files = code, data_dir = dir, work_dir = file.path(dir, "work"), out_dir = file.path(dir, "val-out"), chunks = 2L, regimes = regimeRows("paired_t", 2L))`: could not find function "valRunPhase"
+

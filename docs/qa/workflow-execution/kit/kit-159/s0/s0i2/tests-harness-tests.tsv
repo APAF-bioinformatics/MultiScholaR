@@ -1,0 +1,14 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-alternatives.R	T-ALT-1: export-then-load: export after the last normalisation step, load before DA	14	14	0	0	0	0	3.133
+test-alternatives.R	T-ALT-2: every button the alternative adds is rendered by the product's tab UI	9	9	0	0	0	0	0.929
+test-alternatives.R	T-ALT-3: DIA_LIMPA without the covariates button drops only that step	4	4	0	0	0	0	0.235
+test-alternatives.R	T-ALT-4: valCompareAlternative reports digest, largest difference and changed calls	12	12	0	0	0	0	0.043
+test-alternatives.R	T-S0-1: the S0 plan: ten accepted routes, four alternatives, the two-species route	9	9	0	0	0	0	0.123
+test-alternatives.R	T-S0-2: S0 ends before any route unless every named test file ran and passed	9	9	0	0	0	0	0.04
+test-corpus.R	T-CORP-1: each corpus declares its generator, arguments and the routes it serves	24	24	0	0	0	0	0.116
+test-corpus.R	T-CORP-2: each corpus is written with its manifest, twice byte-identically; generators untouched	103	103	0	0	0	0	4.799
+test-corpus.R	T-CORP-3: a route's cell on its corpus: files, format, design and contrast agree with the data	85	85	0	0	0	0	2.195
+test-corpus.R	T-CORP-4: a proteomics corpus carries a UniProt cache covering its FASTA; the rule passes	5	5	0	0	0	0	0.328
+test-corpus.R	T-CORP-5: the two-species input: the prot_dia report, a FASTA of two organisms, the box forced	10	10	0	0	0	0	1.8
+test-corpus.R	T-CORP-6: on the two-species input the driver confirms the organism modal at its rendered values	6	6	0	0	0	0	6.823
+test-tab-ruv.R	T-TAB-RUV: prot_lfq on its generated input with the shipped arm writes every standard table	8	8	0	0	0	0	147.583

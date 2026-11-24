@@ -1,0 +1,15 @@
+== test-g1r.R :: G1R-READ: the 69 committed blocks name 69 (lane, step) pairs, 4, 30, 22, 13 per file (1 not passed)
+Error in `valReadG1rBlocks(g1rSource())`: could not find function "valReadG1rBlocks"
+
+== test-g1r.R :: G1R-FORMS: each waldo form gives (field, key, base = expected, live = actual) (1 not passed)
+Error in `valReadG1rBlocks(g1rBlock(c("`actual$artifacts` is length 3", "`expected$artifacts` is length 2", "", "names(actual$artifacts)[1:3] vs names(expected$artifacts)[1:2]", "  \"<store entries>\"", "- \"integration/x/a.parquet\"", "  \"results/b.tsv\"", "", "`actual$artifacts$integration/x/a.parquet` is a character vector ('<present>')", "`expected$artifacts$integration/x/a.parquet` is absent", "", "actual$states$s1 vs expected$states$s1", "- \"live1\"", "+ \"base1\"", "", "lines(actual$outputs$o-1)[2:4] vs lines(expected$outputs$o-1)[2:4]",      "  \"same\"", "- \"after: 207\"", "+ \"after: 188\"", "  \"same too\"", "", "actual$notifications[[1]]$message vs expected$notifications[[1]]$message", "- \"m 206\"", "+ \"m 187\"", "", "`actual$notifications[[9]]` is a list", "`expected$notifications[[9]]` is absent", "", "`actual$artifacts$<store entries>` is a character vector ('3')", "`expected$artifacts$<store entries>` is a character vector ('2')")))`: could not find function "valReadG1rBlocks"
+
+== test-g1r.R :: G1R-UNREADABLE: a line outside the four forms, or no lane and step, is unreadable (1 not passed)
+Error in `valReadG1rBlocks(g1rBlock(c("actual$states$s1 vs expected$states$s1", "- \"a\"", "+ \"b\"", "", "a line in no form")))`: could not find function "valReadG1rBlocks"
+
+== test-g1r.R :: G1R-CLASS: every step has a class of G1(a); 73 rows, two per prot_dia_limpa summary step (1 not passed)
+Error in `valG1rDiffs(valReadG1rBlocks(g1rSource()))`: could not find function "valG1rDiffs"
+
+== test-g1r.R :: G1R-ADOPT: KIT-180's and KIT-199's rows agree; KIT-172's disagree in 18 groups (1 not passed)
+Error in `valG1rDiffs(valReadG1rBlocks(g1rSource()))`: could not find function "valG1rDiffs"
+

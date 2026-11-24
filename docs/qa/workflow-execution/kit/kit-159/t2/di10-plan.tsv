@@ -1,0 +1,8 @@
+task	request	cell	range	sim_from	sim_to	target_from	target_to	est_seconds	generator
+C4-143.r01	D	C4-143	1	1	2000	1	20000	187	fixed_symmetric
+C4-145.r01	D	C4-145	1	1	2000	1	20000	166	fixed_symmetric
+C4e-147.r01	D	C4e-147	1	1	2000	1	20000	804	fixed_symmetric
+C4e-149.r01	D	C4e-149	1	1	2000	1	20000	1045	fixed_symmetric
+C4-146.r01	H	C4-146	1	1	200	1	2000	200	redraw
+C4e-148.r01	H	C4e-148	1	1	100	1	1000	530	redraw
+C4e-148.r02	H	C4e-148	2	101	200	1001	2000	530	redraw

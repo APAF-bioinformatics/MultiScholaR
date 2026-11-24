@@ -1,0 +1,18 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-metrics.R	T-M1/M2: bias and median absolute error with one missing estimate	10	10	0	0	0	0	0.121
+test-metrics.R	T-M2-pooled: pooled median and the mean of per-class medians	4	4	0	0	0	0	0.02
+test-metrics.R	T-M3: linear and geometric CV; a group with one finite value is skipped	3	3	0	0	0	0	0.05
+test-metrics.R	T-M4/M5/M6: confusion, FDP and sensitivity in the own and union views	10	10	0	0	0	0	0.029
+test-metrics.R	T-M4-sign: a wrong-sign call is a false discovery and its key stays a miss	8	8	0	0	0	0	0.02
+test-metrics.R	T-M4-nostat: a finite estimate without p is quantified, not testable, and a union miss	5	5	0	0	0	0	0.013
+test-metrics.R	T-M5-zero: no call gives FDP 0; an all-null truth with one call gives FDP 1	4	4	0	0	0	0	0.013
+test-metrics.R	T-M7: partial AUC from the origin, normalised by fpr_max, and the null floor	5	5	0	0	0	0	0.045
+test-metrics.R	T-M7-ties: a tied block is one straight segment	2	2	0	0	0	0	0.008
+test-metrics.R	T-M7-sign: a wrong-sign positive ranks by its one-sided p near the end	5	5	0	0	0	0	0.013
+test-metrics.R	T-M7-prev: 5 nulls in the region are refused at the default floor	1	1	0	0	0	0	0.021
+test-metrics.R	T-M8: Pearson and Spearman correlations	3	3	0	0	0	0	0.013
+test-metrics.R	T-M9: Quartet SNR from scores	1	1	0	0	0	0	0.005
+test-metrics.R	T-M9-pca: the matrix form equals the score form with prcomp's weights	2	2	0	0	0	0	0.136
+test-metrics.R	T-M10: Matthews correlation from the confusion table	2	2	0	0	0	0	0.008
+test-metrics.R	T-M10-sign: a wrong-sign key counts in FP and FN	3	3	0	0	0	0	0.009
+test-metrics.R	M11: coverage counts quantified, testable and called keys per class	4	4	0	0	0	0	0.011
