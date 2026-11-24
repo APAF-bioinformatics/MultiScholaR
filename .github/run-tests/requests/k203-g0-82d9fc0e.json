@@ -1,0 +1,40 @@
+{
+  "requested_by": "KIT-203 G0: base gate, 400 of KIT-189's cell-1 lists through the shipped processEnrichments (q-value calls list by list), and the base fixtures for S3/S4/S6",
+  "label": "KIT-203 G0 on 82d9fc0e (R/ = v0.9-staging 9453e79b)",
+  "package_commit": "82d9fc0eb490cf268ac5bc647362db85b2f773df",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/gate-k203.R",
+      "args": [
+        "g0",
+        "k203-g0"
+      ],
+      "env": {
+        "K203_WORKERS": "4"
+      },
+      "out": "k203-g0",
+      "timeout_minutes": 50
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/capture-k203.R",
+      "args": [
+        "k203-g0/e0-accessions.tsv",
+        "k203-capture"
+      ],
+      "out": "k203-capture",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
