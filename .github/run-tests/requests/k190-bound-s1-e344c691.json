@@ -1,0 +1,35 @@
+{
+  "requested_by": "KIT-190 COUNTED stage 1 of the bounded-k measurement (declaration revision 9): seeds 1 to 50 of the capped arms; returns only reestimate.tsv and provenance.json",
+  "label": "KIT-190 bounded-k stage 1 e344c691",
+  "package_commit": "e344c69142269110b7c9918f8e01940d78a9120b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "stage1",
+        "k190-s1"
+      ],
+      "env": {
+        "K190_WORKERS": "2"
+      },
+      "out": "k190-s1",
+      "out_pattern": "^(reestimate\\.tsv|provenance\\.json)$",
+      "timeout_minutes": 280
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
