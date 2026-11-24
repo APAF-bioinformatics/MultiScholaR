@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-220 instrument re-run 1 of G0 + R1 (VAL-54; run 45498530109: fixture row names, G0 helper, trx manifest note env); base code at bb092685",
+  "label": "KIT-220 G0b + R1b at bb092685 (tests-only, base code)",
+  "package_commit": "bb09268594ab97891c38183a88cfee35886bd494",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit220-da-threshold-consumers.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 55,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-220/g0.R",
+      "args": [
+        "kit220-g0"
+      ],
+      "out": "kit220-g0",
+      "timeout_minutes": 80
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
