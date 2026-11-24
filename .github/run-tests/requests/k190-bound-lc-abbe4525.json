@@ -1,0 +1,183 @@
+{
+  "requested_by": "KIT-190 bounded-k lifecycle (bound-declaration.md revision 8, sections 7 and 8): checks (i) to (xii) and (xi-b); not counted; ceiling 60 job-minutes",
+  "label": "KIT-190 bounded-k lifecycle abbe4525",
+  "package_commit": "abbe45252cf883fb9c0868855169bb4117454d77",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "lc",
+        "k190-lc/lc"
+      ],
+      "env": {},
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 14
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "lc",
+        "k190-lc/fault"
+      ],
+      "env": {
+        "K190_FAULT": "1",
+        "K190_CELLS": "N-r"
+      },
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 4
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/decide.R",
+      "args": [
+        "selftest",
+        "k190-lc/decide-selftest"
+      ],
+      "env": {},
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 5
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/reestimate.R",
+      "args": [
+        "selftest",
+        "k190-lc/re-selftest"
+      ],
+      "env": {},
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 1
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "lc-stage1",
+        "k190-s1a"
+      ],
+      "env": {},
+      "out": "k190-s1a",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 6
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "lc-stage1",
+        "k190-s1b"
+      ],
+      "env": {
+        "K190_PLANT": "1"
+      },
+      "out": "k190-s1b",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 6
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/reestimate.R",
+      "args": [
+        "plan",
+        "k190-s1a/reestimate.tsv",
+        "k190-s1a/provenance.json",
+        "2.0",
+        "k190-lc/plan"
+      ],
+      "env": {},
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 1
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "stage2",
+        "k190-lc/s2"
+      ],
+      "env": {
+        "K190_PLAN": "docs/qa/workflow-execution/kit/kit-190/lc-plan.tsv",
+        "K190_CELLS": "N-r,N-s,N-w,E-r,E-s,E-p,E-g,E-w",
+        "K190_STAGE1_ESTIMATE": "k190-s1a/reestimate.tsv"
+      },
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 7
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "stage2",
+        "k190-lc/s2b"
+      ],
+      "env": {
+        "K190_PLAN": "docs/qa/workflow-execution/kit/kit-190/lc-plan.tsv",
+        "K190_CELLS": "N-w,E-w",
+        "K190_STAGE1_ESTIMATE": "k190-s1a/reestimate.tsv"
+      },
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 4
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/reestimate.R",
+      "args": [
+        "alter",
+        "k190-s1a/reestimate.tsv",
+        "k190-lc/altered/reestimate.tsv"
+      ],
+      "env": {},
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 1
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "bound",
+        "stage2",
+        "k190-lc/s2bad"
+      ],
+      "env": {
+        "K190_PLAN": "docs/qa/workflow-execution/kit/kit-190/lc-plan.tsv",
+        "K190_CELLS": "N-r,N-s,N-w,E-r,E-s,E-p,E-g,E-w",
+        "K190_STAGE1_ESTIMATE": "k190-lc/altered/reestimate.tsv"
+      },
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 7
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/decide.R",
+      "args": [
+        "decide",
+        "k190-lc/s2/journeys.tsv",
+        "--",
+        "k190-lc/decide"
+      ],
+      "env": {},
+      "out": "k190-lc",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 3
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
