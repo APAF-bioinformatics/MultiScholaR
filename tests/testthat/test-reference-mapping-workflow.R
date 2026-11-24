@@ -109,3 +109,16 @@ test_that("the transcriptomics features are unchanged without a gene table and g
     expect_identical(with$map_status, c("one_to_one", "no_protein", NA))
     expect_identical(with$gene_length, c(300, 401, NA))
 })
+
+test_that("a caller's scratch folder and the files in it survive the mapping (audit K167-I02)", {
+    scratch <- tempfile("k167-caller-scratch-")
+    dir.create(scratch)
+    kept <- file.path(scratch, "keep-me.txt")
+    writeLines("the caller's file", kept)
+    result <- k167Map(k167StrainFromReference(), scratch = scratch)
+    expect_identical(result$counts$by_status$one_to_one, 60L)
+    expect_true(dir.exists(scratch))
+    expect_true(file.exists(kept))
+    expect_identical(readLines(kept), "the caller's file")
+    expect_identical(list.files(scratch), "keep-me.txt")
+})
