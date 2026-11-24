@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-184 R3 part a (VAL-178 (3), the one further run): the tests-only commit for audit K184-I01 to I06, head only; the restated expectations must fail at the values in kit-184/outcome.md; ceiling 45 job-minutes",
+  "label": "KIT-184 R3a tests-only 5352a498 (failing first, K184-I01 to I06)",
+  "package_commit": "5352a4983c511bd2e790646f6f5b5ae546107d57",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-removed-factors.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

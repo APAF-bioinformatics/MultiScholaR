@@ -1,0 +1,76 @@
+{
+  "requested_by": "KIT-184 R3 part b (VAL-178 (3)): the merge d7928ac9 against staging 32766889: 29 files, check both sides; scripts: the control before the re-freeze of gui-entry/prot_dia_limpa.json (VAL-178 (2)), the base-store job with mutations; ceiling 600 job-minutes (kit-184/outcome.md)",
+  "label": "KIT-184 R3b merge d7928ac9 vs staging 32766889 (repairs, control)",
+  "package_commit": "d7928ac9d32c0917b302a2123728df64c267ff8c",
+  "base_commit": "32766889bdc9fda739ac9671011bfb46eb620642",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-removed-factors.R",
+    "test-workflow-integration-input.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-input-matrix.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-enrichment-options.R",
+    "test-integration-record.R",
+    "test-integration-gui.R",
+    "test-integration-workbook-api.R",
+    "test-integration-workbook.R",
+    "test-integration-enrichment.R",
+    "test-integration-enrichment-mofa.R",
+    "test-integration-corpus.R",
+    "test-integration-feature-selection.R",
+    "test-integration-model.R",
+    "test-integration-outputs.R",
+    "test-integration-outputs-mofa.R",
+    "test-integration-partitioned-alignment.R",
+    "test-integration-record-mofa.R",
+    "test-integration-results-mofa.R",
+    "test-integration-sample-match.R",
+    "test-kit129-run-path.R",
+    "test-kit172-downstream.R",
+    "test-workflow-analysis-record.R",
+    "test-kit206-prot-norm-export-guard.R",
+    "test-omic-summary-module.R",
+    "test-omics-summary-core.R",
+    "test-gui-entry-proteomics.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-184/gui-entry-control.R",
+      "args": [
+        "32766889bdc9fda739ac9671011bfb46eb620642",
+        "k184-out/control"
+      ],
+      "out": "k184-out",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 90
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-184/base-store-job.R",
+      "args": [
+        "a5229552e1e487da222b002f098d6a16f724354c",
+        "k184-out/x",
+        "mutations"
+      ],
+      "out": "k184-out",
+      "out_pattern": "\\.(tsv|txt|log|json)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
