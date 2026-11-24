@@ -15,6 +15,9 @@ VAL-99). Authority VAL-48, VAL-91 (D1, D2), VAL-99. Branch `kit-182-normalisatio
 
 ## Runs (`runs.tsv`)
 
+Correction pass: R1b (45326674826) on the merge 5add430b against staging 0b926295 (KIT-177 merged first); it stopped at F1 (h) (mechanics), so R2 was not repeated.
+
+
 R1 (45294678011): fix against tests-only on the regression scope (31 files) with R CMD check. R1-2 (45302634386), R1-3 (45306612548) and R1-3b (45306797628): instrument runs 1, 2 and 3 of 3 (VAL-54 (iv)) on the two affected files. R1-3 stopped at plan (empty base field) and ran no test; R1-3b repeated it with the base filled. R1's instrument budget is spent: a further instrument defect on R1's scope stops for the owner. R2 (45310866571): full suite on the merge candidate against `v0.9-staging`.
 
 ## Observed
@@ -84,7 +87,7 @@ R1 (45294678011): fix against tests-only on the regression scope (31 files) with
 |---|---|---|
 | A0 | met | ticket sections 14, 21 |
 | A1 | met | R1-3b `r1-3b-compare.tsv`, `r1-3b-failures-base.txt` |
-| A2 | met (F1 (h) without export) | `feasibility.md` |
+| A2 | partly met: F1 (h) as declared (export and reopen) not answered: in R1b the export and the archive's opening ran, the adoption into a new owner stopped on the fixture's missing contrasts table | `feasibility.md`, R1b |
 | A3 | met | `r1-compare.tsv`, `r1-3b-compare.tsv` |
 | A4 | met | `r1-check-compare.txt`, `r2-check-compare.txt` |
 | A5 | met | `r2-full-compare.tsv`, `r2-full-compare-failures.txt` |

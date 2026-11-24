@@ -25,10 +25,18 @@ met; F1's stop rule did not apply.
 
 Limitations (observed): (g) the worker's dispatch, after the controller's acceptance committed the state, stopped in the
 helper's display read ("selective tables require readSavedWorkflowTable", logged); the predicate was evaluated on the
-committed head. (h) `runProtNormExportSessionWorkflow` stopped on this fixture on both commits, before and after the QC
-change, with "saved table changed during read" (`describeDIANativeFile` on a dependency source that is not a regular
-file); after two instrument runs (VAL-54) case (h) checks the lineage after `restoreProtNormTabState` only. The export
-and a reopen into a new owner are not checked.
+committed head.
+
+(h), first run (R1, 45294678011): `runProtNormExportSessionWorkflow` stopped in `describeDIANativeFile` →
+`workflowTableFileIdentity` ("saved table changed during read", which that function raises for a missing, linked or
+directory path; `R/utils_workflow_saved_table_codec.R:486-488`): a declared dependency was absent at the owner's root. The
+test passed a temporary `sourceDir` other than the owner's `paths$source_dir` (inferred cause). The two instrument repairs
+that followed first reordered and then removed the export; that narrowed the declared case (implementation audit I01)
+and the table row above for (h) is from that narrowed case (restore only, same owner). Restored as declared in the
+correction pass (R1b, 45326674826): with `fixture$paths$source_dir` the export and `openDIANativeSession` completed;
+`adoptDIANativeSession` then stopped in `validateProtDaFilteredSession` with "Filtered session data does not contain a
+valid contrasts table." (the fixture's workflow carries no `contrasts_tbl`; the application's design step sets one).
+F1 (h) as declared is therefore not answered; stopped for the coordinator.
 
 ## F2: the QC change removes proteins
 
