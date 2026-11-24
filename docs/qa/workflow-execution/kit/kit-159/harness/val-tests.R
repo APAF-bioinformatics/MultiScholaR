@@ -13,6 +13,8 @@
 #                         (--probe-nsim, --probe-target-sims)
 #   --coverage-plan <f>   run the plan's tasks of --request <id> in --chunks <k> concurrent
 #                         processes -> coverage-detail.tsv, coverage-table.tsv, coverage-tasks.tsv
+#                         (--nsim, --target-sims: the counts the plan was made for; a plan column
+#                         `generator` selects the I10 diagnostic generator per cell)
 #   --ticket <dir>        run a ticket's pinned tests in <dir>/tests -> <out>/ticket-tests.tsv;
 #                         with --declaration <json>, its coverage_regimes -> ticket-coverage.tsv
 #
@@ -168,6 +170,7 @@ if (!is.null(optValue("--time-regime")) || !is.null(optValue("--probe-cells"))) 
 if (!is.null(optValue("--coverage-plan"))) {
     msrval::valRunCoverage(optValue("--coverage-plan"), request = optValue("--request", "all"),
                            nsim = as.integer(optValue("--nsim", "2000")),
+                           target_sims = as.integer(optValue("--target-sims", "20000")),
                            chunks = as.integer(optValue("--chunks", "4")), out_dir = out_dir)
     say("coverage-table.tsv written")
 }

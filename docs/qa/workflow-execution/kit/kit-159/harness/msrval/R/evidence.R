@@ -169,16 +169,30 @@ valWriteResults <- function(path, comparisons, attribution) {
     for (i in seq_len(nrow(cmp))) {
         r <- cmp[i, ]
         twice <- !is.null(r[["miss_twice_nominal"]]) && isTRUE(r[["miss_twice_nominal"]])
-        label <- if (!is.null(r[["regime_status"]]) && !is.na(r[["regime_status"]])) {
-            sprintf(" [%s]", r[["regime_status"]])
+        st <- if (is.null(r[["regime_status"]])) NA_character_ else r[["regime_status"]]
+        st2 <- if (is.null(r[["regime_status_r113"]])) NA_character_ else r[["regime_status_r113"]]
+        # O5 (VAL-109): both labels where T2's band and r1.13's miss-rate rule differ
+        label <- if (!is.na(st) && !is.na(st2) && st != st2) {
+            sprintf(" [%s under T2's band; %s under r1.13's miss-rate rule]", st, st2)
+        } else if (!is.na(st)) {
+            sprintf(" [%s]", st)
+        } else ""
+        note <- if (is.null(r[["within_note"]])) NA_character_ else r[["within_note"]]
+        note_txt <- if (is.na(note)) "" else if (grepl("6_or_more_open", note, fixed = TRUE)) {
+            paste("; within-run intervals reported beside the verdict, not widened: at 6 or more",
+                  "independent units the widening rule is open (O8)")
+        } else if (grepl("below_6", note, fixed = TRUE)) {
+            paste("; within-run intervals reported beside the verdict, not widened: independent",
+                  "units below 6 (O8, VAL-109)")
         } else ""
         lines <- c(lines, sprintf(
             paste("- %s (%s: %s - %s): %s; regime %s%s, measured coverage %s (Monte Carlo SE %s)",
-                  "at level %s, simulated on %s%s"),
+                  "at level %s, simulated on %s%s%s"),
             r[["member"]], r[["metric"]], r[["arm"]], r[["comparator"]], r[["outcome"]],
             r[["regime"]], label, format(r[["coverage"]]), format(r[["mc_se"]]),
             format(r[["conf"]]), r[["statistic"]],
-            if (twice) "; FLAG: worst-condition miss rate at least twice nominal" else ""
+            if (twice) "; FLAG: worst-condition miss rate at least twice nominal" else "",
+            note_txt
         ))
     }
     lines <- c(lines, "", "## Sources and attribution", "")

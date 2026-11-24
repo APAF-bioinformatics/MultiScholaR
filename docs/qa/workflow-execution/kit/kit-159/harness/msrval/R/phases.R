@@ -639,9 +639,12 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted",
                     member = NA_character_, component = component, not_sensitive = NA,
                     amended = NA_character_, headline = isTRUE(m[["headline"]]), blinded = blind,
                     stringsAsFactors = FALSE)
+                note <- sub("^within_run_widening=", "",
+                            grep("^within_run_widening=", flags, value = TRUE))
                 verdicts[[length(verdicts) + 1L]] <- valVerdictRow(
                     component, NA_character_, m[["id"]], cmp_arms, vk, cl, conf,
-                    fam$family[component] %||% NA_character_, decl)
+                    fam$family[component] %||% NA_character_, decl,
+                    within_note = if (length(note)) note[[1L]] else NA_character_)
             }
         }
     }
@@ -699,7 +702,8 @@ valFamilyOfComponents <- function(decl) {
 
 #' One row of the verdict side table (I05)
 #' @noRd
-valVerdictRow <- function(component, member, metric, cmp_arms, view, cl, conf, family, decl) {
+valVerdictRow <- function(component, member, metric, cmp_arms, view, cl, conf, family, decl,
+                          within_note = NA_character_) {
     fm <- if (is.na(family)) NA_integer_ else
         as.integer(decl[["primary_family"]][[family]][["m"]] %||%
                        length(decl[["primary_family"]][[family]][["members"]]))
@@ -710,13 +714,14 @@ valVerdictRow <- function(component, member, metric, cmp_arms, view, cl, conf, f
                view = view, outcome = cl$outcome %||% NA_character_, conf = conf,
                regime = cl$regime %||% NA_character_,
                regime_status = cl$regime_status %||% NA_character_,
+               regime_status_r113 = cl$regime_status_r113 %||% NA_character_,
                coverage = as.numeric(cl$coverage %||% NA_real_),
                mc_se = as.numeric(cl$mc_se %||% NA_real_),
                nsim = as.numeric(cl$nsim %||% NA_real_),
                statistic = as.character(cl$statistic %||% NA_character_),
                coverage_min = as.numeric(cl$coverage_min %||% NA_real_),
                miss_twice_nominal = isTRUE(cl$miss_twice_nominal),
-               family = family, m = fm, stringsAsFactors = FALSE)
+               family = family, m = fm, within_note = within_note, stringsAsFactors = FALSE)
 }
 
 #' Units refused for a comparison: a cell of one of its arms on the unit is not `completed`
@@ -768,6 +773,7 @@ valLevelOne <- function(decl, m, cmp_arms, v, vk, metrics, units, cells, regimes
     rf <- NULL
     withheld <- NULL
     classify <- function(iv) {
+        iv[["statistic"]] <- iv_spec[["statistic"]]
         tryCatch(valClassify(iv, m[["margin"]], hib, fixed = m[["fixed"]], view = v,
                              feature_interval_decides = isTRUE(m[["feature_interval_decides"]]),
                              regimes = regimes, accept_flagged = iv_spec[["accept_flagged"]]),
@@ -823,9 +829,13 @@ valLevelOne <- function(decl, m, cmp_arms, v, vk, metrics, units, cells, regimes
         if (!is.null(within) && length(cmp_arms) == 2L && is.null(rf)) {
             wr <- valWithinRowsOf(within, m[["id"]], cmp_arms, vk)
             if (nrow(wr) > 0L) {
-                # O8 (VAL-109): over independent units no envelope is taken; each unit's
-                # within-run interval is reported beside the verdict.
-                flags <- c(flags, sprintf("within_run_reported=%s:[%s,%s]",
+                # O8 (VAL-109): over independent units nothing is widened at any unit count; each
+                # unit's within-run interval is reported beside the verdict. Below 6 units this is
+                # the owner's ruling; at 6 or more the register leaves the rule open, so the
+                # harness reports only and says so (`widen_to_within_run` has no effect here).
+                flags <- c(flags, sprintf("within_run_widening=report_only(O8:%s)",
+                                          if (length(keep) < 6L) "below_6" else "6_or_more_open"),
+                           sprintf("within_run_reported=%s:[%s,%s]",
                                           sub("^.*unit=([^;]+);.*$", "\\1", wr$flags),
                                           signif(as.numeric(wr$ci_low), 6),
                                           signif(as.numeric(wr$ci_high), 6)))

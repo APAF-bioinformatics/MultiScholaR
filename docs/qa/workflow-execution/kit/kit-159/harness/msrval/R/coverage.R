@@ -126,8 +126,16 @@ valGenUnits <- function(n, shape, centre) {
 #' @noRd
 valCoverageRows <- function(cell, statistic, class, hits, kind, achieved = NULL,
                             undefined = NULL, target = NA_real_, zero_width = NULL,
-                            target_se = NA_real_, range = NULL, effect = NA_real_) {
+                            target_se = NA_real_, range = NULL, effect = NA_real_,
+                            half_width = NULL, estimate = NULL) {
     nsim <- nrow(hits)
+    # r1.14 (4.4) and O4 of VAL-109: the mean half-width over the simulated SD of the statistic
+    # times the level's normal quantile (1.00 for a correctly scaled interval)
+    hw_ratio <- rep(NA_real_, ncol(hits))
+    if (!is.null(half_width) && !is.null(estimate) && sum(is.finite(estimate)) > 1L) {
+        z <- stats::qnorm(1 - (1 - COVERAGE_LEVELS) / 2)
+        hw_ratio <- colMeans(half_width, na.rm = TRUE) / (stats::sd(estimate, na.rm = TRUE) * z)
+    }
     cov <- colMeans(hits)
     ach <- if (is.null(achieved)) rep(NA_real_, ncol(hits)) else colMeans(achieved, na.rm = TRUE)
     zw <- if (is.null(zero_width)) rep(NA_real_, ncol(hits)) else colMeans(zero_width)
@@ -147,7 +155,8 @@ valCoverageRows <- function(cell, statistic, class, hits, kind, achieved = NULL,
             if (degenerate[[i]]) return("degenerate")
             valCoverageStatus(kind, cov[[i]], COVERAGE_LEVELS[[i]], ach[[i]], nsim)
         }, character(1)),
-        kind = kind, zero_width = zw, effect = effect, stringsAsFactors = FALSE
+        kind = kind, zero_width = zw, effect = effect, half_width_ratio = hw_ratio,
+        stringsAsFactors = FALSE
     )
 }
 
@@ -304,6 +313,11 @@ valSpecMatrix <- function(cell, form, n_feat) {
     lay <- valCovLayout(form, g)
     # r1.13 (VAL-69): the rank cells' effect is calibrated per g into the declared pAUC band
     scale <- if (n_feat == 4840L) valRankEffect(form, g)$effect else 1
+    # I10 diagnostic (VAL-109): `fixed_symmetric` draws the feature baselines once per cell and
+    # splits the changed features +1 and -1; `redraw` (T2) draws them in every simulation
+    fixed <- if (identical(cell[["generator"]], "fixed_symmetric")) {
+        valCovFixedFeatures(cell, n_feat)
+    }
     statsOf <- function(x, l, truth) valCovStats(valCovFit(x, l, form), truth, n_feat, form)
     names_s <- if (n_feat == 4840L) {
         "rank.pauc_diff"
@@ -319,11 +333,11 @@ valSpecMatrix <- function(cell, form, n_feat) {
          range = if (n_feat == 4840L) c(-1, 1),
          effect = if (n_feat == 4840L) scale else NA_real_,
          target_one = function() {
-             dat <- valCovMatrixData(lay, n_feat, form, scale)
+             dat <- valCovMatrixData(lay, n_feat, form, scale, fixed = fixed)
              unname(statsOf(dat$x, lay, dat$truth))
          },
          sim = function(s) {
-             dat <- valCovMatrixData(lay, n_feat, form, scale)
+             dat <- valCovMatrixData(lay, n_feat, form, scale, fixed = fixed)
              full <- unname(statsOf(dat$x, lay, dat$truth))
              dels <- matrix(vapply(seq_len(g), function(u) {
                  keep <- lay$unit != u
@@ -334,7 +348,7 @@ valSpecMatrix <- function(cell, form, n_feat) {
                      valJackknife(full = full[[k]], deletions = dels[k, ], conf = l, form = form)
                  }))
              })
-             list(bounds = bounds, data = dat$x)
+             list(bounds = bounds, data = dat$x, estimate = full)
          })
 }
 
@@ -403,6 +417,7 @@ valCoverageRange <- function(cell, sims, targets = integer()) {
     n_lv <- length(COVERAGE_LEVELS)
     lo <- hi <- ach <- array(NA_real_, c(length(sims), n_lv, n_stat))
     undefined <- matrix(FALSE, length(sims), n_stat)
+    estimate <- matrix(NA_real_, length(sims), n_stat)
     digests <- character(length(sims))
     t0 <- proc.time()[["elapsed"]]
     for (i in seq_along(sims)) {
@@ -414,6 +429,7 @@ valCoverageRange <- function(cell, sims, targets = integer()) {
             ach[i, , k] <- b$achieved
             undefined[i, k] <- b$undefined
         }
+        if (!is.null(r$estimate)) estimate[i, ] <- r$estimate
         digests[[i]] <- digest::digest(r$data, algo = "sha256")
     }
     t1 <- proc.time()[["elapsed"]]
@@ -425,7 +441,8 @@ valCoverageRange <- function(cell, sims, targets = integer()) {
         target_values[j, ] <- valWithSeed(valTargetSeed(cell, targets[[j]]), spec$target_one())
     }
     list(cell = cell$cell, sims = as.integer(sims), lo = lo, hi = hi, achieved = ach,
-         undefined = undefined, digests = digests, targets = as.integer(targets),
+         undefined = undefined, estimate = estimate, digests = digests,
+         targets = as.integer(targets),
          target_values = target_values, target_sum = colSums(target_values),
          seconds_sims = t1 - t0,
          seconds_target = proc.time()[["elapsed"]] - t1)
@@ -474,6 +491,9 @@ valCombineCoverage <- function(cell, parts, nsim, target_sims) {
     hi <- bind("hi")
     ach <- bind("achieved")
     undefined <- do.call(rbind, lapply(parts, `[[`, "undefined"))[ord, , drop = FALSE]
+    est <- do.call(rbind, lapply(parts, function(p) {
+        p[["estimate"]] %||% matrix(NA_real_, length(p$sims), nrow(spec$stats))
+    }))[ord, , drop = FALSE]
     out <- do.call(rbind, lapply(seq_len(nrow(spec$stats)), function(k) {
         hits <- lo[, , k, drop = FALSE] <= target[[k]] & target[[k]] <= hi[, , k, drop = FALSE]
         hits <- matrix(hits %in% TRUE, nrow = nsim)
@@ -483,8 +503,11 @@ valCombineCoverage <- function(cell, parts, nsim, target_sims) {
                         achieved = if (st$kind == "exact") matrix(ach[, , k], nrow = nsim),
                         undefined = undefined[, k], target = target[[k]], zero_width = zero,
                         target_se = target_se[[k]], range = spec[["range"]],
-                        effect = spec[["effect"]] %||% NA_real_)
+                        effect = spec[["effect"]] %||% NA_real_,
+                        half_width = matrix((hi[, , k] - lo[, , k]) / 2, nrow = nsim),
+                        estimate = est[, k])
     }))
+    out$generator <- cell[["generator"]] %||% "redraw"
     out$seconds_sims <- sum(vapply(parts, `[[`, 0, "seconds_sims"))
     out$seconds_target <- sum(vapply(parts, `[[`, 0, "seconds_target"))
     attr(out, "data_digests") <- unlist(lapply(parts, `[[`, "digests"))[ord]
@@ -617,13 +640,15 @@ valCovLayout <- function(form, g) {
 #' changed by +1 log2 per step of the group effects, residual SD 0.3, per-sample offset SD 0.1, and
 #' for form `block` a per-feature block effect of SD 0.1
 #' @noRd
-valCovMatrixData <- function(lay, n_feat, form, scale = 1) {
+valCovMatrixData <- function(lay, n_feat, form, scale = 1, fixed = NULL) {
     n_changed <- if (n_feat == 4840L) 40L else as.integer(n_feat / 5)
     groups <- sort(unique(lay$group))
     effect <- scale * (if (length(groups) == 5L) c(0, 0.5, 1, 1.5, 2) else c(0, 1))
     changed <- seq_len(n_feat) <= n_changed
+    if (!is.null(fixed)) changed <- fixed$sign
     gi <- match(lay$group, groups)
-    x <- matrix(stats::rnorm(n_feat, 20, 1), n_feat, nrow(lay)) +
+    base <- if (is.null(fixed)) stats::rnorm(n_feat, 20, 1) else fixed$baseline
+    x <- matrix(base, n_feat, nrow(lay)) +
         outer(changed, effect[gi]) +
         matrix(stats::rnorm(nrow(lay), 0, 0.1), n_feat, nrow(lay), byrow = TRUE) +
         matrix(stats::rnorm(n_feat * nrow(lay), 0, 0.3), n_feat, nrow(lay))
@@ -633,6 +658,26 @@ valCovMatrixData <- function(lay, n_feat, form, scale = 1) {
     }
     truth <- outer(changed, effect[-1L] - effect[[1L]])
     list(x = x, truth = truth)
+}
+
+#' The I10 diagnostic generator's feature draw (VAL-109): one seeded draw per cell of the feature
+#' baselines (normal, mean 20, SD 1), and the changed features (the first fifth, or 40 of 4,840)
+#' split alternately +1 and -1, so that median normalisation is not shifted by the changes and the
+#' target is conditional on the features, as a fixed benchmark's is
+#' @noRd
+valCovFixedFeatures <- function(cell, n_feat) {
+    n_changed <- if (n_feat == 4840L) 40L else as.integer(n_feat / 5)
+    baseline <- valWithSeed(2100000000L + valCellIndex(cell), stats::rnorm(n_feat, 20, 1))
+    sign <- c(rep_len(c(1, -1), n_changed), rep(0, n_feat - n_changed))
+    list(baseline = baseline, sign = sign)
+}
+
+#' A plan row's cell, with the plan's `generator` when the plan carries one (I10)
+#' @noRd
+valPlanCell <- function(cells, p) {
+    cell <- cells[cells$cell == p$cell, ]
+    if (!is.null(p[["generator"]]) && !is.na(p[["generator"]])) cell$generator <- p[["generator"]]
+    cell
 }
 
 #' Two arms on one matrix: median normalisation, limma with group (and block) terms, contrasts of
@@ -751,6 +796,8 @@ valSummariseCoverage <- function(detail) {
                 paste(unique(side[bad]), collapse = ","),
             zero_width = if (is.null(r$zero_width)) NA_real_ else max(r$zero_width),
             effect = if (is.null(r$effect)) NA_real_ else r$effect[[1L]],
+            half_width_ratio = if (is.null(r$half_width_ratio)) NA_real_ else
+                r$half_width_ratio[[w]],
             stringsAsFactors = FALSE
         )
     })
@@ -803,7 +850,7 @@ valCoverageTasks <- function(plan_file, tasks, out_dir) {
     cells <- valCoverageCells()
     for (id in tasks) {
         p <- plan[plan$task == id, ]
-        cell <- cells[cells$cell == p$cell, ]
+        cell <- valPlanCell(cells, p)
         targets <- if (p$target_to >= p$target_from) p$target_from:p$target_to else integer()
         res <- valCoverageRange(cell, p$sim_from:p$sim_to, targets)
         saveRDS(res, file.path(out_dir, paste0(id, ".rds")))
@@ -876,7 +923,8 @@ valRunCoverage <- function(plan_file, request = "all", nsim = 2000L, target_sims
         tasks_out[[cid]] <- data.frame(task = ids, seconds_sims = vapply(parts, `[[`, 0,
                                                                          "seconds_sims"),
                                        seconds_target = vapply(parts, `[[`, 0, "seconds_target"))
-        detail[[cid]] <- valCombineCoverage(cells[cells$cell == cid, ], parts, nsim, target_sims)
+        detail[[cid]] <- valCombineCoverage(valPlanCell(cells, plan[plan$cell == cid, ][1L, ]),
+                                            parts, nsim, target_sims)
     }
     detail <- do.call(rbind, detail)
     write <- function(x, f) {

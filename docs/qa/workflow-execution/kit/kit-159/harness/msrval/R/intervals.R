@@ -335,7 +335,16 @@ valHarnessRegimes <- function() {
                           status = character(), coverage = numeric(), mc_se = numeric(),
                           source = character(), statistic = character()))
     }
-    utils::read.delim(path, stringsAsFactors = FALSE)
+    reg <- utils::read.delim(path, stringsAsFactors = FALSE)
+    # O5 (VAL-109): T2's run-level rows were classified under the band as run; r1.13 reads
+    # `conservative` on the miss rate (below a quarter of the nominal). Both labels are kept: the
+    # second is r1.13's rule applied to the row's best condition (the rank rows of T2R were
+    # classified under r1.13 already, so both labels agree there).
+    approx_run <- reg$regime %in% c("C2", "C3", "C4", "C4e")
+    second <- approx_run & reg$status == "pass" &
+        1 - suppressWarnings(as.numeric(reg$coverage_max)) < (1 - reg$level) / 4 - 1e-12
+    reg$status_r113 <- ifelse(second %in% TRUE, "conservative", reg$status)
+    reg
 }
 
 #' The regime that licenses an interval (section 4.4), or a refusal
@@ -358,6 +367,23 @@ valFindRegime <- function(interval, regimes, accept_flagged) {
     if (is_ticket) hit <- hit & regimes$source == "ticket"
     m <- regimes[hit %in% TRUE, , drop = FALSE]
     good <- m[m$status %in% c("pass", "conservative"), , drop = FALSE]
+    # O4 (VAL-109): a `conservative` row with no observed miss licenses only the statistic it
+    # simulated (the declared `interval$statistic` must name it)
+    if (nrow(good) > 0L) {
+        cmin <- suppressWarnings(as.numeric(good[["coverage_min"]] %||% good$coverage))
+        zero <- good$status == "conservative" & cmin >= 1 - 1e-12
+        own <- vapply(strsplit(as.character(good$statistic), ", ", fixed = TRUE), function(s) {
+            stat <- interval[["statistic"]]
+            !is.null(stat) && stat %in% sub("@.*$", "", s)
+        }, logical(1))
+        refused_zero <- good[zero %in% TRUE & !own, , drop = FALSE]
+        good <- good[!(zero %in% TRUE) | own, , drop = FALSE]
+        if (nrow(good) == 0L) {
+            valAbort(paste("regime {refused_zero$regime[1]} has no observed miss: it licenses",
+                           "only the statistic it simulated ({refused_zero$statistic[1]}),",
+                           "declare interval$statistic (O4, VAL-109)"), "val_spec_invalid")
+        }
+    }
     if (nrow(good) > 0L) return(good[1L, ])
     flagged <- m[m$status %in% "flagged", , drop = FALSE]
     if (nrow(flagged) > 0L) {
@@ -436,7 +462,9 @@ valClassify <- function(interval, margin, higher_is_better, fixed = NULL, view =
     # twice nominal is flagged beside the verdict.
     worst <- suppressWarnings(as.numeric(reg[["coverage_min"]] %||% reg$coverage))
     list(outcome = outcome, no_worse = lo > -margin, status = "ok", regime = reg$regime,
-         regime_status = reg$status, coverage = reg$coverage, mc_se = reg$mc_se,
+         regime_status = reg$status,
+         regime_status_r113 = as.character(reg[["status_r113"]] %||% reg$status),
+         coverage = reg$coverage, mc_se = reg$mc_se,
          coverage_min = worst, nsim = suppressWarnings(as.numeric(reg[["nsim"]] %||% NA)),
          statistic = as.character(reg[["statistic"]] %||% NA_character_),
          miss_twice_nominal = isTRUE(1 - worst >= 2 * (1 - interval$conf) - 1e-12),
