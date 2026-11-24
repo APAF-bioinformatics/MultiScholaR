@@ -1,0 +1,19 @@
+{
+  "requested_by": "KIT-192 R3: full suite base (branch point) vs head before merge, 20 shards per side, no check (R2 checked); ceiling 186.7 core-h; decides A5",
+  "label": "KIT-192 R3 full suite 0ef0b641 vs 51959495",
+  "package_commit": "0ef0b6413bddb4d9fafca938038a52d2c9923368",
+  "base_commit": "51959495baf68b549fb773954b19c002049d7132",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {"test-gui-entry-proteomics.R": 120, "test-gui-entry-transcriptomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120, "test-gui-entry-metabolomics.R": 120, "test-prot-norm-core.R": 120},
+  "extra_packages": ["sva"],
+  "env": {"MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
