@@ -17,7 +17,7 @@ route's flag `significant = qvalue < q_cutoff`, `R/func_general_enrichment_orche
 Model. `bh` is stated once over any linearly ordered field `K` (ℝ in the theorems 4a-4c, ℚ in 4d and in the
 oracle). `bhSorted` transcribes `p.adjust`'s code (decreasing order, cumulative minimum of `m/i * p`, capped
 at 1, back to the original order); `bh` is its closed form, `min(1, min over j with p_j ≥ p_i of m p_j / #{l : p_l ≤
-p_j})`, which the theorems use; `bh_sorted_eq_stmt` states that they are equal. Real arithmetic: `q = pi0 * BH`
+p_j})`, which the theorems use; `bh_sorted_eq_stmt` states that they are equal for non-negative values. Real arithmetic: `q = pi0 * BH`
 holds in R only up to rounding (`p[o] * m / i` against `n / i * p[o]`); `pi0` is a given number (how `qvalue`
 estimates it, and its fallbacks, are outside the model; KIT-189 measures them); in 4d the p-values' law is the stated
 mixture, not the hypergeometric p-values of a real list. A missing q-value is `none`; R's `NA < alpha` is `NA`, which
@@ -38,7 +38,7 @@ def cumMin : List K → List K
   | a :: l => a :: (cumMin l).map (min a)
 
 /-- `p.adjust(p, "BH")` as R computes it, for `m` p-values without `NA`: order decreasing (`List.mergeSort` with
-"≥"; the order R gives tied values is not modelled and does not matter: `bh_sorted_eq_stmt` equates this definition,
+"≥"; the order R gives tied values is not modelled and does not matter for non-negative values: there `bh_sorted_eq_stmt` equates this definition,
 whatever order ties take here, with the closed form, which does not depend on it), scale the value at 0-based position `r` by `m / (m - r)` (R's `n / i`,
 `i = m - r ≥ 1`), take the cumulative minimum, cap at 1, return to the original order. The `getD` default is never
 used (every index is in the order). -/
@@ -66,9 +66,19 @@ def qv {m : ℕ} (π0 : K) (p : Fin m → K) (i : Fin m) : K := π0 * bh p i
 nothing). -/
 def flag (q : Option K) (α : K) : Prop := ∃ v, q = some v ∧ v < α
 
-/-- `bhSorted` (R's code) equals the closed form `bh`. No hypothesis. Specification lemma. -/
+/-- `bhSorted` (R's code) equals the closed form `bh` on non-negative values. Hypothesis `0 ≤ p j` for every `j`
+(`p.adjust` is fed p-values; no upper bound is needed, both forms cap at 1). Without it the two differ whenever a
+negative value is tied (`bh_sorted_neg_ties_counterexample_stmt`). Specification lemma. -/
 def bh_sorted_eq_stmt : Prop :=
-  ∀ (K : Type) [Field K] [LinearOrder K] [IsStrictOrderedRing K] (m : ℕ) (p : Fin m → K), bhSorted p = bh p
+  ∀ (K : Type) [Field K] [LinearOrder K] [IsStrictOrderedRing K] (m : ℕ) (p : Fin m → K),
+    (∀ j, 0 ≤ p j) → bhSorted p = bh p
+
+/-- The `bh_sorted_eq_stmt` frozen at 4183eb10 had no hypothesis and was false: a result of the proof attempt (ticket
+5.4). With `m = 2` and `p = (-1, -1)` R's sort-and-cumulative-minimum form gives `-2` at one of the two tied indices
+(whichever the sort puts second) and the closed form gives `-1` at both. Closed statement. -/
+def bh_sorted_neg_ties_counterexample_stmt : Prop :=
+  let p : Fin 2 → ℚ := fun _ => -1
+  (∃ i, bhSorted p i = -2) ∧ ∀ i, bh p i = -1
 
 /-- (4a) For `pi0 ≤ 1` and p-values `≥ 0`: `q ≤ bh` at every term, hence the q-value flag contains the BH flag.
 Hypotheses: `π0 ≤ 1` (KIT-189's `pi0` is at most 1); `0 ≤ p j` for all `j` (p-values). The ticket's `0 ≤ π0` is not
@@ -99,7 +109,8 @@ def bh_mono_stmt : Prop :=
   ∀ (m : ℕ) (p p' : Fin m → ℝ) (i : Fin m), UnitP p → UnitP p' → (∀ j, p j ≤ p' j) → bh p i ≤ bh p' i
 
 /-- (4c) Ties get equal adjusted values. Hypothesis `p i = p j` only (the ticket's range `0 ≤ p ≤ 1` is not needed
-for this item and is not assumed). -/
+for this item and is not assumed). This is a fact about the closed form. Of `p.adjust` it holds for `p ≥ 0` (through
+`bh_sorted_eq_stmt`); R gives tied negative values different adjusted values. -/
 def bh_ties_stmt : Prop :=
   ∀ (m : ℕ) (p : Fin m → ℝ) (i j : Fin m), p i = p j → bh p i = bh p j
 
@@ -206,6 +217,10 @@ def kept_family_instance_stmt : Prop :=
     (185 / 1000 : ℚ) < 5 / 27 * (1 - (73 / 100) ^ 150)
 
 /-! ## Witnesses (section 5.1) -/
+
+/-- Witness for `bh_sorted_eq_stmt`: non-negative values with a positive tie below a third value. -/
+def bh_sorted_eq_witness_stmt : Prop :=
+  ∃ p : Fin 3 → ℚ, (∀ j, 0 ≤ p j) ∧ 0 < p 0 ∧ p 0 = p 1 ∧ p 1 < p 2
 
 /-- Witness for `qflag_contains_bh_stmt`: `0 < π0 < 1`, two p-values in `[0, 1]`. -/
 def qflag_contains_bh_witness_stmt : Prop :=

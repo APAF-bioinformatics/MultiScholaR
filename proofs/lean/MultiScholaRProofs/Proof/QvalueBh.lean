@@ -4,14 +4,12 @@ public import MultiScholaRProofs.Spec.QvalueBh
 import Mathlib.Tactic
 
 /-!
-# Target 4 (KIT-193 section 6.4): a counterexample to a frozen statement
+# Target 4 (KIT-193 section 6.4): the counterexample that amended the freeze
 
-`bh_sorted_eq_stmt` (R's sort-and-cumulative-minimum transcription `bhSorted` equals the closed form `bh`, for every
-`p`) is false as frozen: it carries no hypothesis on the sign of `p`, and with negative tied values the later member of
-a tie group gets a smaller cumulative minimum than the closed form. Instance: `K = ℚ`, `m = 2`, `p = (-1, -1)`;
-whatever order the sort gives the two tied indices, the second has `bhSorted = -2` and `bh = -1`. Under ticket 5.4 the
-item stops here and goes back to the statements gate; p-values are never negative, and the statement with
-`∀ j, 0 ≤ p j` is the candidate for the re-review (not proved here).
+`bh_sorted_eq_stmt` as frozen at 4183eb10 (R's transcription `bhSorted` equals the closed form `bh` for every `p`) was
+false: with negative tied values the later member of a tie group gets a smaller cumulative minimum. The statements
+gate's re-review 1 added the hypothesis `∀ j, 0 ≤ p j` and froze the counter-instance as
+`bh_sorted_neg_ties_counterexample_stmt` (`K = ℚ`, `m = 2`, `p = (-1, -1)`), proved here.
 -/
 
 public section
@@ -38,10 +36,10 @@ theorem bh_tiedNeg (i : Fin 2) : bh tiedNeg i = -1 := by
   rw [hfold]
   norm_num
 
-/-- `bh_sorted_eq_stmt` is false (a result of the proof attempt; ticket 5.4). -/
-theorem bh_sorted_eq_counterexample : ¬ bh_sorted_eq_stmt := by
-  intro h
-  have heq := h ℚ 2 tiedNeg
+/-- The counter-instance (ticket 5.4; statements gate re-review 1). -/
+theorem bh_sorted_neg_ties_counterexample : bh_sorted_neg_ties_counterexample_stmt := by
+  show (∃ i, bhSorted tiedNeg i = -2) ∧ ∀ i, bh tiedNeg i = -1
+  refine ⟨?_, bh_tiedNeg⟩
   have hperm := List.mergeSort_perm (List.finRange 2) (fun a b => decide (tiedNeg b ≤ tiedNeg a))
   have hlen : ((List.finRange 2).mergeSort fun a b => decide (tiedNeg b ≤ tiedNeg a)).length = 2 := by
     rw [hperm.length_eq]
@@ -57,16 +55,13 @@ theorem bh_sorted_eq_counterexample : ¬ bh_sorted_eq_stmt := by
     intro hab
     subst hab
     simp at hnd
-  have hval : bhSorted tiedNeg b = -2 := by
-    unfold bhSorted
-    rw [hab_eq]
-    have hidx : [a, b].idxOf b = 1 := by
-      simp [List.idxOf_cons_ne _ hab]
-    rw [hidx]
-    simp [cumMin, tiedNeg]
-    norm_num
-  have := congrFun heq b
-  rw [hval, bh_tiedNeg] at this
-  norm_num at this
+  refine ⟨b, ?_⟩
+  unfold bhSorted
+  rw [hab_eq]
+  have hidx : [a, b].idxOf b = 1 := by
+    simp [List.idxOf_cons_ne _ hab]
+  rw [hidx]
+  simp [cumMin, tiedNeg]
+  norm_num
 
 end MultiScholaRProofs.QvalueBh
