@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-199 R3b: the merge of the re-freeze into v0.9-staging 9453e79b (run-k199-r3b) against that staging head; prot_dia_limpa must pass every step",
+  "label": "KIT-199 R3b merge 6b3e615a against 9453e79b",
+  "package_commit": "6b3e615a60de619296d178490df939215c6ee892",
+  "base_commit": "9453e79b7e6f2faf9cfd64593a84ca68efc5bb73",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 60
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
