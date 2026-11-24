@@ -171,6 +171,7 @@ kit225LimpaOwner <- function(envir = parent.frame()) {
 # ---- G0 recording ----
 
 kit225After <- function(case, fixture, reset) {
+    force(reset) # the Reset runs before the state is read (G0 attempt 1 read it first: VAL-54 instrument defect)
     kit225Record(case, "current_state", fixture$manager$current_state)
     kit225Record(case, "head", kit225Label(fixture, kit225Head(fixture)$entity_id))
     kit225Record(case, "history", kit225History(fixture))
