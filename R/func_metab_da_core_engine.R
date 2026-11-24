@@ -119,7 +119,11 @@ applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
 
     if (!is.na(treat_lfc_cutoff) && treat_lfc_cutoff > 0) {
         logger::log_info("   Running TREAT analysis with LFC cutoff...")
-        t.fit <- limma::treat(eb.fit, lfc = as.double(treat_lfc_cutoff))
+        # KIT-201 (VAL-127, VAL-131): limma's treat() re-estimates the prior itself (trend and robust FALSE by default);
+        # it takes the moderated test's settings, except while a DA made before that change replays.
+        moderated <- workflowTreatModerationCurrent()
+        t.fit <- limma::treat(eb.fit, lfc = as.double(treat_lfc_cutoff), trend = moderated && isTRUE(eBayes_trend),
+            robust = moderated && isTRUE(eBayes_robust))
         extract_fn <- function(fit, coef) limma::topTreat(fit, coef = coef, n = Inf)
     } else {
         logger::log_info("   Running standard analysis...")

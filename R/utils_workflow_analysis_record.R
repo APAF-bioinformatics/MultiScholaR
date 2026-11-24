@@ -649,7 +649,39 @@ validateWorkflowAnalysisRecord <- function(record) {
 #' @noRd
 workflowReplayRuleMarkers <- list(
     missing_value_comparison = list(option = "MultiScholaR.missing_filter_rule", current = "counts",
-        earlier = "rounded_percentage"))
+        earlier = "rounded_percentage"),
+    # KIT-201 (VAL-131, D3): TREAT takes the moderated test's trend and robust settings ("as_main_test"); a DA made before
+    # used treat()'s own defaults, one prior variance without the robust step ("constant"). The DA is not a record step:
+    # the token is written in the DA manifest's model record (`model$treat_moderation`) and read by the DA's replay.
+    treat_moderation = list(option = "MultiScholaR.treat_moderation_rule", current = "as_main_test", earlier = "constant"))
+
+#' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
+#' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).
+#' @return One logical.
+#' @noRd
+workflowTreatModerationCurrent <- function() {
+    marker <- workflowReplayRuleMarkers$treat_moderation
+    !identical(getOption(marker$option), marker$earlier)
+}
+
+#' The DA model record's marker field (KIT-201): `list(treat_moderation = "as_main_test")` under the current rule, an
+#' empty list under the earlier one (a DA made before the change records none).
+#' @return A list to append to a DA model record.
+#' @noRd
+workflowTreatModerationRecord <- function() {
+    if (workflowTreatModerationCurrent()) list(treat_moderation = workflowReplayRuleMarkers$treat_moderation$current) else list()
+}
+
+#' The option a recorded DA replays under (KIT-201, D3): the current rule when its model record names it, else the earlier.
+#' @param model The record's DA model (`record$analyses$differential_abundance$model`).
+#' @return Named list for `withr::with_options()`.
+#' @noRd
+workflowDaReplayRuleOptions <- function(model) {
+    marker <- workflowReplayRuleMarkers$treat_moderation
+    recorded <- unlist(model$treat_moderation)
+    rule <- if (identical(as.character(recorded), marker$current)) marker$current else marker$earlier
+    stats::setNames(list(rule), marker$option)
+}
 
 #' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
 #' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).
@@ -887,6 +919,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     da <- record$analyses$differential_abundance
     da_manifest <- NULL
     if (!is.null(da)) {
+        # KIT-201 (D3): the DA replays with the TREAT moderation it was made with (the earlier one when its model names none).
+        treat_rule <- workflowDaReplayRuleOptions(da$model)
         settings <- list()
         for (parameter in da$parameters) settings[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
         contrasts <- do.call(rbind, lapply(da$contrasts, function(row) as.data.frame(lapply(row, unlist), stringsAsFactors = FALSE)))
@@ -903,11 +937,12 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             # KIT-095: a binding that realises its formula from the head checks the record's against it first.
             omics_settings <- list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc)
             if (is.function(omics_binding$da_replay_check)) withWorkflowStateScope(manager, function() omics_binding$da_replay_check(manager, omics_settings))
-            withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding, manager,
-                getWorkflowStateReference(manager), omics_settings, contrasts))
+            withr::with_options(treat_rule, withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding,
+                manager, getWorkflowStateReference(manager), omics_settings, contrasts)))
         } else {
-            da_manifest <- runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
-                treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths, contrasts = contrasts, publish = FALSE)
+            da_manifest <- withr::with_options(treat_rule, runDIAReferenceDaAnalysis(list(formula_string = settings$formula,
+                da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths,
+                contrasts = contrasts, publish = FALSE))
         }
         if (is.function(on_step)) on_step(list(state = manager$current_state, operation = da$operation %||% "DA-contrast-output"), manager)
         # KIT-107 D5 (F-16): each recorded enrichment step, on the manifest the DA just produced.

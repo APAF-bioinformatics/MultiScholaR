@@ -38,6 +38,19 @@
 
 ### Scientific changes
 
+ * Lipidomics, metabolomics and proteomics: the TREAT test now uses the same variance moderation as the main test (an
+   intensity trend and robust estimation, as the analysis record and report always stated). Before, it used one prior
+   variance for all features without the robust step, so the stated settings had no effect on TREAT results. This
+   applies to lipidomics and metabolomics when a log fold-change threshold above 0 is set, and to every proteomics
+   analysis of DIA without limpa, label-free and TMT data with the Skip or legacy RUV options (TREAT runs there at the
+   default threshold of 0). Results of those analyses change; in simulations [M1's sizes: added when KIT-201's M1 has
+   run]. A new analysis with these options no longer reproduces an earlier version's statistics; saved analyses replay
+   as they were made, and in scripts the earlier statistics are obtained with the trend and robust options off. Reports
+   re-rendered from an analysis saved before this change still describe its TREAT step as trended and robust; that step
+   used one prior variance. The RUV panel's "Approach of earlier versions" row for classic proteomics is restated from
+   the measurement of this test: worst cell 0.389 (was 0.385), 10.1 % false discoveries in the reference scenario (was
+   9.8 %). (KIT-201; methods ledger VAL-127, VAL-131)
+
  * Proteomics, MaxQuant, FragPipe, Spectronaut and Proteome Discoverer TMT: protein quantities are now
    log2-transformed without first adding 1. Adding 1 changed each value v by log2(1 + 1/v): 0.00014 at 10,000, 0.0014
    at 1,000, 0.14 at 10; a fold change of 10 against 80 was reported as 2.88 instead of 3. Measured on simulated data
