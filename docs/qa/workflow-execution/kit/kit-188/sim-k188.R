@@ -97,6 +97,7 @@ standardise <- function(v) {
 }
 residStd <- function(v, basis) standardise(stats::lm.fit(basis, v)$residuals)
 sha <- function(f) strsplit(system2("sha256sum", shQuote(f), stdout = TRUE), " ")[[1L]][[1L]]
+byName <- function(l, n) if (length(n) == 1L && !is.na(n) && n %in% names(l)) l[[n]] else NULL
 oneLine <- function(x, n = 300L) substr(gsub("[\r\n\t]+", " ", paste(x, collapse = " ")), 1L, n)
 
 # ---- the generator (5.2, 18.3) -------------------------------------------------------------------------------------
@@ -967,6 +968,7 @@ mdf <- function(sim, journey, choice) {
         nulls <- function(fit, rows) {
             eb <- limma::eBayes(limma::contrasts.fit(fit, cm), trend = TRUE, robust = TRUE)
             p <- eb$p.value
+            p <- p[rownames(p) %in% rownames(sim$theta), , drop = FALSE]
             th <- sim$theta[rownames(p), , drop = FALSE]
             mean(p[th == 0] < 0.05, na.rm = TRUE)
         }
@@ -1085,7 +1087,7 @@ runConditionL <- function(sim, mask, job, d, lifecycle, fault_now, first_conditi
             if (!isTRUE(j$e1$pass) || first_condition) addCheck("E1", sim$cell, sim$r, paste(condition, arm), NA, "every step as declared",
                 j$e1$pass, j$e1$note)
         } else if (lifecycle && is.null(j$e1) && identical(j$status, "crashed") && !grepl("deliberate fault", j$class, fixed = TRUE)) {
-            addCheck("E1", sim$cell, sim$r, paste(condition, arm), NA, "every step as declared", FALSE, sprintf("journey %s at %s: %s",
+            addCheck("G1_crash", sim$cell, sim$r, paste(condition, arm), NA, "recorded, counted (G1)", FALSE, sprintf("journey %s at %s: %s",
                 j$status, j$step, j$class))
         }
     }
@@ -1107,21 +1109,21 @@ runConditionL <- function(sim, mask, job, d, lifecycle, fault_now, first_conditi
     # E8 and M-amp (LA, mask none)
     if (identical(mask, "none") && !is.null(journeys$LA) && job %in% c("deciding") && !is.null(choices$LA)) {
         amp <- checkE8(sim, journeys$LA, choices$LA, condition)
-        for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(amp[[rows[[i]]$assay]])) {
-            rows[[i]][names(amp[[rows[[i]]$assay]])] <- amp[[rows[[i]]$assay]]
+        for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(byName(amp, rows[[i]]$assay))) {
+            rows[[i]][names(byName(amp, rows[[i]]$assay))] <- byName(amp, rows[[i]]$assay)
         }
     }
     # M-amp, closed-form branch (LA, deciding, every mask; reported)
     if (identical(job, "deciding") && !is.null(journeys$LA) && !is.null(choices$LA)) {
         cf <- cfBranch(sim, journeys$LA, choices$LA)
-        for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(cf[[rows[[i]]$assay]])) rows[[i]][names(cf[[rows[[i]]$assay]])] <- cf[[rows[[i]]$assay]]
+        for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(byName(cf, rows[[i]]$assay))) rows[[i]][names(byName(cf, rows[[i]]$assay))] <- byName(cf, rows[[i]]$assay)
     }
     # M-df (LA and LM, N0 and N1, mask none; L12 and M12)
     if (identical(job, "reported") && identical(mask, "none") && sim$scenario %in% c("N0", "N1") && sim$cell %in% c("L12", "M12")) {
         for (arm in intersect(c("LA", "LM"), names(choices))) {
             res <- mdf(sim, journeys[[arm]], choices[[arm]])
-            for (i in seq_along(rows)) if (identical(rows[[i]]$arm, arm) && !is.null(res[[rows[[i]]$assay]])) {
-                rows[[i]][names(res[[rows[[i]]$assay]])] <- res[[rows[[i]]$assay]]
+            for (i in seq_along(rows)) if (identical(rows[[i]]$arm, arm) && !is.null(byName(res, rows[[i]]$assay))) {
+                rows[[i]][names(byName(res, rows[[i]]$assay))] <- byName(res, rows[[i]]$assay)
             }
         }
     }
@@ -1255,11 +1257,11 @@ runConditionP <- function(sim, mask, job, d, lifecycle, fault_now, config) {
         }
         if (identical(arm, "LA") && identical(mask, "none") && identical(j$status, "ok") && !is.na(ch$proteins$k) && identical(job, "deciding")) {
             amp <- checkE8(sim, j, ch, condition)
-            for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(amp$proteins)) rows[[i]][names(amp$proteins)] <- amp$proteins
+            for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(byName(amp, "proteins"))) rows[[i]][names(byName(amp, "proteins"))] <- byName(amp, "proteins")
         }
         if (identical(arm, "LA") && identical(job, "deciding") && !is.na(ch$proteins$k)) {
             cf <- cfBranch(sim, j, ch)
-            for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(cf$proteins)) rows[[i]][names(cf$proteins)] <- cf$proteins
+            for (i in seq_along(rows)) if (identical(rows[[i]]$arm, "LA") && !is.null(byName(cf, "proteins"))) rows[[i]][names(byName(cf, "proteins"))] <- byName(cf, "proteins")
         }
     }
     if (!is.null(or_errs)) {
@@ -1431,20 +1433,12 @@ runChild <- function(i) {
     code <- system2("Rscript", c(shQuote(script_file), "--unit", part, u$cell, u$r, u$job, u$scenario, u$mask, shQuote(rds)),
         env = env, stdout = FALSE, stderr = FALSE)
     seconds <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    result <- if (file.exists(rds)) readRDS(rds) else list(error = sprintf("child process exit %d, no result", code))
+    res <- if (file.exists(rds)) readRDS(rds) else list(error = sprintf("child process exit %d, no result", code))
     unlink(rds)
-    result$wall <- seconds
-    result$exit <- code
-    result
-}
-results <- parallel::mclapply(seq_len(nrow(units)), runChild, mc.cores = workers, mc.preschedule = FALSE)
-timing <- list()
-checks <- if (length(checks_env$rows)) do.call(rbind, checks_env$rows) else NULL
-status_rows <- list()
-for (i in seq_len(nrow(units))) {
-    u <- units[i, ]
-    res <- results[[i]]
-    if (!is.list(res)) res <- list(error = oneLine(paste("worker failed:", paste(as.character(res), collapse = " "))))
+    res$wall <- seconds
+    res$exit <- code
+    # written as the unit completes, so that a job stopped at its timeout still uploads what it finished (7.1)
+    tag <- sprintf("%s-%s-%d-%s-%s", u$cell, u$job, u$r, u$scenario, u$mask)
     rows <- res$rows
     if (is.null(rows) || !nrow(rows)) {
         rows <- as.data.frame(do.call(newRow, list(part = part, cell = u$cell, job = u$job, scenario = u$scenario, mask = u$mask, rep = u$r,
@@ -1460,17 +1454,36 @@ for (i in seq_len(nrow(units))) {
         unlink(temp)
         rows[BLIND] <- NA
     }
-    utils::write.table(rows, file.path(out_dir, "rows", sprintf("part-%s-%s-%d-%s-%s.tsv", u$cell, u$job, u$r, u$scenario, u$mask)),
-        sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
-    timing[[i]] <- data.frame(cell = u$cell, job = u$job, rep = u$r, scenario = u$scenario, mask = u$mask, wall_seconds = round(res$wall %||% NA, 1),
+    utils::write.table(rows, file.path(out_dir, "rows", sprintf("part-%s.tsv", tag)), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+    timing <- data.frame(cell = u$cell, job = u$job, rep = u$r, scenario = u$scenario, mask = u$mask, wall_seconds = round(res$wall %||% NA, 1),
         unit_seconds = round(res$seconds %||% NA, 1), exit = res$exit %||% NA, error = res$error %||% "", rows = nrow(rows), rows_sha256 = hash,
         fault = u$fault, e7 = u$e7, stringsAsFactors = FALSE)
-    if (!is.null(res$checks)) checks <- rbind(checks, res$checks)
+    utils::write.table(timing, file.path(out_dir, "rows", sprintf("unit-timing-%s.tsv", tag)), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+    if (!is.null(res$checks)) utils::write.table(res$checks, file.path(out_dir, "rows", sprintf("unit-checks-%s.tsv", tag)), sep = "\t",
+        quote = FALSE, row.names = FALSE, na = "NA")
     journeys <- unique(rows[c("cell", "job", "rep", "arm", "arm_scale", "scenario", "mask", "status", "class")])
     journeys[] <- lapply(journeys, function(x) ifelse(is.na(x), "", as.character(x)))
-    status_rows[[i]] <- stats::aggregate(list(n = rep(1L, nrow(journeys))), journeys[c("cell", "job", "arm", "arm_scale", "scenario", "mask",
+    status <- stats::aggregate(list(n = rep(1L, nrow(journeys))), journeys[c("cell", "job", "arm", "arm_scale", "scenario", "mask",
         "status", "class")], length)
+    list(timing = timing, checks = res$checks, status = status)
 }
+results <- parallel::mclapply(seq_len(nrow(units)), runChild, mc.cores = workers, mc.preschedule = FALSE)
+checks <- if (length(checks_env$rows)) do.call(rbind, checks_env$rows) else NULL
+timing <- list()
+status_rows <- list()
+for (i in seq_len(nrow(units))) {
+    res <- results[[i]]
+    if (!is.list(res)) {
+        u <- units[i, ]
+        res <- list(timing = data.frame(cell = u$cell, job = u$job, rep = u$r, scenario = u$scenario, mask = u$mask, wall_seconds = NA,
+            unit_seconds = NA, exit = NA, error = oneLine(paste("worker failed:", paste(as.character(res), collapse = " "))), rows = 0L,
+            rows_sha256 = NA, fault = u$fault, e7 = u$e7, stringsAsFactors = FALSE))
+    }
+    timing[[i]] <- res$timing
+    if (!is.null(res$checks)) checks <- rbind(checks, res$checks)
+    status_rows[[i]] <- res$status
+}
+unlink(list.files(file.path(out_dir, "rows"), pattern = "^unit-(timing|checks)-", full.names = TRUE))
 timing <- do.call(rbind, timing)
 statuses <- do.call(rbind, status_rows)
 statuses <- stats::aggregate(statuses["n"], statuses[c("cell", "job", "arm", "arm_scale", "scenario", "mask", "status", "class")], sum)
