@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R4, the passes-2 and 3 fix with its tests (repair2, repair3), the corrected repair and records tests, coverage and coverage-rank, with --lint; ceiling 45 min, about 1.2 core-hours",
+  "label": "KIT-159 repair R4: second and third pass passing at ee445cfc",
+  "package_commit": "ee445cfcc537b2371653b72433195f94ac7eebfb",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r4-out",
+        "--files",
+        "repair2,repair3,repair,records,coverage,coverage-rank",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r4-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
