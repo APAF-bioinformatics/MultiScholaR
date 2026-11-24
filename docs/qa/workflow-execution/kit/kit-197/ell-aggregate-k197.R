@@ -74,6 +74,7 @@ for (arm in c("vd", "mcar")) for (column in c("estimate", "lo95", "hi95", "jack_
             paste(theirs, collapse = ",")), call. = FALSE)
 }
 
+dir.create(dirname(out_file), recursive = TRUE, showWarnings = FALSE)
 table$range <- range_name
 table$note <- "post hoc (after the results were seen); reported, not deciding"
 sc$writeTsv(table[c("range", "scope", "cell", "mask", "stat", "R", "estimate", "lo95", "hi95", "upper95", "boot_se",
