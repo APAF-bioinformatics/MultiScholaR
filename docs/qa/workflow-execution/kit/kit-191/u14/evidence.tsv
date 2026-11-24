@@ -1,0 +1,121 @@
+kind	test	samples	measure	regenerated	package	equal
+metabolites	camera	12	A	3.4 to 4.5 % (largest: 95 % interval 3.7 to 5.3 %)	3.4 to 4.5 % (largest: 95 % interval 3.7 to 5.3 %)	TRUE
+metabolites	camera	12	B	4.5 % (largest: 95 % interval 4.1 to 4.9 %)	4.5 % (largest: 95 % interval 4.1 to 4.9 %)	TRUE
+metabolites	camera	12	C	0.4 to 4.4 %	0.4 to 4.4 %	TRUE
+metabolites	camera	12	D	0.6 %	0.6 %	TRUE
+metabolites	camera	12	E	6.7 % (95 % interval 5.5 to 7.9 %)	6.7 % (95 % interval 5.5 to 7.9 %)	TRUE
+metabolites	camera	12	F	2.2 to 2.5 %	2.2 to 2.5 %	TRUE
+metabolites	camera	12	C3	4.6 %	4.6 %	TRUE
+metabolites	camera	12	I	0.020 to 0.022	0.020 to 0.022	TRUE
+metabolites	camera_floor	12	A	1.7 to 3.6 % (largest: 95 % interval 2.7 to 4.5 %)	1.7 to 3.6 % (largest: 95 % interval 2.7 to 4.5 %)	TRUE
+metabolites	camera_floor	12	B	2.2 % (largest: 95 % interval 1.9 to 2.5 %)	2.2 % (largest: 95 % interval 1.9 to 2.5 %)	TRUE
+metabolites	camera_floor	12	C	0.1 to 2.3 %	0.1 to 2.3 %	TRUE
+metabolites	camera_floor	12	D	0.5 %	0.5 %	TRUE
+metabolites	camera_floor	12	E	6.7 % (95 % interval 5.5 to 7.9 %)	6.7 % (95 % interval 5.5 to 7.9 %)	TRUE
+metabolites	camera_floor	12	F	0.1 to 0.4 %	0.1 to 0.4 %	TRUE
+metabolites	camera_floor	12	C3	2.1 %	2.1 %	TRUE
+metabolites	camera_floor	12	I	0.001 to 0.002	0.001 to 0.002	TRUE
+metabolites	permutation	12	A	4.2 to 5.2 % (largest: 95 % interval 4.2 to 6.3 %)	4.2 to 5.2 % (largest: 95 % interval 4.2 to 6.3 %)	TRUE
+metabolites	permutation	12	B	4.9 % (largest: 95 % interval 4.5 to 5.3 %)	4.9 % (largest: 95 % interval 4.5 to 5.3 %)	TRUE
+metabolites	permutation	12	C	0.6 to 4.7 %	0.6 to 4.7 %	TRUE
+metabolites	permutation	12	D	0.6 %	0.6 %	TRUE
+metabolites	permutation	12	E	8.6 % (95 % interval 7.2 to 9.9 %)	8.6 % (95 % interval 7.2 to 9.9 %)	TRUE
+metabolites	permutation	12	F	3.2 to 4.2 %	3.2 to 4.2 %	TRUE
+metabolites	permutation	12	C3	5.0 %	5.0 %	TRUE
+metabolites	permutation	12	I	0.010	0.010	TRUE
+metabolites	gsea	12	A	3.2 to 3.9 % (largest: 95 % interval 3.7 to 4.2 %); terms whose features vary together: 8.6 to 28.7 %	3.2 to 3.9 % (largest: 95 % interval 3.7 to 4.2 %); terms whose features vary together: 8.6 to 28.7 %	TRUE
+metabolites	gsea	12	B	3.2 % (largest: 95 % interval 2.9 to 3.6 %)	3.2 % (largest: 95 % interval 2.9 to 3.6 %)	TRUE
+metabolites	gsea	12	C	1.8 to 4.3 %; terms whose features vary together: 4.4 to 23.6 %	1.8 to 4.3 %; terms whose features vary together: 4.4 to 23.6 %	TRUE
+metabolites	gsea	12	D	13.5 %	13.5 %	TRUE
+metabolites	gsea	12	E	34.4 % (95 % interval 32.1 to 36.6 %)	34.4 % (95 % interval 32.1 to 36.6 %)	TRUE
+metabolites	gsea	12	F	4.2 to 4.4 %	4.2 to 4.4 %	TRUE
+metabolites	gsea	12	C3	6.5 %	6.5 %	TRUE
+metabolites	gsea	12	I	0.010 to 0.013	0.010 to 0.013	TRUE
+genes_proteins	camera	12	A	2.2 to 6.6 % (largest: 95 % interval 5.8 to 7.4 %)	2.2 to 6.6 % (largest: 95 % interval 5.8 to 7.4 %)	TRUE
+genes_proteins	camera	12	B	9.4 to 10.1 % (largest: 95 % interval 9.5 to 10.7 %)	9.4 to 10.1 % (largest: 95 % interval 9.5 to 10.7 %)	TRUE
+genes_proteins	camera	12	C	0.4 to 4.2 %	0.4 to 4.2 %	TRUE
+genes_proteins	camera	12	D	0.5 to 0.6 %	0.5 to 0.6 %	TRUE
+genes_proteins	camera	12	E	12.8 % (95 % interval 11.8 to 13.8 %)	12.8 % (95 % interval 11.8 to 13.8 %)	TRUE
+genes_proteins	camera	12	F	1.9 to 2.8 %	1.9 to 2.8 %	TRUE
+genes_proteins	camera	12	G	0.60 to 0.62	0.60 to 0.62	TRUE
+genes_proteins	camera	12	H	0.99 to 1.00	0.99 to 1.00	TRUE
+genes_proteins	camera_floor	12	A	1.1 to 5.1 % (largest: 95 % interval 4.5 to 5.7 %)	1.1 to 5.1 % (largest: 95 % interval 4.5 to 5.7 %)	TRUE
+genes_proteins	camera_floor	12	B	5.4 to 5.5 % (largest: 95 % interval 4.8 to 6.1 %)	5.4 to 5.5 % (largest: 95 % interval 4.8 to 6.1 %)	TRUE
+genes_proteins	camera_floor	12	C	0.1 to 1.8 %	0.1 to 1.8 %	TRUE
+genes_proteins	camera_floor	12	D	0.5 to 0.6 %	0.5 to 0.6 %	TRUE
+genes_proteins	camera_floor	12	E	12.8 % (95 % interval 11.8 to 13.8 %)	12.8 % (95 % interval 11.8 to 13.8 %)	TRUE
+genes_proteins	camera_floor	12	F	0.0 to 0.1 %	0.0 to 0.1 %	TRUE
+genes_proteins	camera_floor	12	G	0.47 to 0.50	0.47 to 0.50	TRUE
+genes_proteins	camera_floor	12	H	0.99	0.99	TRUE
+genes_proteins	permutation	12	A	4.8 to 5.3 % (largest: 95 % interval 4.6 to 6.0 %)	4.8 to 5.3 % (largest: 95 % interval 4.6 to 6.0 %)	TRUE
+genes_proteins	permutation	12	B	4.9 to 5.3 % (largest: 95 % interval 4.8 to 5.7 %)	4.9 to 5.3 % (largest: 95 % interval 4.8 to 5.7 %)	TRUE
+genes_proteins	permutation	12	C	0.4 to 4.4 %	0.4 to 4.4 %	TRUE
+genes_proteins	permutation	12	D	0.5 to 0.8 %	0.5 to 0.8 %	TRUE
+genes_proteins	permutation	12	E	12.7 % (95 % interval 11.8 to 13.7 %)	12.7 % (95 % interval 11.8 to 13.7 %)	TRUE
+genes_proteins	permutation	12	F	2.8 to 4.9 %	2.8 to 4.9 %	TRUE
+genes_proteins	permutation	12	G	0.39 to 0.52	0.39 to 0.52	TRUE
+genes_proteins	permutation	12	H	0.80 to 0.96	0.80 to 0.96	TRUE
+genes_proteins	gsea	12	A	3.9 to 5.5 % (largest: 95 % interval 4.9 to 6.0 %); terms whose features vary together: 28.3 to 62.9 %	3.9 to 5.5 % (largest: 95 % interval 4.9 to 6.0 %); terms whose features vary together: 28.3 to 62.9 %	TRUE
+genes_proteins	gsea	12	B	4.1 to 6.1 % (largest: 95 % interval 5.6 to 6.6 %)	4.1 to 6.1 % (largest: 95 % interval 5.6 to 6.6 %)	TRUE
+genes_proteins	gsea	12	C	1.8 to 5.1 %; terms whose features vary together: 21.8 to 57.7 %	1.8 to 5.1 %; terms whose features vary together: 21.8 to 57.7 %	TRUE
+genes_proteins	gsea	12	D	40.2 to 43.0 %	40.2 to 43.0 %	TRUE
+genes_proteins	gsea	12	E	60.1 % (95 % interval 59.0 to 61.2 %)	60.1 % (95 % interval 59.0 to 61.2 %)	TRUE
+genes_proteins	gsea	12	F	2.6 to 7.1 %	2.6 to 7.1 %	TRUE
+genes_proteins	gsea	12	G	0.63 to 0.72	0.63 to 0.72	TRUE
+genes_proteins	gsea	12	H	1.00	1.00	TRUE
+metabolites	camera	6	A	2.0 to 3.7 % (largest: 95 % interval 3.1 to 4.3 %)	2.0 to 3.7 % (largest: 95 % interval 3.1 to 4.3 %)	TRUE
+metabolites	camera	6	B	3.8 % (largest: 95 % interval 3.4 to 4.1 %)	3.8 % (largest: 95 % interval 3.4 to 4.1 %)	TRUE
+metabolites	camera	6	I	0.001 to 0.002	0.001 to 0.002	TRUE
+metabolites	camera_floor	6	A	0.4 to 2.2 % (largest: 95 % interval 1.5 to 2.9 %)	0.4 to 2.2 % (largest: 95 % interval 1.5 to 2.9 %)	TRUE
+metabolites	camera_floor	6	B	0.3 % (largest: 95 % interval 0.2 to 0.4 %)	0.3 % (largest: 95 % interval 0.2 to 0.4 %)	TRUE
+metabolites	camera_floor	6	I	0.000	0.000	TRUE
+metabolites	permutation	6	A	4.4 to 5.0 % (largest: 95 % interval 3.9 to 6.1 %)	4.4 to 5.0 % (largest: 95 % interval 3.9 to 6.1 %)	TRUE
+metabolites	permutation	6	B	5.0 % (largest: 95 % interval 4.6 to 5.4 %)	5.0 % (largest: 95 % interval 4.6 to 5.4 %)	TRUE
+metabolites	permutation	6	I	0.001 to 0.003	0.001 to 0.003	TRUE
+metabolites	gsea	6	A	4.5 to 4.6 % (largest: 95 % interval 4.3 to 4.8 %); terms whose features vary together: 9.2 to 33.4 %	4.5 to 4.6 % (largest: 95 % interval 4.3 to 4.8 %); terms whose features vary together: 9.2 to 33.4 %	TRUE
+metabolites	gsea	6	B	4.2 % (largest: 95 % interval 3.9 to 4.6 %)	4.2 % (largest: 95 % interval 3.9 to 4.6 %)	TRUE
+metabolites	gsea	6	I	0.007	0.007	TRUE
+genes_proteins	camera	6	A	2.5 to 5.0 % (largest: 95 % interval 4.4 to 5.6 %)	2.5 to 5.0 % (largest: 95 % interval 4.4 to 5.6 %)	TRUE
+genes_proteins	camera	6	B	8.7 to 9.9 % (largest: 95 % interval 9.3 to 10.5 %)	8.7 to 9.9 % (largest: 95 % interval 9.3 to 10.5 %)	TRUE
+genes_proteins	camera	6	G	0.05 to 0.13	0.05 to 0.13	TRUE
+genes_proteins	camera	6	H	0.23 to 0.44	0.23 to 0.44	TRUE
+genes_proteins	camera_floor	6	A	0.3 to 4.1 % (largest: 95 % interval 3.6 to 4.7 %)	0.3 to 4.1 % (largest: 95 % interval 3.6 to 4.7 %)	TRUE
+genes_proteins	camera_floor	6	B	1.9 to 2.7 % (largest: 95 % interval 2.4 to 3.1 %)	1.9 to 2.7 % (largest: 95 % interval 2.4 to 3.1 %)	TRUE
+genes_proteins	camera_floor	6	G	0.000 to 0.001	0.000 to 0.001	TRUE
+genes_proteins	camera_floor	6	H	0.00 to 0.12	0.00 to 0.12	TRUE
+genes_proteins	permutation	6	A	4.8 to 5.3 % (largest: 95 % interval 4.8 to 5.8 %)	4.8 to 5.3 % (largest: 95 % interval 4.8 to 5.8 %)	TRUE
+genes_proteins	permutation	6	B	5.0 to 5.3 % (largest: 95 % interval 4.8 to 5.9 %)	5.0 to 5.3 % (largest: 95 % interval 4.8 to 5.9 %)	TRUE
+genes_proteins	permutation	6	G	0.003 to 0.008	0.003 to 0.008	TRUE
+genes_proteins	permutation	6	H	0.006 to 0.019	0.006 to 0.019	TRUE
+genes_proteins	gsea	6	A	4.5 to 5.2 % (largest: 95 % interval 4.7 to 5.7 %); terms whose features vary together: 30.3 to 64.7 %	4.5 to 5.2 % (largest: 95 % interval 4.7 to 5.7 %); terms whose features vary together: 30.3 to 64.7 %	TRUE
+genes_proteins	gsea	6	B	5.9 to 6.2 % (largest: 95 % interval 5.7 to 6.7 %)	5.9 to 6.2 % (largest: 95 % interval 5.7 to 6.7 %)	TRUE
+genes_proteins	gsea	6	G	0.38 to 0.45	0.38 to 0.45	TRUE
+genes_proteins	gsea	6	H	0.95 to 0.99	0.95 to 0.99	TRUE
+metabolites	camera	20	A	4.1 to 5.4 % (largest: 95 % interval 4.3 to 6.5 %)	4.1 to 5.4 % (largest: 95 % interval 4.3 to 6.5 %)	TRUE
+metabolites	camera	20	B	5.2 % (largest: 95 % interval 4.8 to 5.7 %)	5.2 % (largest: 95 % interval 4.8 to 5.7 %)	TRUE
+metabolites	camera	20	I	0.075 to 0.078	0.075 to 0.078	TRUE
+metabolites	camera_floor	20	A	3.0 to 5.1 % (largest: 95 % interval 4.0 to 6.2 %)	3.0 to 5.1 % (largest: 95 % interval 4.0 to 6.2 %)	TRUE
+metabolites	camera_floor	20	B	3.6 % (largest: 95 % interval 3.2 to 4.0 %)	3.6 % (largest: 95 % interval 3.2 to 4.0 %)	TRUE
+metabolites	camera_floor	20	I	0.025	0.025	TRUE
+metabolites	permutation	20	A	4.7 to 5.8 % (largest: 95 % interval 4.6 to 6.9 %)	4.7 to 5.8 % (largest: 95 % interval 4.6 to 6.9 %)	TRUE
+metabolites	permutation	20	B	5.0 % (largest: 95 % interval 4.5 to 5.4 %)	5.0 % (largest: 95 % interval 4.5 to 5.4 %)	TRUE
+metabolites	permutation	20	I	0.019 to 0.023	0.019 to 0.023	TRUE
+metabolites	gsea	20	A	3.6 to 4.0 % (largest: 95 % interval 3.8 to 4.3 %); terms whose features vary together: 8.1 to 27.7 %	3.6 to 4.0 % (largest: 95 % interval 3.8 to 4.3 %); terms whose features vary together: 8.1 to 27.7 %	TRUE
+metabolites	gsea	20	B	3.3 % (largest: 95 % interval 2.9 to 3.6 %)	3.3 % (largest: 95 % interval 2.9 to 3.6 %)	TRUE
+metabolites	gsea	20	I	0.018 to 0.019	0.018 to 0.019	TRUE
+genes_proteins	camera	20	A	1.9 to 6.4 % (largest: 95 % interval 5.7 to 7.1 %)	1.9 to 6.4 % (largest: 95 % interval 5.7 to 7.1 %)	TRUE
+genes_proteins	camera	20	B	8.3 to 10.3 % (largest: 95 % interval 9.3 to 11.4 %)	8.3 to 10.3 % (largest: 95 % interval 9.3 to 11.4 %)	TRUE
+genes_proteins	camera	20	G	0.88 to 0.90	0.88 to 0.90	TRUE
+genes_proteins	camera	20	H	1.00	1.00	TRUE
+genes_proteins	camera_floor	20	A	1.4 to 6.4 % (largest: 95 % interval 5.7 to 7.1 %)	1.4 to 6.4 % (largest: 95 % interval 5.7 to 7.1 %)	TRUE
+genes_proteins	camera_floor	20	B	5.5 to 7.2 % (largest: 95 % interval 6.3 to 8.1 %)	5.5 to 7.2 % (largest: 95 % interval 6.3 to 8.1 %)	TRUE
+genes_proteins	camera_floor	20	G	0.85 to 0.88	0.85 to 0.88	TRUE
+genes_proteins	camera_floor	20	H	1.00	1.00	TRUE
+genes_proteins	permutation	20	A	4.5 to 5.3 % (largest: 95 % interval 4.8 to 5.8 %)	4.5 to 5.3 % (largest: 95 % interval 4.8 to 5.8 %)	TRUE
+genes_proteins	permutation	20	B	4.9 to 5.1 % (largest: 95 % interval 4.4 to 5.9 %)	4.9 to 5.1 % (largest: 95 % interval 4.4 to 5.9 %)	TRUE
+genes_proteins	permutation	20	G	0.68 to 0.84	0.68 to 0.84	TRUE
+genes_proteins	permutation	20	H	0.99 to 1.00	0.99 to 1.00	TRUE
+genes_proteins	gsea	20	A	3.6 to 5.1 % (largest: 95 % interval 4.6 to 5.6 %); terms whose features vary together: 28.6 to 62.4 %	3.6 to 5.1 % (largest: 95 % interval 4.6 to 5.6 %); terms whose features vary together: 28.6 to 62.4 %	TRUE
+genes_proteins	gsea	20	B	4.2 to 5.9 % (largest: 95 % interval 5.5 to 6.4 %)	4.2 to 5.9 % (largest: 95 % interval 5.5 to 6.4 %)	TRUE
+genes_proteins	gsea	20	G	0.84 to 0.90	0.84 to 0.90	TRUE
+genes_proteins	gsea	20	H	1.00	1.00	TRUE

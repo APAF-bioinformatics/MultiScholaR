@@ -1,0 +1,5 @@
+terms_identical	TRUE
+replay_two_entries	TRUE
+replay_terms_identical	FALSE
+replay_tests_kept	TRUE
+identity_equal_but_software	TRUE

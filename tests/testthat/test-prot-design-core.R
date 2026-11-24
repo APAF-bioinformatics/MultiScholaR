@@ -190,8 +190,10 @@ test_that("(KIT-115 A101-09) a failed UniProt retrieval writes no annotation fil
     expect_false(file.exists(file.path(paths$source_dir, "uniprot_dat_cln.RDS")))
     expect_identical(nrow(workflow_data$uniprot_dat_cln), 0L)
     expect_false(any(grepl("retrieved successfully", notes, fixed = TRUE)))
-    expect_identical(notes[[1L]], paste("[warning] No UniProt annotations were retrieved (the UniProt service may be",
-        "unavailable). Accession IDs will be used as gene names. Save the design again to retry."))
+    # KIT-175 (D6, VAL-25): an empty table that arrives with no outcome shows the "no reason known" sentence.
+    expect_identical(notes[[1L]], paste("[warning] Protein annotation is empty. The analysis can continue. Without",
+        "annotation the results tables have no gene names, plots are labelled with accessions, and enrichment cannot",
+        "be run."))
     expect_identical(workflow_data$tab_status$design_matrix, "complete")
 })
 
