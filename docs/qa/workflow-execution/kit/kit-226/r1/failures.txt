@@ -1,0 +1,207 @@
+file: test-kit226-gprofiler-columns.R
+test: (T1) Count is the number of the list's genes in the term (intersection_size), not the term's size
+kind: failure
+message:
+  Expected `built$Count` to be identical to `rep(c(4L, 5L, 3L, 3L, 2L), 2L)`.
+  Differences:
+    `actual`: 1392 1780 892 131 418 1392 1780 892 131 418
+  `expected`:    4    5   3   3   2    4    5   3   3   2
+
+file: test-kit226-gprofiler-columns.R
+test: (T1) Count is the number of the list's genes in the term (intersection_size), not the term's size
+kind: failure
+message:
+  Expected `built$Count` to be identical to `built$intersection_size`.
+  Differences:
+    `actual`: 1392 1780 892 131 418 1392 1780 892 131 418
+  `expected`:    4    5   3   3   2    4    5   3   3   2
+
+file: test-kit226-gprofiler-columns.R
+test: (T2) the table has no pvalue or qvalue column (g:Profiler gives no unadjusted p-value or q-value)
+kind: failure
+message:
+  Expected `"pvalue" %in% names(built)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit226-gprofiler-columns.R
+test: (T2) the table has no pvalue or qvalue column (g:Profiler gives no unadjusted p-value or q-value)
+kind: failure
+message:
+  Expected `"qvalue" %in% names(built)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit226-gprofiler-columns.R
+test: (T3) p.adjust is the service's adjusted value; p_adjust_method is the correction the answer states
+kind: failure
+message:
+  Expected `built$p_adjust_method` to be identical to `rep("g_SCS", 10L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('g_SCS', 'g_SCS', 'g_SCS', 'g_SCS', 'g_SCS', ...)
+
+file: test-kit226-gprofiler-columns.R
+test: (T3) p.adjust is the service's adjusted value; p_adjust_method is the correction the answer states
+kind: failure
+message:
+  Expected `k226Built("fdr")$p_adjust_method` to be identical to `rep("fdr", 10L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('fdr', 'fdr', 'fdr', 'fdr', 'fdr', ...)
+
+file: test-kit226-gprofiler-columns.R
+test: (T3) p.adjust is the service's adjusted value; p_adjust_method is the correction the answer states
+kind: failure
+message:
+  Expected `k226Built()$p_adjust_method` to be identical to `rep("not recorded", 10L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('not recorded', 'not recorded', 'not recorded', 'not recorded', 'not recorded', ...)
+
+file: test-kit226-gprofiler-columns.R
+test: (T3) p.adjust is the service's adjusted value; p_adjust_method is the correction the answer states
+kind: failure
+message:
+  Expected `k226Built("g_SCS", NULL)$p_adjust_method` to be identical to `rep(c("g_SCS", "not recorded"), each = 5L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('g_SCS', 'g_SCS', 'g_SCS', 'g_SCS', 'g_SCS', ...)
+
+file: test-kit226-gprofiler-columns.R
+test: (T3) p.adjust is the service's adjusted value; p_adjust_method is the correction the answer states
+kind: failure
+message:
+  Expected `k226Built("")$p_adjust_method` to be identical to `rep("not recorded", 10L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('not recorded', 'not recorded', 'not recorded', 'not recorded', 'not recorded', ...)
+
+file: test-kit226-gprofiler-columns.R
+test: (T4) an Open rebuilds the stored answer into the same columns
+kind: failure
+message:
+  Expected `restored$Count` to be identical to `rep(c(4L, 5L, 3L, 3L, 2L), 2L)`.
+  Differences:
+    `actual`: 1392 1780 892 131 418 1392 1780 892 131 418
+  `expected`:    4    5   3   3   2    4    5   3   3   2
+
+file: test-kit226-gprofiler-columns.R
+test: (T4) an Open rebuilds the stored answer into the same columns
+kind: failure
+message:
+  Expected `any(c("pvalue", "qvalue") %in% names(restored))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit226-gprofiler-columns.R
+test: (T4) an Open rebuilds the stored answer into the same columns
+kind: failure
+message:
+  Expected `restored$p_adjust_method` to be identical to `rep("g_SCS", 10L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('g_SCS', 'g_SCS', 'g_SCS', 'g_SCS', 'g_SCS', ...)
+
+file: test-kit226-gprofiler-columns.R
+test: (T5) the tab's archive gprofiler2_results.tsv carries the corrected columns
+kind: failure
+message:
+  Expected `any(c("pvalue", "qvalue") %in% names(tsv))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit226-gprofiler-columns.R
+test: (T5) the tab's archive gprofiler2_results.tsv carries the corrected columns
+kind: failure
+message:
+  Expected `tsv$Count` to be identical to `tsv$intersection_size`.
+  Differences:
+    `actual`: 1392 1780 892 131 418 1392 1780 892 131 418
+  `expected`:    4    5   3   3   2    4    5   3   3   2
+
+file: test-kit226-gprofiler-columns.R
+test: (T5) the tab's archive gprofiler2_results.tsv carries the corrected columns
+kind: failure
+message:
+  Expected `unique(tsv$p_adjust_method)` to be identical to "g_SCS".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('g_SCS')
+
+file: test-kit226-gprofiler-columns.R
+test: (G2) the published TSV gains only p_adjust_method; the figure's data and mappings are unchanged, its labels say adjusted
+kind: failure
+message:
+  Expected `written$p_adjust_method` to be identical to `rep("g_SCS", 5L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('g_SCS', 'g_SCS', 'g_SCS', 'g_SCS', 'g_SCS')
+
+file: test-kit226-gprofiler-columns.R
+test: (G2) the published TSV gains only p_adjust_method; the figure's data and mappings are unchanged, its labels say adjusted
+kind: failure
+message:
+  Expected `written$p_adjust_method` to be identical to `rep("not recorded", 5L)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('not recorded', 'not recorded', 'not recorded', 'not recorded', 'not recorded')
+
+file: test-kit226-gprofiler-columns.R
+test: (G2) the published TSV gains only p_adjust_method; the figure's data and mappings are unchanged, its labels say adjusted
+kind: failure
+message:
+  Expected `plot$labels$y` to be identical to "-log10(adjusted p-value)".
+  Differences:
+  `actual`:   "-log10(p-value)"         
+  `expected`: "-log10(adjusted p-value)"
+
+file: test-kit226-gprofiler-columns.R
+test: (G2) the published TSV gains only p_adjust_method; the figure's data and mappings are unchanged, its labels say adjusted
+kind: failure
+message:
+  Expected `tooltips` to be identical to `paste0(...)`.
+  Differences:
+      lines(actual[[1]])            | lines(expected[[1]])             
+  [1] "Term: E2E apoptotic process" | "Term: E2E apoptotic process" [1]
+  [2] "ID: GO:0006915"              | "ID: GO:0006915"              [2]
+  [3] "P-value: 0.0012"             - "Adjusted p-value: 0.0012"    [3]
+  [4] "Genes: 4"                    | "Genes: 4"                    [4]
+  
+      lines(actual[[2]])     | lines(expected[[2]])          
+  [1] "Term: E2E cell cycle" | "Term: E2E cell cycle"     [1]
+  [2] "ID: GO:0007049"       | "ID: GO:0007049"           [2]
+  [3] "P-value: 0.0034"      - "Adjusted p-value: 0.0034" [3]
+  [4] "Genes: 5"             | "Genes: 5"                 [4]
+  
+      lines(actual[[3]])        | lines(expected[[3]])          
+  [1] "Term: E2E mitochondrion" | "Term: E2E mitochondrion"  [1]
+  [2] "ID: GO:0005739"          | "ID: GO:0005739"           [2]
+  [3] "P-value: 0.0085"         - "Adjusted p-value: 0.0085" [3]
+  [4] "Genes: 3"                | "Genes: 3"                 [4]
+  
+      lines(actual[[4]])             | lines(expected[[4]])              
+  [1] "Term: E2E cell-cycle pathway" | "Term: E2E cell-cycle pathway" [1]
+  [2] "ID: KEGG:04110"               | "ID: KEGG:04110"               [2]
+  [3] "P-value: 0.0127"              - "Adjusted p-value: 0.0127"     [3]
+  [4] "Genes: 3"                     | "Genes: 3"                     [4]
+  
+      lines(actual[[5]])      | lines(expected[[5]])          
+  [1] "Term: E2E hemostasis"  | "Term: E2E hemostasis"     [1]
+  [2] "ID: REAC:R-HSA-109582" | "ID: REAC:R-HSA-109582"    [2]
+  [3] "P-value: 0.0243"       - "Adjusted p-value: 0.0243" [3]
+  [4] "Genes: 2"              | "Genes: 2"                 [4]
+
+file: test-enrichment-significance.R
+test: KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
