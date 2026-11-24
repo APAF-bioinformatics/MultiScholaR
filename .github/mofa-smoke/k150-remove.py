@@ -9,7 +9,7 @@ import sys
 root = os.path.realpath(sys.argv[1])
 target = os.path.realpath(sys.argv[2])
 name = os.path.basename(target)
-if os.path.dirname(target) != root or not re.fullmatch(r"(S|M|L|Lp|P1|P2|P3)_(base|A|B1|B3|C)_r[0-9]+(_failures)?", name):
+if os.path.dirname(target) != root or not re.fullmatch(r"(S|M|L|Lp|P1|P2|P3)_(base|A|B1|B3|C|RC)_r[0-9]+(_failures)?", name):
     sys.exit(f"k150-remove: refused {target} (not a run folder under {root})")
 if os.path.isdir(target):
     shutil.rmtree(target)

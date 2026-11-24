@@ -392,6 +392,24 @@ def main():
         write_tsv(os.path.join(folder, "rows.tsv"), rows, FIELDS)
         for r in rows:
             print(f'{r["id"]}\t{r["outcome"]}\tvalid {r["valid"]}\theap {r["heap_peak_mib"]}\thwm {r["vmhwm_mib"]}\twall {r["wall_s"]}')
+        if os.environ.get("K150_PLAN") == "g0i":
+            by = {r["id"]: r for r in rows}
+            lines = []
+            ok = True
+            for b in ("RC", "C"):
+                for s in STAGES:
+                    r = by.get(f"S_{b}_r1_{s}")
+                    good = r is not None and r["outcome"] == "completed" and r["valid"] == "yes"
+                    ok &= good
+                    lines.append(f"{'ok ' if good else 'BAD'} S {b} {s}: " + (f'{r["outcome"]}, valid {r["valid"]}, hwm {r["vmhwm_mib"]}, wall {r["wall_s"]}' if r else "absent"))
+            r = by.get("S_RC_r1_fail_memory")
+            good = r is not None and r["outcome"] == "killed: memory limit" and num(r["baseline_vmrss_mib"]) is not None
+            ok &= good
+            lines.append(f"{'ok ' if good else 'BAD'} induced fail_memory on RC: " + (f'{r["outcome"]}, baseline {r["baseline_vmrss_mib"]}' if r else "absent"))
+            text = f"g0i: {'held' if ok else 'did not hold'}\n" + "\n".join(lines) + "\n"
+            with open(os.path.join(folder, "g0i.txt"), "w") as handle:
+                handle.write(text)
+            print(text)
         if os.environ.get("K150_PLAN") == "lifecycle":
             text = lifecycle_check(rows)
             with open(os.path.join(folder, "lifecycle.txt"), "w") as handle:

@@ -174,6 +174,15 @@ case "$plan" in
                 tee "$RES/repeats-not-run.txt"
         fi
         ;;
+    g0i)
+        # KIT-209 G0i: the S pipeline on the head (RC) and on build C, then a memory-limit failure on RC.
+        pipeline S RC 1 0 0
+        pipeline S C 1 0 0
+        dir="$WORK/runs/S_RC_r1_failures"
+        mkdir -p "$dir"
+        run_stage fail_memory RC S 1 capped "$dir" 4294967296 600
+        remove_run "$dir"
+        ;;
     *)
         echo "unknown plan $plan" >&2
         exit 2

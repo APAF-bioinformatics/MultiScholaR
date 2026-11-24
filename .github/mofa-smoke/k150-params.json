@@ -1,8 +1,7 @@
 {
-  "label": "k150-counted",
-  "attempt": "counted",
-  "jobs": [
-    {"name": "counted-small", "plan": "counted-small", "size": "M", "timeout": 240},
-    {"name": "counted-large", "plan": "counted-large", "size": "L", "timeout": 330}
-  ]
+  "label": "k209-g0i-1",
+  "attempt": "g0i",
+  "library_build": "RC",
+  "install_builds": "RC C",
+  "jobs": [{"name": "g0i", "plan": "g0i", "size": "S", "timeout": 60}]
 }
