@@ -99,6 +99,39 @@ changed. The branch was then merged with staging a1b397b1 (189df0d7; no shared c
   (49 / 0); no `new-failure`, `message-changed`, `count-changed`, timeout or crash; `test-omic-summary-module.R` and
   the four `test-workflow-checkpoint*` files `same`; check identical (0 / 3 / 3). 1,208.4 job-minutes.
 
+## The second merge (after KIT-205 and KIT-167; implementation audit K208-I08, I01, I07)
+
+Order (coordinator, 2026-11-25): KIT-205, KIT-167, then KIT-208.
+
+- **Merges.** e0c414e0 with staging 446b5878 (KIT-205, KIT-206); 9912c6b1 with 9f3b7c49 (ledger rows only);
+  84e8d774 with 67064baf (KIT-167, KIT-205's re-freeze VAL-174). Each time only `docs/methods-decision-ledger.md`
+  conflicted (staging's rows first, KIT-208's after). KIT-167's I09 change (the 2 x 2 counts over
+  `enrichmentTestedRows`) and its reference-identifier lines in `R/utils_workflow_enrichment.R` and
+  `R/utils_workflow_dia_da.R` merged without conflict and touch no KIT-208 line. VAL-174's re-freeze is in
+  `tests/testthat/test-omic-enrich-module.R` (`omicEnrichW1FrozenUi`, five `omicEnrichW113Frozen` cases); VAL-161's leaf
+  is in `tests/testthat/test-omic-da-module.R:3343`: no overlap.
+- **Tests first (4565c7f6).** T10 (a comparison with named untested rows and unnamed tested rows: refused, "0 of 4
+  tested proteins named"), T11 (an unnamed untested row not counted: "B_vs_A: 1 of 4"), guards T12 (I01: no protein
+  past the cutoffs and none named: completed, no recorder call, "B_vs_A: 70 of 70") and T13 (I07: an annotation entry
+  with an empty name takes the identifier table's); T6's refusal literal says "tested proteins" (draft).
+- **R1b (run 45465107797, 4565c7f6).** T6 fails at the old literal, T10 at "0 of 6 proteins named" (every row), T11 at
+  "B_vs_A: 2 of 5"; every other expectation passes (57), including T1 to T9's numbers (none moved) and T12, T13.
+- **The alignment (9ab177ed).** `workflowEnrichmentUnnamedProteins` and the refusal's `<n>` in
+  `diaEnrichmentNoIdentifiers` count over `enrichmentTestedRows(table)$rows` (which honours the replay marker); the
+  refusal says "none of the tested proteins of comparison <c> has one (0 of <n> tested proteins named)" (a draft for
+  the owner's wording pass).
+- **R2b (run 45468101227, 9912c6b1 against staging 9f3b7c49; 44 files re-grepped, including
+  `test-kit205-enrichment-background.R`, plus the GUI-entry lane, check).** 44 `same`
+  (`test-omic-enrich-module.R` 1,042 / 28 on both: KIT-205's 9 known failures and the 19 earlier, identical); the new
+  file only on head, 60 / 0; check identical. K205-R1-03: KIT-205's report clause ("from the protein annotation or,
+  where the annotation gives none, from the identifier table") is exact on this code: T2 (annotation without the
+  entry, NA) and T13 (entry with an empty name) both take the identifier table's name per protein, and KIT-205's
+  clause tests (`test-go-propagation.R`, `test-kit205-enrichment-background.R`) pass on both sides.
+- **R2b2 (run 45476463299, 84e8d774 against staging 67064baf; 46 files re-grepped, including KIT-167's
+  `test-reference-annotation.R` and `test-reference-mapping-enrichment.R`, plus the GUI-entry lane, check).** 46
+  `same` (`test-omic-enrich-module.R` 1,051 / 19 on both after VAL-174; `test-omic-da-module.R` 1,316 / 53 on both);
+  the new file only on head, 60 / 0; check identical. No R3: neither R2b shows a difference beyond the new file.
+
 ## Acceptance criteria
 
 | # | Met? | Evidence |
@@ -138,7 +171,7 @@ Points for the owner's pass (implementation audit):
 
 ## Budget
 
-R1 0.79, R2 15.43, C1 0.85, R2c 14.14, R3 80.56: 111.77 core-hours used, against 91.1 expected and the 449.33 ceiling
+R1 0.79, R2 15.43, C1 0.85, R2c 14.14, R3 80.56, R1b 0.95, R2b 15.47, R2b2 14.89: 143.08 core-hours used, against 91.1 expected and the 449.33 ceiling
 (the correction row, 222.67, holds C1, R2c and R3's re-run share). R3 alone 80.56 against its row ceiling 186.67.
 
 ## Not checked
@@ -149,7 +182,7 @@ R1 0.79, R2 15.43, C1 0.85, R2c 14.14, R3 80.56: 111.77 core-hours used, against
 - A name filled from the identifier table that holds several names ("A;B", DIA-NN `Genes` style) stays one token under the writer's rule (split on space and colon) and counts as named, so it is neither refused, nor reported as not tested, nor counted as unnamed, and g:Profiler will not recognise it (scripts only; plan F4). Isoform rows take the canonical entry's name (the join key is unchanged); not tested.
 - The fill from the identifier table where the annotation's entry matches but its `gene_names` is empty (`""`) is not tested (T2 exercises only NA); guard T13 at the second merge.
 - Replay of a case-5 record made before this change (refused by reading; no test).
-- KIT-205 (tested-rows background). Whichever of KIT-205 and KIT-208 merges second aligns two counts with the background in force: `workflowEnrichmentUnnamedProteins` (`R/utils_workflow_enrichment.R:830`) and the refusal's `<n>` in `diaEnrichmentNoIdentifiers` (`R/utils_workflow_dia_da.R:740`) count over `enrichmentTestedRows(table)$rows`, which also honours the replay marker, and the refusal says "tested proteins" (a draft for the owner's wording pass). A clean textual merge would leave both over every row, and the refusal could say that no protein is named while an untested one is. Added with it: a comparison with named untested rows and unnamed tested rows (refused; `<n>` = tested rows) and an unnamed untested row (not counted). T5, T6's numbers, T7 ("25 of 70"; (10, 45)) and T8 do not move: every protein of `k208Project` has a p-value (INFERRED). KIT-205 merges first (coordinator, 2026-11-25); KIT-208 does this at its merge.
+- (Done at the second merge, section above.) KIT-205 (tested-rows background). Whichever of KIT-205 and KIT-208 merges second aligns two counts with the background in force: `workflowEnrichmentUnnamedProteins` (`R/utils_workflow_enrichment.R:830`) and the refusal's `<n>` in `diaEnrichmentNoIdentifiers` (`R/utils_workflow_dia_da.R:740`) count over `enrichmentTestedRows(table)$rows`, which also honours the replay marker, and the refusal says "tested proteins" (a draft for the owner's wording pass). A clean textual merge would leave both over every row, and the refusal could say that no protein is named while an untested one is. Added with it: a comparison with named untested rows and unnamed tested rows (refused; `<n>` = tested rows) and an unnamed untested row (not counted). T5, T6's numbers, T7 ("25 of 70"; (10, 45)) and T8 do not move: every protein of `k208Project` has a p-value (INFERRED). KIT-205 merges first (coordinator, 2026-11-25); KIT-208 does this at its merge.
 - `gost` 0.2.4's behaviour on an empty query is from source (plan audit 1.3), not run.
 
 ## For the change report
