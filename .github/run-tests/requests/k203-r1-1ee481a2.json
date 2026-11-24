@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-203 R1: tests-only commit, each new test failing at its stated value; the moved expectations of 10.2",
+  "label": "KIT-203 R1 tests only at 1ee481a2",
+  "package_commit": "1ee481a2bc26134193dd24a1e1df49fe59521786",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-enrichment-significance.R",
+    "test-go-propagation.R",
+    "test-general-enrichment-shared.R",
+    "test-workflow-analysis-record.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-module-ci-prot-enrich.R",
+    "test-e2e-enrichment-doubles.R",
+    "test-omic-enrich-module.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
