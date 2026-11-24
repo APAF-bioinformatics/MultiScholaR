@@ -214,3 +214,29 @@ Purpose: the counted simulation, once. Ceiling: 16 jobs of 85 minutes, the deter
 1,415 job-minutes. It decides K-E1 to K-E5 as `declaration.md` states them. While it runs nothing of it is read but the
 status of its jobs, with one exception the coordinator asked for: the hashes in the run's `script-sha256.txt`, which
 must be the declared ones (if they are not, the run is cancelled).
+
+## S: what happened (2026-11-24)
+
+Run 45353248796, sent by lane commit 008852f8 (only `k184-params.json`: `run = counted`, `package_commit` =
+81ee30527cbfab973d5cd77a9ed31207234643be). All 17 evidence jobs started at once (none queued).
+
+- **The hashes the run read.** A running job's log is not served (the request returned "BlobNotFound"), and its
+  artifact exists only when the job has finished, so the run's hashes could not be read before any job finished. They
+  were read from the log of the first job to finish, the determinism job (16 minutes), by extracting the five hash
+  lines and nothing else: `simulate-k184.R` 58333b1e...a75b, `score-k184.R` 282b844e...a8b2, `k184-evidence.yml`
+  15378427...68d8, KIT-183's two files 4cdf7105... and 7efd7c68...: the declared values. (Before the send they had
+  been confirmed from git at the two commits; every job also stops if the lane's `k184.R` is not the package's
+  `simulate-k184.R`.) No cancellation.
+- **While it ran** nothing else of it was read but the status of its jobs.
+- **Jobs.** All 17 evidence jobs and the score job succeeded at the first attempt: 42.9 to 77.5 minutes for the
+  sixteen replicate jobs (limit 85; the last replicate may start until minute 79), 16.1 for the determinism job, 2.5
+  for the score job, 0.1 for the parameters: 1,043.0 job-minutes, 69.53 core-hours (expected 1,197, ceiling 1,415). No
+  replicate was left unstarted and none failed, so S' was not used and nothing was re-scored. The jobs ran on five
+  processor models (from each job's log, the `Model name` line only): AMD EPYC 7763 (6 jobs, the determinism job among
+  them), AMD EPYC 9V74 (4), Intel Xeon Platinum 8573C (4, job s01 among them), AMD EPYC 9V45 (2), Intel Xeon Platinum
+  8370C (1).
+- **After it finished** I downloaded the `score` artifact (the results; `s/`), and, to size the determinism
+  difference the scorer reported, the artifacts of the determinism job and of job s01, of which I compared the twelve
+  worker tables of cell A replicates 6 to 15 column by column and read `runner.txt` and the first lines of `plan.txt`.
+- **Results**: `results.md`. **The texts**: `wording.md`. The full suite (A17) has not been run; the package's texts
+  still hold the placeholders.

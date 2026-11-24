@@ -1,6 +1,6 @@
-# KIT-184: outcome (running record; stopped at L1's stop rule)
+# KIT-184: outcome (running record; the counted simulation has run; texts and the full suite still to do)
 
-Ticket `tickets/kit/KIT-184.md` revision 1.7. Branch `kit-184-ruv-factors-in-integration`, from `v0.9-staging`
+Ticket `tickets/kit/KIT-184.md` revision 1.8. Branch `kit-184-ruv-factors-in-integration`, from `v0.9-staging`
 67d38df3 (KIT-183, KIT-187 and KIT-191 merged). All computation on GitHub-hosted runners; no R on the laptop.
 
 **State: stopped at a stop rule of ticket section 11.** The package part is built and passes its targeted runs. The
@@ -28,6 +28,17 @@ its first exercise. Ticket revision 1.6, section 22, has a row per finding.
 own run has a limit and a budget line. L1b ran once (45348572248, 18.7 job-minutes) and every item of the re-check's
 list holds, judged from its staged files alone (`lifecycle.md`, `l1b/`). The `score` job's timeout is 30 minutes.
 Stopped here, before the freeze: the auditor confirms L1b first. No `declaration.md`, no counted run.
+
+**After the freeze and the counted run (2026-11-24).** Re-check 2 confirmed L1b; its three repairs were applied (ticket
+revision 1.8). `declaration.md` was committed alone (81ee3052) and the counted run S sent on the coordinator's word
+(45353248796; 1,043.0 job-minutes). **Observed** (`results.md`, tables in `s/`): 2,000 of 2,000 replicates; the
+deciding criterion K-E1 holds in cells A and B (33 of 33 checks each; largest upper limits 0.0639 and 0.0593 against
+0.075), K-E3 holds, K-E5 holds; the declared check K-E4 fails in every data set in cell B (sets of features sharing
+unwanted variation called on the main factor in 8.1 to 29.6 % with the adjustment, 2.0 to 11.2 % without it, 1.6 to
+2.8 % with the planted factors). By ticket 6.5 that is outcome R1 with R7. The determinism check as declared is not
+met (7 of 12 tables identical as text; the others differ in the last digits of real numbers between two processors):
+reported, not ruled on by me. **Not done:** the numbers are not yet written into the package's texts (`wording.md`
+has them and what they mean for two sentences); the full suite (A17) has not been run; nothing is merged.
 
 ## What was run, at which commit, what was observed
 
@@ -64,7 +75,7 @@ recorded on the laptop). `test-kit129-run-path.R` has six failures identical on 
 | A10 | K10, K11, K12 | met | R1 |
 | A11 | K14, K15 | met | R1 |
 | A12 | MOFA2 lane, K13 | met | M |
-| A13 | Simulation | **not met: stopped at L1** (seconds per replicate above the stop). L1's other checks passed | `lifecycle.md`, `l1/` |
+| A13 | Simulation | run and scored: outcome R1 with R7 (K-E1, K-E3, K-E5 hold; K-E4 fails in cell B); determinism as declared not met (7 of 12 tables; real-number digits across processors), to be ruled on; the texts not yet filled | `declaration.md`, `results.md`, `s/`, `wording.md`, `lifecycle.md` |
 | A14 | Gate off | met | `r1/gate-off-verdict.txt` |
 | A15 | Cross-platform record; the writer's memory and time | met on ubuntu-22.04 and windows-2025 (B) and on ubuntu-24.04 (B24): 439 passed, 0 failed, 3 skipped on each, the cross-platform block passing (`cross-platform.tsv`); the writer: 9.6 s and 740 MiB above the reading before the call at 20,000 x 500 (ceilings 60 s, 1 GiB) | B, B24; `r1/removed-factors-cost.tsv` |
 | A16 | Failing first; the guards fail on a broken head | met | R1a; `r1/x-verdict.txt` |
@@ -121,10 +132,9 @@ under `skipped` would be the stricter reading).
 
 ## Not checked
 
-- The simulation: nothing is declared or counted (A13). Every number of the texts that comes from it is a placeholder
-  ([R3], [I3], [R5], [I5], [R5m], [R6], [I6] in `enrich_values_ruv_unadjusted_note` and `methods_enrich_limits_ruv`;
-  `enrich_floor_covariates_note` says its power "has not been measured yet"). **No build may be released or merged
-  with them in place.**
+- The texts: the simulation's numbers are not yet written into the package ([R3], [I3], [R5], [I5], [R5m], [R6], [I6]
+  in `enrich_values_ruv_unadjusted_note` and `methods_enrich_limits_ruv`; `enrich_floor_covariates_note` says its power
+  "has not been measured yet"). **No build may be released or merged with them in place.**
 - The full suite base against head (A17).
 - The tab in a browser (the module is driven with `shiny::testServer` and `renderTags`).
 - The distance between the DA's stored factors and the removed ones on a declared design with missing values.
