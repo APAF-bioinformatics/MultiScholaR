@@ -274,6 +274,7 @@ test_that("KIT-182 F1 (h): after a session export, a reopen into a new owner and
     k182Click(fixture, norm, "manual")
     k182Correlation(fixture, norm, 0.5)
     k182QcChange(fixture)
+    fixture$workflow$contrasts_tbl <- data.frame(contrasts = "grouptreated-groupcontrol") # VAL-138: as the design step sets it
     exported <- protNormCoreQuiet(runProtNormExportSessionWorkflow(fixture$workflow, norm, k182Settings("manual"),
         fixture$paths$source_dir, withProgressFn = function(message, value, expr) force(expr),
         incProgressFn = function(...) NULL))
