@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-193 P2 (target 5 pair) and P0b (target 4 library parts, group R pairs on merged code), one job per pair, planted defects; owed digests job (T3, T1 helper, P at (320,137)) and the new pairs' digests",
+  "label": "KIT-193 pairs permutation, qvalue, ruv and binding digests on kit-193-lean-proofs d71dbd08",
+  "package_commit": "d71dbd08385a31cf1fdd45ce901ecfebad97b2f0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit193-pairs-permutation.R",
+    "test-kit193-pairs-qvalue.R",
+    "test-kit193-pairs-ruv.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-193/scripts/bindings-t3.R",
+      "args": [
+        "kit193-out-t3"
+      ],
+      "out": "kit193-out-t3",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-193/scripts/bindings-p.R",
+      "args": [
+        "kit193-out-p"
+      ],
+      "out": "kit193-out-p",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
