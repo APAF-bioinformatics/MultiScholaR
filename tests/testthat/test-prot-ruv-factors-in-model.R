@@ -331,8 +331,9 @@ test_that("an object without the declaration is tested exactly as today", {
     result <- ruvModelDa(legacy)
     today <- ruvModelKernel(as.matrix(tibble::column_to_rownames(legacy@protein_quant_table, "Protein.Group")), legacy@design_matrix)
     expect_identical(result$contrasts_results, today)
+    # KIT-201 (VAL-131, D3): the legacy route records the TREAT moderation it ran under (the replay rule marker).
     expect_identical(result$da_model, list(model = "limma", formula_used = "~ 0 + group", w_terms = character(), k = 0L,
-        ruv_mode = "none", treat_applied = FALSE, treat_lfc_cutoff_requested = 0))
+        ruv_mode = "none", treat_applied = FALSE, treat_lfc_cutoff_requested = 0, treat_moderation = "as_main_test"))
     # no declaration of the design: W columns and a DIA_LIMPA state's declaration (`ruv_mode` with no `ruv_design`)
     # select nothing, and the object is tested as today
     with_w <- legacy
@@ -860,24 +861,28 @@ test_that("the factors-in-the-model test applies its trend and robust settings a
     expect_gt(length(unique(fit$s2.prior)), 1L)
 })
 
-# The legacy paths' DA outputs on fixed inputs (decisions M29, M30: legacy unchanged). The digests were recorded on the
-# tree before those decisions were implemented (`kit-129-integration` d4b5db27): the DA entry point on an object of
-# today's design (no declaration: its own table tested by `runTestsContrasts`), without and with technical
-# replicates, and the kernel called directly.
-ruvModelLegacyDigests <- function() {
-    plain <- ruvModelFixture(proteins = 120L)
-    technical <- ruvModelTechRepFixture()
-    entry <- function(fixture) {
-        result <- ruvModelDa(ruvModelObject(fixture$x, fixture$design))
-        digest::digest(list(result$contrasts_results$results, result$contrasts_results$fit.eb,
-            result$contrasts_results$qvalue_warnings, result$da_model))
-    }
-    c(entry = entry(plain), entry_technical = entry(technical), kernel = digest::digest(ruvModelKernel(plain$x, plain$design)))
+# The legacy paths' DA at a cutoff of 0 (KIT-201, methods ledger VAL-131: decisions M29's and M30's "legacy unchanged"
+# are given up for the TREAT variance). The DA entry point on an object of today's design (no declaration: its own table
+# tested by `runTestsContrasts`), without and with technical replicates, and the kernel called directly, report the
+# moderated test's p-values: TREAT at 0 with the trend and robust settings is `eBayes(trend = TRUE, robust = TRUE)`
+# (limma 3.68.4 man/ebayes.Rd:81). The reference re-moderates the returned fit itself, so it holds for the blocked model.
+# Before KIT-201 these were digests recorded at d4b5db27 (5f301cd3..., 597ebf0d..., 0ba8a942...).
+ruvModelLegacyModerated <- function(contrasts_results, info) {
+    fit <- contrasts_results$fit.eb
+    expect_gt(length(unique(fit$s2.prior)), 1L, label = paste(info, "distinct prior variances"))
+    expected <- limma::eBayes(fit, trend = TRUE, robust = TRUE)
+    table <- contrasts_results$results[[1L]]
+    contrast <- colnames(fit$coefficients)[[1L]]
+    expect_equal(table$raw_pvalue[match(rownames(fit$coefficients), rownames(table))], unname(expected$p.value[, contrast]),
+        tolerance = 1e-10, label = paste(info, "p-values"))
 }
 
-test_that("the legacy design's DA is unchanged by the exact standard errors and the test settings (M29, M30)", {
-    expect_identical(ruvModelLegacyDigests(), c(entry = "5f301cd329832bf4169a188156ea5a3f", entry_technical = "597ebf0d6c82e95f05a3238fa3b7df78",
-        kernel = "0ba8a9420b0234237f70623e8ffd2565"))
+test_that("the legacy design's DA at a cutoff of 0 is the moderated test with the trend and robust settings (KIT-201, VAL-131)", {
+    plain <- ruvModelFixture(proteins = 120L)
+    technical <- ruvModelTechRepFixture()
+    ruvModelLegacyModerated(ruvModelDa(ruvModelObject(plain$x, plain$design))$contrasts_results, "entry")
+    ruvModelLegacyModerated(ruvModelDa(ruvModelObject(technical$x, technical$design))$contrasts_results, "entry_technical")
+    ruvModelLegacyModerated(ruvModelKernel(plain$x, plain$design), "kernel")
 })
 
 test_that("the technical-replicate design: the biological units as replicate sets, k limited by the units and the groups across them (KIT-129 integration)", {
