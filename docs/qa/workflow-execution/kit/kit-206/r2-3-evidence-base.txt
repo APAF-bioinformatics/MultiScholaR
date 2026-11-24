@@ -1,0 +1,37 @@
+.KIT-206 E1 head=protein_replicate_filtered notes=[message 10] Filtered session data exported successfully!
+.KIT-206 E2 head=protein_intensity_filtered notes=[message 10] Filtered session data exported successfully!
+.KIT-206 E2b archive correlation is the first run's=TRUE
+KIT-206 E2b head=normalized notes=[message 10] Filtered session data exported successfully!
+.KIT-206 E3 head=normalized notes=[message 10] Filtered session data exported successfully!
+.KIT-206 E4 notes=[message 10] Filtered session data exported successfully!
+KIT-206 E5 skip notes=[message 10] Filtered session data exported successfully!
+.KIT-206 E5 limpa notes=[message 10] Filtered session data exported successfully!
+.KIT-206 E6 da notes=[message 10] Filtered session data exported successfully!
+...KIT-206 E6 stand-in notes=[message 10] Filtered session data exported successfully!
+KIT-206 E7 exported_states=protein_replicate_filtered notes= error=none
+KIT-206 E9 first notes=[message 10] Filtered session data exported successfully!
+.....KIT-206 E9 reopened notes=[message 10] Filtered session data exported successfully!
+...KIT-206 E9 reverted head=protein_replicate_filtered notes=[message 10] Filtered session data exported successfully!
+..KIT-206 E10 ruv_covariates and correlation_filtered components differ=TRUE
+...KIT-206 E10 enrichment head built=TRUE
+KIT-206 E11 export notes=[message 10] Filtered session data exported successfully!
+...KIT-206 E11 error=none new_archives=1 archive_states=protein_replicate_filtered latest_moved=TRUE
+KIT-206 E11 guard error=none new_archives=1 archive_states=correlation_filtered
+.KIT-206 E12 head=enrichment_completed class=EnrichmentResults previous_state=normalized
+ native export needs component metadata; explicitly convert the legacy session first new_archives=0 archive_states= pendi
+ saved table changed during read ruv_mode=NULL ruv_applied=NULL pending=TRUE then_correlation=session outputs are pending; retry export befor
+ saved table changed during read class=saved_entity_corrupt pending=TRUE then_correlation=session outputs are pending; retry export before
+ after Skip the export writes; on DIA with limpa after the RUV covariates it proceeds (guard) ('test-kit206-prot-norm-export-guard.R:319:5') - Unknown or uninitialised column: `core_util
+ after Skip the export writes; on DIA with limpa after the RUV covariates it proceeds (guard) ('test-kit206-prot-norm-export-guard.R:319:5') - Unknown or uninitialised column: `core_util
+ DIA with limpa, the tab restored after the RUV covariates, exports; also after the DA and an enrichment (guard) ('test-kit206-prot-norm-export-guard.R:434:5') - Unknown or uninitialise
+ DIA with limpa, the tab restored after the RUV covariates, exports; also after the DA and an enrichment (guard) ('test-kit206-prot-norm-export-guard.R:434:5') - Unknown or uninitialise
+246:5'): KIT-206 E1: after 
+246:5'): KIT-206 E1: after 
+258:5'): KIT-206 E2: after 
+258:5'): KIT-206 E2: after 
+276:5'): KIT-206 E2b: S2, t
+276:5'): KIT-206 E2b: S2, t
+292:5'): KIT-206 E3: after 
+292:5'): KIT-206 E3: after 
+381:5'): KIT-206 E7: the S4
+382:5'): KIT-206 E7: the S
