@@ -26,3 +26,4 @@ run_id	request	commit	purpose	job_minutes	core_hours	result
 45291808400	k189-s-p3a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p3a: c20 r1-400, c23 r1-200	146.8	9.78	scripts ok,ok; every replicate written, exit 0
 45291811542	k189-s-p3b-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p3b: c21 r1-400, c24 r1-200	136.7	9.11	scripts ok,ok; every replicate written, exit 0
 45291815912	k189-s-p3c-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p3c: c22 r1-400	68.7	4.58	scripts ok; every replicate written, exit 0
+45311934798	k189-sc-8039b4e4	8039b4e48d87ef36ecbb07f43353d893151c51f6	SC: score-k189.R once over the committed S rows (as declared)	8.4	0.56	ok: 108 classifications; outcome O1; default BH over the whole size-filtered family

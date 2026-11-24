@@ -1,0 +1,8 @@
+check	pass	detail
+rows read once	TRUE	319200 rows, 0 duplicated keys
+replicates complete (14 rows)	TRUE	22800 replicates, 0 incomplete
+one list per replicate	TRUE	0 replicates with more than one list
+files read	TRUE	33 files
+E2 flags on every ok call	TRUE	0 of 45600 ok calls fail a check ()
+nesting BHf in BH, BH in Q	TRUE	0 calls
+chain reproduces the q-values	TRUE	0 calls differ
