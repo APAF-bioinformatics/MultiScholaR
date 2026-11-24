@@ -787,6 +787,10 @@ runProtNormExportObserver <- function(
   }
 
   tryCatch({
+    # KIT-206: refused, before anything is written or left pending, when the current table is not the tab's last
+    # result. Here and not in the workflow: KIT-182's F1 (h) exports a stale head through the workflow on purpose.
+    assertProtNormExportHeadCurrent(if (is.list(workflowData) || is.environment(workflowData))
+      workflowData$state_manager, normData$correlation_filtered_obj)
     source_dir <- resolveExportSourceDirFn(experimentPaths)
 
     export_result <- runExportSessionWorkflowFn(

@@ -1,0 +1,12 @@
+== test-di10k.R :: DI10K: the confirmatory cell has its own index; T-COV's catalogue does not hold it (1 not passed)
+Error in `valCoverageCells(confirmatory = TRUE)`: unused argument (confirmatory = TRUE)
+
+== test-di10k.R :: DI10K: 4,840 features, exactly 40 changed, all up at scale 1, C4e's g = 5 layout (1 not passed)
+Error in `valCoverageCells(confirmatory = TRUE)`: unused argument (confirmatory = TRUE)
+
+== test-di10k.R :: DI10K: the cell computes C4e's mae, bias and rej on the simulated matrix (1 not passed)
+Error in `valCoverageCells(confirmatory = TRUE)`: unused argument (confirmatory = TRUE)
+
+== test-di10k.R :: DI10K: a plan naming the cell runs it with the plan's generator, in tasks and runs (1 not passed)
+Error in `valCoverageCells(confirmatory = TRUE)`: unused argument (confirmatory = TRUE)
+
