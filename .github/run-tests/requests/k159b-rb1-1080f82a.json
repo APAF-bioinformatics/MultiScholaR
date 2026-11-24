@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-159 builder B, REPAIR line (VAL-109; builder B's share): RB1, the fix at 1080f82a: replay, records, valrun, g1a-entry, plus phases, e2e-free regressions (repair, driver) with --lint; ceiling 40 min, about 1 core-hour; decides whether the items pass (one correction allowed per item)",
+  "label": "KIT-159 builder B RB1: fix at 1080f82a",
+  "package_commit": "1080f82a988d684f3ce034a7a5521adcfa7ca028",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-rb1-out",
+        "--files",
+        "replay,records,valrun,g1a-entry,phases,repair",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-rb1-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 40
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
