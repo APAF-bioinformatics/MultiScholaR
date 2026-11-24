@@ -97,9 +97,10 @@ restructuring; transcriptomics code only, none on S2's path) e6c42d1d. First bra
   e2e fixtures keep 4 of 5 proteins on the base (P00002 removed: its one value at or below the 1st percentile in
   KO) and 5 of 5 on head. Headline figures, mean with 95 % Monte Carlo interval, 3,000 proteins per draw:
   - Cell A (2 x 3): kept 2,442 -> 2,838 (vd5), 2,060 -> 2,668 (vd10), 1,261 -> 2,086 (vd25); power 0.650 -> 0.735,
-    0.548 -> 0.676, 0.333 -> 0.506; FDP 0.050 on both sides at each mask (paired differences within +/-0.001, intervals
-    include 0); of the added proteins about 14 % are called, with FDP 0.061, 0.061, 0.057.
-  - Cell D (3 x 4, the group-level case): added 48, 116, (vd25 in `s2/cells.tsv`); power +0.020, +0.028.
+    0.548 -> 0.676, 0.333 -> 0.506; FDP 0.050 to 0.052 on both sides (means of the paired differences within +/-0.001, each
+    interval includes 0); of the added proteins about 14 % are called, with FDP 0.061, 0.061, 0.057.
+- Among the proteins only the head keeps, the false discovery proportion of their calls is 0.057 to 0.061 in A, 0.068 to 0.076 in B, 0.072 to 0.077 in C and 0.041 to 0.063 in D, with 95 % intervals above 0.05 in A, B and C at every mask and in D at vd25; the list-level FDP is unchanged (0.050 to 0.052). S2 does not separate lower power in this subgroup from the bias of F11.
+  - Cell D (3 x 4, the group-level case): added 48, 116, 328; power +0.020, +0.028, +0.055.
   - Cells B (4 x 3) and C (5 x 3): added 107 / 252 / 605 and 75 / 196 / 538; power +0.019 / +0.039 / +0.085 and
     +0.012 / +0.029 / +0.069.
   - Cell E (3 and 6): no change; the per-group rule of D1 (b) would change the fate of 43, 105 and 285 proteins.
@@ -107,19 +108,28 @@ restructuring; transcriptomics code only, none on S2's path) e6c42d1d. First bra
   These are simulated data, KIT-185's generator, R = 100 draws per cell and mask; the size on real data will be
   shown by KIT-161 (Cox, 2 x 3); KIT-185's cell P2, also simulated, measures RUV-III-C on the fixed filter.
 
+## Core-hours
+
+- R1 46.2, R2 385.2, R3 1,063.5 and R3c 14.9 job-minutes: 1,509.8 in all, 100.7 core-hours.
+- Expected: 94.9 for R1 to R3, plus about 6.2 for R3's added check and script, plus 1.0 for R3c.
+- Ceiling: 297.1 (483.8 with a full correction), plus 16.0 for R3's check and script and 2.7 for R3c.
+- Longest jobs: S2 84.0 min (ceiling 160); R2 test shard 62.7 (75); R3 test shard 45.0 (70).
+
+Scope search of ticket 9, re-run at 98df468b, 604ec4dd and 64cc0fff: the same 36 test files and 5 helpers, all among R2's 45 files.
+
 ## Acceptance criteria
 | # | Status | Evidence |
 |---|---|---|
 | A1 | met | R1 log (`r1-failures.txt`); R2 head: both new files pass |
 | A2 | met: equal to 2.2 | `r1-t3-base-set.txt` |
-| A3 | met under revision 1.4 (VAL-104): the only `message-changed` is the admitted 34 in `test-prot-norm-core.R` | `r2-compare.tsv` |
+| A3 | met under revision 1.4 (VAL-104): the only `message-changed` is the admitted 34 in `test-prot-norm-core.R` | `r2-compare.tsv`; R3 `r3-full-suite-compare.tsv` (the same 34: 17 provenance + 17 record) |
 | A4 | met | `r2-check-compare.txt` |
 | A5 | met | `s2-lc/`, `s2/falsifiers.tsv`, `s2/cells.tsv` |
 | A6 | met (the admitted 34 = 17 provenance + 17 record; cause shown, R3c) | `r3-full-suite-compare.tsv`, `r3c-prov/provenance-verdict.txt` |
 | A7 | met: NEWS under the unreleased heading, ledger `VAL-<merge>`; DESCRIPTION, packaging, NAMESPACE untouched by this branch's commits | diff |
 | A8 | met | section below |
 
-## Decision needed (the owner's)
+## Decision needed at R2 (answered 2026-11-24, VAL-104: the values wait for the end-of-project re-record; plan section 11 row in AUDIT-KIT-187-impl I02)
 The ticket predicted that no stored reference moves (2.5, 6.2); the KIT-111 frozen `provenance` digests in
 `tests/testthat/test-prot-norm-core.R` do, because the normalisation step now records the marker. The file already
 fails on base (laptop-recorded digests), but 34 expectations that pass on base fail on head. Options, none taken:
@@ -154,12 +164,12 @@ numbers are those of 98df468b.
 | Report variables | `R/utils_workflow_analysis_record.R:1023-1024` | file-sourced cutoffs | n/a | unchanged |
 
 ## Inferred, not observed
-- That the `provenance` move comes from the normalisation marker alone (no other provenance writer changed; the
-  filter step is not in the KIT-111 cases). Not traced by a run.
+- (Shown since: R3 and R3c, the moved provenance and record differ from base only by the marker.)
 - The exactness bound (316) and the earlier-rule equivalence beyond the tested grid (n up to 20, G up to 7).
 
 ## Not checked
 - R2b/R3b on KIT-177's merge (not merged when R3 was sent).
-- NEWS and ledger wording (not written).
-- Real data (none used); Windows (no platform code touched); whether a managed worker can run a different build
-  from the controller.
+- The owner's wording pass of NEWS, the ledger row and the report sentences (VAL-41).
+- The group sizes of KIT-159's lifecycle fixtures (ticket 13).
+- Real data (none used); Windows (no platform code touched).
+- A managed worker is a new `Rscript` loading the package from the configured library (`R/utils_workflow_execution.R:605-616`, `:1424-1448`), and nothing compares its build with the controller's: if the library is replaced while a controller runs, a step's recorded rule and its computed rule can differ (read, not run).
