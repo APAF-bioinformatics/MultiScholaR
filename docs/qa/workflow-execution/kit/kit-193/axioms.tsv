@@ -90,3 +90,15 @@ Ruv.H1_witness	Ruv.H1_witness_stmt	propext, Classical.choice, Quot.sound
 Permutation.perm_measure_moving_witness	Permutation.perm_measure_moving_witness_stmt	propext, Classical.choice, Quot.sound
 Ruv.G0_interior_witness	Ruv.G0_interior_witness_stmt	propext, Classical.choice, Quot.sound
 Ruv.F2	Ruv.F2_stmt	propext, Classical.choice, Quot.sound
+Ruv.B1	Ruv.B1_stmt	propext, Classical.choice, Quot.sound
+Ruv.B2	Ruv.B2_stmt	propext, Classical.choice, Quot.sound
+Ruv.D1	Ruv.D1_stmt	propext, Classical.choice, Quot.sound
+Ruv.D2	Ruv.D2_stmt	propext, Classical.choice, Quot.sound
+Ruv.E1	Ruv.E1_stmt	propext, Classical.choice, Quot.sound
+Ruv.E2	Ruv.E2_stmt	propext, Classical.choice, Quot.sound
+Ruv.K1	Ruv.K1_stmt	propext, Classical.choice, Quot.sound
+Ruv.K1_gls	Ruv.K1_gls_stmt	propext, Classical.choice, Quot.sound
+Ruv.B1_witness	Ruv.B1_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.D_witness	Ruv.D_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.K1_witness	Ruv.K1_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.K1_gls_witness	Ruv.K1_gls_witness_stmt	propext, Classical.choice, Quot.sound

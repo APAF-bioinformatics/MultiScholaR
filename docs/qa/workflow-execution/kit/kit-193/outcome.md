@@ -277,7 +277,7 @@ the standard axioms). P03: the coordinator adopted the auditor's two sharper wit
 P05 and P06 concern the paired tests.
 
 **Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
-system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system).
+system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system).
 
 ## P03: two sharper witnesses (new Spec file; proved)
 
@@ -301,6 +301,21 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   latter because `R_2 X1 v = 0` puts `X1 v` in `col(X2)` and `[X1, X2]` is injective. Then `y = X1 β1 + X2 β2 + r` with
   `X1'r = X2'r = 0`, so `R_2 y - R_2 X1 β1 = r` and `(R_2 X1)'r = X1'r = 0`: `β1` solves the normal equations of the
   second fit (`betaHat_of_normal`), and its residual is `r`. Agent time 0.03 h (13:20 to 13:22; labels `rF2-*`).
+- **R-B1, R-B2, R-D1, R-D2, R-E1, R-E2, R-K1 proved** (`Proof/RuvAlgebra2.lean`: `Ruv.B1`, `B2`, `D1`, `D2`, `E1`, `E2`,
+  `K1`, `K1_gls`; witnesses `B1_witness`, `D_witness`, `K1_witness`, `K1_gls_witness`; each on `propext`,
+  `Classical.choice`, `Quot.sound`). How: a shift `1c'` is killed by `R_M` (from `Hone`) and by `U'` (`U'1 = 0` from
+  `HU` and `Hone`), so `α` and `a_c` are unchanged and `W` gains `1 c_ctl' A`; the corrected values gain `1 d'`
+  (`shifted_Ystar`), which restoring removes up to `1c'` and which every contrast annihilates; E1 is the constant case.
+  D1/D2: `α ↦ tQ'α`, `(t²Q'GQ)⁻¹ = t⁻²Q⁻¹G⁻¹Q'⁻¹`, so `W ↦ WQ'⁻¹` and `Wα` unchanged (D1) or scaled by `t` (D2).
+  K1 (ii): `Y* = (I - SUG⁻¹U')Y` with `U'SU = G = a_c a_c'`; `K = I - SUG⁻¹U' - M(M'S⁻¹M)⁻¹M'S⁻¹` kills `M` and
+  `SU` (`U'M = 0` from `UU' = R_M` and `R_M M = 0`), and `I = M A + S U B` with `B = G⁻¹U'`,
+  `A = (M'M)⁻¹M'(I - SUB)`, so `K = 0`. Instances: R-E2 and the B and D witnesses on four runs in one set, `k = 1`,
+  `U = (1, -1, 0, 0)'`, one control (offset amounts 0 and 1 on features 0 and 1); the K1 witnesses on four runs in
+  one set, `k = 3`, `U` the three non-constant columns of the 4 × 4 Hadamard matrix over 2 (`UU' = I - 11'/4`), all
+  four features controls with `Y = I` (so `S = I`). R-K1 (ii)'s hypotheses `IsUnit (M'S⁻¹M).det` and `Hac` are used
+  as stated (not derived). Laptop: 7 Lean calls, 49.7 CPU-seconds (45.7 user + 4.0 system), 23.3 s wall (labels
+  `rP2-alg-*`). Agent time 0.13 h (13:24 to 13:32), against R-B1 4/6, R-B2 2/4, R-D1 3/5, R-D2 5/9, R-E1 4/7,
+  R-E2 2/3, R-K1 7/12 expected/ceiling.
 
 ## Resume here
 

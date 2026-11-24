@@ -228,3 +228,29 @@ example : Ruv.G0_interior_witness_stmt := Ruv.G0_interior_witness
 example : Ruv.F2_stmt := Ruv.F2
 
 #print axioms Ruv.F2
+
+example : Ruv.B1_stmt := Ruv.B1
+example : Ruv.B2_stmt := Ruv.B2
+example : Ruv.D1_stmt := Ruv.D1
+example : Ruv.D2_stmt := Ruv.D2
+example : Ruv.E1_stmt := Ruv.E1
+example : Ruv.E2_stmt := Ruv.E2
+example : Ruv.K1_stmt := Ruv.K1
+example : Ruv.K1_gls_stmt := Ruv.K1_gls
+example : Ruv.B1_witness_stmt := Ruv.B1_witness
+example : Ruv.D_witness_stmt := Ruv.D_witness
+example : Ruv.K1_witness_stmt := Ruv.K1_witness
+example : Ruv.K1_gls_witness_stmt := Ruv.K1_gls_witness
+
+#print axioms Ruv.B1
+#print axioms Ruv.B2
+#print axioms Ruv.D1
+#print axioms Ruv.D2
+#print axioms Ruv.E1
+#print axioms Ruv.E2
+#print axioms Ruv.K1
+#print axioms Ruv.K1_gls
+#print axioms Ruv.B1_witness
+#print axioms Ruv.D_witness
+#print axioms Ruv.K1_witness
+#print axioms Ruv.K1_gls_witness
