@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-213 R3: full suite base against head on the merge with staging e6791275 (KIT-167 in), 20 shards per side; decides A5 and the plan section 11 row; ceiling 2,800 job-minutes",
+  "label": "KIT-213 R3 full suite 36a8eccc vs e6791275",
+  "package_commit": "36a8eccc89773e131470f75a93d7917115837194",
+  "base_commit": "e6791275d2121a1ce2d00cf0be79b4b52395c8a6",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
