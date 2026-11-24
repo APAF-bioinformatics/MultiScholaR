@@ -1,0 +1,13 @@
+item	passed	evidence
+1 lifecycle completed, every mark through the last step	False	state not committed (E3); 3 of 10 steps marked
+1 injected memory limit (0.7 x journey VmHWM): killed after the baseline, classed memory	False	limit None B; outcome not run: the lifecycle journey did not complete; after baseline False; steps marked 0
+1 injected time limit (0.5 x process wall): stopped, classed time	False	limit None s; outcome not run: the lifecycle journey did not complete
+1 injected package error (invalid bound setting): raised in a package frame, classed package error	False	outcome error; step intensity; deepest owner ; the step left state lipid_raw_data_s4, the map names lipid_intensity_filtered
+2 reset control: calibration VmHWM >= entry VmRSS + 480 MiB; no-op VmHWM <= entry VmRSS + 32 MiB	True	calibrate 1148.2 vs entry 380.5; no-op 380.5 vs entry 380.5
+3 gate B3 U1: base completes; candidate completes	False	base state not committed (E3) (intensity the step left state lipid_raw_data_s4, the map names lipid_intensity_filtered); candidate state not committed (E3) (intensity the step left state lipid_raw_data_s4, the map names lipid_intensity_filtered)
+3 gate B3 U2: base completes; candidate completes	False	base state not committed (E3) (intensity the step left state metab_raw_data_s4, the map names metab_intensity_filtered); candidate state not committed (E3) (intensity the step left state metab_raw_data_s4, the map names metab_intensity_filtered)
+3 gate B3 U3: base completes; candidate completes	True	base completed ( ); candidate completed ( )
+3 gate B3 U4: base completes; candidate completes	False	base completed ( ); candidate package error (da no biological replication: every group is one biological unit measured more than once (groups treated, contrast, control)
+3 gate B3 U5: base completes; candidate completes	False	base completed ( ); candidate package error (da no biological replication: every group is one biological unit measured more than once (groups control, treated, contrast)
+3 gate B3 S1: base completes; candidate completes	False	base state not committed (E3) (normalisation_ruv the step left state normalized, the map names ruv_corrected); candidate state not committed (E3) (normalisation_ruv the step left state normalized, the map names ruv_corrected)
+3 gate B3 S2: base completes; candidate completes	False	base state not committed (E3) (normalisation_ruv the step left state normalized, the map names ruv_corrected); candidate state not committed (E3) (normalisation_ruv the step left state normalized, the map names ruv_corrected)

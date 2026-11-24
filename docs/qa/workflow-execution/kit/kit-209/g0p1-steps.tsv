@@ -1,0 +1,34 @@
+job	id	unit	build	rep	index	step	status	seconds	vmhwm_mib	vmhwm_after_reset_mib	entry_vmrss_mib	entry_heap_mib	heap_max_used_mib	exit_vmrss_mib	cgroup_procs	state	expected_state	state_as_expected	rows	store_bytes
+g0p1	U10_C_r1	U10	C	1	1	import	completed	68.45	3056	379.5	379.5	200.8	1688.3	1249.9	1	initial	initial	True		285607287
+g0p1	U10_C_r1	U10	C	1	2	design	completed	71.7	1990.8	1249.9	1249.9	253.8	1005.9	1545.7	1	raw_data_s4	raw_data_s4	True	5846578	285704024
+g0p1	U10_C_r1	U10	C	1	3	qvalue	completed	265.94	2057.5	1545.7	1545.7	264.1	995.4	1383.5	1	qvalue_filtered	qvalue_filtered	True	5846578	687220572
+g0p1	U10_C_r1	U10	C	1	4	rollup	completed	61.76	3821.6	1383.5	1383.5	300.9	652.4	1235.2	1	precursor_rollup	precursor_rollup	True	5521570	871844476
+g0p1	U10_C_r1	U10	C	1	5	peptide_log2	completed	253.46	1995.2	1235.2	1235.2	308.9	1258.5	1441.2	1	log2_matrix	log2_matrix	True	5521570	1394292746
+g0p1	U10_C_r1	U10	C	1	6	peptide_accession	completed	1003.69	2205.5	1441.2	1441.2	319.5	1248.9	1414.2	1	peptide_accession_cleaned	peptide_accession_cleaned	True	5521570	1975645707
+g0p1	U10_C_r1	U10	C	1	7	dpc_quant	completed	271.79	2752.3	1414.2	1414.2	321.8	1902.6	1343.3	1	protein_dpc_quant	protein_dpc_quant	True	2500	2162568237
+g0p1	U10_C_r1	U10	C	1	8	protein_normalisation_limpa	completed	39.23	1882.8	1343.3	1343.3	330.1	1042.8	1337.3	1	protein_normalised	protein_normalised	True	2500	2349370503
+g0p1	U10_C_r1	U10	C	1	9	peptide_count	completed	31.56	1876.8	1337.3	1337.3	331.1	952	1336.5	1	peptide_count_filtered	peptide_count_filtered	True	2500	2528666016
+g0p1	U10_C_r1	U10	C	1	10	correlation	completed	33.62	1854.7	1336.5	1336.5	331.9	910.6	989.4	1	correlation_filtered	correlation_filtered	True	2500	2534889877
+g0p1	U10_C_r1	U10	C	1	11	ruv_covariates	completed	271.14	1955.6	990	990	345.2	953	1131	1	ruv_covariates	ruv_covariates	True	2500	2561021140
+g0p1	U10_C_r1	U10	C	1	12	session_export	completed	32.53	1131	1131	1131	356.9	566.1	1131	1	ruv_covariates		True	2500	2563845778
+g0p1	U10_C_r1	U10	C	1	13	da	completed	129.47	1897.8	1131	1131	357.7	1534.1	1635.5	1	ruv_covariates	ruv_covariates	True	2500	2614842341
+g0p1	U10_C_r1	U10	C	1	14	report	completed	9.95	1675.8	1635.5	1635.5	670.3	1138.2	1287.8	1	ruv_covariates		True	2500	2614842341
+g0p1	U9_C_r1	U9	C	1	1	import	completed	68.66	3055.7	379.6	379.6	200.8	1688.3	1249.8	1	initial	initial	True		285607022
+g0p1	U9_C_r1	U9	C	1	2	design	completed	71.69	1972.3	1249.8	1249.8	253.8	1005.8	1527.2	1	raw_data_s4	raw_data_s4	True	5846578	285703472
+g0p1	U9_C_r1	U9	C	1	3	qvalue	completed	265.9	2080.2	1527.2	1527.2	264.1	993.4	1368.6	1	qvalue_filtered	qvalue_filtered	True	5846578	687219356
+g0p1	U9_C_r1	U9	C	1	4	protein_peptide	completed	161.75	2055.7	1368.6	1368.6	300.9	975	1226	1	protein_peptide_filtered	protein_peptide_filtered	True	5846578	1240778987
+g0p1	U9_C_r1	U9	C	1	5	rollup	completed	62.14	4072.1	1226.1	1226.1	313.7	696.7	1338.8	1	precursor_rollup	precursor_rollup	True	5521570	1427708453
+g0p1	U9_C_r1	U9	C	1	6	intensity	completed	179.23	1907.8	1338.8	1338.8	318.9	1042.9	1344.4	1	intensity_filtered	intensity_filtered	True	5521570	1846136947
+g0p1	U9_C_r1	U9	C	1	7	sample	completed	38.38	1389.5	1344.4	1344.4	320	689.6	1312.1	1	sample_filtered	sample_filtered	True	5515154	2033313911
+g0p1	U9_C_r1	U9	C	1	8	replicate	completed	165.37	2020.7	1312.3	1312.3	320.6	1044.3	1377.2	1	replicate_filtered	replicate_filtered	True	5515154	2313808483
+g0p1	U9_C_r1	U9	C	1	9	imputation	completed	638.9	2290.4	1377.2	1377.2	321.3	1257.3	1305.5	1	imputed	imputed	True	11826409	3337944684
+g0p1	U9_C_r1	U9	C	1	10	iq	completed	221.61	2376.2	1305.5	1305.5	322.3	1141.2	1489.9	1	protein_s4_created	protein_s4_created	True	2500	3492348144
+g0p1	U9_C_r1	U9	C	1	11	accession	completed	26.24	1529.8	1489.9	1489.9	324.6	601.3	1438.3	1	protein_accession_cleaned	protein_accession_cleaned	True	2500	3496620187
+g0p1	U9_C_r1	U9	C	1	12	protein_intensity	completed	27.85	1548.5	1438.3	1438.3	326.3	674.9	1460	1	protein_intensity_filtered	protein_intensity_filtered	True	2500	3499749559
+g0p1	U9_C_r1	U9	C	1	13	duplicates	completed	32.4	1542.3	1460	1460	327.5	608.7	1451.6	1	duplicates_removed	duplicates_removed	True	2500	3511383060
+g0p1	U9_C_r1	U9	C	1	14	protein_replicate	completed	12.02	1451.2	1451.6	1451.6	328.4	731.4	1133.3	1	protein_replicate_filtered	protein_replicate_filtered	True	2500	3525142977
+g0p1	U9_C_r1	U9	C	1	15	normalisation_ruv	completed	227.19	1462.9	1133.3	1133.3	329.7	737.6	1348.8	1	ruv_corrected	ruv_corrected	True	2500	3548437365
+g0p1	U9_C_r1	U9	C	1	16	correlation	completed	29.54	1458.2	1348.8	1348.8	346.6	678.3	1072.7	1	correlation_filtered	correlation_filtered	True	2500	3561256911
+g0p1	U9_C_r1	U9	C	1	17	session_export	completed	94.47	1076.3	1072.9	1072.9	359.5	584.4	1076.3	1	correlation_filtered		True	2500	3564482941
+g0p1	U9_C_r1	U9	C	1	18	da	completed	100.43	1650.4	1076.3	1076.3	360.2	1087.2	1507.5	1	correlation_filtered	correlation_filtered	True	2500	3625828163
+g0p1	U9_C_r1	U9	C	1	19	report	completed	17.96	1841.2	1507.5	1507.5	680.9	1232.6	1455.7	1	correlation_filtered		True	2500	3625828163
