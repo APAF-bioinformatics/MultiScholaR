@@ -1536,6 +1536,48 @@ committed with the final declaration.
 ceiling (4.13) does not fit, and a fitting one (3.13) has a 35-minute script limit against an
 upper per-chunk estimate of 45 minutes. That is the coordinator's choice.
 
+### P1K: the auditor's repairs and the final declaration (declared; NOT sent)
+
+**The auditor's P1K check** (`AUDIT-KIT-159-impl-recheck-20261124.md`, "P1K: change and draft
+declaration") found the change sound and asked for four repairs:
+- **R-P1 (code):** record the one-sided misses, which KIT-162 6.7 and C66 need.
+- **R-P2:** a `degenerate` row is not offered.
+- **R-P3:** reword K2 and replace the scratch-script citation.
+- **R-P4:** the Pass reading, in the register's text.
+
+The coordinator raised P1K from 6 to 9 core-hours (P1's cap 69.6 -> 66.6) and set a 50-minute
+script limit (ceiling 4.13), recorded as ticket r1.27.
+
+**R-P1, tests first, then the change.**
+- **P1K-RP1t** (run 45475429181 at 0e0b43f4): the two new tests fail at absence (`miss_low` and
+  `miss_high` not in the detail; actual NULL). The six earlier tests pass: 170 cells, seeds, the
+  pinned SHA-256, and the dispatch.
+- **Change** (a303bf3f, `coverage.R` `valCombineCoverage`): per statistic and level,
+  `miss_low` = simulations with the lower bound above the target, `miss_high` = simulations with
+  the upper bound below it, as counts.
+- **P1K-RP1f** (run 45478836416): `p1k` 8 of 8; `di10k`, `coverage`, `coverage-rank`,
+  `coverage-table`, `repair2` and `repair4` pass; no lints.
+- **How the pinned table stays byte-identical:**
+  - it is a committed file that no run regenerates;
+  - `valSummariseCoverage` builds regime rows from named columns only, so the new detail columns
+    never reach a regime table (tested);
+  - the SHA-256 test passes;
+  - T-COV-ENDS-2 still rebuilds the committed T2 table from its detail.
+- **One request refused** at plan before any job (its `requested_by` was over 300 characters). It
+  was re-requested under a new name; no job ran and nothing was charged.
+
+**R-P2 to R-P4** are applied in `t2/p1k-declaration-draft.md` and carried into the final
+declaration.
+
+**Final declaration committed alone** at 746eb296: `t2/p1k-declaration.md` and `t2/p1k-plan.tsv`
+(request PK, C4e-171, four ranges of 500 simulations and 5,000 targets, `fixed_onedir`). **Not
+sent**: the auditor confirms it first. When sent: `val-tests.R p1k-out --files metrics
+--coverage-plan t2/p1k-plan.tsv --request PK --nsim 2000 --target-sims 20000 --chunks 4`, script
+limit 50 minutes.
+
+**Spend on P1K:** 0.94 + 0.97 + 0.93 + 1.12 + 1.00 = **4.96 of 9**; 4.04 left, which is 0.09 below
+the run's 4.13 ceiling. The coordinator decides whether the 4.13 ceiling stands.
+
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-25 from 12282273 (a records-only commit on the merge a4e002a6 of the ticket branch with staging a1b397b1, which holds KIT-182, KIT-203, KIT-207 and KIT-196), after the re-audits 2 and 3 and the closure check (register `AUDIT-KIT-159-impl-recheck-20261124`). The ledger row is VAL-165. The whole harness suite passed on a4e002a6 (run 45386625659: 45 files, 274 tests, 2,342 expectations, 0 failed, 0 skipped, no lints), and one `snapshot`-stage dispatch of `distributable.yml` passed on the same commit (run 45386409115). **Merged is not accepted:** acceptance criterion A1 is OPEN. Not done: the lifecycle runs L1a, L1b, L2 and L3; gate G13 in P1; G5 (replay) on every route (only `metab_combined` has been replayed); the confirmatory cell in KIT-162's composition (VAL-163 (3)); the suite and G1(a) repeated after the last product merge (KIT-190, 200, 201, 202, 204, 205, 206, 208 and the tickets after them are pending). By the plan's rule, no validation ticket (KIT-160 to KIT-170) sends a lifecycle or counted request until A1 is recorded as met at a commit that contains every product merge that ticket's runs will use. Ticket total at merge: about 116.2 of 276 core-hours (110.78 before the merge run, plus 5.44).

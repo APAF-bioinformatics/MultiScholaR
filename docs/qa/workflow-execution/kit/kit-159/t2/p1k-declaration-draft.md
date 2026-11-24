@@ -45,8 +45,8 @@ KIT-162's feature count, unit count and decision levels, under the harness's hom
 generator. It says nothing about KIT-162's real-data features listed in the table, nor about
 heterogeneous effects across the 40 positives.
 
-**Code path.** `msrval/R/coverage.R` at 3939ffe2, with the tests corrected at 70648f6d (test
-file only). The fit and generator are C4e-148's and DI10K's (`valCovMatrixData`,
+**Code path.** `msrval/R/coverage.R` at 3939ffe2 (the cell), with the tests corrected at 70648f6d
+(test file only) and the one-sided misses recorded at a303bf3f (R-P1). The fit and generator are C4e-148's and DI10K's (`valCovMatrixData`,
 `valCovFixedFeatures`, `valCovFit`). The statistic is `valCovStats`'s rank branch restricted to
 contrast column 2 (`contrast = 2L`). The effect is `valRankEffect("block", 5L, contrast = 2L)`.
 
@@ -83,36 +83,40 @@ same calibration data sets. Nothing in it reads a coverage result.
 - **K1 (the effect):** every coverage row of C4e-171 carries `effect` 0.40, the value recorded
   above. It shows that the run used the rule's value, not a ceiling or a pooled value.
 - **K2 (the statistic's size): the target of `pauc_diff` lies in [0.025, 0.075].**
-  - Derivation: a Monte Carlo of the two rankings (normal theory; ordinary t on 41 residual df,
-    moderated t as known variance; 40 positives at 0.40 / 0.134, 4,800 nulls; 300 replicates;
-    `scratchpad paucdiff.py`) gives an expected 0.044 (MC SE 0.002) and a plain-arm pAUC of
-    0.627.
+  - Derivation: a model of the two rankings (normal theory; the ordinary arm as t on 41 residual
+    df, the moderated arm as known variance; 40 positives at 0.40 / 0.134, 4,800 nulls; positives
+    ranked by one-sided p, nulls by two-sided p). A 300-replicate Monte Carlo of the empirical pAUC
+    gives an expected 0.044 (MC SE 0.002) and a plain-arm pAUC of 0.627. The population value is
+    0.049 by numerical integration (harness auditor).
   - The same model applied to C4e-148's pooled form gives 0.0213, against the measured target
     0.0243 (T2R). Scaling by that ratio, 1.14, gives about 0.050 for P1K.
   - The band is 0.050 ± 0.025, which allows for the model's error on the pooled cell (14 %) with
     margin.
-  - What it shows: the difference is neither at a ceiling (both pAUCs near 1, difference about 0)
-    nor degenerate.
+  - What it shows: the paired difference is off the ceiling and of the modelled size; degeneracy is
+    read from the zero-width share.
   - What it cannot show: one contrast against several pooled at a similar scale (pooled at 0.35:
     0.024, at the band's edge). That is shown by the tests instead: 40 positives, 4,800 nulls,
     contrast column 2.
-- **Not a check, reported:** the status label. `degenerate` would mean more than 1 % zero-width
-  intervals, or a target within one Monte Carlo SE of ±1. It is not expected: 40 positives give
-  continuous variation between deletions.
 
 ## Pass rule and readings (band as T2, D, DI10b, DI10c and DI10K ran it)
 
 A coverage value fails at a level when it is below level - 0.02. The rule is applied to the one
-statistic at all 8 levels, whatever status label a row carries. A `degenerate` or `conservative`
-label is reported beside it as observed.
+statistic at all 8 levels. A `conservative` label is reported beside it as observed; a
+`degenerate` label is a reading of its own (below).
 
 - **Configuration checks not met** (K1 or K2 fails): **the run does not test the question.** It is
   recorded, reported and not re-run.
-- **Pass** (K1 and K2 hold, no coverage below level - 0.02 at any of the 8 levels): **the C4e
-  g = 5 rank rows license P1 at KIT-162's composition in one-contrast form** (40 positives, a
-  fixed one-directional draw, about 48 nulls in the region), under the differences listed above.
-  KIT-162 quotes this cell's measured coverage at 97.5 % and 98.33 % beside P1. It does not quote
-  the pooled rows' coverage or their `conservative` label.
+- **Pass** (K1 and K2 hold, no coverage below level - 0.02 at any of the 8 levels, and the row is
+  not `degenerate`) (R-P4): **the C4e g = 5 delete-one-block jackknife covers P1's form (a paired
+  pAUC difference to FPR 0.01 on one contrast, 40 positives of 4,840, one direction, fixed draw)
+  at the decision levels, under the listed differences.** KIT-162 quotes this cell's coverage and
+  one-sided misses at 97.5 % and 98.33 %, not the pooled rows' coverage or label. It does not
+  license heterogeneous or compressed fold changes, untested UPS keys counted as misses, the
+  package's normalisation route, KIT-162's arm-versus-baseline rankings, or a P1 near its ceiling
+  in real data.
+- **Degenerate** (R-P2; more than 1 % zero-width intervals, or the target within one Monte Carlo SE
+  of ±1): not offered by the harness's rule (r1.13); KIT-162 needs a ticket coverage regime for
+  P1.
 - **Fail** (K1 and K2 hold, at least one coverage below level - 0.02): **KIT-162 needs a ticket
   coverage regime for P1 at its own composition before it runs.**
 
@@ -124,6 +128,10 @@ label is reported beside it as observed.
   nominal: P(X >= misses) under the nominal miss rate (binomial, n = 2,000). A level below nominal
   at p < 0.01 is reported as anti-conservative with its measured coverage, whatever the band says
   (as VAL-163 (1) did for `sens_diff`).
+- (R-P1) At every level, the misses at the lower and at the upper bound separately, each with its
+  exact 95 % interval; KIT-162 computes its stated false rates from these (KIT-159 C66; KIT-162
+  6.7). They are recorded in the detail as `miss_low` and `miss_high` (counts of 2,000); the
+  regime table does not carry them.
 - `se_inflation` and `half_width_ratio`; the share of zero-width intervals; the target against
   K2's expectation.
 - **The number of positives and the statistic's discreteness.** 40 positives per simulation and
@@ -142,7 +150,7 @@ label is reported beside it as observed.
 - P1's pairwise-intersection view and the secondaries (S1 to S3, S11, S13), which decide nothing
   in KIT-162.
 
-## Binding, ceiling, charge (proposed)
+## Binding, ceiling, charge
 
 One `run-tests` scripts request at the commit that adds the final declaration and `t2/p1k-plan.tsv`
 (request PK; C4e-171 in four ranges of 500 simulations and 5,000 target simulations; `generator`
@@ -163,12 +171,11 @@ One `run-tests` scripts request at the commit that adds the final declaration an
   DI10K's 13 minutes per chunk.
 - **Upper:** the pAUC cost not reduced by the smaller table: 2,680 s per chunk, about 45 minutes.
 
-Proposed: script `timeout_minutes` 50; job about 62 minutes with set-up; ceiling 4.13 core-hours.
+Script `timeout_minutes` 50; job about 62 minutes with set-up; ceiling 4.13 core-hours.
 
-**This ceiling does not fit the line.** P1K's remainder after the three test runs
-(0.94 + 0.97 + 0.93) is 3.16 core-hours. A ceiling that fits is a script limit of 35 minutes (job
-47 minutes, 3.13 core-hours). That is above the likely 21 minutes but below the upper anchor of
-45 minutes. The choice between the two, or a top-up of the line, is the coordinator's.
+Coordinator's ruling (ticket r1.27): line P1K is 9 core-hours, and the coverage run takes a
+50-minute script limit (ceiling 4.13 core-hours), about 2.4 times the likely per-chunk time and
+above the upper anchor.
 
 One run. The result is a result: recorded whatever it shows, never re-run. A timeout with no result
 falls under VAL-54's instrument rule (the limit raised as the mechanics fix), and so does any other
