@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-217 MC (m1): counted measurement M, cells M1 replicates 1-200 (declaration rev 2, 8ef4f158; G-M passed in run 45495021854)",
+  "label": "KIT-217 M counted m1 on kit-217-measure 9e15166a",
+  "package_commit": "9e15166ae4a4cba1cb682370c87b6ad025084ec8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-217/m/sim-k217.R", "args": ["M1", "1", "200", "docs/qa/workflow-execution/kit/kit-217/m/rows"], "env": {"K217_JOB": "m", "K217_WORKERS": "4"}, "out": "docs/qa/workflow-execution/kit/kit-217/m/rows", "timeout_minutes": 150}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
