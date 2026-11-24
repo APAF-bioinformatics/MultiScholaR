@@ -1,0 +1,4 @@
+cell	part	variant	rep	seconds	filter	S	C	Z	DA	estimands	warnings	rows_sha256
+P0	B	base	401	611.975	NA	NA	NA	NA	NA	NA	1	fb1dcb62505d2a6fbf4d07a9f98d8d461e1bcd80de88ae76e3b63917663ccfd9
+P1	B	base	401	343.032	NA	NA	NA	NA	NA	NA	1	72cfa21384716ddcca38edfb6a9a638ae7c9f9b20147b10560f8d4ea8ba61709
+P4b	B	base	401	458.973	NA	NA	NA	NA	NA	NA	3	c2ffd37e8eb9da60fc6e91747fe4a580b8b1bf3428a2c99966edd56f8853860f
