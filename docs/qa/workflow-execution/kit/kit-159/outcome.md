@@ -251,6 +251,58 @@ inside the ticket's total (ticket r1.20, section 35). State per item below; runs
   45356446685, head e9660d3e against base fe5c9273): 0 ERRORs, 3 WARNINGs, 3 NOTEs on each side,
   6 findings identical, **0 only on head**: G10 passes (`g10/`). REAUDIT2: 3.69 of 6 core-hours.
 
+### G1(r): built by the register's method, STOPPED at adoption (KIT-172) (2026-11-24)
+
+**Done.** Tests first: `test-g1r.R` at 6921d815, run G1Rt 45372185943: all five tests error at the
+fault (the functions absent; `rep/g1rt-*`). Fix 712c16f0: `R/g1r.R` (`valReadG1rBlocks`,
+`valG1rDiffs`: the four waldo forms into `valClassifyLiveDiffs`' input, base = `expected`, live =
+`actual`, NA on one side, the `lines(...)[a:b]` window not part of the key; `valG1rRows`: KIT-172's
+columns), `valReferenceDisagreements` in `gates.R` (`valAdoptReferenceRows` now calls it; same rule),
+`harness/val-g1r.R`. Run G1Rf 45374320806 on run branch `run-k159-g1r` (c9f6f4bf = 712c16f0 merged
+with staging 241914cb, for KIT-199's committed files; harness folder identical to 712c16f0).
+
+**Observed (G1Rf).** Tests g1r, g1a, chain: 20 tests, 154 expectations, 0 failures. lintr 2 in
+`g1r.R` (63: `where` reported unused, it is read by the cli message; 75: `<<-`); not corrected (a
+correction run costs about 0.8 and REAUDIT2 has 0.74 left). `val-g1r.R` (`g1r/`): source SHA-256
+167f9052... = prov, prov's source 1b918062...; 69 blocks, 4 / 30 / 22 / 13 per file, 69 (lane,
+step) pairs, every block at least one difference (524 in all); step order from the oracles at
+12d68ca7; **every difference has a class of G1(a)** (no unclassed block): 73 rows,
+`declared_change (KIT-199)` 6, `integration_artifacts` 24, `kit128_technical_replicates` 13,
+`metab_fixture_4` 30 (two rows on each `prot_dia_limpa` summary step except `summary_refusal`); the
+declared rows carry KIT-199's frozen and expected digests; `valStepClassCounts` per lane equals the
+rows. Committed reference files found by the source hash: KIT-180's (12 groups) and KIT-199's (10)
+**agree**; **KIT-172's disagrees in 18 groups**: `metab_gc` and `metab_combined`, every step from
+`correlation` on, where KIT-172's key reads
+`outputs/metabolomics_workflow-norm-correlation_filter_summary)[2:8]` (`)[2:11]` on
+`metab_combined`) and G1(r)'s reads `outputs/metabolomics_workflow-norm-correlation_filter_summary`
+(`g1r/g1r-disagreements.tsv`).
+
+**Inferred.** KIT-172's reader kept the line window of the form `lines(actual$outputs$<key>)[a:b]`
+in the key; the output's id has no `)[2:8]`. By the gate ("a disagreement ... stop and report;
+neither file is edited to agree without the owner's word"), G1(r) stops: `g1a-reference.tsv` is
+NOT committed as the reference. G1(r)'s own rows are kept as `g1r/g1a-reference-own-rows.tsv`
+(73 rows, KIT-172's columns, source and source_sha256 1b918062...). Owed: the owner's word on
+KIT-172's 18 keys (correct KIT-172's file, or adopt G1(r)'s rows for those groups); then the
+rows are committed as `g1a-reference.tsv` with no further run. REAUDIT2: 5.26 of 6.
+
+### G1(r) after re-audit 3: the coordinator's ruling, key errata and lints (2026-11-24)
+
+**Ruling (R3.B3).** G1(r)'s own rows are adopted for KIT-172's 18 windowed keys. KIT-172's file is
+not edited. `g1a-reference.tsv` is committed (byte-identical to G1Rf's `g1r/g1a-reference-own-rows.tsv`,
+SHA-256 3228c900...) with `g1a-reference-prov.txt`; the defect is recorded in
+`g1a-reference-errata.md`. Tests first at 0c366ae3 (G1R-ERRATA; G1R-ADOPT and test-g1a's KIT-172
+case now pass `errata = NULL`, whose premise is KIT-172's own key text); code at 2fa3354e
+(`inst/extdata/g1r-key-errata.tsv`, exact-match application in `valReferenceDisagreements`, the two
+lints fixed as the register gives). By the coordinator's instruction one run only (no separate
+failing-first run).
+
+**G1Rg, declared before the send.** Purpose: the errata tests and the lint fixes. Binds the run
+branch `run-k159-g1r` at the merge of 2fa3354e (plus these records) with staging 241914cb (KIT-199's
+files). Scripts: `val-tests.R --files g1r,g1a,chain --lint` (20 min), then `val-g1r.R` (10 min).
+Ceiling: REAUDIT2's remainder, 1.74 of 7. Pass: every test passes, lintr reports no lint in
+`g1r.R` or `gates.R`, and `val-g1r.R` ends `built` with KIT-172's 18 errata applied and no
+disagreement; anything else is recorded and reported, not re-run (VAL-54 for mechanics).
+
 ### Resume here (handed over, 2026-11-24; context of the builder's session too long)
 
 Open, in this order, on `kit-159-validation-harness` in worktree `MultiScholaR-kit-159`:
@@ -280,6 +332,61 @@ Open, in this order, on `kit-159-validation-harness` in worktree `MultiScholaR-k
    tree identity at merge holds for `R/` and `tests/` but not for the harness folder; R2f covers
    the changed harness files.
 
+### DI10c: the one-directional cell C4-143 (VAL-155; run 45371216508 at d8ad8fcf)
+
+**Declared before the send** (`t2/di10c-declaration.md` and `t2/di10c-plan.tsv`, commit d8ad8fcf,
+pushed 10:03Z; request `k159-di10c-d8ad8fcf` pushed 10:04Z). Cell C4-143 (C4, replicate form, two
+groups of g = 4) under `fixed_onedir`, 2,000 simulations, targets from 20,000, the same generator
+and code as DI10b (`coverage.R` and `val-tests.R` unchanged since 647706dd). Budget line DI10c 1.5
+core-hours (ticket r1.21, section 36).
+
+**Observed.** Script exit 0, 52 s; chunks exit 0,0,0,0, no cell missing, wall 45.8 s
+(`t2/di10c-coverage-run.txt`); `metrics` tests 0 failures. Mechanism checks:
+- N1c (`mae` target >= 0.175): **0.1920**, holds (D 0.1443; T2 0.2049; predicted about 0.20).
+- N2c (`fcs` target >= 0.03): **0.0382**, holds (D 0.0103; T2 0.0475).
+
+Coverage per statistic and level, DI10c (`fixed_onedir`) beside D's `fixed_symmetric` C4-143
+(`t2/di10c-coverage-detail.tsv`, `t2/di10d-coverage-detail.tsv`); fail line = level - 0.02:
+
+| statistic | 0.95 | 0.975 | 0.9833 | 0.9875 | 0.9917 | 0.9938 | 0.9958 | 0.9967 |
+|---|---|---|---|---|---|---|---|---|
+| `mae` DI10c | 0.9620 | 0.9840 | 0.9910 | 0.9940 | 0.9950 | 0.9965 | 0.9985 | 0.9985 |
+| `mae` D | 0.9825 | 0.9900 | 0.9930 | 0.9945 | 0.9970 | 0.9980 | 0.9995 | 0.9995 |
+| `mae_diff` DI10c | 0.9875 | 0.9955 | 0.9965 | 0.9975 | 0.9980 | 0.9985 | 0.9990 | 0.9990 |
+| `mae_diff` D | 0.9810 | 0.9895 | 0.9915 | 0.9950 | 0.9965 | 0.9970 | 0.9980 | 0.9980 |
+| `sens` DI10c | 0.9885 | 0.9975 | 0.9985 | 0.9985 | 0.9995 | 1.0000 | 1.0000 | 1.0000 |
+| `sens` D | 0.9975 | 0.9975 | 0.9980 | 0.9980 | 0.9980 | 0.9980 | 0.9980 | 0.9980 |
+| `sens_diff` DI10c | **0.9340** | 0.9700 | 0.9800 | 0.9865 | 0.9890 | 0.9910 | 0.9925 | 0.9925 |
+| `sens_diff` D | 0.9895 | 0.9945 | 0.9960 | 0.9970 | 0.9990 | 0.9990 | 0.9990 | 0.9990 |
+| `fcs` DI10c | 0.9460 | 0.9775 | 0.9850 | 0.9875 | 0.9935 | 0.9950 | 0.9965 | 0.9970 |
+| `fcs` D | 0.9710 | 0.9815 | 0.9900 | 0.9915 | 0.9925 | 0.9935 | 0.9940 | 0.9940 |
+| `fcs_diff` DI10c | 0.9580 | 0.9805 | 0.9860 | 0.9885 | 0.9950 | 0.9975 | 0.9975 | 0.9975 |
+| `fcs_diff` D | 0.9685 | 0.9855 | 0.9875 | 0.9910 | 0.9920 | 0.9945 | 0.9945 | 0.9950 |
+| pinned C4 g = 4 `accuracy` (D) | 0.981 | 0.9895 | 0.9915 | 0.9945 | 0.9965 | 0.997 | 0.998 | 0.998 |
+| pinned C4 g = 4 `threshold_count` (D) | 0.9685 | 0.9815 | 0.9875 | 0.991 | 0.992 | 0.9935 | 0.994 | 0.994 |
+
+(The pinned rows, `msrval/inst/extdata/coverage-table.tsv`, hold the worst statistic of each class.
+The same rows from DI10c would read `accuracy` 0.962 ... 0.9985 and `threshold_count` 0.934 ...
+0.9925, all from `mae` and `sens_diff`.) Zero-width share 0 except `fcs` 0.001 at every level.
+`se_inflation` (DI10c): `mae` 1.03, `mae_diff` 1.38, `sens` 1.82, `sens_diff` 0.84, `fcs` 0.91,
+`fcs_diff` 0.98.
+
+**By the declared reading: PASS.** N1c and N2c hold and none of the 48 coverages is below level -
+0.02 (smallest margins over the fail line: `sens_diff` 0.004 at 95 %, `fcs` 0.016, `fcs_diff` 0.021,
+`mae` 0.022). So **KIT-160 and KIT-161 may use the pinned C4 g = 4 rows** (VAL-155).
+
+**Inferred, for the owner (not part of the declared rule).** The margin went, as in DI10b, and one
+statistic now covers below nominal by more than Monte Carlo noise: `sens_diff` (the sensitivity gain
+of moderation over the ordinary t) misses 132 of 2,000 at 95 % against 100 expected (P(X >= 132) =
+0.001 under nominal 95 %), and 15 at 99.67 % against 6.7 (P = 0.004); its jackknife SE is below the
+true SD (`se_inflation` 0.84, against about 0.92, the E[SE] / SD of an exactly unbiased variance with 3 df). Every other
+statistic is at or above nominal within noise (`fcs` 0.946, 108 misses, P = 0.22). The band reads
+this as a pass; a reading at nominal would not. The other statistics lost 0.01 to 0.05 against D,
+as DI10b's did (`mae` 0.9825 -> 0.962, `fcs` 0.971 -> 0.946); `mae_diff` rose.
+
+Charge: jobs plan 0.2 + scripts 11.5 + results 0.5 = 12.2 job-minutes, **0.81 core-hours** of line
+DI10c's 1.5. One run, not re-run.
+
 ### What a validation verdict now means (the register's point 7, R2.7, as written there)
 
 1. Independent units: the claim is "over repeat runs, for the features scored"; no widening for
@@ -287,8 +394,17 @@ Open, in this order, on `kit-159-validation-harness` in worktree `MultiScholaR-k
    (VAL-137 (3)).
 2. The C4 and C4e accuracy and threshold rows are conditional: coverage of E[theta-hat | features]
    for one feature draw, the generator named on each row (E7). DI10b extends the C4e g = 5 rows to
-   one-directional changes, at nominal with no margin; the C4 g = 4 and g = 6 rows and the C4e
-   g = 14 rows are shown for balanced changes only.
+   one-directional changes, at nominal with no margin.
+   DI10c (VAL-155; run 45371216508) extends the C4 g = 4 rows to one-directional changes. It used
+   one composition: 20 % of 500 features changed, all +1 log2, one feature draw. By its declared
+   rule it passes: no coverage is below level - 0.02. At 95 % the coverages are `mae` 0.962,
+   `mae_diff` 0.9875, `sens` 0.9885, `sens_diff` 0.934, `fcs` 0.946 and `fcs_diff` 0.958.
+   The interval for the difference in sensitivity (`sens_diff`) is below nominal: it covers
+   0.934 at nominal 95 % (exact interval 0.9222 to 0.9445; 132 misses of 2,000), and the shortfall
+   is systematic, below nominal at all eight levels (0.970, 0.980, 0.9865, 0.989, 0.991, 0.9925,
+   0.9925). The pinned `threshold_count` row's label `conservative` (from D, symmetric changes) does
+   not describe the one-directional case. The C4 g = 6 rows and the C4e g = 14 rows are shown for
+   balanced changes only.
 3. The family bound is the sum of one-sided Clopper-Pearson upper bounds; figures in older notes
    are not comparable.
 4. A zero-miss `conservative` row licenses only its own `interval.statistic`.

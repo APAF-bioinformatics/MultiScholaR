@@ -112,7 +112,9 @@ test_that("G1A-ADOPT: reference rows are adopted by (lane, step, class) and key 
                              paste(c(k172$keyset[[i]], if (k172$truncated[[i]]) "artifacts/more"),
                                    collapse = ";")
                          }, character(1)))
-    expect_identical(valAdoptReferenceRows(own172, k172), own172)
+    # own rows built from KIT-172's own key text: compared without the key errata (KIT-159
+    # re-audit 3, R3.B3; the errata correct KIT-172's windowed keys to G1(r)'s)
+    expect_identical(valAdoptReferenceRows(own172, k172, errata = NULL), own172)
 })
 
 test_that("G1A-D7: the release-commit DA values against the link's da-runner table", {

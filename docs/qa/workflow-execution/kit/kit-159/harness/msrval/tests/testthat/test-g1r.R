@@ -154,10 +154,11 @@ test_that("G1R-ADOPT: KIT-180's and KIT-199's rows agree; KIT-172's disagree in 
     k199 <- valReadReferenceRows(g1rFx("k199-ref.tsv"))
     expect_identical(nrow(valReferenceDisagreements(rows, k199)), 0L)
     expect_identical(valAdoptReferenceRows(rows, k199), rows)
-    # KIT-172 kept the line window of `lines(actual$outputs$<key>)[a:b]` in one key; G1(r) stops
+    # KIT-172 kept the line window of `lines(actual$outputs$<key>)[a:b]` in one key; without the
+    # committed key errata G1(r) stops
     k172 <- valReadReferenceRows(g1rFx("k172-ref.tsv"))
-    expect_error(valAdoptReferenceRows(rows, k172), class = "val_spec_invalid")
-    dis <- valReferenceDisagreements(rows, k172)
+    expect_error(valAdoptReferenceRows(rows, k172, errata = NULL), class = "val_spec_invalid")
+    dis <- valReferenceDisagreements(rows, k172, errata = NULL)
     expect_identical(nrow(dis), 18L)
     expect_identical(sort(unique(dis$lane)), c("metab_combined", "metab_gc"))
     expect_true(all(dis$in_own & dis$in_earlier))
@@ -166,4 +167,35 @@ test_that("G1R-ADOPT: KIT-180's and KIT-199's rows agree; KIT-172's disagree in 
                           "outputs/metabolomics_workflow-norm-correlation_filter_summary)[2:11]")))
     expect_true(all(grepl("outputs/metabolomics_workflow-norm-correlation_filter_summary",
                           dis$own_only, fixed = TRUE)))
+})
+
+test_that("G1R-ERRATA: the 18 listed key pairs are accepted, exactly, and nothing else", {
+    rows <- g1rOwnRows()$rows
+    k172 <- valReadReferenceRows(g1rFx("k172-ref.tsv"))
+    errata <- valG1rKeyErrata()
+    expect_identical(nrow(errata), 18L)
+    expect_identical(sort(unique(errata$lane)), c("metab_combined", "metab_gc"))
+    expect_identical(errata$earlier_key,
+                     paste0(errata$key, ifelse(errata$lane == "metab_gc", ")[2:8]", ")[2:11]")))
+    # with the committed errata (the default) KIT-172's rows are adopted
+    expect_identical(nrow(valReferenceDisagreements(rows, k172)), 0L)
+    expect_identical(valAdoptReferenceRows(rows, k172), rows)
+    # a 19th, unlisted disagreement still stops: G1(r)'s own key changed in an unlisted group
+    other <- rows
+    at <- which(other$lane == "metab_lc" & other$step == "correlation")
+    other$keys[[at]] <- paste0(other$keys[[at]], ";states/unlisted")
+    expect_error(valAdoptReferenceRows(other, k172), class = "val_spec_invalid")
+    dis <- valReferenceDisagreements(other, k172)
+    expect_identical(nrow(dis), 1L)
+    expect_identical(c(dis$lane, dis$step), c("metab_lc", "correlation"))
+    # a windowed key not on the list (another window) still stops
+    k172b <- k172
+    at <- which(k172b$lane == "metab_gc" & k172b$step == "correlation")
+    k172b$keyset[[at]] <- sub(")[2:8]", ")[2:9]", k172b$keyset[[at]], fixed = TRUE)
+    expect_error(valAdoptReferenceRows(rows, k172b), class = "val_spec_invalid")
+    # a listed pair applies only to its own (lane, step, class)
+    k172c <- k172
+    at <- which(k172c$lane == "metab_gc" & k172c$step == "correlation")
+    k172c$class[[at]] <- "kit128_technical_replicates"
+    expect_error(valAdoptReferenceRows(rows, k172c), class = "val_spec_invalid")
 })

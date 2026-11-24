@@ -205,12 +205,17 @@ valDeclaredValuesOk <- function(rows, declared) {
 #' row whose source listed only part of the names (`names_list_truncated`, KIT-172) must have its
 #' keys among G1(r)'s own.
 #'
+#' A committed key erratum (`inst/extdata/g1r-key-errata.tsv`; coordinator's ruling on re-audit 3,
+#' R3.B3) replaces an earlier row's key by G1(r)'s when lane, step, class and the earlier key all
+#' match a listed pair exactly; nothing else is corrected.
+#'
 #' @param own G1(r)'s own rows (lane, step, class, fields, keys).
 #' @param earlier The ticket's committed rows (read by [valReadReferenceRows()], or raw).
+#' @param errata Key errata (`lane`, `step`, `class`, `earlier_key`, `key`), or `NULL`.
 #' @return `own`, or `val_spec_invalid` on any disagreement (neither file is edited to agree).
 #' @export
-valAdoptReferenceRows <- function(own, earlier) {
-    if (nrow(valReferenceDisagreements(own, earlier))) {
+valAdoptReferenceRows <- function(own, earlier, errata = valG1rKeyErrata()) {
+    if (nrow(valReferenceDisagreements(own, earlier, errata))) {
         valAbort("a ticket's committed reference rows disagree with G1(r)'s own rows",
                  "val_spec_invalid")
     }
@@ -220,11 +225,26 @@ valAdoptReferenceRows <- function(own, earlier) {
 #' The (lane, step, class) groups on which a ticket's committed reference rows and G1(r)'s own
 #' rows for its lanes disagree (the rule of [valAdoptReferenceRows()], for the gate's report)
 #'
-#' @param own,earlier As [valAdoptReferenceRows()].
+#' @param own,earlier,errata As [valAdoptReferenceRows()].
 #' @return A data frame, one row per disagreeing group: `lane`, `step`, `class`, `in_own`,
 #'   `in_earlier`, `own_only` and `earlier_only` (`field/key`, semicolon-separated), `truncated`.
 #' @export
-valReferenceDisagreements <- function(own, earlier) {
+valReferenceDisagreements <- function(own, earlier, errata = valG1rKeyErrata()) {
+    if (!is.null(errata) && nrow(errata)) {
+        if (is.null(earlier$keyset)) {
+            earlier$keyset <- lapply(seq_len(nrow(earlier)), function(i) {
+                valReferenceKeys(earlier[i, , drop = FALSE])
+            })
+        }
+        for (i in seq_len(nrow(earlier))) {
+            e <- errata[errata$lane == earlier$lane[[i]] & errata$step == earlier$step[[i]] &
+                            errata$class == earlier$class[[i]], , drop = FALSE]
+            k <- earlier$keyset[[i]]
+            hit <- match(k, e$earlier_key)
+            k[!is.na(hit)] <- e$key[hit[!is.na(hit)]]
+            earlier$keyset[[i]] <- k
+        }
+    }
     sets <- function(x) {
         if (is.null(x$keyset)) {
             x$keyset <- lapply(seq_len(nrow(x)), function(i) valReferenceKeys(x[i, , drop = FALSE]))
@@ -257,4 +277,12 @@ valReferenceDisagreements <- function(own, earlier) {
                         earlier_only = character(), truncated = logical(),
                         stringsAsFactors = FALSE)
     do.call(rbind, c(list(empty), rows))
+}
+
+#' G1(r)'s committed key errata: KIT-172's 18 keys that kept waldo's line window, each with the
+#' output id it names (coordinator's ruling on re-audit 3, R3.B3; KIT-172's file is not edited)
+#' @noRd
+valG1rKeyErrata <- function() {
+    valReadTextTable(system.file("extdata", "g1r-key-errata.tsv", package = "msrval",
+                                 mustWork = TRUE))
 }
