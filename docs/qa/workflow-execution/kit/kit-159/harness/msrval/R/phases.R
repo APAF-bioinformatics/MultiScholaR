@@ -55,7 +55,8 @@ valPrepare <- function(env, data_dir, work_dir) {
     uni <- valUniverse(env, feats)
     universe_path <- file.path(work_dir, "universe.tsv")
     utils::write.table(uni$universe, universe_path, sep = "\t", quote = FALSE, row.names = FALSE)
-    files <- unique(unlist(lapply(prep[["units"]], function(u) unlist(u[["files"]]))))
+    # R5: a unit with no files gives NULL here, and file.exists(NULL) is an error
+    files <- as.character(unique(unlist(lapply(prep[["units"]], function(u) unlist(u[["files"]])))))
     files <- files[file.exists(files)]
     prepared <- data.frame(path = files, sha256 = vapply(files, valSha256, character(1)),
                            stringsAsFactors = FALSE, row.names = NULL)
