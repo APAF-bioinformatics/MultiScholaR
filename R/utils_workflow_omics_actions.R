@@ -249,13 +249,23 @@ readWorkflowOmicsFilteringMetrics <- function(manager, result) {
 runWorkflowOmicsQcAction <- function(binding, workflowData, step, deliver, draw, failed = NULL) {
     runner <- workflowOmicsManagedActions(binding$omic_type)
     if (!is.null(runner)) {
-        runner$run(list(omicsManagedCommit(step, workflowData$config_list, function(result) {
+        actions <- list(omicsManagedCommit(step, workflowData$config_list, function(result) {
             deliver(list(value = result$value, reference = result$stateReference), function() {
                 metrics <- readWorkflowOmicsFilteringMetrics(workflowData$state_manager, result)
                 if (is.null(metrics)) stop("the worker computed no filtering metrics")
                 draw(list(theObject = NULL, metrics = metrics))
             })
-        })), failed = failed)
+        }))
+        # KIT-194 (A02, B01): on a session owner a press queued behind a running action is judged when it starts, on the
+        # head it will read; with any other manager the guard is a no-op and the list is passed as before.
+        if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+            queued <- actions
+            actions <- function() {
+                assertOmicQcHeadNotNormalised(binding, workflowData$state_manager)
+                queued
+            }
+        }
+        runner$run(actions, failed = failed)
         return(invisible(NULL))
     }
     run <- runWorkflowOmicsReferenceStep(workflowData$state_manager, step, workflowData$config_list)

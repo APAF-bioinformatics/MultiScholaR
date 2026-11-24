@@ -1,0 +1,61 @@
+case	test	passed	failed	errors	skipped
+none	KIT-203 S1: on KIT-189's E4 vector the family value is BH with denominator m and flags strictly	6	0	0	0
+none	KIT-203 S2: results the family value cannot be formed for are refused; NULL, empty and q-value pass	11	0	0	0
+none	KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart	9	0	0	0
+none	KIT-203 S4: the q-value option writes and stores what the base commit did, byte for byte	15	0	0	0
+none	KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome	15	0	0	0
+none	KIT-203 S7: every clusterProfiler run is told its rule; the correction sentence follows only for gSCS	5	0	0	0
+none	KIT-203 S8: the default draws the family value; a result without the rule draws the q-value as before	10	0	0	0
+none	KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told	76	0	0	0
+none	KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown	27	0	0	0
+none	KIT-203 S11: the five workbooks pass the default rule	10	0	0	0
+none	KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome	5	0	0	0
+none	KIT-203 S14: a record without the rule replays with the q-value; a recorded rule replays as recorded	2	0	0	0
+m1	KIT-203 S1: on KIT-189's E4 vector the family value is BH with denominator m and flags strictly	6	0	0	0
+m1	KIT-203 S2: results the family value cannot be formed for are refused; NULL, empty and q-value pass	11	0	0	0
+m1	KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart	5	4	0	0
+m1	KIT-203 S4: the q-value option writes and stores what the base commit did, byte for byte	15	0	0	0
+m1	KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome	0	1	1	0
+m1	KIT-203 S7: every clusterProfiler run is told its rule; the correction sentence follows only for gSCS	5	0	0	0
+m1	KIT-203 S8: the default draws the family value; a result without the rule draws the q-value as before	10	0	0	0
+m1	KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told	76	0	0	0
+m1	KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown	25	2	0	0
+m1	KIT-203 S11: the five workbooks pass the default rule	10	0	0	0
+m1	KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome	5	0	0	0
+m1	KIT-203 S14: a record without the rule replays with the q-value; a recorded rule replays as recorded	2	0	0	0
+m2	KIT-203 S1: on KIT-189's E4 vector the family value is BH with denominator m and flags strictly	6	0	0	0
+m2	KIT-203 S2: results the family value cannot be formed for are refused; NULL, empty and q-value pass	11	0	0	0
+m2	KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart	9	0	0	0
+m2	KIT-203 S4: the q-value option writes and stores what the base commit did, byte for byte	15	0	0	0
+m2	KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome	15	0	0	0
+m2	KIT-203 S7: every clusterProfiler run is told its rule; the correction sentence follows only for gSCS	5	0	0	0
+m2	KIT-203 S8: the default draws the family value; a result without the rule draws the q-value as before	10	0	0	0
+m2	KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told	76	0	0	0
+m2	KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown	27	0	0	0
+m2	KIT-203 S11: the five workbooks pass the default rule	10	0	0	0
+m2	KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome	5	0	0	0
+m2	KIT-203 S14: a record without the rule replays with the q-value; a recorded rule replays as recorded	1	1	0	0
+m3	KIT-203 S1: on KIT-189's E4 vector the family value is BH with denominator m and flags strictly	3	3	0	0
+m3	KIT-203 S2: results the family value cannot be formed for are refused; NULL, empty and q-value pass	10	1	0	0
+m3	KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart	7	2	0	0
+m3	KIT-203 S4: the q-value option writes and stores what the base commit did, byte for byte	15	0	0	0
+m3	KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome	15	0	0	0
+m3	KIT-203 S7: every clusterProfiler run is told its rule; the correction sentence follows only for gSCS	5	0	0	0
+m3	KIT-203 S8: the default draws the family value; a result without the rule draws the q-value as before	10	0	0	0
+m3	KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told	76	0	0	0
+m3	KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown	27	0	0	0
+m3	KIT-203 S11: the five workbooks pass the default rule	10	0	0	0
+m3	KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome	5	0	0	0
+m3	KIT-203 S14: a record without the rule replays with the q-value; a recorded rule replays as recorded	2	0	0	0
+m4	KIT-203 S1: on KIT-189's E4 vector the family value is BH with denominator m and flags strictly	6	0	0	0
+m4	KIT-203 S2: results the family value cannot be formed for are refused; NULL, empty and q-value pass	6	0	1	0
+m4	KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart	9	0	0	0
+m4	KIT-203 S4: the q-value option writes and stores what the base commit did, byte for byte	0	15	0	0
+m4	KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome	15	0	0	0
+m4	KIT-203 S7: every clusterProfiler run is told its rule; the correction sentence follows only for gSCS	5	0	0	0
+m4	KIT-203 S8: the default draws the family value; a result without the rule draws the q-value as before	10	0	0	0
+m4	KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told	76	0	0	0
+m4	KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown	27	0	0	0
+m4	KIT-203 S11: the five workbooks pass the default rule	10	0	0	0
+m4	KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome	5	0	0	0
+m4	KIT-203 S14: a record without the rule replays with the q-value; a recorded rule replays as recorded	2	0	0	0

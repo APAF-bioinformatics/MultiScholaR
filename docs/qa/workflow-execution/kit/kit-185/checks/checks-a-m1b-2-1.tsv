@@ -1,0 +1,11 @@
+check	cell	rep	mask	value	threshold	pass	note
+E2	M1b	220	none	1.11926e-09	1e-06	TRUE	base
+E2	M1b	240	none	5.07754e-11	1e-06	TRUE	base
+E2	M1b	260	none	1.14358e-09	1e-06	TRUE	base
+E2	M1b	280	none	1.22569e-11	1e-06	TRUE	base
+E2	M1b	300	none	3.78218e-10	1e-06	TRUE	base
+E2	M1b	320	none	6.20982e-10	1e-06	TRUE	base
+E2	M1b	340	none	9.207e-10	1e-06	TRUE	base
+E2	M1b	360	none	5.53015e-11	1e-06	TRUE	base
+E2	M1b	380	none	1.6685e-10	1e-06	TRUE	base
+E2	M1b	400	none	9.99805e-10	1e-06	TRUE	base

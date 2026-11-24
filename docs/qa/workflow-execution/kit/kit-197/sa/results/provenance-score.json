@@ -1,0 +1,38 @@
+{
+  "ticket": "KIT-197",
+  "mode": "descriptive",
+  "script_sha256": "f546947985617c5a6c0e79edd2d2f4a062db2ed0bea922b9927af6a1a9e9e426",
+  "inputs_sha256": {
+    "A.tsv.gz": "0dbac04eb9fc2b33aab64825019c1cef501f90ef7b0a0fdbf3506d206327ab34",
+    "B.tsv.gz": "acbd5808851ec95d9f7d8986e68f043562283c84954f799378836dcfdb365dda",
+    "C.tsv.gz": "66a369a4dbf140e4e581126617ed187c7fcaa3b7ac2c08adf9ef900487a56554",
+    "D.tsv.gz": "d4af9e7b595311c6ea7ca7e945ea43010d6f95b194329e03eba3fe0792fb4f13",
+    "s2metrics.tsv": "384777028ffe8a87a06d998919ab6cd63829a81ede568d6df8a4856a61da5be6"
+  },
+  "replicates": {
+    "A": [1, 100],
+    "B": [1, 100],
+    "C": [1, 100],
+    "D": [1, 100]
+  },
+  "bootstrap": {
+    "B": 10000,
+    "seed": 197000001,
+    "kind": "Mersenne-Twister",
+    "normal_kind": "Inversion",
+    "sample_kind": "Rejection",
+    "unit": "cell replicate, all six masks",
+    "quantile_type": 7
+  },
+  "margins": {
+    "B": 1.1,
+    "P": 0.005
+  },
+  "level_present": {
+    "setting": 0.00416666666666667,
+    "pool": 0.025
+  },
+  "level_absent": 0.05,
+  "level_f4": 0.00208333333333333,
+  "r_version": "R version 4.6.1 (2026-06-24)"
+}
