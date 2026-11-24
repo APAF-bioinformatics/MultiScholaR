@@ -1,11 +1,12 @@
-# KIT-184 simulation: declaration, DRAFT (third version)
+# KIT-184 simulation: declaration, DRAFT (fourth version)
 
 **This is a draft. It is not the declaration, it fixes nothing, and nothing may be counted against it.** The counted
 run S has not started and does not start from this file. This version applies the declaration audit
 (`tickets/kit/audits/AUDIT-KIT-184-declaration-20261124.md`, findings K184-D01 to D12), the owner's decisions O1 and
-O2 (methods ledger VAL-150, 2026-11-24) and the audit's re-check 1 (K184-R01 to R05, with its "order before the
-freeze"). The declaration itself is then `declaration.md`, committed alone, before S, after the auditor has confirmed
-the blind lifecycle extension L1b. Earlier versions of this draft: e9738ade (first), fc35c308 (second).
+O2 (methods ledger VAL-150, 2026-11-24) and the audit's re-checks 1 and 2 (K184-R01 to R08). Re-check 2 confirmed the
+blind lifecycle extension L1b and that the scripts at 9e525fd9 may be the frozen ones. The declaration itself is
+`declaration.md`, committed alone, before S: sections 1 to 4 of this file. Earlier versions of this draft: e9738ade
+(first), fc35c308 (second), 9e525fd9 and 3dd8a887 (third).
 
 Ticket `tickets/kit/KIT-184.md` revision 1.7, sections 6.2 to 6.5 and 11; ledger VAL-11, VAL-53, VAL-58, VAL-62, VAL-94
 (KIT-183's outcome O1), VAL-97 (3), VAL-150.
@@ -257,8 +258,9 @@ independent of the data, and decides nothing. (The owner's decision O1, methods 
 - Reported, deciding nothing: arms 1, 2, 3o, D0, D1 on every class; C4, C4b, C1-out, C3; the rates per set size
   (`error-rates-by-size.tsv`, each with the number of replicates in which the size formed); the paired differences; the
   feature-level rates; power; cell D; `camera_floor` and `permutation`; the exactness measures; the operating
-  characteristic from the measured standard errors. `operating-characteristic.tsv` counts the proteomics C5 check
-  twice (34 rows per cell), which can only understate the probability of passing.
+  characteristic from the measured standard errors. `operating-characteristic.tsv` has one row per deciding cell;
+  its `checks` column reads 34, because the proteomics C5 check enters in both compositions, which can only understate
+  the probability of passing.
 - C4, C4b and C1-out are defined by the model's selection, so which features and which replicates enter them depends
   on how much unwanted variance the correction left; their rates are conditional on that and are not calibration
   evidence (KIT-183 measured C4 at about 10 % on an independent covariate, VAL-94).
@@ -272,23 +274,35 @@ applied.
 
 The scorer runs once, in the lane's `score` job after every evidence job, with a timeout of 30 minutes (three times
 L1b's measured 119 seconds is 6 minutes, below the floor of 30), on the artifacts, which are kept 90 days. Its minutes
-count in row S: expected about 3, ceiling its timeout, taken from S', which becomes 305 minus that timeout, 275
-job-minutes. A score
-job that fails or times out has produced no result: the scorer's mechanics are fixed without changing any estimand,
-check, limit or composition, and the same artifacts are scored again (VAL-54, at most three). S is never re-run for it.
+count in row S: expected about 5 (set-up, download of the artifacts, about 2 minutes of scoring), ceiling its timeout,
+taken from S', which becomes 305 minus that timeout, 275 job-minutes. A score job that fails or times out has produced
+no result: the scorer's mechanics are fixed without changing any estimand, check, limit or composition, and the same
+artifacts are scored again (VAL-54, at most three). S is never re-run for it.
+
+The scorer runs only when every evidence job and the determinism job have succeeded. If one failed, nothing is scored
+before S' has re-run it.
+
+S' for a failure of an evidence job is GitHub's re-run of the failed jobs in the same run (same package commit, same
+workflow, the same seeds), within 30 days of the run; the score job follows it. If the scorer itself must be
+corrected, a lane commit adds a mode that scores this run's artifacts by run id with the corrected package commit and
+runs no evidence job. It is recorded under VAL-54, and the corrected scorer's SHA-256 is stated beside the declared
+one. The minutes of S' and of every re-score count against the 275 job-minutes of S'.
 
 ### Dated section (after L1, before S), as it would read
 
 - Lifecycle: run 45333818847 (15 of 15 replicates completed; parity with KIT-183's cell identical; 110 to 133 s per
   replicate under four workers). The stop rule of ticket 11 fired at 70 s; the coordinator accepted the re-split above
   and kept the ceiling (ticket 11, revision 1.5). The first push (45333717225) ran no job. L1 was not scored blind
-  (section 2). The lifecycle extension L1b (run 45348572248; every item of the list of section 5 held, `lifecycle.md`;
-  to be confirmed by the auditor before the freeze) was blind (section 5).
+  (section 2). The lifecycle extension L1b (run 45348572248): blind; every item of the re-check's list held
+  (`lifecycle.md`, `l1b/`); confirmed in AUDIT-KIT-184-declaration-20261124, Re-check 2.
 - Frozen with: `simulate-k184.R` SHA-256 58333b1ef1b479a65f30089dd0307aad5ebab2495c1fb060621a8738a873a75b and
-  `score-k184.R` 282b844e1c3427e8c99f296aa486c313957776bda8067d782a9a4511b43fa8b2 (package commit 9e525fd9, the commit
-  L1b ran); lane commit ef6ce13d2b965a8cbaf7c0280ba941498c3a4273, `k184-evidence.yml` SHA-256
-  ae0dc5a52c2735d5b6092fca60455c4f1e9093a7de08b3a7b86c98f04e03eea7 (the workflow L1b ran, 2b680757..., with the score
-  job's timeout set to 30 minutes and nothing else changed); the score job's timeout 30 minutes.
+  `score-k184.R` 282b844e1c3427e8c99f296aa486c313957776bda8067d782a9a4511b43fa8b2, first held by package commit
+  9e525fd9, the commit L1b ran, and unchanged since; KIT-183's two files unchanged (`simulate-k183.R` 4cdf7105...,
+  `score-k183.R` 7efd7c68...). Lane commit 27c8766ca187b314b1951f31b30d43dadf0287fd, `k184-evidence.yml` SHA-256
+  15378427e28bdbcd2066584167c74ae6e7b0b392d07041f6bf166ed0e3ce68d8 (the workflow L1b ran, 2b680757..., with the score
+  job's timeout set to 30 minutes, the score job held back unless every evidence job succeeded, and a re-run job's
+  artifact replacing the failed one's; nothing else changed), its `k184.R` 58333b1e.... The score job's timeout 30
+  minutes; artifacts kept 90 days; S' 275 job-minutes, re-scores included.
 - After L1's formation counts (section 4): proteomics C5 read in two compositions, both of which must hold (VAL-150);
   the reported C4 rate without the sizes that did not form; the feature-level rate on F_main not defined for
   metabolomics. All in the scorer; the sets drawn and tested are the ticket's. K-E1 keeps 33 checks per cell and its
