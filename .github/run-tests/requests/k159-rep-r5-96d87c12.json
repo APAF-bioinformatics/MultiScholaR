@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R5, the third-pass tests only (test-repair3: I15 classifier, D19 admission; test-repair R-I15 changed) at the tests-only commit, shown failing; ceiling 30 min, about 0.8 core-hours",
+  "label": "KIT-159 repair R5: third-pass tests shown failing at 96d87c12",
+  "package_commit": "96d87c125b7201374ec87e3b7da4db509b5d62ec",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r5-out",
+        "--files",
+        "repair3,repair"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r5-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
