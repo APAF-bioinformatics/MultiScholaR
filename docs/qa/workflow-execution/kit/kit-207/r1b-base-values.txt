@@ -1,0 +1,23 @@
+KIT-207 E1 lipid	head=lipid_qc_complete	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'lipid_qc_complete'	rds=LipidomicsAssayData max=1373458.88721	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E2 lipid	head=lipid_log2	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'lipid_qc_complete'	rds=LipidomicsAssayData max=1373458.88721	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E3 lipid	head=lipid_intensity_filtered	retrieved=<none>	rds=NULL	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E4 lipid	head=lipid_reset	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'lipid_correlation_filtered'	rds=LipidomicsAssayData max=20.1120344681	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E5 lipid	head=lipid_qc_complete	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'lipid_qc_complete'	rds=LipidomicsAssayData max=1373458.88721	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E7 lipid	head=lipid_qc_complete	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'lipid_qc_complete'	rds=<none>	done=0	failed=	notes=	queued_state=lipid_qc_complete
+KIT-207 E8 lipid report	render=1	bundle=1	notes=[message] Report generated successfully!
+KIT-207 E8 lipid session_state	files=1	feature_counts=514	notes=[message] Session state exported to: /tmp/RtmpHxU3k7/file4b561c4efa4b/e8-project/scripts/lipidomics/session_state_2026-11-24.RDS
+KIT-207 E1 metab	head=metab_qc_complete	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'metab_qc_complete'	rds=MetaboliteAssayData max=1373458.88721	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E2 metab	head=metab_log2	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'metab_qc_complete'	rds=MetaboliteAssayData max=1373458.88721	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E3 metab	head=metab_intensity_filtered	retrieved=<none>	rds=NULL	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E4 metab	head=metab_reset	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'metab_correlation_filtered'	rds=MetaboliteAssayData max=20.1120344681	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E5 metab	head=metab_qc_complete	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'metab_qc_complete'	rds=MetaboliteAssayData max=1373458.88721	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E7 metab	head=metab_qc_complete	retrieved=SESSION SUMMARY: Retrieved DATA S4 object from state 'metab_qc_complete'	rds=<none>	done=0	failed=	notes=	queued_state=metab_qc_complete
+KIT-207 E8 metab report	render=1	bundle=1	notes=[message] Report generated successfully!
+KIT-207 E8 metab session_state	files=1	feature_counts=514	notes=[message] Session state exported to: /tmp/RtmpHxU3k7/file4b567a02856d/e8-project/scripts/metabolomics/session_state_2026-11-24.RDS
+KIT-207 E6 trx	head=trx_qc_complete	retrieved=SESSION SUMMARY: final transcriptomics state 'trx_qc_complete'	rds=<none>	done=1	failed=	notes=[message] Saved Integration S4 Object 
+KIT-207 E9 trx	head=trx_ruvs	retrieved=SESSION SUMMARY: final transcriptomics state 'trx_ruvs'	rds=<none>	done=0	failed=integration_input_invalid	notes=[warning] Study parameters saved with warnings	tsv=TRUE
+KIT-207 E11 lipid	study_parameters=TRUE	notes=[message] Normalization pipeline complete! 
+KIT-207 G1 lipidomics object=4a781cc6bd9d42cd3ac3b0829fe13a507ada6a584e676f209ab6c0bc1fe82da6 params=85fd6a397b39c31556f47741bba856f3c7e6cb74d4c4daed21b3e244ac6bd0f5 record_steps=initial,lipid_raw_data_s4,lipid_intensity_filtered,lipid_qc_complete,lipid_log2,lipid_normalized,lipid_correlation_filtered
+KIT-207 G1-assays lipidomics assays=866bb980d423dd2ff586d0264aec36f06ac042d5db74f7784fe595a35e67d295
+KIT-207 G1 metabolomics object=925d4551b117bcc8c205aa7009862b864b8fae381b5793f1f091502a530051cc params=22e57b396cd2e08fda78a894b634d3ced8db4b07e8254d696f16652ab6b4530a record_steps=initial,metab_raw_data_s4,metab_intensity_filtered,metab_qc_complete,metab_log2,metab_normalized,metab_correlation_filtered
+KIT-207 G1-assays metabolomics assays=8a270033bb56ce3605bc700d32a3a4b63ccce2b77b903fcd8bb26472b6aa3f7b
