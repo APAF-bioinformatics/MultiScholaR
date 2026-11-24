@@ -106,6 +106,10 @@ case "$plan" in
         # G0a item 1's package error alone (VAL-54 instrument run 2 of G0a: the injected setting changed, section 6).
         corpus lipid_screen || STOP="corpus lipid_screen"
         journey U1 C 1 lifecycle package_error false
+        # Item 5's records (G0a-2 read the build facts at global scope): the LFQ fixture on each build.
+        corpus lfq_fixture || STOP="corpus lfq_fixture"
+        journey S1 base 1 BC "" false
+        journey S1 C 2 BC "" false
         ;;
     g0p1)
         corpus full || STOP="corpus full"

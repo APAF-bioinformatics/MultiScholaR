@@ -675,17 +675,21 @@ k209_env <- list(MULTISCHOLAR_TEST_MODE = Sys.getenv("MULTISCHOLAR_TEST_MODE"), 
     OMP_NUM_THREADS = Sys.getenv("OMP_NUM_THREADS", NA), OPENBLAS_NUM_THREADS = Sys.getenv("OPENBLAS_NUM_THREADS", NA),
     RSTUDIO_PANDOC = Sys.getenv("RSTUDIO_PANDOC", NA), r = R.version.string, blas = extSoftVersion()[["BLAS"]],
     lapack = La_library(), libpaths = .libPaths())
-k209_build_facts <- list(
+# Evaluated in the lane's environment (its parent is the namespace; G0a-1 and -2 read these at global scope and
+# recorded "could not find function").
+k209_facts <- function() list(
     dpc_engine_default = tryCatch(resolveLimpaDpcEngine(), error = function(e) paste("error:", conditionMessage(e))),
     fastlimpadpc_installed = requireNamespace("fastlimpadpc", quietly = TRUE),
     ruv_design_panel_option = getOption("MultiScholaR.ruv_design_panel", NA),
     ruv_design_panel_enabled = if (exists("omicGuiRuvDesignEnabled", envir = k209_ns, inherits = FALSE))
         isTRUE(get("omicGuiRuvDesignEnabled", envir = k209_ns)()) else NA,
-    prot_manual_ruv_defaults = tryCatch(omicGuiConfig("proteomics")$norm$ruv_iii[c("default", "percentage", "k")],
+    prot_manual_ruv_defaults = tryCatch(omicGuiConfig("proteomics")$norm$panels$ruv_iii[c("default", "percentage", "k")],
         error = function(e) paste("error:", conditionMessage(e))),
     managed_runner = tryCatch(is.null(workflowOmicsManagedActions("proteomics")), error = function(e) NA),
     version = as.character(utils::packageVersion("MultiScholaR", lib.loc = k209_args$lib)),
     source_commit = utils::packageDescription("MultiScholaR", lib.loc = k209_args$lib)$`Config/MultiScholaR/SourceCommit` %||% NA)
+environment(k209_facts) <- k209_h
+k209_build_facts <- k209_facts()
 
 # Raise-time capture: a tab's observer catches its errors in a tryCatch, which an outer calling handler never sees.
 # base::stop, rlang::abort and cli::cli_abort are traced (lane only) so the frames of every raised error are recorded
