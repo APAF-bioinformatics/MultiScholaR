@@ -197,7 +197,8 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
                 return(NULL)
             }
             lapply(integrationEnrichmentTestNotes(input$test, facts$samples[[input$view]], facts$input_matrix,
-                facts$omics[[input$view]], texts), function(sentence) shiny::p(shiny::em(sentence)))
+                facts$omics[[input$view]], texts, permutations = as.integer(input$permutations %||% "1000")),
+                function(sentence) shiny::p(shiny::em(sentence)))
         })
         output$evidence <- shiny::renderUI({
             facts <- state$model
@@ -296,11 +297,17 @@ integrationEnrichmentTestInput <- function(id, n_samples, texts = integrationGui
 #' @param n_samples The data set's biological samples.
 #' @param input_matrix The values the model was trained on (`uncorrected` or `ruv_corrected`).
 #' @param omic The data set's omic.
+#' @param permutations VAL-115 (4): the number of reorderings chosen, named in the permutation test's note.
 #' @noRd
-integrationEnrichmentTestNotes <- function(test, n_samples, input_matrix, omic, texts = integrationGuiTexts()) {
+integrationEnrichmentTestNotes <- function(test, n_samples, input_matrix, omic, texts = integrationGuiTexts(),
+    permutations = INTEGRATION_ENRICHMENT_PERMUTATIONS[[1L]]) {
     if (!isTRUE(test %in% INTEGRATION_ENRICHMENT_TESTS_OFFERED)) return(character())
     kind <- integrationEnrichmentEvidenceKind(omic)
-    c(texts[[paste0("enrich_test_", test, "_note_", kind)]],
+    note <- texts[[paste0("enrich_test_", test, "_note_", kind)]]
+    if (identical(test, "permutation")) {
+        note <- sprintf(note, format(as.numeric(permutations), big.mark = ",", scientific = FALSE, trim = TRUE))
+    }
+    c(note,
         if (isTRUE(n_samples < INTEGRATION_ENRICHMENT_CHECKED_SAMPLES))
             sprintf(texts[[paste0("enrich_test_few_samples_", test, "_", kind)]], as.integer(n_samples)),
         if (identical(input_matrix, "ruv_corrected")) texts[["enrich_values_ruv_note"]])
@@ -389,16 +396,7 @@ integrationEnrichmentPermutationFloorText <- function(permutation, terms, texts 
         return(sprintf(texts[["enrich_test_permutation_floor_none"]], as.integer(reorderings),
             as.integer(permutation$samples), floor_text))
     }
-    numerator <- 20 * as.numeric(terms) * (1 + unchanged)
-    k_min <- as.integer((numerator + reorderings) %/% (1 + reorderings))
+    k_min <- integrationEnrichmentFloorMinimum(unchanged, reorderings, terms)
     sprintf(texts[["enrich_test_permutation_floor"]], as.integer(reorderings), as.integer(permutation$samples), floor_text,
         as.integer(terms), k_min)
-}
-
-#' KIT-191 (I01; the form is the owner's to confirm, O1): the smallest attainable p-value (1 + d) / (1 + B) as printed,
-#' the exact fraction with thousands separated ("1/1,001"). The one place the form is set.
-#' @noRd
-integrationEnrichmentFloorFraction <- function(identity_draws, permutations) {
-    paste0(format(1 + as.numeric(identity_draws), big.mark = ",", scientific = FALSE, trim = TRUE), "/",
-        format(1 + as.numeric(permutations), big.mark = ",", scientific = FALSE, trim = TRUE))
 }

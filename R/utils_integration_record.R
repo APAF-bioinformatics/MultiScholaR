@@ -421,7 +421,7 @@ integrationRecordTexts <- function() {
             "and tend to be more strongly associated with it than other features even without a biological link, the more",
             "so for factors weaker than the main effect. In a check on simulated data with 12 biological samples (800",
             "simulated studies per data set; KIT-183), at the 5 % level:"),
-        methods_enrich_limits_clause = paste("the %s, on %s data, called terms with no link to the factor in %s of cases",
+        methods_enrich_limits_clause = paste("the %s, on %s, called terms with no link to the factor in %s of cases",
             "against values unrelated to the data, terms made only of the most variable features, those the model",
             "selects, in %s, and, on factors weaker than the main effect, %s in up to %s"),
         methods_enrich_limits_end = paste("The correlation-adjusted and permutation tests use only features measured in",
@@ -430,6 +430,13 @@ integrationRecordTexts <- function() {
             "RUV correction, the values the model is trained on by default; for a model trained on RUV-corrected values,",
             "variation the correction removed stays in the values tested. P-values were adjusted within each factor, data",
             "set and database (and Gene Ontology aspect), not across them."),
+        # VAL-115 (3): the permutation's floor in its Methods sentence (%s: the exact fraction (1 + d)/(1 + B); %d: the
+        # pathways tested, the smallest number BH can call together); the _none form when the floor is above 0.05.
+        methods_enrich_permutation_floor = paste("The smallest attainable p-value was %s ((1 + d)/(1 + B), d the",
+            "reorderings that left the factor unchanged); of the %d pathways tested, none could be called at a 5 %% false",
+            "discovery rate unless at least %d were called together."),
+        methods_enrich_permutation_floor_none = paste("The smallest attainable p-value was %s ((1 + d)/(1 + B)), above",
+            "0.05, so no pathway could be called at a 5 %% false discovery rate."),
         # %s: factor, data set, database; %d: the number of tests; %s: the tests.
         methods_enrich_several_tests = paste("For %s in %s (%s), %d tests were run (%s); each result is reported, the",
             "tests were not combined, and no adjustment was made across tests."),

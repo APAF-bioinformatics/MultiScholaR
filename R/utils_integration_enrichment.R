@@ -90,10 +90,11 @@ INTEGRATION_ENRICHMENT_REFUSALS <- c(
         "The chosen test (correlation-adjusted or permutation) needs at least %d biological samples in this data set."
     ),
     integration_enrichment_test_not_offered = "This test is not offered here: %s.",
-    # KIT-191 (D4 (c); %s: minutes; %d: features, biological samples, terms, reorderings).
+    # KIT-191 (D4 (c); VAL-115 (4): the time and the limit in seconds; %s: seconds; %d: features, biological samples,
+    # terms, reorderings, the limit).
     integration_enrichment_test_too_large = paste(
-        "The permutation test would take about %s minutes for this data set (%d features, %d biological samples, %d",
-        "terms, %d reorderings), longer than the 2 minutes allowed in the tab, where the application waits for it.",
+        "The permutation test would take about %s seconds for this data set (%d features, %d biological samples, %d",
+        "terms, %d reorderings), longer than the %d seconds allowed in the tab, where the application waits for it.",
         "Choose a correlation-adjusted test or fewer reorderings, or run it from a script."
     )
 )
@@ -1019,7 +1020,8 @@ INTEGRATION_ENRICHMENT_TEST_EVIDENCE <- local({
         C3 = "C3 (identifiers carrying 2 or 3 unrelated features) against values unrelated to the data (F_ind)",
         power = paste("power at BH <= 0.05 within result tables of about 87 terms (metabolites, 12 % truly linked) or 119",
             "to 152 terms (genes and proteins, 17 to 20 %); in larger tables with fewer linked terms every test finds",
-            "fewer, the permutation test most (its floor, KIT-191 5.2 step 8)"))
+            "fewer, the permutation test most (expected, not measured: BH's step-up and the permutation's floor, KIT-191 5.2",
+            "step 8)"))
     measure <- rows[, 4L]
     key <- ifelse(measure %in% c("G", "H", "I"), "power", ifelse(measure == "E", paste0("E_", rows[, 1L]), measure))
     source <- ifelse(measure %in% c("G", "H", "I"), "s/power.tsv", ifelse(measure == "F", "s/familywise.tsv",
@@ -1621,7 +1623,8 @@ integrationEnrichmentPermutation <- function(values, term2gene, term2name, setti
     limit <- settings$time_limit
     if (!is.null(limit) && predicted > limit) {
         integrationEnrichmentRefuse("integration_enrichment_test_too_large",
-            values = list(sprintf("%.1f", predicted / 60), g, n, length(index), permutations), predicted_seconds = predicted)
+            values = list(sprintf("%.0f", predicted), g, n, length(index), permutations, as.integer(limit)),
+            predicted_seconds = predicted)
     }
     if (is.null(limit)) {
         rlang::inform(sprintf(integrationGuiTexts()[["enrich_test_permutation_time"]], sprintf("%.0f", predicted), g, n,
@@ -2345,11 +2348,17 @@ integrationMethodsEnrichment <- function(block, texts = integrationRecordTexts()
                     name <- sprintf(name, reorderings, reorderings)
                     numbers <- c(list(as.integer(s(service$seed))), numbers)
                 }
-                sprintf(texts[[paste0("methods_enrich_", test)]], s(entry$factor), s(entry$view),
+                sentence <- sprintf(texts[[paste0("methods_enrich_", test)]], s(entry$factor), s(entry$view),
                     integrationEnrichmentDatabaseName(database), name,
                     do.call(sprintf, c(list(texts[[paste0("methods_test_settings_", test)]]), numbers)),
                     as.character(s(service$release)), as.character(s(service$organism)), as.integer(s(service$min_set_size)),
                     as.integer(s(service$max_set_size)), as.integer(s(service$pathways_testable)))
+                # VAL-115 (3): the permutation's floor, as the tab states it.
+                if (identical(test, "permutation")) {
+                    clause <- integrationMethodsPermutationFloor(entry$permutation, as.integer(s(entry$tests)), texts)
+                    if (length(clause)) sentence <- paste(sentence, clause)
+                }
+                sentence
             } else
             sprintf(texts[["methods_enrich_pathway"]], s(entry$factor), s(entry$view), integrationEnrichmentDatabaseName(database),
                 as.integer(s(entry$mapping_counts$mapped)), as.character(s(service$release)), as.character(s(service$organism)),
@@ -2361,6 +2370,39 @@ integrationMethodsEnrichment <- function(block, texts = integrationRecordTexts()
     # KIT-183: the limits, once, when the record holds a KEGG or Reactome entry; KIT-191: one clause per test used and
     # kind of data set.
     c(sentences, if (pathways) integrationMethodsEnrichmentLimits(entries, texts), texts[["methods_enrich_family"]])
+}
+
+#' KIT-191 (VAL-115 (3)): the permutation's floor in its Methods sentence: the smallest attainable p-value as the exact
+#' fraction (`integrationEnrichmentFloorFraction()`) and the smallest number of pathways BH can call together, or the
+#' `_none` form when the floor is above 0.05. NULL without the product's `permutation` or without pathways tested.
+#' @param permutation The record block's `permutation` (`permutations`, `identity_draws`).
+#' @param terms The pathways tested (m).
+#' @noRd
+integrationMethodsPermutationFloor <- function(permutation, terms, texts = integrationRecordTexts()) {
+    s <- integrationRecordScalar
+    d <- as.numeric(s(permutation$identity_draws))
+    B <- as.numeric(s(permutation$permutations))
+    if (is.null(permutation) || is.na(d) || is.na(B) || !isTRUE(terms > 0L)) return(NULL)
+    fraction <- integrationEnrichmentFloorFraction(d, B)
+    if (20 * (1 + d) > 1 + B) return(sprintf(texts[["methods_enrich_permutation_floor_none"]], fraction))
+    sprintf(texts[["methods_enrich_permutation_floor"]], fraction, as.integer(terms), integrationEnrichmentFloorMinimum(d, B,
+        terms))
+}
+
+#' KIT-191 (5.2 step 8): the smallest number of terms BH at 5 % can call together, k_min = ceiling(m (1 + d) /
+#' (0.05 (1 + B))), in whole numbers as ceiling(20 m (1 + d) / (1 + B)).
+#' @noRd
+integrationEnrichmentFloorMinimum <- function(identity_draws, permutations, terms) {
+    numerator <- 20 * as.numeric(terms) * (1 + as.numeric(identity_draws))
+    as.integer((numerator + as.numeric(permutations)) %/% (1 + as.numeric(permutations)))
+}
+
+#' KIT-191 (I01; the form confirmed by the owner, VAL-115 (2)): the smallest attainable p-value (1 + d) / (1 + B) as
+#' printed, the exact fraction with thousands separated ("1/1,001"). The one place the form is set.
+#' @noRd
+integrationEnrichmentFloorFraction <- function(identity_draws, permutations) {
+    paste0(format(1 + as.numeric(identity_draws), big.mark = ",", scientific = FALSE, trim = TRUE), "/",
+        format(1 + as.numeric(permutations), big.mark = ",", scientific = FALSE, trim = TRUE))
 }
 
 #' KIT-191 (5.4): the limits paragraph of the Methods, composed from the tests and kinds of data set of the record's
