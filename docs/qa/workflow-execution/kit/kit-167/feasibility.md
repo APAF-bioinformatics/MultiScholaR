@@ -197,3 +197,36 @@ installer).
 
 - Status 0xC0000139 (an entry point missing) was not produced by any state tried.
 - A runtime build between 24215 and 35211; Windows client editions.
+
+## Gates F3 and F6 (run 45352823145, `pass2-inputs.R` at e5a258d2; tables in `gates/`)
+
+### F3: the authors' accessions to UniParc
+
+Each `Results<strain>.xlsx` (PRIDE DIA projects PXD016840, PXD016672, PXD016504, PXD016913) was read; the accession
+columns found were `sseqid` and `Uniprot` of the sheets `Comp 1` and `AllProteinsNorm`. Each distinct accession was
+looked up as `https://rest.uniprot.org/uniprotkb/<accession>.json` (release 2026_04) and its UniParc id read from the
+entry (active) or the inactive entry. Observed: B36 2,175 accessions, KPC2 1,927, BPH2900 1,242, HKU419 1,179; every
+one resolved to a UPI (share 1.000 each; 3,566 active and 2,957 inactive entries over the four). Outcome: every strain
+evaluable in V5 (at least 90 % resolved). Product committed as `references-authors/authors-accession-upi.tsv` (strain,
+accession, UniProtKB status, UPI, release; UniProt CC BY 4.0), for V5 as a `repo://` input.
+Inferred, not observed: the counts are of distinct accessions, so they are below the ticket's protein counts (B36
+2,229 proteins with an authors' hit), as several proteins share a hit.
+
+### F6: the reference order
+
+For each shipped reference, the INSDC assembly UniProt names for the proteome, its NCBI GFF, and the share of entries
+whose `reference_locus` (5.7) joins a protein-coding locus by `locus_tag` or `old_locus_tag`:
+
+| Reference | Assembly | Entries | With a locus | Joined | Share | Pass (>= 90 %) |
+|---|---|---|---|---|---|---|
+| UP000000625 | GCA_000005845.2 | 4,403 | 4,402 | 4,289 | 0.974 | yes |
+| UP000008816 | GCA_000013425.1 | 2,889 | 2,852 | 2,851 | 0.987 | yes |
+| UP000000265 | GCA_000016305.1 | 5,126 | 5,126 | 5,126 | 1.000 | yes |
+| UP000000750 | GCA_000006785.2 | 1,690 | 1,688 | 1,687 | 0.998 | yes |
+
+Outcome: F6 passes on all four, so V9 carries its criterion on every strain (D1). The GFF SHA-256 values are in
+`gates/F6-reference-order.tsv` for the four `inputs.tsv` rows.
+
+### Not checked
+
+- F3: whether the authors' `sseqid` and `Uniprot` columns ever disagree for one protein (both were taken).

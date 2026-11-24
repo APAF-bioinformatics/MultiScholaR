@@ -86,14 +86,24 @@ The record phase of `inputs.tsv`, the lifecycle and counted declarations, `const
   functions that configuration holds (the annotation resolver, 8.3 item 3; and, before the correction, the
   declaration), so that hash differs by design whatever the gate says. The script judges the pages and the
   configuration values (functions replaced by a marker) and reports the deparsed functions that changed.
-- The three declared names are appended when used instead of being listed in the declaration (correction pass): the
-  enrichment step's provenance `parameter_names` keeps the declaration's names, so a replay of a reference-identifier
-  run is not checked here.
-- New refusal classes not in 8.4 but needed: `reference_mapping_engine_failed` (DIAMOND exits non-zero for another
-  reason) and `reference_mapping_reference_invalid` (a supplied reference fails its form checks); both on the wording
-  list (`R/utils_reference_mapping_texts.R`).
-- `protIntegrationInputFeatures()` gains `locus_tag` as NA: the proteomics mapping holds no strain locus tag (8.2's
-  columns); `map_status` there is the group class (`mapped`, `ambiguous_group`, `unmapped`).
+- The three declared names are appended when used instead of being listed in the declaration (correction pass).
+  Ruling (c), answered by implementation in pass 2: a run made with the reference identifiers now records
+  `id_source`, `reference_mapping_sha256` and `go_table_sha256` in its step's provenance after the declaration's names
+  (`saveWorkflowEnrichmentState`), and `replayWorkflowEnrichmentStep` replays such a step with `id_source = "reference"`
+  and the tool switched on for that step only, then compares the three produced values with the record like every
+  declared value (a different mapping or GO table refuses the replay, `workflow_replay_invalid`). A run without them
+  records and replays exactly as before (the dependents `same`). Tests: `test-reference-mapping-enrichment.R` (the
+  record of a strain-project run names the three values; the replay passes them and refuses a different GO-table
+  SHA-256; a run without them replays without them).
+- Implementation departures for the audit (ruling (d); written into the ticket's 8.4 and 8.3 item 8 at revision
+  1.11): three refusal classes not in 8.4: `reference_mapping_engine_failed` (DIAMOND exits non-zero for another
+  reason), `reference_mapping_reference_invalid` (a supplied or downloaded reference fails its form checks; also a
+  saved mapping table without its columns) and `reference_annotation_missing` (the annotation step run without a file);
+  all on the wording list (`R/utils_reference_mapping_texts.R`). The proteomics integration features' `locus_tag` is
+  always NA (the mapping of 8.2 holds no strain locus tag); `map_status` there is the group class.
+- The import steps run the mapping in the session under a progress bar, not in an `ExtendedTask` (a mapping takes
+  under a minute at the shipped settings, F2), and take files with `fileInput` (the uploaded file is copied once into
+  the project's `reference_mapping/inputs/`); both are departures from conventions/R-shiny.md for the audit.
 - The proteomics configuration schema is unchanged: it already admits the extra field `id_column$mapped`, which is
   added only with the gate on.
 - The KPC2 search FASTA is in PRIDE PXD020839 (DDA), not PXD016672 (`feasibility.md`, F2).
