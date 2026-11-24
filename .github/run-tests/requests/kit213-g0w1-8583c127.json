@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-213 G0 instrument rerun 1 of 3 (VAL-54): the w1 part only (run 45471271185's w1 script failed in its own mechanics before any case ran); ceiling 60 job-minutes",
+  "label": "KIT-213 G0 w1 part at 8583c127 (R/ = e305fab3)",
+  "package_commit": "8583c1279aac64f544a77a683e2a28bab12064e2",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {"path": "docs/qa/workflow-execution/kit/kit-213/g0.R", "args": ["docs/qa/workflow-execution/kit/kit-213/g0-w1", "w1"], "env": {}, "out": "docs/qa/workflow-execution/kit/kit-213/g0-w1", "out_pattern": "\\.(tsv|txt)$", "timeout_minutes": 50}
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
