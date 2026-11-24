@@ -1,9 +1,12 @@
-# KIT-187 (VAL-104): the cause of the moved KIT-111 provenance digests in tests/testthat/test-prot-norm-core.R.
-# Base and head each run the three KIT-111 tests whose provenance moved (W1 (a), W2 (W1 (b)), W2 (R7)) and keep each
-# case's provenance unhashed: the step provenance as the test captures it (`protNormW1Provenance`: committed_at, build
-# and source_commit removed; the project root masked). The two sides are then compared field by field. Declared
-# expectation: the only difference is the field `fixed$missing_value_comparison` (value "counts"), present on head in
-# the normalisation steps; anything else is reported and the script stops with an error.
+# KIT-187 (VAL-104): the cause of the moved KIT-111 provenance and record digests in tests/testthat/test-prot-norm-core.R.
+# Base and head each run the three KIT-111 tests whose values moved (W1 (a), W2 (W1 (b)), W2 (R7)) and keep each
+# case's `provenance` and `record` fields unhashed, as the test captures them (`protNormW1Provenance`: committed_at,
+# build and source_commit removed; `protNormW1RecordSteps`: the analysis record's steps without ids, times and
+# software; the project root masked). The two sides are then compared leaf by leaf. Declared expectation: provenance
+# differs only by the field `fixed$missing_value_comparison` (value "counts") present on head; the record differs only
+# by one parameter entry per normalisation step (`operation` "normalization-ruv") present on head, name
+# `missing_value_comparison`, source "fixed", provenance "fixed", value "counts". Anything else is reported and the
+# script exits with status 1. (Revision 2 adds the record half; the provenance comparison is unchanged.)
 #
 # Usage, from the package root of the bound commit on a run-tests runner (full git history):
 #   Rscript docs/qa/workflow-execution/kit/kit-187/provenance-cause.R <base commit> <out dir>
@@ -31,10 +34,12 @@ runSide <- function(tree, side, work) {
     text <- paste(readLines(source_file, warn = FALSE), collapse = "\n")
     text <- substituteOnce(text, "provenance = protNormW1Sha(protNormW1Provenance(snapshot, root)),",
         "provenance = protNormW1Provenance(snapshot, root),")
+    text <- substituteOnce(text, "record = protNormW1Sha(protNormW1RecordSteps(manager, root)),",
+        "record = protNormW1RecordSteps(manager, root),")
     text <- substituteOnce(text, "    frozen <- protNormW1Frozen()[[case]]\n    expect_false(is.null(frozen), info = case)\n    for (field in union(",
-        "    assign(paste0(get('k187_prefix', envir = globalenv()), '/', case), capture$provenance, envir = get('k187_store', envir = globalenv()))\n    frozen <- protNormW1Frozen()[[case]]\n    expect_false(is.null(frozen), info = case)\n    for (field in union(")
+        "    assign(paste0(get('k187_prefix', envir = globalenv()), '/', case), capture[c('provenance', 'record')], envir = get('k187_store', envir = globalenv()))\n    frozen <- protNormW1Frozen()[[case]]\n    expect_false(is.null(frozen), info = case)\n    for (field in union(")
     text <- substituteOnce(text, "    frozen <- protNormW1Frozen()[[case]]\n    expect_false(is.null(frozen), info = case)\n    for (field in setdiff(",
-        "    assign(paste0(get('k187_prefix', envir = globalenv()), '/', case), capture$provenance, envir = get('k187_store', envir = globalenv()))\n    frozen <- protNormW1Frozen()[[case]]\n    expect_false(is.null(frozen), info = case)\n    for (field in setdiff(")
+        "    assign(paste0(get('k187_prefix', envir = globalenv()), '/', case), capture[c('provenance', 'record')], envir = get('k187_store', envir = globalenv()))\n    frozen <- protNormW1Frozen()[[case]]\n    expect_false(is.null(frozen), info = case)\n    for (field in setdiff(")
     copy <- file.path("tests", "testthat", "test-k187-provenance-dump.R")
     writeLines(text, copy)
     on.exit(unlink(copy), add = TRUE)
@@ -84,21 +89,66 @@ for (side in c("base", "head")) {
 }
 base <- readRDS(file.path(work, "base.rds"))
 head <- readRDS(file.path(work, "head.rds"))
+marker_sha <- digest::digest("counts", algo = "sha256")
+# The record half: on head, take out each normalisation step's marker entry of the declared form, counting its leaves.
+isMarkerEntry <- function(p) is.list(p) && identical(p$name, "missing_value_comparison") && identical(p$source, "fixed") &&
+    identical(p$provenance, "fixed") && identical(decodeValue(p$value), "counts")
+decodeValue <- function(v) if (is.list(v) && identical(v$type, "character")) unlist(v$value) else v
+stripRecordMarkers <- function(steps) {
+    removed <- 0L
+    leaves <- 0L
+    if (!is.list(steps)) return(list(steps = steps, removed = 0L, leaves = 0L))
+    for (i in seq_along(steps)) {
+        step <- steps[[i]]
+        if (!is.list(step) || !identical(step$operation, "normalization-ruv") || !length(step$parameters)) next
+        hit <- vapply(step$parameters, isMarkerEntry, logical(1L))
+        if (sum(hit) > 1L) next
+        if (any(hit)) {
+            leaves <- leaves + length(flatten(step$parameters[hit]))
+            step$parameters <- step$parameters[!hit]
+            removed <- removed + 1L
+            steps[[i]] <- step
+        }
+    }
+    list(steps = steps, removed = removed, leaves = leaves)
+}
 rows <- list()
-unexplained <- 0L
+unexplained <- c(provenance = 0L, record = 0L)
+markers <- c(provenance = 0L, record = 0L)
+record_same <- 0L
 cases <- sort(union(names(base), names(head)))
 for (case in cases) {
-    b <- if (is.null(base[[case]])) character() else flatten(base[[case]])
-    h <- if (is.null(head[[case]])) character() else flatten(head[[case]])
+    # provenance, leaf by leaf (as revision 1)
+    b <- if (is.null(base[[case]]$provenance)) character() else flatten(base[[case]]$provenance)
+    h <- if (is.null(head[[case]]$provenance)) character() else flatten(head[[case]]$provenance)
     for (path in sort(union(names(b), names(h)))) {
         bv <- if (path %in% names(b)) b[[path]] else NA_character_
         hv <- if (path %in% names(h)) h[[path]] else NA_character_
         status <- if (identical(bv, hv)) "same" else if (is.na(bv) && endsWith(path, MARKER_PATH) &&
-            identical(hv, digest::digest("counts", algo = "sha256"))) "marker_on_head" else "UNEXPLAINED"
-        if (identical(status, "UNEXPLAINED")) unexplained <- unexplained + 1L
-        state <- strsplit(path, "/", fixed = TRUE)[[1L]][[1L]]
-        rows[[length(rows) + 1L]] <- data.frame(case = case, state = state, path = path, base = substr(bv, 1L, 16L),
+            identical(hv, marker_sha)) "marker_on_head" else "UNEXPLAINED"
+        if (identical(status, "UNEXPLAINED")) unexplained[["provenance"]] <- unexplained[["provenance"]] + 1L
+        if (identical(status, "marker_on_head")) markers[["provenance"]] <- markers[["provenance"]] + 1L
+        rows[[length(rows) + 1L]] <- data.frame(field = "provenance", case = case, path = path, base = substr(bv, 1L, 16L),
             head = substr(hv, 1L, 16L), status = status, stringsAsFactors = FALSE)
+    }
+    # record: head with its marker entries taken out must equal base leaf by leaf
+    stripped <- stripRecordMarkers(head[[case]]$record)
+    markers[["record"]] <- markers[["record"]] + stripped$leaves
+    rows[[length(rows) + 1L]] <- data.frame(field = "record", case = case, path = "<marker entries removed on head>",
+        base = NA_character_, head = as.character(stripped$removed), status = sprintf("marker_entries_%d_leaves_%d",
+            stripped$removed, stripped$leaves), stringsAsFactors = FALSE)
+    if (!stripped$removed) unexplained[["record"]] <- unexplained[["record"]] + 1L
+    b <- if (is.null(base[[case]]$record)) character() else flatten(base[[case]]$record)
+    h <- if (is.null(stripped$steps)) character() else flatten(stripped$steps)
+    for (path in sort(union(names(b), names(h)))) {
+        bv <- if (path %in% names(b)) b[[path]] else NA_character_
+        hv <- if (path %in% names(h)) h[[path]] else NA_character_
+        status <- if (identical(bv, hv)) "same" else "UNEXPLAINED"
+        if (identical(status, "same")) record_same <- record_same + 1L else {
+            unexplained[["record"]] <- unexplained[["record"]] + 1L
+            rows[[length(rows) + 1L]] <- data.frame(field = "record", case = case, path = path, base = substr(bv, 1L, 16L),
+                head = substr(hv, 1L, 16L), status = status, stringsAsFactors = FALSE)
+        }
     }
 }
 table <- do.call(rbind, rows)
@@ -107,14 +157,17 @@ expected_cases <- as.vector(outer(c("w1", "w2"), c("dia_normalization_skip", "di
     "dia_normalization_manual", "dia_correlation_apply", "dia_correlation_reapply", "dia_correlation_skip",
     "dia_normalization_refused", "dia_normalization_retry"), paste, sep = "/"))
 missing_cases <- setdiff(c(expected_cases, "r7/dia_normalization_skip"), intersect(names(base), names(head)))
-markers <- sum(table$status == "marker_on_head")
+ok <- !sum(unexplained) && !length(missing_cases) && all(markers > 0L)
 verdict <- c(sprintf("base %s head %s", args[[1L]], system2("git", c("rev-parse", "HEAD"), stdout = TRUE)),
     sprintf("cases compared: %d (base %d, head %d); missing expected cases: %s", length(cases), length(base), length(head),
         if (length(missing_cases)) paste(missing_cases, collapse = ", ") else "none"),
-    sprintf("leaves: %d same, %d marker_on_head, %d UNEXPLAINED", sum(table$status == "same"), markers, unexplained),
-    sprintf("cases with the marker on head: %s", paste(unique(table$case[table$status == "marker_on_head"]), collapse = ", ")),
-    if (!unexplained && !length(missing_cases) && markers > 0L) "VERDICT: only the marker differs" else
+    sprintf("provenance leaves: %d same, %d marker_on_head, %d UNEXPLAINED", sum(table$field == "provenance" &
+        table$status == "same"), markers[["provenance"]], unexplained[["provenance"]]),
+    sprintf("record leaves: %d same (head after removing its marker entries), %d in marker entries on head, %d UNEXPLAINED (a case with no marker entry counts as one)",
+        record_same, markers[["record"]], unexplained[["record"]]),
+    if (ok) "VERDICT: only the marker differs (provenance and record)" else
         "VERDICT: STOP (an unexplained difference, a missing case or no marker)")
 writeLines(verdict, file.path(out, "provenance-verdict.txt"))
 cat(verdict, sep = "\n")
-if (unexplained || length(missing_cases) || !markers) quit(status = 1L)
+if (!ok) quit(status = 1L)
+

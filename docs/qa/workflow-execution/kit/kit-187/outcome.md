@@ -20,6 +20,22 @@ Head bcb73db5 against 64cc0fff, all test files, 20 shards per side, check on (`r
 
 A6: met for every verdict except that the admitted move, as written, names 34 `provenance` expectations; the observed 34 are 17 `provenance` + 17 `record`. Whether that is within VAL-104 is the owner's reading; the ticket stops here for it.
 
+## R3c, the record half of the cause (VAL-104), declared before it is sent
+
+Purpose: show that the 17 `record` expectations moved by the marker alone, as the 17 `provenance` ones were shown in
+R3. `provenance-cause.R` revision 2 keeps each case's `record` field (`protNormW1RecordSteps(manager, root)`) unhashed
+beside its provenance (one more substitution in the temporary copy of the test file) and compares, base against head,
+leaf by leaf; the provenance comparison is unchanged. One scripts-only request, the 17 case runs of the three KIT-111
+tests only (no test files, no check), base 64cc0fff (R3's), head = the commit adding revision 2 (named in `runs.tsv`).
+Ceiling 40 job-minutes (2.7 core-hours), expected about 15 (1.0). Out: `r3c-prov/`.
+- **Expected:** provenance as R3 (29 marker leaves, 0 unexplained); for the record, on head exactly one parameter
+  entry per normalisation step (`operation` "normalization-ruv") with name `missing_value_comparison`, source "fixed",
+  provenance "fixed", value "counts", in every one of the 17 cases; with those entries removed, head's record equals
+  base's in every leaf; verdict "only the marker differs (provenance and record)".
+- **Decision:** anything else (an unexplained leaf, a case without a marker entry, a missing case) stops the ticket and
+  is reported. A script-mechanics failure with no comparison produced is an instrument defect (VAL-54: at most three
+  further runs, nothing in the expectation changed).
+
 ## R2 stop (as recorded before the ruling)
 
 
