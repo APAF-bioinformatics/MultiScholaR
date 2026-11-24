@@ -1,0 +1,44 @@
+{
+  "requested_by": "KIT-197 S_a: S2's draws r = 1 to 100 (cells A-D, six masks), then the descriptive scoring with gate G1 first; ceiling 100 job-minutes; G1 decides whether S_b is sent",
+  "label": "KIT-197 S_a at declaration 4786112c",
+  "package_commit": "4786112c23b8a97628ff1c5fa38545fb3190d724",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-197/sim-k197.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-197/sa/rows",
+        "1",
+        "100"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-197/sa/rows",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 75
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-197/score-k197.R",
+      "args": [
+        "descriptive",
+        "docs/qa/workflow-execution/kit/kit-197/sa/rows",
+        "docs/qa/workflow-execution/kit/kit-187/s2/cells.tsv",
+        "docs/qa/workflow-execution/kit/kit-197/sa/results"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-197/sa/results",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
