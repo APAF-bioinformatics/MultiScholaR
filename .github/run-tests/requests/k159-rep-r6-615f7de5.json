@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R6, VAL-54 instrument run 1 of 3 for R0's item: T-PROV-1 and R-I17 corrected to reach the fault, on run branch run-k159-r0fix (tests-only commit 4b4e4355 plus the corrected tests), shown failing; 30 min",
+  "label": "KIT-159 repair R6: corrected T-PROV-1 and R-I17 shown failing on the tests-only code",
+  "package_commit": "615f7de5a973de15b3b2ae132d8ef3d2a4c10077",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r6-out",
+        "--files",
+        "records,repair"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r6-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
