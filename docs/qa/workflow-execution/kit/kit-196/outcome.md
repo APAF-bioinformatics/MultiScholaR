@@ -116,7 +116,9 @@ halves without its zero-df features. No computation failed (1,020 rows).
 - Expected: every file `same`, test-kit196 `only-on-head`, check findings identical. A difference is a result: recorded and
   reported, not corrected in the same pass.
 
-RESULT PENDING
+**Result (run 45376398677, head 73cd9ee9, base 241914cb):** as expected. 37 files `same`, test-kit196 `only-on-head` (ok),
+check findings identical (6 on both, none only on head). 8 jobs, 266 job-minutes = 17.7 core-hours of 36.0
+(`r2b-compare.tsv`, `r2b-tests.tsv`, `r2b-check-compare.txt`).
 
 ## Core-hours (job minutes x 4 / 60)
 
@@ -127,8 +129,8 @@ RESULT PENDING
 | R2b under 6.4, tests and check on the merge with KIT-194's staging (45336286628) | 18.6 | 36.0 |
 | R2b under 6.4, S1 both sides on KIT-194's base (four runs) | 18.8 | 32.0 (16.0 per part pair as 6.4 allows, both sides) |
 | R3 (with check) | 80.3 | 186.7 |
-| R2b on the merge with staging 241914cb or later (audit C3) | see below | 36.0 |
-| Total before the audit's R2b | 151.3 | 490.4 (251.7 without a correction); expected 96.2 |
+| R2b on the merge with staging 241914cb (audit C3; 45376398677) | 17.7 | 36.0 |
+| Total | 169.0 | 490.4 (251.7 without a correction); expected 96.2 |
 
 No correction pass was used.
 

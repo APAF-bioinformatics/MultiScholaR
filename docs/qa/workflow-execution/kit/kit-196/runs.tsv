@@ -12,3 +12,4 @@ run_id	commit	purpose	minutes	result
 45346222323	fef003c6	R2 S1 part L head side against the 3d4a585d base records	79	A2 (ii) 316/316, (iii) 46 journeys complete, 92/92 assay comparisons identical, (iv) 204/204; D6 408 rows
 45346224846	fef003c6	R2 S1 part M head side against the 3d4a585d base records	75	A2 (ii) 300/300, (iii) 54 complete, 54/54 identical, (iv) 204/204; D6 612 rows
 45358036892	6dcf593c	R3: full suite base fe5c9273 against head 6dcf593c, 20 shards per side, with check (covers R2b)	1205 (42 jobs)	463 files: 462 same, test-kit196 only-on-head ok; check findings identical, none only on head
+45376398677	73cd9ee9	R2b (6.4; audit C3): R2's 38 files and check on the merge with staging 241914cb	266 (8 jobs)	37 same, test-kit196 only-on-head ok; check findings identical
