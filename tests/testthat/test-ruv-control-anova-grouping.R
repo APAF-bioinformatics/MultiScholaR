@@ -128,7 +128,19 @@ k190Oracle <- function(m, groups, pct, anova_cols = colnames(m), cutoff = 0.05) 
   candidates <- names(q)[q > cutoff]
   ranked <- candidates[order(-q[candidates])]
   chosen <- utils::head(ranked, max(min(count, length(ranked)), 1L))
-  list(selected = rownames(m)[rownames(m) %in% chosen], p = p, q = q, count = count)
+  one_group <- rownames(m)[apply(!is.na(m[, keep, drop = FALSE]), 1L, function(x) length(unique(g_all[x])) < 2L)]
+  list(selected = rownames(m)[rownames(m) %in% chosen], p = p, q = q, count = count, one_group = one_group,
+    rows = rownames(m))
+}
+
+# Rule (d) of section 2.7a (D2, VAL-110; lipid and metab, VAL-126) on an oracle's p and q: candidates q > 0.05 less the
+# features observed in one group (which stay in BH's family), ranked by p descending, ties by identifier in C-locale
+# byte order, round(N_v * pct / 100) of them (all if fewer).
+k190RuleD <- function(oracle, cutoff = 0.05) {
+  candidates <- setdiff(names(oracle$q)[oracle$q > cutoff], oracle$one_group)
+  ranked <- candidates[order(-oracle$p[candidates], candidates, method = "radix")]
+  chosen <- utils::head(ranked, max(min(oracle$count, length(ranked)), 1L))
+  oracle$rows[oracle$rows %in% chosen]
 }
 
 # Trace of the helper's p-values (section 9, "p trace"): applied first; `untrace` deferred before tracing.
@@ -251,7 +263,10 @@ for (omic in names(k190Signature)) {
     expect_identical(k190Selected(result[[1]]), without_pool$selected)
   })
 
-  test_that(sprintf("KIT-190 T5 (%s): one-group features score p = 1 and ties keep the table order", omic), {
+  # Under D2's rule (d) (VAL-110, VAL-126) the one-group features F41 to F45 still score p = 1 but are not candidates,
+  # so both orders select the four highest p among the two-group features (section 9: "under another D2 option the
+  # expected values follow that option").
+  test_that(sprintf("KIT-190 T5 (%s): one-group features score p = 1 and are never chosen, in either order", omic), {
     k190 <- k190Trace()
     selections <- lapply(c(forward = FALSE, reversed = TRUE), function(reversed) {
       m <- k190M45(reversed)
@@ -262,14 +277,12 @@ for (omic in names(k190Signature)) {
       expect_identical(oracle$count, 4)
       expect_equal(unname(ps[sprintf("F%02d", 41:45)]), rep(1, 5L))
       expect_equal(unname(oracle$q[c("F11", sprintf("F%02d", 41:45))]), rep(1, 6L))
-      expect_identical(k190Selected(result[[1]]), oracle$selected)
-      oracle$selected
+      chosen <- k190RuleD(oracle)
+      expect_identical(k190Selected(result[[1]]), chosen)
+      chosen
     })
-    if (identical(sort(selections$forward), sort(selections$reversed))) {
-      stop("KIT-190 T5 is vacuous: the table-order tie-break is not exercised")
-    }
-    expect_setequal(selections$forward, c("F11", "F41", "F42", "F43"))
-    expect_setequal(selections$reversed, c("F11", "F45", "F44", "F43"))
+    expect_setequal(selections$forward, c("F11", "F12", "F13", "F14"))
+    expect_setequal(selections$reversed, c("F11", "F12", "F13", "F14"))
   })
 }
 
@@ -523,4 +536,74 @@ test_that("KIT-190 T7 (vi): a managed legacy RUV step records the marker; a mana
   declared <- managed(list(ruv_design = "groups_all_features", ruv_grouping_variable = "group", ruv_k = 1L,
     ruv_k_rule = "user", ruv_k_seed = NULL, ruv_control_ids = NULL))
   expect_null(k190Marker(declared, "lipid_ruv_corrected"))
+})
+
+# ---- T8: rule (d) for lipid and metab (VAL-110, VAL-126); proteomics and peptide unchanged ---------------------------
+
+# M40 followed by three exact copies of F11 named so that table order (T_c, T_a, T_b) and identifier order (T_a, T_b,
+# T_c) differ: a tie block of four equal p-values at the top (F11 and its copies); at 5 % of 43 rows, 2 controls.
+k190TieMatrix <- function() {
+  copies <- k190M40()[rep("F11", 3L), , drop = FALSE]
+  rownames(copies) <- c("T_c", "T_a", "T_b")
+  rbind(k190M40(), copies)
+}
+
+for (omic in names(k190Signature)) {
+  test_that(sprintf("KIT-190 T8 (i) (%s): a tie block is decided by the feature identifier, not the row order", omic), {
+    m <- k190TieMatrix()
+    oracle <- k190Oracle(m, k190Groups, 5)
+    expect_identical(k190RuleD(oracle), c("F11", "T_a"))
+    # Non-vacuity: the shipped (table-order) rule would take F11 and T_c.
+    if (identical(oracle$selected, k190RuleD(oracle))) stop("KIT-190 T8 (i) is vacuous: both rules select the same")
+    result <- k190Quiet(getNegCtrlMetabAnova(k190Object(omic, m), ruv_grouping_variable = "group",
+      percentage_as_neg_ctrl = 5))
+    expect_setequal(k190Selected(result[[1]]), c("F11", "T_a"))
+  })
+
+  test_that(sprintf("KIT-190 T8 (ii) (%s): a feature observed in one group is never chosen", omic), {
+    m <- k190M45()
+    result <- k190Quiet(getNegCtrlMetabAnova(k190Object(omic, m), ruv_grouping_variable = "group",
+      percentage_as_neg_ctrl = 8))
+    expect_false(any(k190Selected(result[[1]]) %in% sprintf("F%02d", 41:45)))
+    expect_setequal(k190Selected(result[[1]]), k190RuleD(k190Oracle(m, k190Groups, 8)))
+  })
+
+  test_that(sprintf("KIT-190 T8 (iii) (%s): a permuted table gives the same controls", omic), {
+    m <- rbind(k190TieMatrix(), k190M45()[sprintf("F%02d", 41:45), , drop = FALSE])
+    permuted <- m[c(48L, 3L, 44L, 41L, 27L, 12L, setdiff(seq_len(nrow(m)), c(48L, 3L, 44L, 41L, 27L, 12L))), , drop = FALSE]
+    select <- function(x) sort(k190Selected(k190Quiet(getNegCtrlMetabAnova(k190Object(omic, x),
+      ruv_grouping_variable = "group", percentage_as_neg_ctrl = 10))[[1]]))
+    expect_identical(select(permuted), select(m))
+  })
+}
+
+test_that("KIT-190 T8 (iv): proteomics and peptide keep the shipped rule (q descending, table order)", {
+  m <- k190TieMatrix()
+  oracle <- k190Oracle(m, k190Groups, 5)
+  if (identical(oracle$selected, k190RuleD(oracle))) stop("KIT-190 T8 (iv) is vacuous: both rules select the same")
+  design <- data.frame(Run = k190Samples, group = k190Groups, stringsAsFactors = FALSE)
+  protein <- ProteinQuantitativeData(
+    protein_quant_table = data.frame(Protein.Ids = rownames(m), m, check.names = FALSE, stringsAsFactors = FALSE,
+      row.names = NULL),
+    protein_id_column = "Protein.Ids",
+    protein_id_table = data.frame(Protein.Ids = rownames(m), stringsAsFactors = FALSE),
+    design_matrix = design, sample_id = "Run", group_id = "group", technical_replicate_id = "replicates", args = list())
+  expect_identical(k190Selected(k190Quiet(getNegCtrlProtAnova(protein, ruv_grouping_variable = "group",
+    percentage_as_neg_ctrl = 5, ruv_fdr_method = "BH"))), oracle$selected)
+  peptide <- methods::new("PeptideQuantitativeData")
+  peptide@peptide_data <- data.frame(Protein.Ids = rownames(m), Stripped.Sequence = rownames(m), stringsAsFactors = FALSE)
+  peptide@peptide_matrix <- m
+  peptide@protein_id_column <- "Protein.Ids"
+  peptide@peptide_sequence_column <- "Stripped.Sequence"
+  peptide@is_logged_data <- TRUE
+  peptide@design_matrix <- design
+  peptide@sample_id <- "Run"
+  peptide@group_id <- "group"
+  peptide@args <- list()
+  expect_identical(k190Selected(k190Quiet(getNegCtrlProtAnovaPeptides(peptide, ruv_grouping_variable = "group",
+    percentage_as_neg_ctrl = 5, ruv_fdr_method = "BH"))), oracle$selected)
+  # The helper called as every other caller calls it (no rule argument) selects the same.
+  design_helper <- data.frame(group = k190Groups, row.names = k190Samples)
+  expect_identical(k190Selected(k190Quiet(getNegCtrlProtAnovaHelper(m, design_helper, grouping_variable = "group",
+    percentage_as_neg_ctrl = 5, ruv_fdr_method = "BH"))), oracle$selected)
 })

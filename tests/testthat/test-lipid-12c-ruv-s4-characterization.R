@@ -318,7 +318,8 @@ test_that("lipidomics S4 getNegCtrlMetabAnova forwards filtered assay data and h
              percentage_as_neg_ctrl,
              num_neg_ctrl,
              ruv_qval_cutoff,
-             ruv_fdr_method) {
+             ruv_fdr_method,
+             candidate_rule = NULL) {
       helper_capture$data_matrix <- data_matrix
       helper_capture$design_matrix <- design_matrix
       helper_capture$grouping_variable <- grouping_variable
@@ -383,7 +384,8 @@ test_that("lipidomics S4 getNegCtrlMetabAnova falls back to current hardcoded de
              percentage_as_neg_ctrl,
              num_neg_ctrl,
              ruv_qval_cutoff,
-             ruv_fdr_method) {
+             ruv_fdr_method,
+             candidate_rule = NULL) {
       helper_capture$grouping_variable <- grouping_variable
       helper_capture$percentage_as_neg_ctrl <- percentage_as_neg_ctrl
       helper_capture$num_neg_ctrl <- num_neg_ctrl
