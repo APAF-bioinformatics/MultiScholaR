@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-201 R1-2: instrument re-run of T-A5 on the repaired tests-only commit (base) and the fix commit passing (head); VAL-54 instrument run 1 of 3",
+  "label": "KIT-201 R1-2 base 2c399d0c head fa1f9909",
+  "package_commit": "fa1f99092305d761cb2fc2ffc999c0b59fb7d633",
+  "base_commit": "2c399d0c08229c1b29273a4d221b79a6a316ebfb",
+  "tools_ref": "",
+  "tests": [
+    "test-kit201-treat-moderation.R",
+    "test-prot-ruv-factors-in-model.R",
+    "test-omic-norm-ruv-design.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
