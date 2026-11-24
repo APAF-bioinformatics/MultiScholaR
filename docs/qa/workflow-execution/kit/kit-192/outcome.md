@@ -94,11 +94,20 @@ Between R2 and the end of R3, `v0.9-staging` moved from 51959495 by KIT-187's me
 proteomics report templates, one `man/` page, three proteomics test files, its records), `NEWS.md` and the ledger. Of these,
 only `NEWS.md` and the ledger are files of 7.3 (text); no code file of 7.3 changed, nor `tests/testthat/helper-module-ci-trx-tabs.R`. By the merger's rule (6.4): R2b (R2's tests and
 check on the merge) is due; S1 is not repeated; R3b is not due if the only hand-resolved conflicts are in `NEWS.md` and
-the ledger and R2b shows 6.2's verdicts. The merge and R2b were left to the coordinator (not run here).
+the ledger and R2b shows 6.2's verdicts. The merge and R2b were then done at the coordinator's request.
+
+**Merge and R2b.** After the text repairs of the implementation audit (0dae776b: I02, I03), `v0.9-staging` at
+e962775d was merged into the branch with a true merge (9d264708). The only conflict was the ledger: staging's VAL-104
+to VAL-114 kept in order, KIT-192's row after them (still `VAL-<merge>`). NEWS merged cleanly, the three entries in
+place under the one unreleased heading. No code file of 7.3 nor `helper-module-ci-trx-tabs.R` differs on staging
+since 51959495, so S1 was not repeated. R2b (45311259029, 9d264708 against e962775d; `r2b-compare.tsv`,
+`r2b-compare-failures.txt`, `r2b-check-compare.txt`): 26 `same`, `count-changed` for `test-trx-da-without-ruv.R`
+and `test-module-ci-trx-summary.R`, nothing else; 217 failure entries identical on both sides; check findings identical
+(6), none only on head. R3b is not due (rule 6.4: only the ledger hand-resolved, R2b on 6.2's verdicts).
 
 ## Budget
 
-1,270.1 job-minutes (tests, check and scripts jobs; the orchestration jobs, about 2.8 min, not counted): R1 12.8, R1b 13.7 (the VAL-54 instrument run, inside the ceiling), R2 234.2, R3 1,009.4 = 84.67 core-hours against 83.7 expected and 456.4 ceiling. Longest jobs: R2 tests 35.5 min (ceiling 60), check 11.8 and 14.9 (90), S1 15.2 (60); R3 53.8 (70). No overrun.
+1,270.1 job-minutes (tests, check and scripts jobs; the orchestration jobs, about 2.8 min, not counted): R1 12.8, R1b 13.7 (the VAL-54 instrument run, inside the ceiling), R2 234.2, R3 1,009.4 = 84.67 core-hours against 83.7 expected and 456.4 ceiling. R2b (conditional, outside that ceiling): 191.7 job-minutes = 12.78 core-hours against 15.5 expected and 36.0 ceiling; longest job 34.6 min. Longest jobs: R2 tests 35.5 min (ceiling 60), check 11.8 and 14.9 (90), S1 15.2 (60); R3 53.8 (70). No overrun.
 
 ## Acceptance criteria
 
@@ -106,8 +115,8 @@ the ledger and R2b shows 6.2's verdicts. The merge and R2b were left to the coor
 |---|---|---|
 | A1 | met | R1 (T1-T4, T6 at stated values; T5 passes), R1b (T7b passes on base after the instrument fix), R2 head (all pass) |
 | A2 | met | `s1/export-routes-compare.tsv`: 60/60 |
-| A3 | met | `r2-compare.tsv`: the verdicts of 6.2 exactly |
-| A4 | met | `r2-check-compare.txt`: none only on head |
+| A3 | met | `r2-compare.tsv` and, on the merge, `r2b-compare.tsv`: the verdicts of 6.2 exactly |
+| A4 | met | `r2-check-compare.txt`, `r2b-check-compare.txt`: none only on head |
 | A5 | met | `r3-full-suite-compare.tsv`: 453 `same`, the two predicted `count-changed`; no other verdict |
 | A6 | met | NEWS: this entry under the unreleased heading, KIT-186's sentence deleted; ledger row `VAL-<merge>`; `DESCRIPTION`, `packaging/electron/package.json`, lock files, `man/`, `NAMESPACE` unchanged (`git diff --stat 51959495`) |
 | A7 | met | section above |
@@ -119,7 +128,6 @@ the ledger and R2b shows 6.2's verdicts. The merge and R2b were left to the coor
 
 ## Not checked
 
-- The branch merged with the current `v0.9-staging` (R2b, the coordinator's merge).
 - Figure bytes (PNG, PDF) base against head; the figure code is above the changed line.
 - Windows (no platform code touched); real data (none used; no number changes).
 - F1 (a legacy-style state without a RUVs product reaching the export), F3, F4 (earlier-run outputs left in place):
