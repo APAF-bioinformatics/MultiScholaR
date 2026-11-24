@@ -240,6 +240,12 @@ inside the ticket's total (ticket r1.20, section 35). State per item below; runs
   Pass: `check-compare.txt` shows no finding only on head. A finding only on head: stop and report
   (the D13 line is already applied; no further correction).
 
+- **M1, covr (E1cov, run 45351362047 at a5a084cf; observed).** A VAL-54 instrument re-send of E1
+  (2 of 3), allowed beyond the REPAIR line by the owner (VAL-153). `msrval` line coverage **88.36 %**:
+  A2's at least 80 % is met. Lowest file `R/s0.R` 34.72 % (then `coverage.R` 68.72, `inputs.R`
+  79.22, `g1a-entry.R` 80.00; `rep/e1cov-coverage.txt`). The suite ran again in the same job: 265
+  tests, 0 failures; no lints. 126.65 minutes, 8.44 core-hours. **REPAIR line 33.37 of 25: overrun
+  8.37, all of it E1cov, by VAL-153.** Ticket total 107.57 of 276.
 - **R2f and G10 (observed).** R2f (run 45356371981 at 41239449): 37 tests, 281 expectations, 0
   failures, no lints; T-REP-4 13 of 13 with the head DA fingerprints non-NA and equal. G10 (run
   45356446685, head e9660d3e against base fe5c9273): 0 ERRORs, 3 WARNINGs, 3 NOTEs on each side,
