@@ -570,6 +570,14 @@ runBound <- function(phase, out) {
     k190Abort("k190_instrument", "a bound side failed")
   }
   rows <- boundFlat(unlist(lapply(files, function(f) readRDS(f)$rows), recursive = FALSE))
+  if (plant) {
+    # Lifecycle (ix): the planted switch acts on the rows before any count, falsifier, provenance field or console line
+    # is computed, so a leak of an endpoint into any of them would show as a difference between the two runs.
+    shift <- !is.na(rows$arm) & rows$arm == "D+B" & rows$cell == "E-r"
+    rows$fdp[shift] <- as.numeric(rows$fdp[shift]) + 0.30
+    nr <- !is.na(rows$arm) & rows$cell == "N-r" & rows$arm %in% c("F+B", "D+B")
+    rows$arm[nr] <- ifelse(rows$arm[nr] == "F+B", "D+B", "F+B")
+  }
   instrument <- sum(startsWith(as.character(rows$error), "instrument:"), na.rm = TRUE)
   journey_errors <- sum(!is.na(rows$error) & nzchar(as.character(rows$error)), na.rm = TRUE) - instrument
   bounded <- rows[grepl("\\+B$", rows$arm) & !is.na(rows$mode), , drop = FALSE]
@@ -590,12 +598,6 @@ runBound <- function(phase, out) {
   if (blinded) {
     # Stage 1: the rows stay in `work`; the re-estimation sees only the capped arms' endpoints.
     capped <- bounded[bounded$cell %in% BOUND_DECIDING & bounded$arm %in% c("F+B", "D+B"), c("cell", "arm", "r", "fdp", "any_call")]
-    if (plant) {
-      shift <- capped$cell == "E-r" & capped$arm == "D+B"
-      capped$fdp[shift] <- capped$fdp[shift] + 0.30
-      nr <- capped$cell == "N-r"
-      capped$arm[nr] <- ifelse(capped$arm[nr] == "F+B", "D+B", "F+B")
-    }
     rows_file <- file.path(work, "capped.rds")
     saveRDS(capped, rows_file)
     code <- system2(rscript, c(shQuote(file.path(dirname(script_file), "reestimate.R")), "estimate", shQuote(rows_file), shQuote(out)),
@@ -612,6 +614,27 @@ runBound <- function(phase, out) {
   }
   utils::write.table(rows[, setdiff(names(rows), "curve")], file.path(out, "journeys.tsv"), sep = "\t", quote = FALSE,
     row.names = FALSE, na = "NA")
+  stage1_mismatch <- FALSE
+  if (identical(phase, "stage2")) {
+    # Section 8 (S1): seeds 1 to 50 of stage 2 must reproduce stage 1's reestimate.tsv byte for byte.
+    stage1_file <- Sys.getenv("K190_STAGE1_ESTIMATE")
+    stopifnot(nzchar(stage1_file), file.exists(stage1_file))
+    capped <- bounded[bounded$cell %in% BOUND_DECIDING & bounded$arm %in% c("F+B", "D+B") & bounded$r <= 50,
+      c("cell", "arm", "r", "fdp", "any_call")]
+    check_rows <- file.path(work, "stage1-check-rows.rds")
+    saveRDS(capped, check_rows)
+    check_dir <- file.path(work, "stage1-check")
+    code <- system2(rscript, c(shQuote(file.path(dirname(script_file), "reestimate.R")), "estimate", shQuote(check_rows),
+      shQuote(check_dir)), stdout = file.path(work, "stage1-check.log"), stderr = file.path(work, "stage1-check.log"))
+    again <- file.path(check_dir, "reestimate.tsv")
+    # A stage-2 job may cover a subset of the cells (split by cell): stage 1's lines for those cells, byte for byte.
+    subsetLines <- function(f) {
+      x <- readLines(f, warn = FALSE)
+      c(x[[1L]], x[-1L][vapply(strsplit(x[-1L], "\t", fixed = TRUE), `[[`, "", 1L) %in% cells])
+    }
+    stage1_mismatch <- code != 0L || !file.exists(again) || !identical(subsetLines(again), subsetLines(stage1_file))
+    file.copy(again, file.path(out, "stage1-check-reestimate.tsv"), overwrite = TRUE)
+  }
   utils::write.table(rows[, c("cell", "r", "dataset", "arm", "mode", "k", "separation", "curve")], file.path(out, "curves.tsv"),
     sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
   checks <- list()
@@ -646,6 +669,7 @@ runBound <- function(phase, out) {
     if (falsifiers[["k_readback"]] > 0L) k190Abort("k190_falsifier", "fault run: k read-back falsifier triggered (as planted)")
     k190Abort("k190_instrument", "fault run: the planted k + 1 was not detected")
   }
+  if (stage1_mismatch) k190Abort("k190_falsifier", "stage 2: seeds 1 to 50 do not reproduce stage 1's reestimate.tsv")
   if (any(falsifiers > 0L)) k190Abort("k190_falsifier", sprintf("bound %s: falsifiers %s", phase,
     paste(names(falsifiers), falsifiers, collapse = ", ")))
   invisible(NULL)

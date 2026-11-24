@@ -11,6 +11,8 @@
 #       The fixed formula: per-cell R (multiples of 50, option C's floor, at most 1,000), the target used and the
 #       achieved joint probability under equality, the projected core-hours; written to <out dir>/plan.tsv and
 #       <out dir>/plan-summary.tsv. If P_c(1,000) < t then R_c = 1,000.
+#   Rscript reestimate.R alter <reestimate.tsv> <copy>
+#       Lifecycle (xi): writes a copy with the first row's value altered by +0.01.
 #   Rscript reestimate.R selftest <out dir>
 #       Lifecycle item (viii): planted inputs give byte-identical estimate files (a +0.30 shift of every D+B FDP in
 #       an effect cell; (b, c') = (10, 0), (0, 10), (5, 5) on 50 pairs in a null cell). Exit status 1 on a failure.
@@ -71,6 +73,9 @@ plan <- function(est, prov, spent) {
   t <- 0.80^(1 / 8)
   R <- pick(t)
   core <- function(R) spent + cost(R) / 3600 * 1.25
+  # S7: no silent overrun; option C's floors cost about 48 core-hours and cannot bind, but if they did the run stops.
+  if (core(FLOOR) > CEILING) stop(sprintf("plan: option C's sizes alone project %.1f core-hours, above the ceiling %d",
+    core(FLOOR), CEILING))
   while (core(R) > CEILING && t > 0) {
     t <- t - 0.0005
     R <- pick(t)
@@ -97,6 +102,14 @@ if (identical(mode, "estimate")) {
   utils::write.table(res$summary, file.path(args[[5L]], "plan-summary.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
   print(res$plan)
   print(res$summary)
+} else if (identical(mode, "alter")) {
+  # Lifecycle (xi): a copy of a reestimate.tsv with one value altered (the stage-2 check must then stop).
+  x <- readLines(args[[2L]])
+  fields <- strsplit(x[[2L]], "\t", fixed = TRUE)[[1L]]
+  fields[[4L]] <- format(as.numeric(fields[[4L]]) + 0.01, digits = 10)
+  x[[2L]] <- paste(fields, collapse = "\t")
+  dir.create(dirname(args[[3L]]), recursive = TRUE, showWarnings = FALSE)
+  writeLines(x, args[[3L]])
 } else if (identical(mode, "selftest")) {
   out <- args[[2L]]
   dir.create(out, recursive = TRUE, showWarnings = FALSE)

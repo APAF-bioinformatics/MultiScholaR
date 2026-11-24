@@ -58,6 +58,11 @@ effectTest <- function(d, m = M_EFFECT, vectors = 100000L, seed = 19001L) {
   e <- d - m
   n <- length(e)
   s <- stats::sd(e)
+  if (!is.finite(s) || s == 0) {
+    # S4 (c): every paired difference equal; the studentised statistic is undefined; no worse iff mean(d) < margin.
+    return(list(n = n, mean_d = mean(d), sd_d = 0, t = NA_real_, p_signflip = NA_real_, mc_se = NA_real_, skewness = 0,
+      johnson_used = FALSE, t_johnson = NA_real_, t_upper_bound = mean(d), no_worse = mean(d) < m))
+  }
   t_obs <- mean(e) / (s / sqrt(n))
   set.seed(seed)
   count <- 0
@@ -109,15 +114,20 @@ decide <- function(rows) {
       r <- nullTest(as.logical(p$d$any_call), as.logical(p$f$any_call))
       verdicts[[cell]] <- data.frame(cell = cell, endpoint = "any_call", n = r$n, excluded = p$excluded,
         estimate = r$difference, statistic = r$tango_z, p_value = NA, p_berger_boos = r$berger_boos_p, skewness = NA,
-        johnson_used = NA, no_worse = r$no_worse, stringsAsFactors = FALSE)
+        johnson_used = NA, no_worse = r$no_worse, tango_bb_agree = r$no_worse == (r$berger_boos_p <= ALPHA),
+        stringsAsFactors = FALSE)
     } else {
       r <- effectTest(as.numeric(p$d$fdp) - as.numeric(p$f$fdp))
       verdicts[[cell]] <- data.frame(cell = cell, endpoint = "fdp", n = r$n, excluded = p$excluded, estimate = r$mean_d,
         statistic = if (r$johnson_used) r$t_johnson else r$t, p_value = r$p_signflip, p_berger_boos = NA,
-        skewness = r$skewness, johnson_used = r$johnson_used, no_worse = r$no_worse, stringsAsFactors = FALSE)
+        skewness = r$skewness, johnson_used = r$johnson_used, no_worse = r$no_worse, tango_bb_agree = NA,
+        stringsAsFactors = FALSE)
     }
   }
   verdicts <- do.call(rbind, verdicts)
+  # S4 (b): a deciding cell with no pair, or no verdict, stops the decision.
+  if (any(verdicts$n == 0L) || any(is.na(verdicts$no_worse)))
+    stop(errorCondition("decide: a deciding cell has no pairs or no verdict", class = "k190_decision_incomplete"))
   # Reported only: E1-T1b by seed (mean of a seed's two journeys), T11 fixtures, and power and k differences.
   reported <- list()
   t1b <- pairs(rows[rows$cell == "E1" & startsWith(as.character(rows$dataset), "t1b_"), , drop = FALSE], "E1")
@@ -147,7 +157,8 @@ decide <- function(rows) {
     }
   }
   list(verdicts = verdicts, reported = do.call(rbind, reported),
-    decision = data.frame(all_cells_no_worse = all(verdicts$no_worse), ships = if (all(verdicts$no_worse)) "D+B" else "F+B"))
+    decision = data.frame(all_cells_no_worse = all(verdicts$no_worse), ships = if (all(verdicts$no_worse)) "D+B" else "F+B",
+      owner_asked = any(verdicts$excluded > 5)))
 }
 
 args <- commandArgs(TRUE)
@@ -163,20 +174,59 @@ if (identical(args[[1L]], "decide")) {
   print(res$verdicts)
   print(res$decision)
 } else if (identical(args[[1L]], "selftest")) {
+  # Lifecycle (vi), the auditor's planted cases (script check S3): each must give its stated outcome.
   out <- args[[2L]]
   dir.create(out, recursive = TRUE, showWarnings = FALSE)
-  set.seed(190777)
-  n <- 200
-  f <- stats::runif(n, 0, 0.5)
-  same_effect <- effectTest((f + stats::rnorm(n, 0, 0.05)) - f)$no_worse
-  shift_effect <- effectTest((f + 0.20 + stats::rnorm(n, 0, 0.05)) - f)$no_worse
-  calls <- stats::runif(n) < 0.1
-  same_null <- nullTest(calls, calls)$no_worse
-  shifted <- calls
-  shifted[which(!calls)[seq_len(round(0.20 * n))]] <- TRUE
-  shift_null <- nullTest(shifted, calls)$no_worse
-  checks <- c(effect_identical_passes = same_effect, effect_shift_fails = !shift_effect,
-    null_identical_passes = same_null, null_shift_fails = !shift_null)
+  eps <- rep(c(0.005, -0.005), length.out = 200)
+  alt <- rep(c(0.10, -0.10), length.out = 200)
+  nullOf <- function(b, c, n = 2000) list(d = c(rep(TRUE, b), rep(FALSE, c), rep(FALSE, n - b - c)),
+    f = c(rep(FALSE, b), rep(TRUE, c), rep(FALSE, n - b - c)))
+  direct <- list(
+    `E-a` = list(r = effectTest(0.03 + eps), pass = TRUE),
+    `E-b` = list(r = effectTest(0.07 + eps), pass = FALSE),
+    `E-c` = list(r = effectTest(0.05 - 0.0141 + alt), pass = TRUE),
+    `E-d` = list(r = effectTest(c(rep(0, 170), rep(0.20, 30))), pass = TRUE, johnson = TRUE),
+    `E-e` = list(r = effectTest(c(rep(0, 150), rep(0.40, 50))), pass = FALSE, johnson = TRUE),
+    `N-a` = list(r = do.call(nullTest, unname(nullOf(160, 0))), pass = TRUE),
+    `N-b` = list(r = do.call(nullTest, unname(nullOf(240, 0))), pass = FALSE),
+    `N-c` = list(r = do.call(nullTest, unname(nullOf(173, 0))), pass = TRUE))
+  checks <- vapply(direct, function(x) identical(x$r$no_worse, x$pass) && (is.null(x$johnson) || isTRUE(x$r$johnson_used)),
+    logical(1L))
+  # Through decide(): constructed rows tables (F+B and D+B per seed) for all eight deciding cells.
+  table_of <- function(effect_d, null_bc) {
+    rows <- list()
+    for (cell in EFFECT_CELLS) {
+      d <- effect_d[[cell]]
+      f <- rep(0.20, length(d))
+      rows[[length(rows) + 1L]] <- data.frame(cell = cell, r = seq_along(d), dataset = "", arm = "F+B", error = "",
+        any_call = NA, fdp = f, k = 2, power = 0.5, abs_lfc_error = 0.5, calls = 1, stringsAsFactors = FALSE)
+      rows[[length(rows) + 1L]] <- data.frame(cell = cell, r = seq_along(d), dataset = "", arm = "D+B", error = "",
+        any_call = NA, fdp = f + d, k = 2, power = 0.5, abs_lfc_error = 0.5, calls = 1, stringsAsFactors = FALSE)
+    }
+    for (cell in NULL_CELLS) {
+      x <- do.call(nullOf, as.list(null_bc[[cell]]))
+      n <- length(x$d)
+      rows[[length(rows) + 1L]] <- data.frame(cell = cell, r = seq_len(n), dataset = "", arm = "F+B", error = "",
+        any_call = x$f, fdp = NA, k = 2, power = NA, abs_lfc_error = NA, calls = 0, stringsAsFactors = FALSE)
+      rows[[length(rows) + 1L]] <- data.frame(cell = cell, r = seq_len(n), dataset = "", arm = "D+B", error = "",
+        any_call = x$d, fdp = NA, k = 2, power = NA, abs_lfc_error = NA, calls = 0, stringsAsFactors = FALSE)
+    }
+    do.call(rbind, rows)
+  }
+  passing_d <- stats::setNames(rep(list(0.03 + eps), length(EFFECT_CELLS)), EFFECT_CELLS)
+  passing_n <- stats::setNames(rep(list(c(160, 0)), length(NULL_CELLS)), NULL_CELLS)
+  worse_d <- passing_d
+  worse_d[["E-r"]] <- 0.20 + eps
+  better_d <- passing_d
+  better_d[["E-r"]] <- -0.20 + eps
+  nw_fail <- passing_n
+  nw_fail[["N-w"]] <- c(240, 0)
+  ships <- function(effect_d, null_bc) decide(table_of(effect_d, null_bc))$decision$ships
+  checks <- c(checks,
+    swap_worse = identical(ships(worse_d, passing_n), "F+B"),
+    swap_mirrored = identical(ships(better_d, passing_n), "D+B"),
+    aggregation_all = identical(ships(passing_d, passing_n), "D+B"),
+    aggregation_nw = identical(ships(passing_d, nw_fail), "F+B"))
   utils::write.table(data.frame(check = names(checks), ok = checks), file.path(out, "decide-selftest.tsv"), sep = "\t",
     quote = FALSE, row.names = FALSE)
   for (nm in names(checks)) cat(sprintf("selftest %s: %s\n", nm, if (checks[[nm]]) "ok" else "FAILED"))

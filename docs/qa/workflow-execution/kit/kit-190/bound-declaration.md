@@ -1,4 +1,42 @@
-# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 6
+# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 7
+
+**Revision 7 (2026-11-25): the script check of revision 6 (S1 to S7) applied.** Files and SHA-256:
+- `effect.R`: 7d76467a37c9fcf890a557efa0ba8b26498052301f18f15f9231f87177cc5b5a
+- `reestimate.R`: dc29cb9e23165b23744ed5738c7313de98acf5c6ba281f6e2bf6b582784106db
+- `decide.R`: 8cfc23335f1fec655c6609deb8e3936a87a4e9ea01aa7db20eb4626b43c24af4
+- `lc-plan.tsv` (the lifecycle's plan, R = 2 per deciding cell): e7b84295dbfc776231056e505616cb3987926b825037780f2aa3f40c5f5969f9
+- `size2stage.py` (unchanged): 07cf59df0bfc528062cd49e9644fcf2bb184a21cb46cb1ab105c19178ec18d27
+
+Changes:
+- **S1.** Stage 2 requires `K190_STAGE1_ESTIMATE` (stage 1's `reestimate.tsv`); it rebuilds the capped arms' rows for
+  seeds 1 to 50 exactly as stage 1 does, runs `reestimate.R estimate` on them in the private directory, and compares
+  the result with stage 1's file line for line for the cells the job covers (a stage-2 job may cover a subset of the
+  cells). A difference stops the run with `k190_falsifier` after its outputs are written.
+- **S2.** The planted switch of item (ix) now acts on the journey rows immediately after they are assembled, before
+  every count, falsifier, provenance field, console line and the re-estimation: +0.30 on the FDP of D+B in E-r, and F+B
+  exchanged with D+B in N-r.
+- **S3.** `decide.R selftest` (item (vi)) runs the auditor's planted cases: E-a (d = 0.03 ± 0.005, pass), E-b (0.07 ±
+  0.005, fail), E-c (0.0359 ± 0.10, pass; fails under α/8), E-d (170 zeros, 30 × 0.20; pass with Johnson's branch), E-e
+  (150 zeros, 50 × 0.40; fail with Johnson's branch), N-a (b = 160, c′ = 0 of 2,000; pass), N-b (240; fail), N-c (173;
+  pass; fails under α/8); and through `decide()` on constructed tables: D+B worse by 0.20 in E-r ships F+B, the mirror
+  ships D+B, all cells passing ships D+B, N-w alone failing ships F+B.
+- **S4.** `decide.R`: `owner_asked` in `decision.tsv` when more than 5 pairs of a cell are excluded; a classed stop
+  (`k190_decision_incomplete`) when a deciding cell has no pair or no verdict; an effect cell whose paired differences
+  all equal one value (SD 0) is no worse iff mean(d) < 0.05; a column `tango_bb_agree` (Tango's verdict equals Berger–
+  Boos p ≤ 0.05).
+- **S5.** The lifecycle also runs (x) `reestimate.R plan` on the first `lc-stage1` output with spent = 2.0; (xi)
+  `effect.R bound stage2` with `K190_PLAN = lc-plan.tsv`, the 8 deciding cells and `K190_STAGE1_ESTIMATE` = that
+  output's `reestimate.tsv` (must pass the S1 check), and again against a copy with one value altered
+  (`reestimate.R alter`; must stop with `k190_falsifier`); (xii) `decide.R decide` on (xi)'s `journeys.tsv` (must
+  complete; its verdicts are not read). **The lifecycle's ceiling is 60 job-minutes** (coordinator's ruling, inside the
+  100 core-hour ceiling).
+- **S6.** Item (ix)'s comparison, exactly: after download, `cmp` the two `reestimate.tsv`; `diff` the two
+  `console.log` with the `seconds:` line removed; compare the two `provenance.json` with `wall_seconds` and
+  `seconds_median_per_journey` removed. All must be identical.
+- **S7.** `reestimate.R plan` stops with an error if option C's sizes alone project above the 100 core-hour ceiling.
+- **Reading 4 of revision 6 recorded:** section 5's secondary differences (power, k, fold-change error) are reported with
+  paired t 95 % intervals, descriptive (not sign-flip intervals).
+
 
 **Revision 6 (2026-11-25): the scripts, committed for the auditor's script check before the lifecycle.** No design
 change. Files and SHA-256 at this commit:
@@ -25,7 +63,7 @@ Points for the script check, where the scripts read the text more narrowly than 
 
 
 **Revision 5 (2026-11-25):** the audit's "Declaration audit, revision 4" (`tickets/kit/audits/AUDIT-KIT-190-rule-d-20261125.md`)
-applied with its exact texts: R4-01 (skewness check with Johnson's statistic; owner's word pending, section 5), R4-02
+applied with its exact texts: R4-01 (skewness check with Johnson's statistic, section 5), R4-02
 (stage 1's console and provenance; item (ix)), R4-03 (R_c computed by `reestimate.R`; stage 2 always runs), R4-04
 (`size2stage.py` reproduces the table; the appendix's ceiling). Revision 4 is commit 2c78be95 (SHA-256 516447008754...93e0).
 
@@ -156,7 +194,7 @@ Per cell c, pairs are the same data set under D+B and F+B.
 - **Margins (VAL-185).** FDP 0.05 (the route's nominal FDR); null-cell family-wise rate 0.10 (about 5 data sets in 50,
   against earlier differences of 0.40 to 0.52). Fixed before the run and not changed after.
 - Power is not part of "no worse" (VAL-182 (3) speaks of the rule being no worse; the error endpoints are the owner's
-  concern in X168). Power and k differences are reported with paired 95 % intervals (sign-flip), unadjusted, labelled
+  concern in X168). Power and k differences are reported with paired t 95 % intervals (revision 7), unadjusted, labelled
   descriptive.
 
 ## 6. What follows
