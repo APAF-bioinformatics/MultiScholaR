@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-190 decide.R self-test (vi) after the K190-L01 repair (declaration revision 10); not counted",
+  "label": "KIT-190 decide self-test d2aee02e",
+  "package_commit": "d2aee02e94eec06eb95e531f9c56bb3da90cb6fa",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/decide.R",
+      "args": [
+        "selftest",
+        "k190-dst"
+      ],
+      "out": "k190-dst",
+      "out_pattern": "\\.tsv$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
