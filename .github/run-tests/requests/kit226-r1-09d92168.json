@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-226 R1: tests-only commit 09d92168 (no R/ change); shows each new test failing at its stated value; decides stop rule 1 (ceiling 60 min)",
+  "label": "KIT-226 R1 failing-first at 09d92168",
+  "package_commit": "09d92168ebc54f09964777dce5774b9b540a428c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit226-gprofiler-columns.R",
+    "test-prot-11-enrichment-module-contracts.R",
+    "test-enrichment-significance.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 20,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
