@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-194 R2: full suite before merge, base v0.9-staging 19997323 (merged in) against the merge candidate 8290ddb8",
+  "label": "KIT-194 R2 full suite 8290ddb8 vs 19997323",
+  "package_commit": "8290ddb83342ebea401ae2fc175cff737522122a",
+  "base_commit": "19997323dd9a0efac5830696c7d3ac617560dae6",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
