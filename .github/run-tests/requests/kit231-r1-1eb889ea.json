@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-231 R1: tests-only commit 1eb889ea (R/ and inst/ equal to staging cf8af245); N1 to N5 must fail at section 6 base values; ceiling 60 job-minutes (4.0 core-hours); decides stop rule 3",
+  "label": "KIT-231 R1 failing-first at 1eb889ea",
+  "package_commit": "1eb889eadb9af25d2a7126447608b69911402dd0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": ["test-kit231-workbook-directory-names.R"],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
