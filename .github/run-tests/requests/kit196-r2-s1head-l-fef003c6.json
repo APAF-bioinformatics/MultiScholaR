@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-196 R2 S1 head side part L (A2 (ii) to (iv), D6) on the merge with KIT-194's staging, against the base side recorded at 3d4a585d",
+  "label": "KIT-196 R2 S1 head side part L at fef003c6",
+  "package_commit": "fef003c64454c8a276576797fb0621e608d9e1b8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-196/da-sparse-control.R",
+      "args": [
+        "L",
+        "3d4a585dbeb19b281ec8bc640d4d35a892bd7988",
+        "--base-records=docs/qa/workflow-execution/kit/kit-196/s1/r2-base"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-196/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 120
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
