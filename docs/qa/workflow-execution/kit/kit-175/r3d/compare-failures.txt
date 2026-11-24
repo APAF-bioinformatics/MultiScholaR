@@ -1,0 +1,12 @@
+== test-omic-enrich-module.R | fixed | (b) in process: organism_filter
+-- base:
+  Expected `seen[[step]][[field]]` to be identical to `frozen[[step]][[field]]`.
+  Differences:
+  lines(actual[[2]]) vs lines(expected[[2]])
+  - "<text> 70d6422b068870e99b69c8eb14a3eaab033e9e72f3e8a1029e6a74666ed891b0"
+  + "<text> d4fb7d7310ead9d16c488b464913a0e5924d14ef0038fdaef46b4caa5cd76332"
+  
+  organism_filter no_mapping/select values
+-- head:
+  <passes>
+

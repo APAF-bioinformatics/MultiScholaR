@@ -549,7 +549,7 @@ test_that("UniProt GO parsing, gprofiler execution, and result accessors preserv
 if (!methods::isClass("mockClusterProfilerEnrichResultShared")) {
   methods::setClass(
     "mockClusterProfilerEnrichResultShared",
-    slots = c(result = "data.frame")
+    slots = c(result = "data.frame", geneSets = "list") # KIT-203: the family the route adjusts over
   )
 }
 
@@ -741,12 +741,14 @@ test_that("processEnrichments unsupported-organism branch preserves GO annotatio
         result = data.frame(
           ID = if (gene[[1]] == "P1") "GO:1001" else "GO:2001",
           Description = if (gene[[1]] == "P1") "Cell cycle term" else "Signal term",
+          pvalue = 0.001,
           qvalue = 0.01,
           Count = length(gene),
           GeneRatio = sprintf("%d/%d", length(gene), length(gene)),
           BgRatio = sprintf("%d/%d", length(gene), length(universe)),
           stringsAsFactors = FALSE
-        )
+        ),
+        geneSets = stats::setNames(rep(list("P1"), 10L), sprintf("GO:90%02d", 1:10)) # KIT-203
       )
     },
     .package = "clusterProfiler"
@@ -815,10 +817,13 @@ test_that("processEnrichments unsupported-organism branch preserves GO annotatio
   expect_identical(enrichment_results@enrichment_plots, list())
   expect_identical(enrichment_results@enrichment_plotly, list())
   stored_up <- getEnrichmentResult(enrichment_results, "short_gamma", "up")
-  expect_identical(names(stored_up@result), c("ID", "Description", "qvalue", "Count", "GeneRatio", "BgRatio"))
+  # KIT-203: under the default rule the family value and its size follow the kernel's columns, and the plot inputs
+  # carry the rule.
+  expect_identical(names(stored_up@result), c("ID", "Description", "pvalue", "qvalue", "Count", "GeneRatio", "BgRatio",
+    "p_adjust_family", "family_size"))
   expect_identical(attr(stored_up, "enrichment_plot_inputs"), list(
     go_terms = data.frame(ID = "GO:1001", source = "GO:BP", term = "Cell cycle term", stringsAsFactors = FALSE),
-    q_cutoff = 0.05
+    q_cutoff = 0.05, significance_rule = "bh_whole_family"
   ))
   expect_s4_class(enrichment_results, "EnrichmentResults")
   expect_true(any(grepl("short_gamma_up_enrichment_plot.html$", captured$save_widget)))
@@ -827,6 +832,17 @@ test_that("processEnrichments unsupported-organism branch preserves GO annotatio
   # The exported accessor rebuilds the plot from the stored result.
   expect_equal(getEnrichmentPlotly(enrichment_results, "short_gamma", "down")$kind, "plotly")
   expect_equal(captured$plotly, c("text", "text", "text"))
+  # Under "qvalue" the kernel's own table and today's plot inputs.
+  qvalue_results <- processEnrichments(da_results = da_results, taxon_id = "999999", q_cutoff = 0.05,
+    pathway_dir = pathway_dir, go_annotations = go_annotations, exclude_iea = FALSE,
+    protein_id_column = "Protein.IDs", contrast_names = "short_gamma", go_propagation = "none",
+    significance_rule = "qvalue")
+  stored_q <- getEnrichmentResult(qvalue_results, "short_gamma", "up")
+  expect_identical(names(stored_q@result), c("ID", "Description", "pvalue", "qvalue", "Count", "GeneRatio", "BgRatio"))
+  expect_identical(attr(stored_q, "enrichment_plot_inputs"), list(
+    go_terms = data.frame(ID = "GO:1001", source = "GO:BP", term = "Cell cycle term", stringsAsFactors = FALSE),
+    q_cutoff = 0.05
+  ))
 })
 
 # ---- KIT-119: the enrichment plots are rebuilt from the stored result ------------------------------------
@@ -912,8 +928,9 @@ test_that("the tab's plot is the run's saved plot, and a stored plot is shown as
     enricher = function(gene, universe, TERM2GENE, TERM2NAME, pvalueCutoff, pAdjustMethod, ...) {
       methods::new("mockClusterProfilerEnrichResultShared", result = data.frame(
         ID = c("GO:1001", "GO:2001", "GO:9999"), Description = c("Cell cycle term", "Signal term", "Unmapped term"),
-        qvalue = c(0.001, 0.01, 0.2), Count = c(4, 3, 2), GeneRatio = "2/3", BgRatio = "2/30",
-        stringsAsFactors = FALSE))
+        pvalue = c(0.0005, 0.005, 0.1), qvalue = c(0.001, 0.01, 0.2), Count = c(4, 3, 2), GeneRatio = "2/3",
+        BgRatio = "2/30", stringsAsFactors = FALSE),
+        geneSets = stats::setNames(rep(list("P1"), 10L), sprintf("GO:90%02d", 1:10))) # KIT-203
     },
     .package = "clusterProfiler"
   )
@@ -954,10 +971,20 @@ test_that("the tab's plot is the run's saved plot, and a stored plot is shown as
     expect_s3_class(at_render$interactive, "plotly")
     expect_identical(enrichmentPlotDisplay(at_render), enrichmentPlotDisplay(at_run))
   }
-  # The saved results table keeps its columns: the kernel's, the GO maps' and the plot's.
+  # The saved results table keeps its columns: the kernel's, the GO maps' and the plot's; KIT-203: under the default
+  # rule the family value and its size after the kernel's, and the rule after the flag.
   expect_identical(names(readr::read_tsv(file.path(pathway_dir, "short_gamma_up_enrichment_results.tsv"),
-    show_col_types = FALSE)), c("ID", "Description", "qvalue", "Count", "GeneRatio", "BgRatio", "ONTOLOGY", "source",
-    "term", "neg_log10_q", "gene_count", "significant"))
+    show_col_types = FALSE)), c("ID", "Description", "pvalue", "qvalue", "Count", "GeneRatio", "BgRatio",
+    "p_adjust_family", "family_size", "ONTOLOGY", "source", "term", "neg_log10_q", "gene_count", "significant",
+    "significance_rule"))
+  # Under "qvalue": today's columns.
+  suppressWarnings(processEnrichments(da_results = da_results, taxon_id = "999999", q_cutoff = 0.05,
+    pathway_dir = pathway_dir, go_annotations = go_annotations, exclude_iea = FALSE,
+    protein_id_column = "Protein.IDs", contrast_names = "short_gamma", go_propagation = "none",
+    significance_rule = "qvalue"))
+  expect_identical(names(readr::read_tsv(file.path(pathway_dir, "short_gamma_up_enrichment_results.tsv"),
+    show_col_types = FALSE)), c("ID", "Description", "pvalue", "qvalue", "Count", "GeneRatio", "BgRatio", "ONTOLOGY",
+    "source", "term", "neg_log10_q", "gene_count", "significant"))
 
   # The g:Profiler path (up answered with terms, down with none).
   saved$interactive <- saved$static <- NULL

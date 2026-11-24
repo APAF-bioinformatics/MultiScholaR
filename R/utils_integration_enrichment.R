@@ -83,13 +83,20 @@ INTEGRATION_ENRICHMENT_REFUSALS <- c(
     ),
     # KIT-183: the correlation-adjusted test (%d and %s are filled by the refusal's `values`).
     integration_enrichment_too_few_complete = paste(
-        "Too few features have a value in every biological sample for the correlation-adjusted test: at least 10 are",
-        "needed. The pre-ranked test can use features with missing values."
+        "Too few features have a value in every biological sample for the correlation-adjusted and permutation tests:",
+        "at least 10 are needed. The pre-ranked test can use features with missing values."
     ),
     integration_enrichment_too_few_samples_for_test = paste(
-        "The correlation-adjusted test needs at least %d biological samples in this data set."
+        "The chosen test (correlation-adjusted or permutation) needs at least %d biological samples in this data set."
     ),
-    integration_enrichment_test_not_offered = "This test is not offered here: %s."
+    integration_enrichment_test_not_offered = "This test is not offered here: %s.",
+    # KIT-191 (D4 (c); VAL-115 (4): the time and the limit in seconds; %s: seconds; %d: features, biological samples,
+    # terms, reorderings, the limit).
+    integration_enrichment_test_too_large = paste(
+        "The permutation test would take about %s seconds for this data set (%d features, %d biological samples, %d",
+        "terms, %d reorderings), longer than the %d seconds allowed in the tab, where the application waits for it.",
+        "Choose a correlation-adjusted test or fewer reorderings, or run it from a script."
+    )
 )
 
 # --- Conditions and the key ---
@@ -546,8 +553,9 @@ integrationEnrichmentEmptyTerms <- function() {
 #' The pathway test: ranked gene-set enrichment (clusterProfiler `GSEA`) of a ranked table against pathway sets.
 #'
 #' Seeded: the values are sorted, tied values optionally broken with uniform noise, and the test run inside
-#' `withr::with_seed(seed)`, so the caller's random state is untouched and the same input, seed and settings give the
-#' same table. An error of the test is a classed refusal (`integration_enrichment_method_failed`, with the engine's
+#' `withr::with_seed(seed)` with R's default generator kinds (KIT-191 D9: Mersenne-Twister, Inversion, Rejection,
+#' whatever the session's `RNGkind()`), so the caller's random state is untouched and the same input, seed and
+#' settings give the same table. An error of the test is a classed refusal (`integration_enrichment_method_failed`, with the engine's
 #' message in `engine_message`): no other test is run in its place.
 #' @param ranked Data frame with `identifier` and `value`.
 #' @param term2gene Data frame with `term` and `gene` (gene = an identifier of `ranked`).
@@ -580,7 +588,7 @@ integrationEnrichmentGsea <- function(ranked, term2gene, term2name, seed, settin
                 pAdjustMethod = settings$p_adjust_method, verbose = FALSE),
             error = \(e) e
         )
-    })
+    }, .rng_kind = "Mersenne-Twister", .rng_normal_kind = "Inversion", .rng_sample_kind = "Rejection")
     if (inherits(outcome, "error")) {
         integrationEnrichmentRefuse("integration_enrichment_method_failed", conditionMessage(outcome),
             engine_message = conditionMessage(outcome))
@@ -608,11 +616,13 @@ integrationEnrichmentCheckRelease <- function(release) {
 #' point a database's sets are passed to (KIT-183; KIT-181 calls it per Gene Ontology aspect).
 #' @param ranked Data frame with `identifier` and `value` (the pre-ranked test's list).
 #' @param term2gene,term2name The database's sets and names.
-#' @param seed The pre-ranked test's seed (the correlated tests use none).
+#' @param seed The seed of the pre-ranked and (KIT-191) permutation tests (the correlation-adjusted tests use none).
 #' @param settings `integrationGseaSettings()`; the correlated tests read `min_size`, `max_size` and, for the
-#'   simulation's sensitivity arm only, `allow_neg_cor` (absent: TRUE, VAL-53 (2)).
-#' @param test `gsea` (the pre-ranked test, unchanged), `camera` or `camera_pr` (KIT-183 5.1, 5.3).
-#' @param values For `camera` and `camera_pr`: `integrationEnrichmentTestValues()`'s value; the sets are restricted
+#'   simulation's sensitivity arm of `camera` only, `allow_neg_cor` (absent: TRUE, VAL-53 (2)); KIT-191: the permutation
+#'   test reads `permutations` (absent: 1000) and `time_limit` (seconds; absent: no limit, a message instead).
+#' @param test `gsea` (the pre-ranked test, unchanged), `camera` or `camera_pr` (KIT-183 5.1, 5.3); KIT-191:
+#'   `camera_floor` or `permutation`.
+#' @param values For the correlated tests: `integrationEnrichmentTestValues()`'s value; the sets are restricted
 #'   to its identifiers (U_cam).
 #' @return The test's list with `term2gene` and `term2name` as tested.
 #' @noRd
@@ -628,15 +638,19 @@ integrationEnrichmentPathwayTest <- function(ranked, term2gene, term2name, seed,
     }
     if (!is.character(test) || length(test) != 1L || !test %in% INTEGRATION_ENRICHMENT_TESTS ||
         !is.list(values) || !is.matrix(values$y)) {
-        integrationEnrichmentRefuse("integration_enrichment_parameters_invalid",
-            "the test must be camera, camera_pr or gsea, and a correlated test needs the values of the data set")
+        integrationEnrichmentRefuse("integration_enrichment_parameters_invalid", paste("the test must be camera,",
+            "camera_floor, permutation, camera_pr or gsea, and a correlated test needs the values of the data set"))
     }
     term2gene <- unique(term2gene[term2gene$gene %in% rownames(values$y), c("term", "gene"), drop = FALSE])
     rownames(term2gene) <- NULL
     if (nrow(term2gene) == 0L) integrationEnrichmentRefuse("integration_enrichment_no_overlap")
     term2name <- unique(term2name[term2name$term %in% term2gene$term, c("term", "name"), drop = FALSE])
     rownames(term2name) <- NULL
-    result <- integrationEnrichmentCamera(values, term2gene, term2name, settings, test)
+    result <- if (identical(test, "permutation")) {
+        integrationEnrichmentPermutation(values, term2gene, term2name, settings, seed)
+    } else {
+        integrationEnrichmentCamera(values, term2gene, term2name, settings, test)
+    }
     c(result, list(term2gene = term2gene, term2name = term2name))
 }
 
@@ -796,18 +810,24 @@ INTEGRATION_ENRICHMENT_DATABASES <- list(proteomics = "string", transcriptomics 
 #' feature's regression on the oriented factor, the correlation between a set's features estimated; `gsea`: the
 #' pre-ranked test on each feature's correlation (KIT-141, unchanged); `camera_pr`: the labelled fallback with an assumed
 #' correlation of 0.01, implemented so the simulation can measure it and offered only under outcome O2 of the ticket.
+#' KIT-191 (VAL-85 (2)): `camera_floor`, camera with negative estimated correlations counted as zero
+#' (`allow.neg.cor = FALSE`), and `permutation`, PCGSE's permutation of the factor's values as KIT-183's simulation
+#' measured it (`integrationEnrichmentPermutation()`).
 #' @noRd
-INTEGRATION_ENRICHMENT_TESTS <- c("camera", "gsea", "camera_pr")
+INTEGRATION_ENRICHMENT_TESTS <- c("camera", "gsea", "camera_pr", "camera_floor", "permutation")
 
-#' KIT-183: the tests offered (outcome O1 of the ticket's simulation, `docs/qa/workflow-execution/kit/kit-183/results.md`).
+#' KIT-183: the tests offered (outcome O1 of the ticket's simulation, `docs/qa/workflow-execution/kit/kit-183/results.md`);
+#' KIT-191 (VAL-85 (2)): the four tests the user chooses among, the default first.
 #' @noRd
-INTEGRATION_ENRICHMENT_TESTS_OFFERED <- c("camera", "gsea")
+INTEGRATION_ENRICHMENT_TESTS_OFFERED <- c("camera", "camera_floor", "permutation", "gsea")
 
 #' KIT-183: the tests that run on the data set's values (the correlated declaration) rather than on the ranked list.
 #' @noRd
-INTEGRATION_ENRICHMENT_CORRELATED_TESTS <- c("camera", "camera_pr")
+INTEGRATION_ENRICHMENT_CORRELATED_TESTS <- c("camera", "camera_pr", "camera_floor", "permutation")
 
-#' KIT-183 (section 7): the canonical settings text of each correlated test, declared in its identity.
+#' KIT-183 (section 7): the canonical settings text of each correlated test, declared in its identity. KIT-191:
+#' `camera_floor` is camera's text with `allow.neg.cor=FALSE`; the permutation's text holds its seed and number of
+#' reorderings and is built by `integrationEnrichmentTestSettingsText()`.
 #' @noRd
 INTEGRATION_ENRICHMENT_TEST_SETTINGS <- c(
     camera = paste0("inter.gene.cor=NA;allow.neg.cor=TRUE;use.ranks=FALSE;trend.var=TRUE;directional=TRUE;",
@@ -815,7 +835,212 @@ INTEGRATION_ENRICHMENT_TEST_SETTINGS <- c(
         "collapse=largest_mean_among_complete"),
     camera_pr = paste0("inter.gene.cor=0.01;use.ranks=FALSE;directional=TRUE;",
         "statistic=zscoreT(moderated t, trend, approx=TRUE, method=hill);complete=all_samples;",
+        "collapse=largest_mean_among_complete"),
+    camera_floor = paste0("inter.gene.cor=NA;allow.neg.cor=FALSE;use.ranks=FALSE;trend.var=TRUE;directional=TRUE;",
+        "statistic=zscoreT(moderated t, trend, approx=TRUE, method=hill);complete=all_samples;",
         "collapse=largest_mean_among_complete"))
+
+#' KIT-191 (ticket section 6): the permutation test's canonical settings text, with `%d` for the number of reorderings
+#' and the seed. The factor's values are reordered with the model unchanged.
+#' @noRd
+INTEGRATION_ENRICHMENT_PERMUTATION_SETTINGS <- paste0("statistic=fisher_z(pearson);set=pcgse_t(vif=1);",
+    "permute=factor_values_free;permutations=%d;p=(1+b)/(1+B);unchanged_draws=counted;ties=abs_within_1e-9;two_sided=abs;",
+    "seed=%d;",
+    "rng=Mersenne-Twister/Inversion/Rejection;sums=by_index;complete=all_samples;collapse=largest_mean_among_complete")
+
+#' KIT-191 (5.2 step 5, AUDIT-KIT-193 U2): a reordering whose |t*| is below |t| by at most this much is counted as at
+#' least as extreme. Exact ties occur besides the unchanged draws: a reordering that reflects the factor about its mean
+#' (for example (1, 2, 3, 4) reversed) gives t* = -t for every set, and the observed t (from `stats::cor`) and t* (from a
+#' matrix product) differ in their last bits, so an exact comparison would leave the count to rounding. The rounding
+#' error of t is of order 1e-13 at the package's sizes, far below this tolerance, so no exact tie is lost; a draw within
+#' the tolerance that is not an exact tie is counted too, which can only make p larger (the p-value stays valid).
+#' @noRd
+INTEGRATION_ENRICHMENT_PERMUTATION_TIE <- 1e-9
+
+#' KIT-191 (D1, VAL-97 (1)): the numbers of reorderings offered for the permutation test, the default first.
+#' @noRd
+INTEGRATION_ENRICHMENT_PERMUTATIONS <- c(1000L, 10000L)
+
+#' KIT-191 (D4 (c), VAL-97 (4)): the longest predicted run of the permutation test the Enrichment tab accepts, in
+#' seconds (the tab waits for the run).
+#' @noRd
+INTEGRATION_ENRICHMENT_TAB_SECONDS <- 120
+
+#' KIT-191 (5.6): the permutation test's predicted time, a * n * G * B + c * G * B + s * sum(|set|) * B seconds (n
+#' biological samples, G features, B reorderings). Each coefficient is twice the seconds per unit of its own term,
+#' measured in the case its term dominates (L1, `docs/qa/workflow-execution/kit/kit-191/lifecycle.md`, run below).
+#' @noRd
+INTEGRATION_ENRICHMENT_PERMUTATION_COST <- list(a = 5.12e-9, c = 2.13e-7, s = 5.48e-8, run = "45285106025")
+
+#' KIT-191 (VAL-85 (2), ticket 2.3 and 5.4): how each offered test behaved in KIT-183's counted simulation (run
+#' 45225854502, package fae77e5f, 800 replicates per cell), per kind of data set (`metabolites`: its metabolomics data
+#' set, shown also for lipids, which were not simulated; `genes_proteins`: its proteomics and transcriptomics data
+#' sets), number of biological samples and measure. Error rates are shares of null sets with an unadjusted p-value of
+#' 0.05 or less (`sprintf("%.1f", 100 * x)`); power is the share of planted sets called at BH <= 0.05 within the call
+#' in the right direction (`"%.2f"`, or `"%.3f"` when the largest of the range is below 0.1). Measures: A unrelated
+#' sets against values unrelated to the data; B sets of the model's most variable unrelated features, same values; C
+#' unrelated sets, main factor; D correlated unrelated sets (0.3), main factor; E weaker factors, largest; F at least one false call in a result; C3
+#' identifiers carrying 2 or 3 unrelated features; G, H, I power. Regenerated from the committed tables by
+#' `docs/qa/workflow-execution/kit/kit-191/evidence-k191.R` (U14).
+#' @noRd
+INTEGRATION_ENRICHMENT_TEST_EVIDENCE <- local({
+    rows <- matrix(c(
+        "metabolites", "camera", "12", "A", "3.4 to 4.5 % (largest: 95 % interval 3.7 to 5.3 %)",
+        "metabolites", "camera", "12", "B", "4.5 % (largest: 95 % interval 4.1 to 4.9 %)",
+        "metabolites", "camera", "12", "C", "0.4 to 4.4 %",
+        "metabolites", "camera", "12", "D", "0.6 %",
+        "metabolites", "camera", "12", "E", "6.7 % (95 % interval 5.5 to 7.9 %)",
+        "metabolites", "camera", "12", "F", "2.2 to 2.5 %",
+        "metabolites", "camera", "12", "C3", "4.6 %",
+        "metabolites", "camera", "12", "I", "0.020 to 0.022",
+        "metabolites", "camera_floor", "12", "A", "1.7 to 3.6 % (largest: 95 % interval 2.7 to 4.5 %)",
+        "metabolites", "camera_floor", "12", "B", "2.2 % (largest: 95 % interval 1.9 to 2.5 %)",
+        "metabolites", "camera_floor", "12", "C", "0.1 to 2.3 %",
+        "metabolites", "camera_floor", "12", "D", "0.5 %",
+        "metabolites", "camera_floor", "12", "E", "6.7 % (95 % interval 5.5 to 7.9 %)",
+        "metabolites", "camera_floor", "12", "F", "0.1 to 0.4 %",
+        "metabolites", "camera_floor", "12", "C3", "2.1 %",
+        "metabolites", "camera_floor", "12", "I", "0.001 to 0.002",
+        "metabolites", "permutation", "12", "A", "4.2 to 5.2 % (largest: 95 % interval 4.2 to 6.3 %)",
+        "metabolites", "permutation", "12", "B", "4.9 % (largest: 95 % interval 4.5 to 5.3 %)",
+        "metabolites", "permutation", "12", "C", "0.6 to 4.7 %",
+        "metabolites", "permutation", "12", "D", "0.6 %",
+        "metabolites", "permutation", "12", "E", "8.6 % (95 % interval 7.2 to 9.9 %)",
+        "metabolites", "permutation", "12", "F", "3.2 to 4.2 %",
+        "metabolites", "permutation", "12", "C3", "5.0 %",
+        "metabolites", "permutation", "12", "I", "0.010",
+        "metabolites", "gsea", "12", "A", "3.2 to 3.9 % (largest: 95 % interval 3.7 to 4.2 %); terms whose features vary together: 8.6 to 28.7 %",
+        "metabolites", "gsea", "12", "B", "3.2 % (largest: 95 % interval 2.9 to 3.6 %)",
+        "metabolites", "gsea", "12", "C", "1.8 to 4.3 %; terms whose features vary together: 4.4 to 23.6 %",
+        "metabolites", "gsea", "12", "D", "13.5 %",
+        "metabolites", "gsea", "12", "E", "34.4 % (95 % interval 32.1 to 36.6 %)",
+        "metabolites", "gsea", "12", "F", "4.2 to 4.4 %",
+        "metabolites", "gsea", "12", "C3", "6.5 %",
+        "metabolites", "gsea", "12", "I", "0.010 to 0.013",
+        "genes_proteins", "camera", "12", "A", "2.2 to 6.6 % (largest: 95 % interval 5.8 to 7.4 %)",
+        "genes_proteins", "camera", "12", "B", "9.4 to 10.1 % (largest: 95 % interval 9.5 to 10.7 %)",
+        "genes_proteins", "camera", "12", "C", "0.4 to 4.2 %",
+        "genes_proteins", "camera", "12", "D", "0.5 to 0.6 %",
+        "genes_proteins", "camera", "12", "E", "12.8 % (95 % interval 11.8 to 13.8 %)",
+        "genes_proteins", "camera", "12", "F", "1.9 to 2.8 %",
+        "genes_proteins", "camera", "12", "G", "0.60 to 0.62",
+        "genes_proteins", "camera", "12", "H", "0.99 to 1.00",
+        "genes_proteins", "camera_floor", "12", "A", "1.1 to 5.1 % (largest: 95 % interval 4.5 to 5.7 %)",
+        "genes_proteins", "camera_floor", "12", "B", "5.4 to 5.5 % (largest: 95 % interval 4.8 to 6.1 %)",
+        "genes_proteins", "camera_floor", "12", "C", "0.1 to 1.8 %",
+        "genes_proteins", "camera_floor", "12", "D", "0.5 to 0.6 %",
+        "genes_proteins", "camera_floor", "12", "E", "12.8 % (95 % interval 11.8 to 13.8 %)",
+        "genes_proteins", "camera_floor", "12", "F", "0.0 to 0.1 %",
+        "genes_proteins", "camera_floor", "12", "G", "0.47 to 0.50",
+        "genes_proteins", "camera_floor", "12", "H", "0.99",
+        "genes_proteins", "permutation", "12", "A", "4.8 to 5.3 % (largest: 95 % interval 4.6 to 6.0 %)",
+        "genes_proteins", "permutation", "12", "B", "4.9 to 5.3 % (largest: 95 % interval 4.8 to 5.7 %)",
+        "genes_proteins", "permutation", "12", "C", "0.4 to 4.4 %",
+        "genes_proteins", "permutation", "12", "D", "0.5 to 0.8 %",
+        "genes_proteins", "permutation", "12", "E", "12.7 % (95 % interval 11.8 to 13.7 %)",
+        "genes_proteins", "permutation", "12", "F", "2.8 to 4.9 %",
+        "genes_proteins", "permutation", "12", "G", "0.39 to 0.52",
+        "genes_proteins", "permutation", "12", "H", "0.80 to 0.96",
+        "genes_proteins", "gsea", "12", "A", "3.9 to 5.5 % (largest: 95 % interval 4.9 to 6.0 %); terms whose features vary together: 28.3 to 62.9 %",
+        "genes_proteins", "gsea", "12", "B", "4.1 to 6.1 % (largest: 95 % interval 5.6 to 6.6 %)",
+        "genes_proteins", "gsea", "12", "C", "1.8 to 5.1 %; terms whose features vary together: 21.8 to 57.7 %",
+        "genes_proteins", "gsea", "12", "D", "40.2 to 43.0 %",
+        "genes_proteins", "gsea", "12", "E", "60.1 % (95 % interval 59.0 to 61.2 %)",
+        "genes_proteins", "gsea", "12", "F", "2.6 to 7.1 %",
+        "genes_proteins", "gsea", "12", "G", "0.63 to 0.72",
+        "genes_proteins", "gsea", "12", "H", "1.00",
+        "metabolites", "camera", "6", "A", "2.0 to 3.7 % (largest: 95 % interval 3.1 to 4.3 %)",
+        "metabolites", "camera", "6", "B", "3.8 % (largest: 95 % interval 3.4 to 4.1 %)",
+        "metabolites", "camera", "6", "I", "0.001 to 0.002",
+        "metabolites", "camera_floor", "6", "A", "0.4 to 2.2 % (largest: 95 % interval 1.5 to 2.9 %)",
+        "metabolites", "camera_floor", "6", "B", "0.3 % (largest: 95 % interval 0.2 to 0.4 %)",
+        "metabolites", "camera_floor", "6", "I", "0.000",
+        "metabolites", "permutation", "6", "A", "4.4 to 5.0 % (largest: 95 % interval 3.9 to 6.1 %)",
+        "metabolites", "permutation", "6", "B", "5.0 % (largest: 95 % interval 4.6 to 5.4 %)",
+        "metabolites", "permutation", "6", "I", "0.001 to 0.003",
+        "metabolites", "gsea", "6", "A", "4.5 to 4.6 % (largest: 95 % interval 4.3 to 4.8 %); terms whose features vary together: 9.2 to 33.4 %",
+        "metabolites", "gsea", "6", "B", "4.2 % (largest: 95 % interval 3.9 to 4.6 %)",
+        "metabolites", "gsea", "6", "I", "0.007",
+        "genes_proteins", "camera", "6", "A", "2.5 to 5.0 % (largest: 95 % interval 4.4 to 5.6 %)",
+        "genes_proteins", "camera", "6", "B", "8.7 to 9.9 % (largest: 95 % interval 9.3 to 10.5 %)",
+        "genes_proteins", "camera", "6", "G", "0.05 to 0.13",
+        "genes_proteins", "camera", "6", "H", "0.23 to 0.44",
+        "genes_proteins", "camera_floor", "6", "A", "0.3 to 4.1 % (largest: 95 % interval 3.6 to 4.7 %)",
+        "genes_proteins", "camera_floor", "6", "B", "1.9 to 2.7 % (largest: 95 % interval 2.4 to 3.1 %)",
+        "genes_proteins", "camera_floor", "6", "G", "0.000 to 0.001",
+        "genes_proteins", "camera_floor", "6", "H", "0.00 to 0.12",
+        "genes_proteins", "permutation", "6", "A", "4.8 to 5.3 % (largest: 95 % interval 4.8 to 5.8 %)",
+        "genes_proteins", "permutation", "6", "B", "5.0 to 5.3 % (largest: 95 % interval 4.8 to 5.9 %)",
+        "genes_proteins", "permutation", "6", "G", "0.003 to 0.008",
+        "genes_proteins", "permutation", "6", "H", "0.006 to 0.019",
+        "genes_proteins", "gsea", "6", "A", "4.5 to 5.2 % (largest: 95 % interval 4.7 to 5.7 %); terms whose features vary together: 30.3 to 64.7 %",
+        "genes_proteins", "gsea", "6", "B", "5.9 to 6.2 % (largest: 95 % interval 5.7 to 6.7 %)",
+        "genes_proteins", "gsea", "6", "G", "0.38 to 0.45",
+        "genes_proteins", "gsea", "6", "H", "0.95 to 0.99",
+        "metabolites", "camera", "20", "A", "4.1 to 5.4 % (largest: 95 % interval 4.3 to 6.5 %)",
+        "metabolites", "camera", "20", "B", "5.2 % (largest: 95 % interval 4.8 to 5.7 %)",
+        "metabolites", "camera", "20", "I", "0.075 to 0.078",
+        "metabolites", "camera_floor", "20", "A", "3.0 to 5.1 % (largest: 95 % interval 4.0 to 6.2 %)",
+        "metabolites", "camera_floor", "20", "B", "3.6 % (largest: 95 % interval 3.2 to 4.0 %)",
+        "metabolites", "camera_floor", "20", "I", "0.025",
+        "metabolites", "permutation", "20", "A", "4.7 to 5.8 % (largest: 95 % interval 4.6 to 6.9 %)",
+        "metabolites", "permutation", "20", "B", "5.0 % (largest: 95 % interval 4.5 to 5.4 %)",
+        "metabolites", "permutation", "20", "I", "0.019 to 0.023",
+        "metabolites", "gsea", "20", "A", "3.6 to 4.0 % (largest: 95 % interval 3.8 to 4.3 %); terms whose features vary together: 8.1 to 27.7 %",
+        "metabolites", "gsea", "20", "B", "3.3 % (largest: 95 % interval 2.9 to 3.6 %)",
+        "metabolites", "gsea", "20", "I", "0.018 to 0.019",
+        "genes_proteins", "camera", "20", "A", "1.9 to 6.4 % (largest: 95 % interval 5.7 to 7.1 %)",
+        "genes_proteins", "camera", "20", "B", "8.3 to 10.3 % (largest: 95 % interval 9.3 to 11.4 %)",
+        "genes_proteins", "camera", "20", "G", "0.88 to 0.90",
+        "genes_proteins", "camera", "20", "H", "1.00",
+        "genes_proteins", "camera_floor", "20", "A", "1.4 to 6.4 % (largest: 95 % interval 5.7 to 7.1 %)",
+        "genes_proteins", "camera_floor", "20", "B", "5.5 to 7.2 % (largest: 95 % interval 6.3 to 8.1 %)",
+        "genes_proteins", "camera_floor", "20", "G", "0.85 to 0.88",
+        "genes_proteins", "camera_floor", "20", "H", "1.00",
+        "genes_proteins", "permutation", "20", "A", "4.5 to 5.3 % (largest: 95 % interval 4.8 to 5.8 %)",
+        "genes_proteins", "permutation", "20", "B", "4.9 to 5.1 % (largest: 95 % interval 4.4 to 5.9 %)",
+        "genes_proteins", "permutation", "20", "G", "0.68 to 0.84",
+        "genes_proteins", "permutation", "20", "H", "0.99 to 1.00",
+        "genes_proteins", "gsea", "20", "A", "3.6 to 5.1 % (largest: 95 % interval 4.6 to 5.6 %); terms whose features vary together: 28.6 to 62.4 %",
+        "genes_proteins", "gsea", "20", "B", "4.2 to 5.9 % (largest: 95 % interval 5.5 to 6.4 %)",
+        "genes_proteins", "gsea", "20", "G", "0.84 to 0.90",
+        "genes_proteins", "gsea", "20", "H", "1.00"
+    ), ncol = 5L, byrow = TRUE)
+    applies <- c(
+        A = paste("C0, C1, C2 (gsea: C0, C2, with correlated sets C1 after the semicolon) against values unrelated to the",
+            "data (F_ind), over the data sets of the kind; the 95 % interval of the largest cell"),
+        B = "C4 (sets of the model's selected, zero-loading features) against values unrelated to the data (F_ind)",
+        C = "C0, C1, C2 (gsea: C0, C2, with C1 after the semicolon) on the main factor (F_main)",
+        D = "C1 at a correlation of 0.3 on the main factor (F_main)",
+        E_genes_proteins = paste("C4, C4b, C1-out on F_weak and F_none, the largest cell; gsea's figure is C1-out (members",
+            "the model did not use)"),
+        E_metabolites = paste("C4, C4b on F_weak and F_none, the largest cell; metabolites: C4 and C4b only (no C1-out set",
+            "was formed), every test's figure C4b"),
+        F = "familywise: at least one false call among a result's C0 and C2 sets, on F_ind and F_main",
+        C3 = "C3 (identifiers carrying 2 or 3 unrelated features) against values unrelated to the data (F_ind)",
+        power = paste("power at BH <= 0.05 within result tables of about 87 terms (metabolites, 12 % truly linked) or 119",
+            "to 152 terms (genes and proteins, 17 to 20 %); in larger tables with fewer linked terms every test finds",
+            "fewer, the permutation test most (expected, not measured: BH's step-up and the permutation's floor, KIT-191 5.2",
+            "step 8)"))
+    measure <- rows[, 4L]
+    key <- ifelse(measure %in% c("G", "H", "I"), "power", ifelse(measure == "E", paste0("E_", rows[, 1L]), measure))
+    source <- ifelse(measure %in% c("G", "H", "I"), "s/power.tsv", ifelse(measure == "F", "s/familywise.tsv",
+        "s/error-rates.tsv"))
+    data.frame(kind = rows[, 1L], test = rows[, 2L], samples = as.integer(rows[, 3L]), measure = measure,
+        value_text = rows[, 5L], applies_to = unname(applies[key]),
+        source = paste("KIT-183 simulation, run 45225854502,", source), stringsAsFactors = FALSE)
+})
+
+#' KIT-191: the canonical settings text of a correlated test (`test_settings`, declared in its identity).
+#' @param test The test.
+#' @param p The resolved settings (`seed`, `permutations`; the permutation test only).
+#' @noRd
+integrationEnrichmentTestSettingsText <- function(test, p) {
+    if (identical(test, "permutation")) {
+        return(sprintf(INTEGRATION_ENRICHMENT_PERMUTATION_SETTINGS, as.integer(p$permutations), as.integer(p$seed)))
+    }
+    INTEGRATION_ENRICHMENT_TEST_SETTINGS[[test]]
+}
 
 #' KIT-183: the correlated tests' declaration and product schema.
 #' @noRd
@@ -855,12 +1080,16 @@ integrationEnrichmentParameterSpec <- function() {
         reactome_organism = list(default = "Homo sapiens", choices = NULL, type = "text", settled_by = chosen),
         min_set_size = list(default = 5L, choices = NULL, type = "whole", settled_by = chosen),
         max_set_size = list(default = 500L, choices = NULL, type = "whole", settled_by = chosen),
+        # The seed of the pre-ranked and (KIT-191) permutation tests; the correlation-adjusted tests use none.
         seed = list(default = 20261121L, choices = NULL, type = "whole", settled_by = chosen),
         # KIT-183: KEGG, Reactome (and Gene Ontology): the test; absent, the test of record for the data set
-        # (`integrationEnrichmentTestOfRecord()`); STRING ignores it.
+        # (`integrationEnrichmentTestOfRecord()`); STRING ignores it. KIT-191: four tests offered (VAL-85 (2)).
         test = list(default = NULL, choices = INTEGRATION_ENRICHMENT_TESTS_OFFERED, type = "text",
-            default_text = "the test of record for the data set (camera)",
-            settled_by = "VAL-51; KIT-183 simulation, run 45225854502"))
+            default_text = paste("the test of record for the data set (camera); or camera_floor, permutation or gsea"),
+            settled_by = "VAL-51; VAL-85; KIT-183 simulation, run 45225854502"),
+        # KIT-191 (D1): the permutation test's number of random reorderings of the factor's values.
+        permutations = list(default = INTEGRATION_ENRICHMENT_PERMUTATIONS[[1L]], choices = INTEGRATION_ENRICHMENT_PERMUTATIONS,
+            type = "whole", default_text = "1000 (or 10000; the permutation test only)", settled_by = "VAL-85; VAL-97; KIT-191"))
 }
 
 #' Resolve and check an enrichment request against the model (KIT-141). Refused in plain words
@@ -915,6 +1144,10 @@ integrationResolveEnrichmentParameters <- function(parameters, value, object, n_
         invalid("the pathway sizes must be whole numbers, the smallest at least 5 and not above the largest")
     }
     if (!whole(p$seed, 0, .Machine$integer.max)) invalid("the seed must be a whole number")
+    if (!whole(p$permutations, 1, 1e6) || !p$permutations %in% spec$permutations$choices) {
+        invalid("the number of reorderings of the permutation test must be 1000 or 10000")
+    }
+    p$permutations <- as.integer(p$permutations)
     p$min_samples <- as.integer(p$min_samples)
     p$string_species <- as.integer(p$string_species)
     p$string_rank_direction <- as.integer(p$string_rank_direction)
@@ -943,7 +1176,8 @@ integrationResolveEnrichmentParameters <- function(parameters, value, object, n_
         if (is.null(p$test)) {
             p$test <- integrationEnrichmentTestOfRecord(n_samples)
         } else if (!one(p$test) || !p$test %in% INTEGRATION_ENRICHMENT_TESTS) {
-            invalid("the test must be camera (the correlation-adjusted test) or gsea (the pre-ranked test)")
+            invalid(paste("the test must be camera (the correlation-adjusted test), camera_floor (the same, negative",
+                "correlations counted as zero), permutation (the permutation test) or gsea (the pre-ranked test)"))
         } else if (!p$test %in% INTEGRATION_ENRICHMENT_TESTS_OFFERED) {
             integrationEnrichmentRefuse("integration_enrichment_test_not_offered",
                 values = list("the correlation-adjusted test with an assumed correlation is not offered in this release"))
@@ -1222,9 +1456,10 @@ integrationEnrichmentTestValues <- function(object, manager, source, value, mode
 #' (`integration_enrichment_method_failed`); no other test is run in its place (INT-19).
 #' @param values `integrationEnrichmentTestValues()`'s value.
 #' @param term2gene,term2name The sets (restricted to U_cam) and their names.
-#' @param settings `min_size`, `max_size` (members of U_cam) and, for the simulation's sensitivity arm only,
+#' @param settings `min_size`, `max_size` (members of U_cam) and, for the simulation's sensitivity arm of `camera` only,
 #'   `allow_neg_cor` (absent: TRUE).
-#' @param test `camera` or `camera_pr`.
+#' @param test `camera`, `camera_pr` or (KIT-191 5.3) `camera_floor`: camera with `allow.neg.cor = FALSE`, the
+#'   correlation column the estimate before the floor.
 #' @return `list(method, engine, settings, terms, test_counts, design_columns, design_covariates)`; `terms` one row per
 #'   tested set: `ID`, `Description`, `setSize`, `Direction`, `correlation`, `effect`, `pvalue`, `p.adjust` (BH over
 #'   the sets of the call), `test`.
@@ -1233,7 +1468,8 @@ integrationEnrichmentCamera <- function(values, term2gene, term2name, settings, 
     y <- values$y
     design <- values$design
     coefficient <- which(colnames(design) == "factor")
-    allow_neg_cor <- settings$allow_neg_cor %||% TRUE
+    # KIT-191 (5.3): the test sets the floor; the internal hook keeps its meaning for `camera` only.
+    allow_neg_cor <- if (identical(test, "camera_floor")) FALSE else settings$allow_neg_cor %||% TRUE
     index <- split(as.character(term2gene$gene), as.character(term2gene$term))
     sizes <- lengths(index)
     index <- index[sizes >= settings$min_size & sizes <= settings$max_size]
@@ -1253,7 +1489,7 @@ integrationEnrichmentCamera <- function(values, term2gene, term2name, settings, 
         fit <- limma::eBayes(limma::lmFit(y, design), trend = TRUE)
         z <- limma::zscoreT(fit$t[, coefficient], df = fit$df.total, approx = TRUE, method = "hill")
         names(z) <- rownames(y)
-        table <- if (identical(test, "camera")) {
+        table <- if (test %in% c("camera", "camera_floor")) {
             limma::camera(y, index, design = design, contrast = coefficient, inter.gene.cor = NA,
                 allow.neg.cor = allow_neg_cor, use.ranks = FALSE, trend.var = TRUE, sort = FALSE, directional = TRUE)
         } else {
@@ -1277,13 +1513,157 @@ integrationEnrichmentCamera <- function(values, term2gene, term2name, settings, 
     description[is.na(description)] <- names(index)[is.na(description)]
     terms <- data.frame(ID = names(index), Description = description, setSize = as.integer(table$NGenes),
         Direction = as.character(table$Direction),
-        correlation = if (identical(test, "camera")) as.numeric(table$Correlation) else 0.01,
+        correlation = if (test %in% c("camera", "camera_floor")) as.numeric(table$Correlation) else 0.01,
         effect = unname(effect), pvalue = as.numeric(table$PValue), stringsAsFactors = FALSE)
     terms$p.adjust <- stats::p.adjust(terms$pvalue, "BH")
     terms$test <- test
     terms <- terms[order(terms$pvalue, terms$ID, method = "radix"), , drop = FALSE]
     rownames(terms) <- NULL
     out$terms <- terms
+    out
+}
+
+#' KIT-191 (5.2 step 2): Fisher's z of correlations, clamped to +-(1 - 1e-12) as KIT-183's simulation did.
+#' @noRd
+integrationEnrichmentFisherZ <- function(r) atanh(pmax(pmin(r, 1 - 1e-12), -1 + 1e-12))
+
+#' KIT-191 (5.2 steps 3 and 4): PCGSE's two-sample t of each set against the other features (variance inflation 1,
+#' pooled over in and out, G - 2 degrees of freedom), from the sums and sums of squares in and out of each set, the
+#' set's sums taken by indexing its members' rows (the arithmetic of KIT-183's `pcgseT()`, without its dense
+#' set-by-feature matrix).
+#' @param stat Features x columns (one column per reordering, or one).
+#' @param members List of row indices, one element per set.
+#' @return `list(t, effect)`: sets x columns; `effect` the mean in the set minus the mean outside.
+#' @noRd
+integrationEnrichmentSetT <- function(stat, members) {
+    stat <- as.matrix(stat)
+    g <- nrow(stat)
+    squares <- stat^2
+    sum_all <- colSums(stat)
+    sq_all <- colSums(squares)
+    t <- effect <- matrix(NA_real_, length(members), ncol(stat))
+    for (i in seq_along(members)) {
+        rows <- members[[i]]
+        m1 <- length(rows)
+        m2 <- g - m1
+        sum_in <- colSums(stat[rows, , drop = FALSE])
+        sq_in <- colSums(squares[rows, , drop = FALSE])
+        mean_a <- sum_in / m1
+        mean_b <- (sum_all - sum_in) / m2
+        ss_a <- sq_in - m1 * mean_a^2
+        ss_b <- (sq_all - sq_in) - m2 * mean_b^2
+        pooled <- sqrt((ss_a + ss_b) / (m1 + m2 - 2))
+        effect[i, ] <- mean_a - mean_b
+        t[i, ] <- effect[i, ] / (pooled * sqrt(1 / m1 + 1 / m2))
+    }
+    list(t = t, effect = effect)
+}
+
+#' KIT-191 (5.6): the permutation test's predicted time in seconds (`INTEGRATION_ENRICHMENT_PERMUTATION_COST`).
+#' @param n_samples,features,permutations n_d, G and B.
+#' @param members The summed sizes of the sets tested.
+#' @param cost The coefficients.
+#' @noRd
+integrationEnrichmentPermutationSeconds <- function(n_samples, features, permutations, members,
+    cost = INTEGRATION_ENRICHMENT_PERMUTATION_COST) {
+    cost$a * n_samples * features * permutations + cost$c * features * permutations + cost$s * members * permutations
+}
+
+#' KIT-191 (VAL-85 (2), VAL-97; ticket 5.2): the permutation test of PCGSE (Frost et al. 2015) as KIT-183's simulation
+#' measured it (`docs/qa/workflow-execution/kit/kit-183/simulate-k183.R`, `comparators()`). Each feature's Pearson
+#' correlation with the oriented factor over S_d, Fisher-transformed; each set's uncorrected two-sample t against the
+#' other features of U_cam; B free reorderings of the factor's values across the biological samples, drawn once per
+#' call with the declared seed and R's default generator kinds (the session's random state is restored), the model
+#' unchanged; the same reorderings for every set. p = (1 + b) / (1 + B), b the reorderings whose |t*| is at least |t|
+#' less `INTEGRATION_ENRICHMENT_PERMUTATION_TIE` (so exact ties such as the factor's reflection are always counted), a
+#' reordering that leaves the factor's values in their own order (the identity, or one among tied values) counted
+#' without comparing (Phipson and Smyth 2010); (1 + d) / (1 + B) is then a lower bound of every p-value. Two-sided; `Direction` the sign of t; BH over the sets of the call.
+#' Reorderings are processed in blocks of min(B, 1000, floor(5e6 / G)) columns. Refusals as `camera`; a run predicted
+#' above `settings$time_limit` seconds is refused (`integration_enrichment_test_too_large`; the tab), without a limit the
+#' predicted time is given in a message first (scripts). No other test is run in its place (INT-19).
+#' @param values `integrationEnrichmentTestValues()`'s value (`y`, `f`, `counts`; covariates are never used).
+#' @param term2gene,term2name The sets (restricted to U_cam) and their names.
+#' @param settings `min_size`, `max_size`, `permutations` (absent: 1000), `time_limit` (seconds, or absent).
+#' @param seed The declared seed.
+#' @return `camera`'s form with `correlation` NA and `test = "permutation"`, plus `permutation`: `seed`,
+#'   `permutations`, `identity_draws` (d, the reorderings that left the factor unchanged), `min_p` ((1 + d)/(1 + B)),
+#'   `samples`.
+#' @noRd
+integrationEnrichmentPermutation <- function(values, term2gene, term2name, settings, seed) {
+    invalid <- function(detail) integrationEnrichmentRefuse("integration_enrichment_parameters_invalid", detail)
+    whole <- function(x, lower) is.numeric(x) && length(x) == 1L && !is.na(x) && x == round(x) && x >= lower
+    permutations <- settings$permutations %||% INTEGRATION_ENRICHMENT_PERMUTATIONS[[1L]]
+    if (!whole(permutations, 1)) invalid("the number of reorderings of the permutation test must be a whole number of 1 or more")
+    if (!whole(seed, 0) || seed > .Machine$integer.max) invalid("the seed must be a whole number")
+    permutations <- as.integer(permutations)
+    seed <- as.integer(seed)
+    y <- values$y
+    f <- as.numeric(values$f)
+    n <- ncol(y)
+    g <- nrow(y)
+    if (length(f) != n || anyNA(f) || !(stats::var(f) > 0)) invalid("the factor does not vary over the biological samples")
+    index <- split(as.character(term2gene$gene), as.character(term2gene$term))
+    sizes <- lengths(index)
+    index <- index[sizes >= settings$min_size & sizes <= settings$max_size]
+    test_settings <- integrationEnrichmentTestSettingsText("permutation", list(seed = seed, permutations = permutations))
+    out <- list(method = "permutation", engine = list(R = as.character(getRversion())),
+        settings = list(min_size = settings$min_size, max_size = settings$max_size, permutations = permutations, seed = seed,
+            test_settings = test_settings),
+        test_counts = values$counts, design_covariates = "none")
+    if (!length(index)) {
+        out$terms <- data.frame(ID = character(), Description = character(), setSize = integer(), Direction = character(),
+            correlation = numeric(), effect = numeric(), pvalue = numeric(), p.adjust = numeric(), test = character(),
+            stringsAsFactors = FALSE)
+        out$permutation <- list(seed = seed, permutations = permutations, identity_draws = NA_integer_, min_p = NA_real_,
+            samples = n)
+        return(out)
+    }
+    # The guard (D4 (c)): refused in the tab above its limit; in scripts the predicted time is given first.
+    predicted <- integrationEnrichmentPermutationSeconds(n, g, permutations, sum(lengths(index)))
+    limit <- settings$time_limit
+    if (!is.null(limit) && predicted > limit) {
+        integrationEnrichmentRefuse("integration_enrichment_test_too_large",
+            values = list(sprintf("%.0f", predicted), g, n, length(index), permutations, as.integer(limit)),
+            predicted_seconds = predicted)
+    }
+    if (is.null(limit)) {
+        rlang::inform(sprintf(integrationGuiTexts()[["enrich_test_permutation_time"]], sprintf("%.0f", predicted), g, n,
+            length(index), permutations), class = "integration_enrichment_permutation_time")
+    }
+    members <- lapply(index, function(set) sort(match(set, rownames(y))))
+    r <- as.numeric(stats::cor(t(y), f))
+    observed <- integrationEnrichmentSetT(integrationEnrichmentFisherZ(r), members)
+    t_obs <- observed$t[, 1L]
+    perms <- withr::with_seed(seed, vapply(seq_len(permutations), function(i) sample(n), integer(n)),
+        .rng_kind = "Mersenne-Twister", .rng_normal_kind = "Inversion", .rng_sample_kind = "Rejection")
+    perms <- matrix(perms, n, permutations)
+    # Reorderings that leave the factor's values in their own order are counted, never compared (5.2 step 5).
+    unchanged <- vapply(seq_len(permutations), function(b) identical(f[perms[, b]], f), logical(1))
+    ys <- t(scale(t(y)))
+    width <- as.integer(min(permutations, 1000L, max(1L, floor(5e6 / g))))
+    exceed <- numeric(length(members))
+    for (start in seq.int(1L, permutations, by = width)) {
+        columns <- start:min(permutations, start + width - 1L)
+        fs <- scale(matrix(f[perms[, columns, drop = FALSE]], n))
+        zp <- integrationEnrichmentFisherZ((ys %*% fs) / (n - 1))
+        at_least <- abs(integrationEnrichmentSetT(zp, members)$t) >= abs(t_obs) - INTEGRATION_ENRICHMENT_PERMUTATION_TIE
+        at_least[, unchanged[columns]] <- TRUE
+        exceed <- exceed + rowSums(at_least)
+    }
+    identity_draws <- sum(unchanged)
+    names_by_term <- stats::setNames(as.character(term2name$name), as.character(term2name$term))
+    description <- unname(names_by_term[names(index)])
+    description[is.na(description)] <- names(index)[is.na(description)]
+    terms <- data.frame(ID = names(index), Description = description, setSize = as.integer(lengths(index)),
+        Direction = ifelse(t_obs > 0, "Up", "Down"), correlation = NA_real_, effect = observed$effect[, 1L],
+        pvalue = (1 + exceed) / (1 + permutations), stringsAsFactors = FALSE)
+    terms$p.adjust <- stats::p.adjust(terms$pvalue, "BH")
+    terms$test <- "permutation"
+    terms <- terms[order(terms$pvalue, terms$ID, method = "radix"), , drop = FALSE]
+    rownames(terms) <- NULL
+    out$terms <- terms
+    out$permutation <- list(seed = seed, permutations = permutations, identity_draws = as.integer(identity_draws),
+        min_p = (1 + identity_draws) / (1 + permutations), samples = n)
     out
 }
 
@@ -1372,6 +1752,11 @@ integrationEnrichmentKernel <- function(object, parameters) {
     # KIT-183: a correlated test counts and tests the sets on U_cam (the complete identifiers), never on the ranked list.
     test_name <- p$test %||% "gsea"
     correlated <- test_name %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS
+    # KIT-191: the permutation test's number of reorderings and, from the tab, its time limit (never declared).
+    if (identical(test_name, "permutation")) {
+        settings$permutations <- p$permutations %||% INTEGRATION_ENRICHMENT_PERMUTATIONS[[1L]]
+        settings$time_limit <- p$time_limit
+    }
     values <- if (correlated) parameters$values
     members <- if (correlated) rownames(values$y) else ranked$identifier
     if (identical(p$database, "kegg")) {
@@ -1407,7 +1792,7 @@ integrationEnrichmentKernel <- function(object, parameters) {
     out$tests <- nrow(test$terms)
     out$terms <- test$terms
     if (correlated) {
-        # KIT-183 (7, 8.8): the test, its settings, the counts, the design; no seed (nothing is random).
+        # KIT-183 (7, 8.8): the test, its settings, the counts, the design; no seed (nothing in camera is random).
         out$schema <- INTEGRATION_ENRICHMENT_CORRELATED_SCHEMA
         out$service$seed <- NULL
         out$service$test_settings <- test$settings$test_settings
@@ -1415,6 +1800,12 @@ integrationEnrichmentKernel <- function(object, parameters) {
         out$test_counts <- test$test_counts
         out$design_columns <- test$design_columns
         out$design_covariates <- test$design_covariates
+        # KIT-191: the permutation test keeps its seed, its number of reorderings, the reorderings that left the factor
+        # unchanged and the smallest p-value the call could give.
+        if (identical(test_name, "permutation")) {
+            out$service$seed <- test$settings$seed
+            out$permutation <- test$permutation
+        }
     }
     out
 }
@@ -1436,7 +1827,8 @@ integrationEnrichmentOperation <- function() {
 #' sample match's fields (5.1 steps 1 and 2). Its identity is the state's, the ranking's entity, the database, the
 #' identifier column, the tables' SHA-256, the organism, the set sizes, the test, its settings text, the values' slot
 #' and the design's covariates (`"none"` in this ticket; KIT-184 states its own). `service_response`, the STRING
-#' settings and `seed` are not declared: the correlated tests never run on STRING and nothing in them is random. The
+#' settings and `seed` are not declared: the correlated tests never run on STRING and nothing in camera is random
+#' (KIT-191: the permutation test's seed and number of reorderings enter its identity through `test_settings`). The
 #' `integration_enrichment` and ranking declarations are unchanged, so every pre-ranked product keeps its identity.
 #' The kernel reads the data set's values through the store (`integrationEnrichmentTestValues`).
 #' @noRd
@@ -1470,11 +1862,13 @@ integrationEnrichmentCorrelatedOperation <- function() {
 #' @param response STRING: a saved answer to use instead of a query (`integrationServiceResponseFromTable()`'s form).
 #' @param query The STRING client (`integrationStringRankedEnrichment`).
 #' @param host The STRING address queried.
+#' @param time_limit KIT-191 (D4 (c)): the longest predicted run of the permutation test accepted, in seconds (the
+#'   tab: `INTEGRATION_ENRICHMENT_TAB_SECONDS`); NULL (scripts) runs it after a message giving the predicted time.
 #' @return `list(run, ranking, entry)`: the enrichment's run (`status`, `value`, `reference`), the ranking's run and the
 #'   entry kept on the head.
 #' @noRd
 runIntegrationEnrichment <- function(manager, parameters, api_key = NULL, mapping = NULL, response = NULL,
-    query = integrationStringRankedEnrichment, host = INTEGRATION_STRING_DEFAULT_HOST) {
+    query = integrationStringRankedEnrichment, host = INTEGRATION_STRING_DEFAULT_HOST, time_limit = NULL) {
     if (!usesWorkflowReferenceStates(manager)) {
         cli::cli_abort("the integration enrichment needs the integration owner", class = "saved_entity_scope")
     }
@@ -1493,6 +1887,7 @@ runIntegrationEnrichment <- function(manager, parameters, api_key = NULL, mappin
             NA_integer_
         }
         p <- integrationResolveEnrichmentParameters(parameters, value, object, n_samples)
+        p$time_limit <- time_limit
         if (p$database %in% c("kegg", "reactome") && !(is.list(mapping) && identical(tolower(mapping$database),
             p$database) && is.data.frame(mapping$table))) {
             integrationEnrichmentRefuse("integration_enrichment_parameters_invalid",
@@ -1531,7 +1926,7 @@ runIntegrationEnrichment <- function(manager, parameters, api_key = NULL, mappin
             # KIT-183: the correlated tests' own declaration (section 7); the pre-ranked test's is unchanged.
             declared <- list(ranking = ranking$reference$entity_id, database = p$database, id_column = p$id_column,
                 mapping = stored$sha256, organism = organism, min_set_size = p$min_set_size, max_set_size = p$max_set_size,
-                test = p$test, test_settings = INTEGRATION_ENRICHMENT_TEST_SETTINGS[[p$test]], values_slot = "views",
+                test = p$test, test_settings = integrationEnrichmentTestSettingsText(p$test, p), values_slot = "views",
                 design_covariates = "none")
             operation <- integrationEnrichmentCorrelatedOperation()
             extra <- c(extra, list(model_value = value, model_parameters = export$parameters))
@@ -1600,6 +1995,8 @@ acceptIntegrationEnrichment <- function(manager, export, run, ranking, p, stored
     settings <- p[c("factor", "view", "omic", "database", "id_type", "id_column", "correlation_method", "min_samples",
         "string_species", "string_fdr", "string_rank_direction", "kegg_organism", "reactome_organism", "min_set_size",
         "max_set_size", "seed", "test", "test_ignored")]
+    # KIT-191: a permutation entry keeps its number of reorderings (with its seed, above), so it replays identically.
+    if (identical(p$test, "permutation")) settings$permutations <- p$permutations
     entry <- list(factor = p$factor, view = p$view, database = p$database, reference = run$reference,
         ranking = ranking$reference, stored = list(reference = stored$reference, sha256 = stored$sha256,
             kind = if (p$database == "string") "service_response" else "mapping"),
@@ -1748,8 +2145,12 @@ integrationRecordEnrichmentBlock <- function(context, export) {
             mapping_counts = value$mapping_counts, mapping_rule = value$mapping_rule, service = value$service,
             stored_sha256 = entry$stored$sha256, family = value$family, tests = value$tests, entity_id = entry$reference$entity_id,
             # KIT-183: the test (absent: the pre-ranked test), its counts and design, the factor's strength, the values.
-            test = value$test %||% (if (!identical(value$database, "string")) "gsea"), test_counts = value$test_counts,
+            # KIT-191: exactly `test` (`value$test` would partially match the pre-ranked product's `tests`, the count).
+            test = value[["test", exact = TRUE]] %||% (if (!identical(value$database, "string")) "gsea"),
+            test_counts = value$test_counts,
             design_columns = value$design_columns, design_covariates = value$design_covariates,
+            # KIT-191: the permutation test's seed, reorderings, unchanged draws and smallest p-value.
+            permutation = value$permutation,
             factor_r2_percent = entry$factor_r2_percent, largest_r2_percent = entry$largest_r2_percent,
             input_matrix = entry$input_matrix,
             terms = unname(lapply(seq_len(nrow(terms)), function(i) lapply(as.list(terms[i, , drop = FALSE]), function(x)
@@ -1817,7 +2218,7 @@ integrationRecordEnrichmentRanking <- function(entry, texts = integrationRecordT
         if (isTRUE(as.logical(s(entry$settings$test_ignored)))) ranking <- paste0(ranking, "; ", texts[["enrich_string_test_note"]])
         return(ranking)
     }
-    test <- s(entry$test)
+    test <- s(entry[["test", exact = TRUE]])
     if (!isTRUE(test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS)) return(ranking)
     sprintf(texts[[paste0("enrich_ranking_value_", test)]], as.integer(s(entry$test_counts$samples)),
         as.integer(s(entry$test_counts$universe)))
@@ -1840,7 +2241,71 @@ integrationEnrichmentStrengthText <- function(entry, texts) {
     own <- s(entry$factor_r2_percent)
     largest <- s(entry$largest_r2_percent)
     if (identical(s(entry$database), "string") || is.na(own) || is.na(largest)) return("")
-    sprintf(texts[["enrich_factor_strength"]], integrationEnrichmentPercent(own), integrationEnrichmentPercent(largest))
+    # KIT-191: the figure of the entry's own test and the data set's kind (row E of the evidence table).
+    test <- integrationEnrichmentEntryTest(entry)
+    if (is.na(test)) return("")
+    omic <- s(entry$omic)
+    if (is.na(omic)) omic <- s(entry$settings$omic)
+    kind <- integrationEnrichmentEvidenceKind(omic)
+    sprintf(texts[["enrich_factor_strength"]], integrationEnrichmentPercent(own), integrationEnrichmentPercent(largest),
+        texts[[paste0("enrich_strength_kind_", if (identical(omic, "lipidomics")) "lipids" else kind)]],
+        texts[[paste0("enrich_strength_terms_", kind)]], integrationEnrichmentEvidenceValue(kind, test, "E", short = TRUE),
+        texts[[paste0("enrich_test_phrase_", test)]])
+}
+
+#' KIT-191: an entry's test among the offered ones: the declared test first (the head's `settings$test`, which the
+#' record's block carries too), then the block's `test`; an entry without one (made before KIT-183) is the pre-ranked
+#' test. AUDIT-KIT-191-impl I03: a block made by KIT-183's merged code holds the pre-ranked product's count of tests in
+#' `test`, and a value that is none of the offered tests gives NA (no figure is shown for it), never camera's.
+#' @noRd
+integrationEnrichmentEntryTest <- function(entry) {
+    s <- integrationRecordScalar
+    test <- s(entry$settings[["test", exact = TRUE]])
+    if (is.na(test)) test <- s(entry[["test", exact = TRUE]])
+    if (is.na(test)) return("gsea")
+    if (!test %in% INTEGRATION_ENRICHMENT_TESTS_OFFERED) return(NA_character_)
+    test
+}
+
+#' KIT-191: the kind of simulated data whose figures apply to a data set of `omic` (lipids take the metabolites'
+#' figures, labelled: no lipid data were simulated).
+#' @noRd
+integrationEnrichmentEvidenceKind <- function(omic) {
+    if (isTRUE(omic %in% c("proteomics", "transcriptomics"))) "genes_proteins" else "metabolites"
+}
+
+#' KIT-191: one cell of `INTEGRATION_ENRICHMENT_TEST_EVIDENCE` (NA when absent); `short` drops the 95 % interval and
+#' puts the pre-ranked test's figure on correlated terms in brackets.
+#' @noRd
+integrationEnrichmentEvidenceValue <- function(kind, test, measure, samples = 12L, short = FALSE) {
+    e <- INTEGRATION_ENRICHMENT_TEST_EVIDENCE
+    x <- e$value_text[e$kind == kind & e$test == test & e$samples == samples & e$measure == measure]
+    if (length(x) != 1L) return(NA_character_)
+    if (short) {
+        x <- sub(" \\((largest: )?95 % interval [^)]*\\)", "", x)
+        x <- sub("; (terms whose features vary together: .*)$", " (\\1)", x)
+    }
+    x
+}
+
+#' KIT-191 (5.4): the rows of the evidence table the tab shows for a kind of data set, at 12 biological samples.
+#' @noRd
+integrationEnrichmentEvidenceRows <- function(kind) {
+    if (identical(kind, "genes_proteins")) c("A", "B", "D", "E", "G", "H") else c("A", "B", "D", "E", "C3", "I")
+}
+
+#' KIT-191 (5.4): the record's sheet of the evidence table, every row of both kinds, when the record holds a KEGG,
+#' Reactome or Gene Ontology entry.
+#' @param texts Texts holding `col_evidence_*` and the measures' and kinds' names.
+#' @noRd
+integrationRecordEvidenceTable <- function(texts = integrationRecordTexts()) {
+    e <- INTEGRATION_ENRICHMENT_TEST_EVIDENCE
+    measure <- ifelse(e$measure == "E", paste0("enrich_evidence_E_", e$kind), paste0("enrich_evidence_", e$measure))
+    out <- data.frame(unname(texts[paste0("enrich_evidence_kind_", e$kind)]), unname(texts[paste0("enrich_test_phrase_",
+        e$test)]), e$samples, unname(texts[measure]), e$value_text, e$applies_to, e$source, stringsAsFactors = FALSE)
+    names(out) <- unname(texts[c("col_evidence_kind", "col_evidence_test", "col_evidence_samples", "col_evidence_measure",
+        "col_evidence_value", "col_evidence_applies", "col_evidence_source")])
+    out
 }
 
 #' A database's name as shown.
@@ -1866,28 +2331,129 @@ integrationMethodsEnrichment <- function(block, texts = integrationRecordTexts()
     for (entry in entries) {
         service <- entry$service
         database <- s(entry$database)
-        test <- s(entry$test)
+        test <- s(entry[["test", exact = TRUE]])
         pathways <- pathways || !identical(database, "string")
         sentences <- c(sentences, if (identical(database, "string")) sprintf(texts[["methods_enrich_string"]], s(entry$factor),
             s(entry$view), as.integer(s(entry$mapping_counts$mapped)), as.character(s(service$version$string_version)),
             as.character(s(service$species)), as.character(s(service$queried_at))) else
             if (isTRUE(test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS)) {
-                # KIT-183: the correlated test's sentence, composed from its name and settings fragments.
+                # KIT-183: the correlated test's sentence, composed from its name and settings fragments; KIT-191: the
+                # permutation test's name holds its number of reorderings (twice) and its settings its seed first.
                 counts <- entry$test_counts
-                sprintf(texts[[paste0("methods_enrich_", test)]], s(entry$factor), s(entry$view),
-                    integrationEnrichmentDatabaseName(database), texts[[paste0("methods_test_name_", test)]],
-                    sprintf(texts[[paste0("methods_test_settings_", test)]], as.integer(s(counts$samples)),
-                        as.integer(s(counts$universe)), as.integer(s(entry$mapping_counts$mapped))),
+                name <- texts[[paste0("methods_test_name_", test)]]
+                numbers <- list(as.integer(s(counts$samples)), as.integer(s(counts$universe)),
+                    as.integer(s(entry$mapping_counts$mapped)))
+                if (identical(test, "permutation")) {
+                    reorderings <- as.integer(s(entry$permutation$permutations))
+                    name <- sprintf(name, reorderings, reorderings)
+                    numbers <- c(list(as.integer(s(service$seed))), numbers)
+                }
+                sentence <- sprintf(texts[[paste0("methods_enrich_", test)]], s(entry$factor), s(entry$view),
+                    integrationEnrichmentDatabaseName(database), name,
+                    do.call(sprintf, c(list(texts[[paste0("methods_test_settings_", test)]]), numbers)),
                     as.character(s(service$release)), as.character(s(service$organism)), as.integer(s(service$min_set_size)),
                     as.integer(s(service$max_set_size)), as.integer(s(service$pathways_testable)))
+                # VAL-115 (3): the permutation's floor, as the tab states it.
+                if (identical(test, "permutation")) {
+                    clause <- integrationMethodsPermutationFloor(entry$permutation, as.integer(s(entry$tests)), texts)
+                    if (length(clause)) sentence <- paste(sentence, clause)
+                }
+                sentence
             } else
             sprintf(texts[["methods_enrich_pathway"]], s(entry$factor), s(entry$view), integrationEnrichmentDatabaseName(database),
                 as.integer(s(entry$mapping_counts$mapped)), as.character(s(service$release)), as.character(s(service$organism)),
                 as.integer(s(service$min_set_size)), as.integer(s(service$max_set_size)), as.integer(s(service$pathways_testable)),
                 as.integer(s(service$seed))))
     }
-    # KIT-183: the limits of both tests, once, when the record holds a KEGG or Reactome entry.
-    c(sentences, if (pathways) texts[["methods_enrich_limits_tests"]], texts[["methods_enrich_family"]])
+    # KIT-191: a factor, data set and database with more than one test's entry says so, once.
+    sentences <- c(sentences, integrationMethodsSeveralTests(entries, texts))
+    # KIT-183: the limits, once, when the record holds a KEGG or Reactome entry; KIT-191: one clause per test used and
+    # kind of data set.
+    c(sentences, if (pathways) integrationMethodsEnrichmentLimits(entries, texts), texts[["methods_enrich_family"]])
+}
+
+#' KIT-191 (VAL-115 (3)): the permutation's floor in its Methods sentence: the smallest attainable p-value as the exact
+#' fraction (`integrationEnrichmentFloorFraction()`) and the smallest number of pathways BH can call together, or the
+#' `_none` form when the floor is above 0.05. NULL without the product's `permutation` or without pathways tested.
+#' @param permutation The record block's `permutation` (`permutations`, `identity_draws`).
+#' @param terms The pathways tested (m).
+#' @noRd
+integrationMethodsPermutationFloor <- function(permutation, terms, texts = integrationRecordTexts()) {
+    s <- integrationRecordScalar
+    d <- as.numeric(s(permutation$identity_draws))
+    B <- as.numeric(s(permutation$permutations))
+    if (is.null(permutation) || is.na(d) || is.na(B) || !isTRUE(terms > 0L)) return(NULL)
+    fraction <- integrationEnrichmentFloorFraction(d, B)
+    if (20 * (1 + d) > 1 + B) return(sprintf(texts[["methods_enrich_permutation_floor_none"]], fraction))
+    sprintf(texts[["methods_enrich_permutation_floor"]], fraction, as.integer(terms), integrationEnrichmentFloorMinimum(d, B,
+        terms))
+}
+
+#' KIT-191 (5.2 step 8): the smallest number of terms BH at 5 % can call together, k_min = ceiling(m (1 + d) /
+#' (0.05 (1 + B))), in whole numbers as ceiling(20 m (1 + d) / (1 + B)).
+#' @noRd
+integrationEnrichmentFloorMinimum <- function(identity_draws, permutations, terms) {
+    numerator <- 20 * as.numeric(terms) * (1 + as.numeric(identity_draws))
+    as.integer((numerator + as.numeric(permutations)) %/% (1 + as.numeric(permutations)))
+}
+
+#' KIT-191 (I01; the form confirmed by the owner, VAL-115 (2)): the smallest attainable p-value (1 + d) / (1 + B) as
+#' printed, the exact fraction with thousands separated ("1/1,001"). The one place the form is set.
+#' @noRd
+integrationEnrichmentFloorFraction <- function(identity_draws, permutations) {
+    paste0(format(1 + as.numeric(identity_draws), big.mark = ",", scientific = FALSE, trim = TRUE), "/",
+        format(1 + as.numeric(permutations), big.mark = ",", scientific = FALSE, trim = TRUE))
+}
+
+#' KIT-191 (5.4): the limits paragraph of the Methods, composed from the tests and kinds of data set of the record's
+#' KEGG, Reactome (and Gene Ontology) entries: the opening, one clause per test and kind with its rows A, B and E of
+#' the evidence table, the closing.
+#' @param entries The record's complete enrichment entries.
+#' @noRd
+integrationMethodsEnrichmentLimits <- function(entries, texts = integrationRecordTexts()) {
+    s <- integrationRecordScalar
+    pathway <- Filter(function(entry) !identical(s(entry$database), "string"), entries)
+    pathway <- Filter(function(entry) !is.na(integrationEnrichmentEntryTest(entry)), pathway)
+    if (!length(pathway)) return(character())
+    pairs <- unique(do.call(rbind, lapply(pathway, function(entry) {
+        omic <- s(entry$omic)
+        data.frame(test = integrationEnrichmentEntryTest(entry), kind = integrationEnrichmentEvidenceKind(omic),
+            lipids = identical(omic, "lipidomics"), stringsAsFactors = FALSE)
+    })))
+    order_tests <- match(pairs$test, INTEGRATION_ENRICHMENT_TESTS_OFFERED)
+    pairs <- pairs[order(order_tests, pairs$kind, pairs$lipids), , drop = FALSE]
+    clauses <- vapply(seq_len(nrow(pairs)), function(i) {
+        test <- pairs$test[[i]]
+        kind <- pairs$kind[[i]]
+        figure <- function(measure) integrationEnrichmentEvidenceValue(kind, test, measure, short = TRUE)
+        sprintf(texts[["methods_enrich_limits_clause"]], texts[[paste0("enrich_test_phrase_", test)]],
+            texts[[paste0("enrich_strength_kind_", if (pairs$lipids[[i]]) "lipids" else kind)]], figure("A"), figure("B"),
+            texts[[paste0("enrich_strength_terms_", kind)]], figure("E"))
+    }, character(1))
+    paste0(texts[["methods_enrich_limits_tests"]], " ", paste(clauses, collapse = "; "), ". ",
+        texts[["methods_enrich_limits_end"]])
+}
+
+#' KIT-191 (5.4, A15): one sentence per factor, data set and database with more than one test's entry.
+#' @noRd
+integrationMethodsSeveralTests <- function(entries, texts = integrationRecordTexts()) {
+    s <- integrationRecordScalar
+    pathway <- Filter(function(entry) !identical(s(entry$database), "string"), entries)
+    if (!length(pathway)) return(character())
+    key <- vapply(pathway, function(entry) paste(s(entry$factor), s(entry$view), s(entry$database), sep = "|"), character(1))
+    out <- character()
+    for (k in unique(key)) {
+        group <- pathway[key == k]
+        tests <- unique(vapply(group, integrationEnrichmentEntryTest, character(1)))
+        tests <- tests[!is.na(tests)]
+        if (length(tests) < 2L) next
+        tests <- tests[order(match(tests, INTEGRATION_ENRICHMENT_TESTS_OFFERED))]
+        first <- group[[1L]]
+        out <- c(out, sprintf(texts[["methods_enrich_several_tests"]], s(first$factor), s(first$view),
+            integrationEnrichmentDatabaseName(s(first$database)), length(tests),
+            paste(unname(texts[paste0("enrich_test_phrase_", tests)]), collapse = ", ")))
+    }
+    out
 }
 
 # --- The replay (audit ENG-15) ---

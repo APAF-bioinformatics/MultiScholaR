@@ -453,7 +453,6 @@ Suggests:
     iheatmapr,
     reticulate,
     gprofiler2,
-    httr2,
     webshot2,
     shinytest2
 Config/testthat/edition: 3
@@ -488,6 +487,7 @@ Imports:
     htmltools,
     htmlwidgets,
     httr,
+    httr2,
     igraph,
     ini,
     iq,

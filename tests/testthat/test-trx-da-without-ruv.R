@@ -213,3 +213,159 @@ test_that("KIT-186 T6: the scripted path and replay of a none run: the formula c
     expect_identical(again$parameters, manifest$parameters)
     expect_identical(trxDeclValue(replayed, again$results[[1L]]$products$da_contrast)$assays[[1L]]$results$top_table, recorded)
 })
+
+# KIT-192 (VAL-87, VAL-102): the DA export on a run without the legacy RUV grid (design `none`, a declared design whose k
+# is 0, a declared design with factors) completes and reports success, in process, managed and scripted; the grid summary
+# `ruv_optimization_summary.txt` is written only for a run of the legacy grid (D1 (a)). Before the fix each of T1 to T4
+# and T6 fails at an expectation: the tab's last notification is the save warning and the publication's display is
+# `saved = FALSE` (ticket section 9).
+
+trxExportSaved <- "DA results saved to disk (tables, volcano plots, heatmaps)"
+trxExportWarning <- "Warning: Could not save results to disk: non-numeric argument to mathematical function"
+
+#' The last three notifications as "[type] message".
+trxExportTail <- function(out) {
+    notes <- vapply(out$notes, function(note) paste0("[", note$type %||% "", "] ", note$message), character(1))
+    utils::tail(notes, 3L)
+}
+
+#' The in-process tab's last three notifications on a completed export (KIT-186 S1 routes 3 and 4).
+trxExportInProcessTail <- c("[default] Running differential expression analysis...",
+    "[message] Differential expression analysis complete!", paste("[message]", trxExportSaved))
+
+trxExportExpectNoSaveWarning <- function(out) {
+    shown <- vapply(out$notes, function(note) note$message, character(1))
+    expect_false(any(grepl("Could not save results to disk", shown, fixed = TRUE)), info = paste(shown, collapse = " || "))
+}
+
+#' The files every export writes for the corpus contrast Sera_vs_RPMI, each present and not empty.
+trxExportExpectFiles <- function(paths) {
+    graphs <- paths$publication_graphs_dir
+    files <- c(file.path(paths$da_output_dir, c("de_results_Sera_vs_RPMI.csv", "top_de_genes.tsv")),
+        file.path(graphs, "Volcano_Plots", paste0("volcano_plot_Sera_vs_RPMI", c(".png", ".pdf"))),
+        file.path(graphs, "NumSigDeMolecules", paste0("summary_barplot_Sera_vs_RPMI", c(".png", ".pdf"))))
+    written <- file.exists(files) & file.size(files) > 0
+    expect_true(all(written), info = paste("missing or empty:", paste(files[!written], collapse = ", ")))
+}
+
+trxExportSummaryPath <- function(paths) file.path(paths$da_output_dir, "ruv_optimization_summary.txt")
+
+#' The managed tab's export (T2's assertions), on a fixture driven with `omicsManagedChainMocks`.
+trxExportExpectManaged <- function(worker, probe, paths) {
+    expect_identical(worker$errors, character())
+    expect_true("trx_da_publication" %in% probe$operations, info = paste(probe$operations, collapse = " "))
+    expect_true(trxExportSaved %in% trxNoRuvNotes(worker, "message"),
+        info = paste(trxExportTail(worker), collapse = " || "))
+    trxExportExpectNoSaveWarning(worker)
+    trxExportExpectFiles(paths)
+    expect_false(file.exists(trxExportSummaryPath(paths)))
+}
+
+test_that("KIT-192 T1: design none, in process: the DA export completes and writes no grid summary", {
+    skipWithoutTrxDeclReference()
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    fixture <- module_ci_trx_project(module_ci_trx_corpus())
+    out <- module_ci_trx_tabs_journey(fixture, norm = list(ruv_mode = "automatic", ruv_design = "none"))
+    expect_identical(out$errors, character())
+    expect_identical(trxExportTail(out), trxExportInProcessTail)
+    trxExportExpectNoSaveWarning(out)
+    trxExportExpectFiles(fixture$paths)
+    expect_false(file.exists(trxExportSummaryPath(fixture$paths)))
+})
+
+test_that("KIT-192 T2: design none, managed: the worker's DA export completes and writes no grid summary", {
+    skipWithoutTrxDeclReference()
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    managed <- module_ci_trx_project(module_ci_trx_corpus())
+    probe <- new.env()
+    omicsManagedChainMocks(managed, probe)
+    worker <- module_ci_trx_tabs_journey(managed, managed = TRUE, norm = list(ruv_mode = "automatic", ruv_design = "none"))
+    trxExportExpectManaged(worker, probe, managed$paths)
+})
+
+test_that("KIT-192 T3: a declared design whose estimated k is 0, in process: the DA export completes", {
+    skipWithoutTrxDeclReference()
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    fixture <- module_ci_trx_project(module_ci_trx_corpus())
+    # The estimated count forced to 0 and nothing else (KIT-186 T3).
+    real <- estimateRuvFactorCount
+    testthat::local_mocked_bindings(estimateRuvFactorCount = function(...) {
+        e <- real(...)
+        e$k <- 0L
+        e
+    }, .package = "MultiScholaR")
+    out <- module_ci_trx_tabs_journey(fixture, norm = list(ruv_mode = "automatic", ruv_design = "groups_all_features",
+        ruv_k_rule = "num_sv_be"))
+    ruv <- trxNoRuvRuvsOutcomes(buildWorkflowAnalysisRecord(fixture$owner))
+    expect_identical(ruv[c("ruv_k", "ruv_applied")], list(ruv_k = 0L, ruv_applied = FALSE))
+    expect_identical(out$errors, character())
+    expect_identical(trxExportTail(out), trxExportInProcessTail)
+    trxExportExpectNoSaveWarning(out)
+    trxExportExpectFiles(fixture$paths)
+    expect_false(file.exists(trxExportSummaryPath(fixture$paths)))
+})
+
+test_that("KIT-192 T4: a declared design with two factors, in process and managed: the DA export completes", {
+    skipWithoutTrxDeclReference()
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    norm <- list(ruv_mode = "automatic", ruv_design = "groups_all_features", ruv_k_rule = "user", ruv_k_user = 2)
+    # In process.
+    fixture <- module_ci_trx_project(module_ci_trx_corpus())
+    out <- module_ci_trx_tabs_journey(fixture, norm = norm)
+    record <- buildWorkflowAnalysisRecord(fixture$owner)
+    ruv <- trxNoRuvRuvsOutcomes(record)
+    expect_identical(ruv[c("ruv_applied", "ruv_k")], list(ruv_applied = TRUE, ruv_k = 2L))
+    formula <- record$analyses$differential_abundance$model$formula_used %||% ""
+    expect_true(grepl("W_1", formula, fixed = TRUE) && grepl("W_2", formula, fixed = TRUE), info = formula)
+    expect_identical(out$errors, character())
+    expect_identical(trxExportTail(out), trxExportInProcessTail)
+    trxExportExpectNoSaveWarning(out)
+    trxExportExpectFiles(fixture$paths)
+    expect_false(file.exists(trxExportSummaryPath(fixture$paths)))
+    # Managed, on a second fixture.
+    managed <- module_ci_trx_project(module_ci_trx_corpus())
+    probe <- new.env()
+    omicsManagedChainMocks(managed, probe)
+    worker <- module_ci_trx_tabs_journey(managed, managed = TRUE, norm = norm)
+    trxExportExpectManaged(worker, probe, managed$paths)
+})
+
+test_that("KIT-192 T5: the legacy grid (gate off), in process: the export completes and writes the grid summary as before", {
+    skipWithoutTrxDeclReference()
+    withr::local_options(MultiScholaR.ruv_design_panel = FALSE)
+    fixture <- module_ci_trx_project(module_ci_trx_corpus())
+    out <- module_ci_trx_tabs_journey(fixture)
+    expect_identical(out$errors, character())
+    expect_identical(trxExportTail(out), trxExportInProcessTail)
+    trxExportExpectFiles(fixture$paths)
+    summary <- trxExportSummaryPath(fixture$paths)
+    expect_true(file.exists(summary))
+    lines <- if (file.exists(summary)) readLines(summary, warn = FALSE) else character()
+    expect_identical(lines[1L], "=== MultiScholaR RUV Parameter Optimization Summary ===")
+    expect_true("--- Full Grid Search Summary ---" %in% lines)
+})
+
+test_that("KIT-192 T6: a scripted call of the DA publication on a none run returns saved = TRUE", {
+    skipWithoutTrxDeclReference()
+    reference <- trxDeclReference("trx_edge_12")
+    fixture <- trxDeclarationsOwner(withr::local_tempdir(), reference$dir)
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    owner <- fixture$owner
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) {
+            owner$job <- NULL
+            list(status = status)
+        }, .package = "MultiScholaR")
+    suppressWarnings(suppressMessages(runTrxReferenceExpressionFilter(owner, list())))
+    commitWorkflowOmicsStoreStep(owner, "trx_qc_finalize", "trx_qc_complete", list(), "QC processing complete - ready for normalization")
+    suppressWarnings(suppressMessages(runTrxReferenceRuvs(owner, NULL, list(), design_parameters = trxRuvDesignParameters("none"))))
+    suppressWarnings(suppressMessages(runTrxReferenceDaAnalysis(owner, getWorkflowStateReference(owner),
+        list(da_q_val_thresh = 0.05, treat_lfc_cutoff = 1), fixture$workflow$contrasts_tbl)))
+    display <- suppressWarnings(suppressMessages(runWorkflowOmicsPublicationInProcess(transcriptomicsDeclarationBinding, owner,
+        "trx_da_publication", list(), fixture$paths)))
+    expect_true(isTRUE(display$saved))
+    expect_null(display$message)
+    expect_true(isTRUE(trxDaExport(display)$success))
+    expect_true(file.exists(file.path(fixture$paths$da_output_dir, "top_de_genes.tsv")))
+    expect_false(file.exists(trxExportSummaryPath(fixture$paths)))
+})

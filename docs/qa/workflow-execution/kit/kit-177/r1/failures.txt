@@ -1,0 +1,790 @@
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=0.000976562 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.635700667871 > 0.000000000001
+  Difference: 9.635700667870 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=0.000976562 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.486016503 > 0.000000001
+  Difference: 9.486016502 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=0.000976562 (3) logFC <= 1e-09.
+  Actual comparison: 3.577177353 > 0.000000001
+  Difference: 3.577177352 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=1024 (1) design-step shift <= 1e-12.
+  Actual comparison: 2.157589163965 > 0.000000000001
+  Difference: 2.157589163964 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=1024 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.733649327 > 0.000000001
+  Difference: 1.733649326 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=1024 (3) logFC <= 1e-09.
+  Actual comparison: 0.399413412 > 0.000000001
+  Difference: 0.399413411 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=0.001 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.451815273272 > 0.000000000001
+  Difference: 9.451815273271 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=0.001 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.451815273 > 0.000000001
+  Difference: 9.451815272 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.564042447 > 0.000000001
+  Difference: 3.564042446 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=1000 (1) design-step shift <= 1e-12.
+  Actual comparison: 1.733570613642 > 0.000000000001
+  Difference: 1.733570613641 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=1000 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.733570614 > 0.000000001
+  Difference: 1.733570613 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT none s=1000 (3) logFC <= 1e-09.
+  Actual comparison: 0.399399901 > 0.000000001
+  Difference: 0.399399900 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=0.000976562 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.635700667871 > 0.000000000001
+  Difference: 9.635700667870 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=0.000976562 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.349584989 > 0.000000001
+  Difference: 9.349584988 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=0.000976562 (3) logFC <= 1e-09.
+  Actual comparison: 3.567821994 > 0.000000001
+  Difference: 3.567821993 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=1024 (1) design-step shift <= 1e-12.
+  Actual comparison: 2.157589163965 > 0.000000000001
+  Difference: 2.157589163964 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=1024 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.471394299 > 0.000000001
+  Difference: 1.471394298 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=1024 (3) logFC <= 1e-09.
+  Actual comparison: 0.392076539 > 0.000000001
+  Difference: 0.392076538 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=0.001 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.451815273272 > 0.000000000001
+  Difference: 9.451815273271 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=0.001 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.315388650 > 0.000000001
+  Difference: 9.315388649 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.554725154 > 0.000000001
+  Difference: 3.554725153 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=1000 (1) design-step shift <= 1e-12.
+  Actual comparison: 1.733570613642 > 0.000000000001
+  Difference: 1.733570613641 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=1000 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.471333748 > 0.000000001
+  Difference: 1.471333747 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT quantile s=1000 (3) logFC <= 1e-09.
+  Actual comparison: 0.392063363 > 0.000000001
+  Difference: 0.392063362 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=0.000976562 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.635700667871 > 0.000000000001
+  Difference: 9.635700667870 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=0.000976562 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.564835357 > 0.000000001
+  Difference: 9.564835356 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=0.000976562 (3) logFC <= 1e-09.
+  Actual comparison: 3.570162644 > 0.000000001
+  Difference: 3.570162643 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=1024 (1) design-step shift <= 1e-12.
+  Actual comparison: 2.157589163965 > 0.000000000001
+  Difference: 2.157589163964 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=1024 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.763848070 > 0.000000001
+  Difference: 1.763848069 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=1024 (3) logFC <= 1e-09.
+  Actual comparison: 0.399732474 > 0.000000001
+  Difference: 0.399732473 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=0.001 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.451815273272 > 0.000000000001
+  Difference: 9.451815273271 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=0.001 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.530592833 > 0.000000001
+  Difference: 9.530592832 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.557420800 > 0.000000001
+  Difference: 3.557420799 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=1000 (1) design-step shift <= 1e-12.
+  Actual comparison: 1.733570613642 > 0.000000000001
+  Difference: 1.733570613641 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=1000 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.763767283 > 0.000000001
+  Difference: 1.763767282 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected TMT cyclicloess s=1000 (3) logFC <= 1e-09.
+  Actual comparison: 0.399718922 > 0.000000001
+  Difference: 0.399718921 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=0.000976562 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.635700667871 > 0.000000000001
+  Difference: 9.635700667870 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=0.000976562 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.486016503 > 0.000000001
+  Difference: 9.486016502 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=0.000976562 (3) logFC <= 1e-09.
+  Actual comparison: 3.577177353 > 0.000000001
+  Difference: 3.577177352 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=1024 (1) design-step shift <= 1e-12.
+  Actual comparison: 2.157589163965 > 0.000000000001
+  Difference: 2.157589163964 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=1024 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.733649327 > 0.000000001
+  Difference: 1.733649326 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=1024 (3) logFC <= 1e-09.
+  Actual comparison: 0.399413412 > 0.000000001
+  Difference: 0.399413411 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=0.001 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.451815273272 > 0.000000000001
+  Difference: 9.451815273271 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=0.001 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.451815273 > 0.000000001
+  Difference: 9.451815272 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.564042447 > 0.000000001
+  Difference: 3.564042446 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=1000 (1) design-step shift <= 1e-12.
+  Actual comparison: 1.733570613642 > 0.000000000001
+  Difference: 1.733570613641 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=1000 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.733570614 > 0.000000001
+  Difference: 1.733570613 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ none s=1000 (3) logFC <= 1e-09.
+  Actual comparison: 0.399399901 > 0.000000001
+  Difference: 0.399399900 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=0.000976562 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.635700667871 > 0.000000000001
+  Difference: 9.635700667870 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=0.000976562 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.349584989 > 0.000000001
+  Difference: 9.349584988 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=0.000976562 (3) logFC <= 1e-09.
+  Actual comparison: 3.567821994 > 0.000000001
+  Difference: 3.567821993 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=1024 (1) design-step shift <= 1e-12.
+  Actual comparison: 2.157589163965 > 0.000000000001
+  Difference: 2.157589163964 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=1024 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.471394299 > 0.000000001
+  Difference: 1.471394298 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=1024 (3) logFC <= 1e-09.
+  Actual comparison: 0.392076539 > 0.000000001
+  Difference: 0.392076538 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=0.001 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.451815273272 > 0.000000000001
+  Difference: 9.451815273271 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=0.001 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.315388650 > 0.000000001
+  Difference: 9.315388649 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.554725154 > 0.000000001
+  Difference: 3.554725153 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=1000 (1) design-step shift <= 1e-12.
+  Actual comparison: 1.733570613642 > 0.000000000001
+  Difference: 1.733570613641 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=1000 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.471333748 > 0.000000001
+  Difference: 1.471333747 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ quantile s=1000 (3) logFC <= 1e-09.
+  Actual comparison: 0.392063363 > 0.000000001
+  Difference: 0.392063362 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=0.000976562 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.635700667871 > 0.000000000001
+  Difference: 9.635700667870 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=0.000976562 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.564835357 > 0.000000001
+  Difference: 9.564835356 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=0.000976562 (3) logFC <= 1e-09.
+  Actual comparison: 3.570162644 > 0.000000001
+  Difference: 3.570162643 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=1024 (1) design-step shift <= 1e-12.
+  Actual comparison: 2.157589163965 > 0.000000000001
+  Difference: 2.157589163964 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=1024 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.763848070 > 0.000000001
+  Difference: 1.763848069 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=1024 (3) logFC <= 1e-09.
+  Actual comparison: 0.399732474 > 0.000000001
+  Difference: 0.399732473 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=0.001 (1) design-step shift <= 1e-12.
+  Actual comparison: 9.451815273272 > 0.000000000001
+  Difference: 9.451815273271 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=0.001 (2) normalised shift <= 1e-09.
+  Actual comparison: 9.530592833 > 0.000000001
+  Difference: 9.530592832 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=0.001 (3) logFC <= 1e-09.
+  Actual comparison: 3.557420800 > 0.000000001
+  Difference: 3.557420799 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=1000 (1) design-step shift <= 1e-12.
+  Actual comparison: 1.733570613642 > 0.000000000001
+  Difference: 1.733570613641 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=1000 (2) normalised shift <= 1e-09.
+  Actual comparison: 1.763767283 > 0.000000001
+  Difference: 1.763767282 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T1a: multiplying the table by s adds log2(s) at the design step and changes no fold change
+kind: failure
+message:
+  Expected LFQ cyclicloess s=1000 (3) logFC <= 1e-09.
+  Actual comparison: 0.399718922 > 0.000000001
+  Difference: 0.399718921 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T2: a protein at 10 against 80 reports a log2 fold change of 3
+kind: failure
+message:
+  Expected `route$da$logFC[route$da$id == sim$ids[[1L]]]` to equal 3.
+  Differences:
+    `actual`: 2.88
+  `expected`: 3.00
+
+file: test-prot-design-log2.R
+test: KIT-177 T3: 0, NaN and NA become missing, counted apart; a negative or infinite quantity is refused
+kind: failure
+message:
+  Expected `is.na(m[1L, 1L])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-prot-design-log2.R
+test: KIT-177 T3: 0, NaN and NA become missing, counted apart; a negative or infinite quantity is refused
+kind: failure
+message:
+  Expected `any(is.nan(m))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-prot-design-log2.R
+test: KIT-177 T3: 0, NaN and NA become missing, counted apart; a negative or infinite quantity is refused
+kind: failure
+message:
+  Expected `m[2L, ]` to equal `c(A1 = log2(200), B1 = log2(300))`.
+  Differences:
+    `actual`: 7.6511 8.2336
+  `expected`: 7.6439 8.2288
+
+file: test-prot-design-log2.R
+test: KIT-177 T3: 0, NaN and NA become missing, counted apart; a negative or infinite quantity is refused
+kind: failure
+message:
+  Expected `as.integer(fixed$nonpositive_set_to_na)` to be identical to 1L.
+  Differences:
+    `actual`:  
+  `expected`: 1
+
+file: test-prot-design-log2.R
+test: KIT-177 T3: 0, NaN and NA become missing, counted apart; a negative or infinite quantity is refused
+kind: failure
+message:
+  Expected `as.integer(fixed$nonfinite_set_to_na)` to be identical to 1L.
+  Differences:
+    `actual`:  
+  `expected`: 1
+
+file: test-prot-design-log2.R
+test: KIT-177 T3: 0, NaN and NA become missing, counted apart; a negative or infinite quantity is refused
+kind: error
+message:
+  Error in `protDesignLog2NotificationText(made$workflow$prot_design_log2_counts)`: could not find function "protDesignLog2NotificationText"
+trace (first lines):
+  ▆
+
+file: test-prot-design-log2.R
+test: KIT-177 T3b: zeros from a Spectronaut table and from a stored data_cln.tab are missing, recorded and notified
+kind: error
+message:
+  Error in `session$userData$dia_capacity_manager <- manager`: could not find function "makeK177FixtureSession"
+trace (first lines):
+      ▆
+   1. └─MultiScholaR:::initializeDIANativeImport(...) at test-prot-design-log2.R:296:5
+   2.   └─MultiScholaR:::attachDIAStateSession(manager, session, workflow_data) at pkg/R/utils_workflow_dia_sessions.R:1045:5
+
+file: test-prot-design-log2.R
+test: KIT-177 T4: the design step records log2(x); 0 missing and both counts (0 on a fixture without zeros)
+kind: failure
+message:
+  Expected `fixed$transform` to be identical to "log2(x); 0 missing".
+  Differences:
+  `actual`:   "log2(x + 1)"       
+  `expected`: "log2(x); 0 missing"
+
+file: test-prot-design-log2.R
+test: KIT-177 T4: the design step records log2(x); 0 missing and both counts (0 on a fixture without zeros)
+kind: failure
+message:
+  Expected `as.integer(fixed$nonpositive_set_to_na)` to be identical to 0L.
+  Differences:
+    `actual`:  
+  `expected`: 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T4: the design step records log2(x); 0 missing and both counts (0 on a fixture without zeros)
+kind: failure
+message:
+  Expected `as.integer(fixed$nonfinite_set_to_na)` to be identical to 0L.
+  Differences:
+    `actual`:  
+  `expected`: 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T4: the design step records log2(x); 0 missing and both counts (0 on a fixture without zeros)
+kind: error
+message:
+  Error in `protDesignLog2NotificationText(made$workflow$prot_design_log2_counts)`: could not find function "protDesignLog2NotificationText"
+trace (first lines):
+      ▆
+   1. └─testthat::expect_null(protDesignLog2NotificationText(made$workflow$prot_design_log2_counts)) at test-prot-design-log2.R:374:5
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-prot-design-log2.R
+test: KIT-177 T6: on the five e2e fixtures the design step moves each value by log2(1 + 1/v) at most
+kind: failure
+message:
+  Expected prot_lfq each cell log2(1 + 1/v) <= 1e-12.
+  Actual comparison: 0.002755865291 > 0.000000000001
+  Difference: 0.002755865290 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T6: on the five e2e fixtures the design step moves each value by log2(1 + 1/v) at most
+kind: failure
+message:
+  Expected prot_tmt each cell log2(1 + 1/v) <= 1e-12.
+  Actual comparison: 0.002755865291 > 0.000000000001
+  Difference: 0.002755865290 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T6: on the five e2e fixtures the design step moves each value by log2(1 + 1/v) at most
+kind: failure
+message:
+  Expected prot_lfq_fragpipe each cell log2(1 + 1/v) <= 1e-12.
+  Actual comparison: 0.000430180115 > 0.000000000001
+  Difference: 0.000430180114 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T6: on the five e2e fixtures the design step moves each value by log2(1 + 1/v) at most
+kind: failure
+message:
+  Expected prot_tmt_pd each cell log2(1 + 1/v) <= 1e-12.
+  Actual comparison: 0.000279803542 > 0.000000000001
+  Difference: 0.000279803541 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T6: on the five e2e fixtures the design step moves each value by log2(1 + 1/v) at most
+kind: failure
+message:
+  Expected prot_lfq_maxquant each cell log2(1 + 1/v) <= 1e-12.
+  Actual comparison: 0.000249187344 > 0.000000000001
+  Difference: 0.000249187343 > 0
+
+file: test-prot-design-log2.R
+test: KIT-177 T7: on values of 0.5 to 50 every later step runs and the counts are kept
+kind: failure
+message:
+  Expected TMT observed cells of the kept proteins to be identical to `leaving`.
+  Differences:
+  `dimnames(actual)[[1]][194:200]`:   "194" "195" "196" "197" "198" "199" "200"
+  `dimnames(expected)[[1]][194:199]`: "194" "195" "196"       "198" "199" "200"
+  
+  `dimnames(actual)[[1]][269:275]`:   "269" "270" "271" "272" "273" "274" "275"
+  `dimnames(expected)[[1]][268:273]`: "269" "270" "271"       "273" "274" "275"
+  
+  `dimnames(actual)[[1]][396:398]`:   "396" "397" "398"            
+  `dimnames(expected)[[1]][394:398]`: "396" "397" "398" "399" "400"
+
+file: test-prot-design-log2.R
+test: KIT-177 T7: on values of 0.5 to 50 every later step runs and the counts are kept
+kind: failure
+message:
+  Expected LFQ observed cells of the kept proteins to be identical to `leaving`.
+  Differences:
+  `dimnames(actual)[[1]][194:200]`:   "194" "195" "196" "197" "198" "199" "200"
+  `dimnames(expected)[[1]][194:199]`: "194" "195" "196"       "198" "199" "200"
+  
+  `dimnames(actual)[[1]][269:275]`:   "269" "270" "271" "272" "273" "274" "275"
+  `dimnames(expected)[[1]][268:273]`: "269" "270" "271"       "273" "274" "275"
+  
+  `dimnames(actual)[[1]][396:398]`:   "396" "397" "398"            
+  `dimnames(expected)[[1]][394:398]`: "396" "397" "398" "399" "400"
+
+file: test-prot-design-log2.R
+test: KIT-177 T8: an earlier label-free or TMT design state is told once; never a head, DIA or other state
+kind: error
+message:
+  Error in `omicGuiProtLog2Texts()`: could not find function "omicGuiProtLog2Texts"
+trace (first lines):
+  ▆
+
+file: test-prot-design-log2.R
+test: KIT-177 T9: scale on log2 values below 0 warns once with their count, and its result is unchanged
+kind: error
+message:
+  Error in `omicGuiProtLog2Texts()`: could not find function "omicGuiProtLog2Texts"
+trace (first lines):
+  ▆
+
+file: test-workflow-native-session.R
+test: KIT-020: a MaxQuant import on an owner records its inputs and metadata, and the design commits protein_s4_initial with provenance
+kind: failure
+message:
+  Expected `provenance$fixed$transform` to be identical to "log2(x); 0 missing".
+  Differences:
+  `actual`:   "log2(x + 1)"       
+  `expected`: "log2(x); 0 missing"
+
+file: test-workflow-native-session.R
+test: KIT-020: a MaxQuant import on an owner records its inputs and metadata, and the design commits protein_s4_initial with provenance
+kind: failure
+message:
+  Expected `...[]` to equal `log2(1019.8)`.
+  Differences:
+    `actual`: 9.9955
+  `expected`: 9.9941
+

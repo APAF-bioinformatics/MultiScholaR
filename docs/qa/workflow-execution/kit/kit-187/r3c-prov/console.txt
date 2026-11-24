@@ -1,0 +1,23 @@
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+side base: w1 kept 8 cases so far
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+side base: w2 kept 16 cases so far
+side base: r7 kept 17 cases so far
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+side head: w1 kept 8 cases so far
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+side head: w2 kept 16 cases so far
+side head: r7 kept 17 cases so far
+base 64cc0fff6ded931fef78a573215199b098592c74 head 108635c932ea0ca16ec26631c4c3bc545a38d064
+cases compared: 17 (base 17, head 17); missing expected cases: none
+provenance leaves: 725 same, 29 marker_on_head, 0 UNEXPLAINED
+record leaves: 3711 same (head after removing its marker entries), 174 in marker entries on head, 0 UNEXPLAINED (a case with no marker entry counts as one)
+VERDICT: only the marker differs (provenance and record)

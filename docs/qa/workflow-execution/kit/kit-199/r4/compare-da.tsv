@@ -1,0 +1,157 @@
+quantity	column	value
+sha256_a		a2cf61930fcb81358d3633bbac838bff76ce7e232a710680983c03b6b8def790
+sha256_b		2b2def97ed19a4050d2a4af390ab67bbddc5eaaf434e375a94aeb48ae66949f8
+bytes_identical		FALSE
+header_identical		TRUE
+rows_a		393
+rows_b		393
+keys_only_a		0
+keys_only_b		0
+key_order_identical		TRUE
+called_up_a		14
+called_down_a		5
+called_up_b		14
+called_down_b		5
+calls_changed		0
+values_compared	fdr_qvalue	393
+values_text_differ	fdr_qvalue	393
+max_abs_diff	fdr_qvalue	1.7152945730458669e-13
+max_rel_diff	fdr_qvalue	4.3069497989187023e-12
+outside_rule	fdr_qvalue	0
+missing_values_same	fdr_qvalue	TRUE
+verdict	fdr_qvalue	agree
+values_compared	raw_pvalue	393
+values_text_differ	raw_pvalue	391
+max_abs_diff	raw_pvalue	2.5068835896036035e-13
+max_rel_diff	raw_pvalue	5.4046871660749967e-12
+outside_rule	raw_pvalue	0
+missing_values_same	raw_pvalue	TRUE
+verdict	raw_pvalue	agree
+values_compared	log2FC	393
+values_text_differ	log2FC	343
+max_abs_diff	log2FC	2.9132252166164108e-13
+max_rel_diff	log2FC	5.2273398432987143e-11
+outside_rule	log2FC	0
+missing_values_same	log2FC	TRUE
+verdict	log2FC	agree
+values_compared	log2norm.ko_1.KO	393
+values_text_differ	log2norm.ko_1.KO	0
+max_abs_diff	log2norm.ko_1.KO	0
+max_rel_diff	log2norm.ko_1.KO	0
+outside_rule	log2norm.ko_1.KO	0
+missing_values_same	log2norm.ko_1.KO	TRUE
+verdict	log2norm.ko_1.KO	identical
+values_compared	log2norm.ko_2.KO	393
+values_text_differ	log2norm.ko_2.KO	0
+max_abs_diff	log2norm.ko_2.KO	0
+max_rel_diff	log2norm.ko_2.KO	0
+outside_rule	log2norm.ko_2.KO	0
+missing_values_same	log2norm.ko_2.KO	TRUE
+verdict	log2norm.ko_2.KO	identical
+values_compared	log2norm.ko_3.KO	393
+values_text_differ	log2norm.ko_3.KO	0
+max_abs_diff	log2norm.ko_3.KO	0
+max_rel_diff	log2norm.ko_3.KO	0
+outside_rule	log2norm.ko_3.KO	0
+missing_values_same	log2norm.ko_3.KO	TRUE
+verdict	log2norm.ko_3.KO	identical
+values_compared	log2norm.ko_4.KO	393
+values_text_differ	log2norm.ko_4.KO	0
+max_abs_diff	log2norm.ko_4.KO	0
+max_rel_diff	log2norm.ko_4.KO	0
+outside_rule	log2norm.ko_4.KO	0
+missing_values_same	log2norm.ko_4.KO	TRUE
+verdict	log2norm.ko_4.KO	identical
+values_compared	log2norm.wt_1.WT	393
+values_text_differ	log2norm.wt_1.WT	0
+max_abs_diff	log2norm.wt_1.WT	0
+max_rel_diff	log2norm.wt_1.WT	0
+outside_rule	log2norm.wt_1.WT	0
+missing_values_same	log2norm.wt_1.WT	TRUE
+verdict	log2norm.wt_1.WT	identical
+values_compared	log2norm.wt_2.WT	393
+values_text_differ	log2norm.wt_2.WT	0
+max_abs_diff	log2norm.wt_2.WT	0
+max_rel_diff	log2norm.wt_2.WT	0
+outside_rule	log2norm.wt_2.WT	0
+missing_values_same	log2norm.wt_2.WT	TRUE
+verdict	log2norm.wt_2.WT	identical
+values_compared	log2norm.wt_3.WT	393
+values_text_differ	log2norm.wt_3.WT	0
+max_abs_diff	log2norm.wt_3.WT	0
+max_rel_diff	log2norm.wt_3.WT	0
+outside_rule	log2norm.wt_3.WT	0
+missing_values_same	log2norm.wt_3.WT	TRUE
+verdict	log2norm.wt_3.WT	identical
+values_compared	log2norm.wt_4.WT	393
+values_text_differ	log2norm.wt_4.WT	0
+max_abs_diff	log2norm.wt_4.WT	0
+max_rel_diff	log2norm.wt_4.WT	0
+outside_rule	log2norm.wt_4.WT	0
+missing_values_same	log2norm.wt_4.WT	TRUE
+verdict	log2norm.wt_4.WT	identical
+values_compared	raw.ko_1.KO	393
+values_text_differ	raw.ko_1.KO	0
+max_abs_diff	raw.ko_1.KO	0
+max_rel_diff	raw.ko_1.KO	0
+outside_rule	raw.ko_1.KO	0
+missing_values_same	raw.ko_1.KO	TRUE
+verdict	raw.ko_1.KO	identical
+values_compared	raw.ko_2.KO	393
+values_text_differ	raw.ko_2.KO	0
+max_abs_diff	raw.ko_2.KO	0
+max_rel_diff	raw.ko_2.KO	0
+outside_rule	raw.ko_2.KO	0
+missing_values_same	raw.ko_2.KO	TRUE
+verdict	raw.ko_2.KO	identical
+values_compared	raw.ko_3.KO	393
+values_text_differ	raw.ko_3.KO	0
+max_abs_diff	raw.ko_3.KO	0
+max_rel_diff	raw.ko_3.KO	0
+outside_rule	raw.ko_3.KO	0
+missing_values_same	raw.ko_3.KO	TRUE
+verdict	raw.ko_3.KO	identical
+values_compared	raw.ko_4.KO	393
+values_text_differ	raw.ko_4.KO	0
+max_abs_diff	raw.ko_4.KO	0
+max_rel_diff	raw.ko_4.KO	0
+outside_rule	raw.ko_4.KO	0
+missing_values_same	raw.ko_4.KO	TRUE
+verdict	raw.ko_4.KO	identical
+values_compared	raw.wt_1.WT	393
+values_text_differ	raw.wt_1.WT	0
+max_abs_diff	raw.wt_1.WT	0
+max_rel_diff	raw.wt_1.WT	0
+outside_rule	raw.wt_1.WT	0
+missing_values_same	raw.wt_1.WT	TRUE
+verdict	raw.wt_1.WT	identical
+values_compared	raw.wt_2.WT	393
+values_text_differ	raw.wt_2.WT	0
+max_abs_diff	raw.wt_2.WT	0
+max_rel_diff	raw.wt_2.WT	0
+outside_rule	raw.wt_2.WT	0
+missing_values_same	raw.wt_2.WT	TRUE
+verdict	raw.wt_2.WT	identical
+values_compared	raw.wt_3.WT	393
+values_text_differ	raw.wt_3.WT	0
+max_abs_diff	raw.wt_3.WT	0
+max_rel_diff	raw.wt_3.WT	0
+outside_rule	raw.wt_3.WT	0
+missing_values_same	raw.wt_3.WT	TRUE
+verdict	raw.wt_3.WT	identical
+values_compared	raw.wt_4.WT	393
+values_text_differ	raw.wt_4.WT	0
+max_abs_diff	raw.wt_4.WT	0
+max_rel_diff	raw.wt_4.WT	0
+outside_rule	raw.wt_4.WT	0
+missing_values_same	raw.wt_4.WT	TRUE
+verdict	raw.wt_4.WT	identical
+values_compared	annotation_score	393
+values_text_differ	annotation_score	0
+max_abs_diff	annotation_score	0
+max_rel_diff	annotation_score	0
+outside_rule	annotation_score	0
+missing_values_same	annotation_score	TRUE
+verdict	annotation_score	identical
+numeric_columns		20
+verdict_overall		agree

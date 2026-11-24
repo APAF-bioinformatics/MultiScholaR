@@ -1,0 +1,5 @@
+base 64cc0fff6ded931fef78a573215199b098592c74 head bcb73db5a8ecaac312ad811637dd6738bb386afe
+cases compared: 17 (base 17, head 17); missing expected cases: none
+leaves: 725 same, 29 marker_on_head, 0 UNEXPLAINED
+cases with the marker on head: r7/dia_normalization_skip, w1/dia_correlation_apply, w1/dia_correlation_reapply, w1/dia_correlation_skip, w1/dia_normalization_manual, w1/dia_normalization_refused, w1/dia_normalization_retry, w1/dia_normalization_skip, w1/dia_normalization_skip_repeat, w2/dia_correlation_apply, w2/dia_correlation_reapply, w2/dia_correlation_skip, w2/dia_normalization_manual, w2/dia_normalization_refused, w2/dia_normalization_retry, w2/dia_normalization_skip, w2/dia_normalization_skip_repeat
+VERDICT: only the marker differs

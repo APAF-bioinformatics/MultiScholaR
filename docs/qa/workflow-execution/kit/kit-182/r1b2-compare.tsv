@@ -1,0 +1,33 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	same		
+test-prot-norm-worker-figures.R	63	0	0	0	ok	71	0	0	0	ok	count-changed	counts: KIT-182 T8 (managed): after a QC change the run's actions start with the QC result's figures, and the pre-normalisation PCA is redrawn, byte-identical to the unmanaged tab's (fails before) (passed NA -> 8, skipped NA -> 0)	
+test-prot-norm-input-current.R	0	0	0	0	absent	321	0	0	0	ok	only-on-head		
+test-prot-05b-norm-module-contracts.R	439	0	0	22	ok	439	0	0	22	ok	same		
+test-prot-05c-norm-module-seams.R	0	0	0	4	ok	0	0	0	4	ok	same		
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-workflow-saved-qc.R	120	0	0	0	ok	120	0	0	0	ok	same		
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-kit129-run-path.R	687	6	0	1	failed	687	6	0	1	failed	same		
+test-omic-norm-ruv-design.R	1153	0	0	0	ok	1153	0	0	0	ok	same		
+test-workflow-saved-da.R	780	171	0	0	failed	780	171	0	0	failed	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-gui-entry-proteomics.R	189	4	0	0	failed	189	4	0	0	failed	same		
+test-workflow-ruv-pearson-diagnostic.R	301	0	2	5	failed	301	0	2	5	failed	same		
+test-prot-02c-qc-protein-module-contracts.R	407	0	0	23	ok	407	0	0	23	ok	same		
+test-prot-02d-qc-protein-intensity-shared.R	0	0	0	5	ok	0	0	0	5	ok	same		
+test-prot-02e-qc-protein-cleanup-shared.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-prot-02h-qc-protein-replicate-shared.R	0	0	0	5	ok	0	0	0	5	ok	same		
+test-prot-02l-qc-protein-dedup-shared.R	5	0	0	3	ok	5	0	0	3	ok	same		
+test-prot-02p-qc-protein-orchestrator-shared.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-module-ci-prot-protein-qc.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-module-ci-prot-dia-limpa.R	38	0	0	2	ok	38	0	0	2	ok	same		
+test-workflow-prot-declarations.R	303	0	0	2	ok	303	0	0	2	ok	same		
+test-workflow-checkpoint-dia-state.R	174	0	0	4	ok	174	0	0	4	ok	same		
+test-dia-baseline-compatibility.R	26	0	0	2	ok	26	0	0	2	ok	same		
+test-perf107-audit.R	191	0	0	1	ok	191	0	0	1	ok	same		
+test-workflow-gui-memory-repairs.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-e2e-browser-harness.R	126	0	0	1	ok	126	0	0	1	ok	same		
+test-metab-03b-norm-module-helper-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-design-log2.R	226	0	0	0	ok	226	0	0	0	ok	same		

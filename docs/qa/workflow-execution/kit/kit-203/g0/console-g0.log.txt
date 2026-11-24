@@ -1,0 +1,50 @@
+                           item                     expected
+                              R R version 4.6.1 (2026-06-24)
+clusterProfiler clusterProfiler                       4.20.0
+enrichit               enrichit                        0.2.0
+qvalue                   qvalue                       2.44.0
+GO.db                     GO.db                       3.23.1
+AnnotationDbi     AnnotationDbi                       1.74.0
+                                   installed same
+                R version 4.6.1 (2026-06-24) TRUE
+clusterProfiler                       4.20.0 TRUE
+enrichit                               0.2.0 TRUE
+qvalue                                2.44.0 TRUE
+GO.db                                 3.23.1 TRUE
+AnnotationDbi                         1.74.0 TRUE
+                                                     script_sha256
+1 2fc0b3397c2250529a8a664cf4b457d71a33d7e2077d24f62140482684e3008a
+                                                               definitions
+1 CELLS,STRATA,VALUES,seedKit,sortC,b2Entries,loadBackground,drawReplicate
+                                                   deparsed_sha256
+1 c964a9d7d4a06dfbf36b479c8808f9809a0f9b31c9d0989eff73805bbc18c2a0
+
+set-up 24.6 s; B1 universe 4024 proteins
+list 1: match TRUE (4.3 s)
+list 2: match TRUE (7.8 s)
+list 3: match TRUE (10.8 s)
+list 4: match TRUE (13.9 s)
+list 5: match TRUE (17.1 s)
+400 of 400 lists compared in 594.4 s; 0 instrument errors
+                      [,1]                 
+lists                 "400"                
+compared              "400"                
+instrument_errors     "0"                  
+list_sha_same         "400"                
+status_ok             "400"                
+m_values              "1249"               
+m_kept_range          "176-453"            
+q_lists_with_call     "92"                 
+q_lists_with_call_row "92"                 
+q_calls_total         "12151"              
+bh_lists_with_call    "17"                 
+bh_calls_total        "50"                 
+bhf_lists_with_call   "4"                  
+bhf_calls_total       "13"                 
+lists_matching        "400"                
+verdict               "match on every list"
+  list_size status tested q_calls_tsv bh_calls bhf_calls_formula   m
+1       126     ok    156         120        0                 0 314
+                                                 accessions_sha256 as_kit189
+1 d5ae6b2572f77d31fee4e2ae48e018dc25520f8f4a84313d125b8a0a0417ecbe      TRUE
+done in 632.2 s
