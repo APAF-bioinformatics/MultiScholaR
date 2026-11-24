@@ -358,6 +358,17 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   22.9 CPU-seconds (labels `rP3-*`, `rP34-*`). Agent time 0.05 h (13:35 to 13:38), against R-F3 6/10, R-L2 8/14,
   R-M1 4/6.
 
+- **P1a, run 45316817535 (observed):** the test file reached its 15-minute limit (`timeout`) with no failed
+  expectation: 183,822 expectations passed before the limit (gap 1 and 6.1 (i) complete, 6.1 (ii) about 60 percent
+  through by the count of its expectations); no part was judged as a whole. The digest script ran (`p1a/bindings-t1.tsv`,
+  `p1a/versions.txt`: R 4.6.1, MultiScholaR 0.9.0, digest 0.6.39); `bindings.tsv` rows T1 filled from it. Jobs: tests
+  22.7 minutes, scripts 9.0; about 3.45 core-hours. **Instrument defect (VAL-54, re-run 1 of 3):** the failure is in the
+  test file's run time, not in a comparison. Fix, with no expected value, comparison or limit changed: the file split
+  in two (`test-kit193-pairs-filter.R`: gap 1, 6.1 (i), (iii), (iv), the planted defect; `test-kit193-pairs-filter-table.R`:
+  6.1 (ii), (v), gaps 2 to 5), each within the ticket's 15 minutes; 6.1 (ii) and (v) checked per (n*, m) over all its
+  rows at once (the same comparisons, 1,830 expectations in place of 221,430); the shared helpers in
+  `tests/testthat/helper-kit193-filter.R`.
+
 ## Notes for the auditor (second implementer session)
 
 - Hypotheses in frozen statements that the proofs do not use (nothing is weakened; each conclusion holds without

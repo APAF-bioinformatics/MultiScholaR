@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit193-pairs-filter.R	0	0	0	0	0	900	timeout
