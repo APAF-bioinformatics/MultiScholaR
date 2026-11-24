@@ -103,11 +103,22 @@ frozen when the auditor confirms that commit by reading. None is proved yet.
 | R-J3 | `Spec/RuvIIICPattern.lean`: `RuvIIICBr` (residual dimension, eigen-step flag, closed-form values abstract), `J3_pattern`, `J3_counts` (witness `J3_witness`) | RUVIIIC at c534151f: all missing when `min(d_j, #C_j) < k` (`:168-171`), closed form at `d_j = k` (`:173-184`), general branch otherwise, all missing when fewer than `k` eigenvalues converge (`:252-263`) or the eigen step throws (`:304`); values on the observed runs only (`:186-198`, `:286-301`); callers drop all-missing features (`R/func_prot_s4_norm_methods.R:264-265`, `R/func_lipid_s4_ruv_methods.R:713-715`). `J3_counts` is the missing-value part of the clean-up's count only; the intensity threshold it recomputes (`R/func_prot_qc_filtering_helpers.R:243-247`) is not covered | library: `RUVIIIC::RUVIII_C_Varying` on the missing-value fixture; package: the clean-up's counts | proposed: a corrected value written at a missing run; the pattern check must fail |
 | R-N1 | `Spec/RuvControlRules.lean`: `sweepControls`, `rankFirst`, `firstPassControls`, `orderPos`, `trxFirstPassControls`; `N1_stable`, `N1_ties`, `N1_first_pass`, `N1_trx`, `N1_rules_differ` (two parts) (witness `N1_stable_witness`) | `getNegCtrlProtAnovaHelper` (`R/func_prot_norm_optimization_helpers.R:565-582`; the rule `q_table_order`, which stays for proteomics and for the replay of lipid and metabolite records made before KIT-190; KIT-190's `p_id_two_groups` is not modelled), `protRuvFirstPassControls` (`:1380`), `omicsRuvFirstPassControls` (`R/func_omics_ruv_factors.R:54`), `trxRuvDesignControls` (`R/func_trx_ruv.R:296-297`), read on `v0.9-staging` at 19997323; R's `rank(ties = "first", na.last = "keep")`, `order()` and `x[1:n]` as stated assumptions | package: `getNegCtrlProtAnovaHelper` (equal q-values, tied blocks, a count of 0, no candidate; after KIT-190 merges, the equal case under the option `dropped`), `protRuvFirstPassControls`, `omicsRuvFirstPassControls`, `trxRuvDesignControls` on an oracle table `first-pass.tsv` | proposed: `ties.method = "last"`; the table must differ |
 
+## 3a. Pairs run in P2/P0b (run 45335802998): departures from the proposals above
+
+Every planted defect above was built and caught, except as follows (mechanics; no expected value changed;
+`outcome.md` P2/P0b): R-A3 reaches k = 0 through `ruv_k_rule = "num_sv_be"` (the user rule refuses k = 0); R-F1's
+"`Y - 2 * W alpha`" uses the uncentred `RuvIII.W` (with `W_c` the defect stays in col(W_c) and cannot fail); R-M1's
+rank-1 map is one column `W q` (a two-column rank-1 design is refused by edgeR); 4 (i) adds a planted
+`qvalue::qvalue` ignoring pi0 (4 (ii), with `processEnrichments`, waits for KIT-203); R-N1's first-pass planted
+defect is `protRuvFirstPassControls` with `ties.method = "last"`. The target 5 oracle (`Oracle/Permutation.lean`)
+counts over lists with decidable equality; its bridge lemma to the Spec's classical `unchangedDraws` and
+`reflectedDraws` is owed to the Proof files (ticket 5.5).
+
 ## 4. The gate's own reads (ticket 2.3 and 14): done at the gate
 
 - RUVIIIC at the locked commit c534151f and `ruv` 0.9.7.1 were read by the statements gate
   (`AUDIT-KIT-193-statements-20261124.md` section 5); the docstrings cite those lines (S07).
 - RUVSeq: no statement depends on it; R-M1 is linear algebra about any W.
-- `bindings.tsv` rows are written when each pair first runs on merged code (8.2). Filled: T1's four (P1a's script).
-  Pending a runner job: T1's helper `removeRowsWithMissingValuesPercentHelper` and target 3's five (P0a ran without a
-  digest script; `scripts/bindings-t3.R` writes them, with the shipped P at (320, 137), at the next R run); the rest.
+- `bindings.tsv` rows are written when each pair first runs on merged code (8.2). Filled: T1's four (P1a's script);
+  T1's helper, target 3's five, target 5's, target 4's libraries and group R's (run 45335802998, `bindings-t3.R` and
+  `bindings-p.R`). Pending: target 2's five (KIT-190) and T4 `processEnrichments` (KIT-203).

@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit193-pairs-permutation.R	30	0	0	0	0	55.7	ok
+test-kit193-pairs-qvalue.R	161	0	0	0	0	7.7	ok
+test-kit193-pairs-ruv.R	181	0	0	0	0	11.2	ok

@@ -489,33 +489,111 @@ to wait, each frozen after one edit pass (B); target 1's pair holds (C). Applied
   (7,380 jobs); `sha256sum -c SPEC.sha256` twelve OK, no Spec file changed. Stage total: 14 Lean calls, 67.5
   CPU-seconds; agent time 0.20 h against 14 expected and 23 ceiling for the three items.
 
+## P2 and P0b: target 5's pair, target 4's library parts, group R's pairs on merged code (run 45335802998)
+
+Fourth implementer session, 2026-11-24. Branch merged with `v0.9-staging` at ea93d948 first (84e55b0d, a true merge,
+no conflict: KIT-175, KIT-177, KIT-189, KIT-191, KIT-199 and the ledger to VAL-137).
+
+**Ticket 8.2's diff before the first run (observed, by `git show` and `awk` over the function bodies).**
+`integrationEnrichmentSetT` and `INTEGRATION_ENRICHMENT_PERMUTATION_TIE` (1e-9) are as at 2f54469e, the commit the
+Permutation Spec cites; `integrationEnrichmentPermutation` differs only in the values of the time-limit refusal's
+message (outside the model). The floor: at 2f54469e the module computed `ceiling(m p_min / 0.05 - 1e-9)`; merged
+KIT-191 computes it in whole numbers, `integrationEnrichmentFloorMinimum()`, `(20 m (1 + d) + B) %/% (1 + B)`, which
+is `bh_floor_stmt`'s `ceil(m p_min / q)` exactly; the model covers it (the pair checks it on 1.44 million cases).
+Group R: `restoreRuvFeatureLevels`, `computeRuvCovariates`, `computeProtRuvModelFactors`, `protRuvFirstPassControls`,
+`computeOmicsRuvAssayFactors`, `omicsRuvFirstPassControls`, `ruvExactContrastsFit`, `trxRuvDesignControls` and the
+`ruvIII_C_Varying` method for `ProteinQuantitativeData` are byte-identical to 147adde8 (and `trxRuvDesignControls` to
+19997323). Nothing goes back to the auditor.
+
+**Oracle tables (Lean, f3170c03).** `Oracle/Permutation.lean` (`perm-floor.tsv`: 3 fixtures x 13,824 cases, `d`, `r`,
+`(1 + d)/3`), `Oracle/QvalueBh.lean` (`bh-counterexample.tsv`: 441 + 676 outcomes, the Spec's `callsKept` and
+`callsWhole` at "at most" and "below" q), `Oracle/RuvControlRules.lean` (`first-pass.tsv`: 364 cases, the Spec's
+`firstPassControls` and `trxFirstPassControls`). Regenerated with `lake env lean --run Kit193Oracles.lean`; the six
+earlier tables came out byte-identical; `SHA256SUMS` rewritten; `tests/testdata/kit193/` is 3.0 MB. Checked on the
+laptop from the tables (Python, exact fractions): FDRs 3/40, 1/20, 41/1600 (N = 20) and 3/50, 1/25 for both
+comparisons (N = 25), as `fdr_n20_stmt`, `fdr_n20_strict_stmt`, `fdr_n25_stmt` state. No Spec, Proof or Audit file
+changed. **Owed (not mine to write under this session's brief):** ticket 5.5 asks of a separate executable oracle a
+theorem in the Proof files, listed in `Audit.lean`, that it equals the Spec definition. The Permutation Spec's
+`unchangedDraws` and `reflectedDraws` use classical decidability (stated for any type of values) and cannot be
+evaluated, so `Oracle/Permutation.lean` counts the same filters over lists of rationals with their decidable equality.
+The bridge lemma (a filter does not depend on its decidability instance, `Finset.filter_congr_decidable`, and a
+function on `Fin 4` is its list of values) is not yet in `Proof/`. The other two oracles evaluate Spec definitions
+directly. Laptop: 3 Lean calls, 15.5 CPU-seconds (labels `p2-oracle-*`).
+
+**Pairs (tests only, d71dbd08), one shard each, file limit 15 minutes; all passed, 0 failed.**
+- `test-kit193-pairs-permutation.R` (target 5; 30 expectations, 55.7 s): all 576 draw pairs reached through the seed;
+  fixture A's 24 values of |t| more than 1e-8 apart and fixture C's 12 (condition met); on A and B `identity_draws`
+  = `d` and `min_p` = `(1 + d)/3` on all 27,648 cases; every p at least `(1 + d)/3`; on C `identity_draws` = `d` and
+  every p at least `(1 + d + r)/3` (the reflection ties counted); `#{p <= k/3} <= 4608 k` for k = 1, 2, 3 on A and C;
+  the floor 60 at B = 1,000, d = 10, m = 273 (the sentence prints 60) and the shipped floor equal to the exact ceiling
+  on m 1 to 6,000, d 0 to 119, B in {1,000, 10,000}; through `integrationEnrichmentKernel` (KEGG, mapped list
+  mocked), `tests` = the rows `p.adjust` adjusted over (6 of 7 pathways; the one below the size limit is outside the
+  family) and the sentence built with that m; 5c' by `stats::p.adjust` (4 called at 50/1001, floor 2, none at or
+  below 1/1000). Calls go through `integrationEnrichmentPathwayTest()`, the entry point the KEGG, Reactome and kernel
+  routes call; the exported `integrationEnrichFactor()` needs a trained project and was not used. The tolerance at a
+  large |t| (proofs audit P05 item 1) is a note, not tested.
+- `test-kit193-pairs-qvalue.R` (target 4 library parts; 161 expectations, 7.7 s): (i) on 20 seeded vectors (length 1
+  to 200, ties, 0 and 1) and pi0 in {1, 0.5, 0.13}, `qvalue::qvalue` equals `pi0 * p.adjust(p, "BH")` to relative
+  1e-14 and nests the BH flag (no exception); the same with qvalue's own pi0 on 5 vectors of 200; (iii) `p.adjust` on
+  the 441 and 676 outcomes calls exactly what the model calls, every outcome and both comparisons; FDRs 0.075,
+  41/1600, 0.05 (N = 20) and 0.06, 0.04 for both comparisons (N = 25), to 1e-12. Not here: (ii) and the
+  `processEnrichments` flag, which KIT-203 changes (binding row T4 `processEnrichments` stays `pending`; ticket 8.1).
+- `test-kit193-pairs-ruv.R` (group R; 181 expectations, 11.2 s): R-A1, R-A2 (`ruv::RUVIII`), R-A3, R-B1, R-B2, R-E1
+  (with E2's differing amounts on the shipped output), R-C1, R-D1, R-D2, R-F1, R-F2, R-F3 (weights), R-G0, R-G1 (an
+  illustration), R-G2, R-H1 (and weighted), R-J1, R-J2 (upstream's zero-filled equality on every feature, to 1e-8),
+  R-J3's pattern, R-K1 (k = 9, 14 controls: equal to `ruv::RUVIII` at k = 9 and at k = NULL, within-set range <=
+  1e-8), R-L1, R-L2, R-M1 (edgeR fitted values and F to relative 1e-8), R-N1's first-pass rules (all 364 cases of
+  `first-pass.tsv`, all three functions). R-G0's "equal n - g - k" is a property of the fixture (general branch,
+  default formula); the theorem gives "at most" (P05 item 4).
+- **Every planted defect caught** (each `expect_failure()` passed): target 5 (permuted t shrunk by 1e-6: A's
+  `#{p <= 1/3}` = 12,696 > 4,608); 4 (i) (`qvalue::qvalue` ignoring pi0) and 4 d-i (BH over the whole family for the
+  kept one); R-A1, R-A3, R-B2, R-C1 (ticket's), R-D2, R-F1, R-G0, R-H1, R-J2, R-K1, R-L1, R-M1, R-N1.
+
+**Where a pair departs from `models.md` or the ticket text (mechanics, for the auditor; no expected value changed).**
+- R-A3: the ticket's call `computeProtRuvModelFactors(…, ruv_k_rule = "user", ruv_k = 0)` is refused by the code
+  (`validateProtRuvModelK`, k >= 1; the existing test `test-prot-ruv-factors-in-model.R:307` expects that refusal).
+  The k = 0 branch (`R/func_prot_norm_optimization_helpers.R:1352`) is reached through the estimated count
+  (`ruv_k_rule = "num_sv_be"`, `estimateRuvFactorCount` mocked to return 0). The DAs at k = 0 are not re-driven here;
+  the existing tests drive them (`test-prot-ruv-factors-in-model.R` "an object without the declaration ...",
+  `test-kit127-omics-ruv-factors.R`).
+- R-F1's planted defect "`Y - 2 * W alpha`" is read with `W` the library's uncentred W (`RuvIII.W` in `models.md`): with
+  the centred W_c the defect stays in col(W_c) and R-F1 itself says it changes no group coefficient.
+- R-M1's planted defect: `[X, W Q]` with a rank-1 Q of two columns is not of full rank and edgeR refuses it, so the
+  planted design is `[X, W q]`, one column (the same rank-1 map).
+- R-B1, R-B2, R-E1 and R-L1 take `alpha` from `computeRuvCovariates()$alpha` (ruv's); the quantities used are
+  invariant under a change of basis of U, and RUV-III-C's U spans the same space on complete data (R-J1).
+
+Core-hours: 40.8 job minutes, about 2.72 (job minutes x 4 / 60; set-up included in the job time).
+
 ## Resume here
 
-State after the second proofs audit (2026-11-24, third implementer session): every frozen statement of targets 1 to
-5 and of group R priorities 1 to 4 is proved with its witnesses (124 theorems listed in `axioms.tsv`, standard axioms
-only; audited sound). R-I1, R-J3, R-N1: frozen at 2ab4c189 (`statements-gate.md`; confirmed by the auditor by
-reading); R-I1 (9 theorems), R-J3 (3) and R-N1 (6) proved at their commits: every one of the 142 statement
-constants is proved. The 18 new theorems await their proofs audit. Target 1's paired test passed (run
-45323167019, after one VAL-54 instrument re-run).
+State after the fourth implementer session (2026-11-24): all 142 frozen statements proved; 142 theorems listed in
+`axioms.tsv`; audited sound (proofs audit 3; the last three Proof modules were `Proof/RemovedFactors.lean`,
+`Proof/RuvIIICPattern.lean`, `Proof/RuvControlRules.lean`). Pairs passed: target 3 (P0a), target 1 (P1a), and in run
+45335802998 target 5 (P2), target 4's library parts and group R on merged code (P0b), each with its planted defect
+caught. The owed digests job is done: `bindings.tsv` has 6 rows `pending` (target 2's five, KIT-190; T4
+`processEnrichments`, KIT-203). Shipped P at (320, 137) = 57188 (`p2-p0b/p-320-137.tsv`): the first counterexample
+of 6.1 (g) is live in the shipped arithmetic.
 
-Next:
-1. The proofs audit of the 18 (R-I1, R-J3, R-N1). No proof is outstanding.
-2. Target 2's pair waits for KIT-190; P0 (targets 4, group R), P2 (target 5) and P3 as ticket 8.1; the record job L1
-   at the final commit. **Owed, not run (coordinator's instruction):** the digests job `scripts/bindings-t3.R` (T3's
-   five, T1's helper, the shipped P at (320, 137)); alone it is one scripts job of about 9 minutes, as P1a's was
-   (about 1.3 core-hours at (9 + 10) × 4 / 60), or no extra job if it rides on P0's next run.
-Lean calls: `scratchpad lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
-/home/doktersmol/.elan/bin/lake …` per call in `cpu-time.tsv`; one at a time. New Proof modules in this session:
-`Proof/RuvAlgebra2.lean`, `Proof/RuvDownstream2.lean`, `Proof/RuvIIIC.lean`, `Proof/KeptFamily.lean` (defs used in
-public statements are `@[expose]`).
+Next, each waiting on what is named:
+1. After KIT-203 merges: target 4 (ii) and the `processEnrichments` flag binding (ticket 8.1).
+2. After KIT-190 merges: target 2's pair (`pending/test-kit193-pairs-replay.R`, with the builder comparison still to
+   write), the L1 cases (the lipid method in R-G0 and L1's control selection), R-N1's sweep-helper cases with
+   `getNegCtrlProtAnovaHelper`'s binding row; O1 (a statement for the lipid and metabolite rule) is the
+   coordinator's call.
+3. After KIT-184 merges: R-I1's pair and its bindings (P3), with ticket 8.2's diff of the merged writer.
+4. The Permutation oracle's bridge lemma (above) into `Proof/` and `Audit.lean`, by a session allowed to write proofs.
+5. The tripwire `test-kit193-bindings.R` (not written); R CMD check base against head (A7) at P3; the record job L1 at
+   the final commit.
+Lean calls: `lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
+/home/doktersmol/.elan/bin/lake …` per call in `cpu-time.tsv`; one at a time.
 
 ## Not checked
 
-- The proofs of R-I1, R-J3 and R-N1 are checked on the laptop only and not yet audited; R was run only on GitHub
-  runners (P0a, P1a).
-- The digests of target 3's bound objects and of T1's helper, and the shipped P at (320, 137): not computed (no R run
-  since; `scripts/bindings-t3.R` is written, not run).
+- R was run only on GitHub runners (P0a, P1a, P2/P0b).
 - The proofs are checked on the laptop only (`lake build --wfail`, `Audit.lean`); the record job L1 runs once, at the
   final commit. (Two earlier lines here, on the gate's reads and on the CI workflow, were stale: the statements register
   records the gate's reads, and the workflow and L0 are above.)
-- No paired R test of group R or of targets 4 and 5 has run (P0, P2 to come).
+- Target 2's pair, target 4 (ii), the L1 cases, R-N1's sweep cases and R-I1's pair have not run (they wait for
+  KIT-190, KIT-203 and KIT-184). R CMD check (A7) has not run on this branch. The Permutation oracle's equality to
+  the Spec's counts is argued, not yet a Lean theorem.
