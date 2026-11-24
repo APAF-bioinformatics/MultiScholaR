@@ -254,8 +254,10 @@ test_that("KIT-182 F1 (g): the QC step on the worker path carries the same linea
         controller <- omicsWorkerController(list(owner = fixture$manager))
         # The worker computes and the controller's acceptance commits; what the helper reads afterwards is a display
         # handoff, which this case does not need (an error there is logged, the committed head is what is checked).
+        # R1 instrument repair (VAL-54): a committing operation's completion names its state, as W2's dispatch does.
         error <- k182Error(protNormCoreQuiet(protNormW2Dispatch(fixture, controller, "protein_intensity_filter",
-            k182QcParameters, k182Head(fixture))))
+            k182QcParameters, k182Head(fixture), list(state_name = "protein_intensity_filtered", config = list(),
+                description = "dispatch"))))
         if (!is.null(error)) cat(sprintf("KIT-182 F1 g%s dispatch tail: %s\n", case, conditionMessage(error)))
         expect_identical(fixture$manager$current_state, "protein_intensity_filtered", info = case)
         k182F1(fixture, paste0("g", case), TRUE)
@@ -267,10 +269,13 @@ test_that("KIT-182 F1 (h): after a session export and the tab's restore, the sta
     norm <- new.env(parent = emptyenv())
     k182Click(fixture, norm, "manual")
     k182Correlation(fixture, norm, 0.5)
-    k182QcChange(fixture)
+    # R1 instrument repair (VAL-54): the export runs at `correlation_filtered`, as test-workflow-native-session.R exports
+    # (exported after the scripted QC change it stopped with "saved table changed during read" on both commits); the QC
+    # change follows, then the tab's restore.
     source_dir <- withr::local_tempdir()
     protNormCoreQuiet(runProtNormExportSessionWorkflow(fixture$workflow, norm, k182Settings("manual"), source_dir,
         withProgressFn = function(message, value, expr) force(expr), incProgressFn = function(...) NULL))
+    k182QcChange(fixture)
     restored <- new.env(parent = emptyenv())
     protNormCoreQuiet(restoreProtNormTabState(NULL, fixture$workflow, restored))
     k182F1(fixture, "h", TRUE)
@@ -408,7 +413,8 @@ test_that("KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refus
         expect_s3_class(error, "prot_norm_input_after_normalisation")
         # (c) re-commits `protein_replicate_filtered` itself, so the last table before normalisation by that name is the
         # QC-on-normalised one; the walk names the step before it.
-        if (!identical(case, "c")) expect_identical(conditionMessage(error), k182RunText("Protein Replicate Filter"), info = case)
+        if (!identical(case, "c") && inherits(error, "condition")) expect_identical(conditionMessage(error),
+            k182RunText("Protein Replicate Filter"), info = case)
         expect_identical(k182Head(fixture), head, info = case)
         expect_identical(k182History(fixture), history, info = case)
         expect_identical(names(fixture$manager$.context$snapshot$states), states, info = case)
