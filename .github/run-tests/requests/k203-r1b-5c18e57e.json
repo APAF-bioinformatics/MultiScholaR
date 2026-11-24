@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-203 R1b, instrument run 1 of 3 (VAL-54): R1's new test file stopped at parse (one parenthesis too many); fix only",
+  "label": "KIT-203 R1b tests only at 5c18e57e",
+  "package_commit": "5c18e57ef0d849b29b688bd5f7a8818baf2b5b66",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-enrichment-significance.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
