@@ -129,6 +129,10 @@ test_that("T-REP-4: a declared replay cell runs on metab_combined; its result is
     rp <- cell$replay
     expect_false(identical(rp$status, "not_built"))
     expect_identical(rp$status, "identical", info = paste(unlist(rp$differences), rp$class))
+    # R2-01: the head DA result exists on both sides and its fingerprints agree.
+    expect_true(is.character(rp$da_fingerprint_origin) && !is.na(rp$da_fingerprint_origin) &&
+                    nzchar(rp$da_fingerprint_origin))
+    expect_identical(rp$da_fingerprint_replay, rp$da_fingerprint_origin)
     pre <- unlist(rp$preconditions)
     expect_true(length(pre) >= 2L)
     # The prepared store held only the record's import and design states before the replay.
