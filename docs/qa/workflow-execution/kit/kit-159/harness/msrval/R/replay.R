@@ -208,7 +208,9 @@ valReplayCell <- function(work_dir, route, omic, pkg_root, kit = NULL) {
 valWriteCellRecord <- function(manager, work_dir) {
     ns <- asNamespace("MultiScholaR")
     path <- file.path(work_dir, "analysis-record.json")
-    got <- tryCatch(ns$writeWorkflowAnalysisRecord(manager, path), error = function(e) e)
+    got <- tryCatch(ns$withWorkflowStateScope(manager, function() {
+        ns$writeWorkflowAnalysisRecord(manager, path)
+    }), error = function(e) e)
     if (inherits(got, "error")) {
         unlink(path)
         writeLines(class(got)[[1L]], file.path(work_dir, "analysis-record.error"))
