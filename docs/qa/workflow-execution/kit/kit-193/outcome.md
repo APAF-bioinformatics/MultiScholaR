@@ -107,6 +107,46 @@ checks the rule at it.
 - Laptop CPU time for target 1: 4 calls, 14.2 CPU-seconds (11.9 user + 2.3 system), 10.8 s of Lean wall time (labels `t1-*`). Agent time 0.04 h (11:51 to 11:53), against 10 expected and
   18 ceiling.
 
+## The record job and its lifecycle L0 (acceptance criterion A5)
+
+`.github/workflows/kit-193-lean.yml` (ticket 4.4), branch-filtered to `kit-193-lean-proofs` and
+`kit-193-lean-lifecycle`, clean checkout, `actions/checkout` and `leanprover/lean-action` v1.7.1 pinned by commit SHA
+(11bd7190…, ba3fdfe5…). Six runs on `kit-193-lean-lifecycle` (`runs.tsv`), 17.9 runner-minutes, about 1.2 core-hours at
+the house rule (L0 expected 4.00, ceiling 9.00):
+
+| Push | Run | Observed |
+|---|---|---|
+| 1, a trivial theorem | 45300586693 (after two instrument re-runs) | every step passed |
+| 2, a planted `sorry` | 45301077217 | the build failed under `--wfail` ("declaration uses `sorry`"); the axioms step named `sorryAx`; forbidden words |
+| 3, a planted axiom, a Spec byte, an oracle byte | 45302003849 (after one instrument re-run) | axiom-audit (2 declarations use the planted axiom), the Spec hash check (`FilterCount.lean: FAILED`), the axioms step, the oracle comparison (`DIFFERS go-closure.tsv`, `SHA256SUMS` failed), forbidden words |
+
+Three instrument defects, each fixed and re-run under VAL-54 (three re-runs, the maximum for this item):
+1. The bundled `leanchecker` of v4.36.0 ends with a segmentation fault (exit 139) when given two or more modules or a
+   prefix that covers several; one module per call works (reproduced on the laptop). The job runs `leanchecker -v` once
+   per project module (about 7 s each on the runner); the root module, which holds imports only, is not listed.
+2. lean-action's nanoda step reads the package name from a `[package]` table that this `lakefile.toml` does not have,
+   and would export the whole environment under the package, Mathlib included. nanoda is off: D7 (a) (axiom audit and
+   leanchecker) applies; (b) needs the owner (a `lakefile.lean`, and a measured nanoda time over Mathlib).
+3. The oracle step lost its failure status in a piped subshell; fixed and checked locally with a stub.
+
+Departures from ticket 4.4, for the auditor: the oracle tables are written by Lean's interpreter (`lake env lean --run
+Kit193Oracles.lean <dir>`), not by a compiled `lake exe kit193_oracles`, because Mathlib's cache ships no object files
+and a compiled executable would compile Mathlib's C on the laptop and the runner; the interpreter runs the same Spec
+definitions. The job's own step runs `leanchecker` (item 1). Module CI, which runs the R impact suite on every push to
+any branch, was cancelled on each lifecycle push (no R changes there); the three Module CI runs started by the ticket
+branch's first pushes were left to finish. Ticket-branch commits since carry `[skip ci]`; the record L1 runs at the
+final commit.
+
+## Paired tests
+
+- Target 3: `tests/testthat/test-kit193-pairs-go.R` (the comparison over the 211 cases of `go-closure.tsv` and the
+  planted-defect case: `goAncestorPairs` without the closure). Not run yet: it belongs to run P0 (11.1), with target 4
+  and group R.
+- Targets 1 and 2: the oracle tables are committed (`filter-thresholds.tsv`, `replay-*.tsv`); the test files are
+  prepared under `pending/` and move to `tests/testthat/` when KIT-187 and KIT-190 merge (they call functions that exist
+  only on those branches). Still to write at merge: target 2's builder comparison through `buildWorkflowAnalysisRecord`
+  on KIT-187 T8 (iii)'s minimal store.
+
 ## Not checked
 
 - Targets 4, 5 and group R are not proved yet; nothing was run in R.
