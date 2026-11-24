@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-159 builder B, REPAIR line (VAL-109; builder B's share 6 core-hours): RB0, tests only at e2485409 (replay, records, valrun, g1a-entry), shown failing at the fault; ceiling 30 min, about 0.8 core-hours; decides nothing but the failing-first demonstration",
+  "label": "KIT-159 builder B RB0: tests first at e2485409",
+  "package_commit": "e24854096388ab380de0e87cdcfad8702d5d5db5",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-159/rep-rb0-out", "--files", "replay,records,valrun,g1a-entry"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-rb0-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
