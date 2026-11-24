@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-198 gate G0: does a non-sample numeric column reach the lipid/metab intensity filter on the app import path (one scripts job, no tests)",
+  "label": "KIT-198 G0 on kit-198-intensity-filter-wording b0e913b8",
+  "package_commit": "b0e913b84a9c31cc9b2f8af05aace7b1a160cfa8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-198/g0-numeric-columns.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-198/g0",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
