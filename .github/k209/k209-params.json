@@ -1,8 +1,11 @@
 {
-  "label": "counted-wave2",
+  "label": "p3",
   "attempt": "counted",
   "jobs": [
-    {"name": "d7", "plan": "d7", "timeout": 340},
-    {"name": "x10", "plan": "x10", "timeout": 330}
+    {"name": "p3-U7", "plan": "p3-U7", "timeout": 240},
+    {"name": "p3-U8", "plan": "p3-U8", "timeout": 180},
+    {"name": "p3-U9", "plan": "p3-U9", "timeout": 240},
+    {"name": "p3-U10", "plan": "p3-U10", "timeout": 240},
+    {"name": "p3-U12", "plan": "p3-U12", "timeout": 240}
   ]
 }
