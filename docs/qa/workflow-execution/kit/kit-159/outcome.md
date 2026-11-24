@@ -216,6 +216,53 @@ VAL-54 instrument runs per item: R0 item 1 (R6), R3 item 1 (R7), E2E item 1 (R4d
 remainder): one correction used (R12 -> R13).
 Inferred, not run: the whole suite at the final head (R1 ran at 4a57cbdb).
 
+## Re-audit 2 (register section "Re-audit 2", 2026-11-24): repairs and records
+
+Verdict of the register: mergeable after listed repairs (M1 to M4); R2-01, R2-02 and G1(r)'s rows
+owed before a validation ticket uses the harness. Budget: coordinator's line REAUDIT2, 6 core-hours,
+inside the ticket's total (ticket r1.20, section 35). State per item below; runs in `runs.tsv`.
+
+- **M4.** RB0's tables recovered from its artifact (run 45335018540) and committed:
+  `rep/rb0-harness-tests.tsv` (18 tests, 11 failing at their faults), `rep/rb0-harness-failures.txt`,
+  `rep/rb0-code-hashes.tsv`.
+
+### What a validation verdict now means (the register's point 7, R2.7, as written there)
+
+1. Independent units: the claim is "over repeat runs, for the features scored"; no widening for
+   feature generalisation at any count; each unit's within-run interval printed beside the verdict
+   (VAL-137 (3)).
+2. The C4 and C4e accuracy and threshold rows are conditional: coverage of E[theta-hat | features]
+   for one feature draw, the generator named on each row (E7). DI10b extends the C4e g = 5 rows to
+   one-directional changes, at nominal with no margin; the C4 g = 4 and g = 6 rows and the C4e
+   g = 14 rows are shown for balanced changes only.
+3. The family bound is the sum of one-sided Clopper-Pearson upper bounds; figures in older notes
+   are not comparable.
+4. A zero-miss `conservative` row licenses only its own `interval.statistic`.
+5. `se_inflation` replaces the half-width reading; under unbalanced changes the jackknife is not
+   conservative (R2.4).
+6. G1(a) can end "certified with the difference printed" under SWD-083 (VAL-133 (2)): a lane's
+   certificate no longer always means bit-identical captures, and results print the difference.
+7. G5's `identical` means the stored results recompute identically within one session; it says
+   nothing about the published tables. From R2-01's fix it also requires a head DA result on both
+   sides (no DA result on either side is `unsupported`, class `val_replay_no_da_result`).
+8. VAL-141 changes nothing for validation tickets: the feature-blind lifecycle stands for them.
+
+### KIT-162's declared spike-in composition beside DI10b's cell (counts only; for the owner)
+
+| | KIT-162 (`tickets/kit/KIT-162.md`, design rows and 4.1) | DI10b: cell C4e-147, C4e g = 5, `fixed_onedir` (`valCovMatrixData`, `t2/di10b-declaration.md`) |
+|---|---|---|
+| Samples, layout | 50: 5 plexes x 10 channels; groups `L0125`, `L05`, `L0667`, `L1` 2 per plex each, `Norm` (reference pool) 2 per plex | 50: 5 blocks x 5 groups x 2 samples |
+| Blocks (units) | 5 mixtures (plexes); leave-one-mixture-out | 5 blocks; delete-one-block |
+| Features | about 4,800 proteins before the ticket's own filters (Huang 2020: 4,812 incl. 21 UPS after their filters) | 500 |
+| Changed features | UPS1: 48 spiked; "about 40 positives" expected after filters (4.1, limits) (Huang 2020 kept 21) | 100 |
+| Share changed | about 40 / 4,800 = 0.8 % (48 / 4,800 = 1.0 %; 21 / 4,812 = 0.4 %); UPS below 1 % of the load | 100 / 500 = 20 % |
+| Direction | one direction within each contrast: every UPS protein higher at the higher level (none down) | one direction: every changed feature up |
+| Sizes (log2) | level ratios 0.41359, 0.58641, 1 (primary contrast 1 vs 0.5), 2, 2.41359, 3 between the four levels; group means at log2 0, -0.585, -1, -3 relative to level 1; `Norm` pool at 286.5 fmol (log2 -0.80 relative to level 1) | group effects 0, 0.5, 1, 1.5, 2 (steps of 0.5; contrasts 0.5 to 2) |
+| Unchanged features | HeLa background, constant 50 ug per channel | 400 features with no group effect |
+| Noise (simulated only) | (real data) | residual SD 0.3, per-sample offset SD 0.1, per-feature block effect SD 0.1; one fixed feature draw |
+
+Not judged here: whether these are close enough is the owner's question (register R2.8 (b)).
+
 ## E1 and covr: the whole harness suite once (declared before the send, 2026-11-24)
 
 On the coordinator's word, the last step of the repair: one `run-tests` scripts request,
