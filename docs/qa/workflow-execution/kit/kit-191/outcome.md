@@ -1,5 +1,34 @@
 # KIT-191 outcome: the integration enrichment's tests as a list of options
 
+## Resume here (2026-11-24, after the implementation audit)
+
+Register `tickets/kit/audits/AUDIT-KIT-191-impl-20261124.md`: ready after repairs, one major (I01). The repairs are
+written and committed but UNRUN (the one correction pass was used by R2c; the verification run is the owner's, pool
+X114): a tests-only commit (d021463a) then the code commit (c85aa863). Repaired: I01 (the floor printed as the exact
+fraction "1/1,001" by one function, `integrationEnrichmentFloorFraction()`, the form for the owner to confirm, O1; the
+`_none` sentence when p_min > 0.05; k_min in whole numbers; U10 gains the round-up cases 1/10,001 and 2/1,001 and the
+whole-number case B = 1,000, d = 10, m = 273 giving exactly 60), I02 (the limits clause names the kind's terms of row
+E), I03 (the declared test read first; a value that is no offered test gives no figure, never camera's), I04 (exact
+reads of `test` in the tab's summary and the record's ranking and Methods), I05 (the two refusals name the permutation
+test), I06 (record slips), I07 (T10's score column exact; X's m2 also replays the branch-point store's old entries).
+Not repaired: I08 to I13 (notes); the O3 wording items, below, wait for the owner. Staging not merged.
+
+The one run needed: R2's 13 files, base against head with check and its scripts, on the merge with `v0.9-staging`;
+ceiling 420 job-minutes; plus X's repaired script if the owner wants m2's old-entry guard observed.
+
+### O3 wording items, held for the owner (file:line at the repair commit; the auditor's proposed text)
+
+| Item | Where | Proposed |
+|---|---|---|
+| I05 refusal texts | `R/utils_integration_enrichment.R:85-91` | applied as the register gives them (the owner may still edit) |
+| I10 "about 2.0 minutes ... longer than the 2 minutes allowed" | `R/utils_integration_enrichment.R:94-98` (`integration_enrichment_test_too_large`) | wording for the owner; no text proposed beyond noting the reading |
+| I12 permutation notes: "1,000 random reorderings" also when 10,000 is chosen | `R/utils_integration_gui.R:700-701`, `:713-714` | "with what 1,000 (or the chosen 10,000) random reorderings" |
+| I12 camera and gsea notes lack the independent-samples assumption | `R/utils_integration_gui.R:657`, `:669`, `:725`, `:736` | add the sentence the permutation notes carry ("samples taken in pairs, repeatedly from one subject, or in batches" break the assumption of independent samples) |
+| I12 lipid wording "simulated metabolite (no lipid data were simulated) data" | `R/utils_integration_gui.R:765` (`enrich_strength_kind_lipids`) | owner's wording |
+| I12 camera notes attach the C4b figure to "terms made only of the most variable features"; C4 on weaker factors reaches 10.9 % (genes and proteins) and 5.4 % (metabolites) | `R/utils_integration_gui.R:657-668`, `:669-679` | owner's wording |
+| I12 `applies_to` of G, H, I: "every test finds fewer, the permutation test most" is inferred | `R/utils_integration_enrichment.R:1020-1022` | add "(expected, not measured)" |
+| I12 camera metabolite note "0.4 to 4.5 %" covers C0 to C2; C3 reaches 4.6 % | `R/utils_integration_gui.R:669-679` | owner's wording |
+
 Ticket `tickets/kit/KIT-191.md` revision 1.3 (1.2: the re-check's minors B01 to B06; 1.3: AUDIT-KIT-193 U1 and U2, by
 the coordinator's instruction). Owner decisions: VAL-85 (2), VAL-97 (D1 to D9 as recommended). Branch
 `kit-191-enrichment-test-options` from `v0.9-staging` 147adde8. Runs in `runs.tsv`.
@@ -31,11 +60,13 @@ the coordinator's instruction). Owner decisions: VAL-85 (2), VAL-97 (D1 to D9 as
   the comparator at the script's top level (it sits inside `local({...})`), base-head loaded without the test helpers.
   U14 and gate-off passed. The new file 232 passed, 1 skipped (the cross-platform reference not yet recorded); its
   log gave the reference.
-- **R2c (45294896497), the one correction pass.** 13 files: 12 `same` (one only-on-head, the new file: 237 passed,
-  0 failed, 0 skipped), no new failure; KIT-183's file 180 passed on head (178 on base: the restated tests' extra
+- **R2c (45294896497), the one correction pass.** 13 files: 11 `same`, 1 `count-changed` (KIT-183's file, its
+  restated tests) and 1 `only-on-head` (the new file: 237 passed, 0 failed, 0 skipped); no new failure; KIT-183's file 180 passed on head (178 on base: the restated tests' extra
   expectations). Check: 0 ERROR, 3 WARNING, 3 NOTE on both, nothing only on head. Scripts:
   - U3: t within 1e-10; p-values of the product and the committed `simulate-k183.R` comparator identical on all 90
-    sets (n = 6, 12, 20); no draw listed; unchanged draws only at 6 samples, counted by the product (`u3/`).
+    sets (n = 6, 12, 20); no draw listed; no draw left the factor unchanged in any of the three fixtures (none at 6 samples either,
+    where about 1.4 were expected), so U3 did not exercise the unchanged-draw rule; U2's 4-sample case tests it against
+    the loops (`u3/`).
   - U14: 120 of 120 evidence cells and 58 of 58 text figures regenerated equal (`u14/`).
   - U7 (b) and U8's store: camera's and gsea's terms identical (SHA-256 equal) base against head on T1's fixture and
     the corpus store; the store made at base replays at head with each entry's test, terms identical; the camera
@@ -84,7 +115,7 @@ the coordinator's instruction). Owner decisions: VAL-85 (2), VAL-97 (D1 to D9 as
 | A9 | guard and L1 | met | U12 (R2c); `lifecycle.md` |
 | A10 | corpus positive control | met | U13 (R2c) |
 | A11 | every figure equals the regenerated table | met | U14 `u14/` |
-| A12 | failing first; guards fail on mutations | met | R1; X `x/` |
+| A12 | failing first; guards fail on mutations | met (m2 is caught by the replay of the head's new entries in U5/U8; the branch-point store's old entries were replayed unmutated in U7 (b), `u7b/replay.tsv`; the mutant logs do not name the failing expectation. The repaired X script also replays the old entries under m2: unrun) | R1; X `x/` |
 | A13 | cross-platform | met | B, B24, `cross-platform.tsv` |
 | A14 | full suite base against head with check | met | F 45300767142 |
 | A15 | ledger row, NEWS under the unreleased heading, no version change, wording list | met | `docs/methods-decision-ledger.md` (VAL-<merge>), `NEWS.md`, `wording.md` |

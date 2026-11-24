@@ -3,4 +3,4 @@ ubuntu-22.04 (run-tests, the reference's source)	45288809984	2f54469e	test-integ
 ubuntu-22.04 (run-tests)	45294896497	677fb251	test-integration-enrichment-options.R	237	0	0	within 1e-6 of the reference
 ubuntu-22.04 (installed bundle)	45294928896	1141f52d (run-k191-bundle = 677fb251 + bundle lane)	test-integration-enrichment-options.R	237	0	0	within 1e-6
 windows-2025 (installed bundle)	45294928896	1141f52d	test-integration-enrichment-options.R	237	0	0	within 1e-6
-ubuntu-24.04 (installed bundle)	45297583402	d0861ba3 (1141f52d + suite runner 24.04)	test-integration-enrichment-options.R	237	0	0	within 1e-6
+ubuntu-24.04 (installed bundle)	45297583402	0bfbd65a (1141f52d + suite runner 24.04)	test-integration-enrichment-options.R	237	0	0	within 1e-6
