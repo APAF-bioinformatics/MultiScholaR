@@ -1,4 +1,4 @@
-# KIT-200 outcome (stopped before R3: T9 does not pass on head, for a reason outside this change)
+# KIT-200 outcome (R2 green after the owner's T9 decision; R3 running)
 
 Ticket r1.2. Branch `kit-200-prot-da-proteins-without-values` from `v0.9-staging` 67d38df3.
 
@@ -115,7 +115,9 @@ The artifact field, like the return fields, exists only when there are such prot
 
 The owner changed T9's declared expectation (not the implementer): T9 now asserts only that the wrapper's
 differential-abundance step (`runTestsContrasts`, captured inside `daAnalysisWrapperFunction`) completes and reports
-`P_empty` as not tested (`features_without_values`, one untested row per table). Commit 817b026a; run R2-4.
+`P_empty` as not tested (`features_without_values`, one untested row per table). Commit 817b026a; run R2-4 (45471995943): 516 passed, 0 failed. **A1 met on head.**
+
+**Second merge.** The branch merged staging 2a1543db at a786abd2 (ledger conflict: staging's rows first). KIT-205 (D-B) is on staging: the enrichment background now leaves rows without a p-value out, so NEWS and the ledger row say untested proteins are out of the background (c3f27bd3). R3 binds 149ab856 against 2a1543db.
 
 ## Unrelated findings
 
