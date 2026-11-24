@@ -25,6 +25,29 @@
 
 ### Scientific changes
 
+ * Proteomics (DIA, label-free, TMT): the protein missing-value filter ('Protein Intensity Filter', and the clean-up
+   after RUV) now decides by counting missing values. Before, it compared each group's share of missing values with a
+   percentage rounded to three decimals. With three samples per group and 'Min Replicates per Group' 2, one missing
+   value of three (33.3333 %) exceeded the rounded 33.333 %, so at the tab's defaults only proteins measured in every
+   sample were kept. The same happened for some other group sizes (for example 6, 7 or 11 samples with 1 required; 11
+   to 14 with 2) and for three groups with 'Min Groups Required' 2. Group sizes whose allowed share is exact or rounds
+   up (for example 2, 4, 5, 6, 7, 8, 9 or 10 samples with 2 required) give the same results as before. In simulated
+   data (KIT-185's generator with no unwanted variation and no RUV, 2 groups of 3, 3,000 proteins, R = 100 draws per
+   condition) the filter now keeps, at 5 %, 10 % and 25 % value-dependent missingness, 2,838, 2,668 and 2,086 proteins
+   instead of 2,442, 2,060 and 1,261; the differential analysis finds 53, 81 and 110 more proteins (the share of truly
+   changed proteins found rises from 0.65 to 0.73, 0.55 to 0.68 and 0.33 to 0.51), with the false discovery proportion
+   unchanged at about 0.05 for the whole list (among the newly kept proteins about 6 to 8 % of the proteins called
+   were false); these are simulated figures, and the size on real data is not yet measured. Designs with unequal group
+   sizes keep the rule of the largest group, as before, so a smaller group can pass with fewer values than 'Min
+   Replicates per Group' (for example one of three when the largest group has six). Analysis records made before this
+   version replay with the earlier rule; each step of a record replays with the rule it was made with. In an analysis
+   record, the protein intensity filter and normalisation steps made with this version list the fixed parameter
+   'missing_value_comparison = counts'; a step without it was made with the earlier rule. A session saved before this
+   version and continued after it applies the new rule from its next missing-value step. The peptide intensity
+   filter's percentage-only call (deprecated) reads its percentages the same way. The proteomics reports now say that
+   a protein failed a group when its share of missing values exceeded the allowed share, and was kept when the share
+   of groups it failed did not exceed the allowed share; they said 'or more' and 'at most' of the rounded percentages.
+   (KIT-187, VAL-71)
  * Integration enrichment of a factor against KEGG and Reactome pathways now uses a correlation-adjusted test by
    default (limma's camera on each feature's regression on the factor, allowing for the correlation measured between
    a pathway's features, on the features measured in every biological sample; of several features on one compound

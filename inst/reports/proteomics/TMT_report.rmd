@@ -478,7 +478,7 @@ FormatMethodDetailsTMT <- function(numbers) {
   cross_groups_text <- if(max_groups_cutoff == 0) {
     "a protein was retained only if it passed in every experimental group."
   } else {
-    paste0("a protein was retained if it failed in at most ", max_groups_cutoff, "% of the experimental groups.")
+    paste0("a protein was retained if the share of experimental groups in which it failed did not exceed the allowed share, ", max_groups_cutoff, "% (shown rounded to three decimals).")
   }
   ordinal_suffix <- function(n) { n <- suppressWarnings(as.integer(round(as.numeric(n)))); if (is.na(n)) return("th")
     if (n %% 100 %in% 11:13) "th" else switch(as.character(n %% 10), "1" = "st", "2" = "nd", "3" = "rd", "th") }
@@ -558,7 +558,7 @@ and reliable downstream statistical analysis.
 
 Proteins were then filtered on missing values within experimental groups. Intensities below the 
 {intensity_cutoff_pct}{intensity_cutoff_suffix} percentile of all intensities in the table were treated as missing. 
-Within each group a protein failed if {groupwise_cutoff}% or more of its values were missing; {cross_groups_text}
+Within each group a protein failed if the share of its values that were missing exceeded the allowed share, {groupwise_cutoff}% (shown rounded to three decimals); {cross_groups_text}
 
 Proteins appearing in only one replicate across all groups were also excluded 
 to ensure measurement reproducibility and reliable quantification across biological 
