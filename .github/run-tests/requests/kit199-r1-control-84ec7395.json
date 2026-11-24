@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-199 R1: control job 1 of 2 for the prot_dia_limpa re-freeze (sides 12d68ca7, base 19997323, F1 with the freeze); declared before results",
+  "label": "KIT-199 R1 control job 1 at F1 84ec7395",
+  "package_commit": "84ec739515b1a44cc4dc8d1edc78d199f95016a7",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-199/control.R",
+      "args": [
+        "12d68ca78442a50b46f52e33525dd85cf86df5e7",
+        "19997323dd9a0efac5830696c7d3ac617560dae6",
+        "docs/qa/workflow-execution/kit/kit-199/r1"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-199/r1",
+      "out_pattern": "\\.(json|tsv|txt)$",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
