@@ -1,0 +1,27 @@
+check	cell	pass	n	note
+E6_table24	S	TRUE	8	
+E6_table24	B	TRUE	7	
+E6_table24	D	TRUE	2	
+E6_table24	Dk	TRUE	5	
+E6_table24	Atau_any	TRUE	7	
+E6_table24	Atau_g2	TRUE	3	
+E6_table24	Atau_all	TRUE	3	
+E6_table24	Aobs_any	TRUE	6	
+E6_table24	Aobs_g2	TRUE	4	
+E6_table24	Aobs_all	TRUE	4	
+E6_T3	g2	TRUE	NA	
+E6_T3	g1	TRUE	NA	
+E6_T3	g4	TRUE	NA	
+E6_T4	g2	TRUE	NA	
+E6_k	L2	TRUE	NA	trxFilterMinSampleSize
+E6_k	L1	TRUE	NA	trxFilterMinSampleSize
+E6_k	M2	TRUE	NA	trxFilterMinSampleSize
+E6_k	M1	TRUE	NA	trxFilterMinSampleSize
+E6_k	Lv	TRUE	NA	trxFilterMinSampleSize
+E6_k	Le	TRUE	NA	trxFilterMinSampleSize
+E6_k	Me	TRUE	NA	trxFilterMinSampleSize
+E1	M2	TRUE	1400	package S set equals the oracle
+F1	M2	TRUE	1400	subset identities (and none: equal to S)
+E2	M2	TRUE	200	mask none: B, D, Dk, Aobs equal S
+E3	M2	TRUE	1400	B's tested rows and raw p equal S's (1e-12)
+units	M2	TRUE	18200	did not complete: 0 of 18200 rows

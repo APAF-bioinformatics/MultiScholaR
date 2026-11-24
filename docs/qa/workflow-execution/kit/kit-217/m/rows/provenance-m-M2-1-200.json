@@ -1,0 +1,35 @@
+{
+  "job": "m-M2-1-200",
+  "cells": "M2",
+  "replicates": [1, 200],
+  "lifecycle": false,
+  "fault": false,
+  "workers": 4,
+  "commit": "9e15166ae4a4cba1cb682370c87b6ad025084ec8",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "INTEL(R) XEON(R) PLATINUM 8573C",
+  "seed_rule": "set.seed(185000000 + 10000 * (3200 + i) + r, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection') = 217000000 + 10000 i + r",
+  "cell_index": 3203,
+  "key_packages": {
+    "MultiScholaR": "0.9.0",
+    "limma": "3.68.4",
+    "qvalue": "2.44.0",
+    "edgeR": "4.10.1",
+    "dplyr": "1.2.1",
+    "tidyr": "1.3.2",
+    "tibble": "3.3.1"
+  },
+  "script_sha256": "e80b7d5d597299f43c76be8663a6ee47a4ba675549d5d9e7bc35855aa44db1b3",
+  "started": "2026-11-24T22:19:43+0000",
+  "finished": "2026-11-24T22:25:39+0000",
+  "replicate_units": 200,
+  "rows_not_completed": 0,
+  "tables_sha256": {
+    "checks-m-M2-1-200.tsv": "9e608d1edcd22aaaa9315766c4a0ebc483661e4b46e2bc90d8d60009aab3c89a",
+    "m-rows-M2-1-200.tsv.gz": "777aa38da0df01d13848d1f35c948dc66fcab36edc3eafce5491e54ff1becd0d",
+    "timing-m-M2-1-200.tsv": "1b5a8fa79a784be096e1fa2a61e9e0da7eb67242cb2fb991d80a3a560e5db524"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "job": "det-L2-1-5",
+  "cells": "L2",
+  "replicates": [1, 5],
+  "lifecycle": false,
+  "fault": false,
+  "workers": 4,
+  "commit": "9e15166ae4a4cba1cb682370c87b6ad025084ec8",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "seed_rule": "set.seed(185000000 + 10000 * (3200 + i) + r, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection') = 217000000 + 10000 i + r",
+  "cell_index": 3201,
+  "key_packages": {
+    "MultiScholaR": "0.9.0",
+    "limma": "3.68.4",
+    "qvalue": "2.44.0",
+    "edgeR": "4.10.1",
+    "dplyr": "1.2.1",
+    "tidyr": "1.3.2",
+    "tibble": "3.3.1"
+  },
+  "script_sha256": "e80b7d5d597299f43c76be8663a6ee47a4ba675549d5d9e7bc35855aa44db1b3",
+  "started": "2026-11-24T22:20:38+0000",
+  "finished": "2026-11-24T22:21:07+0000",
+  "replicate_units": 5,
+  "rows_not_completed": 0,
+  "tables_sha256": {
+    "checks-det-L2-1-5.tsv": "574542426df6c01da0f915b01ae38d9f173cda36434579201312d458bed08c9a",
+    "det-rows-L2-1-5.tsv.gz": "18450bc045aac3264ab758080bd9bc8ce8e8a37dd045ddeb949d4b6e884e051b",
+    "timing-det-L2-1-5.tsv": "1393f2523ec530dae3438d9057f8ea3450422ad9ec20cf090517629fb4927176"
+  }
+}
