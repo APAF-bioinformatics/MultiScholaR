@@ -1,0 +1,70 @@
+step	run_name	run_id	package_commit	purpose	result	observed	job_minutes	core_hours	ceiling_core_hours
+L1a	k185-l1a-819d882e	45224002653	819d882e1333b1e29cbde5d419e66bdf8d5cadd9	blind lifecycle, part-A proteomics cells P0 P0r P1 P2 P3 P4 P5 P0lo P0hi, replicates 401-403, E1 to E4, E6, E7 (crash with K185_FAULT)	instrument defect (E3) and E1-neg failed on P2	27 of 27 units completed; E1 (a) raw and post, E1 (b), E2, E4, E7 refusal and crash, G1 pass in every cell; E3 failed in the mechanics (the request carried ruv_mode twice; the kernel read "automatic" and refused "ruv_k_rule is user with ruv_mode manual"); E1-neg FAILED on P2 at every replicate (C equals S to 3e-14) because the shipped filter leaves P2 with no missing value (see lifecycle.md)	36.4	2.43	10.67
+L1b	k185-l1b-819d882e	45224008392	819d882e1333b1e29cbde5d419e66bdf8d5cadd9	blind lifecycle, L1 L2 M1 M2 (shipped filter and presence rule), part B on P0 L2 M2 (reps 401-402), sensitivity variants on P0 and M2 (rep 401), E3, E6 (L2)	instrument defect (part B comparator)	every unit completed; E1, E2, E3 (L2, M2), E6 (L2), E7, G1, G2 pass; part B L2 comparator crashed (an empty assay group handed to the reference: mechanics); G1 printed FALSE for variant k1 (not a gate: the sensitivity variant's k is 1 against 2 planted; scope fixed)	30.2	2.01	10.67
+L1c	k185-l1c-819d882e	45224013589	819d882e1333b1e29cbde5d419e66bdf8d5cadd9	blind lifecycle (D5), P4b L1b M1b (reps 401-403), run-aligned masks on P0 P1 L2 M2, part B legacy on P1 P4b L1b M1b (reps 401-402)	instrument defect (part B comparator on L1b)	every unit completed; E1 (a), E1 (b), E1-neg, E2, E4, E7, G1, G2 pass; part B L1b comparator crashed (same mechanics as L1b)	25.9	1.73	10.67
+L1fix	k185-l1fix-bb9dbbc3	45231099951	bb9dbbc3a6472f2175302b2df3695cab4fb336df	VAL-54 instrument runs: E3 and E6 on P0 (rep 401); part B on L2 (L1b item) and L1b (L1c item); fixes: E3 parameters by modifyList, the comparator's assay split on the assays present, the route's controls resolved by position as the lipid method does	pass	E3 P0 identical, E6 P0 identical p-values, E1-neg P0 pass; part B L2 and L1b comparators complete (only the route's own refusals assay_not_corrected at L2 VD 10 and 50 %)	12.5	0.84	inside the L1 ceilings
+S	k185-a-l1-1-432f703b	45235766580	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-l1-1)	ok	all replicates written; no crashed unit	57.7	3.85	section 10 row
+S	k185-a-l1b-1-432f703b	45235771432	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-l1b-1)	ok	all replicates written; no crashed unit	33.1	2.21	section 10 row
+S	k185-a-l2-1-432f703b	45235777914	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-l2-1)	ok	all replicates written; no crashed unit	43.5	2.90	section 10 row
+S	k185-a-m1-1-432f703b	45235783028	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-m1-1)	ok	all replicates written; no crashed unit	32.9	2.19	section 10 row
+S	k185-a-m1-2-432f703b	45235788603	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-m1-2)	ok	all replicates written; no crashed unit	45.5	3.03	section 10 row
+S	k185-a-m1-3-432f703b	45235793562	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-m1-3)	ok	all replicates written; no crashed unit	41.4	2.76	section 10 row
+S	k185-a-m1b-1-432f703b	45235798717	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-m1b-1)	ok	all replicates written; no crashed unit	40.8	2.72	section 10 row
+S	k185-a-m1b-2-432f703b	45235803597	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-m1b-2)	ok	all replicates written; no crashed unit	35.7	2.38	section 10 row
+S	k185-a-m2-1-432f703b	45235810265	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-m2-1)	ok	all replicates written; no crashed unit	21.6	1.44	section 10 row
+S	k185-a-p0-1-432f703b	45235816748	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p0-1)	ok	all replicates written; no crashed unit	131.8	8.79	section 10 row
+S	k185-a-p0-2-432f703b	45235821678	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p0-2)	ok	all replicates written; no crashed unit	137.2	9.14	section 10 row
+S	k185-a-p0hi-1-432f703b	45235827068	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p0hi-1)	ok	all replicates written; no crashed unit	158.7	10.58	section 10 row
+S	k185-a-p0lo-1-432f703b	45235833086	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p0lo-1)	ok	all replicates written; no crashed unit	158.3	10.55	section 10 row
+S	k185-a-p0r-1-432f703b	45235838609	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p0r-1)	ok	all replicates written; no crashed unit	137.2	9.15	section 10 row
+S	k185-a-p0r-2-432f703b	45235844312	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p0r-2)	ok	all replicates written; no crashed unit	130.0	8.67	section 10 row
+S	k185-a-p1-1-432f703b	45235848516	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p1-1)	ok	all replicates written; no crashed unit	76.3	5.09	section 10 row
+S	k185-a-p1-2-432f703b	45235853559	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p1-2)	ok	all replicates written; no crashed unit	110.7	7.38	section 10 row
+S	k185-a-p1-3-432f703b	45235863277	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p1-3)	ok	all replicates written; no crashed unit	114.3	7.62	section 10 row
+S	k185-a-p1-4-432f703b	45235868795	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p1-4)	ok	all replicates written; no crashed unit	111.9	7.46	section 10 row
+S	k185-a-p3-1-432f703b	45235874241	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p3-1)	ok	all replicates written; no crashed unit	132.4	8.83	section 10 row
+S	k185-a-p3-2-432f703b	45235879426	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p3-2)	ok	all replicates written; no crashed unit	134.2	8.95	section 10 row
+S	k185-a-p3-3-432f703b	45235884039	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p3-3)	ok	all replicates written; no crashed unit	121.9	8.13	section 10 row
+S	k185-a-p3-4-432f703b	45235888951	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p3-4)	ok	all replicates written; no crashed unit	103.2	6.88	section 10 row
+S	k185-a-p3-5-432f703b	45235893759	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p3-5)	ok	all replicates written; no crashed unit	133.5	8.90	section 10 row
+S	k185-a-p4-1-432f703b	45235898769	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p4-1)	ok	all replicates written; no crashed unit	146.1	9.74	section 10 row
+S	k185-a-p4-2-432f703b	45235904582	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p4-2)	ok	all replicates written; no crashed unit	175.1	11.67	section 10 row
+S	k185-a-p4-3-432f703b	45235910120	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p4-3)	ok	all replicates written; no crashed unit	164.8	10.98	section 10 row
+S	k185-a-p4-4-432f703b	45235915610	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p4-4)	ok	all replicates written; no crashed unit	171.6	11.44	section 10 row
+S	k185-a-p4-5-432f703b	45235921655	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p4-5)	ok	all replicates written; no crashed unit	132.6	8.84	section 10 row
+S	k185-a-p4b-1-432f703b	45235926347	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p4b-1)	ok	all replicates written; no crashed unit	180.7	12.04	section 10 row
+S	k185-a-p4b-2-432f703b	45235931416	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p4b-2)	ok	all replicates written; no crashed unit	107.3	7.15	section 10 row
+S	k185-a-p4b-3-432f703b	45235936654	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p4b-3)	ok	all replicates written; no crashed unit	170.3	11.35	section 10 row
+S	k185-a-p5-1-432f703b	45235941075	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p5-1)	timeout (instrument)	175-minute timeout; replicates 1-116 / 268-379 written, 117-133 / 380-400 re-sent	186.3	12.42	section 10 row
+S	k185-a-p5-2-432f703b	45235946042	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p5-2)	ok	all replicates written; no crashed unit	178.8	11.92	section 10 row
+S	k185-a-p5-3-432f703b	45235951916	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (a-p5-3)	timeout (instrument)	175-minute timeout; replicates 1-116 / 268-379 written, 117-133 / 380-400 re-sent	186.1	12.41	section 10 row
+S	k185-b-l1bm1b-1-432f703b	45235956657	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (b-l1bm1b-1)	ok	all replicates written; no crashed unit	38.0	2.53	section 10 row
+S	k185-b-l2m2-1-432f703b	45235961521	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (b-l2m2-1)	ok	all replicates written; no crashed unit	35.2	2.35	section 10 row
+S	k185-b-p0-1-432f703b	45235968194	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (b-p0-1)	ok	all replicates written; no crashed unit	152.7	10.18	section 10 row
+S	k185-b-p0-2-432f703b	45235975178	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (b-p0-2)	ok	all replicates written; no crashed unit	182.3	12.15	section 10 row
+S	k185-b-p1-1-432f703b	45235979779	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (b-p1-1)	ok	all replicates written; no crashed unit	117.6	7.84	section 10 row
+S	k185-b-p1-2-432f703b	45235983970	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (b-p1-2)	ok	all replicates written; no crashed unit	126.8	8.46	section 10 row
+S	k185-b-p4b-1-432f703b	45235989375	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (b-p4b-1)	ok	all replicates written; no crashed unit	124.4	8.29	section 10 row
+S	k185-b-p4b-2-432f703b	45235995880	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (b-p4b-2)	ok	all replicates written; no crashed unit	92.3	6.16	section 10 row
+S	k185-d-1-432f703b	45236001422	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (d-1)	ok	determinism D: E5 identical without seconds	14.5	0.97	section 10 row
+S	k185-r-p0l2m2-1-432f703b	45236005600	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (r-p0l2m2-1)	ok	all replicates written; no crashed unit	103.5	6.90	section 10 row
+S	k185-r-p1-1-432f703b	45236009821	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (r-p1-1)	ok	all replicates written; no crashed unit	65.2	4.35	section 10 row
+S	k185-r-p1-2-432f703b	45236016490	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (r-p1-2)	ok	all replicates written; no crashed unit	48.4	3.23	section 10 row
+S	k185-s-m2-1-432f703b	45236022727	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (s-m2-1)	ok	all replicates written; no crashed unit	26.1	1.74	section 10 row
+S	k185-s-p0-1-432f703b	45236027972	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (s-p0-1)	ok	all replicates written; no crashed unit	154.0	10.27	section 10 row
+S	k185-s-p0-2-432f703b	45236032406	432f703b7e0d5f627e2990c288dbfe5f389fcd19	counted run S (s-p0-2)	ok	all replicates written; no crashed unit	111.2	7.41	section 10 row
+S'	k185-a-p5-rest-432f703b	45268841462	432f703b7e0d5f627e2990c288dbfe5f389fcd19	VAL-54 instrument run: P5 replicates 117-133 and 380-400 after the two timeouts	ok	all 38 replicates written	73.1	4.88	S' reserve
+SC	k185-sc-65b9beb4	45281426216	65b9beb4fae134ee36f3aebedf61121118ed8c0e	scoring once over the committed rows	scoring defect (E5, E8 by column type)	O3; E5 and E8 reported false though the rows are identical as text	12.4	0.83	3.33
+SC2	k185-sc2-4e6d426f	45283782973	4e6d426fa7724e523b9b81dee937383f983cf4bd	re-score once after the fix (declaration section 7)	ok	O3; every scored table identical to SC; E5, E8 pass	10.6	0.71	inside SC's ceiling
+L1pb	k185-l1pb-df60efa9	45291628697	df60efa99ce77a313d527d243c0b098b4206b510	VAL-98 (1) lifecycle: part-B reference DA after the fix, P0 P1 P4b rep 401	pass	reference DA arm returned a table in every proteomics part-B cell and route	21.1	1.41	S' reserve
+B'	k185-b2-p4b-2-df60efa9	45294821147	df60efa99ce77a313d527d243c0b098b4206b510	VAL-98 (1) part-B proteomics re-run	ok	reference DA complete in every replicate (50 of 50 per job)	125.7	8.38	S' reserve
+B'	k185-b2-p4b-1-df60efa9	45294817149	df60efa99ce77a313d527d243c0b098b4206b510	VAL-98 (1) part-B proteomics re-run	ok	reference DA complete in every replicate (50 of 50 per job)	70.2	4.68	S' reserve
+B'	k185-b2-p1-2-df60efa9	45294812622	df60efa99ce77a313d527d243c0b098b4206b510	VAL-98 (1) part-B proteomics re-run	ok	reference DA complete in every replicate (50 of 50 per job)	126.4	8.43	S' reserve
+B'	k185-b2-p1-1-df60efa9	45294808197	df60efa99ce77a313d527d243c0b098b4206b510	VAL-98 (1) part-B proteomics re-run	ok	reference DA complete in every replicate (50 of 50 per job)	68.0	4.53	S' reserve
+B'	k185-b2-p0-2-df60efa9	45294803884	df60efa99ce77a313d527d243c0b098b4206b510	VAL-98 (1) part-B proteomics re-run	ok	reference DA complete in every replicate (50 of 50 per job)	152.6	10.17	S' reserve
+B'	k185-b2-p0-1-df60efa9	45294799437	df60efa99ce77a313d527d243c0b098b4206b510	VAL-98 (1) part-B proteomics re-run	ok	reference DA complete in every replicate (50 of 50 per job)	142.3	9.49	S' reserve
+SUMM	k185-summ-ff73dbff	45294836442	ff73dbff	VAL-98 (2) reported-only summary (summ-k185.R)	ok	results/reported-extra.tsv, results/qvalue-methods.tsv	12.5	0.83	-
+L1p2	k185-l1p2-6779d56e	45314701113	6779d56e901c0e052389327c51c56d45a2820a68	P2 blind lifecycle after KIT-187 (declaration section 11)	pass	E1-neg pass (1.85 to 2.54), G1, E1 (b), E2, E7 pass; realised share at VD 10 % 4.5 %	12.2	0.81	10.67
+S-P2	k185-a-p2-1-6779d56e	45316277536	6779d56e901c0e052389327c51c56d45a2820a68	counted run S for P2 after KIT-187 (declaration section 11)	ok	all replicates written; no unit not ok	141.7	9.45	17.67
+S-P2	k185-a-p2-2-6779d56e	45316280358	6779d56e901c0e052389327c51c56d45a2820a68	counted run S for P2 after KIT-187 (declaration section 11)	ok	all replicates written; no unit not ok	125.8	8.39	17.67
+SC3	k185-sc3-bb74274e	45333019858	bb74274e3d8c34e55457da70754edad2c1a80590	re-score with P2 and the part-B proteomics re-run (score-k185.R, summ-k185.R as pinned)	ok	O3 on 456; non-P2 cells.tsv rows identical to SC2; E2 470, E5, E8 pass	13.4	0.89	3.33
