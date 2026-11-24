@@ -688,7 +688,18 @@ omicNormGuardTexts <- function() {
             "Pipeline\" again, then export."),
         da = paste("The current table is not the result of the last normalisation: Quality Control was reverted, or the",
             "normalisation was reset, after it ran. Run the normalisation (and the correlation filter or its Skip) again, then",
-            "run the analysis."))
+            "run the analysis."),
+        # KIT-207: the Summary's refusals (drafts for the owner's wording pass, VAL-41), by the guard's case.
+        summary = paste("The current table is not the result of the last normalisation: Quality Control was reverted, or the",
+            "normalisation was reset, after it ran. Run the normalisation (and the correlation filter or its Skip) again, or,",
+            "if you have only just pressed Reset, press Revert once in a Quality Control sub-tab; then press this button again."),
+        summary_trx = paste("The current table is not the result of the last normalisation: Quality Control was reverted, or the",
+            "normalisation was reset, after it ran. Run the normalisation again, then press this button again."),
+        summary_none = paste("No normalisation has been run in this session, so there is no final table to save. Run the",
+            "normalisation (and the correlation filter or its Skip), then press this button again."),
+        summary_loaded = paste("This session file was saved after Quality Control was reverted past the normalisation, so its",
+            "table (\"%s\") was not normalised. Import the data again, run quality control and the normalisation, then press",
+            "this button again."))
 }
 
 #' Whether the binding is transcriptomics' (one normalisation state, `trx_ruvs`).
