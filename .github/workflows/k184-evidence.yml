@@ -372,6 +372,8 @@ jobs:
           name: k184-${{ matrix.job.id }}
           path: ${{ runner.temp }}/result
           retention-days: 90
+          # A re-run of a failed job (S', the one correction of instrumentation) replaces that job's artifact (K184-R07).
+          overwrite: true
 
       - name: "L1b: only the staging folder leaves the job"
         uses: actions/upload-artifact@v4
@@ -384,8 +386,10 @@ jobs:
   score:
     name: Score once
     needs: [plan, evidence]
-    # Not for a blind run: its scorer ran inside the job and nothing of its result may leave it.
-    if: ${{ !cancelled() && needs.plan.outputs.run != 'blind' }}
+    # Not for a blind run: its scorer ran inside the job and nothing of its result may leave it. And only when every
+    # evidence job and the determinism job succeeded (a matrix job's result is `success` only then): nothing is scored
+    # or published on partial data before the failed jobs have been re-run (declaration audit, re-check 2, K184-R06).
+    if: ${{ !cancelled() && needs.plan.outputs.run != 'blind' && needs.evidence.result == 'success' }}
     runs-on: ubuntu-22.04
     # Re-check K184-R03: three times the scale test's measured time, at least 30 and at most 90 minutes. L1b (run
     # 45348572248) scored about 2,250 replicates (11.9 million error-table lines) in 119 seconds with a peak of 5.1 GiB,
