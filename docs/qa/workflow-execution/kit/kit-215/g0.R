@@ -117,6 +117,12 @@ family_rows <- function(family, tables, annotations, id_column, q_cutoff = 0.05,
 # The W1/W113 module fixture as written (6 proteins; the GO case's taxon 999999 annotation).
 module_table <- h$module_ci_prot_enrich_da_table()
 module_annotations <- h$module_ci_prot_enrich_annotations(organism = "custom")
+# Instrument fix (run 45493249015): the helper writes the biological-process columns only; the gene-set builder reads
+# all three aspects, so the two absent aspects are added empty.
+for (column in c("go_id_go_molecular_function", "go_term_go_molecular_function", "go_id_go_cellular_compartment",
+    "go_term_go_cellular_compartment")) {
+    if (!column %in% names(module_annotations)) module_annotations[[column]] <- NA_character_
+}
 rows <- list(family_rows("w1_module", list(`groupB-groupA` = module_table), module_annotations, "uniprot_acc"))
 rows[[1L]]$run_on_base <- "not run (captured runs use a fake enricher)"
 
