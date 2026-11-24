@@ -1,0 +1,6 @@
+base: 147adde8346beb1df165dd5cbcba94697b7e79a7
+head: 677fb251fc37f53bfcdeb641a7c21c93cc3a4753
+R version 4.6.1 (2026-06-24)
+head renders deterministic: TRUE
+gate-off pages identical to base: TRUE
+gate-off integration module is the unavailable panel: TRUE

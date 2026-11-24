@@ -516,7 +516,10 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
                 value$ruv_model <- c(list(ruv_design = protRuvModelDesign(ruv_model)), ruv_model)
             }
             value
-        })
+        },
+        # KIT-187 (VAL-71, D2): the clean-up after RUV decides by counts; a recorded step without this marker replays
+        # with the earlier rounded-percentage comparison (`workflowReplayRuleMarkers`).
+        fixed = list(missing_value_comparison = "counts"))
 }
 
 #' Today's normalisation declaration takes none of the new design's parameters (KIT-126 audit F-06, KIT-129 B1): its
@@ -728,14 +731,20 @@ resolveDIARuvRunDescription <- function(manager) {
     NULL
 }
 
+#' The in-process normalisation: the gate, the request, the compute half, the commit and the publication half.
+#' @param pre_qc KIT-182 (F-e): the tab's pre-normalisation figure generator, called when the run's source differs from
+#'   the table the figures were drawn from (`diaNormalizationRequest`'s `redraw_pre`), before the publication copies
+#'   them; NULL draws nothing, as before.
+#' @noRd
 runDIAReferenceNormalization <- function(settings, workflow, norm_data, paths, omic_type,
-    experiment_label, post_qc, ruv_qc, grouping) {
+    experiment_label, post_qc, ruv_qc, grouping, pre_qc = NULL) {
     prior_plot <- ggplot2::get_last_plot()
     on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
     manager <- workflow$state_manager
     withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "normalization")
         request <- diaNormalizationRequest(manager, settings, norm_data, grouping())
+        if (isTRUE(request$redraw_pre) && is.function(pre_qc)) pre_qc()
         run <- computeDIAReferenceNormalization(manager, request$source, request$parameters)
         commit <- diaNormalizationCommit(manager, settings, run)
         if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
@@ -744,19 +753,230 @@ runDIAReferenceNormalization <- function(settings, workflow, norm_data, paths, o
     })
 }
 
+# --- KIT-182 (VAL-48, VAL-91, VAL-99): the normalisation reads the current quality-control result ---
+
+#' The normalisation tab's own states (KIT-182): pressed there, "Run Normalization & RUV" re-runs from the table the
+#' previous run read (the restore treats the same three names as "normalisation active").
+#' @noRd
+DIA_NORMALISATION_TAB_STATES <- c("normalized", "ruv_corrected", "correlation_filtered")
+
+#' The save labels that mark a table as normalised (KIT-182): the tab's own states and the normalisation's
+#' between-sample checkpoint, saved by the operation's store as `owner:normalized-science`.
+#' @noRd
+DIA_NORMALISED_LABELS <- c(DIA_NORMALISATION_TAB_STATES, "owner:normalized-science")
+
+#' The heads on which a protein quality-control step is refused by name (KIT-182, VAL-91 D1): the normalisation's and the
+#' DIA_LIMPA RUV covariates' states, the correlation filter's, and the result table enrichment commits after DA.
+#' @noRd
+DIA_QC_REFUSED_HEADS <- c("normalized", "ruv_corrected", "ruv_covariates", "correlation_filtered", "enrichment_completed")
+
+#' The quality-control steps as the Quality Control tab names them (KIT-182), for the refusals' "Revert until" step.
+#' @noRd
+DIA_QC_STEP_TITLES <- c(protein_s4_initial = "the design step (before quality control)",
+    protein_s4_created = "IQ Protein Rollup", protein_accession_cleaned = "Accession Cleanup",
+    protein_intensity_filtered = "Protein Intensity Filter", duplicates_removed = "Duplicate Removal",
+    protein_replicate_filtered = "Protein Replicate Filter", protein_dpc_quant = "DPC Quantification",
+    protein_normalised = "Between-Sample Normalisation", peptide_count_filtered = "Peptide Count Filter")
+
+#' A saved state's bounded record for the lineage checks (KIT-182), or NULL when it is not a readable component
+#' checkpoint (a legacy payload, or no component metadata): logged, and the caller keeps today's outcome.
+#' @param manager Session owner.
+#' @param reference Saved state descriptor, or NULL.
+#' @return The record's `data` (the component checkpoint), or NULL.
+#' @noRd
+readDIALineageRecord <- function(manager, reference) {
+    if (!isSavedWorkflowReference(reference)) return(NULL)
+    unread <- function(condition) {
+        logger::log_info(paste("KIT-182: a state record was not read for the normalisation lineage:",
+            conditionMessage(condition)))
+        NULL
+    }
+    tryCatch(readComponentMetadata(manager, reference)$data,
+        saved_entity_unsupported = unread, saved_entity_corrupt = unread)
+}
+
+#' Whether a protein state has normalisation in its lineage (KIT-182, the ticket's 7.1): (i) its record carries the
+#' normalisation product; or (ii) a reference among its record's cumulative dependencies was saved under a
+#' normalisation label (`DIA_NORMALISED_LABELS`: the label every descriptor keeps unaltered); or (iii), for the head
+#' only, the head was adopted from a legacy session (`adopted` provenance) with `normalized` or `ruv_corrected` earlier
+#' in the active history.
+#' @param manager Session owner.
+#' @param spec The state's record (`readDIALineageRecord`).
+#' @param head TRUE when `spec` is the head's record, which enables clause (iii).
+#' @return TRUE or FALSE.
+#' @noRd
+diaNormalisedLineage <- function(manager, spec, head = FALSE) {
+    if (!is.null(spec$products$normalization_science)) return(TRUE)
+    labelled <- vapply(spec$dependencies, function(dependency)
+        is.list(dependency) && isTRUE(dependency$identity$parameters %in% DIA_NORMALISED_LABELS), logical(1))
+    if (any(labelled)) return(TRUE)
+    if (!head || !isTRUE(manager$.context$snapshot$step_provenance[[manager$current_state]]$adopted)) return(FALSE)
+    history <- diaStateHistory(manager)
+    any(match(c("normalized", "ruv_corrected"), history) < match(manager$current_state, history), na.rm = TRUE)
+}
+
+#' The last quality-control step before normalisation, as the Quality Control tab names it (KIT-182, the ticket's 7.3):
+#' the active history walked back from the position before its first normalisation-tab state (from the head's position
+#' when there is none), to the first state whose record satisfies neither lineage clause (i) nor (ii).
+#' @param manager Session owner.
+#' @return The step's title (`DIA_QC_STEP_TITLES`), or "the peptide quality-control steps" for any other state.
+#' @noRd
+diaPreNormalisationStepName <- function(manager) {
+    history <- diaStateHistory(manager)
+    tab <- which(history %in% c("normalized", "ruv_corrected", "ruv_covariates", "correlation_filtered"))
+    start <- if (length(tab)) tab[[1L]] - 1L else match(manager$current_state, history, nomatch = length(history))
+    title <- function(state) if (isTRUE(state %in% names(DIA_QC_STEP_TITLES))) DIA_QC_STEP_TITLES[[state]] else
+        "the peptide quality-control steps"
+    for (state in rev(history[seq_len(start)])) {
+        spec <- readDIALineageRecord(manager, getDIAStateReference(manager, state))
+        if (is.null(spec) || !diaNormalisedLineage(manager, spec)) return(title(state))
+    }
+    title(NA_character_)
+}
+
+#' The refusal of "Run Normalization & RUV" on a normalised input (KIT-182, VAL-91 D1; wording proposed, VAL-41).
+#' @param manager Session owner.
+#' @noRd
+abortDIANormalisedInput <- function(manager) {
+    rlang::abort(paste0("this normalisation would start from a table that has already been normalised ",
+        "(quality-control steps were applied after normalisation, or the project recorded a normalised table as its ",
+        "starting table), so it cannot be normalised again. In the Quality Control tab press Revert until the current ",
+        "step is \"", diaPreNormalisationStepName(manager), "\", the last quality-control result before normalisation, ",
+        "apply again from there any quality-control steps you want, then press \"Run Normalization & RUV\"."),
+        class = "prot_norm_input_after_normalisation")
+}
+
+#' Today's chain for a press at the tab's own state (KIT-182 `guard`): a source saved under a normalisation-tab state's
+#' name, or whose record satisfies lineage clause (i) or (ii), is refused; a NULL source, a value that is not a saved
+#' reference or an unreadable record passes unchanged (today's outcome).
+#' @param manager Session owner.
+#' @param source The candidate source.
+#' @return `source`.
+#' @noRd
+guardDIANormalizationSource <- function(manager, source) {
+    if (!isSavedWorkflowReference(source)) return(source)
+    normalised <- isTRUE(source$identity$parameters %in% DIA_NORMALISATION_TAB_STATES)
+    if (!normalised) {
+        spec <- readDIALineageRecord(manager, source)
+        normalised <- !is.null(spec) && diaNormalisedLineage(manager, spec)
+    }
+    if (normalised) abortDIANormalisedInput(manager)
+    source
+}
+
+#' The normalisation's source (KIT-182, VAL-48; the ticket's 7.1). At the tab's own state (`normalized`,
+#' `ruv_corrected`, `correlation_filtered`; checked first) the table the previous run read, as before (R3), so a
+#' settings change never normalises a normalised table. Otherwise the head when it is a protein or peptide state with no
+#' normalisation in its lineage (R1: the current quality-control result; a peptide head meets the operation's existing
+#' refusal), refused when it has (R2: quality control applied after normalisation, in a session saved before the fix or
+#' by a script). Any other head (a result table, an unreadable record): today's chain (R3). Every R3 result is guarded.
+#' A NULL or non-reference owner keeps today's chain unguarded.
+#' @param manager,norm_data Session owner and the tab's state.
+#' @return The source reference.
+#' @noRd
+diaNormalizationSource <- function(manager, norm_data) {
+    today <- function() norm_data$normalization_input_reference %||%
+        manager$.context$snapshot$qc_sources$pre_normalization %||%
+        getDIAStateReference(manager, "protein_replicate_filtered") %||% getDIAStateReference(manager)
+    if (!usesDIAReferenceStates(manager)) return(today())
+    if (manager$current_state %in% DIA_NORMALISATION_TAB_STATES) return(guardDIANormalizationSource(manager, today()))
+    head <- getDIAStateReference(manager)
+    spec <- readDIALineageRecord(manager, head)
+    if (!is.null(spec) && isTRUE(spec$class %in% c("ProteinQuantitativeData", "PeptideQuantitativeData"))) {
+        if (!diaNormalisedLineage(manager, spec, head = TRUE)) return(head)
+        abortDIANormalisedInput(manager)
+    }
+    guardDIANormalizationSource(manager, today())
+}
+
+#' The refusal of a protein quality-control Apply on a normalised table (KIT-182, VAL-91 D1). It decides by name
+#' first (`DIA_QC_REFUSED_HEADS`); only then does it read the head's record (`readComponentMetadata` through
+#' `readDIALineageRecord`, before any read of the history or provenance) and refuse a protein state with normalisation
+#' in its lineage (a session saved before the fix). A no-op on a NULL or non-reference owner. Called first by the six
+#' protein QC sub-tabs' steps in process and before their managed `apply`; not by the kernels, the registry handlers or
+#' replay.
+#' @param workflowData The workflow bus (`state_manager`).
+#' @return TRUE invisibly, or an error of class `prot_qc_input_normalised`.
+#' @noRd
+assertProtQcHeadNotNormalised <- function(workflowData) {
+    manager <- workflowData$state_manager
+    if (is.null(manager) || !usesDIAReferenceStates(manager)) return(invisible(TRUE))
+    refuse <- function() rlang::abort(paste0("quality-control steps cannot be applied to a table that has already ",
+        "been normalised. To change quality control, press Revert in this tab until the current step is \"",
+        diaPreNormalisationStepName(manager), "\", the last quality-control result before normalisation, then apply ",
+        "the steps again and press \"Run Normalization & RUV\" again."), class = "prot_qc_input_normalised")
+    if (isTRUE(manager$current_state %in% DIA_QC_REFUSED_HEADS)) refuse()
+    spec <- readDIALineageRecord(manager, getDIAStateReference(manager))
+    if (identical(spec$class, "ProteinQuantitativeData") && diaNormalisedLineage(manager, spec, head = TRUE)) refuse()
+    invisible(TRUE)
+}
+
+#' The managed protein QC sub-tab's check before `apply` (KIT-182, VAL-91 D1): the refusal, or any error reading the
+#' head, is shown as the managed step's own failures are ("Error applying <label>: ...") and the step is not started.
+#' @param workflowData The workflow bus.
+#' @param label The label the sub-tab gives `installWorkflowManagedStep`.
+#' @return TRUE when `apply` may run.
+#' @noRd
+protQcManagedApplyAllowed <- function(workflowData, label) {
+    tryCatch({
+        withDIAStateScope(workflowData$state_manager, function() assertProtQcHeadNotNormalised(workflowData))
+        TRUE
+    }, error = function(e) {
+        message <- paste0("Error applying ", label, ": ", conditionMessage(e))
+        logger::log_error(message)
+        shiny::showNotification(message, type = "error", duration = 15)
+        FALSE
+    })
+}
+
+#' The DIA_LIMPA pass-through's refusal of a normalised table (KIT-182, VAL-91 D1, second part; the third re-check's
+#' C02): the table it would designate (`diaLimpaPassThroughSource`) is a protein state with normalisation in its lineage,
+#' as in a session saved before the fix in which Between-Sample Normalisation or Peptide Count Filter ran on
+#' `ruv_corrected`, `ruv_covariates` or `correlation_filtered`. A no-op on a non-reference owner.
+#' @param manager,normData Session owner and the tab's state.
+#' @return TRUE invisibly, or an error of class `prot_norm_input_after_normalisation`.
+#' @noRd
+assertDIALimpaDesignationNotNormalised <- function(manager, normData) {
+    if (!usesDIAReferenceStates(manager)) return(invisible(TRUE))
+    source <- diaLimpaPassThroughSource(manager, normData)
+    spec <- readDIALineageRecord(manager, source)
+    head <- identical(source$entity_id, getDIAStateReference(manager)$entity_id)
+    if (identical(spec$class, "ProteinQuantitativeData") && diaNormalisedLineage(manager, spec, head = head))
+        abortDIANormalisedInput(manager)
+    invisible(TRUE)
+}
+
 #' The normalisation's source and declared parameters, as the tab sends them in process and to the worker (KIT-111 D3):
-#' the recorded input, else the pre-normalisation QC source, else `protein_replicate_filtered`, else the head. The source
-#' is recorded as the tab's normalisation input.
+#' the source by `diaNormalizationSource` (KIT-182), recorded as the tab's normalisation input. KIT-182: after a completed
+#' run, a protein source other than the previous run's signals the classed message `prot_norm_input_current`, which the
+#' tab shows as a notice; a source other than the table the pre-normalisation figures were drawn from becomes the
+#' figures' source (`qc_sources$pre_normalization`) and `redraw_pre` is TRUE.
 #' @param manager,norm_data Session owner and the tab's state.
 #' @param settings The normalisation settings (`runDIAReferenceNormalization`).
 #' @param grouping The RUV grouping variable.
-#' @return `list(source, parameters)`.
+#' @return `list(source, parameters, redraw_pre)`.
 #' @noRd
 diaNormalizationRequest <- function(manager, settings, norm_data, grouping) {
-    source <- norm_data$normalization_input_reference %||%
-        manager$.context$snapshot$qc_sources$pre_normalization %||%
-        getDIAStateReference(manager, "protein_replicate_filtered") %||% getDIAStateReference(manager)
+    previous <- norm_data$normalization_input_reference
+    source <- diaNormalizationSource(manager, norm_data)
     norm_data$normalization_input_reference <- source
+    redraw_pre <- FALSE
+    if (usesDIAReferenceStates(manager) && isSavedWorkflowReference(source)) {
+        if (isTRUE(norm_data$normalization_complete) && isSavedWorkflowReference(previous) &&
+            !identical(previous$entity_id, source$entity_id) &&
+            identical(readDIALineageRecord(manager, source)$class, "ProteinQuantitativeData")) {
+            message(structure(class = c("prot_norm_input_current", "message", "condition"), list(message = paste(
+                "This normalisation uses your current quality-control result. The previous normalisation used an",
+                "earlier table, from before your latest quality-control changes."), call = NULL)))
+        }
+        snapshot <- manager$.context$snapshot
+        drawn <- snapshot$qc_sources$pre_normalization
+        if (!is.null(drawn) && !identical(drawn$entity_id, source$entity_id)) {
+            snapshot$qc_sources$pre_normalization <- source
+            publishDIAStateHead(manager$.context, snapshot)
+            redraw_pre <- TRUE
+        }
+    }
     fields <- c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
         "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k")
     parameters <- stats::setNames(lapply(fields, \(field) settings[[field]]), fields)
@@ -767,7 +987,7 @@ diaNormalizationRequest <- function(manager, settings, norm_data, grouping) {
         # KIT-129 fifth pass item 3: the supplied list beside them (its identity is set by `workflowRequestOperation`).
         if (identical(settings$ruv_design, "supplied_controls")) parameters$ruv_control_ids <- settings$ruv_control_ids
     }
-    list(source = source, parameters = parameters)
+    list(source = source, parameters = parameters, redraw_pre = redraw_pre)
 }
 
 #' The normalisation's compute half (KIT-111 D3): the declaration on the source, reused on a hit. Worker-safe: no head
@@ -1600,7 +1820,8 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, threshold,
 #' tab's `ruv_normalized_obj`, which the RUV covariates' publication points at the committed RUV state: a correlation
 #' re-apply after the covariates then starts where the first correlation did, never from a state that already holds the
 #' correction or the W terms. On a first click the two are the same reference. Every other route reads
-#' `ruv_normalized_obj`, as before.
+#' `ruv_normalized_obj`, as before. KIT-182 (VAL-91 D2, VAL-99 (4)): refused when the Quality Control tab's table has
+#' changed since normalisation (`assertDIACorrelationHeadCurrent`).
 #' @param manager,norm_data Session owner and the tab's state.
 #' @return The source reference.
 #' @noRd
@@ -1608,7 +1829,41 @@ diaCorrelationSource <- function(manager, norm_data) {
     source <- if (identical(manager$workflow_type, "DIA_LIMPA"))
         norm_data$normalization_input_reference %||% norm_data$ruv_normalized_obj else norm_data$ruv_normalized_obj
     if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
+    if (usesDIAReferenceStates(manager)) assertDIACorrelationHeadCurrent(manager, source)
     source
+}
+
+#' The correlation filter's refusal after a Quality Control change (KIT-182, VAL-91 D2; the ticket's 7.5), for Apply and
+#' Skip on both paths. DIA, LFQ, TMT: allowed at the tab's own states, at `normalized` or `ruv_corrected` only when the
+#' head's table is the source's (VAL-99 (4): a Revert between two normalisations leaves an earlier run's state current
+#' while the tab holds the later run's result); refused at any other protein or peptide head (a step applied or
+#' reverted since normalisation). DIA_LIMPA (its normalisation commits no state): allowed at its tab states
+#' (`ruv_covariates`, `ruv_corrected`, `correlation_filtered`) or when the head is the table the pass-through designated;
+#' refused at any other protein or peptide head. A result-class head or an unreadable record: allowed, as today.
+#' @param manager Reference-backed session owner.
+#' @param source The correlation's source (`diaCorrelationSource`).
+#' @return TRUE invisibly, or an error of class `prot_norm_correlation_input_stale`.
+#' @noRd
+assertDIACorrelationHeadCurrent <- function(manager, source) {
+    refuse <- function() rlang::abort(paste0("the table in the Quality Control tab has changed since normalisation was ",
+        "last run (a step was applied or reverted), so the correlation filter would use a table that does not match it. ",
+        "Press \"Run Normalization & RUV\" again, then apply or skip the correlation filter."),
+        class = "prot_norm_correlation_input_stale")
+    limpa <- identical(manager$workflow_type, "DIA_LIMPA")
+    head <- getDIAStateReference(manager)
+    if (!limpa && manager$current_state %in% c("normalized", "ruv_corrected")) {
+        head_spec <- readDIALineageRecord(manager, head)
+        source_spec <- readDIALineageRecord(manager, source)
+        if (!is.null(head_spec) && !is.null(source_spec) && !identical(head_spec$components, source_spec$components)) refuse()
+        return(invisible(TRUE))
+    }
+    own <- if (limpa) c("ruv_covariates", "ruv_corrected", "correlation_filtered") else "correlation_filtered"
+    if (manager$current_state %in% own) return(invisible(TRUE))
+    if (limpa && identical(head$entity_id, source$entity_id)) return(invisible(TRUE))
+    spec <- readDIALineageRecord(manager, head)
+    if (is.null(spec) || !isTRUE(spec$class %in% c("ProteinQuantitativeData", "PeptideQuantitativeData")))
+        return(invisible(TRUE))
+    refuse()
 }
 
 #' The within-group Pearson pairs' parameters (KIT-111 D3): the grouping and the pool-sample pattern the tab removes.

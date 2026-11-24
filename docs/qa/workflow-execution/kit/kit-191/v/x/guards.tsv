@@ -1,0 +1,9 @@
+variant	test	passed	failed	skipped	error
+head	KIT-191 U5, U8: 	21	0	FALSE	FALSE
+head	KIT-191 U7 (a): 	5	0	FALSE	FALSE
+m1_camera_text	KIT-191 U5, U8: 	21	0	FALSE	FALSE
+m1_camera_text	KIT-191 U7 (a): 	4	1	FALSE	FALSE
+m2_replay_drops_test	KIT-191 U5, U8: 	20	1	FALSE	FALSE
+m2_replay_drops_test	KIT-191 U7 (a): 	5	0	FALSE	FALSE
+m3_permutation_text_no_seed	KIT-191 U5, U8: 	30	1	FALSE	FALSE
+m3_permutation_text_no_seed	KIT-191 U7 (a): 	5	0	FALSE	FALSE

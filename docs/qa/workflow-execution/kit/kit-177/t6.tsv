@@ -1,0 +1,6 @@
+lane	proteins	bound	largest_change	calls_old	calls_new	calls_changed	max_abs_logfc_change
+prot_lfq	5	0.00276114	0.00276114	0	0	0	0.000127226
+prot_tmt	5	0.00276114	0.00276114	0	0	0	0.000127226
+prot_lfq_fragpipe	400	0.000430308	0.000430308	23	23	0	0.00036545
+prot_tmt_pd	400	0.000279858	0.000279858	19	19	0	0.000125409
+prot_lfq_maxquant	400	0.00024923	0.00024923	17	17	0	8.47867e-05

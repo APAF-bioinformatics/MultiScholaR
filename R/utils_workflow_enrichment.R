@@ -776,6 +776,44 @@ workflowEnrichmentEffectiveCorrection <- function(method, requested) {
     if (identical(method$method, "clusterprofiler")) "BH" else requested
 }
 
+#' The annotation problems an enrichment run reports (KIT-175 item 5)
+#'
+#' One notice line and one `annotation_error` outcome from the resolved table's `annotation_outcome` attribute (an
+#' empty or incomplete retrieval, wherever the table came from) and the resolver's `loadError` and `creationError`.
+#' When the table is empty or missing, the notice is the first sentence of the design step's notice for the problem
+#' (the run is then refused).
+#' @param annotations The resolved annotation table, or NULL.
+#' @param resolved The resolver's list (`loadError`, `creationError`, `creationReason`, `creationDetail`).
+#' @return `list(notice, outcome)`, or NULL when nothing occurred.
+#' @noRd
+workflowEnrichmentAnnotationProblem <- function(annotations, resolved) {
+    outcome <- attr(annotations, "annotation_outcome")
+    empty <- is.null(annotations) || nrow(annotations) == 0L
+    load <- if (!is.null(resolved$loadError)) redactUniprotDetail(resolved$loadError)
+    notices <- character()
+    outcomes <- character()
+    if (!is.null(load)) {
+        notices <- c(notices, if (empty) sprintf("Protein annotation could not be read from the project file (%s).", load)
+            else sprintf("The saved protein annotation could not be read (%s); it was retrieved again.", load))
+        outcomes <- c(outcomes, sprintf("annotation file could not be read (%s)", load))
+    }
+    if (!is.null(resolved$creationError)) {
+        notices <- c(notices, uniprotAnnotationSentence(list(reason = resolved$creationReason,
+            detail = resolved$creationDetail)))
+    }
+    if (!is.null(outcome)) {
+        if (identical(outcome$reason, "incomplete")) {
+            notices <- c(notices, sprintf(paste("Enrichment ran with incomplete protein annotation: %d of %d proteins",
+                "have no annotation and were left out."), outcome$accessions_not_looked_up, outcome$accessions_requested))
+            outcomes <- c(outcomes, uniprotRecordSummary("incomplete", outcome))
+        } else {
+            notices <- c(notices, uniprotAnnotationSentence(outcome))
+        }
+    }
+    if (!length(notices)) return(NULL)
+    list(notice = paste(notices, collapse = " "), outcome = paste(outcomes, collapse = "; "))
+}
+
 #' Run the enrichment on an accepted DA manifest (KIT-107 D3)
 #'
 #' The module's manifest path at the start commit (`runProtEnrichAnalysisBody`, its setup, finalise and persist steps,
@@ -844,8 +882,26 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     }
     # KIT-119 (A107-06): each contrast's DA table as the run read it, before the organism filter.
     da_inputs <- lapply(da_results@da_data, function(table) diaAnnotationDigest(table) %||% NA_character_)
-    annotations <- config$annotation$resolve(workflowData = workflow, experimentPaths = paths,
-        currentS4Object = source_object, organismTaxid = parameters$organism_taxid)$uniprotDatCln
+    # KIT-175 (items 5, 5a): the annotation's problems are reported, and a run without annotation is refused before
+    # any service is called and before the GO outcome step (D1, VAL-30; KIT-173 audit I04). The conditions of the
+    # step's own retrieval are seen, not muffled.
+    retrieval <- NULL
+    keep <- function(w) retrieval <<- w
+    resolved <- withCallingHandlers(config$annotation$resolve(workflowData = workflow, experimentPaths = paths,
+        currentS4Object = source_object, organismTaxid = parameters$organism_taxid),
+        prot_annotation_uniprot_empty = keep, prot_annotation_uniprot_incomplete = keep)
+    annotations <- resolved$uniprotDatCln
+    if (!is.null(retrieval) && !is.null(annotations)) {
+        attr(annotations, "annotation_outcome") <- uniprotOutcomeFromCondition(retrieval)
+        workflow$uniprot_dat_cln <- annotations
+    }
+    annotation_problem <- workflowEnrichmentAnnotationProblem(annotations, resolved)
+    if (if (is.null(annotations)) !is_test_mode() else nrow(annotations) == 0L) {
+        if (!is.null(annotation_problem)) notify(annotation_problem$notice, "warning", NULL)
+        rlang::abort(paste("Enrichment needs protein annotation and this project has none. Save the design again to",
+            "retrieve it, then run the later steps again."), class = "workflow_enrichment_annotation")
+    }
+    if (!is.null(annotation_problem)) notify(annotation_problem$notice, "warning", NULL)
     matching <- config$annotation$match(uniprotDatCln = annotations, daResultsForEnrichment = da_results,
         currentS4Object = source_object)
     filter_applied <- FALSE
@@ -914,6 +970,10 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     # displayable columns as text, so the table in memory and a read-back of it agree). NA for no table or an empty one.
     outcomes <- c(outcomes, list(annotation_sha256 = diaAnnotationDigest(annotations) %||% NA_character_,
         da_inputs_sha256 = da_inputs))
+    # KIT-175 (item 5): present only when the annotation had a problem on a run that proceeds.
+    if (!is.null(annotation_problem) && nzchar(annotation_problem$outcome)) {
+        outcomes$annotation_error <- annotation_problem$outcome
+    }
     if (!is.null(go_propagation) && !identical(go_propagation, "none")) {
         outcomes <- c(outcomes, workflowEnrichmentGoOutcomes(annotations, go_propagation, da_results, columns$idColumn))
     }
