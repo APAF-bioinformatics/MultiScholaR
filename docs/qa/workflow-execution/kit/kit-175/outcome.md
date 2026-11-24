@@ -115,3 +115,5 @@ Done as the auditor's "Correction pass, reading 1" states, nothing more.
   35 files fail identically on both sides; check identical.
 
 Correction row use: 1.56 (diagnosis) + 15.39 (R2c) + 16.37 (R2d) + 71.56 (R3d) = 104.9 core-hours of 230.
+
+- D1 premise (implementation audit I02): ruled by the owner, VAL-107. The refusal stays; a follow-up before KIT-179 fixes the join that blanks gene names when both tables carry `gene_names` (I05) and makes g:Profiler refuse when it would send no identifiers.
