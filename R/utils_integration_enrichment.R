@@ -2142,7 +2142,9 @@ integrationRecordEnrichmentBlock <- function(context, export) {
             mapping_counts = value$mapping_counts, mapping_rule = value$mapping_rule, service = value$service,
             stored_sha256 = entry$stored$sha256, family = value$family, tests = value$tests, entity_id = entry$reference$entity_id,
             # KIT-183: the test (absent: the pre-ranked test), its counts and design, the factor's strength, the values.
-            test = value$test %||% (if (!identical(value$database, "string")) "gsea"), test_counts = value$test_counts,
+            # KIT-191: exactly `test` (`value$test` would partially match the pre-ranked product's `tests`, the count).
+            test = value[["test", exact = TRUE]] %||% (if (!identical(value$database, "string")) "gsea"),
+            test_counts = value$test_counts,
             design_columns = value$design_columns, design_covariates = value$design_covariates,
             # KIT-191: the permutation test's seed, reorderings, unchanged draws and smallest p-value.
             permutation = value$permutation,

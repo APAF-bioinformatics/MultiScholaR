@@ -20,11 +20,20 @@ script <- "docs/qa/workflow-execution/kit/kit-183/simulate-k183.R"
 exprs <- parse(script, keep.source = FALSE)
 wanted <- c("fisherZ", "pcgseT", "comparators")
 sim <- new.env(parent = globalenv())
-for (e in exprs) {
-    if (is.call(e) && identical(e[[1L]], as.name("<-")) && is.name(e[[2L]]) && as.character(e[[2L]]) %in% wanted) {
+# The script's definitions sit inside its top-level `local({ ... })` block: visit `local` and `{` calls only.
+visit <- function(e) {
+    if (!is.call(e)) return(invisible(NULL))
+    head <- e[[1L]]
+    if (identical(head, as.name("<-")) && is.name(e[[2L]]) && as.character(e[[2L]]) %in% wanted) {
         eval(e, sim)
+    } else if (identical(head, as.name("local"))) {
+        visit(e[[length(e)]])
+    } else if (identical(head, as.name("{"))) {
+        for (i in seq_along(e)[-1L]) visit(e[[i]])
     }
+    invisible(NULL)
 }
+for (e in exprs) visit(e)
 stopifnot(all(wanted %in% ls(sim)))
 assign("K", list(permutations = 1000L, mofa_min_size = 10L), envir = sim)
 functions <- data.frame(name = wanted, sha256 = vapply(wanted, function(name)

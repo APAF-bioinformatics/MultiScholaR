@@ -30,7 +30,7 @@ child <- file.path(work, "child.R")
 writeLines(c(
     "a <- commandArgs(trailingOnly = TRUE)",
     "tree <- a[[1L]]; side <- a[[2L]]; fixtures <- a[[3L]]; out <- a[[4L]]; base_store <- a[[5L]]",
-    "suppressMessages(pkgload::load_all(tree, quiet = TRUE, export_all = TRUE, helpers = FALSE))",
+    "suppressMessages(pkgload::load_all(tree, quiet = TRUE, export_all = TRUE, helpers = TRUE))",
     "setwd(tree)",
     "for (e in parse(fixtures, keep.source = FALSE)) {",
     "    if (is.call(e) && identical(e[[1L]], as.name('<-')) && is.name(e[[2L]]) && startsWith(as.character(e[[2L]]), 'intEt')) eval(e, globalenv())",
