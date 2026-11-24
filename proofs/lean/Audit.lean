@@ -342,3 +342,19 @@ example : Ruv.J3_witness_stmt := Ruv.J3_witness
 #print axioms Ruv.J3_pattern
 #print axioms Ruv.J3_counts
 #print axioms Ruv.J3_witness
+
+/-! ## Group R, R-N1 (`Proof/RuvControlRules.lean`) -/
+
+example : RuvControls.N1_stable_stmt := RuvControls.N1_stable
+example : RuvControls.N1_ties_stmt := RuvControls.N1_ties
+example : RuvControls.N1_first_pass_stmt := RuvControls.N1_first_pass
+example : RuvControls.N1_trx_stmt := RuvControls.N1_trx
+example : RuvControls.N1_rules_differ_stmt := RuvControls.N1_rules_differ
+example : RuvControls.N1_stable_witness_stmt := RuvControls.N1_stable_witness
+
+#print axioms RuvControls.N1_stable
+#print axioms RuvControls.N1_ties
+#print axioms RuvControls.N1_first_pass
+#print axioms RuvControls.N1_trx
+#print axioms RuvControls.N1_rules_differ
+#print axioms RuvControls.N1_stable_witness

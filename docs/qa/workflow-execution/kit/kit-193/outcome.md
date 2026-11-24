@@ -1,4 +1,4 @@
-# KIT-193 outcome (in progress: 124 theorems proved and audited; R-I1, R-J3, R-N1 committed for their freeze, not proved)
+# KIT-193 outcome (in progress: all 142 frozen statements proved; the last 18 (R-I1, R-J3, R-N1) await their audit)
 
 Ticket `tickets/kit/KIT-193.md` r1.5. Branch `kit-193-lean-proofs` from `v0.9-staging` at 51959495. Lean runs on the
 laptop by the owner's exception (VAL-95, VAL-103); no R was run anywhere for this stage.
@@ -296,7 +296,7 @@ the standard axioms). P03: the coordinator adopted the auditor's two sharper wit
 P05 and P06 concern the paired tests.
 
 **Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
-system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system). After R-F3, R-L2, R-M1: 152 calls, 923.3 CPU-seconds (734.8 user + 188.4 system). After 4d-ii: 164 calls, 975.4 CPU-seconds (780.6 user + 194.8 system). After the R-I1, R-J3, R-N1 drafts: 169 calls, 986.0 CPU-seconds (this session: 35 calls, 150.4 CPU-seconds, 88.4 s of Lean wall time). After the freeze edit pass: 174 calls, 1,003.8 CPU-seconds (801.6 user + 202.2 system).
+system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system). After R-F3, R-L2, R-M1: 152 calls, 923.3 CPU-seconds (734.8 user + 188.4 system). After 4d-ii: 164 calls, 975.4 CPU-seconds (780.6 user + 194.8 system). After the R-I1, R-J3, R-N1 drafts: 169 calls, 986.0 CPU-seconds (this session: 35 calls, 150.4 CPU-seconds, 88.4 s of Lean wall time). After the freeze edit pass: 174 calls, 1,003.8 CPU-seconds (801.6 user + 202.2 system). After R-I1, R-J3, R-N1: 188 calls, 1,071.4 CPU-seconds (856.6 user + 214.8 system).
 
 ## P03: two sharper witnesses (new Spec file; proved)
 
@@ -468,20 +468,42 @@ to wait, each frozen after one edit pass (B); target 1's pair holds (C). Applied
   general branch, the eigen step succeeding), feature 1 observed on run 0 only (residual dimension 0: not corrected);
   the residual dimension is the code's, observed runs minus one set. Laptop: 3 Lean calls, 10.7 CPU-seconds (labels
   `rJ3-*`). Agent time 0.03 h, against 2 expected and 3 ceiling.
+- **R-N1 proved** (`Proof/RuvControlRules.lean`: `RuvControls.N1_stable`, `N1_ties`, `N1_first_pass`, `N1_trx`,
+  `N1_rules_differ`; witness `N1_stable_witness`; each on `propext`, `Classical.choice`, `Quot.sound`). How: (a) with
+  every `q` equal the comparator always holds, so the kept list is already sorted and `mergeSort` returns it (core's
+  `mergeSort_of_pairwise`). (a') `mergeSort` output is sorted by "larger q first" (`pairwise_mergeSort`); for two
+  tied values in the wrong row order, the filtered list (strictly increasing rows) has them in row order, stability
+  (`pair_sublist_mergeSort`) keeps that order in the output, and a list without repeats cannot hold both orders.
+  (b), (c) from one counting lemma (`card_rank_gt`): under a strict total order on a set of `N` elements the rank
+  `1 + #{j before i}` is a bijection onto `1..N` (injective by totality and `rank_lt_rank`; into `1..N`; equal
+  cardinalities), so exactly `N - m` ranks exceed `m`; "smaller p, then earlier row" on the present p-values (`F/4 <
+  r` in ℚ is `⌊F/4⌋ < r`), and R's `order()` (missing last) on all genes; the second parts from `rank_lt_rank` and
+  totality. (d) part 1 from the counts (4 against 3 controls at five genes); part 2 by evaluation (gene 0 has no
+  p-value, so it is not a first-pass control; one present gene precedes it in `order()`, so its position exceeds
+  `⌈4/4⌉ = 1`). One limit of Lean met on the way: `decide` cannot evaluate statements that unfold `before` (its match
+  compiles to a private splitter the kernel cannot reduce), so (d) is proved by the counts and by hand, not by
+  `decide`. Laptop: 6 Lean calls, 24.0 CPU-seconds (labels `rN1-*`). Agent time 0.07 h, against 2 expected and 4
+  ceiling.
+- **All 142 statement constants proved.** `Audit.lean` has 142 `example` lines (each theorem's type is its frozen
+  statement) and 142 `#print axioms` lines, every one on the standard axioms or fewer; `lake build --wfail` clean
+  (7,380 jobs); `sha256sum -c SPEC.sha256` twelve OK, no Spec file changed. Stage total: 14 Lean calls, 67.5
+  CPU-seconds; agent time 0.20 h against 14 expected and 23 ceiling for the three items.
 
 ## Resume here
 
 State after the second proofs audit (2026-11-24, third implementer session): every frozen statement of targets 1 to
 5 and of group R priorities 1 to 4 is proved with its witnesses (124 theorems listed in `axioms.tsv`, standard axioms
 only; audited sound). R-I1, R-J3, R-N1: frozen at 2ab4c189 (`statements-gate.md`; confirmed by the auditor by
-reading); R-I1 (9 theorems) and R-J3 (3) proved, R-N1 not yet. Target 1's paired test passed (run
+reading); R-I1 (9 theorems), R-J3 (3) and R-N1 (6) proved at their commits: every one of the 142 statement
+constants is proved. The 18 new theorems await their proofs audit. Target 1's paired test passed (run
 45323167019, after one VAL-54 instrument re-run).
 
 Next:
-1. The auditor confirmed 2ab4c189. R-I1 and R-J3 proved (above). Next R-N1 (5 statements, 1 witness; the rank/order
-   counts a bijection onto 1..F; `N1_ties` from the sortedness and stability of `mergeSort`).
+1. The proofs audit of the 18 (R-I1, R-J3, R-N1). No proof is outstanding.
 2. Target 2's pair waits for KIT-190; P0 (targets 4, group R), P2 (target 5) and P3 as ticket 8.1; the record job L1
-   at the final commit. The next R run carries `scripts/bindings-t3.R` (T3 digests, T1's helper, the P at (320, 137)).
+   at the final commit. **Owed, not run (coordinator's instruction):** the digests job `scripts/bindings-t3.R` (T3's
+   five, T1's helper, the shipped P at (320, 137)); alone it is one scripts job of about 9 minutes, as P1a's was
+   (about 1.3 core-hours at (9 + 10) × 4 / 60), or no extra job if it rides on P0's next run.
 Lean calls: `scratchpad lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900
 /home/doktersmol/.elan/bin/lake …` per call in `cpu-time.tsv`; one at a time. New Proof modules in this session:
 `Proof/RuvAlgebra2.lean`, `Proof/RuvDownstream2.lean`, `Proof/RuvIIIC.lean`, `Proof/KeptFamily.lean` (defs used in
@@ -489,8 +511,8 @@ public statements are `@[expose]`).
 
 ## Not checked
 
-- R-I1, R-J3 and R-N1 are reviewed and committed for the freeze (2ab4c189), not yet confirmed and not proved; R was
-  run only on GitHub runners (P0a, P1a).
+- The proofs of R-I1, R-J3 and R-N1 are checked on the laptop only and not yet audited; R was run only on GitHub
+  runners (P0a, P1a).
 - The digests of target 3's bound objects and of T1's helper, and the shipped P at (320, 137): not computed (no R run
   since; `scripts/bindings-t3.R` is written, not run).
 - The proofs are checked on the laptop only (`lake build --wfail`, `Audit.lean`); the record job L1 runs once, at the

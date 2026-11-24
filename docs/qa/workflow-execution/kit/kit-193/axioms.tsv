@@ -135,3 +135,9 @@ Ruv.I1_average_witness	Ruv.I1_average_witness_stmt	propext, Classical.choice, Qu
 Ruv.J3_pattern	Ruv.J3_pattern_stmt	propext, Classical.choice, Quot.sound
 Ruv.J3_counts	Ruv.J3_counts_stmt	propext, Classical.choice, Quot.sound
 Ruv.J3_witness	Ruv.J3_witness_stmt	propext, Classical.choice, Quot.sound
+RuvControls.N1_stable	RuvControls.N1_stable_stmt	propext, Classical.choice, Quot.sound
+RuvControls.N1_ties	RuvControls.N1_ties_stmt	propext, Classical.choice, Quot.sound
+RuvControls.N1_first_pass	RuvControls.N1_first_pass_stmt	propext, Classical.choice, Quot.sound
+RuvControls.N1_trx	RuvControls.N1_trx_stmt	propext, Classical.choice, Quot.sound
+RuvControls.N1_rules_differ	RuvControls.N1_rules_differ_stmt	propext, Classical.choice, Quot.sound
+RuvControls.N1_stable_witness	RuvControls.N1_stable_witness_stmt	propext, Classical.choice, Quot.sound
