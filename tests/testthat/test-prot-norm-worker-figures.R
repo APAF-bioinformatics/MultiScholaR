@@ -59,10 +59,13 @@ protNormK122Drive <- function(fixture, steps, managed) {
             plot <- shiny::isolate(norm$final_qc_plot)
             out$final[[case]] <- if (!is.null(plot)) list(data = protNormW1Sha(as.data.frame(plot$data)), title = plot$labels$title)
             out$actions[[case]] <- vapply(probe$actions[seq_along(probe$actions) > seen], `[[`, "", "operation")
+            # KIT-182: each action's input entity, beside its operation.
+            out$inputs[[case]] <- vapply(probe$actions[seq_along(probe$actions) > seen], function(action)
+                action$input %||% NA_character_, "")
             out$generated[[case]] <- shiny::isolate(norm$pre_norm_qc_generated)
         }
     })))
-    list(images = out$images, final = out$final, actions = out$actions, generated = out$generated,
+    list(images = out$images, final = out$final, actions = out$actions, inputs = out$inputs, generated = out$generated,
         counts = unlist(mget(sort(ls(counts)), envir = counts)), notes = log$notes)
 }
 
@@ -270,4 +273,69 @@ test_that("KIT-122 (composite): a figure is found saved only for the stage image
         identities$png))
     # With no directory nothing is looked up or written: the caller builds, as before.
     expect_false(writeDIACompositeFigureFiles(manager, product, "manual", NULL, "proteomics"))
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-182 T8 (managed; F-e): the pre-normalisation figures follow the normalisation's source. The tab is driven
+# unmanaged and managed through the tab entry (figures of PRF1), a normalisation, a Quality Control Revert and a QC
+# change (the Protein Intensity Filter through its kernel and the step's display publication, as KIT-182's
+# test-prot-norm-input-current.R makes it), and the normalisation again. On the fix the run reads the QC result, the
+# managed actions start with that table's figures, and the pre-normalisation PCA is redrawn from it, byte-identical to
+# the unmanaged tab's.
+# ------------------------------------------------------------------------------------------------
+
+protNormK182Steps <- function(seen) {
+    click <- protNormW3Clicker()
+    press <- function(...) {
+        step <- click(...)
+        function(session, selected) step(session)
+    }
+    list(
+        tab_entry = function(session, selected) {
+            do.call(session$setInputs, protNormW3Inputs("skip"))
+            selected("normalization")
+        },
+        normalization_skip = press("run_normalization"),
+        qc_change = function(session, selected) {
+            manager <- getDIAActiveManager()
+            rlang::local_bindings(filtering_progress = methods::new("FilteringProgress"), .env = .GlobalEnv)
+            grDevices::pdf(NULL)
+            device <- grDevices::dev.cur()
+            on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device), add = TRUE)
+            withDIAStateScope(manager, function() {
+                selectDIAStateReference(manager, "protein_replicate_filtered")
+                value <- computeDIAReferenceProteinIntensityFilter(manager, getDIAStateReference(manager),
+                    list(strict_mode = FALSE, min_reps_per_group = 2, min_groups = 2,
+                        proteins_intensity_cutoff_percentile = 10))
+                result <- finishDIAReferenceProteinStep(list2env(list(state_manager = manager, qc_params = list())),
+                    value, publish = FALSE)
+                publishDIAProteinProgress(result, "11_protein_intensity_filtered", "proteomics", "core", updateProteinFiltering)
+            })
+            seen$q <- getDIAStateReference(manager)$entity_id
+            seen$prf1 <- getDIAStateReference(manager, "protein_replicate_filtered")$entity_id
+        },
+        normalization_again = press("run_normalization"))
+}
+
+test_that("KIT-182 T8 (managed): after a QC change the run's actions start with the QC result's figures, and the pre-normalisation PCA is redrawn, byte-identical to the unmanaged tab's (fails before)", {
+    skip_if_not(workflowOwnerCapable())
+    unmanaged_seen <- new.env(parent = emptyenv())
+    managed_seen <- new.env(parent = emptyenv())
+    unmanaged <- protNormK122Drive(protNormCoreOwner(), protNormK182Steps(unmanaged_seen), managed = FALSE)
+    managed <- protNormK122Drive(protNormCoreOwner(), protNormK182Steps(managed_seen), managed = TRUE)
+    figures <- "normalization-qc-figures"
+    # The QC change removed proteins and is the head before the second run.
+    expect_false(is.null(managed_seen$q))
+    expect_false(identical(managed_seen$q, managed_seen$prf1))
+    # Managed: the source's figures first, then the normalisation, both on the QC result.
+    expect_identical(managed$actions$normalization_again, c(figures, "normalization-ruv", figures, figures))
+    expect_identical(unname(managed$inputs$normalization_again[1:2]), rep(managed_seen$q, 2L))
+    # The pre-normalisation PCA was redrawn after the QC change, on both paths, and is the same file on both.
+    pca <- "pre_norm_pca.png"
+    expect_false(identical(unmanaged$images$normalization_again[[pca]], unmanaged$images$tab_entry[[pca]]))
+    expect_false(identical(managed$images$normalization_again[[pca]], managed$images$tab_entry[[pca]]))
+    expect_identical(managed$images$normalization_again[[pca]], unmanaged$images$normalization_again[[pca]])
+    # The steps before the QC change are as KIT-122 records them.
+    expect_identical(managed$actions[c("tab_entry", "normalization_skip")],
+        list(tab_entry = figures, normalization_skip = c("normalization-ruv", figures, figures)))
 })
