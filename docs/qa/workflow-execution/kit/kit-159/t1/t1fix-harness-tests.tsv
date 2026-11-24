@@ -1,0 +1,21 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-coverage-rank.R	T-RANK-1: the rank effect is calibrated into the declared pAUC band and recorded	4	4	0	0	0	0	9.89
+test-coverage-rank.R	T-RANK-2: a cell with zero-width intervals or a target at a bound is degenerate	5	5	0	0	0	0	0.023
+test-coverage-rank.R	T-RANK-3: run-level conservative is read on the miss rate	4	4	0	0	0	0	0.011
+test-coverage-rank.R	T-RANK-4: a degenerate condition makes the regime row degenerate (not offered)	1	1	0	0	0	0	0.007
+test-coverage.R	pass bands: approximate run-level, within-run, exact and Clopper-Pearson	9	9	0	0	0	0	0.021
+test-coverage.R	the summary flags a paired t count passing on normal and failing on skewed data	3	3	0	0	0	0	0.015
+test-coverage.R	the catalogue has unique cells and every regime of 10.2	2	2	0	0	0	0	0.064
+test-coverage.R	small runs of a C1 and a C3 cell return one row per level	5	5	0	0	0	0	0.118
+test-coverage.R	a coverage cell run as ranges equals the cell run whole; a dropped or repeated range is refused	15	15	0	0	0	0	0.519
+test-coverage.R	seeds depend on the cell and the index only	3	3	0	0	0	0	0.067
+test-coverage.R	a coverage plan splits each cell into fixed consecutive ranges	3	3	0	0	0	0	0.067
+test-phases.R	T-PH-1: the cell table crosses units and arms, one run per (run, arm), fixed seeds	7	7	0	0	0	0	0.027
+test-phases.R	T-PH-2: prepare.R runs in an isolated environment; universe and prepared hashes	7	7	0	0	0	0	0.063
+test-phases.R	T-PH-3: the cell runner by kind writes da.tsv; a refusal is val_arm_refused	8	8	0	0	0	0	0.042
+test-phases.R	T-PH-4: kernel arms pass the identity gate before their cells, or are all refused	5	5	0	0	0	0	0.062
+test-phases.R	T-PH-5: per-unit metric rows carry the fixed columns; blinded in the lifecycle	5	5	0	0	0	0	0.057
+test-phases.R	T-PH-6: run-level intervals over units, refusals, and blinded outcomes	5	5	0	0	0	0	0.023
+test-phases.R	T-PH-7: a phase writes its run folder (cells, metrics, comparisons, provenance)	12	12	0	0	0	0	0.563
+test-phases.R	T-PH-8: within-run bootstrap rows per unit, widening, clopper_pearson and a within-run verdict	10	10	0	0	0	0	3.97
+test-phases.R	T-PH-9: test mode cannot be forced (r1.12, 7.3)	1	1	0	0	0	0	0.021

@@ -1,0 +1,8 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-repair2.R	R-O8: over independent units nothing is widened at any count; report only, stated	9	4	5	0	0	0	0.227
+test-repair2.R	R-O5: the 117 T2 rows read pass under T2's band and conservative under r1.13's; both printed	5	0	5	0	0	0	0.053
+test-repair2.R	R-O4: a conservative row with no observed miss licenses only the statistic it simulated	5	3	2	0	0	0	0.031
+test-repair2.R	R-O4: the half-width ratio is mean half-width over the statistic's SD times z	0	0	0	0	1	0	0.005
+test-repair2.R	R-I10: the redraw generator is unchanged; the fixed generator draws features once per cell	1	1	0	0	1	0	0.071
+test-repair2.R	R-I10: under the fixed symmetric generator the plain arm's null rejection share is near 0.05	2	1	1	0	0	0	1.353
+test-repair2.R	R-I10: a plan's generator column reaches the cell in the chunk tasks and the detail	2	2	0	0	0	0	0.127

@@ -1,0 +1,3 @@
+cell	step	action	input_id	value	source	location
+prot_dia_limpa	da	differential_expression-run_da_analysis	setup_import-mixed_species_fasta	FALSE	ui_default	ui
+prot_dia_limpa-no_covariates	da	differential_expression-run_da_analysis	setup_import-mixed_species_fasta	FALSE	ui_default	ui

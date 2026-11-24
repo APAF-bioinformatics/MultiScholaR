@@ -1,0 +1,49 @@
+== test-coverage.R :: small runs of a C1 and a C3 cell return one row per level (1 not passed)
+Expected `all(c1$achieved[c1$status != "not_offered"] >= c1$level - 1e-12)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+== test-intervals.R :: T-PT: paired t on eight per-unit differences (2 not passed)
+Expected `a$se` to equal 0.0070710678.
+Differences:
+actual != expected but don't know how to show the difference
+
+
+== test-intervals.R :: T-JK-1: the delete-one jackknife of the mean has SE sd / sqrt(n) (1 not passed)
+Expected `j$se` to equal 0.0070710678.
+Differences:
+actual != expected but don't know how to show the difference
+
+
+== test-intervals.R :: T-JK-2: jackknife from full and deletion values (2 not passed)
+Expected `j$se` to equal 0.0046636895.
+Differences:
+actual != expected but don't know how to show the difference
+
+
+== test-intervals.R :: T-JK-crit: a declared critical value may be larger than t, never smaller (1 not passed)
+Expected `c(j$ci_low, j$ci_high)` to equal `c(0.0123452, 0.0496548)`.
+Differences:
+actual != expected but don't know how to show the difference
+
+
+== test-intervals.R :: T-CP: Clopper-Pearson intervals (1 not passed)
+Expected `c(c3$ci_low, c3$ci_high)` to equal `c(0.0024816, 0.0346666)`.
+Differences:
+actual != expected but don't know how to show the difference
+
+
+== test-intervals.R :: T-ONE: the one-sample paired t against a fixed value (1 not passed)
+Expected `c(f$ci_low, f$ci_high)` to equal `c(-0.0167204, 0.0167204)`.
+Differences:
+actual != expected but don't know how to show the difference
+
+
+== test-intervals.R :: T-REF-FILL: the least favourable fill decides whether the verdict stands (2 not passed)
+Expected `c(r$interval_dropped$ci_low, r$interval_dropped$ci_high)` to equal `c(0.0117612, 0.0182388)`.
+Differences:
+actual != expected but don't know how to show the difference
+
+

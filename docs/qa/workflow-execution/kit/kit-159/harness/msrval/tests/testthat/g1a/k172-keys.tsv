@@ -1,0 +1,353 @@
+lane	step	key	expected	observed_head1	equal
+lipid_canonical	import_refusal	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	import_refusal	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	import	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	import	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	design_refusal	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	design_refusal	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	design	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	design	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	qc_intensity	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	qc_intensity	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	qc_duplicates	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	qc_duplicates	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	qc_itsd_refusal	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	qc_itsd_refusal	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	qc_finalize	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	qc_finalize	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	da_refusal	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	da_refusal	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	norm_refusal	outputs/lipidomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+lipid_canonical	norm_refusal	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	norm	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	norm	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	correlation	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	correlation	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	session_export	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	session_export	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	da_load	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	da_load	outputs/lipidomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+lipid_canonical	da	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	da	outputs/lipidomics_workflow-de-da_summary_stats	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	TRUE
+lipid_canonical	summary_refusal	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	summary_refusal	outputs/lipidomics_workflow-de-da_summary_stats	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	TRUE
+lipid_canonical	summary_save	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	summary_save	outputs/lipidomics_workflow-de-da_summary_stats	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	TRUE
+lipid_canonical	summary_copy	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	summary_copy	outputs/lipidomics_workflow-de-da_summary_stats	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	TRUE
+lipid_canonical	summary_report	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	summary_report	outputs/lipidomics_workflow-de-da_summary_stats	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	TRUE
+lipid_canonical	summary_export	outputs/lipidomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+lipid_canonical	summary_export	outputs/lipidomics_workflow-de-da_summary_stats	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	Total lipids: 17
+Significant (Q < 0.050): 4 (23.5%)
+  Up-regulated: 1
+  Down-regulated: 3
+Not tested (no value in a compared group): 0	TRUE
+metab_lc	import_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	import_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	import	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	import	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	design_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	design_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	design	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	design	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	qc_intensity	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	qc_intensity	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	qc_duplicates	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	qc_duplicates	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	qc_itsd_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	qc_itsd_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	qc_finalize	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	qc_finalize	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	da_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	da_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	norm_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_lc	norm_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	norm	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	norm	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	correlation	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	correlation	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	session_export	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	session_export	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	da_load	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	da_load	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_lc	da	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	da	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_lc	summary_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	summary_refusal	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_lc	summary_save	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	summary_save	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_lc	summary_copy	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	summary_copy	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_lc	summary_report	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	summary_report	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_lc	summary_export	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_lc	summary_export	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_gc	import_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	import_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	import	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	import	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	design_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	design_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	design	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	design	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	qc_intensity	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	qc_intensity	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	qc_duplicates	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	qc_duplicates	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	qc_itsd_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	qc_itsd_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	qc_finalize	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	qc_finalize	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	da_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	da_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	norm_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_gc	norm_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	norm	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	norm	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	correlation	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	correlation	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	session_export	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	session_export	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	da_load	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	da_load	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_gc	da	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	da	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_gc	summary_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	summary_refusal	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_gc	summary_save	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	summary_save	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_gc	summary_copy	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	summary_copy	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_gc	summary_report	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	summary_report	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_gc	summary_export	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_gc	summary_export	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 3
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_combined	import_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	import_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	import	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	import	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	design_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	design_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	design	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	design	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	qc_intensity	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	qc_intensity	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	qc_duplicates	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	qc_duplicates	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	qc_itsd_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	qc_itsd_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	qc_finalize	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	qc_finalize	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	da_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	da_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	norm_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<NULL>	<NULL>	TRUE
+metab_combined	norm_refusal	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	norm	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	norm	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	correlation	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	correlation	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	session_export	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	session_export	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	da_load	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	da_load	outputs/metabolomics_workflow-de-da_summary_stats	<req>	<req>	TRUE
+metab_combined	da	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	da	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_combined	summary_refusal	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	summary_refusal	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_combined	summary_save	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	summary_save	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_combined	summary_copy	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	summary_copy	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_combined	summary_report	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	summary_report	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE
+metab_combined	summary_export	outputs/metabolomics_workflow-norm-log2_recorded_offset	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	<ui> 916f8a8c86071386c243371112c1dbc02799a8523e1228e00b0083bed5521aa0	TRUE
+metab_combined	summary_export	outputs/metabolomics_workflow-de-da_summary_stats	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	Total metabolites: 6
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0
+Not tested (no value in a compared group): 0	TRUE

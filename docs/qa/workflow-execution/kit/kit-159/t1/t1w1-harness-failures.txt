@@ -1,0 +1,66 @@
+== test-coverage.R :: a coverage cell run as ranges equals the cell run whole; a dropped or repeated range is refused (1 not passed)
+Expected `drop_time(split)` to be identical to `drop_time(whole)`.
+Differences:
+     actual$target       | expected$target         
+[14] 0.01431414037995473 | 0.01431414037995473 [14]
+[15] 0.01431414037995473 | 0.01431414037995473 [15]
+[16] 0.01431414037995473 | 0.01431414037995473 [16]
+[17] 0.93499999999999994 - 0.93500000000000005 [17]
+[18] 0.93499999999999994 - 0.93500000000000005 [18]
+[19] 0.93499999999999994 - 0.93500000000000005 [19]
+[20] 0.93499999999999994 - 0.93500000000000005 [20]
+[21] 0.93499999999999994 - 0.93500000000000005 [21]
+[22] 0.93499999999999994 - 0.93500000000000005 [22]
+
+
+== test-tab.R :: T-TAB: prot_dia_limpa writes the standard tables with their columns (1 not passed)
+Expected `file.exists(file.path(out, "matrix_display.tsv"))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+== test-tab.R :: T-TAB: trx_screen writes the standard tables with their columns (3 not passed)
+Expected `res$exit` to be identical to "completed".
+Differences:
+`actual`:   "refused"  
+`expected`: "completed"
+
+import ok; design ok; qc_filter ok; qc_finalize ok; norm ok; da refused
+
+== test-tab.R :: T-TAB: lipid_canonical writes the standard tables with their columns (3 not passed)
+Expected `res$exit` to be identical to "completed".
+Differences:
+`actual`:   "did_not_complete"
+`expected`: "completed"       
+
+import ok; design did_not_complete
+
+== test-tab.R :: T-TAB: metab_lc writes the standard tables with their columns (3 not passed)
+Expected `res$exit` to be identical to "completed".
+Differences:
+`actual`:   "did_not_complete"
+`expected`: "completed"       
+
+import ok; design did_not_complete
+
+== test-tab.R :: T-TAB: metab_gc writes the standard tables with their columns (3 not passed)
+Expected `res$exit` to be identical to "completed".
+Differences:
+`actual`:   "did_not_complete"
+`expected`: "completed"       
+
+import ok; design did_not_complete
+
+== test-tab.R :: T-TAB: metab_combined writes the standard tables with their columns (3 not passed)
+Expected `res$exit` to be identical to "completed".
+Differences:
+`actual`:   "did_not_complete"
+`expected`: "completed"       
+
+import ok; design did_not_complete
+
+== test-workflow.R :: an R error is did_not_complete (error); a wrong state is (unexpected_state) (1 not passed)
+<shiny.destroyed.error/error/condition>
+Error: Can't access reactive `workflow_data`; its module session has been destroyed
+

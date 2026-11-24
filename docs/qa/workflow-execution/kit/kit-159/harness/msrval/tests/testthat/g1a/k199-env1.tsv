@@ -1,0 +1,21 @@
+key	value
+mode	control
+commit_anchor	12d68ca78442a50b46f52e33525dd85cf86df5e7
+commit_base	19997323dd9a0efac5830696c7d3ac617560dae6
+commit_head	84ec739515b1a44cc4dc8d1edc78d199f95016a7
+cpu_model	AMD EPYC 9V74 80-Core Processor
+cpu_count	4
+image_os	ubuntu22
+image_version	20261116.365.1
+c_library_version	2.35
+libblas3_package	3.10.0-2ubuntu1
+liblapack3_package	3.10.0-2ubuntu1
+blas_library	libblas.so.3.10.0
+lapack_library	liblapack.so.3.10.0
+lapack_version	3.10.0
+r_version	R version 4.6.1 (2026-06-24)
+rust_toolchain_version	1.100.0
+pin_fastduckdb	e724f90bdbdf1073635b7112c80f8dd406f2c79b
+pin_fastlimpadpc	0ad8c5271da97605af3a1c8048d7b10fdfc0745b
+openblas_num_threads	<unset>
+omp_num_threads	<unset>

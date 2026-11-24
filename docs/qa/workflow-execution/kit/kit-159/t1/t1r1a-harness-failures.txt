@@ -1,0 +1,10 @@
+== test-record-uniprot.R :: T-R1-1: the record writes uniprot.tsv with the release and hash; the cache stays private (1 not passed)
+Error in `valRecordUniprot(accFile(dir), out, cache, annotate = annotate, release = function() "2026_04")`: could not find function "valRecordUniprot"
+
+== test-record-uniprot.R :: T-R1-2: uniprot.tsv is on the allow-list with its columns; an extra column is refused (1 not passed)
+<val_publish_forbidden/val_error/rlang_error/error/condition>
+Error in `forbid(paste(f, "is not on the allow-list"))`: evidence: uniprot.tsv is not on the allow-list
+
+== test-record-uniprot.R :: T-R1-3: an incomplete UniProt answer refuses the record and writes nothing (1 not passed)
+Error in `valRecordUniprot(accFile(dir), out, file.path(dir, "c"), annotate = annotate, release = function() "2026_04")`: could not find function "valRecordUniprot"
+

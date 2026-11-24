@@ -1,0 +1,8 @@
+== test-tab.R :: T-TAB: trx_screen writes the standard tables with their columns (3 not passed)
+Expected `res$exit` to be identical to "completed".
+Differences:
+`actual`:   "refused"  
+`expected`: "completed"
+
+import ok NA NA NA; design ok NA NA NA; qc_filter ok NA NA NA; qc_finalize ok NA NA NA; norm ok NA NA NA; da refused NA unclassed Run the normalisation first: the DA runs on the normalised (RUVs) state.
+
