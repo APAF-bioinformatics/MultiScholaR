@@ -1,0 +1,19 @@
+outcome O1: the q-value fails; BH by default over the whole size-filtered family (rule F); the q-value offered with its measured failure; default BHf
+  outcome
+1      O1
+                                                                                                                       reading
+1 the q-value fails; BH by default over the whole size-filtered family (rule F); the q-value offered with its measured failure
+  default rule_f material_power_gain large_event_condition q_fails bh_fails
+1     BHf    BHf               FALSE                 FALSE    TRUE    FALSE
+  bhf_fails q_controls bh_controls bhf_controls classifications controls
+1     FALSE      FALSE       FALSE         TRUE             108       95
+  fails_n not_determined
+1       9              4
+                          check pass                               detail
+1                rows read once TRUE       319200 rows, 0 duplicated keys
+2 replicates complete (14 rows) TRUE       22800 replicates, 0 incomplete
+3        one list per replicate TRUE 0 replicates with more than one list
+4                    files read TRUE                             33 files
+5     E2 flags on every ok call TRUE  0 of 45600 ok calls fail a check ()
+6    nesting BHf in BH, BH in Q TRUE                              0 calls
+7 chain reproduces the q-values TRUE                       0 calls differ
