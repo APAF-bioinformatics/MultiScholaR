@@ -113,6 +113,12 @@ example : QvalueBh.bh_sorted_neg_ties_counterexample_stmt := QvalueBh.bh_sorted_
 
 #print axioms QvalueBh.bh_sorted_neg_ties_counterexample
 
+example : QvalueBh.bh_sorted_eq_stmt := QvalueBh.bh_sorted_eq
+example : QvalueBh.bh_sorted_eq_witness_stmt := QvalueBh.bh_sorted_eq_witness
+
+#print axioms QvalueBh.bh_sorted_eq
+#print axioms QvalueBh.bh_sorted_eq_witness
+
 example : QvalueBh.qflag_contains_bh_stmt := QvalueBh.qflag_contains_bh
 example : QvalueBh.flag_none_stmt := QvalueBh.flag_none
 example : QvalueBh.qflag_extra_stmt := QvalueBh.qflag_extra

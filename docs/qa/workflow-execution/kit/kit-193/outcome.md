@@ -174,7 +174,7 @@ the range 4c states. **The item stops here and goes back to the statements gate 
 statement uses it (4a to 4c and 4d are stated on the closed form `bh`); work on target 4 stopped at this point by the
 coordinator's rule ("stop and report at any statement problem"). Laptop time for this attempt: 11.0 CPU-seconds over 5 Lean calls, 10.2 s of Lean wall time (labels `t4-*`).
 
-## Target 4 (q-value and BH): 4a to 4c and 4d-i proved; freeze amended
+## Target 4 (q-value and BH): 4a to 4c, 4d-i and the corrected bh_sorted_eq proved; freeze amended
 
 - **Freeze amended (5474e512, alone):** statements gate re-review 1 confirmed the counterexample, added `∀ j, 0 ≤ p j`
   to `bh_sorted_eq_stmt`, and froze `bh_sorted_neg_ties_counterexample_stmt` and `bh_sorted_eq_witness_stmt`; one line of
@@ -190,8 +190,15 @@ coordinator's rule ("stop and report at any statement problem"). Laptop time for
   flag); the sum over the `(N + 1)²` outcomes splits by which p-values are 1 (`fdr2_split`); each grid value's condition
   becomes a whole-number condition on its index (`cond_grid`); the remaining sums are expanded and evaluated by `simp`
   and `norm_num` (each value compiles in under ten seconds).
-- Not yet: 4d-ii (`kept_family_formula`, `kept_family_instance`, `kept_family_witness`; second to last by D4) and the
-  corrected `bh_sorted_eq_stmt` with its witness.
+- **Corrected `bh_sorted_eq_stmt` proved** (`bh_sorted_eq`, witness `bh_sorted_eq_witness` with `p = (1, 1, 2)`; each
+  on `propext`, `Classical.choice`, `Quot.sound`), after the auditor confirmed the amendment 5474e512 (coordinator,
+  2026-11-24). The proof works for whatever order the sort gives tied values: at 0-based position `r` of the decreasing
+  order `L` the cumulative minimum is the minimum over `s ≤ r` of `m / (m - s) · p L[s]` (`le_cumMin_iff`); every such
+  `L[s]` has `p ≥ p i` and at least `m - s` values at or below it, so its closed-form term is at most the sorted term
+  (here `p ≥ 0` is used); conversely, for `j` with `p j ≥ p i` and `c = #{l : p l ≤ p j}`, position `m - c` is at most
+  `r` and carries a value at most `p j`, so its sorted term is at most `bhTerm p j`. Laptop: 5 Lean calls, 72.9
+  CPU-seconds (67.4 user + 5.5 system), 40.2 s wall (labels `t4-sorted-*`). Agent time 0.07 h (12:52 to 12:56).
+- Not yet: 4d-ii (`kept_family_formula`, `kept_family_instance`, `kept_family_witness`; second to last by D4).
 - Laptop time for target 4 so far: 156.2 CPU-seconds over 24 Lean calls, 103.5 s of Lean wall time (labels `t4-*`, the counterexample's included).
 
 ## Target 5 (permutation p-value): proved (5a, 5a', 5b, 5c, 5c')
@@ -223,8 +230,7 @@ coordinator's rule ("stop and report at any statement problem"). Laptop time for
 
 ## Resume here
 
-Order (coordinator, 2026-11-24): target 5 is complete; next the corrected
-`bh_sorted_eq_stmt` with `bh_sorted_eq_witness_stmt` (the auditor confirmed 5474e512); then group R priority 1
+Order (coordinator, 2026-11-24): target 5 and the corrected `bh_sorted_eq_stmt` are complete; next group R priority 1
 (R-A1, R-A2, R-A3, R-C1, R-F1, R-G0, R-G2, R-H1); then stop for the proofs audit (not priority 2, 4d-ii or
 `kept_family_witness`). Lean calls go through `taskset -c 0-3` with `LEAN_NUM_THREADS=4`, one at a time, each logged in
 `cpu-time.tsv`.

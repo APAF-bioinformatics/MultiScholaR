@@ -71,3 +71,5 @@ Permutation.perm_finite_core	Permutation.perm_finite_core_stmt	propext, Classica
 Permutation.perm_witness	Permutation.perm_witness_stmt	propext, Classical.choice, Quot.sound
 Permutation.perm_measure	Permutation.perm_measure_stmt	propext, Classical.choice, Quot.sound
 Permutation.perm_measure_witness	Permutation.perm_measure_witness_stmt	propext, Classical.choice, Quot.sound
+QvalueBh.bh_sorted_eq	QvalueBh.bh_sorted_eq_stmt	propext, Classical.choice, Quot.sound
+QvalueBh.bh_sorted_eq_witness	QvalueBh.bh_sorted_eq_witness_stmt	propext, Classical.choice, Quot.sound

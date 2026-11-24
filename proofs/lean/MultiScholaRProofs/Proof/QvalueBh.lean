@@ -125,7 +125,176 @@ theorem bh_stepup_gen {m : ℕ} (p : Fin m → K) (i : Fin m) (α : K) (hp : Uni
           rw [ht]
           field_simp
 
+/-! ### R's sort-and-cumulative-minimum form equals the closed form on non-negative values
+
+At 0-based position `r` of the decreasing order `L` the cumulative minimum is the minimum over `s ≤ r` of
+`m / (m - s) * p L[s]`. Each such `L[s]` has `p ≥ p i`, and at least `m - s` values lie at or below it (the positions
+from `s` on), so its closed-form term `m p / #{≤ p}` is at most the sorted term (this needs `p ≥ 0`). Conversely, for
+`j` with `p j ≥ p i` and `c = #{l : p l ≤ p j}`, the position `s = m - c` is at most `r` and carries a value at most
+`p j`, so its sorted term `m / c * p L[s]` is at most `bhTerm p j`. -/
+
+theorem length_cumMin : ∀ l : List K, (cumMin l).length = l.length
+  | [] => rfl
+  | a :: l => by simp [cumMin, length_cumMin l]
+
+/-- The prefix minimum is the minimum of the prefix: `α ≤ cm[r] ↔ α ≤ l[s]` for every `s ≤ r`. -/
+theorem le_cumMin_iff : ∀ (l : List K) (r : ℕ) (hr : r < (cumMin l).length) (α : K),
+    α ≤ (cumMin l)[r] ↔ ∀ s (hs : s < l.length), s ≤ r → α ≤ l[s]
+  | [], r, hr, α => by simp [cumMin] at hr
+  | a :: l, 0, hr, α => by
+      simp only [cumMin, List.getElem_cons_zero]
+      constructor
+      · intro h s hs hsr
+        have hs0 : s = 0 := by omega
+        subst hs0
+        simpa using h
+      · intro h
+        have h0 := h 0 (by simp) le_rfl
+        rwa [List.getElem_cons_zero] at h0
+  | a :: l, r + 1, hr, α => by
+      have hr' : r < (cumMin l).length := by
+        simp only [cumMin, List.length_cons, List.length_map] at hr
+        omega
+      simp only [cumMin, List.getElem_cons_succ, List.getElem_map, le_min_iff]
+      rw [le_cumMin_iff l r hr' α]
+      constructor
+      · rintro ⟨ha, hl⟩ s hs hsr
+        cases s with
+        | zero => simpa using ha
+        | succ s => simpa using hl s (by simpa using hs) (by omega)
+      · intro h
+        refine ⟨?_, fun s hs hsr => ?_⟩
+        · have h0 := h 0 (by simp) (by omega)
+          rwa [List.getElem_cons_zero] at h0
+        · have h1 := h (s + 1) (by simpa using hs) (by omega)
+          rwa [List.getElem_cons_succ] at h1
+
+/-- `bhSorted = bh` on non-negative values, whatever order the sort gives tied values. -/
+theorem bhSorted_eq_bh {m : ℕ} (p : Fin m → K) (hp : ∀ j, 0 ≤ p j) : bhSorted p = bh p := by
+  funext i
+  unfold bhSorted
+  set L := (List.finRange m).mergeSort fun a b => decide (p b ≤ p a) with hL
+  have hperm : L.Perm (List.finRange m) := List.mergeSort_perm _ _
+  have hlen : L.length = m := by rw [hperm.length_eq, List.length_finRange]
+  have hnd : L.Nodup := hperm.nodup_iff.2 (List.nodup_finRange m)
+  have hmem : ∀ l : Fin m, l ∈ L := fun l => hperm.mem_iff.2 (List.mem_finRange l)
+  have hsort : ∀ (a b : ℕ) (ha : a < L.length) (hb : b < L.length), a < b → p L[b] ≤ p L[a] := by
+    have hpw := List.pairwise_mergeSort (le := fun a b => decide (p b ≤ p a))
+      (fun a b c hab hbc => by
+        simp only [decide_eq_true_eq] at hab hbc ⊢
+        exact le_trans hbc hab)
+      (fun a b => by simp [le_total]) (List.finRange m)
+    rw [List.pairwise_iff_getElem] at hpw
+    intro a b ha hb hab
+    simpa using hpw a b ha hb hab
+  have hsort' : ∀ (a b : ℕ) (ha : a < L.length) (hb : b < L.length), a ≤ b → p L[b] ≤ p L[a] := by
+    intro a b ha hb hab
+    rcases hab.lt_or_eq with h | h
+    · exact hsort a b ha hb h
+    · subst h
+      exact le_rfl
+  have hget : ∀ (u : ℕ) (hu : u < L.length), L.getD u i = L[u] := by
+    intro u hu
+    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hu, Option.getD_some]
+  -- (A) a value at position `t` has at least `m - t` values at or below it
+  have hA : ∀ (t : ℕ) (ht : t < L.length) (v : K), p L[t] ≤ v → m - t ≤ cntLe p v := by
+    intro t ht v hv
+    have key := card_le_card_of_injOn (s := Finset.Ico t m) (t := univ.filter fun l => p l ≤ v)
+      (fun u => L.getD u i) (fun u hu => ?_) (fun u hu w hw huw => ?_)
+    · simpa [cntLe] using key
+    · rw [Finset.coe_Ico, Set.mem_Ico] at hu
+      have hu' : u < L.length := by omega
+      rw [Finset.coe_filter]
+      simp only [mem_univ, true_and, Set.mem_ofPred_eq]
+      rw [hget u hu']
+      exact le_trans (hsort' t u ht hu' hu.1) hv
+    · rw [Finset.coe_Ico, Set.mem_Ico] at hu hw
+      have hu' : u < L.length := by omega
+      have hw' : w < L.length := by omega
+      simp only [hget u hu', hget w hw'] at huw
+      exact (hnd.getElem_inj_iff).1 huw
+  -- (B) values strictly below the value at position `s` sit after `s`
+  have hB : ∀ (s : ℕ) (hs : s < L.length) (v : K), v < p L[s] → cntLe p v + s + 1 ≤ m := by
+    intro s hs v hv
+    have key := card_le_card_of_injOn (s := univ.filter fun l => p l ≤ v) (t := Finset.Ico (s + 1) m)
+      (fun l => L.idxOf l) (fun l hl => ?_) (fun a _ b _ hab => (List.idxOf_inj (hmem a)).1 hab)
+    · rw [Nat.card_Ico] at key
+      unfold cntLe
+      omega
+    · rw [Finset.coe_filter] at hl
+      simp only [mem_univ, true_and, Set.mem_ofPred_eq] at hl
+      have hlt : L.idxOf l < L.length := List.idxOf_lt_length_of_mem (hmem l)
+      rw [Finset.coe_Ico, Set.mem_Ico]
+      beta_reduce
+      refine ⟨?_, by omega⟩
+      by_contra hc
+      have h1 := hsort' (L.idxOf l) s hlt hs (by omega)
+      rw [List.getElem_idxOf hlt] at h1
+      exact absurd (lt_of_lt_of_le hv h1) (not_lt.2 hl)
+  have hrlt : L.idxOf i < L.length := List.idxOf_lt_length_of_mem (hmem i)
+  have hLr : L[L.idxOf i] = i := List.getElem_idxOf hrlt
+  set r := L.idxOf i with hr
+  set sc := L.zipIdx.map fun x => (m : K) / ((m - x.2 : ℕ) : K) * p x.1 with hsc
+  have hsclen : sc.length = L.length := by simp [hsc]
+  have hsc_get : ∀ (s : ℕ) (hs : s < sc.length),
+      sc[s] = (m : K) / ((m - s : ℕ) : K) * p (L[s]'(by omega)) := by
+    intro s hs
+    simp [hsc, List.getElem_zipIdx]
+  have hcm : r < (cumMin sc).length := by rw [length_cumMin]; omega
+  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hcm, Option.getD_some]
+  apply eq_of_forall_le_iff
+  intro α
+  rw [le_min_iff, le_cumMin_iff sc r hcm α, le_bh_iff]
+  refine and_congr_right fun _ => ⟨fun h j hij => ?_, fun h s hs hsr => ?_⟩
+  · set c := cntLe p (p j) with hc
+    have hc1 : 1 ≤ c := cntLe_pos p j
+    have hcm' : c ≤ m := cntLe_le_m p _
+    have hsr : m - c ≤ r := by
+      have := hA r hrlt (p j) (by rw [hLr]; exact hij)
+      omega
+    have hslt : m - c < L.length := by omega
+    have hval : p L[m - c] ≤ p j := by
+      by_contra hcon
+      have := hB (m - c) hslt (p j) (lt_of_not_ge hcon)
+      omega
+    have h1 := h (m - c) (by omega) hsr
+    rw [hsc_get] at h1
+    have hmc : ((m - (m - c) : ℕ) : K) = (c : K) := by
+      congr 1
+      omega
+    rw [hmc] at h1
+    have hcpos : (0 : K) < c := by exact_mod_cast hc1
+    unfold bhTerm
+    rw [← hc]
+    calc α ≤ (m : K) / c * p L[m - c] := h1
+      _ ≤ (m : K) / c * p j := mul_le_mul_of_nonneg_left hval (by positivity)
+      _ = m * p j / c := by ring
+  · have hsL : s < L.length := by omega
+    have hij : p i ≤ p L[s] := by
+      have := hsort' s r hsL hrlt hsr
+      rw [hLr] at this
+      exact this
+    have h1 := h L[s] hij
+    have hcnt : m - s ≤ cntLe p (p L[s]) := hA s hsL _ le_rfl
+    rw [hsc_get]
+    have hms : (0 : K) < ((m - s : ℕ) : K) := by
+      have : 0 < m - s := by omega
+      exact_mod_cast this
+    have hcK : ((m - s : ℕ) : K) ≤ (cntLe p (p L[s]) : K) := by exact_mod_cast hcnt
+    have hp0 : 0 ≤ p L[s] := hp _
+    unfold bhTerm at h1
+    calc α ≤ m * p L[s] / cntLe p (p L[s]) := h1
+      _ ≤ m * p L[s] / ((m - s : ℕ) : K) := div_le_div_of_nonneg_left (by positivity) hms hcK
+      _ = m / ((m - s : ℕ) : K) * p L[s] := by ring
+
 end general
+
+/-- (4) R's `p.adjust` form equals the closed form on non-negative values (the corrected statement). -/
+theorem bh_sorted_eq : bh_sorted_eq_stmt := fun _ _ _ _ _ p hp => bhSorted_eq_bh p hp
+
+/-- Witness for `bh_sorted_eq_stmt`: `p = (1, 1, 2)`. -/
+theorem bh_sorted_eq_witness : bh_sorted_eq_witness_stmt :=
+  ⟨![1, 1, 2], fun j => by fin_cases j <;> norm_num, by norm_num, by norm_num, by norm_num⟩
 
 /-- The counter-instance: two tied p-values of `-1`. -/
 def tiedNeg : Fin 2 → ℚ := fun _ => -1

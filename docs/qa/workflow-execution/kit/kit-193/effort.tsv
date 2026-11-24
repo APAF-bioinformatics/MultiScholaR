@@ -14,3 +14,4 @@ T4-4a-4c-4d-i	2026-11-24T12:23	2026-11-24T12:37	0.23	proved (12 statements, 4 wi
 T5-floors-and-bh-floor	2026-11-24T12:37	2026-11-24T12:40	0.05	proved (7 statements, 2 witnesses); 5a, 5b open
 T5-5a-finite-core	2026-11-24T12:42	2026-11-24T12:48	0.10	proved (perm_finite_core and perm_witness)
 T5-5b-measure	2026-11-24T12:48	2026-11-24T12:52	0.07	proved (perm_measure and perm_measure_witness); target 5 complete
+T4-bh_sorted_eq-corrected	2026-11-24T12:52	2026-11-24T12:56	0.07	proved (bh_sorted_eq and bh_sorted_eq_witness; amendment 5474e512 confirmed by the auditor)
