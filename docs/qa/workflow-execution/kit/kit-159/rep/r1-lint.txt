@@ -1,0 +1,28 @@
+filename	line_number	linter	message
+driver.R	1133	indentation_linter	Hanging indent should be 54 spaces but is 16 spaces.
+evidence.R	161	indentation_linter	Hanging indent should be 34 spaces but is 12 spaces.
+evidence.R	163	brace_linter	Either both or neither branch in `if`/`else` should use curly braces.
+evidence.R	166	indentation_linter	Hanging indent should be 34 spaces but is 12 spaces.
+evidence.R	172	brace_linter	Either both or neither branch in `if`/`else` should use curly braces.
+intervals.R	587	indentation_linter	Hanging indent should be 48 spaces but is 36 spaces.
+intervals.R	594	indentation_linter	Hanging indent should be 48 spaces but is 36 spaces.
+phases.R	643	indentation_linter	Hanging indent should be 67 spaces but is 20 spaces.
+phases.R	672	indentation_linter	Hanging indent should be 67 spaces but is 20 spaces.
+phases.R	813	indentation_linter	Indentation should be 12 spaces but is 16 spaces.
+phases.R	1203	indentation_linter	Hanging indent should be 23 spaces but is 12 spaces.
+phases.R	1212	indentation_linter	Hanging indent should be 23 spaces but is 12 spaces.
+regimes.R	83	indentation_linter	Hanging indent should be 50 spaces but is 16 spaces.
+regimes.R	202	indentation_linter	Hanging indent should be 26 spaces but is 8 spaces.
+regimes.R	206	indentation_linter	Hanging indent should be 23 spaces but is 12 spaces.
+regimes.R	210	indentation_linter	Hanging indent should be 23 spaces but is 12 spaces.
+runfolder.R	125	indentation_linter	Hanging indent should be 52 spaces but is 16 spaces.
+runfolder.R	130	brace_linter	Either both or neither branch in `if`/`else` should use curly braces.
+runfolder.R	167	indentation_linter	Hanging indent should be 55 spaces but is 24 spaces.
+runfolder.R	173	brace_linter	Either both or neither branch in `if`/`else` should use curly braces.
+runfolder.R	242	indentation_linter	Hanging indent should be 52 spaces but is 16 spaces.
+runfolder.R	247	brace_linter	Either both or neither branch in `if`/`else` should use curly braces.
+runfolder.R	285	indentation_linter	Indentation should be 37 spaces but is 12 spaces.
+runfolder.R	299	indentation_linter	Indentation should be 26 spaces but is 21 spaces.
+schema.R	40	indentation_linter	Hanging indent should be 76 spaces but is 78 spaces.
+scripts.R	246	indentation_linter	Indentation should be 25 spaces but is 20 spaces.
+scripts.R	252	indentation_linter	Indentation should be 31 spaces but is 12 spaces.

@@ -1,0 +1,7 @@
+== test-coverage-rank.R :: T-RANK-1: the rank effect is calibrated into the declared pAUC band and recorded (1 not passed)
+Expected `cal$effect %in% msrval:::RANK_EFFECT_GRID` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+

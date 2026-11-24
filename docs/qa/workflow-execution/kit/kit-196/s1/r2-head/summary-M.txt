@@ -1,0 +1,42 @@
+KIT-196 S1 M: head fef003c64454c8a276576797fb0621e608d9e1b8, base 3d4a585dbeb19b281ec8bc640d4d35a892bd7988, base only FALSE, copy SHA-256 c0fbc4ab34925dbbbfee90169dee3e7af60f24b3d29c1ba94aa83175b52a1c22
+KIT-196 S1 M: git diff --name-only 98df468b 3d4a585dbeb19b281ec8bc640d4d35a892bd7988 -- R/: R/func_general_parameter_helpers.R R/func_prot_annotation_uniprot_full_helpers.R R/func_prot_annotation_uniprot_helpers.R R/func_prot_qc_filtering_helpers.R R/func_prot_qc_peptide_group_filters.R R/mod_integration_enrichment.R R/mod_omic_da.R R/mod_omic_norm.R R/mod_omic_qc_tabs.R R/mod_prot_da_handlers_load_session.R R/mod_prot_design.R R/mod_prot_design_builder_helpers.R R/mod_prot_design_import_helpers.R R/mod_prot_design_state_helpers.R R/mod_prot_norm_workflow_helpers.R R/mod_trx_qc_filter.R R/utils_integration_enrichment.R R/utils_integration_gui.R R/utils_integration_record.R R/utils_integration_workbook.R R/utils_omic_gui_config.R R/utils_workflow_analysis_record.R R/utils_workflow_dia_enrichment.R R/utils_workflow_dia_products.R R/utils_workflow_dia_state.R R/utils_workflow_enrichment.R R/utils_workflow_omics_actions.R R/utils_workflow_prot_declarations.R R/utils_workflow_trx_da.R R/utils_workflow_trx_declarations.R R/utils_workflow_trx_norm.R
+KIT-196 S1 M: base side read from docs/qa/workflow-execution/kit/kit-196/s1/r2-base/s1-M-base.tsv (SHA-256 bb5ad208f7b078b49a37023be411b619c6ef3122bbef2acb3dcca19a69e0d984): 204 journeys
+KIT-196 S1 M: head: 204 journeys (9 units, 0 failed to return) in 64.6 min; full stops 0; journeys with an assay error 0
+KIT-196 S1 M: A2 (i): OR full stops KIT-188 27, S1 base 27, list equal TRUE; n_T equal 102 of 102; miss_share equal 102 of 102; verdict HOLDS
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E0|vd20|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E0|vd20|402
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E0|vd20|403
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E1|vd20|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E1|vd20|402
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E1|vd20|403
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E1|vd5|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E2|vd20|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E2|vd20|402
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|E2|vd20|403
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|N0|vd20|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|N0|vd20|402
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|N0|vd20|403
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|N1|vd20|402
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|N1|vd20|403
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|N2|vd20|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|N2|vd20|402
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|N2|vd20|403
+KIT-196 S1 M: A2 (i) S1 OR full stop: M12|deciding|N2|vd5|403
+KIT-196 S1 M: A2 (i) S1 OR full stop: M168|ba|E1|ba|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M168|ba|N0|ba|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M168|ba|N1|ba|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M168|ba|N1|ba|402
+KIT-196 S1 M: A2 (i) S1 OR full stop: M168|deciding|E1|vd20|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M168|deciding|N0|vd20|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M168|deciding|N1|vd20|401
+KIT-196 S1 M: A2 (i) S1 OR full stop: M168|deciding|N1|vd20|402
+KIT-196 S1 M: base partial failures (an assay's error in a journey that completed): 0 journeys, 0 assays
+KIT-196 S1 M: A2 (iv) base: 54 assays with an error, 54 with a feature without values (counts 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,7,7,7,7), direct message as its df case 54; verdict HOLDS
+KIT-196 S1 M: direct messages on base: prior.weights contain NA values x54
+KIT-196 S1 M: A2 (ii): identical: 300 rows, 300 hold
+KIT-196 S1 M: A2 (iv): no head failure with either message: 204 rows, 204 hold
+KIT-196 S1 M: A2 (iii): completes on head: 54 rows, 54 hold
+KIT-196 S1 M: A2 (iii): identical where the reduced input holds a missing value, else relative 1e-12: 54 rows, 54 hold
+KIT-196 S1 M: A2 (iii): rows with AveExpr missing are the features without values: 54 rows, 54 hold
+KIT-196 S1 M: D6: 612 rows, 0 with an error (descriptive only)
+KIT-196 S1 M: R R version 4.6.1 (2026-06-24), limma 3.68.4, BLAS /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0; wall 64.6 min; exit 0

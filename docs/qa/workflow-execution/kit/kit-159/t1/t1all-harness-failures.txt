@@ -1,0 +1,3 @@
+== test-phases.R :: T-PH-8: within-run bootstrap rows per unit, widening, clopper_pearson and a within-run verdict (1 not passed)
+Error in `valWithinRunRows(decl, "u01", da, prep$truth, prep$universe, env, blind_seed = NULL)`: attempt to use zero-length variable name
+

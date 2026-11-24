@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit196-da-no-value-features.R	189	351	0	0	1	98.2	failed
+test-kit128-da-assay-failure.R	38	0	0	0	0	14.8	ok

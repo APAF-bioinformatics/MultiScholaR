@@ -1,0 +1,22 @@
+stage	side	outcome	detail	seconds
+worktree	base	ok		0.5
+head_commit	base	ok		0.0
+native	base	ok		0.7
+load	base	ok		7.0
+lane	base	ok	lane record 193.0 s; 0 failed expectations inside the lane's steps	193.3
+child	base	ok		200.8
+record	base	ok	24 step ids, as the oracle's	
+copy	base	ok	the copy's digest equals the record's at da	
+worktree	head	ok		0.6
+head_commit	head	ok		0.0
+native	head	ok		0.7
+load	head	ok		7.3
+lane	head	ok	lane record 191.1 s; 0 failed expectations inside the lane's steps	191.3
+child	head	ok		199.1
+record	head	ok	24 step ids, as the oracle's	
+copy	head	ok	the copy's digest equals the record's at da	
+columns	base	ok	37 columns	
+columns	head	ok	37 columns	
+keys	base	ok	393 rows, keys unique	
+keys	head	ok	393 rows, keys unique	
+compare	both	ok		0.2

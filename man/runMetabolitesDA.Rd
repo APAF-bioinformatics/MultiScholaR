@@ -53,6 +53,9 @@ A list containing:
 \item failed_assays: Present only when an assay's analysis stopped: the message per failed assay. The
 other assays are kept and a warning (class \code{omics_da_assay_failed}) names the failed ones; when every
 assay failed the function stops (class \code{omics_da_all_assays_failed}).
+\item features_without_values: present only when an assay held features with no value in any sample; per such
+assay, their ids. Such a feature is not tested: it is a row of every contrast table without statistics
+(\code{AveExpr} missing), and the other features' results are those of the data without it
 \item ruv_features_not_tested, ruv_features_not_observed: with \code{ruv_factors} only. Per assay, the ids not tested
 (\code{supplied_controls}, \code{not_estimable}), and a table (\code{feature}, \code{group}) of the tested features with no
 value in one whole group
@@ -61,5 +64,6 @@ value in one whole group
 \description{
 Main entry point for metabolomics differential abundance analysis.
 Loops over all assays in the MetaboliteAssayData object, runs limma DA on each,
-and aggregates results with an assay identifier column.
+and aggregates results with an assay identifier column. A feature with no value in any sample is not
+tested and is listed (\code{features_without_values}).
 }

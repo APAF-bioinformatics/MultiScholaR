@@ -1,0 +1,51 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-arms.R	T-KER-1: a kernel equal to the workflow arm passes on seeded identity units and a refusal unit	6	6	0	0	0	0	0.107
+test-arms.R	T-KER-2: a deliberately different kernel is refused	2	2	0	0	0	0	0.054
+test-arms.R	the hook receives the named arguments only through formals that name them (C22)	5	5	0	0	0	0	0.011
+test-arms.R	prepareInputs' result tables are copied, checked, and an undeclared one refused	4	4	0	0	0	0	0.041
+test-evidence.R	T-SCORE-2: phase score widens a run-level interval bound by bound to the requests' within-run rows	5	5	0	0	0	0	0.016
+test-evidence.R	the results note prints the measured coverage beside every verdict and the attribution	4	4	0	0	0	0	0.013
+test-evidence.R	the hand-off folder: admitted only counted with every data input permitted, and checked	9	9	0	0	0	0	0.155
+test-evidence.R	ticket-coverage.tsv has its fixed columns; ticket-coverage-cells.tsv is admitted	2	2	0	0	0	0	0.026
+test-evidence.R	check-evidence.sh: the pre-push allow-list and hash check without R	5	5	0	0	0	0	0.072
+test-inputs.R	T-IN-1 to T-IN-3: a missing column, a bad URL and a bad hash format are refused	5	5	0	0	0	0	0.052
+test-inputs.R	T-IN-4 and T-IN-5: size and hash mismatches are refused and the file deleted	4	4	0	0	0	0	0.038
+test-inputs.R	T-IN-6: a verified input is reached by role; an undeclared role is refused	3	3	0	0	0	0	0.022
+test-inputs.R	T-IN-7: 2.5 times the bytes to fetch above the free space is refused	1	1	0	0	0	0	0.013
+test-inputs.R	T-IN-8: three members of one archive from one download, each verified	4	4	0	0	0	0	0.032
+test-inputs.R	T-IN-9: an optional role that cannot be fetched is recorded, a required one refused	3	3	0	0	0	0	0.027
+test-inputs.R	the record phase hashes inputs and members; two equal records compare equal	3	3	0	0	0	0	0.015
+test-inputs.R	T-ANN-1: an incomplete or empty UniProt answer refuses the record	7	7	0	0	0	2	0.035
+test-inputs.R	T-PRE-1: phase pre admits listed aggregates only and refuses truth reads	4	4	0	0	0	0	0.049
+test-licence.R	T-LIC-1 to T-LIC-4: unlisted file, extra column, per-feature class, too many rows	6	6	0	0	0	0	0.077
+test-licence.R	T-LIC-5 to T-LIC-8: copies, archives and the size of scored.tsv.gz	5	5	0	0	0	0	2.369
+test-licence.R	T-LIC-9: declared outputs, keyed lineage, and path placeholders	8	8	0	0	0	0	0.112
+test-licence.R	T-LIC-10: the lifecycle keeps scored.tsv.gz and primary call counts private	3	3	0	0	0	0	0.074
+test-licence.R	T-LIC-11: result tables of a not-permitted input, label keys, attribution	6	6	0	0	0	0	0.063
+test-licence.R	T-LOG-1 and T-LOG-2: a child's text, system2 output and fd 2 reach only the private log	8	8	0	0	0	0	0.178
+test-repair.R	R-I01: featureKey(feature_id, arm) is called per arm; unmapped is excluded for all arms and counted	8	8	0	0	0	0	0.07
+test-repair.R	R-I02: the universe is the input role's features with their assays; BH per assay; outside rows stop	10	10	0	0	0	0	0.101
+test-repair.R	R-I03: ticket coverage regimes run, are pinned by hash and reach the classifier	14	14	0	0	0	0	0.176
+test-repair.R	R-I04: refusals are recorded per 4.7 and O7 (b); nothing aborts the scoring	15	15	0	0	0	0	0.079
+test-repair.R	R-I05, I07, I08: a counted phase writes the run folder of 5.7, results.md with coverage, and passes both checks	29	29	0	0	0	0	0.691
+test-repair.R	R-I08: the guard in production: a universe key as a label, a lifecycle call count, a stray file	3	3	0	0	0	0	0.41
+test-repair.R	R-I06: phase score reads the requests' within-run rows; jackknife widens to the full unit's same view	6	6	0	0	0	0	13.254
+test-repair.R	R-I09, I18: declared states follow the arm's RUV run; a diagnostic step that changes state is not ok	11	11	0	0	0	0	2.478
+test-repair.R	R-I11: the declaration's statistical schema is refused before any cell	17	17	0	0	0	0	0.213
+test-repair.R	R-I16: a member without a verdict is not_evaluable; worse_when never names a guard	4	4	0	0	0	0	0.015
+test-repair.R	R-I15: G1(a) has no limpa_da_last_digits class and no admission path (VAL-109 (5))	3	3	0	0	0	0	0.007
+test-repair.R	R-I17: the chunk backstop ends a cell blocked outside R as did_not_complete (timeout)	6	6	0	0	0	0	6.059
+test-repair.R	R-I20: anchor refusal at step anchor; within-run seed required; confusion-table metrics	4	4	0	0	0	0	0.057
+test-repair2.R	R-O8, VAL-137 (3): over independent units nothing is widened at any count; the claim's scope is stated	24	24	0	0	0	0	0.081
+test-repair2.R	R-O5: T2 rows reading pass under T2's band and conservative under r1.13's; both printed	5	5	0	0	0	0	0.018
+test-repair2.R	R-O4: a conservative row with no observed miss licenses only the statistic it simulated	5	5	0	0	0	0	0.048
+test-repair2.R	R-O4: the half-width ratio is mean half-width over the statistic's SD times z	6	6	0	0	0	0	0.16
+test-repair2.R	R-I10: the redraw generator is unchanged; the fixed generator draws features once per cell	11	11	0	0	0	0	0.165
+test-repair2.R	R-I10: under the fixed symmetric generator the plain arm's null rejection share is near 0.05	2	2	0	0	0	0	1.407
+test-repair2.R	R-I10: a plan's generator column reaches the cell in the chunk tasks and the detail	4	4	0	0	0	0	0.153
+test-repair4.R	R-V137-2: the family bound sums each component's one-sided 95 % Clopper-Pearson upper bound	5	1	4	0	0	0	0.08
+test-repair4.R	R-V137-3: the jackknife widens only in forms (ii) and (iii); form (i) reports only	13	13	0	0	0	0	0.032
+test-repair4.R	R-E8: the SE inflation is the half-width ratio with the t factor removed	8	8	0	0	0	0	0.133
+test-repair4.R	R-E7: the pinned table names each row's generator; the classifier and results.md carry it	9	9	0	0	0	0	0.028
+test-repair4.R	R-E4: per-unit truths are hashed into provenance	12	12	0	0	0	0	0.509
+test-repair4.R	R-DI10b: the one-directional fixed generator keeps the fixed draw and moves every changed feature up	5	5	0	0	0	0	0.341
