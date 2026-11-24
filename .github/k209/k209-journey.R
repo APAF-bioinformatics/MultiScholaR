@@ -197,8 +197,18 @@ k209_omics_journey <- function(lane, corpus, settings) {
         lane$workflow <- workflow_data
         set <- function(values) do.call(session$setInputs, values)
         tab <- function(value) set(stats::setNames(list(value), paste0(omic, "_tabs")))
+        # A tab's defaults: its own UI function rendered under the tab's id (KIT-075's `defaults(ui_name, id)`; the QC
+        # sub-tabs render dynamically, so the omic's static UI does not hold them), else the omic's static UI.
+        tab_ui <- c(`qc-intensity` = "qc_intensity", `qc-duplicates` = "qc_duplicates", `qc-itsd` = "qc_itsd",
+            `qc-s4_finalize` = "qc_s4", norm = "norm", de = "da", summary = "summary", `qc-filter` = "qc_filter")
         defaults <- function(prefix) {
-            chosen <- all_defaults[startsWith(names(all_defaults), paste0(prefix, "-"))]
+            ui_name <- paste0("mod_", short, "_", tab_ui[[prefix]], "_ui")
+            chosen <- if (exists(ui_name, envir = k209_ns, inherits = FALSE)) {
+                k209_ui_defaults(get(ui_name, envir = k209_ns)(prefix))
+            } else {
+                all_defaults[startsWith(names(all_defaults), paste0(prefix, "-"))]
+            }
+            lane$defaults_set[[prefix]] <- names(chosen)
             if (length(chosen)) set(chosen)
         }
         click <- function(id) set(stats::setNames(list(1L), id))
@@ -648,7 +658,12 @@ k209_steps <- k209_route_steps(k209_lane, k209_corpus_files, k209_bound)
 k209_expected <- if (identical(k209_args$route, "calibration")) list() else {
     ruv_mode <- k209_bound$ruv_mode %||% "covariates"
     harness_steps <- k209_harness$kitJourneySteps(k209_args$route, ruv_mode)
-    stats::setNames(lapply(harness_steps, function(step) step$state %||% NA_character_), vapply(harness_steps, `[[`, "", "id"))
+    expected <- stats::setNames(lapply(harness_steps, function(step) step$state %||% NA_character_), vapply(harness_steps, `[[`, "", "id"))
+    # The harness map's protein route names `ruv_corrected`; a skipped RUV commits `normalized` (kit-021's recorder,
+    # "a skipped RUV commits `normalized` where the route names `ruv_corrected`"; diaNormalizationCommit).
+    if (k209_args$route %in% c("protein", "DIA") && identical(ruv_mode, "skip") && "normalisation_ruv" %in% names(expected))
+        expected$normalisation_ruv <- "normalized"
+    expected
 }
 k209_env <- list(MULTISCHOLAR_TEST_MODE = Sys.getenv("MULTISCHOLAR_TEST_MODE"), RAYON_NUM_THREADS = Sys.getenv("RAYON_NUM_THREADS", NA),
     OMP_NUM_THREADS = Sys.getenv("OMP_NUM_THREADS", NA), OPENBLAS_NUM_THREADS = Sys.getenv("OPENBLAS_NUM_THREADS", NA),
@@ -666,6 +681,28 @@ k209_build_facts <- list(
     version = as.character(utils::packageVersion("MultiScholaR", lib.loc = k209_args$lib)),
     source_commit = utils::packageDescription("MultiScholaR", lib.loc = k209_args$lib)$`Config/MultiScholaR/SourceCommit` %||% NA)
 
+# Raise-time capture: a tab's observer catches its errors in a tryCatch, which an outer calling handler never sees.
+# base::stop, rlang::abort and cli::cli_abort are traced (lane only) so the frames of every raised error are recorded
+# at the moment it is raised; the last one before a failed or uncommitted step classifies it.
+k209_rec$raised <- 0L
+k209_rec$last_raise <- NULL
+k209_on_raise <- function() {
+    calls <- sys.calls()
+    k209_rec$raised <- k209_rec$raised + 1L
+    k209_rec$last_raise <- lapply(seq_along(calls), function(j) {
+        fun <- tryCatch(sys.function(j), error = function(e) NULL)
+        list(call = substr(paste(deparse(calls[[j]][[1L]]), collapse = ""), 1L, 80L),
+            owner = if (is.null(fun) || identical(fun, k209_on_raise)) "handler" else k209_owner_of(fun))
+    })
+}
+k209_traced <- vapply(list(c("stop", "base"), c("abort", "rlang"), c("cli_abort", "cli")), function(target) {
+    isTRUE(tryCatch({
+        suppressMessages(trace(target[[1L]], tracer = quote(k209_on_raise()), print = FALSE, where = asNamespace(target[[2L]])))
+        TRUE
+    }, error = function(e) FALSE))
+}, logical(1))
+names(k209_traced) <- c("base::stop", "rlang::abort", "cli::cli_abort")
+
 # --- Measure ----------------------------------------------------------------------------------------------------------
 # One step: the entry marks, the resets, the step, the exit marks; then (outside the figures) the head. A step that
 # errors, or leaves a state other than the harness map's, ends the journey (E3).
@@ -682,6 +719,8 @@ k209_measure <- function(steps, lane) {
         # one's frames and their owners classify a failed step or a state not committed.
         k209_rec$signal <- NULL
         k209_rec$signals <- 0L
+        k209_rec$raised <- 0L
+        k209_rec$last_raise <- NULL
         handler <- function(error) {
             if (inherits(error, c("shiny.silent.error", "validation"))) return(invisible(NULL))
             calls <- sys.calls()
@@ -714,6 +753,7 @@ k209_measure <- function(steps, lane) {
         mark$store_bytes <- state$store_bytes %||% NA_real_
         mark$head_error <- state$head_error %||% NA_character_
         mark$errors_signalled <- k209_rec$signals
+        mark$errors_raised <- k209_rec$raised
         k209_rec$marks[[i]] <- mark
         k209_write(paste0(k209_args$out, ".marks.json"), c(k209_common(), list(marks = k209_rec$marks)))
         cat(sprintf("k209 %-28s %-9s VmHWM %8.1f MiB  heap in %7.1f MiB  %8.1f s  state %s\n", step$id, mark$status, hwm,
@@ -724,7 +764,9 @@ k209_measure <- function(steps, lane) {
                     paste0("; last error signalled: ", k209_rec$signal$message)))
         if (!is.null(failed)) {
             k209_rec$error <- c(failed, list(step = step$id, signalled_class = k209_rec$signal$class %||% NA_character_,
-                frames = k209_rec$signal$frames))
+                frames = k209_rec$signal$frames %||% k209_rec$last_raise,
+                frames_source = if (!is.null(k209_rec$signal$frames)) "calling handler" else if (!is.null(k209_rec$last_raise))
+                    "raise trace (the last error raised in the step)" else "none"))
             break
         }
     }
@@ -739,7 +781,7 @@ k209_baseline <- list(heap_mib = round(sum(k209_g0[, 2L]), 1), vmrss_mib = k209_
     vmhwm_after_reset_mib = k209_status_mib("VmHWM"), load_s = round(k209_rec$t0 - k209_started, 2),
     loaded_from = k209_loaded_from, cgroup_procs = k209_cgroup_procs())
 k209_write(paste0(k209_args$out, ".baseline.json"), c(k209_common(), list(status = "baseline", baseline = k209_baseline,
-    settings = k209_bound, environment = k209_env, build_facts = k209_build_facts,
+    settings = k209_bound, environment = k209_env, build_facts = k209_build_facts, traced = as.list(k209_traced),
     steps = if (is.null(k209_steps)) names(k209_expected) else vapply(k209_steps, `[[`, "", "id"))))
 
 # The omics routes run their steps inside the module server's testServer; the others here. A failure outside a step

@@ -1,5 +1,11 @@
 {
-  "label": "g0a-1",
-  "attempt": "g0a",
-  "jobs": [{"name": "g0a", "plan": "g0a", "timeout": 150}]
+  "label": "g0a-2",
+  "attempt": "instrument",
+  "jobs": [
+    {
+      "name": "g0a",
+      "plan": "g0a",
+      "timeout": 150
+    }
+  ]
 }
