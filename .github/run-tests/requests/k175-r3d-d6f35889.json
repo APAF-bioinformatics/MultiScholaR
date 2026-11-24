@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-175 second correction (VAL-114) R3: full suite d6f35889 against staging e962775d, full-suite template, check",
+  "label": "KIT-175 R3 second correction d6f35889 vs e962775d",
+  "package_commit": "d6f35889467b6ed3027b066c307f0d26a4337f84",
+  "base_commit": "e962775da173bb5700367c3c197a31a6ea0cdce6",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
