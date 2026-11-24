@@ -1,0 +1,15 @@
+case	field	path	base	head	status
+clusterprofiler	provenance	fixed/enrichment_background	NA	88564567c5ba4da3	marker_on_head
+clusterprofiler	record	parameters/<enrichment_background entry>	NA	fixed;fixed;test	marker_on_head
+gprofiler	provenance	fixed/enrichment_background	NA	88564567c5ba4da3	marker_on_head
+gprofiler	record	parameters/<enrichment_background entry>	NA	fixed;fixed;test	marker_on_head
+kernel_clusterprofiler	provenance	fixed/enrichment_background	NA	88564567c5ba4da3	marker_on_head
+kernel_clusterprofiler	record	parameters/<enrichment_background entry>	NA	fixed;fixed;test	marker_on_head
+kernel_gprofiler	provenance	fixed/enrichment_background	NA	88564567c5ba4da3	marker_on_head
+kernel_gprofiler	record	parameters/<enrichment_background entry>	NA	fixed;fixed;test	marker_on_head
+organism_filter/mapped	provenance	fixed/enrichment_background	NA	88564567c5ba4da3	marker_on_head
+organism_filter/mapped	record	parameters/<enrichment_background entry>	NA	fixed;fixed;test	marker_on_head
+organism_filter/no_mapping	provenance	fixed/enrichment_background	NA	88564567c5ba4da3	marker_on_head
+organism_filter/no_mapping	record	parameters/<enrichment_background entry>	NA	fixed;fixed;test	marker_on_head
+restore	provenance	fixed/enrichment_background	NA	88564567c5ba4da3	marker_on_head
+restore	record	parameters/<enrichment_background entry>	NA	fixed;fixed;test	marker_on_head

@@ -4312,7 +4312,9 @@ test_that("(R3, P-28) an unfiltered run keeps its nine declared names, its recor
     expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters,
         c(omicEnrichR3FilterNames, "go_propagation", "significance_rule"))) # KIT-173, KIT-203
     expect_length(r3$provenance$parameter_names, 9L)
-    expect_identical(names(omicEnrichR3Parameters(r3$step)), r3$provenance$parameter_names)
+    # KIT-205: the record step lists the fixed background rule marker after the declared names.
+    expect_identical(names(omicEnrichR3Parameters(r3$step)), c(r3$provenance$parameter_names,
+        "enrichment_background"))
     # KIT-119 (2), A107-06: every run records its inputs' identities beside the outcomes every step has (it recorded
     # `rows` and `columns` only); the organism filter's outcomes are still absent from an unfiltered run.
     expect_identical(names(r3$step$outcomes), c("rows", "columns", "annotation_sha256", "da_inputs_sha256"))
@@ -4333,8 +4335,8 @@ test_that("(R3, A107-03) a clusterProfiler run records the correction it applied
     # KIT-203 (5.4, OD10): the notice opens with the default rule's sentence; the correction sentence follows.
     expect_identical(seen$run$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
         paste("[warning 8 -] For this organism, terms are called significant by the Benjamini-Hochberg adjusted p-value",
-            "over every term of 10 to 500 measured proteins. The selected correction, gSCS, applies to g:Profiler only",
-            "and was not used."),
+            "over every term of 10 to 500 tested proteins. The selected correction, gSCS, applies to g:Profiler only",
+            "and was not used."), # KIT-205 (SD-1 (b)): "tested"
         "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A", "remove enrichment_working"))
 })
 

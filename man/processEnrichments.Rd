@@ -58,7 +58,7 @@ the background, and the GO release is that of the installed GO.db. Not used on t
 
 \item{significance_rule}{For organisms outside the 13 served by g:Profiler, how a term is called significant
 (KIT-203): \code{"bh_whole_family"} (the default) by its Benjamini-Hochberg adjusted p-value over every term of 10 to
-500 measured proteins, terms without a listed protein entering with p = 1 (columns \code{p_adjust_family} and
+500 tested proteins, terms without a listed protein entering with p = 1 (columns \code{p_adjust_family} and
 \code{family_size} added to the result); \code{"qvalue"} by Storey's q-value over the terms with at least one listed protein,
 as in earlier versions (in simulations it called terms on up to 42.9 \% of random protein lists). Not used on the
 g:Profiler route.}
@@ -69,4 +69,12 @@ plots are written to \code{pathway_dir} and rebuilt from the enrichment data whe
 }
 \description{
 Process Enrichments
+}
+\details{
+The background (universe) of each comparison is the proteins tested in that comparison (KIT-205, VAL-129
+(2)): before the up and down lists and the background are formed, the comparison's table is reduced to its rows
+with a finite \code{fdr_qvalue} and, where the table has a \code{raw_pvalue} column, a finite \code{raw_pvalue} (a table without
+\code{raw_pvalue} is reduced by \code{fdr_qvalue} alone). A protein without a p-value could never be in a list, so it is not
+counted in the background either. One background per comparison serves both lists, on both routes; the number of
+rows left out is written to the log. Analyses recorded before this rule replay with every row.
 }
