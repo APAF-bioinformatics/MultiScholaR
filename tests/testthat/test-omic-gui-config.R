@@ -1315,7 +1315,7 @@ test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the 
     # KIT-106 W2 merge: trx's source read, model text, static volcano, contrast entries and export report are wired to
     # the core (utils_workflow_trx_da.R), and lipid's preflight (func_omics_design_shared.R).
     expect_identical(trx$source, list(class = "TranscriptomicsAssayData", read_metadata = trxDaReadMetadata,
-        no_data = "Run the normalisation first: the DA runs on the normalised (RUVs) state."))
+        no_data = "Run the normalisation first: the differential analysis runs on the normalised data."))
     expect_identical(trx$model$text, trxDaModelText)
     expect_identical(trx$views$static_volcano$plot, trxDaStaticVolcano)
     expect_identical(c(trx$contrast_entries, trx$contrast_entry), c(trxDaContrastEntries, trxDaContrastEntry))
