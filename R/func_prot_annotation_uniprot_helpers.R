@@ -28,6 +28,8 @@
 #'
 #' @export
 #' @param progress_callback Runtime inputs used by this function; see the usage section for accepted values.
+#' @param label NULL (the project's own annotation), or a text appended to the `query_summary` of every analysis-record
+#'   row the retrieval writes (KIT-167: `"reference annotation: <reference> (<UPID> or supplied)"`).
 getUniprotAnnotations <- function(input_tbl, 
                                  cache_dir, 
                                  taxon_id,
@@ -35,7 +37,8 @@ getUniprotAnnotations <- function(input_tbl,
                                  batch_size = 25,
                                  timeout = 600,
                                  api_delay = 1,
-                                 progress_callback = NULL) {
+                                 progress_callback = NULL,
+                                 label = NULL) {
   
   message(sprintf("   Cache dir: %s", cache_dir))
   message(sprintf("   Taxon ID: %d", taxon_id))
@@ -81,7 +84,8 @@ getUniprotAnnotations <- function(input_tbl,
         batch_size = batch_size,
         timeout = timeout,
         api_delay = api_delay,
-        progress_callback = progress_callback
+        progress_callback = progress_callback,
+        label = label
       ),
       prot_annotation_uniprot_incomplete = function(w) incomplete <<- TRUE
     )
@@ -116,7 +120,8 @@ getUniprotAnnotations <- function(input_tbl,
     }
   }, error = function(e) {
     if (!inherits(e, "prot_annotation_uniprot_recorded")) {
-      recordUniprotOutcome(NA_character_, "failed", "annotation failed after retrieval: the answer could not be processed")
+      recordUniprotOutcome(NA_character_, "failed",
+        uniprotLabelSummary("annotation failed after retrieval: the answer could not be processed", label))
       e <- markUniprotRecorded(e, "processing_failed", list(detail = uniprotConditionDetail(e),
         requested = length(unique(input_tbl$Protein.Ids)), taxon_id = taxon_id))
     }
@@ -161,13 +166,19 @@ getUniprotAnnotations <- function(input_tbl,
 #'
 #' @export
 #' @param progress_callback Runtime inputs used by this function; see the usage section for accepted values.
+#' @param label NULL, or a text appended to the `query_summary` of every analysis-record row written (KIT-167).
 directUniprotDownload <- function(input_tbl, 
                                  output_path, 
                                  taxon_id, 
                                  batch_size = 25,
                                  timeout = 600, 
                                  api_delay = 1,
-                                 progress_callback = NULL) {
+                                 progress_callback = NULL,
+                                 label = NULL) {
+  # KIT-167: a reference annotation's record rows name the reference (default NULL keeps the text).
+  recordUniprotOutcome <- function(release, release_kind, summary) {
+    get("recordUniprotOutcome", envir = topenv())(release, release_kind, uniprotLabelSummary(summary, label))
+  }
   
   message(sprintf("   Input: %d unique protein IDs", nrow(input_tbl)))
   message(sprintf("   Taxon ID: %d", taxon_id))
@@ -688,6 +699,15 @@ uniprotRecordRows <- function() {
 #' @noRd
 uniprotStatusText <- function(statuses) {
   if (length(statuses)) paste(statuses, collapse = ", ") else ""
+}
+
+#' A record row's `query_summary` with a reference annotation's label appended (KIT-167 8.3 item 3, KIT-175 B15)
+#' @param summary KIT-175's text.
+#' @param label NULL (today's text), or the label.
+#' @return One string.
+#' @noRd
+uniprotLabelSummary <- function(summary, label = NULL) {
+  if (is.null(label)) summary else paste0(summary, "; ", label)
 }
 
 #' The record's `query_summary` of a retrieval that failed or was incomplete (KIT-175 section 12).

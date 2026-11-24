@@ -4,6 +4,19 @@
 
 ### New features
 
+ * Reference mapping for individually sequenced strains (KIT-167; the application's panels and enrichment choice are behind the option
+   `MultiScholaR.reference_mapping`, off by default until the tool's validation passes; the two exported functions can
+   be called but are not yet validated): `mapStrainToReference()` maps a
+   strain's proteins to their orthologues in one well-annotated reference of the same species by reciprocal best hits
+   of DIAMOND v2.2.8 searches in both directions (repeat masking off, full extension, 80 % coverage of both sequences,
+   e-value 1e-5, no identity floor by default; every status reported and counted; a strain protein takes a reference
+   accession only when one-to-one). Four UniProt reference proteomes (release 2026_04, CC BY 4.0) ship with the
+   package: E. coli K-12 MG1655, S. aureus NCTC 8325, K. pneumoniae MGH 78578 and S. pyogenes SF370 (STRING
+   unavailable for SF370). `matchStrainGenesToProteins()` matches the strain's genes (locus tags) to its proteins from
+   the GFF3 or GTF annotation without sequence search. Proteomics enrichment can use the orthologues' accessions, with
+   the reference's own GO table, unmapped groups left out of the query lists and the background, and the counts of
+   changed and unchanged features by mapped and unmapped; the integration features gain the mapping columns.
+
  * Integration enrichment (KEGG and Reactome, for metabolite and lipid data sets): besides the correlation-adjusted
    test (the default, unchanged) and the pre-ranked test, two more tests can be chosen: the correlation-adjusted test
    with negative correlations counted as zero, and a permutation test of the factor's values (PCGSE). The tab and every

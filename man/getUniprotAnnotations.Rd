@@ -12,7 +12,8 @@ getUniprotAnnotations(
   batch_size = 25,
   timeout = 600,
   api_delay = 1,
-  progress_callback = NULL
+  progress_callback = NULL,
+  label = NULL
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ getUniprotAnnotations(
 \item{api_delay}{Sleep time in seconds between API calls}
 
 \item{progress_callback}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{label}{NULL (the project's own annotation), or a text appended to the \code{query_summary} of every analysis-record
+row the retrieval writes (KIT-167: \code{"reference annotation: <reference> (<UPID> or supplied)"}).}
 }
 \value{
 A data frame containing UniProt annotations and GO terms. A table built here carries the attribute

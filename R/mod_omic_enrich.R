@@ -117,6 +117,20 @@ omicEnrichSettingsColumn <- function(ns, config) {
       ),
       shiny::helpText("NCBI taxonomy ID for organism"),
 
+      # KIT-167 (8.3 item 3): the identifier choice, only when the group offers the reference column (gate on).
+      if (!is.null(config$id_column$mapped)) shiny::tagList(
+        shiny::hr(),
+        shiny::radioButtons(ns("id_source"), "Identifiers for enrichment:",
+          choices = c(`Protein accessions as imported` = "imported", `Orthologues in the mapped reference` = "reference"),
+          selected = "reference"),
+        shiny::helpText(referenceMappingTexts$applicability),
+        shiny::conditionalPanel(sprintf("input['%s'] == 'reference'", ns("id_source")),
+          shiny::helpText(referenceMappingTexts$organism_filter_not_needed),
+          shiny::h5("Mapped and unmapped features (after the last run)"),
+          shiny::tableOutput(ns("reference_mapping_counts")),
+          shiny::downloadButton(ns("download_unmapped_changed"), "Download unmapped changed features"))
+      ),
+
       # Mixed species filtering checkbox, when the omic filters by organism
       if (!is.null(config$organism_filter)) shiny::tagList(
         shiny::hr(),
@@ -490,6 +504,8 @@ runOmicEnrichServer <- function(input, output, session, id, workflowData, experi
   shiny::observeEvent(input$run_enrichment_analysis,
     runOmicEnrichAnalysis(input, tab, workflowData, experimentPaths, config, ran))
   registerOmicEnrichResultOutputs(output, input, tab, workflowData, config)
+  # KIT-167: the 2 x 2 counts, the unmapped download and the taxon pre-fill, only when the group offers the choice.
+  if (!is.null(config$id_column$mapped)) registerReferenceMappingEnrichOutputs(input, output, session, workflowData)
   output$download_enrichment_results <- shiny::downloadHandler(
     filename = function() buildProtEnrichResultsDownloadFilename(input$selected_contrast),
     content = function(file) {
@@ -616,10 +632,11 @@ runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, con
     return(invisible(FALSE))
   }
   shiny::showNotification("Running enrichment analysis...", id = "enrichment_working", duration = NULL)
-  parameters <- list(selected_contrast = input$selected_contrast, organism_taxid = input$organism_taxid,
+  parameters <- c(list(selected_contrast = input$selected_contrast, organism_taxid = input$organism_taxid,
     up_cutoff = input$up_cutoff, down_cutoff = input$down_cutoff, q_cutoff = input$q_cutoff,
     correction_method = input$correction_method, enable_organism_filter = input$enable_organism_filter,
-    significance_rule = input$significance_rule %||% enrichmentSignificanceShipped) # KIT-203
+    significance_rule = input$significance_rule %||% enrichmentSignificanceShipped), # KIT-203
+    if (!is.null(config$id_column$mapped)) list(id_source = input$id_source))
   completed <- tryCatch({
     run <- shiny::withProgress(message = "Running enrichment analysis...", value = 0,
       holdOmicEnrichRun(tab, runWorkflowEnrichment(workflowData, config, tab$da_results_data,
