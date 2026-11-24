@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-193 target 1 paired test (P1 split, target 1 only): shipped missing-value count rule against the Lean oracle table, I10's five gaps, planted defect; bindings T1 digests",
+  "label": "KIT-193 T1 pair test-kit193-pairs-filter.R on kit-193-lean-proofs 55c5c2fa",
+  "package_commit": "55c5c2fa3abece4c701c23df3f364feda8a3c335",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit193-pairs-filter.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-193/scripts/bindings-t1.R",
+      "args": [
+        "kit193-out"
+      ],
+      "out": "kit193-out",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
