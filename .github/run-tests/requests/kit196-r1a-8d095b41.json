@@ -1,0 +1,36 @@
+{
+  "requested_by": "KIT-196 R1 (gate G0): failing-first tests on the tests-only commit; S1 base side part L",
+  "label": "KIT-196 R1 tests-only 8d095b41, S1 part L base only",
+  "package_commit": "8d095b41f1a789c2bd532b48cea0b3459aaf7bb0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit196-da-no-value-features.R",
+    "test-kit128-da-assay-failure.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-196/da-sparse-control.R",
+      "args": [
+        "L",
+        "19997323dd9a0efac5830696c7d3ac617560dae6",
+        "--base-only"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-196/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
