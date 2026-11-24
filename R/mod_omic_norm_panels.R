@@ -858,7 +858,7 @@ omicNormRuvHeadTechnicalReplicates <- function(manager) {
         spec <- readWorkflowStateMetadata(manager, reference)$data
         design <- as.data.frame(materializeWorkflowTable(manager$.context, spec$components$design_matrix))
         isTRUE(resolveProtTechnicalReplicateBlock(design, spec$slots$group_id %||% NA_character_,
-            spec$slots$technical_replicate_id %||% NA_character_)$technical)
+            spec$slots$technical_replicate_id %||% NA_character_, check = FALSE)$technical)
     }), error = function(error) FALSE)
 }
 

@@ -110,15 +110,31 @@ integrationInputViewName <- function(omic, assay) {
 #' per biological sample before the model, which is the model's step; the writer names the column): the design's
 #' declared technical-replicate column, else `tech_rep_group` (the group and replicate number, the biological unit since
 #' KIT-128), else the run's own id (each run its own biological sample).
+#' KIT-222 (owner's OD-3): a design whose biological-sample names hold runs of more than one technical-replicate marking
+#' action is refused (`refuseOmicsDesignReplicateKeyCollision`), as the integration would average two biological
+#' samples and pair the average by name.
 #' @param design The input's samples table.
 #' @param technical The design's technical-replicate column, or NA.
 #' @param sample The run id column.
 #' @return A column name of `design`.
 #' @noRd
 integrationInputBiologicalSampleColumn <- function(design, technical, sample) {
-    if (is.character(technical) && length(technical) == 1L && isTRUE(technical %in% names(design))) return(technical)
-    if ("tech_rep_group" %in% names(design)) return("tech_rep_group")
-    sample
+    column <- if (is.character(technical) && length(technical) == 1L && isTRUE(technical %in% names(design))) {
+        technical
+    } else if ("tech_rep_group" %in% names(design)) {
+        "tech_rep_group"
+    } else {
+        sample
+    }
+    if (!identical(column, sample)) {
+        frame <- as.data.frame(design)
+        if ("group" %in% names(frame)) {
+            resolveProtTechnicalReplicateBlock(frame, "group", column)
+        } else {
+            refuseOmicsDesignReplicateKeyCollision(frame, key = column, run = sample)
+        }
+    }
+    column
 }
 
 #' Validate the contract's tables against the manifest's column names and views: the matrix's first column is

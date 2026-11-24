@@ -24,27 +24,33 @@ applyProtDesignMetadataAssignment <- function(designMatrix, selectedRuns, factor
     }
     designMatrix$replicates[selected] <- replicateNumbers
     designMatrix$group[selected] <- buildOmicsDesignGroupName(factor1Selection, factor2Selection, factor3Selection)
+    # KIT-222 (OD-1): a new assignment ends the runs' technical-replicate marking.
+    if ("tech_reps" %in% names(designMatrix)) designMatrix$tech_reps[selected] <- NA
     designMatrix
 }
 
 #' The shared technical-replicate edit (`applyOmicsDesignTechRepAssignment()`) with the proteomics
-#' builder's notification texts.
-#' @return A list: `ok`, `type`, `message` and `designMatrix`.
+#' builder's notification texts (KIT-222: the shared `number_held` and `partial_sample` refusals keep the shared text).
+#' @return A list: `ok`, `type`, `message` and `designMatrix` (and `code` on a refusal).
 #' @noRd
 applyProtDesignTechRepAssignment <- function(designMatrix, techRepSamples, assignmentMode,
                                              manualReplicateNumber = NULL) {
+    integerNumbers <- is.integer(designMatrix$replicates)
     assignment <- applyOmicsDesignTechRepAssignment(designMatrix, techRepSamples, assignmentMode,
         manualReplicateNumber)
     if (length(techRepSamples) < 2) {
         assignment$message <- "Please select at least two samples to assign as technical replicates."
-    } else if (!isTRUE(assignment$ok)) {
+    } else if (identical(assignment$code, "groups")) {
         assignment$message <- "All selected samples must belong to the same group. Please assign metadata first."
-    } else {
+    } else if (isTRUE(assignment$ok)) {
+        # KIT-222: proteomics' replicate numbers stay integers (a typed number is a double).
+        if (integerNumbers) assignment$designMatrix$replicates <- as.integer(assignment$designMatrix$replicates)
         # The biological replicate number the selected runs now share.
         baseReplicateNumber <- assignment$designMatrix$replicates[assignment$designMatrix$Run == techRepSamples[1]]
         assignment$message <- paste("Assigned", length(techRepSamples),
             "samples as technical replicates with biological replicate number", baseReplicateNumber,
             "and adjusted subsequent replicate numbers")
     }
+    # KIT-222: the shared refusals (`number_held`, `partial_sample`) keep their own text.
     assignment
 }

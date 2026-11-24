@@ -1,0 +1,2 @@
+run	commit	purpose	minutes	result
+45507613511	e9309b9d	R1: tests-only commit on base cf8af245, each E row against its stated base value	11 (1 job)	every E row failed by assertion at its base value (59 failures, 3 errors: 2 follow-up matches after a failed type assertion, 1 G5 instrument defect); G1, G4, E3c passed

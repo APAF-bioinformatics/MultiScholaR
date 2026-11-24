@@ -619,36 +619,63 @@ applyOmicsDesignMetadataAssignment <- function(designMatrix, selectedRuns, facto
     }
     designMatrix$replicates[selected] <- buildOmicsDesignReplicateNumbers(selectedRuns, replicateStart)
     designMatrix$group[selected] <- buildOmicsDesignGroupName(factor1Selection, factor2Selection, factor3Selection)
+    # KIT-222 (OD-1): a new assignment ends the runs' technical-replicate marking.
+    if ("tech_reps" %in% names(designMatrix)) designMatrix$tech_reps[selected] <- NA
     designMatrix
 }
 
 #' C4. Mark runs of one group as technical replicates of one biological replicate (`lowest`,
-#' `first` or a `manual` number), renumbering the group's later replicates.
-#' @return A list: `ok`, `type`, `message` (the notification) and `designMatrix`.
+#' `first` or a `manual` number). KIT-222 (owner's OD-1, 2026-11-25): no other run's number is moved; in every mode
+#' the edit is refused when the resulting number belongs to a marked run of the group outside the selection
+#' (`number_held`), or when a selected run is marked and a marked run outside the selection holds its number (only some
+#' of a sample's runs re-marked, `partial_sample`); after the edit the group's numbers are replaced by their ranks 1..m
+#' in their existing order, so the numbers stay consecutive (the integration pairs samples across omics by them).
+#' @return A list: `ok`, `type`, `message` (the notification), `designMatrix`, and on a refusal `code` (`too_few`,
+#'   `groups`, `number_held` or `partial_sample`).
 #' @noRd
 applyOmicsDesignTechRepAssignment <- function(designMatrix, techRepSamples, assignmentMode,
                                               manualReplicateNumber = NULL) {
-    refuse <- function(message) list(ok = FALSE, type = "warning", message = message, designMatrix = designMatrix)
-    if (length(techRepSamples) < 2) return(refuse("Please select at least two samples."))
+    refuse <- function(message, code) {
+        list(ok = FALSE, type = "warning", message = message, code = code, designMatrix = designMatrix)
+    }
+    listRuns <- function(rows) paste(designMatrix$Run[rows], collapse = ", ")
+    if (length(techRepSamples) < 2) return(refuse("Please select at least two samples.", "too_few"))
     selected <- which(designMatrix$Run %in% techRepSamples)
     selectedGroups <- unique(designMatrix$group[selected])
     if (length(selectedGroups) > 1 || any(is.na(selectedGroups))) {
-        return(refuse("All selected samples must belong to the same group."))
+        return(refuse("All selected samples must belong to the same group.", "groups"))
     }
     baseReplicateNumber <- switch(assignmentMode,
         lowest = min(designMatrix$replicates[selected], na.rm = TRUE),
         first = designMatrix$replicates[designMatrix$Run == techRepSamples[1]],
         manual = manualReplicateNumber,
         stop("Unsupported technical replicate assignment mode."))
-    originalReplicateNumbers <- unique(designMatrix$replicates[selected])
-    consolidated <- length(originalReplicateNumbers) - 1
-    highest <- max(originalReplicateNumbers, na.rm = TRUE)
-    toAdjust <- which(designMatrix$group == selectedGroups[1] & !is.na(designMatrix$group) &
-        designMatrix$replicates > highest & !designMatrix$Run %in% techRepSamples)
-    if (length(toAdjust) > 0) designMatrix$replicates[toAdjust] <- designMatrix$replicates[toAdjust] - consolidated
+    marks <- if ("tech_reps" %in% names(designMatrix)) designMatrix$tech_reps else rep(NA, nrow(designMatrix))
+    inGroup <- which(designMatrix$group == selectedGroups[1] & !is.na(designMatrix$group))
+    markedOthers <- setdiff(inGroup, selected)
+    markedOthers <- markedOthers[!is.na(marks[markedOthers])]
+    selectedMarked <- selected[!is.na(marks[selected])]
+    partial <- markedOthers[designMatrix$replicates[markedOthers] %in% designMatrix$replicates[selectedMarked]]
+    if (length(partial) > 0) {
+        sampleRows <- sort(union(selectedMarked[designMatrix$replicates[selectedMarked] %in%
+            designMatrix$replicates[partial]], partial))
+        return(refuse(paste0("Selected runs ", listRuns(selected), ": ",
+            listRuns(intersect(sampleRows, selected)), " is already marked with ", listRuns(setdiff(sampleRows, selected)),
+            " as one biological sample. Select all runs of that sample (", listRuns(sampleRows),
+            ") together in one action, with any further runs of the same sample."), "partial_sample"))
+    }
+    held <- markedOthers[designMatrix$replicates[markedOthers] %in% baseReplicateNumber]
+    if (length(held) > 0) {
+        return(refuse(paste0("Replicate number ", baseReplicateNumber, " already belongs to ", listRuns(held),
+            " in group ", selectedGroups[1], ", marked as another biological sample. Choose a number no other ",
+            "sample uses."), "number_held"))
+    }
     designMatrix$replicates[selected] <- baseReplicateNumber
     techRepMapping <- stats::setNames(seq_along(techRepSamples), techRepSamples)
     designMatrix$tech_reps[selected] <- techRepMapping[designMatrix$Run[selected]]
+    numbers <- designMatrix$replicates[inGroup]
+    ranks <- match(numbers, sort(unique(numbers)))
+    designMatrix$replicates[inGroup] <- if (is.integer(numbers)) ranks else as.numeric(ranks)
     list(ok = TRUE, type = "message",
         message = paste("Assigned", length(techRepSamples), "samples as technical replicates"),
         designMatrix = designMatrix)
@@ -721,17 +748,129 @@ buildOmicsDesignSaveContrastsTable <- function(contrastData, formulaString) {
         full_format = paste0(friendlyNames, "=", contrastStrings), stringsAsFactors = FALSE)
 }
 
-#' C5. The builder's save payload: the saved design, the assays subset to its runs in its order, the
-#' contrasts table and the configuration with the formula. NULL when no run is assigned. KIT-128 (audit K128-2): a
-#' replicate number shared inside a group is a technical replicate set (`tech_rep_group`), so it is refused unless
-#' every run sharing it was marked by the technical-replicate action (`tech_reps`); the refusal is its message.
-#' @return A list (`design_matrix`, `data_cln`, `contrasts_tbl`, `config_list`), NULL, or the refusal's text.
+#' KIT-222. The keys of a design that hold runs of more than one marking action: (D1) a key in which a technical
+#' replicate number (`tech_reps`, not NA) repeats, so runs of two marking actions share it; (D2) a key of two or more
+#' runs of which some are marked and some are not. Empty when the design has no `tech_reps` column (a hand-written
+#' design without it declares technical replicates by a shared number, which cannot be checked).
+#' @param design A design data frame.
+#' @param key The key column (default `tech_rep_group`), used when `keys` is NULL.
+#' @param keys Optional key per row (the technical-replicate block a consumer uses).
+#' @param run The run column naming the rows in the result.
+#' @return A data frame: `key`, `rule` (`D1` or `D2`) and `runs` (the key's runs, comma-separated), one row per key.
 #' @noRd
-buildOmicsDesignSavePayload <- function(designMatrix, removedSamples = character(0), dataCln, colMap, contrastData,
-                                        configList, formulaString, idKey) {
-    designMatrixFinal <- buildOmicsDesignSaveDesignMatrix(designMatrix, removedSamples)
-    if (nrow(designMatrixFinal) == 0) return(NULL)
-    marked <- if ("tech_reps" %in% names(designMatrixFinal)) !is.na(designMatrixFinal$tech_reps) else rep(FALSE, nrow(designMatrixFinal))
+findOmicsDesignReplicateKeyCollisions <- function(design, key = "tech_rep_group", keys = NULL, run = "Run") {
+    empty <- data.frame(key = character(), rule = character(), runs = character(), stringsAsFactors = FALSE)
+    if (!is.data.frame(design) || !"tech_reps" %in% names(design)) return(empty)
+    if (is.null(keys)) {
+        if (!key %in% names(design)) return(empty)
+        keys <- design[[key]]
+    }
+    keys <- as.character(keys)
+    runs <- if (run %in% names(design)) as.character(design[[run]]) else as.character(seq_len(nrow(design)))
+    marks <- design$tech_reps
+    found <- lapply(unique(keys[!is.na(keys)]), function(value) {
+        rows <- which(keys == value)
+        if (length(rows) < 2L) return(NULL)
+        marked <- !is.na(marks[rows])
+        rule <- if (anyDuplicated(marks[rows][marked]) > 0L) "D1" else if (any(marked) && any(!marked)) "D2" else NA
+        if (is.na(rule)) return(NULL)
+        data.frame(key = value, rule = rule, runs = paste(runs[rows], collapse = ", "), stringsAsFactors = FALSE)
+    })
+    found <- do.call(rbind, found)
+    if (is.null(found)) empty else found
+}
+
+#' KIT-222. The text of a design whose biological-sample names hold runs of more than one marking action, as an opened
+#' project and the analysis steps show it (DRAFT wording, docs/qa/workflow-execution/kit/kit-222/wording.md).
+#' @param collisions `findOmicsDesignReplicateKeyCollisions()`'s result (one or more rows).
+#' @noRd
+omicsDesignReplicateKeyCollisionText <- function(collisions) {
+    paste0("This design gives one biological sample's name to runs of two samples (",
+        paste(sprintf("'%s': %s", collisions$key, collisions$runs), collapse = "; "), "): the runs were marked as ",
+        "technical replicates in separate steps, or beside a run that is not marked, so analyses that use technical ",
+        "replicates would treat two biological samples as one. Re-open the design, mark the runs of each biological ",
+        "sample together, each sample with its own number, save and run the analysis again. If these runs are one ",
+        "sample, mark all of them in one action. To check a saved design: in Study_report/design_matrix.tab, count ",
+        "the distinct tech_rep_group values in each group; fewer than the biological samples you put in that group ",
+        "means two samples were analysed as one.")
+}
+
+#' KIT-222 (owner's OD-3, 2026-11-25). Refuse a design whose biological-sample names hold runs of more than one marking
+#' action: an error of class `omics_design_replicate_key_collision` (and `trx_error`, so that the transcriptomics
+#' design check shows it) carrying the collisions. Inside `replayWorkflowAnalysisRecord` (option
+#' `MultiScholaR.replicate_key_collisions = "record"`) the collisions are recorded instead and the replay states them.
+#' @inheritParams findOmicsDesignReplicateKeyCollisions
+#' @return `design`, invisibly, when no key collides.
+#' @noRd
+refuseOmicsDesignReplicateKeyCollision <- function(design, key = "tech_rep_group", keys = NULL, run = "Run") {
+    collisions <- findOmicsDesignReplicateKeyCollisions(design, key, keys, run)
+    if (nrow(collisions) == 0L) return(invisible(design))
+    recorder <- getOption("MultiScholaR.replicate_key_collisions")
+    if (is.environment(recorder)) {
+        recorder$collisions <- unique(rbind(recorder$collisions, collisions))
+        return(invisible(design))
+    }
+    rlang::abort(omicsDesignReplicateKeyCollisionText(collisions),
+        class = c("omics_design_replicate_key_collision", "trx_error"), collisions = collisions)
+}
+
+#' KIT-222 (owner's OD-3). On opening a project: when the design's biological-sample names hold runs of more than one
+#' technical-replicate marking action, say so (a warning of class `omics_design_replicate_key_collision_open`, the log,
+#' and a notification in a running app). The analysis steps then refuse through `resolveProtTechnicalReplicateBlock`.
+#' @param design The opened design (NULL when the project holds none).
+#' @param group_id,technical_replicate_id The design's group and technical-replicate columns.
+#' @param run The run column.
+#' @return The collisions, invisibly.
+#' @noRd
+noteOmicsDesignReplicateKeyCollisionOnOpen <- function(design, group_id = "group", technical_replicate_id = "tech_rep_group",
+                                                     run = "Run") {
+    design <- tryCatch(as.data.frame(design), error = function(error) NULL)
+    if (is.null(design) || !is.character(technical_replicate_id) || length(technical_replicate_id) != 1L ||
+        is.na(technical_replicate_id) || !technical_replicate_id %in% names(design)) {
+        return(invisible(findOmicsDesignReplicateKeyCollisions(NULL)))
+    }
+    keys <- as.character(design[[technical_replicate_id]])
+    if (is.character(group_id) && length(group_id) == 1L && isTRUE(group_id %in% names(design))) {
+        group <- as.character(design[[group_id]])
+        nested <- all(vapply(split(group, keys), function(g) length(unique(g)) == 1L, logical(1)))
+        if (!nested) keys <- paste(group, keys, sep = "_")
+    }
+    collisions <- findOmicsDesignReplicateKeyCollisions(design, keys = keys, run = run)
+    if (nrow(collisions) == 0L) return(invisible(collisions))
+    text <- omicsDesignReplicateKeyCollisionText(collisions)
+    logger::log_warn(text)
+    if (!is.null(shiny::getDefaultReactiveDomain())) {
+        tryCatch(shiny::showNotification(text, type = "warning", duration = NULL), error = function(error) NULL)
+    }
+    cli::cli_warn("{text}", class = "omics_design_replicate_key_collision_open")
+    invisible(collisions)
+}
+
+#' KIT-222. The design of an owner's head state, its group and technical-replicate slots, or NULL.
+#' @noRd
+readWorkflowHeadDesignForKeyCheck <- function(manager) {
+    tryCatch(withWorkflowStateScope(manager, function() {
+        reference <- getWorkflowStateReference(manager)
+        if (is.null(reference)) return(NULL)
+        spec <- readWorkflowStateMetadata(manager, reference)$data
+        list(design = as.data.frame(materializeWorkflowTable(manager$.context, spec$components$design_matrix)),
+            group_id = spec$slots$group_id %||% "group", technical_replicate_id = spec$slots$technical_replicate_id %||% NA,
+            run = spec$slots$sample_id %||% "Run")
+    }), error = function(error) NULL)
+}
+
+#' KIT-222. A saved or imported design's refusal text, or NULL: KIT-128's rule (K128-2: a replicate number shared
+#' inside a group by a run that was not marked by the technical-replicate action) and rule D1 (a key holding runs of
+#' two marking actions).
+#' @param designMatrixFinal The design with `tech_rep_group`.
+#' @param unmarkedWithoutColumn Treat every run as unmarked when the design has no `tech_reps` column (the builder's
+#'   save, as KIT-128); FALSE for imports, where a design without the column declares technical replicates by a shared
+#'   number.
+#' @noRd
+omicsDesignSaveRefusal <- function(designMatrixFinal, unmarkedWithoutColumn = TRUE) {
+    hasMarks <- "tech_reps" %in% names(designMatrixFinal)
+    if (!hasMarks && !unmarkedWithoutColumn) return(NULL)
+    marked <- if (hasMarks) !is.na(designMatrixFinal$tech_reps) else rep(FALSE, nrow(designMatrixFinal))
     shared <- designMatrixFinal$tech_rep_group %in% designMatrixFinal$tech_rep_group[duplicated(designMatrixFinal$tech_rep_group)]
     unmarked <- designMatrixFinal$tech_rep_group %in% designMatrixFinal$tech_rep_group[shared & !marked]
     if (any(unmarked)) {
@@ -740,6 +879,29 @@ buildOmicsDesignSavePayload <- function(designMatrix, removedSamples = character
             "Give each biological replicate its own number (the starting replicate number), or mark the runs of one ",
             "biological sample with 'Assign Technical Replicates'."))
     }
+    collisions <- findOmicsDesignReplicateKeyCollisions(as.data.frame(designMatrixFinal))
+    if (nrow(collisions) > 0L) {
+        return(paste0(paste(sprintf("Runs %s share the biological sample '%s'", collisions$runs, collisions$key),
+            collapse = "; "), " but were marked as technical replicates in separate steps, so they would be analysed ",
+            "as one biological sample. Mark the runs of each biological sample together, each sample with its own ",
+            "number. If these runs are one sample, mark all of them in one action."))
+    }
+    NULL
+}
+
+#' C5. The builder's save payload: the saved design, the assays subset to its runs in its order, the
+#' contrasts table and the configuration with the formula. NULL when no run is assigned. KIT-128 (audit K128-2): a
+#' replicate number shared inside a group is a technical replicate set (`tech_rep_group`), so it is refused unless
+#' every run sharing it was marked by the technical-replicate action (`tech_reps`); KIT-222 also refuses a key holding
+#' runs of two marking actions (`omicsDesignSaveRefusal`); the refusal is its message.
+#' @return A list (`design_matrix`, `data_cln`, `contrasts_tbl`, `config_list`), NULL, or the refusal's text.
+#' @noRd
+buildOmicsDesignSavePayload <- function(designMatrix, removedSamples = character(0), dataCln, colMap, contrastData,
+                                        configList, formulaString, idKey) {
+    designMatrixFinal <- buildOmicsDesignSaveDesignMatrix(designMatrix, removedSamples)
+    if (nrow(designMatrixFinal) == 0) return(NULL)
+    refusal <- omicsDesignSaveRefusal(designMatrixFinal)
+    if (!is.null(refusal)) return(refusal)
     configList[["deAnalysisParameters"]][["formula_string"]] <- formulaString
     list(design_matrix = designMatrixFinal,
         data_cln = buildOmicsDesignSaveDataList(dataCln, designMatrixFinal$Run, colMap, idKey),
