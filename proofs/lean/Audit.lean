@@ -10,3 +10,5 @@ the printed axioms (`.github/workflows/kit-193-lean.yml`, step "axioms").
 -/
 
 open MultiScholaRProofs
+
+#print axioms MultiScholaRProofs.Lifecycle.l0_trivial
