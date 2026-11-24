@@ -214,7 +214,7 @@ test_that("a strain whose project annotation is empty runs with the reference id
     tables <- unlist(lapply(project$run$results@enrichment_data, function(contrast) lapply(contrast, function(result)
         if (is.null(result)) 0L else nrow(result@result))))
     expect_gt(sum(tables), 0L)
-    expect_gt(project$workflow$enrichment_reference_mapping$B_vs_A$mapped, 0L)
+    expect_gt(project$workflow$enrichment_reference_mapping[[1L]]$mapped, 0L)
     imported <- k167EnrichProject(tempfile("k167-run-"), "imported")
     expect_null(imported$workflow$enrichment_reference_mapping)
     expect_s3_class(imported$error, "workflow_enrichment_annotation")

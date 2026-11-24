@@ -4,7 +4,7 @@
 # between two loads of one tree could not be compared).
 #
 # Hashed per side: app_ui(NULL); mod_prot_import_ui("x"); mod_omic_import_ui("x", transcriptomics configuration);
-# mod_prot_enrich_ui("x"); mod_omic_enrich_ui("x", proteomics configuration); omicGuiConfig() of proteomics and of
+# mod_prot_enrich_ui("x"); mod_omic_enrich_ui("x", the proteomics configuration's enrichment group); omicGuiConfig() of proteomics and of
 # transcriptomics, as values (every function replaced by a marker) and, separately, with every function deparsed. The
 # verdict reads the pages and the values; the deparsed functions are reported, not judged: the ticket changes the bodies
 # of functions the proteomics configuration holds (the annotation resolver, 8.3 item 3; the enrichment declaration,
@@ -30,7 +30,10 @@ child <- '
 arguments <- commandArgs(trailingOnly = TRUE)
 suppressMessages(pkgload::load_all(arguments[[1L]], quiet = TRUE, export_all = TRUE, helpers = FALSE))
 options(MultiScholaR.reference_mapping = NULL)
-sha <- function(text) digest::digest(paste(text, collapse = "\\n"), algo = "sha256", serialize = FALSE)
+# An item whose rendering fails is recorded as its error text, so the verdict counts it (run 45347302450 hashed the
+# error text of the enrichment page, called with the whole configuration instead of its enrichment group).
+sha <- function(text) if (length(text) && startsWith(text[[1L]], "error:")) gsub("[\\t\\n]", " ", text[[1L]]) else
+    digest::digest(paste(text, collapse = "\\n"), algo = "sha256", serialize = FALSE)
 # Shiny gives each tabset a random id (`data-tabsetid`, `tab-<n>-<m>`; run 45339028522 found mod_prot_enrich_ui
 # different between two renders of the head): those numbers are masked before hashing.
 page <- function(expr) {
@@ -50,7 +53,7 @@ items <- list(
     mod_prot_import_ui = sha(page(mod_prot_import_ui("x"))),
     mod_omic_import_ui_transcriptomics = sha(page(mod_omic_import_ui("x", omicGuiConfig("transcriptomics")))),
     mod_prot_enrich_ui = sha(page(mod_prot_enrich_ui("x"))),
-    mod_omic_enrich_ui_proteomics = sha(page(mod_omic_enrich_ui("x", omicGuiConfig("proteomics")))),
+    mod_omic_enrich_ui_proteomics = sha(page(mod_omic_enrich_ui("x", omicGuiConfig("proteomics")$enrichment))),
     omic_gui_config_proteomics = config("proteomics"),
     omic_gui_config_transcriptomics = config("transcriptomics"),
     functions_omic_gui_config_proteomics = config("proteomics", TRUE),
@@ -91,4 +94,4 @@ verdict <- c(paste("base:", base), paste("head:", system2("git", c("rev-parse", 
 writeLines(verdict, file.path(out_dir, "gate-off-verdict.txt"))
 writeLines(verdict)
 system2("git", c("worktree", "remove", "--force", tree))
-if (!(deterministic && same && identical(fasta_step, 0L))) quit(status = 1L)
+if (!(deterministic && same && errors == 0L && identical(fasta_step, 0L))) quit(status = 1L)

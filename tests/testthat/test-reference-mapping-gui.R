@@ -8,7 +8,7 @@ test_that("with the gate off no import or enrichment page shows a reference mapp
     for (omic in c("proteomics", "transcriptomics")) {
         expect_false(grepl("refmap_", k167Html(mod_omic_import_ui("x", omicGuiConfig(omic))), fixed = TRUE), info = omic)
     }
-    page <- k167Html(mod_omic_enrich_ui("x", omicGuiConfig("proteomics")))
+    page <- k167Html(mod_omic_enrich_ui("x", omicGuiConfig("proteomics")$enrichment))
     expect_false(grepl("x-id_source", page, fixed = TRUE))
     expect_false(grepl("reference_mapping_counts", page, fixed = TRUE))
 })
@@ -26,7 +26,7 @@ test_that("with the gate on the proteomics import offers the mapping and transcr
         "x-refmap_summary")) {
         expect_true(grepl(id, trx, fixed = TRUE), info = id)
     }
-    enrich <- k167Html(mod_omic_enrich_ui("x", omicGuiConfig("proteomics")))
+    enrich <- k167Html(mod_omic_enrich_ui("x", omicGuiConfig("proteomics")$enrichment))
     expect_true(grepl("x-id_source", enrich, fixed = TRUE))
     expect_true(grepl("x-reference_mapping_counts", enrich, fixed = TRUE))
     expect_true(grepl("x-download_unmapped_changed", enrich, fixed = TRUE))
