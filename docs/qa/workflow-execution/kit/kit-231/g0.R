@@ -327,6 +327,9 @@ kit200Design <- function(sizes = c(A = 4L, B = 4L, C = 4L)) {
 }
 
 kit200Object <- function(x, design) {
+    # The KIT-200 tests run under load_all(export_all = TRUE); the installed package does not export the generator.
+    # Instrument fix after run 45509141744 (VAL-54): resolved here, locally, so the search path S scans is unchanged.
+    ProteinQuantitativeData <- get("ProteinQuantitativeData", envir = asNamespace("MultiScholaR"))
     rownames(design) <- NULL
     ProteinQuantitativeData(protein_quant_table = data.frame(Protein.Ids = rownames(x), x, row.names = NULL,
         check.names = FALSE, stringsAsFactors = FALSE), design_matrix = design, sample_id = "Run", group_id = "group",
