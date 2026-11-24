@@ -73,21 +73,41 @@ put("engine_version", system2(diamond, "version", stdout = TRUE))
 help_text <- tryCatch(system2(diamond, "help", stdout = TRUE, stderr = TRUE), error = function(e) character())
 cat(help_text, sep = "\n")
 
-# The strain FASTA: resolved through PRIDE's file listing for the project (the FTP folder is dated by publication).
+# The strain FASTA: found in the project's PRIDE FTP folder, dated by publication (year/month). The folder is taken
+# from the PRIDE API's project record when it answers, else every month of 2019 to 2024 is listed; the file is the
+# folder listing's entry matching the name, case-insensitive. Each step prints what it read (instrument run 2, after
+# run 45334031153 found no URL).
+readText <- function(url) {
+    text <- tryCatch(paste(readLines(url, warn = FALSE), collapse = "\n"), error = function(e) {
+        message("read failed: ", url, ": ", conditionMessage(e))
+        ""
+    })
+    text
+}
 pride_url <- function(accession, name) {
-    endpoints <- c(
-        sprintf("https://www.ebi.ac.uk/pride/ws/archive/v2/projects/%s/files?pageSize=1000", accession),
-        sprintf("https://www.ebi.ac.uk/pride/ws/archive/v3/projects/%s/files?pageSize=1000", accession),
-        sprintf("https://www.ebi.ac.uk/pride/ws/archive/v2/files/byProject?accession=%s", accession))
-    for (endpoint in endpoints) {
-        text <- tryCatch(paste(readLines(endpoint, warn = FALSE), collapse = ""), error = function(e) "")
-        hits <- regmatches(text, gregexpr(sprintf("(ftp|https?)://[^\"]*/%s", name), text))[[1]]
-        if (length(hits)) return(sub("^ftp://", "https://", hits[[1]]))
+    folders <- character()
+    for (endpoint in c(sprintf("https://www.ebi.ac.uk/pride/ws/archive/v3/projects/%s", accession),
+        sprintf("https://www.ebi.ac.uk/pride/ws/archive/v2/projects/%s", accession))) {
+        text <- readText(endpoint)
+        cat(sprintf("PRIDE %s: %d characters\n", endpoint, nchar(text)))
+        date <- regmatches(text, regexpr("\"publicationDate\"[[:space:]]*:[[:space:]]*\"[0-9]{4}-[0-9]{2}", text))
+        if (length(date)) {
+            ym <- regmatches(date, regexpr("[0-9]{4}-[0-9]{2}$", date))
+            folders <- c(folders, sprintf("https://ftp.pride.ebi.ac.uk/pride/data/archive/%s/%s/%s/",
+                substr(ym, 1, 4), substr(ym, 6, 7), accession))
+        }
     }
-    for (year in 2019:2024) for (month in sprintf("%02d", 1:12)) {
-        url <- sprintf("https://ftp.pride.ebi.ac.uk/pride/data/archive/%d/%s/%s/%s", year, month, accession, name)
-        head <- tryCatch(curlGetHeaders(url), error = function(e) "")
-        if (length(head) && isTRUE(attr(head, "status") == 200L)) return(url)
+    folders <- unique(c(folders, as.vector(outer(sprintf("%02d/%s/", 1:12, accession), 2019:2024,
+        function(tail, year) sprintf("https://ftp.pride.ebi.ac.uk/pride/data/archive/%d/%s", year, tail)))))
+    for (folder in folders) {
+        listing <- suppressWarnings(readText(folder))
+        if (!nzchar(listing)) next
+        files <- unique(regmatches(listing, gregexpr("href=\"[^\"]+\"", listing))[[1]])
+        files <- sub("^href=\"(.*)\"$", "\\1", files)
+        cat(sprintf("PRIDE folder %s: %d entries\n", folder, length(files)))
+        hit <- files[tolower(basename(files)) == tolower(name)]
+        if (length(hit)) return(paste0(folder, basename(hit[[1]])))
+        cat("PRIDE folder entries:", paste(utils::head(basename(files), 40), collapse = " "), "\n")
     }
     NA_character_
 }
