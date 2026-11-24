@@ -1,0 +1,2 @@
+step	run_name	run_id	package_commit	purpose	decides	ceiling_job_minutes	result	observed	job_minutes	core_hours
+ML	k217-ml-9e15166a	pending	9e15166ae4a4cba1cb682370c87b6ad025084ec8	blind lifecycle: all seven cells, replicates 401-403, fault in L2 401 vd10 arm D; E1 to E6; selftest (a)-(f); E7	gate G-M (E1, E2, E4, E6, E7, selftest): pass sends MC unchanged; a mechanics failure is an instrument defect (VAL-54)	197	pending	pending	pending	pending
