@@ -208,3 +208,48 @@ listed when the difference of the medians exceeds both max(0.25 GiB, 10 % of the
 the two builds' ranges; also every step where the committed state differs and every non-completion; an aid, not a
 verdict. Re-measure map: ticket section 9.4. Time limits (9.3): 3 × the staging head's G0p time (G0a's for screen
 units), cut to the job's remaining time less 12 minutes.
+
+## Addendum 1 (2026-11-24): the coordinator's rulings on G0's six points, and the probes before the counted runs
+
+Committed before any further run. The rulings are engineering (VAL-151 leaves the base's library to engineering).
+
+- **A1. U4 and U5 at screen size.** The candidate's refusal of DA when every group is one biological unit is correct
+  product behaviour (KIT-128, 40ae84bd). Both builds are measured through the last step both run (through
+  normalisation/RUV, correlation and the session export); DA and the report are reported for the base only, labelled
+  "base only; the candidate refuses this design (one biological unit per group)". The screen design binding and
+  `tools/profiling/` are unchanged. The candidate's journey ends at its refused DA step (class package error, expected
+  by this ruling); its earlier steps are its figures.
+- **A2. U11 and U12.** One short probe (`probe-ruv-base`) first: the base on `lfq_300` and `tmt_300` with the manual RUV
+  of G0p (percentage 5, k from the tab's NULL, 3), each journey stopped after `normalisation_ruv`; whether the base also
+  refuses is a result either way. The paired journeys then run with **RUV skipped on both builds** (stated beside every
+  figure; bindings `lfq_300`, `tmt_300` → `ruv_mode = skip`, state `normalized`). D6 and D7 (the candidate's shipped
+  default, the automatic sweep) run as planned and are reported. No k or percentage is searched for. The refusal and
+  the control-protein counts it states are a finding for the owner.
+- **A3. U6 and U8.** A time probe (`g0p3`): one journey each on the candidate, to the job's deadline; their limits are
+  set from it (3 × the process wall).
+- **A4. G0a' is not run.** Every base figure carries "base on the candidate's internal dependency versions"; the two
+  upgrades (`fastduckdb` 0.1 → 0.2, `fast_limpa_dpc` d4f9cc1d → 0ad8c527) are outside what the comparison shows.
+- **A5. Corpora.** Within a job each corpus is generated once (`k209-plan.sh`, `corpus()`: into `$WORK/corpus/<key>`,
+  skipped when present) and every journey of both builds reads that directory (`corpus_dir`), so both builds read the
+  same bytes. The mismatch with the bound sha256 is a finding: `screen`'s `report.tsv` and `trx_screen`'s `truth.json`
+  gave the same sha256 in two jobs (G0a-1, G0a-2), so it is deterministic on the runner and not run-to-run; `full`'s
+  `report.tsv` is generated in J3, J4 and X10, whose sha256 are compared. Bindings are not regenerated.
+- **A6. Shipped-default runs (D1 to D7) and X10.** A D run takes the candidate's shipped defaults: on the omics routes
+  the normalisation, correlation and DA tabs' own UI defaults (no bound value is set); on DIA, LFQ and TMT the
+  normalisation tab's UI defaults (`mod_prot_norm_ui`, recorded field by field); on DIA_LIMPA the protein normalisation
+  tab's method (`none`) and the covariates mode. X10 binds the engine `limpa`. Both run on the candidate only, to the
+  job's deadline, reported.
+- **A7. Integration timing.** G0i's MOFA training took 197.6 s on the head against 48.2 s on build C, one run each. The
+  job's own records: same job, same system library (built from the head's lock), same bundle Python and BLAS, thread
+  variables unset for both; same iterations (2,056) and identical factors (sha256 7a50408dcda9…); Python peak 4.8 MiB
+  (head) against 61.7 MiB (C). One repeat each (`g0i-repeat`, branch `run-kit209-integration`, the same commits) inside
+  G0i's remaining ceiling (42 of 60 min) shows whether it repeats.
+- **A8. The candidate for the counted runs** is the staging head when the dated section is committed; it is named there.
+
+**Probes declared now:**
+
+| Run | Purpose | Binds | Jobs, ceiling | Decides |
+|---|---|---|---|---|
+| probe-ruv-base | A2: the base's response to the bound manual RUV on `lfq_300`, `tmt_300` | `base` | 1 job, 120 min (VAL-54's G0 re-run row) | reported; nothing changes with it |
+| g0p3 | A3: U6 and U8 times and peaks | candidate (the staging head at sending) | 1 job, 150 min (G0p's remaining row: 480 − 156) | U6 and U8 limits and J1's layout |
+| g0i-repeat | A7: one repeat of the S pipeline on the head and on build C | c03cb02a, 324e14b4 | 1 job, 42 min (G0i's remainder) | reported: whether the training time difference repeats |
