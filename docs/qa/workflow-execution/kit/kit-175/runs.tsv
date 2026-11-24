@@ -1,3 +1,8 @@
 run_id	commit	purpose	minutes	result
 45118859939	4546b50b13867c1a9b4f3e1fa2a8b825f398a380	R0b gate F3: UniProt first page on real reference-proteome accessions (scripts job, network open)	14	case (ii): X-Total-Results exceeds rows on 115 of 120 requests; stop for the owner
 45121855739	e27c9d69e282aee9c475b6a8efdb0bca0ecd547b	F4 measurement before D8: bare vs field-qualified query (F3 requests; secondary, deleted, other-organism probes)	21	Entry sets identical 120/120; next links bare 115, qualified 0; absences: qualified never links, bare always; secondaries not found under either form (1 of 200 under bare)
+45281585187	def420a1a6ab11a4aa091289f5bcb61e3e72c62b	R1 failing-first (tests-only commit) and R0 F1 consumers script	25.3	as expected: new tests fail at stated values on base, pins and T6 pass; D6 sentence fails on base; F1 table; T7 instrument defect (record path passed) found
+45284015220	698f37aa14992383119e1b14602c4f43e8d325ae	R2 fix vs tests-only commit 0f64e328: 29 targeted and dependent files, R CMD check both sides	246.9	new file 319/0 on head; design-core fixed; 26 same; 1 new-failure (test-omic-enrich-module.R plot digest, order-dependent); check identical
+45289730439	873d6e8ae53055bb41fc8d1b8043f4ef2c8b289b	R2 diagnosis head: the plot text behind the changed digest (no result judged)	8.8	session alone gives the frozen digest on head
+45289724427	db1672368f9a180eebfb58f9f2c953f12c0817e1	R2 diagnosis base (tests-only commit + script, branch kit-175-diag-base)	13.3	session alone gives the frozen digest on base
+45291921569	873d6e8ae53055bb41fc8d1b8043f4ef2c8b289b	R3 full suite vs af04046f, 20 shards per side, full-suite template, check	1057.3	454 same, 1 only-on-head (new file 319/0), 0 new-failure; check identical

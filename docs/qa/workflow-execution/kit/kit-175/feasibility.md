@@ -68,3 +68,44 @@ Questions for the owner (the ticket's stop rule says a query change is a separat
 - F1 (R0): not run; it follows the gate.
 - The re-run of 2.3's greps on the implementation base: the base differs from b052b824 by a ledger row only; not
   re-run.
+
+# F1 (R0): the consumers without annotation (revision 1.6)
+
+Run 45281585187 (`run-tests k175-r1-def420a1`), scripts job, script `f1-consumers.R` at def420a1 (the tests-only
+commit; `R/` equal to the merged base af04046f). 12.3 minutes, about 0.82 core-hours (R0: expected 1, ceiling 4).
+Network closed (proxy at a closed port), test mode off, no service called (`clusterProfiler::enricher` wrapped to
+record its arguments; `gprofiler2::gost` replaced by a recorder returning no result). Fixture: KIT-173's committed
+E. coli project (70 proteins; `tests/testthat/helper-go-propagation.R`). Table: `r1/f1-consumers.tsv`.
+
+## Observed
+
+| Case | Annotation rows | Outcome | Service calls | Identifiers sent per call | Background |
+|---|---|---|---|---|---|
+| clusterProfiler, complete | 70 | completed | 2 | 25; 10 | 70; 70 |
+| clusterProfiler, empty | 0 | error: column `go_id_go_biological_process` not found (unclassed `rlang_error`) | 0 | | |
+| clusterProfiler, one chunk of 25 missing | 45 | completed | 2 | 25; 10 | 70; 70 |
+| g:Profiler (gost recorded), complete | 70 | completed | 10 | 0 each | 0 each |
+| g:Profiler, empty | 0 | completed | 10 | 25 or 10 | 70 |
+| g:Profiler, one chunk missing | 45 | completed | 10 | 0 each | 0 each |
+| organism filter on, empty (clusterProfiler) | 0 | the 8-second notice "Multi-species filtering enabled but no organism mapping available. Proceeding without filtering.", then the column error | 0 | | |
+| organism filter on, complete | 70 | completed, the same notice | 2 | 25; 10 | 70; 70 |
+| integration features, complete / empty / one chunk missing | 70 / 0 / 45 | NA gene names 0 / 70 / 25; display name = feature id 0 / 70 / 25 | | | |
+
+DA export: 70 rows in every case; the `gene_name` column blank on 70 of 70 rows with the complete and the partial
+table, on 0 of 70 with the empty table. Summary report: not run (Not checked).
+
+## Inferred (not verified)
+
+- The fixture's own protein identifier table carries `gene_names` (`GENE1` ... `GENE70`). With no annotation the DA
+  table's `gene_name` comes from that column, so g:Profiler was queried on the fixture's own names; with an annotation
+  joined, the two `gene_names` columns collide (`.x`, `.y`) and `gene_name` is blank, so g:Profiler was asked about
+  nothing. On data whose identifier table carries no gene names, the empty case sends nothing (section 2.2). The
+  collision with an annotation present is a separate defect of the fixture or the DA join, outside this ticket.
+- clusterProfiler's background was the 70 DA proteins in every case, also with 25 unannotated: the universe passed is
+  the DA background; DOSE then intersects it with the annotated identifiers (section 2.2; not observed here).
+
+## For the owner (D1 premise)
+
+Section 2.2 says the gene-set service is asked about nothing without annotation. F1 shows that this holds only when
+the data carry no gene names of their own: with a protein identifier table that names genes, the g:Profiler route ran
+without UniProt annotation. The refusal of item 5a (D1, VAL-30) is implemented as decided and also refuses that case.
