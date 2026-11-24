@@ -278,7 +278,8 @@ omicDaFilterRows <- function(results, selectedContrast, selectedAssay, tableFilt
 #' @param summary The group's `summary` (`noun`, `significance_label`; KIT-172: with `not_tested`, also the count of
 #'   result rows limma could not test because a compared group has no observed value, whose fold change is missing).
 #' @param runQValThresh KIT-220 E-7: the threshold the analysis ran at (the counts' `significant` column was made at it);
-#'   the label states it, and a box that differs from it is said beside the summary. NULL: the box's value, as before.
+#'   the label states it, and a box that differs from it is said beside the summary (naming the group's
+#'   `summary$box_consumers`, the views that follow the box). NULL: the box's value, as before.
 #' @noRd
 omicDaSummaryText <- function(daResults, selectedContrast, selectedAssay, daQValThresh, summary, tableFilter = "all_only",
     runQValThresh = NULL) {
@@ -293,8 +294,9 @@ omicDaSummaryText <- function(daResults, selectedContrast, selectedAssay, daQVal
         sprintf("  Down-regulated: %d", sum(results$significant == "Down", na.rm = TRUE)),
         if (isTRUE(summary$not_tested)) sprintf("Not tested (no value in a compared group): %d", sum(is.na(results$logFC))),
         if (!isTRUE(all.equal(counted_at, as.numeric(daQValThresh)))) sprintf(paste("The threshold box (%s < %.3f) differs",
-            "from the threshold the analysis ran at (%s < %.3f); the table filter and the static volcano plot use the box."),
-            summary$significance_label, daQValThresh, summary$significance_label, counted_at)),
+            "from the threshold the analysis ran at (%s < %.3f); %s use the box."),
+            summary$significance_label, daQValThresh, summary$significance_label, counted_at,
+            summary$box_consumers %||% "the table filter and the static volcano plot")),
         collapse = "\n")
 }
 

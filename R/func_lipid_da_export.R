@@ -307,13 +307,16 @@ outputLipidDaResultsAllContrasts <- function(
             tryCatch(
                 {
                     sig_summary <- assay_contrast_data |>
+                        # KIT-220 (r1.3, I01): up and down are counted before `significant` is replaced by its count;
+                        # summarise() let the new count mask the column, so both were always 0.
                         dplyr::summarise(
                             total = dplyr::n(),
-                            significant = sum(significant != "NS", na.rm = TRUE),
                             up_regulated = sum(significant == "Up", na.rm = TRUE),
                             down_regulated = sum(significant == "Down", na.rm = TRUE),
+                            significant = sum(significant != "NS", na.rm = TRUE),
                             .groups = "drop"
                         ) |>
+                        dplyr::relocate(dplyr::all_of("significant"), .after = dplyr::all_of("total")) |>
                         dplyr::mutate(
                             assay = assay_name,
                             mode = mode_prefix,
