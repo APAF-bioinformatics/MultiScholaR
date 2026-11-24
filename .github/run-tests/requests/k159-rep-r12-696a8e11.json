@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R12, the I15 G1(a) remainder and VAL-133 G13 fix: g1a, g13, parity, parity-stage, repair3, chain with --lint; ceiling 25 min, about 0.7 core-hours",
+  "label": "KIT-159 repair R12: G1(a) loader and G13 fix at 696a8e11",
+  "package_commit": "696a8e112aefb753a3cf16c2ed98aa3d2c2e34f4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": ["lintr"],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-159/rep-r12-out", "--files", "g1a,g13,parity,parity-stage,repair3,chain", "--lint"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r12-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
