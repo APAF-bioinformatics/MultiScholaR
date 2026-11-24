@@ -1,14 +1,20 @@
 {
-  "label": "k209-g0i-repeat",
-  "attempt": "repeat",
+  "label": "k209-m3",
+  "attempt": "counted",
   "library_build": "RC",
   "install_builds": "RC C",
   "jobs": [
     {
-      "name": "g0i-repeat",
-      "plan": "g0i-repeat",
-      "size": "S",
-      "timeout": 42
+      "name": "m3-M",
+      "plan": "m3-M",
+      "size": "M",
+      "timeout": 180
+    },
+    {
+      "name": "m3-L",
+      "plan": "m3-L",
+      "size": "L",
+      "timeout": 330
     }
   ]
 }
