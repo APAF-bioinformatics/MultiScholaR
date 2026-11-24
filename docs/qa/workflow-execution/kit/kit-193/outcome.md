@@ -140,8 +140,11 @@ final commit.
 ## Paired tests
 
 - Target 3: `tests/testthat/test-kit193-pairs-go.R` (the comparison over the 211 cases of `go-closure.tsv` and the
-  planted-defect case: `goAncestorPairs` without the closure). Not run yet: it belongs to run P0 (11.1), with target 4
-  and group R.
+  planted-defect case: `goAncestorPairs` without the closure). Run P0a (split out of P0 by the coordinator), run
+  45302637982 at 8e94b260, R 4.6.1 on ubuntu-22.04: **passed, 638 expectations, 0 failed** (`p0a/tests.tsv`): the
+  shipped `goAncestorPairs`, `propagateGoAnnotations` and `buildUniprotGoGeneSets` equal the Lean model on every case,
+  and the planted defect is caught. Acceptance criterion A8 for target 3 (base comparison and `R CMD check` stay with
+  P0/P3).
 - Targets 1 and 2: the oracle tables are committed (`filter-thresholds.tsv`, `replay-*.tsv`); the test files are
   prepared under `pending/` and move to `tests/testthat/` when KIT-187 and KIT-190 merge (they call functions that exist
   only on those branches). Still to write at merge: target 2's builder comparison through `buildWorkflowAnalysisRecord`
