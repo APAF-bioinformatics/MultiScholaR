@@ -464,8 +464,9 @@ test_that("KIT-206 E11: the Summary's archive refresh is refused after a Revert 
     norm <- new.env(parent = emptyenv())
     k206Click(fixture, norm, "skip")
     k206Correlation(fixture, norm, 0.5)
-    k206ExpectExported("E11 export", k206Export(fixture, norm, "skip"), fixture$paths, k206Snapshot(fixture$paths),
-        "correlation_filtered")
+    # R2 instrument repair (VAL-54): the snapshot is taken before the export (a lazy argument was read after it).
+    before <- k206Snapshot(fixture$paths)
+    k206ExpectExported("E11 export", k206Export(fixture, norm, "skip"), fixture$paths, before, "correlation_filtered")
     k206Da(fixture)
     k206Revert(fixture, "protein_replicate_filtered")
     before <- k206Snapshot(fixture$paths)
