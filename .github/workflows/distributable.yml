@@ -156,7 +156,7 @@ jobs:
           esac
           # main = the existing job of the stage; suite = one shard of the test suite on the bundle (stages rc, suite)
           linux_matrix="$(jq -cn --argjson runners "$linux_runners" --argjson n "$linux_shards" --argjson smoke "$smoke" \
-            '[$runners[] | {runner: ., part: "main", shard: 0}] + [range(1; $n + 1) | {runner: "ubuntu-22.04", part: "suite", shard: .}]
+            '[$runners[] | {runner: ., part: "main", shard: 0}] + [range(1; $n + 1) | {runner: "ubuntu-24.04", part: "suite", shard: .}]
              + (if $smoke == 1 then [{runner: "ubuntu-22.04", part: "smoke", shard: 1}] else [] end)')"
           windows_matrix="$(jq -cn --argjson n "$windows_shards" --argjson main "$main" --argjson smoke "$smoke" \
             '(if $main then [{part: "main", shard: 0}] else [] end) + [range(1; $n + 1) | {part: "suite", shard: .}]
