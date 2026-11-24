@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-196 R2: fix (merged with staging ea93d948) base against head; S1 part M head side against R1's base records",
+  "label": "KIT-196 R2 at 1b8fa4f2: S1 part M",
+  "package_commit": "1b8fa4f2e51b7f2048cbd756fd31984c663fd330",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-196/da-sparse-control.R",
+      "args": [
+        "M",
+        "19997323dd9a0efac5830696c7d3ac617560dae6",
+        "--base-records=docs/qa/workflow-execution/kit/kit-196/s1/r1"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-196/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 120
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
