@@ -186,3 +186,48 @@ scratchpad `k190py/power.py`, not committed; indicative):
 - Joint probability: the product over the 8 cells (independent data sets).
 - Journey-seconds: bounded Manual 17 s; unbounded B 15 s, F 25 s, D 32 s (`ed/*/provenance.json`, audit's cost
   section); core-hours = journey-seconds / 3,600 × 1.25 (set-up, compile, idle) plus about 2 for the lifecycle.
+
+### Option C (added at the coordinator's request, 2026-11-25)
+
+FDP margin 0.05 and null-cell margin 0.10 as in A; 8 deciding cells; T1b reported. R per cell: the smallest multiples
+of 50 (searched over 50 to 400 per cell type, cheapest combination kept) with P(pass all | arms equal) ≥ 0.80 at paired
+SD 0.20 and N-w discordance 0.25.
+
+| | Option C |
+|---|---|
+| R: N-r, N-s | 100, 100 |
+| R: E-r, E-s, E-p, E-g | 200 each |
+| R: N-w, E-w | 250, 200 |
+| Journey-seconds (estimate) | about 132,700 s |
+| Expected core-hours (lifecycle included) | about 48 |
+| Ceiling | 65 |
+| P(pass all), arms equal, SD 0.20, N-w discordance 0.25 / 0.12 | 0.80 / 0.86 |
+| same, SD 0.10 | 0.93 / 0.995 |
+| P(pass all), first measurement's differences | below 1e-9 |
+
+Computed as for A and B (null cells simulated with 4,000 data sets per R; N-r and N-s at discordance 0.02 need R = 100
+because 0.939² at R = 50 alone caps the joint probability near 0.88).
+
+**Reuse.** The six balanced cells keep their generator and seed rule (`190000000 + 10000 × cell + r`), so replicates 1
+to 50 reuse the committed unbounded rows of `e/` and `ed/` (B, F, D) and only their bounded arms are run; replicates 51
+onwards are new seeds and run F and D unbounded plus F+B and D+B. The costs above count it so (bounded only for
+r ≤ 50; unbounded F and D plus both bounded arms for r > 50; all six arms in N-w and E-w).
+
+### Observed spread in the first measurement (committed rows only; stdlib Python on `e/*/journeys.tsv` and `ed/*/journeys.tsv`, lipid)
+
+| Cell | SD of FDP(D) − FDP(F), unbounded, n = 50 | SD of FDP(F) − FDP(B), unbounded | pairs with both k ≤ 2 (SD) |
+|---|---|---|---|
+| E-r | 0.417 | 0.313 | 4 (0.035) |
+| E-s | 0.354 | 0.240 | 1 |
+| E-p | 0.406 | 0.514 | 6 (0.312) |
+| E-g | 0.418 | 0.337 | 1 |
+
+| Cell | discordance, any call, D vs F unbounded (D only / F only) | discordance, F vs B unbounded |
+|---|---|---|
+| N-r | 0.64 (28 / 4) | 0.04 |
+| N-s | 0.58 (25 / 4) | 0.02 |
+
+These are for the **unbounded** arms, whose k differ widely (D 5 to 6 on average); the bounded arms' spread is not
+known. The pairs with both k ≤ 2 are too few to estimate it. Unbounded, the observed paired SD (0.35 to 0.42) is above
+both assumptions (0.10, 0.20); the null discordance between two low-k arms (F against B: 0.02 to 0.04) is near the 0.02
+assumed for N-r and N-s.
