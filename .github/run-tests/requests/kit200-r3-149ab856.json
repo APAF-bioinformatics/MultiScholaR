@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-200 R3: full suite, the branch merged with staging 2a1543db against that staging commit, 20 shards per side, no check; ceiling 40x70 min",
+  "label": "KIT-200 R3 full suite 149ab856 vs 2a1543db",
+  "package_commit": "149ab856e5c8068a04acb1b653742b1ee5cf0c48",
+  "base_commit": "2a1543db8e8ebd59f7d90f92374ef765296dd7cb",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
