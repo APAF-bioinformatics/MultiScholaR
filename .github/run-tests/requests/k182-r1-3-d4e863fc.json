@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-182 R1 instrument rerun 2 of 3 (VAL-54): F1 (h) without the session export the fixture cannot run; the two affected files, head d4e863fc vs base ; within R1's 540 job-min ceiling",
+  "label": "KIT-182 R1-3 instrument rerun d4e863fc vs ",
+  "package_commit": "d4e863fc15b69eaa5f94f4fdaeb32c8dae2664cb",
+  "base_commit": "",
+  "tools_ref": "",
+  "tests": [
+    "test-prot-norm-worker-figures.R",
+    "test-prot-norm-input-current.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
