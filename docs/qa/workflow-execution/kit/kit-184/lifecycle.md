@@ -23,7 +23,7 @@ every arm, class and factor runs to completion, and they decide nothing.
 | The identity check (arm 3's `correlation` against the same model fitted to the corrected values; below 1e-8 expected) | largest difference 1.8e-14 over every data set, factor and replicate (135 comparisons, none above 1e-8); for proteomics and metabolomics, whose levels are restored, the p-values agree within 1.4e-13; for transcriptomics the p-values differ (its level is not restored, so the trend covariate moves), as ticket 5.2 says (`l1/identity.tsv`) |
 | What the removed factors caught: the smallest canonical correlation between the written and the planted unwanted factors, median per data set (stop to the owner below 0.9) | transcriptomics 0.994, 0.987, 0.994 (cells A, B, D); proteomics 0.950, 0.965, 0.976; metabolomics 0.983, 0.974, 0.916: **no median below 0.9**. Single replicates were lower: proteomics 0.48 (cell A), transcriptomics 0.70 (cell B), metabolomics 0.69 (cell A) (`l1/caught.tsv`) |
 | p_floor at least p_camera, set by set, under every arm that runs both | largest p_camera minus p_floor: 0 (`l1/floor.tsv`) |
-| Pools: classes forming fewer than 90 % of their declared sets | proteomics C5 at size 100: 67 % (its pool is about 100 features); transcriptomics C4 (a reported class): 56 to 65 % at sizes 10, 30, 100. Every other class and size formed all its sets (`l1/pools.tsv`). Both are to be redefined in a dated section of the declaration before the counted run (ticket 6.2) |
+| Pools: classes forming fewer than 90 % of their declared sets | Counted per replicate (a size forms in a replicate when its pool holds at least that many features; `l1/pools.tsv`, and the workers' `formed.tsv`): proteomics C5 at size 100 formed in 10 of 15 replicates (4, 3 and 3 of 5 in cells A, B, D; the same under both models); transcriptomics C4 (a reported class) under the default model formed in 2 of 15 replicates at size 10 and in none at sizes 30 and 100, and under the model trained on corrected values in 15 of 15 at sizes 10 and 30 and in 14 of 15 at size 100 (4 of 5 in cell B); metabolomics C4 at size 20 formed in 14 of 15 replicates (4 of 5 in cell B; the same under both models). Every other class and size formed all its sets. To be redefined in a dated section of the declaration before the counted run (ticket 6.2): proposals in `declaration-draft.md`. *Corrected 2026-11-24: this row first gave transcriptomics C4 as "56 to 65 %" (a share pooled over models, factors and cells, which hid that the failures are almost all under the default model) and said every other class formed all its sets, which missed metabolomics C4 at size 20 in cell B.* |
 | Feature-level rates | computed for every arm on F_ind, F_ret and F_main, except metabolomics on F_main: the model takes every metabolomics feature (250, fewer than its 1,000 per data set), so "the clean complete features the model did not select" is empty there. To be stated in the declaration |
 
 C5's rate (`camera`, share of C5 sets with p at most 0.05) on these 5 replicates, as the L1 row asks (65 to 75 sets
@@ -75,3 +75,22 @@ proposed to be cut.
 Also due before the declaration (ticket section 11 and 20.1): the coordinator sees these seconds with KIT-191's added
 arms switched on (they were: `camera_floor` under arms 3, 2, 3o and D1, the permutation under arms 2 and D0), and the
 auditor re-checks the budget's re-derivation.
+
+## After the stop (2026-11-24)
+
+The coordinator ruled (DISPATCH-STATE, engineering): the re-split to 16 jobs of 125 replicates is accepted (S expected
+79.47 core-hours, ceiling 92.33); the ticket's ceiling stays 303.33 core-hours, so the one correction S' is limited to
+re-running affected jobs within 20.33 core-hours (305 job-minutes), and a whole repeat would be a stop to the owner.
+Ticket section 11, revision 1.5, has the re-derivation row by row. Two figures above are corrected there:
+
+- The ticket's expected total after the re-split is 192.02 core-hours, not 188.69: the figure above started from
+  140.35 and left out the run of the tests-only commit (R1a, 50 job-minutes), which revision 1.4 had already added
+  (143.68).
+- The medians above mix replicates run under four busy workers with replicates run under fewer. The lane deals five
+  replicates into the ranges 1, 2, 3 and 4 to 5, so the last replicates of a cell ran while fewer workers were busy.
+  Under four busy workers: cell A 110 to 117 s (replicates 1 to 4), cell B 110 to 118 s (1 to 4), cell D 120 to 133 s
+  (1 to 3). Under fewer: A 101 s, B 82 s, D 72 and 77 s. The budget's 120 s per replicate stays a fair expectation for
+  the whole (800 x 112.5 + 800 x 113.9 + 400 x 127.8 s = 64.5 core-hours of replicates against the 66.7 budgeted), but a
+  job holding only cell D replicates would run its last replicate close to the job's limit (31 x 127.8 s = 66.0 minutes
+  against 68.4 available before the last-start time); the job list in `declaration-draft.md` therefore gives every job
+  100 replicates of cell A or B and 25 of cell D.

@@ -1,12 +1,17 @@
 # KIT-184: outcome (running record; stopped at L1's stop rule)
 
-Ticket `tickets/kit/KIT-184.md` revision 1.4. Branch `kit-184-ruv-factors-in-integration`, from `v0.9-staging`
+Ticket `tickets/kit/KIT-184.md` revision 1.5. Branch `kit-184-ruv-factors-in-integration`, from `v0.9-staging`
 67d38df3 (KIT-183, KIT-187 and KIT-191 merged). All computation on GitHub-hosted runners; no R on the laptop.
 
 **State: stopped at a stop rule of ticket section 11.** The package part is built and passes its targeted runs. The
 simulation's lifecycle run (L1) passed every check but one: a replicate takes 111 to 120 seconds against the 70 at
 which the ticket stops and returns to the owner with a re-split (`lifecycle.md`). The simulation is therefore not
 declared and not counted, the texts still hold its placeholders, and the full suite has not been run.
+
+**After the stop (2026-11-24).** The coordinator accepted the re-split (16 jobs of 125 replicates), kept the ticket's
+ceiling at 303.33 core-hours and limited the one correction S' to the affected jobs within 20.33 core-hours (ticket
+section 11, revision 1.5). The declaration is still not committed and S not started: `declaration-draft.md` holds the
+declaration as it would be frozen and the four changes L1's formation counts force, and waits for an independent audit.
 
 ## What was run, at which commit, what was observed
 
@@ -109,4 +114,6 @@ under `skipped` would be the stricter reading).
 - The distance between the DA's stored factors and the removed ones on a declared design with missing values.
 - That the CRAN archive's ruv 0.9.7.1 tarball is the one the lock's library was installed from (G0).
 - The scorer's criteria tables on real counts: L1 exercised `score-k184.R` on 5 replicates per cell only.
+- The determinism comparison: the KIT-184 part of `score-k184.R` does not make it yet (found 2026-11-24; an instrument
+  gap to close before S, `declaration-draft.md` section 5).
 - Cell C (not run: KIT-183's outcome is O1).
