@@ -1,0 +1,5 @@
+config	shape	seeds	rows_failed	seeds_changed	seeds_with_call_change	max_abs_t_change	max_abs_logfc_change	rule_outcome
+groups_all_features	TMT	20	0	0	0	1.75495e-11	2.84217e-14	reported
+groups_all_features	LFQ	20	0	0	0	1.75495e-11	2.84217e-14	reported
+first_pass_nulls	TMT	20	0	0	0	1.75495e-11	2.84217e-14	reported
+first_pass_nulls	LFQ	20	0	0	0	1.75495e-11	2.84217e-14	reported

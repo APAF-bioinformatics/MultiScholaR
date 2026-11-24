@@ -176,3 +176,21 @@ collation; `out` = `docs/qa/workflow-execution/kit/kit-177/control`, `out_patter
 keys both sides hold), none `unexplained`; state tables: at `protein_s4_initial` every cell base minus head =
 log2(1 + 2^-head) to 1e-12, no other missing-value change; later tables identical in shape and identifiers. Only then
 the three oracles are committed (scripts.tsv `ok`, no `withheld.txt`). Anything else stops the ticket.
+
+**T1b, new designs, run 45290294513** (`t1b2/`; combined table `t1b.tsv`): `groups_all_features` and
+`first_pass_nulls` (gate on): 0 of 20 seeds change a call, k or the control share at any factor; largest change in t
+1.8e-11, in logFC 2.8e-14. With the legacy rows of R2, `t1b.tsv` is T1b's table: `scale` and both legacy RUV modes
+reach "own ticket" by the fixed rules; the new designs are unit-invariant on this fixture.
+
+**R4, run 45290288889** (head 32ead4fc, `R/` as c8fc140e, against base 55710a87; `gui-entry-control.tsv`,
+`control/verdict.tsv`, `control/gui-entry-steps.tsv`, `control/gui-entry-tables.tsv`; 21.0 job-minutes). Both child
+processes under C collation; `scripts.tsv` `ok`; no `withheld.txt`. Step 1 (frozen against base, KIT-180's re-frozen
+files): 0 rows on each lane. Step 2: 0 rows before `design`. Step 3: from `design` on, 96 (`prot_tmt`), 102
+(`prot_lfq`) and 102 (`prot_lfq_fragpipe`) rows, all `plain_log2 (KIT-177)` (288 `states` digests, 12 `artifacts`),
+0 `unexplained`; no output, tab status, history or notification differs. State tables, cell by cell: at
+`protein_s4_initial` every cell base minus head equals log2(1 + 1/v) to 1e-12 (0 violations, no zero turned missing,
+no other missing-value change); later tables of the same shape and identifiers, largest absolute difference 2.4e-4 to
+4.8e-4. The head record equals the file frozen from it. **Control passed**: the three oracles (source SHA 32ead4fc,
+written under C collation by `guiEntryExpectLane`) are committed to `tests/testdata/gui-entry/` (SHA-256 prefixes
+`prot_tmt` f35ae4853f91, `prot_lfq` 95553da3647a, `prot_lfq_fragpipe` dd1ed8e188d7, equal to the artifact's). Chain:
+this record follows KIT-180's (`kit-180/gui-entry-control.tsv`).
