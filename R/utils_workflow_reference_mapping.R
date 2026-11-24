@@ -9,6 +9,10 @@
 #   - Proteomics enrichment with the reference identifiers (8.3): the protein-group join (`attachReferenceMapping`),
 #     the reference's annotation table (`referenceAnnotationTable`), the 2 x 2 unmapped counts.
 
+#' The three names a proteomics enrichment run declares only when it uses the reference identifiers (8.3 item 5)
+#' @noRd
+referenceEnrichmentNames <- c("reference_mapping_sha256", "id_source", "go_table_sha256")
+
 #' Whether the reference mapping tool is switched on (option `MultiScholaR.reference_mapping`, default FALSE)
 #' @noRd
 referenceMappingEnabled <- function() isTRUE(getOption("MultiScholaR.reference_mapping", FALSE))

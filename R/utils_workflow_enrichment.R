@@ -906,6 +906,8 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         da_results <- attached$da_results
         reference <- list(stored = stored, counts = attached$counts,
             mapping_sha256 = stored$record$value[stored$record$field == "mapping_sha256"])
+        # The tab's 2 x 2 counts and the unmapped changed groups, per contrast (5.6); written only on this route.
+        workflow$enrichment_reference_mapping <- attached$counts
     }
     # KIT-175 (items 5, 5a): the annotation's problems are reported, and a run without annotation is refused before
     # any service is called and before the GO outcome step (D1, VAL-30; KIT-173 audit I04). The conditions of the
@@ -1130,8 +1132,11 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
     tryCatch({
         results <- portableWorkflowEnrichmentResults(results) # F107-05
         entry <- workflowOperationEntry(config$operation()$name)
+        # KIT-167: the reference identifiers' three values are recorded after the declaration's names when the run
+        # used them (a run without them records exactly what it did before), so that its replay checks them.
         setWorkflowStepProvenance(manager, entry$name, entry$default_variant,
-            intersect(entry$parameters, names(declared)), entry$declaration$fixed, values = declared)
+            c(intersect(entry$parameters, names(declared)), intersect(referenceEnrichmentNames, names(declared))),
+            entry$declaration$fixed, values = declared)
         saveDIAOwnerState(manager,
             state_name = config$state_name,
             s4_data_object = results,
@@ -1299,13 +1304,23 @@ replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, co
     workflow$contrasts_tbl <- contrasts
     workflow$tab_status <- list()
     run_paths <- utils::modifyList(as.list(paths), list(da_output_dir = staged$da_output_dir, pathway_dir = pathway_dir))
-    run <- runWorkflowEnrichment(workflow, config, manifest, list(selected_contrast = contrasts$friendly_names[[1L]],
+    run_parameters <- list(selected_contrast = contrasts$friendly_names[[1L]],
         organism_taxid = format(parameters$taxon_id, scientific = FALSE, trim = TRUE), up_cutoff = parameters$up_cutoff,
         down_cutoff = parameters$down_cutoff, q_cutoff = parameters$q_cutoff,
         correction_method = parameters$correction_method,
         enable_organism_filter = isTRUE(parameters$organism_filter_enabled),
         # KIT-173: a record made before parent terms, or without them, replays without them.
-        go_propagation = parameters$go_propagation %||% "none"), run_paths)
+        go_propagation = parameters$go_propagation %||% "none")
+    # KIT-167: a step recorded with the reference identifiers replays with them, the tool switched on for this step
+    # only; its recorded mapping and GO-table SHA-256 are then compared below like every declared value.
+    reference_ids <- identical(parameters$id_source, "reference")
+    if (reference_ids) run_parameters$id_source <- "reference"
+    if (reference_ids) {
+        previous <- options(MultiScholaR.reference_mapping = TRUE)
+        on.exit(options(previous), add = TRUE)
+    }
+    run <- runWorkflowEnrichment(workflow, config, manifest, run_parameters, run_paths)
+    if (reference_ids) options(previous)
     # The record holds each value through its JSON encoding; the produced values are compared in the same form.
     as_recorded <- function(value) decodeWorkflowRecordValue(jsonlite::fromJSON(jsonlite::toJSON(
         encodeWorkflowRecordValue(value), auto_unbox = TRUE, digits = I(17), null = "null", na = "null"),

@@ -121,7 +121,10 @@ omicEnrichSettingsColumn <- function(ns, config) {
           selected = "reference"),
         shiny::helpText(referenceMappingTexts$applicability),
         shiny::conditionalPanel(sprintf("input['%s'] == 'reference'", ns("id_source")),
-          shiny::helpText(referenceMappingTexts$organism_filter_not_needed))
+          shiny::helpText(referenceMappingTexts$organism_filter_not_needed),
+          shiny::h5("Mapped and unmapped features (after the last run)"),
+          shiny::tableOutput(ns("reference_mapping_counts")),
+          shiny::downloadButton(ns("download_unmapped_changed"), "Download unmapped changed features"))
       ),
 
       # Mixed species filtering checkbox, when the omic filters by organism
@@ -471,6 +474,8 @@ runOmicEnrichServer <- function(input, output, session, id, workflowData, experi
   shiny::observeEvent(input$run_enrichment_analysis,
     runOmicEnrichAnalysis(input, tab, workflowData, experimentPaths, config, ran))
   registerOmicEnrichResultOutputs(output, input, tab, workflowData, config)
+  # KIT-167: the 2 x 2 counts, the unmapped download and the taxon pre-fill, only when the group offers the choice.
+  if (!is.null(config$id_column$mapped)) registerReferenceMappingEnrichOutputs(input, output, session, workflowData)
   output$download_enrichment_results <- shiny::downloadHandler(
     filename = function() buildProtEnrichResultsDownloadFilename(input$selected_contrast),
     content = function(file) {

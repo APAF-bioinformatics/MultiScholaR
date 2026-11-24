@@ -34,6 +34,7 @@ referenceMappingTexts <- list(
     reference_mapping_download_unavailable = paste(
         "Downloading the current UniProt release needs the httr2 package, which is not installed. The shipped",
         "references work without it."),
+    reference_annotation_missing = "Choose the strain's genome annotation file (GFF3 or GTF) to match its genes.",
     reference_annotation_malformed = "The annotation file is not GFF3 or GTF: line %d does not have 9 tab-separated fields.",
     reference_annotation_no_protein_id = paste(
         "The annotation file names no protein for any coding sequence (no protein_id attribute), so genes cannot be",

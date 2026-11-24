@@ -240,10 +240,14 @@ test_that("the analysis record of a reference-identifier run names the three ref
     expect_identical(value("go_table_sha256"), readReferenceOrganisms()$go_sha256[1])
 })
 
+k167AsRecorded <- function(values) lapply(values, function(value) decodeWorkflowRecordValue(jsonlite::fromJSON(
+    jsonlite::toJSON(encodeWorkflowRecordValue(value), auto_unbox = TRUE, digits = I(17), null = "null", na = "null"),
+    simplifyVector = FALSE)))
+
 test_that("the replay passes the recorded identifier choice with the gate on and checks the reference values", {
     captured <- NULL
-    recorded <- list(taxon_id = "999999", up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "gSCS",
-        id_source = "reference", reference_mapping_sha256 = strrep("a", 64), go_table_sha256 = strrep("b", 64))
+    recorded <- k167AsRecorded(list(taxon_id = "999999", up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "gSCS",
+        id_source = "reference", reference_mapping_sha256 = strrep("a", 64), go_table_sha256 = strrep("b", 64)))
     produced <- recorded
     local_mocked_bindings(produceDIADaPublication = function(...) invisible(NULL),
         runWorkflowEnrichment = function(workflow, config, manifest, parameters, paths, ...) {
@@ -265,7 +269,8 @@ test_that("the replay passes the recorded identifier choice with the gate on and
 
 test_that("a run without the reference identifiers replays without the choice and the gate untouched", {
     captured <- NULL
-    recorded <- list(taxon_id = "999999", up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "gSCS")
+    recorded <- k167AsRecorded(list(taxon_id = "999999", up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05,
+        correction_method = "gSCS"))
     local_mocked_bindings(produceDIADaPublication = function(...) invisible(NULL),
         runWorkflowEnrichment = function(workflow, config, manifest, parameters, paths, ...) {
             captured <<- list(parameters = parameters, gate = referenceMappingEnabled())
