@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-193 target 3 paired test (split out of P0 by the coordinator): shipped GO propagation against the Lean oracle table, with its planted-defect case",
+  "label": "KIT-193 T3 pair test-kit193-pairs-go.R on kit-193-lean-proofs 8e94b260",
+  "package_commit": "8e94b2601b66e3cccc48c2750d8bbc3c30fff6c1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit193-pairs-go.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
