@@ -72,14 +72,12 @@ assertion, at its stated value, both omics; no test errored.
 - **A1, head.** test-kit196 passes 540, fails 0 (`r2-tests.tsv`). T1's rounding case was bit-identical (largest relative
   difference 0 in t, P.Value and the q-values; `r2-test-notes.txt`). T8 used seed 196001 on both commits. T9 (b) head equals
   the reference.
-- **A3 holds.** Every one of the 38 files is `same` base against head; test-kit196 `only-on-head`; test-kit128 `same`
-  (`r2-compare.tsv`). No `compare-error`, no `new-failure`. Files failing identically on both sides (stored references
+- **A3 holds.** Of the 38 files (section 9's scope at the branch point plus test-omics-norm-state-guards.R; listed in `r2-compare.tsv`), 37 are `same` base against head, test-kit196 is `only-on-head` and test-kit128 is `same`. No `compare-error`, no `new-failure`. Files failing identically on both sides (stored references
   recorded on the laptop): test-kit127 (1), test-kit129-run-path (6), test-omic-da-module (53), test-workflow-omics-declarations
   (22), test-workflow-operation-registry (2), test-workflow-saved-da (171).
 - **A4 holds.** R CMD check: 0 errors, 3 warnings, 3 notes on both sides, findings identical, none only on head
   (`r2-check-compare.txt`).
-- **A2 (ii) to (iv), S1 head side (`s1/r2-head/`).** (ii) every journey that completed on base has identical `da` and long
-  table digests on head: 316 of 316 rows (L), 300 of 300 (M). (iii) every journey that failed on base (L 46: 20 full stops and
+- **A2 (ii) to (iv), S1 head side (`s1/r2-head/`).** (ii) every journey that completed on base (158 L, 150 M: 308 journeys) has identical `da` and long table digests on head: 616 of 616 digest comparisons (316 L, 300 M). (iii) every journey that failed on base (L 46: 20 full stops and
   26 one-assay failures; M 54) completes on head; in each of its assays the tested rows' logFC, t, P.Value and q equal the
   contrast half on the DA input without the features without values, identical in all 92 (L) and 54 (M) assays (largest
   relative difference 0), and the rows with `AveExpr` missing are exactly the features without values in every contrast.
@@ -94,27 +92,30 @@ Head side, every journey and assay, per contrast: the reference (the journey's D
 halves without its zero-df features. No computation failed (1,020 rows).
 
 - Zero-df features occur in 130 of 408 L rows (up to 10) and 294 of 612 M rows (up to 12).
-- Over the features tested in both fits, the largest absolute change in P.Value is 0.087 (L) and 0.092 (M); the median of
-  the per-row maxima is 0.
+- Over the features tested in both fits, the largest absolute change in P.Value is 0.087 (L) and 0.092 (M). In the rows without a zero-df feature (278 of 408 L, 318 of 612 M) the two fits are the same and the change is 0. In the rows with one (130 L, 294 M), the median of the per-row largest change is 0.0086 (L) and 0.0099 (M); it exceeds 0.01 in 58 (L) and 147 (M) rows and 0.05 in 5 and 13.
 - q < 0.05 calls made only in the reference: 12 (L), 4 (M); only in the alternative: 16 (L), 2 (M); of 7,420 (L) and 1,515
   (M) reference calls. No zero-df feature was called in the reference.
 - (f) also contains the alternative's smaller q-value family; only (e) isolates limma's robust step. Nothing here is
-  decided; the figures go to KIT-188 and the owner.
+  decided here. **With the owner:** whether zero-df features (one value per observed group) should stay in limma's prior
+  estimation is the owner's decision before KIT-188 declares (audit S1; F3), on these figures.
 
 ### R3 (full suite; run 45358036892, base fe5c9273, head 6dcf593c)
 
 463 files: 462 `same`, test-kit196-da-no-value-features.R `only-on-head` (ok); no `new-failure`, `message-changed`,
 `count-changed`, timeout or crash (`r3-compare.tsv`). R CMD check: findings identical on both sides, none only on head
-(`r3-check-compare.txt`). 42 jobs, 1,205 job-minutes.
+(`r3-check-compare.txt`). 35 files fail identically on both sides (stored references, as in R2). 42 jobs, 1,205 job-minutes.
 
 ## Core-hours (job minutes x 4 / 60)
 
 | Row | Used | Ceiling |
 |---|---|---|
 | R1 (incl. three instrument runs) | 12.4 | 13.0 |
-| R2 (incl. the cancelled 21.2 and S1 repeated on both sides at KIT-194's base) | 58.6 | 52.0, plus R2b's S1 16.0 (the 6.4 condition, triggered) |
-| R3 (with check, covering R2b's tests) | 80.3 | 186.7 |
-| Total | 151.3 | 490.4 (251.7 without a correction); expected 96.2 |
+| R2 (the first send on the merge with ea93d948, cancelled, no result) | 21.2 | 52.0 |
+| R2b under 6.4, tests and check on the merge with KIT-194's staging (45336286628) | 18.6 | 36.0 |
+| R2b under 6.4, S1 both sides on KIT-194's base (four runs) | 18.8 | 32.0 (16.0 per part pair as 6.4 allows, both sides) |
+| R3 (with check) | 80.3 | 186.7 |
+| R2b on the merge with staging 241914cb or later (audit C3) | see below | 36.0 |
+| Total before the audit's R2b | 151.3 | 490.4 (251.7 without a correction); expected 96.2 |
 
 No correction pass was used.
 
@@ -168,6 +169,30 @@ fixed TRUE on every DA route including Skip (2.5 corrected in revision 1.2; KIT-
 - That replay of an old record whose DA failed for this cause now completes (by reading: replay re-runs the same contrast
   halves; not run).
 
+## Hand-offs
+
+- **KIT-201 (audit I04).** At its next revision, add the guard test: **T-196 (guard; TREAT with features without values;
+  passes on base and head).** `kit196Object(omic, scatter = TRUE)` (copied from `test-kit196-da-no-value-features.R`) through
+  `runLipidsDA` / `runMetabolitesDA` with `treat_lfc_cutoff = 0.5`: completes; `F1_empty` once per contrast with every
+  statistic NA and `AveExpr` NA; the tested rows equal the same call on the object without `F1_empty` (`expect_identical`).
+  And replace `KIT-201.md:683`'s "not tested here" with "tested by T-196".
+- **KIT-200 (audit I06).** Detection here is by row names (`rownames(cfit$coefficients)[is.na(cfit$Amean)]`); on a fit
+  without row names the index is NULL, nothing is removed and limma stops as before. Every app route sets row names, and the
+  roxygen requires them. KIT-200, which copies the form, should use a logical index (`empty <- is.na(cfit$Amean)`). Also the
+  class and text, the append form, I07 (bit for bit shown under the reference BLAS only) and the corrected NEWS wording.
+
+## Audit notes recorded (I07, I09 to I12)
+
+- I07: "bit for bit" is shown under the reference BLAS of the runs only (`libblas.so.3.10.0`).
+- I09: T7 starts below the module's button handler (`runOmicDaAnalysis`), whose checks do not depend on feature values;
+  bf5ed69f's added assertion (manifest errors as text) is the same claim.
+- I10: D3's "the failure channel adds the assay" holds for the orchestrators; in the app a full stop joins messages without
+  assay names (`R/utils_workflow_omics_declarations.R:1604`; F7).
+- I11: 122 added lines exceed R.md's 100-character limit, following the files' own idiom (~120); the four `man/*.Rd` are
+  hand-edited (the brief forbids `roxygen2::document()`), not regenerated.
+- I12 (with the owner): on the app route `features_without_values` reaches neither the manifest nor the record; the user sees
+  the rows and the "Not tested" count, which lumps them with features missing a compared group. A reporting candidate.
+
 ## What other tickets observed
 
 - KIT-188's lifecycle check 45334020028 on staging ea93d948 recorded one-assay DA failures as `no_da` in its lipid shape L12
@@ -180,7 +205,6 @@ fixed TRUE on every DA route including Skip (2.5 corrected in revision 1.2; KIT-
 - The managed path against the in-process path on the same object (see Inferred).
 - Replay of an old failed record (see Inferred).
 - The exported S4 `differentialAbundanceAnalysis` on lipid and metabolomics objects (unchanged; KIT-200).
-- TREAT (lfc > 0) with features without values: the removal precedes `treat`, which re-squeezes without trend; not tested
-  here (KIT-201).
+- TREAT (lfc > 0) with features without values: not tested here; KIT-201's guard T-196 tests it.
 - An assay of fewer than three features with one without values (the disclosed `B` change): not tested.
 - D6's figures decide nothing here.
