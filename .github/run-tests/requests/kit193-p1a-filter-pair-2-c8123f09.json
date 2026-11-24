@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-193 target 1 paired test, VAL-54 instrument re-run 1 of 3 of P1a (45316817535 timed out, no comparison failed): file split in two, same comparisons",
+  "label": "KIT-193 T1 pair (two files) on kit-193-lean-proofs c8123f09",
+  "package_commit": "c8123f09866883d40b11363267f024544bca3822",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit193-pairs-filter.R",
+    "test-kit193-pairs-filter-table.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
