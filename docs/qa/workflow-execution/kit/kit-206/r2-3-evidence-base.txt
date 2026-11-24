@@ -18,20 +18,20 @@ KIT-206 E11 export notes=[message 10] Filtered session data exported successfull
 ...KIT-206 E11 error=none new_archives=1 archive_states=protein_replicate_filtered latest_moved=TRUE
 KIT-206 E11 guard error=none new_archives=1 archive_states=correlation_filtered
 .KIT-206 E12 head=enrichment_completed class=EnrichmentResults previous_state=normalized
- native export needs component metadata; explicitly convert the legacy session first new_archives=0 archive_states= pendi
- saved table changed during read ruv_mode=NULL ruv_applied=NULL pending=TRUE then_correlation=session outputs are pending; retry export befor
- saved table changed during read class=saved_entity_corrupt pending=TRUE then_correlation=session outputs are pending; retry export before
- after Skip the export writes; on DIA with limpa after the RUV covariates it proceeds (guard) ('test-kit206-prot-norm-export-guard.R:319:5') - Unknown or uninitialised column: `core_util
- after Skip the export writes; on DIA with limpa after the RUV covariates it proceeds (guard) ('test-kit206-prot-norm-export-guard.R:319:5') - Unknown or uninitialised column: `core_util
- DIA with limpa, the tab restored after the RUV covariates, exports; also after the DA and an enrichment (guard) ('test-kit206-prot-norm-export-guard.R:434:5') - Unknown or uninitialise
- DIA with limpa, the tab restored after the RUV covariates, exports; also after the DA and an enrichment (guard) ('test-kit206-prot-norm-export-guard.R:434:5') - Unknown or uninitialise
-246:5'): KIT-206 E1: after 
-246:5'): KIT-206 E1: after 
-258:5'): KIT-206 E2: after 
-258:5'): KIT-206 E2: after 
-276:5'): KIT-206 E2b: S2, t
-276:5'): KIT-206 E2b: S2, t
-292:5'): KIT-206 E3: after 
-292:5'): KIT-206 E3: after 
-381:5'): KIT-206 E7: the S4
-382:5'): KIT-206 E7: the S
+KIT-206 E12 head=enrichment_completed notes=[error 10] Error exporting session: native export needs component metadata; explicitly convert the legacy session first new_archives=0 archive_states= pending=FALSE
+KIT-206 E13 radio notes=[error 10] Error exporting session: saved table changed during read ruv_mode=NULL ruv_applied=NULL pending=TRUE then_correlation=session outputs are pending; retry export before dependent actions
+.KIT-206 E13 missing notes=[error 10] Error exporting session: saved table changed during read class=saved_entity_corrupt pending=TRUE then_correlation=session outputs are pending; retry export before dependent actions
+1. KIT-206 E5: after Skip the export writes; on DIA with limpa after the RUV covariates it proceeds (guard) ('test-kit206-prot-norm-export-guard.R:319:5') - Unknown or uninitialised column: `core_utilisation`.
+2. KIT-206 E5: after Skip the export writes; on DIA with limpa after the RUV covariates it proceeds (guard) ('test-kit206-prot-norm-export-guard.R:319:5') - Unknown or uninitialised column: `core_utilisation`.
+3. KIT-206 E10: DIA with limpa, the tab restored after the RUV covariates, exports; also after the DA and an enrichment (guard) ('test-kit206-prot-norm-export-guard.R:434:5') - Unknown or uninitialised column: `core_utilisation`.
+4. KIT-206 E10: DIA with limpa, the tab restored after the RUV covariates, exports; also after the DA and an enrichment (guard) ('test-kit206-prot-norm-export-guard.R:434:5') - Unknown or uninitialised column: `core_utilisation`.
+── 1. Failure ('test-kit206-prot-norm-export-guard.R:246:5'): KIT-206 E1: after 
+── 2. Failure ('test-kit206-prot-norm-export-guard.R:246:5'): KIT-206 E1: after 
+── 3. Failure ('test-kit206-prot-norm-export-guard.R:258:5'): KIT-206 E2: after 
+── 4. Failure ('test-kit206-prot-norm-export-guard.R:258:5'): KIT-206 E2: after 
+── 5. Failure ('test-kit206-prot-norm-export-guard.R:276:5'): KIT-206 E2b: S2, t
+── 6. Failure ('test-kit206-prot-norm-export-guard.R:276:5'): KIT-206 E2b: S2, t
+── 7. Failure ('test-kit206-prot-norm-export-guard.R:292:5'): KIT-206 E3: after 
+── 8. Failure ('test-kit206-prot-norm-export-guard.R:292:5'): KIT-206 E3: after 
+── 9. Failure ('test-kit206-prot-norm-export-guard.R:381:5'): KIT-206 E7: the S4
+── 10. Failure ('test-kit206-prot-norm-export-guard.R:382:5'): KIT-206 E7: the S

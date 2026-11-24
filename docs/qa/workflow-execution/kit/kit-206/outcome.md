@@ -25,7 +25,8 @@ the library install step (no test ran there); `gh run rerun --failed` repeated i
 
 ## Observed
 
-- **Failing first (A1).** R1-2 at d268d860 (and the base side of R2-3, 334ff10b): the new file fails 27 expectations, 0 errors, all
+- **Failing first (A1).** R1-2 at d268d860 fails 28 expectations: the 27 below and E11's set-up check (`added` of length 1; the lazy
+  argument repaired in c3711e2f and fad0311d); the base side of R2-3 (334ff10b) fails exactly the 27, 0 errors, all
   in the failing-first list at the values the ticket states: E1, E2, E2b, E3 and E9's second part export successfully (archive
   current state `protein_replicate_filtered`, `protein_intensity_filtered`, `normalized`, `normalized`, `protein_replicate_filtered`;
   E2b's archive carries the first run's correlation result: `TRUE`); E7's S4 export is called with head `protein_replicate_filtered`
@@ -56,7 +57,7 @@ the library install step (no test ran there); `gh run rerun --failed` repeated i
 - **Check (A2).** R2: 0 ERROR, 3 WARNING, 3 NOTE on both sides; nothing only on head (`r2-check-compare.txt`).
 - **Full suite (A3).** R3 on the merge 75360c69: 464 files `same`, the new file `only-on-head` (90 passed, 0 failed); no
   `new-failure`, no `message-changed`. The files KIT-207's audit names for the second merge are `same`:
-  `test-kit207-summary-head-guard.R`, `test-integration-input-lipid-metab.R`, `test-prot-12-summary-module-contracts.R` (ok on both),
+  `test-kit207-summary-head-guard.R`, `test-integration-input-lipid-metab.R`, `test-prot-12-summary-module-contracts.R` (quarantined: no expectation runs),
   `test-omics-summary-core.R`, `test-omic-summary-module.R`, `test-gui-entry-proteomics.R` (identical stored-reference failures on
   both). `r3-full-compare.tsv`.
 - **A4.** NEWS under the one unreleased heading; ledger row `VAL-<merge>` after VAL-155; no `DESCRIPTION`, `NAMESPACE`, `man/`,
@@ -66,6 +67,8 @@ the library install step (no test ran there); `gh run rerun --failed` repeated i
 
 - The application's Summary "Save Workflow Arguments" shows "The session could not be saved: <text>" on a refusal, since the refresh's
   error reaches `summaryFailed` (read; E11 calls the refresh directly).
+- The peptide checkpoint's recorded inputs (search-engine report, IQ output) are now checked before its request; a missing one is
+  refused with part (b)'s text instead of failing in staging.
 - On the default path part (b) changes no archive member: the run's file equals the radio's, and the lanes (which capture archives as
   present only) are `same`.
 
@@ -93,7 +96,7 @@ branch drives a proteomics Save to that refusal.
 
 | # | Status | Evidence |
 |---|---|---|
-| A1 | met | R1-2 (`r1-2-failures.txt`); R2-3 `r2-3-compare.tsv`, `r2-3-failures-base.txt`, `r2-3-evidence-*.txt` |
+| A1 | met | R1-2 (`r1-2-failures.txt`); R2-3 `r2-3-compare.tsv`, `r2-3-failures-base.txt`, `r2-3-evidence-*.txt` (every log line holding `KIT-206` in the run's two logs of the new file, unaltered; regenerated in the correction pass after the first copies were cut) |
 | A2 | met | `r2-compare.tsv`, `r2-check-compare.txt`; the new file per R2-3 |
 | A3 | met | R3 45380286045 (attempt 2), `r3-full-compare.tsv` |
 | A4 | met | the branch diff; this file |
@@ -102,7 +105,15 @@ branch drives a proteomics Save to that refusal.
 
 - The running application (no browser): the Summary's notification text, a failed download's appearance.
 - A DIA-with-limpa archive reopened into a new owner (E10 restores within one owner).
-- The owned (non-native) export still records `ruv_mode`/`ruv_applied` from the radio (not the default route).
+- The owned (non-native) and in-memory exports still record the RUV mode, `ruv_applied` and the normalisation method from the tab's
+  inputs (`R/mod_prot_norm_session_helpers.R:136-138`); by reading they are not reached in the shipped application (the owner attaches
+  whenever its required packages are present). Plan candidate F4.
+- Directions not executed (implementation audit I08): the S4 download passing at a legitimate head with a reference owner (E7 tests
+  the refusal only); the result-class branch on the Summary's refresh at a stale head (S3, DA, enrichment, Save; E12 drives the export
+  only, where the base already fails, D1); the limpa exemption's refusal direction (a Revert from `ruv_covariates` to
+  `correlation_filtered`; refused by reading); NEWS's `covariates`/`correction`/`none` RUV-mode statement (the limpa owners are not
+  native, and the lanes record archives as present only); one Revert to `ruv_corrected` after a single RUV run (E3 tests the two-run
+  form).
 - That `validateProtDaFilteredSession` accepts `results_file` (read only; the lanes' DA load after export is `same`).
 - The S4 export inside a guarded diagnostic runner; Windows; real data.
 
@@ -112,7 +123,12 @@ branch drives a proteomics Save to that refusal.
   not the normalisation tab's last result (from the correlation filter, its Skip, or on DIA with limpa the RUV covariates step): a step
   was applied or reverted since that result was made, so the exported session would not describe the current table. Press "Run
   Normalization & RUV" again, apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export."
-- Part (b): "the file <name> that this export needs is missing from <folder>; run the step that writes it, then export again."
+- Part (b) (draft): "the file <name> that this export needs is missing from <folder>, or is a link or a folder; restore it, or run the
+  step that writes it, then export again." Shown after "Error exporting session: " and, in the Summary, after "The session could not be
+  saved: ", where "export again" should read "save again"; also shown for the peptide checkpoint's recorded inputs. (The shipped text
+  is still "the file <name> that this export needs is missing from <folder>; run the step that writes it, then export again.")
+- The Summary Save's pair of notices on any of the four named classes: "The session could not be saved: <text>" (error, persistent),
+  then "Study parameters saved with warnings" (warning, 5 s).
 - To align with KIT-194's export text (`omicNormGuardTexts()$export`) and KIT-207's Summary texts at the same pass.
 
 ## For the change report
@@ -140,7 +156,7 @@ branch drives a proteomics Save to that refusal.
 
 ## Budget
 
-Core-hours (job minutes x 4 / 60): R1 0.96, R1-2 0.93, R2 23.25, R2-2 1.91, R2-3 2.17, R3 79.24 (attempt 1 1,148.2 job-minutes with the
-lost shard's 8 minutes, attempt 2 40.4). Total 108.46 against the ticket's expected 86.8 and ceiling 449.4. Rows: R1 with its instrument
-run 1.89 of 4.0; R2 with its two instrument runs 27.33 of 36.0; R3 79.24 of 186.7. Instrument runs used: one of three on R1's item,
+Core-hours (job minutes x 4 / 60): R1 0.96, R1-2 0.93, R2 23.25, R2-2 1.91, R2-3 1.75, R3 79.24 (attempt 1 1,148.2 job-minutes with the
+lost shard's 8 minutes, attempt 2 40.4). Total 108.04 against the ticket's expected 86.8 and ceiling 449.4. Rows: R1 with its instrument
+run 1.89 of 4.0; R2 with its two instrument runs 26.91 of 36.0; R3 79.24 of 186.7. Instrument runs used: one of three on R1's item,
 two of three on R2's item (VAL-54).

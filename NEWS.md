@@ -24,9 +24,13 @@
    RDS', which runs only in a guarded diagnostic session, refuses in the same case. The session export now takes its
    results file and its statement of whether RUV was applied from the normalisation that was run, not from the
    current RUV setting; a missing file is reported plainly and no longer blocks the next steps until the application
-   is restarted. Exports made at the end of the normalisation tab, and projects reopened from them, are unchanged,
-   except that the session file now states the RUV mode of the run (on DIA with limpa, the RUV covariates step's mode
-   rather than the RUV setting shown) (KIT-206).
+   is restarted. A save refused this way also removes the proteomics input that the Integration tab reads from an
+   earlier save, as in the other omics. Exports made at the end of the normalisation tab, and projects reopened from
+   them, are unchanged, except that the session file now states the RUV mode of the run: on DIA with limpa the RUV
+   covariates step's mode, and 'none' where the chosen rule applied no RUV, rather than the RUV setting shown. In a
+   session file exported before this version, the 'RUV Mode' line of filtered_session_summary.txt is the setting shown
+   at export. The RUV the run applied is in the project's analysis_record.json (the normalisation step's ruv_applied)
+   and in the normalisation tab's RUV summary. No result, report or Methods text used that line (KIT-206).
 
  * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
    Pre-Normalization', 'Apply Correlation Filter', 'Skip Filtering & Proceed to DE', 'Export Normalized Data' and the

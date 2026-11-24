@@ -144,6 +144,12 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
             "integration_input_invalid"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
         }
+        # KIT-206 audit I02 (K061-3; as KIT-207 SD-5 (b)): the proteomics archive refresh refused a table that is not the
+        # normalisation tab's last result before the integration input was written; the omic's earlier input is removed.
+        if (inherits(error, "prot_norm_correlation_input_stale")) {
+            tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
+                error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
+        }
         basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
         if (!file.exists(basicParamsFile)) {
             writeLines(c("Study Parameters", "================", "", paste("Workflow Name:", label),

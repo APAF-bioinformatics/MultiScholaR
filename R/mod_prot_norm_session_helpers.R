@@ -33,6 +33,13 @@ assertProtNormExportHeadCurrent <- function(manager, result) {
       # A result (enrichment_completed): the table it was made from is judged.
       judged <- tryCatch(readComponentMetadata(manager, head)$previous_state,
         saved_entity_unsupported = function(e) NULL, saved_entity_corrupt = function(e) NULL)
+      # A result committed again on itself (a second enrichment run) names itself as its previous state; the table
+      # it was made from is then the state before it in the active history (KIT-206 audit I01).
+      if (identical(judged, manager$current_state)) {
+        history <- diaStateHistory(manager)
+        position <- match(judged, history)
+        judged <- if (!is.na(position) && position > 1L) history[[position - 1L]] else NULL
+      }
       if (!is.character(judged) || length(judged) != 1L || is.na(judged)) return(invisible(TRUE))
       head <- getDIAStateReference(manager, judged)
       if (is.null(head) || identical(head$entity_id, result$entity_id)) return(invisible(TRUE))
