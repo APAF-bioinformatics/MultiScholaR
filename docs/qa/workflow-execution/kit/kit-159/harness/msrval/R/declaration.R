@@ -65,6 +65,7 @@ valReadDeclaration <- function(path = NULL, text = NULL) {
         valAbort("release_commit and harness_tree must be 40 hexadecimal characters",
                  "val_spec_invalid")
     }
+    valCheckDeclarationSchema(decl)
     decl
 }
 
@@ -239,6 +240,7 @@ valCheckDeclaration <- function(repo, evidence_dir, stage, at = "HEAD", phase = 
                             as.character(unlist(decl$environment$extra_packages)))
     }
     valCheckDeclaredTables(repo, at, sd, decl, units)
+    if (length(units)) valCheckDeclarationSchema(decl, units)
     list(ok = TRUE, declaration = decl, declaration_commit = dc, at = at_commit,
          amended = amend[["label"]], declaration_diff = diff)
 }

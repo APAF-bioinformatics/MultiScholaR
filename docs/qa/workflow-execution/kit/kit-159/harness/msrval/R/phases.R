@@ -18,14 +18,19 @@ valTicketEnv <- function(code_files) {
 
 #' Run the ticket's preparation: `prepareInputs`, `buildTruth`, `featureKey` (7.8 step 5)
 #'
-#' Writes `universe.tsv` (the union of the truth tables' keys, assay `all`) into `work_dir` (it is
-#' feature-level and stays in the job) and hashes every prepared file.
+#' The key universe is built as 4.1 fixes it: every feature of the declared input role
+#' (`prepareInputs()$features`, a data frame `assay, feature_id`), mapped by the ticket's
+#' `featureKey(feature_id, arm)` with `arm = NA`; only features whose status is `ok` enter it, each
+#' with its own assay. `universe.tsv` (`assay, key`) is written into `work_dir` (it is
+#' feature-level and stays in the job); its SHA-256, its row count and the mapping's counts by
+#' status and reason go into provenance (`inputs.universe`). Every prepared file is hashed.
 #'
 #' @param env From [valTicketEnv()].
 #' @param data_dir The fetched inputs.
 #' @param work_dir The preparation's private folder.
 #' @return A list: `units` (per unit: `files`, `design`, `contrasts`, ...), `truth` (named list),
-#'   `universe`, `prepared` (path, sha256), `result_tables`.
+#'   `universe` (`assay`, `key`), `universe_counts` (`status`, `reason`, `n`), `universe_sha256`,
+#'   `features`, `prepared` (path, sha256), `result_tables`.
 #' @export
 valPrepare <- function(env, data_dir, work_dir) {
     for (fn in c("prepareInputs", "buildTruth", "featureKey")) {
@@ -38,29 +43,101 @@ valPrepare <- function(env, data_dir, work_dir) {
     if (!is.list(prep[["units"]]) || is.null(names(prep[["units"]]))) {
         valAbort("prepareInputs() must return a named list `units`", "val_spec_invalid")
     }
+    feats <- prep[["features"]]
+    if (!is.data.frame(feats) || !all(c("assay", "feature_id") %in% names(feats)) ||
+            nrow(feats) == 0L) {
+        valAbort(paste("prepareInputs() must return `features`, data.frame(assay, feature_id):",
+                       "every feature of the declared input role (4.1)"), "val_spec_invalid")
+    }
     truth <- env$buildTruth(data_dir)
     if (is.data.frame(truth)) truth <- list(primary = truth)
-    for (id in names(truth)) {
-        t1 <- truth[[id]]
-        if (!all(c("key", "class", "expected", "truth_status") %in% names(t1))) {
-            valAbort("truth table {id} lacks key, class, expected or truth_status",
-                     "val_truth_invalid")
-        }
-        if (anyDuplicated(t1$key)) {
-            valAbort("truth table {id} holds a key more than once", "val_truth_invalid")
-        }
-    }
-    keys <- unique(unlist(lapply(truth, function(t1) as.character(t1$key))))
-    universe <- data.frame(assay = "all", key = sort(keys, method = "radix"),
-                           stringsAsFactors = FALSE)
-    utils::write.table(universe, file.path(work_dir, "universe.tsv"), sep = "\t", quote = FALSE,
-                       row.names = FALSE)
+    for (id in names(truth)) valCheckTruth(truth[[id]], id)
+    uni <- valUniverse(env, feats)
+    universe_path <- file.path(work_dir, "universe.tsv")
+    utils::write.table(uni$universe, universe_path, sep = "\t", quote = FALSE, row.names = FALSE)
     files <- unique(unlist(lapply(prep[["units"]], function(u) unlist(u[["files"]]))))
     files <- files[file.exists(files)]
     prepared <- data.frame(path = files, sha256 = vapply(files, valSha256, character(1)),
                            stringsAsFactors = FALSE, row.names = NULL)
-    list(units = prep[["units"]], truth = truth, universe = universe, prepared = prepared,
+    list(units = prep[["units"]], truth = truth, universe = uni$universe,
+         universe_counts = uni$counts, universe_sha256 = valSha256(universe_path),
+         features = feats, prepared = prepared,
          result_tables = prep[["result_tables"]] %||% list())
+}
+
+#' A truth table's required columns and unique keys
+#' @noRd
+valCheckTruth <- function(t1, id) {
+    if (!is.data.frame(t1) || !all(c("key", "class", "expected", "truth_status") %in% names(t1))) {
+        valAbort("truth table {id} lacks key, class, expected or truth_status", "val_truth_invalid")
+    }
+    if (anyDuplicated(t1$key)) {
+        valAbort("truth table {id} holds a key more than once", "val_truth_invalid")
+    }
+    invisible(TRUE)
+}
+
+KEY_STATUSES <- c("ok", "unmapped", "ambiguous")
+
+#' The ticket's `featureKey(feature_id, arm)` under its contract (4.1)
+#'
+#' @param env The ticket's code environment.
+#' @param feature_id Feature identifiers.
+#' @param arm The arm id (`NA` when the universe is built).
+#' @return `data.frame(key, status, reason)`, one row per feature.
+#' @noRd
+valFeatureKeys <- function(env, feature_id, arm) {
+    fk <- env$featureKey(as.character(feature_id), arm)
+    if (!is.data.frame(fk) || !all(c("key", "status") %in% names(fk)) ||
+            nrow(fk) != length(feature_id)) {
+        valAbort(paste("featureKey(feature_id, arm) must return data.frame(key, status, reason),",
+                       "one row per feature (4.1)"), "val_spec_invalid")
+    }
+    status <- as.character(fk$status)
+    if (!all(status %in% KEY_STATUSES)) {
+        valAbort("featureKey() gave a status outside ok, unmapped and ambiguous",
+                 "val_spec_invalid")
+    }
+    reason <- if (is.null(fk[["reason"]])) rep(NA_character_, nrow(fk)) else
+        as.character(fk$reason)
+    data.frame(key = as.character(fk$key), status = status, reason = reason,
+               stringsAsFactors = FALSE)
+}
+
+#' Counts of a key mapping by status and reason
+#' @noRd
+valKeyCounts <- function(fk) {
+    if (nrow(fk) == 0L) {
+        return(data.frame(status = character(), reason = character(), n = integer(),
+                          stringsAsFactors = FALSE))
+    }
+    reason <- ifelse(is.na(fk$reason), "", fk$reason)
+    tab <- stats::aggregate(list(n = rep(1L, nrow(fk))),
+                            list(status = fk$status, reason = reason), sum)
+    tab <- tab[order(tab$status, tab$reason, method = "radix"), , drop = FALSE]
+    rownames(tab) <- NULL
+    tab
+}
+
+#' The key universe of the declared input role's features (4.1)
+#' @noRd
+valUniverse <- function(env, features) {
+    fk <- valFeatureKeys(env, features$feature_id, NA_character_)
+    ok <- fk$status == "ok" & !is.na(fk$key) & nzchar(fk$key)
+    u <- unique(data.frame(assay = as.character(features$assay)[ok], key = fk$key[ok],
+                           stringsAsFactors = FALSE))
+    u <- u[order(u$assay, u$key, method = "radix"), , drop = FALSE]
+    rownames(u) <- NULL
+    list(universe = u, counts = valKeyCounts(fk))
+}
+
+#' Rows of an arm's keyed table whose (assay, key) is `ok` and outside the universe
+#' @noRd
+valNotInUniverse <- function(tab, universe) {
+    u_assay <- universe$assay %||% rep("all", nrow(universe))
+    u <- paste(u_assay, universe$key, sep = "\r")
+    sum(tab$key_status == "ok" & !is.na(tab$key) &
+            !(paste(tab$assay, tab$key, sep = "\r") %in% u))
 }
 
 #' A declared data set and arm by id
@@ -184,7 +261,9 @@ valRunCell <- function(cell, ctx) {
                                        batch = arm[["batch"]]),
                         val_baseline_refused = function(e) valRefuseFrom(e, "baseline"))
         d <- res$da
-        valWriteDa(data.frame(feature_id = d$key, contrast = d$contrast, log2fc = d$estimate,
+        # The baseline's rows carry the assay its input belongs to (4.1, I02).
+        valWriteDa(data.frame(feature_id = d$key, assay = arm[["assay"]] %||% "all",
+                              contrast = d$contrast, log2fc = d$estimate,
                               p = d$p, s_own = d$s_own, call_statistic = d$call_statistic,
                               called_own = d$called_own, stringsAsFactors = FALSE), da_path)
         return(list(da = da_path))
@@ -234,7 +313,7 @@ valRunWorkflowCell <- function(cell, ctx, ds, arm, inputs, contrasts, cell_dir) 
     script <- valActionScript(cell$route, assays = inputs[["assays"]],
                               import_tool = inputs[["import_tool"]],
                               import_values = inputs[["import_values"]] %||% list(),
-                              contrasts = pairs)
+                              contrasts = pairs, ruv = valArmRuvRun(arm_obj))
     forced <- arm[["forced"]] %||% list()
     is_option <- vapply(forced, function(f) {
         grepl("^(MultiScholaR|multischolar)\\.", f[["setting"]])
@@ -283,7 +362,8 @@ valRunWorkflowCell <- function(cell, ctx, ds, arm, inputs, contrasts, cell_dir) 
         stop(sprintf("did_not_complete (%s)", res$reason %||% res$exit), call. = FALSE)
     }
     list(da = res$tables[["da"]], tables = res$tables, ledger = res$ledger_path,
-         fallback = res$fallback, options_at_start = res$options_at_start)
+         fallback = res$fallback, options_at_start = res$options_at_start,
+         qvalue_fallback = res$qvalue_fallback, hook = res$hook)
 }
 
 #' The kernel identity gate before a phase's kernel cells (7.5; A14, A30)
@@ -362,14 +442,28 @@ valMetricFunction <- function(name, env) {
 #' @export
 valUnitMetrics <- function(decl, dataset, unit, da, truth, universe, env, blind_seed = NULL) {
     arms_tab <- valArmTables(da, env)
+    ds <- valDeclDataset(decl, dataset)
+    expected <- ds[["expected_not_in_universe"]] %||% list()
+    outside <- vapply(arms_tab, function(t1) valNotInUniverse(t1, universe), integer(1))
+    for (a in names(outside)) {
+        n_out <- outside[[a]]
+        want <- expected[[a]]
+        if (n_out > 0L && (is.null(want) || !identical(as.integer(want), n_out))) {
+            valAbort(paste("arm {a} of unit {unit}: {n_out} rows outside the key universe; an",
+                           "instrument stop (declare expected_not_in_universe to admit them)"),
+                     "val_spec_invalid")
+        }
+    }
     rows <- list()
     for (m in decl[["metrics"]]) {
         tid <- m[["truth"]] %||% "primary"
         tr <- truth[[tid]]
+        if (is.null(tr)) valAbort("metric {m$id}: no truth table {tid}", "val_spec_invalid")
         if (!is.null(blind_seed)) tr <- valBlindTruth(tr, as.integer(blind_seed))
         tr <- tr[, c("key", "class", "expected", "truth_status")]
         fn <- valMetricFunction(m[["function"]], env)
         mtype <- if (identical(m[["class"]], "accuracy")) "accuracy" else "detection"
+        input <- m[["metric_input"]] %||% "scored"
         for (cmp in m[["comparisons"]]) {
             cmp_arms <- unlist(cmp)
             present <- cmp_arms[cmp_arms %in% names(arms_tab)]
@@ -384,8 +478,21 @@ valUnitMetrics <- function(decl, dataset, unit, da, truth, universe, env, blind_
                     status <- "arm_not_completed"
                     if (!is.null(sv)) {
                         args <- m[["args"]] %||% list()
-                        if ("call_rule" %in% names(formals(fn))) args$call_rule <- m[["call_rule"]]
-                        res <- do.call(fn, c(list(sv[sv$arm == a, , drop = FALSE]), args))
+                        rows_a <- sv[sv$arm == a, , drop = FALSE]
+                        first <- switch(input,
+                                        scored = rows_a,
+                                        confusion = valConfusion(rows_a, call_rule =
+                                                                     m[["call_rule"]] %||% "own"),
+                                        matrix = valCellMatrix(file.path(dirname(da[[a]]),
+                                                                         "matrix.tsv")))
+                        if (input == "scored" && "call_rule" %in% names(formals(fn))) {
+                            args$call_rule <- m[["call_rule"]]
+                        }
+                        if (input == "matrix" && is.null(first)) {
+                            res <- list(value = NA_real_, status = "no_matrix")
+                        } else {
+                            res <- do.call(fn, c(list(first), args))
+                        }
                         value <- if (is.list(res)) as.numeric(res[["value"]]) else as.numeric(res)
                         status <- if (is.list(res)) res[["status"]] %||% "ok" else "ok"
                     }
@@ -407,50 +514,83 @@ valUnitMetrics <- function(decl, dataset, unit, da, truth, universe, env, blind_
             }
         }
     }
-    if (length(rows) == 0L) {
-        return(as.data.frame(stats::setNames(replicate(length(EVIDENCE_COLUMNS[["metrics.tsv"]]),
-                                                       character(), simplify = FALSE),
-                                             EVIDENCE_COLUMNS[["metrics.tsv"]])))
+    out <- if (length(rows) == 0L) {
+        as.data.frame(stats::setNames(replicate(length(EVIDENCE_COLUMNS[["metrics.tsv"]]),
+                                                character(), simplify = FALSE),
+                                      EVIDENCE_COLUMNS[["metrics.tsv"]]))
+    } else {
+        do.call(rbind, rows)
     }
-    do.call(rbind, rows)
+    kc <- lapply(names(arms_tab), function(a) {
+        k <- attr(arms_tab[[a]], "key_counts")
+        if (!is.null(k) && nrow(k)) cbind(data.frame(unit = unit, arm = a), k)
+    })
+    attr(out, "key_counts") <- do.call(rbind, kc)
+    attr(out, "not_in_universe") <- if (length(outside)) {
+        data.frame(unit = unit, arm = names(outside), n = unname(outside))
+    }
+    out
+}
+
+#' An arm's matrix (`matrix.tsv` of its cell) as a numeric matrix, or `NULL`
+#' @noRd
+valCellMatrix <- function(path) {
+    if (!is.character(path) || !file.exists(path)) return(NULL)
+    x <- utils::read.delim(path, check.names = FALSE, stringsAsFactors = FALSE)
+    num <- vapply(x, is.numeric, logical(1)) & !names(x) %in% c("feature_id", "assay")
+    out <- as.matrix(x[, num, drop = FALSE])
+    rownames(out) <- paste(x$assay, x$feature_id, sep = ":")
+    out
 }
 
 #' Run-level intervals and classification over the units (7.8 step 8; 4.4 to 4.7)
 #'
 #' Per metric, comparison and view: the per-unit differences (two arms) or values (one arm against
 #' the declared `fixed`), then the declared method: `jackknife` over the `full` and `deletion`
-#' units, or `paired_t` / `exact_median` over `independent` and `draw` units with the refusal rule
-#' ([valRefusalFill()]) when units are missing. In phase `lifecycle` the outcome is `blinded`.
-#' Compound members of each primary family are classified after their components.
+#' units, or `paired_t`, `exact_median` or `clopper_pearson` over `independent` and `draw` units
+#' with the refusal rule ([valRefusalFill()]) for one-arm and two-arm comparisons alike. A unit is
+#' refused only when a cell of the comparison's arms on it is not `completed` (`cells`); a completed
+#' unit whose metric is NA for a data reason is dropped and counted in `flags` (`data_na=<k>`), its
+#' reason in `metrics.tsv`'s `status`. A jackknife whose `full` or `deletion` unit is refused is
+#' `not_evaluable`. Statuses go into `flags` (`not_evaluable`, `refusal_substitute_required`,
+#' `n_refused=<k>`); a refused classification is recorded in `regime` and never aborts the run.
+#'
+#' The widening (4.4, A38; O8 ruled in VAL-109): a jackknife interval (forms (ii), (iii)) is
+#' widened to the `full` unit's within-run interval of the same view; over independent units each
+#' unit's within-run interval is reported in `flags` beside the verdict, without widening.
+#'
+#' A metric with `family_adjustment` (`"bonferroni"`, or `list(method = "bonferroni", m = <m>)`)
+#' is also classified at 1 - 0.05/m (m: the declared count, else the metric's comparisons) into
+#' `outcome_family` (4.6), the only outcome that may feed M22. Compound members of each primary
+#' family are classified after their components; their family is written in `flags`.
 #'
 #' @param decl The declaration.
 #' @param metrics Per-unit rows (`unit`, `metric`, `arm`, `view`, `truth_id`, `value`).
 #' @param units The unit table.
 #' @param regimes The regime table for the classifier (default the harness's).
 #' @param phase The phase.
-#' @param within The run's within-run rows ([valWithinRunRows()]): the run-level interval is widened
-#'   to them bound by bound (4.4, A38; mandatory below 6 units), and a metric whose method is
+#' @param within The run's within-run rows ([valWithinRunRows()]); a metric whose method is
 #'   `bootstrap_within_run` is classified on them, one row per unit.
-#' @return Rows in the columns of `comparisons.tsv`.
+#' @param cells The cells' exits (`unit`, `arm`, `exit`), or `NULL` (then a non-finite value is
+#'   taken as a refused unit).
+#' @return Rows in the columns of `comparisons.tsv`, with attribute `verdicts`: per classified
+#'   component and member its regime, measured coverage, Monte Carlo SE, statistic and family (I05).
 #' @export
-valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted", within = NULL) {
+valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted", within = NULL,
+                        cells = NULL) {
     units <- valUnits(units)
     blind <- identical(phase, "lifecycle")
     rows <- list()
     outcomes <- list()
+    verdicts <- list()
+    fam <- valFamilyOfComponents(decl)
     for (m in decl[["metrics"]]) {
-        iv_spec <- m[["interval"]] %||% list()
-        method <- iv_spec[["method"]] %||% "paired_t"
-        hib <- isTRUE(m[["higher_is_better"]])
+        method <- (m[["interval"]] %||% list())[["method"]] %||% "paired_t"
+        conf <- m[["conf"]] %||% 0.95
         for (cmp in m[["comparisons"]]) {
             cmp_arms <- unlist(cmp)
             for (v in unlist(m[["views"]])) {
                 vk <- valViewKey(v, cmp_arms)
-                value_of <- function(a) {
-                    r <- metrics[metrics$metric == m[["id"]] & metrics$arm == a &
-                                     metrics$view %in% c(vk, v), , drop = FALSE]
-                    stats::setNames(as.numeric(r$value), r$unit)[units$unit]
-                }
                 component <- paste0(m[["id"]], ":", paste(cmp_arms, collapse = "-"))
                 if (identical(method, "bootstrap_within_run")) {
                     got <- valClassifyWithin(m, cmp_arms, vk, within, regimes, blind)
@@ -458,88 +598,32 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted",
                     outcomes[[component]] <- got$outcome
                     next
                 }
-                d <- value_of(cmp_arms[[1L]])
-                if (length(cmp_arms) == 2L) d <- d - value_of(cmp_arms[[2L]])
-                names(d) <- units$unit
-                rf <- NULL
-                if (identical(method, "jackknife")) {
-                    full <- units$unit[units$unit_role == "full"]
-                    del <- units$unit[units$unit_role == "deletion"]
-                    n_ref <- sum(!is.finite(d[c(full, del)]))
-                    iv <- valJackknife(full = unname(d[full][1L]), deletions = unname(d[del]),
-                                       conf = m[["conf"]] %||% 0.95,
-                                       form = iv_spec[["form"]] %||% "unit",
-                                       critical = iv_spec[["critical"]],
-                                       transform = iv_spec[["transform"]], margin = m[["margin"]],
-                                       class = m[["class"]] %||% NA_character_,
-                                       unequal_deletion = any(units$unequal_deletion %in%
-                                                                  c("TRUE", TRUE)),
-                                       design = iv_spec[["design"]] %||% NA_character_)
-                } else if (identical(method, "clopper_pearson")) {
-                    if (length(cmp_arms) != 1L) {
-                        valAbort("clopper_pearson is a one-arm share over units (against `fixed`)",
+                one <- valLevelOne(decl, m, cmp_arms, v, vk, metrics, units, cells, regimes,
+                                   blind, conf, within)
+                cl <- one$cl
+                flags <- one$flags
+                outcome_family <- NA_character_
+                adj <- m[["family_adjustment"]]
+                if (!blind && !is.null(adj)) {
+                    fm <- as.integer(if (is.list(adj)) adj[["m"]] else length(m[["comparisons"]]))
+                    adj_method <- if (is.list(adj)) adj[["method"]] else adj
+                    if (!identical(adj_method, "bonferroni") || length(fm) != 1L || fm < 1L) {
+                        valAbort("family_adjustment must be bonferroni with m >= 1",
                                  "val_spec_invalid")
                     }
-                    ind <- units$unit[units$unit_role %in% c("independent", "draw")]
-                    dd <- unname(d[ind])
-                    n_ref <- sum(!is.finite(dd))
-                    ok <- dd[is.finite(dd)]
-                    if (!all(ok %in% c(0, 1))) {
-                        valAbort("clopper_pearson needs per-unit values 0 or 1", "val_spec_invalid")
-                    }
-                    draw <- all(units$unit_role[units$unit %in% ind] == "draw")
-                    iv <- valInterval(as.integer(sum(ok)), method = "clopper_pearson",
-                                      n = length(ok), conf = m[["conf"]] %||% 0.95,
-                                      unit_role = if (draw) "draw" else "independent",
-                                      class = m[["class"]] %||% NA_character_)
-                } else {
-                    role <- units$unit_role
-                    ind <- units$unit[role %in% c("independent", "draw")]
-                    dd <- unname(d[ind])
-                    n_ref <- sum(!is.finite(dd))
-                    unit_role <- if (all(role[role %in% c("independent", "draw")] == "draw")) {
-                        "draw"
-                    } else {
-                        "independent"
-                    }
-                    if (!blind && n_ref > 0L && length(cmp_arms) == 2L) {
-                        rf <- valRefusalFill(dd, tolerance = as.integer(
-                            decl[["refusal_tolerance"]][[m[["id"]]]] %||% 0L),  # nolint
-                            higher_is_better = hib, margin = m[["margin"]], method = method,  # nolint
-                            conf = m[["conf"]] %||% 0.95, regimes = regimes,
-                            accept_flagged = iv_spec[["accept_flagged"]])
-                        iv <- rf$interval_dropped %||%
-                            valNewInterval(NA_real_, NA_real_, method, length(dd) - n_ref,
-                                           m[["conf"]] %||% 0.95, status = rf$status)
-                    } else {
-                        iv <- valInterval(dd[is.finite(dd)], method = method,
-                                          conf = m[["conf"]] %||% 0.95, unit_role = unit_role,
-                                          class = m[["class"]] %||% NA_character_)
-                    }
-                }
-                if (length(cmp_arms) == 2L && !is.null(within) && is.null(rf)) {
-                    iv <- valWidenFromRequests(iv, within, cmp_arms[[1L]], cmp_arms[[2L]],
-                                               m[["id"]], widen = m[["widen_to_within_run"]])
-                }
-                cl <- list(outcome = "blinded", no_worse = NA, regime = NA_character_)
-                if (!blind) {
-                    cl <- if (!is.null(rf)) {
-                        list(outcome = rf$outcome %||% rf$status, no_worse = rf$no_worse,
-                             regime = NA_character_)
-                    } else {
-                        tryCatch(valClassify(iv, m[["margin"]], hib, fixed = m[["fixed"]],
-                                             view = v,
-                                             feature_interval_decides = isTRUE(
-                                                 m[["feature_interval_decides"]]),  # nolint
-                                             regimes = regimes,
-                                             accept_flagged = iv_spec[["accept_flagged"]]),
-                                 val_spec_invalid = function(e) {  # nolint
-                                     list(outcome = NA_character_, no_worse = NA,
-                                          regime = paste("refused:", conditionMessage(e)))
-                                 })  # nolint
+                    conf_adj <- 1 - 0.05 / fm
+                    adj_one <- valLevelOne(decl, m, cmp_arms, v, vk, metrics, units, cells,
+                                           regimes, blind, conf_adj, within = NULL)
+                    outcome_family <- adj_one$cl$outcome
+                    flags <- c(flags, sprintf("family_adjustment=bonferroni(m=%d;level=%s)", fm,
+                                              format(round(conf_adj, 6))))
+                    if (!is.na(adj_one$cl$regime %||% NA) &&
+                            startsWith(adj_one$cl$regime, "refused")) {
+                        flags <- c(flags, "family_level_refused")
                     }
                 }
                 outcomes[[component]] <- cl
+                iv <- one$iv
                 rows[[length(rows) + 1L]] <- data.frame(
                     arm = cmp_arms[[1L]],  # nolint
                     comparator = if (length(cmp_arms) == 2L) cmp_arms[[2L]] else "fixed",
@@ -548,39 +632,240 @@ valRunLevel <- function(decl, metrics, units, regimes = NULL, phase = "counted",
                     diff = iv[["estimate"]] %||% NA_real_, method = method,
                     scope = iv[["scope"]] %||% NA_character_, ci_low = iv[["ci_low"]],
                     ci_high = iv[["ci_high"]], margin = m[["margin"]] %||% NA_real_,
-                    conf = m[["conf"]] %||% 0.95, outcome = cl$outcome, no_worse = cl$no_worse,
-                    outcome_family = NA_character_, n_refused = as.integer(n_ref),
+                    conf = conf, outcome = cl$outcome, no_worse = cl$no_worse,
+                    outcome_family = outcome_family, n_refused = as.integer(one$n_ref),
                     regime = cl$regime %||% NA_character_,
-                    flags = paste(iv[["flags"]] %||% character(), collapse = ","),
+                    flags = paste(unique(flags), collapse = ","),
                     member = NA_character_, component = component, not_sensitive = NA,
                     amended = NA_character_, headline = isTRUE(m[["headline"]]), blinded = blind,
                     stringsAsFactors = FALSE)
+                verdicts[[length(verdicts) + 1L]] <- valVerdictRow(
+                    component, NA_character_, m[["id"]], cmp_arms, vk, cl, conf,
+                    fam$family[component] %||% NA_character_, decl)
             }
         }
     }
     if (!blind) {
-        for (fam in names(decl[["primary_family"]])) {
-            members <- decl[["primary_family"]][[fam]][["members"]]
+        for (fam_name in names(decl[["primary_family"]])) {
+            members <- decl[["primary_family"]][[fam_name]][["members"]]
             for (nm in names(members)) {
                 mem <- members[[nm]]
                 mem$all_of <- unlist(mem$all_of)
                 res <- valClassifyMember(mem, outcomes)
+                flags <- c(res$guard_text %||% character(), paste0("family=", fam_name),
+                           if (length(res$missing)) {
+                               c("not_evaluable",
+                                 paste0("no_verdict=", paste(res$missing, collapse = "+")))
+                           })
                 rows[[length(rows) + 1L]] <- data.frame(
                     arm = nm, comparator = NA_character_, truth_id = NA_character_,  # nolint
                     metric = NA_character_, view = NA_character_, call_rule = NA_character_,
                     diff = NA_real_, method = NA_character_, scope = NA_character_,
                     ci_low = NA_real_, ci_high = NA_real_, margin = NA_real_, conf = NA_real_,
-                    outcome = res$outcome, no_worse = res$no_worse, outcome_family = fam,
-                    n_refused = NA_integer_, regime = NA_character_,
-                    flags = paste(res$guard_text %||% character(), collapse = "; "),
+                    outcome = res$outcome, no_worse = res$no_worse,
+                    outcome_family = NA_character_, n_refused = NA_integer_,
+                    regime = NA_character_, flags = paste(flags, collapse = "; "),
                     member = nm, component = NA_character_, not_sensitive = NA,
                     amended = NA_character_, headline = FALSE, blinded = FALSE,
                     stringsAsFactors = FALSE)
+                verdicts[[length(verdicts) + 1L]] <- valVerdictRow(
+                    NA_character_, nm, NA_character_, character(), NA_character_,
+                    list(outcome = res$outcome), NA_real_, fam_name, decl)
             }
         }
     }
     out <- do.call(rbind, rows)
-    out[, EVIDENCE_COLUMNS[["comparisons.tsv"]]]
+    out <- out[, EVIDENCE_COLUMNS[["comparisons.tsv"]]]
+    attr(out, "verdicts") <- if (length(verdicts)) do.call(rbind, verdicts)
+    out
+}
+
+#' Components of each primary family's members: `family` (component -> family) and `m`
+#' @noRd
+valFamilyOfComponents <- function(decl) {
+    family <- character()
+    m <- integer()
+    for (f in names(decl[["primary_family"]])) {
+        pf <- decl[["primary_family"]][[f]]
+        comps <- unlist(lapply(pf[["members"]], function(mem) {
+            c(unlist(mem[["all_of"]]),
+              vapply(mem[["guards"]] %||% list(), function(g) g[["component"]], character(1)))
+        }))
+        family[comps] <- f
+        m[[f]] <- as.integer(pf[["m"]] %||% length(pf[["members"]]))
+    }
+    list(family = family, m = m)
+}
+
+#' One row of the verdict side table (I05)
+#' @noRd
+valVerdictRow <- function(component, member, metric, cmp_arms, view, cl, conf, family, decl) {
+    fm <- if (is.na(family)) NA_integer_ else
+        as.integer(decl[["primary_family"]][[family]][["m"]] %||%
+                       length(decl[["primary_family"]][[family]][["members"]]))
+    data.frame(component = component, member = member, metric = metric,
+               arm = if (length(cmp_arms)) cmp_arms[[1L]] else member,
+               comparator = if (length(cmp_arms) == 2L) cmp_arms[[2L]] else
+                   if (length(cmp_arms) == 1L) "fixed" else NA_character_,
+               view = view, outcome = cl$outcome %||% NA_character_, conf = conf,
+               regime = cl$regime %||% NA_character_,
+               regime_status = cl$regime_status %||% NA_character_,
+               coverage = as.numeric(cl$coverage %||% NA_real_),
+               mc_se = as.numeric(cl$mc_se %||% NA_real_),
+               nsim = as.numeric(cl$nsim %||% NA_real_),
+               statistic = as.character(cl$statistic %||% NA_character_),
+               coverage_min = as.numeric(cl$coverage_min %||% NA_real_),
+               miss_twice_nominal = isTRUE(cl$miss_twice_nominal),
+               family = family, m = fm, stringsAsFactors = FALSE)
+}
+
+#' Units refused for a comparison: a cell of one of its arms on the unit is not `completed`
+#' @noRd
+valRefusedUnits <- function(cells, cmp_arms, unit_ids, d) {
+    if (is.null(cells)) return(stats::setNames(!is.finite(d), unit_ids))
+    out <- vapply(unit_ids, function(u) {
+        ex <- cells$exit[cells$unit == u & cells$arm %in% cmp_arms]
+        length(ex) < length(cmp_arms) || any(ex != "completed")
+    }, logical(1))
+    stats::setNames(out, unit_ids)
+}
+
+#' An interval over per-unit values by a run-level method
+#' @noRd
+valLevelInterval <- function(values, method, conf, unit_role, class) {
+    if (identical(method, "clopper_pearson")) {
+        if (length(values) == 0L) {
+            return(valNewInterval(NA_real_, NA_real_, method, 0L, conf, status = "too_few_units"))
+        }
+        if (!all(values %in% c(0, 1))) {
+            valAbort("clopper_pearson needs per-unit values 0 or 1", "val_spec_invalid")
+        }
+        return(valInterval(as.integer(sum(values)), method = "clopper_pearson",
+                           n = length(values), conf = conf, unit_role = unit_role, class = class))
+    }
+    valInterval(values, method = method, conf = conf, unit_role = unit_role, class = class)
+}
+
+#' The interval, flags and classification of one comparison and view at one level
+#' @noRd
+valLevelOne <- function(decl, m, cmp_arms, v, vk, metrics, units, cells, regimes, blind, conf,
+                        within) {
+    iv_spec <- m[["interval"]] %||% list()
+    method <- iv_spec[["method"]] %||% "paired_t"
+    hib <- isTRUE(m[["higher_is_better"]])
+    cls <- m[["class"]] %||% NA_character_
+    value_of <- function(a) {
+        r <- metrics[metrics$metric == m[["id"]] & metrics$arm == a &
+                         metrics$view %in% c(vk, v), , drop = FALSE]
+        stats::setNames(as.numeric(r$value), r$unit)[units$unit]
+    }
+    d <- value_of(cmp_arms[[1L]])
+    if (length(cmp_arms) == 2L) d <- d - value_of(cmp_arms[[2L]])
+    names(d) <- units$unit
+    refused_u <- valRefusedUnits(cells, cmp_arms, units$unit, d)
+    data_na <- !refused_u & !is.finite(d)
+    flags <- if (any(data_na)) sprintf("data_na=%d", sum(data_na)) else character()
+    rf <- NULL
+    withheld <- NULL
+    classify <- function(iv) {
+        tryCatch(valClassify(iv, m[["margin"]], hib, fixed = m[["fixed"]], view = v,
+                             feature_interval_decides = isTRUE(m[["feature_interval_decides"]]),
+                             regimes = regimes, accept_flagged = iv_spec[["accept_flagged"]]),
+                 val_spec_invalid = function(e) {
+                     list(outcome = NA_character_, no_worse = NA,
+                          regime = paste("refused:", conditionMessage(e)))
+                 })
+    }
+    if (identical(method, "jackknife")) {
+        full <- units$unit[units$unit_role == "full"]
+        del <- units$unit[units$unit_role == "deletion"]
+        n_ref <- sum(refused_u[c(full, del)])
+        iv <- valJackknife(full = unname(d[full][1L]), deletions = unname(d[del]), conf = conf,
+                           form = iv_spec[["form"]] %||% "unit", critical = iv_spec[["critical"]],
+                           transform = iv_spec[["transform"]], margin = m[["margin"]],
+                           class = cls,
+                           unequal_deletion = any(units$unequal_deletion %in% c("TRUE", TRUE)),
+                           design = iv_spec[["design"]] %||% NA_character_)
+        if (n_ref > 0L) {
+            # 4.7: a refused full or deletion run leaves the jackknife not evaluable; the status
+            # `undefined_deletion` is kept for a statistic undefined on completed data.
+            iv$status <- "not_evaluable"
+            iv$ci_low <- NA_real_
+            iv$ci_high <- NA_real_
+            flags <- c(flags, "not_evaluable", sprintf("n_refused=%d", n_ref))
+        }
+    } else {
+        if (identical(method, "clopper_pearson") && length(cmp_arms) != 1L) {
+            valAbort("clopper_pearson is a one-arm share over units (against `fixed`)",
+                     "val_spec_invalid")
+        }
+        role <- units$unit_role
+        ind <- units$unit[role %in% c("independent", "draw")]
+        ind_roles <- role[role %in% c("independent", "draw")]
+        unit_role <- if (length(ind_roles) && all(ind_roles == "draw")) "draw" else "independent"
+        keep <- ind[!data_na[ind]]
+        dd <- unname(d[keep])
+        dd[refused_u[keep]] <- NA_real_
+        n_ref <- sum(refused_u[keep])
+        if (!blind && n_ref > 0L) {
+            rf <- valRefusalFill(dd, tolerance = as.integer(
+                decl[["refusal_tolerance"]][[m[["id"]]]] %||% 0L),  # nolint
+                higher_is_better = hib, margin = m[["margin"]], method = method, conf = conf,
+                regimes = regimes, accept_flagged = iv_spec[["accept_flagged"]],
+                fixed = m[["fixed"]], unit_role = unit_role, class = cls, view = v)
+            iv <- rf$interval_dropped %||%
+                valNewInterval(NA_real_, NA_real_, method, length(dd) - n_ref, conf,
+                               status = rf$status)
+            flags <- c(flags, rf$flags)
+        } else {
+            iv <- valLevelInterval(dd[is.finite(dd)], method, conf, unit_role, cls)
+        }
+        if (!is.null(within) && length(cmp_arms) == 2L && is.null(rf)) {
+            wr <- valWithinRowsOf(within, m[["id"]], cmp_arms, vk)
+            if (nrow(wr) > 0L) {
+                # O8 (VAL-109): over independent units no envelope is taken; each unit's
+                # within-run interval is reported beside the verdict.
+                flags <- c(flags, sprintf("within_run_reported=%s:[%s,%s]",
+                                          sub("^.*unit=([^;]+);.*$", "\\1", wr$flags),
+                                          signif(as.numeric(wr$ci_low), 6),
+                                          signif(as.numeric(wr$ci_high), 6)))
+            }
+        }
+    }
+    if (method == "jackknife" && !is.null(within) && length(cmp_arms) == 2L &&
+            identical(iv$status, "ok")) {
+        full_u <- units$unit[units$unit_role == "full"][1L]
+        wr <- valWithinRowsOf(within, m[["id"]], cmp_arms, vk)
+        if (nrow(wr) > 0L) {
+            iv <- valWidenFromRequests(iv, wr, cmp_arms[[1L]], cmp_arms[[2L]], m[["id"]],
+                                       widen = m[["widen_to_within_run"]], view = vk,
+                                       unit = full_u)
+            flags <- c(flags, iv[["flags"]][grepl("^within_run_reported", iv[["flags"]])])
+        }
+    }
+    flags <- c(flags, iv[["flags"]] %||% character())
+    cl <- list(outcome = "blinded", no_worse = NA, regime = NA_character_)
+    if (!blind) {
+        cl <- if (!is.null(withheld)) {
+            list(outcome = NA_character_, no_worse = NA, regime = withheld)
+        } else if (!is.null(rf)) {
+            r <- rf$classification %||% list(regime = NA_character_)
+            r$outcome <- rf$outcome
+            r$no_worse <- rf$no_worse
+            r
+        } else {
+            classify(iv)
+        }
+    }
+    list(iv = iv, n_ref = n_ref, flags = flags, cl = cl)
+}
+
+#' A comparison's within-run rows (scope `within_run`) of one view
+#' @noRd
+valWithinRowsOf <- function(within, metric, cmp_arms, vk) {
+    within[within$scope == "within_run" & within$metric == metric &
+               within$arm == cmp_arms[[1L]] & within$comparator == cmp_arms[[2L]] &
+               within$view == vk, , drop = FALSE]
 }
 
 #' Within-run rows of one unit: a paired percentile bootstrap over keys (4.4; contract row 15)
@@ -635,9 +920,17 @@ valWithinRunRows <- function(decl, unit, da, truth, universe, env, blind_seed = 
                 stat <- function(df) {
                     val(a1[i1[df$j], , drop = FALSE]) - val(a2[i2[df$j], , drop = FALSE])
                 }
+                if (is.null(spec[["seed"]])) {
+                    valAbort("metric {m$id}: within_run declares no seed", "val_spec_invalid")
+                }
+                if (!is.null(spec[["events"]])) {
+                    data$events <- as.logical(a1[[spec[["events"]]]][i1])
+                }
                 iv <- valBootstrap(data, stat, B = as.integer(spec[["B"]] %||%
                                                                   valBootstrapMinB(conf)),
-                                   conf = conf, seed = as.integer(spec[["seed"]] %||% 1L),
+                                   conf = conf, seed = as.integer(spec[["seed"]]),
+                                   events = if (!is.null(spec[["events"]])) "events",
+                                   min_events = as.integer(spec[["min_events"]] %||% 5L),
                                    strata = if (identical(spec[["strata"]], "class")) "class",
                                    cluster = if (!is.null(data$cluster)) "cluster",
                                    class = m[["class"]] %||% NA_character_)
@@ -662,20 +955,36 @@ valWithinRunRows <- function(decl, unit, da, truth, universe, env, blind_seed = 
     do.call(rbind, rows)
 }
 
-#' Arm DA tables keyed for scoring
+#' Arm DA tables keyed for scoring by the ticket's `featureKey(feature_id, arm)` (4.1)
+#'
+#' Each arm's table carries the key and its status from the ticket's function (a feature
+#' `unmapped` or `ambiguous` in one arm is excluded for all the comparison's arms by
+#' [valViews()]); attribute `key_counts` holds the arm's counts by status and reason.
 #' @noRd
 valArmTables <- function(da, env) {
-    lapply(da, function(p) {
-        d <- if (is.character(p)) utils::read.delim(p, stringsAsFactors = FALSE) else p
-        data.frame(feature_id = as.character(d$feature_id),
-                   key = as.character(env$featureKey(as.character(d$feature_id))),
-                   assay = as.character(d$assay %||% "all"), contrast = as.character(d$contrast),
-                   estimate = as.numeric(d$log2fc), p = as.numeric(d$p),
-                   s_own = as.numeric(d$s_own), stringsAsFactors = FALSE)
-    })
+    Map(function(p, arm) {
+        d <- if (is.character(p)) {
+            utils::read.delim(p, stringsAsFactors = FALSE, colClasses = c(feature_id = "character"))
+        } else {
+            p
+        }
+        fid <- as.character(d$feature_id)
+        fk <- valFeatureKeys(env, fid, arm)
+        out <- data.frame(feature_id = fid, key = fk$key, key_status = fk$status,
+                          assay = as.character(d$assay %||% rep("all", nrow(d))),
+                          contrast = as.character(d$contrast), estimate = as.numeric(d$log2fc),
+                          p = as.numeric(d$p), s_own = as.numeric(d$s_own),
+                          stringsAsFactors = FALSE)
+        attr(out, "key_counts") <- valKeyCounts(fk)
+        out
+    }, da, names(da))
 }
 
 #' Classify the within-run rows of a `bootstrap_within_run` metric, one per unit
+#'
+#' The component's outcome across units is the units' common outcome; where the units disagree
+#' it is NA (TODO(KIT-159 audit O8, I16): how a within-run component's outcome is formed across
+#' units is the owner's rule; until then no verdict is formed from disagreeing units).
 #' @noRd
 valClassifyWithin <- function(m, cmp_arms, vk, within, regimes, blind) {
     r <- if (is.null(within)) within else
@@ -687,14 +996,14 @@ valClassifyWithin <- function(m, cmp_arms, vk, within, regimes, blind) {
                  "val_spec_invalid")
     }
     out <- list()
-    last <- NULL
+    all_cl <- list()
     for (i in seq_len(nrow(r))) {
         x <- r[i, ]
         n <- as.integer(sub("^.*n=([0-9]+).*$", "\\1", x$flags))
         st <- sub("^.*status=([a-z_]+).*$", "\\1", x$flags)
-        iv <- valNewInterval(x$ci_low, x$ci_high, "bootstrap_within_run", n, x$conf,
-                             "within_run", m[["class"]] %||% NA_character_, status = st,
-                             estimate = x$diff)
+        iv <- valNewInterval(as.numeric(x$ci_low), as.numeric(x$ci_high), "bootstrap_within_run",
+                             n, as.numeric(x$conf), "within_run", m[["class"]] %||% NA_character_,
+                             status = st, estimate = as.numeric(x$diff))
         cl <- list(outcome = "blinded", no_worse = NA, regime = NA_character_)
         if (!blind) {
             cl <- tryCatch(valClassify(iv, m[["margin"]], isTRUE(m[["higher_is_better"]]),
@@ -713,16 +1022,30 @@ valClassifyWithin <- function(m, cmp_arms, vk, within, regimes, blind) {
         x$regime <- cl$regime %||% NA_character_
         x$blinded <- blind
         out[[length(out) + 1L]] <- x
-        last <- cl
+        all_cl[[length(all_cl) + 1L]] <- cl
     }
-    list(rows = out, outcome = last)
+    oc <- unique(vapply(all_cl, function(cl) cl$outcome %||% NA_character_, character(1)))
+    nw <- unique(vapply(all_cl, function(cl) isTRUE(cl$no_worse), logical(1)))
+    outcome <- if (length(oc) == 1L) {
+        list(outcome = oc, no_worse = if (length(nw) == 1L) nw else NA,
+             regime = all_cl[[1L]]$regime)
+    } else {
+        list(outcome = NA_character_, no_worse = NA,
+             regime = "withheld: the units' within-run outcomes differ; rule pending (O8)")
+    }
+    list(rows = out, outcome = outcome)
 }
 
 #' Run a phase's cells and score them into `runs/<label>/` (7.8 steps 5 to 9)
 #'
-#' The caller has checked the declaration and fetched the inputs (steps 1 to 4). Here: the ticket's
-#' preparation, the kernel gate, the cells in concurrent chunks, blind or unblinded scoring, the
-#' fixed tables, provenance, the evidence check (with a manifest) and `outputs.sha256` last.
+#' The caller has checked the declaration and fetched the inputs (steps 1 to 4). Here: the
+#' declaration's statistical schema, the ticket's preparation, the kernel gate, the cells in
+#' concurrent chunks (each chunk with its backstop: cells x `cell_minutes` + 10), blind or unblinded
+#' scoring, the run folder of 5.7 (`cells.tsv`, `calls.tsv`, `metrics.tsv`, `comparisons.tsv`,
+#' `coverage.tsv`, one ledger per workflow cell, `tables.sha256`, `not-committed.sha256`,
+#' `scored.tsv.gz` where permitted, `results.md` outside the lifecycle, `attribution.tsv`,
+#' `allowed-paths.txt`), provenance with the fields of 5.6, the evidence check over everything
+#' the job wrote under `val-out/` and `outputs.sha256` last.
 #'
 #' @param phase `lifecycle`, `counted`, `correction`, `determinism` or `amended`.
 #' @param decl The declaration (a list).
@@ -734,33 +1057,40 @@ valClassifyWithin <- function(m, cmp_arms, vk, within, regimes, blind) {
 #' @param work_dir The job's private folder.
 #' @param out_dir `val-out/`.
 #' @param chunks Concurrent chunks.
-#' @param regimes Regime table for the classifier (default the harness's).
+#' @param regimes Regime table for the classifier (default the harness's; with ticket regimes from
+#'   [valClassifierRegimes()]).
 #' @param arms,unit_ids Restrict the cells.
 #' @param manifest The input manifest (data frame), for `attribution.tsv` and the evidence check.
 #' @param code The provenance `code` block.
 #' @param pkg_root The package checkout.
+#' @param ticket_coverage The committed `ticket-coverage.tsv` rows (provenance), or `NULL`.
+#' @param declaration_diff The counted declaration's differences from the lifecycle one, or `NULL`.
 #' @return The run folder, invisibly.
 #' @export
 valRunPhase <- function(phase, decl, dataset, units, label, code_files, data_dir, work_dir,
                         out_dir, chunks = 4L, regimes = NULL, arms = NULL, unit_ids = NULL,
-                        manifest = NULL, code = NULL, pkg_root = ".") {
+                        manifest = NULL, code = NULL, pkg_root = ".", ticket_coverage = NULL,
+                        declaration_diff = NULL) {
     started <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
     units <- valUnits(units)
+    valCheckDeclarationSchema(decl, units)
     env <- valTicketEnv(code_files)
     prep <- valPrepare(env, data_dir, file.path(work_dir, "prepare"))
     run_dir <- file.path(out_dir, "runs", label)
-    dir.create(run_dir, recursive = TRUE, showWarnings = FALSE)
+    dir.create(file.path(run_dir, "ticket"), recursive = TRUE, showWarnings = FALSE)
     cells <- valPhaseCells(decl, dataset, units, phase, unit_ids, arms)
+    universe_ids <- unique(c(prep$universe$key, as.character(prep$features$feature_id)))
     if (length(prep$result_tables)) {
         valCopyResultTables(prep$result_tables, decl[["outputs"]], run_dir,
                             arms = unique(cells$arm), units = unique(cells$unit),
-                            universe = prep$universe)
+                            universe = universe_ids)
     }
-    no_text <- !is.null(manifest) &&
-        any(manifest$kind == "data" & manifest$redistribution == "not_permitted")
+    no_text <- !is.null(manifest) && valPrivateLogs(manifest)
+    # The hook writes only under runs/<label>/ticket/ (5.2, I08).
     ctx <- list(decl = decl, dataset = dataset, units = prep$units, code_files = code_files,
                 work_dir = file.path(work_dir, "cells"), pkg_root = normalizePath(pkg_root),
-                record_messages = !no_text, out_dir = normalizePath(out_dir))
+                record_messages = !no_text,
+                out_dir = normalizePath(file.path(run_dir, "ticket")))
     gate <- valKernelGate(cells, c(ctx, list(env = env)))
     ctx_path <- file.path(work_dir, "cell-context.rds")
     saveRDS(ctx, ctx_path)
@@ -770,88 +1100,133 @@ valRunPhase <- function(phase, decl, dataset, units, label, code_files, data_dir
                  "runCell <- function(cell) msrval::valRunCell(cell, ctx)"), runner)
     to_run <- cells[!cells$run %in% gate$refused, , drop = FALSE]
     minutes <- as.numeric(decl[["ceilings"]][["cell_minutes"]] %||% 120)
+    chunk_root <- file.path(work_dir, "chunks")
     ran <- if (nrow(to_run) > 0L) {
-        valRunCells(to_run, runner, k = chunks, cell_minutes = minutes,
-                    work_dir = file.path(work_dir, "chunks"))
+        valRunCells(to_run, runner, k = chunks, cell_minutes = minutes, work_dir = chunk_root,
+                    chunk_minutes = valChunkMinutes(length(unique(to_run$run)), chunks, minutes))
     }
-    res <- cells[, c("unit", "run", "arm")]
-    res$exit <- "refused"
-    res$stop_reason <- NA_character_
-    res$step <- "identity_gate"
-    res$class <- "val_kernel_identity_failed"
-    res$message_sha256 <- NA_character_
-    res$seconds <- NA_real_
-    res$chunk <- NA_character_
-    if (!is.null(ran)) {
-        i <- match(ran$run, res$run)
-        for (col in c("exit", "stop_reason", "step", "class", "message_sha256", "seconds",
-                      "chunk")) {
-            res[[col]][i] <- ran[[col]]
-        }
-    }
-    res$fallback <- NA
-    res$options_at_start <- NA_character_
-    res$ruv_k <- NA_integer_
-    res$ruv_controls <- NA_integer_
+    res <- valCellResults(cells, ran)
+    values <- valCellValues(res, chunk_root)
+    res <- valCellSettings(res, values)
     cells_out <- res
     cells_out$run <- sub("@[^@]*$", "", cells_out$run)
     utils::write.table(cells_out[, EVIDENCE_COLUMNS[["cells.tsv"]]],
                        file.path(run_dir, "cells.tsv"), sep = "\t", quote = FALSE,
-                       row.names = FALSE)
+                       row.names = FALSE, na = "NA")
     blind_seed <- if (identical(phase, "lifecycle")) decl[["blind"]][["seed"]] else NULL
     done <- res[res$exit == "completed", , drop = FALSE]
-    metrics <- do.call(rbind, lapply(unique(cells$unit), function(u) {
+    da_of <- function(u) {
         r <- done[done$unit == u, , drop = FALSE]
-        da <- stats::setNames(as.list(file.path(valCellDir(ctx$work_dir, r$run), "da.tsv")),
-                              r$arm)
-        valUnitMetrics(decl, dataset, u, da, prep$truth, prep$universe, env,
-                       blind_seed = blind_seed)
+        stats::setNames(as.list(file.path(valCellDir(ctx$work_dir, r$run), "da.tsv")), r$arm)
+    }
+    truths <- lapply(stats::setNames(unique(cells$unit), unique(cells$unit)), function(u) {
+        valUnitTruth(decl, dataset, env, prep, u)
+    })
+    key_counts <- list()
+    outside <- list()
+    metrics <- do.call(rbind, lapply(unique(cells$unit), function(u) {
+        mt <- valUnitMetrics(decl, dataset, u, da_of(u), truths[[u]], prep$universe, env,
+                             blind_seed = blind_seed)
+        key_counts[[u]] <<- attr(mt, "key_counts")
+        outside[[u]] <<- attr(mt, "not_in_universe")
+        mt
     }))
     utils::write.table(metrics, file.path(run_dir, "metrics.tsv"), sep = "\t", quote = FALSE,
-                       row.names = FALSE)
+                       row.names = FALSE, na = "NA")
     within <- do.call(rbind, lapply(unique(cells$unit), function(u) {
-        r <- done[done$unit == u, , drop = FALSE]
-        da <- stats::setNames(as.list(file.path(valCellDir(ctx$work_dir, r$run), "da.tsv")),
-                              r$arm)
-        valWithinRunRows(decl, u, da, prep$truth, prep$universe, env, blind_seed = blind_seed)
+        valWithinRunRows(decl, u, da_of(u), truths[[u]], prep$universe, env,
+                         blind_seed = blind_seed)
     }))
     scored_units <- units[units$unit %in% cells$unit, , drop = FALSE]
     comparisons <- valRunLevel(decl, metrics, scored_units, regimes = regimes, phase = phase,
-                               within = within)
+                               within = within, cells = res[, c("unit", "arm", "exit")])
+    verdicts <- attr(comparisons, "verdicts")
     if (!is.null(within)) {
         key <- function(x) paste(x$component, x$scope, x$flags)
         comparisons <- rbind(comparisons, within[!key(within) %in% key(comparisons), ])
     }
     utils::write.table(comparisons, file.path(run_dir, "comparisons.tsv"), sep = "\t",
-                       quote = FALSE, row.names = FALSE)
-    if (!is.null(manifest)) {
-        utils::write.table(manifest[, c("role", "kind", "licence", "redistribution", "citation")],
-                           file.path(run_dir, "attribution.tsv"), sep = "\t", quote = FALSE,
-                           row.names = FALSE)
+                       quote = FALSE, row.names = FALSE, na = "NA")
+    primary_units <- valPrimaryUnits(decl, dataset, unique(cells$unit))
+    valWriteCalls(res, values, ctx$work_dir, run_dir)
+    valWriteCoverageTable(decl, done, ctx$work_dir, truths, prep$universe, env, run_dir,
+                          blind_seed, primary_units)
+    valCopyLedgers(res, cells, ctx$work_dir, run_dir)
+    private <- !is.null(manifest) &&
+        !valPublishable(manifest, manifest$role[manifest$kind == "data"])
+    withheld <- valWriteScored(done, ctx$work_dir, truths, prep$universe, env, run_dir,
+                               lifecycle = identical(phase, "lifecycle"), private = private)
+    tables <- valWriteTableHashes(res, values, run_dir, withheld,
+                                  if (private) prep$prepared else NULL)
+    attribution <- if (!is.null(manifest)) {
+        manifest[, c("role", "kind", "licence", "redistribution", "citation")]
+    } else {
+        data.frame(role = character(), kind = character(), licence = character(),
+                   redistribution = character(), citation = character())
     }
-    code <- code %||% list(package_commit = "none", release_commit = "none",
-                           harness = list(commit = "none", tree = "none"), declaration = list())
+    if (!is.null(manifest)) {
+        utils::write.table(attribution, file.path(run_dir, "attribution.tsv"), sep = "\t",
+                           quote = FALSE, row.names = FALSE)
+    }
+    if (phase %in% c("counted", "amended", "correction") && !is.null(verdicts)) {
+        valWriteResults(file.path(run_dir, "results.md"), verdicts, attribution)
+    }
+    allowed <- unlist(lapply(decl[["outputs"]] %||% list(), function(o) {
+        valExpandOutputPaths(o, arms = unique(cells$arm), units = unique(cells$unit))
+    }))
+    writeLines(sort(unique(as.character(allowed))), file.path(run_dir, "allowed-paths.txt"))
+    code <- code %||% valNoCode(decl[["stage"]] %||% phase)
+    code$code_files <- code$code_files %||% lapply(code_files, function(f) {
+        list(path = f, sha256 = valSha256(f))
+    })
     gates <- gate[setdiff(names(gate), "refused")]
+    chunk_tab <- if (!is.null(ran)) attr(ran, "chunks")
+    if (!is.null(chunk_tab)) {
+        chunk_tab$peak_rss_mib <- vapply(chunk_tab$chunk, function(ch) {
+            v <- res$vmhwm_mib[res$chunk %in% ch]
+            if (any(is.finite(v))) max(v, na.rm = TRUE) else NA_real_
+        }, numeric(1))
+    }
     prov <- valProvenance(
         ticket = decl[["ticket"]] %||% "unknown", stage = decl[["stage"]] %||% phase,
         label = label, phase = phase, status = "completed", blinded = !is.null(blind_seed),
         started = started, code = code,
-        inputs = list(prepared = prep$prepared),
-        truth = list(ids = names(prep$truth), blinded = !is.null(blind_seed),
-                     universe_keys = nrow(prep$universe)),
-        cells = list(n = nrow(cells), completed = sum(res$exit == "completed"),
-                     refused = sum(res$exit == "refused")),
-        chunks = if (!is.null(ran)) attr(ran, "chunks") else list(),
-        scoring = list(kernel_gates = lapply(gates, function(g) {
-            list(passed = isTRUE(g$passed), units = g$units, note = g$note)
-        }))
+        inputs = list(prepared = prep$prepared,
+                      universe = list(sha256 = prep$universe_sha256,
+                                      rows = nrow(prep$universe),
+                                      by_status = prep$universe_counts)),
+        truth = valTruthProvenance(prep$truth, work_dir, blind_seed),
+        cells = valCellsProvenance(res, cells, values, run_dir, ctx$work_dir,
+                                   !is.null(decl[["hooks"]][["post_cell"]])),
+        chunks = chunk_tab %||% list(),
+        scoring = list(
+            metrics_sha256 = valSha256(file.path(run_dir, "metrics.tsv")),
+            comparisons_sha256 = valSha256(file.path(run_dir, "comparisons.tsv")),
+            intervals = verdicts %||% list(), ticket_coverage = ticket_coverage %||% list(),
+            declaration_diff = declaration_diff %||% list(),
+            key_status = do.call(rbind, key_counts) %||% list(),
+            not_in_universe = do.call(rbind, outside) %||% list(),
+            tables = tables,
+            cell_counts = list(n = nrow(cells), completed = sum(res$exit == "completed"),
+                               refused = sum(res$exit == "refused")),
+            kernel_gates = lapply(gates, function(g) {
+                list(passed = isTRUE(g$passed), units = g$units, note = g$note)
+            })),
+        outputs = lapply(sort(list.files(run_dir, recursive = TRUE)), function(f) {
+            list(path = f, sha256 = valSha256(file.path(run_dir, f)))
+        })
     )
     valWriteProvenance(prov, file.path(run_dir, "provenance.json"))
     valCheckProvenance(file.path(run_dir, "provenance.json"))
+    valCheckOutsideRuns(out_dir)
     if (!is.null(manifest)) {
+        classes <- unique(unlist(lapply(prep$truth, function(t1) as.character(t1$class))))
         valCheckEvidence(run_dir, manifest, outputs = decl[["outputs"]] %||% list(),
                          arms = unique(cells$arm), units = unique(cells$unit),
-                         universe = prep$universe, phase = phase)
+                         universe = universe_ids, classes = classes,
+                         row_bounds = list(metrics.tsv = valMetricsRowBound(decl, cells)),
+                         phase = phase, primary_units = primary_units,
+                         forbidden_sha256 = if (private) prep$prepared$sha256 else character())
     }
     valWriteOutputsSha(run_dir)
     invisible(run_dir)

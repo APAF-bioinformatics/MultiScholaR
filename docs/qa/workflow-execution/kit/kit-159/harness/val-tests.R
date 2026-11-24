@@ -13,7 +13,8 @@
 #                         (--probe-nsim, --probe-target-sims)
 #   --coverage-plan <f>   run the plan's tasks of --request <id> in --chunks <k> concurrent
 #                         processes -> coverage-detail.tsv, coverage-table.tsv, coverage-tasks.tsv
-#   --ticket <dir>        run a ticket's pinned tests in <dir>/tests -> <out>/ticket-tests.tsv
+#   --ticket <dir>        run a ticket's pinned tests in <dir>/tests -> <out>/ticket-tests.tsv;
+#                         with --declaration <json>, its coverage_regimes -> ticket-coverage.tsv
 #
 # msrval is installed from this checkout into $RUNNER_TEMP/val-lib first (7.8 step 1). Only fixed
 # template lines are printed; the tests use synthetic data only.
@@ -94,6 +95,19 @@ runTests <- function(test_path, package, tsv_name, failures_name) {
 if (!is.null(optValue("--ticket"))) {
     ticket_dir <- optValue("--ticket")
     runTests(file.path(ticket_dir, "tests"), NULL, "ticket-tests.tsv", "ticket-failures.txt")
+    # The declaration's coverage_regimes (4.4, I03): ticket-coverage.tsv and its cells file.
+    decl_path <- optValue("--declaration")
+    if (!is.null(decl_path)) {
+        decl <- jsonlite::read_json(decl_path, simplifyVector = FALSE)
+        tc <- msrval::valTicketCoverage(decl, dirname(decl_path))
+        if (!is.null(tc)) {
+            utils::write.table(tc$coverage, file.path(out_dir, "ticket-coverage.tsv"), sep = "\t",
+                               quote = FALSE, row.names = FALSE, na = "NA")
+            utils::write.table(tc$cells, file.path(out_dir, "ticket-coverage-cells.tsv"),
+                               sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+            say("ticket coverage: ", nrow(tc$coverage), " rows")
+        }
+    }
 } else {
     runTests(file.path(pkg_dir, "tests", "testthat"), "msrval", "harness-tests.tsv",
              "harness-failures.txt")

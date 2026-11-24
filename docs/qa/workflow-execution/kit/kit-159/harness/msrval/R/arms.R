@@ -264,6 +264,18 @@ valCellRuv <- function(route, arm) {
     "correction"
 }
 
+#' Whether an arm skips RUV, always applies it, or may give either state (I09, I18)
+#'
+#' @param arm A workflow arm.
+#' @return `skip` (RUV off, or design `none`), `applied` (the pinned legacy mode) or `either`.
+#' @export
+valArmRuvRun <- function(arm) {
+    b <- arm$builder %||% "shipped"
+    if (identical(b, "off") || identical(arm$design, "none")) return("skip")
+    if (identical(b, "legacy")) return("applied")
+    "either"
+}
+
 #' Run an arm of kind `custom` or `published` on one unit (section 7.5; 4.7)
 #'
 #' A `custom` arm is labelled "not the harness baseline". A `published` arm (a published
@@ -306,7 +318,8 @@ valRunCustomArm <- function(arm, unit, inputs) {
             label <- "anchor not reproduced: context only"
             primary <- FALSE
         } else {
-            valAbort("arm {arm$id}: the published anchor is not reproduced", "val_arm_refused")
+            # I20: refused at step `anchor`, so cells.tsv records the step and class.
+            valArmRefused("anchor", "val_anchor_not_reproduced")
         }
     }
     list(refused = FALSE, class = NA_character_, message_sha256 = NA_character_, da = da,

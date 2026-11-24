@@ -1,7 +1,34 @@
 # G1(a)'s re-freeze chain reader and G1(r)'s adoption of earlier reference rows (KIT-159 section 2).
 
+# `limpa_da_last_digits` is not a default class: G1D did not admit it (its base reproduction
+# failed) and D19 was ruled in VAL-109: a separate ticket (KIT-199) re-freezes the DIA-with-limpa
+# reference, and until it merges G1(a) does not admit the class (audit I15).
 G1A_CLASSES <- c("integration_artifacts", "kit128_technical_replicates", "metab_fixture_4",
-                 "platform_rounding", "limpa_da_last_digits")
+                 "platform_rounding")
+G1D_LIMPA_DIGEST_PREFIX <- "8a4c2dd5"
+
+#' G1(a)'s classes, with `limpa_da_last_digits` only through an explicit admission
+#'
+#' @param admit `NULL`, or `list(ruling, digest)`: the ruling that admits the class (KIT-199's
+#'   merge) and the measured masked digest, which must begin with G1D's `8a4c2dd5`.
+#' @return The admitted classes.
+#' @noRd
+valG1aClasses <- function(admit = NULL) {
+    if (is.null(admit)) return(G1A_CLASSES)
+    if (!nzchar(admit[["ruling"]] %||% "") ||
+            !startsWith(admit[["digest"]] %||% "", G1D_LIMPA_DIGEST_PREFIX)) {
+        valAbort("limpa_da_last_digits is admitted only with its ruling and G1D's digest",
+                 "val_spec_invalid")
+    }
+    c(G1A_CLASSES, "limpa_da_last_digits")
+}
+
+#' Every difference of the admitted limpa class carries G1D's digest
+#' @noRd
+valLimpaDigestsOk <- function(diffs, admit) {
+    i <- diffs$class %in% "limpa_da_last_digits"
+    !any(i) || (!is.null(diffs$digest) && all(diffs$digest[i] %in% admit[["digest"]]))
+}
 
 #' Counts per class
 #' @noRd
@@ -34,12 +61,15 @@ valSameCounts <- function(a, b) {
 #'   `change_classes`.
 #' @param reference `g1a-reference.tsv` rows (lane, step, class, fields, keys).
 #' @param live_diffs For a lane with no link: the live run's differences from the oracle.
+#' @param admit `NULL`, or the admission of `limpa_da_last_digits` ([valG1aClasses()]).
 #' @return A list: `status` (`certified`, `not_certified`, `stop`), `failed_link`, `reason`.
 #' @export
-valReadChain <- function(lane, links, reference, live_diffs = NULL) {
+valReadChain <- function(lane, links, reference, live_diffs = NULL, admit = NULL) {
+    classes <- valG1aClasses(admit)
     ref_counts <- valClassCounts(reference$class[reference$lane == lane])
     if (length(links) == 0L) {
-        ok <- !is.null(live_diffs) && all(live_diffs$class %in% G1A_CLASSES) &&
+        ok <- !is.null(live_diffs) && all(live_diffs$class %in% classes) &&
+            valLimpaDigestsOk(live_diffs, admit) &&
             valSameCounts(valClassCounts(live_diffs$class), ref_counts)
         return(list(status = if (ok) "certified" else "stop", failed_link = NA_integer_,
                     reason = if (ok) "" else "differences outside the classes or other counts"))
@@ -52,7 +82,8 @@ valReadChain <- function(lane, links, reference, live_diffs = NULL) {
         if (is.null(link)) return(fail(i, "a re-frozen oracle without its control record"))
         bd <- link$base_diffs
         ok_base <- if (i == 1L) {
-            all(bd$class %in% G1A_CLASSES) && valSameCounts(valClassCounts(bd$class), ref_counts)
+            all(bd$class %in% classes) && valLimpaDigestsOk(bd, admit) &&
+                valSameCounts(valClassCounts(bd$class), ref_counts)
         } else {
             all(bd$class %in% "platform_rounding")
         }

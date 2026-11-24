@@ -37,7 +37,8 @@ valVerifyOutputsSha <- function(dir) {
 #' @param dir The ticket's evidence folder (holding `runs/`).
 #' @param labels The requests' labels.
 #' @param expected_cells Data frame of the declared cells (`unit`, `arm`).
-#' @return A list: `metrics` and `cells` combined, `package_commit`.
+#' @return A list: `metrics`, `cells` and the within-run comparison rows (`within`) combined,
+#'   `package_commit`.
 #' @export
 valScoreRuns <- function(dir, labels, expected_cells) {
     changed <- function(what) valAbort("phase score: {what}", "val_declaration_changed")
@@ -56,6 +57,13 @@ valScoreRuns <- function(dir, labels, expected_cells) {
                           na.strings = character(), stringsAsFactors = FALSE)
     }
     cells <- do.call(rbind, lapply(labels, function(l) cbind(read(l, "cells.tsv"), request = l)))
+    cmp <- do.call(rbind, lapply(labels, function(l) {
+        cbind(read(l, "comparisons.tsv"), request = l)
+    }))
+    within <- cmp[cmp$scope == "within_run", , drop = FALSE]
+    for (col in c("diff", "ci_low", "ci_high", "conf", "margin")) {
+        within[[col]] <- suppressWarnings(as.numeric(within[[col]]))
+    }
     metrics <- do.call(rbind, lapply(labels, function(l) {
         cbind(read(l, "metrics.tsv"), request = l)
     }))
@@ -65,7 +73,8 @@ valScoreRuns <- function(dir, labels, expected_cells) {
         valAbort("phase score: the cells are not each declared cell exactly once",
                  "val_spec_invalid")
     }
-    list(metrics = metrics, cells = cells, package_commit = provs[[1L]]$code$package_commit)
+    list(metrics = metrics, cells = cells, within = if (nrow(within)) within,
+         package_commit = provs[[1L]]$code$package_commit)
 }
 
 #' Widen a run-level interval in phase score to the requests' within-run intervals (4.4, A38;
@@ -78,12 +87,21 @@ valScoreRuns <- function(dir, labels, expected_cells) {
 #' @param comparisons The requests' `comparisons.tsv` rows combined.
 #' @param arm,comparator,metric The comparison.
 #' @param widen The declaration's `widen_to_within_run` (default `TRUE`).
+#' @param view Only rows of this view (`NULL`: any).
+#' @param unit Only the rows of this unit (`unit=<id>;` in `flags`): the jackknife's `full` unit.
 #' @return The interval, widened bound by bound or with `within_run_reported`.
 #' @export
-valWidenFromRequests <- function(interval, comparisons, arm, comparator, metric, widen = NULL) {
-    rows <- comparisons[comparisons[["scope"]] == "within_run" & comparisons[["arm"]] == arm &
-                            comparisons[["comparator"]] == comparator &
-                            comparisons[["metric"]] == metric, , drop = FALSE]
+valWidenFromRequests <- function(interval, comparisons, arm, comparator, metric, widen = NULL,
+                                 view = NULL, unit = NULL) {
+    sel <- comparisons[["scope"]] == "within_run" & comparisons[["arm"]] == arm &
+        comparisons[["comparator"]] == comparator & comparisons[["metric"]] == metric
+    if (!is.null(view) && !is.null(comparisons[["view"]])) {
+        sel <- sel & comparisons[["view"]] == view
+    }
+    if (!is.null(unit)) {
+        sel <- sel & grepl(paste0("unit=", unit, ";"), comparisons[["flags"]], fixed = TRUE)
+    }
+    rows <- comparisons[sel %in% TRUE, , drop = FALSE]
     if (nrow(rows) == 0L) return(interval)
     lo <- min(as.numeric(rows[["ci_low"]]))
     hi <- max(as.numeric(rows[["ci_high"]]))
@@ -98,17 +116,28 @@ valWidenFromRequests <- function(interval, comparisons, arm, comparator, metric,
         interval[["flags"]] <- c(interval[["flags"]], "widened_to_within_run")
     } else {
         interval[["within_run_reported"]] <- c(lo, hi)
+        interval[["flags"]] <- c(interval[["flags"]],
+                                 sprintf("within_run_reported=[%s,%s]", signif(lo, 6),
+                                         signif(hi, 6)))
     }
     interval
 }
 
+HARNESS_REGIME_NSIM <- 2000L
+
 #' Write `results.md`: every verdict with its regime's measured coverage and Monte Carlo SE, each
 #' primary family's nominal level beside the bound from measured misses, and the attribution
-#' (sections 4.4, 5.2)
+#' (sections 4.4, 5.2; I05; O1 and O5 of VAL-109)
+#'
+#' The family bound sums the measured miss rates (1 - coverage) of the family's classified
+#' components; a regime with no observed miss enters at 3 / simulations (the rule of three), and
+#' the note says so. A verdict whose regime's worst-condition miss rate is at least twice nominal is
+#' flagged.
 #'
 #' @param path Output path.
-#' @param comparisons Rows with `member`, `metric`, `arm`, `comparator`, `outcome`, `conf`,
-#'   `regime`, `coverage`, `mc_se`, `statistic`, `family`, `m`.
+#' @param comparisons Verdict rows with `member`, `metric`, `arm`, `comparator`, `outcome`, `conf`,
+#'   `regime`, `coverage`, `mc_se`, `statistic`, `family`, `m` (and optionally `nsim`,
+#'   `regime_status`, `miss_twice_nominal`).
 #' @param attribution `attribution.tsv` rows.
 #' @return `path`, invisibly.
 #' @export
@@ -120,22 +149,36 @@ valWriteResults <- function(path, comparisons, attribution) {
     for (f in fams) {
         r <- cmp[cmp[["family"]] %in% f, , drop = FALSE]
         m <- r[["m"]][[1L]]
-        nominal <- 1 - m * (1 - r[["conf"]][[1L]])
-        bound <- sum(1 - r[["coverage"]])
+        conf <- r[["conf"]][is.finite(r[["conf"]])][1L]
+        nominal <- 1 - m * (1 - conf)
+        k <- r[is.finite(r[["coverage"]]), , drop = FALSE]
+        nsim <- if (is.null(k[["nsim"]])) rep(NA_real_, nrow(k)) else as.numeric(k[["nsim"]])
+        nsim[!is.finite(nsim)] <- HARNESS_REGIME_NSIM
+        miss <- 1 - k[["coverage"]]
+        zero <- miss <= 0
+        miss[zero] <- 3 / nsim[zero]
         lines <- c(lines, sprintf(
-            "- %s: m = %d, nominal family level %s, family error bound from measured misses %s",
-            f, as.integer(m), format(round(nominal, 6)), format(round(bound, 4))
-        ))
+            "- %s: m = %d, nominal family level %s, family error bound from measured misses %s%s",
+            f, as.integer(m), format(round(nominal, 6)), format(round(sum(miss), 4)),
+            if (any(zero)) {
+                sprintf(" (%d component(s) with no observed miss entered at 3/simulations)",
+                        sum(zero))
+            } else ""))
     }
     lines <- c(lines, "", "## Verdicts", "")
     for (i in seq_len(nrow(cmp))) {
         r <- cmp[i, ]
+        twice <- !is.null(r[["miss_twice_nominal"]]) && isTRUE(r[["miss_twice_nominal"]])
+        label <- if (!is.null(r[["regime_status"]]) && !is.na(r[["regime_status"]])) {
+            sprintf(" [%s]", r[["regime_status"]])
+        } else ""
         lines <- c(lines, sprintf(
-            paste("- %s (%s: %s - %s): %s; regime %s, measured coverage %s (Monte Carlo SE %s)",
-                  "at level %s, simulated on %s"),
+            paste("- %s (%s: %s - %s): %s; regime %s%s, measured coverage %s (Monte Carlo SE %s)",
+                  "at level %s, simulated on %s%s"),
             r[["member"]], r[["metric"]], r[["arm"]], r[["comparator"]], r[["outcome"]],
-            r[["regime"]], format(r[["coverage"]]), format(r[["mc_se"]]), format(r[["conf"]]),
-            r[["statistic"]]
+            r[["regime"]], label, format(r[["coverage"]]), format(r[["mc_se"]]),
+            format(r[["conf"]]), r[["statistic"]],
+            if (twice) "; FLAG: worst-condition miss rate at least twice nominal" else ""
         ))
     }
     lines <- c(lines, "", "## Sources and attribution", "")

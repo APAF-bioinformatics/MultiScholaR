@@ -171,8 +171,9 @@ if (phase == "record") {
     units <- msrval::valUnits(file.path(sd, ds$units$table))
     lib <- msrval::valLibraryTable()
     # Step 4: the declaration check and the environment check (G15), before any download.
-    msrval::valCheckDeclaration(".", evidence_dir, stage, at = "HEAD", phase = phase,
-                                library_table = lib, units = units$unit)
+    chk <- msrval::valCheckDeclaration(".", evidence_dir, stage, at = "HEAD", phase = phase,
+                                       library_table = lib, units = units$unit)
+    regimes <- msrval::valClassifierRegimes(decl, evidence_dir)
     env_check <- msrval::valCheckEnvironment(lib, decl$environment$library_sha256,
                                              extra_packages = unlist(decl$environment$extra_packages))
     manifest_path <- file.path(sd, decl$inputs$path)
@@ -181,32 +182,21 @@ if (phase == "record") {
     decl_commit <- utils::tail(system2("git", c("log", "--format=%H", "--diff-filter=A", "HEAD",
                                                 "--", file.path(sd, "declaration.json")),
                                        stdout = TRUE), 1L)
+    sha <- function(p) digest::digest(file = p, algo = "sha256")
+    code_paths <- file.path(sd, vapply(decl$code, function(x) x$path, character(1)))
     code <- list(package_commit = commit, release_commit = decl$release_commit,
+                 product_tree_identical = TRUE,
                  harness = list(commit = commit, tree = msrval::valHarnessTree(".")),
-                 declaration = list(stage = stage, commit = decl_commit),
-                 environment_check = env_check)
+                 declaration = list(stage = stage, commit = decl_commit,
+                                    sha256_md = sha(file.path(sd, "declaration.md")),
+                                    sha256_json = sha(file.path(sd, "declaration.json"))),
+                 code_files = lapply(code_paths, function(p) list(path = p, sha256 = sha(p))),
+                 helpers_extracted = list(), environment_check = env_check)
     if (phase == "score") {
         labels <- strsplit(optValue("--runs", ""), ",")[[1L]]
-        cells <- msrval::valPhaseCells(decl, dataset, units, "counted")
-        got <- msrval::valScoreRuns(evidence_dir, labels, cells[, c("unit", "arm")])
-        metrics <- got$metrics
-        metrics$value <- as.numeric(metrics$value)
-        out <- file.path("val-out", "runs", label)
-        dir.create(out, recursive = TRUE, showWarnings = FALSE)
-        cmp <- msrval::valRunLevel(decl, metrics, units, phase = stage)
-        utils::write.table(cmp, file.path(out, "comparisons.tsv"), sep = "\t", quote = FALSE,
-                           row.names = FALSE)
-        utils::write.table(manifest[, c("role", "kind", "licence", "redistribution", "citation")],
-                           file.path(out, "attribution.tsv"), sep = "\t", quote = FALSE,
-                           row.names = FALSE)
-        prov <- msrval::valProvenance(ticket = decl$ticket, stage = stage, label = label,
-                                      phase = "score", status = "completed",
-                                      blinded = identical(stage, "lifecycle"), started = started,
-                                      code = code, scoring = list(requests = labels))
-        msrval::valWriteProvenance(prov, file.path(out, "provenance.json"))
-        msrval::valCheckProvenance(file.path(out, "provenance.json"))
-        msrval::valCheckEvidence(out, manifest, phase = stage)
-        msrval::valWriteOutputsSha(out)
+        msrval::valScorePhase(decl, dataset, units, evidence_dir, labels, label, "val-out",
+                              manifest, stage = stage, code = code, regimes = regimes,
+                              started = started)
     } else {
         # Step 5: retrieval into the private folder, then the phase (steps 5 to 9).
         data_dir <- file.path(tmp_root, "val-data")
@@ -228,7 +218,9 @@ if (phase == "record") {
             data_dir = data_dir, work_dir = normalizePath(work), out_dir = "val-out",
             chunks = as.integer(optValue("--chunks", "4")),
             arms = if (is.null(arms)) NULL else strsplit(arms, ",")[[1L]], unit_ids = unit_ids,
-            manifest = manifest, code = code, pkg_root = "."
+            manifest = manifest, code = code, pkg_root = ".", regimes = regimes,
+            ticket_coverage = attr(regimes, "ticket_coverage"),
+            declaration_diff = chk$declaration_diff
         )
     }
     msrval::valStatus(phase = phase, status = "completed")

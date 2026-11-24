@@ -35,7 +35,7 @@ EVIDENCE_FREE_NAMES <- c(
     "provenance.json", "results.md", "tables.sha256", "not-committed.sha256", "outputs.sha256",
     "inputs.tsv", "library.tsv", "coverage-table.tsv", "coverage-detail.tsv", "coverage-run.txt",
     "harness-tests.tsv", "pre-outputs.tsv", "harness-failures.txt", "ticket-tests.tsv",
-    "ticket-failures.txt", "code-hashes.tsv", "fsim.tsv", "cost-probe.tsv"
+    "ticket-failures.txt", "code-hashes.tsv", "fsim.tsv", "cost-probe.tsv", "allowed-paths.txt"
 )
 RESULT_TYPES <- c("label", "count", "share", "quantile", "sd", "n", "abs_diff", "hash", "statistic")
 CALL_COUNT_METRICS <- c("TP", "FP", "calls", "keys_called", "called")

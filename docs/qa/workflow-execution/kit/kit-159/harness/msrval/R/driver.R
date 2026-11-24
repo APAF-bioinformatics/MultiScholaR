@@ -259,7 +259,13 @@ valStepOutcome <- function(declared, before, after, history_changed, error_notif
              reason = NA_character_)
     }
     if (identical(declared, "diagnostic")) {
-        if (!is.null(error_notification)) return(refused())
+        # I18: a diagnostic step expects no state change; a changed head or history is not ok.
+        changed <- !identical(after, before) || isTRUE(history_changed)
+        if (!changed && !is.null(error_notification)) return(refused())
+        if (changed) {
+            return(list(outcome = "did_not_complete", class = NA_character_,
+                        message_sha256 = NA_character_, reason = "unexpected_state"))
+        }
         return(list(outcome = "ok", class = NA_character_, message_sha256 = NA_character_,
                     reason = NA_character_))
     }
@@ -710,7 +716,8 @@ valRunWorkflow <- function(script, files, design, arm = valArmShipped(), helpers
          ledger_path = ledger_path,
          ledger_sha256 = digest::digest(file = ledger_path, algo = "sha256"),
          actions = actions, options_at_start = run$options_at_start, matched = res$matched,
-         fallback = res$fallback, tables = res$tables, value = res$value,
+         fallback = res$fallback, tables = res$tables, value = res$value, hook = res$hook,
+         qvalue_fallback = res$qvalue_fallback,
          seconds = round(as.numeric(difftime(Sys.time(), started, units = "secs")), 1))
 }
 
@@ -1121,7 +1128,20 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
                                            itsd_applied = itsd_applied)
             ctx$tables <- acc$tables
         }
-        if (!is.null(on_complete)) acc$value <- on_complete(ctx)
+        if (identical(acc$exit, "completed") && identical(omic, "proteomics")) {
+            acc$qvalue_fallback <- valQvalueFallbacks(
+                shiny::isolate(workflow_data$da_analysis_results_list))
+        }
+        # I14: the hook runs only for a completed cell; its error is recorded, the exit kept.
+        if (!is.null(on_complete) && identical(acc$exit, "completed")) {
+            got <- tryCatch(list(value = on_complete(ctx), hook = list(status = "ok")),
+                            error = function(e) {
+                                list(value = NULL,
+                                     hook = list(status = "error", class = class(e)[[1L]]))
+                            })
+            acc$value <- got$value
+            acc$hook <- got$hook
+        }
         if (project) shiny::isolate(ns$closeDIAStateAdapter(workflow_data$state_manager))
     }
     shiny::testServer(spec$server, args = server_args, {
@@ -1130,7 +1150,8 @@ valWorkflowCell <- function(script, files, design, arm_inputs, helpers, forced_i
     list(exit = acc$exit, reason = acc$reason,
          steps = if (length(acc$steps)) do.call(rbind, acc$steps) else NULL,
          ledger = acc$ledger, actions = acc$actions, matched = acc$matched,
-         fallback = acc$fallback, tables = acc$tables, value = acc$value)
+         fallback = acc$fallback, tables = acc$tables, value = acc$value, hook = acc$hook,
+         qvalue_fallback = acc$qvalue_fallback)
 }
 
 #' A step's masked message text for `steps$message` (at most 300 characters), or NA
@@ -1284,12 +1305,19 @@ valStateMatrix <- function(obj, omic, which = c("data", "uncorrected")) {
 }
 
 #' The state that enters RUV, per route (7.3's table)
+#'
+#' On DIA_LIMPA with RUV the matrix that entered RUV is the `ruv_covariates` state's own record of
+#' its input (read by [valProtRuvInput()]); `peptide_count_filtered` is kept for the RUV-off arm
+#' (I13).
 #' @noRd
-valPreRuvState <- function(route) {
+valPreRuvState <- function(route, ruv = "off") {
     r <- valRoute(route)
     switch(r$omic,
-           proteomics = if (identical(r$workflow, "DIA_LIMPA")) "peptide_count_filtered" else
-               "normalized",
+           proteomics = if (identical(r$workflow, "DIA_LIMPA")) {
+               if (identical(ruv, "off")) "peptide_count_filtered" else NA_character_
+           } else {
+               "normalized"
+           },
            lipidomics = "lipid_normalized",
            metabolomics = "metab_normalized",
            transcriptomics = "trx_qc_complete")
@@ -1423,12 +1451,16 @@ valReadArmTables <- function(manager, paths, route, out_dir, ruv = "off", q_thre
         path
     }
     da <- valReadDa(paths$da_output_dir, omic, q_thresh, lfc_cutoff)
-    pre_obj <- state_reader(valPreRuvState(route))
+    pre_state <- valPreRuvState(route, ruv)
+    pre_obj <- if (!is.na(pre_state)) state_reader(pre_state)
     model_obj <- if (identical(omic, "transcriptomics")) pre_obj else
         state_reader(model_state %||% valPreRuvState(route))
     # With RUV applied on DIA, LFQ and TMT the product commits no `normalized` state; the matrix
-    # that entered RUV is the RUV state's own record of it (S0 run 45277101451).
-    pre <- if (is.null(pre_obj) && identical(omic, "proteomics") && !is.null(manager)) {
+    # that entered RUV is the RUV state's own record of it (S0 run 45277101451). On DIA_LIMPA with
+    # RUV it is the `ruv_covariates` state's record of its input (I13).
+    pre <- if (is.na(pre_state) && !is.null(manager)) {
+        valProtRuvInput(manager, "ruv_covariates")
+    } else if (is.null(pre_obj) && identical(omic, "proteomics") && !is.null(manager)) {
         valProtRuvInput(manager)
     } else {
         valStateMatrix(pre_obj, omic)
@@ -1474,6 +1506,27 @@ valReadArmTables <- function(manager, paths, route, out_dir, ruv = "off", q_thre
     out
 }
 
+#' The contrasts whose q-values fell back to BH in the product's DA result (`qvalue_warnings`,
+#' R/func_prot_da_model_stats.R:411, 824): the names of its TRUE entries, found wherever the
+#' results list holds the field; `character()` when none
+#' @noRd
+valQvalueFallbacks <- function(x) {
+    found <- character()
+    walk <- function(y) {
+        if (!is.list(y) || isS4(y) || is.environment(y)) return(invisible())
+        w <- y[["qvalue_warnings"]]
+        if (is.list(w) || is.logical(w)) {
+            flagged <- names(w)[vapply(w, function(v) isTRUE(as.logical(unlist(v))[1L]),
+                                       logical(1))]
+            found <<- c(found, flagged)
+        }
+        for (el in y) walk(el)
+        invisible()
+    }
+    walk(x)
+    unique(found[!is.na(found)])
+}
+
 #' The display matrix where the product keeps it outside the state object: DIA_LIMPA's
 #' `ruv-adjusted-science` checkpoint of the `ruv_covariates` state's product (as the Summary's
 #' integration input reads it, `protIntegrationInputSource`, R/utils_workflow_dia_summary.R:96-176);
@@ -1514,20 +1567,22 @@ valProductDisplayReader <- function(manager, r) {
 #' state's own product (`normalization_science`, its `normalized` checkpoint), as the integration
 #' input reads it (`protIntegrationInputRuvInput`, R/utils_workflow_dia_summary.R:180-205)
 #' @noRd
-valProtRuvInput <- function(manager) {
+valProtRuvInput <- function(manager, state = "ruv_corrected") {
     ns <- asNamespace("MultiScholaR")
     ns$withWorkflowStateScope(manager, function() {
         # The state's own record, read directly (not by walking the lineage from the head).
-        reference <- ns$getDIAStateReference(manager, "ruv_corrected")
+        reference <- ns$getDIAStateReference(manager, state)
         if (is.null(reference)) {
             held <- paste(names(manager$.context$snapshot$states), collapse = ",")  # nolint
             owner <- class(manager)[[1L]]  # nolint: object_usage_linter (glue)
-            valAbort("no ruv_corrected state to read the RUV input from ({owner}; states {held})",
+            valAbort("no {state} state to read the RUV input from ({owner}; states {held})",
                      "val_spec_invalid")
         }
         record <- ns$readComponentMetadata(manager, reference)
-        if (is.null(record$data$products$normalization_science)) {
-            valAbort("the ruv_corrected state records no normalisation product", "val_spec_invalid")
+        products <- record$data$products
+        if (is.null(products$normalization_science) &&
+                is.null(products$ruv_covariates_science)) {
+            valAbort("the {state} state records no RUV product", "val_spec_invalid")
         }
         input <- ns$protIntegrationInputRuvInput(manager, record)
         tbl <- ns$readDIAExecutionComponents(manager, input$reference,

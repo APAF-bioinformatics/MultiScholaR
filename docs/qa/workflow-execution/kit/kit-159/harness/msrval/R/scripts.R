@@ -86,20 +86,33 @@ PROT_QC_STATES <- c(
 #'   consumer runs (r1.14): `export_load` ("Export session" after the last normalisation step,
 #'   then "Load Filtered Session" on the DA tab before Run; not on transcriptomics, which has no
 #'   load button) and `no_covariates` (DIA_LIMPA without "Compute RUV-III Covariates").
+#' @param ruv The arm's RUV run ([valArmRuvRun()]): `skip`, `applied` or `either` (default).
 #' @return A list: `route`, `omic`, `workflow`, `contrasts`, `alternative`, `steps`.
 #' @export
 valActionScript <- function(route, assays = NULL, import_tool = NULL, import_values = list(),
-                            contrasts = NULL, summary = NULL, alternative = NULL) {
+                            contrasts = NULL, summary = NULL, alternative = NULL, ruv = NULL) {
+    ruv <- ruv %||% "either"
+    if (!ruv %in% c("skip", "applied", "either")) {
+        valAbort("ruv must be skip, applied or either", "val_spec_invalid")
+    }
     r <- valRoute(route)
     valCheckAlternative(r, alternative)
     tool <- import_tool %||% r$import_tool
     steps <- switch(r$omic,
-                    proteomics = valProtScript(r, tool, summary, alternative),
+                    proteomics = valProtScript(r, tool, summary, alternative, ruv),
                     transcriptomics = valTrxScript(summary),
                     valOmicsScript(r, if (r$omic == "lipidomics") "lipid" else "metab", tool,
-                                   assays, import_values, summary, alternative))
+                                   assays, import_values, summary, alternative, ruv))
     list(route = route, omic = r$omic, workflow = r$workflow, contrasts = contrasts,
          alternative = alternative, steps = steps)
+}
+
+#' The normalisation step's declared states by the arm's RUV run (I18): skip gives the normalised
+#' state; an arm that always applies RUV the corrected one; both only where k can resolve to 0
+#' (the shipped default and the gate-on designs, KIT-129 item 2)
+#' @noRd
+valRuvHeads <- function(normalised, corrected, ruv) {
+    switch(ruv, skip = normalised, applied = corrected, c(normalised, corrected))
 }
 
 #' Refuse an alternative the route does not have (G1(b); r1.14)
@@ -138,7 +151,7 @@ valExportLoadSteps <- function(head, norm_tab, norm_module, export_button, da_ta
 
 #' The proteomics script
 #' @noRd
-valProtScript <- function(r, tool, summary, alternative = NULL) {
+valProtScript <- function(r, tool, summary, alternative = NULL, ruv = "either") {
     ns <- asNamespace("MultiScholaR")
     workflow <- r$workflow
     peptide_level <- workflow %in% c("DIA", "DIA_LIMPA")
@@ -210,7 +223,7 @@ valProtScript <- function(r, tool, summary, alternative = NULL) {
     norm <- valStep(
         "norm", "normalization",  # nolint
         list(head = if (limpa) c("peptide_count_filtered", "ruv_covariates") else
-            c("normalized", "ruv_corrected")),  # nolint
+            valRuvHeads("normalized", "ruv_corrected", ruv)),  # nolint
         module = "normalization", press = "normalization-run_normalization",  # nolint
         run = function(api) {
             api$defaults(ns$mod_prot_norm_ui, "normalization")
@@ -226,12 +239,17 @@ valProtScript <- function(r, tool, summary, alternative = NULL) {
             api$press("normalization-apply_correlation_filter")
         })
     covariates <- if (limpa && !identical(alternative, "no_covariates")) {
-        valStep("ruv_covariates", "normalization", list(head = "ruv_covariates"),
+        # I09: with mode skip the product records the skip and commits no state (the head stays
+        # `correlation_filtered`).
+        valStep("ruv_covariates", "normalization",
+                list(head = if (identical(ruv, "skip")) "correlation_filtered" else
+                    "ruv_covariates"),
                 module = "normalization", press = "normalization-apply_ruv_covariates",
                 run = function(api) api$press("normalization-apply_ruv_covariates"))
     }
     export_load <- if (identical(alternative, "export_load")) {
-        valExportLoadSteps(if (is.null(covariates)) "correlation_filtered" else "ruv_covariates",
+        valExportLoadSteps(if (is.null(covariates) || identical(ruv, "skip"))
+            "correlation_filtered" else "ruv_covariates",
                            "normalization", "normalization",
                            "normalization-export_filtered_session", "da",
                            "differential_expression", ns$mod_prot_da_ui)
@@ -262,7 +280,8 @@ valProtScript <- function(r, tool, summary, alternative = NULL) {
 
 #' The lipidomics and metabolomics script (`short`: `lipid` or `metab`)
 #' @noRd
-valOmicsScript <- function(r, short, tool, assays, import_values, summary, alternative = NULL) {
+valOmicsScript <- function(r, short, tool, assays, import_values, summary, alternative = NULL,
+                           ruv = "either") {
     ns <- asNamespace("MultiScholaR")
     ui <- function(name) get(paste0("mod_", short, "_", name, "_ui"), envir = ns)
     state <- function(x) paste0(short, "_", x)
@@ -316,7 +335,8 @@ valOmicsScript <- function(r, short, tool, assays, import_values, summary, alter
                             api$defaults(ui("qc_s4"), "qc-s4_finalize")
                             api$press("qc-s4_finalize-finalize_qc")
                         })
-    norm <- valStep("norm", "norm", list(head = c(state("normalized"), state("ruv_corrected"))),
+    norm <- valStep("norm", "norm",
+                    list(head = valRuvHeads(state("normalized"), state("ruv_corrected"), ruv)),
                     module = "norm", press = "norm-run_normalization",
                     run = function(api) {
                         api$defaults(ui("norm"), "norm")

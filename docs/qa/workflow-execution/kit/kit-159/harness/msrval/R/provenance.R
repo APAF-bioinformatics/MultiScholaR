@@ -129,5 +129,31 @@ valCheckProvenance <- function(x) {
     for (b in c("inputs", "truth", "cells", "chunks", "scoring", "outputs")) {
         if (!b %in% names(x) || !(is.list(x[[b]]) || is.null(x[[b]]))) bad(b)
     }
+    # 5.6's nested fields for the phases that run cells and for phase score (I07).
+    if (x$phase %in% c("lifecycle", "counted", "correction", "determinism", "amended", "score")) {
+        if (!"product_tree_identical" %in% names(x$code)) bad("code.product_tree_identical")
+        need(x$code$declaration, c("stage", "commit", "sha256_md", "sha256_json"), is_chr,
+             "code.declaration.")
+        need(x$code, c("code_files", "helpers_extracted"), is.list, "code.")
+    }
+    if (x$phase %in% c("lifecycle", "counted", "correction", "determinism", "amended")) {
+        need(x$inputs$universe, "sha256", is_chr, "inputs.universe.")
+        need(x$inputs$universe, "rows", is.numeric, "inputs.universe.")
+        truths <- x$truth[setdiff(names(x$truth), "blind")]
+        if (!length(truths)) bad("truth")
+        for (t1 in truths) need(t1, "sha256", is_chr, "truth.")
+        need(x$truth, "blind", is.list, "truth.")
+        if (!is.list(x$cells) || !length(x$cells)) bad("cells")
+        for (cl in x$cells) {
+            need(cl, c("unit", "arm", "exit"), is_chr, "cells[].")
+            need(cl, "seed", is.numeric, "cells[].")
+        }
+        need(x$scoring, c("metrics_sha256", "comparisons_sha256"), is_chr, "scoring.")
+        if (!is.list(x$outputs) || !length(x$outputs)) bad("outputs")
+    }
+    if (identical(x$phase, "score")) {
+        need(x$scoring, "comparisons_sha256", is_chr, "scoring.")
+        need(x$scoring, "combined_runs", is.list, "scoring.")
+    }
     TRUE
 }

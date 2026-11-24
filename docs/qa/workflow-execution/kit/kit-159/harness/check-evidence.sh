@@ -63,6 +63,8 @@ while IFS= read -r f; do
     [ -n "$want" ] || want="$(expected_header "$base")"
     if [ -n "$want" ] && [ "$f" = "$base" ]; then
         got="$(head -n 1 "$f")"
+        # The driver writes ledgers with R's quoting; their header is compared unquoted (I08).
+        case "$f" in ledger-*.tsv) got="$(printf '%s' "$got" | tr -d '"')" ;; esac
         [ "$got" = "$want" ] || fail "$f does not have its columns"
         continue
     fi

@@ -432,8 +432,14 @@ valClassify <- function(interval, margin, higher_is_better, fixed = NULL, view =
         "inconclusive"
     }
     labels <- c(interval[["label"]], if (reg$status == "flagged") accept_flagged[["label"]])
+    # O1 (VAL-109): the bands stay as run; a regime whose worst-condition miss rate is at least
+    # twice nominal is flagged beside the verdict.
+    worst <- suppressWarnings(as.numeric(reg[["coverage_min"]] %||% reg$coverage))
     list(outcome = outcome, no_worse = lo > -margin, status = "ok", regime = reg$regime,
          regime_status = reg$status, coverage = reg$coverage, mc_se = reg$mc_se,
+         coverage_min = worst, nsim = suppressWarnings(as.numeric(reg[["nsim"]] %||% NA)),
+         statistic = as.character(reg[["statistic"]] %||% NA_character_),
+         miss_twice_nominal = isTRUE(1 - worst >= 2 * (1 - interval$conf) - 1e-12),
          label = paste(labels[nzchar(labels)], collapse = "; "))
 }
 
@@ -457,6 +463,10 @@ valClassifyMember <- function(member, outcomes) {
                        character(1))
     controls <- member[["controls"]] %||% list()
     named <- c(comps, guards, unlist(controls), unlist(member[["worse_when"]]))
+    if (any(unlist(member[["worse_when"]]) %in% guards)) {
+        valAbort("a worse_when group names a guard (a guard never sets the outcome)",
+                 "val_spec_invalid")
+    }
     if (!all(named %in% names(outcomes)) || !all(guards %in% comps)) {
         valAbort("a member names a component that is not a declared comparison",
                  "val_spec_invalid")
@@ -480,12 +490,21 @@ valClassifyMember <- function(member, outcomes) {
                     guard_text = guard_text))
     }
     a_out <- vapply(active, oc, character(1))
+    missing <- active[!a_out %in% c("better", "match", "worse", "inconclusive")]
+    if (length(missing)) {
+        # I16: an active component without a verdict (refused, not evaluable) leaves the member
+        # not evaluable; it is never printed as a statistical word.
+        return(list(outcome = "not_evaluable", no_worse = NA, components = components,
+                    guard_text = guard_text, missing = missing))
+    }
     a_nw <- vapply(active, function(c) isTRUE(outcomes[[c]]$no_worse), logical(1))
     is_worse <- if (is.null(member[["worse_when"]])) {
         any(a_out %in% "worse")
     } else {
         any(vapply(member[["worse_when"]], function(grp) {
-            all(vapply(grp, function(c) identical(oc(c), "worse"), logical(1)))
+            grp <- intersect(unlist(grp), active)
+            length(grp) > 0L && all(vapply(grp, function(c) identical(oc(c), "worse"),
+                                           logical(1)))
         }, logical(1)))
     }
     outcome <- if (is_worse) {
@@ -510,26 +529,36 @@ valClassifyMember <- function(member, outcomes) {
     list(outcome = outcome, no_worse = no_worse, components = components, guard_text = guard_text)
 }
 
-#' Refusals in a paired run-level comparison (section 4.7)
+#' Refusals in a run-level comparison (section 4.7; O7 ruled in VAL-109)
 #'
 #' Fewer than 30 units: more than one refused unit is `not_evaluable`; exactly one is dropped,
 #' with the `refusal_substitute` sensitivity arm required. 30 or more: within `tolerance` (at most
 #' 5 % of the units), the verdict with the refused units dropped stands only if it is unchanged when
-#' each refused unit takes the least favourable observed value; beyond it, `not_evaluable`.
+#' each refused unit takes the least favourable observed value; beyond it, `not_evaluable`. After a
+#' refusal the interval rests on n - k units: a verdict is given only where a coverage regime for
+#' that count is registered (the harness's or the consuming ticket's, option (b) of O7); otherwise
+#' the comparison is `not_evaluable` with the reason in `regime`. Never an abort.
 #'
-#' @param d Per-unit paired differences, NA for a refused or not-completed unit.
+#' @param d Per-unit differences (or one-arm values), NA for a refused unit.
 #' @param tolerance The declared `refusal_tolerance`.
 #' @param higher_is_better Orientation.
 #' @param margin Margin.
-#' @param method Run-level method (`paired_t` or `exact_median`).
+#' @param method Run-level method (`paired_t`, `exact_median` or `clopper_pearson`).
 #' @param conf Level.
 #' @param regimes Regime table for the classifier.
 #' @param accept_flagged As [valClassify()].
+#' @param fixed The fixed value of a one-arm comparison, or `NULL`.
+#' @param unit_role `independent` or `draw` (Monte Carlo scope).
+#' @param class Statistic class.
+#' @param view The comparison's view.
 #' @return A list: `status`, `outcome`, `no_worse`, `outcome_dropped`, `outcome_filled`,
-#'   `interval_dropped`, `interval_filled`, `n_refused`, `refusal_substitute_required`.
+#'   `interval_dropped`, `interval_filled`, `n_refused`, `refusal_substitute_required`,
+#'   `classification`, `flags`.
 #' @export
 valRefusalFill <- function(d, tolerance, higher_is_better, margin, method = "paired_t",
-                           conf = 0.95, regimes = NULL, accept_flagged = NULL) {
+                           conf = 0.95, regimes = NULL, accept_flagged = NULL, fixed = NULL,
+                           unit_role = "independent", class = NA_character_,
+                           view = "intersection") {
     checkmate::assert_numeric(d, min.len = 1L)
     checkmate::assert_count(tolerance)
     n <- length(d)
@@ -538,27 +567,52 @@ valRefusalFill <- function(d, tolerance, higher_is_better, margin, method = "pai
     if (n >= 30L && tolerance > floor(0.05 * n)) {
         valAbort("refusal_tolerance {tolerance} exceeds 5 % of {n} units", "val_spec_invalid")
     }
+    counted <- if (n_ref > 0L) sprintf("n_refused=%d", n_ref) else character()
     result <- list(status = "not_evaluable", outcome = NA_character_, no_worse = NA,
                    outcome_dropped = NA_character_, outcome_filled = NA_character_,
                    interval_dropped = NULL, interval_filled = NULL, n_refused = n_ref,
-                   refusal_substitute_required = FALSE)
+                   refusal_substitute_required = FALSE,
+                   classification = list(regime = paste("not_evaluable:", n_ref,
+                                                        "refused units exceed the rule (4.7)")),
+                   flags = c("not_evaluable", counted))
     limit <- if (n < 30L) 1L else tolerance
     if (n_ref > limit) return(result)
     classify <- function(v) {
-        iv <- valInterval(v, method = method, conf = conf)
-        list(iv = iv, cl = valClassify(iv, margin, higher_is_better, regimes = regimes,
-                                       accept_flagged = accept_flagged))
+        iv <- valLevelInterval(v, method, conf, unit_role, class)
+        cl <- tryCatch(valClassify(iv, margin, higher_is_better, fixed = fixed, view = view,
+                                   regimes = regimes, accept_flagged = accept_flagged),
+                       val_spec_invalid = function(e) {
+                           list(outcome = NA_character_, no_worse = NA, refused = TRUE,
+                                regime = paste0(
+                                    if (n_ref > 0L) "not_evaluable: " else "refused: ",
+                                    conditionMessage(e),
+                                    if (n_ref > 0L) {
+                                        paste0(" (after ", n_ref, " refused units the interval",
+                                               " rests on ", length(v),
+                                               " units; no regime is registered for that count;",
+                                               " O7 (b), VAL-109)")
+                                    }))
+                       })
+        list(iv = iv, cl = cl)
     }
     kept <- d[!refused]
     dropped <- classify(kept)
     result$interval_dropped <- dropped$iv
     result$outcome_dropped <- dropped$cl$outcome
+    result$classification <- dropped$cl
     result$status <- "ok"
     result$outcome <- dropped$cl$outcome
     result$no_worse <- dropped$cl$no_worse
+    result$flags <- counted
     if (n_ref == 0L) return(result)
+    if (isTRUE(dropped$cl$refused)) {
+        result$status <- "not_evaluable"
+        result$flags <- c("not_evaluable", counted)
+        return(result)
+    }
     if (n < 30L) {
         result$refusal_substitute_required <- TRUE
+        result$flags <- c(counted, "refusal_substitute_required")
         return(result)
     }
     filled_d <- d
@@ -572,6 +626,7 @@ valRefusalFill <- function(d, tolerance, higher_is_better, margin, method = "pai
         result$status <- "not_evaluable"
         result$outcome <- NA_character_
         result$no_worse <- NA
+        result$flags <- c("not_evaluable", counted)
     }
     result
 }
