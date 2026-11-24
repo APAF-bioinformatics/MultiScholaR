@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-208 control C1 after stop rule 2: dump the prot_load DA table (test-omic-da-module.R) on base 0a524465 and head 9dc2bd64 twice, compare columns, rows, precondition digest; ceiling 100 job-min; decides what to put to the owner",
+  "label": "KIT-208 C1 control prot_load DA table at 5728b7eb",
+  "package_commit": "5728b7eb4267f1cf198c0a27cc3e3cb5fac5140a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-208/control/control-k208.R",
+      "args": [
+        "0a524465591b21a555aff688d5cd8e2de7a33057",
+        "9dc2bd64898d8b64f77107886812b0920c087441",
+        "k208-control-out"
+      ],
+      "out": "k208-control-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 100
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
