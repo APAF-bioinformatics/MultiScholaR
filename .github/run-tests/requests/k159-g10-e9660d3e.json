@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-159 REAUDIT2 line: G10 (M2), R CMD check base fe5c9273 (staging) against head e9660d3e (ticket head 41239449 + staging, D13 .Rbuildignore line applied); no tests; decides G10",
+  "label": "KIT-159 G10 check fe5c9273 vs e9660d3e",
+  "package_commit": "e9660d3e00c4994f614167b7098da2534356a286",
+  "base_commit": "fe5c9273b5ddbd8905073859af15a546e7560b41",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
