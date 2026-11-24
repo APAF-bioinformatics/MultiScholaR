@@ -1,0 +1,53 @@
+{
+  "requested_by": "KIT-192 R2b (rule 6.4): R2's scope and check on the merge with staging e962775d, no scripts; ceiling 36.0 core-h; passes on 6.2's verdicts exactly",
+  "label": "KIT-192 R2b merge 9d264708 vs staging e962775d",
+  "package_commit": "9d2647087e62fbec3e71fb007663875443ebc0f8",
+  "base_commit": "e962775da173bb5700367c3c197a31a6ea0cdce6",
+  "tools_ref": "",
+  "tests": [
+    "test-omic-da-module.R",
+    "test-workflow-omics-application-reads.R",
+    "test-omic-summary-module.R",
+    "test-trx-da-without-ruv.R",
+    "test-module-ci-trx-summary.R",
+    "test-module-ci-trx-da.R",
+    "test-module-ci-trx-norm.R",
+    "test-module-ci-trx-qc.R",
+    "test-module-ci-trx-design.R",
+    "test-module-ci-trx-app.R",
+    "test-workflow-trx-declarations.R",
+    "test-trx-publication.R",
+    "test-trx-ruv-designs.R",
+    "test-trx-norm-core.R",
+    "test-kit129-run-path.R",
+    "test-omics-da-core.R",
+    "test-omic-gui-config.R",
+    "test-omic-qc-module.R",
+    "test-omics-qc-core.R",
+    "test-integration-input-transcriptomics.R",
+    "test-e2e-trx-journey.R",
+    "test-e2e-transcriptomics-screen.R",
+    "test-e2e-manifest.R",
+    "test-gui-entry-transcriptomics.R",
+    "test-workflow-operation-registry.R",
+    "test-workflow-figure-paths.R",
+    "test-lipid-02ab-da-module-characterization.R",
+    "test-metab-02ab-da-module-characterization.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-transcriptomics.R": 120
+  },
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
