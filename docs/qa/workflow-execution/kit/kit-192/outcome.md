@@ -13,7 +13,8 @@ every base below). Nothing was run on the laptop; every run is a `run-tests` req
 | 31c9dd64 | Tests only: T1 to T6 appended to `tests/testthat/test-trx-da-without-ruv.R`, T7b in `tests/testthat/test-module-ci-trx-summary.R`, S1 `export-routes-control.R` |
 | e8f78773 | Tests only: T7b's printed paragraph matched with `perl = TRUE` (R1 instrument defect, below) |
 | 816173df | The fix (`R/utils_workflow_trx_declarations.R`, `computeWorkflowTrxDaPublicationAction`: the grid summary only when `grid[["ruv_design", exact = TRUE]]` is NULL, the RUV publication's test); NEWS; ledger row `VAL-<merge>` |
-| (records) | This folder |
+| 0ef0b641 | Records of R1, R1b, R2, S1 (R3 binds this commit) |
+| (records) | R3 and this final outcome |
 
 ## Re-read at the branch point (step 0)
 
@@ -79,7 +80,21 @@ reference failures. T7b's stop rule (a W3 defect) did not fire.
     identical; (iii) errors, head, k (0, 0, 2, 1), DA table digest, the 8-file listing and the `.csv`/`.tsv` digests
     identical; the grid summary absent on both sides.
 
+**R3** (45301883983, 0ef0b641 against 51959495, full suite, 20 shards per side, no check;
+`r3-full-suite-compare.tsv`, `r3-full-suite-compare-failures.txt`). 455 files: 453 `same`; `count-changed`
+`test-trx-da-without-ruv.R` and `test-module-ci-trx-summary.R` (the new tests passing); no `new-failure`,
+`message-changed`, `compare-error`, `timeout` or crash. 899 failure entries on each side, identical (runner against
+laptop references, KIT-156).
+
 No stored reference moved.
+
+## After R3: staging gained code
+
+Between R2 and the end of R3, `v0.9-staging` moved from 51959495 by KIT-187's merge (proteomics `R/` files, three
+proteomics report templates, one `man/` page, three proteomics test files, its records), `NEWS.md` and the ledger. None
+is a file of 7.3 or `tests/testthat/helper-module-ci-trx-tabs.R`. By the merger's rule (6.4): R2b (R2's tests and
+check on the merge) is due; S1 is not repeated; R3b is not due if the only hand-resolved conflicts are in `NEWS.md` and
+the ledger and R2b shows 6.2's verdicts. The merge and R2b were left to the coordinator (not run here).
 
 ## Acceptance criteria
 
@@ -89,7 +104,7 @@ No stored reference moved.
 | A2 | met | `s1/export-routes-compare.tsv`: 60/60 |
 | A3 | met | `r2-compare.tsv`: the verdicts of 6.2 exactly |
 | A4 | met | `r2-check-compare.txt`: none only on head |
-| A5 | pending R3 | |
+| A5 | met | `r3-full-suite-compare.tsv`: 453 `same`, the two predicted `count-changed`; no other verdict |
 | A6 | met | NEWS: this entry under the unreleased heading, KIT-186's sentence deleted; ledger row `VAL-<merge>`; `DESCRIPTION`, `packaging/electron/package.json`, lock files, `man/`, `NAMESPACE` unchanged (`git diff --stat 51959495`) |
 | A7 | met | section above |
 
@@ -99,6 +114,8 @@ No stored reference moved.
 - That a gate-off user sees nothing change (routes 1 to 3 show it for the three legacy routes driven).
 
 ## Not checked
+
+- The branch merged with the current `v0.9-staging` (R2b, the coordinator's merge).
 
 - Figure bytes (PNG, PDF) base against head; the figure code is above the changed line.
 - Windows (no platform code touched); real data (none used; no number changes).
