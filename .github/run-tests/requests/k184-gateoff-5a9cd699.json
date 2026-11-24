@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-184 A14 at the final head: the kit-138 gate-off identity script, head 5a9cd699 (branch merged with staging) against staging 8cb536cc, after the VAL-160 change touched the tab and its texts; one test file beside it; ceiling 90 job-minutes, inside row R2",
+  "label": "KIT-184 gate-off identity 5a9cd699 vs staging 8cb536cc",
+  "package_commit": "5a9cd699851bce34b34583e07f6f0bddfafe311b",
+  "base_commit": "8cb536cc3bc09591ec1bfb6fef0cb15437a5ad4a",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-gui.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-138/gate-off-identity.R",
+      "args": [
+        "8cb536cc3bc09591ec1bfb6fef0cb15437a5ad4a",
+        "k184-out/gate-off"
+      ],
+      "out": "k184-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
