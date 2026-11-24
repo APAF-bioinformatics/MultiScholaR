@@ -205,6 +205,7 @@ kit201ProtOwner <- function(root, rule = NULL) {
     manager$.context$reference_states <- TRUE
     manager$setWorkflowType("LFQ")
     wide <- data.frame(Protein.Ids = rownames(fixture$x), fixture$x, check.names = FALSE, stringsAsFactors = FALSE)
+    rownames(wide) <- NULL # the protein table carries its ids as a column only (R1 instrument defect, run 45328062374)
     design <- fixture$design
     rownames(design) <- NULL
     design$tech_rep_group <- design$Run
