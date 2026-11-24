@@ -1,6 +1,6 @@
-# Third pass of the pre-release repair (audit I15; D19 and O10 of VAL-109): G1(a)'s live-difference
-# classifier, bounded by field and key as the pass column of G1(a) states, and the admission of
-# `limpa_da_last_digits` only after KIT-199's merge is in the commit under test.
+# Third pass of the pre-release repair (audit I15; D19 answered by VAL-109 (5) and the KIT-199
+# plan audit's ruling C1 (a)): G1(a)'s live-difference classifier, bounded by field and key as the
+# pass column of G1(a) states, and the DIA-with-limpa link read as `declared_change (KIT-199)`.
 
 LIMPA_KEY <- "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv"
 
@@ -14,17 +14,6 @@ g1aSteps <- function() {
 g1aDiff <- function(lane, step, field, key, base, live) {
     data.frame(lane = lane, step = step, field = field, key = key, base = base, live = live,
                stringsAsFactors = FALSE)
-}
-
-# A throwaway git repository whose HEAD has the given subject; returns its root and HEAD.
-gitRepoWith <- function(subject) {
-    skip_if(!nzchar(Sys.which("git")), "no git")
-    repo <- withr::local_tempdir(.local_envir = parent.frame())
-    git <- function(...) system2("git", c("-C", shQuote(repo), ...), stdout = TRUE, stderr = TRUE)
-    git("init", "-q")
-    git("-c", "user.email=val@example.invalid", "-c", "user.name=val", "commit", "-q",
-        "--allow-empty", "-m", shQuote(subject))
-    list(root = repo, head = git("rev-parse", "HEAD")[[1L]])
 }
 
 test_that("R-I15b: live differences are classed by G1(a)'s bounds, or left outside the classes", {
@@ -66,33 +55,36 @@ test_that("R-I15b: live differences are classed by G1(a)'s bounds, or left outsi
     expect_identical(valReadChain("metab_lc", list(), ref, live_diffs = out)$status, "stop")
 })
 
-test_that("R-D19: limpa_da_last_digits is admitted only once KIT-199's merge is in the commit under test", {
-    expect_error(msrval:::valG1aClasses(list(ruling = "KIT-199 merged", digest = "8a4c2dd5ab")),
-                 class = "val_spec_invalid")
-    other <- gitRepoWith("Merge KIT-198: something else")
-    expect_error(msrval:::valG1aClasses(list(ruling = "KIT-199", digest = "8a4c2dd5ab",
-                                            merge_commit = other$head, pkg_root = other$root)),
-                 class = "val_spec_invalid")
-    merged <- gitRepoWith("Merge KIT-199: re-freeze the DIA-with-limpa reference")
-    admit <- list(ruling = "KIT-199", digest = "8a4c2dd5ab", merge_commit = merged$head,
-                  pkg_root = merged$root)
-    expect_true("limpa_da_last_digits" %in% msrval:::valG1aClasses(admit))
-    bad_digest <- admit
-    bad_digest$digest <- "80cfedaa"
-    expect_error(msrval:::valG1aClasses(bad_digest), class = "val_spec_invalid")
+test_that("R-K199: no admission path; the DIA-with-limpa link is a declared change; two classes in a step", {
+    expect_false("limpa_da_last_digits" %in% msrval:::G1A_CLASSES)
+    expect_false("admit" %in% names(formals(valClassifyLiveDiffs)))
     steps <- g1aSteps()
-    d <- g1aDiff("prot_dia_limpa", "da", "artifacts", LIMPA_KEY, "80cfedaa11", "8a4c2dd5ab")
-    expect_identical(valClassifyLiveDiffs(d, steps, admit = admit)$class, "limpa_da_last_digits")
-    d2 <- d
-    d2$live <- "77aa0000"
-    expect_true(is.na(valClassifyLiveDiffs(d2, steps, admit = admit)$class))
-    d3 <- rbind(d, g1aDiff("prot_dia_limpa", "da", "states", "da", "a", "b"))
-    expect_true(all(is.na(valClassifyLiveDiffs(d3, steps, admit = admit)$class)))
-    ref <- data.frame(lane = "prot_dia_limpa", step = "da", class = "limpa_da_last_digits",
-                      fields = "artifacts", keys = "1")
-    live <- data.frame(class = "limpa_da_last_digits", digest = "8a4c2dd5ab")
-    expect_identical(valReadChain("prot_dia_limpa", list(), ref, live_diffs = live,
-                                  admit = admit)$status, "certified")
-    expect_identical(valReadChain("prot_dia_limpa", list(), ref, live_diffs = live)$status,
-                     "stop")
+    # one summary step holding the DA-digest change and the integration-name change
+    d <- rbind(g1aDiff("prot_dia_limpa", "int", "artifacts", LIMPA_KEY, "80cfedaa11", "8a4c2dd5ab"),
+               g1aDiff("prot_dia_limpa", "int", "artifacts", "integration/proteomics/m.parquet",
+                       NA, "cc"))
+    expect_true(all(is.na(valClassifyLiveDiffs(d, steps)$class)))
+    declared <- data.frame(lane = "prot_dia_limpa", step = "int", key = LIMPA_KEY,
+                           ticket = "KIT-199")
+    cl <- valClassifyLiveDiffs(d, steps, declared = declared)
+    expect_identical(cl$class, c("declared_change (KIT-199)", "integration_artifacts"))
+    # KIT-199's link (i) accepts its own declared change; the reference counts compare the rest
+    ref <- data.frame(lane = "prot_dia_limpa", step = "int", class = "integration_artifacts",
+                      fields = "artifacts", keys = "integration/proteomics/m.parquet")
+    none <- data.frame(step = character(), field = character(), key = character(),
+                       class = character(), head_value = character())
+    link <- list(ticket = "KIT-199", changed_step = "da",
+                 base_diffs = cl[, c("step", "field", "key", "class")], before_diffs = none,
+                 after_diffs = none[, 1:4],
+                 declared = data.frame(key = LIMPA_KEY, step = "int", expected = "8a4c2dd5ab"),
+                 change_classes = "declared_change (KIT-199)")
+    expect_identical(valReadChain("prot_dia_limpa", list(link), ref)$status, "certified")
+    other <- link
+    other$base_diffs$class[[1L]] <- "declared_change (KIT-198)"
+    expect_identical(valReadChain("prot_dia_limpa", list(other), ref)$status, "not_certified")
+    unlisted <- link
+    unlisted$declared <- unlisted$declared[0L, ]
+    expect_identical(valReadChain("prot_dia_limpa", list(unlisted), ref)$status, "not_certified")
+    # with no link, a declared change is not certified by the reference alone
+    expect_identical(valReadChain("prot_dia_limpa", list(), ref, live_diffs = cl)$status, "stop")
 })

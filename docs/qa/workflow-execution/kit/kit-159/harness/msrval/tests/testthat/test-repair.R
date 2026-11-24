@@ -357,20 +357,15 @@ test_that("R-I16: a member without a verdict is not_evaluable; worse_when never 
     expect_identical(res3$outcome, "match")
 })
 
-test_that("R-I15: G1(a) does not admit limpa_da_last_digits without its ruling and G1D's digest", {
+test_that("R-I15: G1(a) has no limpa_da_last_digits class and no admission path (VAL-109 (5))", {
     expect_false("limpa_da_last_digits" %in% msrval:::G1A_CLASSES)
     ref <- data.frame(lane = "prot_dia_limpa", step = "da", class = "limpa_da_last_digits",
                       fields = "log2FC", keys = "1")
     live <- data.frame(class = "limpa_da_last_digits", digest = "8a4c2dd5ab")
     expect_identical(valReadChain("prot_dia_limpa", list(), ref, live_diffs = live)$status, "stop")
-    expect_error(valReadChain("prot_dia_limpa", list(), ref, live_diffs = live,
-                              admit = list(ruling = "KIT-199", digest = "80cfedaa")),
-                 class = "val_spec_invalid")
-    # D19 (VAL-109): a ruling's text alone does not admit the class; KIT-199's merge must be in
-    # the commit under test (test-repair3.R, R-D19)
-    expect_error(valReadChain("prot_dia_limpa", list(), ref, live_diffs = live,
-                              admit = list(ruling = "KIT-199 merged", digest = "8a4c2dd5ab")),
-                 class = "val_spec_invalid")
+    # KIT-199's plan audit, ruling C1 (a): the DIA-with-limpa link is read as a declared change
+    # (test-repair3.R, R-K199); the harness keeps no separate admission of the class
+    expect_false("admit" %in% names(formals(valReadChain)))
 })
 
 test_that("R-I17: the chunk backstop ends a cell blocked outside R as did_not_complete (timeout)", {
