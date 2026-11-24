@@ -176,7 +176,7 @@
  * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
    numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
    it counted in how many samples a feature was below it. An MS-DIAL table imported with its default identifier column
-   ('Peak ID' for lipids, 'Alignment ID' for metabolites), whose identifiers are whole numbers, had that column counted
+   ('Peak ID' or 'Alignment ID', whichever the export has), whose identifiers are whole numbers, had that column counted
    as a sample, so the threshold could be set by identifier numbers and whether a feature was removed could depend on
    its row number. For example, on an MS-DIAL metabolite table of 8 features and 4 samples at the 10th percentile and
    0.5, the threshold was 4.9 instead of 16,410 and no feature was removed instead of 2. A custom-format table with a
