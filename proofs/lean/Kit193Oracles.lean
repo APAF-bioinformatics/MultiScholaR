@@ -28,6 +28,9 @@ def main (args : List String) : IO UInt32 := do
     writeTable dir "replay-inforce.tsv" Oracle.ReplayRule.inforceTable
     writeTable dir "replay-build.tsv" Oracle.ReplayRule.buildTable
     writeTable dir "replay-options.tsv" Oracle.ReplayRule.optionsTable
+    writeTable dir "perm-floor.tsv" Oracle.Permutation.table
+    writeTable dir "bh-counterexample.tsv" Oracle.QvalueBh.table
+    writeTable dir "first-pass.tsv" Oracle.RuvControlRules.table
     return 0
   | _ =>
     IO.eprintln "usage: lake env lean --run Kit193Oracles.lean <output directory>"

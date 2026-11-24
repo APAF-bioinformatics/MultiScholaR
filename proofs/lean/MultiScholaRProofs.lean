@@ -15,6 +15,9 @@ public import MultiScholaRProofs.Spec.RuvControlRules
 public import MultiScholaRProofs.Oracle.GoClosure
 public import MultiScholaRProofs.Oracle.FilterCount
 public import MultiScholaRProofs.Oracle.ReplayRule
+public import MultiScholaRProofs.Oracle.Permutation
+public import MultiScholaRProofs.Oracle.QvalueBh
+public import MultiScholaRProofs.Oracle.RuvControlRules
 public import MultiScholaRProofs.Proof.GoClosure
 public import MultiScholaRProofs.Proof.ReplayRule
 public import MultiScholaRProofs.Proof.FilterCount
