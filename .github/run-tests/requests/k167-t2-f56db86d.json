@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-167 core at f56db86d: the five new core test files after the fix; ceiling 30 job-minutes; decides whether the core passes or needs the one correction pass",
+  "label": "KIT-167 T2 core f56db86d",
+  "package_commit": "f56db86dfc98672c0c4c891951c7ce127d072844",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-reference-mapping-resolve.R",
+    "test-reference-mapping-fasta.R",
+    "test-reference-organisms.R",
+    "test-reference-annotation.R",
+    "test-reference-engine.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 10,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
