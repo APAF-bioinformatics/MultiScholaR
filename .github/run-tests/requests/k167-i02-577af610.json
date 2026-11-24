@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-167 audit I02 test first at 577af610: the scratch-folder test shown failing before the repair (no R/ change); ceiling 20 job-minutes; decides the failing-first record",
+  "label": "KIT-167 I02 failing first 577af610",
+  "package_commit": "577af6102fd15066b43373b8deaac1dd2842af38",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-reference-mapping-workflow.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
