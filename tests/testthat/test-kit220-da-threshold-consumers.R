@@ -416,3 +416,15 @@ test_that("KIT-220 G5: every printCountDaGenesTable call of the DA helper and th
         for (call in calls) expect_true("fdr_thresh" %in% names(as.list(call)), info = paste(fun, deparse(call)[[1L]]))
     }
 })
+
+# ---- r1.3 (implementation audit I05): the top-genes list at the given threshold -----------------------------------
+
+test_that("KIT-220 T-T1 (top genes): trxAnnotateDe lists the top genes at the given FDR threshold", {
+    # trxAnnotateDe takes the gene ids from the top table's row names (rownames_to_column, R/func_trx_da.R:102).
+    top <- data.frame(logFC = c(2, 1.5, 1, -2, -1.5, -1), FDR = c(0.001, 0.02, 0.04, 0.002, 0.03, 0.2),
+        row.names = paste0("G", 1:6))
+    counts <- data.frame(GeneID = paste0("G", 1:6), GeneName = paste0("N", 1:6), stringsAsFactors = FALSE)
+    at_001 <- trxAnnotateDe(top, counts, "B_vs_A", fdr_thresh = 0.01)$top_de
+    expect_identical(sort(at_001$GeneID), c("G1", "G4"))
+    expect_identical(sort(trxAnnotateDe(top, counts, "B_vs_A")$top_de$GeneID), c("G1", "G2", "G3", "G4", "G5"))
+})
