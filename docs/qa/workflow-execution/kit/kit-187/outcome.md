@@ -10,6 +10,16 @@ Branch state for R3: c7ce0be6 plus the records/NEWS/ledger commit, a merge of `v
 - Script `provenance-cause.R` (scripts job, `out` `docs/qa/workflow-execution/kit/kit-187/r3-prov`): base and head each run the three KIT-111 tests by description with the eight cases' provenance kept unhashed (a temporary copy of the test file with two substitutions), then compare every leaf. **Expected:** every leaf `same` except leaves `<state>/fixed/missing_value_comparison` present only on head with value "counts" (`marker_on_head`); all 17 expected cases present (8 in W1 (a), 8 in W2, 1 in R7); verdict "only the marker differs". **Decision:** anything else (an `UNEXPLAINED` leaf, a missing case, no marker) stops the ticket and is reported; a script-mechanics failure with no comparison produced is an instrument defect under VAL-54.
 - **Predicted verdicts:** as 6.2 (revision 1.4): the two new files `only-on-head`; `test-prot-summary-report-templates.R` `count-changed` (12 added, passing); `test-prot-norm-core.R` `message-changed` with exactly the 34 provenance expectations added to the base's failures; files enumerating record parameters may be `count-changed` with passing expectations only; everything else `same`; check: no finding only on head. Any other `new-failure`, `message-changed` or `compare-error` stops the ticket.
 
+## R3, run 45294246208 (observed)
+
+Head bcb73db5 against 64cc0fff, all test files, 20 shards per side, check on (`r3-full-suite-compare.tsv`, `r3-full-suite-compare-failures.txt`, `r3-check-compare.txt`, `r3-prov/`); 1,063.5 job-minutes (70.9 core-hours).
+- Verdicts over 457 files: 453 `same`; `only-on-head` the two new files; `count-changed` `test-prot-summary-report-templates.R`; `message-changed` `test-prot-norm-core.R` only. No `new-failure`, no `compare-error`.
+- `test-prot-norm-core.R`: base 272 failures, head 306; the head-only failures are exactly 34, none gone, all in the three KIT-111 tests and the 17 cases (8 in W1 (a), 8 in W2 (W1 (b)), 1 in W2 (R7)). **They are 17 `<case> provenance` and 17 `<case> record` expectations, not 34 `provenance`:** each case's `record` field (`protNormW1Sha(protNormW1RecordSteps(manager, root))`, the analysis record's steps) moves too. R2's 34 were the same 34; my R2 reading listed only the `provenance` labels (my pattern omitted `record`), so VAL-104 and the ticket's revision 1.4 text name the wrong field mix.
+- `provenance-cause.R`: 17 cases on both sides, 725 leaves same, 29 leaves `<state>/fixed/missing_value_comparison` = "counts" only on head, 0 unexplained: "only the marker differs" for the provenance. The record steps were not compared by the script; that their move is the same marker (listed by the record builder as a `fixed` parameter of the normalisation steps) is inferred, not shown.
+- R CMD check: identical findings on both sides (0 errors, 3 warnings, 3 notes); nothing only on head.
+
+A6: met for every verdict except that the admitted move, as written, names 34 `provenance` expectations; the observed 34 are 17 `provenance` + 17 `record`. Whether that is within VAL-104 is the owner's reading; the ticket stops here for it.
+
 ## R2 stop (as recorded before the ruling)
 
 
@@ -78,7 +88,7 @@ restructuring; transcriptomics code only, none on S2's path) e6c42d1d. First bra
 | A3 | **not met**: `test-prot-norm-core.R` `message-changed` | `r2-compare.tsv` |
 | A4 | met | `r2-check-compare.txt` |
 | A5 | met | `s2-lc/`, `s2/falsifiers.tsv`, `s2/cells.tsv` |
-| A6 | not run (R3 waits) | |
+| A6 | see "R3" above: verdicts as predicted except the admitted move is 17 provenance + 17 record | `r3-full-suite-compare.tsv` |
 | A7 | not yet (NEWS, ledger wait); DESCRIPTION, packaging, NAMESPACE untouched by this branch's commits | diff |
 | A8 | met | section below |
 
@@ -122,8 +132,8 @@ numbers are those of 98df468b.
 - The exactness bound (316) and the earlier-rule equivalence beyond the tested grid (n up to 20, G up to 7).
 
 ## Not checked
-- R3 (full suite); R2b/R3b on KIT-177's merge (not merged at stop time).
-- Other stored references outside R2's 45 files that may hash step provenance (R3 would show them).
+- R2b/R3b on KIT-177's merge (not merged when R3 was sent).
+- That the 17 `record` moves come only from the marker (the cause script compares provenance only).
 - NEWS and ledger wording (not written).
 - Real data (none used); Windows (no platform code touched); whether a managed worker can run a different build
   from the controller.
