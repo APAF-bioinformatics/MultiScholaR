@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-220 G0 instrument re-run 2 (VAL-54; run 45501071657 section 2 called an unexported function); base code at 19b9a4dc; ceiling 90 job-minutes",
+  "label": "KIT-220 G0c at 19b9a4dc (base code)",
+  "package_commit": "19b9a4dcf4a27cbedb6ed037ab29b67e78258b2b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-220/g0.R",
+      "args": [
+        "kit220-g0"
+      ],
+      "out": "kit220-g0",
+      "timeout_minutes": 80
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
