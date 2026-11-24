@@ -1,0 +1,2 @@
+KIT-188 l1-l: 18 units, 4 workers, lifecycle TRUE, jobs deciding,reported,munit,ba
+KIT-188 l1-l finished: 18 units (3 with an error), wall 105.0 min

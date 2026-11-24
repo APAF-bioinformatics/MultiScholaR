@@ -1,0 +1,3 @@
+run_id	request	commit	purpose	job_minutes	core_hours	result
+45273944113	k188-l1-l-049c51b4	049c51b445398433b3778dcef86260e06788db79	L1 blind lifecycle, L12 and L64, data sets 401-403 (deciding, reported, munit, ba); ceiling 10.67	115.5	7.70	completed; 15 of 18 units; the 3 L12 reported units stopped on a script defect (no result; VAL-54 rerun); E9 150 of 150 pass
+45273948106	k188-l1-m-049c51b4	049c51b445398433b3778dcef86260e06788db79	L1 blind lifecycle, M12 and M168, data sets 401-403; ceiling 10.67	127.9	8.53	completed; 18 of 18 units; E9 176 of 176 pass

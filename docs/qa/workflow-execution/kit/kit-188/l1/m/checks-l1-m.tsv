@@ -1,0 +1,464 @@
+check	cell	rep	condition	value	threshold	pass	note
+E4	constructed	0	family	NA	exact	TRUE	differ: ; s5 without the feature 0; oracle s5 1
+E3	metab	0	defaults	NA	equal to 2.1 and 18.4	TRUE	differ: ; labelled names matching an ITSD pattern:  | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k=2; percentile=10; proportion=0.5
+E6	M168	401	N0	1.776e-15	1e-12	TRUE	
+E9	M168	401	N0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M168	401	N0 none LM	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	401	N0 none FP	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	401	N0 none SC	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M168	401	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	401	N0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M168	401	N0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N0 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N0 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N0 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	401	N1	3.553e-15	1e-12	TRUE	
+E9	M168	401	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 17: 24 controls, positions among valid rows 1-24, expected 1..24: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	401	N1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	401	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	401	N1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M168	401	N1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N1 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N1 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N1 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	401	E0	1.776e-15	1e-12	TRUE	
+E9	M168	401	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 4: 6 controls, positions among valid rows 1-6, expected 1..6: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	401	E0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	401	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 10: 14 controls, positions among valid rows 1-14, expected 1..14: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	401	E0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	401	E0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 7: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	401	E0 vd20	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE
+E6	M168	401	E1	3.553e-15	1e-12	TRUE	
+E9	M168	401	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 8: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	401	E1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	401	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 8: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	401	E1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M168	401	E1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	E1 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	E1 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	E1 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E7_refusal	M168	401	N0 none	8	omics_ruv_insufficient_controls	TRUE	k 8: status refused, class omics_ruv_insufficient_controls, step ruv
+E6	M168	402	N0	1.776e-15	1e-12	TRUE	
+E9	M168	402	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 17: 23 controls, positions among valid rows 1-23, expected 1..23: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M168	402	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M168	402	N0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M168	402	N0 none LM	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	402	N0 none FP	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	402	N0 none SC	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	402	N0 none LCm	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M168	402	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 27 controls, positions among valid rows 1-27, expected 1..27: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	N0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	402	N0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	N0 vd20	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE
+E6	M168	402	N1	3.553e-15	1e-12	TRUE	
+E9	M168	402	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 8: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	N1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	402	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 8: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	N1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M168	402	N1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	402	N1 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	402	N1 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	402	N1 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	402	E0	1.776e-15	1e-12	TRUE	
+E9	M168	402	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 13 controls, positions among valid rows 1-13, expected 1..13: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	E0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	402	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 10: 14 controls, positions among valid rows 1-14, expected 1..14: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	E0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	402	E0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 14 controls, positions among valid rows 1-14, expected 1..14: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	M168	402	E1	1.776e-15	1e-12	TRUE	
+E9	M168	402	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 12: 17 controls, positions among valid rows 1-17, expected 1..17: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	E1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	402	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 6: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	E1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	402	E1 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 3: 5 controls, positions among valid rows 1-5, expected 1..5: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	E1 vd20	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE
+E6	M168	403	N0	1.776e-15	1e-12	TRUE	
+E9	M168	403	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M168	403	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M168	403	N0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M168	403	N0 none LM	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	403	N0 none FP	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	403	N0 none SC	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	403	N0 none LCm	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M168	403	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 19: 26 controls, positions among valid rows 1-26, expected 1..26: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	N0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	403	N0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	N0 vd20	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE
+E6	M168	403	N1	2.665e-15	1e-12	TRUE	
+E9	M168	403	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 17: 24 controls, positions among valid rows 1-24, expected 1..24: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	N1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	403	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 16: 23 controls, positions among valid rows 1-23, expected 1..23: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	N1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	403	N1 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 5: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	M168	403	E0	1.776e-15	1e-12	TRUE	
+E9	M168	403	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 18: 25 controls, positions among valid rows 1-25, expected 1..25: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	E0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	403	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 17: 23 controls, positions among valid rows 1-23, expected 1..23: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	E0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	403	E0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	E0 vd20	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE
+E6	M168	403	E1	3.553e-15	1e-12	TRUE	
+E9	M168	403	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 11: 16 controls, positions among valid rows 1-16, expected 1..16: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	E1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	403	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 6: 9 controls, positions among valid rows 1-9, expected 1..9: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	E1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M168	403	E1 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	E1 vd20	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE
+E6	M168	401	N0	1.776e-15	1e-12	TRUE	
+E9	M168	401	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 8: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M168	401	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	401	N0 none GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	401	N0 none NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole
+E8	M168	401	N0 none LCMS_Pos	8.783e-11	1e-06	TRUE	k 1, controls 11 (reported, never re-run)
+E9	M168	401	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M168	401	N0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N0 vd20 GA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N0 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	401	N1	3.553e-15	1e-12	TRUE	
+E9	M168	401	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 17: 24 controls, positions among valid rows 1-24, expected 1..24: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M168	401	N1 none LCMS_Pos	4.753e-16	1e-06	TRUE	k 1, controls 24 (reported, never re-run)
+E9	M168	401	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M168	401	N1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N1 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	401	E0	1.776e-15	1e-12	TRUE	
+E9	M168	401	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 4: 6 controls, positions among valid rows 1-6, expected 1..6: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M168	401	E0 none LCMS_Pos	1.084e-13	1e-06	TRUE	k 2, controls 6 (reported, never re-run)
+E9	M168	401	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 10: 14 controls, positions among valid rows 1-14, expected 1..14: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	401	E0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 7: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	M168	401	E1	3.553e-15	1e-12	TRUE	
+E9	M168	401	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 8: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M168	401	E1 none LCMS_Pos	4.607e-15	1e-06	TRUE	k 1, controls 11 (reported, never re-run)
+E9	M168	401	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 8: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M168	401	E1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	E1 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	402	N0	1.776e-15	1e-12	TRUE	
+E9	M168	402	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 17: 23 controls, positions among valid rows 1-23, expected 1..23: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M168	402	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	402	N0 none GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	402	N0 none NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole
+E8	M168	402	N0 none LCMS_Pos	8.415e-14	1e-06	TRUE	k 1, controls 23 (reported, never re-run)
+E9	M168	402	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 27 controls, positions among valid rows 1-27, expected 1..27: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	N0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	M168	402	N1	3.553e-15	1e-12	TRUE	
+E9	M168	402	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 8: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M168	402	N1 none LCMS_Pos	6.731e-16	1e-06	TRUE	k 1, controls 11 (reported, never re-run)
+E9	M168	402	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 8: 11 controls, positions among valid rows 1-11, expected 1..11: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M168	402	N1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	402	N1 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	402	E0	1.776e-15	1e-12	TRUE	
+E9	M168	402	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 13 controls, positions among valid rows 1-13, expected 1..13: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M168	402	E0 none LCMS_Pos	2.627e-13	1e-06	TRUE	k 2, controls 13 (reported, never re-run)
+E9	M168	402	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 10: 14 controls, positions among valid rows 1-14, expected 1..14: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	E0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 14 controls, positions among valid rows 1-14, expected 1..14: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	M168	402	E1	1.776e-15	1e-12	TRUE	
+E9	M168	402	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 12: 17 controls, positions among valid rows 1-17, expected 1..17: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M168	402	E1 none LCMS_Pos	5.725e-12	1e-06	TRUE	k 16, controls 17 (reported, never re-run)
+E9	M168	402	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 6: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	402	E1 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 3: 5 controls, positions among valid rows 1-5, expected 1..5: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E2	M168	402	E1 vd20	0	identical	TRUE	rows 456 and 456
+E6	M168	403	N0	1.776e-15	1e-12	TRUE	
+E9	M168	403	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M168	403	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	403	N0 none GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	403	N0 none NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole
+E8	M168	403	N0 none LCMS_Pos	4.55e-12	1e-06	TRUE	k 1, controls 28 (reported, never re-run)
+E9	M168	403	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 19: 26 controls, positions among valid rows 1-26, expected 1..26: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	N0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	M168	403	N1	2.665e-15	1e-12	TRUE	
+E9	M168	403	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 17: 24 controls, positions among valid rows 1-24, expected 1..24: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M168	403	N1 none LCMS_Pos	4.51e-16	1e-06	TRUE	k 1, controls 24 (reported, never re-run)
+E9	M168	403	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 16: 23 controls, positions among valid rows 1-23, expected 1..23: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	N1 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 5: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	M168	403	E0	1.776e-15	1e-12	TRUE	
+E9	M168	403	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 18: 25 controls, positions among valid rows 1-25, expected 1..25: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M168	403	E0 none LCMS_Pos	7.95e-12	1e-06	TRUE	k 2, controls 25 (reported, never re-run)
+E9	M168	403	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 17: 23 controls, positions among valid rows 1-23, expected 1..23: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	E0 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	M168	403	E1	3.553e-15	1e-12	TRUE	
+E9	M168	403	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 11: 16 controls, positions among valid rows 1-16, expected 1..16: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M168	403	E1 none LCMS_Pos	6.946e-13	1e-06	TRUE	k 16, controls 16 (reported, never re-run)
+E9	M168	403	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 6: 9 controls, positions among valid rows 1-9, expected 1..9: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M168	403	E1 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E2	M168	403	E1 vd20	0	identical	TRUE	rows 456 and 456
+E6	M168	401	N0	1.776e-15	1e-12	TRUE	
+E1	M168	401	N0 ba LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N0 ba GA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N0 ba NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	401	N1	3.553e-15	1e-12	TRUE	
+E1	M168	401	N1 ba LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	N1 ba NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	401	E0	1.776e-15	1e-12	TRUE	
+E6	M168	401	E1	3.553e-15	1e-12	TRUE	
+E1	M168	401	E1 ba LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	401	E1 ba NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	402	N0	1.776e-15	1e-12	TRUE	
+E1	M168	402	N0 ba LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	402	N0 ba GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	402	N0 ba NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole
+E6	M168	402	N1	3.553e-15	1e-12	TRUE	
+E1	M168	402	N1 ba LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M168	402	N1 ba NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M168	402	E0	1.776e-15	1e-12	TRUE	
+E6	M168	402	E1	1.776e-15	1e-12	TRUE	
+E6	M168	403	N0	1.776e-15	1e-12	TRUE	
+E1	M168	403	N0 ba LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	403	N0 ba GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M168	403	N0 ba NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole
+E6	M168	403	N1	2.665e-15	1e-12	TRUE	
+E6	M168	403	E0	1.776e-15	1e-12	TRUE	
+E6	M168	403	E1	3.553e-15	1e-12	TRUE	
+E6	M12	401	N0	1.776e-15	1e-12	TRUE	
+E9	M12	401	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 6: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	401	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M12	401	N0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	401	N0 none LM	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	401	N0 none FP	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	401	N0 none SC	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	401	N0 none LCm	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M12	401	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 13 controls, positions among valid rows 1-13, expected 1..13: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	401	N0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	401	N0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	N0 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	N0 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	N0 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	401	N1	1.776e-15	1e-12	TRUE	
+E9	M12	401	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 14: 20 controls, positions among valid rows 1-20, expected 1..20: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	401	N1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M12	401	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 14: 20 controls, positions among valid rows 1-20, expected 1..20: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	401	N1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M12	401	N1 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	401	N1 vd20	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E6	M12	401	E0	1.776e-15	1e-12	TRUE	
+E9	M12	401	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 18: 25 controls, positions among valid rows 1-25, expected 1..25: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	401	E0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M12	401	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 13 controls, positions among valid rows 1-13, expected 1..13: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	401	E0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	401	E0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E0 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E0 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E0 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	401	E1	1.776e-15	1e-12	TRUE	
+E9	M12	401	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 11: 16 controls, positions among valid rows 1-16, expected 1..16: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	401	E1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	401	E1 vd5 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E1 vd5 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E1 vd5 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E1 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E1 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E7_refusal	M12	401	N0 none	8	omics_ruv_insufficient_controls	TRUE	k 8: status refused, class omics_ruv_insufficient_controls, step ruv
+E6	M12	402	N0	1.776e-15	1e-12	TRUE	
+E9	M12	402	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 15: 21 controls, positions among valid rows 1-21, expected 1..21: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	402	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M12	402	N0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	402	N0 none LM	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	402	N0 none FP	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	402	N0 none SC	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	402	N0 none LCm	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M12	402	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 27 controls, positions among valid rows 1-27, expected 1..27: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	402	N0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	402	N0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	N0 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	N0 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	N0 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	402	N1	1.776e-15	1e-12	TRUE	
+E9	M12	402	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 19: 27 controls, positions among valid rows 1-27, expected 1..27: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	402	N1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M12	402	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	402	N1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	402	N1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	N1 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	N1 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	402	E0	8.882e-16	1e-12	TRUE	
+E9	M12	402	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 4: 6 controls, positions among valid rows 1-6, expected 1..6: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	402	E0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M12	402	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 11: 15 controls, positions among valid rows 1-15, expected 1..15: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	402	E0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	402	E0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	E0 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	E0 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	E0 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	402	E1	1.776e-15	1e-12	TRUE	
+E9	M12	402	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 15: 21 controls, positions among valid rows 1-21, expected 1..21: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	402	E1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M12	402	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 12: 17 controls, positions among valid rows 1-17, expected 1..17: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	402	E1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	402	E1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	E1 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	E1 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	N0	1.776e-15	1e-12	TRUE	
+E9	M12	403	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 13 controls, positions among valid rows 1-13, expected 1..13: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	403	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M12	403	N0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	403	N0 none LM	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	403	N0 none FP	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	403	N0 none SC	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	403	N0 none LCm	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E9	M12	403	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 7: 10 controls, positions among valid rows 1-10, expected 1..10: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	403	N0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	403	N0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N0 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N0 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N0 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	N1	1.776e-15	1e-12	TRUE	
+E9	M12	403	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 11: 16 controls, positions among valid rows 1-16, expected 1..16: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	403	N1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M12	403	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	403	N1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	403	N1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N1 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N1 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	E0	1.776e-15	1e-12	TRUE	
+E9	M12	403	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	403	E0 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M12	403	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 19: 27 controls, positions among valid rows 1-27, expected 1..27: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	403	E0 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	403	E0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	E0 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	E0 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	E0 vd20 SC	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	E1	1.776e-15	1e-12	TRUE	
+E9	M12	403	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	403	E1 none	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E9	M12	403	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	403	E1 vd5	NA	same sets	TRUE	LM LCMS_Pos: RUV input rows in the written order TRUE; LM LCMS_Pos pct 5: 7 controls, positions among valid rows 1-7, expected 1..7: TRUE
+E1	M12	403	E1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	E1 vd20 LM	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	E1 vd20 FP	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	401	N0	1.776e-15	1e-12	TRUE	
+E6	M12	401	E1	1.776e-15	1e-12	TRUE	
+E6	M12	402	N0	1.776e-15	1e-12	TRUE	
+E6	M12	402	E1	1.776e-15	1e-12	TRUE	
+E6	M12	403	N0	1.776e-15	1e-12	TRUE	
+E6	M12	403	E1	1.776e-15	1e-12	TRUE	
+E6	M12	401	N0	1.776e-15	1e-12	TRUE	
+E9	M12	401	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 6: 8 controls, positions among valid rows 1-8, expected 1..8: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	401	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	401	N0 none GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	401	N0 none NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole
+E8	M12	401	N0 none LCMS_Pos	8.082e-14	1e-08	TRUE	k 1, controls 8 (reported, never re-run)
+E9	M12	401	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 13 controls, positions among valid rows 1-13, expected 1..13: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	401	N0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	N0 vd20 GA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	N0 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	401	N1	1.776e-15	1e-12	TRUE	
+E9	M12	401	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 14: 20 controls, positions among valid rows 1-20, expected 1..20: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	401	N1 none LCMS_Pos	3.997e-15	1e-08	TRUE	k 1, controls 20 (reported, never re-run)
+E9	M12	401	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 14: 20 controls, positions among valid rows 1-20, expected 1..20: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E9	M12	401	N1 vd20	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E6	M12	401	E0	1.776e-15	1e-12	TRUE	
+E9	M12	401	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 18: 25 controls, positions among valid rows 1-25, expected 1..25: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	401	E0 none LCMS_Pos	7.749e-14	1e-08	TRUE	k 2, controls 25 (reported, never re-run)
+E9	M12	401	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 13 controls, positions among valid rows 1-13, expected 1..13: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	401	E0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E0 vd20 GA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E0 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	401	E1	1.776e-15	1e-12	TRUE	
+E9	M12	401	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 11: 16 controls, positions among valid rows 1-16, expected 1..16: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	401	E1 none LCMS_Pos	1.49e-13	1e-08	TRUE	k 4, controls 16 (reported, never re-run)
+E1	M12	401	E1 vd5 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E1 vd5 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E1 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	401	N2	1.776e-15	1e-12	TRUE	
+E9	M12	401	N2 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 4: 5 controls, positions among valid rows 1-5, expected 1..5: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	401	N2 none LCMS_Pos	1.155e-14	1e-08	TRUE	k 2, controls 5 (reported, never re-run)
+E9	M12	401	N2 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 4: 6 controls, positions among valid rows 1-6, expected 1..6: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	401	N2 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	N2 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	401	E2	1.776e-15	1e-12	TRUE	
+E9	M12	401	E2 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 13: 18 controls, positions among valid rows 1-18, expected 1..18: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	401	E2 none LCMS_Pos	8.604e-15	1e-08	TRUE	k 1, controls 18 (reported, never re-run)
+E9	M12	401	E2 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 12: 17 controls, positions among valid rows 1-17, expected 1..17: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	401	E2 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	401	E2 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	402	N0	1.776e-15	1e-12	TRUE	
+E9	M12	402	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 15: 21 controls, positions among valid rows 1-21, expected 1..21: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	402	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	402	N0 none GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	402	N0 none NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole
+E8	M12	402	N0 none LCMS_Pos	4.402e-14	1e-08	TRUE	k 1, controls 21 (reported, never re-run)
+E9	M12	402	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 27 controls, positions among valid rows 1-27, expected 1..27: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	402	N0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	N0 vd20 GA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	N0 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	402	N1	1.776e-15	1e-12	TRUE	
+E9	M12	402	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 19: 27 controls, positions among valid rows 1-27, expected 1..27: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	402	N1 none LCMS_Pos	6.106e-16	1e-08	TRUE	k 1, controls 27 (reported, never re-run)
+E9	M12	402	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	402	N1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	N1 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	402	E0	8.882e-16	1e-12	TRUE	
+E9	M12	402	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 4: 6 controls, positions among valid rows 1-6, expected 1..6: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	402	E0 none LCMS_Pos	2.539e-13	1e-08	TRUE	k 1, controls 6 (reported, never re-run)
+E9	M12	402	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 11: 15 controls, positions among valid rows 1-15, expected 1..15: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	402	E0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	E0 vd20 GA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	E0 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	402	E1	1.776e-15	1e-12	TRUE	
+E9	M12	402	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 15: 21 controls, positions among valid rows 1-21, expected 1..21: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	402	E1 none LCMS_Pos	5.329e-15	1e-08	TRUE	k 2, controls 21 (reported, never re-run)
+E9	M12	402	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 12: 17 controls, positions among valid rows 1-17, expected 1..17: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	402	E1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	E1 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	402	N2	1.776e-15	1e-12	TRUE	
+E9	M12	402	N2 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 14: 19 controls, positions among valid rows 1-19, expected 1..19: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	402	N2 none LCMS_Pos	1.388e-14	1e-08	TRUE	k 1, controls 19 (reported, never re-run)
+E9	M12	402	N2 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 12: 17 controls, positions among valid rows 1-17, expected 1..17: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	402	N2 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	N2 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	402	E2	1.776e-15	1e-12	TRUE	
+E9	M12	402	E2 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 13: 18 controls, positions among valid rows 1-18, expected 1..18: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	402	E2 none LCMS_Pos	1.872e-13	1e-08	TRUE	k 4, controls 18 (reported, never re-run)
+E9	M12	402	E2 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 13: 19 controls, positions among valid rows 1-19, expected 1..19: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	402	E2 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	402	E2 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	N0	1.776e-15	1e-12	TRUE	
+E9	M12	403	N0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 9: 13 controls, positions among valid rows 1-13, expected 1..13: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	403	N0 none LA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	403	N0 none GA	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_ruv,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole,whole
+E1	M12	403	N0 none NO	NA	every step as declared	TRUE	ops metab_intensity_filter,metab_duplicate_resolution,metab_qc_finalize,metab_log2,metab_between_sample_normalisation,metab_pearson_selection; variants partitioned,whole,whole,partitioned,whole,whole
+E8	M12	403	N0 none LCMS_Pos	9.57e-14	1e-08	TRUE	k 1, controls 13 (reported, never re-run)
+E9	M12	403	N0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 7: 10 controls, positions among valid rows 1-10, expected 1..10: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	403	N0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N0 vd20 GA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N0 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	N1	1.776e-15	1e-12	TRUE	
+E9	M12	403	N1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 11: 16 controls, positions among valid rows 1-16, expected 1..16: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	403	N1 none LCMS_Pos	2.309e-14	1e-08	TRUE	k 3, controls 16 (reported, never re-run)
+E9	M12	403	N1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	403	N1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N1 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	E0	1.776e-15	1e-12	TRUE	
+E9	M12	403	E0 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	403	E0 none LCMS_Pos	1.793e-13	1e-08	TRUE	k 2, controls 28 (reported, never re-run)
+E9	M12	403	E0 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 19: 27 controls, positions among valid rows 1-27, expected 1..27: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	403	E0 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	E0 vd20 GA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	E0 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	E1	1.776e-15	1e-12	TRUE	
+E9	M12	403	E1 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	403	E1 none LCMS_Pos	1.554e-15	1e-08	TRUE	k 1, controls 28 (reported, never re-run)
+E9	M12	403	E1 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	403	E1 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	E1 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	N2	1.776e-15	1e-12	TRUE	
+E9	M12	403	N2 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 13: 18 controls, positions among valid rows 1-18, expected 1..18: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	403	N2 none LCMS_Pos	1.402e-15	1e-08	TRUE	k 1, controls 18 (reported, never re-run)
+E1	M12	403	N2 vd5 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N2 vd5 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N2 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	N2 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E6	M12	403	E2	1.776e-15	1e-12	TRUE	
+E9	M12	403	E2 none	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 28 controls, positions among valid rows 1-28, expected 1..28: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E8	M12	403	E2 none LCMS_Pos	2.331e-15	1e-08	TRUE	k 2, controls 28 (reported, never re-run)
+E9	M12	403	E2 vd5	NA	same sets	TRUE	LA LCMS_Pos: RUV input rows in the written order TRUE; LA LCMS_Pos pct 20: 29 controls, positions among valid rows 1-29, expected 1..29: TRUE; LA LCMS_Pos: counts per percentage = round(N_v pct / 100) for 20 of 20 percentages: TRUE
+E1	M12	403	E2 vd20 LA	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E1	M12	403	E2 vd20 NO	NA	every step as declared	FALSE	journey crashed at da: simpleError: prior.weights contain NA values
+E7_crash	M168	401	first unit	1	>= 1 rows	TRUE	units completed 18 of 18
+E5r	M12	401	LA and OR rows, deciding against reported	72	identical (written columns)	TRUE	lifecycle: blinded columns not compared
+E5r	M12	402	LA and OR rows, deciding against reported	72	identical (written columns)	TRUE	lifecycle: blinded columns not compared
+E5r	M12	403	LA and OR rows, deciding against reported	72	identical (written columns)	TRUE	lifecycle: blinded columns not compared
+E5r	M168	401	LA and OR rows, deciding against reported	72	identical (written columns)	FALSE	lifecycle: blinded columns not compared
+E5r	M168	402	LA and OR rows, deciding against reported	72	identical (written columns)	TRUE	lifecycle: blinded columns not compared
+E5r	M168	403	LA and OR rows, deciding against reported	72	identical (written columns)	TRUE	lifecycle: blinded columns not compared
