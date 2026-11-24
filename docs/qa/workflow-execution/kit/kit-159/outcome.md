@@ -1416,6 +1416,67 @@ One run; the result is recorded whatever it shows; VAL-54 for mechanics.
 **Budget (ticket r1.25):** DI10K's 5.28 core-hours beyond the allocations are taken from P1's cap,
 80.9 -> 75.6 (P1 expected 63.9).
 
+### DI10K: result (run 45407487281 at 9dbb7b1e)
+
+**Outcome by the declared reading: PASS.** Both configuration checks hold, and no coverage is below
+level - 0.02. The C4e g = 5 `accuracy` (bias) and `threshold_count` (null share) rows license
+KIT-162's frame guard and G-cal intervals at its composition (feature count, proportion,
+direction), under the differences listed in `t2/di10k-declaration.md`. `mae`'s result is reported
+and licenses nothing KIT-162 decides. No pinned row changes, and `t2/di10k-coverage-table.tsv`
+(same row key as the pinned C4e g = 5 rows) is never merged into the pinned table or read in its
+place. P1 (KIT-162's primary rank endpoint) is not covered; that is with the owner.
+
+**Observed.**
+- Script exit 0, 754 s. Chunks exit 0,0,0,0, no cell missing, wall 750 s. Process 2,974 s:
+  1,064 s of simulations and 1,910 s of targets (`t2/di10k-coverage-run.txt`, `-tasks.tsv`).
+  `metrics` tests: 17, 0 failed.
+- N1k (`bias` target <= -0.0035): **-0.01117**, holds. It is more negative than predicted
+  (-0.0077 ± 0.0011 over random draws; the predicted 1st percentile is -0.0101), but on the
+  declared side.
+- N2k (`rej` target in [0.045, 0.060]): **0.05082**, holds (predicted about 0.051).
+- `mae` target 0.09087 (predicted 0.0907).
+
+Coverage at the 8 levels: DI10K (`fixed_onedir`, 40 of 4,840) beside DI10b (`fixed_onedir`,
+100 of 500). The fail line is level - 0.02.
+
+| statistic | 0.95 | 0.975 | 0.9833 | 0.9875 | 0.9917 | 0.9938 | 0.9958 | 0.9967 |
+|---|---|---|---|---|---|---|---|---|
+| `bias` DI10K | 0.9555 | 0.9775 | 0.9855 | 0.9885 | 0.993 | 0.994 | 0.996 | 0.996 |
+| `bias` DI10b | 0.960 | 0.983 | 0.9885 | 0.991 | 0.9925 | 0.995 | 0.9965 | 0.9975 |
+| `rej` DI10K | 0.9825 | 0.9875 | 0.9895 | 0.992 | 0.995 | 0.9955 | 0.9965 | 0.9965 |
+| `rej` DI10b | 0.9485 | 0.975 | 0.984 | 0.9875 | 0.9905 | 0.992 | 0.995 | 0.9955 |
+| `mae` DI10K | 0.988 | 0.9955 | 0.9965 | 0.9975 | 0.998 | 0.998 | 0.999 | 0.999 |
+| `mae` DI10b | 0.9575 | 0.9815 | 0.9885 | 0.99 | 0.994 | 0.9965 | 0.9965 | 0.998 |
+
+- **Lowest-covering statistic:** `bias` at every level (tied with `rej` at 99.67 %). At 95 %: 89
+  misses of 2,000, coverage 0.9555, exact 95 % interval 0.9455 to 0.9641 (`t2/di10k-exact.tsv`
+  has every level).
+- **Misses above nominal (R8):**
+  - `bias` at 99.67 %: 8 misses against 6.7 nominal, P(X >= 8) = 0.35, coverage 0.996, exact
+    interval 0.9921 to 0.9983.
+  - `rej` at 99.67 %: 7 against 6.7, P = 0.50, coverage 0.9965, exact interval 0.9928 to 0.9986.
+  - No statistic is below nominal at p < 0.01, so none is called anti-conservative.
+- **`se_inflation`:**
+
+  | | `mae` | `bias` | `rej` |
+  |---|---|---|---|
+  | DI10K | 1.508 | 0.990 | 1.311 |
+  | DI10b | 0.979 | 0.996 | 0.900 |
+
+  Status labels: `mae` `conservative` at 6 levels; `bias` and `rej` `pass`.
+- **Event counts:** `rej` over 19,200 null contrasts per simulation, about 976 rejections at the
+  target share 0.0508. `mae` and `bias` are medians over 19,360 entries (160 changed). No
+  statistic counts true positives.
+
+**Inferred.**
+- At 0.8 % changed the `bias` interval covers as it did under DI10b's large shift: a near-zero
+  margin at 95 %, close to nominal elsewhere, `se_inflation` 0.99.
+- The `rej` interval is wider at 4,840 features (`se_inflation` 1.31 against 0.90), so its 95 %
+  coverage rises from 0.9485 to 0.9825.
+- As the declaration expected, the one-directional question is nearly moot at this composition.
+
+**Spend:** 21.1 job-minutes, 1.40 core-hours. Line DI10K: 0.77 + 0.84 + 1.40 = **3.01 of 6**.
+
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-25 from 12282273 (a records-only commit on the merge a4e002a6 of the ticket branch with staging a1b397b1, which holds KIT-182, KIT-203, KIT-207 and KIT-196), after the re-audits 2 and 3 and the closure check (register `AUDIT-KIT-159-impl-recheck-20261124`). The ledger row is VAL-165. The whole harness suite passed on a4e002a6 (run 45386625659: 45 files, 274 tests, 2,342 expectations, 0 failed, 0 skipped, no lints), and one `snapshot`-stage dispatch of `distributable.yml` passed on the same commit (run 45386409115). **Merged is not accepted:** acceptance criterion A1 is OPEN. Not done: the lifecycle runs L1a, L1b, L2 and L3; gate G13 in P1; G5 (replay) on every route (only `metab_combined` has been replayed); the confirmatory cell in KIT-162's composition (VAL-163 (3)); the suite and G1(a) repeated after the last product merge (KIT-190, 200, 201, 202, 204, 205, 206, 208 and the tickets after them are pending). By the plan's rule, no validation ticket (KIT-160 to KIT-170) sends a lifecycle or counted request until A1 is recorded as met at a commit that contains every product merge that ticket's runs will use. Ticket total at merge: about 116.2 of 276 core-hours (110.78 before the merge run, plus 5.44).
