@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-190 T7 (vi) instrument rerun (VAL-54, 3 of 3 for this item): the kit129 worker fixture",
+  "label": "KIT-190 T7 passing rerun 9e9b0e31",
+  "package_commit": "9e9b0e319ede8d9f90937a6393d22c0ed7ac02c0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-ruv-control-anova-grouping.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
