@@ -210,6 +210,21 @@ valDeclaredValuesOk <- function(rows, declared) {
 #' @return `own`, or `val_spec_invalid` on any disagreement (neither file is edited to agree).
 #' @export
 valAdoptReferenceRows <- function(own, earlier) {
+    if (nrow(valReferenceDisagreements(own, earlier))) {
+        valAbort("a ticket's committed reference rows disagree with G1(r)'s own rows",
+                 "val_spec_invalid")
+    }
+    own
+}
+
+#' The (lane, step, class) groups on which a ticket's committed reference rows and G1(r)'s own
+#' rows for its lanes disagree (the rule of [valAdoptReferenceRows()], for the gate's report)
+#'
+#' @param own,earlier As [valAdoptReferenceRows()].
+#' @return A data frame, one row per disagreeing group: `lane`, `step`, `class`, `in_own`,
+#'   `in_earlier`, `own_only` and `earlier_only` (`field/key`, semicolon-separated), `truncated`.
+#' @export
+valReferenceDisagreements <- function(own, earlier) {
     sets <- function(x) {
         if (is.null(x$keyset)) {
             x$keyset <- lapply(seq_len(nrow(x)), function(i) valReferenceKeys(x[i, , drop = FALSE]))
@@ -223,14 +238,23 @@ valAdoptReferenceRows <- function(own, earlier) {
     }
     a <- sets(own[own$lane %in% earlier$lane, , drop = FALSE])
     b <- sets(earlier)
-    same <- identical(sort(names(a$keys)), sort(names(b$keys))) &&
-        all(vapply(names(b$keys), function(g) {
-            if (b$truncated[[g]]) all(b$keys[[g]] %in% a$keys[[g]]) else
-                identical(a$keys[[g]], b$keys[[g]])
-        }, logical(1)))
-    if (!same) {
-        valAbort("a ticket's committed reference rows disagree with G1(r)'s own rows",
-                 "val_spec_invalid")
-    }
-    own
+    groups <- sort(union(names(a$keys), names(b$keys)))
+    rows <- lapply(groups, function(g) {
+        ka <- a$keys[[g]]
+        kb <- b$keys[[g]]
+        truncated <- isTRUE(b$truncated[g])
+        agree <- !is.null(ka) && !is.null(kb) &&
+            (if (truncated) all(kb %in% ka) else identical(ka, kb))
+        if (agree) return(NULL)
+        p <- strsplit(g, "\r", fixed = TRUE)[[1L]]
+        data.frame(lane = p[[1L]], step = p[[2L]], class = p[[3L]], in_own = !is.null(ka),
+                   in_earlier = !is.null(kb), own_only = paste(setdiff(ka, kb), collapse = ";"),
+                   earlier_only = paste(setdiff(kb, ka), collapse = ";"), truncated = truncated,
+                   stringsAsFactors = FALSE)
+    })
+    empty <- data.frame(lane = character(), step = character(), class = character(),
+                        in_own = logical(), in_earlier = logical(), own_only = character(),
+                        earlier_only = character(), truncated = logical(),
+                        stringsAsFactors = FALSE)
+    do.call(rbind, c(list(empty), rows))
 }
