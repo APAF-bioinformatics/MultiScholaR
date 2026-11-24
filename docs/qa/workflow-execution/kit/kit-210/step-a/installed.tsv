@@ -1,0 +1,15 @@
+field	value
+Package	RUVIIIC
+Version	1.0.19
+RemoteType	github
+RemoteHost	api.github.com
+RemoteUsername	cran
+RemoteRepo	RUVIIIC
+RemoteSha	c534151f6b2265b36294ff630f4dd13c2e86a9fa
+RemoteRef	c534151f6b2265b36294ff630f4dd13c2e86a9fa
+Packaged	2021-04-14 04:40:31 UTC; rshah
+Date/Publication	2021-04-23 15:00:09 UTC
+Repository	CRAN
+Built	R 4.6.1; x86_64-pc-linux-gnu; 2026-11-24 07:56:46 UTC; unix
+libs/RUVIIIC.so sha256	13510d12d3474777e9968da6d6bed50d258475488d391fd9ea6b5dba3e12b2d4
+R	R version 4.6.1 (2026-06-24)

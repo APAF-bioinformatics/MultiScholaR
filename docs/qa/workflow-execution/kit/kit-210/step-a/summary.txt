@@ -1,0 +1,4 @@
+files compared: 32 ; equal in both archives: 32
+GA1: pass
+GA2: pass
+deciding A2 parts: a TRUE, b TRUE, c1 TRUE, c2 TRUE, c3 TRUE

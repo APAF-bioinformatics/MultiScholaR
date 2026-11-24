@@ -1,1 +1,2 @@
 step	run_name	run_id	package_commit	purpose	result	observed	job_minutes	core_hours	ceiling_core_hours
+A	k210-step-a-e8a43097	45351569441	e8a43097204f46e5eb1742b15ab5125b1cc7f2bd	step A: A1 pinned source fetched and hashed (CRAN archive, GitHub mirror), installed DESCRIPTION; A2 installed RUVIIIC zero-fill checks with negative controls	pass (GA1, GA2)	32 of 32 files equal in both archives and equal to ticket 2.2; installed 1.0.19 at c534151f; A2 (a) (b) (c1) (c2) (c3) pass, reported (c2-neg) and (d) pass	11.8	0.79	3.33

@@ -1,0 +1,6 @@
+function_name	installed_equals_source
+RUVIII_C	TRUE
+RUVIIIC_R	TRUE
+RUVIII_C_Varying	TRUE
+RUVIIIC_Varying_R	TRUE
+RUVIII_C_Varying_residual_dimension	TRUE

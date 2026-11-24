@@ -1,0 +1,8 @@
+part	check	observed	rule	pass	deciding
+a	NA -> 0 in f20 at r05 (neither target nor control; target observed there): output identical()	TRUE	identical	TRUE	yes
+b	NA -> 20 in f20 at r05: largest output difference (negative control of (a))	5.542e-02	> 1e-6	TRUE	yes
+c1	y - W alpha(target) against the returned corrected values, target's rows; NA elsewhere	0.000e+00; NA rows TRUE; residual dimension 8	<= 1e-10	TRUE	yes
+c2	W and the controls' alpha from U of P Sel (Y0 Y0') Sel' P (zero-filled), basis aligned	W 4.003e-13; alpha(controls) 3.455e-12; W alpha(target) 4.272e-13; R'R - I 1.295e-12; controls used 10; (lambda_k - lambda_k+1) / lambda_1 5.023e-01	<= 1e-8	TRUE	yes
+c2-neg	the same reproduction with every missing value filled by 20 instead of 0: W alpha(target) difference	2.502e-01	> 1e-6	TRUE	reported
+c3	NA -> 0 in f20 at r05: W, alpha, residual dimension and output identical(); NA -> 20: U and output change	0: identical TRUE; 20: U projector 1.065e-01, output 5.542e-02	0: identical; 20: > 1e-6	TRUE	yes
+d	RUVIII_C (fixed controls): NA -> 0 identical(); NA -> 20 differs	0: identical TRUE; 20: 5.542e-02	0: identical; 20: > 1e-6	TRUE	reported

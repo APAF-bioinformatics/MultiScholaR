@@ -1,0 +1,6 @@
+Warning in utils::download.file(u, dest, mode = "wb", quiet = TRUE) :
+  cannot open URL 'https://cran.r-project.org/src/contrib/RUVIIIC_1.0.19.tar.gz': HTTP status was '404 Not Found'
+files compared: 32 ; equal in both archives: 32
+GA1: pass
+GA2: pass
+deciding A2 parts: a TRUE, b TRUE, c1 TRUE, c2 TRUE, c3 TRUE

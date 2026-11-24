@@ -1,0 +1,3 @@
+source	url	sha256	bytes	recorded_sha256
+cran	https://cran.r-project.org/src/contrib/Archive/RUVIIIC/RUVIIIC_1.0.19.tar.gz	c6556d081795536c10c3180766826f23645e6748cc639d15eff3b56ac93da8df	399491	NA
+mirror	https://github.com/cran/RUVIIIC/archive/c534151f6b2265b36294ff630f4dd13c2e86a9fa.tar.gz	846cc1442ad90711efade03c9e2f6e90c963753023860a91efe9ef63958d4009	399991	846cc1442ad90711efade03c9e2f6e90c963753023860a91efe9ef63958d4009
