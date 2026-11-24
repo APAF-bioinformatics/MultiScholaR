@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-215 R3: full suite on the merge 94d57634 (head; staging d048898d merged, R2's correction pass 66f32932) against staging d048898d (base); decides A5 and A2's corrected T7b row; ceiling 2,800 job-minutes",
+  "label": "KIT-215 R3 full suite 94d57634 vs d048898d",
+  "package_commit": "94d57634ecacaee2bb915b9b7d7ade8504b3c3d4",
+  "base_commit": "d048898dfcb9c580a1a4b5d65d6ac09a15efdc0a",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
