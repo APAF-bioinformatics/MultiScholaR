@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R7, VAL-54 instrument run 1 of 3 for R3's item: the plan-generator test corrected to reach the fault, on run branch run-k159-r3fix (tests-only commit 4e78b246 plus the correction), shown failing; 30 min",
+  "label": "KIT-159 repair R7: corrected plan-generator test shown failing on the tests-only code",
+  "package_commit": "fff8524f47d250e83767b24a019c23627fa46367",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r7-out",
+        "--files",
+        "repair2"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r7-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
