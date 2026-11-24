@@ -1,7 +1,8 @@
-# KIT-208 outcome: STOPPED at stop rule 2 (a stored capture moved in R2)
+# KIT-208 outcome: the gene-name join, and g:Profiler not asked with no named identifier
 
-Ticket r1.3 (`tickets/kit/KIT-208.md`). Branch `kit-208-gprofiler-gene-names`, cut from `v0.9-staging` 241914cb
-(KIT-203 merged). Runs in `runs.tsv`. R3 (the full suite) was not sent: stop rule 2 stops the ticket first.
+Ticket r1.3 (`tickets/kit/KIT-208.md`; decisions VAL-147, re-freeze VAL-161). Branch `kit-208-gprofiler-gene-names`,
+cut from `v0.9-staging` 241914cb (KIT-203 merged), merged with staging a1b397b1 (KIT-207, KIT-196). Every run is in
+`runs.tsv`. Done and ready for the implementation audit.
 
 ## Commits
 
@@ -10,6 +11,10 @@ Ticket r1.3 (`tickets/kit/KIT-208.md`). Branch `kit-208-gprofiler-gene-names`, c
 | 0a524465 | tests only: `tests/testthat/test-kit208-gprofiler-identifiers.R` (T1 to T9); nothing under `R/` |
 | 60e49a57 | the fix (5 files under `R/`), the ledger row `VAL-<merge>`, the stub signature in `test-general-enrichment-shared.R` (D2) |
 | 9dc2bd64 | NEWS entry; R1 records |
+| a57f3ce3, 5728b7eb, af23a090 | R2 records (stop rule 2); the control script; C1 records |
+| 0e8ffd05 | correction pass: the one leaf of `omicDaW1Frozen[["prot_load"]]` re-frozen, 180c3306... to fbe4b6a9... (VAL-161, C1) |
+| 189df0d7 | merge of `origin/v0.9-staging` at a1b397b1 (ledger conflict only: staging's rows first, KIT-208's after) |
+| 57aecb31 | R2c records |
 
 ## What was observed
 
@@ -20,15 +25,14 @@ Ticket r1.3 (`tickets/kit/KIT-208.md`). Branch `kit-208-gprofiler-gene-names`, c
   effect on head. Stop rule 1 not met (`r1/`).
 - **R2 (run 45370085901, 9dc2bd64 against 0a524465, 44 files, check both sides).** `r2/compare.tsv`:
   - the new file: 26 passed / 20 failed / 1 error on base, 49 / 0 / 0 on head (`fixed`);
-  - 41 files `same`, including the five proteomics GUI-entry lanes (`test-gui-entry-proteomics.R`, 4 failures
-    identical on both sides), `test-omic-enrich-module.R` (19 identical), `test-prot-annotation-uniprot-empty.R`,
-    `test-general-enrichment-shared.R` (the D2 stub), `test-workflow-analysis-record.R`;
+  - 41 files `same`, including the proteomics GUI-entry lanes (`test-gui-entry-proteomics.R`, 4 failures identical
+    on both sides) and `test-general-enrichment-shared.R` (the D2 stub);
   - check: 0 errors, 3 warnings, 3 notes on both sides, identical;
-  - **one `new-failure`: `test-omic-da-module.R`, test "(b) in process: prot_load"** (passed 28 to 27). The moved
-    leaf: the stored SHA-256 of `da_output/da_proteins_groupB-groupA_long_annot.tsv` in the W1 (b) `prot_load` run
-    files: stored `180c3306...` (`test-omic-da-module.R:3343`; base reproduces it), head `fbe4b6a9...`, which is the
-    value stored for `prot_main` (`:3464`) (`r2/compare-failures.txt`; in waldo's diff `-` is the value produced, `+`
-    the stored one; this file first had the direction reversed, corrected after C1).
+  - **one `new-failure`: `test-omic-da-module.R`, "(b) in process: prot_load"** (passed 28 to 27): the stored SHA-256
+    of `da_output/da_proteins_groupB-groupA_long_annot.tsv` in its run step, stored `180c3306...`
+    (`test-omic-da-module.R:3343`; base reproduces it), head `fbe4b6a9...`, the value stored for `prot_main`
+    (`:3464`) (in waldo's diff `-` is the value produced, `+` the stored one; first reported reversed, corrected).
+    **Stop rule 2: stopped.**
 
 ## What moved: control C1 (run 45377688470, script commit 5728b7eb)
 
@@ -62,14 +66,13 @@ The plan audit's P03 reading did not list this capture.
 ## Fixtures part (a) can move (identifier table and annotation both carry `gene_names`; by reading)
 
 1. `tests/testthat/helper-module-ci-prot-da.R:70` with the session file of `:156-167`: `test-omic-da-module.R` W1
-   `prot_load` **moved in R2** (above); `prot_main` (stored value already the head's); `test-module-ci-prot-da.R:670-697`,
+   `prot_load` **moved in R2** (above; re-frozen under VAL-161); `prot_main` (stored value already the head's); `test-module-ci-prot-da.R:670-697`,
    `test-omic-enrich-module.R`, `test-workflow-analysis-record.R`, `test-omics-enrich-core.R`,
    `test-workflow-integration-input.R`: `same` in R2. `test-omic-summary-module.R` (via
-   `helper-module-ci-prot-summary.R`, which writes its proteomics DA table directly, not through the writer): **not
-   run**.
+   `helper-module-ci-prot-summary.R`, which writes its proteomics DA table directly, not through the writer): not in
+   R2's scope; `same` in R3.
 2. `tests/testthat/helper-module-ci-prot-da.R:218` (`module_ci_prot_da_result_table`, a result table that already has
-   `gene_names`, written directly by its consumers, not through the join): consumers in R2 `same`; the summary
-   module's use not run.
+   `gene_names`, written directly by its consumers, not through the join): consumers `same` in R2 and R3.
 3. `tests/testthat/helper-go-propagation.R:134` (`goPropRunProject`) and its stored base capture
    `tests/testdata/go-propagation/replay-base/` (record, capture, evidence, product made from the collision-shaped
    table): `test-go-propagation.R` `same` in R2.
@@ -78,22 +81,32 @@ The plan audit's P03 reading did not list this capture.
    digest): `same` in R2.
 5. `tests/testthat/test-prot-annotation-uniprot-empty.R:645` (`k175Project`): `same` in R2.
 6. `tests/testthat/helper-workflow-checkpoint-fixtures.R:228-231` (identifiers `gene_names = SYNTHETIC_<i>`): no test
-   found that publishes these with a UniProt annotation; **not run** (R3 would show it).
+   found that publishes these with a UniProt annotation; the four checkpoint test files `same` in R3.
 
-## Decision needed (stop rule 2, E-4)
+## Correction pass (VAL-161)
 
-Stop rule 2 stops the ticket. Under E-4 the capture `omicDaW1Frozen[["prot_load"]]` (`test-omic-da-module.R:3254`,
-the run step's leaf at `:3343`) is re-frozen only on the owner's word; the base-against-head control is C1 (above).
-No capture was re-recorded here.
+The owner allowed the re-freeze of that one leaf (methods ledger VAL-161, on the evidence of C1); commit 0e8ffd05
+changes only `tests/testthat/test-omic-da-module.R:3343` (180c3306... to fbe4b6a9...). No other stored reference was
+changed. The branch was then merged with staging a1b397b1 (189df0d7; no shared code file changed on staging since
+241914cb).
+
+- **R2c (run 45386281915, 189df0d7 against staging a1b397b1, the same 44 files, check).** 43 files `same`
+  (`test-omic-da-module.R` 1,316 passed / 53 failed on both sides: the re-frozen leaf passes on head, the old leaf on
+  base); the new file only on head, 49 / 0; no new failure; check identical (0 / 3 / 3). Stop rule 2 not met.
+- **R3 (run 45392959369, 57aecb31 = the merge plus records, against staging a1b397b1, every test file, 20 shards per
+  side, check).** 465 files `same` (426 `ok` on both sides, 39 failing identically on both, with
+  the same messages; their causes were not examined here), the new file only on head
+  (49 / 0); no `new-failure`, `message-changed`, `count-changed`, timeout or crash; `test-omic-summary-module.R` and
+  the four `test-workflow-checkpoint*` files `same`; check identical (0 / 3 / 3). 1,208.4 job-minutes.
 
 ## Acceptance criteria
 
 | # | Met? | Evidence |
 |---|---|---|
-| A1 | met | R1 fails at the stated values; R2 head passes the new file 49/0 |
-| A2 | **not met** | R2: one stored capture moved (`test-omic-da-module.R` prot_load DA TSV digest) |
-| A3 | not run | R3 not sent (stop rule 2) |
-| A4 | partly | NEWS, ledger row; no version, `NAMESPACE` or `man/` change; this file |
+| A1 | met | R1: every failing-first test fails at its stated base value, guards pass; R2, R2c, R3: the new file 49 / 0 on head |
+| A2 | met after the correction pass | R2: one stored capture moved (stop rule 2), re-frozen on the owner's word (VAL-161, control C1); R2c: every file `same` but the new one, which alone asserts the outcomes `enrichment_lists_not_tested` and `enrichment_unnamed_proteins` (no other file's result changed, so no other run's recorded outcomes moved where a test reads them); check identical, nothing only on head |
+| A3 | met | R3: 465 `same`, the new file only on head; check identical |
+| A4 | met | NEWS (one Fixes entry), ledger row `VAL-<merge>` citing VAL-147 and VAL-161; no version, `NAMESPACE` or `man/` change; this file with "For the change report" |
 
 ## Deviations (for the implementation audit; accepted as engineering by the coordinator)
 
@@ -118,13 +131,19 @@ Notice (case 6), one per run, one sentence per list:
 Signal message (for callers): "g:Profiler was given no gene names to test: <list_size> proteins in the list,
 <background_ids> named proteins in the background".
 
+## Budget
+
+R1 0.78, R2 15.43, C1 0.85, R2c 14.14, R3 80.56: 111.76 core-hours used, against 91.1 expected and the 449.33 ceiling
+(the correction row, 222.67, holds C1, R2c and R3's re-run share). R3 alone 80.56 against its row ceiling 186.67.
+
 ## Not checked
 
-- R3 (full suite) not run; files outside R2's scope not compared.
-- C1 compares masked text (as the test digests it), not unmasked numbers; `test-omic-summary-module.R` and the
-  checkpoint fixtures were not run.
-- Real g:Profiler, real data, case 5's reach in the app, DIA-NN group keys (VAL-147 (4), hand-off).
-- KIT-205's background: T7 and T8 not aligned to it (whichever merges second runs R2b).
+- Real g:Profiler and real data; how often case 5 or case 6 occurs in the application (VAL-147 (4), hand-off:
+  DIA-NN multi-accession group keys).
+- C1 compared masked text (as the test digests it), not unmasked numbers.
+- Replay of a case-5 record made before this change (refused by reading; no test).
+- KIT-205's background: T7 and T8 are not aligned to it; whichever of KIT-205 and KIT-208 merges second runs R2b.
+- `gost` 0.2.4's behaviour on an empty query is from source (plan audit 1.3), not run.
 
 ## For the change report
 
@@ -148,6 +167,9 @@ Signal message (for callers): "g:Profiler was given no gene names to test: <list
   (`enrichment_unnamed_proteins`). A record of a case-5 run made earlier no longer replays. Left unchanged (E-3): the
   legacy writer `.outputDaResultsAllContrastsProteomicsLegacy` and the workbooks' writer `outputDeAnalysisResults`
   keep the default-suffix join.
-- **Evidence.** R1 45367973598, R2 45370085901, C1 45377688470 (`r1/`, `r2/`, `control/`); recorded `gost`
-  stand-in, no service call. R2 showed the module-CI W1 `prot_load` DA TSV digest move; C1 shows it is only the
-  name columns (above): awaiting the owner's re-freeze decision.
+- **Evidence.** R1 45367973598 (failing first), R2 45370085901 (the one moved capture), C1 45377688470 (what moved:
+  the name columns only), R2c 45386281915 and R3 45392959369 (no other difference; full suite 465 files `same`)
+  (`r1/`, `r2/`, `control/`, `r2c/`, `r3/`); the tests use a recorded `gost` stand-in returning NULL on KIT-173's
+  70-protein E. coli fixture, no service call; the effect on real data and real g:Profiler was not measured. One
+  test reference was re-frozen on the owner's word (VAL-161): the module-CI session-load case's DA table digest,
+  recorded from the collision-shaped table.
