@@ -4,6 +4,21 @@
 
 ### Fixes
 
+ * Lipidomics and metabolomics: the differential analysis no longer stops with 'prior.weights contain NA values' (or
+   'covariate contains NA or infinite values') when an assay holds a feature with no value in any sample. Examples are a
+   feature below the detection limit everywhere, which the intensity filter keeps, or a feature measured only in samples
+   the correlation filter removed. Such a feature is not tested: it appears in each comparison's table without a fold
+   change or p-value and is counted in the summary's 'Not tested' line, and it no longer affects any other feature's
+   result. Before, the assay's analysis failed, and the whole analysis stopped when every assay failed. A saved analysis
+   that failed this way now completes when it is replayed. Results of analyses that completed before with the default
+   settings are unchanged. The older S4 method `differentialAbundanceAnalysis()` on lipidomics and metabolomics objects
+   is not changed. With the trend option off (available only when calling the functions directly), on data that contain
+   such features the result tables change: those features move to the end of each table without an average intensity.
+   With the robust option also on, the other features' results change, to those of the same data without them. With
+   RUV factors in the model these features were already left out of the tables and listed separately; that is
+   unchanged. An assay in which no feature has any value is now refused with 'no feature has a value in any sample, so
+   nothing can be tested'. `runLipidsDA()` and `runMetabolitesDA()` return `features_without_values` (per assay, the
+   ids) when there are such features (KIT-196).
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
    model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
