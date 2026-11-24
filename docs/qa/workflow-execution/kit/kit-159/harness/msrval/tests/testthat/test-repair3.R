@@ -74,9 +74,10 @@ test_that("R-K199: no admission path; the DIA-with-limpa link is a declared chan
     none <- data.frame(step = character(), field = character(), key = character(),
                        class = character(), head_value = character())
     link <- list(ticket = "KIT-199", changed_step = "da",
-                 base_diffs = cl[, c("step", "field", "key", "class")], before_diffs = none,
-                 after_diffs = none[, 1:4],
-                 declared = data.frame(key = LIMPA_KEY, step = "int", expected = "8a4c2dd5ab"),
+                 base_diffs = cl[, c("step", "field", "key", "class", "base", "live")],
+                 before_diffs = none, after_diffs = none[, 1:4],
+                 declared = data.frame(key = LIMPA_KEY, step = "int", frozen = "80cfedaa11",
+                                       expected = "8a4c2dd5ab"),
                  change_classes = "declared_change (KIT-199)")
     expect_identical(valReadChain("prot_dia_limpa", list(link), ref)$status, "certified")
     other <- link
@@ -102,11 +103,14 @@ test_that("R-K199b: counts are per (step, class), not per difference row: severa
     base <- rbind(rows("int"), rows("summary"),
                   data.frame(step = "summary", field = "artifacts", key = LIMPA_KEY,
                              class = "declared_change (KIT-199)"))
+    base$base <- ifelse(base$key == LIMPA_KEY, "f", NA)
+    base$live <- ifelse(base$key == LIMPA_KEY, "x", "p")
     none <- data.frame(step = character(), field = character(), key = character(),
                        class = character(), head_value = character())
     link <- list(ticket = "KIT-199", changed_step = "da", base_diffs = base,
                  before_diffs = none, after_diffs = none[, 1:4],
-                 declared = data.frame(key = LIMPA_KEY, step = "summary", expected = "x"),
+                 declared = data.frame(key = LIMPA_KEY, step = "summary", frozen = "f",
+                                       expected = "x"),
                  change_classes = "declared_change (KIT-199)")
     expect_identical(valReadChain("prot_dia_limpa", list(link), ref)$status, "certified")
     live <- cbind(lane = "prot_dia_limpa", rbind(rows("int"), rows("summary")))

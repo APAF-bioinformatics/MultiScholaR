@@ -59,14 +59,17 @@ test_that("the browser replays the driver's actions in order and records its val
     expect_identical(rec$value[rec$input_id == "norm-ruv_k"][[1L]], "3")
 })
 
-test_that("the bundle DA table against L1's: digest, then 10-digit fingerprints", {
+test_that("the bundle DA table against L1's: digest, then the values under SWD-083 (VAL-133 (1))", {
     da <- data.frame(feature_id = c("a", "b"), log2fc = c(1.123456789012, 2), p = c(0.1, 0.2))
-    l1 <- list(digest = valMaskedDigest(da), fingerprint = valFingerprint(da))
+    l1 <- list(digest = valMaskedDigest(da), fingerprint = valFingerprint(da), table = da,
+               keys = "feature_id", q_col = "p", fc_col = "log2fc")
     expect_identical(valCompareParityDa(da, l1)$status, "identical")
     near <- da
     near$log2fc[[1L]] <- near$log2fc[[1L]] * (1 + 1e-14)
-    expect_identical(valCompareParityDa(near, l1)$status, "within_rounding")
+    expect_identical(valCompareParityDa(near, l1)$status, "within_tolerance")
     far <- da
     far$log2fc[[1L]] <- 1.2
     expect_identical(valCompareParityDa(far, l1)$status, "differs")
+    no_table <- l1[c("digest", "fingerprint")]
+    expect_error(valCompareParityDa(near, no_table), class = "val_spec_invalid")
 })
