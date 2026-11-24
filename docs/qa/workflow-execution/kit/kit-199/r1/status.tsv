@@ -1,0 +1,25 @@
+stage	side	outcome	detail	seconds
+worktree	anchor	ok		0.6
+head_commit	anchor	ok	12d68ca78442a50b46f52e33525dd85cf86df5e7	0.0
+native	anchor	ok		0.7
+load	anchor	ok		7.3
+lane	anchor	ok	lane record 205.1 s	205.4
+child	anchor	ok	the child exited 0	213.2
+record	anchor	ok	24 step ids	
+copy	anchor	ok	copy present: TRUE; its masked digest equals the record's at da: TRUE	
+worktree	base	ok		0.7
+head_commit	base	ok	19997323dd9a0efac5830696c7d3ac617560dae6	0.0
+native	base	ok		0.7
+load	base	ok		7.6
+lane	base	ok	lane record 207.4 s	207.8
+child	base	ok	the child exited 0	216.0
+record	base	ok	24 step ids	
+copy	base	ok	copy present: TRUE; its masked digest equals the record's at da: TRUE	
+worktree	head	ok		0.7
+head_commit	head	ok	84ec739515b1a44cc4dc8d1edc78d199f95016a7	0.0
+native	head	ok		0.7
+load	head	ok		7.7
+lane	head	ok	lane record 209.1 s	209.7
+child	head	ok	the child exited 0	217.9
+record	head	ok	24 step ids	
+copy	head	ok	copy present: TRUE; its masked digest equals the record's at da: TRUE	
