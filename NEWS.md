@@ -17,6 +17,17 @@
 
 ### Fixes
 
+ * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
+   Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for
+   example after a quality-control step was reverted or applied again following normalisation. Before, the session
+   file named that table as current while carrying the earlier normalisation's results. 'Export S4 compatibility
+   RDS', which runs only in a guarded diagnostic session, refuses in the same case. The session export now takes its
+   results file and its statement of whether RUV was applied from the normalisation that was run, not from the
+   current RUV setting; a missing file is reported plainly and no longer blocks the next steps until the application
+   is restarted. Exports made at the end of the normalisation tab, and projects reopened from them, are unchanged,
+   except that the session file now states the RUV mode of the run (on DIA with limpa, the RUV covariates step's mode
+   rather than the RUV setting shown) (KIT-206).
+
  * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
    Pre-Normalization', 'Apply Correlation Filter', 'Skip Filtering & Proceed to DE', 'Export Normalized Data' and the
    differential analysis could run on data that had not been normalised (no internal-standard step, no log2, no

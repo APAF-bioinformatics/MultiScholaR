@@ -217,6 +217,12 @@ protNormS4DownloadHandler <- function(workflowData, normData, experimentPaths, o
   shiny::downloadHandler(
     filename = function() paste0(omicType, "_", experimentLabel, "_final_s4.RDS"),
     content = function(file) {
+      # KIT-206: refused, and shown, when the current table is not the tab's last result.
+      tryCatch(assertProtNormExportHeadCurrent(workflowData$state_manager, normData$correlation_filtered_obj),
+        prot_norm_correlation_input_stale = function(e) {
+          shiny::showNotification(paste("Error exporting session:", conditionMessage(e)), type = "error", duration = 10)
+          stop(e)
+        })
       names <- resolveProtNormCorrelationResultFilenames(normData$ruv_optimization_result,
         workflowData$ruv_optimization_result)
       canonical <- file.path(experimentPaths$protein_qc_dir, names$rdsFilename)

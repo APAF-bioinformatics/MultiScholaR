@@ -5,6 +5,54 @@ canProtNormExportFilteredSession <- function(
   isTRUE(correlationFilteringComplete) && !is.null(correlationFilteredObj)
 }
 
+#' The refusal of a session export whose current table is not the normalisation tab's last result (KIT-206, VAL-134
+#' (1); parity with VAL-105 (2)): "Export Filtered Data Session", the Summary's archive refresh and the S4
+#' compatibility download. The head passes when it is the result itself, or when its table's components are the
+#' result's (the correlation commit and the DA re-commit keep them); a result-class head (`enrichment_completed`) is
+#' judged by the table it was made from; on DIA_LIMPA the RUV covariates' states pass on their own correlation result
+#' (a reopened project's `correlation_filtered_obj` names the correlation state); an unreadable record passes, as
+#' KIT-182's correlation guard does. Recorded divergence: plain words for non-specialists, not conventions/R.md's
+#' "state the offending value" (as KIT-182 and KIT-194).
+#' @param manager The session's owner; NULL or an owner without reference states passes.
+#' @param result The tab's last result (`correlation_filtered_obj`), or the earlier export's correlation reference.
+#' @return TRUE invisibly, or an error of class `prot_norm_correlation_input_stale`.
+#' @noRd
+assertProtNormExportHeadCurrent <- function(manager, result) {
+  if (is.null(manager) || !inherits(manager, "DIAStateAdapter") || !usesDIAReferenceStates(manager)) {
+    return(invisible(TRUE))
+  }
+  # The owned-payload form of the tab's state carries no lineage record.
+  if (!isSavedWorkflowReference(result)) return(invisible(TRUE))
+  withDIAStateScope(manager, function() {
+    head <- getDIAStateReference(manager)
+    if (identical(head$entity_id, result$entity_id)) return(invisible(TRUE))
+    judged <- manager$current_state
+    head_spec <- readDIALineageRecord(manager, head)
+    if (is.null(head_spec)) return(invisible(TRUE))
+    if (!isTRUE(head_spec$class %in% c("ProteinQuantitativeData", "PeptideQuantitativeData"))) {
+      # A result (enrichment_completed): the table it was made from is judged.
+      judged <- tryCatch(readComponentMetadata(manager, head)$previous_state,
+        saved_entity_unsupported = function(e) NULL, saved_entity_corrupt = function(e) NULL)
+      if (!is.character(judged) || length(judged) != 1L || is.na(judged)) return(invisible(TRUE))
+      head <- getDIAStateReference(manager, judged)
+      if (is.null(head) || identical(head$entity_id, result$entity_id)) return(invisible(TRUE))
+      head_spec <- readDIALineageRecord(manager, head)
+      if (is.null(head_spec)) return(invisible(TRUE))
+    }
+    if (identical(manager$workflow_type, "DIA_LIMPA") && isTRUE(judged %in% c("ruv_covariates", "ruv_corrected")) &&
+      "correlation_filtered" %in% diaStateHistory(manager)) {
+      return(invisible(TRUE))
+    }
+    result_spec <- readDIALineageRecord(manager, result)
+    if (is.null(result_spec) || identical(head_spec$components, result_spec$components)) return(invisible(TRUE))
+    rlang::abort(paste0("the current table is not the normalisation tab's last result (from the correlation filter, ",
+      "its Skip, or on DIA with limpa the RUV covariates step): a step was applied or reverted since that result was ",
+      "made, so the exported session would not describe the current table. Press \"Run Normalization & RUV\" again, ",
+      "apply or skip the correlation filter (on DIA with limpa, then the RUV covariates step), then export."),
+      class = "prot_norm_correlation_input_stale")
+  })
+}
+
 resolveProtNormExportSourceDir <- function(
   experimentPaths,
   dirExistsFn = dir.exists

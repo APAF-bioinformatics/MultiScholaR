@@ -95,7 +95,10 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         catFn("SESSION SUMMARY ERROR:", conditionMessage(error), "\n")
         # KIT-052 (KIT-134 run 44379470655): a file the save could not write (the session archive's, on Windows with long
         # paths disabled) is named to the user, not only logged; the copy and the report stay refused until it is written.
-        if (inherits(error, "workflow_figure_unwritten")) {
+        # KIT-206: a session archive the save refused (its head is not the normalisation tab's last result, or a file it
+        # needs is missing) is named too.
+        if (inherits(error, c("workflow_figure_unwritten", "prot_norm_correlation_input_stale",
+            "workflow_export_dependency_missing"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
         }
         basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
