@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 line DI10K (VAL-163 (3), coordinator 2026-11-25): tests first for the confirmatory cell C4e-170; expected: the 4 new-cell tests error (no such cell), the unchanged-catalogue test passes; no coverage simulation; ceiling 25 job-minutes",
+  "label": "KIT-159 DI10K tests-first at 58a6f598",
+  "package_commit": "58a6f5984dde30149ba310c46dd3867773b0f097",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/di10k-t-out",
+        "--files",
+        "di10k"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/di10k-t-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
