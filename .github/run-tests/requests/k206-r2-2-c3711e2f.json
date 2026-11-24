@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-206 R2-2 (instrument run 1 of 3 for R2, VAL-54): the new file only, head c3711e2f (fix + E11 snapshot repair) against base 8f4822a2 (tests-only d268d860 + the same repair, branch run-k206-r2-base2); ceiling inside R2's 540 job-minutes",
+  "label": "KIT-206 R2-2 new file c3711e2f vs 8f4822a2",
+  "package_commit": "c3711e2f113294e37877b71eff519846f63cfe72",
+  "base_commit": "8f4822a27fc864748bf4f65fd22e1a9e3fb933db",
+  "tools_ref": "",
+  "tests": [
+    "test-kit206-prot-norm-export-guard.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
