@@ -1,0 +1,223 @@
+name: In-process memory discovery (KIT-209)
+
+# Run-only lane (branch run-kit209-memory; KIT-209, methods ledger VAL-145 and VAL-151): in-process journeys of each
+# route on synthetic corpora, the candidate build and build b468a885 installed side by side in one job (each in its own
+# library over the KIT-134 snapshot library), every journey in a fresh R process inside its own memory cgroup, with
+# per-step marks (VmHWM reset per step, R heap, time, the state committed). KIT-150's lane (run-mofa-measure-k150,
+# .github/workflows/k150-measure.yml), adapted: no MOFA2 closure, no bundle Python; the bundle's pandoc for the report.
+# Declaration: docs/qa/workflow-execution/kit/kit-209/declaration.md on branch kit-209-memory-gate (before any run).
+#
+# Start: change .github/k209/k209-params.json in a commit and push it to run-kit209-memory.
+#   label    short name of the run
+#   attempt  g0a | g0p | instrument (VAL-54; as the declaration counts attempts)
+#   jobs     [{name, plan, timeout}]: plan as k209-plan.sh names it; timeout in minutes (at most 340)
+# What leaves a job (the upload): the result folder only (journey records, rows, corpora and library tables, runner
+# facts, the journeys' console logs); token-like text fails the job; a console log naming an internal package is
+# withheld. No cache of any kind; nothing built with the token is uploaded (the libraries stay on the runner).
+
+on:
+  push:
+    branches:
+      - "run-kit209-memory"
+    paths:
+      - .github/k209/k209-params.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: k209-measure-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Parameters
+    runs-on: ubuntu-latest
+    outputs:
+      jobs: ${{ steps.plan.outputs.jobs }}
+      library_commit: ${{ steps.plan.outputs.library_commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/k209
+          persist-credentials: false
+      - id: plan
+        run: |
+          p=.github/k209/k209-params.json
+          jq -e '(.label | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,40}$")) and
+            (.attempt | IN("g0a", "g0p", "instrument")) and
+            (.jobs | type == "array" and length >= 1 and length <= 4 and
+              all(.name | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")) and
+              all(.plan | IN("g0a", "g0p1", "g0p2")) and
+              all(.timeout | type == "number" and . == floor and . >= 20 and . <= 340))' "$p" > /dev/null \
+            || { echo "::error::k209-params.json is not valid"; exit 1; }
+          echo "jobs=$(jq -c .jobs "$p")" | tee -a "$GITHUB_OUTPUT"
+          c=$(awk -F'\t' '$1 == "C" { print $2 }' .github/k209/k209-builds.tsv)
+          [[ "$c" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::build C has no commit"; exit 1; }
+          echo "library_commit=$c" | tee -a "$GITHUB_OUTPUT"
+      - name: The lane's R scripts parse (fails before any runner time is spent on installs)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends r-base-core > /dev/null
+          for f in .github/k209/*.R; do Rscript --vanilla -e 'invisible(parse(commandArgs(TRUE)[[1]])); cat("parses:", commandArgs(TRUE)[[1]], "\n")' "$f"; done
+
+  measure:
+    name: ${{ matrix.job.name }} (${{ matrix.job.plan }})
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        job: ${{ fromJSON(needs.plan.outputs.jobs) }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: ${{ matrix.job.timeout }}
+    steps:
+      - name: Job start
+        run: echo "JOB_STARTED=$(date +%s)" | tee -a "$GITHUB_ENV"
+
+      - name: The candidate's checkout (the snapshot library installs it; the generators and the harness come from it)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.library_commit }}
+          persist-credentials: false
+          lfs: false
+
+      - name: This lane's scripts
+        uses: actions/checkout@v4
+        with:
+          path: lane
+          persist-credentials: false
+          sparse-checkout: .github/k209
+
+      - name: Paths; the runner
+        run: |
+          {
+            echo "OUT=$RUNNER_TEMP/evidence"
+            echo "RES=$RUNNER_TEMP/result"
+            echo "LIBROOT=$RUNNER_TEMP/builds"
+          } >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/evidence" "$RUNNER_TEMP/result" "$RUNNER_TEMP/builds"
+          {
+            echo "image: ${ImageOS:-?} ${ImageVersion:-?}"
+            uname -r
+            nproc
+            grep -E '^(MemTotal|SwapTotal)' /proc/meminfo
+            lscpu | grep -E '^(Model name|CPU\(s\)|Thread|Core)'
+            df -h "$RUNNER_TEMP" /
+            echo "cgroup: $(stat -fc %T /sys/fs/cgroup) controllers: $(cat /sys/fs/cgroup/cgroup.subtree_control 2> /dev/null)"
+            echo "candidate checkout: $(git rev-parse HEAD)"
+            echo "lock: $(sha256sum packaging/multischolar.lock.json)"
+          } | tee "$RUNNER_TEMP/result/runner.txt"
+
+      - name: R 4.6.1, the KIT-134 library, the internal packages and MultiScholaR at the candidate (no cache)
+        uses: ./.github/actions/snapshot-library
+        with:
+          token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: ""
+
+      - name: The bundle's pandoc (distributable.yml's version) for the report render
+        run: |
+          v="$(sed -n 's/^  PANDOC_VERSION: "\(.*\)"$/\1/p' .github/workflows/distributable.yml)"
+          test -n "$v" || { echo "::error::PANDOC_VERSION not found"; exit 1; }
+          curl -fsSL -o "$RUNNER_TEMP/pandoc.tar.gz" "https://github.com/jgm/pandoc/releases/download/${v}/pandoc-${v}-linux-amd64.tar.gz"
+          mkdir -p "$RUNNER_TEMP/pandoc"
+          tar -xzf "$RUNNER_TEMP/pandoc.tar.gz" -C "$RUNNER_TEMP/pandoc"
+          echo "RSTUDIO_PANDOC=$RUNNER_TEMP/pandoc/pandoc-${v}/bin" | tee -a "$GITHUB_ENV"
+          "$RUNNER_TEMP/pandoc/pandoc-${v}/bin/pandoc" --version | head -n 1 | tee -a "$RES/runner.txt"
+
+      - name: The two builds, each in its own library (R CMD INSTALL of each commit; logs kept on the runner)
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
+        run: |
+          set -o pipefail
+          logs="$RUNNER_TEMP/build-logs"
+          mkdir -p "$logs" "$RUNNER_TEMP/src"
+          while IFS=$'\t' read -r build commit; do
+            [ "$build" = build ] && continue
+            src="$RUNNER_TEMP/src/$build"
+            mkdir -p "$src" "$LIBROOT/$build"
+            git -C "$src" init -q
+            git -C "$src" fetch -q --depth 1 "https://github.com/$GITHUB_REPOSITORY" "$commit" < /dev/null
+            git -C "$src" checkout -q FETCH_HEAD
+            test "$(git -C "$src" rev-parse HEAD)" = "$commit" || { echo "::error::$build is not at $commit"; exit 1; }
+            ( /opt/R/4.6.1/bin/R CMD INSTALL --no-test-load --library="$LIBROOT/$build" "$src" > "$logs/$build.log" 2>&1
+              echo $? > "$logs/$build.status" ) &
+          done < lane/.github/k209/k209-builds.tsv
+          wait
+          while IFS=$'\t' read -r build commit; do
+            [ "$build" = build ] && continue
+            status=$(cat "$logs/$build.status")
+            if [ "$status" != 0 ]; then tail -n 30 "$logs/$build.log"; echo "::error::build $build did not install"; exit 1; fi
+            echo "$commit" > "$LIBROOT/$build/k209-build-commit.txt"
+            printf '%s\t%s\t%s\n' "$build" "$commit" "$(sed -n 's/^Version: //p' "$LIBROOT/$build/MultiScholaR/DESCRIPTION")" |
+              tee -a "$RES/builds-installed.tsv"
+            /opt/R/4.6.1/bin/Rscript --vanilla lane/.github/k209/k209-library.R "$build" "$LIBROOT/$build" "$RES/library-b2.tsv"
+          done < lane/.github/k209/k209-builds.tsv
+          /opt/R/4.6.1/bin/Rscript --vanilla -e 'ip <- utils::installed.packages(.Library)[, c("Package", "Version")]; utils::write.table(ip, commandArgs(TRUE)[[1]], sep = "\t", quote = FALSE, row.names = FALSE)' "$RES/library-versions.tsv"
+
+      - name: Measure (k209-plan.sh ${{ matrix.job.plan }})
+        env:
+          PLAN: ${{ matrix.job.plan }}
+          TIMEOUT_MIN: ${{ matrix.job.timeout }}
+          JOB_NAME: ${{ matrix.job.name }}
+          MULTISCHOLAR_TEST_MODE: "true"
+          RAYON_NUM_THREADS: "1"
+        run: |
+          set -o pipefail
+          export WORK="$RUNNER_TEMP/k209-work" LANE="$GITHUB_WORKSPACE/lane" CHECKOUT="$GITHUB_WORKSPACE" \
+            K209_CG=/sys/fs/cgroup/k209 K209_LOGS="$RES/logs" LIBROOT RES RSTUDIO_PANDOC
+          export DEADLINE=$((JOB_STARTED + (TIMEOUT_MIN - 12) * 60))
+          mkdir -p "$WORK" "$K209_LOGS"
+          sudo mkdir -p "$K209_CG"
+          echo "+memory" | sudo tee "$K209_CG/cgroup.subtree_control" > /dev/null
+          sha256sum lane/.github/k209/* | tee "$RES/script-sha256.txt"
+          { echo "plan $PLAN; deadline $(date -d "@$DEADLINE" -u +%H:%M:%SZ); setup took $(( $(date +%s) - JOB_STARTED )) s"
+            echo "environment: MULTISCHOLAR_TEST_MODE=$MULTISCHOLAR_TEST_MODE RAYON_NUM_THREADS=$RAYON_NUM_THREADS OMP_NUM_THREADS=${OMP_NUM_THREADS:-unset} OPENBLAS_NUM_THREADS=${OPENBLAS_NUM_THREADS:-unset}"
+          } | tee "$RES/plan.txt"
+          set +e
+          bash lane/.github/k209/k209-plan.sh "$PLAN" 2>&1 | tee "$RES/plan-console.log"
+          echo "plan exit $? after $(( $(date +%s) - JOB_STARTED )) s from job start" | tee -a "$RES/plan.txt"
+          set -e
+          K209_JOB="$JOB_NAME" K209_PLAN="$PLAN" python3 -I lane/.github/k209/k209-summarise.py job "$RES"
+
+      - name: Nothing token-like in the upload; console logs naming the internal packages withheld
+        if: ${{ always() }}
+        run: |
+          if grep -rlE 'ghp_|github_pat_|gho_|ghs_|Bearer ' "$RES"; then
+            echo "::error::token-like text in the result"; exit 1
+          fi
+          grep -rlE 'fast_duckdb|fast_limpa_dpc|fastduckdb|fastlimpadpc' "$RES/logs" "$RES/plan-console.log" 2> /dev/null | while read -r f; do
+            rm -f "$f"; echo "withheld: ${f#"$RES"/}" | tee -a "$RES/withheld.txt"
+          done
+          du -sh "$RES"
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: k209-${{ matrix.job.name }}
+          path: ${{ runner.temp }}/result
+          retention-days: 30
+
+  summary:
+    name: Summary
+    needs: [plan, measure]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/k209
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: k209-*
+          path: ${{ runner.temp }}/jobs
+      - name: Summarise once
+        run: |
+          sha256sum .github/k209/k209-summarise.py
+          python3 -I .github/k209/k209-summarise.py final "$RUNNER_TEMP/jobs" "$RUNNER_TEMP/summary"
+          cat "$RUNNER_TEMP/summary/summary.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: summary
+          path: ${{ runner.temp }}/summary
+          retention-days: 30

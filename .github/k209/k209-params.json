@@ -1,0 +1,5 @@
+{
+  "label": "g0a-1",
+  "attempt": "g0a",
+  "jobs": [{"name": "g0a", "plan": "g0a", "timeout": 150}]
+}
