@@ -285,6 +285,9 @@ test_that("KIT-122 (composite): a figure is found saved only for the stage image
 # ------------------------------------------------------------------------------------------------
 
 protNormK182Steps <- function(seen) {
+    # R1 instrument repair (VAL-54): the managed chain's read counter passes `fields = NULL` on, which reads no assay; the
+    # scripted QC change in the application reads through the package's own function.
+    read <- readWorkflowExecutionComponents
     click <- protNormW3Clicker()
     press <- function(...) {
         step <- click(...)
@@ -302,7 +305,7 @@ protNormK182Steps <- function(seen) {
             grDevices::pdf(NULL)
             device <- grDevices::dev.cur()
             on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device), add = TRUE)
-            withDIAStateScope(manager, function() {
+            testthat::with_mocked_bindings(withDIAStateScope(manager, function() {
                 selectDIAStateReference(manager, "protein_replicate_filtered")
                 value <- computeDIAReferenceProteinIntensityFilter(manager, getDIAStateReference(manager),
                     list(strict_mode = FALSE, min_reps_per_group = 2, min_groups = 2,
@@ -310,7 +313,7 @@ protNormK182Steps <- function(seen) {
                 result <- finishDIAReferenceProteinStep(list2env(list(state_manager = manager, qc_params = list())),
                     value, publish = FALSE)
                 publishDIAProteinProgress(result, "11_protein_intensity_filtered", "proteomics", "core", updateProteinFiltering)
-            })
+            }), readWorkflowExecutionComponents = read, .package = "MultiScholaR")
             seen$q <- getDIAStateReference(manager)$entity_id
             seen$prf1 <- getDIAStateReference(manager, "protein_replicate_filtered")$entity_id
         },
@@ -321,8 +324,11 @@ test_that("KIT-182 T8 (managed): after a QC change the run's actions start with 
     skip_if_not(workflowOwnerCapable())
     unmanaged_seen <- new.env(parent = emptyenv())
     managed_seen <- new.env(parent = emptyenv())
-    unmanaged <- protNormK122Drive(protNormCoreOwner(), protNormK182Steps(unmanaged_seen), managed = FALSE)
-    managed <- protNormK122Drive(protNormCoreOwner(), protNormK182Steps(managed_seen), managed = TRUE)
+    # The steps are built before the drive installs its mocks (they keep the package's own component read).
+    unmanaged_steps <- protNormK182Steps(unmanaged_seen)
+    managed_steps <- protNormK182Steps(managed_seen)
+    unmanaged <- protNormK122Drive(protNormCoreOwner(), unmanaged_steps, managed = FALSE)
+    managed <- protNormK122Drive(protNormCoreOwner(), managed_steps, managed = TRUE)
     figures <- "normalization-qc-figures"
     # The QC change removed proteins and is the head before the second run.
     expect_false(is.null(managed_seen$q))
