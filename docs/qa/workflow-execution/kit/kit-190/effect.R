@@ -43,8 +43,12 @@ e2PickCells <- function(allowed, groups, per_group, count) {
   cells[seq_len(min(count, nrow(cells))), , drop = FALSE]
 }
 
-# ---- copy: helper-kit172.R:34-62 at d4e2eb2c (name changed; `effect_share` added, :44 uses it) ----
-e2Values <- function(seed, planted = FALSE, missing = TRUE, n = 520L, n_itsd = 5L, effect_share = 0.1) {
+# ---- copy: helper-kit172.R:34-62 at d4e2eb2c (name changed; `effect_share` added, :44 uses it; `factor_pattern` added
+# by bound-declaration.md section 3: "random" draws the factor's sample pattern N(0, 1) per sample right after the
+# loadings, centred and scaled to the balanced pattern's sample variance 12/11; "balanced" leaves the stream unchanged) ----
+e2Values <- function(seed, planted = FALSE, missing = TRUE, n = 520L, n_itsd = 5L, effect_share = 0.1,
+                     factor_pattern = c("balanced", "random")) {
+  factor_pattern <- match.arg(factor_pattern)
   set.seed(seed)
   design <- kit172Design()
   groups <- design$group
@@ -58,7 +62,12 @@ e2Values <- function(seed, planted = FALSE, missing = TRUE, n = 520L, n_itsd = 5
     effects[changed] <- sample(c(-1, 1), length(changed), replace = TRUE)
     logs[, groups == "B"] <- logs[, groups == "B"] + effects
     loadings <- stats::rnorm(n_features, 0, 0.5)
-    logs <- logs + outer(loadings, rep(c(-1, -1, -1, 1, 1, 1), 2L))
+    pattern <- rep(c(-1, -1, -1, 1, 1, 1), 2L)
+    if (identical(factor_pattern, "random")) {
+      w <- stats::rnorm(nrow(design))
+      pattern <- (w - mean(w)) / stats::sd(w) * sqrt(12 / 11)
+    }
+    logs <- logs + outer(loadings, pattern)
   }
   values <- 2^logs
   if (missing) {
@@ -71,20 +80,24 @@ e2Values <- function(seed, planted = FALSE, missing = TRUE, n = 520L, n_itsd = 5
   out <- rbind(values, standards)
   dimnames(out) <- list(c(sprintf("F%03d", seq_len(n_features)), sprintf("IS_%d", seq_len(n_itsd))), design$Run)
   list(values = out, effects = stats::setNames(c(effects, rep(0, n_itsd)), rownames(out)),
-    loadings = stats::setNames(c(loadings, rep(0, n_itsd)), rownames(out)))
+    loadings = stats::setNames(c(loadings, rep(0, n_itsd)), rownames(out)),
+    factor_group_r = if (planted) stats::cor(pattern, as.numeric(groups == "B")) else NA_real_)
 }
 
 E2_CELLS <- c("N-r", "N-s", "E-r", "E-s", "E-p", "E-g")
 ALL_CELLS <- c("E1", E2_CELLS)
+# bound-declaration.md section 3: the two cells where the unwanted factor lines up with the groups by chance (cells 7, 8)
+ALIGNED_CELLS <- c("N-w", "E-w")
 CUTOFF <- 0.05
 
 k190Abort <- function(class, message) stop(errorCondition(message, class = c(class, "k190_condition")))
 
 # ---- E2 data (5.3): effects, the one-group features of E-g, the row order -------------------------------------------
 e2Data <- function(cell, r) {
-  idx <- match(cell, E2_CELLS)
+  idx <- match(cell, c(E2_CELLS, ALIGNED_CELLS))
   seed <- 190000000 + 10000 * idx + r
-  sim <- e2Values(seed, planted = TRUE, missing = TRUE, effect_share = if (startsWith(cell, "N")) 0 else 0.1)
+  sim <- e2Values(seed, planted = TRUE, missing = TRUE, effect_share = if (startsWith(cell, "N")) 0 else 0.1,
+    factor_pattern = if (cell %in% ALIGNED_CELLS) "random" else "balanced")
   values <- sim$values
   effects <- sim$effects
   one_group <- character()
@@ -97,7 +110,8 @@ e2Data <- function(cell, r) {
     "N-s" = , "E-s" = order(rowMeans(log2(values), na.rm = TRUE)),
     "E-p" = order(effects == 0),
     seq_len(nrow(values)))
-  list(values = values[ord, , drop = FALSE], effects = effects, one_group = one_group, seed = seed)
+  list(values = values[ord, , drop = FALSE], effects = effects, one_group = one_group, seed = seed,
+    factor_group_r = sim$factor_group_r)
 }
 
 # ---- the rule of section 2.6, base R only (as the test file's oracle) ------------------------------------------------
@@ -324,6 +338,319 @@ runE3Side <- function(tree, head_tree, side, work, sizes, modes) {
   saveRDS(list(side = side, commit = commit, rows = do.call(rbind, rows)), file.path(work, paste0("e3-", side, ".rds")))
 }
 
+# ==== bound mode (bound-declaration.md, VAL-182, VAL-185) ============================================================
+# Arms: unbounded B (legacy, d4e2eb2c), F (first repair, d6d67efe), D (rule (d), a1c12d28); bounded B+B, F+B, D+B through
+# the legacy Manual mode at the unbounded arm's chosen percentage with k = min(k, 2). Lipid only. Old cells (1 to 6)
+# and E1 run F, D; the aligned cells N-w, E-w run B, F, D. Unbounded rows for r <= 50 in the old cells are read from
+# the committed e/ (F, B) and ed/ (D) tables; otherwise the unbounded journey is run.
+BOUND_TREES <- c(B = "d4e2eb2cff0302c27f98b78f90bfb51dab6aee04", F = "d6d67efea7e7a09f8ba41c28a99718dddb2ec796",
+  D = "a1c12d28bfd6e8291f3e360ab75b6875458d8c88")
+BOUND_CAP <- 2L
+BOUND_NULL_CELLS <- c("N-r", "N-s", "N-w")
+BOUND_EFFECT_CELLS <- c("E-r", "E-s", "E-p", "E-g", "E-w")
+BOUND_DECIDING <- c(BOUND_NULL_CELLS, BOUND_EFFECT_CELLS)
+
+boundKey <- function(cell, r, dataset) if (identical(cell, "E1")) paste("E1", dataset, sep = "|") else paste(cell, r, sep = "|")
+
+boundArms <- function(cell) if (cell %in% ALIGNED_CELLS) c("B", "F", "D") else c("F", "D")
+
+boundE1Data <- function(dataset) {
+  if (identical(dataset, "t11_concentration")) {
+    values <- kit172ConcentrationValues()
+    return(list(values = values, effects = stats::setNames(rep(0, nrow(values)), rownames(values)), one_group = character()))
+  }
+  if (identical(dataset, "t11_f172")) {
+    values <- kit172Values(172001L)$values
+    return(list(values = values, effects = stats::setNames(rep(0, nrow(values)), rownames(values)), one_group = character()))
+  }
+  parts <- strsplit(dataset, "_", fixed = TRUE)[[1L]]
+  sim <- kit172Values(as.integer(parts[[2L]]), planted = TRUE, missing = identical(parts[[3L]], "missing"))
+  list(values = sim$values, effects = sim$effects, one_group = character())
+}
+
+boundE1Datasets <- function(all = TRUE) c("t11_concentration", "t11_f172", if (all) as.vector(outer(sprintf("t1b_%d", 172101:172120),
+  c("missing", "complete"), paste, sep = "_")))
+
+# One journey of arm `arm` (unbounded when `ruv` is Automatic, bounded when Manual), with the declaration's endpoints,
+# its checks and its instrumentation. `rule` names the arm's control rule for the oracle check.
+boundJourney <- function(task, arm, ruv, rule, k_ref = NA_real_) {
+  started <- proc.time()[[3L]]
+  root <- file.path(tempdir(), sprintf("k190b-%s-%s-%s-%d-%s", arm, gsub("[^A-Za-z0-9]", "", task$cell),
+    gsub("[^A-Za-z0-9]", "", task$dataset), task$r, ruv$ruv_mode))
+  on.exit(unlink(root, recursive = TRUE), add = TRUE)
+  data <- if (identical(task$cell, "E1")) boundE1Data(task$dataset) else e2Data(task$cell, task$r)
+  object <- kit172Object(data$values, "lipid")
+  head_row <- list(cell = task$cell, r = task$r, dataset = task$dataset, arm = arm, mode = ruv$ruv_mode,
+    factor_group_r = data$factor_group_r %||% NA_real_)
+  run <- tryCatch(kit172Journey(root, object, "lipid", ruv = ruv), error = function(e) e)
+  if (inherits(run, "error")) {
+    return(c(head_row, list(error = gsub("[\t\n]", " ", conditionMessage(run)), seconds = proc.time()[[3L]] - started)))
+  }
+  on.exit(closeDIAStateAdapter(run$owner), add = TRUE, after = FALSE)
+  input <- kit172StateMatrix(run, paste0(run$prefix, "_normalized"))
+  input[!is.finite(input)] <- NA_real_
+  opt <- run$ruv$optimisation[["LCMS_Pos"]]
+  groups <- kit172Design()$group
+  valid <- rownames(input)[rowSums(!is.na(input)) > 1]
+  pct <- opt$best_percentage %||% NA_real_
+  k <- opt$best_k %||% NA_integer_
+  controls <- if (isTRUE(opt$success)) names(opt$control_genes_index)[opt$control_genes_index] else character()
+  orc <- if (is.finite(pct)) k190Oracle(input, groups, pct) else NULL
+  oracle <- if (is.null(orc)) character() else switch(rule,
+    B = utils::head(valid, max(round(length(valid) * pct / 100), 1L)),
+    F = orc$selected,
+    D = k190Candidate(orc, "d"))
+  # Residual dimensions per feature: observed runs minus observed replicate sets (the groups).
+  observed <- !is.na(input)
+  dims <- rowSums(observed) - apply(observed, 1L, function(x) length(unique(groups[x])))
+  dimCounts <- function(kk) if (is.finite(kk)) c(sum(dims < kk), sum(dims == kk), sum(dims > kk)) else rep(NA_integer_, 3L)
+  corrected <- tryCatch(kit172StateMatrix(run, paste0(run$prefix, "_ruv_corrected")), error = function(e) NULL)
+  removed <- if (is.null(corrected)) NA_integer_ else sum(!rownames(input) %in% rownames(corrected)[rowSums(!is.na(corrected)) > 0])
+  curve <- tryCatch(.extractCancorCurveData(opt$cancor_plot), error = function(e) NULL)
+  separation <- tryCatch(calculateSeparationScore(opt$cancor_plot, metric = "max_difference"), error = function(e) NA_real_)
+  da <- kit172DaTable(run)
+  if (!is.null(da$assay)) da <- da[da$assay == "LCMS_Pos", , drop = FALSE]
+  truth <- data$effects[da$feature]
+  truth[is.na(truth)] <- 0
+  called <- da$feature[!is.na(da$fdr_qvalue) & da$fdr_qvalue < 0.05]
+  planted <- names(data$effects)[data$effects != 0]
+  at_k <- dimCounts(k)
+  at_ref <- dimCounts(k_ref)
+  c(head_row, list(error = "", percentage = pct, k = k, n_controls = length(controls), dropped = !isTRUE(opt$success),
+    oracle_ok = if (length(controls) && !is.null(orc)) setequal(controls, oracle) else NA,
+    calls = length(called), any_call = length(called) > 0L,
+    fdp = if (length(called)) sum(!called %in% planted) / length(called) else 0,
+    power = if (length(planted)) sum(called %in% planted) / length(planted) else NA_real_,
+    abs_lfc_error = mean(abs(da$logFC - truth), na.rm = TRUE),
+    dims_below_k = at_k[[1L]], dims_at_k = at_k[[2L]], dims_above_k = at_k[[3L]],
+    dims_below_kref = at_ref[[1L]], dims_at_kref = at_ref[[2L]], dims_above_kref = at_ref[[3L]],
+    removed_by_ruv = removed, separation = separation,
+    curve = if (is.null(curve)) "" else paste(sprintf("%s:%.6g:%.6g", curve$K, curve$All, curve$Control), collapse = ";"),
+    seconds = proc.time()[[3L]] - started))
+}
+
+# A side: one tree, one rule; per task the unbounded journey (unless reused) then the bounded one.
+runBoundSide <- function(tree, head_tree, arm, work, tasks_file, workers, fault) {
+  loadTree(tree, head_tree)
+  tasks <- readRDS(tasks_file)
+  results <- parallel::mclapply(seq_along(tasks), function(i) tryCatch(suppressWarnings(suppressMessages({
+    task <- tasks[[i]]
+    rows <- list()
+    pct_u <- task$pct_u
+    k_u <- task$k_u
+    if (isTRUE(task$run_unbounded)) {
+      u <- boundJourney(task, arm, kit172LegacyRuv("automatic"), arm)
+      rows[[1L]] <- u
+      if (!isTRUE(task$reuse)) {
+        pct_u <- u$percentage %||% NA_real_
+        k_u <- u$k %||% NA_real_
+      }
+    }
+    if (is.finite(pct_u %||% NA_real_) && is.finite(k_u %||% NA_real_)) {
+      k_b <- as.integer(min(k_u, BOUND_CAP))
+      if (fault && i == 1L) k_b <- k_b + 1L
+      ruv <- kit172LegacyRuv("manual")
+      ruv$manual_percentage <- pct_u
+      ruv$manual_k <- k_b
+      b <- boundJourney(task, paste0(arm, "+B"), ruv, arm, k_ref = k_u)
+      b$pct_u <- pct_u
+      b$k_u <- k_u
+      b$k_ok <- isTRUE(b$k == as.integer(min(k_u, BOUND_CAP)))
+      b$pct_ok <- isTRUE(b$percentage == pct_u)
+      rows[[length(rows) + 1L]] <- b
+    }
+    rows
+  })), error = function(e) list(list(cell = tasks[[i]]$cell, r = tasks[[i]]$r, dataset = tasks[[i]]$dataset, arm = arm,
+    error = paste("instrument:", gsub("[\t\n]", " ", conditionMessage(e)))))),
+    mc.cores = workers, mc.preschedule = FALSE)
+  saveRDS(list(arm = arm, commit = system2("git", c("-C", shQuote(tree), "rev-parse", "HEAD"), stdout = TRUE),
+    rows = unlist(results, recursive = FALSE)), file.path(work, paste0("bound-", arm, ".rds")))
+}
+
+boundFlat <- function(rows) {
+  cols <- c("cell", "r", "dataset", "arm", "mode", "error", "factor_group_r", "pct_u", "k_u", "percentage", "k", "n_controls",
+    "dropped", "oracle_ok", "k_ok", "pct_ok", "calls", "any_call", "fdp", "power", "abs_lfc_error", "dims_below_k", "dims_at_k",
+    "dims_above_k", "dims_below_kref", "dims_at_kref", "dims_above_kref", "removed_by_ruv", "separation", "curve", "seconds")
+  do.call(rbind, lapply(rows, function(x) {
+    out <- lapply(stats::setNames(cols, cols), function(cn) {
+      v <- x[[cn]]
+      if (is.null(v) || length(v) == 0L) NA else v[[1L]]
+    })
+    as.data.frame(out, stringsAsFactors = FALSE)
+  }))
+}
+
+# The committed unbounded rows (lipid): F from e/ (head), B from e/ (base), D from ed/ (head).
+boundCommitted <- function(root) {
+  read <- function(dir) do.call(rbind, lapply(file.path(root, "docs/qa/workflow-execution/kit/kit-190", dir, c("a", "b"),
+    "journeys.tsv"), function(f) if (file.exists(f)) utils::read.delim(f, stringsAsFactors = FALSE) else NULL))
+  e <- read("e")
+  ed <- read("ed")
+  pick <- function(t, side) {
+    ok <- is.na(t$error) | !nzchar(as.character(t$error))
+    t <- t[t$side == side & t$class == "lipid" & t$kind %in% c("e1", "e2") & ok, , drop = FALSE]
+    t$key <- vapply(seq_len(nrow(t)), function(i) boundKey(t$cell[[i]], t$r[[i]], as.character(t$dataset[[i]])), "")
+    t[, c("key", "percentage", "k", "n_controls", "calls")]
+  }
+  list(F = pick(e, "head"), B = pick(e, "base"), D = pick(ed, "head"))
+}
+
+runBound <- function(phase, out) {
+  started_at <- Sys.time()
+  lifecycle <- startsWith(phase, "lc")
+  blinded <- phase %in% c("stage1", "lc-stage1")
+  if (blinded) options(warn = -1L) # no warning text reaches the console in a blinded run
+  plant <- identical(Sys.getenv("K190_PLANT"), "1")
+  fault <- identical(Sys.getenv("K190_FAULT"), "1")
+  stopifnot(phase %in% c("lc", "lc-stage1", "stage1", "stage2"), !plant || identical(phase, "lc-stage1"),
+    !fault || identical(phase, "lc"))
+  dir.create(out, recursive = TRUE, showWarnings = FALSE)
+  out <- normalizePath(out)
+  script_file <- normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[[1L]]))
+  head_root <- normalizePath(".")
+  # Private working directory: discarded with the runner, never under `out`.
+  work <- file.path(tempdir(), "k190-bound-work")
+  dir.create(work, showWarnings = FALSE)
+  say <- function(...) if (!blinded) cat(..., "\n", sep = "")
+  committed <- boundCommitted(head_root)
+  plan <- NULL
+  if (identical(phase, "stage2")) {
+    plan_file <- Sys.getenv("K190_PLAN")
+    stopifnot(nzchar(plan_file), file.exists(plan_file))
+    plan <- utils::read.delim(plan_file, stringsAsFactors = FALSE)
+  }
+  cells_env <- Sys.getenv("K190_CELLS", paste(c(BOUND_DECIDING, if (identical(phase, "stage2") || identical(phase, "lc")) "E1"),
+    collapse = ","))
+  cells <- strsplit(cells_env, ",", fixed = TRUE)[[1L]]
+  stopifnot(all(cells %in% c(BOUND_DECIDING, "E1")), !blinded || !("E1" %in% cells))
+  R_of <- function(cell) {
+    if (lifecycle) return(2L)
+    if (identical(phase, "stage1")) return(50L)
+    as.integer(plan$R[plan$cell == cell])
+  }
+  tasks <- list(B = list(), F = list(), D = list())
+  for (cell in cells) {
+    entries <- if (identical(cell, "E1")) lapply(boundE1Datasets(!lifecycle), function(d) list(r = 1L, dataset = d)) else
+      lapply(seq_len(R_of(cell)), function(r) list(r = r, dataset = ""))
+    for (arm in boundArms(cell)) for (en in entries) {
+      key <- boundKey(cell, en$r, en$dataset)
+      ref <- committed[[arm]][committed[[arm]]$key == key, , drop = FALSE]
+      old <- !(cell %in% ALIGNED_CELLS) && nrow(ref) == 1L && is.finite(ref$percentage) && is.finite(ref$k)
+      # Only the lifecycle's own check (i) re-runs reusable unbounded journeys; every other phase reuses them.
+      reuse_now <- old && !identical(phase, "lc")
+      task <- list(cell = cell, r = en$r, dataset = en$dataset, reuse = reuse_now, run_unbounded = !reuse_now, pct_u = if (old) ref$percentage else NA_real_, k_u = if (old) ref$k else NA_real_,
+        committed = if (old) as.list(ref) else NULL)
+      tasks[[arm]][[length(tasks[[arm]]) + 1L]] <- task
+    }
+  }
+  arms <- names(tasks)[vapply(tasks, length, 1L) > 0L]
+  trees <- list()
+  for (arm in arms) {
+    trees[[arm]] <- file.path(tempdir(), paste0("k190-tree-", arm))
+    invisible(system2("git", c("worktree", "add", "--detach", shQuote(trees[[arm]]), BOUND_TREES[[arm]]), stdout = TRUE, stderr = TRUE))
+    stopifnot(dir.exists(file.path(trees[[arm]], "R")))
+    pkgbuild::compile_dll(trees[[arm]], quiet = TRUE)
+  }
+  workers <- as.integer(Sys.getenv("K190_WORKERS", if (length(arms) == 3L) "1" else "2"))
+  rscript <- file.path(R.home("bin"), "Rscript")
+  jobs <- lapply(arms, function(arm) {
+    tf <- file.path(work, paste0("tasks-", arm, ".rds"))
+    saveRDS(tasks[[arm]], tf)
+    parallel::mcparallel(system2(rscript, c(shQuote(script_file), "--bound-side", shQuote(trees[[arm]]), shQuote(head_root), arm,
+      shQuote(work), shQuote(tf), workers, if (fault) "1" else "0"),
+      stdout = file.path(work, paste0("bound-", arm, ".log")), stderr = file.path(work, paste0("bound-", arm, ".log"))))
+  })
+  status <- unlist(parallel::mccollect(jobs))
+  files <- file.path(work, paste0("bound-", arms, ".rds"))
+  if (any(status != 0L) || !all(file.exists(files))) {
+    if (!blinded) for (arm in arms) {
+      log <- file.path(work, paste0("bound-", arm, ".log"))
+      if (file.exists(log)) cat(paste0("[", arm, "] ", utils::tail(readLines(log, warn = FALSE), 15L)), sep = "\n")
+    }
+    k190Abort("k190_instrument", "a bound side failed")
+  }
+  rows <- boundFlat(unlist(lapply(files, function(f) readRDS(f)$rows), recursive = FALSE))
+  instrument <- sum(startsWith(as.character(rows$error), "instrument:"), na.rm = TRUE)
+  journey_errors <- sum(!is.na(rows$error) & nzchar(as.character(rows$error)), na.rm = TRUE) - instrument
+  bounded <- rows[grepl("\\+B$", rows$arm) & !is.na(rows$mode), , drop = FALSE]
+  falsifiers <- c(k_readback = sum(!bounded$k_ok, na.rm = TRUE), pct_readback = sum(!bounded$pct_ok, na.rm = TRUE),
+    oracle = sum(!bounded$oracle_ok, na.rm = TRUE), instrument = instrument)
+  seconds_median <- vapply(c(bounded = "\\+B$", B = "^B$", F = "^F$", D = "^D$"), function(rx) {
+    x <- rows$seconds[grepl(rx, rows$arm)]
+    if (length(x)) stats::median(x) else NA_real_
+  }, numeric(1L))
+  counts <- as.data.frame(table(cell = rows$cell, arm = rows$arm), stringsAsFactors = FALSE)
+  provenance <- list(ticket = "KIT-190 bound", phase = phase, head_commit = system2("git", c("rev-parse", "HEAD"), stdout = TRUE),
+    trees = as.list(BOUND_TREES[arms]), script_sha256 = strsplit(system2("sha256sum", shQuote(script_file), stdout = TRUE), " ")[[1L]][[1L]],
+    seed_rule = "190000000 + 10000 * cell + r; cells N-r 1 to E-g 6, N-w 7, E-w 8", cells = cells,
+    journeys = stats::setNames(as.list(counts$Freq), paste(counts$cell, counts$arm)), falsifiers = as.list(falsifiers),
+    journey_errors = journey_errors,
+    seconds_median_per_journey = as.list(seconds_median),
+    wall_seconds = as.numeric(difftime(Sys.time(), started_at, units = "secs")))
+  if (blinded) {
+    # Stage 1: the rows stay in `work`; the re-estimation sees only the capped arms' endpoints.
+    capped <- bounded[bounded$cell %in% BOUND_DECIDING & bounded$arm %in% c("F+B", "D+B"), c("cell", "arm", "r", "fdp", "any_call")]
+    if (plant) {
+      shift <- capped$cell == "E-r" & capped$arm == "D+B"
+      capped$fdp[shift] <- capped$fdp[shift] + 0.30
+      nr <- capped$cell == "N-r"
+      capped$arm[nr] <- ifelse(capped$arm[nr] == "F+B", "D+B", "F+B")
+    }
+    rows_file <- file.path(work, "capped.rds")
+    saveRDS(capped, rows_file)
+    code <- system2(rscript, c(shQuote(file.path(dirname(script_file), "reestimate.R")), "estimate", shQuote(rows_file), shQuote(out)),
+      stdout = file.path(work, "reestimate.log"), stderr = file.path(work, "reestimate.log"))
+    jsonlite::write_json(provenance, file.path(out, "provenance.json"), auto_unbox = TRUE, pretty = TRUE, digits = NA)
+    for (i in seq_len(nrow(counts))) cat(sprintf("journeys %s %s: %d\n", counts$cell[[i]], counts$arm[[i]], counts$Freq[[i]]))
+    for (nm in names(falsifiers)) cat(sprintf("falsifier %s: %d\n", nm, falsifiers[[nm]]))
+    cat(sprintf("seconds: %.0f\n", provenance$wall_seconds))
+    if (code == 0L && file.exists(file.path(out, "reestimate.tsv"))) {
+      cat(readLines(file.path(out, "reestimate.tsv")), sep = "\n")
+    } else cat("reestimate: failed\n")
+    if (code != 0L || any(falsifiers > 0L)) quit(status = 1L)
+    return(invisible(NULL))
+  }
+  utils::write.table(rows[, setdiff(names(rows), "curve")], file.path(out, "journeys.tsv"), sep = "\t", quote = FALSE,
+    row.names = FALSE, na = "NA")
+  utils::write.table(rows[, c("cell", "r", "dataset", "arm", "mode", "k", "separation", "curve")], file.path(out, "curves.tsv"),
+    sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+  checks <- list()
+  if (lifecycle) {
+    # (i) the unbounded journeys of the old cells reproduce the committed rows (k, percentage, controls count, calls).
+    unb <- rows[rows$mode == "automatic" & rows$cell %in% c(E2_CELLS, "E1") & !is.na(rows$mode), , drop = FALSE]
+    rep_ok <- vapply(seq_len(nrow(unb)), function(i) {
+      key <- boundKey(unb$cell[[i]], unb$r[[i]], as.character(unb$dataset[[i]]))
+      ref <- committed[[unb$arm[[i]]]]
+      ref <- ref[ref$key == key, , drop = FALSE]
+      nrow(ref) == 1L && isTRUE(ref$k == unb$k[[i]]) && isTRUE(ref$percentage == unb$percentage[[i]]) &&
+        isTRUE(ref$n_controls == unb$n_controls[[i]]) && isTRUE(ref$calls == unb$calls[[i]])
+    }, logical(1L))
+    checks$i_reproduce <- c(ok = sum(rep_ok), of = length(rep_ok))
+    checks$ii_k_pct_readback <- c(ok = sum(bounded$k_ok & bounded$pct_ok, na.rm = TRUE), of = nrow(bounded))
+    checks$iii_oracle <- c(ok = sum(bounded$oracle_ok, na.rm = TRUE), of = nrow(bounded))
+    filled <- !is.na(bounded$dims_at_k) & !is.na(bounded$removed_by_ruv) & nzchar(bounded$curve %||% "")
+    checks$iv_instrumentation <- c(ok = sum(filled), of = nrow(bounded))
+    secs <- seconds_median
+    secs[!is.finite(secs)] <- 0
+    cR <- c(`N-r` = 100, `N-s` = 100, `N-w` = 250, `E-r` = 200, `E-s` = 200, `E-p` = 200, `E-g` = 200, `E-w` = 200)
+    old_cost <- function(R) 2 * secs[["bounded"]] * R + (secs[["F"]] + secs[["D"]]) * max(R - 50, 0)
+    projection <- sum(vapply(names(cR), function(c) if (c %in% ALIGNED_CELLS) cR[[c]] * (3 * secs[["bounded"]] + secs[["B"]] +
+      secs[["F"]] + secs[["D"]]) else old_cost(cR[[c]]), numeric(1L))) + 42 * 2 * secs[["bounded"]]
+    checks$vii_projected_core_hours_option_c <- c(value = projection / 3600 * 1.25, ceiling = 100)
+  }
+  jsonlite::write_json(c(provenance, list(checks = lapply(checks, as.list))), file.path(out, "provenance.json"),
+    auto_unbox = TRUE, pretty = TRUE, digits = NA)
+  cat(sprintf("KIT-190 bound %s: %d rows; falsifiers %s\n", phase, nrow(rows), paste(names(falsifiers), falsifiers, collapse = ", ")))
+  for (nm in names(checks)) cat(sprintf("check %s: %s\n", nm, paste(names(checks[[nm]]), round(checks[[nm]], 2), collapse = " ")))
+  if (fault) {
+    if (falsifiers[["k_readback"]] > 0L) k190Abort("k190_falsifier", "fault run: k read-back falsifier triggered (as planted)")
+    k190Abort("k190_instrument", "fault run: the planted k + 1 was not detected")
+  }
+  if (any(falsifiers > 0L)) k190Abort("k190_falsifier", sprintf("bound %s: falsifiers %s", phase,
+    paste(names(falsifiers), falsifiers, collapse = ", ")))
+  invisible(NULL)
+}
+
 # ---- the side processes ---------------------------------------------------------------------------------------------
 args <- commandArgs(TRUE)
 if (length(args) && identical(args[[1L]], "--side")) {
@@ -338,6 +665,16 @@ if (length(args) && identical(args[[1L]], "--e3-side")) {
 }
 
 # ---- the controller -------------------------------------------------------------------------------------------------
+if (length(args) && identical(args[[1L]], "--bound-side")) {
+  runBoundSide(args[[2L]], args[[3L]], args[[4L]], args[[5L]], args[[6L]], as.integer(args[[7L]]), identical(args[[8L]], "1"))
+  quit(status = 0L)
+}
+if (length(args) && identical(args[[1L]], "bound")) {
+  # Usage: Rscript effect.R bound <lc | lc-stage1 | stage1 | stage2> <out dir>   (bound-declaration.md)
+  stopifnot(length(args) == 3L)
+  runBound(args[[2L]], args[[3L]])
+  quit(status = 0L)
+}
 stopifnot(length(args) == 3L, args[[1L]] %in% c("e", "e3"), grepl("^([0-9a-f]{40}|self)$", args[[2L]]))
 mode <- args[[1L]]
 started_at <- Sys.time()

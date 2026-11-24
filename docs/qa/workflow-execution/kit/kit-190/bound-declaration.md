@@ -1,4 +1,28 @@
-# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 5
+# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 6
+
+**Revision 6 (2026-11-25): the scripts, committed for the auditor's script check before the lifecycle.** No design
+change. Files and SHA-256 at this commit:
+- `effect.R` (the `bound` mode: phases `lc`, `lc-stage1`, `stage1`, `stage2`; the generator argument; arms; checks;
+  instrumentation): 6cd59c4c6120dd12a930ca08cae9b332a72b9d1c7bc6b35422d78210d4d955ff
+- `reestimate.R` (`estimate`, `plan`, `selftest`; section 8): b171924cae9493d3a6b9ff080906ac27d5b3a1f7488579269b5026fd53053226
+- `decide.R` (sections 5 and 6: the tests, the intersection-union decision, the reported items; `selftest` for item
+  (vi)); a third script, named here for the first time: d908af20d51cc58d03f16e29fcf2c501b973837bb921e5cac2985bb7480cf01c
+- `size2stage.py` (unchanged from revision 5): 07cf59df0bfc528062cd49e9644fcf2bb184a21cb46cb1ab105c19178ec18d27
+
+Points for the script check, where the scripts read the text more narrowly than it could be read:
+1. **E1-T1b, lipid only:** 20 seeds (172101 to 172120), 40 journeys; "21 seeds" in section 5 counted the metab seed,
+   which this lipid-only measurement excludes. T1b is reported, not deciding (VAL-185).
+2. **Check (i)** compares k, percentage, number of controls and calls with the committed rows; the control identities
+   themselves were not committed in `e/` and `ed/`, so they cannot be compared.
+3. **E1 runs in stage 2 only** (it is reported, has a fixed size, and plays no part in the re-estimation).
+4. **Secondary differences** (k, power, fold-change error) are reported with paired t intervals, not sign-flip
+   intervals (descriptive only).
+5. **The lifecycle's runs:** `effect.R bound lc` (R = 2, all cells and E1's two T11 fixtures; checks (i) to (iv),
+   (vii)); `effect.R bound lc` with `K190_FAULT=1`, N-r only (check (v)); `decide.R selftest` (vi);
+   `reestimate.R selftest` (viii); `effect.R bound lc-stage1` twice, the second with `K190_PLANT=1` (ix), each with its
+   own `out`. In the lifecycle's stage-1 runs the unbounded old-cell journeys are reused from the committed rows, as in
+   stage 1.
+
 
 **Revision 5 (2026-11-25):** the audit's "Declaration audit, revision 4" (`tickets/kit/audits/AUDIT-KIT-190-rule-d-20261125.md`)
 applied with its exact texts: R4-01 (skewness check with Johnson's statistic; owner's word pending, section 5), R4-02
