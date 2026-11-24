@@ -76,7 +76,7 @@ section("proteomics", local({
         sign <- h$kit220SignCounts(long, t)
         first <- h$kit220TableCounts(result$num_sig_da_molecules_first_go$table)
         second <- h$kit220TableCounts(result$num_sig_da_molecules)
-        tab <- diaDaSummaryStatsView(list(da_proteins_long = long), unique(long$comparison)[[1L]], t, lfc)
+        tab <- ns$diaDaSummaryStatsView(list(da_proteins_long = long), unique(long$comparison)[[1L]], t, lfc)
         path <- h$kit220Publish(object, result, t, tempfile("kit220-g0-"))
         table <- utils::read.delim(path, check.names = FALSE)
         published <- h$kit220TableCounts(table)
