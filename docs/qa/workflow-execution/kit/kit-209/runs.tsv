@@ -5,3 +5,9 @@ run_id	lane_commit	purpose	runner_minutes	result
 45364337214	efa3d105	G0a instrument run 2, first send	0.8	cancelled before any journey (to add the build-facts fix)
 45364573916	1307446f	G0a-3 = G0a instrument run 2 (VAL-54): package-error item, S1 on both builds	9.5	held: package error raised in a package frame; item 5 recorded
 45366618275	d4b6dd9e	G0p1 (U10, U9) and G0p2 (U7, U11, U12) on C, two jobs	155.9	U10, U9, U7 completed (42.8, 41.2, 22.4 min); U11 and U12 refused at normalisation_ruv (manual RUV, k 3: too few complete control proteins), class package error
+45383701044	d15f0f98	probe-ruv-base (base, manual RUV, stop after normalisation_ruv) and g0p3 (U6, U8 on RC 91e3cdcb); addendum 1 A2, A3	78.9	base refuses manual RUV as the candidate does (0 / 2 complete controls); U6 1,555 s, U8 295 s
+45383732532	96cc604e	g0i-repeat (integration lane; RC c03cb02a, C 324e14b4); addendum 1 A7	14.6	training 149.1 s (head) against 35.8 s (C); identical factors and peaks
+45390852350	6d3926cf	counted wave 1: M1, J1 to J6, D6 (RC 91e3cdcb, base b468a885; dated section d8fbd7f2)	938.6	every job completed its plan; U4/U5 candidate refused at DA (ruling A1); D6 refused at normalisation_ruv (shipped automatic sweep: 0 complete controls at every percentage)
+45404289533	2521ffcd	counted wave 2: D7, X10	215.8	D7 completed (TMT shipped automatic sweep); X10 completed (limpa, 10,366 s)
+45404313162	bd63b269	M3: I-M (3 per build), I-L (2 per build), RC 91e3cdcb and C 324e14b4	278.8	every stage completed and valid
+45465660117	f808e92a	P3: third pair (B C) for U7, U8, U9, U10, U12 (ticket 7.2)	317.8	every journey completed
