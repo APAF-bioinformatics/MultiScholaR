@@ -251,6 +251,40 @@ inside the ticket's total (ticket r1.20, section 35). State per item below; runs
   45356446685, head e9660d3e against base fe5c9273): 0 ERRORs, 3 WARNINGs, 3 NOTEs on each side,
   6 findings identical, **0 only on head**: G10 passes (`g10/`). REAUDIT2: 3.69 of 6 core-hours.
 
+### G1(r): built by the register's method, STOPPED at adoption (KIT-172) (2026-11-24)
+
+**Done.** Tests first: `test-g1r.R` at 6921d815, run G1Rt 45372185943: all five tests error at the
+fault (the functions absent; `rep/g1rt-*`). Fix 712c16f0: `R/g1r.R` (`valReadG1rBlocks`,
+`valG1rDiffs`: the four waldo forms into `valClassifyLiveDiffs`' input, base = `expected`, live =
+`actual`, NA on one side, the `lines(...)[a:b]` window not part of the key; `valG1rRows`: KIT-172's
+columns), `valReferenceDisagreements` in `gates.R` (`valAdoptReferenceRows` now calls it; same rule),
+`harness/val-g1r.R`. Run G1Rf 45374320806 on run branch `run-k159-g1r` (c9f6f4bf = 712c16f0 merged
+with staging 241914cb, for KIT-199's committed files; harness folder identical to 712c16f0).
+
+**Observed (G1Rf).** Tests g1r, g1a, chain: 20 tests, 154 expectations, 0 failures. lintr 2 in
+`g1r.R` (63: `where` reported unused, it is read by the cli message; 75: `<<-`); not corrected (a
+correction run costs about 0.8 and REAUDIT2 has 0.74 left). `val-g1r.R` (`g1r/`): source SHA-256
+167f9052... = prov, prov's source 1b918062...; 69 blocks, 4 / 30 / 22 / 13 per file, 69 (lane,
+step) pairs, every block at least one difference (524 in all); step order from the oracles at
+12d68ca7; **every difference has a class of G1(a)** (no unclassed block): 73 rows,
+`declared_change (KIT-199)` 6, `integration_artifacts` 24, `kit128_technical_replicates` 13,
+`metab_fixture_4` 30 (two rows on each `prot_dia_limpa` summary step except `summary_refusal`); the
+declared rows carry KIT-199's frozen and expected digests; `valStepClassCounts` per lane equals the
+rows. Committed reference files found by the source hash: KIT-180's (12 groups) and KIT-199's (10)
+**agree**; **KIT-172's disagrees in 18 groups**: `metab_gc` and `metab_combined`, every step from
+`correlation` on, where KIT-172's key reads
+`outputs/metabolomics_workflow-norm-correlation_filter_summary)[2:8]` (`)[2:11]` on
+`metab_combined`) and G1(r)'s reads `outputs/metabolomics_workflow-norm-correlation_filter_summary`
+(`g1r/g1r-disagreements.tsv`).
+
+**Inferred.** KIT-172's reader kept the line window of the form `lines(actual$outputs$<key>)[a:b]`
+in the key; the output's id has no `)[2:8]`. By the gate ("a disagreement ... stop and report;
+neither file is edited to agree without the owner's word"), G1(r) stops: `g1a-reference.tsv` is
+NOT committed as the reference. G1(r)'s own rows are kept as `g1r/g1a-reference-own-rows.tsv`
+(73 rows, KIT-172's columns, source and source_sha256 1b918062...). Owed: the owner's word on
+KIT-172's 18 keys (correct KIT-172's file, or adopt G1(r)'s rows for those groups); then the
+rows are committed as `g1a-reference.tsv` with no further run. REAUDIT2: 5.26 of 6.
+
 ### Resume here (handed over, 2026-11-24; context of the builder's session too long)
 
 Open, in this order, on `kit-159-validation-harness` in worktree `MultiScholaR-kit-159`:
