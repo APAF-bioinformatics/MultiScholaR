@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-212 R3: full suite on the merge with staging (6d23dd52) against staging 9a0bf9f0, and check (ceiling 2,800 job-minutes; decides A4)",
+  "label": "KIT-212 R3 merge 6d23dd52 vs staging 9a0bf9f0",
+  "package_commit": "6d23dd5252fc8d950e34bbb0a120074ea838ed13",
+  "base_commit": "9a0bf9f0e2d4334633aeabaa1dc4cffa92e39ec9",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 90,
+    "test-gui-entry-lipidomics.R": 70,
+    "test-gui-entry-metabolomics.R": 70,
+    "test-gui-entry-transcriptomics.R": 70
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
