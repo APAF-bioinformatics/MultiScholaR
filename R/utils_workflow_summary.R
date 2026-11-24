@@ -72,6 +72,41 @@ workflowSummaryFinalState <- function(config, workflowData, omicType, catFn = ca
     list(finalS4Object = finalS4Object, contrastsTbl = workflowData$contrasts_tbl, dataStateUsed = dataStateUsed)
 }
 
+#' KIT-207 (VAL-105 (2), VAL-148): whether the Summary may write from the head (its final object, study parameters,
+#' analysis record, integration file, report bundle and session state). Lipidomics and metabolomics accept the heads the
+#' DA's head rule accepts (KIT-194: `omicDaFallbackHeadNormalised`; a head adopted from a session file unless
+#' `omicDaLoadedStateRefused` names it), without the DA's precondition on the normalisation status; transcriptomics
+#' accepts a normalised state (`trxDaReadMetadata`). Every other omic, and a manager that is not a session owner, as
+#' before. Recorded divergence: the refusals use plain words for non-specialists, not conventions/R.md's "state the
+#' offending value" (as KIT-194).
+#' @param workflowData The workflow bus.
+#' @param omicType The omic.
+#' @return TRUE, invisibly; otherwise a condition of class `omic_norm_correlation_input_stale` whose text names the case.
+#' @noRd
+assertWorkflowSummaryHeadFinal <- function(workflowData, omicType) {
+    manager <- workflowData$state_manager
+    if (!isTRUE(omicType %in% c("lipidomics", "metabolomics", "transcriptomics")) || !inherits(manager, "DIAStateAdapter")) {
+        return(invisible(TRUE))
+    }
+    binding <- omicGuiConfig(omicType)$binding$binding
+    texts <- omicNormGuardTexts()
+    refusal <- withWorkflowStateScope(manager, function() {
+        if (omicNormIsTrx(binding)) {
+            if (!is.null(trxDaReadMetadata(workflowData))) return(NULL)
+            return(if (is.null(getWorkflowStateReference(manager, "trx_ruvs"))) texts$summary_none else texts$summary_trx)
+        }
+        head <- manager$current_state
+        if (is.character(head) && length(head) == 1L && omicNormAdopted(manager, head)) {
+            return(if (omicDaLoadedStateRefused(binding, head)) sprintf(texts$summary_loaded, head))
+        }
+        if (omicDaFallbackHeadNormalised(workflowData, binding)) return(NULL)
+        if (is.null(getWorkflowStateReference(manager, paste0(binding$prefix, "_normalized")))) texts$summary_none else
+            texts$summary
+    })
+    if (is.null(refusal)) return(invisible(TRUE))
+    rlang::abort(refusal, class = "omic_norm_correlation_input_stale")
+}
+
 #' Whether the analysis record (and its bundle) is written for this bus: always with a bus, or only for the group's
 #' `record_class` owner.
 #' @noRd
@@ -93,12 +128,20 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
     summaryFailed <- function(error) {
         catFn("SESSION SUMMARY ERROR:", conditionMessage(error), "\n")
+        # KIT-207: the head is not the normalisation's result. Refused before anything was written: no fallback file, no
+        # "saved with warnings"; the omic's earlier integration input is removed (SD-5 (b), K061-3).
+        if (inherits(error, "omic_norm_correlation_input_stale")) {
+            notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
+            tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
+                error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
+            failed(error)
+            return(invisible(NULL))
+        }
         # KIT-052 (KIT-134 run 44379470655): a file the save could not write (the session archive's, on Windows with long
         # paths disabled) is named to the user, not only logged; the copy and the report stay refused until it is written.
-        # KIT-206: a session archive the save refused (its head is not the normalisation tab's last result, or a file it
-        # needs is missing) is named too.
-        if (inherits(error, c("workflow_figure_unwritten", "prot_norm_correlation_input_stale",
-            "workflow_export_dependency_missing"))) {
+        # KIT-052, KIT-206; KIT-207 (SD-4): a file the save could not write, or refused, is named to the user.
+        if (inherits(error, c("workflow_figure_unwritten", "prot_norm_correlation_input_stale", "workflow_export_dependency_missing",
+            "integration_input_invalid"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
         }
         basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
@@ -112,6 +155,7 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         invisible(basicParamsFile)
     }
     tryCatch({
+        assertWorkflowSummaryHeadFinal(workflowData, omicType)
         state <- workflowSummaryFinalState(config, workflowData, omicType, catFn)
         studyParamsFile <- createWorkflowArgsFn(workflow_name = label, description = description,
             source_dir_path = paths$source_dir, final_s4_object = state$finalS4Object, contrasts_tbl = state$contrastsTbl,
@@ -312,6 +356,15 @@ renderWorkflowSummaryReport <- function(config, workflowData, projectDirs, omicT
         notify("Error: Project directories not properly initialized", "error", 10)
         return(invisible(list(path = NULL, template = NULL, templateSource = NULL, bundleError = NULL)))
     }
+    # KIT-207 (SD-2 (b)): refused, before the template is looked up, when the head is not the normalisation's result.
+    # Recorded divergence: a catch-all at a press site (as KIT-194 A05), over conventions/R.md's specific conditions, so
+    # that an unexpected error of the guard's reads is shown rather than escaping the observer.
+    refused <- tryCatch(assertWorkflowSummaryHeadFinal(workflowData, omicType), error = function(e) e)
+    if (inherits(refused, "error")) {
+        logger::log_error(logger::skip_formatter(paste("Report refused:", conditionMessage(refused))))
+        notify(paste("Report generation failed:", cli::ansi_strip(conditionMessage(refused))), "error", 15)
+        return(invisible(list(path = NULL, template = NULL, templateSource = NULL, bundleError = NULL)))
+    }
     report <- config$report
     within("Generating report...", {
         # KIT-108 W4: proteomics shows the route's detection first; its resolver returns the template with the route's
@@ -399,6 +452,8 @@ workflowSummaryRenderReport <- function(config, workflowData, paths, omicType, l
 writeWorkflowSummarySessionState <- function(config, workflowData, projectDirs, omicType, label, description, values,
     notify) {
     tryCatch({
+        # KIT-207 (SD-2 (b)): refused when the head is not the normalisation's result ("Export failed: <text>").
+        assertWorkflowSummaryHeadFinal(workflowData, omicType)
         path <- file.path(projectDirs[[omicType]]$source_dir, paste0("session_state_", Sys.Date(), ".RDS"))
         state <- config$session_state(inputValues = list(experiment_label = label, description = description),
             projectDirs = projectDirs, omicType = omicType, values = values, timestamp = Sys.time(),

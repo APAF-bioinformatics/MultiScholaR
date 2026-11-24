@@ -1,0 +1,305 @@
+file: test-enrichment-significance.R
+test: KIT-203 S1: on KIT-189's E4 vector the family value is BH with denominator m and flags strictly
+kind: error
+message:
+  Error in `addEnrichmentFamilyAdjustment(k203Result(c(0.001, 0.01, 0.2), 10L), "bh_whole_family")`: could not find function "addEnrichmentFamilyAdjustment"
+trace (first lines):
+  ▆
+
+file: test-enrichment-significance.R
+test: KIT-203 S2: results the family value cannot be formed for are refused; NULL, empty and q-value pass
+kind: error
+message:
+  Error in `addEnrichmentFamilyAdjustment(k203Result(c(0.01, 0.02, 0.03), 2L), "bh_whole_family")`: could not find function "addEnrichmentFamilyAdjustment"
+trace (first lines):
+      ▆
+   1. └─testthat::expect_error(...) at test-enrichment-significance.R:85:5
+   2.   └─testthat:::expect_condition_matching_(...)
+   3.     └─testthat:::quasi_capture(...)
+   4.       ├─testthat (local) .capture(...)
+   5.       │ └─base::withCallingHandlers(...)
+   6.       └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+
+file: test-enrichment-significance.R
+test: KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart
+kind: failure
+message:
+  Expected `sum(tsv$significant %in% "TRUE")` to be identical to 0L.
+  Differences:
+    `actual`: 120
+  `expected`:   0
+
+file: test-enrichment-significance.R
+test: KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart
+kind: failure
+message:
+  Expected `unique(tsv$significance_rule)` to be identical to "bh_whole_family".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('bh_whole_family')
+
+file: test-enrichment-significance.R
+test: KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart
+kind: failure
+message:
+  Expected `run$up@result$p_adjust_family` to be identical to `stats::p.adjust(c(p, rep(1, m - length(p))), "BH")[seq_along(p)]`.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (1, 1, 1, 1, 1, ...)
+
+file: test-enrichment-significance.R
+test: KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart
+kind: failure
+message:
+  Expected `unique(run$up@result$family_size)` to be identical to `as.integer(sum(sizes >= 10L & sizes <= 500L))`.
+  Differences:
+  `actual` is NULL
+  `expected` is an integer vector (314)
+
+file: test-enrichment-significance.R
+test: KIT-203 S3: KIT-173's null draw 5 calls nothing by default and 120 terms by the q-value; m counted apart
+kind: error
+message:
+  Error in `processEnrichments(da, "999999", q_cutoff = 0.05, pathway_dir = pathway_dir, go_annotations = annotations, exclude_iea = FALSE, protein_id_column = "Protein.IDs", contrast_names = "effect", go_propagation = "none", ...)`: unused argument (significance_rule = "qvalue")
+trace (first lines):
+       ▆
+    1. ├─k203Read(k203S3("qvalue")$tsv) at test-enrichment-significance.R:149:5
+    2. │ └─utils::read.delim(...) at test-enrichment-significance.R:68:13
+    3. │   └─utils::read.table(...)
+    4. └─k203S3("qvalue")
+    5.   └─k203S3Run(dir, significance_rule = rule) at test-enrichment-significance.R:120:13
+    6.     ├─utils::capture.output(...) at test-enrichment-significance.R:44:5
+    7.     │ └─base::withVisible(...elt(i))
+    8.     ├─base::suppressMessages(...) at test-enrichment-significance.R:44:5
+    9.     │ └─base::withCallingHandlers(...)
+   10.     └─base::suppressWarnings(...) at test-enrichment-significance.R:44:5
+   11.       └─base::withCallingHandlers(...)
+
+file: test-enrichment-significance.R
+test: KIT-203 S4: the q-value option writes and stores what the base commit did, byte for byte
+kind: error
+message:
+  Error in `processEnrichments(da, "999999", q_cutoff = 0.05, pathway_dir = pathway_dir, go_annotations = annotations, exclude_iea = FALSE, protein_id_column = "Protein.IDs", contrast_names = "effect", go_propagation = "none", ...)`: unused argument (significance_rule = "qvalue")
+trace (first lines):
+      ▆
+   1. └─k203S3("qvalue") at test-enrichment-significance.R:162:5
+   2.   └─k203S3Run(dir, significance_rule = rule) at test-enrichment-significance.R:120:13
+   3.     ├─utils::capture.output(...) at test-enrichment-significance.R:44:5
+   4.     │ └─base::withVisible(...elt(i))
+   5.     ├─base::suppressMessages(...) at test-enrichment-significance.R:44:5
+   6.     │ └─base::withCallingHandlers(...)
+   7.     └─base::suppressWarnings(...) at test-enrichment-significance.R:44:5
+   8.       └─base::withCallingHandlers(...)
+
+file: test-enrichment-significance.R
+test: KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome
+kind: failure
+message:
+  Expected `names_of(default$step)` to be identical to `c(ten, "significance_rule")`.
+  Differences:
+       actual           | expected                
+   [8] "contrast_names" | "contrast_names"    [8] 
+   [9] "results"        | "results"           [9] 
+  [10] "go_propagation" | "go_propagation"    [10]
+                        - "significance_rule" [11]
+
+file: test-enrichment-significance.R
+test: KIT-203 S6: the default declares its rule; the q-value declares KIT-173's ten as the base did; outcome
+kind: error
+message:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `Filter(function(p) identical(p$name, "significance_rule"), default$step$parameters)[[1L]]`: subscript out of bounds
+trace (first lines):
+  ▆
+
+file: test-enrichment-significance.R
+test: KIT-203 S7: every clusterProfiler run is told its rule; the correction sentence follows only for gSCS
+kind: error
+message:
+  Error in `eval(code, test_env)`: object 'ENRICHMENT_SIGNIFICANCE_RULES' not found
+trace (first lines):
+  ▆
+
+file: test-enrichment-significance.R
+test: KIT-203 S8: the default draws the family value; a result without the rule draws the q-value as before
+kind: error
+message:
+  Error in `setEnrichmentPlotInputs(result, go, 0.05, significance_rule = "bh_whole_family")`: unused argument (significance_rule = "bh_whole_family")
+trace (first lines):
+  ▆
+
+file: test-enrichment-significance.R
+test: KIT-203 S9: the four reports state the recorded rule; earlier records keep their paragraph and are told
+kind: error
+message:
+  Error in `eval(code, test_env)`: object 'ENRICHMENT_SIGNIFICANCE_RULES' not found
+trace (first lines):
+  ▆
+
+file: test-enrichment-significance.R
+test: KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown
+kind: failure
+message:
+  Expected `k203Where(ui, id)` to be identical to "outside".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('outside')
+
+file: test-enrichment-significance.R
+test: KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown
+kind: failure
+message:
+  Expected `grepl("<option value=\"bh_whole_family\" selected>", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-enrichment-significance.R
+test: KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown
+kind: failure
+message:
+  Expected `grepl("<option value=\"qvalue\">", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-enrichment-significance.R
+test: KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown
+kind: failure
+message:
+  Expected `lengths(...)` to be identical to 2L.
+  Differences:
+    `actual`: 0
+  `expected`: 2
+
+file: test-enrichment-significance.R
+test: KIT-203 S10: the tab offers both rules before Run, each with its note; the run's rule is shown
+kind: error
+message:
+  Error in `eval(code, test_env)`: object 'ENRICHMENT_SIGNIFICANCE_RULES' not found
+trace (first lines):
+  ▆
+
+file: test-enrichment-significance.R
+test: KIT-203 S11: the five workbooks pass the default rule
+kind: failure
+message:
+  Expected `grepl("significance_rule = \"bh_whole_family\"", call, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIA_workflow_experienced.rmd
+
+file: test-enrichment-significance.R
+test: KIT-203 S11: the five workbooks pass the default rule
+kind: failure
+message:
+  Expected `grepl("significance_rule = \"bh_whole_family\"", call, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIA_workflow_limpa.rmd
+
+file: test-enrichment-significance.R
+test: KIT-203 S11: the five workbooks pass the default rule
+kind: failure
+message:
+  Expected `grepl("significance_rule = \"bh_whole_family\"", call, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIA_workflow_limpa_starter.rmd
+
+file: test-enrichment-significance.R
+test: KIT-203 S11: the five workbooks pass the default rule
+kind: failure
+message:
+  Expected `grepl("significance_rule = \"bh_whole_family\"", call, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIA_workflow_limpa_experienced.rmd
+
+file: test-enrichment-significance.R
+test: KIT-203 S11: the five workbooks pass the default rule
+kind: failure
+message:
+  Expected `grepl("significance_rule = \"bh_whole_family\"", call, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIA_workflow_starter.rmd
+
+file: test-enrichment-significance.R
+test: KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome
+kind: failure
+message:
+  Expected `workflowParameterLabels$enrichment$significance_rule` to be identical to "Significance rule for Gene Ontology terms (clusterProfiler route)".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('Significance rule for Gene Ontology terms (clusterProfiler route)')
+
+file: test-enrichment-significance.R
+test: KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome
+kind: failure
+message:
+  Expected `workflowParameterLabels$enrichment$q_cutoff` to be identical to "Enrichment cutoff (differential-abundance q-value of the listed proteins; significance value of a term)".
+  Differences:
+  actual vs expected
+  - "Enrichment q-value threshold"
+  + "Enrichment cutoff (differential-abundance q-value of the listed proteins; significance value of a term)"
+
+file: test-enrichment-significance.R
+test: KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome
+kind: failure
+message:
+  Expected `declared$enrichment_significance_rule` to be identical to "bh_whole_family".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('bh_whole_family')
+
+file: test-enrichment-significance.R
+test: KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome
+kind: failure
+message:
+  Expected `outcome$enrichment_significance_rule` to be identical to "qvalue".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('qvalue')
+
+file: test-enrichment-significance.R
+test: KIT-203 S12: the record labels the rule and the report reads it, declared or as the outcome
+kind: failure
+message:
+  Expected `neither$enrichment_significance_rule` to be identical to "not recorded".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('not recorded')
+
+file: test-enrichment-significance.R
+test: KIT-203 S14: a record without the rule replays with the q-value; a recorded rule replays as recorded
+kind: failure
+message:
+  Expected `passed$significance_rule` to be identical to "qvalue".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('qvalue')
+
+file: test-enrichment-significance.R
+test: KIT-203 S14: a record without the rule replays with the q-value; a recorded rule replays as recorded
+kind: error
+message:
+  <workflow_replay_invalid/rlang_error/error/condition>
+  Error in `replayWorkflowEnrichmentStep(NULL, list(state = "enrichment_completed", outcomes = list()), parameters, list(parameters = list(qvalue = 0.05)), data.frame(friendly_names = "B_vs_A", stringsAsFactors = FALSE), list(), withr::local_tempdir())`: replayed step "enrichment_completed" produced a different "significance_rule" from the record
+trace (first lines):
+      ▆
+   1. └─replay(c(recorded, list(significance_rule = "bh_whole_family"))) at test-enrichment-significance.R:603:5
+   2.   └─MultiScholaR:::replayWorkflowEnrichmentStep(...) at test-enrichment-significance.R:598:15
+   3.     └─cli::cli_abort(...) at pkg/R/utils_workflow_enrichment.R:1212:13
+   4.       └─rlang::abort(...)
+

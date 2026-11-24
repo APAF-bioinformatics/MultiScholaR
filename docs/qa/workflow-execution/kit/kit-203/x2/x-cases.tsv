@@ -1,0 +1,5 @@
+case	file	applied
+none		TRUE
+m5	R/utils_workflow_enrichment.R	TRUE
+m6	R/func_general_enrichment_engine_helpers.R	TRUE
+m7	inst/reports/proteomics/LFQ_report.rmd	TRUE

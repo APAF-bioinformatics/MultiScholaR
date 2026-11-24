@@ -1,0 +1,7 @@
+case	file	applied
+none		TRUE
+m1	R/func_general_enrichment_orchestration.R	TRUE
+m2	R/utils_workflow_enrichment.R	TRUE
+m3	R/func_general_enrichment_orchestration.R	TRUE
+m4	R/func_general_enrichment_orchestration.R	TRUE
+m4	R/func_general_enrichment_orchestration.R	TRUE

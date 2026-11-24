@@ -61,6 +61,31 @@
    step's input, is the result (result_entity_id) of a normalisation, RUV or correlation step. The data were then
    normalised twice, or filtered after normalisation. Run such analyses again with this version (KIT-194).
 
+ * Lipidomics, metabolomics and transcriptomics: the Summary tab's 'Save Workflow Arguments', 'Generate Report' and
+   'Export Session State' now refuse with a message when the current table is not the result of the last
+   normalisation, for example after Quality Control was reverted or the normalisation was reset after it ran. Before,
+   the saved final object (<omic>_<label>_final_s4.RDS), the study parameters and the analysis record could describe
+   the quality-control table (not normalised), an empty object, or an earlier normalisation, while the differential
+   analysis shown came from the normalised data. A refused save writes nothing and removes the omic's integration
+   input folder (integration/<omic>/), as a save without a final table already did, so the Integration tab does not
+   read an earlier input after a refused save. This includes an input saved earlier in the same session: after a
+   Revert and a refused save, run the normalisation again and save before integrating. 'Generate Report' and 'Export
+   Session State' refuse without removing anything. After a Reset, press Revert once in a Quality Control sub-tab (or
+   run the normalisation again) before saving; after one Revert to the RUV-corrected table that table is saved; a save
+   right after a run, before the correlation step, is allowed; the Summary does not check that the differential
+   analysis shown was run on the table it saves. Transcriptomics no longer writes an earlier normalisation's RUVIII
+   matrix as the integration file: after a second normalisation without a new RUVIII export the save says so. In every
+   omic, proteomics included, a save whose integration input is refused for another reason now names the reason. Saves
+   at the end of the normalisation, after its correlation step or Skip, and after the differential analysis are
+   unchanged. To check an earlier save: open analysis_record.json in the folder of study_parameters.txt (the same save
+   wrote both). If the last step it lists is not a normalisation result (a state ending in _normalized,
+   _ruv_corrected, _correlation_filtered or _norm_complete, or loaded_for_de; for transcriptomics trx_ruvs), for
+   example a quality-control, Reset, internal-standard or log2 state, that save's final object, study parameters and
+   (transcriptomics) integration file do not describe the normalised analysis: save again with this version. A
+   transcriptomics save that showed 'Study parameters saved with warnings' after a second normalisation may have
+   written the earlier RUVIII export as transcriptomics_normalized_data.tsv: run the RUVIII export and save again
+   (KIT-207).
+
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
    model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
@@ -112,6 +137,12 @@
    annotation was retrieved keep their blank gene names until the DA is run again. (KIT-175)
 
 ### Scientific changes
+
+ * Gene Ontology enrichment for organisms outside g:Profiler's set now calls a term significant by its
+   Benjamini-Hochberg adjusted p-value over every term of 10 to 500 measured proteins, including terms with none of the
+   listed proteins. The earlier flag, Storey's q-value over the terms with at least one listed protein, is still
+   offered; in simulations at a cutoff of 0.05 it called terms on up to 42.9 % of random protein lists without parent
+   terms and up to 22.9 % with them. Analyses recorded before this change replay with the q-value, unchanged (KIT-203).
 
  * Proteomics, MaxQuant, FragPipe, Spectronaut and Proteome Discoverer TMT: protein quantities are now
    log2-transformed without first adding 1. Adding 1 changed each value v by log2(1 + 1/v): 0.00014 at 10,000, 0.0014

@@ -294,7 +294,7 @@ test_that("MCI-010.5 export ZIP and publication/report metadata preserve backend
   expect_match(summary_text, "Contrast: B_vs_A", fixed = TRUE)
   expect_match(summary_text, "Analysis Method: clusterprofiler", fixed = TRUE)
   expect_match(summary_text, "Taxonomy ID: 999999", fixed = TRUE)
-  expect_match(summary_text, "Q-value Cutoff: 0.05", fixed = TRUE)
+  expect_match(summary_text, "Significance cutoff: 0.05", fixed = TRUE) # KIT-203 (OD9), the clusterProfiler method
 
   payload <- buildProtEnrichAnalysisResultsPayload(
     gprofilerResults = module_ci_prot_enrich_gprofiler_table("positive"),
