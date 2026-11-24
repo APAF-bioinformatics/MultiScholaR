@@ -23,7 +23,7 @@ wanted <- if (length(arguments) > 1L) strsplit(arguments[[2L]], ",", fixed = TRU
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 work <- file.path(tempdir(), "k167-pass2")
 dir.create(work, recursive = TRUE, showWarnings = FALSE)
-options(timeout = 600)
+options(timeout = 300)
 sha256 <- function(path) digest::digest(file = path, algo = "sha256")
 log_line <- function(...) cat(sprintf("KIT167 %s\n", paste(..., collapse = " ")))
 write_tsv <- function(table, name) utils::write.table(table, file.path(out, name), sep = "\t", quote = FALSE,
@@ -98,12 +98,11 @@ section("A", {
         found <- pride_folder(project)
         keep <- found$files[grepl("\\.fasta$|^Results.*\\.xlsx$|MQtxt\\.zip$", found$files, ignore.case = TRUE)]
         log_line("A", project, found$folder, length(found$files), "files;", paste(keep, collapse = " "))
+        # Instrument run 3: no HEAD request per file (run 45372182412 timed out in this section); sizes are those of
+        # the downloaded search FASTAs below.
         for (file in keep) {
-            head <- tryCatch(curlGetHeaders(paste0(found$folder, file)), error = function(e) character())
-            size <- suppressWarnings(as.numeric(sub("(?i)^content-length:[[:space:]]*", "",
-                grep("(?i)^content-length:", head, value = TRUE, perl = TRUE)[1L], perl = TRUE)))
             rows[[length(rows) + 1L]] <- data.frame(project = project, folder = found$folder, file = file,
-                bytes = size, stringsAsFactors = FALSE)
+                bytes = NA_real_, stringsAsFactors = FALSE)
         }
         if (!length(keep)) rows[[length(rows) + 1L]] <- data.frame(project = project, folder = found$folder,
             file = NA_character_, bytes = NA_real_)
