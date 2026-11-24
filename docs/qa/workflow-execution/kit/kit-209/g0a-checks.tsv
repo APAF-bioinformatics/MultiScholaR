@@ -1,0 +1,13 @@
+item	passed	evidence
+1 lifecycle completed, every mark through the last step	True	completed; 10 of 10 steps marked
+1 injected memory limit (0.7 x journey VmHWM): killed after the baseline, classed memory	True	limit 937982689 B; outcome killed: memory limit; after baseline True; steps marked 5
+1 injected time limit (0.5 x process wall): stopped, classed time	True	limit 63 s; outcome stopped: time limit
+1 injected package error (invalid bound setting): raised in a package frame, classed package error	False	outcome completed; step ; deepest owner ; 
+2 reset control: calibration VmHWM >= entry VmRSS + 480 MiB; no-op VmHWM <= entry VmRSS + 32 MiB	True	calibrate 1147.9 vs entry 380.2; no-op 380.2 vs entry 380.2
+3 gate B3 U1: base completes; candidate completes	True	base completed ( ); candidate completed ( )
+3 gate B3 U2: base completes; candidate completes	True	base completed ( ); candidate completed ( )
+3 gate B3 U3: base completes; candidate completes	True	base completed ( ); candidate completed ( )
+3 gate B3 U4: base completes; candidate completes	False	base completed ( ); candidate package error (da no biological replication: every group is one biological unit measured more than once (groups treated, contrast, control)
+3 gate B3 U5: base completes; candidate completes	False	base completed ( ); candidate package error (da no biological replication: every group is one biological unit measured more than once (groups control, treated, contrast)
+3 gate B3 S1: base completes; candidate completes	True	base completed ( ); candidate completed ( )
+3 gate B3 S2: base completes; candidate completes	True	base completed ( ); candidate completed ( )
