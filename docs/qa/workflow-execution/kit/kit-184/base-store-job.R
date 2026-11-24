@@ -57,15 +57,16 @@ mutations <- list(
     m1_always_element = list(file = "R/utils_workflow_integration_model.R",
         from = "            if (is.null(removed)) next",
         to = "            if (is.null(removed)) { record[[omic]][\"removed_factors\"] <- list(record[[omic]]$removed_factors); next }"),
-    # K7 (ii): covariates whenever the input has the factors, whatever the model was trained on.
+    # K7 (ii): the adjustment on by default (VAL-160 decides it is off): covariates without being asked for.
     m2_covariates_default = list(file = "R/utils_integration_enrichment.R",
-        from = "    adjust <- if (is.null(given)) identical(model_parameters$input_matrix, \"ruv_corrected\") else given",
-        to = paste0("    adjust <- if (is.null(given)) !is.null(object@inputs[[integrationViewOmics(object)[[p$view]]]]",
-            "$removed_factors[[p$view]]) else given")),
-    # K9: the replay's restore dropped (an entry without the setting takes the default for its model).
+        from = "        adjust_ruv_factors = list(default = FALSE, choices = c(TRUE, FALSE), type = \"flag\",",
+        to = "        adjust_ruv_factors = list(default = TRUE, choices = c(TRUE, FALSE), type = \"flag\","),
+    # K9 (b): the replay forgets the saved form (every entry of a test that has a design replays without the
+    # adjustment). Before VAL-160 this mutation dropped the restore of an entry without the setting; with the default
+    # off that would change nothing, so it would no longer be a mutation.
     m3_no_restore = list(file = "R/utils_integration_enrichment.R",
         from = "            settings$adjust_ruv_factors %||% FALSE",
-        to = "            settings$adjust_ruv_factors"),
+        to = "            FALSE"),
     # K7 (i) (a) and (iii): the setting put among the declared parameters.
     m4_setting_declared = list(file = "R/utils_integration_enrichment.R",
         from = "            \"test_settings\", \"values_slot\", \"design_covariates\"),",
@@ -112,8 +113,8 @@ if (with_mutations) {
         sprintf("m1_always_element: K3 (base store) fails %s; K3 (the import) fails %s", !ok("m1_always_element", ids[["k3_base"]]),
             !ok("m1_always_element", ids[["k3_import"]])),
         sprintf("m2_covariates_default: K7 (ii) fails %s", !ok("m2_covariates_default", ids[["k7_ii"]])),
-        sprintf("m3_no_restore: K9 (a) fails %s; the replay of an entry without the setting (in K7 (ii), K16) fails %s",
-            !ok("m3_no_restore", ids[["k7_iii_k9a"]]), !ok("m3_no_restore", ids[["k7_ii"]])),
+        sprintf("m3_no_restore: the replay of each entry in its saved form (K9 (b), in K7 (ii), K16) fails %s",
+            !ok("m3_no_restore", ids[["k7_ii"]])),
         sprintf("m4_setting_declared: K7 (i) (a) fails %s; K7 (iii) fails %s", !ok("m4_setting_declared", ids[["k7_ia"]]),
             !ok("m4_setting_declared", ids[["k7_iii_k9a"]])))
 }
