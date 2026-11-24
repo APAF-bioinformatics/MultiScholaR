@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-167 pass 2 inputs, instrument run 2 of at most 3 (VAL-54) at 3e8e8b80: sections A, F4 (with B36's FASTA), CUT and DEMO only (F3 and F6 were produced by run 45352823145); same purpose; ceiling 90 job-minutes",
+  "label": "KIT-167 P2 inputs A F4 CUT DEMO 3e8e8b80 instrument 2",
+  "package_commit": "3e8e8b800f135227429960ac8f26951790fe0fda",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "readxl"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-167/pass2-inputs.R",
+      "args": [
+        "pass2-out",
+        "A,F4,CUT,DEMO"
+      ],
+      "out": "pass2-out",
+      "out_pattern": "\\.(tsv|gff|gtf|txt)$",
+      "timeout_minutes": 75
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
