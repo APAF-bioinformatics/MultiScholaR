@@ -1388,6 +1388,34 @@ owner. The ticket-level arithmetic: DI10K's 6 core-hours exceed the 0.72 left un
 
 Spend on line DI10K: 0.77 + 0.84 = **1.61 of 6** core-hours.
 
+### DI10K: the declared run (declared before the send)
+
+**Re-audit 4** (`AUDIT-KIT-159-impl-recheck-20261124.md`, "Re-audit 4"): the generator change is sound
+and isolated and may merge on the six-file evidence. The draft's derivations reproduce. Repairs R1
+to R10 are applied in the final declaration `t2/di10k-declaration.md`, and the audited draft
+`t2/di10k-declaration-draft.md` is kept unchanged. The repairs: the expected reading; the checks
+renamed configuration checks, with N1k's robustness figure; `bias` matches the frame guard, `rej`
+G-cal, `mae` nothing KIT-162 decides; Pass narrowed to those two guards; Fail names the ticket
+regime; P1 not covered; no probe; R8's significance statement; R10, the pinned table untouched.
+The optional mocked rank-dispatch test was not added. Not built: a P1-form rank cell (the owner's
+decision).
+
+**Declared:** the declaration and plan were committed alone at 9dbb7b1e (`t2/di10k-declaration.md`,
+`t2/di10k-plan.tsv`) and pushed before the request. The request is `k159-di10k-9dbb7b1e`:
+`val-tests.R di10k-out --files metrics --coverage-plan t2/di10k-plan.tsv --request DK --nsim 2000
+--target-sims 20000 --chunks 4`, script limit 50 minutes, ceiling 4.13 core-hours (line DI10K,
+4.39 left).
+- Configuration checks: N1k (`bias` target <= -0.0035) and N2k (`rej` target in [0.045, 0.060]).
+- Pass rule: no coverage below level - 0.02 for `mae`, `bias` and `rej` at the 8 levels.
+- Readings: pass = the C4e g = 5 rows license KIT-162's frame guard and G-cal intervals at its
+  composition; fail = KIT-162 needs a ticket regime for the failing guard; checks not met = the run
+  does not test the question.
+
+One run; the result is recorded whatever it shows; VAL-54 for mechanics.
+
+**Budget (ticket r1.25):** DI10K's 5.28 core-hours beyond the allocations are taken from P1's cap,
+80.9 -> 75.6 (P1 expected 63.9).
+
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-25 from 12282273 (a records-only commit on the merge a4e002a6 of the ticket branch with staging a1b397b1, which holds KIT-182, KIT-203, KIT-207 and KIT-196), after the re-audits 2 and 3 and the closure check (register `AUDIT-KIT-159-impl-recheck-20261124`). The ledger row is VAL-165. The whole harness suite passed on a4e002a6 (run 45386625659: 45 files, 274 tests, 2,342 expectations, 0 failed, 0 skipped, no lints), and one `snapshot`-stage dispatch of `distributable.yml` passed on the same commit (run 45386409115). **Merged is not accepted:** acceptance criterion A1 is OPEN. Not done: the lifecycle runs L1a, L1b, L2 and L3; gate G13 in P1; G5 (replay) on every route (only `metab_combined` has been replayed); the confirmatory cell in KIT-162's composition (VAL-163 (3)); the suite and G1(a) repeated after the last product merge (KIT-190, 200, 201, 202, 204, 205, 206, 208 and the tickets after them are pending). By the plan's rule, no validation ticket (KIT-160 to KIT-170) sends a lifecycle or counted request until A1 is recorded as met at a commit that contains every product merge that ticket's runs will use. Ticket total at merge: about 116.2 of 276 core-hours (110.78 before the merge run, plus 5.44).
