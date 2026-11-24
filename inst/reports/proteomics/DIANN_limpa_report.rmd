@@ -790,8 +790,8 @@ FormatGOEnrichment <- function(numbers) {
       "with the correction selected for the run (g:SCS unless the Benjamini-Hochberg false discovery rate was chosen)"
     }
     # KIT-208 (E-7): a protein without a gene name is never sent as its accession; it leaves the lists and background.
-    named_clause <- paste0("the first gene name of each protein in the protein annotation; proteins without a gene ",
-      "name were left out of the lists and the background")
+    named_clause <- paste0("the first gene name of each protein, from the protein annotation or, where the annotation ",
+      "gives none, from the identifier table; proteins without a gene name were left out of the lists and the background")
     parameter_bullets <- paste0(lfc_text, "\n",
       "• A term was called significant when its adjusted p-value was below ", q_val_cutoff_val, ".", "\n",
       if (every_row) paste0("• The background was the identifiers of each comparison's differential-abundance table (",

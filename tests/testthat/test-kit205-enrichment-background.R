@@ -389,8 +389,8 @@ test_that("KIT-205 B7: the report reads the marker; each template states the bac
         "with at least one Gene Ontology annotation."),
         absent = paste("The background was every protein listed in that comparison's differential-abundance table,",
             "including any without a p-value, with at least one Gene Ontology annotation."))
-    clause <- paste("the first gene name of each protein in the protein annotation; proteins without a gene name were",
-        "left out of the lists and the background")
+    clause <- paste("the first gene name of each protein, from the protein annotation or, where the annotation gives",
+        "none, from the identifier table; proteins without a gene name were left out of the lists and the background")
     gprofiler <- c(tested = paste0("• The background was the identifiers of the proteins tested in each comparison ",
         "(those with a p-value in its differential-abundance table; ", clause, ") that g:Profiler recognises (a custom ",
         "background)."),

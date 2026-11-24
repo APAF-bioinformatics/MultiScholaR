@@ -562,9 +562,10 @@ test_that("KIT-173 T11(d): a g:Profiler run prints the corrected g:Profiler para
                 fixed = TRUE), info = paste(template, name))
             # KIT-205: without a record, the tested proteins; KIT-208's clause (E-7).
             expect_true(grepl(paste0("• The background was the identifiers of the proteins tested in each comparison ",
-                "(those with a p-value in its differential-abundance table; the first gene name of each protein in the ",
-                "protein annotation; proteins without a gene name were left out of the lists and the background) that ",
-                "g:Profiler recognises (a custom background)."), text, fixed = TRUE), info = paste(template, name))
+                "(those with a p-value in its differential-abundance table; the first gene name of each protein, from ",
+                "the protein annotation or, where the annotation gives none, from the identifier table; proteins without ",
+                "a gene name were left out of the lists and the background) that g:Profiler recognises (a custom ",
+                "background)."), text, fixed = TRUE), info = paste(template, name))
             expect_false(grepl("clusterProfiler", text, fixed = TRUE), info = paste(template, name))
             expect_false(grepl("Benjamini-Hochberg method", text, fixed = TRUE), info = paste(template, name))
             expect_false(grepl("adjusted FDR cutoff", text, fixed = TRUE), info = paste(template, name))
