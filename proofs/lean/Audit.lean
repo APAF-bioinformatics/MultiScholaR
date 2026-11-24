@@ -146,3 +146,25 @@ example : QvalueBh.grid_witness_stmt := QvalueBh.grid_witness
 #print axioms QvalueBh.qflag_extra_witness
 #print axioms QvalueBh.bh_unit_witness
 #print axioms QvalueBh.grid_witness
+
+/-! ## Target 5: the permutation p-value (`Spec/Permutation.lean`) -/
+
+example : Permutation.identity_clause_stmt := Permutation.identity_clause
+example : Permutation.perm_tolerance_mono_stmt := Permutation.perm_tolerance_mono
+example : Permutation.perm_floor_stmt := Permutation.perm_floor
+example : Permutation.perm_floor_reflect_stmt := Permutation.perm_floor_reflect
+example : Permutation.bh_floor_stmt := Permutation.bh_floor
+example : Permutation.bh_floor_strict_stmt := Permutation.bh_floor_strict
+example : Permutation.bh_floor_sentence_counterexample_stmt := Permutation.bh_floor_sentence_counterexample
+example : Permutation.perm_floor_reflect_witness_stmt := Permutation.perm_floor_reflect_witness
+example : Permutation.bh_floor_witness_stmt := Permutation.bh_floor_witness
+
+#print axioms Permutation.identity_clause
+#print axioms Permutation.perm_tolerance_mono
+#print axioms Permutation.perm_floor
+#print axioms Permutation.perm_floor_reflect
+#print axioms Permutation.bh_floor
+#print axioms Permutation.bh_floor_strict
+#print axioms Permutation.bh_floor_sentence_counterexample
+#print axioms Permutation.perm_floor_reflect_witness
+#print axioms Permutation.bh_floor_witness

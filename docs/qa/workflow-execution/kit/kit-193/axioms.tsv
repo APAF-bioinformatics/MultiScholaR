@@ -58,3 +58,12 @@ QvalueBh.qflag_contains_bh_witness	QvalueBh.qflag_contains_bh_witness_stmt	prope
 QvalueBh.qflag_extra_witness	QvalueBh.qflag_extra_witness_stmt	propext, Classical.choice, Quot.sound
 QvalueBh.bh_unit_witness	QvalueBh.bh_unit_witness_stmt	propext, Classical.choice, Quot.sound
 QvalueBh.grid_witness	QvalueBh.grid_witness_stmt	propext, Classical.choice, Quot.sound
+Permutation.identity_clause	Permutation.identity_clause_stmt	propext, Classical.choice, Quot.sound
+Permutation.perm_tolerance_mono	Permutation.perm_tolerance_mono_stmt	propext, Classical.choice, Quot.sound
+Permutation.perm_floor	Permutation.perm_floor_stmt	propext, Classical.choice, Quot.sound
+Permutation.perm_floor_reflect	Permutation.perm_floor_reflect_stmt	propext, Classical.choice, Quot.sound
+Permutation.bh_floor	Permutation.bh_floor_stmt	propext, Classical.choice, Quot.sound
+Permutation.bh_floor_strict	Permutation.bh_floor_strict_stmt	propext, Classical.choice, Quot.sound
+Permutation.bh_floor_sentence_counterexample	Permutation.bh_floor_sentence_counterexample_stmt	propext, Classical.choice, Quot.sound
+Permutation.perm_floor_reflect_witness	Permutation.perm_floor_reflect_witness_stmt	propext, Classical.choice, Quot.sound
+Permutation.bh_floor_witness	Permutation.bh_floor_witness_stmt	propext, Classical.choice, Quot.sound

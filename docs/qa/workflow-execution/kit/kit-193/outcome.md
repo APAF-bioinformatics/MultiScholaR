@@ -194,6 +194,18 @@ coordinator's rule ("stop and report at any statement problem"). Laptop time for
   corrected `bh_sorted_eq_stmt` with its witness.
 - Laptop time for target 4 so far: 156.2 CPU-seconds over 24 Lean calls, 103.5 s of Lean wall time (labels `t4-*`, the counterexample's included).
 
+## Target 5 (permutation p-value): the floors and the BH floor proved; 5a and 5b open
+
+- **Proved** (`Proof/Permutation.lean`, each on `propext`, `Classical.choice`, `Quot.sound`): 5a' `identity_clause`;
+  `perm_tolerance_mono`; 5c `perm_floor`, `perm_floor_reflect`, `bh_floor`, `bh_floor_strict`; 5c'
+  `bh_floor_sentence_counterexample`; witnesses `perm_floor_reflect_witness`, `bh_floor_witness`.
+- **Not yet:** 5a `perm_finite_core_stmt` (the exchangeability count) with its witness `perm_witness_stmt`, and 5b
+  `perm_measure_stmt` with `perm_measure_witness_stmt`. Planned proof of 5a: the map `(τ, π) ↦ (τ, τπ_1, …, τπ_B)` is
+  a bijection of `Perm^(B+1)`; for any tuple, the indices `j` with at most `k - 1` others counted against them number
+  at most `k` (take the one of least statistic among them: every other is counted against it); summing over the `B + 1`
+  index swaps gives the bound.
+- Laptop time for target 5 so far: 31.1 CPU-seconds over 8 Lean calls, 23.5 s of Lean wall time (labels `t5-*`).
+
 ## Not checked
 
 - Targets 4, 5 and group R are not proved yet; nothing was run in R.
