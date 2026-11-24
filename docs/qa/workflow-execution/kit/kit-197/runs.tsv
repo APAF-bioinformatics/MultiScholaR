@@ -1,2 +1,3 @@
 run_id	commit	purpose	minutes	core_hours	result
 45316713443	5a702b7b6484e97e03ac515b2dd2c8b0b130c80e	L1: blind lifecycle E1 to E6, determinism and G1 mechanics (expected 1.33, ceiling 2.67 core-h)	18.7	1.25	all checks pass at the first attempt (lifecycle.md)
+45319257326	4786112c23b8a97628ff1c5fa38545fb3190d724	S_a: S2 draws r = 1 to 100, six masks, then descriptive scoring with G1 (expected 4.67, ceiling 6.67 core-h)	66.4	4.43	G1 passed 96 of 96 (relative 1e-9; runner AMD EPYC 7763, S2 ran on 9V45); F1 0; complete 2400 replicate-masks; sim 3,284 s, scoring 8 s
