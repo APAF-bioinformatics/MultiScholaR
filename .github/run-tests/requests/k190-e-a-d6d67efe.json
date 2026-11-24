@@ -1,0 +1,36 @@
+{
+  "requested_by": "KIT-190 E (R2): base d4e2eb2c against head d6d67efe, cells E1, N-r, N-s, E-r, R = 50; split by cell (section 10)",
+  "label": "KIT-190 E part A (E1, N-r, N-s, E-r) d6d67efe",
+  "package_commit": "d6d67efea7e7a09f8ba41c28a99718dddb2ec796",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "e",
+        "d4e2eb2cff0302c27f98b78f90bfb51dab6aee04",
+        "k190-e/a"
+      ],
+      "env": {
+        "K190_CELLS": "E1,N-r,N-s,E-r",
+        "K190_WORKERS": "2"
+      },
+      "out": "k190-e",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 150
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

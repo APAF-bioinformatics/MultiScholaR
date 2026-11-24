@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-190 E3 (R2): Automatic and Manual on head d6d67efe at 5,000 and 20,000 features x 2 assays, base d4e2eb2c Automatic at 20,000; projection to 50,000",
+  "label": "KIT-190 E3 run time d6d67efe",
+  "package_commit": "d6d67efea7e7a09f8ba41c28a99718dddb2ec796",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-190/effect.R",
+      "args": [
+        "e3",
+        "d4e2eb2cff0302c27f98b78f90bfb51dab6aee04",
+        "k190-e3"
+      ],
+      "env": {},
+      "out": "k190-e3",
+      "out_pattern": "\\.(tsv|json)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
