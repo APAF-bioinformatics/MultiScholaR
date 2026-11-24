@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R9, the KIT-199 re-check Q01 test (counts per step and class, several keys in a step) at its tests-only commit, shown failing; 30 min",
+  "label": "KIT-159 repair R9: (step, class) count test shown failing at 1d77f70a",
+  "package_commit": "1d77f70ab22fd3f87f9d82e41f36709db712dab3",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r9-out",
+        "--files",
+        "repair3"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r9-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
