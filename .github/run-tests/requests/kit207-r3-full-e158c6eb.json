@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-207 R3: full suite on the merge of kit-207-summary-guard bb5c0c22 with v0.9-staging 42dd1751 (head) against staging (base); decides A3 (ceiling 2,800 job-min)",
+  "label": "KIT-207 R3 full suite merge e158c6eb vs staging 42dd1751",
+  "package_commit": "e158c6ebab6b1f75157c2f7fb50079919e2e1289",
+  "base_commit": "42dd175159fa4cdbbe5392a322d1b5612b385275",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
