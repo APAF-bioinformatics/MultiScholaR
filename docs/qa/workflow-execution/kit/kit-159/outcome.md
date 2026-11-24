@@ -26,7 +26,7 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, S0 done; stopped before the release commit; read this first)
+## Resume here (state 2026-11-24, S0 done, suite check without result; stopped before the release commit; read this first)
 
 **S0 done: all 15 route runs valid, every step `ok`.** Evidence `s0/s0r1/` (run 45277101451 at
 a29a43c0: the 9 non-classic-proteomics cells) and `s0/s0i2/` (run 45288286009 at df71922f: the 6
