@@ -1,0 +1,2 @@
+run	id	commit	purpose	job_minutes	core_hours	result
+R1a	45321879760	a5229552	the tests-only commit: every test of new behaviour failing at its stated value (8 files, 2 shards, no base, no check); inside R1 ceiling	pending	pending	pending
