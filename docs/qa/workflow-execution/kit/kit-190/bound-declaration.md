@@ -1,4 +1,12 @@
-# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 9
+# KIT-190: declaration of the bounded-k measurement (VAL-182 (2), (3)), revision 10
+
+**Revision 10 (2026-11-25): the audit's K190-L01 repaired in `decide.R` only.** The sign-flip test's observed statistic
+now goes through the same arithmetic as each sign vector's (the all-plus vector), so the identity pattern ties exactly
+instead of being lost to rounding; the self-test (vi) gains the case E-ties (n = 2, both e_i negative: p within
+0.25 ± 0.01, the cell does not pass). `decide.R` SHA-256 660ebf9abc2864a668a5d9f9183c3c72a0dfade735e6354f478dec615690b61c.
+**`effect.R` (7d76467a) and `reestimate.R` (f8f60d2a) are unchanged, so stage 1 (run on e344c691) stands.** Also
+corrected (cosmetic): section 5's "21 seeds" for T1b reads "20 seeds, lipid only".
+
 
 **Revision 9 (2026-11-25): text only.** The owner accepted R4-01 (methods ledger VAL-192): section 5's "owner's word
 pending" mark is replaced by that citation. No script changes; every script hash is revision 8's.
@@ -185,7 +193,7 @@ Per cell c, pairs are the same data set under D+B and F+B.
   one-sided sign-flip test of the studentised mean of e_i = d_i − 0.05: statistic t = mean(e)/(sd(e)/√n), reference
   distribution of t over 100,000 random sign vectors (seed 19001) plus the observed one. p = the share of sign vectors
   with t* ≤ t. No worse if p ≤ α. The test is asymptotically valid without symmetry and exact under symmetry; the Monte
-  Carlo error of p is reported. The paired t bound is reported beside it. **E1-T1b:** the unit is the seed (21 seeds); e
+  Carlo error of p is reported. The paired t bound is reported beside it. **E1-T1b:** the unit is the seed (20 seeds, lipid only); e
   is the mean of a seed's two journeys. (Margin 0.05, VAL-185.) E1-T1b is
   reported with this test, not deciding (VAL-185).
   **Skewness check, fixed now (R4-01; accepted by the owner, methods ledger VAL-192).** In each effect

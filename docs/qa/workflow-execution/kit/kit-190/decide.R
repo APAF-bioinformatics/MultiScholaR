@@ -63,7 +63,14 @@ effectTest <- function(d, m = M_EFFECT, vectors = 100000L, seed = 19001L) {
     return(list(n = n, mean_d = mean(d), sd_d = 0, t = NA_real_, p_signflip = NA_real_, mc_se = NA_real_, skewness = 0,
       johnson_used = FALSE, t_johnson = NA_real_, t_upper_bound = mean(d), no_worse = mean(d) < m))
   }
-  t_obs <- mean(e) / (s / sqrt(n))
+  # K190-L01: the observed statistic goes through the same arithmetic as every sign vector's (the all-plus vector), so
+  # the identity pattern ties exactly instead of being lost to rounding.
+  tRows <- function(ex) {
+    means <- rowMeans(ex)
+    sds <- sqrt(rowSums((ex - means)^2) / (n - 1))
+    means / (sds / sqrt(n))
+  }
+  t_obs <- tRows(matrix(e, 1L, n))
   set.seed(seed)
   count <- 0
   chunk <- max(1L, floor(5e6 / n))
@@ -71,10 +78,7 @@ effectTest <- function(d, m = M_EFFECT, vectors = 100000L, seed = 19001L) {
   while (done < vectors) {
     k <- min(chunk, vectors - done)
     signs <- matrix(sample(c(-1, 1), k * n, replace = TRUE), k, n)
-    ex <- signs * rep(e, each = k)
-    means <- rowMeans(ex)
-    sds <- sqrt(rowSums((ex - means)^2) / (n - 1))
-    tstar <- means / (sds / sqrt(n))
+    tstar <- tRows(signs * rep(e, each = k))
     count <- count + sum(tstar <= t_obs)
     done <- done + k
   }
@@ -189,9 +193,11 @@ if (identical(args[[1L]], "decide")) {
     `E-e` = list(r = effectTest(c(rep(0, 150), rep(0.40, 50))), pass = FALSE, johnson = TRUE),
     `N-a` = list(r = do.call(nullTest, unname(nullOf(160, 0))), pass = TRUE),
     `N-b` = list(r = do.call(nullTest, unname(nullOf(240, 0))), pass = FALSE),
-    `N-c` = list(r = do.call(nullTest, unname(nullOf(173, 0))), pass = TRUE))
-  checks <- vapply(direct, function(x) identical(x$r$no_worse, x$pass) && (is.null(x$johnson) || isTRUE(x$r$johnson_used)),
-    logical(1L))
+    `N-c` = list(r = do.call(nullTest, unname(nullOf(173, 0))), pass = TRUE),
+    # K190-L01: n = 2, both e_i negative; only the identity sign pattern reaches t_obs, so p is about 0.25 (exact ties kept).
+    `E-ties` = list(r = effectTest(c(0.03, 0.02)), pass = FALSE, p_near = 0.25))
+  checks <- vapply(direct, function(x) identical(x$r$no_worse, x$pass) && (is.null(x$johnson) || isTRUE(x$r$johnson_used)) &&
+    (is.null(x$p_near) || isTRUE(abs(x$r$p_signflip - x$p_near) <= 0.01)), logical(1L))
   # Through decide(): constructed rows tables (F+B and D+B per seed) for all eight deciding cells.
   table_of <- function(effect_d, null_bc) {
     rows <- list()
