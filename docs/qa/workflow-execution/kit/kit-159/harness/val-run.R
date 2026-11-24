@@ -23,6 +23,8 @@
 # the lifecycle) into val-out/runs/<label>/ (amended: <label>-amended). score: the committed
 # runs/<label>/ folders of the named requests combined (valScoreRuns) and scored at run level.
 # parity runs in the bundle jobs (val-parity.R, 7.9), not here.
+# A refusal in a cell or score phase (any val_error: a missing or changed declaration, the
+# environment, the licence guard) prints one template line with its class and exits 3.
 
 harness_dir <- "docs/qa/workflow-execution/kit/kit-159/harness"
 args <- commandArgs(trailingOnly = TRUE)
@@ -166,63 +168,76 @@ if (phase == "record") {
     dataset <- optValue("--dataset")
     if (is.null(dataset)) stop("--dataset is required", call. = FALSE)
     sd <- file.path(evidence_dir, stage)
-    decl <- jsonlite::read_json(file.path(sd, "declaration.json"), simplifyVector = FALSE)
-    ds <- Filter(function(d) identical(d$id, dataset), decl$datasets)[[1L]]
-    units <- msrval::valUnits(file.path(sd, ds$units$table))
-    lib <- msrval::valLibraryTable()
-    # Step 4: the declaration check and the environment check (G15), before any download.
-    chk <- msrval::valCheckDeclaration(".", evidence_dir, stage, at = "HEAD", phase = phase,
-                                       library_table = lib, units = units$unit)
-    regimes <- msrval::valClassifierRegimes(decl, evidence_dir)
-    env_check <- msrval::valCheckEnvironment(lib, decl$environment$library_sha256,
-                                             extra_packages = unlist(decl$environment$extra_packages))
-    manifest_path <- file.path(sd, decl$inputs$path)
-    manifest <- msrval::valReadManifest(manifest_path)
-    commit <- system2("git", c("rev-parse", "HEAD"), stdout = TRUE)
-    decl_commit <- utils::tail(system2("git", c("log", "--format=%H", "--diff-filter=A", "HEAD",
-                                                "--", file.path(sd, "declaration.json")),
-                                       stdout = TRUE), 1L)
-    sha <- function(p) digest::digest(file = p, algo = "sha256")
-    code_paths <- file.path(sd, vapply(decl$code, function(x) x$path, character(1)))
-    code <- list(package_commit = commit, release_commit = decl$release_commit,
-                 product_tree_identical = TRUE,
-                 harness = list(commit = commit, tree = msrval::valHarnessTree(".")),
-                 declaration = list(stage = stage, commit = decl_commit,
-                                    sha256_md = sha(file.path(sd, "declaration.md")),
-                                    sha256_json = sha(file.path(sd, "declaration.json"))),
-                 code_files = lapply(code_paths, function(p) list(path = p, sha256 = sha(p))),
-                 helpers_extracted = list(), environment_check = env_check)
-    if (phase == "score") {
-        labels <- strsplit(optValue("--runs", ""), ",")[[1L]]
-        msrval::valScorePhase(decl, dataset, units, evidence_dir, labels, label, "val-out",
-                              manifest, stage = stage, code = code, regimes = regimes,
-                              started = started)
-    } else {
-        # Step 5: retrieval into the private folder, then the phase (steps 5 to 9).
-        data_dir <- file.path(tmp_root, "val-data")
-        msrval::valFetchInputs(manifest_path, data_dir, repo_root = ".")
-        range <- optValue("--units")
-        unit_ids <- if (is.null(range)) NULL else {
-            ends <- strsplit(range, ":", fixed = TRUE)[[1L]]
-            i <- match(ends, units$unit)
-            if (anyNA(i)) stop("--units names a unit not in the unit table", call. = FALSE)
-            units$unit[i[[1L]]:i[[length(i)]]]
-        }
-        arms <- optValue("--arms")
-        work <- file.path(tmp_root, "val-work")
-        dir.create(work, recursive = TRUE, showWarnings = FALSE)
-        msrval::valRunPhase(
-            phase = phase, decl = decl, dataset = dataset, units = units,
-            label = if (phase == "amended") paste0(label, "-amended") else label,
-            code_files = file.path(sd, vapply(decl$code, function(x) x$path, character(1))),
-            data_dir = data_dir, work_dir = normalizePath(work), out_dir = "val-out",
-            chunks = as.integer(optValue("--chunks", "4")),
-            arms = if (is.null(arms)) NULL else strsplit(arms, ",")[[1L]], unit_ids = unit_ids,
-            manifest = manifest, code = code, pkg_root = ".", regimes = regimes,
-            ticket_coverage = attr(regimes, "ticket_coverage"),
-            declaration_diff = chk$declaration_diff
-        )
+    # A refusal (any val_error: a missing or changed declaration, the environment, the licence
+    # guard) ends the job with its class on one template line and exit 3 (E2).
+    refused <- function(e) {
+        msrval::valStatus(phase = phase, status = "refused", class = class(e)[[1L]])
+        quit(save = "no", status = 3L)
     }
+    refuse <- function(cls) {
+        refused(structure(class = c(cls, "val_error", "error", "condition"),
+                          list(message = cls, call = NULL)))
+    }
+    tryCatch({
+        lib <- msrval::valLibraryTable()
+        # Step 4: the declaration check and the environment check (G15), before any download;
+        # the declaration is the committed one (read from git), not the working tree's.
+        chk <- msrval::valCheckDeclaration(".", evidence_dir, stage, at = "HEAD", phase = phase,
+                                           library_table = lib)
+        decl <- chk$declaration
+        ds <- Filter(function(d) identical(d$id, dataset), decl$datasets)
+        if (length(ds) != 1L) refuse("val_spec_invalid")
+        ds <- ds[[1L]]
+        units <- msrval::valUnits(file.path(sd, ds$units$table))
+        chk <- msrval::valCheckDeclaration(".", evidence_dir, stage, at = "HEAD", phase = phase,
+                                           library_table = lib, units = units$unit)
+        regimes <- msrval::valClassifierRegimes(decl, evidence_dir)
+        env_check <- msrval::valCheckEnvironment(lib, decl$environment$library_sha256,
+                                                 extra_packages = unlist(decl$environment$extra_packages))
+        manifest_path <- file.path(sd, decl$inputs$path)
+        manifest <- msrval::valReadManifest(manifest_path)
+        commit <- system2("git", c("rev-parse", "HEAD"), stdout = TRUE)
+        sha <- function(p) digest::digest(file = p, algo = "sha256")
+        code_paths <- file.path(sd, vapply(decl$code, function(x) x$path, character(1)))
+        code <- list(package_commit = commit, release_commit = decl$release_commit,
+                     product_tree_identical = TRUE,
+                     harness = list(commit = commit, tree = msrval::valHarnessTree(".")),
+                     declaration = list(stage = stage, commit = chk$declaration_commit,
+                                        sha256_md = sha(file.path(sd, "declaration.md")),
+                                        sha256_json = sha(file.path(sd, "declaration.json"))),
+                     code_files = lapply(code_paths, function(p) list(path = p, sha256 = sha(p))),
+                     helpers_extracted = list(), environment_check = env_check)
+        if (phase == "score") {
+            labels <- strsplit(optValue("--runs", ""), ",")[[1L]]
+            msrval::valScorePhase(decl, dataset, units, evidence_dir, labels, label, "val-out",
+                                  manifest, stage = stage, code = code, regimes = regimes,
+                                  started = started)
+        } else {
+            # Step 5: retrieval into the private folder, then the phase (steps 5 to 9).
+            data_dir <- file.path(tmp_root, "val-data")
+            msrval::valFetchInputs(manifest_path, data_dir, repo_root = ".")
+            range <- optValue("--units")
+            unit_ids <- if (is.null(range)) NULL else {
+                ends <- strsplit(range, ":", fixed = TRUE)[[1L]]
+                i <- match(ends, units$unit)
+                if (anyNA(i)) refuse("val_spec_invalid")
+                units$unit[i[[1L]]:i[[length(i)]]]
+            }
+            arms <- optValue("--arms")
+            work <- file.path(tmp_root, "val-work")
+            dir.create(work, recursive = TRUE, showWarnings = FALSE)
+            msrval::valRunPhase(
+                phase = phase, decl = decl, dataset = dataset, units = units,
+                label = if (phase == "amended") paste0(label, "-amended") else label,
+                code_files = code_paths, data_dir = data_dir, work_dir = normalizePath(work),
+                out_dir = "val-out", chunks = as.integer(optValue("--chunks", "4")),
+                arms = if (is.null(arms)) NULL else strsplit(arms, ",")[[1L]],
+                unit_ids = unit_ids, manifest = manifest, code = code, pkg_root = ".",
+                regimes = regimes, ticket_coverage = attr(regimes, "ticket_coverage"),
+                declaration_diff = chk$declaration_diff
+            )
+        }
+    }, val_error = refused)
     msrval::valStatus(phase = phase, status = "completed")
 } else {
     stop(sprintf("unknown phase %s", phase), call. = FALSE)

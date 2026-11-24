@@ -274,9 +274,43 @@ valTruthProvenance <- function(truth, work_dir, blind_seed) {
     c(out, list(blind = list(seed = blind_seed %||% NA_integer_, applied = !is.null(blind_seed))))
 }
 
+#' The provenance `truth` block's per-unit truths (4.1, KIT-163 N5; re-check E4): per unit and
+#' per-unit truth id its SHA-256 (of the key-sorted table, as [valTruthProvenance()]) and rows
+#' @noRd
+valPerUnitTruthProvenance <- function(truths, dataset_truth, work_dir) {
+    out <- list()
+    for (u in names(truths)) {
+        for (tid in setdiff(names(truths[[u]]), names(dataset_truth))) {
+            h <- valTruthProvenance(truths[[u]][tid], work_dir, NULL)[[tid]]
+            out[[length(out) + 1L]] <- list(unit = u, truth_id = tid, sha256 = h$sha256,
+                                            rows = h$rows)
+        }
+    }
+    out
+}
+
+#' The provenance `helpers_extracted` (5.6; re-check E4): the GUI-entry helpers where the phase
+#' runs workflow cells, and the replay kit where it replays any; each file, function and the
+#' SHA-256 of its source
+#' @noRd
+valHelpersExtracted <- function(cells, decl, pkg_root) {
+    wf <- cells[cells$kind == "workflow", , drop = FALSE]
+    if (!nrow(wf)) return(list())
+    tabs <- list(attr(valGuiHelpers(pkg_root), "helpers"))
+    if (any(mapply(function(u, a) valReplayDeclared(decl, u, a), wf$unit, wf$arm))) {
+        tabs <- c(tabs, list(attr(valReplayKit(pkg_root), "helpers")))
+    }
+    tab <- do.call(rbind, tabs)
+    lapply(seq_len(nrow(tab)), function(i) {
+        list(file = tab$file[[i]], `function` = tab[["function"]][[i]],
+             sha256_of_source = tab$sha256_of_source[[i]])
+    })
+}
+
 #' The provenance `cells` block, one entry per unit x arm (5.6)
 #' @noRd
-valCellsProvenance <- function(res, cells, values, run_dir, cell_root, hook_declared) {
+valCellsProvenance <- function(res, cells, values, run_dir, cell_root, hook_declared,
+                               decl = list()) {
     lapply(seq_len(nrow(res)), function(i) {
         v <- values[[res$run[[i]]]]
         led <- file.path(valCellDir(cell_root, res$run[[i]]), "work",
@@ -299,9 +333,9 @@ valCellsProvenance <- function(res, cells, values, run_dir, cell_root, hook_decl
                  sha <- if (file.exists(tabs[[nm]])) valSha256(tabs[[nm]]) else NA_character_
                  list(name = nm, sha256 = sha)
              }),
-             # TODO(KIT-159 audit I07, G5): the declared `replay` cells are not replayed yet;
-             # replayWorkflowAnalysisRecord needs the project inputs G5 records.
-             replay = list(status = "not_built"), hook = hook, vmhwm_mib = res$vmhwm_mib[[i]])
+             replay = valReplayBlock(v$replay, valReplayDeclared(decl, res$unit[[i]], res$arm[[i]]),
+                                     identical(res$exit[[i]], "completed")),
+             hook = hook, vmhwm_mib = res$vmhwm_mib[[i]])
     })
 }
 

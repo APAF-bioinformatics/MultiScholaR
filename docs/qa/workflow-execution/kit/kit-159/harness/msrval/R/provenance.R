@@ -139,14 +139,23 @@ valCheckProvenance <- function(x) {
     if (x$phase %in% c("lifecycle", "counted", "correction", "determinism", "amended")) {
         need(x$inputs$universe, "sha256", is_chr, "inputs.universe.")
         need(x$inputs$universe, "rows", is.numeric, "inputs.universe.")
-        truths <- x$truth[setdiff(names(x$truth), "blind")]
-        if (!length(truths)) bad("truth")
+        truths <- x$truth[setdiff(names(x$truth), c("blind", "per_unit"))]
+        per_unit <- x$truth$per_unit %||% list()
+        if (!length(truths) && !length(per_unit)) bad("truth")
         for (t1 in truths) need(t1, "sha256", is_chr, "truth.")
+        for (t1 in per_unit) need(t1, c("unit", "truth_id", "sha256"), is_chr, "truth.per_unit[].")
         need(x$truth, "blind", is.list, "truth.")
         if (!is.list(x$cells) || !length(x$cells)) bad("cells")
         for (cl in x$cells) {
             need(cl, c("unit", "arm", "exit"), is_chr, "cells[].")
             need(cl, "seed", is.numeric, "cells[].")
+            # G5 (I07, E5): every cell says whether it was replayed and with what result.
+            need(cl, "replay", is.list, "cells[].")
+            st <- cl$replay$status
+            if (!is_chr(st) || is.na(st) || !st %in% REPLAY_STATUSES) bad("cells[].replay.status")
+            if (identical(st, "differs") && !length(cl$replay$differences)) {
+                bad("cells[].replay.differences")
+            }
         }
         need(x$scoring, c("metrics_sha256", "comparisons_sha256"), is_chr, "scoring.")
         if (!is.list(x$outputs) || !length(x$outputs)) bad("outputs")

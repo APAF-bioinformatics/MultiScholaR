@@ -353,7 +353,8 @@ valRunWorkflowCell <- function(cell, ctx, ds, arm, inputs, contrasts, cell_dir) 
                           roles = inputs[["roles"]] %||% list(), on_complete = on_complete,
                           pkg_root = ctx$pkg_root,
                           technical_replicates = identical(ds[["replicate_type"]], "technical"),
-                          record_messages = ctx$record_messages %||% TRUE)
+                          record_messages = ctx$record_messages %||% TRUE,
+                          replay = valReplayDeclared(ctx$decl, cell$unit, cell$arm))
     if (identical(res$exit, "refused")) {
         s <- res$steps[res$steps$outcome == "refused", , drop = FALSE]
         s <- s[nrow(s), , drop = FALSE]
@@ -364,7 +365,7 @@ valRunWorkflowCell <- function(cell, ctx, ds, arm, inputs, contrasts, cell_dir) 
     }
     list(da = res$tables[["da"]], tables = res$tables, ledger = res$ledger_path,
          fallback = res$fallback, options_at_start = res$options_at_start,
-         qvalue_fallback = res$qvalue_fallback, hook = res$hook)
+         qvalue_fallback = res$qvalue_fallback, hook = res$hook, replay = res$replay)
 }
 
 #' The kernel identity gate before a phase's kernel cells (7.5; A14, A30)
@@ -1196,6 +1197,10 @@ valRunPhase <- function(phase, decl, dataset, units, label, code_files, data_dir
     code$code_files <- code$code_files %||% lapply(code_files, function(f) {
         list(path = f, sha256 = valSha256(f))
     })
+    if (!length(code$helpers_extracted)) {
+        code$helpers_extracted <- tryCatch(valHelpersExtracted(cells, decl, ctx$pkg_root),
+                                           error = function(e) list())
+    }
     gates <- gate[setdiff(names(gate), "refused")]
     chunk_tab <- if (!is.null(ran)) attr(ran, "chunks")
     if (!is.null(chunk_tab)) {
@@ -1212,9 +1217,10 @@ valRunPhase <- function(phase, decl, dataset, units, label, code_files, data_dir
                       universe = list(sha256 = prep$universe_sha256,
                                       rows = nrow(prep$universe),
                                       by_status = prep$universe_counts)),
-        truth = valTruthProvenance(prep$truth, work_dir, blind_seed),
+        truth = c(valTruthProvenance(prep$truth, work_dir, blind_seed),
+                  list(per_unit = valPerUnitTruthProvenance(truths, prep$truth, work_dir))),
         cells = valCellsProvenance(res, cells, values, run_dir, ctx$work_dir,
-                                   !is.null(decl[["hooks"]][["post_cell"]])),
+                                   !is.null(decl[["hooks"]][["post_cell"]]), decl = decl),
         chunks = chunk_tab %||% list(),
         scoring = list(
             metrics_sha256 = valSha256(file.path(run_dir, "metrics.tsv")),
