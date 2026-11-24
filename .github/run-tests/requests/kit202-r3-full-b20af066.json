@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-202 R3: full suite, head b20af066 (fix merged with staging 393ebb85) against 393ebb85, 20 shards per side; ceiling 2800 job-minutes; decides A5",
+  "label": "KIT-202 R3 full b20af066 vs 393ebb85",
+  "package_commit": "b20af0663ac3e267785171bcf9c18625d46a40e7",
+  "base_commit": "393ebb85837a3831ec0943450e7986315bd299a8",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
