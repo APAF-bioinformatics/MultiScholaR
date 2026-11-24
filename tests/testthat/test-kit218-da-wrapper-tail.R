@@ -231,3 +231,69 @@ test_that("KIT-218 M1 (recorded, not judged): groups named 1, 2, 3 (F1)", {
         paste("caught message:", run$error)))
     succeed()
 })
+
+# ---- H1 (ticket section 14a): the comparisons are read as text; a non-data-frame is refused -------------------------
+
+kit218FactorRows <- function(factors) data.frame(contrasts = c("groupC-groupA", "groupB-groupA"),
+    full_format = c("C_vs_A=groupC-groupA", "B_vs_A=groupB-groupA"), stringsAsFactors = factors)
+
+kit218FactorNoFullFormat <- function(factors) data.frame(contrasts = c("C_vs_A=groupC-groupA", "B_vs_A=groupB-groupA"),
+    stringsAsFactors = factors)
+
+# Per comparison and protein, log2FC, fdr_qvalue and raw_pvalue of `got` identical to the reference call's.
+kit218ExpectSameRows <- function(got, ref) {
+    expect_identical(sort(unique(got$comparison)), sort(unique(ref$comparison)))
+    for (comparison in unique(ref$comparison)) {
+        a <- got[got$comparison == comparison, , drop = FALSE]
+        b <- ref[ref$comparison == comparison, , drop = FALSE]
+        expect_identical(sort(a$Protein.Ids), sort(b$Protein.Ids), info = comparison)
+        at <- match(b$Protein.Ids, a$Protein.Ids)
+        for (column in c("log2FC", "fdr_qvalue", "raw_pvalue")) {
+            expect_identical(a[[column]][at], b[[column]], info = paste(comparison, column))
+        }
+    }
+}
+
+test_that("KIT-218 W5: a contrasts_tbl that is not a data frame is refused with a classed error", {
+    kit218MockPlots()
+    expect_error(kit218Quiet(daAnalysisWrapperFunction(kit218CompleteObject(),
+        contrasts_tbl = c("B_vs_A=groupB-groupA", "C_vs_A=groupC-groupA"), formula_string = "~ 0 + group",
+        treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE, args_row_id = "Protein.Ids")),
+        class = "prot_da_contrasts_invalid")
+})
+
+test_that("KIT-218 W6: a full_format column stored as a factor gives each comparison its own statistics", {
+    kit218MockPlots()
+    run <- kit218Call(kit218CompleteObject(), kit218FactorRows(TRUE))
+    if (!kit218Completed(run, "W6 error")) return(invisible())
+    text <- kit218Call(kit218CompleteObject(), kit218FactorRows(FALSE))
+    if (!kit218Completed(text, "W6 text reference error")) return(invisible())
+    kit218ExpectSameRows(run$value$significant_rows, text$value$significant_rows)
+})
+
+test_that("KIT-218 W7: a first column stored as a factor, without full_format, gives both comparisons", {
+    kit218MockPlots()
+    run <- kit218Call(kit218CompleteObject(), kit218FactorNoFullFormat(TRUE))
+    if (!kit218Completed(run, "W7 error")) return(invisible())
+    expect_identical(sort(unique(run$value$significant_rows$comparison)), c("B_vs_A", "C_vs_A"))
+    text <- kit218Call(kit218CompleteObject(), kit218FactorNoFullFormat(FALSE))
+    if (!kit218Completed(text, "W7 text reference error")) return(invisible())
+    kit218ExpectSameRows(run$value$significant_rows, text$value$significant_rows)
+})
+
+test_that("KIT-218 M2 (recorded, not judged; base only): W6's factor input through G1's doubles", {
+    skip_if(!any(grepl("nested_list", deparse(daAnalysisWrapperFunction))), "the fix is present (M2 is base only)")
+    kit218MockPlots()
+    kit218MockUnnested()
+    run <- kit218Call(kit218CompleteObject(), kit218FactorRows(TRUE))
+    if (is.null(run$error)) {
+        rows <- run$value$significant_rows
+        effect <- rows[rows$Protein.Ids %in% paste0("P", 11:16), , drop = FALSE]
+        means <- tapply(effect$log2FC, effect$comparison, mean)
+        cat(sprintf("\nKIT-218 M2: mean log2FC of P11..P16 under %s\n", paste(names(means), sprintf("%.4f", means),
+            sep = " = ", collapse = "; ")))
+    } else {
+        cat(sprintf("\nKIT-218 M2: caught message: %s\n", run$error))
+    }
+    succeed()
+})
