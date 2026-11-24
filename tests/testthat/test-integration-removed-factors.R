@@ -1537,7 +1537,8 @@ test_that("KIT-184 cross-platform: K1's removed factors and K6's terms agree wit
     hand <- intRfHand()
     factors <- integrationInputRemovedFactors(intRfTable(hand$normalised), intRfTable(hand$corrected), 2L, hand$runs)$table
     unit <- intRfUnit(factors = intRfUnitFactors())
-    terms <- intRfUnitProduct(unit)$terms
+    # K6's terms are those of the adjusted test, which the reference holds: asked for by name, the default being off.
+    terms <- intRfUnitProduct(unit, adjust_ruv_factors = TRUE)$terms
     terms <- terms[order(terms$ID), c("ID", "Direction", "pvalue", "p.adjust", "correlation", "effect")]
     text <- c(utils::capture.output(utils::write.table(format(factors, digits = 17), sep = "\t", quote = FALSE,
         row.names = FALSE)), utils::capture.output(utils::write.table(format(terms, digits = 17), sep = "\t", quote = FALSE,
