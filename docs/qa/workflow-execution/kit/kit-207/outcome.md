@@ -12,7 +12,9 @@ X141). Branch `kit-207-summary-guard` from `v0.9-staging` 3f066385. No R was run
 | 2d49258d | tests only, instrument fix: the lipid/metab rows install KIT-194's Shiny notification and progress doubles (`k194Notes()`) |
 | 8f0c2eda | the fix: `R/utils_workflow_summary.R`, `R/mod_omic_norm.R`, `R/utils_workflow_trx_declarations.R`; `NEWS.md` |
 | bb5c0c22 | tests only, instrument: G1 prints its masked study parameters |
-| (records) | this folder; the ledger row `VAL-<merge>` |
+| 5b9d1beb | records: this folder; the ledger row `VAL-<merge>` |
+| fe82f331 | tests only (audit I03): E10 asserts the `summary_none` text; E12 |
+| (this commit) | audit repairs I01, I02, I04 to I06 (NEWS, ledger, records) |
 
 ## Step 0 survey (section 10)
 
@@ -75,8 +77,8 @@ See `runs.tsv`. Core-hours used: 96.45 (R1 1.07, R1b 0.70, R2 15.15, R2-G1 1.85,
 Record steps on both sides: `initial, <prefix>_raw_data_s4, _intensity_filtered, _qc_complete, _log2, _normalized,
 _correlation_filtered`. The study-parameters digest is not reproducible between runs of one commit: at 2d49258d it was
 85fd6a39… (R1b) and d2d2317e… (R2 base) for lipidomics. R2-G1 printed the masked text: of 208 lines, base and head differ
-in one line per omic, line 93, `pairs [input] = <sha256>` of the correlation step (the identity of its input pairs
-product, which differs between runs), and in nothing else (`r2g1-params-diff.txt`). **Observed:** the default-path
+in one line per omic, line 93, `pairs [input] = <sha256>` of the correlation step (the entity id of its input pairs
+product, which embeds the store's per-session incarnation), and in nothing else (`r2g1-params-diff.txt`). **Observed:** the default-path
 save hands the RDS writer the same object (byte-identical serialisation digest), writes the same record steps, and writes
 the same study parameters apart from that run-varying identity line.
 
@@ -88,14 +90,14 @@ skipped (head `<prefix>_normalized`); the head's record components are `identica
 
 ## R3
 
-**R3** (45362773892; head e158c6eb = branch bb5c0c22 merged with `v0.9-staging` 42dd1751 (branch `run-k207-r3`), base 42dd1751; the full suite, 20 shards per side, check off): 463 files; 461 `same`; `test-kit207-summary-head-guard.R` `only-on-head` (264 passed, 0 failed); `test-integration-input-lipid-metab.R` `count-changed` (base 131 passed, 0 failed with the old block; head 132 passed, 0 failed: E10's block, three expectations in place of two). No `new-failure`, no `message-changed`, no timeout or crash; 40 files fail identically on base and head (stored laptop references, KIT-156 record) (`r3-full-suite-compare.tsv`, `r3-full-suite-compare-failures.txt`). 40 jobs, 1,165.2 job-minutes, longest job 53.2 min. KIT-206 and KIT-202 had not merged, so R2b is not due and no other ticket's new file needed adding (E-6).
+**R3** (45362773892; head e158c6eb = branch bb5c0c22 merged with `v0.9-staging` 42dd1751 (branch `run-k207-r3`), base 42dd1751; the full suite, 20 shards per side, check off): 463 files; 461 `same`; `test-kit207-summary-head-guard.R` `only-on-head` (264 passed, 0 failed); `test-integration-input-lipid-metab.R` `count-changed` (base 131 passed, 0 failed with the old block; head 132 passed, 0 failed: E10's block, three expectations in place of two). No `new-failure`, no `message-changed`, no timeout or crash; 39 files fail identically on base and head (stored laptop references, KIT-156 record) (`r3-full-suite-compare.tsv`, `r3-full-suite-compare-failures.txt`). 40 jobs, 1,165.2 job-minutes, longest job 53.2 min. KIT-206 and KIT-202 had not merged, so R2b is not due and no other ticket's new file needed adding (E-6).
 
 ## Acceptance criteria
 
 | # | Criterion | Met | Evidence |
 |---|---|---|---|
 | A1 | failing-first tests fail on the tests-only commit at section 10's values; guards pass on both; all pass on the fix | met | R1 (trx, E10, E11) and R1b (lipid/metab); R2 head 264/0 and 132/0 |
-| A2 | regression scope base against head `same` except the new file and E10's block; check: nothing only on head; G1's digests equal | met, with the G1 qualification | R2: 27 `same`, 2 `fixed`, check identical; G1 object, assays and record steps equal; study parameters equal except one run-varying identity line (R2-G1) |
+| A2 | regression scope base against head `same` except the new file and E10's block; check: nothing only on head; G1's digests equal | not met as declared for G1's parameter digest, explained: line 93 prints the correlation step's `pairs` input as an owner-scoped entity id (store incarnation drawn per session, `R/utils_workflow_saved_entities.R:79-82`, `:352-358`), so the digest differs between any two runs, also of one commit (R1b, R2 base, R2-G1 base); every other G1 comparison is equal (object, assays, record steps, 207 of 208 masked lines); all other A2 clauses met | R2: 27 `same`, 2 `fixed`, check identical; G1 object, assays and record steps equal; study parameters equal except one run-varying identity line (R2-G1) |
 | A3 | full suite on the merge with staging: no difference other than the new file and E10's block | met | R3 |
 | A4 | NEWS, ledger row; no version, `NAMESPACE`, `man/` change; outcome with "For the change report" | met | `NEWS.md` (### Fixes), ledger `VAL-<merge>`; `git diff 3f066385 -- DESCRIPTION NAMESPACE man` empty |
 
@@ -111,6 +113,9 @@ E11 was built and executed (not INFERRED): R1b base values above; head passes in
   Package Version, Source: they name the commit, which differs between base and head by construction) and the temporary
   root. It still varied between runs; R2-G1 shows why (above).
 - Two tests-only commits instead of one (2d49258d: an instrument fix after R1), and one tests-only print (bb5c0c22).
+- `summaryFailed`'s removal of the earlier integration input catches any error (an error inside the Save's error handler would
+  escape the observer) and shows it as a warning; it is not logged (conventions/R.md:118-119). Recorded, as the Report's
+  catch-all.
 - Recorded divergences from `conventions/`: the refusals are plain words, not "state the offending value" (as KIT-194);
   the Report call site catches any error from the guard (as KIT-194 A05); new lines follow the surrounding code's width
   (about 130 characters, as KIT-194's texts), not `R.md`'s 100.
@@ -132,8 +137,36 @@ As implemented in `omicNormGuardTexts()` (`R/mod_omic_norm.R`), shown after "The
   button again."
 
 Also shown by the Save (SD-4, existing text of `trxIntegrationInputSource`): "The session could not be saved: the accepted
-RUVIII export was made from an earlier RUV step: run the export again, then save again". The ticket's note stands: the
+RUVIII export was made from an earlier RUV step: run the export again, then save again".
+
+- After a refused save whose removal failed (existing text of `removeIntegrationInput`, now shown as a persistent
+  warning): "the earlier integration input at <folder> could not be removed".
+
+The ticket's note stands: the
 owner may prefer "The workflow arguments were not saved: " for these omics.
+
+## Implementation audit repairs (`AUDIT-KIT-207-impl-20261124.md`)
+
+I01 and I02 (NEWS, ledger, this file), I04 (`r1b-base-values.txt` regenerated whole from R1b's artifact: 23 lines, E1
+carrying `qc_complete_max`; R3's identical failures are 39), I05 (A2's G1 clause), I06 (divergence and text recorded)
+applied as the register gives them. I03 (the coordinator's ruling: add both tests): commit fe82f331, tests only.
+E10 now also asserts the `summary_none` text; E12 (lipid, metab) runs SD-5 (b)'s main case: a valid save, a Revert to
+`<prefix>_qc_complete`, a refused save into the same integration folder. Run 45376347870 (head fe82f331, the two files, 1 job, 18.7 job-min, 1.25 core-hours, from the correction row): `test-kit207-summary-head-guard.R` 292 passed, 0 failed; `test-integration-input-lipid-metab.R` 132 passed, 0 failed. E12 lipid and metab: the valid save wrote the input; the refused save showed the `summary` text, wrote nothing and removed the earlier input; E10's `summary_none` text asserted. The transcriptomics `summary_none` branch, the trx Report and Session State refusals, an `_itsd_norm` head, the A01 head at the Summary and trx Reset stay by reading (the register's I03 (c)).
+
+## Hand-offs and with the owner
+
+- KIT-206 (shared `summaryFailed`): `integration_input_invalid` is now shown at every omic's Save, proteomics included;
+  KIT-206's tests of proteomics Save notifications must expect "The session could not be saved: <reason>" wherever they
+  reach that class, and whichever of the two merges second writes the union of both branches (E-2).
+- Reproducibility candidate (plan section 13, coordinator): "The analysis record and study_parameters.txt name a product
+  input (the lipid/metab correlation step's `pairs`) by its owner-scoped entity id, which differs between sessions of an
+  identical analysis and reads like a content hash; record the product's content sha256 (`payload$sha256`) or label the
+  value session-scoped; check that replay of a lipid/metab record resolves it."
+- With the owner (K207-I07, pre-existing, batched): a refused integration-input write (SD-4's refusal and every other
+  `abortIntegrationInput` reason of the lipid, metab and trx input writers) leaves the omic's earlier input in
+  `integration/<omic>/` while the same Save writes the head's parameters and record. Candidate text: "A save whose
+  integration input is refused (`integration_input_invalid` from the omic's own input writer) removes the omic's earlier
+  input, as K061-3 and KIT-207 SD-5 (b) do."
 
 ## Observed and inferred
 
@@ -180,7 +213,7 @@ checking its source). Fix 8f0c2eda: `R/utils_workflow_summary.R:86-108` (`assert
 **What changed in results.** No completed analysis changes. Summary saves, reports and session exports at a head that
 is not the normalisation's result are refused before anything is written; on a refused Save the omic's earlier
 integration input (`integration/<omic>/`) is removed; a transcriptomics integration file is not written from an RUVIII
-export made from an earlier RUVs state; a refused integration input is now named to the user. Saves on the default path
+export made from an earlier RUVs state; a refused integration input is now named to the user at every omic's Save (proteomics included; not tested for proteomics). Saves on the default path
 are unchanged (G1: same object and record steps; parameters equal apart from a run-varying identity line).
 
 **Evidence.** R1 45344983182 and R1b 45347712087 (base values), R2 45350537647 (29 files, check), R2-G1 45359339101
