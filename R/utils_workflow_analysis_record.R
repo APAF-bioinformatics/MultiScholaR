@@ -425,7 +425,8 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         if (!length(fixed) && !is.null(entry$declaration$fixed)) {
             # The head entry predates the constant's declaration (a store written before KIT-038 declared the P14
             # backend); the kernel passed it then as now, so the registry's constant is listed with its source named.
-            fixed <- entry$declaration$fixed
+            # KIT-187: a rule marker is never back-filled; its absence records the earlier rule.
+            fixed <- entry$declaration$fixed[setdiff(names(entry$declaration$fixed), names(workflowReplayRuleMarkers))]
             fixed_source <- "registry"
         }
         for (name in names(fixed)) parameters[[length(parameters) + 1L]] <- list(name = name, source = fixed_source,
@@ -639,6 +640,58 @@ validateWorkflowAnalysisRecord <- function(record) {
     list(valid = !length(errors), errors = errors, incomplete = incomplete)
 }
 
+#' Replay rule markers (KIT-187, VAL-71; KIT-190 adds a row): for each marker that a step's declaration may fix, the
+#' option that selects the rule inside the package, its current token (the declaration's fixed value) and its earlier
+#' token. A step lists the marker, with source `fixed`, only when it was computed under the current rule: the record
+#' builder never back-fills it, `setWorkflowStepProvenance` omits it while the option holds the earlier token
+#' (`workflowFixedInForce`), and the replay runs each step whose declaration fixes it with the step's own rule
+#' (`workflowReplayRuleOptions`). The option is internal and set nowhere else.
+#' @noRd
+workflowReplayRuleMarkers <- list(
+    missing_value_comparison = list(option = "MultiScholaR.missing_filter_rule", current = "counts",
+        earlier = "rounded_percentage"))
+
+#' The rule a recorded step was made with (KIT-187): the marker's current token when the step lists the marker with
+#' source `fixed` and that value; its earlier token otherwise (no entry, or an entry of source `registry`).
+#' @param step One step of an analysis record.
+#' @param marker A name of `workflowReplayRuleMarkers`.
+#' @return The token.
+#' @noRd
+workflowReplayRule <- function(step, marker) {
+    spec <- workflowReplayRuleMarkers[[marker]]
+    for (parameter in step$parameters %||% list()) {
+        if (identical(parameter$name, marker) && identical(parameter$source, "fixed") &&
+            identical(decodeWorkflowRecordValue(parameter$value), spec$current)) return(spec$current)
+    }
+    spec$earlier
+}
+
+#' The options a step replays under (KIT-187): one per rule marker its declaration fixes, set to the step's own rule.
+#' @param step One step of an analysis record.
+#' @param declaration The step's registered declaration.
+#' @return Named list for `withr::with_options()` (empty when the declaration fixes no marker).
+#' @noRd
+workflowReplayRuleOptions <- function(step, declaration) {
+    options <- list()
+    for (marker in intersect(names(declaration$fixed), names(workflowReplayRuleMarkers)))
+        options[[workflowReplayRuleMarkers[[marker]]$option]] <- workflowReplayRule(step, marker)
+    options
+}
+
+#' A declaration's fixed constants as a step computed now records them (KIT-187): a rule marker whose option holds
+#' its earlier token is omitted, and NULL is returned when nothing is left.
+#' @param fixed Named list of fixed constants, or NULL.
+#' @return The constants to record.
+#' @noRd
+workflowFixedInForce <- function(fixed) {
+    markers <- intersect(names(fixed), names(workflowReplayRuleMarkers))
+    earlier <- Filter(function(marker) identical(getOption(workflowReplayRuleMarkers[[marker]]$option),
+        workflowReplayRuleMarkers[[marker]]$earlier), markers)
+    if (!length(earlier)) return(fixed)
+    fixed <- fixed[setdiff(names(fixed), earlier)]
+    if (length(fixed)) fixed else NULL
+}
+
 #' Decode a record step's parameters into the named list the operation receives: declared names only (a step
 #' without declared parameters lists its arguments, which are not request parameters), fixed constants excluded.
 #' @noRd
@@ -728,7 +781,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         parameters <- workflowReplayParameters(step$parameters, union(entry$parameters, RUV_DESIGN_REQUEST_PARAMETERS))
         assertReplayRuvControlList(parameters, step)
         variant <- if (is.null(step$variant) || is.na(step$variant)) entry$default_variant else step$variant
-        withWorkflowStateScope(manager, function() {
+        # KIT-187: a step whose declaration fixes a rule marker replays, for that step alone, with the rule it was made with.
+        withr::with_options(workflowReplayRuleOptions(step, entry$declaration), withWorkflowStateScope(manager, function() {
             if (entry$compute %in% c("peptide", "protein")) {
                 directory <- file.path(scratch, "requests", step$state)
                 dir.create(directory, recursive = TRUE, showWarnings = FALSE)
@@ -825,7 +879,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             } else {
                 cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}", class = "workflow_replay_unsupported")
             }
-        })
+        }))
         if (!identical(manager$current_state, step$state))
             cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
         if (is.function(on_step)) on_step(step, manager)
@@ -966,7 +1020,8 @@ workflowAnalysisRecordTables <- function(record) {
 writeWorkflowAnalysisRecordWorkbook <- function(record, path) {
     tables <- workflowAnalysisRecordTables(record)
     openxlsx::write.xlsx(tables[intersect(c("software", "inputs", "design", "parameters", "external_resources", "steps", "analyses",
-        "packages", "ruv_design", INTEGRATION_RECORD_SHEETS), names(tables))], path, overwrite = TRUE)
+        "packages", "ruv_design", INTEGRATION_RECORD_SHEETS, INTEGRATION_RECORD_EVIDENCE_SHEET), names(tables))], path,
+        overwrite = TRUE)
     invisible(path)
 }
 

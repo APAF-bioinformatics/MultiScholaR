@@ -1,0 +1,9 @@
+requests: 120 (status 200: 120; other status: 0; transport errors: 0)
+200 answers with X-Total-Results: 120 of 120
+200 answers where X-Total-Results exceeds rows: 115
+200 answers with a Link header: 115 (rel=next: 115)
+answers with Retry-After: 0 (values: )
+returned entries outside the requested accessions: 0 (max per request 0)
+requested accessions not returned: 0
+max rows in one answer: 25
+releases seen: 2026_04

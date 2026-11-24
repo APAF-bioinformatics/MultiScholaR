@@ -1,0 +1,43 @@
+{
+  "job": "a-p4b-3-1",
+  "part": "A",
+  "cells": "P4b",
+  "replicates": [268, 400],
+  "lifecycle": false,
+  "fault": false,
+  "presence_cells": [],
+  "variants": "base",
+  "workers": 4,
+  "commit": "432f703b7e0d5f627e2990c288dbfe5f389fcd19",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "omp_threads": "1",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "seed_rule": "set.seed(185000000 + 10000 * cell index + replicate, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection')",
+  "cell_index": 14,
+  "key_packages": {
+    "MultiScholaR": "0.9.2",
+    "RUVIIIC": "1.0.19",
+    "ruv": "0.9.7.1",
+    "RSpectra": "0.16-2",
+    "limma": "3.68.4",
+    "qvalue": "2.44.0",
+    "progress": "1.2.3",
+    "sva": "3.60.0",
+    "dplyr": "1.2.1",
+    "tidyr": "1.3.2"
+  },
+  "script_sha256": ["3ee4aac433a694ca633975479835bf3a1b0daca368d611886f4b6c572c5895e7", "019ee0a6a039f3bf1b842dbff6543e964dda08ce393908a933ade1ea40e39130"],
+  "started": "2026-11-23T18:24:22+0000",
+  "finished": "2026-11-23T21:03:14+0000",
+  "units": 133,
+  "units_crashed": 0,
+  "exit_status": 0,
+  "tables_sha256": {
+    "checks-a-p4b-3-1.tsv": "8a1a5759dab0985de4e2601037d2f6605814b7f00f5f5ac7191fc62c1ead7494",
+    "rows/a-P4b-268-400.tsv.gz": "3abf5be3a31fa08c854d04fa01c2e971e891500f2516bd6212811b851a8089f2",
+    "timing-a-p4b-3-1.tsv": "2be3276a8d280106052febe9be934aa9b271af7f77a1784282d28f68fd258c6b"
+  }
+}

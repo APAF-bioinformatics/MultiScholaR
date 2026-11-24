@@ -1,0 +1,3 @@
+enrichment	mode	ranking_equal	terms_equal	terms_identical	terms_only_recorded	terms_only_repeated	note	test_recorded	test_after
+Factor1|metabolomics_GCMS|kegg|camera	recorded	TRUE	TRUE	TRUE	0	0		camera	camera
+Factor1|metabolomics_GCMS|kegg	recorded	TRUE	FALSE	FALSE	0	0		gsea	gsea

@@ -29,8 +29,12 @@ holds KEGG compound or ChEBI identifiers, for example \code{list(metabolomics_LC
 \item{overrides}{A named list of enrichment settings and their values (see \code{integrationSettings()$enrichment}).
 \code{test} chooses the test for KEGG and Reactome: \code{"camera"}, the test of record and the default (limma's camera
 on each feature's regression on the factor, allowing for the correlation measured between a pathway's features,
-on the features measured in every biological sample), or \code{"gsea"}, the pre-ranked test used before (each
-feature's correlation with the factor, tested as if features were independent). STRING ignores it.}
+on the features measured in every biological sample); \code{"camera_floor"}, the same with negative estimated
+correlations counted as zero (it never calls a pathway \code{"camera"} does not call); \code{"permutation"}, PCGSE's
+permutation test of the factor's values (each feature's correlation with the factor against \code{permutations}
+random reorderings of the factor's values across the biological samples, 1000 or 10000, with \code{seed}; a message
+gives the predicted time first); or \code{"gsea"}, the pre-ranked test used before (each feature's correlation with
+the factor, tested as if features were independent). STRING ignores it.}
 }
 \value{
 A list: \code{enrichments}, a list named \code{"<data set> <database>"} of the enrichments made, each a list with
@@ -51,6 +55,9 @@ writeLines(enriched$skipped)
 # The pre-ranked test used before KIT-183, for KEGG and Reactome:
 earlier <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
     overrides = list(test = "gsea"))
+# The permutation test of the factor's values (PCGSE), with its seed:
+permuted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+    overrides = list(test = "permutation", seed = 1L))
 names(enriched$enrichments)
 }
 }

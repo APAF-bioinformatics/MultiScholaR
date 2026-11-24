@@ -1,0 +1,7 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-prot-missing-value-counts.R	39	22	0	0	4	1253.6	failed
+test-prot-qc-peptide-intensity-legacy-counts.R	2	1	0	0	0	7.1	failed
+test-prot-02-qc-filtering.R	4	0	0	1	0	8.7	ok
+test-prot-s4-qc-direct-shared.R	72	0	0	0	0	13.2	ok
+test-general-filemgmt-update-missing-value-shared.R	16	0	0	0	0	6.7	ok
+test-prot-summary-report-templates.R	111	12	0	0	0	7.4	failed

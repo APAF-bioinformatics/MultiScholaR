@@ -2,7 +2,52 @@
 
 ## MultiScholaR (unreleased; becomes 0.9.1, the first alpha for testing on real data)
 
+### New features
+
+ * Integration enrichment (KEGG and Reactome, for metabolite and lipid data sets): besides the correlation-adjusted
+   test (the default, unchanged) and the pre-ranked test, two more tests can be chosen: the correlation-adjusted test
+   with negative correlations counted as zero, and a permutation test of the factor's values (PCGSE). The tab and every
+   record show how each test behaved in a check on simulated data of the same kind (false calls and power; no lipid
+   data were simulated), so the choice can be made on those figures. With a permutation result, the tab and the
+   record's Methods state the smallest attainable p-value as an exact fraction (for example 1/1,001) and the smallest
+   number of terms that can be called together at a 5 % false discovery rate, or that none can be called when that
+   p-value is above 0.05 (VAL-115). Results of the default test are unchanged. The
+   pre-ranked test now draws its random numbers with R's default generator whatever the session's setting; results in
+   a session with default settings are unchanged (KIT-191).
+
 ### Fixes
+
+ * Lipidomics and metabolomics: after Quality Control was reverted past the normalisation, or after 'Reset to
+   Pre-Normalization', 'Apply Correlation Filter', 'Skip Filtering & Proceed to DE', 'Export Normalized Data' and the
+   differential analysis could run on data that had not been normalised (no internal-standard step, no log2, no
+   normalisation), and reported the analysis complete. They now stop with a message asking to run the normalisation
+   again. Lipidomics, metabolomics and transcriptomics: pressing 'Run Normalization Pipeline' a second time without
+   Reset normalised the already normalised table (log2 applied twice), and in transcriptomics a second run with fewer
+   factors stopped with an error and kept the first run's factors (seen with 2 then 1), and the expression filter
+   applied after normalisation kept factors estimated on the unfiltered genes; it now runs again from the table the
+   first run started from, and it is refused on a table loaded from a session file and while a step is still running.
+   Quality-control steps can no longer be applied to a normalised table; the message names the step to Revert to. A
+   table that carries the name of a normalisation step is treated as normalised even when it was made by a script, or
+   loaded from a session file, rather than by the tab: quality control and the normalisation refuse it, and the message
+   asks to Revert to the last quality-control step (or, when none is left, to import the data again). Scripts that call
+   the package's step functions directly are not guarded, as in proteomics; a script decides which table it passes. The
+   differential analysis no longer runs on a session file named after a design, quality-control, reset,
+   internal-standard or log2 state (such a file was exported after Quality Control was reverted past the normalisation).
+   Results change only for sessions that took these routes; analysis records are not changed, and replaying one repeats
+   the steps it recorded. To check an earlier lipidomics or metabolomics result, open its analysis record
+   (analysis_record.xlsx, exported with the results). In the sheet 'analyses', the column source_state names the table
+   the differential analysis tested. If that name ends in _intensity_filtered, _duplicates_resolved, _qc_complete,
+   _reset, _itsd_norm or _log2, the analysis tested values that were not normalised, or not fully. If it ends in
+   _correlation_filtered or _norm_complete, look at the sheet 'steps': unless a log2 step (state ending _log2) and a
+   normalisation step (state ending _normalized) stand between the quality-control steps and that state, the analysis
+   tested values that were not normalised. If the sheet 'steps' starts from a session file loaded with 'Load Filtered
+   Session' (one step, operation 'legacy'), the record cannot show how that file was made: this version refuses files
+   named after a design, quality-control, reset, internal-standard or log2 state, and a file named after the correlation
+   step is affected only if Quality Control was reverted before it was exported. A second normalisation run without
+   Reset, and quality control applied after normalisation, do not show in the sheet 'steps'. They show in
+   analysis_record.json: the first internal-standard or log2 step's input (input_entity_ids), or a quality-control
+   step's input, is the result (result_entity_id) of a normalisation, RUV or correlation step. The data were then
+   normalised twice, or filtered after normalisation. Run such analyses again with this version (KIT-194).
 
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
@@ -12,11 +57,78 @@
    when the Differential Analysis tab is pressed before the normalisation now reads 'Run the normalisation first: the
    differential analysis runs on the normalised data.', and the tab's model help says that the RUV factors enter the
    model only when the normalisation added them. The report then states that no correction for unwanted variation was
-   applied. On these runs the tab still reports that the results could not be saved to disk, although the result tables
-   and figures are written; this is fixed separately (KIT-192).
+   applied.
+
+ * Transcriptomics: on runs of the RUV design panel (the option 'No removal of unwanted variation', an RUV design whose
+   rule finds no unwanted factor, or any RUV design that adds factors), the Differential Analysis tab no longer reports
+   'Could not save results to disk: non-numeric argument to mathematical function' after writing the result tables and
+   figures. The RUV grid summary (`ruv_optimization_summary.txt`) is written only for runs that used the RUV grid
+   search; the other runs have no grid to summarise, and their RUV choices are in the analysis record and the report.
+   Files written by an earlier run of the same project that used the RUV grid search (this summary, the
+   canonical-correlation panels and the grid workbook) are not removed, and describe that earlier run. Runs that used
+   the RUV grid are unchanged. The RUV design panel is off by default.
+
+ * Proteomics: when protein annotation from UniProt is empty or incomplete the app now says why, keeps the notice
+   until it is closed, writes the fact into the analysis record, and no longer keeps an empty or incomplete answer
+   for the next attempt. An incomplete annotation stays marked as incomplete when the project is saved and reopened.
+   Projects whose annotation was empty under an earlier version: save the design again. Enrichment now refuses to run
+   when the project has no protein annotation (previously: the UniProt GO route stopped with a 'column not found'
+   error, and the g:Profiler route was sent no protein, since data imported in the app carry no gene names of their
+   own). An earlier analysis record whose enrichment ran without any protein annotation is no longer replayed: the
+   replay is refused, because that run had nothing to test. Each request to UniProt is now tried up to three times,
+   and asks for each protein by its accession only (`accession:` terms; an isoform is asked for by its canonical
+   accession, as the design step already did), so an answer holds exactly the requested entries; a protein UniProt
+   has merged into another entry (a secondary accession) still gets no annotation. DA tables written before the
+   annotation was retrieved keep their blank gene names until the DA is run again. (KIT-175)
 
 ### Scientific changes
 
+ * Proteomics, MaxQuant, FragPipe, Spectronaut and Proteome Discoverer TMT: protein quantities are now
+   log2-transformed without first adding 1. Adding 1 changed each value v by log2(1 + 1/v): 0.00014 at 10,000, 0.0014
+   at 1,000, 0.14 at 10; a fold change of 10 against 80 was reported as 2.88 instead of 3. Measured on simulated data
+   (2,000 proteins, two groups of five, 10 % of proteins changed by a factor of 2; 20 simulated data sets per setting):
+   where typical values are near 10, fold changes were shrunk to 0.81 of their true size with the offset and 0.94
+   without it; near 40, 0.96 and 1.00; from about 150 on the two agree. Low-abundance calls stay unreliable either
+   way: in the lowest third of abundance, with values near 10, 14.5 % of the true changes were found with the offset
+   and 8.4 % without it with RUV Automatic (5.2 % and 3.1 % with RUV skipped), and 65 % against 71 % of the calls
+   there were false with RUV Automatic (50 % against 42 % with RUV skipped; the whole list's false share was 0.19
+   against 0.17, and 0.05 against 0.04). The Benjamini-Hochberg procedure controls the false discovery rate of the
+   whole list, not of an abundance stratum. The test used by default does not model the larger variance of log values
+   at low abundance. On the package's five test data sets (values of 500 and above) no call changed (fold changes
+   moved by at most 0.0001). Some Proteome Discoverer exports report signal-to-noise values, which are small; there
+   the change is largest. A value of 0 is read as not measured (missing) and counted; for Spectronaut tables and for
+   designs re-imported from files saved before 7 November 2026 this changes which values are tested. A negative or
+   infinite value now stops the design step with a message naming the run. Saved projects keep their results; saving
+   the design again applies the new transform, and a project whose design was saved by an earlier version says so
+   once when it is opened. Sessions from versions before the session owner (filtered sessions adopted for DA) are not
+   told. Scale normalisation (limma's two-colour M-value scaling) multiplies each sample's log2 values by a factor, so
+   its result depends on the unit of the table on any data; on log2 values below 0 (values below 1) it also treats -2
+   like +2, and a warning now says so when the data hold such values. Cyclic Loess and Quantile do not depend on the
+   unit.
+
+ * Proteomics (DIA, label-free, TMT): the protein missing-value filter ('Protein Intensity Filter', and the clean-up
+   after RUV) now decides by counting missing values. Before, it compared each group's share of missing values with a
+   percentage rounded to three decimals. With three samples per group and 'Min Replicates per Group' 2, one missing
+   value of three (33.3333 %) exceeded the rounded 33.333 %, so at the tab's defaults only proteins measured in every
+   sample were kept. The same happened for some other group sizes (for example 6, 7 or 11 samples with 1 required; 11
+   to 14 with 2) and for three groups with 'Min Groups Required' 2. Group sizes whose allowed share is exact or rounds
+   up (for example 2, 4, 5, 6, 7, 8, 9 or 10 samples with 2 required) give the same results as before. In simulated
+   data (KIT-185's generator with no unwanted variation and no RUV, 2 groups of 3, 3,000 proteins, R = 100 draws per
+   condition) the filter now keeps, at 5 %, 10 % and 25 % value-dependent missingness, 2,838, 2,668 and 2,086 proteins
+   instead of 2,442, 2,060 and 1,261; the differential analysis finds 53, 81 and 110 more proteins (the share of truly
+   changed proteins found rises from 0.65 to 0.73, 0.55 to 0.68 and 0.33 to 0.51), with the false discovery proportion
+   unchanged at about 0.05 for the whole list (among the newly kept proteins about 6 to 8 % of the proteins called
+   were false); these are simulated figures, and the size on real data is not yet measured. Designs with unequal group
+   sizes keep the rule of the largest group, as before, so a smaller group can pass with fewer values than 'Min
+   Replicates per Group' (for example one of three when the largest group has six). Analysis records made before this
+   version replay with the earlier rule; each step of a record replays with the rule it was made with. In an analysis
+   record, the protein intensity filter and normalisation steps made with this version list the fixed parameter
+   'missing_value_comparison = counts'; a step without it was made with the earlier rule. A session saved before this
+   version and continued after it applies the new rule from its next missing-value step. The peptide intensity
+   filter's percentage-only call (deprecated) reads its percentages the same way. The proteomics reports now say that
+   a protein failed a group when its share of missing values exceeded the allowed share, and was kept when the share
+   of groups it failed did not exceed the allowed share; they said 'or more' and 'at most' of the rounded percentages.
+   (KIT-187, VAL-71)
  * Integration enrichment of a factor against KEGG and Reactome pathways now uses a correlation-adjusted test by
    default (limma's camera on each feature's regression on the factor, allowing for the correlation measured between
    a pathway's features, on the features measured in every biological sample; of several features on one compound
