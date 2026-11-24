@@ -18,7 +18,7 @@ Head bcb73db5 against 64cc0fff, all test files, 20 shards per side, check on (`r
 - `provenance-cause.R`: 17 cases on both sides, 725 leaves same, 29 leaves `<state>/fixed/missing_value_comparison` = "counts" only on head, 0 unexplained: "only the marker differs" for the provenance. The record steps were not compared by the script; that their move is the same marker (listed by the record builder as a `fixed` parameter of the normalisation steps) is inferred, not shown.
 - R CMD check: identical findings on both sides (0 errors, 3 warnings, 3 notes); nothing only on head.
 
-A6: met for every verdict except that the admitted move, as written, names 34 `provenance` expectations; the observed 34 are 17 `provenance` + 17 `record`. Whether that is within VAL-104 is the owner's reading; the ticket stops here for it.
+A6: met. The admitted move is the 34 expectations (17 `provenance` + 17 `record`), VAL-104 as worded on staging after the correction; both halves are shown by R3c to come from the marker alone.
 
 ## R3c, the record half of the cause (VAL-104), declared before it is sent
 
@@ -35,6 +35,17 @@ Ceiling 40 job-minutes (2.7 core-hours), expected about 15 (1.0). Out: `r3c-prov
 - **Decision:** anything else (an unexplained leaf, a case without a marker entry, a missing case) stops the ticket and
   is reported. A script-mechanics failure with no comparison produced is an instrument defect (VAL-54: at most three
   further runs, nothing in the expectation changed).
+
+## R3c, run 45301081110 (observed)
+
+Head 108635c9 (revision 2 of `provenance-cause.R`), base 64cc0fff; 295 s script, 15.0 job-minutes (1.0 core-hour); `r3c-prov/`.
+- 17 of 17 case runs on both sides; no missing case.
+- Provenance: 725 leaves same, 29 leaves `fixed/missing_value_comparison` = "counts" only on head, 0 unexplained (as R3).
+- Record: on head, 29 marker entries (one per normalisation step: 5 cases with one step, 12 with two), each of the
+  declared form (name `missing_value_comparison`, source "fixed", provenance "fixed", value "counts"), 174 leaves;
+  with them removed, 3,711 leaves equal base's, 0 unexplained.
+- Verdict: "only the marker differs (provenance and record)". Both halves of the 34 moved expectations are shown to
+  come from the marker alone; VAL-104's condition is met.
 
 ## R2 stop (as recorded before the ruling)
 
@@ -101,11 +112,11 @@ restructuring; transcriptomics code only, none on S2's path) e6c42d1d. First bra
 |---|---|---|
 | A1 | met | R1 log (`r1-failures.txt`); R2 head: both new files pass |
 | A2 | met: equal to 2.2 | `r1-t3-base-set.txt` |
-| A3 | **not met**: `test-prot-norm-core.R` `message-changed` | `r2-compare.tsv` |
+| A3 | met under revision 1.4 (VAL-104): the only `message-changed` is the admitted 34 in `test-prot-norm-core.R` | `r2-compare.tsv` |
 | A4 | met | `r2-check-compare.txt` |
 | A5 | met | `s2-lc/`, `s2/falsifiers.tsv`, `s2/cells.tsv` |
-| A6 | see "R3" above: verdicts as predicted except the admitted move is 17 provenance + 17 record | `r3-full-suite-compare.tsv` |
-| A7 | not yet (NEWS, ledger wait); DESCRIPTION, packaging, NAMESPACE untouched by this branch's commits | diff |
+| A6 | met (the admitted 34 = 17 provenance + 17 record; cause shown, R3c) | `r3-full-suite-compare.tsv`, `r3c-prov/provenance-verdict.txt` |
+| A7 | met: NEWS under the unreleased heading, ledger `VAL-<merge>`; DESCRIPTION, packaging, NAMESPACE untouched by this branch's commits | diff |
 | A8 | met | section below |
 
 ## Decision needed (the owner's)
@@ -149,7 +160,6 @@ numbers are those of 98df468b.
 
 ## Not checked
 - R2b/R3b on KIT-177's merge (not merged when R3 was sent).
-- That the 17 `record` moves come only from the marker (the cause script compares provenance only).
 - NEWS and ledger wording (not written).
 - Real data (none used); Windows (no platform code touched); whether a managed worker can run a different build
   from the controller.
