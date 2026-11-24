@@ -24,21 +24,38 @@ returned list had gained an element (`test-omics-enrich-core.R` W2 names). Fix a
 unchanged and the three names are appended to a run's declared names only when the reference identifiers are used;
 the returned list is unchanged.
 
+## Pass 2 (coordinator's rulings of 2026-11-24)
+
+| Run | Commit | What it showed |
+|---|---|---|
+| 45352132631 | 644aa7df (tests only) | download, GUI and replay tests fail first (download 4 errors; GUI 14 failures, 7 errors; enrichment 5 failures, 1 error) |
+| 45352515231 | 4a501cb0 vs d3909a30 | new files pass but 3 errors (the GUI test and the gate-off script built the enrichment page from the whole configuration; the 2 x 2 counts read under a contrast name); dependents `same`; correction pass taken |
+| 45353194826, 45353725258 | packaging | gate F1 (`feasibility.md`): the first an instrument defect (Docker engine not reached), the second complete |
+| 45352823145, 45372182412, 45386584323 | e5a258d2 to the last fix | the inputs script: F3 and F6 in the first; the second timed out (instrument); the third complete: FASTA locations, F4, the GEO cut, the demo tables and the real-engine lane |
+| 45387203510 | 3c4c5c90 vs a1b397b1 (merged with staging) | every KIT-167 file passes (369 expectations); the 13 dependents `same` |
+| 45392214469 | 2893bfed vs a1b397b1 | the pass's one full suite: 475 files, 465 `same`, 10 `only-on-head` (KIT-167 files, 443 expectations, 0 failures), no new failure (the GUI-entry mask flake did not occur this time; recorded as unchanged); R CMD check identical both sides; gate-off: pages and configuration values identical, head deterministic, no item failing to render |
+| 45386641894 | 3c4c5c90, bundle lane (`distributable.yml`, stage full, both platforms) | DIAMOND fetched and verified against the pin in both builds; the bare-container check finds it through the launcher's `MSR_DIAMOND` and the package's check accepts it (Linux); the Windows NSIS installer builds with `installer.nsh`; the GUI-entry lanes fail as in earlier full runs on other branches (Linux: prot_dia 4 steps, prot_dia_limpa 6, trx_screen 13; Windows: metab and lipid 8, trx_screen an error), with no base run on this image, so not judged; trx_screen's discrete differences 83 against 82 in run 45151293709 (23 November, another tree) are not attributed |
+
+Built in pass 2: `downloadReferenceProteome()` and its refusals; the import panels (proteomics mapping, transcriptomics
+annotation step), the tab's 2 x 2 table, download and taxon pre-fill (all behind the gate); the record and replay of
+reference-identifier runs (ruling (c)); the demo tables and `readReferenceMappingDemo()`; DIAMOND in both bundles with
+its checks, the installer's runtime check, the notices; gates F1, F3, F4, F6; the GEO cut test (ruling (e)).
+
 ## Acceptance criteria
 
 | # | State | Evidence |
 |---|---|---|
 | A0 | met (step 1) | `feasibility.md` (runs 45127082405, 45127086068); the `LICENSE` sentence added in this pass |
-| A1 | partly: F2 passed, F5 passed (code reading); F1, F3, F4, F6 not run; F7 waits for the harness | `feasibility.md` |
+| A1 | F1 to F6 recorded (F1 the runtime route ships; F2, F3, F5, F6 pass; F4 by its efetch route); F7 waits for the harness | `feasibility.md` |
 | A2 to A8 | wait for the harness (KIT-159) | none |
 | A9 | met | `test-reference-mapping-resolve.R` (run 45335657533): every status rule, top hit filtered in both directions, e-value only, score not e-value, bit score key, counts sum, identical sequences; gene statuses in `test-reference-annotation.R` |
-| A10 | met for the refusals implemented: header classes and OX rule, duplicate, alphabet, too few, annotation malformed and without protein_id, engine missing, mismatch, runtime statuses 0xC0000135 and 0xC0000139, timeout; not built: the current-release download refusals | `test-reference-mapping-fasta.R`, `test-reference-annotation.R`, `test-reference-engine.R` |
-| A11 | met (pages and configuration values; deparsed functions reported, see departures) | `gate-off-identity.R`, run 45347302450 (`gate-off-verdict.txt`) |
-| A12 | not built (bundle, installer, notices, F1) | none |
-| A13 | met with the stub engine; the real-engine lane not run | `test-reference-mapping-workflow.R`: replay offline equals the stored table; compute-again refused in words without the engine and equal with it |
+| A10 | met: every refusal of 8.4 tested, the download's two in pass 2 | `test-reference-mapping-fasta.R`, `test-reference-annotation.R`, `test-reference-engine.R`, `test-reference-download.R` |
+| A11 | met (pages and configuration values; deparsed functions reported; ruling (b), ticket revision 1.11) | `gate-off-identity.R`, runs 45347302450 and 45392214469 (`gate-off-verdict.txt`) |
+| A12 | met for KIT-167's parts: archive and executable SHA-256 verified at build (both), `diamond version` and the package's check in the Linux bare container, the installer check compiled into the Windows installer, F1's container result; the notices' DIAMOND and UniProt rows are written by `notices.R` (not read back from the build); the lanes' failures are pre-existing patterns, not judged without a base run | F1 run 45353725258; bundle lane 45386641894 |
+| A13 | met: with the stub engine in tests; the real engine gives identical mapping and decision-table SHA-256 at threads 1 and 4 (run 45386584323) | `test-reference-mapping-workflow.R`: replay offline equals the stored table; compute-again refused in words without the engine and equal with it |
 | A14 | met | `test-reference-mapping-workflow.R`: record sheet fields; Methods text with the applicability sentence, UPID and release |
 | A15 | met | `test-reference-mapping-enrichment.R`: identifier choice, join rule counts, NA removed from query and background, declared names only with the choice; unchanged identity without it (the dependents `same` in run 45336550337 and the full suite) |
-| A16 | partly: shipped references with SHA-256 checked against `reference_organisms.tsv`; a curated mapping and a curated-reference annotation make no network call (httr2 and curl mocked to fail); demo tables not made | `test-reference-organisms.R`, `test-reference-mapping-workflow.R`, `test-reference-mapping-enrichment.R` |
+| A16 | met: shipped references checked against their SHA-256; no network call for a curated mapping or annotation (mocked to fail); demo tables committed and loaded by a test | `test-reference-organisms.R`, `test-reference-mapping-workflow.R`, `test-reference-mapping-enrichment.R` |
 | A17 | met | `test-reference-mapping-enrichment.R`: a strain project with an empty project annotation runs with the reference identifiers on the shipped K-12 GO table (terms found), the project's annotation slot unchanged, and refuses with "as imported" (`workflow_enrichment_annotation`); the organism filter not applied or declared |
 
 ## Observed
@@ -61,19 +78,16 @@ the returned list is unchanged.
   `prot_lfq_fragpipe`) and on base in run 45347302450 (lane `prot_dia_limpa`). Unrelated defect, left alone.
 
 - The organism filter and the identifier choice in the tab behave as the core does: the tab passes `id_source` only when
-  the gate is on (no module test was written).
+  the gate is on (no module test of the server was written).
+- The 2 x 2 table counts a feature as changed by the fdr q-value and the fold-change cutoffs; KIT-203's significance
+  rule (merged since) is not applied to it (the counts describe the table, not the test).
 
-## Not built (needs no harness; left for a further pass)
+## Not built (needs no harness)
 
-- The proteomics import panel "Map to a reference organism" (8.1) and the transcriptomics annotation step at count
-  import (the stored gene table and its integration columns are built; the step's UI is not); the tab's 2 x 2 table and
-  download (the counts are computed and recorded as the step's outcome `reference_mapping_groups`); the taxon pre-fill.
-- `downloadReferenceProteome()` (the explicit current-release choice) and its two refusals.
-- The engine in the distributable: `build.sh`, `distributable.yml` (stages `kit167-engine`, `kit167-validate`),
-  `main.js`, `installer.nsh`, notices, verify scripts; gate F1; the Windows executable SHA-256 (NA in the pin file, so a
-  Windows mapping is refused as a mismatch until F1 measures it).
-- Demo tables for the four strains (need the engine on a runner with the PRIDE FASTAs).
-- Gates F3, F4, F6 (metadata reads for V5 and V9).
+- The Windows V7 step (`kit167-validate` stage of `distributable.yml`): it runs V6 at threads 1 and 4 for the counted
+  validation, so it is written with the harness's declarations.
+- A module test of the import panels' server and the tab's outputs under `shiny::testServer` (the pure functions they
+  call are tested).
 
 ## Waits for the harness (KIT-159, not released)
 
@@ -118,6 +132,16 @@ above the plan's per-run ceiling of 72 and the measured 61: the request ran 20 s
 gate-off script); instrument rerun 71 (4.7). Total 1,504 job-minutes, 100.3 core-hours; with step 1 (1.4), 101.7.
 Against the ticket: test lanes ceiling 177.6 (full suite 144 of it), validation ceiling 84.67 (F2 and corrections
 used 3.8).
+
+## Core-hours, pass 2
+
+Job minutes: tests and targeted runs 487 (32.5 core-hours); the inputs, F3 to F6 and demo runs 229 (15.3); F1 8 (0.5);
+the full suite with check and script 1,080 (72.0, at the per-run ceiling of 72); the bundle lane 243 (16.2; expected
+11.2, ceiling 33.6). Pass 2: 2,047 job-minutes, 136.5 core-hours. With pass 1 and step 1: 238.2 core-hours against the
+ticket's whole ceiling of 262.27. Overruns: the test lanes (two full suites, 149 core-hours, and 68 of targeted runs and the bundle lane,
+about 217 against their 177.6) and the F3 to F6 row (15.3 against 2.0: F3's 6,524 per-accession lookups and three
+instrument runs). What is left of the ceiling (24.1) is below the validation's own ceiling (84.67), which waits for
+KIT-159.
 
 ## Not checked
 
