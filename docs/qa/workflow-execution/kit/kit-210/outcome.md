@@ -43,3 +43,13 @@
 - Poulos et al. 2020 (A3; GA3 not applied).
 - The library's `version = "R"` forms on the runner (shown from source only).
 - Whether k = 0 reaches the legacy lipid/metab method in practice (ticket 2.9).
+
+## Step C preparation (2026-11-24; no run)
+
+Written against v0.9-staging 53713252 on the coordinator's ruling (option (b), limited): `sim-k210.R`,
+`ruviiic-ref210.R`, `score-k210.R` and `declaration-draft.md` (a draft; every measured figure a named blank that L1
+fills; the scripts' hashes provisional). The blind lane's three request drafts are on branch `lane-k210-l1`
+(`.github/run-tests/drafts/`, outside `requests/`, `package_commit` "BOUND_COMMIT"). Nothing was sent: L1 waits for
+E1's bound commit (KIT-190, KIT-196, KIT-201 are not merged on 53713252). Ticket revision 1.3 records C7's component
+count per route (the coordinator's ruling), the reported arm C7r5 (about +8 expected / +14 ceiling core-hours), the CRAN
+Archive URL and the branch name.
