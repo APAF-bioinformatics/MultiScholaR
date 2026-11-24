@@ -117,3 +117,16 @@ audit's I03 lists: features lost by residual dimension and planted status, B2, t
 canonical correlation and the rank, the comp/inc strata, the residual-dimension strata of the DA measures, the oracle's
 own change and the uncorrected arm's departure, the arms' mechanics, and the q-value methods with their S/S0 mismatches.
 Reported only: no classification, no band; it changes nothing in sections 1 to 9.
+
+## 11. Addendum for P2 (2026-11-24), committed before P2's run (VAL-71, VAL-108)
+
+KIT-187 is merged (`v0.9-staging` 6416dbd6; VAL-108): the proteomics missing-value filter compares counts, so a group of
+three with one missing value passes at the tab's defaults. This branch merges 6416dbd6; P2 binds to the commit that adds
+this section. Everything else is as sections 1 to 10 declare: the generator, seeds (cell index 4), masks, corrections,
+estimands, bands, family 456, classification, attribution, onset, safe rate and outcome rules, the stop rules and the
+ceilings of section 10 of the ticket (two jobs, replicates 1-200 and 201-400, timeout 255 minutes each). `sim-k185.R`
+SHA-256 5ffc96049efbcba0c7c465c78201465aa7a6cc13490b20afa6e705524aa234ce (section 9's), `score-k185.R` as section 8, `summ-k185.R` as section 10. First a blind lifecycle on P2
+replicates 401-403 (part A): E1-neg must now pass (the comparator differs from S on at least one masked arm) and G1 must
+hold; if E1-neg fails again, the work stops and the owner is told. Then the two counted jobs, then the whole record is
+re-scored once with the pinned scripts (part A's 13 cells must come out identical apart from P2's added rows and the
+re-run part-B proteomics cells).
