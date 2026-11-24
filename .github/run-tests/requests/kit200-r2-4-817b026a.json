@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-200 R2 instrument re-run 3 of 3: the new file only, T9 per the owner's decision VAL-180 (a)",
+  "label": "KIT-200 R2-4 new file at 817b026a",
+  "package_commit": "817b026ac11022f6940e40a488b1eb47fc7d09a8",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit200-prot-da-no-value-proteins.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit200-prot-da-no-value-proteins.R": 50
+  },
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
