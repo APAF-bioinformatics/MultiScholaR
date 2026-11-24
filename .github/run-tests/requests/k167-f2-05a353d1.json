@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-167 gate F2: one mapping KPC2 against MGH 78578 at the shipped settings, threads 4 (time, peak memory, score type, executable SHA-256); ceiling 30 min; decides the ranking key and the pins, or stops for the owner",
+  "label": "KIT-167 F2 05a353d1",
+  "package_commit": "05a353d160befcc462fd0388e9d186e37ceb7d47",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-167/gate-f2.R",
+      "args": [],
+      "out": "capture-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 20
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
