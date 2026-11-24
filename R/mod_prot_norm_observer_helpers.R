@@ -16,7 +16,10 @@ registerProtNormServerObservers <- function(
   checkMemoryUsageFn = checkProtNormMemoryUsage,
   runTabEntryWorkflowFn = runProtNormTabEntryWorkflow,
   regenerateQcForAestheticChangeFn = regenerateProtNormQcForAestheticChange,
-  runNormalizationWorkflowFn = runProtNormNormalizationWorkflow,
+  # KIT-182 (F-e): the tab's run redraws the pre-normalisation figures with the tab's own generator when its source
+  # changes; a delegate given here is called with the formals it had before.
+  runNormalizationWorkflowFn = function(...) runProtNormNormalizationWorkflow(...,
+    generatePreNormalizationQcFn = generatePreNormalizationQcFn),
   runApplyCorrelationObserverFn = runProtNormApplyCorrelationObserver,
   runSkipCorrelationObserverFn = runProtNormSkipCorrelationObserver,
   runResetObserverFn = runProtNormResetObserver,

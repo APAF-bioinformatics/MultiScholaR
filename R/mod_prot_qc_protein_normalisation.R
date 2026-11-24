@@ -70,6 +70,7 @@ runProteinNormalisationStep <- function(workflowData, normMethod,
                                         normaliseBetweenSamplesFn = normaliseBetweenSamples,
                                         logInfoFn = logger::log_info,
                                         nowFn = Sys.time) {
+  assertProtQcHeadNotNormalised(workflowData) # KIT-182 (VAL-91 D1)
   runDIAReferenceProteinNormalisation(workflowData, list(norm_method = normMethod))
 }
 
@@ -150,6 +151,7 @@ mod_prot_qc_protein_normalisation_server <- function(id, workflow_data, experime
 
     shiny::observeEvent(input$apply_protein_normalisation, {
       if (!is.null(workflowSessionApplication(session))) {
+        if (!protQcManagedApplyAllowed(workflow_data, "between-sample normalisation")) return(invisible(NULL)) # KIT-182
         managed_step$apply(list(norm_method = input$norm_method))
         return(invisible(NULL))
       }
