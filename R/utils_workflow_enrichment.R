@@ -56,7 +56,8 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
                                                   contrastNames,
                                                   correctionMethod,
                                                   excludeIea = FALSE,
-                                                  goPropagation = NULL) {
+                                                  goPropagation = NULL,
+                                                  significanceRule = NULL) {
   validatedParams <- validateProtEnrichProcessParameters(
     organismTaxid = organismTaxid,
     upCutoff = upCutoff,
@@ -93,8 +94,10 @@ buildProtEnrichProcessEnrichmentsArgs <- function(daResultsForEnrichment,
       contrast_names = contrastNames,
       correction_method = validatedParams$correction_method
     ),
-    # KIT-173: the GO parent-term rule reaches the kernel only when given (the clusterProfiler route).
-    if (!is.null(goPropagation)) list(go_propagation = goPropagation))
+    # KIT-173: the GO parent-term rule reaches the kernel only when given (the clusterProfiler route); KIT-203: so
+    # does the significance rule.
+    if (!is.null(goPropagation)) list(go_propagation = goPropagation),
+    if (!is.null(significanceRule)) list(significance_rule = significanceRule))
   )
 }
 
@@ -834,12 +837,15 @@ workflowEnrichmentAnnotationProblem <- function(annotations, resolved) {
 #' @param config The omic's `enrichment` group (`omicGuiConfig(<omic>)$enrichment`).
 #' @param manifest The accepted DA result manifest.
 #' @param parameters The run's inputs: `selected_contrast`, `organism_taxid`, `up_cutoff`, `down_cutoff`, `q_cutoff`,
-#'   `correction_method`, `enable_organism_filter`, and `go_propagation` (KIT-173; absent takes the shipped value,
-#'   `goPropagationShipped`; used on the clusterProfiler route only).
+#'   `correction_method`, `enable_organism_filter`, `go_propagation` (KIT-173; absent takes the shipped value,
+#'   `goPropagationShipped`; used on the clusterProfiler route only), and `significance_rule` (KIT-203; absent takes
+#'   `enrichmentSignificanceShipped`; clusterProfiler route only, where every run records the rule it applied as the
+#'   outcome `significance_rule` and notifies it).
 #' @param paths Experiment paths (`da_output_dir`, `pathway_dir`, `results_dir`, `source_dir`).
 #' @param process_fn The kernel; NULL selects `config$kernel$select()` when called (the double in test mode).
-#' @param notify `function(message, type, duration)`: the organism filter's warning, and the notice that the backend
-#'   applies another correction than the selected one (A107-03); NULL notifies nobody.
+#' @param notify `function(message, type, duration)`: the organism filter's warning, and on the clusterProfiler route
+#'   the notice of the significance rule applied (KIT-203), with the sentence that the selected correction was not used
+#'   when the selection is not `fdr` or `BH` (A107-03; then a warning); NULL notifies nobody.
 #' @param progress `function(value, detail)`; NULL reports nothing.
 #' @param refuse_missing_da TRUE refuses a run whose DA table is missing for a contrast before anything is written
 #'   (class `workflow_enrichment_input`; F107-03). FALSE is the start commit's behaviour: the run continues on the
@@ -977,11 +983,15 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     # names and record are unchanged).
     go_propagation <- if (identical(method$method, "clusterprofiler"))
         checkGoPropagation(parameters$go_propagation %||% goPropagationShipped)
+    # KIT-203: the significance rule, on the clusterProfiler route only.
+    significance_rule <- if (identical(method$method, "clusterprofiler"))
+        checkEnrichmentSignificanceRule(parameters$significance_rule %||% enrichmentSignificanceShipped)
     arguments <- buildProtEnrichProcessEnrichmentsArgs(daResultsForEnrichment = da_results,
         organismTaxid = parameters$organism_taxid, upCutoff = parameters$up_cutoff, downCutoff = parameters$down_cutoff,
         qCutoff = parameters$q_cutoff, pathwayDir = directories$pathwayDir, goAnnotations = annotations,
         proteinIdColumn = columns$idColumn, contrastNames = names(manifest$results),
-        correctionMethod = parameters$correction_method, excludeIea = config$exclude_iea, goPropagation = go_propagation)
+        correctionMethod = parameters$correction_method, excludeIea = config$exclude_iea, goPropagation = go_propagation,
+        significanceRule = significance_rule)
     kernel <- process_fn %||% config$kernel$select()
     .capture_checkpoint(arguments$checkpointArgs, "cp10", "enrichment_input")
     # GUI audit R3, P-28: the organism filter is declared when it is on, and what it did is recorded as the step's
@@ -993,12 +1003,15 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     if (!identical(correction, parameters$correction_method)) {
         run_arguments$correction_method_effective <- correction
         outcomes <- list(correction_method_requested = parameters$correction_method)
-        # g:Profiler's `fdr` is Benjamini-Hochberg under another name: nothing to tell the user.
-        if (!isTRUE(parameters$correction_method %in% c("fdr", "BH"))) {
-            notify(sprintf(paste("clusterProfiler adjusts p-values with %s (Benjamini-Hochberg). The selected",
-                "correction, %s, applies to g:Profiler only and was not used."), correction,
-                parameters$correction_method), "warning", 8)
-        }
+    }
+    # KIT-203 (VAL-86, OD10): every clusterProfiler run is told which rule calls a term significant; the sentence that
+    # the selected correction was not used follows when the selection is not g:Profiler's `fdr` (Benjamini-Hochberg
+    # under another name) or BH, and makes the notice a warning.
+    if (!is.null(significance_rule)) {
+        unused <- !isTRUE(parameters$correction_method %in% c("fdr", "BH"))
+        notify(paste0(ENRICHMENT_SIGNIFICANCE_RULES$notice[ENRICHMENT_SIGNIFICANCE_RULES$rule == significance_rule],
+            if (unused) sprintf(" The selected correction, %s, applies to g:Profiler only and was not used.",
+                parameters$correction_method)), if (unused) "warning" else "message", 8)
     }
     if (!is.null(reference)) {
         run_arguments$id_source <- "reference"
@@ -1025,6 +1038,8 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     if (!is.null(go_propagation) && !identical(go_propagation, "none")) {
         outcomes <- c(outcomes, workflowEnrichmentGoOutcomes(annotations, go_propagation, da_results, columns$idColumn))
     }
+    # KIT-203 (OD10): the rule applied, provenance only (not identity), last so positional reads keep their entries.
+    if (!is.null(significance_rule)) outcomes <- c(outcomes, list(significance_rule = significance_rule))
     declared <- config$run(workflow, manifest, run_arguments, process_fn = kernel)
     results <- declared$results
     contrast_results <- buildProtEnrichAllContrastResults(enrichmentResults = results, methodInfo = method)
@@ -1310,7 +1325,9 @@ replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, co
         correction_method = parameters$correction_method,
         enable_organism_filter = isTRUE(parameters$organism_filter_enabled),
         # KIT-173: a record made before parent terms, or without them, replays without them.
-        go_propagation = parameters$go_propagation %||% "none")
+        go_propagation = parameters$go_propagation %||% "none",
+        # KIT-203 (OD6): a record made before the rule, or with the q-value, replays with the q-value.
+        significance_rule = parameters$significance_rule %||% "qvalue")
     # KIT-167: a step recorded with the reference identifiers replays with them, the tool switched on for this step
     # only; its recorded mapping and GO-table SHA-256 are then compared below like every declared value.
     reference_ids <- identical(parameters$id_source, "reference")

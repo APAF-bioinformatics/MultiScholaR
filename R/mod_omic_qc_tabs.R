@@ -179,6 +179,8 @@ registerOmicQcIntensity <- function(input, output, session, workflow_data, omic_
             # KIT-075: the counts come from the declaration's result and the figure from the committed state read for
             # this action (or the worker's metrics); no object outlives the observer.
             omicQcHeadMetadata(workflow_data, config)
+            # KIT-194: no QC step on a normalised table (7.2).
+            assertOmicQcHeadNotNormalised(binding, workflow_data$state_manager)
             percentile <- input$intensity_cutoff_percentile
             proportion <- input$proportion_below_cutoff
             logger::log_info(paste("Applying", binding$feature_noun, "intensity filter: percentile =", percentile,
@@ -197,7 +199,7 @@ registerOmicQcIntensity <- function(input, output, session, workflow_data, omic_
             }
             runWorkflowOmicsQcAction(binding, workflow_data, omicsIntensityFilterStep(binding, percentile, proportion),
                 deliver, omicQcDraw(config, omic_type, "2_Intensity_Filtered"),
-                failed = function(error) shiny::removeNotification(working))
+                failed = function(error) omicQcManagedFailed(error, working, texts[["intensity_error"]]))
         }, error = function(e) {
             message <- paste(texts[["intensity_error"]], e$message)
             logger::log_error(message)
@@ -256,6 +258,20 @@ mod_omic_qc_duplicates_server <- function(id, workflow_data, omic_type, experime
     shiny::moduleServer(id, function(input, output, session) {
         registerOmicQcDuplicates(input, output, session, workflow_data, omic_type, config)
     })
+}
+
+#' A managed QC action's failure (the step has reported it): the working notice removed; a refusal of KIT-194's QC guard
+#' made when the queued action started (A02, B03) is shown with the step's error prefix, as its handler shows one at the
+#' press.
+#' @noRd
+omicQcManagedFailed <- function(error, working, prefix) {
+    shiny::removeNotification(working)
+    if (inherits(error, "omic_qc_input_normalised")) {
+        message <- paste(prefix, conditionMessage(error))
+        logger::log_error(message)
+        shiny::showNotification(message, type = "error", duration = 15)
+    }
+    invisible(NULL)
 }
 
 #' The output id of an assay's duplicate table.
@@ -360,6 +376,8 @@ registerOmicQcDuplicates <- function(input, output, session, workflow_data, omic
         tryCatch({
             # KIT-075: the assay names from the state's metadata; the result carries the state's reference.
             assays <- omicQcHeadMetadata(workflow_data, config)$assay_names
+            # KIT-194: no QC step on a normalised table (7.2).
+            assertOmicQcHeadNotNormalised(binding, workflow_data$state_manager)
             deliver <- function(result, figure) {
                 stats <- omicsDuplicateResolutionStats(result$value, assays)
                 resolved(stats)
@@ -373,7 +391,7 @@ registerOmicQcDuplicates <- function(input, output, session, workflow_data, omic
             }
             runWorkflowOmicsQcAction(binding, workflow_data, omicsDuplicateResolutionStep(binding), deliver,
                 omicQcDraw(config, omic_type, "3_Duplicates_Resolved"),
-                failed = function(error) shiny::removeNotification(working))
+                failed = function(error) omicQcManagedFailed(error, working, "Error resolving duplicates:"))
         }, error = function(e) {
             message <- paste("Error resolving duplicates:", e$message)
             logger::log_error(message)
@@ -760,6 +778,8 @@ runOmicQcFinalize <- function(workflow_data, omic_type, plot, output, config) {
     qc <- config$qc
     manager <- workflow_data$state_manager
     tryCatch({
+        # KIT-194: no QC step on a normalised table (7.2); the store step below commits at this press, so the press decides.
+        assertOmicQcHeadNotNormalised(binding, manager)
         # KIT-082: the checks read names, classes and row counts, and the text counts the id column. KIT-104 W6
         # (F104-04): an omic whose class cannot be rebuilt as the generic shell reads its own (`qc$finalize_shell`).
         read_shell <- qc$finalize_shell %||% function(binding, manager) {

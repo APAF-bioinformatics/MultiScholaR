@@ -664,7 +664,7 @@ diaEnrichmentOperation <- function() {
         factors = list(cacheable = FALSE, service = "enrichment"),
         parameters = c("taxon_id", "up_cutoff", "down_cutoff", "q_cutoff", "exclude_iea", "correction_method",
             "protein_id_column", "contrast_names", "results", "organism_filter_enabled", "organism_filter_taxon",
-            "go_propagation"),
+            "go_propagation", "significance_rule"),
         global_statistics = c(per_contrast_da_table =
             "the background universe and the significant set are the complete DA table of each contrast"),
         kernel = function(object, parameters, store) {
@@ -676,6 +676,8 @@ diaEnrichmentOperation <- function() {
                 contrast_names = parameters$contrast_names, correction_method = parameters$correction_method)
             # KIT-173: the GO parent-term rule, passed only when the run carries one (the clusterProfiler route).
             if (!is.null(parameters$go_propagation)) arguments$go_propagation <- parameters$go_propagation
+            # KIT-203: the significance rule, likewise.
+            if (!is.null(parameters$significance_rule)) arguments$significance_rule <- parameters$significance_rule
             failures <- character()
             results <- withCallingHandlers(do.call(process, arguments),
                 multischolar_enrichment_service_failure = function(condition)
@@ -694,9 +696,11 @@ diaEnrichmentOperation <- function() {
 #' run's arguments switch the filter on. Before P-28 no completed run had the filter applied (it failed on the undefined
 #' `clean_acc`, P-07, or ran unfiltered for want of a mapping), so a run without the two names is an unfiltered run.
 #' KIT-173: `go_propagation` only when the run's arguments carry a propagating value (the clusterProfiler route), so a
-#' g:Profiler run and a run without parent terms declare what they did before.
+#' g:Profiler run and a run without parent terms declare what they did before. KIT-203: `significance_rule` only when the
+#' run's arguments carry a rule other than `"qvalue"`, so a g:Profiler run and a q-value run declare what they did before
+#' (OD6: a record made before the rule replays with the q-value, its identity unchanged).
 #' @param declared The declaration's parameter names.
-#' @param arguments The run's arguments (`organism_filter_enabled`, `go_propagation`).
+#' @param arguments The run's arguments (`organism_filter_enabled`, `go_propagation`, `significance_rule`).
 #' @return The names, in the declaration's order.
 #' @noRd
 diaEnrichmentDeclaredNames <- function(declared, arguments) {
@@ -707,6 +711,8 @@ diaEnrichmentDeclaredNames <- function(declared, arguments) {
     if (identical(arguments$id_source, "reference")) declared <- c(declared, referenceEnrichmentNames)
     if (is.null(arguments$go_propagation) || identical(arguments$go_propagation, "none"))
         declared <- setdiff(declared, "go_propagation")
+    if (is.null(arguments$significance_rule) || identical(arguments$significance_rule, "qvalue"))
+        declared <- setdiff(declared, "significance_rule")
     declared
 }
 
@@ -739,6 +745,9 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
     # KIT-173: an undeclared `go_propagation` ("none") still reaches the kernel, whose own default propagates.
     if (!is.null(arguments$go_propagation) && !"go_propagation" %in% declared)
         parameters$go_propagation <- arguments$go_propagation
+    # KIT-203: an undeclared `significance_rule` ("qvalue") still reaches the kernel, whose own default is the family's.
+    if (!is.null(arguments$significance_rule) && !"significance_rule" %in% declared)
+        parameters$significance_rule <- arguments$significance_rule
     value <- runProjected(manager, declaration, manifest$source, parameters)
     declared_values <- parameters[declared]
     if (!is.null(arguments$correction_method_effective))

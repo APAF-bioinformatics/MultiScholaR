@@ -97,13 +97,17 @@ omicEnrichSettingsColumn <- function(ns, config) {
 
       shiny::numericInput(
         ns("q_cutoff"),
-        "Q-value Cutoff:",
+        "Significance cutoff:",
         value = cutoffs$q$value,
         min = cutoffs$q$min,
         max = cutoffs$q$max,
         step = cutoffs$q$step
       ),
-      shiny::helpText("FDR threshold for enrichment significance"),
+      shiny::helpText(paste("Proteins with a differential-abundance q-value below this value form the up and down lists;",
+        "a term is called significant when its adjusted value (below) is below it.")),
+
+      # KIT-203: the clusterProfiler route's significance rule, outside every results tab's condition
+      if ("clusterprofiler" %in% config$services) omicEnrichSignificanceRuleInput(ns),
 
       shiny::textInput(
         ns("organism_taxid"),
@@ -192,6 +196,27 @@ omicEnrichSettingsColumn <- function(ns, config) {
         shiny::helpText("FDR: Detects more terms but higher false positive risk.")
       )
     )
+  )
+}
+
+#' The clusterProfiler route's significance rule (KIT-203): the selector, its help, and each rule's note shown while
+#' that rule is selected (client-side conditions; no server output is added).
+#' @noRd
+omicEnrichSignificanceRuleInput <- function(ns) {
+  rules <- ENRICHMENT_SIGNIFICANCE_RULES
+  shiny::tagList(
+    shiny::selectInput(
+      ns("significance_rule"),
+      "Significance rule (clusterProfiler route):",
+      choices = stats::setNames(as.list(rules$rule), rules$label),
+      selected = enrichmentSignificanceShipped
+    ),
+    shiny::helpText(paste("Used for organisms outside g:Profiler's 13 (the clusterProfiler route); g:Profiler applies",
+      "its own correction.")),
+    lapply(seq_len(nrow(rules)), function(i) shiny::conditionalPanel(
+      condition = sprintf("input['%s'] == '%s'", ns("significance_rule"), rules$rule[[i]]),
+      shiny::helpText(rules$note[[i]])
+    ))
   )
 }
 
@@ -321,6 +346,11 @@ omicEnrichServiceTab <- function(service, ns) {
             
             # clusterProfileR results table
             DT::DTOutput(ns("clusterprofiler_results_table")),
+            # KIT-203: what the adjusted columns are (OD1: the kept-terms column named with its family)
+            shiny::helpText(paste("p.adjust: Benjamini-Hochberg over the terms with at least one listed protein.",
+              "p_adjust_family: Benjamini-Hochberg over every term of 10 to 500 measured proteins. qvalue: Storey's",
+              "q-value over the terms with at least one listed protein. In the saved table, neg_log10_q is from the",
+              "q-value whatever the rule.")),
             
             shiny::br(),
             
@@ -481,6 +511,7 @@ runOmicEnrichServer <- function(input, output, session, id, workflowData, experi
     content = function(file) {
       used <- ran()
       writeProtEnrichResultsDownloadArchive(file = file, selectedContrast = input$selected_contrast,
+        significanceRule = used$significance_rule %||% "qvalue",
         methodInfo = method(), organismTaxid = used$organism_taxid %||% input$organism_taxid,
         upCutoff = used$up_cutoff %||% input$up_cutoff, downCutoff = used$down_cutoff %||% input$down_cutoff,
         qCutoff = used$q_cutoff %||% input$q_cutoff, gprofilerResults = tab$gprofiler_results,
@@ -523,7 +554,9 @@ registerOmicEnrichSelectedContrastObserver <- function(input, tab, workflowData,
     if (restoreProtEnrichResultsFromState(tab, workflowData, config)) {
       # KIT-115 (A107-09): the restored run's cutoffs, when its step provenance holds them (KIT-107 D4).
       recorded <- shiny::isolate(workflowData$state_manager)$.context$snapshot$step_provenance[[config$state_name]]$values
-      ran(recorded[intersect(c("up_cutoff", "down_cutoff", "q_cutoff"), names(recorded))])
+      # KIT-203: and its significance rule; a run recorded without one used the q-value.
+      ran(c(recorded[intersect(c("up_cutoff", "down_cutoff", "q_cutoff"), names(recorded))],
+        list(significance_rule = recorded$significance_rule %||% "qvalue")))
     }
     shiny::req(tab$analysis_complete)
     shiny::req(tab$all_enrichment_results)
@@ -601,7 +634,8 @@ runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, con
   shiny::showNotification("Running enrichment analysis...", id = "enrichment_working", duration = NULL)
   parameters <- c(list(selected_contrast = input$selected_contrast, organism_taxid = input$organism_taxid,
     up_cutoff = input$up_cutoff, down_cutoff = input$down_cutoff, q_cutoff = input$q_cutoff,
-    correction_method = input$correction_method, enable_organism_filter = input$enable_organism_filter),
+    correction_method = input$correction_method, enable_organism_filter = input$enable_organism_filter,
+    significance_rule = input$significance_rule %||% enrichmentSignificanceShipped), # KIT-203
     if (!is.null(config$id_column$mapped)) list(id_source = input$id_source))
   completed <- tryCatch({
     run <- shiny::withProgress(message = "Running enrichment analysis...", value = 0,
@@ -661,7 +695,8 @@ registerOmicEnrichStatusOutputs <- function(output, input, tab, method, ran = fu
       upCutoff = used$up_cutoff %||% input$up_cutoff, downCutoff = used$down_cutoff %||% input$down_cutoff,
       qCutoff = used$q_cutoff %||% input$q_cutoff,
       gprofilerResults = tab$gprofiler_results, clusterprofilerResults = tab$clusterprofiler_results,
-      stringdbResults = tab$stringdb_results)
+      stringdbResults = tab$stringdb_results,
+      significanceRule = used$significance_rule %||% "qvalue") # KIT-203: the run's rule, never the selector's
   })
   invisible(output)
 }

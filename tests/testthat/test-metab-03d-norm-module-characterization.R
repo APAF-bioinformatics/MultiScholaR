@@ -317,14 +317,14 @@ test_that("mod_metab_norm_server preserves skip-correlation public behavior", {
 
 test_that("mod_metab_norm_server preserves export prereq and success behavior", {
   skip_if_not(workflowOwnerCapable())
-  harness <- makeMetabNormCharacterizationHarness(current_state = "metab_norm_complete")
+  harness <- makeMetabNormCharacterizationHarness(current_state = "metab_qc_complete")
   # KIT-071: the export is the owner's publication, so this server test runs on a real owner bound to the route with
   # the harness's object committed under its state; the module's later saves commit onto the same owner.
   harness$workflow_data$state_manager <- createDIASessionOwner(harness$workflow_data, harness$experiment_paths,
     harness$session, omic_type = "metabolomics")
   shiny::withReactiveDomain(harness$session, bindWorkflowOwnerTypeAtDesign(harness$workflow_data, "METABOLOMICS"))
   withr::defer(closeDIAStateAdapter(harness$workflow_data$state_manager))
-  harness$workflow_data$state_manager$saveState("metab_norm_complete", harness$current_s4, harness$workflow_data$config_list,
+  harness$workflow_data$state_manager$saveState("metab_qc_complete", harness$current_s4, harness$workflow_data$config_list,
     "the harness's object")
   scoped_mocked_bindings(
     generateMetabQcPlots = function(...) invisible(NULL),

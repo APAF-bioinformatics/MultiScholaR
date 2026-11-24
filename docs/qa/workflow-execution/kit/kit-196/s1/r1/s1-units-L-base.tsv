@@ -1,0 +1,10 @@
+side	commit	cell	job	rep	exit	wall_seconds	unit_seconds	ns_path	error
+base	19997323dd9a0efac5830696c7d3ac617560dae6	L64	deciding	401	0	2045.4	2045	/tmp/RtmplTVUZa/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	L64	deciding	402	0	2057.4	2057	/tmp/RtmplTVUZa/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	L64	deciding	403	0	2070.7	2070.3	/tmp/RtmplTVUZa/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	L12	deciding	401	0	1855	1854.5	/tmp/RtmplTVUZa/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	L12	deciding	402	0	1798.6	1798.2	/tmp/RtmplTVUZa/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	L12	deciding	403	0	1756.4	1756	/tmp/RtmplTVUZa/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	L64	ba	401	0	752.3	751.8	/tmp/RtmplTVUZa/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	L64	ba	402	0	733.4	733	/tmp/RtmplTVUZa/kit196-s1-base	
+base	19997323dd9a0efac5830696c7d3ac617560dae6	L64	ba	403	0	727	726.6	/tmp/RtmplTVUZa/kit196-s1-base	

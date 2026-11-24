@@ -941,6 +941,11 @@ trxWriteIntegrationExport <- function(manager, parameters, path) {
     }
     export <- manager$.context$snapshot$exports$trx_ruviii_export
     if (is.null(export)) cli::cli_abort("no accepted RUVIII export", class = "workflow_execution_invalid")
+    # KIT-207 (SD-4 (a)): the export must have been made from the lineage's RUVs state, as `trxIntegrationInputSource`
+    # requires; an earlier run's matrix is refused before the file is written.
+    if (!is.null(state) && !identical(export$source$entity_id, state$reference$entity_id)) {
+        abortIntegrationInput("the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again")
+    }
     newY <- hydrateSavedWorkflowEntity(manager$.context$store, export$reference)$value$newY
     vroom::vroom_write(as.data.frame(newY) |> tibble::rownames_to_column("Run"), path)
     invisible(path)

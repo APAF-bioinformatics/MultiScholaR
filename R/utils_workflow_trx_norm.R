@@ -136,6 +136,12 @@ runTrxNormInProcess <- function(binding, manager, settings, normData, config, ad
 runTrxNormalisation <- function(run, binding, manager, settings, normData, config, experimentPaths, addLog, notify, setStatus) {
     force(manager)
     force(settings)
+    # KIT-194: the run rule (a refusal, or the previous run's start selected) before anything moves (7.3).
+    started <- omicNormApplyRunStart(binding, manager, normData, addLog)
+    if (inherits(started, "error")) {
+        notify(conditionMessage(started), type = "error", duration = 15)
+        return(invisible(FALSE))
+    }
     normData$post_filter_obj <- getWorkflowStateReference(manager)
     addLog(sprintf("Running TMM, the RUV grid (%s) and RUVs", settings$ruv_mode))
     failed <- function(error) {
