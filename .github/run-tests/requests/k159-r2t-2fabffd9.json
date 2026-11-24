@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-159 REAUDIT2 line (coordinator, 6 core-hours): R2-01 and R2-02 tests only at 2fabffd9, shown failing at the fault; files reaudit2, replay; ceiling 30 min; decides nothing else",
+  "label": "KIT-159 R2 tests first at 2fabffd9",
+  "package_commit": "2fabffd98659c2e69dcfbd6b4e679dbc5866a29b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r2t-out",
+        "--files",
+        "reaudit2,replay"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r2t-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
