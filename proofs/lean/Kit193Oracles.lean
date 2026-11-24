@@ -23,6 +23,11 @@ def main (args : List String) : IO UInt32 := do
   | [dir] =>
     IO.FS.createDirAll dir
     writeTable dir "go-closure.tsv" Oracle.GoClosure.table
+    writeTable dir "filter-thresholds.tsv" Oracle.FilterCount.table
+    writeTable dir "replay-rule.tsv" Oracle.ReplayRule.ruleTable
+    writeTable dir "replay-inforce.tsv" Oracle.ReplayRule.inforceTable
+    writeTable dir "replay-build.tsv" Oracle.ReplayRule.buildTable
+    writeTable dir "replay-options.tsv" Oracle.ReplayRule.optionsTable
     return 0
   | _ =>
     IO.eprintln "usage: lake env lean --run Kit193Oracles.lean <output directory>"

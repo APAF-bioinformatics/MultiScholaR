@@ -9,6 +9,8 @@ public import MultiScholaRProofs.Spec.RuvAlgebra
 public import MultiScholaRProofs.Spec.RuvDownstream
 public import MultiScholaRProofs.Spec.RuvIIIC
 public import MultiScholaRProofs.Oracle.GoClosure
+public import MultiScholaRProofs.Oracle.FilterCount
+public import MultiScholaRProofs.Oracle.ReplayRule
 public import MultiScholaRProofs.Proof.GoClosure
 public import MultiScholaRProofs.Proof.ReplayRule
 public import MultiScholaRProofs.Proof.FilterCount
