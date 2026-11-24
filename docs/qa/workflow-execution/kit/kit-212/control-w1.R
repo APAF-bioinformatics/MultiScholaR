@@ -28,11 +28,10 @@ FILE <- file.path("tests", "testthat", "test-omic-summary-module.R")
 dump <- function(tree, label) {
     path <- file.path(out, paste0("dump-", label, ".R"))
     unlink(path)
-    descs <- sprintf("(b) %s: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's",
-        CASES)
+    # The (b) tests are made in a loop, so `desc` cannot select them (control run 45489784784 found no test, VAL-54): the whole file
+    # runs, its (b) cases limited to the nine by MULTISCHOLAR_KIT108_W1_CASES.
     code <- paste0("suppressMessages(pkgload::load_all(", deparse(tree), ", export_all = TRUE, helpers = TRUE, quiet = TRUE)); ",
-        "for (d in ", paste(deparse(descs), collapse = ""), ") testthat::test_file(file.path(", deparse(tree), ", ",
-        deparse(FILE), "), desc = d, reporter = 'summary', stop_on_failure = FALSE)")
+        "testthat::test_file(file.path(", deparse(tree), ", ", deparse(FILE), "), reporter = 'summary', stop_on_failure = FALSE)")
     log <- file.path(out, paste0("dump-", label, ".log.txt"))
     exit <- system2(rscript, c("-e", shQuote(code)), stdout = log, stderr = log,
         env = c(paste0("MULTISCHOLAR_KIT108_W1_DUMP=", path), paste0("MULTISCHOLAR_KIT108_W1_CASES=", paste(CASES, collapse = ",")),

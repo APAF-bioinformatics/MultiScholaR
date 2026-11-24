@@ -55,6 +55,24 @@ Lipid and metab Copy do not collect `Volcano_Plots`; their user-saved heatmaps g
 collects. The lipid and metab names are pinned by G1 and E12 (the real publication's files, none unmade), trx's and
 proteomics' by G1.
 
+## Open finding (for the coordinator and the implementation audit): K219-P16, the Report after a later DA
+
+By reading (no R run), r1.4's design does **not** close the route "Save, Copy, run the DA again (other arguments or
+contrasts, same table), Report", and no test row of section 10 covers it.
+- Report needs only some earlier successful Copy: `values$files_copied` is set by Copy (`R/mod_omic_summary.R:278`) and
+  only gates the Report (`:196-205`); nothing resets it when the DA runs again.
+- KIT-212's Report guard (`assertWorkflowSummaryDaCurrent(..., files = TRUE)` in `renderWorkflowSummaryReport`,
+  `R/utils_workflow_summary.R`, fix 3db806a4) judges the DA status and the **source** folders (`da_output_dir`, the figure
+  folders under `publication_graphs_dir`); after the re-run the status is "current" and the source files carry the
+  re-run's own names, so it passes.
+- The reports read the **publication** folder the earlier Copy filled (`results_summary_dir`:
+  `inst/reports/lipidomics/lipidomics_report.rmd:71-74`, `inst/reports/metabolomics/metabolomics_report.rmd:68-71`,
+  `inst/reports/transcriptomics/transcriptomics_report.rmd:31-33`, `inst/reports/proteomics/DIANN_report.rmd:68`), so the
+  report shows the earlier run's DA tables and figures beside the current Save's parameters.
+- Not changed here (coordinator: no design or scope change on this note). Candidate remedies for the ruling: Copy
+  records the DA manifest it copied and the Report refuses when the store's manifest differs; or a DA run resets
+  `files_copied`.
+
 ## Runs
 
 See `runs.tsv`.
