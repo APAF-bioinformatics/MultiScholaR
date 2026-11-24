@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-167 audit repairs at a260f14c against 577af610 (the I02 test without the repair): the I02 test passing, the KIT-167 files depending on mapStrainToReference, and R CMD check for the Rd change (I03); ceiling 60 job-minutes; decides I02 and I03 closure",
+  "label": "KIT-167 audit repairs a260f14c vs 577af610",
+  "package_commit": "a260f14c71ac176d087e887f1c891608325e40f1",
+  "base_commit": "577af6102fd15066b43373b8deaac1dd2842af38",
+  "tools_ref": "",
+  "tests": [
+    "test-reference-mapping-workflow.R",
+    "test-reference-mapping-gui.R",
+    "test-reference-download.R",
+    "test-reference-mapping-fasta.R",
+    "test-reference-mapping-resolve.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
