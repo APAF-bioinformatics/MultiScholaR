@@ -1,0 +1,25 @@
+{
+  "requested_by": "KIT-190 T7 failing-first: tests-only commit after the KIT-187 merge (7.4 not yet written); new file and KIT-187's T8 file",
+  "label": "KIT-190 T7 failing-first 2caff088",
+  "package_commit": "2caff08889d5ca1e6747675d46cdbbf8e740a56f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-ruv-control-anova-grouping.R",
+    "test-prot-missing-value-counts.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 25,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
