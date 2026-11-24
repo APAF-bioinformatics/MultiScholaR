@@ -147,3 +147,9 @@ settings (random lists 1.0 % to 2.5 %; planted mean FDP 0.1 % to 1.7 %, pooled a
 to 5.8 points with parent terms, 8.8 without. This ticket: G0 45326277295, G1 and S5 45335245494, X 45341049018.
 Simulated on reviewed E. coli K-12 and S. cerevisiae proteomes, up lists of 25, 126 and 400, cutoff 0.05; not simulated:
 down lists, correlated real lists, other cutoffs and organisms.
+
+## Budget
+
+Core-hours (job minutes x 4 / 60): G0 1.47, G0b 0.49, R1 1.84, R1b 0.64, R2 9.00, R2c 8.21, F 77.76; total 99.41
+against 83.33 expected and 235.67 ceiling (the correction pass used 8.21 of its 111.33; F 1,166.3 of 1,200 job-minutes).
+Instrument reruns (VAL-54): G0b (capture), R1b (R1 parse), and in R2c the S1/S2 and OD5 repairs (one each).
