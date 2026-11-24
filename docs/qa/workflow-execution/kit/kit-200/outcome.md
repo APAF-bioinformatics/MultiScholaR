@@ -1,4 +1,4 @@
-# KIT-200 outcome (done; ready for the implementation audit)
+# KIT-200 outcome (done; audit repairs applied; ready for the closure check)
 
 Ticket r1.5. Branch `kit-200-prot-da-proteins-without-values` from `v0.9-staging` 67d38df3.
 
@@ -170,7 +170,21 @@ The implementation audit (`AUDIT-KIT-200-impl-20261125.md`, I05) found that on a
 after an empty protein were labelled one position too low (direct scripted calls only). This is the ticket's one
 correction pass for a result. Tests-only commit a51b230f adds the register's test; run C1 shows it failing on that head.
 Fix dc23416c: the register's lines in `applyProtDaContrastModel` name an unnamed fit's rows by position before the
-removal. R2b runs the test on the fix.
+removal. Observed: C1 (45493507825, at a51b230f): the I05 test fails 18 times (both trend settings, three contrasts): the tested
+rows after position 3 carry the label one lower, "3" holds a tested protein, and the expected labels 1 to 61 are not all
+present. R2b (below) passes it on the fix.
+
+## R2b on the merge with staging 0cf0e440 (audit I01)
+
+The branch merged staging 0cf0e440 at 48c1b100 (ledger conflict only: staging's rows first, KIT-200's after VAL-190).
+R2b (45493851112): 58fbe5cc against 0cf0e440, section 9 re-grepped on the merged tree (47 files: R2-2's 44 plus
+`test-kit205-enrichment-background.R`, `test-kit208-gprofiler-identifiers.R`, `test-reference-mapping-enrichment.R`), with
+R CMD check. **46 `same`**; the new file `only-on-head` and ok (538 passed, the I05 test included); no `new-failure`,
+`message-changed` or `compare-error`. Check: 3 WARNINGs and 3 NOTEs on both sides, identical, none only on head
+(**A4 on the merged tree**). 304.2 job-minutes (20.3 core-hours, inside the row's 36.0); one job 65.7 minutes. Every R2b
+file was in R3's full suite, and only NEWS and the ledger were hand-resolved, so R3 (45474317181) stands (6.4).
+
+**Core-hours, total:** 147.7 of 449.4 (C1 1.08, R2b 20.28 added to 126.4).
 
 ## Hand-offs (audit notes I09 to I11, as the register words them)
 
