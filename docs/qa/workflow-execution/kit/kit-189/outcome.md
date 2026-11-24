@@ -69,13 +69,18 @@ Totals: Q 9 fail, 25 control, 2 not determined; BH 0 fail, 34 control, 2 not det
 
 Under the shipped propagation (`"is_a_part_of_regulates"`) the q-value fails in 2 cells (lists of 25 on the full E. coli proteome and on the subset; Bonferroni lower limits 0.199 and 0.140). Its other 7 failures are without parent terms (`"none"`, the value earlier records replay with, VAL-77).
 
+On planted lists of 25 with parent terms (E. coli full proteome, mid-size process; a reported cell, not deciding) the q-value's mean false discovery proportion was 10.7 % (95 % interval 8.5 % to 12.9 %), against 1.1 % for BH over the kept terms and 0.2 % for BH over the whole family.
+
 ### Power and the large-event rule (`results/paired.tsv`)
 
-- Planted term called by Q minus by BH, paired: at most 0.039 in a deciding planted cell; the highest one-sided lower limit at 0.05 / 18 is 0.0005. **No material power gain.**
+- Planted term called by Q minus by BH, paired: at most 0.038 (3 of 78 tested lists; E. coli full proteome, large process, no parent terms) in a deciding planted cell; the highest one-sided lower limit at 0.05 / 18 is 0.0005. **No material power gain.**
 - Lists on which Q calls 10 or more terms and BH fewer than 10: up to 0.237 of random lists (yeast, 126, no parent terms; upper limit 0.253), and 0.151 with parent terms (E. coli full, 25; upper limit 0.165). The large-event condition (upper limit below 0.01 in every null cell) fails in 6 of 18 cells. On one random yeast list of 126 with parent terms, Q called 1,144 terms more than BH.
 - On no list did Q call fewer terms than BH: 2.1 item 2 holds on every list.
 
 ### Mechanism (`results/mechanism.tsv`)
+
+Confirmed (ticket 2.1 items 1 and 2): enrichit 0.2.0 drops the terms with no list protein before adjusting (`R/ora_gson.R:94-99`, BH `:143-144`, q-value `:146-147`); q = pi0 × BH (`qvalue` 2.44.0 `R/qvalue.R:118`) with pi0 ≤ 1 (`R/pi0est.R:117-119`); on the runner by E0 to E2 (L1) and on all 45,600 counted calls (E2 flags, `results/checks-score.tsv`).
+
 
 - pi0_hat (q / p.adjust) collapses: its median per null cell is 0.14 to 1.00; lists with pi0_hat below 0.5 occur in 15 of 18 null cells (up to 1,684 of 2,000: yeast, 126, no parent terms; smallest value 0.001).
 - The within-list counterfactual (A-Qf: the same chain over the whole size-filtered family, count-0 terms entered at p = 1): its median pi0_hat is 1.00 in every null cell, and on every list where the kept-family pi0_hat is below 0.5 the whole-family one is at least 0.9, except 3 lists in one cell (E. coli subset, 400, no parent terms). Dropping the count-0 terms is what collapses pi0, as 2.1 inferred.
@@ -83,8 +88,8 @@ Under the shipped propagation (`"is_a_part_of_regulates"`) the q-value fails in 
 
 ## Inferred
 
-- The q-value's failure is a property of the route (the kept family; read in 2.1 and confirmed by the counterfactual), not of a user's data. It is largest without parent terms and for small lists, and remains with parent terms at L = 25.
-- Restricting BH to the kept terms loosens control at L = 25 (BH's two "not determined" cells, estimates 0.072 and 0.083, against BHf's 0.020 and 0.010). BHf costs some power: planted term called in 74.8 % of tested lists at the lowest, against 78.5 % for BH and 80.5 % for Q.
+- The q-value's failure is a property of the route (the kept family; read in 2.1 and confirmed by the counterfactual), not of a user's data. It fails at lists of 25 and 126 and nowhere at 400: without parent terms in 4 random-list settings (up to 42.9 %, yeast, 126) and 3 planted settings; with parent terms in 2 random-list settings, both lists of 25 on E. coli (22.9 % full proteome, 16.7 % subset; the programme's `sprintf("%.1f")` rounding of 0.2295 and 0.167).
+- Restricting BH to the kept terms loosens control at L = 25 (BH's two "not determined" cells, estimates 0.072 and 0.083, against BHf's 0.020 and 0.010). BHf costs some power: planted term called in 74.8 % of tested lists at the lowest, against 78.5 % for BH and 80.5 % for Q. Paired, in that setting the whole-family BH called the planted term on 23 fewer of 400 lists than the q-value and 15 fewer than BH over the kept terms, never more (5.8 and 3.8 points; 95 % intervals 3.5 to 8.0 and 1.9 to 5.6); without parent terms the largest paired cost against the q-value is 8.8 points (yeast, large process, 12 of 137 tested lists).
 
 ## Recommendation put to the owner (O1, rule F; VAL-86)
 
@@ -104,14 +109,32 @@ Each option's trade-off text T: `results/options.tsv`, reproduced in `results.md
 | A3 | met | commit 8deb1649 holds `declaration.md` alone; every provenance file's `script_sha256` equals the declared `sim-k189.R` hash; SC ran `score-k189.R` unchanged since the declaration |
 | A4 | met | 22,800 of 22,800 replicates; no crash; E5 pass (`runs.tsv`, `rows/`, `rows-d/`) |
 | A5 | met | `results/`; outcome O1 and its recommendation |
-| A6 | met | this file; `results.md` |
+| A6 | met | this file (the mechanism confirmed with ticket 2.1's lines under "Mechanism"); `results.md` |
 | A7 | met | ledger row `VAL-<merge>` |
-| A8 | met | `runs.tsv`: 183.8 core-hours |
+| A8 | met | `runs.tsv`: 183.8 core-hours; per row below |
+
+## Core-hours per budget row (ticket 10, revision 1.3; `runs.tsv`)
+
+| Row | Used | Expected | Ceiling |
+|---|---|---|---|
+| L1 and its E7 instrument run | 3.77 | 2.67 | 6.67 |
+| S null B1 | 46.66 | 36.04 | 54.67 |
+| S null B2 | 26.83 | 22.50 | 33.00 |
+| S null B3 | 68.12 | 94.26 | 141.00 |
+| S planted B1 | 8.81 | 15.25 | 22.67 |
+| S planted B2 | 4.69 | 9.31 | 14.67 |
+| S planted B3 | 23.48 | 24.93 | 37.67 |
+| D | 0.91 | 1.33 | 2.67 |
+| SC | 0.56 | 1.33 | 2.67 |
+| S′ reserve | 0 | 0 | 86.92 |
+| **Total** | **183.83** | **238.72** | **446.60** |
+
+Every row is within its ceiling; L1, S null B1 and S null B2 exceed their expected figures. Core-hours per run are job minutes × 4 / 60, rounded to two decimals (five cells corrected after the implementation audit, I03 (f)).
 
 ## Not checked
 
 - Real lists, down lists, cutoffs other than 0.05, other organisms or annotation sources, the two-relation propagation set.
-- The g:Profiler route; the integration's legacy enricher fallback (its `p.adjust` is BH over kept pathways, so BH's two "not determined" cells bear on it; not measured).
+- The g:Profiler route; the integration's legacy enricher fallback (`runKeggEnrichment`, `runReactomeEnrichment` only, after a failed GSEA call; BH over the pathways with at least one positively ranked feature, the same selection as here; not measured, and its list is about half the universe, so the effect there is expected to be smaller; the application's integration enrichment does not use it).
 - Whether DOSE's historical code also adjusted over terms with hits only.
 - The literature cited in 2.1 (Tarone 1990, Gilbert 2005, Benjamini and Yekutieli 2001) was not read; `results.md` does not cite it.
 - `results.md`'s Methods wording is proposed; the owner edits it (VAL-41).

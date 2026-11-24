@@ -1,20 +1,20 @@
 run_id	request	commit	purpose	job_minutes	core_hours	result
 45275836889	k189-l1-426cebb0	426cebb0e41dfc150e7160e7f87814be20468693	L1 blind lifecycle: 120 lists over 24 cells, E0 to E4, E6, E7, blind scoring	32.5	2.17	sim ok (120 of 120 replicates written, 0 crashed or empty calls; E0, E1, E2, E3, E4, E6 pass); E7 driver stopped at a parse error in its report line before running anything (instrument defect, VAL-54); blind scoring completed (108 classifications)
 45281701515	k189-l1e7-9f78d703	9f78d703a14225c83f1de753ae5f75291f608365	L1 E7 instrument run 1 of 3 (VAL-54): the parse error fixed (one closing parenthesis), nothing declared changed; limit from L1's committed timing	24.0	1.60	E7 pass: killed at 178 s with 20 of 40 parts complete, continuation of the other 20, union equals the uninterrupted run's rows without part and seconds
-45291725277	k189-d-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	D (E5): replicates 1-10 of cells 2 and 11	13.6	0.9	scripts ok,ok; every replicate written, exit 0; E5 pass (280 rows identical to S without part and seconds)
+45291725277	k189-d-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	D (E5): replicates 1-10 of cells 2 and 11	13.6	0.91	scripts ok,ok; every replicate written, exit 0; E5 pass (280 rows identical to S without part and seconds)
 45291729475	k189-s-n1a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n1a: c1 r1-1000	92.8	6.19	scripts ok; every replicate written, exit 0
-45291733211	k189-s-n1b-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n1b: c1 r1001-2000	125.2	8.34	scripts ok; every replicate written, exit 0
+45291733211	k189-s-n1b-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n1b: c1 r1001-2000	125.2	8.35	scripts ok; every replicate written, exit 0
 45291737083	k189-s-n2a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n2a: c2 r1-1000	135.3	9.02	scripts ok; every replicate written, exit 0
 45291740715	k189-s-n2b-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n2b: c2 r1001-2000	127.5	8.5	scripts ok; every replicate written, exit 0
 45291744491	k189-s-n3a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n3a: c3 r1-1000	124.2	8.28	scripts ok; every replicate written, exit 0
 45291748000	k189-s-n3b-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n3b: c3 r1001-2000	94.8	6.32	scripts ok; every replicate written, exit 0
-45291751761	k189-s-n4-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n4: c4 r1-2000	117.1	7.8	scripts ok; every replicate written, exit 0
+45291751761	k189-s-n4-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n4: c4 r1-2000	117.1	7.81	scripts ok; every replicate written, exit 0
 45291755981	k189-s-n5-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n5: c5 r1-2000	135.4	9.03	scripts ok; every replicate written, exit 0
 45291760280	k189-s-n6-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n6: c6 r1-2000	149.9	9.99	scripts ok; every replicate written, exit 0
 45291763848	k189-s-n7a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n7a: c7 r1-667	110.0	7.33	scripts ok; every replicate written, exit 0
 45291767728	k189-s-n7b-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n7b: c7 r668-1334	117.5	7.83	scripts ok; every replicate written, exit 0
 45291771178	k189-s-n7c-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n7c: c7 r1335-2000	133.4	8.89	scripts ok; every replicate written, exit 0
-45291774896	k189-s-n8a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n8a: c8 r1-667	152.3	10.16	scripts ok; every replicate written, exit 0
+45291774896	k189-s-n8a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n8a: c8 r1-667	152.3	10.15	scripts ok; every replicate written, exit 0
 45291779210	k189-s-n8b-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n8b: c8 r668-1334	132.5	8.83	scripts ok; every replicate written, exit 0
 45291783513	k189-s-n8c-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n8c: c8 r1335-2000	88.8	5.92	scripts ok; every replicate written, exit 0
 45291787737	k189-s-n9a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job n9a: c9 r1-667	98.6	6.57	scripts ok; every replicate written, exit 0
@@ -23,7 +23,7 @@ run_id	request	commit	purpose	job_minutes	core_hours	result
 45291798764	k189-s-p1a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p1a: c10 r1-400, c11 r1-400	73.3	4.89	scripts ok,ok; every replicate written, exit 0
 45291802582	k189-s-p1b-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p1b: c12 r1-400, c13 r1-200, c14 r1-200	58.8	3.92	scripts ok,ok,ok; every replicate written, exit 0
 45291805398	k189-s-p2-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p2: c15 r1-400, c16 r1-400, c17 r1-400, c18 r1-200, c19 r1-200	70.4	4.69	scripts ok,ok,ok,ok,ok; every replicate written, exit 0
-45291808400	k189-s-p3a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p3a: c20 r1-400, c23 r1-200	146.8	9.78	scripts ok,ok; every replicate written, exit 0
+45291808400	k189-s-p3a-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p3a: c20 r1-400, c23 r1-200	146.8	9.79	scripts ok,ok; every replicate written, exit 0
 45291811542	k189-s-p3b-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p3b: c21 r1-400, c24 r1-200	136.7	9.11	scripts ok,ok; every replicate written, exit 0
 45291815912	k189-s-p3c-8deb1649	8deb16494d2bcb8cb65ecf3f577bfd124271985f	S job p3c: c22 r1-400	68.7	4.58	scripts ok; every replicate written, exit 0
 45311934798	k189-sc-8039b4e4	8039b4e48d87ef36ecbb07f43353d893151c51f6	SC: score-k189.R once over the committed S rows (as declared)	8.4	0.56	ok: 108 classifications; outcome O1; default BH over the whole size-filtered family
