@@ -1,0 +1,4 @@
+run_id	commit	base	purpose	job_minutes	result
+45493249015	01725d76	none	G0 (engine conditions, families) + R1 failing-first	24	G0 conditions (i)-(iv) pass; G0 script stopped in the W1 family (instrument defect); R1: every failing-first row fails at its base value, guards pass
+45495664583	6d002423	none	G0b instrument re-run 1 (VAL-54)	13	families listed: t7_complete, k175_incomplete tested; k208_lacks_up up not tested; w1_module m = 0 (fake engine in the captures)
+45495673217	c9219652	6d002423	R2 scope (26 files) + check; G2 (KIT-203 gate g1)	215	25 files same; new file 109/1 (T7b message over-specified: correction pass 66f32932); check findings identical; G2 match on every list (400); G1 and G5 digests identical base vs head
