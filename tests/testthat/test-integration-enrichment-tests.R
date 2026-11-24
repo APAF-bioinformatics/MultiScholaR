@@ -501,7 +501,9 @@ test_that("KIT-183 T3, T9, T10: camera through the store: U_cam from the views, 
         "metabolite", texts[["enrich_strength_terms_metabolites"]], figure, phrase)
     expect_setequal(unique(tables$summary[[texts[["col_enrich_strength"]]]]),
         c(strengthOf("6.7 %", "correlation-adjusted test"), strengthOf("34.4 %", "pre-ranked test")))
-    expect_true(startsWith(texts[["col_enrich_score"]], "Enrichment score (NES), or effect"))
+    expect_identical(texts[["col_enrich_score"]], paste("Enrichment score (NES), or effect: the difference in mean z-score",
+        "(correlation-adjusted tests) or in mean Fisher-transformed correlation (permutation) between the term and the other",
+        "features"))
     methods <- integrationMethodsEnrichment(block, texts)
     camera_sentence <- sprintf(texts[["methods_enrich_camera"]], "Factor1", view, "KEGG", texts[["methods_test_name_camera"]],
         sprintf(texts[["methods_test_settings_camera"]], counts$samples, counts$universe,

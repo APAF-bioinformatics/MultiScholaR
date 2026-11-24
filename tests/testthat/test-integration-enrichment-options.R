@@ -447,6 +447,18 @@ test_that("KIT-191 U6: the resolver offers four tests; camera_pr and unknown tes
     }
     expect_error(integrationEnrichmentPermutation(matrix_fixture$values, matrix_fixture$term2gene, matrix_fixture$term2name,
         intEoSettings(permutations = 0L), 1L), class = "integration_enrichment_parameters_invalid")
+    # AUDIT-KIT-191-impl I05: the refusals raised for every test on the values name the permutation test too.
+    expect_match(INTEGRATION_ENRICHMENT_REFUSALS[["integration_enrichment_too_few_complete"]], "permutation", fixed = TRUE)
+    expect_match(INTEGRATION_ENRICHMENT_REFUSALS[["integration_enrichment_too_few_samples_for_test"]], "permutation",
+        fixed = TRUE)
+    # AUDIT-KIT-191-impl I04: a pre-ranked product (it has `tests`, no `test`) is not read as a correlated one.
+    gsea_value <- list(database = "kegg", factor = "Factor1", view = "m", tests = 2L, service = list(release = "r"),
+        ranking_counts = list(features = 1L, ranked = 1L, too_few_samples = 0L, no_variation = 0L, internal_standard = 0L),
+        mapping_counts = list(mapped = 1L, unmapped = 0L, duplicated = 0L),
+        direction = list(feature_id = "x", view = "m", sign = 1L))
+    summary <- integrationEnrichmentSummary(gsea_value, integrationGuiTexts())
+    expect_true(any(startsWith(summary, "Direction: the factor is oriented")))
+    expect_false(any(grepl("Used by the", summary, fixed = TRUE)))
 })
 
 test_that("KIT-191 U7 (a): camera's canonical text and the declarations are those of base", {
@@ -529,6 +541,21 @@ test_that("KIT-191 U9: the record: evidence sheet, Methods per test, limits per 
         fixed = TRUE)
     expect_match(integrationEnrichmentStrengthText(entry("lipidomics", "camera"), texts), "no lipid data were simulated",
         fixed = TRUE)
+    # AUDIT-KIT-191-impl I02: gsea's gene-and-protein weaker-factor figure (60.1 %) is of block members the model did not
+    # use, so the limits clause names them with the kind's phrase.
+    gp <- list(complete = TRUE, database = "kegg", omic = "proteomics", test = "gsea", settings = list(test = "gsea"))
+    expect_match(integrationMethodsEnrichmentLimits(list(gp), texts), paste("terms made of features the model used, or of",
+        "features that vary together with them in up to 60.1 %"), fixed = TRUE)
+    # AUDIT-KIT-191-impl I03: a block made by KIT-183's merged code holds the pre-ranked product's count of tests in `test`;
+    # the declared test is read first, and a value that is no offered test is not taken for camera.
+    old <- list(database = "kegg", omic = "metabolomics", test = 12L, settings = list(test = "gsea", omic = "metabolomics"),
+        factor_r2_percent = 5, largest_r2_percent = 20)
+    expect_identical(integrationEnrichmentEntryTest(old), "gsea")
+    expect_match(integrationEnrichmentStrengthText(old, texts), "up to 34.4 % of cases by the pre-ranked test", fixed = TRUE)
+    unknown <- list(database = "kegg", omic = "metabolomics", test = "fry", settings = list(test = "fry"),
+        factor_r2_percent = 5, largest_r2_percent = 20)
+    expect_true(is.na(integrationEnrichmentEntryTest(unknown)))
+    expect_identical(integrationEnrichmentStrengthText(unknown, texts), "")
     # Only STRING entries: no evidence sheet.
     string_only <- record
     string_only$analyses$integration_mofa_model$integration$enrichment <- list(list(complete = TRUE, database = "string",
@@ -634,14 +661,28 @@ test_that("KIT-191 U10: the tab: four tests, camera pre-selected, the kind's not
     expect_length(integrationEnrichmentTestNotes("permutation", 12L, "uncorrected", "metabolomics", texts), 1L)
     # The floor (corrected, AUDIT-KIT-193 A05): 2,000 terms, 1,000 reorderings, none unchanged: none is called unless at
     # least 40 are called together.
-    floor <- integrationEnrichmentPermutationFloorText(list(permutations = 1000L, identity_draws = 0L, min_p = 1 / 1001,
-        samples = 12L), 2000L, texts)
-    expect_identical(floor, sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 12L, "0.000999", 2000L, 40L))
+    # The floor printed exactly as (1 + d)/(1 + B) (AUDIT-KIT-191-impl I01: a three-figure decimal rounded to nearest can
+    # exceed it), and k_min exact.
+    floorOf <- function(B, d, n, m) integrationEnrichmentPermutationFloorText(list(permutations = B, identity_draws = d,
+        min_p = (1 + d) / (1 + B), samples = n), m, texts)
+    expect_identical(integrationEnrichmentFloorFraction(0L, 1000L), "1/1,001")
+    floor <- floorOf(1000L, 0L, 12L, 2000L)
+    expect_identical(floor, sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 12L, "1/1,001", 2000L, 40L))
     expect_match(floor, "none can be called at a 5 % false discovery rate unless at least 40 are called together",
         fixed = TRUE)
-    five <- integrationEnrichmentPermutationFloorText(list(permutations = 1000L, identity_draws = 8L, min_p = 9 / 1001,
-        samples = 5L), 30L, texts)
-    expect_identical(five, sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 5L, "0.00899", 30L, 6L))
+    expect_identical(floorOf(1000L, 8L, 5L, 30L), sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 5L, "9/1,001",
+        30L, 6L))
+    # Cases a rounded decimal printed above the floor: 1/10,001 (was "0.0001") and 2/1,001 (was "0.002").
+    expect_identical(floorOf(10000L, 0L, 12L, 2000L), sprintf(texts[["enrich_test_permutation_floor"]], 10000L, 12L,
+        "1/10,001", 2000L, 4L))
+    expect_identical(floorOf(1000L, 1L, 6L, 100L), sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 6L, "2/1,001",
+        100L, 4L))
+    # A whole-number bound: B = 1,000, d = 10, m = 273: m (1 + d) / (0.05 (1 + B)) = 60 exactly, so k_min = 60, not 61.
+    expect_identical(floorOf(1000L, 10L, 5L, 273L), sprintf(texts[["enrich_test_permutation_floor"]], 1000L, 5L, "11/1,001",
+        273L, 60L))
+    # p_min above 0.05 (4 samples, 50 unchanged draws): no term can be called; the _none sentence.
+    expect_identical(floorOf(1000L, 50L, 4L, 10L), sprintf(texts[["enrich_test_permutation_floor_none"]], 1000L, 4L,
+        "51/1,001"))
     # The sentence is true of A05's counterexample: 100 terms, four at 2/1001, the rest at 1: BH calls the four, with
     # no p-value at or below 1/1000, and four is at least the sentence's ceiling(100 (1/1001) / 0.05) = 2.
     p <- c(rep(2 / 1001, 4L), rep(1, 96L))
