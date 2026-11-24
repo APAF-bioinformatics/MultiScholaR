@@ -482,9 +482,9 @@ test_that("KIT-190 T7 (vi): a managed legacy RUV step records the marker; a mana
   skip_if_not_installed("sva")
   testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
     assertWorkflowController = function(...) invisible(TRUE), .package = "MultiScholaR")
-  managed <- function(parameters) {
-    fixture <- lipidDeclarationsOwner(withr::local_tempdir(.local_envir = parent.frame(2L)))
-    withr::defer(closeDIAStateAdapter(fixture$owner), envir = parent.frame(2L))
+  managed <- function(parameters, env = parent.frame()) {
+    fixture <- lipidDeclarationsOwner(withr::local_tempdir(.local_envir = env))
+    withr::defer(closeDIAStateAdapter(fixture$owner), envir = env)
     worker <- omicsWorkerRun(fixture, "lipid_ruv", parameters)
     expect_identical(worker$status, "complete", info = worker$error)
     k190Quiet(completeWorkflowAction(list(manager = fixture$owner, accepting = TRUE), "lipid_ruv", worker$result,
