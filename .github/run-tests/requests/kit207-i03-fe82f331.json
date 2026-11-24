@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-207 audit I03: E10's summary_none text and E12 (SD-5 (b) main case) on the fix; head only; a failing new row is a result (ceiling 60 min)",
+  "label": "KIT-207 I03 tests on head fe82f331",
+  "package_commit": "fe82f3311c71a055bf431a08abbc382af11771af",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit207-summary-head-guard.R",
+    "test-integration-input-lipid-metab.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
