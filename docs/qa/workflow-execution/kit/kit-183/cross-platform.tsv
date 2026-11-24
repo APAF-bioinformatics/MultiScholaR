@@ -1,0 +1,5 @@
+platform	run_id	package	result	note
+ubuntu-22.04 (run-tests, load_all)	45222892427	bf3543e8	reference	terms printed at 17 digits, sha256 99a74cd3a4dd9360e65e2dc4e90e29f003380129e2902ebf461481029767bfbd of the printed table; tests/testdata/integration/kit183-cross-platform.tsv
+ubuntu-22.04 (bundle, installed)	45237281880	d53a5dd1 (run-k183-bundle 0bc2d16e)	within 1e-6	same IDs and directions; magnitudes not observable; each below 1e-6 by the test's assertion (pvalue, p.adjust, correlation, effect, NES); SHA-256 not observable (the lane uploads nothing)
+windows-2025 (bundle, installed)	45237281880	d53a5dd1 (run-k183-bundle 0bc2d16e)	within 1e-6	as above (magnitudes not observable; each below 1e-6 by the test's assertion)
+ubuntu-24.04 (bundle, installed)	45273632957	912cd36b (run-k183-bundle, suite shard set to ubuntu-24.04 for this dispatch)	within 1e-6	as above (magnitudes not observable; each below 1e-6 by the test's assertion)
