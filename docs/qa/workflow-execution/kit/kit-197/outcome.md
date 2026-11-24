@@ -70,7 +70,7 @@ total **10.54** against 10.67 expected and 25.33 ceiling (`runs.tsv`).
 | A5 | every estimand per setting with R, estimate, SEs, limits; descriptive decomposition; 12 labels; pooled label; attribution; outcome | yes | `sb/results/` (`settings.tsv`, `pooled.tsv`, `labels.tsv`, `r5-mcar.tsv`, `strata.tsv`, `m5.tsv`, `outcome.tsv`), `sa/results/descriptive.tsv` |
 | A6 | outcome.md and results.md | yes, after the implementation audit's repairs | these files: observed and inferred separated, the threshold-value exception stated (I01), the power attribution corrected (I03), "For the change report" (I06); `results.md`: the Methods sentence as replaced (I02), M5 as worded and signed; the generated template stays in `sb/results/sentence.md` |
 | A7 | NEWS clause and ledger row | yes, after the implementation audit's repairs | `NEWS.md` KIT-187 bullet, re-wrapped with the exception clause (I01 (c), I05); ledger row `VAL-<merge>` after VAL-121 with I01 (d) and I04 (a) to (d) |
-| A8 | core-hours per run | yes | `runs.tsv`: 10.54 of 25.33 |
+| A8 | core-hours per run | yes | `runs.tsv`: 10.54 of 25.33 for the counted runs; with the post-hoc R1-01 run (0.75) 11.29 |
 
 ## Departures (mechanics only)
 
@@ -88,9 +88,15 @@ total **10.54** against 10.67 expected and 25.33 ceiling (`runs.tsv`).
 - Post hoc: written after the results were seen. Reported, not deciding: no label, outcome or threshold depends on it,
   and the script asserts no expected value except its self-check (the committed pooled ρ_O estimate, limits and
   jackknife SE re-derived to a relative 1e-9, else it stops).
-- Run: one request on the runner, binding the commit that adds the script and this paragraph; ceiling 30 job-minutes
-  (each script 15 minutes); outputs `audit/ell-aggregate-sb.tsv`, `audit/ell-aggregate-sa.tsv`. A failure in the
-  mechanics follows VAL-54; a self-check failure is a result and is reported, not re-run.
+- Run: one request on the runner (`k197-ell-20e17c20`), binding 20e17c20 (the script as added in a935e8e7 plus one
+  line creating its output directory, made before any run); ceiling 30 job-minutes (each script 15 minutes); outputs
+  `audit/ell-aggregate-sb.tsv`, `audit/ell-aggregate-sa.tsv`. A failure in the mechanics follows VAL-54; a self-check
+  failure is a result and is reported, not re-run.
+- Observed: run 45342463572 (AMD EPYC 7763, reference BLAS), scripts job 11.2 minutes (0.75 core-hours; each script 3
+  s), both self-checks passed at the first attempt. ℓ = 1: 2.535 [2.365, 2.709] (S_a 2.470 [2.288, 2.651]); ℓ = 0:
+  0.984 [0.964, 1.004] (S_a 0.981 [0.960, 1.002]); random missingness ℓ = 1 1.553 [1.395, 1.713], ℓ = 0 1.012 [0.996,
+  1.028]; ℓ = 1 share 0.0212 (S_a 0.0206); [2.5 %, 97.5 %] bootstrap limits. These equal the implementation audit's
+  figures to the digits it printed.
 
 ## Not checked
 
@@ -99,9 +105,10 @@ total **10.54** against 10.67 expected and 25.33 ceiling (`runs.tsv`).
 - Whether the per-setting heterogeneity (B vd5, A vd5) is more than chance: not tested by design.
 - G1 on the 9V45 processor S2 used (it held on an EPYC 7763).
 - `fitFDistUnequalDF1` being the branch taken in every fit (not instrumented).
-- The aggregate over strata of ρ_O for ℓ = 1 and ℓ = 0 and its intervals ([2.37, 2.71], [0.96, 1.00], mcar
-  [1.40, 1.71]) are not in a committed table: the point estimates follow from `strata.tsv` (weighted by the strata's
-  tested nulls), the intervals are the implementation audit's, from the declared resampling.
+- The aggregate over strata of ρ_O for ℓ = 1 and ℓ = 0 is in no table the counted jobs wrote; `ell-aggregate-k197.R`
+  (this ticket's script, run on the runner, 45342463572) computes it with its intervals from the committed rows
+  (`audit/ell-aggregate-sb.tsv`, `audit/ell-aggregate-sa.tsv`), after re-deriving the committed pooled limits. It is a
+  post-hoc aggregate over the declared strata, computed after the results were seen: reported, not deciding.
 
 ## With the owner (not decided here)
 
