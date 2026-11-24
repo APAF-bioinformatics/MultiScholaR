@@ -164,3 +164,17 @@ Manual 22.7 s and 86.8 s. Projected Automatic step at 50,000 features: 989 s, un
 - T7 failing first (tests-only 2caff088, run 45307510617): (i) at the marker row; (iii) and (vi) at the marker absent;
   (iv) at (a)'s mismatches and (b)'s marker; (v) passed. (vi)'s new-design half failed in the instrument (the fixture's
   default object has duplicate ids, which the declared design refuses); repaired in 518f29b1. KIT-187's T8 file ok.
+
+## Rule (d) (VAL-110; lipid and metab, Automatic and Manual, VAL-126)
+
+- Ticket r1.4 (2.7a, D8 answered). Tests first (2c843db4, run 45325824390): T5 (lipid, metab) and T8 (i) to (iii)
+  failed at the first repair's selections; T8 (iv) (proteomics, peptide and the helper's default unchanged) passed.
+  Code a1c12d28 (helper argument `candidate_rule`, default `"q_table_order"`; the lipid and metab methods pass
+  `"p_id_two_groups"`, or the default under the earlier rule); run 45327321011: all six targeted files green (new file
+  110 passed; journey files 259 and 259; characterisation files 59 and 26; complete-controls 28).
+- **Declared before the measurement runs** (k190-ed-a/b-a1c12d28): E (E1 and E2, R = 50, the seeds of runs 45296793520
+  and 45296797285), base d4e2eb2c against head a1c12d28, `K190_RULE=d` (F2 checks the head against rule (d)). Compared:
+  base (row order), the first repair (d6d67efe, earlier runs, same seeds and base) and rule (d), on k, FDP, power and
+  the control shares, per cell, and on E1's fixtures (T1b's 42 journeys, T11 concentration, T11 F172). The figures are
+  reported; the ticket states no threshold, so no verdict is drawn from them. The head's `share_tie_decided` is computed
+  on q ties and does not describe rule (d).
