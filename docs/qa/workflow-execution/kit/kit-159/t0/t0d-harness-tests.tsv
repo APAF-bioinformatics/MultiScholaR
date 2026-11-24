@@ -1,0 +1,49 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-action-scripts.R	every route has a script whose steps carry an id, a declared state and a run function	0	0	0	0	1	0	0.014
+test-action-scripts.R	no script presses revert, skip, export, load, report, enrichment or Cancel (7.4, A17)	0	0	0	0	1	0	0.082
+test-action-scripts.R	the common skeleton per route: import, design, QC, normalisation, correlation, DA	0	0	0	0	1	0	0.005
+test-action-scripts.R	the QC sub-tabs are the product's spec tables, in order (DIA, DIA_LIMPA, LFQ, TMT)	0	0	0	0	1	0	2.44
+test-action-scripts.R	each QC step declares the state its sub-tab commits; DA declares its tab complete	0	0	0	0	1	0	0.005
+test-action-scripts.R	action-scripts.md lists exactly each route's step ids (the accepted scripts, VAL-41)	2	1	1	0	1	1	0.097
+test-arm-builders.R	shipped: no option and no override on any route	0	0	0	0	1	0	0.004
+test-arm-builders.R	legacy: the gate off and the shipped mode and parameters written explicitly	0	0	0	0	1	0	0.005
+test-arm-builders.R	calibrated: the gate on; the design the server selects, recorded as expected	0	0	0	0	1	0	0.005
+test-arm-builders.R	off: skip with the gate off; transcriptomics design none with the gate on	0	0	0	0	1	0	0.005
+test-arm-builders.R	design and supplied controls: the gate on, the design and k rule; the list one per line	0	0	0	0	1	0	0.005
+test-arm-builders.R	the matrix stage of a cell follows its route and arm (7.3; A12, revision 1.8)	0	0	0	0	1	0	0.005
+test-arm-tables.R	proteomics: da.tsv's columns and values, the matrices by stage, features	0	0	0	0	1	0	0.007
+test-arm-tables.R	a fold-change threshold enters called_own; a missing DA file is refused	0	0	0	0	1	0	0.016
+test-arm-tables.R	lipidomics with factors in the model: matrix.tsv uncorrected, W, a labelled display	0	0	0	0	1	0	0.007
+test-arm-tables.R	lipidomics with RUV correcting the matrix: matrix.tsv is the corrected one, no display	0	0	0	0	1	0	0.022
+test-arm-tables.R	transcriptomics: da.tsv from the edgeR table, log-CPM matrices	0	0	0	0	1	0	0.006
+test-custom-arm.R	a custom arm is labelled 'not the harness baseline'	0	0	0	0	1	0	0.005
+test-custom-arm.R	a published arm: anchor reproduced, stopped, or kept as context	0	0	0	0	1	0	0.005
+test-custom-arm.R	a ticket function that refuses is recorded as refused with its class and digest	0	0	0	0	1	0	0.005
+test-integration.R	the workbook functions run in a user's order with every setting recorded	0	0	0	0	1	0	0.005
+test-integration.R	a departure from a setting that does not exist is refused; the hook gets the results	0	0	0	0	1	0	0.006
+test-parity.R	the browser's inputValues lose their type suffixes	0	0	0	0	1	0	0.005
+test-parity.R	the ledgers are compared per action and input, with excluded client-state inputs	0	0	0	0	1	0	0.006
+test-parity.R	the browser replays the driver's actions in order and records its values before each	0	0	0	0	1	0	0.006
+test-parity.R	the bundle DA table against L1's: digest, then 10-digit fingerprints	0	0	0	0	1	0	0.005
+test-replay.R	a replay giving the same DA table is identical	0	0	0	0	1	0	0.005
+test-replay.R	a replay giving other values differs, with the largest difference	0	0	0	0	1	0	0.005
+test-replay.R	a replay the package refuses is unsupported, with its class	0	0	0	0	1	0	0.005
+test-tab.R	T-TAB: prot_dia writes the standard tables with their columns	0	0	0	0	1	0	0.006
+test-tab.R	T-TAB: prot_dia_limpa writes the standard tables with their columns	0	0	0	0	1	0	0.006
+test-tab.R	T-TAB: prot_lfq writes the standard tables with their columns	0	0	0	0	1	0	0.006
+test-tab.R	T-TAB: prot_lfq_fragpipe writes the standard tables with their columns	0	0	0	0	1	0	0.006
+test-tab.R	T-TAB: prot_tmt writes the standard tables with their columns	0	0	0	0	1	0	0.006
+test-tab.R	T-TAB: trx_screen writes the standard tables with their columns	0	0	0	0	1	0	0.006
+test-tab.R	T-TAB: lipid_canonical writes the standard tables with their columns	0	0	0	0	1	0	0.006
+test-tab.R	T-TAB: metab_lc writes the standard tables with their columns	0	0	0	0	1	0	0.006
+test-tab.R	T-TAB: metab_gc writes the standard tables with their columns	0	0	0	0	1	0	0.005
+test-tab.R	T-TAB: metab_combined writes the standard tables with their columns	0	0	0	0	1	0	0.006
+test-workflow.R	a toy cell runs to its end: outcomes per step, the diagnostic refusal recorded	0	0	0	0	1	0	0.005
+test-workflow.R	the ledger: rendered defaults, a choices-only server update, modal inputs, a re-render	0	0	0	0	1	0	0.005
+test-workflow.R	a refused step ends the cell; later steps do not run	0	0	0	0	1	0	0.005
+test-workflow.R	an R error is did_not_complete (error); a wrong state is (unexpected_state)	0	0	0	0	1	0	0.005
+test-workflow.R	a script setting a non-structural input is refused; an enrichment press is refused	0	0	0	0	1	0	0.005
+test-workflow.R	forced options and inputs are scoped to the cell and recorded (KIT-163 N9)	0	0	0	0	1	0	0.005
+test-workflow.R	an arm's overrides are set with source override; one not rendered is refused	0	0	0	0	1	0	0.005
+test-workflow.R	the hook-side callback runs inside the session after the steps, with the cell's context	0	0	0	0	1	0	0.005
+test-workflow.R	a not_permitted ledger masks the listed inputs' identifiers by SHA-256 (5.2)	0	0	0	0	1	0	0.005

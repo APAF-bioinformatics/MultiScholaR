@@ -1,0 +1,18 @@
+key	value
+cpu_model	AMD EPYC 9V74 80-Core Processor
+cpu_count	4
+image_os	ubuntu22
+image_version	20261116.365.1
+c_library_version	2.35
+libblas3_package	3.10.0-2ubuntu1
+liblapack3_package	3.10.0-2ubuntu1
+blas_library	libblas.so.3.10.0
+lapack_library	liblapack.so.3.10.0
+lapack_version	3.10.0
+r_version	R version 4.6.1 (2026-06-24)
+rust_toolchain_version	1.100.0
+pin_fastduckdb	e724f90bdbdf1073635b7112c80f8dd406f2c79b
+pin_fastlimpadpc	0ad8c5271da97605af3a1c8048d7b10fdfc0745b
+openblas_num_threads	<unset>
+omp_num_threads	<unset>
+lockfile_sha256	483c964b44a13f81e7c68030d2a9a58df2981ee96e8ae99db1da3fec38a1f1d7

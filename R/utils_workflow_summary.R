@@ -139,9 +139,16 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         }
         # KIT-052 (KIT-134 run 44379470655): a file the save could not write (the session archive's, on Windows with long
         # paths disabled) is named to the user, not only logged; the copy and the report stay refused until it is written.
-        # KIT-207 (SD-4): an integration input the save refused is named too.
-        if (inherits(error, c("workflow_figure_unwritten", "integration_input_invalid"))) {
+        # KIT-052, KIT-206; KIT-207 (SD-4): a file the save could not write, or refused, is named to the user.
+        if (inherits(error, c("workflow_figure_unwritten", "prot_norm_correlation_input_stale", "workflow_export_dependency_missing",
+            "integration_input_invalid"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
+        }
+        # KIT-206 audit I02 (K061-3; as KIT-207 SD-5 (b)): the proteomics archive refresh refused a table that is not the
+        # normalisation tab's last result before the integration input was written; the omic's earlier input is removed.
+        if (inherits(error, "prot_norm_correlation_input_stale")) {
+            tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
+                error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
         }
         basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
         if (!file.exists(basicParamsFile)) {

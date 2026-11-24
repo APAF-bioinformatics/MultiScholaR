@@ -1,0 +1,54 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-baseline.R	T-BASE: median and no normalisation; t equals a direct limma fit; zeros become NA	0	0	0	0	1	0	0.013
+test-baseline.R	T-BASE-filter: a key enters a contrast by that contrast's two groups only	0	0	0	0	1	0	0.071
+test-baseline.R	T-BASE-batch: a balanced batch term leaves the fold changes unchanged	0	0	0	0	1	0	0.006
+test-baseline.R	the baseline refuses a contrast group below min_per_group	0	0	0	0	1	0	0.007
+test-baseline.R	the counts baseline runs voom-limma after filterByExpr and TMM	0	0	0	0	1	0	0.006
+test-classify.R	T-CLS: the four outcomes, no_worse and inclusive ends	0	0	0	0	1	0	0.008
+test-classify.R	T-CLS: refusals and a one-arm comparison against a fixed value	0	0	0	0	1	0	0.008
+test-classify.R	T-CLS: a within-run interval decides only when declared on that comparison	0	0	0	0	1	0	0.007
+test-classify.R	T-CLS-regime: no regime, no harness regime for the class, flagged without consent	0	0	0	0	1	0	0.008
+test-classify.R	T-CLS-compound: conjunctions, worse_when, controls and guards	0	0	0	0	1	0	0.007
+test-classify.R	T-CLS-compound: a guard requiring match, and a contradicted guard	0	0	0	0	1	0	0.007
+test-intervals.R	T-ORD: order-statistic intervals and their achieved levels	0	0	0	0	1	0	0.006
+test-intervals.R	T-PT: paired t on eight per-unit differences	0	0	0	0	1	0	0.005
+test-intervals.R	T-JK-1: the delete-one jackknife of the mean has SE sd / sqrt(n)	0	0	0	0	1	0	0.005
+test-intervals.R	T-JK-2: jackknife from full and deletion values	0	0	0	0	1	0	0.005
+test-intervals.R	T-JK-2-bias: the bias estimate and its flag against half the margin	0	0	0	0	1	0	0.005
+test-intervals.R	T-JK-log: the log transform and an undefined deletion	0	0	0	0	1	0	0.005
+test-intervals.R	T-JK-crit: a declared critical value may be larger than t, never smaller	0	0	0	0	1	0	0.006
+test-intervals.R	T-JK-3: the jackknife of a median is refused	0	0	0	0	1	0	0.005
+test-intervals.R	the jackknife needs four deletions; dependent units are refused	0	0	0	0	1	0	0.005
+test-intervals.R	T-CP: Clopper-Pearson intervals	0	0	0	0	1	0	0.005
+test-intervals.R	T-ONE: the one-sample paired t against a fixed value	0	0	0	0	1	0	0.005
+test-intervals.R	T-WIL: Wilson intervals without an event floor	0	0	0	0	1	0	0.008
+test-intervals.R	T-NEW: Newcombe's paired interval, method 10	0	0	0	0	1	0	0.005
+test-intervals.R	T-BOOT-1: the same seed and B give identical intervals	0	0	0	0	1	0	0.006
+test-intervals.R	T-BOOT-2: a constant paired shift gives a zero-width interval at the shift	0	0	0	0	1	0	0.006
+test-intervals.R	T-BOOT-3: strata keep their sizes; clusters are resampled whole	0	0	0	0	1	0	0.005
+test-intervals.R	T-BOOT-4: B below 50 / tail probability is refused	0	0	0	0	1	0	0.006
+test-intervals.R	T-REF-FILL: the least favourable fill decides whether the verdict stands	0	0	0	0	1	0	0.007
+test-intervals.R	refusals under 30 units: one is dropped with a substitute required, two are not evaluable	0	0	0	0	1	0	0.006
+test-metrics.R	T-M1/M2: bias and median absolute error with one missing estimate	0	0	0	0	1	0	0.006
+test-metrics.R	T-M2-pooled: pooled median and the mean of per-class medians	0	0	0	0	1	0	0.006
+test-metrics.R	T-M3: linear and geometric CV; a group with one finite value is skipped	0	0	0	0	1	0	0.006
+test-metrics.R	T-M4/M5/M6: confusion, FDP and sensitivity in the own and union views	0	0	0	0	1	0	0.008
+test-metrics.R	T-M4-sign: a wrong-sign call is a false discovery and its key stays a miss	0	0	0	0	1	0	0.005
+test-metrics.R	T-M4-nostat: a finite estimate without p is quantified, not testable, and a union miss	0	0	0	0	1	0	0.006
+test-metrics.R	T-M5-zero: no call gives FDP 0; an all-null truth with one call gives FDP 1	0	0	0	0	1	0	0.006
+test-metrics.R	T-M7: partial AUC from the origin, normalised by fpr_max, and the null floor	0	0	0	0	1	0	0.006
+test-metrics.R	T-M7-ties: a tied block is one straight segment	0	0	0	0	1	0	0.006
+test-metrics.R	T-M7-sign: a wrong-sign positive ranks by its one-sided p near the end	0	0	0	0	1	0	0.006
+test-metrics.R	T-M7-prev: 5 nulls in the region are refused at the default floor	0	0	0	0	1	0	0.007
+test-metrics.R	T-M8: Pearson and Spearman correlations	0	0	0	0	1	0	0.006
+test-metrics.R	T-M9: Quartet SNR from scores	0	0	0	0	1	0	0.005
+test-metrics.R	T-M9-pca: the matrix form equals the score form with prcomp's weights	0	0	0	0	1	0	0.078
+test-metrics.R	T-M10: Matthews correlation from the confusion table	0	0	0	0	1	0	0.009
+test-metrics.R	T-M10-sign: a wrong-sign key counts in FP and FN	0	0	0	0	1	0	0.005
+test-metrics.R	M11: coverage counts quantified, testable and called keys per class	0	0	0	0	1	0	0.006
+test-score.R	T-BH: the matched rule is Benjamini-Hochberg of the raw p	0	0	0	0	1	0	0.006
+test-score.R	T-BH-assay: one family per assay; the same key in two assays is two rows	0	0	0	0	1	0	0.006
+test-score.R	T-VIEW: intersection, union, and union metrics unchanged by a third arm	0	0	0	0	1	0	0.007
+test-score.R	T-KEY: a duplicate in one arm and an unmapped key in another leave the comparison	0	0	0	0	1	0	0.006
+test-score.R	T-VIEW: an own-view comparison between arms is refused by the classifier	0	0	0	0	1	0	0.005
+test-score.R	T-BLIND-1: two truths with one key set and label multiset blind identically	0	0	0	0	1	0	0.005

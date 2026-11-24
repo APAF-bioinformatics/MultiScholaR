@@ -1,0 +1,25 @@
+file	test	expectations	passed	failed	skipped	error	warnings	seconds
+test-chain.R	T-CHAIN-1: a first link absorbing an unintended difference is refused at link one	2	2	0	0	0	0	0.062
+test-chain.R	T-CHAIN-1: a correct chain is accepted; a later link's base is compared with zero	3	3	0	0	0	0	0.059
+test-chain.R	T-CHAIN-1: a re-frozen file without a record; a lane not re-frozen against the counts	4	4	0	0	0	0	0.016
+test-chain.R	T-CHAIN-1: declared keys before the changed step, and unclassed differences after it	4	4	0	0	0	0	0.022
+test-chain.R	T-CHAIN-1: rows a re-freezing ticket committed earlier are adopted when they agree	2	2	0	0	0	0	0.043
+test-g13.R	G13-SWD083: the measured DIA-with-limpa difference passes under the rule	0	0	0	0	1	0	0.006
+test-g13.R	G13-O4: the bundle lane's six DIA-with-limpa DA steps are excluded by name	0	0	0	0	1	0	0.013
+test-g1a.R	G1A-LOAD: KIT-199's real record is one certified link of prot_dia_limpa	0	0	0	0	1	0	0.005
+test-g1a.R	G1A-VAL: link (i) checks each declared row's stored and live digest values	0	0	0	0	1	0	0.005
+test-g1a.R	G1A-LOAD: KIT-172's real record certifies each of its four lanes	0	0	0	0	1	0	0.005
+test-g1a.R	G1A-LOAD: KIT-180 then KIT-177 on the proteomics lanes, in merge order	0	0	0	0	1	0	0.005
+test-g1a.R	G1A-ADOPT: reference rows are adopted by (lane, step, class) and key sets	0	0	0	0	1	0	0.005
+test-g1a.R	G1A-D7: the release-commit DA values against the link's da-runner table	0	0	0	0	1	0	0.005
+test-g1a.R	G1A-D7: exact only on the link's CPU models with its whole recorded environment	0	0	0	0	1	0	0.005
+test-g1a.R	G1A-REL: VAL-133 (2): identical captures first, else values; certified with the difference	0	0	0	0	1	0	0.007
+test-g1a.R	G1A-P1: part (1) compares installed against load_all; prot_dia stops at da	0	0	0	0	1	0	0.005
+test-g1a.R	G1A-P2: part (2) reads each lane's chain from the history and judges the live run	0	0	0	0	1	0	0.006
+test-parity.R	the browser's inputValues lose their type suffixes	1	1	0	0	0	0	0.004
+test-parity.R	the ledgers are compared per action and input, with excluded client-state inputs	5	5	0	0	0	0	0.044
+test-parity.R	the browser replays the driver's actions in order and records its values before each	4	4	0	0	0	0	0.015
+test-parity.R	the bundle DA table against L1's: digest, then the values under SWD-083 (VAL-133 (1))	4	2	2	0	0	0	0.157
+test-repair3.R	R-I15b: live differences are classed by G1(a)'s bounds, or left outside the classes	8	8	0	0	0	0	0.045
+test-repair3.R	R-K199: no admission path; the DIA-with-limpa link is a declared change; two classes in a step	8	8	0	0	0	0	0.027
+test-repair3.R	R-K199b: counts are per (step, class), not per difference row: several keys in one step	3	3	0	0	0	0	0.014

@@ -1,0 +1,11 @@
+measure	value
+base_commit	241914cb4461128efdd453002a17ab3744cad2ba
+archive_exit	0
+install_exit	0
+capture_exit	0
+package_path	/home/runner/work/_temp/k205-replay/base-lib/MultiScholaR
+has_enrichmentTestedRows	FALSE
+untested_proteins	P03959,P0A6P7,P0A766,P0A7S3,P00547,P00561
+da_files	da_proteins_groupB-groupA_long_annot.tsv
+untested_rows	6
+untested_annotated_rows	6

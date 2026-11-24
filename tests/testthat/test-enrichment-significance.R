@@ -249,7 +249,8 @@ test_that("KIT-203 S6: the default declares its rule; the q-value declares KIT-1
     names_of <- function(step) vapply(step$parameters, `[[`, "", "name")
     ten <- c(utils::head(diaEnrichmentOperation()$parameters, 9L), "go_propagation")
     default <- k203Project("default")
-    expect_identical(names_of(default$step), c(ten, "significance_rule"))
+    # KIT-205: every record step lists the fixed background rule marker last.
+    expect_identical(names_of(default$step), c(ten, "significance_rule", "enrichment_background"))
     value <- Filter(function(p) identical(p$name, "significance_rule"), default$step$parameters)[[1L]]$value
     expect_identical(decodeWorkflowRecordValue(value), "bh_whole_family")
     expect_identical(utils::tail(names(default$step$outcomes), 1L), "significance_rule")
@@ -258,8 +259,9 @@ test_that("KIT-203 S6: the default declares its rule; the q-value declares KIT-1
     # entity ids, which are store-local, so the values are compared without `results`).
     qvalue <- k203Project("qvalue", list(significance_rule = "qvalue"))
     base <- readRDS(k203Fixture("s6-identity.rds"))
-    expect_identical(names_of(qvalue$step), ten)
-    expect_identical(names_of(qvalue$step), base$declared_names)
+    # KIT-205: the marker last; the names before it are the base run's (the stored fixture is not re-recorded).
+    expect_identical(names_of(qvalue$step), c(ten, "enrichment_background"))
+    expect_identical(setdiff(names_of(qvalue$step), "enrichment_background"), base$declared_names)
     without_results <- function(x) x[setdiff(names(x), "results")]
     expect_identical(without_results(qvalue$run$parameters), without_results(base$parameters))
     expect_identical(names(qvalue$run$parameters), names(base$parameters))
@@ -271,7 +273,8 @@ test_that("KIT-203 S6: the default declares its rule; the q-value declares KIT-1
     expect_identical(diaEnrichmentDeclaredNames(diaEnrichmentOperation()$parameters,
         list(significance_rule = "qvalue")), utils::head(diaEnrichmentOperation()$parameters, 9L))
     gprofiler <- k203Project("gprofiler", list(organism_taxid = "9606"), runProtEnrichDeterministicProcessEnrichments)
-    expect_identical(names_of(gprofiler$step), utils::head(diaEnrichmentOperation()$parameters, 9L))
+    expect_identical(names_of(gprofiler$step), c(utils::head(diaEnrichmentOperation()$parameters, 9L),
+        "enrichment_background")) # KIT-205
     expect_false("significance_rule" %in% names(gprofiler$step$outcomes))
     expect_null(buildProtEnrichProcessEnrichmentsArgs(NULL, "9606", 0, 0, 0.05, "p", NULL, "uniprot_acc", "B_vs_A",
         "gSCS")$processArgs$significance_rule)
@@ -357,7 +360,8 @@ test_that("KIT-203 S9: the four reports state the recorded rule; earlier records
     numbers <- function(source, extra = list()) c(list(ui_enrichment_organism_selected = "999999",
         ui_enrichment_up_lfc = 0, ui_enrichment_down_lfc = 0, ui_enrichment_q_value_cutoff = 0.05),
         if (!is.null(source)) list(ui_enrichment_database_source = source), extra)
-    family_clause <- paste0("terms with 10 to 500 annotated measured proteins, whether or not a listed protein falls ",
+    # KIT-205 (SD-1 (b)): "tested"; these numbers carry no record (the background rule's no-record branch).
+    family_clause <- paste0("terms with 10 to 500 annotated tested proteins, whether or not a listed protein falls ",
         "in them (terms without one enter with p = 1).")
     old_flag <- paste0("A term was called significant when its q-value (Storey, 2002) was below 0.05; ",
         "Benjamini-Hochberg adjusted p-values are also given in the results table.")
@@ -442,8 +446,8 @@ test_that("KIT-203 S10: the tab offers both rules before Run, each with its note
         expect_false(grepl(htmltools::htmlEscape(rules$note[rules$rule != rule]), hit[[1L]]$text, fixed = TRUE),
             info = rule)
     }
-    expect_true(grepl("p_adjust_family: Benjamini-Hochberg over every term of 10 to 500 measured proteins.", html,
-        fixed = TRUE))
+    expect_true(grepl("p_adjust_family: Benjamini-Hochberg over every term of 10 to 500 tested proteins.", html,
+        fixed = TRUE)) # KIT-205 (SD-1 (b))
     expect_true(grepl("Significance cutoff:", html, fixed = TRUE))
     # No output is added: the module's output ids are the base commit's.
     expect_identical(sort(unique(k203Outputs(ui))), c(
