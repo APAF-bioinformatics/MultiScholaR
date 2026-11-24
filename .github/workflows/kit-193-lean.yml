@@ -35,7 +35,7 @@ jobs:
       - name: checkout (clean)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: lean-action (build --wfail, axiom audit, leanchecker, nanoda)
+      - name: lean-action (build --wfail, axiom audit, nanoda)
         uses: leanprover/lean-action@ba3fdfe5c4476c925da13bf11a005ddb47e47aee # v1.7.1
         with:
           lake-package-directory: proofs/lean
@@ -49,10 +49,26 @@ jobs:
           axiom-audit: "true"
           axiom-audit-allow: "propext,Classical.choice,Quot.sound"
           axiom-audit-root: "MultiScholaRProofs"
-          leanchecker: "true"
-          leanchecker-args: "MultiScholaRProofs"
+          leanchecker: "false"
           nanoda: "true"
           nanoda-allow-sorry: "false"
+
+      - name: leanchecker (kernel replay, one call per project module)
+        if: ${{ !cancelled() }}
+        # The bundled leanchecker of v4.36.0 ends with a segmentation fault (exit 139) when given two or more modules,
+        # or a prefix that covers several (L0 run 45298959712; reproduced on the laptop); one module per call works.
+        # The root module MultiScholaRProofs holds imports only and is not listed.
+        run: |
+          set +e
+          mkdir -p "$RUNNER_TEMP/record"
+          status=0
+          for m in $(find MultiScholaRProofs -name '*.lean' | sed 's|/|.|g; s|\.lean$||' | sort); do
+            lake env leanchecker -v "$m" >> "$RUNNER_TEMP/record/leanchecker.txt" 2>&1
+            rc=$?
+            echo "$m exit $rc" | tee -a "$RUNNER_TEMP/record/leanchecker.txt"
+            [ "$rc" -eq 0 ] || status=1
+          done
+          exit $status
 
       - name: spec (frozen hashes, import closure)
         if: ${{ !cancelled() }}

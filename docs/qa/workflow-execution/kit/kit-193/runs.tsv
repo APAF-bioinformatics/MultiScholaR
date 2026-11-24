@@ -1,0 +1,2 @@
+run_id	branch	commit	purpose	minutes	result
+45298959712	kit-193-lean-lifecycle	a8e68953	L0 push 1 (trivial theorem, must pass every step)	2.5	instrument defect: build passed; bundled leanchecker exit 139 on the module prefix (reproduced locally: any two modules crash, one module passes); nanoda and axiom-audit skipped; spec, axioms, oracles, forbidden words passed. Fix: leanchecker one call per module (VAL-54 instrument re-run 1 of 3)
