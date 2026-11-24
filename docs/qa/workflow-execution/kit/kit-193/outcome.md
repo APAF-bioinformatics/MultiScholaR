@@ -277,7 +277,7 @@ the standard axioms). P03: the coordinator adopted the auditor's two sharper wit
 P05 and P06 concern the paired tests.
 
 **Laptop total (implementer, all Lean, from `cpu-time.tsv`):** 122 calls, 786.2 CPU-seconds (616.3 user + 170.0
-system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system).
+system, row 39's user time not recorded) at the P01 commit; updated at each later commit below. At b404e62e (R-F2): 134 calls, 835.7 CPU-seconds (657.9 user + 177.8 system). After R-B1 to R-K1: 141 calls, 885.4 CPU-seconds (703.6 user + 181.8 system). After priority 2: 146 calls, 900.4 CPU-seconds (715.5 user + 184.8 system). After R-F3, R-L2, R-M1: 152 calls, 923.3 CPU-seconds (734.8 user + 188.4 system).
 
 ## P03: two sharper witnesses (new Spec file; proved)
 
@@ -327,6 +327,20 @@ branch); no bearing on what is proved. Laptop: 8 Lean calls, 29.1 CPU-seconds (l
   kills constants in `a` and in `U'Y_C`, and `Σλ = 0` kills them in `d_C`. Laptop: 5 Lean calls, 15.0 CPU-seconds
   (labels `rP2-G1-*`, `rP2-J-*`, `rP2-GJL-*`). Agent time 0.05 h (13:32 to 13:35), against R-G1 4/6, R-J1 5/8,
   R-J2 3/5, R-L1 5/8.
+
+## Group R priorities 3 and 4 (R-I1, R-J3, R-N1 wait for their statements review)
+
+- **R-F3, R-L2, R-M1 proved** (`Proof/RuvDownstream2.lean`: `Ruv.F3_span`, `F3_fwl`, `F3_fwl_witness`, `M1`,
+  `M1_witness`; `Proof/RuvIIIC.lean`: `L2`, `L2_witness`; each on `propext`, `Classical.choice`, `Quot.sound`).
+  R-F3: R-F1's shift and R-F2's argument with the weighted normal equations `X'Ω(y - Xβ̂) = 0`; positive
+  definiteness of `Ω` turns injectivity of `X2` and of `M_2 X1` into invertible weighted Gram matrices (Mathlib's
+  `PosDef.conjTranspose_mul_mul_same`), and `M_2'Ωr = Ωr` because `X2'Ωr = 0` (no symmetry of `Ω` is used). R-L2:
+  the quadratic bound makes `G = a_C a_C'` injective, hence invertible; with `z = G⁻¹a`, `‖A a‖² = z'a`,
+  `κ z'z ≤ z'a` and Cauchy-Schwarz give `z'a ≤ a'a/κ`, then Cauchy-Schwarz once more. R-M1: `[X, WQ]` and `[X, W]`
+  reach the same predictors through `β_W ↦ Q⁻¹β_W` and back; `Matrix.rank` is the dimension of that range. Witnesses:
+  `Ω = diag(2, 1, 1)` with `X1 = e_1`, `X2 = e_2`; `a_C = [I_2, 0]`, `κ = 1`; `Q = (2)`. Laptop: 6 Lean calls,
+  22.9 CPU-seconds (labels `rP3-*`, `rP34-*`). Agent time 0.05 h (13:35 to 13:38), against R-F3 6/10, R-L2 8/14,
+  R-M1 4/6.
 
 ## Resume here
 

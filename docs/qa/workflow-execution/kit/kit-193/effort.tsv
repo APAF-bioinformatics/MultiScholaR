@@ -20,3 +20,4 @@ P03-sharper-witnesses	2026-11-24T13:12	2026-11-24T13:20	0.13	Spec file committed
 R-F2	2026-11-24T13:20	2026-11-24T13:22	0.03	proved (F2; witness F_witness)
 R-B1, R-B2, R-D1, R-D2, R-E1, R-E2, R-K1	2026-11-24T13:24	2026-11-24T13:32	0.13	proved (8 statements, 4 witnesses; written in one sitting, not timed per item)
 R-G1, R-J1, R-J2, R-L1	2026-11-24T13:32	2026-11-24T13:35	0.05	proved (6 statements, 4 witnesses); group R priority 2 complete
+R-F3, R-L2, R-M1	2026-11-24T13:35	2026-11-24T13:38	0.05	proved (5 statements, 3 witnesses); priorities 3 (but R-I1, R-J3) and 4 (but R-N1) complete

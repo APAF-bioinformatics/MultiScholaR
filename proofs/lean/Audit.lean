@@ -276,3 +276,25 @@ example : Ruv.L1_invariance_witness_stmt := Ruv.L1_invariance_witness
 #print axioms Ruv.L1
 #print axioms Ruv.L1_invariance
 #print axioms Ruv.L1_invariance_witness
+
+/-! ## Group R priority 3 -/
+
+example : Ruv.F3_span_stmt := Ruv.F3_span
+example : Ruv.F3_fwl_stmt := Ruv.F3_fwl
+example : Ruv.F3_fwl_witness_stmt := Ruv.F3_fwl_witness
+example : Ruv.L2_stmt := Ruv.L2
+example : Ruv.L2_witness_stmt := Ruv.L2_witness
+
+#print axioms Ruv.F3_span
+#print axioms Ruv.F3_fwl
+#print axioms Ruv.F3_fwl_witness
+#print axioms Ruv.L2
+#print axioms Ruv.L2_witness
+
+/-! ## Group R priority 4 -/
+
+example : Ruv.M1_stmt := Ruv.M1
+example : Ruv.M1_witness_stmt := Ruv.M1_witness
+
+#print axioms Ruv.M1
+#print axioms Ruv.M1_witness

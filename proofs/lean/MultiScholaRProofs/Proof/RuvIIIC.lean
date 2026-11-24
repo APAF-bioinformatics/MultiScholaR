@@ -8,7 +8,7 @@ import Mathlib.Tactic
 # Proofs for group R, RUV-III-C with missing values (KIT-193 section 7.2)
 
 Theorems whose types are the frozen statements of `Spec/RuvIIIC.lean`: R-J1 with `J1_witness`; R-J2 (`J2`,
-`J2_contribution`) with `J2_witness`; R-L1 (`L1`, `L1_invariance`) with `L1_invariance_witness`.
+`J2_contribution`) with `J2_witness`; R-L1 (`L1`, `L1_invariance`) with `L1_invariance_witness`; R-L2 with `L2_witness`.
 -/
 
 public section
@@ -174,5 +174,74 @@ theorem L1_invariance_witness : L1_invariance_witness_stmt := by
   · intro h
     have := congrFun h 0
     simp at this
+
+/-! ## R-L2 -/
+
+/-- Cauchy-Schwarz for the dot product: `(u'v)² ≤ (u'u)(v'v)`. -/
+theorem dot_sq_le {ι : Type} [Fintype ι] (u v : ι → ℝ) : (u ⬝ᵥ v) ^ 2 ≤ (u ⬝ᵥ u) * (v ⬝ᵥ v) := by
+  have h := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ u v
+  simp only [dotProduct, ← sq]
+  exact h
+
+theorem dot_self_nonneg' {ι : Type} [Fintype ι] (u : ι → ℝ) : 0 ≤ u ⬝ᵥ u :=
+  Finset.sum_nonneg fun _ _ => mul_self_nonneg _
+
+/-- R-L2: the bound on the fold-change error. -/
+theorem L2 : L2_stmt := by
+  intro C _ k aC dC a κ hκ hbound
+  set G := aC * aCᵀ with hG
+  have hGinj : Function.Injective G.mulVec := by
+    intro v w hvw
+    have h0 : G *ᵥ (v - w) = 0 := by rw [Matrix.mulVec_sub, hvw, sub_self]
+    have h1 := hbound (v - w)
+    rw [h0, dotProduct_zero] at h1
+    have h2 : (v - w) ⬝ᵥ (v - w) = 0 :=
+      le_antisymm (by nlinarith [dot_self_nonneg' (v - w)]) (dot_self_nonneg' _)
+    exact sub_eq_zero.1 (dotProduct_self_eq_zero.1 h2)
+  have hGu : IsUnit G := Matrix.mulVec_injective_iff_isUnit.1 hGinj
+  have hGd : IsUnit G.det := (Matrix.isUnit_iff_isUnit_det G).1 hGu
+  set z := G⁻¹ *ᵥ a with hz
+  have hGz : G *ᵥ z = a := by rw [hz, Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv _ hGd, Matrix.one_mulVec]
+  set u := (aCᵀ * G⁻¹) *ᵥ a with hu
+  have hu' : u = aCᵀ *ᵥ z := by rw [hu, hz, Matrix.mulVec_mulVec]
+  -- `u'u = z'a`
+  have huu : u ⬝ᵥ u = z ⬝ᵥ a := by
+    rw [hu', Matrix.dotProduct_mulVec, ← Matrix.mulVec_transpose, transpose_transpose, Matrix.mulVec_mulVec,
+      ← hGz, hG, dotProduct_comm]
+  -- `κ z'z ≤ z'a` and `(z'a)² ≤ (z'z)(a'a)` give `z'a ≤ a'a / κ`
+  have hza : z ⬝ᵥ a ≤ (a ⬝ᵥ a) / κ := by
+    have h1 : κ * (z ⬝ᵥ z) ≤ z ⬝ᵥ a := by
+      have := hbound z
+      rwa [hGz] at this
+    have h2 := dot_sq_le z a
+    have hzz := dot_self_nonneg' z
+    have haa := dot_self_nonneg' a
+    rw [le_div_iff₀ hκ]
+    have hw : 0 ≤ z ⬝ᵥ a := le_trans (mul_nonneg hκ.le hzz) h1
+    have h3 : κ * (z ⬝ᵥ a) ^ 2 ≤ (z ⬝ᵥ a) * (a ⬝ᵥ a) := by
+      nlinarith [mul_le_mul_of_nonneg_right h1 haa, mul_le_mul_of_nonneg_left h2 hκ.le]
+    rcases hw.eq_or_lt with h0 | hpos
+    · rw [← h0]
+      simpa using haa
+    · by_contra hc
+      rw [not_le] at hc
+      nlinarith [mul_lt_mul_of_pos_left hc hpos]
+  have hdu : (dC ⬝ᵥ u) ^ 2 ≤ (dC ⬝ᵥ dC) * ((a ⬝ᵥ a) / κ) := by
+    calc (dC ⬝ᵥ u) ^ 2 ≤ (dC ⬝ᵥ dC) * (u ⬝ᵥ u) := dot_sq_le dC u
+      _ ≤ (dC ⬝ᵥ dC) * ((a ⬝ᵥ a) / κ) := by
+          rw [huu]
+          exact mul_le_mul_of_nonneg_left hza (dot_self_nonneg' dC)
+  have h := Real.abs_le_sqrt hdu
+  rw [Real.sqrt_mul (dot_self_nonneg' dC), Real.sqrt_div' _ hκ.le, ← mul_div_assoc] at h
+  exact h
+
+/-- Witness for `L2_stmt`: `a_C = [I_2, 0]`, `κ = 1`. -/
+theorem L2_witness : L2_witness_stmt := by
+  refine ⟨Matrix.of fun i j => if (i : ℕ) = (j : ℕ) then 1 else 0, 1, by norm_num, fun x => ?_⟩
+  have h : (Matrix.of fun (i : Fin 2) (j : Fin 3) => if (i : ℕ) = (j : ℕ) then (1 : ℝ) else 0) *
+      (Matrix.of fun (i : Fin 2) (j : Fin 3) => if (i : ℕ) = (j : ℕ) then (1 : ℝ) else 0)ᵀ = 1 := by
+    ext a b
+    fin_cases a <;> fin_cases b <;> simp [Matrix.mul_apply, Fin.sum_univ_three]
+  rw [h, Matrix.one_mulVec, one_mul]
 
 end MultiScholaRProofs.Ruv
