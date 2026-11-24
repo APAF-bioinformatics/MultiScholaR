@@ -61,7 +61,8 @@ protSummaryIntegrationWrite <- function(workflowData, path, object = NULL, sourc
       if (is.null(source)) return(FALSE)
       writeIntegrationInput(dirname(path), source$manifest, source$samples,
         matrices = list(proteomics = source$matrix),
-        features = list(proteomics = protIntegrationInputFeatures(source$matrix$feature_id, annotation)),
+        features = list(proteomics = protIntegrationInputFeatures(source$matrix$feature_id, annotation,
+          mapping = if (referenceMappingEnabled()) readReferenceMapping(manager)$mapping)),
         corrected = if (!is.null(source$corrected)) list(proteomics = source$corrected) else list())
       TRUE
     })
@@ -261,9 +262,13 @@ protIntegrationInputCorrection <- function(manager, state, design) {
 #' the feature id, which stays the key.
 #' @param ids The matrix's feature ids.
 #' @param annotation The UniProt table (`uniprot_dat_cln`, keyed by `Entry`), or NULL.
-#' @return `data.frame(feature_id, display_name, uniprot_accession, gene_names)`.
+#' @param mapping NULL, or the project's reference mapping table (KIT-167): the features then gain
+#'   `reference_accession_used` (by the protein-group rule, 8.3 items 1 and 8), `reference_gene`, `locus_tag` (NA: the
+#'   mapping holds no strain locus tag) and `map_status` (`mapped`, `ambiguous_group` or `unmapped`); without a mapping
+#'   the table is unchanged.
+#' @return `data.frame(feature_id, display_name, uniprot_accession, gene_names)`, and the four mapping columns.
 #' @noRd
-protIntegrationInputFeatures <- function(ids, annotation) {
+protIntegrationInputFeatures <- function(ids, annotation, mapping = NULL) {
   accession <- sub("-[0-9]+$", "", sub(";.*$", "", ids))
   genes <- rep(NA_character_, length(ids))
   if (is.data.frame(annotation) && all(c("Entry", "gene_names") %in% names(annotation))) {
@@ -272,8 +277,16 @@ protIntegrationInputFeatures <- function(ids, annotation) {
   first <- vapply(strsplit(ifelse(is.na(genes), "", genes), " |:"), function(parts) {
     if (length(parts)) parts[[1L]] else ""
   }, "")
-  data.frame(feature_id = ids, display_name = ifelse(nzchar(first), first, ids), uniprot_accession = accession,
+  features <- data.frame(feature_id = ids, display_name = ifelse(nzchar(first), first, ids), uniprot_accession = accession,
     gene_names = genes, stringsAsFactors = FALSE)
+  if (is.null(mapping)) return(features)
+  groups <- referenceAccessionForGroups(ids, mapping)
+  features$reference_accession_used <- groups$reference_accession_used
+  gene <- if ("reference_gene" %in% names(mapping)) mapping$reference_gene else rep(NA_character_, nrow(mapping))
+  features$reference_gene <- gene[match(groups$reference_accession_used, mapping$reference_accession_used)]
+  features$locus_tag <- rep(NA_character_, length(ids))
+  features$map_status <- groups$group_class
+  features
 }
 
 #' The session-state payload in the core's shape (`session_state`): today's `prepareProtSummarySessionStateExport`'s

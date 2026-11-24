@@ -709,6 +709,9 @@ diaEnrichmentOperation <- function() {
 diaEnrichmentDeclaredNames <- function(declared, arguments) {
     filter <- c("organism_filter_enabled", "organism_filter_taxon")
     if (!isTRUE(arguments$organism_filter_enabled)) declared <- setdiff(declared, filter)
+    # KIT-167 (8.3 item 5): the reference identifiers' three names are added only when they are used; the declaration
+    # itself is unchanged, so every existing run keeps its names, provenance and identity.
+    if (identical(arguments$id_source, "reference")) declared <- c(declared, referenceEnrichmentNames)
     if (is.null(arguments$go_propagation) || identical(arguments$go_propagation, "none"))
         declared <- setdiff(declared, "go_propagation")
     if (is.null(arguments$significance_rule) || identical(arguments$significance_rule, "qvalue"))
