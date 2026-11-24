@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-184 R1a: the tests-only commit; every test of new behaviour must fail at the value ticket section 10 states (ceiling 120 job-minutes; decides nothing but the failing-first record, A16)",
+  "label": "KIT-184 R1a tests-only a5229552 (failing first)",
+  "package_commit": "a5229552e1e487da222b002f098d6a16f724354c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-integration-removed-factors.R",
+    "test-workflow-integration-input.R",
+    "test-integration-input-lipid-metab.R",
+    "test-integration-input-transcriptomics.R",
+    "test-integration-input-matrix.R",
+    "test-integration-enrichment-tests.R",
+    "test-integration-record.R",
+    "test-integration-gui.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
