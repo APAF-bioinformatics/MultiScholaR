@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109): R4c, the R4b corrections: repair, records, e2e (three omic families end to end, workflow cells), with --lint; ceiling 100 min, about 4.5 core-hours",
+  "label": "KIT-159 repair R4c: corrections and end-to-end at 36297e25",
+  "package_commit": "36297e2522862ef13fb31690f0faca1e9469edce",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-r4c-out",
+        "--files",
+        "repair,records,e2e",
+        "--lint"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-r4c-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 100
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

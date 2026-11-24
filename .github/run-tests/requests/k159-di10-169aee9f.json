@@ -1,0 +1,61 @@
+{
+  "requested_by": "KIT-159 T2 line (VAL-109): I10 diagnostic, four 500-feature cells at 2000 sims under the fixed symmetric generator (request D), and the O4 half-width ratio of two rank rows at 200 sims (request H); declaration t2/di10-declaration.md; ceiling 4 core-hours",
+  "label": "KIT-159 I10 diagnostic and O4 half-width ratio at 169aee9f",
+  "package_commit": "169aee9fff79b958fc81ca6aae75bf0c1941a3b4",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/di10d-out",
+        "--files",
+        "metrics",
+        "--coverage-plan",
+        "docs/qa/workflow-execution/kit/kit-159/t2/di10-plan.tsv",
+        "--request",
+        "D",
+        "--nsim",
+        "2000",
+        "--chunks",
+        "4"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/di10d-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 120
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/di10h-out",
+        "--files",
+        "metrics",
+        "--coverage-plan",
+        "docs/qa/workflow-execution/kit/kit-159/t2/di10-plan.tsv",
+        "--request",
+        "H",
+        "--nsim",
+        "200",
+        "--chunks",
+        "4",
+        "--target-sims",
+        "2000"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/di10h-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 120
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
