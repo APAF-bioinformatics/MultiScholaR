@@ -366,9 +366,11 @@ test_that("R-I15: G1(a) does not admit limpa_da_last_digits without its ruling a
     expect_error(valReadChain("prot_dia_limpa", list(), ref, live_diffs = live,
                               admit = list(ruling = "KIT-199", digest = "80cfedaa")),
                  class = "val_spec_invalid")
-    ok <- valReadChain("prot_dia_limpa", list(), ref, live_diffs = live,
-                       admit = list(ruling = "KIT-199 merged", digest = "8a4c2dd5ab"))
-    expect_identical(ok$status, "certified")
+    # D19 (VAL-109): a ruling's text alone does not admit the class; KIT-199's merge must be in
+    # the commit under test (test-repair3.R, R-D19)
+    expect_error(valReadChain("prot_dia_limpa", list(), ref, live_diffs = live,
+                              admit = list(ruling = "KIT-199 merged", digest = "8a4c2dd5ab")),
+                 class = "val_spec_invalid")
 })
 
 test_that("R-I17: the chunk backstop ends a cell blocked outside R as did_not_complete (timeout)", {
