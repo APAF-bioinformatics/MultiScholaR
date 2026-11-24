@@ -5,10 +5,12 @@ Ticket `tickets/kit/KIT-184.md` revision 2.0. Branch `kit-184-ruv-factors-in-int
 laptop. Owner's decisions: methods ledger VAL-53, VAL-58, VAL-62 (the design), VAL-150 (the declaration), VAL-160 (the
 results: the adjustment ships off by default with a stated limit).
 
-**State: ready for the implementation audit, with one thing open for the coordinator before merge.** Everything the
-ticket asks for is built, measured and recorded. The full suite found one stored reference moved by the ticket's
-intended change (the new file in the proteomics integration input), which the ticket foresaw (8.5) and which I may
-not re-record; and the full suite ran over its row's ceiling. Both are below.
+**State (2026-11-25): the implementation audit's repairs are made and the one further run the owner allowed is
+declared below (VAL-178).** The audit (`tickets/kit/audits/AUDIT-KIT-184-impl-20261125.md`) confirmed the method and
+the shipped path and found three majors in the texts and the record (K184-I01 to I03), minors (I04 to I09) and one
+stored reference that moves (I10). The sections from "What was built" to "Not checked" are the record as it stood at
+the audit, with the audit's record repairs applied; "After the implementation audit" at the end has what was done
+since, the control, the declared run and its results.
 
 ## What was built (observed in the code and the runs)
 
@@ -231,3 +233,83 @@ under `skipped` would be the stricter reading).
   the integration enrichment).
 - Cell C of the simulation (not run: KIT-183's outcome is O1).
 - A second reading of the texts by the owner: all are drafts.
+
+## After the implementation audit (2026-11-25; owner's decision VAL-178)
+
+VAL-178: (1) the claim narrowed to what was measured, with the 9.4 % and 8.6 % figures printed, the limit printed in
+the record whenever any entry is adjusted, an approximate set of factors stated with its share; (2)
+`tests/testdata/gui-entry/prot_dia_limpa.json` re-frozen, that file only, after the control; (3) one further bounded
+run beyond the spent correction pass, inside the ticket's unchanged ceiling; (4) VAL-160 governs this ticket's
+proteomics and metabolomics figures.
+
+### Commits
+
+| Commit | What |
+|---|---|
+| 5352a498 | tests only, for K184-I01 to I06 (nothing under `R/`) |
+| 33facbb5 | the fix: texts, the approximate fragment, the clause printed for any adjusted entry; the record repairs I07 to I09; `wording.md`; `gui-entry-control.R` |
+| d7928ac9 | the merge with `v0.9-staging` 32766889 (one conflict, the methods ledger: staging's rows to VAL-182 first, then this ticket's three `VAL-<merge>` rows; NEWS merged without conflict; nothing else conflicted) |
+
+### Tests first: each changed or new expectation, what it gives before the fix (5352a498) and after (33facbb5)
+
+All in `tests/testthat/test-integration-removed-factors.R`.
+
+| Finding | Expectation | Before the fix | After |
+|---|---|---|---|
+| I01 | K10: the clause holds "of the kinds the check decided on (random sets, correlated blocks of features,", "the first three also against the model's main factor), were called at the 5 % level in at most 5.4 %", the most variable features' sets "up to 9.4 % (6.8 % without the adjustment, 9.8 % had the true unwanted factors been known)", the planted sets "up to 8.6 % (up to 7.0 % ..., up to 8.5 % ...)" | absent: 4 failures | present |
+| I01 | K10: the clause does not hold "any set against a covariate" | present: fails | absent |
+| I01 | K11: the help holds "(at most 5.4 %) for the kinds of sets with no link to what was tested that the check decided on; ... (up to 9.4 %, 6.8 % without it)" and "(up to 8.6 %, up to 7.0 % without it)" | absent: 2 failures | present |
+| I01 | the placeholder block: the starter workbook's paragraph holds the same two phrases | absent: 2 failures | present |
+| I02 | K10, a model trained before RUV, record with the adjusted entry: the limits paragraph contains `methods_enrich_limits_ruv` and "in 8.1 to 29.6 % with the adjustment" | absent: 2 failures (the head asserted the absence) | present |
+| I02 | K10, the same model, record with only the unadjusted entry: no clause, Methods as before | passes | passes |
+| I02 | K10: the clause opens "The correlation-adjusted tests can add to their model the unwanted factors the RUV correction removed from each data set" | opens "For a model trained on RUV-corrected values": fails | passes |
+| I03 | new block "K10 (K184-I03)": `integrationMethodsCovariates()` on an entry with approximate factors (share 0.9) gives "; approximate: 90.0 % of what the correction removed lies within these factors (runs were removed after the correction), so they do not match the corrected values exactly", directly after "8 residual degrees of freedom)" and before the words for a model trained before RUV | absent: 3 failures | present |
+| I03 | the same block: an exact entry and an unadjusted one hold no "approximate" | passes | passes |
+| I03 | K10: the clause holds "for a model trained on RUV-corrected values and features measured in every run where no run was removed after the correction, this is identical to fitting that model" | absent: fails | present |
+| I04 | K11: the note holds "the regression is exactly that of the same model (the factor and these 2 unwanted factors) fitted to the corrected values, with 8 residual degrees of freedom; the test's variance trend reads ..." and not "this gives exactly the result" | 2 failures | passes |
+| I05 | K11 and the starter: "(with as many factors removed as were planted; with four removed where two were planted it found fewer)" | absent: 2 failures | present |
+| I06 (a), (b) | K10: the clause holds the proteins' two compositions and the simulated correction, and not "11.2 to 13.3 %" | 4 failures | passes |
+| I06 (c) | "yes (2 factor(s))." (K11; K10's label and ranking cell), "2 removed unwanted factor(s)" (K8's refusal, K10's ranking text, the design sentence), "4 removed factor(s)" (K15) | "factors": 6 failures | passes |
+| I06 (d) | the starter holds "In that check it did not protect pathways ..." | "It does not protect": fails | passes |
+| I06 (f) | K11: the four texts that state the limit give its numbers; no tab text says "(see Methods)" | 5 failures | passes |
+
+### The control before the re-freeze (as the audit register gives it, section 5; VAL-178 (2))
+
+It runs on a runner (`gui-entry-control.R`, in the pattern of `kit-199/control.R` for the same lane):
+
+1. A base dump of the lane `prot_dia_limpa` at the staging commit the merge takes (32766889). It must be byte-equal
+   to the stored file; this shows the dumper reproduces the stored reference on that runner.
+2. Two head dumps at the merge commit (d7928ac9), identical to each other.
+3. The head dump against the stored file must differ in exactly four added keys,
+   `"integration/proteomics/removed_proteomics.parquet": "<present>"` in `summary_save`, `summary_copy`,
+   `summary_report` and `summary_export`, and in nothing else.
+
+Then the head dump is committed alone as the new reference, and the lane must pass in the run. If the control shows
+anything else: stop and report; the file is not re-frozen and nothing is widened.
+
+One thing about "byte-equal to the stored file", read in the helper (`tests/testthat/helper-gui-entry.R`,
+`guiEntryExpectLane()`): a frozen file holds, beside its steps, the commit, the date and R's version of its freeze, so
+no later dump can equal the whole file byte for byte. The control compares the `steps` member, written alone by the
+helper's own writer, by SHA-256, as KIT-199's control did. The whole-file hashes are written too (`sha256.tsv`).
+
+### The one further run, declared before it is sent
+
+- **Purpose.** The last run of this ticket (VAL-178 (3)): the tests-first evidence for I01 to I06, the regression at
+  the merge, the control, and, only if the control's three verdicts hold, the lane passing on the re-frozen file. An
+  unfavourable valid result is reported, not repaired.
+- **Queue.** Checked with `gh run list` before each send (recorded in `lifecycle.md`).
+
+| Part | Request | Commits | What it decides | Expected; ceiling (job-minutes) |
+|---|---|---|---|---|
+| a, tests first | `test-integration-removed-factors.R`, head only | 5352a498 (tests only) | that the restated expectations fail before the fix at the values of the table above | 15; 45 |
+| b, the merge | 29 files (R2's 25 and the audit's `test-kit206-prot-norm-export-guard.R`, `test-omic-summary-module.R`, `test-omics-summary-core.R`, `test-gui-entry-proteomics.R`), 3 shards per side, R CMD check on both sides; scripts: `gui-entry-control.R 32766889`, then `base-store-job.R a5229552 mutations` | head d7928ac9 (the merge) against base 32766889 (staging) | A2 to A11 and the repairs at the merge; nothing worse than staging but for the known four expectations of lane `prot_dia_limpa` (the reference is re-frozen only after the control); check unchanged; the control's three verdicts; the base-store blocks and the four mutations | 330; 600 |
+| c, the re-frozen lane (sent only if the control's three verdicts hold) | `test-gui-entry-proteomics.R` | head = the commit that holds the head dump of `prot_dia_limpa.json` alone, against base 32766889 | that the lane passes on the re-frozen file: the file's verdict `same` as staging (189 passed, 4 failed in lane `prot_dia`, which fails on staging already) | 90; 180 |
+| **Total** | | | | **435 (29.0 core-hours); 825 (55.0 core-hours)** |
+
+- **Budget.** 205.16 of 303.33 core-hours used before this run; with the ceiling 260.2. No row of ticket section 11
+  holds this run: it is the further run of VAL-178 (3), inside the ticket's unchanged ceiling.
+- **Not in it, and why.** The MOFA2 lane and the bundle lane are not repeated (the audit's regression scope does not
+  ask for them: K13's assertions and the cross-platform block read nothing the repairs change); no full suite (F at
+  8cb536cc stands for the rest, staging's code since being disjoint from this ticket's, audit section 8).
+- **Mechanics.** A request refused before a job runs, or a script that cannot run (no verdict written), is an
+  instrument failure (VAL-54): fixed and sent again inside the ceiling. A verdict or a test result is a result.
