@@ -160,6 +160,8 @@ example : Permutation.perm_floor_reflect_witness_stmt := Permutation.perm_floor_
 example : Permutation.bh_floor_witness_stmt := Permutation.bh_floor_witness
 example : Permutation.perm_finite_core_stmt := Permutation.perm_finite_core
 example : Permutation.perm_witness_stmt := Permutation.perm_witness
+example : Permutation.perm_measure_stmt := Permutation.perm_measure
+example : Permutation.perm_measure_witness_stmt := Permutation.perm_measure_witness
 
 #print axioms Permutation.identity_clause
 #print axioms Permutation.perm_tolerance_mono
@@ -172,3 +174,5 @@ example : Permutation.perm_witness_stmt := Permutation.perm_witness
 #print axioms Permutation.bh_floor_witness
 #print axioms Permutation.perm_finite_core
 #print axioms Permutation.perm_witness
+#print axioms Permutation.perm_measure
+#print axioms Permutation.perm_measure_witness

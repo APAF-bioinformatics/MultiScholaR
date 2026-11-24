@@ -295,6 +295,127 @@ theorem perm_finite_core : perm_finite_core_stmt := by
     le_of_mul_le_mul_left key (by positivity)
   exact le_trans (by exact_mod_cast h1) h5
 
+/-! ## (5b) The measure-theoretic form
+
+`Measure.prod_apply` writes the probability as the `μ`-integral of the draws' probability given the factor; the
+invariance of `μ` under each relabelling `τ` moves that integrand to `f ∘ τ`; summing over the `n!` relabellings, the
+integrand becomes the count of 5a over `(τ, π)` (with `g = f`) divided by `(n!)^B`, at most `α n!` at every `f`. -/
+
+section MeasureForm
+
+open MeasureTheory ENNReal
+
+/-- Every set of permutations is measurable in the discrete structure, so singletons are. -/
+local instance permMeasurableSingleton (n : ℕ) : MeasurableSingletonClass (Equiv.Perm (Fin n)) :=
+  ⟨fun _ => MeasurableSpace.measurableSet_top⟩
+
+/-- The event `{p_ε ≤ α}` as a set of (factor, draws). -/
+def permEvent (n B : ℕ) (T : (Fin n → ℝ) → ℝ) (ε α : ℝ) : Set ((Fin n → ℝ) × (Fin B → Equiv.Perm (Fin n))) :=
+  {x | pval T ε x.1 x.2 ≤ α}
+
+theorem measurable_comp_perm {n : ℕ} (σ : Equiv.Perm (Fin n)) : Measurable fun f : Fin n → ℝ => f ∘ ⇑σ :=
+  Measurable.of_eval fun i => measurable_pi_apply (σ i)
+
+/-- For fixed draws, `p_ε` is a measurable function of the factor. -/
+theorem measurable_pval_left {n B : ℕ} (T : (Fin n → ℝ) → ℝ) (hT : Measurable T) (ε : ℝ)
+    (π : Fin B → Equiv.Perm (Fin n)) : Measurable fun f : Fin n → ℝ => pval T ε f π := by
+  have hset : ∀ b, MeasurableSet {f : Fin n → ℝ | T (f ∘ ⇑(π b)) ≥ T f - ε ∨ f ∘ ⇑(π b) = f} := fun b => by
+    rw [Set.ofPred_or]
+    exact (measurableSet_le (hT.sub_const ε) (hT.comp (measurable_comp_perm (π b)))).union
+      (measurableSet_eq_fun (measurable_comp_perm (π b)) measurable_id)
+  unfold pval
+  refine Measurable.div_const (measurable_const.add ?_) _
+  simp only [card_filter, Nat.cast_sum, Nat.cast_ite, Nat.cast_one, Nat.cast_zero]
+  exact Finset.measurable_sum _ fun b _ => Measurable.ite (hset b) measurable_const measurable_const
+
+theorem measurableSet_permEvent {n B : ℕ} (T : (Fin n → ℝ) → ℝ) (hT : Measurable T) (ε α : ℝ) :
+    MeasurableSet (permEvent n B T ε α) :=
+  measurableSet_le (measurable_from_prod_countable_left fun π => measurable_pval_left T hT ε π) measurable_const
+
+instance uniformDraws_finite (n B : ℕ) : IsFiniteMeasure (uniformDraws n B) :=
+  ⟨by
+    rw [uniformDraws, Measure.uniformOfFinset_apply]
+    exact ENNReal.div_lt_top (by simp) (by simp)⟩
+
+/-- At every factor `f`, the draws' probabilities of the event summed over the relabellings are at most `α n!`. -/
+theorem sum_relabel_le {n B : ℕ} (T : (Fin n → ℝ) → ℝ) (ε α : ℝ) (hα : 0 ≤ α) (hε : 0 ≤ ε) (f : Fin n → ℝ) :
+    ∑ τ : Equiv.Perm (Fin n), uniformDraws n B (Prod.mk (f ∘ ⇑τ) ⁻¹' permEvent n B T ε α) ≤
+      ENNReal.ofReal α * (n.factorial : ℝ≥0∞) := by
+  classical
+  have h5a := perm_finite_core n B ℝ f T α ε hα hε
+  set C := (univ.filter fun x : Equiv.Perm (Fin n) × (Fin B → Equiv.Perm (Fin n)) =>
+    pval T ε (f ∘ ⇑x.1) x.2 ≤ α).card with hCdef
+  have hC : ∑ τ : Equiv.Perm (Fin n), (univ.filter fun π : Fin B → Equiv.Perm (Fin n) =>
+      π ∈ Prod.mk (f ∘ ⇑τ) ⁻¹' permEvent n B T ε α).card = C := by
+    rw [hCdef, card_eq_sum_ones (univ.filter _), sum_filter, Fintype.sum_prod_type]
+    refine sum_congr rfl fun τ _ => ?_
+    rw [card_eq_sum_ones, sum_filter]
+    refine sum_congr rfl fun π _ => ?_
+    by_cases hp : pval T ε (f ∘ ⇑τ) π ≤ α
+    · rw [ite_eq_left hp, ite_eq_left (by simpa [permEvent] using hp)]
+    · rw [ite_eq_right hp, ite_eq_right (by simpa [permEvent] using hp)]
+  have hM : ((univ : Finset (Fin B → Equiv.Perm (Fin n))).card : ℝ≥0∞) = (n.factorial : ℝ≥0∞) ^ B := by
+    simp [Fintype.card_perm]
+  have hCle : (C : ℝ≥0∞) ≤ ENNReal.ofReal α * (n.factorial : ℝ≥0∞) ^ (B + 1) := by
+    rw [← ENNReal.ofReal_natCast C, ← ENNReal.ofReal_natCast n.factorial, ← ENNReal.ofReal_pow (by positivity),
+      ← ENNReal.ofReal_mul hα]
+    exact ENNReal.ofReal_le_ofReal h5a
+  have h0 : ((n.factorial : ℝ≥0∞) ^ B) ≠ 0 := by simp [Nat.factorial_ne_zero]
+  have htop : ((n.factorial : ℝ≥0∞) ^ B) ≠ ∞ := by simp
+  simp only [uniformDraws, Measure.uniformOfFinset_apply, div_eq_mul_inv]
+  rw [← sum_mul, ← Nat.cast_sum, hC, hM]
+  calc (C : ℝ≥0∞) * ((n.factorial : ℝ≥0∞) ^ B)⁻¹
+      ≤ ENNReal.ofReal α * (n.factorial : ℝ≥0∞) ^ (B + 1) * ((n.factorial : ℝ≥0∞) ^ B)⁻¹ := by gcongr
+    _ = ENNReal.ofReal α * (n.factorial : ℝ≥0∞) * (n.factorial : ℝ≥0∞) ^ B * ((n.factorial : ℝ≥0∞) ^ B)⁻¹ := by
+        ring
+    _ = ENNReal.ofReal α * (n.factorial : ℝ≥0∞) := ENNReal.mul_inv_cancel_right h0 htop
+
+/-- (5b) the measure-theoretic form. -/
+theorem perm_measure : perm_measure_stmt := by
+  intro n B μ T α ε hμ hT hinv hα hε
+  change (μ.prod (uniformDraws n B)) (permEvent n B T ε α) ≤ ENNReal.ofReal α
+  have hE := measurableSet_permEvent (B := B) T hT ε α
+  rw [Measure.prod_apply hE]
+  have hhm : Measurable fun f => uniformDraws n B (Prod.mk f ⁻¹' permEvent n B T ε α) :=
+    measurable_measure_prodMk_left hE
+  have hshift : ∀ τ : Equiv.Perm (Fin n),
+      ∫⁻ f, uniformDraws n B (Prod.mk f ⁻¹' permEvent n B T ε α) ∂μ =
+        ∫⁻ f, uniformDraws n B (Prod.mk (f ∘ ⇑τ) ⁻¹' permEvent n B T ε α) ∂μ := fun τ => by
+    rw [← lintegral_map hhm (measurable_comp_perm τ), hinv τ]
+  have hN0 : (n.factorial : ℝ≥0∞) ≠ 0 := by simp [Nat.factorial_ne_zero]
+  have hNtop : (n.factorial : ℝ≥0∞) ≠ ∞ := by simp
+  have hsum : (n.factorial : ℝ≥0∞) * ∫⁻ f, uniformDraws n B (Prod.mk f ⁻¹' permEvent n B T ε α) ∂μ ≤
+      (n.factorial : ℝ≥0∞) * ENNReal.ofReal α := by
+    calc (n.factorial : ℝ≥0∞) * ∫⁻ f, uniformDraws n B (Prod.mk f ⁻¹' permEvent n B T ε α) ∂μ
+        = ∑ _τ : Equiv.Perm (Fin n), ∫⁻ f, uniformDraws n B (Prod.mk f ⁻¹' permEvent n B T ε α) ∂μ := by
+          simp [Fintype.card_perm]
+      _ = ∑ τ : Equiv.Perm (Fin n), ∫⁻ f, uniformDraws n B (Prod.mk (f ∘ ⇑τ) ⁻¹' permEvent n B T ε α) ∂μ :=
+          sum_congr rfl fun τ _ => hshift τ
+      _ = ∫⁻ f, ∑ τ : Equiv.Perm (Fin n), uniformDraws n B (Prod.mk (f ∘ ⇑τ) ⁻¹' permEvent n B T ε α) ∂μ :=
+          (lintegral_finsetSum _ fun τ _ => hhm.comp (measurable_comp_perm τ)).symm
+      _ ≤ ∫⁻ _f, ENNReal.ofReal α * (n.factorial : ℝ≥0∞) ∂μ :=
+          lintegral_mono fun f => sum_relabel_le T ε α hα hε f
+      _ = (n.factorial : ℝ≥0∞) * ENNReal.ofReal α := by
+          rw [lintegral_const, measure_univ, mul_one, mul_comm]
+  exact (ENNReal.mul_le_mul_iff_right hN0 hNtop).1 hsum
+
+/-- Witness for 5b: the law putting 1/2 on each of two constant vectors (invariant under every relabelling). -/
+theorem perm_measure_witness : perm_measure_witness_stmt := by
+  let μ : Measure (Fin 4 → ℝ) :=
+    (2⁻¹ : ℝ≥0∞) • Measure.dirac (fun _ => 0) + (2⁻¹ : ℝ≥0∞) • Measure.dirac (fun _ => 1)
+  refine ⟨μ, fun f => f 0, ⟨?_⟩, measurable_pi_apply 0, fun σ => ?_, fun _ => 0, fun _ => 1, ?_, ?_, ?_⟩
+  · simp [μ, ENNReal.inv_two_add_inv_two]
+  · have hc := measurable_comp_perm σ
+    simp only [μ, Measure.map_add _ _ hc, Measure.map_smul _ hc.aemeasurable, Measure.map_dirac' hc]
+    rfl
+  · intro h
+    have := congrFun h 0
+    norm_num at this
+  · simp [μ]
+  · simp [μ]
+
+end MeasureForm
+
 /-! Witnesses -/
 
 /-- Witness for 5a: `g = (0, 1)`, `T h = -h 0`, the swap as the one draw: it is not counted, so `p = 1/2 ≤ α`. -/

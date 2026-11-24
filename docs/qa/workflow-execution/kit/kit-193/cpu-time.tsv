@@ -98,3 +98,8 @@ t5a-proof-4	2026-11-24T12:47:02+11:00	3.017	0.551	2.259	1	taskset -c 0-3 timeout
 t5a-proof-5	2026-11-24T12:47:08+11:00	5.028	0.895	3.789	0	taskset -c 0-3 timeout 900 lake env lean MultiScholaRProofs/Proof/Permutation.lean
 t5a-build-root	2026-11-24T12:47:17+11:00	6.837	1.156	5.298	0	taskset -c 0-3 timeout 900 lake build --wfail
 t5a-audit	2026-11-24T12:47:27+11:00	1.590	0.805	2.284	0	taskset -c 0-3 timeout 900 lake env lean Audit.lean
+t5b-proof-1	2026-11-24T12:50:03+11:00	5.315	0.964	4.051	0	taskset -c 0-3 timeout 900 lake env lean MultiScholaRProofs/Proof/Permutation.lean
+t5b-proof-2	2026-11-24T12:50:41+11:00	7.792	0.959	4.626	0	taskset -c 0-3 timeout 900 lake env lean MultiScholaRProofs/Proof/Permutation.lean
+t5b-proof-3	2026-11-24T12:50:51+11:00	8.252	0.979	4.751	0	taskset -c 0-3 timeout 900 lake env lean MultiScholaRProofs/Proof/Permutation.lean
+t5b-build-root	2026-11-24T12:51:05+11:00	10.422	1.590	7.422	0	taskset -c 0-3 timeout 900 lake build --wfail
+t5b-audit	2026-11-24T12:51:12+11:00	2.616	1.156	3.637	0	taskset -c 0-3 timeout 900 lake env lean Audit.lean

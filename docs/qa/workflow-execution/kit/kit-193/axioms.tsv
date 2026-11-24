@@ -69,3 +69,5 @@ Permutation.perm_floor_reflect_witness	Permutation.perm_floor_reflect_witness_st
 Permutation.bh_floor_witness	Permutation.bh_floor_witness_stmt	propext, Classical.choice, Quot.sound
 Permutation.perm_finite_core	Permutation.perm_finite_core_stmt	propext, Classical.choice, Quot.sound
 Permutation.perm_witness	Permutation.perm_witness_stmt	propext, Classical.choice, Quot.sound
+Permutation.perm_measure	Permutation.perm_measure_stmt	propext, Classical.choice, Quot.sound
+Permutation.perm_measure_witness	Permutation.perm_measure_witness_stmt	propext, Classical.choice, Quot.sound

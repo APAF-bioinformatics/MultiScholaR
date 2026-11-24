@@ -194,7 +194,7 @@ coordinator's rule ("stop and report at any statement problem"). Laptop time for
   corrected `bh_sorted_eq_stmt` with its witness.
 - Laptop time for target 4 so far: 156.2 CPU-seconds over 24 Lean calls, 103.5 s of Lean wall time (labels `t4-*`, the counterexample's included).
 
-## Target 5 (permutation p-value): 5a, 5a', 5c, 5c' proved; 5b open
+## Target 5 (permutation p-value): proved (5a, 5a', 5b, 5c, 5c')
 
 - **Proved** (`Proof/Permutation.lean`, each on `propext`, `Classical.choice`, `Quot.sound`): 5a' `identity_clause`;
   `perm_tolerance_mono`; 5c `perm_floor`, `perm_floor_reflect`, `bh_floor`, `bh_floor_strict`; 5c'
@@ -209,15 +209,21 @@ coordinator's rule ("stop and report at any statement problem"). Laptop time for
   Witness: `g = (0, 1)`, `T h = -h 0`, one draw (the swap), `α = 1/2`, `ε = 10⁻⁹`: the draw is not counted, `p = 1/2`.
   Laptop: 7 Lean calls, 29.7 CPU-seconds (24.8 user + 4.9 system), 19.9 s wall (labels `t5a-*`). Agent time 0.10 h
   (12:42 to 12:48), against 20 expected and 30 ceiling (5a and 5a' together).
-- **Not yet:** 5b `perm_measure_stmt` with `perm_measure_witness_stmt`. Plan: `Measure.prod_apply` (the event is
-  measurable: `pval` is measurable in the factor for each draw tuple, and the draws are a countable discrete space);
-  invariance of `μ` under each relabelling moves the inner count to `f ∘ τ`; summing over the `n!` relabellings and 5a
-  pointwise in `f` gives the bound.
+- **5b proved** (`perm_measure`, witness `perm_measure_witness`; each on `propext`, `Classical.choice`,
+  `Quot.sound`): the event is measurable (`measurableSet_permEvent`: for fixed draws `p_ε` is a measurable function of
+  the factor, a finite sum of indicators of sets built from `T` and from equalities of coordinates; the draws form a
+  countable discrete space); `Measure.prod_apply` writes the probability as the `μ`-integral of the draws' probability;
+  invariance of `μ` under each relabelling `τ` (`lintegral_map`) moves the integrand to `f ∘ τ`; summed over the `n!`
+  relabellings the integrand is the count of 5a with `g = f` divided by `(n!)^B`, at most `α n!` at every `f`
+  (`sum_relabel_le`). Witness: the law with mass 1/2 on each of the constant vectors 0 and 1 in `ℝ^4` (invariant
+  because a constant vector is unchanged by every relabelling), `T f = f 0`. Laptop: 5 Lean calls, 40.0 CPU-seconds
+  (34.4 user + 5.6 system), 24.5 s wall (labels `t5b-*`; the first call compiled the file before the 5b text was in
+  it, an editing slip, not a proof attempt). Agent time 0.07 h (12:48 to 12:52), against 14 expected and 24 ceiling.
 - Laptop time for target 5 so far: 31.1 CPU-seconds over 8 Lean calls, 23.5 s of Lean wall time (labels `t5-*`).
 
 ## Resume here
 
-Order (coordinator, 2026-11-24): 5b `perm_measure_stmt` with `perm_measure_witness_stmt`; then the corrected
+Order (coordinator, 2026-11-24): target 5 is complete; next the corrected
 `bh_sorted_eq_stmt` with `bh_sorted_eq_witness_stmt` (the auditor confirmed 5474e512); then group R priority 1
 (R-A1, R-A2, R-A3, R-C1, R-F1, R-G0, R-G2, R-H1); then stop for the proofs audit (not priority 2, 4d-ii or
 `kept_family_witness`). Lean calls go through `taskset -c 0-3` with `LEAN_NUM_THREADS=4`, one at a time, each logged in
