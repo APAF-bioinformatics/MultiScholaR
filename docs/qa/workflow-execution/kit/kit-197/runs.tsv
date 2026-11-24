@@ -1,0 +1,2 @@
+run_id	commit	purpose	minutes	core_hours	result
+45316713443	5a702b7b6484e97e03ac515b2dd2c8b0b130c80e	L1: blind lifecycle E1 to E6, determinism and G1 mechanics (expected 1.33, ceiling 2.67 core-h)	18.7	1.25	all checks pass at the first attempt (lifecycle.md)
