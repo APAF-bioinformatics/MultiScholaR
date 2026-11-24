@@ -48,10 +48,10 @@ jobs:
         run: |
           p=.github/mofa-smoke/k150-params.json
           jq -e '(.label | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,40}$")) and
-            (.attempt | IN("lifecycle", "probe", "counted", "correction", "g0i", "instrument")) and
+            (.attempt | IN("lifecycle", "probe", "counted", "correction", "g0i", "instrument", "repeat")) and
             (.jobs | type == "array" and length >= 1 and length <= 4 and
               all(.name | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")) and
-              all(.plan | IN("lifecycle", "probe", "counted-small", "counted-large", "g0i")) and
+              all(.plan | IN("lifecycle", "probe", "counted-small", "counted-large", "g0i", "g0i-repeat", "m3-M", "m3-L")) and
               all(.size | IN("S", "M", "L", "Lp")) and
               all(.timeout | type == "number" and . == floor and . >= 20 and . <= 330))' "$p" > /dev/null \
             || { echo "::error::k150-params.json is not valid"; exit 1; }

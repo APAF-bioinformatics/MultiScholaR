@@ -1,7 +1,14 @@
 {
-  "label": "k209-g0i-1",
-  "attempt": "g0i",
+  "label": "k209-g0i-repeat",
+  "attempt": "repeat",
   "library_build": "RC",
   "install_builds": "RC C",
-  "jobs": [{"name": "g0i", "plan": "g0i", "size": "S", "timeout": 60}]
+  "jobs": [
+    {
+      "name": "g0i-repeat",
+      "plan": "g0i-repeat",
+      "size": "S",
+      "timeout": 42
+    }
+  ]
 }

@@ -174,6 +174,22 @@ case "$plan" in
                 tee "$RES/repeats-not-run.txt"
         fi
         ;;
+    g0i-repeat)
+        # KIT-209 addendum 1 (A7): one repeat of the S pipeline on RC and on C (the same commits as G0i).
+        pipeline S RC 2 0 0
+        pipeline S C 2 0 0
+        ;;
+    m3-M)
+        # KIT-209 M3: I-M, 3 per build, order C RC / RC C / C RC (the base of integration is build C).
+        pipeline M C 1 0 0; pipeline M RC 1 0 0
+        pipeline M RC 2 0 0; pipeline M C 2 0 0
+        pipeline M C 3 0 0; pipeline M RC 3 0 0
+        ;;
+    m3-L)
+        # KIT-209 M3: I-L, 2 per build, order C RC / RC C.
+        pipeline L C 1 0 0; pipeline L RC 1 0 0
+        pipeline L RC 2 0 0; pipeline L C 2 0 0
+        ;;
     g0i)
         # KIT-209 G0i: the S pipeline on the head (RC) and on build C, then a memory-limit failure on RC.
         pipeline S RC 1 0 0
