@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-167 pass 2 inputs at e5a258d2: which PRIDE project holds each search FASTA (ruling a), F4, the B36 GEO cut (ruling e), F6, F3, the demo tables and the real-engine lane; public data only; ceiling 150 job-minutes; decides the ticket's input corrections, F3/F4/F6 outcomes and the demo tables",
+  "label": "KIT-167 P2 inputs, gates F3 F4 F6, demo e5a258d2",
+  "package_commit": "e5a258d2015f201049f01646238e1cafa996c214",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "readxl"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-167/pass2-inputs.R",
+      "args": [
+        "pass2-out"
+      ],
+      "out": "pass2-out",
+      "out_pattern": "\\.(tsv|gff|gtf|txt)$",
+      "timeout_minutes": 130
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
