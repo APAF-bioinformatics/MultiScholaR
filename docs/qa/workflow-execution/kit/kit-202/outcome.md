@@ -1,4 +1,4 @@
-# KIT-202 outcome (interim: R1 done; the fix commit waits for KIT-190's merge)
+# KIT-202 outcome (stopped at 6.2's rule after R2: one unpredicted stored-reference move)
 
 Ticket `tickets/kit/KIT-202.md` r1.2 (owner decisions VAL-130). Branch `kit-202-intensity-filter-samples` from
 `v0.9-staging` 9453e79b.
@@ -33,14 +33,52 @@ Observed (`r1/tests.tsv`, `r1/failures.txt`, the two logs):
 Inferred: R1's stated base values hold, so the ticket goes on to the fix commit after KIT-190 merges (front matter,
 RC-03).
 
+## Fix and R2
+
+Commits: 2622fcff (true merge with `v0.9-staging` 9f3b7c49; no 7.3 file changed except the marker list, so no R1b);
+6e02de15 (the fix); 5d322d9c (S1 instrument repair, docs only).
+
+**R2, run 45469464049 on 6e02de15**, base e305fab3 (staging head when sent; it differs from the merged 9f3b7c49 only in
+`tests/testthat/test-omic-enrich-module.R`, KIT-205's re-freeze, and the ledger; neither in R2's scope, `R/` identical).
+363.1 job-minutes (3 + 3 shards, check on both sides, scripts), ceiling 675. Observed (`r2/compare.tsv`):
+- 39 files `same`; `test-kit202-intensity-filter-samples.R` `only-on-head`, 163 passed, 0 failed; `test-metab-qc-shared.R`
+  `count-changed` (11 -> 12 passed in the edited test), no failure: as 6.2 predicts.
+- `test-workflow-omics-declarations.R` `message-changed` (base 46 / 22 failed, head 45 / 23): the head adds one failing
+  expectation, `expect_identical(current$registry, frozen$registry)`, whose differences are the intensity filter
+  declarations' `fixed` (a list on head, NULL frozen) and `global_statistics` text, both omics (`r2/moved-declarations-registry.txt`).
+  Decided by the owner (VAL-181): no exception by file; `fixtures/kit073-omics-declarations-frozen.rds` is deferred to
+  the end-of-project re-record; it does not stop the ticket.
+- `test-workflow-omics-binding-steps.R` `message-changed` (58 / 1 failed on both sides), **not predicted**: the one
+  failing expectation (KIT-094's characterisation against `fixtures/kit094-characterisation.rds`) fails on base for input
+  sha256 values only; on head it also shows `steps[[3]]$parameters` of length 3 against 2, both omics: the intensity
+  filter step's record carries the marker entry (`r2/moved-binding-steps.txt`). 6.2 predicted no record snapshot moves;
+  this one does. By 6.2's rule the ticket stops before merge; the owner decides.
+- Check: findings identical on both sides (0 errors, 3 warnings, 3 notes each); none only on head (`r2/check-compare.txt`).
+- S1 died in R2 (instrument defect: the child's loop overwrote its output-directory variable; no rows written, no
+  result). Repaired in 5d322d9c (VAL-54 instrument run 1 of 3; no expected value, comparison or stop rule changed).
+
+**S1, run 45482129676 on 5d322d9c** (base argument e305fab3), 16.3 job-minutes, ceiling 75. Every criterion equal
+(`s1/compare.tsv`, `s1/filter-identity.tsv`): (i) unaffected base = head 836/836 (11 assays x 76 settings); (ii) head =
+design-sample oracle 228/228 and base = numeric-column oracle 228/228 (3 affected objects x 76); (iii) whole =
+partitioned 42/42 on head and on base, unaffected base = head 33/33 per variant; (iv) head under the earlier option =
+base 228/228.
+
+Stored references deferred to the end-of-project re-record (VAL-181): `tests/testthat/fixtures/kit073-omics-declarations-frozen.rds`.
+Awaiting the owner: `tests/testthat/fixtures/kit094-characterisation.rds` (`test-workflow-omics-binding-steps.R`).
+
 ## Acceptance criteria
 
-- A1: base side met (R1). Head side pending (R2).
-- A2 to A7: pending (fix commit, R2, R3).
+- A1: met. Base side R1; head side R2: every new test passes (163), T8's file passes.
+- A2: met (S1, run 45482129676).
+- A3: not met as written: one unpredicted verdict (`test-workflow-omics-binding-steps.R` `message-changed`); the
+  declarations file's move is decided (VAL-181). No `compare-error`, no `new-failure`.
+- A4: met (check findings identical).
+- A5: not run (R3 waits for the owner's decision).
+- A6: met (`git diff 9f3b7c49..6e02de15 -- R/` touches only 7.3's files; the comparison lines unchanged).
+- A7: met (NEWS, ledger row `VAL-<merge>`; `DESCRIPTION`, `NAMESPACE`, lock files unchanged; `man/` as 7.3).
 
 ## Not checked
 
-- Any head behaviour: the fix is not written.
-- S1 (`filter-samples-control.R`) has not run; it runs first in R2.
-- That the error class reaches the caller through the partitioned step's wrappers on head (T5 (a)).
-- R1b (only if the merge with a staging that contains KIT-190 changes a file it names).
+- R3 (full suite) and the merge with the current staging.
+- Whether other stored record snapshots outside R2's scope carry the intensity filter step's parameters (R3 would show).
+- Inferred, not observed: T5 (a)'s partitioned refusal passed on head, so the error class reaches the caller.

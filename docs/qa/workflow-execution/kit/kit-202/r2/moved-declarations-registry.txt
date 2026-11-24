@@ -1,0 +1,24 @@
+    16.1593635507555895
+  - 15.7323821990543760
+  + 15.7323821990543742
+    16.0304477110869037
+    16.2199230201751483
+    16.4512348380569868
+  
+  metabolomics metab_log2
+  Expected `current$registry` to be identical to `frozen$registry`.
+  Differences:
+  actual$lipidomics$lipid_intensity_filter$declaration$global_statistics vs expected$lipidomics$lipid_intensity_filter$declaration$global_statistics
+  - min_lipid_intensity_threshold"the percentile of the design's sample intensities of one assay table, computed once per assay before any row"
+  + min_lipid_intensity_threshold"the percentile of every intensity of one assay table, computed once per assay before any row"
+  
+  `actual$lipidomics$lipid_intensity_filter$declaration$fixed` is a list
+  `expected$lipidomics$lipid_intensity_filter$declaration$fixed` is NULL
+  
+  actual$metabolomics$metab_intensity_filter$declaration$global_statistics vs expected$metabolomics$metab_intensity_filter$declaration$global_statistics
+  - min_metabolite_intensity_threshold"the percentile of the design's sample intensities of one assay table, computed once per assay before any row"
+  + min_metabolite_intensity_threshold"the percentile of every intensity of one assay table, computed once per assay before any row"
+  
+  `actual$metabolomics$metab_intensity_filter$declaration$fixed` is a list
+  `expected$metabolomics$metab_intensity_filter$declaration$fixed` is NULL
+
