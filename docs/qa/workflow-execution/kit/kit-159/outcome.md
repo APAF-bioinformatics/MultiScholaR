@@ -26,7 +26,7 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, repair runs R0 to R9 in, R4c and the I10 diagnostic running)
+## Resume here (state 2026-11-24, repair runs R0 to R13 in; items 1 and 2 of the hand-over done)
 
 Ticket r1.16 (main checkout; section 31). Rulings: VAL-109; KIT-199 plan audit ruling C1 (a); KIT-199
 re-check Q01; KIT-192 implementation audit I04. Repair line: 15 core-hours (VAL-109).
@@ -68,35 +68,88 @@ hold; no row fails; all 11 rows failing at 95 % in T2 rise, lowest now 0.9605); 
 half-width ratios 1.4 to 5.3 (D) and 2.0 to 3.2 (consumer rank rows, H). R10 (d0492872): 48 tests
 pass, lint 0.
 
-**HANDED OVER at 5b8f38b4 + this records commit (context long). Next, in this order, each tests
-first (a tests-only commit shown failing AT the fault, then the fix), on the REPAIR line (raised to
-25 by the coordinator's ruling; 12.50 used, 12.50 left):**
-1. I15 remaining G1(a): loader for `gui-entry-control.tsv` and `declared-keys.tsv` against the real
-   records (KIT-199's on branch `kit-199-limpa-reference-refreeze`, `docs/qa/workflow-execution/kit/
-   kit-199/`; KIT-172's, 177's, 180's on staging) as fixtures; link (i) checking the declared rows'
-   digest values; reference-row adoption by key sets (not column names); the release-commit value
-   comparison (VAL-120 (2) with VAL-133's fallback: identical masked captures first; else keys,
-   order, missing values and calls exactly, numbers under SWD-083: certified with the difference
-   printed, or not certified; hand-off text KIT-199.md 12.3); the part (1)/(2) runners.
-2. VAL-133's G13 under SWD-083 (today `parity.R` rounds to 10 significant digits).
-3. I07 replay of declared cells (a prepared store holding only the import and design states;
-   `replayWorkflowAnalysisRecord(record, project_root, inputs, paths, scratch)`).
-4. I19 (4) covr LAST, only if the line has room: state its cost first (estimate: the whole suite
-   took 25 min plain; covr instruments it, likely 2 to 3 times, so 3 to 5 core-hours).
+**HANDED OVER AGAIN (second builder, context long) at the records commit after 80d17087.**
+
+Done by the second builder (observed; tables `rep/r11-*`, `rep/r12-*`, `rep/r13-*`):
+- Item 1 (I15 remaining G1(a)), `R/g1a.R` and `gates.R`: `valReadControlLink` reads a ticket's
+  `gui-entry-control.tsv` in all four committed forms (a/b of KIT-177, 180, 199; runner/oracle and the
+  comment line of KIT-172; `frozen_vs_base`/`frozen-base` -> base differences with their values;
+  `base_vs_head`/`base-head0` -> before and after the changed step; KIT-172's `base-head1` and
+  `head1-head0` not part of the link) and `declared-keys.tsv` (field prefix dropped; raw line breaks in
+  cells read); link (i) checks each own declared row's stored and live values against `frozen` and
+  `expected` (`valDeclaredValuesOk`); `valAdoptReferenceRows` compares (lane, step, class) and key
+  sets in either column form, a truncated KIT-172 row as a subset; D7 / VAL-133 (2):
+  `valCompareDaValues`, `valReadDaLink`, `valG1aDaMode` (exact only on the link's control CPU models
+  when they agreed byte for byte, with the ten environment keys of KIT-199's corrected I04 text equal
+  and the lockfile unchanged), `valG1aReleaseValues` (identical masked captures first; else values;
+  certified with the difference printed, or not certified); runners `valG1aRunLane` (child process,
+  inside `test_that()`, installed through the extracted helpers or under `load_all`, G1D's DA copy hook
+  for `prot_dia_limpa`), `valG1aPart1`, `valG1aPart2` (chain from `git log --first-parent` of the oracle
+  since 12d68ca7, each merge's `kit-<n>/gui-entry-control.tsv`; C51 label via `not_refrozen`).
+  Fixtures: the real records in `harness/msrval/tests/testthat/g1a/` with `SOURCES.tsv` (source path,
+  commit, SHA-256; KIT-199 at 6b3e615a, the others at staging 0b926295).
+- Item 2 (VAL-133 (1)): `valCompareParityDa` compares values under SWD-083 after the digest
+  (`identical`, `within_tolerance`, `differs`; no 10-digit decision; refuses without L1's table, keys,
+  q and fold-change columns); the measured KIT-199 R4 rows (P00025 fdr and P00146 log2FC cross the 10th
+  digit; P00189 log2FC 5.2e-11 relative; calls identical) fail the old rule and pass the new;
+  `PARITY_INSTALLER_EXCLUDED` and `valInstallerAcceptanceRows` exclude the six `prot_dia_limpa` DA steps
+  by name.
+- Runs: R11 (tests only, 8b52be7d) every new test fails at the fault (absent functions; the parity
+  test at its status); R12 (696a8e11) 25 of 28 with three fix defects and 4 lints, corrected once
+  (80d17087); R13 (80d17087): all 28 tests pass (159 expectations), lintr 0.
+- Interpretation to confirm (coordinator/owner): VAL-133 (2)'s value path is taken only when the DA
+  artifact is the only differing capture; any other capture difference from the re-frozen file is
+  `not_certified` (the G1(a) text's "expected identical"). The default change classes of a link are
+  the record's classes whose every part carries the ticket's tag (a ticket does not list them
+  separately in its record).
+- Not yet run against a real lane: `valG1aRunLane`'s child (only a stubbed runner is tested); the
+  first real use is G1(a)'s own job, or a one-lane smoke run (lipid_canonical, both modes, about 10
+  job-minutes) before it. Not built: the job-environment recorder for D7 (KIT-199 `control.R`
+  `writeEnvironment` is the template), the G1(a) entry script that chains part (1), part (2) and
+  `gates.md`; L1's committed DA tables for G13 (the parity request needs `table`, `keys`, `q_col`,
+  `fc_col` per route, and `valCheckParityL1` does not yet check a table's hash).
+
+**Next, in this order (each tests first, shown failing at the fault, then the fix):**
+1. Coordinator's re-audit list (register `AUDIT-KIT-159-impl-recheck-20261124.md`) and the owner's
+   VAL-137 rulings: E3 (USAGE.md consumer bullets to the re-pinned statuses; the "have not run end to
+   end" line; the duplicated loader sentence); E8 (`half_width_ratio` divides by z while the jackknife
+   uses t(g - 1): add an SE-inflation column with the t factor removed; correct the ticket's "1.00 for
+   a correctly scaled interval"); E7 (a `generator` column in the pinned table, the generator named in
+   results.md: 500-feature rows conditional on one feature draw); VAL-137 (1): the re-pin STANDS, the
+   C4 g = 6 sensitivity row recorded as not offered, outcome.md, runs.tsv and the ticket say the
+   declared rule's outcome was "partial" and why; VAL-137 (2): the family-wise bound uses a one-sided
+   95 % Clopper-Pearson upper bound on each component's miss rate (in place of the point estimate,
+   and of 3/n at zero misses), results.md's family line and the ticket; VAL-137 (3): a run-level
+   interval over independent units is never widened by a within-run interval at ANY count (each
+   unit's within-run interval reported; results.md: "over repeat runs, for the features scored");
+   widening only for jackknife forms (ii) and (iii): code, ticket text, USAGE.md; E4
+   (`helpers_extracted` filled; per-unit truths hashed into provenance); E6 (refusal tests assert the
+   message and which licence rule fired); E2 (drive `val-run.R` lifecycle, counted, score on the toy
+   ticket in a temporary git repository); in outcome.md, per finding, whether a failing-first
+   demonstration AT the audited fault exists (auditor: only I01, I07, I15, I16, I18, and I03, I11 as
+   absence; I02, 04, 05, 06, 08, 09, 13, 17 shown only by the fix passing).
+2. DI10b (owner and coordinator, budget line DI10b 1.5 core-hours from the unassigned total, 81.9 of
+   276 used before it): one confirmatory cell with the fixed feature draw and ONE-directional changes;
+   declare here BEFORE sending what it measures and what result would mean the symmetric split was
+   needed; reported, decides nothing by itself.
+3. I07 / E5 replay of declared cells: copy the cell's project store, prune it with
+   `kitPrepareReplayProject` (`tools/profiling/workflow_kit.R:1936`, read and extracted from the
+   package checkout, never edited) to the record's import and design states, then
+   `replayWorkflowAnalysisRecord(record, prepared, inputs, paths, scratch)` and `valReplay`'s
+   comparison; replace `replay = list(status = "not_built")` (`runfolder.R:304`). The package's own use:
+   `tests/testthat/test-workflow-lipid-declarations.R:198-216`.
+4. E1 LAST, with covr: the whole suite with `--lint` and T-TAB at ONE commit merged with current
+   staging (KIT-175, 177, 187, 189, 191, 192, 199 in it); repeated once after KIT-182, 190, 194 merge.
+   covr estimate 3 to 5 core-hours (the plain suite 25 min on 4 cores; instrumented 2 to 3 times).
 Owed after KIT-202 merges (not now): S0's three metabolomics routes and `metab_lc` export-then-load
 re-run (about 1 core-hour). Do not repeat R1 for later product merges until the coordinator says.
 
-**Lines:** REPAIR 12.50 of 25 (raised from 15) (R0 0.86, R1 2.21, R3 0.70, R4 0.20 cancelled, R5 0.90, R6 0.68, R7
-0.57, R8 0.78, R4b 0.87, R9 0.81, R4c 0.88, R4d 2.27, R10 0.77); T2 29.00 of 39 (DI10 2.07).
-VAL-54 instrument runs per item: R0 item 1 (R6), R3 item 1 (R7), E2E item 1 (R4d).
-Inferred, not run: the whole suite at the final head (R1 ran at 4a57cbdb; every changed file has
-been run since, in R4b, R4c, R4d, R10).
-
-**Not built (handed over):** I07 replay of declared cells (`replayWorkflowAnalysisRecord` needs a
-prepared project store holding only the import and design states and the record's inputs; provenance
-says `not_built`); I15's G1(a) part (1)/(2) runners, the `gui-entry-control.tsv` loader (fixtures:
-KIT-172, 177, 180 records) and the release-commit DA-value comparison of the DIA-with-limpa lane
-(VAL-120 (2), KIT-199 12.3); I19 (4) covr (R2) not sent: the repair line cannot hold it with R4c.
+**Lines:** REPAIR 14.81 of 25 (R0 0.86, R1 2.21, R3 0.70, R4 0.20 cancelled, R5 0.90, R6
+0.68, R7 0.57, R8 0.78, R4b 0.87, R9 0.81, R4c 0.88, R4d 2.27, R10 0.77, R11 0.76, R12 0.77, R13
+0.78); T2 29.00 of 39 (DI10 2.07); DI10b 0 of 1.5 (new line, coordinator 2026-11-24).
+VAL-54 instrument runs per item: R0 item 1 (R6), R3 item 1 (R7), E2E item 1 (R4d). Item 1 (G1(a)
+remainder): one correction used (R12 -> R13).
+Inferred, not run: the whole suite at the final head (R1 ran at 4a57cbdb).
 
 ## Earlier resume record (state 2026-11-24, pre-release repair written, UNRUN)
 
