@@ -28,3 +28,11 @@ R-A3;R-F1	Ruv.A3_stmt	package function	computeProtRuvModelFactors	R/func_prot_no
 R-H1	Ruv.H1_stmt	package function	ruvExactContrastsFit	R/func_general_ruv_factor_count.R	pending	test-kit193-pairs-ruv.R
 R-F1;R-G1;R-G2;R-H1	Ruv.betaHat	library	limma	limma	pending	test-kit193-pairs-ruv.R
 R-M1	Ruv.M1_stmt	library	edgeR	edgeR	pending	test-kit193-pairs-ruv.R
+T5	Permutation.pval	package function	integrationEnrichmentSetT	R/utils_integration_enrichment.R	pending	test-kit193-pairs-permutation.R
+T5	Permutation.bh_floor_stmt	package function	integrationEnrichmentFloorMinimum	R/utils_integration_enrichment.R	pending	test-kit193-pairs-permutation.R
+R-G0;R-L1;R-F1	Ruv.RuvIIIC.restored	package function	ruvIII_C_Varying,ProteinQuantitativeData	R/func_prot_s4_norm_methods.R	pending	test-kit193-pairs-ruv.R
+R-N1	RuvControls.firstPassControls	package function	protRuvFirstPassControls	R/func_prot_norm_optimization_helpers.R	pending	test-kit193-pairs-ruv.R
+R-N1	RuvControls.firstPassControls	package function	omicsRuvFirstPassControls	R/func_omics_ruv_factors.R	pending	test-kit193-pairs-ruv.R
+R-N1	RuvControls.trxFirstPassControls	package function	trxRuvDesignControls	R/func_trx_ruv.R	pending	test-kit193-pairs-ruv.R
+R-N1	RuvControls.firstPassControls	package constant	OMICS_RUV_FIRST_PASS_DROPPED_SHARE	R/func_omics_ruv_factors.R	pending	test-kit193-pairs-ruv.R
+R-N1	RuvControls.trxFirstPassControls	package constant	TRX_FIRST_PASS_DROPPED_SHARE	R/func_trx_ruv.R	pending	test-kit193-pairs-ruv.R
