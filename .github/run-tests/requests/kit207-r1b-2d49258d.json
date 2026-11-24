@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-207 R1b: instrument re-run of R1 (VAL-54; R1 45344983182 errored in the lipid/metab rows before the Save: notification doubles missing); same expectations; ceiling 60 min",
+  "label": "KIT-207 R1b tests-only 2d49258d (R/ equals v0.9-staging 3f066385)",
+  "package_commit": "2d49258d771e5bdae1840221454b4b3690e4abd6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit207-summary-head-guard.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
