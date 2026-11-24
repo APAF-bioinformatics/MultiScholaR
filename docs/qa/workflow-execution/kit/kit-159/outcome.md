@@ -303,6 +303,20 @@ Ceiling: REAUDIT2's remainder, 1.74 of 7. Pass: every test passes, lintr reports
 `g1r.R` or `gates.R`, and `val-g1r.R` ends `built` with KIT-172's 18 errata applied and no
 disagreement; anything else is recorded and reported, not re-run (VAL-54 for mechanics).
 
+**G1Rg observed (run 45378422113 at 34696937; `rep/g1rg-*`, `g1r/g1rg/`). Every declared pass
+condition is met.** Tests g1r, g1a, chain: 21 tests, 165 expectations, 0 failures (G1R-ERRATA 11 of
+11). lintr: no lints. `val-g1r.R`: `built`, every check passes; KIT-172's file 34 groups, 0
+disagreements, 18 errata applied; KIT-180 (12) and KIT-199 (10) agree with none; the table written
+is byte-identical to the committed `g1a-reference.tsv` (SHA-256 3228c900...). 12.5 job-minutes,
+0.83 core-hours. REAUDIT2: 6.09 of 7.
+
+**Departure, stated plainly.** The errata tests were not shown failing before the code went in:
+the coordinator ordered one run for the errata and the lints together. The nearest failing-first
+evidence comes from this same run. G1R-ADOPT passes with `errata = NULL`, and in that state
+`valAdoptReferenceRows` still stops on KIT-172's rows with exactly the 18 disagreements. So without
+the list the gate stops, and with it the gate passes. It does not show the new test failing on the
+code before the change.
+
 ### Resume here (handed over, 2026-11-24; context of the builder's session too long)
 
 Open, in this order, on `kit-159-validation-harness` in worktree `MultiScholaR-kit-159`:
