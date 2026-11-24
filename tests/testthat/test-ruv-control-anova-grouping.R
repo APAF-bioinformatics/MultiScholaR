@@ -329,3 +329,173 @@ test_that("KIT-190 T7 (ii): under the earlier rule the selection is the row-orde
     expect_equal(unname(unlist(k190$ps)), rep(1, 40L))
   }
 })
+
+# ---- T7: records and replay (D4 (a)); KIT-187's shared table `workflowReplayRuleMarkers` -----------------------------
+
+k190Marker <- function(record, state) {
+  step <- Filter(function(s) identical(s$state, state), record$steps)
+  if (!length(step)) return(NULL)
+  rows <- Filter(function(p) identical(p$name, "ruv_control_grouping"), step[[1L]]$parameters)
+  if (!length(rows)) return(NULL)
+  list(source = rows[[1L]]$source, value = decodeWorkflowRecordValue(rows[[1L]]$value))
+}
+
+k190FixedNames <- function(record, state) {
+  step <- Filter(function(s) identical(s$state, state), record$steps)
+  vapply(Filter(function(p) identical(p$source, "fixed"), step[[1L]]$parameters), function(p) p$name, "")
+}
+
+# As test-kit172-reopen.R:19-23.
+k190Paths <- function(root, class) {
+  qc <- if (identical(class, "lipid")) "lipid_qc_dir" else "metabolite_qc_dir"
+  stats::setNames(list(file.path(root, "source"), file.path(root, "qc"), file.path(root, "da"), file.path(root, "pub")),
+    c("source_dir", qc, "da_output_dir", "publication_graphs_dir"))
+}
+
+# A KIT-172 journey (helper-kit172.R:110-130) to the normalised state, then its RUV step: `legacy = TRUE` computes it
+# under the earlier rule, so its provenance has no marker, as a build before this change wrote it. Rows: F172 seed
+# 172101 with planted effects, the planted features first, so the row-order and the ANOVA selections differ.
+k190Owner <- function(root, class, ruv, legacy = FALSE) {
+  sim <- kit172Values(172101L, planted = TRUE)
+  values <- sim$values[order(sim$effects == 0), , drop = FALSE]
+  journey <- kit172Journey(root, kit172Object(values, class), class, ruv = NULL, da = FALSE)
+  run <- function() kit172Quiet(runWorkflowOmicsReferenceRuv(journey$binding, journey$owner, ruv,
+    journey$fixture$workflow$config_list))
+  if (legacy) withr::with_options(list(MultiScholaR.ruv_control_grouping = "dropped"), run()) else run()
+  journey
+}
+
+# Write the record, close the owner, prepare a copy cut to the design state and replay it (as test-kit172-reopen.R:
+# 44-56 does); `during` wraps the replay (spies). Returns the record, the replayed project's record, the mismatches and
+# the corrected matrix of the origin.
+k190Replay <- function(journey, root, class, during = function(expr) expr) {
+  prefix <- journey$prefix
+  corrected <- kit172StateMatrix(journey, paste0(prefix, "_ruv_corrected"))
+  json <- file.path(root, "analysis_record.json")
+  writeWorkflowAnalysisRecord(journey$owner, json)
+  record <- jsonlite::read_json(json, simplifyVector = FALSE)
+  closeDIAStateAdapter(journey$owner)
+  source_dir <- file.path(root, "source")
+  store_root <- dirname(dirname(list.files(source_dir, "^store[.]json$", recursive = TRUE, all.files = TRUE,
+    full.names = TRUE)[[1L]]))
+  copy <- tempfile("k190-copy-")
+  dir.create(copy)
+  stopifnot(system2("cp", c("-a", file.path(source_dir, "."), copy)) == 0L)
+  harness <- new.env(parent = globalenv())
+  sys.source(file.path(testthat::test_path("..", ".."), "tools", "profiling", "workflow_kit.R"), harness)
+  api <- function(name) get(name, asNamespace("MultiScholaR"))
+  copy_root <- file.path(copy, substring(store_root, nchar(source_dir) + 2L))
+  prepared <- harness$kitPrepareReplayProject(copy_root, c("initial", paste0(prefix, "_raw_data_s4")), api)
+  inputs <- c(stats::setNames(file.path(source_dir, "import_sources", "LCMS_Pos_export.txt"), paste0(prefix, "_assay_1")),
+    design_file = file.path(source_dir, "design_matrix.tab"))
+  replay <- during(kit172Quiet(harness$kitReplayJourney(record, prepared, store_root, inputs, k190Paths(root, class),
+    tempfile("k190-scratch-"), api)))
+  identity <- readSavedStoreIdentity(file.path(prepared, ".workflow-entities", "store.json"))
+  replayed <- newDIAStateAdapter(newWorkflowEntityStore(prepared, identity$project_id, identity$workflow_id), reopen = TRUE)
+  replayed_record <- buildWorkflowAnalysisRecord(replayed)
+  closeDIAStateAdapter(replayed)
+  list(record = record, replayed_record = replayed_record, mismatches = as.character(replay$mismatches),
+    corrected = corrected, state = paste0(prefix, "_ruv_corrected"))
+}
+
+test_that("KIT-190 T7 (i): the replay rule of the control grouping follows the step's marker", {
+  markers <- get0("workflowReplayRuleMarkers", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+  expect_true(!is.null(markers[["ruv_control_grouping"]]))
+  if (!is.null(markers[["ruv_control_grouping"]])) {
+    entry <- function(source) list(name = "ruv_control_grouping", source = source, value = encodeWorkflowRecordValue("kept"),
+      provenance = "fixed")
+    for (operation in c("lipid_ruv", "metab_ruv")) {
+      step <- function(parameters) list(state = "s", operation = operation, parameters = parameters)
+      expect_identical(workflowReplayRule(step(list(entry("fixed"))), "ruv_control_grouping"), "kept", info = operation)
+      expect_identical(workflowReplayRule(step(list()), "ruv_control_grouping"), "dropped", info = operation)
+      expect_identical(workflowReplayRule(step(list(entry("registry"))), "ruv_control_grouping"), "dropped", info = operation)
+    }
+  }
+})
+
+test_that("KIT-190 T7 (iii): a legacy RUV step made now lists the marker; one made under the earlier rule lists none", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  journey <- k190Owner(root, "lipid", kit172LegacyRuv("automatic"))
+  withr::defer(closeDIAStateAdapter(journey$owner))
+  expect_identical(k190Marker(buildWorkflowAnalysisRecord(journey$owner), "lipid_ruv_corrected"),
+    list(source = "fixed", value = "kept"))
+  # The builder does not back-fill the marker into a step whose provenance has no fixed constants (KIT-187).
+  other <- k190Owner(withr::local_tempdir(), "lipid", kit172LegacyRuv("manual"), legacy = TRUE)
+  withr::defer(closeDIAStateAdapter(other$owner))
+  expect_null(k190Marker(buildWorkflowAnalysisRecord(other$owner), "lipid_ruv_corrected"))
+})
+
+for (class in c("lipid", "metab")) {
+  test_that(sprintf("KIT-190 T7 (iv) (%s): records made before and after the change replay with their own selection", class), {
+    skip_if_not(workflowOwnerCapable())
+    root_a <- withr::local_tempdir()
+    root_b <- withr::local_tempdir()
+    a_owner <- k190Owner(root_a, class, kit172LegacyRuv("manual"), legacy = TRUE)
+    b_owner <- k190Owner(root_b, class, kit172LegacyRuv("manual"))
+    a <- k190Replay(a_owner, root_a, class)
+    b <- k190Replay(b_owner, root_b, class)
+    if (identical(a$corrected, b$corrected)) {
+      stop("KIT-190 T7 (iv) is vacuous: the two selections give the same corrected state")
+    }
+    expect_identical(a$mismatches, character())
+    expect_identical(b$mismatches, character())
+    expect_null(k190Marker(a$record, a$state))
+    expect_null(k190Marker(a$replayed_record, a$state))
+    expect_identical(k190Marker(b$record, b$state), list(source = "fixed", value = "kept"))
+    expect_identical(k190Marker(b$replayed_record, b$state), list(source = "fixed", value = "kept"))
+  })
+}
+
+test_that("KIT-190 T7 (v): a new-design RUV step replays unchanged and never reaches the control selection", {
+  skip_if_not(workflowOwnerCapable())
+  skip_if_not_installed("sva")
+  withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+  root <- withr::local_tempdir()
+  ruv <- list(ruv_design = "groups_all_features", ruv_grouping_variable = "group", ruv_k = 1L, ruv_k_rule = "user",
+    ruv_k_seed = NULL, ruv_control_ids = NULL)
+  journey <- k190Owner(root, "lipid", ruv)
+  calls <- new.env(parent = emptyenv())
+  calls$n <- 0L
+  ns <- asNamespace("MultiScholaR")
+  original_method <- get("getNegCtrlMetabAnova", envir = ns)
+  original_helper <- get("getNegCtrlProtAnovaHelper", envir = ns)
+  spied <- function(expr) {
+    testthat::local_mocked_bindings(
+      getNegCtrlMetabAnova = function(...) { calls$n <- calls$n + 1L; original_method(...) },
+      getNegCtrlProtAnovaHelper = function(...) { calls$n <- calls$n + 1L; original_helper(...) },
+      .package = "MultiScholaR")
+    expr
+  }
+  result <- k190Replay(journey, root, "lipid", during = spied)
+  expect_identical(result$mismatches, character())
+  expect_identical(calls$n, 0L)
+  for (record in list(result$record, result$replayed_record)) {
+    fixed <- k190FixedNames(record, result$state)
+    expect_true(all(c("replicate_sets", "test") %in% fixed))
+    expect_false("ruv_control_grouping" %in% fixed)
+  }
+})
+
+test_that("KIT-190 T7 (vi): a managed legacy RUV step records the marker; a managed new-design step does not", {
+  skip_if_not(workflowOwnerCapable())
+  skip_if_not_installed("sva")
+  testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+    assertWorkflowController = function(...) invisible(TRUE), .package = "MultiScholaR")
+  managed <- function(parameters) {
+    fixture <- lipidDeclarationsOwner(withr::local_tempdir(.local_envir = parent.frame(2L)))
+    withr::defer(closeDIAStateAdapter(fixture$owner), envir = parent.frame(2L))
+    worker <- omicsWorkerRun(fixture, "lipid_ruv", parameters)
+    expect_identical(worker$status, "complete", info = worker$error)
+    k190Quiet(completeWorkflowAction(list(manager = fixture$owner, accepting = TRUE), "lipid_ruv", worker$result,
+      context = list(state_name = "lipid_ruv_corrected", config = list(), description = "RUV (managed)"),
+      values = parameters))
+    buildWorkflowAnalysisRecord(fixture$owner)
+  }
+  legacy <- managed(lipidDeclarationsRuvParameters())
+  expect_identical(k190Marker(legacy, "lipid_ruv_corrected"), list(source = "fixed", value = "kept"))
+  withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+  declared <- managed(list(ruv_design = "groups_all_features", ruv_grouping_variable = "group", ruv_k = 1L,
+    ruv_k_rule = "user", ruv_k_seed = NULL, ruv_control_ids = NULL))
+  expect_null(k190Marker(declared, "lipid_ruv_corrected"))
+})
