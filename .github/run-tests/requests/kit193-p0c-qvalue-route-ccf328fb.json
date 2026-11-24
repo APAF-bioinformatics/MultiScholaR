@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-193 P0c: target 4 (ii) on the merged route (KIT-203; significance_rule = qvalue) with its planted defect, row T4 digest of processEnrichments, first run of the binding tripwire test-kit193-bindings.R",
+  "label": "KIT-193 target 4 (ii), T4 digest, tripwire on kit-193-lean-proofs ccf328fb",
+  "package_commit": "ccf328fb83b94bcf158c79e1540e3057202e1907",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit193-pairs-qvalue.R",
+    "test-kit193-bindings.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-193/scripts/bindings-t4.R",
+      "args": [
+        "kit193-out-t4"
+      ],
+      "out": "kit193-out-t4",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
