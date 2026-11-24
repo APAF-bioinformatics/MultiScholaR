@@ -1,4 +1,4 @@
-# KIT-202 outcome (R2 judged; R3 and the check on the merge running)
+# KIT-202 outcome (R3 and the check on the merge recorded; ready to merge)
 
 Ticket `tickets/kit/KIT-202.md` r1.3 (owner decisions VAL-130). Branch `kit-202-intensity-filter-samples` from
 `v0.9-staging` 9453e79b.
@@ -70,9 +70,20 @@ Stored references deferred to the end-of-project re-record: `tests/testthat/fixt
 (`test-workflow-omics-declarations.R`, VAL-181) and `tests/testthat/fixtures/kit094-characterisation.rds`
 (`test-workflow-omics-binding-steps.R`, VAL-189).
 
+## R3: run 45490601364 (full suite, head b20af066 against 393ebb85, 20 + 20 shards, 1,223.1 job-minutes = 81.54 core-hours, ceiling 2,800)
+
+Observed (`r3/compare.tsv`): 478 files; 474 `same`; `test-kit202-intensity-filter-samples.R` `only-on-head`, 163 passed,
+0 failed, 0 skipped; `test-metab-qc-shared.R` `count-changed` (that test 11 -> 12), no failure;
+`test-workflow-omics-declarations.R` and `test-workflow-omics-binding-steps.R` `message-changed`, their base and head
+messages byte-equal to R2's (the registry's four differences, VAL-181; the two `steps[[3]]$parameters` lines per omic,
+VAL-189); no `new-failure`, no `compare-error`, no other `message-changed` or `count-changed` (the four GUI-entry files,
+`test-kit172-*`, `test-workflow-kit-harness.R` and the record users outside R2's scope all `same`). Every item of the
+audit's "What R3 must show" 1 to 5 and 7 holds; R3 is above its expected 67.29 core-hours and inside its ceiling.
+
 ## Check on the merge (R2b, audit I02) and staging after 393ebb85
 
-R2b's check-only run, b20af066 against 393ebb85, declared in `runs.tsv` before it was sent: result below when back.
+R2b's check on the merge (run 45493607263, b20af066 against 393ebb85, declared in `runs.tsv` before it was sent, 29.5
+job-minutes): findings identical (0 errors, 3 warnings, 3 notes each side); none only on head (`r2b/check-compare.txt`).
 S1 is not repeated: KIT-167 (merged at d593e351) changed no file of 7.3 and no lipid or metabolite filter, declaration
 or design-save code; its `R/mod_omic_import.R` hunk runs only behind `referenceMappingImportOffered` (the gate on, and
 proteomics or transcriptomics).
@@ -106,16 +117,14 @@ Divergence from `conventions/R.md` recorded (audit I11): 43 added R lines exceed
   6.2 from r1.3; VAL-181) and `test-workflow-omics-binding-steps.R` (predicted by the ticket: no; VAL-189, the coordinator's ruling told to the owner), both
   `message-changed` by the marker and declaration text only. Every other verdict as 6.2. No `compare-error`, no
   `new-failure`.
-- A4: met (check findings identical).
-- A5: pending (R3 on the merge with staging 393ebb85, d593e351; R1b not needed: the merge changes no 7.3 file and no
-  lipid or metabolite filter, import or design-save file).
+- A4: met (R2's check, and R2b's check on the merge, run 45493607263: findings identical, none only on head).
+- A5: met (R3 45490601364; the two decided differences as in A3). R1b not needed: the merge changes no 7.3 file and no
+  lipid or metabolite filter, import or design-save file.
 - A6: met (`git diff 9f3b7c49..6e02de15 -- R/` touches only 7.3's files; the comparison lines unchanged).
 - A7: met (NEWS, ledger row `VAL-<merge>`; `DESCRIPTION`, `NAMESPACE`, lock files unchanged; `man/` as 7.3).
 
 ## Not checked
 
-- R3 (full suite) and the merge with the current staging.
-- Whether other stored record snapshots outside R2's scope carry the intensity filter step's parameters (R3 would show).
 - The managed worker route on an affected table (T6 (v) runs the worker on the text-id fixtures; it shows the marker only).
 - Import Existing Design with numeric non-sample columns, or with a run read back as not numeric (no test or script runs
   that route).
@@ -161,9 +170,10 @@ Over S1's 76 settings per fixture, the kept set changed at 46, 21 and 42 setting
 Analyses recorded before this change replay with the earlier rule: their step carries no marker (T6 (iv); S1 (iv), 228 of 228). New records carry the marker. A design sample that is missing from the table or not numeric is now refused. In the application this can happen only through Import Existing Design, when the folder's column mapping lists a run whose column holds no value at all. Without `sample_columns`, the exported helpers count every numeric column except the identifier, and warn.
 
 **Evidence and limits.**
+- R2b 45493607263: R CMD check on the merge, findings identical.
 - R1 45326839837: 32 + 2 assertions failing at their stated base values on the tests-only commit f9d7d910.
 - R2 45469464049: 43 files, base e305fab3 against head 6e02de15; check identical.
 - S1 45482129676: every criterion equal.
-- R3 `<R3 id>`: full suite on the merge with 393ebb85.
+- R3 45490601364: full suite on the merge with 393ebb85.
 
 Fixtures only: the repository's MS-DIAL metabolite seed, the module-CI lipid table with integer ids, the GUI-entry lanes and the module-CI QC objects. No real data. That current MS-DIAL releases write integer identifiers was not checked against a named export. The Import Existing Design route and the managed worker were not run on an affected table; they use the same code (inferred).
