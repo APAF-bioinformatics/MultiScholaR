@@ -72,7 +72,7 @@ k208FirstName <- function(annotations, entries) {
 #' `uniprot_dat_cln.RDS`, `bus` put on `workflow$uniprot_dat_cln`, `da_annotations` publishes the DA (default: the
 #' annotations, or an empty table). `gost` is always replaced by the recorder, so no service is called.
 k208Project <- function(root, annotations = NULL, id_gene_names = TRUE, bus = NULL, da_annotations = NULL,
-    taxon = "9606", record_enricher = FALSE) {
+    taxon = "9606", record_enricher = FALSE, q_cutoff = 0.05) {
     gost <- k208RecordGost()
     enricher <- if (record_enricher) k208RecordEnricher()
     roles <- k208Roles()
@@ -103,7 +103,7 @@ k208Project <- function(root, annotations = NULL, id_gene_names = TRUE, bus = NU
         qc_params = list(protein_qc = list()), config_list = list()))
     if (!is.null(bus)) workflow$uniprot_dat_cln <- bus
     parameters <- list(selected_contrast = "B_vs_A", organism_taxid = taxon, up_cutoff = 0, down_cutoff = 0,
-        q_cutoff = 0.05, correction_method = "gSCS", enable_organism_filter = FALSE)
+        q_cutoff = q_cutoff, correction_method = "gSCS", enable_organism_filter = FALSE)
     published <- da_annotations %||% (if (is.data.frame(annotations)) annotations else createEmptyUniprotTable())
     notes <- list()
     kernel_calls <- 0L
@@ -135,8 +135,8 @@ k208Project <- function(root, annotations = NULL, id_gene_names = TRUE, bus = NU
 
 k208Blank <- function(x) sum(is.na(x) | !nzchar(as.character(x)))
 
-k208Refusal <- paste("g:Profiler tests gene names, and none of the proteins of comparison B_vs_A has one (0 of 70",
-    "proteins named), so nothing would be tested. Check that the protein annotation was retrieved for this organism",
+k208Refusal <- paste("g:Profiler tests gene names, and none of the tested proteins of comparison B_vs_A has one (0 of",
+    "70 tested proteins named), so nothing would be tested. Check that the protein annotation was retrieved for this organism",
     "(save the design again). This happens when the annotation was not retrieved for these proteins, or when their",
     "identifiers are not UniProt accessions.")
 
@@ -270,4 +270,65 @@ test_that("KIT-208 T9: perform_enrichment called directly with no identifier doe
     expect_true(inherits(caught, "multischolar_enrichment_no_identifiers"))
     expect_identical(caught$list_size, 3L)
     expect_identical(caught$query_ids, 0L)
+})
+
+# --- At the merge after KIT-205 (implementation audit K208-I08, I01, I07): the counts follow the tested rows -------
+
+#' One comparison's DA table in a `da_results_for_enrichment`, as the run reads it (`groupB-groupA`, shown as B_vs_A)
+k208DaResults <- function(table) {
+    methods::new("da_results_for_enrichment",
+        contrasts = tibble::tibble(contrasts = "groupB-groupA", friendly_names = "B_vs_A"),
+        da_data = list(`groupB-groupA` = table), design_matrix = data.frame(Run = "S1", stringsAsFactors = FALSE))
+}
+
+test_that("KIT-208 T10: the refusal's n counts the tested proteins only", {
+    # Four tested proteins without a name (two past the cutoffs, up), two untested proteins with a name.
+    table <- data.frame(gene_name = c(NA, NA, NA, NA, "NAMED1", "NAMED2"),
+        log2FC = c(2, 2, 0.1, -0.1, 3, 3), raw_pvalue = c(0.001, 0.001, 0.5, 0.5, NA, NA),
+        fdr_qvalue = c(0.01, 0.01, 0.6, 0.6, NA, NA), stringsAsFactors = FALSE)
+    log <- k208RecordGost()
+    parameters <- list(da_results = k208DaResults(table), taxon_id = "9606", up_cutoff = 0, down_cutoff = 0,
+        q_cutoff = 0.05, pathway_dir = withr::local_tempdir(), go_annotations = NULL, exclude_iea = FALSE,
+        protein_id_column = "gene_name", contrast_names = "groupB-groupA", correction_method = "gSCS",
+        process_fn = processEnrichments)
+    error <- k208Capture(diaEnrichmentOperation()$kernel(NULL, parameters, NULL))
+    expect_identical(conditionMessage(error), paste("g:Profiler tests gene names, and none of the tested proteins of",
+        "comparison B_vs_A has one (0 of 4 tested proteins named), so nothing would be tested. Check that the protein",
+        "annotation was retrieved for this organism (save the design again). This happens when the annotation was not",
+        "retrieved for these proteins, or when their identifiers are not UniProt accessions."))
+    expect_true(inherits(error, "workflow_enrichment_no_identifiers"))
+    expect_identical(log$calls, character())
+})
+
+test_that("KIT-208 T11: an untested protein without a name is not counted as unnamed", {
+    # Three tested proteins with a name, one tested without, one untested without.
+    table <- data.frame(gene_name = c("A1", "B1", "C1", NA, NA), log2FC = c(2, -2, 0, 0, 1),
+        raw_pvalue = c(0.001, 0.001, 0.5, 0.5, NA), fdr_qvalue = c(0.01, 0.01, 0.6, 0.6, NA), stringsAsFactors = FALSE)
+    da <- k208DaResults(table)
+    expect_identical(workflowEnrichmentUnnamedProteins(da, da@contrasts, "gene_name"), "B_vs_A: 1 of 4")
+})
+
+test_that("KIT-208 T12 (guard, I01): no protein past the cutoffs and none named: the run completes, nothing sent", {
+    k208Offline()
+    unmatched <- k208Annotations()
+    unmatched$Entry <- sprintf("Z%05d", seq_len(nrow(unmatched)))
+    project <- k208Project(withr::local_tempdir(), annotations = unmatched, id_gene_names = FALSE, q_cutoff = 0)
+    expect_null(project$error)
+    expect_identical(project$gost, character())
+    expect_null(project$outcomes$enrichment_lists_not_tested)
+    expect_identical(project$outcomes$enrichment_unnamed_proteins, "B_vs_A: 70 of 70")
+})
+
+test_that("KIT-208 T13 (guard, I07): an annotation entry with an empty name takes the identifier table's", {
+    k208Offline()
+    full <- k208Annotations()
+    entries <- sort(k208Roles()$entry)
+    emptied <- full$Entry[1:5]
+    full$gene_names[1:5] <- ""
+    project <- k208Project(withr::local_tempdir(), annotations = full)
+    da <- project$da
+    at <- da$uniprot_acc %in% emptied
+    expect_identical(sum(at), 5L)
+    expect_identical(as.character(da$gene_name[at]), paste0("GENE", match(da$uniprot_acc[at], entries)))
+    expect_identical(as.character(da$gene_name[!at]), k208FirstName(full, da$uniprot_acc[!at]))
 })
