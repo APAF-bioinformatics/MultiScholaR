@@ -2,4 +2,4 @@ platform	run	commit	file	passed	failed	errors	skipped	cross_platform_block	rule
 ubuntu-22.04 (run-tests, the reference)	45325536775	939a9d10	test-integration-removed-factors.R	432	0	0	4	printed; recorded as tests/testdata/integration/kit184-cross-platform.tsv (sha256 of the printed block 8085a590e43ae1175c73cc59d14f8ebb4e5e228bbc2711b1e0c11848d3bb5fb1)	the reference
 ubuntu-22.04 (the installed bundle)	45332726284	83f745ee	test-integration-removed-factors.R	439	0	0	3	passed	largest principal angle to the reference's factors at most 1e-8; IDs and directions identical; pvalue, p.adjust, correlation and effect within 1e-6
 windows-2025 (the installed bundle)	45332726284	83f745ee	test-integration-removed-factors.R	439	0	0	3	passed	the same
-ubuntu-24.04 (the installed bundle)	45336831513	5e5df9b9	test-integration-removed-factors.R	pending	pending	pending	pending	pending	the same
+ubuntu-24.04 (the installed bundle)	45336831513	5e5df9b9	test-integration-removed-factors.R	439	0	0	3	passed	the same

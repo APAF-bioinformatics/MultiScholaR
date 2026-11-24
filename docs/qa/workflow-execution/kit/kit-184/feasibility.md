@@ -87,4 +87,6 @@ share one W, a target with a missing run has its own.
 ## G3 (run L1) and G4
 
 G4: KIT-183's counted outcome is known: O1, `camera` the test of record for every data set (ledger VAL-94; run
-45225854502). Cell C is therefore not run, and K-E1 decides in cells A and B. G3: pending (L1).
+45225854502). Cell C is therefore not run, and K-E1 decides in cells A and B. G3: holds (L1, run
+45333818847): the evidence lane has ruv 0.9.7.1, RUVIIIC 1.0.19, limma 3.68.4 and MOFA2 1.22.0, the locked versions
+(`l1/versions.tsv`); no extra install step was needed.

@@ -45,7 +45,7 @@ recorded on the laptop). `test-kit129-run-path.R` has six failures identical on 
 | A12 | MOFA2 lane, K13 | met | M |
 | A13 | Simulation | **not met: stopped at L1** (seconds per replicate above the stop). L1's other checks passed | `lifecycle.md`, `l1/` |
 | A14 | Gate off | met | `r1/gate-off-verdict.txt` |
-| A15 | Cross-platform record; the writer's memory and time | met on ubuntu-22.04 and windows-2025 (B); ubuntu-24.04: see `cross-platform.tsv`; the writer: 9.6 s and 740 MiB above the reading before the call at 20,000 x 500 (ceilings 60 s, 1 GiB) | B, B24; `r1/removed-factors-cost.tsv` |
+| A15 | Cross-platform record; the writer's memory and time | met on ubuntu-22.04 and windows-2025 (B) and on ubuntu-24.04 (B24): 439 passed, 0 failed, 3 skipped on each, the cross-platform block passing (`cross-platform.tsv`); the writer: 9.6 s and 740 MiB above the reading before the call at 20,000 x 500 (ceilings 60 s, 1 GiB) | B, B24; `r1/removed-factors-cost.tsv` |
 | A16 | Failing first; the guards fail on a broken head | met | R1a; `r1/x-verdict.txt` |
 | A17 | Full suite base against head with check | **not run**: it is the merge checkpoint and waits for the final head (the texts filled from the counted simulation) | |
 | A18 | Ledger rows | rows 1 (implementation) and 2 (G1) written as `VAL-<merge>`; row 3 (the simulation) waits for it | `docs/methods-decision-ledger.md` |
