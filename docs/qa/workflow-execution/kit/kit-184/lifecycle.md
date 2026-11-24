@@ -196,3 +196,21 @@ take somewhat longer than 119 seconds; the limit leaves fifteen times that.
 
 **Not checked by L1b:** any result (by design); the counted run's own job list (it has not run); the `score` job as a
 separate job on downloaded artifacts (L1b ran the scorer inside its job).
+
+## S, the counted run: the conditions for sending it, written before the send (2026-11-24)
+
+Authority: re-check 2 of the declaration audit ("the first thing that must be true before S is sent") and the
+coordinator's word, given for when all of these hold.
+
+| Condition | Evidence (read just before the send) |
+|---|---|
+| The freeze commit is on the remote package branch | `git ls-remote origin kit-184-ruv-factors-in-integration` gave 81ee30527cbfab973d5cd77a9ed31207234643be, the freeze commit, whose `git show --stat` lists one path, `docs/qa/workflow-execution/kit/kit-184/declaration.md` (432 lines added). (The commit that adds this section comes after it; the freeze commit stays its ancestor and is the `package_commit` of the send.) |
+| The freeze commit's scripts hash to the declared values | `git show 81ee3052:.../simulate-k184.R | sha256sum` = 58333b1ef1b479a65f30089dd0307aad5ebab2495c1fb060621a8738a873a75b; `score-k184.R` = 282b844e1c3427e8c99f296aa486c313957776bda8067d782a9a4511b43fa8b2; `git diff --stat 9e525fd9 81ee3052` over `R/`, `inst/`, `DESCRIPTION`, `NAMESPACE`, `tests/`, the two scripts and `kit-183/` is empty |
+| The lane branch's head is exactly the lane commit the declaration names | `git ls-remote origin run-mofa-evidence-k184` gave 27c8766ca187b314b1951f31b30d43dadf0287fd; at that commit `k184-evidence.yml` hashes to 15378427e28bdbcd2066584167c74ae6e7b0b392d07041f6bf166ed0e3ce68d8 and `k184.R` to 58333b1e...a75b |
+| The send commit changes only `k184-params.json`, with `run = counted` and `package_commit` = the freeze commit's full id | prepared and not yet pushed: lane commit 008852f82c41103a43a3b0e333febda81f7feee5, parent 27c8766c; `git show --stat`: `.github/mofa-smoke/k184-params.json`, 1 file changed, 3 insertions, 3 deletions; `run` is `counted`, `package_commit` is 81ee30527cbfab973d5cd77a9ed31207234643be |
+| `gh run list` shows room for the 17 jobs | 19 runs of other tickets were not completed; their jobs: 77 in progress, 0 queued. So the account was running far more than 20 jobs at once and none was waiting for a runner; no full suite was queued. The 17 jobs are sent on that reading; if they queue, they wait (a job's limits count from its own start) |
+
+Purpose: the counted simulation, once. Ceiling: 16 jobs of 85 minutes, the determinism job of 25, the score job of 30:
+1,415 job-minutes. It decides K-E1 to K-E5 as `declaration.md` states them. While it runs nothing of it is read but the
+status of its jobs, with one exception the coordinator asked for: the hashes in the run's `script-sha256.txt`, which
+must be the declared ones (if they are not, the run is cancelled).
