@@ -148,6 +148,8 @@ function rEnvironment(probe, runFolder) {
     env.RETICULATE_PYTHON = path.join(runtime, 'python', 'python.exe');
     env.PYTHONNOUSERSITE = '1';
     env.RSTUDIO_PANDOC = path.join(runtime, 'pandoc');
+    // KIT-167: the sequence search program of the reference mapping; the package checks its SHA-256.
+    env.MSR_DIAMOND = path.join(runtime, 'diamond', 'diamond.exe');
     // The saved-entity store must not take WSL's bash or other GNU tools found on the host (F6).
     env.MULTISCHOLAR_DISABLE_TOOLS = 'bash,dd,sha256sum,sync,tar,cp';
     env.MSR_BUNDLE = runtime;

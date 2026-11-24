@@ -56,7 +56,8 @@
       "differentialPackage": false,
       "shortcutName": "MultiScholaR",
       "createStartMenuShortcut": true,
-      "artifactName": "MultiScholaR-Setup-${version}.exe"
+      "artifactName": "MultiScholaR-Setup-${version}.exe",
+      "include": "installer.nsh"
     }
   }
 }

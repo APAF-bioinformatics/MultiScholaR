@@ -121,6 +121,14 @@ for (metadata in Sys.glob(file.path(site, "*.dist-info", "METADATA"))) {
 pandoc <- Sys.getenv("PANDOC_VERSION", "")
 component("pandoc", "pandoc", pandoc, "GPL-2.0-or-later",
     sprintf("https://github.com/jgm/pandoc/archive/refs/tags/%s.tar.gz", pandoc))
+# KIT-167: DIAMOND runs as a separate program (an aggregate with MultiScholaR); its corresponding source is the tag's
+# archive. The shipped UniProt references are data under CC BY 4.0 (inst/extdata/reference_mapping/ATTRIBUTION.txt).
+diamond_pin <- utils::read.delim(file.path("inst", "extdata", "diamond-pin.tsv"), colClasses = "character")
+component("DIAMOND", "DIAMOND", diamond_pin$version[[1L]], "GPL-3.0-or-later (third-party code in src/lib carries its own notices)",
+    sprintf("https://github.com/bbuchfink/diamond/archive/refs/tags/v%s.tar.gz", diamond_pin$version[[1L]]))
+component("data", "UniProtKB reference proteomes (KIT-167)", "release 2026_04",
+    "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); attribution in reference_mapping/ATTRIBUTION.txt",
+    "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/")
 component("Electron", "Electron", electron,
     "MIT (LICENSE.electron.txt); Chromium and its components: LICENSES.chromium.html (both beside the program)",
     sprintf("https://github.com/electron/electron/archive/refs/tags/v%s.tar.gz", electron))
