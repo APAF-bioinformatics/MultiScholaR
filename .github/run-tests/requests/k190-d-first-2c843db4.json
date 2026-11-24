@@ -1,0 +1,26 @@
+{
+  "requested_by": "KIT-190 rule (d) failing-first: tests-only commit; new file and the two characterisation files",
+  "label": "KIT-190 rule d failing-first 2c843db4",
+  "package_commit": "2c843db4b28810a92f2635c2c89fdae87012e93d",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-ruv-control-anova-grouping.R",
+    "test-lipid-12c-ruv-s4-characterization.R",
+    "test-metab-02y-get-neg-ctrl-metab-anova-characterization.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 15,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
