@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-231 gate G0: workbook folder reads, zero-length primitives, static scan of eight workbooks, affected chunks on a real object, RunApplet; base cf8af245 plus script; records only; ceiling 60 job-minutes (4.0 core-hours); decides stop rules 1 and 2",
+  "label": "KIT-231 G0 at 2c6c2498 (staging cf8af245 + g0.R)",
+  "package_commit": "2c6c24984f2a2cb1a3e2a9b68148179646011f03",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-231/g0.R",
+      "args": ["docs/qa/workflow-execution/kit/kit-231/g0-out"],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-231/g0-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 50
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
