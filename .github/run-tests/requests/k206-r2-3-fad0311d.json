@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-206 R2-3 (instrument run 2 of 3 for R2, VAL-54): the new file only, head fad0311d against base 334ff10b (tests-only + the same two E11 repairs, run-k206-r2-base2); ceiling inside R2's 540 job-minutes",
+  "label": "KIT-206 R2-3 new file fad0311d vs 334ff10b",
+  "package_commit": "fad0311de77c7de71ee13e67c22b3e2b0c945890",
+  "base_commit": "334ff10bc4c4a902a3e31d80da1dcf43969f2870",
+  "tools_ref": "",
+  "tests": [
+    "test-kit206-prot-norm-export-guard.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
