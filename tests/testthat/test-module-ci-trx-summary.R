@@ -185,7 +185,8 @@ test_that("KIT-192 T7b the report of a declared design whose k is 0 names the ap
   # Pandoc's smart quotes write each quoted label as its own Word run and the extraction puts a space at every tag, so
   # both sides are compared with quotes made straight and all white space removed (AUDIT-KIT-192-plan-20261124.md A01).
   squash <- function(x) gsub("\\s+", "", gsub("‘|’|&apos;|&#39;", "'", x))
-  shown <- regmatches(text, regexpr("No correction for unwanted variation.{0,1200}", text))
+  # PCRE: the default engine (TRE) refuses a repeat count above 255 (R1, an instrument defect; the comparison is unchanged).
+  shown <- regmatches(text, regexpr("No correction for unwanted variation.{0,1200}", text, perl = TRUE))
   if (!length(shown)) shown <- "<absent>"
   for (statement in c(
     paste0("No correction for unwanted variation was applied. The approach chosen on the normalisation tab was ",
