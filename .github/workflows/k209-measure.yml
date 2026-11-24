@@ -49,7 +49,7 @@ jobs:
             (.attempt | IN("g0a", "g0p", "instrument")) and
             (.jobs | type == "array" and length >= 1 and length <= 4 and
               all(.name | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")) and
-              all(.plan | IN("g0a", "g0p1", "g0p2")) and
+              all(.plan | IN("g0a", "g0a-error", "g0p1", "g0p2")) and
               all(.timeout | type == "number" and . == floor and . >= 20 and . <= 340))' "$p" > /dev/null \
             || { echo "::error::k209-params.json is not valid"; exit 1; }
           echo "jobs=$(jq -c .jobs "$p")" | tee -a "$GITHUB_OUTPUT"

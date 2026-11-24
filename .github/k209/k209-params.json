@@ -1,11 +1,11 @@
 {
-  "label": "g0a-2",
+  "label": "g0a-3-error",
   "attempt": "instrument",
   "jobs": [
     {
-      "name": "g0a",
-      "plan": "g0a",
-      "timeout": 150
+      "name": "g0a-error",
+      "plan": "g0a-error",
+      "timeout": 60
     }
   ]
 }

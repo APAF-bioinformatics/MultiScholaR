@@ -198,7 +198,7 @@ def main():
         journeys, steps = journey_rows(folder, job)
         write_tsv(os.path.join(folder, "journeys.tsv"), journeys, JOURNEY_FIELDS)
         write_tsv(os.path.join(folder, "steps.tsv"), steps, STEP_FIELDS)
-        if os.environ.get("K209_PLAN") == "g0a":
+        if os.environ.get("K209_PLAN") in ("g0a", "g0a-error"):
             checks = g0a_checks(folder, journeys, steps)
             write_tsv(os.path.join(folder, "g0a.tsv"), checks, ["item", "passed", "evidence"])
             for c in checks:

@@ -97,8 +97,10 @@ k209_settings <- function() {
     settings <- K209_SETTINGS[[route]]
     override <- K209_CORPUS_OVERRIDES[[k209_args$corpus]]
     if (!is.null(override)) settings <- utils::modifyList(settings, override)
-    # G0a's injected package error (declaration, G0a item 1): an invalid bound setting the package must refuse.
-    if (identical(k209_args$inject, "package_error")) settings$norm_method <- "k209_invalid_method"
+    # G0a's injected package error (declaration, G0a item 1): an invalid bound setting the package must refuse. G0a-2
+    # showed the between-sample kernel falls back to unnormalised data on an unknown method (no error), so the setting
+    # is the intensity filter's percentile, left undefined (the omics journey clears it after the tab's defaults).
+    if (identical(k209_args$inject, "package_error")) settings$intensity_percentile_injected <- "undefined (NULL)"
     settings
 }
 
@@ -299,7 +301,11 @@ k209_omics_journey <- function(lane, corpus, settings) {
             list(id = "session_export", fn = function() click("summary-export_session_state"))) else list(
             list(id = "import", fn = import),
             list(id = "design", fn = design),
-            list(id = "intensity", fn = function() { tab("qc"); defaults("qc-intensity"); click("qc-intensity-apply_filter") }),
+            list(id = "intensity", fn = function() {
+                tab("qc"); defaults("qc-intensity")
+                if (identical(k209_args$inject, "package_error")) set(list(`qc-intensity-intensity_cutoff_percentile` = NULL))
+                click("qc-intensity-apply_filter")
+            }),
             list(id = "duplicates", fn = function() {
                 defaults("qc-duplicates"); click("qc-duplicates-detect_duplicates"); click("qc-duplicates-resolve_duplicates")
             }),

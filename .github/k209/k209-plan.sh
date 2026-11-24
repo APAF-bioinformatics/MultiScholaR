@@ -102,6 +102,11 @@ case "$plan" in
             journey "$unit" C 2 BC "" true
         done
         ;;
+    g0a-error)
+        # G0a item 1's package error alone (VAL-54 instrument run 2 of G0a: the injected setting changed, section 6).
+        corpus lipid_screen || STOP="corpus lipid_screen"
+        journey U1 C 1 lifecycle package_error false
+        ;;
     g0p1)
         corpus full || STOP="corpus full"
         journey U10 C 1 probe "" false "$MEMORY_LIMIT" "$TO_DEADLINE"
