@@ -2,7 +2,7 @@ name: KIT-193 Lean record
 
 # KIT-193 (machine-checked proofs, ticket section 4.4). Re-checks proofs/lean from a clean checkout: the build with
 # warnings as errors (a `sorry` fails it), the axiom audit (only propext, Classical.choice, Quot.sound), the kernel
-# replay of the project's modules (leanchecker) and a second checker (nanoda, D7), the frozen Spec files' SHA-256
+# replay of the project's modules (leanchecker; nanoda is off, D7 (a), see the lean-action step), the frozen Spec files' SHA-256
 # (SPEC.sha256), the Spec import closure, the printed axioms of Audit.lean, the oracle tables regenerated and compared
 # byte for byte, and a search for forbidden words. Branches kit-193-lean-proofs and kit-193-lean-lifecycle only (the
 # file reaches v0.9-staging at the merge, D6). Budget: ticket section 11.2 (L0 three runs, L1 one, one correction).
@@ -35,7 +35,7 @@ jobs:
       - name: checkout (clean)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: lean-action (build --wfail, axiom audit, nanoda)
+      - name: lean-action (build --wfail, axiom audit)
         uses: leanprover/lean-action@ba3fdfe5c4476c925da13bf11a005ddb47e47aee # v1.7.1
         with:
           lake-package-directory: proofs/lean
@@ -50,8 +50,10 @@ jobs:
           axiom-audit-allow: "propext,Classical.choice,Quot.sound"
           axiom-audit-root: "MultiScholaRProofs"
           leanchecker: "false"
-          nanoda: "true"
-          nanoda-allow-sorry: "false"
+          # D7: nanoda is off. L0 run 45300025617: lean-action's nanoda script reads the package name from a
+          # `[package]` table, which this lakefile.toml (top-level fields) does not have, and it would export the
+          # whole environment under the package, Mathlib included. D7 (a) applies until the owner decides otherwise.
+          nanoda: "false"
 
       - name: leanchecker (kernel replay, one call per project module)
         if: ${{ !cancelled() }}
