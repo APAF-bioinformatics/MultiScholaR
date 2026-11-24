@@ -461,18 +461,25 @@ to wait, each frozen after one edit pass (B); target 1's pair holds (C). Applied
   `(A W_c) α_j + t 1` (`fromCols_mulVec_sumElim`). Witness: `witnessE2` with `F = {0}` (`W = e_1`,
   `W_c = e_1 - 1/4`; the rank clause is `I1_ctl_rank` at `F = ctl`); the averaging map `(1/2, 1/2)`. Laptop: 5 Lean
   calls, 32.9 CPU-seconds (labels `rI1-*`). Agent time 0.10 h, against 10 expected and 16 ceiling.
+- **R-J3 proved** (`Proof/RuvIIICPattern.lean`: `Ruv.J3_pattern`, `J3_counts`; witness `J3_witness`; each on
+  `propext`, `Classical.choice`, `Quot.sound`). Both by unfolding `out` per run (a kept feature is a corrected one, and
+  then a value is missing exactly where the run is not observed; `Finset.filter_congr`). Witness `witnessJ3`: four
+  runs in one set, `k = 1`, feature 0 (the only control) observed on runs 0 to 2 (residual dimension 2 > k, the
+  general branch, the eigen step succeeding), feature 1 observed on run 0 only (residual dimension 0: not corrected);
+  the residual dimension is the code's, observed runs minus one set. Laptop: 3 Lean calls, 10.7 CPU-seconds (labels
+  `rJ3-*`). Agent time 0.03 h, against 2 expected and 3 ceiling.
 
 ## Resume here
 
 State after the second proofs audit (2026-11-24, third implementer session): every frozen statement of targets 1 to
 5 and of group R priorities 1 to 4 is proved with its witnesses (124 theorems listed in `axioms.tsv`, standard axioms
 only; audited sound). R-I1, R-J3, R-N1: frozen at 2ab4c189 (`statements-gate.md`; confirmed by the auditor by
-reading); R-I1 proved (9 theorems), R-J3 and R-N1 not yet. Target 1's paired test passed (run
+reading); R-I1 (9 theorems) and R-J3 (3) proved, R-N1 not yet. Target 1's paired test passed (run
 45323167019, after one VAL-54 instrument re-run).
 
 Next:
-1. The auditor confirmed 2ab4c189. R-I1 proved (above). Next R-J3 (2 statements, 1 witness; definitional), then R-N1
-   (5, 1; the rank/order counts a bijection onto 1..F; `N1_ties` from the sortedness and stability of `mergeSort`).
+1. The auditor confirmed 2ab4c189. R-I1 and R-J3 proved (above). Next R-N1 (5 statements, 1 witness; the rank/order
+   counts a bijection onto 1..F; `N1_ties` from the sortedness and stability of `mergeSort`).
 2. Target 2's pair waits for KIT-190; P0 (targets 4, group R), P2 (target 5) and P3 as ticket 8.1; the record job L1
    at the final commit. The next R run carries `scripts/bindings-t3.R` (T3 digests, T1's helper, the P at (320, 137)).
 Lean calls: `scratchpad lr.sh`-style wrapper logging `LEAN_NUM_THREADS=4 taskset -c 0-3 timeout 900

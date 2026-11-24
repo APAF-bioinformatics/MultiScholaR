@@ -86,8 +86,8 @@ Further notes (second proofs audit Q02):
 - R-D1: `Hac` is not used (without it both sides are `Y`). R-K1 (i): `Hset` is not used.
 - `kept_family_formula`: `0 < m` is not used (at `m = 0` both sides are 0).
 - R-K1's witnesses have one replicate set and `Y_c Y_c′ = I`; R-J1's has `k = 0` (second proofs audit, Q01).
-- R-I1 (c''), `I1_ctl_rank`: proved as frozen; its hypotheses (`Hac`, `ctl ⊆ F`) have the witness `A2_witness` with
-  F = univ; with F = {0}, `witnessE2` (which `I1_witness` uses: its rank clause is `I1_ctl_rank` at F = ctl = {0}).
+- R-I1, `I1_ctl_rank`: witness `A2_witness` with F = `univ` (`ctl ⊆ univ` for every computation); with F = {0},
+  `witnessE2` (as `I1_witness` uses it: its rank clause is `I1_ctl_rank` at F = ctl = {0}).
 
 
 ## 3. R-I1, R-J3, R-N1: their own statements review (departure from ticket 5.3 item 1, recorded in r1.3)

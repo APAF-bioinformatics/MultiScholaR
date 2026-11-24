@@ -132,3 +132,6 @@ Ruv.I1_ctl_rank	Ruv.I1_ctl_rank_stmt	propext, Classical.choice, Quot.sound
 Ruv.I1_average	Ruv.I1_average_stmt	propext, Classical.choice, Quot.sound
 Ruv.I1_witness	Ruv.I1_witness_stmt	propext, Classical.choice, Quot.sound
 Ruv.I1_average_witness	Ruv.I1_average_witness_stmt	propext, Classical.choice, Quot.sound
+Ruv.J3_pattern	Ruv.J3_pattern_stmt	propext, Classical.choice, Quot.sound
+Ruv.J3_counts	Ruv.J3_counts_stmt	propext, Classical.choice, Quot.sound
+Ruv.J3_witness	Ruv.J3_witness_stmt	propext, Classical.choice, Quot.sound

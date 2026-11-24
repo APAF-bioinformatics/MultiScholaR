@@ -332,3 +332,13 @@ example : Ruv.I1_average_witness_stmt := Ruv.I1_average_witness
 #print axioms Ruv.I1_average
 #print axioms Ruv.I1_witness
 #print axioms Ruv.I1_average_witness
+
+/-! ## Group R, R-J3 (`Proof/RuvIIICPattern.lean`) -/
+
+example : Ruv.J3_pattern_stmt := Ruv.J3_pattern
+example : Ruv.J3_counts_stmt := Ruv.J3_counts
+example : Ruv.J3_witness_stmt := Ruv.J3_witness
+
+#print axioms Ruv.J3_pattern
+#print axioms Ruv.J3_counts
+#print axioms Ruv.J3_witness
