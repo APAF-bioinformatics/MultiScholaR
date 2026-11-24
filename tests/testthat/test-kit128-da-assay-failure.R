@@ -1,17 +1,8 @@
 # KIT-128 (parked row 24 b, decision D4): a kernel error on one assay is named in the result and warned about, the
 # other assays are kept, and the run stops only when every assay failed. Three sites: runLipidsDA, runMetabolitesDA and
-# the per-contrast path's fit half (omicsDaAssayFit, the GUI's path). The reproduced case: a feature without a value in
-# any sample of the assay stops limma's eBayes(trend = TRUE) ("covariate contains NA or infinite values").
+# the per-contrast path's fit half (omicsDaAssayFit, the GUI's path). KIT-196: a feature without a value in any sample is
+# no longer a failure (it is reported as not tested), so the orchestrator's failure is made by a mocked contrast half.
 library(testthat)
-
-kit128FailureObject <- function(omic, assays = "neg") {
-  object <- omicsDaContrastsFixture(omic)
-  slot_name <- if (identical(omic, "lipid")) "lipid_data" else "metabolite_data"
-  tables <- methods::slot(object, slot_name)
-  for (assay in assays) tables[[assay]][1L, object@design_matrix$Run] <- NA_real_
-  methods::slot(object, slot_name) <- tables
-  object
-}
 
 kit128FailureRun <- function(omic, object) {
   suppressMessages(utils::capture.output(result <- omicsDaKernel(omic)(theObject = object,
@@ -20,23 +11,36 @@ kit128FailureRun <- function(omic, object) {
   result
 }
 
+# KIT-196: the orchestrator's contrast half raises for the assay whose features start with `failing_prefix`.
+kit128ContrastFailureRun <- function(omic, failing_prefix) {
+  half <- paste0("apply", if (identical(omic, "lipid")) "Lipid" else "Metab", "DaContrasts")
+  original <- get(half, envir = asNamespace("MultiScholaR"))
+  failing <- function(fit, ...) {
+    if (any(startsWith(rownames(fit$coefficients), failing_prefix))) stop("the contrast half could not test this assay")
+    original(fit, ...)
+  }
+  do.call(testthat::local_mocked_bindings, c(stats::setNames(list(failing), half), list(.package = "MultiScholaR")))
+  kit128FailureRun(omic, omicsDaContrastsFixture(omic))
+}
+
 for (omic in c("lipid", "metab")) {
   long_table <- if (identical(omic, "lipid")) "da_lipids_long" else "da_metabolites_long"
 
   test_that(paste("KIT-128:", omic, "orchestrator names a failed assay, warns and keeps the others"), {
     healthy <- kit128FailureRun(omic, omicsDaContrastsFixture(omic))
     expect_null(healthy$failed_assays)
-    expect_warning(result <- kit128FailureRun(omic, kit128FailureObject(omic)), "neg", class = "omics_da_assay_failed")
+    # The `neg` assay's features are F2_*.
+    expect_warning(result <- kit128ContrastFailureRun(omic, "F2_"), "neg", class = "omics_da_assay_failed")
     expect_identical(names(result$failed_assays), "neg")
-    expect_match(result$failed_assays$neg, "covariate contains NA or infinite values", fixed = TRUE)
+    expect_match(result$failed_assays$neg, "the contrast half could not test this assay", fixed = TRUE)
     expect_identical(names(result$per_assay_results), "pos")
     expect_identical(result$per_assay_results$pos, healthy$per_assay_results$pos)
     expect_identical(result[[long_table]], healthy$per_assay_results$pos)
   })
 
   test_that(paste("KIT-128:", omic, "orchestrator stops when every assay failed"), {
-    expect_error(suppressWarnings(kit128FailureRun(omic, kit128FailureObject(omic, c("pos", "neg")))),
-      "covariate contains NA or infinite values", class = "omics_da_all_assays_failed")
+    expect_error(suppressWarnings(kit128ContrastFailureRun(omic, "F")),
+      "the contrast half could not test this assay", class = "omics_da_all_assays_failed")
   })
 
   test_that(paste("KIT-128:", omic, "per-contrast path records a failed fit under the assay's errors and keeps the others"), {

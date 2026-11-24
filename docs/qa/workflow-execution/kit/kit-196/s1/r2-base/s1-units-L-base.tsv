@@ -1,0 +1,10 @@
+side	commit	cell	job	rep	exit	wall_seconds	unit_seconds	ns_path	error
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	L64	deciding	401	0	2056.2	2055.8	/tmp/RtmpByrEQs/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	L64	deciding	402	0	2060.8	2060.3	/tmp/RtmpByrEQs/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	L64	deciding	403	0	2073	2072.5	/tmp/RtmpByrEQs/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	L12	deciding	401	0	1856.7	1856.3	/tmp/RtmpByrEQs/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	L12	deciding	402	0	1810.7	1810.3	/tmp/RtmpByrEQs/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	L12	deciding	403	0	1769.2	1768.8	/tmp/RtmpByrEQs/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	L64	ba	401	0	752.4	751.9	/tmp/RtmpByrEQs/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	L64	ba	402	0	739.3	738.9	/tmp/RtmpByrEQs/kit196-s1-base	
+base	3d4a585dbeb19b281ec8bc640d4d35a892bd7988	L64	ba	403	0	728.7	728.2	/tmp/RtmpByrEQs/kit196-s1-base	

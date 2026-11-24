@@ -1,0 +1,26 @@
+== test-repair2.R :: R-O8: over independent units nothing is widened at any count; report only, stated (5 not passed)
+Expected `run$flags[[1L]]` to match string "within_run_widening=report_only(O8:below_6)".
+Actual text:
+x | within_run_reported=u01:[-0.5,0.5],within_run_reported=u02:[-0.5,0.5],within_run_reported=u03:[-0.5,0.5],within_run_reported=u04:[-0.5,0.5],within_run_reported=u05:[-0.5,0.5]
+
+== test-repair2.R :: R-O5: the 117 T2 rows read pass under T2's band and conservative under r1.13's; both printed (5 not passed)
+Expected `"status_r113" %in% names(reg)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+== test-repair2.R :: R-O4: a conservative row with no observed miss licenses only the statistic it simulated (2 not passed)
+Expected `valClassify(iv, 0.05, TRUE, regimes = reg)` to throw a error with class <val_spec_invalid>.
+
+== test-repair2.R :: R-O4: the half-width ratio is mean half-width over the statistic's SD times z (1 not passed)
+Error in `msrval:::valCoverageRows(cell, "mae", "accuracy", hits, "approx_run", target = 0, half_width = hw, estimate = est)`: unused arguments (half_width = hw, estimate = est)
+
+== test-repair2.R :: R-I10: the redraw generator is unchanged; the fixed generator draws features once per cell (1 not passed)
+Error in `eval(code, test_env)`: object 'valCovFixedFeatures' not found
+
+== test-repair2.R :: R-I10: under the fixed symmetric generator the plain arm's null rejection share is near 0.05 (1 not passed)
+Expected `abs(mean(rej) - 0.05)` <= `3 * se + 1e-09`.
+Actual comparison: 0.32 > 0.02
+Difference: 0.31 > 0
+

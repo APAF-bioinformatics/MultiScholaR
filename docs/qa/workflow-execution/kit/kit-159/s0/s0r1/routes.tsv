@@ -1,0 +1,16 @@
+cell	route	corpus	alternative	exit	reason	steps_ok	steps	fallback	da_rows	da_called	da_digest	ledger_sha256	seconds	message
+prot_dia	prot_dia	prot_dia	NA	error	val_spec_invalid	NA	NA	NA	NA	NA	NA	NA	244.5	the state object is missing
+prot_dia_limpa	prot_dia_limpa	prot_dia	NA	completed	NA	13	13	NA	794	36	4b0882b05a3afd242526519c8ab1091d1df7824956b142bdb82f4284692cf76c	2766009e18716c67113f80349eb947cfbc8f4412f4ef6f1f7c27608908c95476	180.6	NA
+prot_lfq	prot_lfq	prot_lfq	NA	error	val_spec_invalid	NA	NA	NA	NA	NA	NA	NA	175.9	the state object is missing
+prot_lfq_fragpipe	prot_lfq_fragpipe	prot_lfq_fragpipe	NA	error	val_spec_invalid	NA	NA	NA	NA	NA	NA	NA	174.3	the state object is missing
+prot_tmt	prot_tmt	prot_tmt	NA	error	val_spec_invalid	NA	NA	NA	NA	NA	NA	NA	172.9	the state object is missing
+trx_screen	trx_screen	trx_screen	NA	completed	NA	6	6	NA	1668	129	f666b39134d14b31084b85f061c288c61bda7b8ebddd68d33689b157f6949f8b	8f7c68a3d9b42bf7f56daa719d73af9a2c82a55cfba22a667f3a0590230c05fa	30.1	NA
+lipid_canonical	lipid_canonical	lipid_canonical	NA	completed	NA	9	9	NA	366	29	ca7e90f99ae34f403c059348a3ecb7536a7a2e1b21a75fc32d0b69f436bfb109	3467ecf01b400bcf8681baad4c23cdb557ea531eaa81e7b63b0fda94bdfb221d	117.8	NA
+metab_lc	metab_lc	metab	NA	completed	NA	9	9	NA	293	38	8a5e556627159207d2573ac9fce76033a043ec3f81421320f126e2a7a7bca0a6	22bfd61c5a00855646b6251f6e544d83a8d352fb9a40588e9f01f2ba1f3e81c9	75.9	NA
+metab_gc	metab_gc	metab	NA	completed	NA	9	9	NA	292	56	0f122d5123f1de8c841e7e60f58b75a7da287a3155353cff936f82d26c68640e	bfbc51110b0bb3dd0c26af4923a2f10cd9e2f399c33e27b314dec222599b2333	78.4	NA
+metab_combined	metab_combined	metab	NA	completed	NA	9	9	NA	585	94	331009abc8870084c82d833a77defc927bf0a0e1592d416f9d224f1cb031c341	3b72dee983aa848bbd9c0f3c13439d92be8b38fde1a07686c314475d50fcb042	117	NA
+prot_dia-export_load	prot_dia	prot_dia	export_load	error	val_spec_invalid	NA	NA	NA	NA	NA	NA	NA	345.5	the state object is missing
+lipid_canonical-export_load	lipid_canonical	lipid_canonical	export_load	completed	NA	11	11	NA	366	29	ca7e90f99ae34f403c059348a3ecb7536a7a2e1b21a75fc32d0b69f436bfb109	481ba1014fa3b15d8fbdcbef86cb1b411fbe460472c67af3845fe3d4c815e3cc	125.8	NA
+metab_lc-export_load	metab_lc	metab	export_load	completed	NA	11	11	NA	293	38	8a5e556627159207d2573ac9fce76033a043ec3f81421320f126e2a7a7bca0a6	c4e67a888deb1af88c3e0ca3f553d957de5b9cb58fd23415d3851b82c4030014	80.8	NA
+prot_dia_limpa-no_covariates	prot_dia_limpa	prot_dia	no_covariates	completed	NA	12	12	NA	794	36	1638ba15d8e833090e56b8ce7f9dd5707bbda7d1e1992db23c5c0d996c15a641	1ab9d33292841467d39d747afbade4d105e4effff57c3dbf3f84cf70b7cb40bd	157.8	NA
+prot_dia_two_species	prot_dia	prot_dia_two_species	NA	error	val_spec_invalid	NA	NA	NA	NA	NA	NA	NA	341.6	the state object is missing

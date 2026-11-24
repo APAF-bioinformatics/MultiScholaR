@@ -27,3 +27,4 @@
 ^inst/duckdb$
 ^packaging$
 ^data/benchmark$
+^docs/qa/workflow-execution/kit/kit-159/harness$
