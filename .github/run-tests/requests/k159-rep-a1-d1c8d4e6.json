@@ -1,0 +1,31 @@
+{
+  "requested_by": "KIT-159 REPAIR line (VAL-109, VAL-137): A1, tests first after the re-audit (builder A): repair4, repair2, repair, evidence, licence, arms, inputs; shows each new test failing at its fault; ceiling 25 min, about 0.8 core-hours",
+  "label": "KIT-159 repair A1: tests only at d1c8d4e6",
+  "package_commit": "d1c8d4e6ee32590bb0fc835082ec0bed4617a29f",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-a1-out",
+        "--files",
+        "repair4,repair2,repair,evidence,licence,arms,inputs"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-a1-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 25
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
