@@ -458,7 +458,10 @@ diaProteinIntensityFilterOperation <- function() {
         parameters = c("strict_mode", "min_reps_per_group", "min_groups", "proteins_intensity_cutoff_percentile"),
         product_type = "dia.protein_intensity_filter_result",
         global_statistics = c(min_protein_intensity_threshold = "the percentile of every finite value in the whole table",
-            group_sizes = "samples per group and the number of groups from the design"))
+            group_sizes = "samples per group and the number of groups from the design"),
+        # KIT-187 (VAL-71): the step decides by counts; a recorded step without this marker replays with the earlier
+        # rounded-percentage comparison (`workflowReplayRuleMarkers`).
+        fixed = list(missing_value_comparison = "counts"))
 }
 
 #' The duplicate-protein removal as a declaration (KIT-015): unit feature group by the active protein key

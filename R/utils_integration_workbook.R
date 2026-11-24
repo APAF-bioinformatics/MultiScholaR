@@ -71,7 +71,8 @@ integrationSettings <- function() {
     enrichment_spec <- integrationEnrichmentParameterSpec()
     list(model = integrationMofaParameterTable(), results = integrationResultsParameterTable(),
         enrichment = data.frame(setting = names(enrichment_spec),
-            default = vapply(enrichment_spec, function(entry) paste(format(entry$default), collapse = ""), character(1)),
+            default = vapply(enrichment_spec, function(entry) entry$default_text %||% paste(format(entry$default),
+                collapse = ""), character(1)),
             settled_by = vapply(enrichment_spec, `[[`, character(1), "settled_by"), row.names = NULL),
         input_matrix_help = integrationGuiTexts()[["help_input_matrix"]])
 }
@@ -367,6 +368,10 @@ integrationExportResults <- function(project, model, results) {
 #' @param id_columns A named list giving, for a metabolite or lipid data set, the column of its feature table that
 #'   holds KEGG compound or ChEBI identifiers, for example `list(metabolomics_LCMS_Pos = "kegg_id")`.
 #' @param overrides A named list of enrichment settings and their values (see `integrationSettings()$enrichment`).
+#'   `test` chooses the test for KEGG and Reactome: `"camera"`, the test of record and the default (limma's camera
+#'   on each feature's regression on the factor, allowing for the correlation measured between a pathway's features,
+#'   on the features measured in every biological sample), or `"gsea"`, the pre-ranked test used before (each
+#'   feature's correlation with the factor, tested as if features were independent). STRING ignores it.
 #' @return A list: `enrichments`, a list named `"<data set> <database>"` of the enrichments made, each a list with
 #'   `summary` (sentences) and `terms` (a data frame of the terms found); and `skipped`, sentences naming each data
 #'   set and database skipped or refused, and why.
@@ -374,6 +379,9 @@ integrationExportResults <- function(project, model, results) {
 #' \dontrun{
 #' enriched <- integrationEnrichFactor(project, results, api_key = Sys.getenv("STRING_API_KEY"))
 #' writeLines(enriched$skipped)
+#' # The pre-ranked test used before KIT-183, for KEGG and Reactome:
+#' earlier <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+#'     overrides = list(test = "gsea"))
 #' names(enriched$enrichments)
 #' }
 #' @export
@@ -395,6 +403,9 @@ integrationEnrichFactor <- function(project, results, factor = NULL, api_key = N
     integrationApiAssertOverrides(overrides, enrichment_spec, "overrides")
     enrichment_settings <- lapply(enrichment_spec, `[[`, "default")
     enrichment_settings[names(overrides)] <- overrides
+    # KIT-183: the test is sent only when named in `overrides` (absent, the test of record for the data set), and
+    # never for STRING.
+    if (is.null(overrides[["test"]])) enrichment_settings$test <- NULL
     manager <- project$manager
     view_omics <- integrationViewOmics(integrationImportedObject(manager, "inputs"))
     enrichments <- list()
@@ -412,6 +423,7 @@ integrationEnrichFactor <- function(project, results, factor = NULL, api_key = N
                 next
             }
             request <- c(list(factor = factor, view = view, database = database), enrichment_settings)
+            if (database == "string") request$test <- NULL
             mapping <- NULL
             if (database != "string") {
                 request$id_column <- id_columns[[view]]
@@ -428,7 +440,8 @@ integrationEnrichFactor <- function(project, results, factor = NULL, api_key = N
                     NULL
                 })
             if (is.null(enrichment)) next
-            enrichments[[paste(view, database)]] <- list(summary = integrationEnrichmentSummary(enrichment$run$value),
+            enrichments[[paste(view, database)]] <- list(summary = integrationEnrichmentSummary(enrichment$run$value,
+                entry = enrichment$entry),
                 terms = as.data.frame(enrichment$run$value$terms))
         }
     }

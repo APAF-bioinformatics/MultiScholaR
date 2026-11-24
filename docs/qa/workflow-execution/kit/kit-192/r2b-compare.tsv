@@ -1,0 +1,29 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-omic-da-module.R	1316	53	0	0	failed	1316	53	0	0	failed	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-trx-da-without-ruv.R	57	0	0	0	ok	103	0	0	0	ok	count-changed	counts: KIT-192 T1: design none, in process: the DA export completes and writes no grid summary (passed NA -> 5, skipped NA -> 0); counts: KIT-192 T2: design none, managed: the worker's DA export completes and writes no grid summary (passed NA -> 6, skipped NA -> 0); counts: KIT-192 T3: a declared design whose estimated k is 0, in process: the DA export completes (passed NA -> 6, skipped NA -> 0); counts: KIT-192 T4: a declared design with two factors, in process and managed: the DA export completes (passed NA -> 13, skipped NA -> 0); counts: KIT-192 T5: the legacy grid (gate off), in process: the export completes and writes the grid summary as before (passed NA -> 6, skipped NA -> 0); counts: KIT-192 T6: a scripted call of the DA publication on a none run returns saved = TRUE (passed NA -> 10, skipped NA -> 0)	
+test-module-ci-trx-summary.R	77	2	0	0	failed	86	2	0	0	failed	count-changed	counts: KIT-192 T7b the report of a declared design whose k is 0 names the approach, the rule, the seed and the reason (passed NA -> 9, skipped NA -> 0)	
+test-module-ci-trx-da.R	52	1	0	0	failed	52	1	0	0	failed	same		
+test-module-ci-trx-norm.R	63	1	0	0	failed	63	1	0	0	failed	same		
+test-module-ci-trx-qc.R	38	0	1	0	failed	38	0	1	0	failed	same		
+test-module-ci-trx-design.R	66	0	1	0	failed	66	0	1	0	failed	same		
+test-module-ci-trx-app.R	50	0	0	0	ok	50	0	0	0	ok	same		
+test-workflow-trx-declarations.R	309	33	0	0	failed	309	33	0	0	failed	same		
+test-trx-publication.R	92	82	0	0	failed	92	82	0	0	failed	same		
+test-trx-ruv-designs.R	368	0	0	0	ok	368	0	0	0	ok	same		
+test-trx-norm-core.R	58	0	0	0	ok	58	0	0	0	ok	same		
+test-kit129-run-path.R	711	0	0	1	ok	711	0	0	1	ok	same		
+test-omics-da-core.R	129	0	0	2	ok	129	0	0	2	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omic-qc-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-omics-qc-core.R	115	0	0	0	ok	115	0	0	0	ok	same		
+test-integration-input-transcriptomics.R	57	0	0	0	ok	57	0	0	0	ok	same		
+test-e2e-trx-journey.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-e2e-transcriptomics-screen.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-e2e-manifest.R	237	0	0	0	ok	237	0	0	0	ok	same		
+test-gui-entry-transcriptomics.R	16	13	0	0	failed	16	13	0	0	failed	same		
+test-workflow-operation-registry.R	1093	2	0	0	failed	1093	2	0	0	failed	same		
+test-workflow-figure-paths.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-lipid-02ab-da-module-characterization.R	15	0	0	2	ok	15	0	0	2	ok	same		
+test-metab-02ab-da-module-characterization.R	9	0	0	4	ok	9	0	0	4	ok	same		

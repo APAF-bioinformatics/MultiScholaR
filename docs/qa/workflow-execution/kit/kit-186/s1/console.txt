@@ -1,0 +1,45 @@
+KIT-186 S1: head e9e1df741bb17748ec6199214faf8ba7b8cf52ca base ffdfdfb76a9eacdc681f2098f75ac574e2cf8af4 out /home/runner/work/MultiScholaR/MultiScholaR/pkg/docs/qa/workflow-execution/kit/kit-186/s1 
+KIT-186 S1 base route 1 ok 
+KIT-186 S1 base route 2 ok 
+KIT-186 S1 base route 3 ok 
+KIT-186 S1 base route 4 FAILED 
+KIT-186 S1 base route 5 FAILED 
+KIT-186 S1 base route 6 FAILED 
+::notice title=INFO::Ensured timestamped directory exists: /tmp/Rtmp64gXKY/file4ba77e013429/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261123_173924
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/Rtmp64gXKY/file4ba77e013429/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::warning title=WARN::   Could not write DA results to disk: non-numeric argument to mathematical function
+Test passed with 1 success 🌈.
+KIT-186 S1 base route 6 FAILED 
+KIT-186 S1 head route 1 ok 
+KIT-186 S1 head route 2 ok 
+KIT-186 S1 head route 3 ok 
+KIT-186 S1 head route 4 ok 
+KIT-186 S1 head route 5 ok 
+KIT-186 S1 head route 6 ok 
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpGeATMu/file6379197f6665/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261123_174131
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/RtmpGeATMu/file6379197f6665/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+::notice title=INFO::=== TRANSCRIPTOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 1 assays
+::notice title=INFO::   Writing DA results to disk...
+::warning title=WARN::   Could not write DA results to disk: non-numeric argument to mathematical function
+Test passed with 1 success 🌈.
+KIT-186 S1 head route 6 ok 
+KIT-186 S1: A2 rows 36 equal 36 routes 1,2,3,4,5,6 
+KIT-186 S1: base status 0 head status 0 

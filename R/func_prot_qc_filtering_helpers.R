@@ -142,14 +142,26 @@ removeRowsWithMissingValues <- function(
 # ----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #' @title Remove rows with missing values
+#' @description Removes the proteins that fail too many groups. Within a group, a value is missing when it is not
+#'   finite or not strictly above the intensity threshold (the `proteins_intensity_cutoff_percentile` quantile of
+#'   every finite value in the table). A group fails when its count of missing values exceeds the share its cutoff
+#'   stands for, and a protein is removed when its count of failing groups exceeds the share the group cutoff stands
+#'   for. Each cutoff is read as rounded to three decimals, as `updateMissingValueParameters()` stores it, and the
+#'   comparison is made in whole numbers: a group of n samples with k missing values fails when
+#'   200000 k > n (2 P + 1), P being the cutoff in thousandths of a percent. This is exact whenever every group has
+#'   at most 316 samples. Before KIT-187 the share itself was compared with the rounded percentage, so that one
+#'   missing value of three (33.3333 percent) failed a cutoff of 33.333 percent; a replayed analysis step made
+#'   before that change keeps that comparison.
 #' @param input_table An input table with a column containing the row ID and the rest of the columns representing abundance values for each sample.
 #' @param cols A tidyselect command to select the columns. This includes the functions starts_with(), ends_with(), contains(), matches(), and num_range()
 #' @param design_matrix A data frame with a column containing the sample ID (as per the sample_id param) and the experimental group (as per the group param). Each row as the sample ID as row name in the data frame.
 #' @param sample_id The name of the column in design_matrix table that has the sample ID.
 #' @param row_id A unique ID for each row of the 'input_table' variable.
 #' @param grouping_variable The name of the column in design_matrix table that has the experimental group.
-#' @param groupwise_percentage_cutoff The maximum percentage of values below threshold allow in each group for a protein .
-#' @param max_groups_percentage_cutoff The maximum percentage of groups allowed with too many samples with protein abundance values below threshold.
+#' @param groupwise_percentage_cutoff The share of a group's values, in percent, that may be missing; a group with
+#'   more missing values fails. One finite number from 0 to 100, read as rounded to three decimals.
+#' @param max_groups_percentage_cutoff The share of the groups, in percent, that a protein may fail; a protein failing
+#'   more groups is removed. One finite number from 0 to 100, read as rounded to three decimals.
 #' @param temporary_abundance_column The name of a temporary column to keep the abundance value you want to filter upon
 #' @param proteins_intensity_cutoff_percentile The percentile of the protein intensity values to be used as the minimum threshold for protein intensity.
 #' @return A list, the name of each element is the sample ID and each element is a vector containing the protein accessions (e.g. row_id) with enough number of values.
@@ -166,6 +178,13 @@ removeRowsWithMissingValuesPercentHelper <- function(
   proteins_intensity_cutoff_percentile = 1,
   temporary_abundance_column = "Abundance"
 ) {
+  # KIT-187: a non-finite or out-of-range cutoff kept or removed everything without a word.
+  for (cutoff in list(groupwise_percentage_cutoff, max_groups_percentage_cutoff)) {
+    if (!is.numeric(cutoff) || length(cutoff) != 1L || !is.finite(cutoff) || cutoff < 0 || cutoff > 100) {
+      cli::cli_abort("each missing-value cutoff must be one finite percentage from 0 to 100, not {.val {cutoff}}",
+        class = "multischolar_missing_filter_invalid")
+    }
+  }
 
   # 1. Setup strings and symbols
   sample_id_str <- rlang::as_string(rlang::ensym(sample_id))
@@ -234,11 +253,22 @@ removeRowsWithMissingValuesPercentHelper <- function(
   # 7. Identify proteins to remove
   total_num_of_groups <- nrow(count_values_per_group)
 
-  proteins_to_remove <- count_percent_missing_per_group |>
-    dplyr::filter(perc_missing_per_group > groupwise_percentage_cutoff) |>
-    dplyr::group_by(!!rlang::sym(row_id_str)) |>
-    dplyr::summarise(percent_groups_failed = n() / total_num_of_groups * 100, .groups = "drop") |>
-    dplyr::filter(percent_groups_failed > max_groups_percentage_cutoff)
+  # KIT-187 (VAL-71): counts against the share each cutoff stands for. The earlier comparison is kept unchanged for
+  # the replay of a step made before that change (`workflowReplayRuleMarkers`).
+  marker <- workflowReplayRuleMarkers$missing_value_comparison
+  if (identical(getOption(marker$option), marker$earlier)) {
+    proteins_to_remove <- count_percent_missing_per_group |>
+      dplyr::filter(perc_missing_per_group > groupwise_percentage_cutoff) |>
+      dplyr::group_by(!!rlang::sym(row_id_str)) |>
+      dplyr::summarise(percent_groups_failed = n() / total_num_of_groups * 100, .groups = "drop") |>
+      dplyr::filter(percent_groups_failed > max_groups_percentage_cutoff)
+  } else {
+    proteins_to_remove <- count_percent_missing_per_group |>
+      dplyr::filter(exceedsRoundedPercent(num_missing_per_group, num_per_group, groupwise_percentage_cutoff)) |>
+      dplyr::group_by(!!rlang::sym(row_id_str)) |>
+      dplyr::summarise(num_groups_failed = dplyr::n(), .groups = "drop") |>
+      dplyr::filter(exceedsRoundedPercent(num_groups_failed, total_num_of_groups, max_groups_percentage_cutoff))
+  }
 
   num_removed <- nrow(proteins_to_remove)
 
@@ -258,3 +288,32 @@ removeRowsWithMissingValuesPercentHelper <- function(
 
   return(filtered_tbl)
 }
+
+#' Whether a count over a size exceeds the share a percentage cutoff stands for (KIT-187, VAL-71)
+#'
+#' The cutoff is read as the three-decimal rounding of an exact share: with P = round(1000 x cutoff) (thousandths of
+#' a percent), the count exceeds it when 200000 x count > size x (2 P + 1), that is count / size > (P + 0.5) / 100000.
+#' Every term is a whole number below 2^53, so the comparison is exact in doubles. Against the exact share s that the
+#' cutoff rounds, this is exact whenever lcm(size, size of the group s comes from) < 100000: every design whose
+#' groups all have at most 316 samples.
+#' @param count,size Whole numbers (vectors recycled together): missing values and group size, or failing groups and
+#'   the number of groups.
+#' @param cutoff_percent One percentage from 0 to 100.
+#' @return Logical vector.
+#' @noRd
+exceedsRoundedPercent <- function(count, size, cutoff_percent) {
+    200000 * count > size * roundedPercentNumerator(cutoff_percent)
+}
+
+#' The largest count over a size that does not exceed a rounded percentage cutoff, by the reading of
+#' `exceedsRoundedPercent` (KIT-187; the peptide filter's percentage-only path).
+#' @inheritParams exceedsRoundedPercent
+#' @return Whole numbers (double).
+#' @noRd
+allowedByRoundedPercent <- function(size, cutoff_percent) {
+    floor(size * roundedPercentNumerator(cutoff_percent) / 200000)
+}
+
+#' 2 P + 1, P the cutoff in thousandths of a percent (KIT-187).
+#' @noRd
+roundedPercentNumerator <- function(cutoff_percent) 2 * round(1000 * cutoff_percent) + 1
