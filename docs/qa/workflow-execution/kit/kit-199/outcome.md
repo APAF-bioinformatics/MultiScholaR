@@ -65,7 +65,7 @@ digests) removed and four `*.parquet` keys (`<present>`) added, `corrected_prote
 `test-gui-entry-proteomics.R`: base 183 passed / 10 failed (`prot_dia` 4, `prot_dia_limpa` 6), head 189 / 4
 (`prot_dia` only; its four failure blocks identical on both sides), verdict `fixed` for `prot_dia_limpa`.
 `test-e2e-proteomics-dia-limpa.R`: skipped on both (`same`). Check: ERRORs 0, WARNINGs 3, NOTEs 3 on both; findings
-identical (6 on both, none only on one side). Records: `r3/compare.tsv`, `r3/check-compare.txt`, `r3/tests*.tsv`.
+identical (6 on both, none only on one side). Records: `r3/compare.tsv`, `r3/check-compare.txt`, `r3/tests*.tsv`, `r3/failures.txt`, `r3/failures-base.txt`, `r3/compare-failures.txt`. Shards: base on AMD EPYC 7763, head on Intel Xeon Platinum 8573C; the head reproduces every capture of the re-frozen file on a third CPU model, of another vendor (masked captures only; the raw DA table was not compared there). `r3/failures-base.txt`'s six `prot_dia_limpa` blocks equal run 44953187101's text for text.
 
 ### R4: the route under OpenBLAS (run 45319240524, records commit R; D6, reported, decides nothing)
 
@@ -85,6 +85,8 @@ EPYC 7763, OpenBLAS 0.3.20 (pthread), `OPENBLAS_NUM_THREADS` and `OMP_NUM_THREAD
 | SWD-083 verdict | `agree` (overall; each moving column `agree`, the rest `identical`) |
 | Masked DA digest under OpenBLAS | 80cfedaa… (the old stored value), not 8a4c2dd5… |
 
+- The only difference the mask leaves visible is the notation of one value, the raw p-value of P00038 (0.00019627370306785395 under the reference BLAS, 1.9627370306790967e-4 under OpenBLAS, 2.8e-13 relative); every other difference lies in masked fractional digits. The masked digest therefore separates the two libraries on this table through that one value, not because the mask shows differences of this size in general (computed from the committed `r1/da-runner.tsv` and `r4/da-runner.tsv` with the lane's mask; shown for the 22 columns, the 15 text columns inferred unchanged).
+
 ### The Linux bundle's lane summary (no compute)
 
 Latest `distributable.yml` run with the GUI-entry lanes: 45151293709 (2026-11-23, commit a4f60900, branch
@@ -95,14 +97,13 @@ integration keys at four steps), 0 digest differences: the DA key equalled the s
 
 ## Inferred (not shown)
 
-- The re-frozen file's DA digest separates reference BLAS (8a4c2dd5…) from OpenBLAS (80cfedaa…): a value difference
-  of at most 5.2e-11 relative reaches a part of the table the mask leaves visible. After this merge the Linux
-  bundle's lane will therefore differ from the reference at the six DA steps; no KIT-159 gate reads that step.
-- The laptop's stored digest equals the OpenBLAS digest. This suggests, without showing, that the laptop's
-  difference from the runner is of the same kind and size as the OpenBLAS one (differences of order 1e-11 in p, q
-  and log2FC). The laptop's library and BLAS at the freeze are not recorded; the measurement of 6.3 decides it.
-- D7's exact mode: R1 and R2 agreed byte for byte on EPYC 9V74 and EPYC 7763, so under Q03 G1(a) compares exactly
-  when its job lands on either model, otherwise under SWD-083.
+- After this merge the Linux bundle's lane (OpenBLAS) will differ from the reference at the six DA steps; no gate reads that step.
+- The laptop's stored digest equals the OpenBLAS digest, so the laptop's masked DA text equals OpenBLAS's (shown, barring a hash collision), and its visible difference from the runner is the notation of P00038's raw p-value. That the laptop's numeric differences under the mask are of the same size as OpenBLAS's (about 1e-11 relative) is inferred only; the laptop measurement of 6.3 decides it.
+- Note for KIT-159's G13 (audit I05): rounding to 10 significant digits does not absorb the OpenBLAS difference: 2 of the 1,179 values in the three moving columns change at the 10th significant digit, so a 10-digit fingerprint would report `differs` where SWD-083 agrees.
+- D7's exact mode: R1 and R2 agreed byte for byte on EPYC 9V74 and EPYC 7763, so under the ticket's D7 text (as
+  repaired by the implementation audit's I04) G1(a) compares exactly when its job lands on either model and its
+  recorded environment (image, C library, BLAS and LAPACK packages and libraries, R, Rust toolchain, internal pins,
+  unchanged lockfile) equals `environment.tsv`'s; otherwise under SWD-083.
 
 ## Acceptance criteria
 
