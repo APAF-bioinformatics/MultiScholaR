@@ -1,0 +1,55 @@
+{
+  "requested_by": "KIT-203 R2c: the ticket's one correction pass (status text) on R2's files base vs head with check; OD5 instrument rerun 1 of 3 (VAL-54); X mutations",
+  "label": "KIT-203 R2c at 198d5827 against staging f6c86cfb",
+  "package_commit": "198d582737f8881800bf0774e8dbed84808afc19",
+  "base_commit": "f6c86cfb58fb58dcf73c66671601ad2ed6376618",
+  "tools_ref": "",
+  "tests": [
+    "test-enrichment-significance.R",
+    "test-go-propagation.R",
+    "test-general-enrichment-shared.R",
+    "test-workflow-analysis-record.R",
+    "test-workflow-omics-binding-steps.R",
+    "test-module-ci-prot-enrich.R",
+    "test-e2e-enrichment-doubles.R",
+    "test-e2e-fixture-integrity.R",
+    "test-e2e-transcriptomics-screen.R",
+    "test-omic-enrich-module.R",
+    "test-omics-enrich-core.R",
+    "test-prot-11-enrichment-module-contracts.R",
+    "test-prot-11a-enrichment-module-characterization.R",
+    "test-omic-gui-config.R",
+    "test-workflow-class-declarations.R",
+    "test-workflow-dia-products.R",
+    "test-prot-annotation-uniprot-empty.R",
+    "test-prot-annotation-uniprot-direct-shared.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/od5-k203.R",
+      "args": [
+        "k203-od5",
+        "f6c86cfb58fb58dcf73c66671601ad2ed6376618"
+      ],
+      "out": "k203-od5",
+      "timeout_minutes": 40
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-203/mutate-k203.R",
+      "args": [
+        "k203-x"
+      ],
+      "out": "k203-x",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
