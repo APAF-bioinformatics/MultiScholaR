@@ -52,26 +52,24 @@ is "other" and never refused.
 | prot | `Heatmap` (Save Heatmap) | `<prefix>_(heatmap.(png\|pdf)\|heatmap_methods.md\|clusters.csv)` | `omicDaHeatmapSavePrefix("prot_", contrast)` for the manifest's contrasts (any of its three names) | user-saved, by contrast |
 
 Lipid and metab Copy do not collect `Volcano_Plots`; their user-saved heatmaps go to `Heatmap`, which only proteomics' Copy
-collects. The lipid and metab names are pinned by G1 and E12 (the real publication's files, none unmade), trx's and
-proteomics' by G1.
+collects. The table names are pinned by G1 and E12; on F172 no heatmap is drawn (G1 and E12 print none), so the heatmap names (`<mode>_<contrast>_heatmap.(png|pdf)`, `all_heatmaps_combined.pdf`) are verified by reading: the writer and the made list use the same `omicsDaFileNames()$plot` base and the same suffixes (`R/func_lipid_da_export.R:269-276`, `:358`; `R/utils_workflow_dia_da.R:209-214`); E12's heatmap clause is vacuous on this fixture. Trx's and proteomics' names are pinned by G1 (implementation audit I08).
 
-## Open finding (for the coordinator and the implementation audit): K219-P16, the Report after a later DA
+## K219-P16 / K212-I02: the Report after a later DA (repaired in the correction pass)
 
-By reading (no R run), r1.4's design does **not** close the route "Save, Copy, run the DA again (other arguments or
-contrasts, same table), Report", and no test row of section 10 covers it.
-- Report needs only some earlier successful Copy: `values$files_copied` is set by Copy (`R/mod_omic_summary.R:278`) and
-  only gates the Report (`:196-205`); nothing resets it when the DA runs again.
-- KIT-212's Report guard (`assertWorkflowSummaryDaCurrent(..., files = TRUE)` in `renderWorkflowSummaryReport`,
-  `R/utils_workflow_summary.R`, fix 3db806a4) judges the DA status and the **source** folders (`da_output_dir`, the figure
-  folders under `publication_graphs_dir`); after the re-run the status is "current" and the source files carry the
-  re-run's own names, so it passes.
-- The reports read the **publication** folder the earlier Copy filled (`results_summary_dir`:
-  `inst/reports/lipidomics/lipidomics_report.rmd:71-74`, `inst/reports/metabolomics/metabolomics_report.rmd:68-71`,
-  `inst/reports/transcriptomics/transcriptomics_report.rmd:31-33`, `inst/reports/proteomics/DIANN_report.rmd:68`), so the
-  report shows the earlier run's DA tables and figures beside the current Save's parameters.
-- Not changed here (coordinator: no design or scope change on this note). Candidate remedies for the ruling: Copy
-  records the DA manifest it copied and the Report refuses when the store's manifest differs; or a DA run resets
-  `files_copied`.
+The route "Save, Copy, run the DA again, Report" showed the earlier Copy's DA files with no message (`R/mod_omic_summary.R:196-205`,
+`:278`; the templates read the publication folder). The coordinator ruled it inside VAL-172 and approved
+`R/mod_omic_summary.R`: the tab keeps the DA the last successful Copy was made under (outside `values`, so no capture
+moves) and, when a DA has run since, asks for Copy again with F-11's existing notice (no new text). Row E17 (failing first
+on the tests-first commit 606b11d2, passing on the repair).
+
+## Limits for the owner (implementation audit; worded as the register gives them)
+
+- **K212-I03 (owner):** The files check works by name, so files the latest DA did not write count as "made": a heatmap not
+  redrawn, a count barplot, a combined PDF, a Save Heatmap file. Copy and the Report present the earlier DA's figure
+  silently.
+- **K212-I04 (owner):** Copy and the Report use the last Save's `study_parameters.txt` and `analysis_record.json`, whatever
+  table and DA it was made at. Save, then a change, then a DA re-run, then Copy or Report still pairs one table's parameters
+  with another table's DA. NEWS implies this is fixed (corrected: NEWS now states the limit).
 
 ## What was run, and what was observed
 
@@ -85,7 +83,7 @@ c854590b; records b004b4db. Runs (ids, minutes, core-hours) in `runs.tsv`.
   `source_state=<null>`; E2 `copies=1`; E6 Save "saved with warnings"; E9/E9b/E9c replays complete; E10 the DA ran on the
   loaded `lipid_correlation_filtered`. Stop rule 1 did not fire.
 - **R1h** (45475680286, 3db806a4): the new file 303/0; `test-kit207-summary-head-guard.R` (with E14) 292/0.
-- **R2** (45479681505, 3db806a4 against e150fd65; `r2-compare.tsv`, `r2-check-compare.txt`): 56 files `same`; the new file
+- **R2** (45479681505, 3db806a4 against e150fd65; `r2-compare.tsv`, `r2-check-compare.txt`): 57 files `same`; the new file
   `fixed`; `test-omic-summary-module.R` and `test-omics-summary-core.R` move, and only in the nine declared cases (the
   module file: the nine; the core file: the eight of the nine it runs, among them `prot_owner` and `prot_owner_variants`, so
   re-check 3's "the core file runs lipid, metab and trx only" was not right: it has a proteomics list,
@@ -109,7 +107,7 @@ c854590b; records b004b4db. Runs (ids, minutes, core-hours) in `runs.tsv`.
 
 **G7 (head, R1h):** status and unmade-file count per W1 fixture: lipid complete none 3, optional_missing none 2, none none 0;
 metab complete none 2, optional_missing none 2, none none 0; proteomics in-memory manager none 0 (not checked); proteomics
-session owner none 1 (`da_groupB-groupA_long_annot.xlsx`). G15: the in-memory manager copies.
+session owner none 1 (`da_groupB-groupA_long_annot.xlsx`). G15: the in-memory manager copies. G7 was printed per fixture kind (8 rows), not per case and press; the in-memory manager prints 0 (`workflowDaFilesUnmade` returns none for it: not checked); the trx cases run a real DA and are bounded by R2 and R3 (implementation audit I09).
 
 **Inferred.** The refusal paths are reached only where the store's DA left the active history or the table, or where DA
 files on disk were not made by the store's DA; every route the ticket lists as allowed (G1 to G15) passed on head, and no
@@ -141,8 +139,19 @@ See `runs.tsv`.
 - Trx G8 (the trx DA tab has no Load Filtered Session, `R/utils_omic_gui_config.R:2951`).
 - A per-run DA file left by an earlier run when a later run writes none (e.g. `all_heatmaps_combined.pdf` when the later
   DA draws no heatmap): counted as made (G0's per-run rule).
-- K219-P16 (above): the Report after a later DA reads the earlier Copy's files; open.
+- Adopting a legacy session publishes a head, so the tab's "no manifest" clause runs (ticket 13).
+- The proteomics and transcriptomics templates' reads (ticket 13).
+- I03's figures not redrawn and I04's Save route (limits above).
+- A v1 omics manifest in a reopened store (I15): `workflowDaMadeFiles` reads v2 manifests and runs outside the predicate's
+  read-error rule.
 - A browser, Windows, real data.
+
+## Wording drafts for the owner (VAL-41)
+
+- `summary_da_stale` and `summary_da_files_unmade` (`R/mod_omic_norm.R:706-712`).
+- The replay refusal (`R/utils_workflow_analysis_record.R:719-721`).
+- I02's repair reuses F-11's existing notice ("Please copy the results to the publication directory before generating the
+  report (Copy to Publication Directory).").
 
 ## For the change report
 
@@ -167,5 +176,9 @@ See `runs.tsv`.
 - **What changed in results.** Nothing computed. Refusals with a message (Save, Report, Copy; Save also removes the omic's
   earlier integration input), a cleared DA display, a DA after a load and a head move taken on the head, and replay
   refusing records whose DA ran on another table (narrowing VAL-99 (3), VAL-139, VAL-154).
-- **Evidence.** R1 45475673660 (base values), R1h 45475680286, R2 45479681505, control C 45491596893, R3 (runs.tsv); the
-  fixtures are F172 (KIT-172), the module-CI W1 fixtures, the KIT-206 proteomics owner and the MCI-032 trx project.
+- **Evidence.** R1 45475673660 (base values), R1h 45475680286, R2 45479681505, control C 45491596893, R3 45494383196
+  (stopped: the core file's eight Report notes), E16 and the train run that closed it (runs.tsv); E17 (failing first by
+  `e17-first.R` on 606b11d2, passing on the repair). Declared test edits: E14 (`test-kit207-summary-head-guard.R`), E16
+  (`test-omics-summary-core.R`, `omicsSummaryCoreExpected`). The fixtures are F172 (KIT-172), the module-CI W1 fixtures,
+  the KIT-206 proteomics owner and the MCI-032 trx project.
+- **Limits.** I03 and I04 (above) stand until the owner decides; I02 is repaired (E17).
