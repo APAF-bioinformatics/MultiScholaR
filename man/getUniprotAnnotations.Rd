@@ -42,3 +42,9 @@ Downloads protein information from UniProt for a list of protein IDs,
 processes the results including Gene Ontology annotations, and caches
 the result for future use.
 }
+\details{
+A cache file with zero rows, or one that cannot be read, is not used: it is removed and the query runs. An empty
+or incomplete answer (the conditions of \code{directUniprotDownload}, which pass through) is never written to the
+cache. An error in the processing of the answer or in the cache write is recorded once and re-raised with the
+class \code{prot_annotation_uniprot_recorded} added (field \code{reason = "processing_failed"}).
+}

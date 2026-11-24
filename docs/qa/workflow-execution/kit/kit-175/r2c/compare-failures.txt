@@ -1,0 +1,18 @@
+== test-prot-annotation-uniprot-empty.R | fixed | KIT-175 T2b (i)-(v): an answer is cut short only when a requested accession is missing and a next page exists
+-- base:
+  Expected `any(grepl("accession:[A-Z0-9]+-[0-9]+", queries))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+-- head:
+  <passes>
+
+== test-prot-annotation-uniprot-direct-shared.R | new-failure | UniProt annotation helpers preserve cache, download, and empty-table behavior
+-- base:
+  <passes>
+-- head:
+  Expected `grepl("Q8N158-2", request_log$query, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
