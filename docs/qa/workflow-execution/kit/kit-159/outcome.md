@@ -203,8 +203,8 @@ of `runs.tsv` (formerly `runs-b.tsv`).
 | 3. G1(a)'s job pieces | I15 remainder, VAL-120 (2), VAL-133 (1) | `R/g1a-entry.R`: `valJobEnvironment` (CPU model, image, the ten D7 keys, lockfile SHA-256; derived as KIT-199's `writeEnvironment`), `valLockfileUnchanged`, `valG1aDaInputs`, `valG1aGatesMd`, `valParityL1Tables` (L1's DA tables for G13 read by path and checked by SHA-256); the entry script `val-g1a.R` (environment, part (1), part (2), `gates.md`) | T-G1A-ENV-1, -ENV-2, -GATES, -ENTRY, T-PAR-5; the smoke run | RB1: all pass. SM1 (real lane): `lipid_canonical` part (1) `identical`, installed against `load_all`, each in its own R process; environment and `gates.md` written (`g1a-smoke/`) |
 | 4. E4 | E4 | `helpers_extracted` filled by `valRunPhase` when `val-run.R` passes none (GUI-entry helpers for workflow cells, the replay kit where it replays). Per-unit truths: builder A's `truth.per_unit` kept at the merge, B's duplicate removed | in T-REP-4, T-PROV-2 | RB1: pass |
 
-**Lint (RB1).** `replay.R` 186 and 200, indentation only; corrected after this merge as item 1's one
-correction (layout, no behaviour change); shown by the merge run below.
+**Lint (RB1).** `replay.R` 186 and 200, indentation only; corrected at 7467b5d1 as item 1's one
+correction (layout, no behaviour change); RM shows no lints.
 
 **Coordinator's rulings on builder B's two points (ticket r1.18, section 33; `USAGE.md`).**
 - (a) ACCEPTED: G5 compares the package's content fingerprints of every state and of the head's DA
@@ -242,7 +242,16 @@ lanes (KIT-172: `lipid_canonical`, `metab_*`; KIT-180: `prot_tmt`, `prot_lfq`,
 
 **Builder B's runs** (REPAIR line; rows in `runs.tsv`): RB0 0.91, RB1 1.13, SM0 0.01 (refused at
 plan: `requested_by` over 300 characters; VAL-54 instrument defect, 1 of 3), SM1 0.86 (SM0 re-sent
-unchanged but for that line). The merge run: below.
+unchanged but for that line), RM 0.74: builder B 3.65 core-hours in all. REPAIR line 19.98 of 25
+after RM (sum of the REPAIR rows of `runs.tsv`).
+
+**The merge run RM** (k159b-rm-7467b5d1, run 45339308178, at 7467b5d1 = merge 2f7211a3 of builder
+A's 69bb2e4f, plus the lint correction): once, the twelve harness test files either builder changed
+(arms, evidence, g1a-entry, inputs, licence, records, repair, repair2, repair4, replay, valrun,
+phases) with `--lint`: **77 of 77 tests, 535 expectations, 0 failures; no lints**
+(`rep/rm-harness-tests.tsv`). R-V137-2 passes (its owed re-run after builder A's fixture correction
+at 820f3207). T-REP-4 `identical` again (11 expectations: the merge f4a3152d adapted it to builder A's
+`truth.per_unit`). Not run: the whole suite, covr (last, on the coordinator's word).
 
 **Not checked (builder B).** Part (2) of G1(a) on a real lane (needs `g1a-reference.tsv`); part (1)
 on the nine other lanes; replay on any route other than `metab_combined`; G13's last link (ruling
