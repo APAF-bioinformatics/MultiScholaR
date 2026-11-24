@@ -1,8 +1,11 @@
 # KIT-185 outcome: RUV-III-C and missing values, measured
 
-Ticket revision 1.2; declaration `declaration.md` (commit 432f703b, sections 1 to 6; section 7 dated, after the results).
-Package code: `v0.9-staging` at ffdfdfb76a9eacdc681f2098f75ac574e2cf8af4. Runs and core-hours: `runs.tsv`. Rows:
-`rows/`; the jobs' checks `checks/`; timing and provenance `jobs/`; scored tables `results/` (re-score run 45283782973).
+Ticket revision 1.2; declaration `declaration.md` (commit 432f703b, sections 1 to 6; dated sections 7, 8 and 10 after
+part A's results, section 9 before the part-B re-run; section 11, P2's addendum, committed alone at 6779d56e before P2
+ran). Package code: `v0.9-staging` at ffdfdfb76a9eacdc681f2098f75ac574e2cf8af4; P2 at 6779d56e, which contains
+`v0.9-staging` 6416dbd6 (KIT-187's count filter; merged into this branch at 070d34e1; between the two, the RUV-III-C S4
+method, its helpers, the proteomics DA and the factor count are unchanged). Runs and core-hours: `runs.tsv`. Rows:
+`rows/`; the jobs' checks `checks/`; timing and provenance `jobs/`; scored tables `results/` (final scoring run 45333019858).
 
 ## Answer
 
@@ -10,21 +13,31 @@ Package code: `v0.9-staging` at ffdfdfb76a9eacdc681f2098f75ac574e2cf8af4. Runs a
 "material", 312 "no material effect", 18 "not determined", 28 "refused by the route" (re-score run 45333019858). P2 ran
 after KIT-187 (VAL-71, VAL-108; declaration section 11) and its 36 classifications are included; the other 420 are
 unchanged from the first scoring (every non-P2 row of `results/cells.tsv` identical). P2 (two groups of three): at
-random missingness B and power material from 0.5 % (attributable to the zero-filling); value-dependent FDP serious from
-10 % (the comparator serious too). **No remedy is decided here** (VAL-56 keeps it for its own decision).
+random missingness B (0.088, 0.21, 0.24 at 0.5, 2, 10 %) and power (0.045, 0.13, 0.057) material from 0.5 %,
+attributable to the zero-filling; the false discovery proportion material at random 10 % (+0.030; the comparator
+serious, +0.215); value-dependent FDP serious from 10 % (+0.086, +0.21, +0.30 at 10, 25, 50 %; realised 4.6, 8.6,
+13.2 %), the comparator higher (S − C −0.049 to −0.022, intervals excluding 0), so none of it is the zero-filling;
+value-dependent power not determined at 2 %; safe rates 0 at random, 0.5 % value-dependent. **No remedy is decided here** (VAL-56 keeps it for its own decision).
 
 Observed, in plain words:
-1. **At random (MCAR) missingness, the zero-filling itself damages the correction.** From 2 % (P0, P0r, P1, L2, M2,
-   P5) or 10 % (P3, P4) the shipped correction leaves 0.12 to 0.40 of the planted unwanted variance (B) that it removed
+1. **At random (MCAR) missingness, the zero-filling itself damages the correction.** From 0.5 % (P2), 2 % (P0, P0r,
+   P1, L2, M2, P5) or 10 % (P3, P4) the shipped correction leaves 0.09 to 0.40 of the planted unwanted variance (B) that it removed
    without missing values, and the legacy test loses up to 0.45 of power beyond the oracle's own loss (L2 MCAR 10 %).
-   The comparator with directions from complete features leaves none of it (C's Delta between -0.06 and +0.05; classified
-   "no material effect" in every such case): 35 of the 88 material or serious deciding classifications are "attributable
-   to the zero-filling" (29 at random, 6 value-dependent: P5 VD 25 and 50 % B, P0 and P0r VD 25 % power, M1b VD 2 % B, M2 VD 2 % power).
+   The comparator with directions from complete features leaves none of it (C's Delta between -0.08 and +0.05; classified
+   "no material effect" in every such case): 41 of the 98 material or serious deciding classifications are "attributable
+   to the zero-filling" (35 at random, 6 value-dependent: P5 VD 25 and 50 % B, P0 and P0r VD 25 % power, M1b VD 2 % B, M2 VD 2 % power).
+   The comparator is not free of cost at random missingness: its false discovery proportion is serious at 10 % in P0
+   (+0.031), P0r (+0.035), P1 (+0.093), P2 (+0.215), L2 (+0.042) and M2 (+0.082) and at 2 % in P2 (+0.040), where the
+   shipped correction's is not (−0.07 to −0.16: it leaves unwanted variance and calls less; P2 10 %: +0.030, material),
+   and at P4 10 % it is higher than the shipped correction's (+0.128 against +0.077). Directions from complete features
+   remove the zero-filling's damage to B and power, but not the rise in false discoveries that comes with correcting
+   features with missing values (inferred: the degrees of freedom the correction uses are not counted by the legacy
+   test, VAL-53 (1)).
 2. **At value-dependent (left-censored) missingness, the zero-filling does little to B, but the legacy test's false
-   discovery proportion rises, mostly not because of the zero-filling.** From 10 % (P0, P0r, P1, P3, L1, L2) or 25 %
+   discovery proportion rises, mostly not because of the zero-filling.** From 10 % (P0, P0r, P1, P2, P3, L1, L2) or 25 %
    (P4), 2 % in M1, M1b and L1b: +0.016 to +0.34 beyond the oracle's change (P1 VD 50 %: +0.34; P0 VD 25 %: +0.066).
    The comparator is serious wherever S is serious (26 of 26), and in the proteomics cells it raises the false discovery
-   proportion as much or more (S - C from -0.023 to +0.001). In four lipid and metabolomics cells S exceeds the
+   proportion as much or more (S - C from -0.049, P2 VD 10 %, to +0.001). In four lipid and metabolomics cells S exceeds the
    comparator, with 95 % intervals that exclude 0: L1 VD 25 % (+0.020), M1 VD 10 % (+0.017; 211 assessable replicates),
    M1b batch-block 10 % (+0.022) and 25 % (+0.041; 16 assessable replicates). There, 8 to 26 % of the rise is the
    zero-filling, on top of a serious rise that both share. Where few replicates have max(20, 3k) complete features (M2
@@ -221,7 +234,9 @@ the attributable share): `results/cells.tsv`, `results/attribution.tsv`.
   follows the run with most zeros); 0.02 to 0.03 in L2, M2; power loss 0.04 to 0.13.
 - **Part B** (`results/partb.tsv`, R = 100). The declared designs' DA contrasts were measured for lipidomics and
   metabolomics only: on L2 and M2, FDP moved by at most +0.006 and power by at most 0.026 up to VD 10 % (n = 100 each);
-  at VD 50 % L2's power loss is 0.17 on 62 of 100 replicates, conditional on the analysis completing (see the note below), and M2 has no value. The proteomics part-B DA contrasts were first lost to a script defect (instrument events) and were re-run under
+  at VD 50 % L2's power loss is 0.17 on the 62 of 100 replicates that returned a table, but in 52 of them one assay's
+  DA failed and its planted features count as not called; on the 10 replicates where both assays completed it is
+  0.11 ± 0.06 (mean ± 1.96 Monte Carlo errors, n = 10); M2 has no value (see the note below). The proteomics part-B DA contrasts were first lost to a script defect (instrument events) and were re-run under
   VAL-98 (1) (six jobs at df60efa9, 100 replicates, the reference arm complete in every replicate); the values, oracle-
   referenced as part A's, mean ± 1.96 Monte Carlo errors:
 
@@ -238,8 +253,8 @@ the attributable share): `results/cells.tsv`, `results/attribution.tsv`.
   | legacy | P4b | VD 2 % | -0.193 ± 0.067 | +0.002 ± 0.000 | +0.013 ± 0.005 | -0.001 ± 0.003 |
   | legacy | P4b | VD 10 % | -0.266 ± 0.070 | +0.006 ± 0.001 | +0.022 ± 0.006 | +0.013 ± 0.005 |
 
-  The declared proteomics design (W from complete features in the model) moves FDP by at most +0.009 and power by at
-  most 0.011 up to VD 10 % (0.090 at VD 50 %). The legacy route with its own sweep and k is noisier and, at VD 50 % in
+  The declared proteomics design (W from complete features in the model) moves FDP by at most +0.001 and power by at
+  most 0.011 up to VD 10 % (at VD 50 %: FDP +0.009 ± 0.004, power 0.090 ± 0.005). The legacy route with its own sweep and k is noisier and, at VD 50 % in
   P0, raises FDP by +0.065 and loses 0.105 of power; in P4b its FDP rises by +0.013 to +0.022 at VD 2 and 10 %. Part B's B, C*
   and A1 are complete where the route corrected. The legacy route with its own sweep is noisy: its k and controls change
   with the mask, and B is unstable where the sweep picks few controls. The legacy lipidomics and metabolomics method
@@ -250,16 +265,28 @@ the attributable share): `results/cells.tsv`, `results/attribution.tsv`.
   (`rows/b-*.tsv.gz`; every part-B cell and route checked for `da_failed`): only the declared route at VD 50 % is
   affected. L2: in 52 of 100 replicates one assay's DA stopped (`da_failed` = 1), and in 38 more no DA table was returned
   at all; M2: no DA table in 100 of 100. In the rows the message of a whole-table failure was not recorded (the
-  `tryCatch` around the route's DA kept none); KIT-196's diagnosis gives the stop as `prior.weights contain NA values`,
-  caused by a feature with no value in any sample of an assay. No other part-B cell (legacy or declared, L2, M2, L1b,
-  M1b, any mask) has a failed assay. The L2 and M2 VD 50 % declared figures are therefore conditional on the analysis
-  completing (L2: 62 replicates, 52 of them on one assay only; M2: none). These cells are re-run after KIT-196 merges
+  `tryCatch` around the route's DA kept none). No message was observed here. What was observed: every assay whose DA
+  failed is an assay for which the declared route estimated k = 0 (no factor; L2: 52 replicates with one such assay,
+  all 52 failed on it; 38 with both, no table; M2: k = 0 in 100 of 100, no table), and every assay with k >= 1
+  completed. With no factor the DA takes the plain limma path (`R/func_lipid_da_model.R:513-528`), where KIT-196
+  diagnoses the stop `prior.weights contain NA values` on a feature with no value in any sample; that it is this stop
+  is inferred, not shown (KIT-196 2.6). Reported beside it: at VD 50 % the calibrated design (`num_sv_be`) estimated
+  k = 0 for at least one assay in 90 of 100 L2 and all 100 M2 replicates, although two factors are planted; at VD 2
+  and 10 % it estimated 2. No other part-B cell (legacy or declared, L2, M2, L1b, M1b, any mask) has a failed assay.
+  The L2 and M2 VD 50 % declared DA figures therefore do not stand as measurements (L2: 10 complete replicates, 52 with
+  one assay, 38 with none; M2: none); the replicates that returned are not a random subset. These cells are re-run after KIT-196 merges
   only if their figures are cited. Part A is not affected (G2; no deciding DA failed).
 - **Reported-only summary** (`results/reported-extra.tsv`, `results/qvalue-methods.tsv`; `summ-k185.R`, VAL-98 (2)):
   in the features whose observed runs leave exactly k residual dimensions (the closed-form branch) the shipped
   correction's FDP rises by +0.29 to +0.52 beyond the oracle at VD 25 and 50 % (P0, P1, L2, M2), and by +0.06 to +0.30
-  in the features with more than k; the oracle's own FDP change is at most +0.08 (M2 VD 50 %); the shipped correction
-  loses 2 to 3 % of the filtered proteins at VD 25-50 % in P0 and P1, 8 to 41 % of the features in L2 and M2.
+  in the features with more than k; the comparator's rise in the same strata is as large (within 0.03; M2 VD 25 %
+  +0.38 against +0.29), as expected, since the closed-form branch takes no zero-filled value (ticket 2.1): this part is
+  not the zero-filling; the stratum figures are per-replicate proportions over few calls (at VD 25 %, P0 4.4, P1 62,
+  L2 3.3, M2 1.2 calls per replicate), not shares of all false calls (those are 5 to 25 %, below); the oracle's own FDP
+  change is at most +0.08 over all filtered features (M2 VD 50 %) and at most +0.10 within the closed-form stratum
+  (L2 VD 50 %), both already subtracted; the shipped correction loses 2 to 3 % of the filtered proteins at VD 25-50 %
+  in P0 and P1, 8 to 41 % of the features in L2 and M2 (the comparator loses the same features). The calls per
+  replicate and the in-stratum oracle change are counted from the committed rows (`rows/a-*`), not from a results table.
 - **Sensitivity** (`results/sensitivity.tsv`, P0 and M2, R = 200): with strength 1 (weaker factors) B at VD 2 % rises
   to 0.33 to 0.39 and MCAR 2 % to 0.48 to 0.62 (larger than any deciding value; the material edge is crossed at VD 2 %
   where part A is "no material effect"); strength 10 leaves B near 0. Against part A's MCAR 2 % B (P0 0.16, M2 0.19),
@@ -274,18 +301,24 @@ As O2's mapping, plus: where a data set's realised share is read at a rate class
 mechanism, the RUV-III-C-corrected results of that route are reported as measured but not as evidence that the
 correction works, and a remedy is decided before any RUV-based claim on that route. Each data set is placed by its
 ticket's `ruv-input.tsv` (11.1). Safe rates are low: 0 to 2 % at random in every cell, 0.1 to 2 % value-dependent in
-most (10 % only in P4), so real data sets will mostly be read above the safe rate. The declared designs' DA is not
+most (0 in L1b and M1b; 10 % only in P4), so (inferred) real data sets will mostly be read above the safe rate. The declared designs' DA is not
 exposed to the zero-filling by construction (E6). Part B shows its change is small up to VD 10 % (lipidomics and
 metabolomics; proteomics after the VAL-98 (1) re-run); their corrected matrices (figures, export, the
 integration input) carry the limitation measured here. KIT-161's PXD000279 is read against P2.
 
 How D2 applies to these results, as the owner decided (VAL-98 (3)):
-1. **Mechanism.** The mechanism with the lower safe rate in the matched cell; on a tie (P3, M1b) the lower safe rate is
-   the tied value, so either mechanism gives the same reading.
+1. **Mechanism.** The mechanism with the lower safe rate in the matched cell. On a tie (P3: 2 % and 2 %; M1b: 0 and 0)
+   VAL-98 (3)'s "the lower applies" does not choose, and the two mechanisms do not read the same above the safe rate
+   (`results/cells.tsv`): P3 at 10 % is "serious" at random (power; B material) but "material" value-dependent (FDP;
+   realised 8.1 %); M1b at 2 % is "serious" value-dependent (C\*, FDP; B material; realised 1.13 %) but "not
+   determined" batch-block (FDP; realised 1.3 %). P2 is not a tie: the rule's mechanism (at random, safe rate 0) is at
+   most "material" up to 10 %, while value-dependent missingness is "serious" from 10 % (realised 4.6 %). **D2's reading
+   for P3, M1b and P2 is awaiting the owner's ruling** (close audit C02); KIT-161 (P3, P2) and KIT-166 (M1b) are not
+   read under this item until it is given.
 2. **Rates.** A data set's realised share (11.1 item 2, after the route's filter) is compared with the cells' realised
    shares after the filter (the "realised share" columns), not with the nominal rates.
 3. **Coverage.** Where the matched cell and mechanism were measured only up to 10 % (at random in L1, L2, M1, M2, P0,
-   P0r, P1, P4 and P5; value-dependent in P4b and L1b), a data set whose realised share is above 10 % is "not covered",
+   P0r, P1, P2, P4 and P5; value-dependent in P4b and L1b), a data set whose realised share is above 10 % is "not covered",
    and its RUV-III-C result stays held (VAL-56).
 4. For proteomics, part B's DA contrasts are those of the re-run (VAL-98 (1), the Part B bullet above).
 In practice, a data set on an affected route is read as evidence of correction only at or below the safe rate of its
@@ -298,8 +331,8 @@ measurement.
 |---|---|---|
 | A1 | `git diff --stat ffdfdfb7..HEAD`: only `docs/qa/workflow-execution/kit/kit-185/` and the ledger row | met |
 | A2 | `lifecycle.md`; L1 E1 to E4, E6, E7 pass after one instrument run (E3 mechanics); E1-neg failed on P2 at the old filter (VAL-71) and passed after KIT-187 (P2 lifecycle 45314701113: 1.85 to 2.54); G1, G2 pass; G3 no re-split | met |
-| A3 | declaration 432f703b committed alone after L1 and VAL-67, VAL-71, before S; script hashes match the files S ran (section 1); section 7 dated, scoring only | met |
-| A4 | every job's replicates written (P5 jobs 1 and 3 timed out; their missing replicates 117-133 and 380-400 re-sent once, VAL-54, run 45268841462); refused counts in cells.tsv; E5 identical; E2 450 of 450 recorded pass (10 not run, P5 timed-out jobs); E8 pass | met |
+| A3 | declaration 432f703b committed alone after L1 and VAL-67, VAL-71, before S; script hashes match the files S ran (section 1); section 7 dated, scoring only; section 9 (df60efa9, with the two-line fix) before the part-B re-run; section 10 (ff73dbff) before the summary ran; section 11 committed alone (6779d56e) before P2's lifecycle and jobs | met |
+| A4 | every job's replicates written (P5 jobs 1 and 3 timed out; their missing replicates 117-133 and 380-400 re-sent once, VAL-54, run 45268841462); refused counts in cells.tsv; E5 identical; E2 470 of 470 recorded pass (P2's 20 included; 10 not run, P5 timed-out jobs); E8 pass | met |
 | A5 | `results/` | met. The deciding estimands (B, C*, FDP, power), A1 and the null rate for all 14 cells, with mean, sd, Monte Carlo error, R and limits (`cells.tsv`); the estimands the pinned scoring does not summarise (features lost by residual dimension and planted status, B2, the incomplete-feature recovery, every canonical correlation, the comp/inc and residual-dimension strata, the oracle's own change, the uncorrected arm's departure, the arms' mechanics, the q-value methods and their S/S0 mismatches) in the reported-only summary `reported-extra.tsv` and `qvalue-methods.tsv` (`summ-k185.R`, VAL-98 (2)). |
 | A6 | this file | met |
 | A7 | ledger row `VAL-<merge>` on the branch | met |
@@ -337,7 +370,7 @@ count from the rows): the closed-form features (exactly k residual dimensions) c
   rule, which would have made P5 "not determined". **A recorded departure, accepted by the owner: VAL-98 (4).** The
   timed-out jobs' rows were assembled outside R from their uploaded part files (text identical, verified by the
   implementation audit). Those jobs wrote no checks, so E2 did not run for P5 replicates 20-100 and 280-360 (every 20th);
-  "E2 450 of 450" counts the checks that exist.
+  "E2 470 of 470" counts the checks that exist.
 - Part B (found by the implementation audit; re-run, see the end of this item): the reference DA arm on the `none` state restricted to F_filt
   (`sim-k185.R:994`) failed in most proteomics replicates and the `tryCatch` kept no error. The P0, P1 and P4b part-B FDP
   and power contrasts are missing, or rest on 7 to 20 of 100 replicates. Reported part only; no classification changes.
@@ -360,3 +393,37 @@ count from the rows): the closed-form features (exactly k residual dimensions) c
 - The release commit (A9 is stated at 147adde8).
 - The run path's own declared lipid/metab DA kernel (E6 on L2 mirrors its input rule).
 - Real data; other generators, residual distributions, normalisers beyond cyclic loess.
+- The message of the declared lipid and metabolite part-B DA failures (not recorded); that they are KIT-196's stop is
+  inferred from the k = 0 coincidence and the code path, not shown.
+- D2's reading for P3, M1b and P2 (close audit C02): awaiting the owner's ruling.
+
+## For the change report
+
+No behaviour changed in this ticket; it measured a limitation of the legacy pipeline that a later remedy may change.
+
+What it measured. On the classic proteomics routes (DIA without limpa, LFQ, TMT) and on the lipidomics and metabolomics
+routes, MultiScholaR passes matrices that still contain missing values to RUV-III-C (`R/func_prot_s4_norm_methods.R:248-254`,
+`R/func_lipid_s4_ruv_methods.R:691-697` at ffdfdfb7). RUV-III-C (RUVIIIC 1.0.19, `src/RUVIIIC_Varying.cpp:80-85`) sets
+those missing values to 0 when it estimates the unwanted directions. DIA with limpa and transcriptomics do not use
+RUV-III-C.
+
+Who is affected. Users of these routes whose data have more missing values than the matched shape's safe rate (0 to
+2 % in most shapes; 10 % only in the 50-run TMT-like shape) get RUV-III-C-corrected values, and on the legacy test
+calls, affected as tabulated above. The declared designs' test (W from complete features in the model) does not see
+the zero-filling by construction; their corrected matrices (figures, export, the integration input) do.
+
+What the measurement shows (outcome O3, VAL-<merge>). At random missingness from 0.5 % (two groups of three) or 2 % (most shapes), the zero-filling itself
+leaves 0.09 to 0.40 of the planted unwanted variation in the data and costs the legacy test up to 0.45 of its power;
+directions from complete features remove this. At value-dependent missingness from 10 % (from 2 % in three shapes), the legacy test's false
+discovery proportion rises by +0.016 to +0.34 beyond the truth's own change, and the complete-feature version rises
+as much, so that rise is mostly not the zero-filling. The complete-feature version is not a ready remedy: at 10 %
+random missingness its own false discovery proportion is seriously raised in six shapes. With the declared design at
+value-dependent 50 %, small lipid and metabolite designs estimated no factor (k = 0) in 90 and 100 of 100 data sets,
+and their DA did not complete for those assays (cause inferred, see Part B).
+
+Evidence. Rows `rows/`, scored tables `results/` (final scoring run 45333019858), runs and commits `runs.tsv`; the
+declaration `declaration.md` (432f703b, with dated sections 7 to 11).
+
+Limits. One synthetic generator (log2 levels about 20; two planted unwanted factors of total strength 3; k at the
+truth; no normalisation; the legacy route's limma test); 14 study shapes, 400 data sets each; no real data; other
+designs, k, normalisers and tests not measured. No remedy is decided (VAL-56).

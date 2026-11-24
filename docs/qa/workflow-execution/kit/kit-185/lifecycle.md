@@ -65,6 +65,13 @@ same rows), not the zero-filling. The ticket treats a failed E1-neg as an instru
 failure and no fix of the script can change it without changing the route's filter. By the brief's rule (unsure whether
 instrument defect or result: it is a result), the work stops here and the owner decides.
 
+## Later lifecycles (part-B re-run and P2)
+
+L1pb (45291628697, df60efa9, VAL-98 (1)): blind, replicate 401 of P0, P1, P4b part B; the reference DA arm returned a
+table in every cell and route (`qmethod` recorded). Outputs `l1/l1pb-1/` (committed after the close audit, C06 (1);
+their SHA-256 equal those in `provenance-l1pb.json`). L1p2 (45314701113, 6779d56e, section 11): blind, P2 replicates
+401-403; E1-neg 2.54, 1.85, 2.30; G1, E1 (a), E1 (b), E2, E7 pass. Outputs `l1/l1p2-1/`.
+
 ## Not checked
 
 - The S-run timing itself (L1 measures with the lifecycle's extra work).

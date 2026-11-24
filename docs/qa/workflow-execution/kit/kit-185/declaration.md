@@ -130,3 +130,7 @@ replicates 401-403 (part A): E1-neg must now pass (the comparator differs from S
 hold; if E1-neg fails again, the work stops and the owner is told. Then the two counted jobs, then the whole record is
 re-scored once with the pinned scripts (part A's 13 cells must come out identical apart from P2's added rows and the
 re-run part-B proteomics cells).
+
+## 12. Dated note (2026-11-24), after the close audit: record corrections only
+
+Section 10 was written after part A's results were scored (SC 45281426216, SC2 45283782973); its summary is reported only and decides nothing. The part-B re-run's rows equal the earlier rows in every value the earlier rows held; only the reference arm's missing DA fields were filled (close audit).
