@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-159, owner's VAL-153: E1cov, VAL-54 instrument re-send of k159-e1-covr-a5a084cf with covr in extra_packages, nothing else changed; at a5a084cf; ceiling 240 min; decides A2 covr >= 80 % on msrval",
+  "label": "KIT-159 E1cov: suite, lint and covr at a5a084cf",
+  "package_commit": "a5a084cfd1e1e0379cb01d7f8e7d313ce67d320e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "covr",
+    "lintr"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-159/harness/val-tests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-159/rep-e1cov-out",
+        "--lint",
+        "--covr"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-159/rep-e1cov-out",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 240
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
