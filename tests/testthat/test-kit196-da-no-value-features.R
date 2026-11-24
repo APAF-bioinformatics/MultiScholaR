@@ -354,9 +354,11 @@ for (omic in c("lipid", "metab")) {
             run <- kit196ManagedDa(omic, object, environment())
             manager <- run$manager
             reference <- manager$.context$snapshot$da_results
-            manifest <- if (!is.null(reference)) hydrateSavedWorkflowEntity(manager$.context$store, reference)$value
-            list(manifest = manifest, results = if (!is.null(manifest)) readWorkflowOmicsDaResults(kit196Binding(omic), manager, manifest),
-                operations = run$probe$operations, errors = c(run$errors, paste("operations:", paste(run$probe$operations, collapse = ","),
+            # The accepted manifest is a state value (test-module-ci-trx-da.R:26 reads it so).
+            manifest <- if (!is.null(reference)) withWorkflowStateScope(manager, function() resolveWorkflowStateValue(manager$.context, reference))
+            results <- if (!is.null(manifest)) withWorkflowStateScope(manager, function() readWorkflowOmicsDaResults(kit196Binding(omic), manager, manifest))
+            list(manifest = manifest, results = results,
+                operations = run$probe$operations, errors = c(run$errors, paste("reference:", !is.null(reference), "operations:", paste(run$probe$operations, collapse = ","),
                     "statuses:", paste(run$probe$statuses, collapse = ","))))
         }
         out <- managed(kit196Object(omic, scatter = TRUE))
