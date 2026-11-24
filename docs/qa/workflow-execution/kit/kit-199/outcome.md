@@ -67,6 +67,14 @@ digests) removed and four `*.parquet` keys (`<present>`) added, `corrected_prote
 `test-e2e-proteomics-dia-limpa.R`: skipped on both (`same`). Check: ERRORs 0, WARNINGs 3, NOTEs 3 on both; findings
 identical (6 on both, none only on one side). Records: `r3/compare.tsv`, `r3/check-compare.txt`, `r3/tests*.tsv`, `r3/failures.txt`, `r3/failures-base.txt`, `r3/compare-failures.txt`. Shards: base on AMD EPYC 7763, head on Intel Xeon Platinum 8573C; the head reproduces every capture of the re-frozen file on a third CPU model, of another vendor (masked captures only; the raw DA table was not compared there). `r3/failures-base.txt`'s six `prot_dia_limpa` blocks equal run 44953187101's text for text.
 
+### R3b: the merge commit under test (run 45325909248)
+
+Merge 6b3e615a60de619296d178490df939215c6ee892 (this branch at 89b72c9c merged with `v0.9-staging` 9453e79b; the only
+conflict was the ledger, resolved by keeping staging's VAL-122 to VAL-130 and this ticket's row after them), pushed
+to `run-k199-r3b`; base 9453e79b; `test-gui-entry-proteomics.R`, one shard, no check, reference BLAS. Base 183 passed /
+10 failed, head 189 / 4 (`prot_dia` only; its four blocks identical on both sides); `prot_dia_limpa` `fixed`, no
+failure at any step. Both shards on AMD EPYC 7763. Records: `r3b/`.
+
 ### R4: the route under OpenBLAS (run 45319240524, records commit R; D6, reported, decides nothing)
 
 Measurement mode of F1's `control.R`, then `compare-da.R` (`r4/da-runner.tsv` = a, `r1/da-runner.tsv` = b). Job: AMD
@@ -117,13 +125,12 @@ integration keys at four steps), 0 digest differences: the DA key equalled the s
 | A6 | yes | `r3/compare.tsv` (`fixed`; `prot_dia` 4 on both; e2e `same`), `r3/check-compare.txt` (identical) |
 | A7 | yes | this file, `runs.tsv`, `r1/`, `r2/`, `r3/`, `r4/`; longest path under this directory 69 bytes |
 | A8 | yes (handed over) | ledger row `VAL-<merge>` after VAL-121; plan section 11 row and section 5 sentence: ticket 6.3, for the coordinator; no version change; no NEWS entry |
-| A9 | yes | `runs.tsv`: 146.3 job-minutes, 9.75 core-hours against 17.67 expected and 72.0 ceiling (R3b not yet run) |
-| A10 | due, not run | `v0.9-staging` has moved past B in `R/` and `inst/` (at 67d38df3); R3b at the merge commit is the coordinator's to order |
+| A9 | yes | `runs.tsv`: 204.0 job-minutes, 13.60 core-hours against 17.67 expected and 72.0 ceiling |
+| A10 | yes | R3b (run 45325909248) at merge 6b3e615a against 9453e79b: `prot_dia_limpa` `fixed`, `prot_dia` unchanged; `r3b/compare.tsv` |
 | A11 | yes | `r4/compare-da.tsv`, `r4/measure.tsv`, `r4/environment.tsv`; table above; bundle summary read |
 
 ## Not checked
 
-- R3b at the merge commit (due; ordered by the coordinator).
 - The laptop's DA table and the cause of the laptop-against-runner difference (6.3, end-of-project laptop session).
 - OpenBLAS with a set thread count, or on a CPU model other than EPYC 7763; the Windows bundle.
 - Cross-model byte identity beyond EPYC 9V74 and EPYC 7763.
