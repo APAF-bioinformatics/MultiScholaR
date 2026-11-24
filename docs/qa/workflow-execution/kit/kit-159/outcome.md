@@ -26,7 +26,50 @@ jobs are counted against T0's and T1's ceilings (6 core-hours each), not against
 | b. records and guard | `inputs.R`, `licence.R`, `declaration.R`, `provenance.R`, `determinism.R`, `evidence.R`, `units.R` | T-IN, T-LIC, T-LOG, T-DECL, T-PRE, T-ENV, T-SCORE, T-ANN, T-PROV, T-DET, T-CHUNK, T-RUN, T-RNG |
 | c. driver | `driver.R`, `arms.R`, `parity.R`, `integration.R` (Part B later) | T-DRV, T-HELP, T-CHAIN, T-KER, T-TAB |
 
-## Resume here (state 2026-11-24, pre-release repair written, UNRUN; read this first)
+## Resume here (state 2026-11-24, repair runs R0 to R9 in, R4c and the I10 diagnostic running)
+
+Ticket r1.16 (main checkout; section 31). Rulings: VAL-109; KIT-199 plan audit ruling C1 (a); KIT-199
+re-check Q01; KIT-192 implementation audit I04. Repair line: 15 core-hours (VAL-109).
+
+**Observed (runs; tables in `rep/`, `runs.tsv`):**
+- R0 (45310054283, 4b4e4355, tests only) and R1 (45310058037, 4a57cbdb, whole suite) were sent
+  together, so the tests-first order rests on the commits (05d300b2/4b4e4355 add no `R/`), not on
+  the send order. R0: every new test fails; most at the audit's fault (T-PH-5/7/8 I01; R-I03, I04,
+  I06, I09/I18, I11, I15, I16, I20; T-TAB-OFF I09); some at a precondition (R-I01, I02, I05/07/08,
+  I08: valPrepare; E2E: no da.tsv; T-PRE-RUV: `ruv` argument). Passing by construction: T-PROV-1's
+  nested fields and R-I17's valRunCells backstop; both corrected (145621ac) and re-run on the
+  tests-only code (R6, run branch `run-k159-r0fix`): T-PROV-1 fails at I07; R-I17's capture cannot
+  be reached there (that valRunPhase cannot run a ticket of the repaired contract), so I17 is shown
+  on the fix only.
+- R1: 216 of 226 pass. All ten T-TAB routes, T-TAB-RUV, T-TAB-OFF on DIA_LIMPA and trx_screen (RUV
+  off completes, before KIT-192) and T-PRE-RUV on DIA, LFQ, TMT, DIA_LIMPA pass on the merged
+  product. Failures: E2E x3 and R-I01/I02/I05-08/I08/I06/I20 (fix defects, see below), T-SCORE-1
+  (fixture mechanics), 27 lints in the repair code (a result; corrected cb3a57e9).
+- R3 (4e78b246), R5 (96d87c12), R8 (20028e18), R9 (1d77f70a, pending): tests first for passes 2
+  and 3 and the coordinator's items; each fails at its fault; R3's plan-generator test passed by
+  construction, corrected (ee445cfc) and shown failing in R7 (run branch `run-k159-r3fix`). R3 also
+  shows the I10 mechanism directly: under T2's generator the plain arm's null rejection share is
+  0.37 (target 0.05).
+- R4b (45315050609, 169aee9f): 50 of 55 pass (repair2, repair3, coverage, coverage-rank, chain,
+  phases, most of repair); fails: E2E x3 (verdict row: row names from a named family vector),
+  T-SCORE-1 (zero-row comparisons cbind), R-I08 (toy metric lacks `...`: mechanics), 2 lints.
+  Corrected at 5901132a and 36297e25; R4c sent.
+
+**Fix defects found by runs, each its item's one correction:** valPrepare `file.exists(NULL)` for
+units without files (R5/R1, I02; 55e349a2); verdict row names (R4b, I05; 5901132a); phase score with
+no comparison rows (R4b, I06; 5901132a); lints (R1, R4b).
+
+**Running:** R4c (36297e25: repair, records, e2e with workflow cells, lint); the I10 diagnostic
+and the O4 half-width run (169aee9f, T2's line, declared in `t2/di10-declaration.md` at 3571510a
+before the send).
+
+**Not built (handed over):** I07 replay of declared cells (`replayWorkflowAnalysisRecord` needs a
+prepared project store holding only the import and design states and the record's inputs; provenance
+says `not_built`); I15's G1(a) part (1)/(2) runners, the `gui-entry-control.tsv` loader (fixtures:
+KIT-172, 177, 180 records) and the release-commit DA-value comparison of the DIA-with-limpa lane
+(VAL-120 (2), KIT-199 12.3); I19 (4) covr (R2) not sent: the repair line cannot hold it with R4c.
+
+## Earlier resume record (state 2026-11-24, pre-release repair written, UNRUN)
 
 The pre-release implementation audit (`tickets/kit/audits/AUDIT-KIT-159-impl-prerelease-20261124.md`)
 found the cell-to-verdict path unfit (I01 to I20). The owner answered every waiting point in methods
