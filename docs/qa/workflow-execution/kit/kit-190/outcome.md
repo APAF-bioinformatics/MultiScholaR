@@ -146,3 +146,21 @@ Manual 22.7 s and 86.8 s. Projected Automatic step at 50,000 features: 989 s, un
 - k, FDP and power under candidate rules (b) to (d) (only their selections were recorded).
 - Why the T11 concentration fixture's head journey reached k = 7 and 209 calls.
 - The pool refusal's text as the tab and the worker show it (only its class and words, by test).
+
+## Observed, not examined (named to the owner and to KIT-188)
+
+- T11 concentration fixture (`kit172ConcentrationValues()`, no planted effect), legacy Automatic, lipid and metab
+  identical: head (first repair, d6d67efe) chose 14 % (72 controls) and k = 7 and made 209 calls, all false by
+  construction, against 1 %, 5 controls, k = 2 and 16 calls on base (`e/a/fixtures.tsv`, rows `t11_concentration`).
+- KIT-172 T1b (42 journeys): the largest |change in log2 FC| per journey, head against base, has median 3.5 and maximum
+  1,066 (`e/a/fixtures.tsv`, column `max_abs_dlogfc`). Neither has been examined; both point at unstable fits at some k.
+
+## After KIT-187's merge (6416dbd6)
+
+- Merged (true merge); no conflict. 7.4 written (1d9c6847): the row `ruv_control_grouping` in `workflowReplayRuleMarkers`,
+  `fixed = list(ruv_control_grouping = "kept")` on the legacy RUV declaration, and no marker on managed new-design steps
+  (`completeWorkflowAction`). Ticket citations corrected (omics branch `:878`, wrapper `:785`). NEWS and the ledger row
+  `VAL-<merge>` written with the first repair's figures; they change if the rule changes (VAL-110).
+- T7 failing first (tests-only 2caff088, run 45307510617): (i) at the marker row; (iii) and (vi) at the marker absent;
+  (iv) at (a)'s mismatches and (b)'s marker; (v) passed. (vi)'s new-design half failed in the instrument (the fixture's
+  default object has duplicate ids, which the declared design refuses); repaired in 518f29b1. KIT-187's T8 file ok.
