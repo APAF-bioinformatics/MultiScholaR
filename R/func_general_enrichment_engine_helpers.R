@@ -17,13 +17,17 @@ perform_enrichment <- function(data_subset,
                                max_retries = 5,
                                wait_time = 5,
                                protein_id_column,
-                               correction_method = "gSCS") {
+                               correction_method = "gSCS",
+                               contrast = NA_character_,
+                               direction = NA_character_) {
   
   
   
   if (nrow(data_subset) == 0) {
     return(NULL)
   }
+  # KIT-208: the list's size before the NA filter below empties `data_subset`.
+  list_size <- nrow(data_subset)
 
   # Clean data before enrichment
   protein_ids <- data_subset[[protein_id_column]]
@@ -63,6 +67,22 @@ perform_enrichment <- function(data_subset,
   }
 
   custom_bg <- unique(custom_bg)
+
+  # KIT-208 (VAL-147 (1)): g:Profiler is not asked when nothing would be tested: the list has proteins but no named
+  # identifier, or the custom background has none (`gost` answers an empty query with NULL, read as "no terms"). The
+  # classed condition, with the labels `processEnrichments` passes, does nothing unless a caller handles
+  # `multischolar_enrichment_no_identifiers` (`diaEnrichmentOperation`'s kernel refuses an empty background and reports
+  # an empty list as not tested); the return value stays NULL.
+  query_ids <- length(protein_ids)
+  background_ids <- sum(!is.na(custom_bg) & nzchar(as.character(custom_bg)))
+  if ((list_size > 0 && query_ids == 0) || (identical(domain_scope, "custom") && background_ids == 0)) {
+    signalCondition(structure(class = c("multischolar_enrichment_no_identifiers", "condition"),
+      list(message = sprintf(paste("g:Profiler was given no gene names to test: %d proteins in the list, %d named",
+        "proteins in the background"), list_size, background_ids), call = NULL, contrast = as.character(contrast),
+        direction = as.character(direction), list_size = list_size, query_ids = query_ids,
+        background_ids = background_ids)))
+    return(NULL)
+  }
 
   result <- NULL
   attempt <- 1

@@ -1,0 +1,47 @@
+check	reference	value	result
+ftp_release	all	2026_04 from RELEASE.metalink	pass
+fasta_file	UP000000625	UP000000625_83333.fasta.gz	pass
+release_uniprotkb_xref	UP000000625	reply 2026_04; ftp 2026_04	pass
+accessions_xref	UP000000625	fasta 4403; table 4403; only in fasta 0; only in table 0	pass
+release_uniprotkb_go	UP000000625	reply 2026_04; ftp 2026_04	pass
+accessions_go	UP000000625	fasta 4403; table 4403; only in fasta 0; only in table 0	pass
+fasta_file	UP000000265	UP000000265_272620.fasta.gz	pass
+release_uniprotkb_xref	UP000000265	reply 2026_04; ftp 2026_04	pass
+accessions_xref	UP000000265	fasta 5126; table 5126; only in fasta 0; only in table 0	pass
+release_uniprotkb_go	UP000000265	reply 2026_04; ftp 2026_04	pass
+accessions_go	UP000000265	fasta 5126; table 5126; only in fasta 0; only in table 0	pass
+fasta_file	UP000008816	UP000008816_93061.fasta.gz	pass
+release_uniprotkb_xref	UP000008816	reply 2026_04; ftp 2026_04	pass
+accessions_xref	UP000008816	fasta 2889; table 2889; only in fasta 0; only in table 0	pass
+release_uniprotkb_go	UP000008816	reply 2026_04; ftp 2026_04	pass
+accessions_go	UP000008816	fasta 2889; table 2889; only in fasta 0; only in table 0	pass
+fasta_file	UP000000750	UP000000750_301447.fasta.gz	pass
+release_uniprotkb_xref	UP000000750	reply 2026_04; ftp 2026_04	pass
+accessions_xref	UP000000750	fasta 1690; table 1690; only in fasta 0; only in table 0	pass
+release_uniprotkb_go	UP000000750	reply 2026_04; ftp 2026_04	pass
+accessions_go	UP000000750	fasta 1690; table 1690; only in fasta 0; only in table 0	pass
+uniparc_records	UP000001734	5739 records	pass
+uniparc_records	UP000000530	2721 records	pass
+uniparc_records	UP000002436	1993 records	pass
+file_size	UP000000265.fasta	2469712 bytes	pass
+file_size	UP000000265_go.tsv	1147948 bytes	pass
+file_size	UP000000265_xref.tsv	232084 bytes	pass
+file_size	UP000000530_uniparc.fasta	883830 bytes	pass
+file_size	UP000000625.fasta	1891162 bytes	pass
+file_size	UP000000625_go.tsv	1047533 bytes	pass
+file_size	UP000000625_xref.tsv	333013 bytes	pass
+file_size	UP000000750.fasta	735243 bytes	pass
+file_size	UP000000750_go.tsv	310938 bytes	pass
+file_size	UP000000750_xref.tsv	70977 bytes	pass
+file_size	UP000001734_uniparc.fasta	1910385 bytes	pass
+file_size	UP000002436_uniparc.fasta	631889 bytes	pass
+file_size	UP000008816.fasta	1227493 bytes	pass
+file_size	UP000008816_go.tsv	578247 bytes	pass
+file_size	UP000008816_xref.tsv	175632 bytes	pass
+file_size	citation-page.txt	35392 bytes	pass
+file_size	citation.tsv	496 bytes	pass
+file_size	hashes.tsv	1496 bytes	pass
+file_size	release.tsv	2156 bytes	pass
+download	all	26 downloads completed	pass
+job_start_utc	all	2026-11-23T07:00:10Z	recorded
+job_end_utc	all	2026-11-23T07:01:18Z	recorded

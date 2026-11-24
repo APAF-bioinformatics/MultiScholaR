@@ -39,7 +39,7 @@ on:
         description: "Stage"
         type: choice
         default: library
-        options: [snapshot, library, full, container, parity]
+        options: [snapshot, library, full, container, parity, kit167-engine]
       platform:
         description: "Platform"
         type: choice
@@ -85,6 +85,7 @@ jobs:
       build: ${{ steps.plan.outputs.build }}
       full: ${{ steps.plan.outputs.full }}
       container: ${{ steps.plan.outputs.container }}
+      kit167_engine: ${{ steps.plan.outputs.kit167_engine }}
       linux_runners: ${{ steps.plan.outputs.linux_runners }}
       parity: ${{ steps.plan.outputs.parity }}
     steps:
@@ -135,9 +136,10 @@ jobs:
             platform=both
             case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
           fi
-          case "$stage" in none|snapshot|library|full|container|parity) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
-          build=false; full=false; container=false; parity=false; linux_runners='["ubuntu-22.04"]'
+          case "$stage" in none|snapshot|library|full|container|parity|kit167-engine) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          build=false; full=false; container=false; parity=false; kit167_engine=false; linux_runners='["ubuntu-22.04"]'
           case "$stage" in
+            kit167-engine) kit167_engine=true; platform=windows ;;
             library) build=true ;;
             full) build=true; full=true; linux_runners='["ubuntu-22.04", "ubuntu-24.04"]' ;;
             container) build=true; container=true; platform=windows ;;
@@ -154,10 +156,90 @@ jobs:
           case "$platform" in both) linux=true; windows=true ;; linux) linux=true ;; windows) windows=true ;; esac
           {
             echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
-            echo "build=$build"; echo "full=$full"; echo "container=$container"
+            echo "build=$build"; echo "full=$full"; echo "container=$container"; echo "kit167_engine=$kit167_engine"
             echo "linux_runners=$linux_runners"; echo "parity=$parity"
           } | tee -a "$GITHUB_OUTPUT"
           echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
+
+  # ------------------------------------------------------- KIT-167 gate F1: the Windows engine (no build, no token)
+  # The DIAMOND v2.2.8 Windows executable: its imports (dumpbin), then `diamond version` and a 100-protein search in a
+  # Server Core container without the Visual C++ runtime, with Microsoft's current one, and with the oldest Microsoft
+  # still serves; the installer's registry check against each state, read in the 64-bit view. Nothing is uploaded:
+  # every result is a log line `KIT167 <field> <value>` read with `gh run view <id> --log`.
+  kit167_engine:
+    name: "KIT-167 F1: DIAMOND on Windows (imports, Server Core container, runtime states; log lines only)"
+    needs: plan
+    if: needs.plan.outputs.kit167_engine == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 75
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: The release asset, verified; the executable's SHA-256 and imports
+        run: |
+          $pin = Import-Csv -Delimiter "`t" inst\extdata\diamond-pin.tsv | Where-Object platform -eq 'windows'
+          New-Item -ItemType Directory -Force C:\k167 | Out-Null
+          curl.exe -fsSL -o C:\k167\diamond.zip $pin.archive_url
+          Write-Output ("KIT167 archive_bytes {0}" -f (Get-Item C:\k167\diamond.zip).Length)
+          $archive = (Get-FileHash -Algorithm SHA256 C:\k167\diamond.zip).Hash.ToLower()
+          Write-Output "KIT167 archive_sha256 $archive"
+          if ($archive -ne $pin.archive_sha256) { throw "the archive differs from the pin" }
+          Expand-Archive -LiteralPath C:\k167\diamond.zip -DestinationPath C:\k167\zip
+          $exe = Get-ChildItem -Recurse -Filter diamond.exe C:\k167\zip | Select-Object -First 1
+          Copy-Item $exe.FullName C:\k167\diamond.exe
+          Write-Output ("KIT167 executable_sha256 {0}" -f (Get-FileHash -Algorithm SHA256 C:\k167\diamond.exe).Hash.ToLower())
+          $dumpbin = Get-ChildItem -Recurse -Filter dumpbin.exe "C:\Program Files\Microsoft Visual Studio" -ErrorAction SilentlyContinue | Where-Object FullName -match 'Hostx64\\x64' | Select-Object -First 1
+          if ($null -eq $dumpbin) { Write-Output "KIT167 dumpbin not_found" } else {
+            $deps = & $dumpbin.FullName /dependents C:\k167\diamond.exe | Where-Object { $_ -match '^\s+\S+\.dll\s*$' } | ForEach-Object { $_.Trim() }
+            foreach ($dll in $deps) { Write-Output "KIT167 imports $dll" }
+            $headers = & $dumpbin.FullName /headers C:\k167\diamond.exe | Select-String 'linker version'
+            Write-Output ("KIT167 linker {0}" -f ($headers -join ' ').Trim())
+          }
+      - name: A 100-protein query and database (the shipped SF370 reference's first 100 entries)
+        run: |
+          $lines = Get-Content inst\extdata\reference_mapping\references\UP000000750.fasta
+          $starts = 0..($lines.Count - 1) | Where-Object { $lines[$_].StartsWith('>') }
+          $end = if ($starts.Count -gt 100) { $starts[100] - 1 } else { $lines.Count - 1 }
+          $lines[0..$end] | Set-Content -Encoding ascii C:\k167\q.fasta
+          Write-Output ("KIT167 query_entries {0}" -f ([Math]::Min(100, $starts.Count)))
+      - name: The registry check the installer makes (64-bit view), as a script for the container
+        run: |
+          @'
+          $key = [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine', 'Registry64').OpenSubKey('SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64')
+          if ($null -eq $key) { "installed=absent bld=absent" } else { "installed={0} bld={1}" -f $key.GetValue('Installed'), $key.GetValue('Bld') }
+          '@ | Set-Content -Encoding ascii C:\k167\check.ps1
+          @'
+          param([string]$Label)
+          $check = & powershell -NoProfile -File C:\k167\check.ps1
+          Write-Output "KIT167 registry_$Label $check"
+          $p = Start-Process -FilePath C:\k167\diamond.exe -ArgumentList 'version' -PassThru -Wait -NoNewWindow -RedirectStandardOutput C:\k167\v.out -RedirectStandardError C:\k167\v.err
+          Write-Output ("KIT167 version_status_{0} 0x{1:X8}" -f $Label, $p.ExitCode)
+          Set-Location C:\k167
+          $m = Start-Process -FilePath C:\k167\diamond.exe -ArgumentList 'makedb','--in','q.fasta','--db','q' -PassThru -Wait -NoNewWindow -RedirectStandardOutput C:\k167\m.out -RedirectStandardError C:\k167\m.err
+          $b = Start-Process -FilePath C:\k167\diamond.exe -ArgumentList 'blastp','--query','q.fasta','--db','q','--out','hits.tsv','--ultra-sensitive','--masking','none','--ext','full','-k0','--max-hsps','1','--threads','2' -PassThru -Wait -NoNewWindow -RedirectStandardOutput C:\k167\b.out -RedirectStandardError C:\k167\b.err
+          $rows = if (Test-Path C:\k167\hits.tsv) { (Get-Content C:\k167\hits.tsv).Count } else { 0 }
+          Write-Output ("KIT167 search_status_{0} 0x{1:X8} rows {2}" -f $Label, $b.ExitCode, $rows)
+          Remove-Item -ErrorAction SilentlyContinue C:\k167\hits.tsv, C:\k167\q.dmnd
+          '@ | Set-Content -Encoding ascii C:\k167\state.ps1
+          Write-Output ("KIT167 host_build {0}" -f [Environment]::OSVersion.Version)
+      - name: Server Core container, three runtime states
+        run: |
+          # Run 45353194826: the Docker engine was not running on the image; start it and wait for its pipe.
+          $service = Get-Service -Name docker -ErrorAction SilentlyContinue
+          Write-Output ("KIT167 docker_service {0}" -f $(if ($service) { $service.Status } else { 'absent' }))
+          if ($service -and $service.Status -ne 'Running') { Start-Service docker }
+          foreach ($i in 1..30) { docker version *> $null; if ($LASTEXITCODE -eq 0) { break }; Start-Sleep -Seconds 5 }
+          docker version --format '{{.Server.Version}}' | ForEach-Object { "KIT167 docker_server $_" }
+          $image = 'mcr.microsoft.com/windows/servercore:ltsc2025'
+          docker pull $image | Select-Object -Last 1
+          $current = 'https://aka.ms/vs/17/release/vc_redist.x64.exe'
+          # The oldest x64 Visual C++ 2015 redistributable Microsoft still serves (14.0.24215, VS 2015 Update 3).
+          $oldest = 'https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x64.exe'
+          docker run --rm -v C:\k167:C:\k167 $image powershell -NoProfile -File C:\k167\state.ps1 -Label none
+          docker run --rm -v C:\k167:C:\k167 $image powershell -NoProfile -Command "curl.exe -fsSL -o C:\vc.exe $oldest; `$i = Start-Process C:\vc.exe -ArgumentList '/install','/quiet','/norestart' -Wait -PassThru; Write-Output ('KIT167 install_status_oldest 0x{0:X8}' -f `$i.ExitCode); & C:\k167\state.ps1 -Label oldest"
+          docker run --rm -v C:\k167:C:\k167 $image powershell -NoProfile -Command "curl.exe -fsSL -o C:\vc.exe $current; `$i = Start-Process C:\vc.exe -ArgumentList '/install','/quiet','/norestart' -Wait -PassThru; Write-Output ('KIT167 install_status_current 0x{0:X8}' -f `$i.ExitCode); & C:\k167\state.ps1 -Label current"
 
   # ------------------------------------------------------- P2 step 1: the snapshot date
   snapshot:
@@ -279,6 +361,9 @@ jobs:
       - name: Pandoc ${{ env.PANDOC_VERSION }}
         run: $BUILD_EXEC bash packaging/linux/build.sh pandoc
 
+      - name: DIAMOND (KIT-167; release asset and executable verified against inst/extdata/diamond-pin.tsv)
+        run: $BUILD_EXEC bash packaging/linux/build.sh diamond
+
       - name: Assemble the bundle (run paths to the bundled libraries); remove R from its build prefix
         run: $BUILD_EXEC bash packaging/linux/build.sh assemble
 
@@ -307,6 +392,13 @@ jobs:
           set -o pipefail
           bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-internal.R required \
             2>&1 | tee "$OUT/check-internal.log"
+
+      - name: "Check: the bundled DIAMOND runs and passes the package's checksum check (KIT-167; bare ubuntu:22.04, network off)"
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-diamond.R \
+            2>&1 | tee "$OUT/check-diamond.log"
 
       # ------------------------------------------------ stage full: the shell, the archive, the install
       - uses: actions/setup-node@v4
@@ -713,6 +805,21 @@ jobs:
           Copy-Item "$env:RUNNER_TEMP\pandoc\pandoc-${env:PANDOC_VERSION}\*" "$env:BUNDLE\pandoc\" -Recurse
           & "$env:BUNDLE\pandoc\pandoc.exe" --version | Select-Object -First 1
 
+      - name: DIAMOND (KIT-167; release asset verified against inst/extdata/diamond-pin.tsv)
+        run: |
+          $pin = Import-Csv -Delimiter "`t" inst\extdata\diamond-pin.tsv | Where-Object platform -eq 'windows'
+          curl.exe -fsSL -o "$env:RUNNER_TEMP\diamond.zip" $pin.archive_url
+          if ((Get-Item "$env:RUNNER_TEMP\diamond.zip").Length -ne [int64]$pin.archive_bytes) { throw "DIAMOND archive size differs from the pin" }
+          if ((Get-FileHash -Algorithm SHA256 "$env:RUNNER_TEMP\diamond.zip").Hash.ToLower() -ne $pin.archive_sha256) { throw "DIAMOND archive SHA-256 differs from the pin" }
+          Expand-Archive -LiteralPath "$env:RUNNER_TEMP\diamond.zip" -DestinationPath "$env:RUNNER_TEMP\diamond"
+          New-Item -ItemType Directory -Force "$env:BUNDLE\diamond" | Out-Null
+          $exe = Get-ChildItem -Recurse -Filter diamond.exe "$env:RUNNER_TEMP\diamond" | Select-Object -First 1
+          Copy-Item $exe.FullName "$env:BUNDLE\diamond\diamond.exe"
+          $measured = (Get-FileHash -Algorithm SHA256 "$env:BUNDLE\diamond\diamond.exe").Hash.ToLower()
+          Write-Output "KIT167 executable_sha256 $measured"
+          if ($pin.executable_sha256 -ne 'NA' -and $measured -ne $pin.executable_sha256) { throw "DIAMOND executable SHA-256 differs from the pin" }
+          & "$env:BUNDLE\diamond\diamond.exe" version
+
       # The test tools are fetched before the check step cuts the network for the bundle's programs.
       - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library"
         id: testtools
@@ -780,7 +887,7 @@ jobs:
           $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot;$env:SystemRoot\System32\WindowsPowerShell\v1.0"
           $env:R_LIBS_USER = "$bundle\R\no-user-library"; $env:R_LIBS_SITE = "$bundle\R\no-site-library"
           $env:RTOOLS45_HOME = "$bundle\no-rtools"; $env:RETICULATE_PYTHON = "$bundle\python\python.exe"; $env:PYTHONNOUSERSITE = '1'
-          $env:RSTUDIO_PANDOC = "$bundle\pandoc"; $env:MULTISCHOLAR_DISABLE_TOOLS = 'bash,dd,sha256sum,sync,tar,cp'; $env:MSR_BUNDLE = $bundle
+          $env:RSTUDIO_PANDOC = "$bundle\pandoc"; $env:MSR_DIAMOND = "$bundle\diamond\diamond.exe"; $env:MULTISCHOLAR_DISABLE_TOOLS = 'bash,dd,sha256sum,sync,tar,cp'; $env:MSR_BUNDLE = $bundle
           $run = 'C:\Users\ContainerAdministrator\msr-run'; New-Item -ItemType Directory -Force $run | Out-Null
           $r = Start-Process -FilePath "$bundle\R\bin\Rscript.exe" -ArgumentList '--vanilla', 'C:\checks\entry.R', '8765', $run, "$PID" -PassThru -NoNewWindow -RedirectStandardOutput "$run\r.out" -RedirectStandardError "$run\r.err"
           $status = $null

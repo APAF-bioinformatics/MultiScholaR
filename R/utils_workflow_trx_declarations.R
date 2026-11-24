@@ -1055,6 +1055,9 @@ trxIntegrationInputSource <- function(manager) {
     features <- data.frame(feature_id = ids, display_name = ifelse(is.na(gene_names) | !nzchar(gene_names), ids, gene_names),
         stringsAsFactors = FALSE)
     if (!name_column %in% names(features)) features[[name_column]] <- gene_names
+    # KIT-167: with the gate on and a gene table saved at count import, the gene-level mapping columns and the gene
+    # length (counts unchanged); without one the features are as before.
+    if (referenceMappingEnabled()) features <- trxReferenceMappingFeatures(features, readReferenceGenes(manager))
     technical <- slots$technical_replicate_id
     if (!is.character(technical) || length(technical) != 1L || !isTRUE(technical %in% names(samples))) technical <- NA_character_
     manifest <- list(omic_type = "transcriptomics",

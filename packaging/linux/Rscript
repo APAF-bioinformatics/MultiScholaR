@@ -24,10 +24,12 @@ RETICULATE_PYTHON="$bundle/python/bin/python3"
 PYTHONNOUSERSITE=1
 # rmarkdown finds pandoc here before it looks on the PATH.
 RSTUDIO_PANDOC="$bundle/pandoc"
+# KIT-167: the sequence search program of the reference mapping (its checksum is checked by the package).
+MSR_DIAMOND="$bundle/diamond/diamond"
 PATH=/usr/bin:/bin
 MSR_BUNDLE="$bundle"
 export RHOME R_LIBS_USER R_LIBS_SITE RETICULATE_PYTHON PYTHONNOUSERSITE RSTUDIO_PANDOC \
-    PATH MSR_BUNDLE
+    MSR_DIAMOND PATH MSR_BUNDLE
 
 # R needs a UTF-8 locale for the application's text; C.UTF-8 is in every glibc from 2.35 on.
 case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in

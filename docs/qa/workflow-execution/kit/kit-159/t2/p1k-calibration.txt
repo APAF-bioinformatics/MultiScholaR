@@ -1,0 +1,1 @@
+[p1k-calibration] one-contrast effect 0.40 mean pAUC 0.5932; pooled 0.35 0.6017
