@@ -105,20 +105,27 @@ jobs:
 
       - name: oracles (regenerate and compare bytes)
         if: ${{ !cancelled() }}
+        # No pipe around the loop: a variable set inside a piped group is lost (L0 run 45301514375).
         run: |
-          mkdir -p "$RUNNER_TEMP/record"
+          rec="$RUNNER_TEMP/record"; mkdir -p "$rec"
           out="$RUNNER_TEMP/oracles"
           lake env lean --run Kit193Oracles.lean "$out"
+          report="$rec/oracle-compare.txt"
+          : > "$report"
           status=0
-          {
-            for f in "$out"/*.tsv; do
-              name=$(basename "$f")
-              if cmp "$f" "../../tests/testdata/kit193/$name"; then echo "same $name"; else echo "DIFFERS $name"; status=1; fi
-            done
-            echo "## SHA256SUMS of the committed tables"
-            (cd ../../tests/testdata/kit193 && sha256sum -c SHA256SUMS) || status=1
-          } 2>&1 | tee "$RUNNER_TEMP/record/oracle-compare.txt"
-          exit $status
+          for f in "$out"/*.tsv; do
+            name=$(basename "$f")
+            if cmp "$f" "../../tests/testdata/kit193/$name" >> "$report" 2>&1; then
+              echo "same $name" >> "$report"
+            else
+              echo "DIFFERS $name" >> "$report"; status=1
+            fi
+          done
+          echo "## SHA256SUMS of the committed tables" >> "$report"
+          if ! (cd ../../tests/testdata/kit193 && sha256sum -c SHA256SUMS) >> "$report" 2>&1; then status=1; fi
+          cat "$report"
+          if [ "$status" -ne 0 ]; then echo "::error::an oracle table differs"; fi
+          exit "$status"
 
       - name: forbidden words (second line; the axiom audit is the authority)
         if: ${{ !cancelled() }}
