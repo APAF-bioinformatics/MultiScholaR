@@ -1,5 +1,5 @@
 {
-  "run": "blind",
-  "package_commit": "9e525fd94ec585cc116919884cea83cc1d014091",
-  "note": "KIT-184 L1b: the blind lifecycle extension (declaration audit K184-D05, re-check K184-R02); one job, timeout 50 minutes, inside what is left of L1's ceiling (52.3 job-minutes); decides whether the scripts at 9e525fd9 may be frozen and the score job's timeout; only the staging folder leaves the job; first send"
+  "run": "counted",
+  "package_commit": "81ee30527cbfab973d5cd77a9ed31207234643be",
+  "note": "KIT-184 S: the counted simulation, once (declaration.md at this package commit; scripts 58333b1e... and 282b844e...); 16 jobs of 125 replicates (cells A and B 6 to 805, cell D 6 to 405) and the determinism job (cell A 6 to 15), then the score job; ceiling 1,415 job-minutes (16 x 85 + 25 + 30); an unfavourable valid result is a result and is not re-run"
 }
