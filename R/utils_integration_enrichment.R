@@ -97,37 +97,24 @@ INTEGRATION_ENRICHMENT_REFUSALS <- c(
         "terms, %d reorderings), longer than the %d seconds allowed in the tab, where the application waits for it.",
         "Choose a correlation-adjusted test or fewer reorderings, or run it from a script."
     ),
-    # KIT-184 (VAL-58 (3), VAL-62; ticket 8.4 and D01; proposed wording, VAL-41). The forms of one class, chosen by the
-    # refusal's `form`. A model trained on RUV-corrected values: the input saved without the factors (%s: the data set,
-    # the omic, the omic); the factors not determined (%s: the data set, the reason). Any model, the adjustment switched
-    # on for a data set without RUV (%s: the data set, the omic). A model trained on the values before RUV with the
-    # adjustment switched on: the same two cases in the words for that model.
+    # KIT-184 (VAL-58 (3), VAL-62, VAL-160; ticket 8.4; proposed wording, VAL-41). The adjustment is off unless chosen
+    # (VAL-160), so each of these arises only when it was switched on, and reads the same whatever the model was trained
+    # on. The forms of one class, chosen by the refusal's `form`: the input saved without the factors (%s: the data
+    # set, the omic, the omic); the factors not determined (%s: the data set, the reason); a data set without RUV (%s:
+    # the data set, the omic).
     integration_enrichment_removed_factors_missing = paste(
-        "This model was trained on RUV-corrected values, and the correlation-adjusted test needs the unwanted factors",
-        "that the correction removed from %s. The saved data of %s does not hold them (it was saved by an earlier",
-        "version). Save the %s Summary again, import the data and train the model again. The pre-ranked test can be run",
-        "as it is, and so can this test with 'Adjust for removed RUV factors' switched off, which is then labelled as",
-        "that form."
+        "'Adjust for removed RUV factors' was switched on, and it needs the unwanted factors that the correction removed",
+        "from %s. The saved data of %s does not hold them (it was saved by an earlier version). Save the %s Summary",
+        "again, import the data and train the model again. Switched off (the default), the test runs as it is."
     ),
     integration_enrichment_removed_factors_missing_undetermined = paste(
-        "This model was trained on RUV-corrected values, and the unwanted factors that the correction removed from %s",
-        "could not be determined (%s). The correlation-adjusted test cannot be run on this data set for this model. The",
-        "pre-ranked test can be run as it is, and so can this test with 'Adjust for removed RUV factors' switched off."
+        "'Adjust for removed RUV factors' was switched on, and it needs the unwanted factors that the correction removed",
+        "from %s. They could not be determined (%s), so the test cannot be run with the adjustment on this data set.",
+        "Switched off (the default), the test runs as it is."
     ),
     integration_enrichment_removed_factors_missing_no_ruv = paste(
         "No correction for unwanted variation (RUV) was applied to %s in %s, so there are no removed factors to adjust",
         "for. Switch 'Adjust for removed RUV factors' off."
-    ),
-    integration_enrichment_removed_factors_missing_default = paste(
-        "The adjustment for removed RUV factors was switched on, and it needs the unwanted factors that the correction",
-        "removed from %s. The saved data of %s does not hold them (it was saved by an earlier version). Save the %s",
-        "Summary again, import the data and train the model again. Switch the adjustment off to run the test as this",
-        "model's default."
-    ),
-    integration_enrichment_removed_factors_missing_default_undetermined = paste(
-        "The adjustment for removed RUV factors was switched on, and it needs the unwanted factors that the correction",
-        "removed from %s. They could not be determined (%s), so the test cannot be run with the adjustment on this data",
-        "set. Switch the adjustment off to run the test as this model's default."
     ),
     # %d: the removed factors in the design, the biological samples needed, those the data set has.
     integration_enrichment_too_few_samples_for_test_covariates = paste(
@@ -1149,11 +1136,12 @@ integrationEnrichmentParameterSpec <- function() {
         # KIT-191 (D1): the permutation test's number of random reorderings of the factor's values.
         permutations = list(default = INTEGRATION_ENRICHMENT_PERMUTATIONS[[1L]], choices = INTEGRATION_ENRICHMENT_PERMUTATIONS,
             type = "whole", default_text = "1000 (or 10000; the permutation test only)", settled_by = "VAL-85; VAL-97; KIT-191"),
-        # KIT-184 (VAL-62): "Adjust for removed RUV factors", for the tests that have a design (camera, camera_floor):
-        # the unwanted factors the RUV correction removed from the data set go into the test's design. No constant
-        # default: absent, it follows the model's input.
-        adjust_ruv_factors = list(default = NULL, choices = c(TRUE, FALSE), type = "flag",
-            default_text = "yes for a model trained on RUV-corrected values, no otherwise", settled_by = "VAL-53; VAL-58; VAL-62"))
+        # KIT-184 (VAL-62, VAL-160): "Adjust for removed RUV factors", for the tests that have a design (camera,
+        # camera_floor): the unwanted factors the RUV correction removed from the data set go into the test's design.
+        # Off unless chosen, whatever the model was trained on (the owner's decision after the counted simulation).
+        adjust_ruv_factors = list(default = FALSE, choices = c(TRUE, FALSE), type = "flag",
+            default_text = "no (optional: yes adds the unwanted factors the RUV correction removed to the test's model)",
+            settled_by = "VAL-53; VAL-58; VAL-62; VAL-160"))
 }
 
 #' Resolve and check an enrichment request against the model (KIT-141). Refused in plain words
@@ -1260,13 +1248,13 @@ integrationResolveEnrichmentParameters <- function(parameters, value, object, n_
     p
 }
 
-#' Resolve the setting `adjust_ruv_factors` of a request (KIT-184 5.7; VAL-62). A value other than TRUE or FALSE is
-#' refused. STRING drops the setting. With the pre-ranked or the permutation test, which have no design, TRUE is refused
-#' and nothing is kept. For a test that has a design (`INTEGRATION_ENRICHMENT_DESIGN_TESTS`; an absent test is the test
-#' of record), absent becomes TRUE for a model trained on RUV-corrected values and FALSE otherwise; with TRUE the data
-#' set's removed factors are prepared (`integrationEnrichmentRemovedFactors()`, which refuses a data set without usable
-#' factors); with FALSE the run is the test without covariates, untouched. No value of the setting reads the corrected
-#' values: both forms test the values before RUV.
+#' Resolve the setting `adjust_ruv_factors` of a request (KIT-184 5.7; VAL-62, VAL-160). A value other than TRUE or
+#' FALSE is refused. STRING drops the setting. With the pre-ranked or the permutation test, which have no design, TRUE
+#' is refused and nothing is kept. For a test that has a design (`INTEGRATION_ENRICHMENT_DESIGN_TESTS`; an absent test
+#' is the test of record), absent is FALSE whatever the model was trained on (VAL-160: the adjustment is off unless
+#' chosen); with TRUE the data set's removed factors are prepared (`integrationEnrichmentRemovedFactors()`, which
+#' refuses a data set without usable factors); with FALSE the run is the test without covariates, untouched. No value
+#' of the setting reads the corrected values: both forms test the values before RUV.
 #' @param p The settings resolved so far (`database`, `view`, `test` as given or NULL, `adjust_ruv_factors` as given).
 #' @param model_parameters The model's resolved parameters, or NULL.
 #' @param object The inputs state (`design_matrix`, `inputs`; the data sets' column names).
@@ -1292,7 +1280,7 @@ integrationResolveEnrichmentCovariates <- function(p, model_parameters, object, 
         }
         return(p)
     }
-    adjust <- if (is.null(given)) identical(model_parameters$input_matrix, "ruv_corrected") else given
+    adjust <- isTRUE(given)
     p$adjust_ruv_factors <- adjust
     if (adjust) {
         p$covariates <- integrationEnrichmentRemovedFactors(object, value, model_parameters, p$view)
@@ -1309,8 +1297,9 @@ integrationResolveEnrichmentCovariates <- function(p, model_parameters, object, 
 #' left singular vectors whose singular value is above `INTEGRATION_ENRICHMENT_COVARIATE_TOLERANCE`, each with its
 #' entry of largest absolute value positive), so that a removed direction that only separated the runs of one
 #' biological sample costs no degree of freedom and no direction above the bound is dropped. Refused in plain words
-#' (`integration_enrichment_removed_factors_missing`): a data set to which the omic applied no RUV; an input saved
-#' without the factors; factors that could not be determined.
+#' (`integration_enrichment_removed_factors_missing`; the same words whatever the model was trained on, since the
+#' adjustment is only ever asked for): a data set to which the omic applied no RUV; an input saved without the factors;
+#' factors that could not be determined.
 #' @param object The inputs state (`design_matrix`, `inputs`; the data sets' column names).
 #' @param value The model product (its biological samples).
 #' @param model_parameters The model's resolved parameters (`input_matrix`, the sample match), or NULL.
@@ -1322,7 +1311,6 @@ integrationResolveEnrichmentCovariates <- function(p, model_parameters, object, 
 integrationEnrichmentRemovedFactors <- function(object, value, model_parameters, view) {
     omic <- integrationViewOmics(object)[[view]]
     input <- object@inputs[[omic]]
-    trained_corrected <- identical(model_parameters$input_matrix, "ruv_corrected")
     entry <- Filter(function(item) identical(item$name, view), input$manifest$views)
     entry <- if (length(entry)) entry[[1L]]
     refuseMissing <- function(form, values) integrationEnrichmentRefuse("integration_enrichment_removed_factors_missing",
@@ -1332,10 +1320,9 @@ integrationEnrichmentRemovedFactors <- function(object, value, model_parameters,
     if (is.null(held)) {
         record <- entry$removed_factors
         if (is.list(record) && identical(record$status, "not_determined")) {
-            refuseMissing(if (trained_corrected) "undetermined" else "default_undetermined",
-                list(view, as.character(record$reason %||% "no reason was recorded")))
+            refuseMissing("undetermined", list(view, as.character(record$reason %||% "no reason was recorded")))
         }
-        refuseMissing(if (!trained_corrected) "default", list(view, omic, omic))
+        refuseMissing(NULL, list(view, omic, omic))
     }
     factors <- held$factors
     design <- integrationApplySampleMatch(object@design_matrix, model_parameters$sample_match_table)
@@ -2179,20 +2166,18 @@ runIntegrationEnrichment <- function(manager, parameters, api_key = NULL, mappin
 
 #' The head's key of one enrichment: factor, data set and database; KIT-183: and the test for a correlated test
 #' (`factor|view|database|camera`), so that both tests' results can be kept side by side. The pre-ranked test and
-#' STRING keep the key without a suffix. KIT-184 (7.3; VAL-62): for a test that has a design, the form that is not the
-#' default for the model's input gains `|unadjusted` (a model trained on RUV-corrected values, the adjustment off) or
-#' `|adjusted` (a model trained on the values before RUV, the adjustment on), so the form of record and the sensitivity
-#' form are kept side by side; the permutation and the pre-ranked test never have such a suffix.
+#' STRING keep the key without a suffix. KIT-184 (7.3; VAL-62, VAL-160): for a test that has a design, the form with
+#' the adjustment for removed RUV factors gains `|adjusted`, whatever the model was trained on, so the two forms are
+#' kept side by side; the form without it, which is the default and what an entry stored before KIT-184 is, has no
+#' suffix; the permutation and the pre-ranked test never have one.
 #' @param adjust The entry's resolved `adjust_ruv_factors`, or NULL (an entry stored before KIT-184: no suffix).
-#' @param input_matrix The values the model was trained on.
 #' @noRd
-integrationEnrichmentKey <- function(factor, view, database, test = NULL, adjust = NULL, input_matrix = NULL) {
+integrationEnrichmentKey <- function(factor, view, database, test = NULL, adjust = NULL) {
     key <- paste(factor, view, database, sep = "|")
     if (!identical(database, "string") && isTRUE(test %in% INTEGRATION_ENRICHMENT_CORRELATED_TESTS)) {
         key <- paste(key, test, sep = "|")
-        if (isTRUE(test %in% INTEGRATION_ENRICHMENT_DESIGN_TESTS) && is.logical(adjust) && length(adjust) == 1L &&
-            !is.na(adjust) && !identical(adjust, identical(input_matrix, "ruv_corrected"))) {
-            key <- paste(key, if (adjust) "adjusted" else "unadjusted", sep = "|")
+        if (isTRUE(test %in% INTEGRATION_ENRICHMENT_DESIGN_TESTS) && isTRUE(adjust)) {
+            key <- paste(key, "adjusted", sep = "|")
         }
     }
     key
@@ -2246,8 +2231,8 @@ acceptIntegrationEnrichment <- function(manager, export, run, ranking, p, stored
     entry$factor_r2_percent <- strength$factor_r2_percent
     entry$largest_r2_percent <- strength$largest_r2_percent
     entry$input_matrix <- as.character(export$parameters$input_matrix %||% "uncorrected")
-    current$enrichment[[integrationEnrichmentKey(p$factor, p$view, p$database, p$test, p$adjust_ruv_factors,
-        entry$input_matrix)]] <- entry
+    head_key <- integrationEnrichmentKey(p$factor, p$view, p$database, p$test, p$adjust_ruv_factors)
+    current$enrichment[[head_key]] <- entry
     snapshot$exports[[INTEGRATION_MODEL_OPERATION]] <- current
     publishWorkflowStateHead(context, snapshot)
     invisible(entry)
@@ -2791,8 +2776,8 @@ integrationReplayEnrichment <- function(manager, recorded, mode = c("recorded", 
         # KIT-183) is a pre-ranked entry, never the current default. STRING ignores the test (its stored NA removed).
         parameters$test <- if (identical(database, "string")) NULL else settings$test %||% "gsea"
         # KIT-184 (7.4; VAL-62): an entry of a test that has a design replays in the form it was saved in; one without
-        # the setting (stored before KIT-184) replays without the adjustment, never with the default for its model.
-        # The other tests and STRING take none.
+        # the setting (stored before KIT-184) replays without the adjustment, stated here and not left to the setting's
+        # default (which is off as well, VAL-160). The other tests and STRING take none.
         parameters$adjust_ruv_factors <- if (isTRUE(parameters$test %in% INTEGRATION_ENRICHMENT_DESIGN_TESTS)) {
             settings$adjust_ruv_factors %||% FALSE
         }

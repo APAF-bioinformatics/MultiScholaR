@@ -197,16 +197,16 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
             }
             integrationEnrichmentTestInput(session$ns("test"), facts$samples[[input$view]], texts)
         })
-        # KIT-184 (VAL-62): the adjustment's control, shown for a test that has a design; pre-set from the model's input
-        # (on for a model trained on RUV-corrected values, off otherwise) whenever the model changes.
+        # KIT-184 (VAL-62, VAL-160): the adjustment's control, shown for a test that has a design; off unless the user
+        # switches it on, whatever the model was trained on.
         output$adjust_ui <- shiny::renderUI({
             facts <- state$model
             if (is.null(facts) || !isTRUE(input$database %in% c("kegg", "reactome")) || !isTRUE(input$view %in% facts$views) ||
                 !isTRUE(input$test %in% INTEGRATION_ENRICHMENT_DESIGN_TESTS)) {
                 return(NULL)
             }
-            shiny::tagList(shiny::checkboxInput(session$ns("adjust_ruv_factors"), texts[["enrich_adjust_ruv"]],
-                value = identical(facts$input_matrix, "ruv_corrected")), shiny::p(shiny::em(texts[["enrich_adjust_ruv_help"]])))
+            shiny::tagList(shiny::checkboxInput(session$ns("adjust_ruv_factors"), texts[["enrich_adjust_ruv"]], value = FALSE),
+                shiny::p(shiny::em(texts[["enrich_adjust_ruv_help"]])))
         })
         output$test_note <- shiny::renderUI({
             facts <- state$model
@@ -271,7 +271,7 @@ mod_integration_enrichment_server <- function(id, workflow_data, paths, texts = 
             state$run <- run
             workflow_data$integration_enrichment <- list(model = workflow_data$integration_model$reference$entity_id,
                 entry = integrationEnrichmentKey(run$entry$factor, run$entry$view, run$entry$database, run$entry$settings$test,
-                    run$entry$settings$adjust_ruv_factors, run$entry$input_matrix))
+                    run$entry$settings$adjust_ruv_factors))
             status <- shiny::isolate(workflow_data$tab_status)
             status$integration_enrichment <- "complete"
             workflow_data$tab_status <- status
@@ -409,8 +409,8 @@ integrationEnrichmentSummary <- function(value, texts = integrationGuiTexts(), e
 #' measured in every run and the share of the factor the removed factors explain beside the share expected by chance; for
 #' an approximate set of factors the share of what was removed that lies within them, and no sentence claiming an exact
 #' match; the overlap sentence when the adjusted share is at least 0.5; the few-degrees sentence below the smallest
-#' count checked; for `camera_floor` its own sentence. Without them on a model trained on RUV-corrected values: the
-#' sensitivity note.
+#' count checked; for `camera_floor` its own sentence. Without them (the default) on a model trained on RUV-corrected
+#' values: the note of that form.
 #' @param value The enrichment product of a test that has a design.
 #' @param entry The entry accepted on the head (`input_matrix`), or NULL.
 #' @return A character vector of sentences.

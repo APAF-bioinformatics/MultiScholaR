@@ -222,14 +222,16 @@ record show how each test behaved in a check on simulated data of the same kind 
 factor was learned from these same data, which none of the tests allows for: read the results as a list of pathways
 worth a closer look, not as proof.
 
-**For a model trained on RUV-corrected values** (`input_matrix <- "ruv_corrected"` above), the correlation-adjusted
-tests read the values before that correction and put the unwanted factors the correction removed from each data set
-into their model, so a feature counts for what it shares with the factor beyond those unwanted factors ("Adjust for
-removed RUV factors"). Each result says whether it was adjusted. The other form is a setting:
-`enrichment_overrides <- list(adjust_ruv_factors = FALSE)` tests the values before RUV without those factors, a
-sensitivity analysis in which unwanted variation stays in the values tested; on a model trained on the values before
-RUV, `adjust_ruv_factors = TRUE` switches the adjustment on for the data sets to which the omic applied RUV. An omic
-saved before this version must be saved again at its Summary step before the adjusted test can run. The pre-ranked
+**Adjust for removed RUV factors (optional, off unless you choose it).** The correlation-adjusted tests can put the
+unwanted factors that an omic's RUV correction removed from a data set into their model, so a feature counts for what
+it shares with the factor beyond those unwanted factors: `enrichment_overrides <- list(adjust_ruv_factors = TRUE)`.
+For a model trained on RUV-corrected values (`input_matrix <- "ruv_corrected"` above) and features measured in every
+run, that is the same as fitting the test's model to the corrected values. In a check on simulated data the adjusted
+test kept false calls within the checked limit for sets with no link to what was tested (at most 5.4 %) and found
+more true terms. It does not protect pathways whose features share unwanted variation that follows the groups: such
+sets were called in 8.1 to 29.6 % of cases with the adjustment and in 2.0 to 11.2 % without it. Each result says
+whether it was adjusted. Without the setting every model is tested on the values before RUV without those factors. An
+omic saved before this version must be saved again at its Summary step before the adjusted test can run. The pre-ranked
 test, the permutation test and STRING do not use the setting.
 
 ```{r wb-enrichment}

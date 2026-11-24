@@ -37,11 +37,11 @@ gives the predicted time first); or \code{"gsea"}, the pre-ranked test used befo
 the factor, tested as if features were independent). STRING ignores it. \code{adjust_ruv_factors} (\code{TRUE} or \code{FALSE}),
 "Adjust for removed RUV factors", applies to \code{"camera"} and \code{"camera_floor"}: with \code{TRUE} the test puts the unwanted
 factors that the omic's RUV correction removed from the data set into its model, so a feature counts for what it
-shares with the factor beyond them. Left out, it is \code{TRUE} for a model trained on RUV-corrected values
-(\code{input_matrix = "ruv_corrected"}) and \code{FALSE} otherwise. \code{FALSE} on a model trained on RUV-corrected values is a
-sensitivity analysis (the values before RUV, without those factors); \code{TRUE} needs a data set to which the omic
-applied RUV, saved by this version or later. Every result says which form it is. The pre-ranked test, the
-permutation test and STRING do not use the setting.}
+shares with the factor beyond them. Left out, it is \code{FALSE} whatever the model was trained on: the adjustment is
+optional. Because the removed factors are estimated, the adjustment does not protect pathways whose features
+share unwanted variation that follows the factor (the Methods text of a record gives the numbers). \code{TRUE} needs a
+data set to which the omic applied RUV, saved by this version or later. Every result says which form it is. The
+pre-ranked test, the permutation test and STRING do not use the setting.}
 }
 \value{
 A list: \code{enrichments}, a list named \code{"<data set> <database>"} of the enrichments made, each a list with
@@ -65,9 +65,9 @@ earlier <- integrationEnrichFactor(project, results, id_columns = list(metabolom
 # The permutation test of the factor's values (PCGSE), with its seed:
 permuted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
     overrides = list(test = "permutation", seed = 1L))
-# For a model trained on RUV-corrected values, the sensitivity form without the removed RUV factors:
-unadjusted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
-    overrides = list(adjust_ruv_factors = FALSE))
+# With the unwanted factors the RUV correction removed in the test's model (optional; off unless chosen):
+adjusted <- integrationEnrichFactor(project, results, id_columns = list(metabolomics_GCMS = "kegg_id"),
+    overrides = list(adjust_ruv_factors = TRUE))
 names(enriched$enrichments)
 }
 }

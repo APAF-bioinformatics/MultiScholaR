@@ -1,0 +1,1162 @@
+cell	view	kind	class	rho_key	comparison	replicates	T	mc_se	lower	upper
+A	metabolomics_LCMS	F_ind	C0		arm 1 minus arm 3	5	0	0.0105409255338946	-0.0292663011028361	0.0292663011028361
+B	metabolomics_LCMS	F_ind	C0		arm 1 minus arm 3	5	0.0133333333333333	0.00816496580927726	-0.00933624602194186	0.0360029126886085
+D	metabolomics_LCMS	F_ind	C0		arm 1 minus arm 3	5	-0.0133333333333333	0.0309120616516523	-0.0991589755976359	0.0724923089309692
+A	proteomics	F_ind	C0		arm 1 minus arm 3	5	0.0133333333333333	0.00816496580927726	-0.00933624602194185	0.0360029126886085
+B	proteomics	F_ind	C0		arm 1 minus arm 3	5	-0.00666666666666667	0.0163299316185545	-0.052005825377217	0.0386724920438837
+D	proteomics	F_ind	C0		arm 1 minus arm 3	5	-0.00666666666666667	0.00666666666666667	-0.0251763007013186	0.0118429673679853
+A	transcriptomics	F_ind	C0		arm 1 minus arm 3	5	-0.0266666666666667	0.0124721912892465	-0.0612950211227856	0.00796168778945225
+B	transcriptomics	F_ind	C0		arm 1 minus arm 3	5	0.00666666666666667	0.0163299316185545	-0.0386724920438837	0.0520058253772171
+D	transcriptomics	F_ind	C0		arm 1 minus arm 3	5	0.00666666666666667	0.019436506316151	-0.0472977261569568	0.0606310594902901
+A	metabolomics_LCMS	F_main	C0		arm 1 minus arm 3	5	0.02	0.0133333333333333	-0.0170192680693039	0.0570192680693039
+B	metabolomics_LCMS	F_main	C0		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C0		arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C0		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C0		arm 1 minus arm 3	5	-0.00666666666666667	0.00666666666666667	-0.0251763007013186	0.0118429673679853
+D	proteomics	F_main	C0		arm 1 minus arm 3	5	0.0133333333333333	0.00816496580927726	-0.00933624602194185	0.0360029126886085
+A	transcriptomics	F_main	C0		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C0		arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C0		arm 1 minus arm 3	5	0.02	0.00816496580927726	-0.00266957935527519	0.0426695793552752
+A	metabolomics_LCMS	F_ret	C0		arm 1 minus arm 3	5	0.00666666666666667	0.00666666666666667	-0.0118429673679853	0.0251763007013186
+B	metabolomics_LCMS	F_ret	C0		arm 1 minus arm 3	5	-0.00666666666666667	0.00666666666666667	-0.0251763007013186	0.0118429673679853
+D	metabolomics_LCMS	F_ret	C0		arm 1 minus arm 3	5	0.0133333333333333	0.00816496580927726	-0.00933624602194186	0.0360029126886085
+A	proteomics	F_ret	C0		arm 1 minus arm 3	5	0.00666666666666667	0.00666666666666667	-0.0118429673679853	0.0251763007013186
+B	proteomics	F_ret	C0		arm 1 minus arm 3	5	0.00666666666666667	0.0163299316185545	-0.0386724920438837	0.0520058253772171
+D	proteomics	F_ret	C0		arm 1 minus arm 3	5	1.38737220496676e-18	0.0105409255338946	-0.0292663011028361	0.0292663011028361
+A	transcriptomics	F_ret	C0		arm 1 minus arm 3	5	0.02	0.00816496580927726	-0.00266957935527519	0.0426695793552752
+B	transcriptomics	F_ret	C0		arm 1 minus arm 3	5	-0.00666666666666667	0.0244948974278318	-0.0746754047324922	0.0613420713991589
+D	transcriptomics	F_ret	C0		arm 1 minus arm 3	5	0.0133333333333333	0.0169967317119759	-0.0338571592327424	0.0605238258994091
+A	metabolomics_LCMS	F_ind	C2		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C2		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C2		arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C2		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C2		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+D	proteomics	F_ind	C2		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+A	transcriptomics	F_ind	C2		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C2		arm 1 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	transcriptomics	F_ind	C2		arm 1 minus arm 3	5	-0.02	0.0374165738677394	-0.123885063368357	0.0838850633683568
+A	metabolomics_LCMS	F_main	C2		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C2		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C2		arm 1 minus arm 3	5	0.08	0.08	-0.142115608415823	0.302115608415823
+A	proteomics	F_main	C2		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	proteomics	F_main	C2		arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C2		arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C2		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C2		arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C2		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+A	metabolomics_LCMS	F_ret	C2		arm 1 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+B	metabolomics_LCMS	F_ret	C2		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C2		arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C2		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C2		arm 1 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	proteomics	F_ret	C2		arm 1 minus arm 3	5	0.06	0.04	-0.0510578042079117	0.171057804207912
+A	transcriptomics	F_ret	C2		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C2		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+D	transcriptomics	F_ret	C2		arm 1 minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+A	metabolomics_LCMS	F_ind	C3		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	metabolomics_LCMS	F_ind	C3		arm 1 minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+D	metabolomics_LCMS	F_ind	C3		arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C3		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C3		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C3		arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C3		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	metabolomics_LCMS	F_ret	C3		arm 1 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	metabolomics_LCMS	F_ret	C3		arm 1 minus arm 3	5	0.06	0.0244948974278318	-0.00800873806582556	0.128008738065826
+A	metabolomics_LCMS	F_ind	C4		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C4		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+D	metabolomics_LCMS	F_ind	C4		arm 1 minus arm 3	5	0.0666666666666667	0.0421637021355784	-0.0503985377446777	0.183731871078011
+A	proteomics	F_ind	C4		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C4		arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C4		arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C4		arm 1 minus arm 3	5	2.77393125830416e-18	0.0210818510677892	-0.0585326022056722	0.0585326022056722
+B	transcriptomics	F_ind	C4		arm 1 minus arm 3	5	0	0.0210818510677892	-0.0585326022056722	0.0585326022056722
+D	transcriptomics	F_ind	C4		arm 1 minus arm 3	5	-0.0266666666666667	0.0339934634239519	-0.121047651798818	0.0677143184654848
+A	metabolomics_LCMS	F_main	C4		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C4		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+D	metabolomics_LCMS	F_main	C4		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+A	proteomics	F_main	C4		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	proteomics	F_main	C4		arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+A	transcriptomics	F_main	C4		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+D	transcriptomics	F_main	C4		arm 1 minus arm 3	5	0.04	0.0266666666666667	-0.0340385361386078	0.114038536138608
+A	metabolomics_LCMS	F_ret	C4		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026373
+D	metabolomics_LCMS	F_ret	C4		arm 1 minus arm 3	5	0.0266666666666667	0.0163299316185545	-0.0186724920438837	0.072005825377217
+A	proteomics	F_ret	C4		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C4		arm 1 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	proteomics	F_ret	C4		arm 1 minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+A	transcriptomics	F_ret	C4		arm 1 minus arm 3	5	0.0266666666666667	0.0163299316185545	-0.0186724920438837	0.0720058253772171
+B	transcriptomics	F_ret	C4		arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C4		arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C5		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C5		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C5		arm 1 minus arm 3	5	-0.12	0.12	-0.453173412623735	0.213173412623735
+A	proteomics	F_ind	C5		arm 1 minus arm 3	5	-0.0533333333333333	0.0533333333333333	-0.201410405610549	0.0947437389438823
+B	proteomics	F_ind	C5		arm 1 minus arm 3	5	-0.12	0.12	-0.453173412623735	0.213173412623735
+D	proteomics	F_ind	C5		arm 1 minus arm 3	5	-0.0333333333333333	0.0954521404218424	-0.29835096138821	0.231684294721543
+A	transcriptomics	F_ind	C5		arm 1 minus arm 3	5	-0.0266666666666667	0.0163299316185545	-0.072005825377217	0.0186724920438837
+B	transcriptomics	F_ind	C5		arm 1 minus arm 3	5	-0.0266666666666667	0.0266666666666667	-0.100705202805274	0.0473718694719412
+D	transcriptomics	F_ind	C5		arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C5		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C5		arm 1 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	metabolomics_LCMS	F_main	C5		arm 1 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+A	proteomics	F_main	C5		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C5		arm 1 minus arm 3	5	0.06	0.0266666666666667	-0.0140385361386078	0.134038536138608
+D	proteomics	F_main	C5		arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C5		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C5		arm 1 minus arm 3	5	0.04	0.0266666666666667	-0.0340385361386078	0.114038536138608
+D	transcriptomics	F_main	C5		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+A	metabolomics_LCMS	F_ret	C5		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C5		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C5		arm 1 minus arm 3	5	0.08	0.08	-0.142115608415823	0.302115608415823
+A	proteomics	F_ret	C5		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+B	proteomics	F_ret	C5		arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C5		arm 1 minus arm 3	5	0.0933333333333333	0.0933333333333333	-0.165801543151794	0.352468209818461
+A	transcriptomics	F_ret	C5		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C5		arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C5		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+A	metabolomics_LCMS	F_ind	Pdown		arm 1 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+B	metabolomics_LCMS	F_ind	Pdown		arm 1 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	metabolomics_LCMS	F_ind	Pdown		arm 1 minus arm 3	5	0	0.0632455532033676	-0.175597806617017	0.175597806617017
+A	proteomics	F_ind	Pdown		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	Pdown		arm 1 minus arm 3	5	-0.06	0.04	-0.171057804207912	0.0510578042079117
+D	proteomics	F_ind	Pdown		arm 1 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+A	transcriptomics	F_ind	Pdown		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	Pdown		arm 1 minus arm 3	5	-0.0933333333333333	0.110754984838908	-0.400838468865574	0.214171802198908
+D	transcriptomics	F_ind	Pdown		arm 1 minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026372	0.0236859347359706
+A	metabolomics_LCMS	F_main	Pdown		arm 1 minus arm 3	5	-0.04	0.0748331477354788	-0.247770126736714	0.167770126736713
+B	metabolomics_LCMS	F_main	Pdown		arm 1 minus arm 3	5	-0.08	0.08	-0.302115608415823	0.142115608415823
+D	metabolomics_LCMS	F_main	Pdown		arm 1 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+A	proteomics	F_main	Pdown		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	Pdown		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+D	proteomics	F_main	Pdown		arm 1 minus arm 3	5	-0.04	0.0244948974278318	-0.108008738065826	0.0280087380658256
+A	transcriptomics	F_main	Pdown		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	Pdown		arm 1 minus arm 3	5	0.0266666666666667	0.0163299316185545	-0.0186724920438837	0.072005825377217
+D	transcriptomics	F_main	Pdown		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+A	metabolomics_LCMS	F_ret	Pdown		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	Pdown		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	Pdown		arm 1 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+A	proteomics	F_ret	Pdown		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	Pdown		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+D	proteomics	F_ret	Pdown		arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	Pdown		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	Pdown		arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	Pdown		arm 1 minus arm 3	5	0.0266666666666667	0.0163299316185545	-0.0186724920438837	0.0720058253772171
+A	metabolomics_LCMS	F_ind	Pup		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	Pup		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	Pup		arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	Pup		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	Pup		arm 1 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	proteomics	F_ind	Pup		arm 1 minus arm 3	5	-0.02	0.066332495807108	-0.204168533299198	0.164168533299198
+A	transcriptomics	F_ind	Pup		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	Pup		arm 1 minus arm 3	5	-0.0933333333333333	0.0933333333333333	-0.352468209818461	0.165801543151794
+D	transcriptomics	F_ind	Pup		arm 1 minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026372	0.0236859347359706
+A	metabolomics_LCMS	F_main	Pup		arm 1 minus arm 3	5	0.04	0.0748331477354788	-0.167770126736714	0.247770126736714
+B	metabolomics_LCMS	F_main	Pup		arm 1 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+D	metabolomics_LCMS	F_main	Pup		arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	Pup		arm 1 minus arm 3	5	-0.04	0.0244948974278318	-0.108008738065826	0.0280087380658256
+B	proteomics	F_main	Pup		arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	Pup		arm 1 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+A	transcriptomics	F_main	Pup		arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	Pup		arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	Pup		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+A	metabolomics_LCMS	F_ret	Pup		arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	Pup		arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	Pup		arm 1 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+A	proteomics	F_ret	Pup		arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	Pup		arm 1 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+D	proteomics	F_ret	Pup		arm 1 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+A	transcriptomics	F_ret	Pup		arm 1 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+B	transcriptomics	F_ret	Pup		arm 1 minus arm 3	5	0.0266666666666667	0.0266666666666667	-0.0473718694719412	0.100705202805274
+D	transcriptomics	F_ret	Pup		arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1	0.1	arm 1 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+A	transcriptomics	F_ind	C1	0.1	arm 1 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+B	transcriptomics	F_ind	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1	0.1	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_main	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1	0.1	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_ret	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1out	0.1	arm 1 minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+D	proteomics	F_ind	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1out	0.1	arm 1 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+B	transcriptomics	F_ind	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1out	0.1	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_ret	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1out	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C4b	0.1	arm 1 minus arm 3	5	-0.0166666666666667	0.0927960727138337	-0.274309868534569	0.240976535201235
+B	transcriptomics	F_ind	C4b	0.1	arm 1 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ind	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4b	0.1	arm 1 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_main	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C4b	0.1	arm 1 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+A	transcriptomics	F_ret	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C4b	0.1	arm 1 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ret	C4b	0.1	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C1	0.3	arm 1 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	metabolomics_LCMS	F_ind	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1	0.3	arm 1 minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+B	proteomics	F_ind	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1	0.3	arm 1 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+B	transcriptomics	F_ind	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C1	0.3	arm 1 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+A	metabolomics_LCMS	F_main	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1	0.3	arm 1 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+D	proteomics	F_main	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1	0.3	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_ret	C1	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1	0.3	arm 1 minus arm 3	5	0.0666666666666667	0.0408248290463863	-0.0466812301097093	0.180014563443043
+A	proteomics	F_ind	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1out	0.3	arm 1 minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+A	transcriptomics	F_ind	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C1out	0.3	arm 1 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+A	proteomics	F_main	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1out	0.3	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_ret	C1out	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1out	0.3	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	metabolomics_LCMS	F_ind	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C4b	0.3	arm 1 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	metabolomics_LCMS	F_ind	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C4b	0.3	arm 1 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ind	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4b	0.3	arm 1 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_main	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C4b	0.3	arm 1 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ret	C4b	0.3	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C1	0.6	arm 1 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	metabolomics_LCMS	F_ind	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C1	0.6	arm 1 minus arm 3	5	-0.1	0.0666666666666667	-0.28509634034652	0.0850963403465195
+D	transcriptomics	F_ind	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1	0.6	arm 1 minus arm 3	5	0.0666666666666667	0.0408248290463863	-0.0466812301097093	0.180014563443043
+D	transcriptomics	F_main	C1	0.6	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	metabolomics_LCMS	F_ret	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1	0.6	arm 1 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_ret	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1	0.6	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+D	transcriptomics	F_ret	C1	0.6	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	proteomics	F_ind	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C1out	0.6	arm 1 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+D	transcriptomics	F_ind	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1out	0.6	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_main	C1out	0.6	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+D	transcriptomics	F_main	C1out	0.6	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	proteomics	F_ret	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1out	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1out	0.6	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+D	transcriptomics	F_ret	C1out	0.6	arm 1 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	metabolomics_LCMS	F_ind	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C4b	0.6	arm 1 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	metabolomics_LCMS	F_ind	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C4b	0.6	arm 1 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	proteomics	F_ind	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C4b	0.6	arm 1 minus arm 3	5	-0.116666666666667	0.0726483157256779	-0.318370727264089	0.0850373939307556
+D	transcriptomics	F_ind	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4b	0.6	arm 1 minus arm 3	5	0.05	0.05	-0.0888222552598897	0.18882225525989
+D	transcriptomics	F_main	C4b	0.6	arm 1 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	metabolomics_LCMS	F_ret	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C4b	0.6	arm 1 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	transcriptomics	F_ret	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C4b	0.6	arm 1 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C4b	0.6	arm 1 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	metabolomics_LCMS	F_ind	C0		arm 2 minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026372	0.0236859347359706
+B	metabolomics_LCMS	F_ind	C0		arm 2 minus arm 3	5	0.0266666666666667	0.00666666666666667	0.00815703263201471	0.0451763007013186
+D	metabolomics_LCMS	F_ind	C0		arm 2 minus arm 3	5	-4.16469159505994e-18	0.0235702260395516	-0.0654414387159186	0.0654414387159186
+A	proteomics	F_ind	C0		arm 2 minus arm 3	5	0	0.0149071198499986	-0.0413887999401255	0.0413887999401255
+B	proteomics	F_ind	C0		arm 2 minus arm 3	5	0	0.0105409255338946	-0.0292663011028361	0.0292663011028361
+D	proteomics	F_ind	C0		arm 2 minus arm 3	5	0	0.0149071198499986	-0.0413887999401255	0.0413887999401255
+A	transcriptomics	F_ind	C0		arm 2 minus arm 3	5	0	0.0182574185835055	-0.0506907204597212	0.0506907204597212
+B	transcriptomics	F_ind	C0		arm 2 minus arm 3	5	-2.77542203629133e-18	0.0182574185835055	-0.0506907204597212	0.0506907204597212
+D	transcriptomics	F_ind	C0		arm 2 minus arm 3	5	0.0133333333333333	0.00816496580927726	-0.00933624602194185	0.0360029126886085
+A	metabolomics_LCMS	F_main	C0		arm 2 minus arm 3	5	1.38669457860896e-18	0.0105409255338946	-0.0292663011028361	0.0292663011028361
+B	metabolomics_LCMS	F_main	C0		arm 2 minus arm 3	5	0.00666666666666667	0.00666666666666667	-0.0118429673679853	0.0251763007013186
+D	metabolomics_LCMS	F_main	C0		arm 2 minus arm 3	5	0.0133333333333333	0.0169967317119759	-0.0338571592327424	0.0605238258994091
+A	proteomics	F_main	C0		arm 2 minus arm 3	5	-0.00666666666666667	0.019436506316151	-0.0606310594902901	0.0472977261569568
+B	proteomics	F_main	C0		arm 2 minus arm 3	5	-0.0266666666666667	0.0124721912892465	-0.0612950211227856	0.00796168778945226
+D	proteomics	F_main	C0		arm 2 minus arm 3	5	0.0266666666666667	0.0163299316185545	-0.0186724920438837	0.072005825377217
+A	transcriptomics	F_main	C0		arm 2 minus arm 3	5	-0.00666666666666667	0.019436506316151	-0.0606310594902901	0.0472977261569568
+B	transcriptomics	F_main	C0		arm 2 minus arm 3	5	-0.0133333333333333	0.0169967317119759	-0.0605238258994091	0.0338571592327424
+D	transcriptomics	F_main	C0		arm 2 minus arm 3	5	-0.00666666666666667	0.0124721912892465	-0.0412950211227856	0.0279616877894523
+A	metabolomics_LCMS	F_ret	C0		arm 2 minus arm 3	5	1.38696562915208e-18	0.0105409255338946	-0.0292663011028361	0.0292663011028361
+B	metabolomics_LCMS	F_ret	C0		arm 2 minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026373	0.0236859347359706
+D	metabolomics_LCMS	F_ret	C0		arm 2 minus arm 3	5	1.38669457860896e-18	0.0105409255338946	-0.0292663011028361	0.0292663011028361
+A	proteomics	F_ret	C0		arm 2 minus arm 3	5	0.00666666666666667	0.0244948974278318	-0.0613420713991589	0.0746754047324922
+B	proteomics	F_ret	C0		arm 2 minus arm 3	5	0.00666666666666667	0.0124721912892465	-0.0279616877894523	0.0412950211227856
+D	proteomics	F_ret	C0		arm 2 minus arm 3	5	-0.0133333333333333	0.0169967317119759	-0.0605238258994091	0.0338571592327424
+A	transcriptomics	F_ret	C0		arm 2 minus arm 3	5	0.0333333333333333	0.0235702260395516	-0.0321081053825852	0.0987747720492519
+B	transcriptomics	F_ret	C0		arm 2 minus arm 3	5	-0.00666666666666667	0.0266666666666667	-0.0807052028052745	0.0673718694719412
+D	transcriptomics	F_ret	C0		arm 2 minus arm 3	5	-0.02	0.00816496580927726	-0.0426695793552752	0.00266957935527519
+A	metabolomics_LCMS	F_ind	C2		arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C2		arm 2 minus arm 3	5	0.2	0.2	-0.355289021039559	0.755289021039559
+D	metabolomics_LCMS	F_ind	C2		arm 2 minus arm 3	5	-0.08	0.0489897948556636	-0.216017476131651	0.0560174761316511
+A	proteomics	F_ind	C2		arm 2 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	proteomics	F_ind	C2		arm 2 minus arm 3	5	0.02	0.0374165738677394	-0.0838850633683568	0.123885063368357
+D	proteomics	F_ind	C2		arm 2 minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+A	transcriptomics	F_ind	C2		arm 2 minus arm 3	5	-0.04	0.0244948974278318	-0.108008738065826	0.0280087380658256
+B	transcriptomics	F_ind	C2		arm 2 minus arm 3	5	0	0.0316227766016838	-0.0877989033085083	0.0877989033085083
+D	transcriptomics	F_ind	C2		arm 2 minus arm 3	5	-0.04	0.0244948974278318	-0.108008738065826	0.0280087380658256
+A	metabolomics_LCMS	F_main	C2		arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C2		arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C2		arm 2 minus arm 3	5	0.08	0.08	-0.142115608415823	0.302115608415823
+A	proteomics	F_main	C2		arm 2 minus arm 3	5	0.06	0.06	-0.106586706311868	0.226586706311868
+B	proteomics	F_main	C2		arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C2		arm 2 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+A	transcriptomics	F_main	C2		arm 2 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+B	transcriptomics	F_main	C2		arm 2 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	transcriptomics	F_main	C2		arm 2 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C2		arm 2 minus arm 3	5	0	0.0632455532033676	-0.175597806617017	0.175597806617017
+B	metabolomics_LCMS	F_ret	C2		arm 2 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	metabolomics_LCMS	F_ret	C2		arm 2 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+A	proteomics	F_ret	C2		arm 2 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	proteomics	F_ret	C2		arm 2 minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+D	proteomics	F_ret	C2		arm 2 minus arm 3	5	0.06	0.04	-0.0510578042079117	0.171057804207912
+A	transcriptomics	F_ret	C2		arm 2 minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+B	transcriptomics	F_ret	C2		arm 2 minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+D	transcriptomics	F_ret	C2		arm 2 minus arm 3	5	0.08	0.02	0.0244710978960441	0.135528902103956
+A	metabolomics_LCMS	F_ind	C3		arm 2 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	metabolomics_LCMS	F_ind	C3		arm 2 minus arm 3	5	-0.06	0.04	-0.171057804207912	0.0510578042079117
+D	metabolomics_LCMS	F_ind	C3		arm 2 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C3		arm 2 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	metabolomics_LCMS	F_main	C3		arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C3		arm 2 minus arm 3	5	0.06	0.04	-0.0510578042079117	0.171057804207912
+A	metabolomics_LCMS	F_ret	C3		arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C3		arm 2 minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+D	metabolomics_LCMS	F_ret	C3		arm 2 minus arm 3	5	0	0.0547722557505166	-0.152072161379164	0.152072161379164
+A	metabolomics_LCMS	F_ind	C4		arm 2 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+B	metabolomics_LCMS	F_ind	C4		arm 2 minus arm 3	5	0.0333333333333333	0.0210818510677892	-0.0251992688723388	0.0918659355390055
+D	metabolomics_LCMS	F_ind	C4		arm 2 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+A	proteomics	F_ind	C4		arm 2 minus arm 3	5	0	0.0447213595499958	-0.124166399820376	0.124166399820376
+B	proteomics	F_ind	C4		arm 2 minus arm 3	5	0.02	0.0374165738677394	-0.0838850633683568	0.123885063368357
+D	proteomics	F_ind	C4		arm 2 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+A	transcriptomics	F_ind	C4		arm 2 minus arm 3	5	-0.0266666666666667	0.0858939915115008	-0.265146618964674	0.211813285631341
+B	transcriptomics	F_ind	C4		arm 2 minus arm 3	5	-0.0266666666666667	0.0163299316185545	-0.072005825377217	0.0186724920438837
+D	transcriptomics	F_ind	C4		arm 2 minus arm 3	5	-0.04	0.0498887651569859	-0.178513417824476	0.0985134178244757
+A	metabolomics_LCMS	F_main	C4		arm 2 minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026372	0.0236859347359706
+B	metabolomics_LCMS	F_main	C4		arm 2 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+D	metabolomics_LCMS	F_main	C4		arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4		arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C4		arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4		arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4		arm 2 minus arm 3	5	0.0133333333333333	0.038873012632302	-0.0945954523139135	0.12126211898058
+B	transcriptomics	F_main	C4		arm 2 minus arm 3	5	-0.0466666666666667	0.0290593262902712	-0.127348290905636	0.0340149575723022
+D	transcriptomics	F_main	C4		arm 2 minus arm 3	5	-0.0266666666666667	0.0498887651569859	-0.165180084491142	0.111846751157809
+A	metabolomics_LCMS	F_ret	C4		arm 2 minus arm 3	5	0	0.0210818510677892	-0.0585326022056722	0.0585326022056722
+B	metabolomics_LCMS	F_ret	C4		arm 2 minus arm 3	5	-0.0266666666666667	0.0266666666666667	-0.100705202805274	0.0473718694719412
+D	metabolomics_LCMS	F_ret	C4		arm 2 minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026373	0.0236859347359706
+A	proteomics	F_ret	C4		arm 2 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+B	proteomics	F_ret	C4		arm 2 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	proteomics	F_ret	C4		arm 2 minus arm 3	5	-5.55247037584139e-18	0.0447213595499958	-0.124166399820376	0.124166399820376
+A	transcriptomics	F_ret	C4		arm 2 minus arm 3	5	0.0666666666666667	0.0365148371670111	-0.0347147742527757	0.168048107586109
+B	transcriptomics	F_ret	C4		arm 2 minus arm 3	5	0.0266666666666667	0.0266666666666667	-0.0473718694719411	0.100705202805274
+D	transcriptomics	F_ret	C4		arm 2 minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+A	metabolomics_LCMS	F_ind	C5		arm 2 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+B	metabolomics_LCMS	F_ind	C5		arm 2 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+D	metabolomics_LCMS	F_ind	C5		arm 2 minus arm 3	5	-0.2	0.2	-0.755289021039559	0.355289021039559
+A	proteomics	F_ind	C5		arm 2 minus arm 3	5	-0.0933333333333333	0.0653197264742181	-0.274689968175535	0.0880233015088682
+B	proteomics	F_ind	C5		arm 2 minus arm 3	5	-0.04	0.16	-0.484231216831647	0.404231216831647
+D	proteomics	F_ind	C5		arm 2 minus arm 3	5	-0.146666666666667	0.0879393730551528	-0.390825508539808	0.097492175206475
+A	transcriptomics	F_ind	C5		arm 2 minus arm 3	5	0.133333333333333	0.1211060141639	-0.202910866902041	0.469577533568707
+B	transcriptomics	F_ind	C5		arm 2 minus arm 3	5	-0.0266666666666667	0.0266666666666667	-0.100705202805274	0.0473718694719412
+D	transcriptomics	F_ind	C5		arm 2 minus arm 3	5	-0.0266666666666667	0.0163299316185545	-0.072005825377217	0.0186724920438837
+A	metabolomics_LCMS	F_main	C5		arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C5		arm 2 minus arm 3	5	0.2	0.154919333848297	-0.230125026163606	0.630125026163606
+D	metabolomics_LCMS	F_main	C5		arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C5		arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C5		arm 2 minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+D	proteomics	F_main	C5		arm 2 minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+A	transcriptomics	F_main	C5		arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C5		arm 2 minus arm 3	5	-0.2	0.109544511501033	-0.504144322758327	0.104144322758327
+D	transcriptomics	F_main	C5		arm 2 minus arm 3	5	-0.04	0.0163299316185545	-0.0853391587105504	0.00533915871055037
+A	metabolomics_LCMS	F_ret	C5		arm 2 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+B	metabolomics_LCMS	F_ret	C5		arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C5		arm 2 minus arm 3	5	-0.12	0.12	-0.453173412623735	0.213173412623735
+A	proteomics	F_ret	C5		arm 2 minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026372	0.0236859347359706
+B	proteomics	F_ret	C5		arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C5		arm 2 minus arm 3	5	-0.0466666666666667	0.02	-0.102195568770623	0.0088622354372892
+A	transcriptomics	F_ret	C5		arm 2 minus arm 3	5	-0.0533333333333333	0.0249443825784929	-0.122590042245571	0.0159233755789045
+B	transcriptomics	F_ret	C5		arm 2 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C5		arm 2 minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026372	0.0236859347359706
+A	metabolomics_LCMS	F_ind	Pdown		arm 2 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+B	metabolomics_LCMS	F_ind	Pdown		arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	Pdown		arm 2 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+A	proteomics	F_ind	Pdown		arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	Pdown		arm 2 minus arm 3	5	-0.04	0.0509901951359278	-0.181571477698227	0.101571477698227
+D	proteomics	F_ind	Pdown		arm 2 minus arm 3	5	0	0.0316227766016838	-0.0877989033085083	0.0877989033085083
+A	transcriptomics	F_ind	Pdown		arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	Pdown		arm 2 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+D	transcriptomics	F_ind	Pdown		arm 2 minus arm 3	5	0.0133333333333333	0.038873012632302	-0.0945954523139136	0.12126211898058
+A	metabolomics_LCMS	F_main	Pdown		arm 2 minus arm 3	5	-0.16	0.0748331477354788	-0.367770126736713	0.0477701267367135
+B	metabolomics_LCMS	F_main	Pdown		arm 2 minus arm 3	5	-0.2	0.126491106406735	-0.551195613234033	0.151195613234033
+D	metabolomics_LCMS	F_main	Pdown		arm 2 minus arm 3	5	0.16	0.116619037896906	-0.163786356941741	0.483786356941741
+A	proteomics	F_main	Pdown		arm 2 minus arm 3	5	-0.04	0.0244948974278318	-0.108008738065826	0.0280087380658256
+B	proteomics	F_main	Pdown		arm 2 minus arm 3	5	-0.08	0.0374165738677394	-0.183885063368357	0.0238850633683568
+D	proteomics	F_main	Pdown		arm 2 minus arm 3	5	-0.1	0.0894427190999916	-0.348332799640753	0.148332799640753
+A	transcriptomics	F_main	Pdown		arm 2 minus arm 3	5	-0.0533333333333333	0.038873012632302	-0.16126211898058	0.0545954523139135
+B	transcriptomics	F_main	Pdown		arm 2 minus arm 3	5	-0.0666666666666667	0.0210818510677892	-0.125199268872339	-0.00813406446099451
+D	transcriptomics	F_main	Pdown		arm 2 minus arm 3	5	0.04	0.0163299316185545	-0.00533915871055037	0.0853391587105504
+A	metabolomics_LCMS	F_ret	Pdown		arm 2 minus arm 3	5	0	0.0632455532033676	-0.175597806617017	0.175597806617017
+B	metabolomics_LCMS	F_ret	Pdown		arm 2 minus arm 3	5	0	0.0632455532033676	-0.175597806617017	0.175597806617017
+D	metabolomics_LCMS	F_ret	Pdown		arm 2 minus arm 3	5	0.08	0.08	-0.142115608415823	0.302115608415823
+A	proteomics	F_ret	Pdown		arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	Pdown		arm 2 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	proteomics	F_ret	Pdown		arm 2 minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+A	transcriptomics	F_ret	Pdown		arm 2 minus arm 3	5	0.0533333333333333	0.0533333333333333	-0.0947437389438823	0.201410405610549
+B	transcriptomics	F_ret	Pdown		arm 2 minus arm 3	5	0.0266666666666667	0.0163299316185545	-0.0186724920438837	0.072005825377217
+D	transcriptomics	F_ret	Pdown		arm 2 minus arm 3	5	0.24	0.0858939915115008	0.00152004770199268	0.478479952298007
+A	metabolomics_LCMS	F_ind	Pup		arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	Pup		arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	Pup		arm 2 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+A	proteomics	F_ind	Pup		arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	Pup		arm 2 minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+D	proteomics	F_ind	Pup		arm 2 minus arm 3	5	0.02	0.0860232526704263	-0.218838838809998	0.258838838809998
+A	transcriptomics	F_ind	Pup		arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	Pup		arm 2 minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+D	transcriptomics	F_ind	Pup		arm 2 minus arm 3	5	0.04	0.0452155332208351	-0.0855384458898959	0.165538445889896
+A	metabolomics_LCMS	F_main	Pup		arm 2 minus arm 3	5	0.08	0.08	-0.142115608415823	0.302115608415823
+B	metabolomics_LCMS	F_main	Pup		arm 2 minus arm 3	5	-0.28	0.0489897948556636	-0.416017476131651	-0.143982523868349
+D	metabolomics_LCMS	F_main	Pup		arm 2 minus arm 3	5	-1.11049407516828e-17	0.0632455532033676	-0.175597806617017	0.175597806617017
+A	proteomics	F_main	Pup		arm 2 minus arm 3	5	-0.08	0.058309518948453	-0.24189317847087	0.0818931784708703
+B	proteomics	F_main	Pup		arm 2 minus arm 3	5	-0.06	0.04	-0.171057804207912	0.0510578042079117
+D	proteomics	F_main	Pup		arm 2 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+A	transcriptomics	F_main	Pup		arm 2 minus arm 3	5	-0.04	0.0266666666666667	-0.114038536138608	0.0340385361386078
+B	transcriptomics	F_main	Pup		arm 2 minus arm 3	5	-0.0666666666666667	0.0596284793999944	-0.232221866427168	0.0988885330938352
+D	transcriptomics	F_main	Pup		arm 2 minus arm 3	5	-0.04	0.0266666666666667	-0.114038536138608	0.0340385361386078
+A	metabolomics_LCMS	F_ret	Pup		arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	Pup		arm 2 minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	metabolomics_LCMS	F_ret	Pup		arm 2 minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+A	proteomics	F_ret	Pup		arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	Pup		arm 2 minus arm 3	5	0	0.0316227766016838	-0.0877989033085083	0.0877989033085083
+D	proteomics	F_ret	Pup		arm 2 minus arm 3	5	0.06	0.06	-0.106586706311868	0.226586706311868
+A	transcriptomics	F_ret	Pup		arm 2 minus arm 3	5	0.0666666666666667	0.0516397779494322	-0.0767083420545354	0.210041675387869
+B	transcriptomics	F_ret	Pup		arm 2 minus arm 3	5	0.08	0.082731157639939	-0.149698517676756	0.309698517676756
+D	transcriptomics	F_ret	Pup		arm 2 minus arm 3	5	0.173333333333333	0.0956846672960488	-0.0923298928232608	0.438996559489927
+A	metabolomics_LCMS	F_ind	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1	0.1	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+D	proteomics	F_ind	C1	0.1	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+A	transcriptomics	F_ind	C1	0.1	arm 2 minus arm 3	5	0.0333333333333333	0.0816496580927726	-0.193362460219419	0.260029126886085
+B	transcriptomics	F_ind	C1	0.1	arm 2 minus arm 3	5	-0.1	0.0666666666666667	-0.28509634034652	0.0850963403465195
+D	transcriptomics	F_ind	C1	0.1	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	metabolomics_LCMS	F_main	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1	0.1	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_main	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1	0.1	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	metabolomics_LCMS	F_ret	C1	0.1	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	metabolomics_LCMS	F_ret	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1	0.1	arm 2 minus arm 3	5	0.1	0.0666666666666667	-0.0850963403465195	0.28509634034652
+B	transcriptomics	F_ret	C1	0.1	arm 2 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+D	transcriptomics	F_ret	C1	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1out	0.1	arm 2 minus arm 3	5	0.0333333333333333	0.133333333333333	-0.336859347359706	0.403526014026372
+D	proteomics	F_ind	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1out	0.1	arm 2 minus arm 3	5	-0.0666666666666667	0.0408248290463863	-0.180014563443043	0.0466812301097093
+B	transcriptomics	F_ind	C1out	0.1	arm 2 minus arm 3	5	-0.1	0.0666666666666667	-0.28509634034652	0.0850963403465195
+D	transcriptomics	F_ind	C1out	0.1	arm 2 minus arm 3	5	0	0.052704627669473	-0.14633150551418	0.14633150551418
+A	proteomics	F_main	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1out	0.1	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	proteomics	F_ret	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1out	0.1	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	transcriptomics	F_ret	C1out	0.1	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_ret	C1out	0.1	arm 2 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+D	transcriptomics	F_ret	C1out	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C4b	0.1	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+A	transcriptomics	F_ind	C4b	0.1	arm 2 minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+B	transcriptomics	F_ind	C4b	0.1	arm 2 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ind	C4b	0.1	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	metabolomics_LCMS	F_main	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4b	0.1	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_main	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4b	0.1	arm 2 minus arm 3	4	-0.0625	0.0625	-0.261402894080232	0.136402894080232
+D	transcriptomics	F_main	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C4b	0.1	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	metabolomics_LCMS	F_ret	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C4b	0.1	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C4b	0.1	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+A	transcriptomics	F_ret	C4b	0.1	arm 2 minus arm 3	5	0.133333333333333	0.0816496580927726	-0.0933624602194185	0.360029126886085
+B	transcriptomics	F_ret	C4b	0.1	arm 2 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ret	C4b	0.1	arm 2 minus arm 3	5	0.166666666666667	0.105409255338946	-0.125996344361694	0.459329677695028
+A	metabolomics_LCMS	F_ind	C1	0.3	arm 2 minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+B	metabolomics_LCMS	F_ind	C1	0.3	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	metabolomics_LCMS	F_ind	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1	0.3	arm 2 minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+B	proteomics	F_ind	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1	0.3	arm 2 minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+A	transcriptomics	F_ind	C1	0.3	arm 2 minus arm 3	5	-0.0666666666666667	0.0408248290463863	-0.180014563443043	0.0466812301097093
+B	transcriptomics	F_ind	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C1	0.3	arm 2 minus arm 3	5	0.0333333333333333	0.0623609564462323	-0.139808438947261	0.206475105613928
+A	metabolomics_LCMS	F_main	C1	0.3	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	metabolomics_LCMS	F_main	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1	0.3	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+D	proteomics	F_main	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1	0.3	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_ret	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1	0.3	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_ret	C1	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1	0.3	arm 2 minus arm 3	5	0.1	0.0849836585598797	-0.135952462830379	0.335952462830379
+A	proteomics	F_ind	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1out	0.3	arm 2 minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+A	transcriptomics	F_ind	C1out	0.3	arm 2 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+B	transcriptomics	F_ind	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C1out	0.3	arm 2 minus arm 3	5	0	0.052704627669473	-0.14633150551418	0.14633150551418
+A	proteomics	F_main	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1out	0.3	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	proteomics	F_ret	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1out	0.3	arm 2 minus arm 3	5	0.0666666666666667	0.0408248290463863	-0.0466812301097093	0.180014563443043
+B	transcriptomics	F_ret	C1out	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1out	0.3	arm 2 minus arm 3	5	0	0.052704627669473	-0.14633150551418	0.14633150551418
+A	metabolomics_LCMS	F_ind	C4b	0.3	arm 2 minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+B	metabolomics_LCMS	F_ind	C4b	0.3	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	metabolomics_LCMS	F_ind	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C4b	0.3	arm 2 minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+A	transcriptomics	F_ind	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C4b	0.3	arm 2 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ind	C4b	0.3	arm 2 minus arm 3	5	0.133333333333333	0.0816496580927726	-0.0933624602194185	0.360029126886085
+A	metabolomics_LCMS	F_main	C4b	0.3	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	metabolomics_LCMS	F_main	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4b	0.3	arm 2 minus arm 3	4	-0.0833333333333333	0.0833333333333333	-0.348537192106976	0.181870525440309
+D	transcriptomics	F_main	C4b	0.3	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+A	metabolomics_LCMS	F_ret	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C4b	0.3	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_ret	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C4b	0.3	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C4b	0.3	arm 2 minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ret	C4b	0.3	arm 2 minus arm 3	5	0.133333333333333	0.0816496580927726	-0.0933624602194185	0.360029126886085
+A	metabolomics_LCMS	F_ind	C1	0.6	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	metabolomics_LCMS	F_ind	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C1	0.6	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	proteomics	F_ind	C1	0.6	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_ind	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C1	0.6	arm 2 minus arm 3	5	-0.1	0.0408248290463863	-0.213347896776376	0.0133478967763759
+D	transcriptomics	F_ind	C1	0.6	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	metabolomics_LCMS	F_main	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1	0.6	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_main	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1	0.6	arm 2 minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+D	transcriptomics	F_main	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C1	0.6	arm 2 minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+D	metabolomics_LCMS	F_ret	C1	0.6	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	proteomics	F_ret	C1	0.6	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_ret	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1	0.6	arm 2 minus arm 3	5	0.1	0.0666666666666667	-0.0850963403465195	0.28509634034652
+D	transcriptomics	F_ret	C1	0.6	arm 2 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+A	proteomics	F_ind	C1out	0.6	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_ind	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C1out	0.6	arm 2 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+D	transcriptomics	F_ind	C1out	0.6	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+A	proteomics	F_main	C1out	0.6	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_main	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1out	0.6	arm 2 minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+B	transcriptomics	F_main	C1out	0.6	arm 2 minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+D	transcriptomics	F_main	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1out	0.6	arm 2 minus arm 3	5	0.1	0.0666666666666667	-0.0850963403465195	0.28509634034652
+D	transcriptomics	F_ret	C1out	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C4b	0.6	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	metabolomics_LCMS	F_ind	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C4b	0.6	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	proteomics	F_ind	C4b	0.6	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	proteomics	F_ind	C4b	0.6	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+D	proteomics	F_ind	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C4b	0.6	arm 2 minus arm 3	5	-0.116666666666667	0.0726483157256779	-0.318370727264089	0.0850373939307556
+D	transcriptomics	F_ind	C4b	0.6	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	metabolomics_LCMS	F_main	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4b	0.6	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_main	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4b	0.6	arm 2 minus arm 3	5	-0.266666666666667	0.19436506316151	-0.806310594902901	0.272977261569568
+D	transcriptomics	F_main	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4b	0.6	arm 2 minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+D	metabolomics_LCMS	F_ret	C4b	0.6	arm 2 minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	proteomics	F_ret	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C4b	0.6	arm 2 minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+D	transcriptomics	F_ret	C4b	0.6	arm 2 minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C0		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C0		arm 3o minus arm 3	5	0.00666666666666667	0.00666666666666667	-0.0118429673679853	0.0251763007013186
+D	metabolomics_LCMS	F_ind	C0		arm 3o minus arm 3	5	-0.04	0.019436506316151	-0.0939643928236234	0.0139643928236234
+A	proteomics	F_ind	C0		arm 3o minus arm 3	5	0.02	0.00816496580927726	-0.00266957935527519	0.0426695793552752
+B	proteomics	F_ind	C0		arm 3o minus arm 3	5	0	0.0105409255338946	-0.0292663011028361	0.0292663011028361
+D	proteomics	F_ind	C0		arm 3o minus arm 3	5	-0.02	0.0133333333333333	-0.0570192680693039	0.0170192680693039
+A	transcriptomics	F_ind	C0		arm 3o minus arm 3	5	-0.00666666666666667	0.00666666666666667	-0.0251763007013186	0.0118429673679853
+B	transcriptomics	F_ind	C0		arm 3o minus arm 3	5	0.0266666666666667	0.0221108319357027	-0.0347228444330661	0.0880561777663994
+D	transcriptomics	F_ind	C0		arm 3o minus arm 3	5	0.0133333333333333	0.00816496580927726	-0.00933624602194185	0.0360029126886085
+A	metabolomics_LCMS	F_main	C0		arm 3o minus arm 3	5	0.00666666666666666	0.0163299316185545	-0.0386724920438837	0.052005825377217
+B	metabolomics_LCMS	F_main	C0		arm 3o minus arm 3	5	-0.00666666666666667	0.00666666666666667	-0.0251763007013186	0.0118429673679853
+D	metabolomics_LCMS	F_main	C0		arm 3o minus arm 3	5	0.0133333333333333	0.00816496580927726	-0.00933624602194185	0.0360029126886085
+A	proteomics	F_main	C0		arm 3o minus arm 3	5	0.00666666666666667	0.00666666666666667	-0.0118429673679853	0.0251763007013186
+B	proteomics	F_main	C0		arm 3o minus arm 3	5	-0.00666666666666667	0.00666666666666667	-0.0251763007013186	0.0118429673679853
+D	proteomics	F_main	C0		arm 3o minus arm 3	5	-0.00666666666666667	0.00666666666666667	-0.0251763007013186	0.0118429673679853
+A	transcriptomics	F_main	C0		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C0		arm 3o minus arm 3	5	-0.00666666666666667	0.00666666666666667	-0.0251763007013186	0.0118429673679853
+D	transcriptomics	F_main	C0		arm 3o minus arm 3	5	0	0.0105409255338946	-0.0292663011028361	0.0292663011028361
+A	metabolomics_LCMS	F_ret	C0		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C0		arm 3o minus arm 3	5	0	0.0105409255338946	-0.0292663011028361	0.0292663011028361
+D	metabolomics_LCMS	F_ret	C0		arm 3o minus arm 3	5	0.00666666666666667	0.0163299316185545	-0.0386724920438837	0.052005825377217
+A	proteomics	F_ret	C0		arm 3o minus arm 3	5	-0.00666666666666667	0.00666666666666667	-0.0251763007013186	0.0118429673679853
+B	proteomics	F_ret	C0		arm 3o minus arm 3	5	0.0133333333333333	0.00816496580927726	-0.00933624602194185	0.0360029126886085
+D	proteomics	F_ret	C0		arm 3o minus arm 3	5	-0.02	0.0133333333333333	-0.0570192680693039	0.0170192680693039
+A	transcriptomics	F_ret	C0		arm 3o minus arm 3	5	0.00666666666666667	0.0124721912892465	-0.0279616877894523	0.0412950211227856
+B	transcriptomics	F_ret	C0		arm 3o minus arm 3	5	-0.00666666666666667	0.0124721912892465	-0.0412950211227856	0.0279616877894523
+D	transcriptomics	F_ret	C0		arm 3o minus arm 3	5	-0.00666666666666667	0.0124721912892465	-0.0412950211227856	0.0279616877894522
+A	metabolomics_LCMS	F_ind	C2		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C2		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C2		arm 3o minus arm 3	5	-0.08	0.0489897948556636	-0.216017476131651	0.0560174761316511
+A	proteomics	F_ind	C2		arm 3o minus arm 3	5	0.04	0.0509901951359278	-0.101571477698227	0.181571477698227
+B	proteomics	F_ind	C2		arm 3o minus arm 3	5	-0.04	0.0244948974278318	-0.108008738065826	0.0280087380658256
+D	proteomics	F_ind	C2		arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C2		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C2		arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C2		arm 3o minus arm 3	5	-0.04	0.0244948974278318	-0.108008738065826	0.0280087380658256
+A	metabolomics_LCMS	F_main	C2		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C2		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	metabolomics_LCMS	F_main	C2		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+A	proteomics	F_main	C2		arm 3o minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	proteomics	F_main	C2		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	proteomics	F_main	C2		arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C2		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C2		arm 3o minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+D	transcriptomics	F_main	C2		arm 3o minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+A	metabolomics_LCMS	F_ret	C2		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C2		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C2		arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C2		arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C2		arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C2		arm 3o minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+A	transcriptomics	F_ret	C2		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C2		arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C2		arm 3o minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+A	metabolomics_LCMS	F_ind	C3		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C3		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	metabolomics_LCMS	F_ind	C3		arm 3o minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+A	metabolomics_LCMS	F_main	C3		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C3		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C3		arm 3o minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+A	metabolomics_LCMS	F_ret	C3		arm 3o minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+B	metabolomics_LCMS	F_ret	C3		arm 3o minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+D	metabolomics_LCMS	F_ret	C3		arm 3o minus arm 3	5	-0.04	0.0244948974278318	-0.108008738065826	0.0280087380658256
+A	metabolomics_LCMS	F_ind	C4		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C4		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	metabolomics_LCMS	F_ind	C4		arm 3o minus arm 3	5	0.0533333333333333	0.0442216638714053	-0.0694456888661321	0.176112355532799
+A	proteomics	F_ind	C4		arm 3o minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+B	proteomics	F_ind	C4		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	proteomics	F_ind	C4		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+A	transcriptomics	F_ind	C4		arm 3o minus arm 3	5	0.0133333333333333	0.0249443825784929	-0.0559233755789045	0.0825900422455712
+B	transcriptomics	F_ind	C4		arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C4		arm 3o minus arm 3	5	-0.0533333333333333	0.0646357314322177	-0.232790893489193	0.126124226822527
+A	metabolomics_LCMS	F_main	C4		arm 3o minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026372	0.0236859347359706
+B	metabolomics_LCMS	F_main	C4		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4		arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+B	proteomics	F_main	C4		arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4		arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4		arm 3o minus arm 3	5	-0.00666666666666667	0.0266666666666667	-0.0807052028052745	0.0673718694719412
+D	transcriptomics	F_main	C4		arm 3o minus arm 3	5	0.0133333333333333	0.0442216638714053	-0.109445688866132	0.136112355532799
+A	metabolomics_LCMS	F_ret	C4		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4		arm 3o minus arm 3	5	0.0466666666666667	0.02	-0.00886223543728921	0.102195568770623
+D	metabolomics_LCMS	F_ret	C4		arm 3o minus arm 3	5	-0.0266666666666667	0.0163299316185545	-0.0720058253772171	0.0186724920438837
+A	proteomics	F_ret	C4		arm 3o minus arm 3	5	0.06	0.0244948974278318	-0.00800873806582556	0.128008738065826
+B	proteomics	F_ret	C4		arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C4		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+A	transcriptomics	F_ret	C4		arm 3o minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+B	transcriptomics	F_ret	C4		arm 3o minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+D	transcriptomics	F_ret	C4		arm 3o minus arm 3	5	-0.0133333333333333	0.0249443825784929	-0.0825900422455712	0.0559233755789045
+A	metabolomics_LCMS	F_ind	C5		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+B	metabolomics_LCMS	F_ind	C5		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C5		arm 3o minus arm 3	5	-0.12	0.12	-0.453173412623735	0.213173412623735
+A	proteomics	F_ind	C5		arm 3o minus arm 3	5	0.08	0.116237305161085	-0.242726496955876	0.402726496955876
+B	proteomics	F_ind	C5		arm 3o minus arm 3	5	0.14	0.216641024123626	-0.461491911013077	0.741491911013077
+D	proteomics	F_ind	C5		arm 3o minus arm 3	5	0.06	0.0452155332208351	-0.0655384458898959	0.185538445889896
+A	transcriptomics	F_ind	C5		arm 3o minus arm 3	5	0.0266666666666667	0.0266666666666667	-0.0473718694719412	0.100705202805274
+B	transcriptomics	F_ind	C5		arm 3o minus arm 3	5	0.04	0.0498887651569859	-0.0985134178244757	0.178513417824476
+D	transcriptomics	F_ind	C5		arm 3o minus arm 3	5	0.0133333333333333	0.0249443825784929	-0.0559233755789045	0.0825900422455712
+A	metabolomics_LCMS	F_main	C5		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C5		arm 3o minus arm 3	5	-0.08	0.0489897948556636	-0.216017476131651	0.0560174761316511
+D	metabolomics_LCMS	F_main	C5		arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C5		arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C5		arm 3o minus arm 3	5	-0.0933333333333333	0.0933333333333333	-0.352468209818461	0.165801543151794
+D	proteomics	F_main	C5		arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C5		arm 3o minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+B	transcriptomics	F_main	C5		arm 3o minus arm 3	5	-0.186666666666667	0.114309521329882	-0.504040777640519	0.130707444307186
+D	transcriptomics	F_main	C5		arm 3o minus arm 3	5	-0.04	0.0163299316185545	-0.0853391587105504	0.00533915871055037
+A	metabolomics_LCMS	F_ret	C5		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+B	metabolomics_LCMS	F_ret	C5		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C5		arm 3o minus arm 3	5	-0.12	0.12	-0.453173412623735	0.213173412623735
+A	proteomics	F_ret	C5		arm 3o minus arm 3	5	0.06	0.0266666666666667	-0.0140385361386078	0.134038536138608
+B	proteomics	F_ret	C5		arm 3o minus arm 3	5	0.173333333333333	0.0956846672960488	-0.0923298928232608	0.438996559489927
+D	proteomics	F_ret	C5		arm 3o minus arm 3	5	0.1	0.0988826464946088	-0.17454223984896	0.37454223984896
+A	transcriptomics	F_ret	C5		arm 3o minus arm 3	5	0.0133333333333333	0.0133333333333333	-0.0236859347359706	0.0503526014026372
+B	transcriptomics	F_ret	C5		arm 3o minus arm 3	5	0.0533333333333333	0.0133333333333333	0.0163140652640294	0.0903526014026372
+D	transcriptomics	F_ret	C5		arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	Pdown		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	Pdown		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	Pdown		arm 3o minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+A	proteomics	F_ind	Pdown		arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	Pdown		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	proteomics	F_ind	Pdown		arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	Pdown		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	Pdown		arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	Pdown		arm 3o minus arm 3	5	-0.0266666666666667	0.0266666666666667	-0.100705202805275	0.0473718694719412
+A	metabolomics_LCMS	F_main	Pdown		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+B	metabolomics_LCMS	F_main	Pdown		arm 3o minus arm 3	5	2.22077130990206e-17	0.0632455532033676	-0.175597806617017	0.175597806617017
+D	metabolomics_LCMS	F_main	Pdown		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+A	proteomics	F_main	Pdown		arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	Pdown		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	proteomics	F_main	Pdown		arm 3o minus arm 3	5	-0.04	0.0244948974278318	-0.108008738065826	0.0280087380658256
+A	transcriptomics	F_main	Pdown		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	Pdown		arm 3o minus arm 3	5	0.0266666666666667	0.0163299316185545	-0.0186724920438837	0.072005825377217
+D	transcriptomics	F_main	Pdown		arm 3o minus arm 3	5	0.0133333333333333	0.0249443825784929	-0.0559233755789045	0.0825900422455712
+A	metabolomics_LCMS	F_ret	Pdown		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	Pdown		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	Pdown		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+A	proteomics	F_ret	Pdown		arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	Pdown		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	proteomics	F_ret	Pdown		arm 3o minus arm 3	5	0.02	0.02	-0.0355289021039559	0.0755289021039559
+A	transcriptomics	F_ret	Pdown		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	Pdown		arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	Pdown		arm 3o minus arm 3	5	0.106666666666667	0.077746025264604	-0.109190904627827	0.32252423796116
+A	metabolomics_LCMS	F_ind	Pup		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	Pup		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	Pup		arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	Pup		arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	Pup		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	proteomics	F_ind	Pup		arm 3o minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+A	transcriptomics	F_ind	Pup		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	Pup		arm 3o minus arm 3	5	-0.0133333333333333	0.0133333333333333	-0.0503526014026372	0.0236859347359706
+D	transcriptomics	F_ind	Pup		arm 3o minus arm 3	5	0	0.0210818510677892	-0.0585326022056722	0.0585326022056722
+A	metabolomics_LCMS	F_main	Pup		arm 3o minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+B	metabolomics_LCMS	F_main	Pup		arm 3o minus arm 3	5	0.04	0.04	-0.0710578042079117	0.151057804207912
+D	metabolomics_LCMS	F_main	Pup		arm 3o minus arm 3	5	0.08	0.0489897948556636	-0.0560174761316511	0.216017476131651
+A	proteomics	F_main	Pup		arm 3o minus arm 3	5	0	0.0316227766016838	-0.0877989033085083	0.0877989033085083
+B	proteomics	F_main	Pup		arm 3o minus arm 3	5	-0.02	0.02	-0.0755289021039559	0.0355289021039559
+D	proteomics	F_main	Pup		arm 3o minus arm 3	5	0.04	0.0244948974278318	-0.0280087380658256	0.108008738065826
+A	transcriptomics	F_main	Pup		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	Pup		arm 3o minus arm 3	5	-0.0266666666666667	0.0266666666666667	-0.100705202805275	0.0473718694719412
+D	transcriptomics	F_main	Pup		arm 3o minus arm 3	5	0.04	0.0163299316185545	-0.00533915871055037	0.0853391587105504
+A	metabolomics_LCMS	F_ret	Pup		arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	Pup		arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	Pup		arm 3o minus arm 3	5	-0.04	0.04	-0.151057804207912	0.0710578042079117
+A	proteomics	F_ret	Pup		arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	Pup		arm 3o minus arm 3	5	0	0.0316227766016838	-0.0877989033085083	0.0877989033085083
+D	proteomics	F_ret	Pup		arm 3o minus arm 3	5	0.02	0.0734846922834954	-0.184026214197477	0.224026214197477
+A	transcriptomics	F_ret	Pup		arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	Pup		arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	Pup		arm 3o minus arm 3	5	0.08	0.08	-0.142115608415823	0.302115608415823
+A	metabolomics_LCMS	F_ind	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1	0.1	arm 3o minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+A	transcriptomics	F_ind	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C1	0.1	arm 3o minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+A	metabolomics_LCMS	F_main	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1	0.1	arm 3o minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+A	transcriptomics	F_ret	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1out	0.1	arm 3o minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+B	transcriptomics	F_ind	C1out	0.1	arm 3o minus arm 3	5	0.0333333333333333	0.0333333333333333	-0.0592148368399264	0.125881503506593
+D	transcriptomics	F_ind	C1out	0.1	arm 3o minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+A	proteomics	F_main	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1out	0.1	arm 3o minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+D	proteomics	F_ret	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1out	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C4b	0.1	arm 3o minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+A	transcriptomics	F_ind	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C4b	0.1	arm 3o minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ind	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C4b	0.1	arm 3o minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	proteomics	F_main	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4b	0.1	arm 3o minus arm 3	4	0	0	0	0
+D	transcriptomics	F_main	C4b	0.1	arm 3o minus arm 3	5	0	0.0790569415042095	-0.219497258271271	0.219497258271271
+A	metabolomics_LCMS	F_ret	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C4b	0.1	arm 3o minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	proteomics	F_ret	C4b	0.1	arm 3o minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+D	proteomics	F_ret	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C4b	0.1	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C4b	0.1	arm 3o minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ret	C4b	0.1	arm 3o minus arm 3	5	0.166666666666667	0.105409255338946	-0.125996344361694	0.459329677695028
+A	metabolomics_LCMS	F_ind	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C1	0.3	arm 3o minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+B	proteomics	F_ind	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1	0.3	arm 3o minus arm 3	5	-0.0666666666666667	0.0408248290463863	-0.180014563443043	0.0466812301097093
+B	transcriptomics	F_ind	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C1	0.3	arm 3o minus arm 3	5	0	0.052704627669473	-0.14633150551418	0.14633150551418
+A	metabolomics_LCMS	F_main	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1	0.3	arm 3o minus arm 3	5	0	0.052704627669473	-0.14633150551418	0.14633150551418
+A	proteomics	F_ind	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1out	0.3	arm 3o minus arm 3	5	-0.0666666666666667	0.0666666666666667	-0.251763007013186	0.118429673679853
+A	transcriptomics	F_ind	C1out	0.3	arm 3o minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+B	transcriptomics	F_ind	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C1out	0.3	arm 3o minus arm 3	5	-0.0333333333333333	0.0623609564462323	-0.206475105613928	0.139808438947261
+A	proteomics	F_main	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1out	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C1out	0.3	arm 3o minus arm 3	5	0	0.052704627669473	-0.14633150551418	0.14633150551418
+A	metabolomics_LCMS	F_ind	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ind	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ind	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C4b	0.3	arm 3o minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	proteomics	F_ind	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C4b	0.3	arm 3o minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ind	C4b	0.3	arm 3o minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+A	metabolomics_LCMS	F_main	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C4b	0.3	arm 3o minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+D	proteomics	F_main	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4b	0.3	arm 3o minus arm 3	4	0	0	0	0
+D	transcriptomics	F_main	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C4b	0.3	arm 3o minus arm 3	4	0	0	0	0
+D	transcriptomics	F_ret	C4b	0.3	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C1	0.6	arm 3o minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	metabolomics_LCMS	F_ind	C1	0.6	arm 3o minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	proteomics	F_ind	C1	0.6	arm 3o minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_ind	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C1	0.6	arm 3o minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+D	transcriptomics	F_ind	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C1	0.6	arm 3o minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+A	proteomics	F_main	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1	0.6	arm 3o minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+B	transcriptomics	F_main	C1	0.6	arm 3o minus arm 3	5	0	0.052704627669473	-0.14633150551418	0.14633150551418
+D	transcriptomics	F_main	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1	0.6	arm 3o minus arm 3	5	0.0666666666666667	0.0666666666666667	-0.118429673679853	0.251763007013186
+B	proteomics	F_ret	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1	0.6	arm 3o minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+D	transcriptomics	F_ret	C1	0.6	arm 3o minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+A	proteomics	F_ind	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ind	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C1out	0.6	arm 3o minus arm 3	5	0	0.052704627669473	-0.14633150551418	0.14633150551418
+D	transcriptomics	F_ind	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_main	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_main	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ret	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C1out	0.6	arm 3o minus arm 3	5	-0.0333333333333333	0.0333333333333333	-0.125881503506593	0.0592148368399264
+D	transcriptomics	F_ret	C1out	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ind	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ind	C4b	0.6	arm 3o minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+D	metabolomics_LCMS	F_ind	C4b	0.6	arm 3o minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	proteomics	F_ind	C4b	0.6	arm 3o minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+B	proteomics	F_ind	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ind	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_ind	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ind	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ind	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_main	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_main	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_main	C4b	0.6	arm 3o minus arm 3	5	-0.1	0.1	-0.377644510519779	0.177644510519779
+A	proteomics	F_main	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_main	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_main	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	transcriptomics	F_main	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_main	C4b	0.6	arm 3o minus arm 3	5	0.05	0.05	-0.0888222552598897	0.18882225525989
+D	transcriptomics	F_main	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	metabolomics_LCMS	F_ret	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	metabolomics_LCMS	F_ret	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	metabolomics_LCMS	F_ret	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+A	proteomics	F_ret	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	proteomics	F_ret	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	proteomics	F_ret	C4b	0.6	arm 3o minus arm 3	5	0.1	0.1	-0.177644510519779	0.377644510519779
+A	transcriptomics	F_ret	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+B	transcriptomics	F_ret	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0
+D	transcriptomics	F_ret	C4b	0.6	arm 3o minus arm 3	5	0	0	0	0

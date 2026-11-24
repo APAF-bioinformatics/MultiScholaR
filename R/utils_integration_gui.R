@@ -768,15 +768,19 @@ integrationGuiTexts <- function() {
         enrich_values_ruv_note = paste("This model was trained on RUV-corrected values, but this result uses the",
             "normalised values before RUV correction without the unwanted factors the correction removed; variation the",
             "correction removed stays in them, which lowers power and, if it follows the factor, can bias the result."),
-        # KIT-184 (VAL-53 (1), VAL-58, VAL-62; ticket 5.5; proposed wording, VAL-41: the owner edits before release). The
-        # setting, the label of the form with every result of a test that has a design, and the sentences of each form.
+        # KIT-184 (VAL-53 (1), VAL-58, VAL-62, VAL-160; ticket 5.5). DRAFTS for the owner's wording pass (VAL-41), listed
+        # verbatim in docs/qa/workflow-execution/kit/kit-184/wording.md. The setting is off unless chosen (VAL-160). The
+        # numbers are those of the counted simulation (run 45353248796; kit-184/results.md): what the adjustment kept,
+        # and its limit, in the words the results audit proposed (K184-R12). The setting, the label of the form with
+        # every result of a test that has a design, and the sentences of each form.
         enrich_adjust_ruv = "Adjust for removed RUV factors",
-        enrich_adjust_ruv_help = paste("On: each feature is tested for what it shares with the factor beyond the unwanted",
-            "factors that the RUV correction removed from this data set. This is the default for a model trained on",
-            "RUV-corrected values. Off: the values before RUV are tested without those factors. For a model trained on",
-            "RUV-corrected values that is a sensitivity analysis: unwanted variation stays in the values, which lowers",
-            "power and can bias a set where it lines up with the factor. On needs a data set to which the omic applied",
-            "RUV. The setting does not apply to the pre-ranked test, the permutation test or STRING."),
+        enrich_adjust_ruv_help = paste("Off unless you switch it on. On: each feature is tested for what it shares with",
+            "the factor beyond the unwanted factors that the RUV correction removed from this data set. In a check on",
+            "simulated data this kept false calls within the checked limit for sets with no link to what was tested (at",
+            "most 5.4 %) and found more true terms than off. Because the unwanted factors are estimated, sets of features",
+            "that share them can still be called when that variation follows the factor (see Methods). Off: the values",
+            "before RUV are tested without those factors. On needs a data set to which the omic applied RUV. The setting",
+            "does not apply to the pre-ranked test, the permutation test or STRING."),
         # %d: the removed factors in the design.
         enrich_adjust_label_yes = "Adjusted for removed RUV factors: yes (%d factors).",
         enrich_adjust_label_no = "Adjusted for removed RUV factors: no.",
@@ -787,7 +791,8 @@ integrationGuiTexts <- function() {
             "beyond those unwanted factors. For features measured in every run this gives exactly the result of fitting",
             "the same model (the factor and these %d unwanted factors) to the corrected values, with %d residual degrees",
             "of freedom. It is not the test of the corrected values on the factor alone. The unwanted factors were",
-            "estimated from these same data and are treated as known."),
+            "estimated from these same data and are treated as known. Because the unwanted factors are estimated, sets of",
+            "features that share them can still be called when that variation follows the factor (see Methods)."),
         # An approximate set of factors (VAL-58 (6)): no sentence claims an exact match. %d: the removed factors in the
         # design, the residual degrees of freedom.
         enrich_values_ruv_covariates_note_approximate = paste("This model was trained on values corrected for unwanted",
@@ -795,7 +800,8 @@ integrationGuiTexts <- function() {
             "correction removed from this data set into its model, so a feature counts only for what it shares with the",
             "factor beyond those unwanted factors. The model has %d residual degrees of freedom. It is not the test of the",
             "corrected values on the factor alone. The unwanted factors were estimated from these same data and are",
-            "treated as known."),
+            "treated as known. Because the unwanted factors are estimated, sets of features that share them can still be",
+            "called when that variation follows the factor (see Methods)."),
         # %d: the factors the correction declared; %s: the share of what it removed that lies within them.
         enrich_removed_approximate = paste("Runs were removed after the correction, or it removed variation outside these",
             "%d factors: %s of what it removed lies within them, so the match with the corrected values is approximate for",
@@ -805,15 +811,18 @@ integrationGuiTexts <- function() {
             "result the adjustment for removed RUV factors was switched on: the test puts the %d unwanted factors that the",
             "omic's RUV correction removed from this data set into its model, so a feature counts only for what it shares",
             "with the factor beyond those unwanted factors. If the factor itself follows them, little is left to test (see",
-            "the share below). The unwanted factors were estimated from these same data and are treated as known."),
-        # [R6], [R5m]: written in after the counted simulation (ticket 6.4).
+            "the share below). The unwanted factors were estimated from these same data and are treated as known. Because",
+            "the unwanted factors are estimated, sets of features that share them can still be called when that variation",
+            "follows the factor (see Methods)."),
+        # The form without the adjustment on a model trained on RUV-corrected values: the default (VAL-160). Its numbers
+        # are the ranges over the three simulated data sets where the unwanted variation followed the groups.
         enrich_values_ruv_unadjusted_note = paste("This model was trained on RUV-corrected values. This result is the form",
-            "without the adjustment for removed RUV factors, a sensitivity analysis: it tests the normalised values before",
-            "RUV correction without the unwanted factors the correction removed. Its degrees of freedom are counted",
-            "correctly, but variation the correction removed stays in the values, which lowers power and can bias a set",
-            "where that variation lines up with the factor. In a check on simulated data, sets of features that share",
-            "unwanted variation and have no link to the simulated biology were called on the model's main factor in [R6]",
-            "of cases in this form and in [R5m] with the adjustment, in the same simulated data set."),
+            "without the adjustment for removed RUV factors, which is the default (the adjustment is optional): it tests",
+            "the normalised values before RUV correction without the unwanted factors the correction removed. Its degrees",
+            "of freedom are counted correctly, but variation the correction removed stays in the values, which lowers",
+            "power. In a check on simulated data where the unwanted variation followed the groups, sets of features",
+            "sharing it were called on the model's main factor in 2.0 to 11.2 % of cases in this form and in 8.1 to 29.6 %",
+            "with the adjustment."),
         # The counts of a result with the removed factors, in three sentences (the second is left out for an approximate
         # set of factors). %d: the removed factors in the design, biological samples, residual degrees of freedom.
         enrich_test_covariates_design = paste("Design: intercept, factor and %d removed unwanted factors; %d biological",
@@ -836,11 +845,13 @@ integrationGuiTexts <- function() {
         # %d: the removed factors, the residual degrees of freedom, the smallest number at which the rate was checked.
         enrich_test_few_df = paste("With %d removed factors in the model this test has %d residual degrees of freedom,",
             "fewer than the smallest number (%d) at which its error rate was checked."),
-        # camera_floor with the removed factors (KIT-191 8.2 item 4; D3 (a): the measured power is written in after the
-        # counted simulation).
+        # camera_floor with the removed factors (KIT-191 8.2 item 4; D3 (a): its measured power, arm 3 of the counted
+        # simulation, sets of 10 on the main factor, the gene and protein data sets of both deciding cells).
         enrich_floor_covariates_note = paste("False calls are at most those of the correlation-adjusted test with the same",
-            "unwanted factors (counting negative correlations as zero never makes a p-value smaller); its power with these",
-            "factors has not been measured yet."),
+            "unwanted factors (counting negative correlations as zero never makes a p-value smaller). In a check on",
+            "simulated data with 12 biological samples and 2 removed factors, terms of 10 features in which half the",
+            "features truly followed the main factor were found in 13 to 32 % of cases with these factors in the model (the",
+            "correlation-adjusted test: 30 to 48 %)."),
         enrich_caution = paste("Exploratory: the factor was learned from these same data, so these terms are worth a",
             "closer look, not proof. P-values are adjusted within this factor, data set and database only."),
         # %s: the factor's variance explained, the largest factor's (r2_percent of the data set's model features), the
